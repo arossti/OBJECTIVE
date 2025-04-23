@@ -407,12 +407,28 @@ A comprehensive verification process ensures accuracy:
 
 ## 8. Known Limitations and Future Work
 
-1. **Mobile Responsiveness**: Additional work needed for small screens
+1. **Mobile Responsiveness**: Additional work needed for small screens - sticky header needs to either collapse/minify or roll with other sections if iOS or Android detected
 2. **Performance Optimization**: Further optimization for large datasets
 3. **Advanced Visualizations**: Implementation of Sankey and dependency diagrams
 4. **Field Verification**: Continued verification of field alignments and calculations
 5. **Improved whitespace optimization through flex columns, etc.
-6. **SIMPLE MODE, where all redundant organizational descriptive text is hidden from the UI and only relevant user inputs and tooltips are rendered per each section
+6. **SIMPLE or n00b MODE, where all redundant organizational descriptive text is hidden from the UI and only relevant user inputs and tooltips are rendered per each section
+7. **SMS-based file save/open and transfer system. 🧮 Rough Estimate:
+
+If each field has max value 999999, we need:
+
+~20 bits per field
+50 × 20 = 1000 bits
+Base91 packs ~6.5 bits per character
+1000 bits / 6.5 ≈ 154 characters
+🎯 Fits in an SMS!
+
+It will be unreadable (like a blob of gibberish auto-pasted to Notes section), but the app can:
+
+Encode the data
+Show it as a message
+Let the user copy/send it to themselves
+Decode it later from SMS by pasting it back in
 
 ## 9. Technical Compatibility Considerations
 
