@@ -391,7 +391,7 @@ The dependency visualization will:
 - Aid in understanding the model's structure
 - Provide interactive filtering of dependency chains
 - Visualize the impact of changing specific inputs
-- Visual summary of key formulas used (including novel ones to OBJECTIVE)
+- Visual summary of key formulas used (including novel ones unique to OBJECTIVE ie. Twb from RH%13h00 LST & Tdb)
 
 Both visualization sections are currently in the planning phase and will be implemented after verification of the core calculation sections is complete.
 
@@ -442,7 +442,7 @@ Technical choices were made to ensure the broadest possible accessibility:
 
 1. **Cross-Browser Compatibility**: Tested and supported on major browsers (Chrome, Safari)
 2. **Low-Bandwidth Friendly**: Minimal asset sizes and no large libraries
-3. **Low-Resource Requirements**: Functions well on older hardware with limited resources
+3. **Low-Resource Requirements**: Functions well on older hardware with limited resources - or poor/rural/copper internet
 4. **Degradation Grace**: Provides fallbacks when advanced features aren't available (even when styles unloaded)
 
 ### Developer Accessibility
