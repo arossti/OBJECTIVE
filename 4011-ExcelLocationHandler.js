@@ -1,0 +1,318 @@
+/**
+ * 4011-ExcelLocationHandler.js
+ * Specialized handler for location data processing
+ */
+
+window.TEUI = window.TEUI || {};
+
+TEUI.ExcelLocationHandler = (function() {
+    // Province ranges in the CANADA worksheet
+    const PROVINCE_RANGES = {
+        'BC': { start: 6, end: 114 },     // British Columbia
+        'AB': { start: 116, end: 170 },   // Alberta
+        'SK': { start: 172, end: 202 },   // Saskatchewan
+        'MB': { start: 204, end: 227 },   // Manitoba
+        'ON': { start: 229, end: 458 },   // Ontario
+        'QC': { start: 460, end: 584 },   // Quebec
+        'NB': { start: 586, end: 603 },   // New Brunswick
+        'NS': { start: 605, end: 630 },   // Nova Scotia
+        'PE': { start: 632, end: 635 },   // Prince Edward Island
+        'NL': { start: 637, end: 654 },   // Newfoundland and Labrador
+        'YT': { start: 656, end: 664 },   // Yukon
+        'NT': { start: 666, end: 682 },   // Northwest Territory
+        'NU': { start: 684, end: 699 }    // Nunavut
+    };
+
+    const PROVINCE_NAMES = {
+        'BC': 'British Columbia',
+        'AB': 'Alberta',
+        'SK': 'Saskatchewan',
+        'MB': 'Manitoba',
+        'ON': 'Ontario',
+        'QC': 'Quebec',
+        'NB': 'New Brunswick',
+        'NS': 'Nova Scotia',
+        'PE': 'Prince Edward Island',
+        'NL': 'Newfoundland and Labrador',
+        'YT': 'Yukon',
+        'NT': 'Northwest Territories',
+        'NU': 'Nunavut'
+    };
+
+    let locationData = null;
+
+    function initialize() {
+        // Initialize dropdowns with empty options
+        initializeDropdowns();
+        
+        // Listen for location data loaded event
+        document.addEventListener('location-data-ready', function() {
+            updateProvinceDropdowns();
+        });
+        
+        // Add a check to verify DOM elements after a short delay
+        setTimeout(checkDOMReadiness, 1000);
+    }
+
+    function checkDOMReadiness() {
+        console.log('Checking DOM readiness for location dropdowns...');
+        
+        const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
+        const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
+        
+        console.log(`Found ${provinceDropdowns.length} province dropdowns`);
+        console.log(`Found ${cityDropdowns.length} city dropdowns`);
+        
+        if (provinceDropdowns.length === 0) {
+            console.warn('WARNING: No province dropdowns found in DOM. Check if the climate section is properly rendered.');
+        }
+        
+        if (cityDropdowns.length === 0) {
+            console.warn('WARNING: No city dropdowns found in DOM. Check if the climate section is properly rendered.');
+        }
+    }
+
+    function initializeDropdowns() {
+        const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
+        const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
+
+        provinceDropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Select Province</option>';
+            dropdown.onchange = function() {
+                updateCityDropdowns(this.value);
+            };
+        });
+
+        cityDropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Select City</option>';
+        });
+    }
+
+    // Display status message using the feedback area
+    function showStatus(message, type) {
+        console.log(`[ExcelLocationHandler] ${message}`);
+        
+        // Get the feedback area
+        const feedbackArea = document.getElementById('feedback-area');
+        if (feedbackArea) {
+            // Define colors for different message types
+            const colors = {
+                'info': '#0dcaf0',    // light blue
+                'success': '#198754', // green
+                'warning': '#ffc107', // yellow
+                'error': '#dc3545'    // red
+            };
+            
+            // Set the message with appropriate color
+            feedbackArea.textContent = message;
+            feedbackArea.style.color = colors[type] || '#0dcaf0';
+            
+            // Auto-clear success and info messages after a delay
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    if (feedbackArea.textContent === message) {
+                        feedbackArea.textContent = '';
+                    }
+                }, 5000);
+            }
+        }
+    }
+
+    function processLocationData(workbook) {
+        console.log('Processing location data from workbook...');
+        showStatus('Processing location data...', 'info');
+        
+        if (!validateWorkbook(workbook)) {
+            console.error('Invalid workbook structure, missing CANADA sheet');
+            showStatus('Error: Invalid workbook structure, missing CANADA sheet', 'error');
+            throw new Error('Invalid workbook structure: Missing CANADA sheet');
+        }
+
+        const sheet = workbook.Sheets['CANADA'];
+        locationData = {};
+
+        // Process each province
+        Object.entries(PROVINCE_RANGES).forEach(([province, range]) => {
+            locationData[province] = {
+                name: PROVINCE_NAMES[province],
+                cities: getCitiesForRange(sheet, range)
+            };
+        });
+
+        console.log('Location data processed successfully:', Object.keys(locationData));
+        printLocationDataSummary();
+        showStatus('Location data processed successfully', 'success');
+        return locationData;
+    }
+
+    function validateWorkbook(wb) {
+        if (!wb || !wb.SheetNames.includes('CANADA') || !wb.Sheets['CANADA']) {
+            console.error('Invalid workbook structure:', wb?.SheetNames);
+            return false;
+        }
+        return true;
+    }
+
+    function getCitiesForRange(sheet, range) {
+        const cities = [];
+        for (let row = range.start; row <= range.end; row++) {
+            const cityCell = sheet[`A${row}`];
+            if (cityCell && cityCell.v) {
+                cities.push({
+                    name: cityCell.v.trim(),
+                    data: getWeatherDataForRow(sheet, row)
+                });
+            }
+        }
+        console.log(`Found ${cities.length} cities in range ${range.start}-${range.end}`);
+        return cities;
+    }
+
+    function getWeatherDataForRow(sheet, row) {
+        return {
+            city: sheet[`A${row}`]?.v?.trim() || '',
+            Elevation_ASL: sheet[`B${row}`]?.v || null,
+            January_2_5: sheet[`C${row}`]?.v || null,
+            January_1: sheet[`D${row}`]?.v || null,
+            July_2_5_Tdb: sheet[`E${row}`]?.v || null,
+            July_2_5_Twb: sheet[`F${row}`]?.v || null,
+            Future_July_2_5_Tdb: sheet[`G${row}`]?.v || null,
+            Future_July_2_5_Twb: sheet[`H${row}`]?.v || null,
+            HDD18: sheet[`I${row}`]?.v || null,
+            HDD15: sheet[`J${row}`]?.v || null,
+            HDD18_2021_2050: sheet[`K${row}`]?.v || null,
+            CDD24: sheet[`L${row}`]?.v || null,
+            CDD24_2021_2050: sheet[`M${row}`]?.v || null,
+            Over_30Tdb_2021_2050: sheet[`N${row}`]?.v || null,
+            Extreme_Hot_Tdb_1991_2020: sheet[`O${row}`]?.v || null,
+            Rain_15_min_mm: sheet[`P${row}`]?.v || null,
+            Rain_15_min_mm_New: sheet[`Q${row}`]?.v || null,
+            Rain_1_day_1_50mm: sheet[`R${row}`]?.v || null,
+            Rain_1_day_1_50mm_New: sheet[`S${row}`]?.v || null,
+            Rain_Annual_mm: sheet[`T${row}`]?.v || null,
+            Rain_Annual_mm_New: sheet[`U${row}`]?.v || null,
+            Moisture_Index_New: sheet[`V${row}`]?.v || null,
+            Precip_Annual_mm: sheet[`W${row}`]?.v || null,
+            Precip_Annual_mm_New: sheet[`X${row}`]?.v || null,
+            Driving_Rain_Wind_Pa_1_5: sheet[`Y${row}`]?.v || null,
+            Driving_Rain_Wind_Pa_1_5_New: sheet[`Z${row}`]?.v || null,
+            Snow_kPa_1_50_Ss: sheet[`AA${row}`]?.v || null,
+            Snow_kPa_1_50_Sr: sheet[`AB${row}`]?.v || null,
+            Snow_kPa_1_1000_Ss: sheet[`AC${row}`]?.v || null,
+            Snow_kPa_1_1000_Sr: sheet[`AD${row}`]?.v || null,
+            Wind_Hourly_kPa_1_10: sheet[`AE${row}`]?.v || null,
+            Wind_Hourly_kPa_1_10_New: sheet[`AF${row}`]?.v || null,
+            Wind_Hourly_kPa_1_50: sheet[`AG${row}`]?.v || null,
+            Wind_Hourly_kPa_1_50_New: sheet[`AH${row}`]?.v || null,
+            Wind_Hourly_kPa_1_500_New: sheet[`AI${row}`]?.v || null,
+            Winter_Tdb_Avg: sheet[`AJ${row}`]?.v || null,
+            Winter_Windspeed_Avg: sheet[`AK${row}`]?.v || null,
+            Summer_Tdb_Avg: sheet[`AL${row}`]?.v || null,
+            Summer_Twb_Avg: sheet[`AM${row}`]?.v || null,
+            Summer_RH_1500_LST: sheet[`AN${row}`]?.v || null
+        };
+    }
+
+    function updateProvinceDropdowns() {
+        const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
+        console.log(`Found ${provinceDropdowns.length} province dropdowns with data-dropdown-id="dd_d_19"`);
+        
+        if (locationData === null) {
+            console.error('Location data is null when trying to update province dropdowns');
+            showStatus('Error: No location data available', 'error');
+            return;
+        }
+        
+        console.log('Available provinces:', Object.keys(locationData));
+        
+        provinceDropdowns.forEach(dropdown => {
+            // Clear existing options
+            dropdown.innerHTML = '<option value="">Select Province</option>';
+            
+            // Add province options
+            Object.keys(locationData).forEach(code => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = locationData[code].name;
+                dropdown.appendChild(option);
+            });
+
+            // Add change handler
+            dropdown.onchange = function() {
+                updateCityDropdowns(this.value);
+            };
+        });
+        console.log('Province dropdowns updated');
+        showStatus('Province dropdowns updated successfully', 'info');
+    }
+
+    function updateCityDropdowns(provinceCode) {
+        const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
+        console.log(`Found ${cityDropdowns.length} city dropdowns with data-dropdown-id="dd_h_19"`);
+        
+        if (locationData === null) {
+            console.error('Location data is null when trying to update city dropdowns');
+            showStatus('Error: No location data available', 'error');
+            return;
+        }
+        
+        if (!provinceCode) {
+            console.warn('No province code provided when updating city dropdowns');
+            showStatus('Please select a province first', 'warning');
+            return;
+        }
+        
+        if (!locationData[provinceCode]) {
+            console.error(`Province ${provinceCode} not found in location data`);
+            showStatus(`Error: Province ${provinceCode} not found in location data`, 'error');
+            return;
+        }
+        
+        const cities = locationData[provinceCode].cities || [];
+        console.log(`Found ${cities.length} cities for province ${provinceCode}`);
+
+        cityDropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Select City</option>';
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.name;
+                option.textContent = city.name;
+                dropdown.appendChild(option);
+            });
+        });
+        console.log(`City dropdowns updated with ${cities.length} cities`);
+        showStatus(`${cities.length} cities loaded for ${locationData[provinceCode].name}`, 'info');
+    }
+
+    function printLocationDataSummary() {
+        if (!locationData) {
+            console.log('No location data available to summarize');
+            return;
+        }
+        
+        console.log('=== Location Data Summary ===');
+        Object.keys(locationData).forEach(province => {
+            const cityCount = locationData[province].cities.length;
+            console.log(`${province} (${locationData[province].name}): ${cityCount} cities`);
+            
+            // Log first city as a sample
+            if (cityCount > 0) {
+                const firstCity = locationData[province].cities[0];
+                console.log(`  Sample: ${firstCity.name} (HDD: ${firstCity.data.HDD18}, CDD: ${firstCity.data.CDD24})`);
+            }
+        });
+        console.log('======================');
+    }
+
+    // Initialize when document is ready
+    document.addEventListener('DOMContentLoaded', initialize);
+
+    // Public API
+    return {
+        initialize,
+        getLocationData: () => locationData,
+        processLocationData,
+        updateProvinceDropdowns,
+        updateCityDropdowns
+    };
+})(); 

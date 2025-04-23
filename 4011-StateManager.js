@@ -1,0 +1,782 @@
+/**
+ * 4011-StateManager.js
+ * 
+ * State management module for TEUI Calculator 4.011
+ * Handles the state of all calculator values with support for dependencies and efficient recalculation
+ * 
+ * Refactored to use DOM-based field IDs (e.g. 'd-12' for cell D12).
+ */
+
+// Define the global namespace if it doesn't exist
+window.TEUI = window.TEUI || {};
+
+// State Manager Module
+TEUI.StateManager = (function() {
+    
+    // Value state constants
+    const VALUE_STATES = {
+        DEFAULT: 'default',        // Original default value
+        IMPORTED: 'imported',      // Value imported from saved data
+        USER_MODIFIED: 'user-modified', // Value changed by user
+        CALCULATED: 'calculated',  // Value calculated by the system
+        DERIVED: 'derived'         // Value derived from another field
+    };
+    
+    // Private properties
+    let fields = new Map();           // Map of all field values
+    let dependencies = new Map();     // Map of field dependencies
+    let calculatedFields = new Set(); // Set of fields that are calculated
+    let dirtyFields = new Set();      // Fields needing recalculation
+    let listeners = new Map();        // Field change listeners
+    
+    /**
+     * Initialize the state manager
+     */
+    function initialize() {
+        // console.log('Initializing StateManager');
+        clear();
+        
+        // Initialize with default values from FieldManager
+        if (window.TEUI.fields) {
+            initializeFromFieldManager();
+        }
+        
+        registerTEUIFields();
+        registerTEDITELIFields();
+        registerVolumeMetricsFields();
+        
+        // Add listeners for TEUI source fields
+        addListener('f_32', () => updateTEUICalculations('f_32'));
+        addListener('j_32', () => updateTEUICalculations('j_32'));
+        addListener('h_15', () => updateTEUICalculations('h_15'));
+        
+        // Initial calculation
+        updateTEUICalculations('init');
+    }
+    
+    /**
+     * Initialize state with values from FieldManager
+     */
+    function initializeFromFieldManager() {
+        const allFields = window.TEUI.fields;
+        if (!allFields) return;
+        
+        Object.entries(allFields).forEach(([fieldId, field]) => {
+            // Skip fields without default values
+            if (field.defaultValue === undefined) return;
+            
+            // Set default value
+            setValue(fieldId, field.defaultValue, VALUE_STATES.DEFAULT);
+            
+            // Register dependencies if any
+            if (field.dependencies && Array.isArray(field.dependencies)) {
+                field.dependencies.forEach(dependencyId => {
+                    registerDependency(dependencyId, fieldId);
+                });
+            }
+        });
+        
+        // console.log(`Initialized state with ${fields.size} fields and ${dependencies.size} dependencies`);
+    }
+    
+    /**
+     * Clear all state data
+     */
+    function clear() {
+        fields.clear();
+        dependencies.clear();
+        calculatedFields.clear();
+        dirtyFields.clear();
+        listeners.clear();
+    }
+    
+    /**
+     * Get a field value
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @returns {any} The field value or null if not found
+     */
+    function getValue(fieldId) {
+        return fields.has(fieldId) ? fields.get(fieldId).value : null;
+    }
+    
+    /**
+     * Set a field value
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {any} value - New value
+     * @param {string} state - Value state (default, user-modified, calculated, etc.)
+     * @returns {boolean} True if the value changed
+     */
+    function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+        // Get the current value
+        const oldValue = getValue(fieldId);
+        
+        // If field doesn't exist, create it
+        if (!fields.has(fieldId)) {
+            fields.set(fieldId, {
+                id: fieldId,
+                value: value,
+                state: state
+            });
+            
+            // Notify listeners of the new field
+            notifyListeners(fieldId, value, null, state);
+            return true;
+        }
+        
+        // Update the existing field
+        const field = fields.get(fieldId);
+        
+        // Skip update if value hasn't changed
+        if (field.value === value && field.state === state) {
+            return false;
+        }
+        
+        // Update the field
+        field.value = value;
+        field.state = state;
+        
+        // Mark dependent fields as dirty (if not already calculated state)
+        if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+            markDependentsDirty(fieldId);
+        }
+        
+        // Notify listeners of the change
+        notifyListeners(fieldId, value, oldValue, state);
+        
+        return true;
+    }
+    
+    /**
+     * Register a dependency between fields
+     * @param {string} sourceId - Source field ID (DOM-based, e.g. 'd-12')
+     * @param {string} targetId - Target (dependent) field ID (DOM-based, e.g. 'cf-d-22')
+     */
+    function registerDependency(sourceId, targetId) {
+        // Ensure source is in the dependency map
+        if (!dependencies.has(sourceId)) {
+            dependencies.set(sourceId, new Set());
+        }
+        
+        // Add target to source's dependencies
+        dependencies.get(sourceId).add(targetId);
+        
+        // Add target to calculated fields set
+        calculatedFields.add(targetId);
+        
+        // console.log(`Registered dependency: ${sourceId} → ${targetId}`);
+    }
+    
+    /**
+     * Mark a field and its dependents as dirty
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {Set} visited - Set of already visited fields (to prevent circular dependencies)
+     */
+    function markDependentsDirty(fieldId, visited = new Set()) {
+        // Skip if already visited (prevent circular dependency infinite recursion)
+        if (visited.has(fieldId)) {
+            // console.warn(`Circular dependency detected with field ${fieldId}`);
+            return;
+        }
+        
+        // Add to visited set
+        visited.add(fieldId);
+        
+        // Skip if no dependencies
+        if (!dependencies.has(fieldId)) {
+            return;
+        }
+        
+        // Get dependent fields
+        const dependents = dependencies.get(fieldId);
+        
+        // Mark each dependent as dirty and recurse
+        dependents.forEach(dependentId => {
+            dirtyFields.add(dependentId);
+            markDependentsDirty(dependentId, visited);
+        });
+    }
+    
+    /**
+     * Get all dirty fields
+     * @returns {Array} Array of dirty field IDs
+     */
+    function getDirtyFields() {
+        return [...dirtyFields];
+    }
+    
+    /**
+     * Clear dirty status for specified fields
+     * @param {Array} fieldIds - Array of field IDs to clear, or empty for all
+     */
+    function clearDirtyStatus(fieldIds = []) {
+        if (fieldIds.length === 0) {
+            dirtyFields.clear();
+        } else {
+            fieldIds.forEach(id => dirtyFields.delete(id));
+        }
+    }
+    
+    /**
+     * Add a listener for a field
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {Function} callback - Callback function(newValue, oldValue, fieldId, state)
+     */
+    function addListener(fieldId, callback) {
+        if (!listeners.has(fieldId)) {
+            listeners.set(fieldId, new Set());
+        }
+        
+        listeners.get(fieldId).add(callback);
+    }
+    
+    /**
+     * Remove a listener from a field
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {Function} callback - Callback function to remove
+     */
+    function removeListener(fieldId, callback) {
+        if (!listeners.has(fieldId)) {
+            return;
+        }
+        
+        listeners.get(fieldId).delete(callback);
+    }
+    
+    /**
+     * Notify all listeners for a field
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {any} newValue - New value
+     * @param {any} oldValue - Old value
+     * @param {string} state - Value state
+     */
+    function notifyListeners(fieldId, newValue, oldValue, state) {
+        if (!listeners.has(fieldId)) {
+            return;
+        }
+        
+        // Call each listener
+        listeners.get(fieldId).forEach(callback => {
+            try {
+                callback(newValue, oldValue, fieldId, state);
+            } catch (error) {
+                console.error(`Error in listener for ${fieldId}:`, error);
+            }
+        });
+    }
+    
+    /**
+     * Save the current state to localStorage
+     */
+    function saveState() {
+        // Create a serializable state object
+        const state = {};
+        
+        // Only save user-modified fields to keep the state small
+        fields.forEach((field, fieldId) => {
+            if (field.state === VALUE_STATES.USER_MODIFIED || field.state === VALUE_STATES.IMPORTED) {
+                state[fieldId] = {
+                    value: field.value,
+                    state: field.state
+                };
+            }
+        });
+        
+        // Save to localStorage
+        try {
+            localStorage.setItem('TEUI_4011_STATE', JSON.stringify(state));
+            // console.log('State saved to localStorage');
+        } catch (error) {
+            console.error('Error saving state to localStorage:', error);
+        }
+    }
+    
+    /**
+     * Load state from localStorage
+     */
+    function loadState() {
+        try {
+            // Get state from localStorage
+            const stateJson = localStorage.getItem('TEUI_4011_STATE');
+            
+            if (!stateJson) {
+                // console.log('No saved state found in localStorage');
+                return;
+            }
+            
+            // Parse state
+            const state = JSON.parse(stateJson);
+            
+            // Load each field
+            Object.entries(state).forEach(([fieldId, field]) => {
+                setValue(fieldId, field.value, field.state);
+            });
+            
+            // console.log('State loaded from localStorage');
+        } catch (error) {
+            console.error('Error loading state from localStorage:', error);
+        }
+    }
+    
+    /**
+     * Import state from a data object
+     * @param {Object} data - Data object with field values
+     */
+    function importState(data) {
+        // Import each field
+        Object.entries(data).forEach(([fieldId, value]) => {
+            setValue(fieldId, value, VALUE_STATES.IMPORTED);
+        });
+        
+        // console.log('State imported from data object');
+    }
+    
+    /**
+     * Export the current state
+     * @returns {Object} State object with field values
+     */
+    function exportState() {
+        const state = {};
+        
+        // Export all fields
+        fields.forEach((field, fieldId) => {
+            state[fieldId] = field.value;
+        });
+        
+        return state;
+    }
+    
+    /**
+     * Get calculation order for dirty fields
+     * @returns {Array} Field IDs in calculation order
+     */
+    function getCalculationOrder() {
+        const visited = new Set();
+        const temp = new Set();
+        const order = [];
+        
+        // Helper function for depth-first topological sort
+        const visit = (fieldId) => {
+            if (temp.has(fieldId)) {
+                // console.warn(`Circular dependency detected with field ${fieldId}`);
+                return;
+            }
+            
+            if (!visited.has(fieldId)) {
+                temp.add(fieldId);
+                
+                // Visit all dependents
+                if (dependencies.has(fieldId)) {
+                    dependencies.get(fieldId).forEach(depId => visit(depId));
+                }
+                
+                temp.delete(fieldId);
+                visited.add(fieldId);
+                order.push(fieldId);
+            }
+        };
+        
+        // Start with dirty fields
+        getDirtyFields().forEach(fieldId => visit(fieldId));
+        
+        // Reverse to get correct calculation order
+        return order.reverse();
+    }
+    
+    /**
+     * Update the UI with a field value
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {any} value - Value to display
+     */
+    function updateUI(fieldId, value) {
+        // Find the element by data-field-id attribute
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (!element) return;
+        
+        // Different update based on field type
+        if (element.tagName === 'SELECT') {
+            element.value = value;
+        } else if (element.tagName === 'INPUT') {
+            element.value = value;
+        } else {
+            // For non-input elements, just set the text content
+            element.textContent = value;
+        }
+    }
+    
+    /**
+     * Get all keys currently in the state
+     * @returns {Array} Array of all field IDs in the state
+     */
+    function getAllKeys() {
+        return Array.from(fields.keys());
+    }
+    
+    /**
+     * Get state information for debugging
+     * @param {string} fieldId - Optional field ID to get info for
+     * @returns {Object} Debug information
+     */
+    function getDebugInfo(fieldId = null) {
+        if (fieldId) {
+            return fields.has(fieldId) ? fields.get(fieldId) : null;
+        }
+        
+        return {
+            fieldCount: fields.size,
+            dependencyCount: dependencies.size,
+            calculatedCount: calculatedFields.size,
+            dirtyCount: dirtyFields.size,
+            listenerCount: listeners.size
+        };
+    }
+    
+    /**
+     * Register critical energy fields used by TEUI calculations
+     * This ensures that Section01 TEUI values can be calculated from Section04 data
+     * 
+     * NOTE ON ORDERING: Fields are organized by dependency relationships, not row numbers.
+     * Input fields must be registered before dependent calculated fields to ensure proper
+     * initialization and dependency chain establishment.
+     */
+    function registerTEUIFields() {
+        // console.log('Registering TEUI-related fields');
+        
+        // =========================================================================
+        // 1. REGISTER INPUT FIELDS FIRST (always register dependencies before dependents)
+        // =========================================================================
+        
+        // Section02 Row 15 - Conditioned Area (input from Building Info section)
+        if (!fields.has('h_15')) {
+            setValue('h_15', '1427.20', VALUE_STATES.DEFAULT);
+        }
+        
+        // Section04 Row 32 - Energy values (calculated in Energy section)
+        if (!fields.has('f_32')) {
+            setValue('f_32', '132938.00', VALUE_STATES.DEFAULT);
+        }
+        
+        if (!fields.has('j_32')) {
+            setValue('j_32', '132765.65', VALUE_STATES.DEFAULT);
+        }
+        
+        // =========================================================================
+        // 2. REGISTER OUTPUT/CALCULATED FIELDS SECOND
+        // =========================================================================
+        
+        // Section01 Row 10 - TEUI values (calculated from the above inputs)
+        if (!fields.has('h_10')) {
+            setValue('h_10', '93.0', VALUE_STATES.CALCULATED);
+        }
+        
+        if (!fields.has('k_10')) {
+            setValue('k_10', '93.1', VALUE_STATES.CALCULATED);
+        }
+        
+        // =========================================================================
+        // 3. ESTABLISH FORMAL DEPENDENCY RELATIONSHIPS (for calculation chain)
+        // =========================================================================
+        
+        // The order here explicitly defines the calculation flow for visualization
+        registerDependency('h_15', 'h_10'); // Area affects target TEUI
+        registerDependency('j_32', 'h_10'); // Target energy affects target TEUI
+        
+        registerDependency('h_15', 'k_10'); // Area affects actual TEUI
+        registerDependency('f_32', 'k_10'); // Actual energy affects actual TEUI
+        
+        // console.log('TEUI fields registered with dependency relationships established');
+    }
+    
+    /**
+     * Register TEDI/TELI and TEUI Summary fields for integration
+     * This ensures that Section14 and Section15 values are properly initialized
+     */
+    function registerTEDITELIFields() {
+        // console.log('Registering TEDI/TELI and TEUI Summary related fields');
+        
+        // =========================================================================
+        // 1. REGISTER KEY TEDI & TELI FIELDS (SECTION 14)
+        // =========================================================================
+        
+        // Critical TEDI value that's used by Section 15
+        if (!fields.has('h_126')) {
+            setValue('h_126', '83.50', VALUE_STATES.CALCULATED);
+        }
+        
+        // Critical TELI value also used by Section 15
+        if (!fields.has('h_130')) {
+            setValue('h_130', '81.33', VALUE_STATES.CALCULATED);
+        }
+        
+        // =========================================================================
+        // 2. REGISTER TEUI SUMMARY FIELDS (SECTION 15)
+        // =========================================================================
+        
+        // Primary TEUI value in Section 15
+        if (!fields.has('h_136')) {
+            setValue('h_136', '93.0', VALUE_STATES.CALCULATED);
+        }
+        
+        // Reduction percentage in Section 15
+        if (!fields.has('d_144')) {
+            setValue('d_144', '15.2', VALUE_STATES.CALCULATED);
+        }
+        
+        // Cost metrics in Section 15
+        if (!fields.has('d_141')) {
+            setValue('d_141', '12.35', VALUE_STATES.CALCULATED);
+        }
+        
+        if (!fields.has('h_141')) {
+            setValue('h_141', '10.47', VALUE_STATES.CALCULATED);
+        }
+        
+        // =========================================================================
+        // 3. ESTABLISH CROSS-SECTION DEPENDENCY RELATIONSHIPS
+        // =========================================================================
+        
+        // Section 15 key dependencies (additional ones registered in SectionIntegrator)
+        registerDependency('h_126', 'h_136');  // TEDI affects primary TEUI value
+        registerDependency('h_10', 'h_136');   // TEUI (Section 1) affects TEUI Summary
+        registerDependency('k_10', 'd_144');   // TEUI actual affects reduction percentage
+        
+        // TEUI Summary influences Section 1 (bidirectional relationship)
+        registerDependency('h_136', 'k_10');   // Summary TEUI affects main TEUI values
+        
+        // Building area influences all intensity values
+        registerDependency('h_15', 'd_144');   // Area affects reduction calculations
+        registerDependency('h_15', 'd_141');   // Area affects cost metrics
+        registerDependency('h_15', 'h_141');   // Area affects cost metrics
+        
+        // console.log('TEDI/TELI and TEUI Summary fields registered with dependencies established');
+    }
+    
+    /**
+     * Register Volume and Surface Metrics fields (Section 12)
+     * This ensures proper integration with other sections
+     */
+    function registerVolumeMetricsFields() {
+        // console.log('Registering Volume and Surface Metrics fields');
+        
+        // =========================================================================
+        // 1. REGISTER KEY SURFACE AREA FIELDS
+        // =========================================================================
+        
+        // Total area exposed to air
+        if (!fields.has('d_101')) {
+            setValue('d_101', '2476.62', VALUE_STATES.DEFAULT);
+        }
+        
+        // Total area exposed to ground
+        if (!fields.has('d_102')) {
+            setValue('d_102', '1100.42', VALUE_STATES.DEFAULT);
+        }
+        
+        // =========================================================================
+        // 2. REGISTER VOLUME AND U-VALUE FIELDS
+        // =========================================================================
+        
+        // Total conditioned volume
+        if (!fields.has('d_105')) {
+            setValue('d_105', '8000.00', VALUE_STATES.DEFAULT);
+        }
+        
+        // Combined U-value
+        if (!fields.has('d_104')) {
+            setValue('d_104', '0.292', VALUE_STATES.CALCULATED);
+        }
+        
+        // Window to Wall Ratio
+        if (!fields.has('d_107')) {
+            setValue('d_107', '32.59%', VALUE_STATES.CALCULATED);
+        }
+        
+        // =========================================================================
+        // 3. REGISTER HEAT LOSS/GAIN FIELDS
+        // =========================================================================
+        
+        // Total heat loss through envelope
+        if (!fields.has('i_104')) {
+            setValue('i_104', '116070.33', VALUE_STATES.CALCULATED);
+        }
+        
+        // Air leakage heat loss
+        if (!fields.has('i_103')) {
+            setValue('i_103', '23178.39', VALUE_STATES.CALCULATED);
+        }
+        
+        // =========================================================================
+        // 4. ESTABLISH DEPENDENCY RELATIONSHIPS
+        // =========================================================================
+        
+        // Areas affect heat loss calculations
+        registerDependency('d_101', 'i_101'); // Area affects heat loss through air
+        registerDependency('d_102', 'i_102'); // Area affects heat loss through ground
+        
+        // U-values affect heat loss calculations
+        registerDependency('g_101', 'i_101'); // U-value affects heat loss through air
+        registerDependency('g_102', 'i_102'); // U-value affects heat loss through ground
+        
+        // Air leakage affects heat loss
+        registerDependency('g_109', 'i_103'); // ACH50 affects air leakage heat loss
+        
+        // Building volume affects metrics
+        registerDependency('d_105', 'g_105'); // Volume affects volume/area ratio
+        registerDependency('d_105', 'i_105'); // Volume affects area/volume ratio
+        
+        // console.log('Volume and Surface Metrics fields registered with dependencies established');
+    }
+    
+    /**
+     * Update TEUI calculations when source values change
+     * @param {string} sourceField - The source field that changed
+     */
+    function updateTEUICalculations(sourceField) {
+        // console.log(`Updating TEUI calculations due to change in ${sourceField}`);
+        
+        try {
+            // Get raw values from state manager
+            const rawActualEnergy = getValue('f_32');
+            const rawTargetEnergy = getValue('j_32');
+            const rawArea = getValue('h_15');
+            
+            /*
+            console.log("Raw values from StateManager:");
+            console.log(`- Actual Energy (f_32): "${rawActualEnergy}"`);
+            console.log(`- Target Energy (j_32): "${rawTargetEnergy}"`);
+            console.log(`- Conditioned Area (h_15): "${rawArea}"`);
+            */
+            
+            // Parse values with appropriate fallbacks
+            let actualEnergy, targetEnergy, area;
+            
+            // Parse Actual Energy (f_32)
+            if (typeof rawActualEnergy === 'string') {
+                actualEnergy = parseFloat(rawActualEnergy.replace(/,/g, ''));
+            } else {
+                actualEnergy = parseFloat(rawActualEnergy);
+            }
+            
+            // Parse Target Energy (j_32)
+            if (typeof rawTargetEnergy === 'string') {
+                targetEnergy = parseFloat(rawTargetEnergy.replace(/,/g, ''));
+            } else {
+                targetEnergy = parseFloat(rawTargetEnergy);
+            }
+            
+            // Parse Conditioned Area (h_15)
+            if (typeof rawArea === 'string') {
+                area = parseFloat(rawArea.replace(/,/g, ''));
+            } else {
+                area = parseFloat(rawArea);
+            }
+            
+            // If parsing fails, get values from DOM as backup
+            if (isNaN(actualEnergy)) {
+                const f32Element = document.querySelector('[data-field-id="f_32"]');
+                if (f32Element) {
+                    const domValue = f32Element.textContent.trim();
+                    actualEnergy = parseFloat(domValue.replace(/,/g, ''));
+                }
+            }
+            
+            if (isNaN(targetEnergy)) {
+                const j32Element = document.querySelector('[data-field-id="j_32"]');
+                if (j32Element) {
+                    const domValue = j32Element.textContent.trim();
+                    targetEnergy = parseFloat(domValue.replace(/,/g, ''));
+                }
+            }
+            
+            if (isNaN(area) || area <= 0) {
+                const h15Element = document.querySelector('[data-field-id="h_15"]');
+                if (h15Element) {
+                    const domValue = h15Element.textContent.trim();
+                    area = parseFloat(domValue.replace(/,/g, ''));
+                }
+            }
+            
+            // Final fallbacks
+            if (isNaN(actualEnergy)) {
+                actualEnergy = 132938.0; // Default value
+            }
+            
+            if (isNaN(targetEnergy)) {
+                targetEnergy = 132765.65; // Default value
+            }
+            
+            if (isNaN(area) || area <= 0) {
+                area = 1427.20; // Default value
+            }
+            
+            /*
+            console.log("Final values for calculation:");
+            console.log("- Actual Energy:", actualEnergy);
+            console.log("- Target Energy:", targetEnergy);
+            console.log("- Area:", area);
+            */
+            
+            // Calculate TEUI values (rounded to 1 decimal place)
+            let actualTEUI, targetTEUI;
+            
+            // Calculate Actual TEUI - handle zero energy case
+            if (actualEnergy === 0) {
+                actualTEUI = 0.0;
+            } else {
+                actualTEUI = Math.round((actualEnergy / area) * 10) / 10;
+            }
+            
+            // Calculate Target TEUI - always use target energy
+            targetTEUI = Math.round((targetEnergy / area) * 10) / 10;
+            
+            // console.log(`Calculated TEUI values - Actual: ${actualTEUI}, Target: ${targetTEUI}`);
+            
+            // Update the TEUI values
+            setValue('k_10', actualTEUI.toString(), VALUE_STATES.CALCULATED);
+            setValue('h_10', targetTEUI.toString(), VALUE_STATES.CALCULATED);
+            
+        } catch (error) {
+            console.error('Error updating TEUI calculations:', error);
+        }
+    }
+    
+    // Public API
+    return {
+        // Constants
+        VALUE_STATES: VALUE_STATES,
+        
+        // Basic functions
+        initialize: initialize,
+        clear: clear,
+        getValue: getValue,
+        setValue: setValue,
+        
+        // Dependency management
+        registerDependency: registerDependency,
+        markDependentsDirty: markDependentsDirty,
+        getDirtyFields: getDirtyFields,
+        clearDirtyStatus: clearDirtyStatus,
+        getCalculationOrder: getCalculationOrder,
+        
+        // Listener management
+        addListener: addListener,
+        removeListener: removeListener,
+        
+        // UI updates
+        updateUI: updateUI,
+        
+        // State persistence
+        saveState: saveState,
+        loadState: loadState,
+        importState: importState,
+        exportState: exportState,
+        
+        // Debugging
+        getAllKeys: getAllKeys,
+        getDebugInfo: getDebugInfo
+    };
+})();
+
+// Initialize when the document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    TEUI.StateManager.initialize();
+});

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 
+    ============================================================================
+    DEVELOPMENT NOTES - SAFARI SLIDER BUG
+    ============================================================================
+    ISSUE SUMMARY:
+    When this editable_slider component was integrated for the Area field (h_15) 
+    in Section 02, a Safari-specific bug emerged. Adjusting the h_15 slider 
+    and then immediately adjusting the h_13 (Service Life) slider caused 
+    calculations in Section 01 (T.1, T.2, T.3) to display extreme/incorrect values.
+
+    ROOT CAUSE ANALYSIS (based on logging):
+    Logging indicated that the StateManager value for h_15 becomes temporarily 
+    null/empty during the calculation cycle triggered by the h_13 adjustment, 
+    but *only* when it immediately follows an h_15 adjustment. This points to 
+    a race condition or event-timing issue in Safari related to the dual updates 
+    from the text input ('change' event) and the range input ('input' event) 
+    for the same state variable (h_15).
+
+    GOAL FOR THIS FILE:
+    Refine and test the component logic *here* in isolation to ensure its 
+    state updates are robust, atomic, and consistent across browsers before 
+    re-attempting integration into FieldManager.js. The component must behave 
+    identically to a simple numeric input from the StateManager's perspective, 
+    preventing state corruption during rapid sequential interactions.
+    Ensure styling relies *only* on 4011-styles.css and matches the target 
+    appearance within the main application's table structure.
+    ============================================================================
+     -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider Test - Standard HTML Centered Range</title>
+    <!-- noUiSlider library links REMOVED -->
+    <link rel="stylesheet" href="./2025.04.19/4011-styles.css"> <!-- Link to main styles -->
+    <style>
+        /* Minimal styles just for test page layout */
+        body { max-width: 700px; margin: 20px auto; padding: 20px; }
+        .slider-container { margin-bottom: 24px; border: 1px solid #eee; padding: 20px; }
+        hr { margin: 40px 0; }
+        /* Basic text input style - relies mostly on 4011-styles.css */
+        .value-input { 
+            width: 120px; 
+            font-family: var(--bs-font-monospace, monospace);
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            text-align: right;
+        }
+        /* Basic label styling */
+        /* Use existing styles from 4011-styles.css for labels */
+        /* .label { 
+            display: block; 
+            font-size: var(--bs-body-font-size, 1rem);
+            font-weight: normal; 
+            margin-bottom: 0; // Adjusted for inline
+            margin-right: 8px; // Added spacing
+        } */
+        /* Style for inline layout */
+        .inline-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 8px; 
+            width: 100%;
+            max-width: 230px; /* Target width approx */
+            box-sizing: border-box; /* Include padding/border in width */
+        }
+        /* .inline-slider-group .label { */ /* Label removed */
+        /*     flex-shrink: 0;  */
+        /* } */
+        .inline-slider-group .value-input {
+            width: 95px; /* Adjusted width for ~8 digits */
+            flex-shrink: 0; /* Prevent input from shrinking */
+            margin-left: 0; 
+            /* font style should inherit from global CSS */
+        }
+        .inline-slider-group .form-range {
+            flex-grow: 1; 
+            margin-top: 0; 
+            width: auto; 
+        }
+        /* Force removal of shadow/border artifacts on standard slider thumb */
+        #standard-area-slider::-webkit-slider-thumb {
+            box-shadow: none !important;
+            border: none !important;
+        }
+        #standard-area-slider::-moz-range-thumb {
+            box-shadow: none !important;
+            border: none !important;
+        }
+        #standard-area-slider::-ms-thumb {
+            box-shadow: none !important;
+            border: none !important;
+        }
+        /* Ensure inputs within the group use standard app styles */
+        /* .inline-slider-group .value-input { */ /* Handled above */
+            /* Styles likely defined in 4011-styles.css, remove specific overrides if any */
+             /* width: 120px; */ /* Keep width for now */
+        /* } */
+        /* .inline-slider-group .form-range { */ /* Handled above */
+             /* Styles likely defined in 4011-styles.css */
+             /* flex-grow: 1; */
+             /* width: auto; */
+        /* } */
+    </style>
+</head>
+<body>
+    <h1>Standard HTML Slider: Input Sets Centered Range</h1>
+    <p>Enter a value in the text box and press Enter or click away. The slider's range will adjust so your value is in the middle, allowing you to tweak it up or down. Test this before integrating into FieldManager.js.</p>
+    
+    <!-- Example 1 (noUiSlider) REMOVED -->
+
+    <!-- <hr style="margin: 40px 0;"> REMOVED -->
+
+    <div id="standard-slider-container">
+        <!-- <h2>Example 2: Using Standard HTML Inputs (Vanilla JS)</h2> REMOVED -->
+        <div class="slider-container">
+             <div class="inline-slider-group"> <!-- Use the structure intended for FieldManager -->
+                <!-- The label content comes from the field definition in the real app -->
+                 <input type="text" 
+                        class="value-input" 
+                        id="standard-area-input"
+                        aria-label="Conditioned Area"
+                 >
+                 <input type="range" 
+                        id="standard-area-slider" 
+                        class="form-range" 
+                 >
+             </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * INSTRUCTIONS FOR FieldManager.js INTEGRATION:
+         * 
+         * 1. Define a New Field Type:
+         *    In your section module definitions (e.g., 4011-Section02.js),
+         *    add a new type like 'editable_slider' for fields that need this behavior.
+         *    Example cell definition:
+         *    h: { 
+         *        type: "editable_slider", 
+         *        fieldId: "h_15", 
+         *        value: "1427.20", 
+         *        min: 0,        // Optional: Define initial fallback min
+         *        max: 3000,     // Optional: Define initial fallback max
+         *        step: 0.1, 
+         *        padding: 500,  // Define the +/- range padding
+         *        label: "Conditioned Area (Net m²)" // Add label here
+         *    }
+         *
+         * 2. Modify FieldManager.js - Rendering:
+         *    - In `generateSectionContent` or where cell HTML is created:
+         *      - Add an `else if (cellDef.type === 'editable_slider')` block.
+         *      - Inside, create the HTML structure using a wrapper div (like `inline-slider-group`):
+         *          - A `<span>` or `<label>` for the description (get from `cellDef.label`).
+         *          - An `<input type="text">` (class `value-input`, link `id` to `fieldId`).
+         *          - An `<input type="range">` (class `form-range`, link `id` appropriately, e.g., `fieldId + '-slider'`).
+         *      - Store necessary data attributes on the wrapper or inputs (e.g., `data-field-id`, `data-padding`, `data-step`).
+         *
+         * 3. Modify FieldManager.js - Initialization (`initializeSliders` or New Function):
+         *    - Create a new function `initializeEditableSliders(sectionId)` or modify `initializeSliders`.
+         *    - Find all elements corresponding to the 'editable_slider' type within the section.
+         *    - For each one:
+         *      - Get references to the text input and range input elements.
+         *      - Retrieve config (initial value, padding, step) from data attributes or field definition.
+         *      - Add the `change` event listener to the text input.
+         *      - Add the `input` event listener to the range input.
+         *      - Implement the `updateStandardRange` logic (from this file) within the event listener scope or as a helper.
+         *      - Perform the initial setup call (`updateStandardRange(initialValue)`).
+         *      - Ensure the `StateManager` is updated correctly in both listeners.
+         *
+         * 4. CSS:
+         *    - Ensure the CSS rules for `.inline-slider-group` and its children (from this file's <style> block)
+         *      are added to your main `4011-styles.css` file for consistent layout.
+         *    - You might need additional specific CSS rules in `4011-styles.css` for the 
+         *      `input[type=text].value-input` and `input[type=range].form-range` when they
+         *      are part of an `editable_slider` to perfectly match other form elements. 
+         * 
+         * 5. StateManager Integration:
+         *    - The entire component (label, text input, range slider) should be associated with a SINGLE
+         *      `fieldId` (e.g., 'h_15' for Conditioned Area).
+         *    - Both the text input's `change` listener AND the range input's `input` listener must update
+         *      the *same* state variable in the StateManager using this single `fieldId`:
+         *      `window.TEUI.StateManager.setValue('h_15', newValue, 'user-modified');`
+         *    - Other parts of the application will read the value using `window.TEUI.StateManager.getValue('h_15');`
+         *      and do not need to know if the value came from the text input or the slider.
+         *    - No separate "helper cell" is needed in the DOM to store the value; StateManager is the source of truth.
+         * 
+         * 6. Potential Pitfalls:
+         *    - CSS Conflicts: The flexbox CSS might interact unexpectedly with table cell (`<td>`) styling.
+         *      Test thoroughly and adjust CSS specificity in `4011-styles.css` if needed.
+         *    - FieldManager Complexity: Modifying FieldManager requires care to avoid breaking other field types.
+         *      Test incrementally.
+         *    - Event Handling: Ensure the new event listeners don't conflict with other global/specific listeners,
+         *      although this is less likely with the current architecture.
+         *    - Formatting: Ensure the number formatting (`formatStdNumber` logic) is consistent with the rest of the app.
+         */
+
+        // --- Config for Standard Slider --- 
+        const sliderConfig = {
+            id: 'B.3_area',
+            label: 'Conditioned Area',
+            units: 'm²',
+            step: 0.1, 
+            initial: 1427.2,
+            padding: 500 
+        };
+
+        // --- Script for Standard HTML Inputs ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const textInput = document.getElementById('standard-area-input');
+            const rangeInput = document.getElementById('standard-area-slider');
+            const config = sliderConfig; 
+            let currentNumericValue = config.initial;
+
+            // Function to format numbers 
+            const formatStdNumber = (num) => {
+                if (isNaN(num)) return '';
+                return num.toLocaleString(undefined, { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
+            };
+
+            // Function to update standard range slider properties
+            const updateStandardRange = (value) => {
+                const numValue = parseFloat(value);
+                if (isNaN(numValue) || numValue < 0) return;
+                
+                currentNumericValue = numValue; 
+
+                const padding = config.padding;
+                const newMin = Math.max(0, numValue - padding);
+                const newMax = numValue + padding;
+                const step = config.step;
+
+                // console.log(`Updating Standard Range: min=${newMin.toFixed(2)}, max=${newMax.toFixed(2)}, value=${numValue.toFixed(2)}`);
+
+                rangeInput.min = newMin.toFixed(2);
+                rangeInput.max = newMax.toFixed(2);
+                rangeInput.step = step.toString();
+                rangeInput.value = numValue.toFixed(2);
+            };
+
+            // Initialize standard slider
+            textInput.value = formatStdNumber(config.initial);
+            updateStandardRange(config.initial);
+
+            // Event listener for the text input
+            textInput.addEventListener('change', (e) => {
+                const rawValue = e.target.value;
+                const cleanValue = rawValue.replace(/,/g, '');
+                const numValue = parseFloat(cleanValue);
+
+                if (!isNaN(numValue) && numValue >= 0) {
+                    // console.log(`Standard Input changed: ${numValue} - FINAL VALUE`);
+                    updateStandardRange(numValue);
+                    e.target.value = formatStdNumber(numValue); // Reformat 
+                    // ===> EXTERNAL UPDATE POINT 1 <===
+                    // Convert to string with fixed decimals for StateManager consistency
+                    console.log(`>>> STATE MANAGER UPDATE (from text): fieldId=${config.id}, value=${numValue.toFixed(2)}`); 
+                    // In real app: Update StateManager here
+                    // window.TEUI?.StateManager?.setValue(config.id, numValue.toFixed(2), 'user-modified');
+                } else {
+                    // console.log(`Invalid standard input: ${rawValue}. Reverting.`);
+                    e.target.value = formatStdNumber(currentNumericValue); // Revert 
+                }
+            });
+
+            // Event listener for the range input (INPUT for immediate visual feedback)
+            rangeInput.addEventListener('input', (e) => {
+                const numValue = parseFloat(e.target.value);
+                if (!isNaN(numValue)) {
+                    // Update internal tracking and visual text display ONLY
+                    currentNumericValue = numValue; 
+                    textInput.value = formatStdNumber(numValue);
+                    // console.log(`Standard Slider dragging: ${numValue}`); 
+                    // DO NOT update StateManager here during continuous input
+                }
+            });
+
+            // Event listener for the range input (CHANGE for final state update)
+            rangeInput.addEventListener('change', (e) => {
+                 const numValue = parseFloat(e.target.value);
+                 if (!isNaN(numValue)) {
+                    // console.log(`Standard Slider committed: ${numValue} - FINAL VALUE`);
+                    // Ensure range reflects the final committed value (might have changed slightly)
+                    updateStandardRange(numValue); 
+                    // ===> EXTERNAL UPDATE POINT 2 <===
+                    // Convert to string with fixed decimals for StateManager consistency
+                    console.log(`>>> STATE MANAGER UPDATE (from slider): fieldId=${config.id}, value=${numValue.toFixed(2)}`);
+                    // In real app: Update StateManager & Trigger calculations based on numValue
+                    // window.TEUI?.StateManager?.setValue(config.id, numValue.toFixed(2), 'user-modified');
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
