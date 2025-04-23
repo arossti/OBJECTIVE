@@ -46,7 +46,7 @@ When working with this codebase, previous AI assistants have encountered several
    - ❌ **Avoid**: Creating circular dependencies or breaking existing calculation chains
    - ✅ **Prefer**: Following the established dependency order in SectionIntegrator.js
    - **Load Order Matters**:
-     - Script loading sequence is defined in 4011-Index.html
+     - Script loading sequence is defined in index.html (Current version 4.011)
      - Core modules (StateManager, FieldManager) must initialize before section modules
      - Section modules register with the system during initialization
    - **Section Module Structure**:
