@@ -366,9 +366,21 @@ window.TEUI.SectionModules.sect05 = (function() {
     function calculatePercentages() {
         // Get values
         const typologyCap = parseFloat(getFieldValue("i_39")) || 350;
-        const carbonTarget = parseFloat(getFieldValue("i_40")) || 345.82;
+        const carbonTargetValue = getFieldValue("i_40");
         const totalEmitted = parseFloat(getFieldValue("d_40")) || 390.82;
         const modelledValue = parseFloat(getFieldValue("i_41")) || 345.82;
+        
+        // Handle special case when carbon target is 'N/A'
+        if (carbonTargetValue === "N/A") {
+            // When carbon standard is "Not Reported", we don't show percentages
+            setCalculatedValue("l_39", "N/A");
+            setCalculatedValue("l_40", "N/A");
+            setCalculatedValue("l_41", "N/A");
+            return;
+        }
+        
+        // Convert to number for calculations
+        const carbonTarget = parseFloat(carbonTargetValue) || 345.82;
         
         // Calculate percentages
         const typologyPercent = Math.round((carbonTarget / typologyCap) * 100);
@@ -385,26 +397,36 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Calculate GHGI operational values
      */
     function calculateGHGI() {
-        // Get values
-        const emissionsSubtotal = parseFloat(getFieldValue("f_32")) || 6779.84;
+        // Get values - retrieve all values at maximum available precision
+        const d_14_value = getFieldValue("d_14") || "Utility Bills"; // Determine calculation method
+        const g_32_value = parseFloat(getFieldValue("g_32")); // Utility Bills emissions
+        const k_32_value = parseFloat(getFieldValue("k_32")); // Targeted Use emissions
         const conditionedArea = parseFloat(getFieldValue("i_15")) || 1427.20;
         
-        if (emissionsSubtotal && conditionedArea) {
-            // Calculate MT CO2e/yr
-            const ghgiMT = emissionsSubtotal / 1000; // Convert kg to metric tons
-            
-            // Calculate kgCO2e/m²
-            const ghgiPerM2 = emissionsSubtotal / conditionedArea;
-            
-            // Set calculated values
-            setCalculatedValue("d_38", ghgiMT.toFixed(2));
-            setCalculatedValue("g_38", ghgiPerM2.toFixed(2));
-            
-            // Calculate lifetime emissions
-            const serviceLife = parseFloat(getFieldValue("h_13")) || 50;
-            const lifetimeEmissions = ghgiPerM2 * serviceLife;
-            setCalculatedValue("j_38", lifetimeEmissions.toFixed(2));
-        }
+        // Default values only if not available from StateManager - maintaining precise defaults
+        const g_32_default = 6779.84;
+        const k_32_default = 6771.048; // Using precise value from Excel
+        
+        // Calculate MT CO2e/yr based on selection in d_14 with maximum precision
+        const ghgiMT = (d_14_value === "Utility Bills") ? 
+            (g_32_value || g_32_default) / 1000 : // Convert kg to metric tons for Utility Bills
+            (k_32_value || k_32_default) / 1000;  // Convert kg to metric tons for Targeted Use
+        
+        // Calculate kgCO2e/m² using the same emissions value chosen above
+        const emissionsKg = (d_14_value === "Utility Bills") ? 
+            (g_32_value || g_32_default) : 
+            (k_32_value || k_32_default);
+        const ghgiPerM2 = emissionsKg / conditionedArea;
+        
+        // Maintain full floating point precision in StateManager for calculations
+        // Only format for display in the DOM
+        setCalculatedValue("d_38", ghgiMT);
+        setCalculatedValue("g_38", ghgiPerM2);
+        
+        // Calculate lifetime emissions with maximum precision
+        const serviceLife = parseFloat(getFieldValue("h_13")) || 50;
+        const lifetimeEmissions = ghgiPerM2 * serviceLife;
+        setCalculatedValue("j_38", lifetimeEmissions);
     }
     
     /**
@@ -442,8 +464,17 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Calculate Target kgCO2e/m2 (i_40 = d_16)
      */
     function calculate_i_40() {
-        const d_16_value = parseFloat(getFieldValue("d_16")) || 0; // Embodied Carbon Target
-        setCalculatedValue("i_40", d_16_value.toFixed(2));
+        // Get the embodied carbon target
+        const d_16_value = getFieldValue("d_16");
+        
+        // Special handling for 'N/A'
+        if (d_16_value === "N/A") {
+            setCalculatedValue("i_40", "N/A");
+        } else {
+            // Regular handling for numeric values
+            const numericValue = parseFloat(d_16_value) || 0;
+            setCalculatedValue("i_40", numericValue.toFixed(2));
+        }
     }
 
     /**
@@ -464,14 +495,40 @@ window.TEUI.SectionModules.sect05 = (function() {
     function calculate_d_41() {
         // Get the placeholder reference value from StateManager
         // TODO: Replace this fetch with the actual DeepState lookup based on d_13
-        const reference_d_38_placeholder = parseFloat(getFieldValue("ref_d_38")) || 10.0; // Default to 10.0 if not found
+        const reference_d_38_placeholder = parseFloat(getFieldValue("ref_d_38")) || 47.9209; // Default to 47.9209 until reference model is implemented
 
         const d_38_value = parseFloat(getFieldValue("d_38")) || 0; // Actual/Target MT CO2e/yr (from REPORT)
         const h_13_value = parseFloat(getFieldValue("h_13")) || 50; // Service Life (yrs)
 
-        // Calculate Avoided Emissions
+        // Calculate Avoided Emissions with maximum precision through the calculation chain
         const d_41_result = (reference_d_38_placeholder - d_38_value) * h_13_value;
+        
+        // Apply formatting only at the final display step - maintaining calculation precision
         setCalculatedValue("d_41", d_41_result.toFixed(2));
+    }
+    
+    /**
+     * Format a number for display with thousand separators and proper decimals
+     */
+    function formatNumber(value) {
+        // Ensure value is a number
+        const numValue = parseFloat(value);
+        
+        // Handle invalid values
+        if (isNaN(numValue)) {
+            return "0.00";
+        }
+        
+        // Check if value is very small
+        if (Math.abs(numValue) < 0.01 && numValue !== 0) {
+            return numValue.toFixed(2);
+        }
+        
+        // Always use 2 decimal places for all numbers, including integers
+        return numValue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
     
     /**
@@ -503,18 +560,21 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Helper function to set a calculated field value
      */
     function setCalculatedValue(fieldId, value) {
-        // Set in state manager
+        // Store raw value in state manager
         if (window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
             window.TEUI.StateManager.setValue(fieldId, value, "calculated");
         }
         
-        // Also update DOM
+        // Special handling for 'N/A' values
+        const formattedValue = value === "N/A" ? "N/A" : formatNumber(value);
+        
+        // Update DOM with formatted value
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
                 element.value = value;
             } else {
-                element.textContent = value;
+                element.textContent = formattedValue;
             }
         }
     }
@@ -631,8 +691,6 @@ window.TEUI.SectionModules.sect05 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
-        // console.log('Emissions section rendered, initializing calculations...');
-        
         // Initialize event handlers
         initializeEventHandlers();
         

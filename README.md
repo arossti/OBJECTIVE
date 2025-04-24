@@ -13,7 +13,7 @@ When working with this codebase, previous AI assistants have encountered several
 
 1. **Prioritize Root Causes Over Quick Fixes**: 
    - ❌ **Avoid**: Adding patches, hacks, or bandaids when code is failing
-   - ✅ **Prefer**: Taking time to understand the underlying causes of issues
+   - ✅ **Prefer**: Taking time to understand the underlying architecture and addressing root causes
    - Quick fixes accumulate technical debt, making the codebase harder to maintain over time
    - Understanding root causes often reveals simpler solutions that maintain architectural integrity
 
@@ -23,7 +23,51 @@ When working with this codebase, previous AI assistants have encountered several
    - Failure to maintain reference consistency has routinely broken visualizations
    - D3 selections and data binding depend on stable object references
 
-3. **DOM Simplicity**:
+3. **StateManager & Calculation Integration**:
+   - ⚠️ **CRITICAL**: StateManager is the single source of truth for all calculations
+   - ❌ **AVOID**: 
+     - Direct DOM manipulation in event handlers or calculation functions
+     - Creating custom calculation methods like `recalculateField()` or `updateValue()` that bypass StateManager
+     - Checking for calculation existence with non-existent methods like `getCalculation()`
+   - ✅ **REQUIRED PATTERN FOR DROPDOWN EVENTS**:
+     1. Register the calculation function with StateManager during initialization:
+        ```javascript
+        // Register calculation once during initialization
+        window.TEUI.StateManager.registerCalculation("target_field_id", calculateFunction);
+        
+        // Register dependencies
+        window.TEUI.StateManager.registerDependency("dropdown_field_id", "target_field_id");
+        ```
+     2. Handle dropdown changes by updating StateManager and then calling a centralized calculation function:
+        ```javascript
+        function handleDropdownChange(e) {
+            const fieldId = e.target.getAttribute('data-field-id');
+            const value = e.target.value;
+            
+            // 1. Update value in StateManager
+            window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+            
+            // 2. Call centralized calculation function
+            calculateAll();
+        }
+        ```
+     3. Implement a direct calculation approach in your calculation function:
+        ```javascript
+        function calculateAll() {
+            // Calculate values directly without trying to use non-existent StateManager methods
+            const calculatedValue = calculateTargetField();
+            
+            // Update both StateManager and DOM
+            setCalculatedValue("target_field_id", calculatedValue);
+        }
+        ```
+   - This pattern ensures:
+     - Proper StateManager integration
+     - Reliable calculation updates when dropdown values change
+     - Consistent state management across the application
+     - No reliance on non-existent methods like `getCalculation()` or `recalculateField()`
+
+4. **DOM Simplicity**:
    - ❌ **Avoid**: Over-engineering or overthinking DOM operations
    - ✅ **Prefer**: Working with the straightforward DOM naming conventions
    - Our DOM structure intentionally mirrors Excel's cell structure for clarity
@@ -33,7 +77,58 @@ When working with this codebase, previous AI assistants have encountered several
      - `cf_d_19` = Calculated field for cell D19
      - `dv_d_19` = Derived value from cell D19
 
-4. **Field Naming Conventions**:
+5. **Number Formatting Consistency**:
+   - ❌ **Avoid**: Inconsistent formatting of numerical values across sections
+   - ✅ **Prefer**: Using the standardized `formatNumber` function in each section module
+   - All numerical values displayed to users should have:
+     - Thousands separators (commas)
+     - Exactly 2 decimal places (e.g., "2,057.00" not "2,057"), even for integers or whole numbers
+     - **Exceptions**: 
+       - U-values must display with 3 decimal places (e.g., "0.123")
+       - Cost values may require 4 decimal places in some contexts
+   - Raw values should be stored in StateManager for calculations, but formatted values should be displayed in the DOM
+   - Consistent number formatting is critical for:
+     - Readability of large numbers
+     - UI stability when values change (prevents layout shifts when switching between values with/without decimals)
+     - Future D3 visualizations and charts.js integrations
+     - Ensuring data consistency between calculations and visual representations
+   - Each section module should implement `formatNumber` and use it within `setCalculatedValue`
+
+6. **Calculation Precision and Significant Digits**:
+   - ❌ **Avoid**: Truncating precision during calculation chains or using hardcoded adjustments
+   - ✅ **Prefer**: Maintaining maximum floating-point precision through all calculation steps
+   - General calculations must maintain at least 4 decimal places internally
+   - Thermal calculations (involving U-values, RSI, etc.) require 6+ decimal places of precision
+   - **Why Precision Matters - A Note from Our Scientific Advisor**:
+     > "With this application, we are measuring a horse turd with calipers." — Dr. Ted Kesik
+     
+     This colorful metaphor acknowledges that while our models have inherent limitations in perfectly representing reality (the "horse turd"), we must still maintain mathematical precision (the "calipers") throughout our calculations. Imprecise math can introduce up to 5% additional variance in results—error that is completely avoidable. Our mathematical implementation should never add error or uncertainty to an already imperfect modeling process.
+   - **Critical considerations**:
+     - Even when user inputs have only 2 decimal places, intermediate calculation results often expand to many more places
+     - Division and multiplication operations can significantly affect precision (e.g., 1/3 * 3 ≠ 1 if truncated between steps)
+     - Match Excel's calculation precision exactly to ensure identical results
+     - Only apply formatting (toFixed, etc.) at the final display step, never during calculations
+     - Store raw values at full precision in StateManager
+   - Example implementation:
+     ```javascript
+     // CORRECT APPROACH
+     function calculateValue() {
+       // Get values at full precision
+       const uValue = parseFloat(getFieldValue("g_101")); // e.g., 0.123
+       const area = parseFloat(getFieldValue("d_85"));    // e.g., 25.00
+       
+       // Perform calculations with full floating-point precision
+       const heatLoss = uValue * area * temperatureDifference;
+       
+       // Store raw result in StateManager (full precision)
+       StateManager.setValue("cf_g_120", heatLoss);
+       
+       // Format ONLY for display
+       displayElement.textContent = formatNumber(heatLoss); // e.g., "345.82"
+     }
+     ```
+
+7. **Field Naming Conventions**:
    - Field IDs are defined in `3037DOM.csv` and calculation relationships in `FORMULAE-3037.csv`
    - Special prefixes indicate field types:
      - `dd_` = Dropdown field
@@ -42,7 +137,7 @@ When working with this codebase, previous AI assistants have encountered several
      - `sl_` = Slider control
    - For example, a dropdown in cell D19 is referenced as `dd_d_19` throughout the codebase
 
-5. **Calculation Sequencing and Dependency Management**:
+8. **Calculation Sequencing and Dependency Management**:
    - ❌ **Avoid**: Creating circular dependencies or breaking existing calculation chains
    - ✅ **Prefer**: Following the established dependency order in SectionIntegrator.js
    - **Load Order Matters**:
@@ -69,6 +164,75 @@ When working with this codebase, previous AI assistants have encountered several
      - The event system (`teui-section-rendered`, etc.) coordinates section calculation timing
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
+
+### REQUIRED: StateManager Implementation Pattern for Cross-Section Functions
+
+One critical architectural pattern is how we handle functions that need to operate across multiple sections, such as temperature setpoints based on occupancy type. This approach enables consistent behavior while maintaining the single responsibility principle:
+
+1. **✅ PROPER ARCHITECTURE PATTERN**:
+   - Create centralized utility functions in the global namespace
+   - Use these functions across sections for consistent behavior
+   - Register calculations correctly with StateManager
+   - Follow proper dependency registration order
+   - Respect StateManager as the single source of truth
+
+2. **🔄 PROPER REGISTRATION ORDER**:
+   ```javascript
+   // 1. FIRST register calculation functions
+   window.TEUI.StateManager.registerCalculation("h_23", calculateHeatingSetpoint);
+   window.TEUI.StateManager.registerCalculation("h_24", calculateCoolingSetpoint);
+   window.TEUI.StateManager.registerCalculation("is_critical", calculateCriticalFlag);
+   
+   // 2. THEN register dependencies (after calculations are registered)
+   window.TEUI.StateManager.registerDependency("d_12", "h_23"); // Occupancy affects heating setpoint
+   window.TEUI.StateManager.registerDependency("d_12", "h_24"); // Occupancy affects cooling setpoint
+   window.TEUI.StateManager.registerDependency("d_12", "is_critical"); // Occupancy affects critical flag
+   ```
+   
+   The order is critical - always register calculation functions before registering dependencies.
+
+3. **📋 CALCULATION FUNCTION PATTERN**:
+   ```javascript
+   // Example of a proper StateManager calculation function
+   function calculateHeatingSetpoint() {
+       // Get input value from StateManager
+       const occupancyType = window.TEUI.StateManager.getValue("d_12");
+       
+       // Use centralized utility for consistent calculations across sections
+       const temps = window.TEUI.getTemperaturesForOccupancy(occupancyType);
+       
+       // Return calculated value - StateManager will store it
+       return temps.heating;
+   }
+   ```
+
+4. **🌐 GLOBAL UTILITY FUNCTIONS**:
+   When logic needs to be shared between sections (like occupancy-based temperature settings), 
+   implement it as a global utility in the TEUI namespace:
+   
+   ```javascript
+   // Global utility function for consistent behavior across sections
+   window.TEUI.getTemperaturesForOccupancy = function(occupancyType) {
+       // Formatting and normalization logic
+       // ...
+       
+       // Return consistent data structure
+       return {
+           heating: 22, // or 18 depending on type
+           cooling: 24,
+           isCritical: isCare
+       };
+   };
+   ```
+
+5. **⚠️ COMMON ANTI-PATTERNS TO AVOID**:
+   - ❌ Direct DOM manipulation inside calculation functions
+   - ❌ Setting calculated values with direct DOM updates rather than via StateManager
+   - ❌ Inlining complex condition checks in multiple places instead of using shared utilities
+   - ❌ Checking user-displayed text instead of StateManager values
+   - ❌ Implementing different logic for the same calculation in different sections
+
+This architecture ensures that changes to occupancy type properly propagate through the system, maintaining consistent temperature setpoints, critical occupancy flags, and weather data handling across all affected sections.
 
 ## Project Status & Implementation Summary
 

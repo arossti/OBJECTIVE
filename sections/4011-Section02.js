@@ -9,9 +9,295 @@
  * are integrated directly into the layout structure.
  */
 
-// Ensure namespace exists
+// Create section-specific namespace for global references
 window.TEUI = window.TEUI || {};
-window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+window.TEUI.sect02 = window.TEUI.sect02 || {};
+window.TEUI.sect02.initialized = false;
+window.TEUI.sect02.userInteracted = false;
+
+// Create a global function to update temperature setpoints based on occupancy
+window.updateTempSetpointsFromOccupancy = function() {
+    if (window.TEUI?.StateManager?.getValue) {
+        const occupancyType = window.TEUI.StateManager.getValue("d_12");
+        if (occupancyType) {
+            const temps = getTemperaturesForOccupancy(occupancyType);
+            
+            // Set temperature values in StateManager
+            window.TEUI.StateManager.setValue("h_23", temps.heating, "user-modified");
+            window.TEUI.StateManager.setValue("h_24", temps.cooling, "user-modified");
+            window.TEUI.StateManager.setValue("is_critical_occupancy", temps.isCritical, "user-modified");
+            window.TEUI.StateManager.setValue("occupancy_critical", temps.isCritical ? "true" : "false", "user-modified");
+            
+            console.log(`Updated temperature setpoints for ${occupancyType}: heating=${temps.heating}, cooling=${temps.cooling}, critical=${temps.isCritical}`);
+            return true;
+        }
+    }
+    return false;
+};
+
+// Add a global function to expose the occupancy critical status
+window.isOccupancyCritical = function() {
+    if (window.TEUI?.StateManager?.getValue) {
+        const occupancyType = window.TEUI.StateManager.getValue("d_12");
+        return (occupancyType === "B2-Care and Treatment" || 
+               occupancyType === "B3-Detention Care & Treatment");
+    }
+    return false;
+};
+
+// Global diagnostic function for testing
+window.diagnoseTsetUpdates = function() {
+    console.clear();
+    console.log("=== OCCUPANCY & TEMPERATURE DIAGNOSTIC ===");
+    
+    // Check if required objects exist
+    const hasStateManager = !!window.TEUI?.StateManager;
+    const hasSect02 = !!window.TEUI?.SectionModules?.sect02;
+    const hasSect03 = !!window.TEUI?.SectionModules?.sect03;
+    
+    console.log("Required objects present:", {
+        "TEUI.StateManager": hasStateManager,
+        "TEUI.SectionModules.sect02": hasSect02,
+        "TEUI.SectionModules.sect03": hasSect03
+    });
+    
+    // Get current values
+    const values = {};
+    try {
+        if (hasStateManager && window.TEUI.StateManager.getValue) {
+            values.d_12 = window.TEUI.StateManager.getValue("d_12") || "unknown";
+            values.h_23 = window.TEUI.StateManager.getValue("h_23") || "unknown";
+            values.h_24 = window.TEUI.StateManager.getValue("h_24") || "unknown";
+            values.occupancy_critical = window.TEUI.StateManager.getValue("occupancy_critical") || "unknown";
+            console.log("Current StateManager values:", values);
+        } else {
+            console.log("StateManager.getValue not available, checking DOM");
+            values.d_12 = document.querySelector('[data-field-id="d_12"]')?.value || "unknown";
+            values.h_23 = document.querySelector('[data-field-id="h_23"]')?.textContent || "unknown";
+            values.h_24 = document.querySelector('[data-field-id="h_24"]')?.textContent || "unknown";
+            console.log("Current DOM values:", values);
+        }
+    } catch (e) {
+        console.error("Error getting values:", e);
+    }
+    
+    // Check update methods
+    if (hasSect02) {
+        console.log("\nChecking available update methods:");
+        const methods = {
+            updateHeatingSetpoint: typeof window.TEUI.SectionModules.sect02.updateHeatingSetpoint === 'function',
+            updateCoolingSetpoint: typeof window.TEUI.SectionModules.sect02.updateCoolingSetpoint === 'function',
+            updateCriticalOccupancyFlags: typeof window.TEUI.SectionModules.sect02.updateCriticalOccupancyFlags === 'function',
+            updateOccupancyRelatedValues: typeof window.TEUI.SectionModules.sect02.updateOccupancyRelatedValues === 'function'
+        };
+        console.log(methods);
+        
+        // Try to update values
+        console.log("\nAttempting to update values...");
+        try {
+            const result = window.TEUI.SectionModules.sect02.updateOccupancyRelatedValues();
+            console.log("Update completed:", result);
+        } catch (e) {
+            console.error("Error updating values:", e);
+        }
+    }
+    
+    // Check Section 03 weather update
+    if (hasSect03) {
+        console.log("\nChecking Section 03 updateWeatherData:");
+        try {
+            if (typeof window.TEUI.SectionModules.sect03.updateWeatherData === 'function') {
+                console.log("updateWeatherData is available, attempting to call...");
+                window.TEUI.SectionModules.sect03.updateWeatherData();
+                console.log("updateWeatherData called successfully");
+            } else {
+                console.log("updateWeatherData method not found");
+            }
+        } catch (e) {
+            console.error("Error calling updateWeatherData:", e);
+        }
+    }
+    
+    // Check DOM updates
+    console.log("\nChecking DOM elements for fields:");
+    const domElements = {
+        d_12: !!document.querySelector('[data-field-id="d_12"]'),
+        h_23: !!document.querySelector('[data-field-id="h_23"]'),
+        h_24: !!document.querySelector('[data-field-id="h_24"]')
+    };
+    console.log(domElements);
+    
+    // Get current DOM values
+    const domValues = {
+        d_12: document.querySelector('[data-field-id="d_12"]')?.value || "not found",
+        h_23: document.querySelector('[data-field-id="h_23"]')?.textContent || "not found",
+        h_24: document.querySelector('[data-field-id="h_24"]')?.textContent || "not found"
+    };
+    console.log("Current DOM values:", domValues);
+    
+    console.log("\n=== DIAGNOSTIC COMPLETE ===");
+    return { values, domValues };
+};
+
+// Lightweight diagnostic function for checking occupancy dropdown
+window.checkOccupancyDropdown = function() {
+    console.log("=== OCCUPANCY DROPDOWN CHECK ===");
+    
+    // Try to find the dropdown with various selectors
+    const selectors = [
+        '[data-dropdown-id="dd_d_12"]', 
+        '[data-field-id="d_12"]',
+        '#d_12',
+        '#dd_d_12',
+        'select[data-dropdown-id="dd_d_12"]',
+        'select[data-field-id="d_12"]',
+        'select#d_12',
+        'select#dd_d_12',
+        'select[name="d_12"]'
+    ];
+    
+    // Check each selector
+    const results = {};
+    selectors.forEach(selector => {
+        const el = document.querySelector(selector);
+        results[selector] = el ? {
+            found: true,
+            tagName: el.tagName,
+            value: el.value,
+            options: el.options?.length || 0
+        } : { found: false };
+    });
+    
+    console.log("Selector results:", results);
+    
+    // Find all select elements as a fallback
+    const allSelects = document.querySelectorAll('select');
+    console.log(`Found ${allSelects.length} select elements in the document`);
+    
+    if (allSelects.length > 0) {
+        allSelects.forEach((el, i) => {
+            if (el.options?.length > 0) {
+                const optionsText = Array.from(el.options).map(opt => opt.text).join(', ');
+                console.log(`Select #${i}: id="${el.id}", name="${el.name}", value="${el.value}"`);
+                console.log(`  data-field-id="${el.getAttribute('data-field-id')}", data-dropdown-id="${el.getAttribute('data-dropdown-id')}"`);
+                console.log(`  options (${el.options.length}): ${optionsText.substring(0, 200)}${optionsText.length > 200 ? '...' : ''}`);
+            }
+        });
+    }
+    
+    // Check current values
+    const heatingValue = document.querySelector('[data-field-id="h_23"]')?.textContent.trim();
+    const coolingValue = document.querySelector('[data-field-id="h_24"]')?.textContent.trim();
+    
+    console.log(`Current temperature values: heating=${heatingValue}, cooling=${coolingValue}`);
+    console.log("=== CHECK COMPLETE ===");
+};
+
+// Global utility function to get heating and cooling setpoints based on occupancy type
+// This ensures consistent temperature values across the entire application
+// @param {string} occupancyType - The occupancy type (e.g., "A-Assembly", "B2-Care and Treatment")
+// @returns {Object} Object with heating and cooling setpoint values
+window.TEUI.getTemperaturesForOccupancy = function(occupancyType) {
+    console.log(`[getTemperaturesForOccupancy] Getting temperatures for: "${occupancyType}"`);
+    
+    // Default values
+    const defaultTemps = {
+        heating: 18,
+        cooling: 26
+    };
+    
+    // Check if occupancy is undefined or null
+    if (!occupancyType) {
+        console.warn("[getTemperaturesForOccupancy] Occupancy type is undefined or null, using defaults");
+        return defaultTemps;
+    }
+    
+    // Normalize the occupancy string for more reliable comparison
+    const normalizedOccupancy = occupancyType.toLowerCase().trim();
+    
+    // For occupancies containing "care", "treatment", or "residential", use 22°C heating
+    if (
+        normalizedOccupancy.includes("care") || 
+        normalizedOccupancy.includes("treatment") || 
+        normalizedOccupancy.includes("residential") ||
+        normalizedOccupancy.includes("b2")
+    ) {
+        console.log(`[getTemperaturesForOccupancy] Using care/residential temperatures for "${occupancyType}"`);
+        return {
+            heating: 22,
+            cooling: 25 // Slightly lower cooling setpoint for sensitive occupancies
+        };
+    }
+    
+    // Check for special case - Critical Occupancy
+    if (normalizedOccupancy.includes("critical")) {
+        console.log(`[getTemperaturesForOccupancy] Using critical occupancy temperatures for "${occupancyType}"`);
+        return {
+            heating: 21,
+            cooling: 24 // Tighter temperature control for critical areas
+        };
+    }
+    
+    // For all other occupancies, use the default values
+    console.log(`[getTemperaturesForOccupancy] Using default temperatures for "${occupancyType}"`);
+    return defaultTemps;
+};
+
+// Global helper function for testing/debugging
+window.updateOccupancyAndSetpoints = function(occupancyType) {
+    if (!occupancyType) {
+        console.log("Please specify an occupancy type, e.g., 'B2-Care and Treatment'");
+        return;
+    }
+    
+    console.log(`Manually updating occupancy to: ${occupancyType}`);
+    
+    // Update dropdown value if it exists
+    const dropdown = document.querySelector('select[data-dropdown-id="dd_d_12"]');
+    if (dropdown) {
+        // Check if the value is valid
+        const isValidValue = Array.from(dropdown.options).some(opt => opt.value === occupancyType);
+        if (!isValidValue) {
+            console.log(`Warning: ${occupancyType} is not a valid option. Valid options are:`);
+            Array.from(dropdown.options).forEach(opt => console.log(`  - ${opt.value}`));
+            return;
+        }
+        
+        // Set the dropdown value
+        dropdown.value = occupancyType;
+        
+        // Update StateManager with the occupancy value (only this one)
+        if (window.TEUI?.StateManager?.setValue) {
+            // Set the occupancy value only - let StateManager handle the rest
+            window.TEUI.StateManager.setValue("d_12", occupancyType, "user-modified");
+            console.log("StateManager updated with occupancy type");
+            
+            // Trigger recalculation of dependent values
+            if (window.TEUI?.StateManager?.recalculateValue) {
+                window.TEUI.StateManager.recalculateValue("h_23");
+                window.TEUI.StateManager.recalculateValue("h_24");
+                window.TEUI.StateManager.recalculateValue("is_critical_occupancy");
+                window.TEUI.StateManager.recalculateValue("occupancy_critical");
+                console.log("Dependent values recalculated");
+                
+                // Update Section 03 weather data
+                if (typeof window.TEUI?.SectionModules?.sect03?.updateWeatherData === 'function') {
+                    window.TEUI.SectionModules.sect03.updateWeatherData();
+                    console.log("Section 03 weather data updated");
+                }
+            }
+            
+            // Trigger a change event on the dropdown
+            dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            return true;
+        }
+    } else {
+        console.log("Occupancy dropdown not found");
+    }
+    
+    return false;
+};
 
 // Section 2: Building Information Module
 window.TEUI.SectionModules.sect02 = (function() {
@@ -179,7 +465,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                     fieldId: "h_14", 
                     type: "editable", 
                     value: "Three Feathers Terrace", 
-                    classes: ["wide-text", "no-wrap"],
+                    classes: ["wide-text", "no-wrap", "text-start"],
                     section: "buildingInfo",
                     span: 2
                 },
@@ -268,7 +554,8 @@ window.TEUI.SectionModules.sect02 = (function() {
                     fieldId: "d_16", 
                     type: "derived", 
                     value: "345.82",
-                    section: "buildingInfo"
+                    section: "buildingInfo",
+                    classes: ["text-start"]
                 },
                 e: { content: "" }, // Empty but needed for alignment
                 f: { content: "A.1", classes: ["label-prefix", "text-right", "no-wrap"] },
@@ -277,7 +564,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                     fieldId: "i_16", 
                     type: "editable", 
                     value: "Thomson Architecture, Inc.",
-                    classes: [],
+                    classes: ["text-start"],
                     section: "buildingInfo",
                     span: 2
                 },
@@ -310,7 +597,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                     fieldId: "i_17", 
                     type: "editable", 
                     value: "8154",
-                    classes: [],
+                    classes: ["text-start"],
                     section: "buildingInfo",
                     span: 2
                 },
@@ -473,8 +760,408 @@ window.TEUI.SectionModules.sect02 = (function() {
     }
     
     //==========================================================================
-    // EVENT HANDLING AND CALCULATIONS
+    // CALCULATION FUNCTIONS AND REGISTRATION
     //==========================================================================
+    
+    /**
+     * Calculate the heating setpoint (h_23) based on the occupancy type (d_12) and reference standard (d_13)
+     * @returns {number} The heating setpoint in °C
+     */
+    function calculateHeatingSetpoint() {
+        try {
+            console.log("[calculateHeatingSetpoint] Calculating heating setpoint");
+            
+            // Get the currently selected occupancy type from StateManager
+            const occupancyType = window.TEUI.StateManager.getValue("d_12");
+            console.log(`[calculateHeatingSetpoint] Current occupancy type: "${occupancyType}"`);
+            
+            // Get the reference standard
+            const refStandard = window.TEUI.StateManager.getValue("d_13");
+            console.log(`[calculateHeatingSetpoint] Reference standard: "${refStandard}"`);
+            
+            // If reference standard contains "PH" (Passivhaus), always use 18°C
+            if (refStandard && refStandard.includes("PH")) {
+                console.log("[calculateHeatingSetpoint] Using Passivhaus heating setpoint: 18°C");
+                return 18;
+            }
+            
+            // Get temperatures based on occupancy type
+            const temps = window.TEUI.getTemperaturesForOccupancy(occupancyType);
+            console.log(`[calculateHeatingSetpoint] Final heating setpoint: ${temps.heating}°C`);
+            
+            return temps.heating;
+        } catch (error) {
+            console.error("[calculateHeatingSetpoint] Error:", error);
+            return 18; // Default to 18°C if there's an error
+        }
+    }
+    
+    /**
+     * Calculate the cooling setpoint (h_24) based on the occupancy type (d_12) and reference standard (d_13)
+     * @returns {number} The cooling setpoint in °C
+     */
+    function calculateCoolingSetpoint() {
+        try {
+            console.log("[calculateCoolingSetpoint] Calculating cooling setpoint");
+            
+            // Get the currently selected occupancy type from StateManager
+            const occupancyType = window.TEUI.StateManager.getValue("d_12");
+            console.log(`[calculateCoolingSetpoint] Current occupancy type: "${occupancyType}"`);
+            
+            // Get temperatures based on occupancy type
+            const temps = window.TEUI.getTemperaturesForOccupancy(occupancyType);
+            console.log(`[calculateCoolingSetpoint] Final cooling setpoint: ${temps.cooling}°C`);
+            
+            return temps.cooling;
+        } catch (error) {
+            console.error("[calculateCoolingSetpoint] Error:", error);
+            return 26; // Default to 26°C if there's an error
+        }
+    }
+    
+    /**
+     * Calculate whether the occupancy is critical
+     * This is a StateManager calculation function
+     */
+    function calculateCriticalOccupancy() {
+        const occupancyType = window.TEUI.StateManager.getValue("d_12");
+        
+        // Use the shared utility function for consistent results
+        const temps = window.TEUI.getTemperaturesForOccupancy(occupancyType);
+        return temps.isCritical;
+    }
+    
+    /**
+     * Calculate the critical occupancy string format ("true"/"false")
+     * This is a StateManager calculation function
+     */
+    function calculateCriticalOccupancyString() {
+        const isCritical = calculateCriticalOccupancy();
+        return isCritical ? "true" : "false";
+    }
+    
+    /**
+     * Calculate Embodied Carbon Target (d_16) based on selected Carbon Standard (d_15)
+     * This is a StateManager calculation function
+     */
+    function calculateEmbodiedCarbonTarget() {
+        const carbonStandard = window.TEUI.StateManager.getValue("d_15") || "Self Reported";
+        const modelledValueI41 = parseFloat(window.TEUI.StateManager.getValue("i_41")) || 345.82;
+        
+        // Special case: 'Not Reported' should return 'N/A'
+        if (carbonStandard === "Not Reported") {
+            return "N/A";
+        }
+        
+        // Values from S3-Carbon-Standards sheet (corrected values)
+        const AR6_EPC_K5 = 3.39; // EPC = 3.39
+        const AR6_EA_L5 = 0.17;  // EA = 0.17
+        
+        // Implement the formula
+        let targetValue;
+        
+        switch(carbonStandard) {
+            case "BR18 (Denmark)":
+                targetValue = 500;
+                break;
+            case "IPCC AR6 EPC":
+                targetValue = AR6_EPC_K5;
+                break;
+            case "IPCC AR6 EA":
+                targetValue = AR6_EA_L5;
+                break;
+            case "TGS4":
+                targetValue = 500;
+                break;
+            case "CaGBC ZCB D":
+                targetValue = 425;
+                break;
+            case "CaGBC ZCB P":
+                targetValue = 425;
+                break;
+            case "Self Reported":
+                targetValue = modelledValueI41;
+                break;
+            default:
+                targetValue = 345.82; // Default to Self Reported value
+        }
+        
+        // Format numeric values to 2 decimal places consistently
+        return targetValue.toFixed(2);
+    }
+    
+    /**
+     * Function to register all calculations with the StateManager
+     */
+    function registerCalculations() {
+        console.log("[Section02] Registering calculations with StateManager");
+        
+        try {
+            // Register the calculation for heating setpoint (h_23)
+            window.TEUI.StateManager.registerCalculation("h_23", calculateHeatingSetpoint);
+            console.log("[Section02] Registered calculation for heating setpoint (h_23)");
+            
+            // Register dependencies after the calculation
+            window.TEUI.StateManager.registerDependency("d_12", "h_23"); // Occupancy type affects heating setpoint
+            window.TEUI.StateManager.registerDependency("d_13", "h_23"); // Reference standard affects heating setpoint
+            console.log("[Section02] Registered dependencies for h_23: d_12, d_13");
+            
+            // Register the calculation for cooling setpoint (h_24)
+            window.TEUI.StateManager.registerCalculation("h_24", calculateCoolingSetpoint);
+            console.log("[Section02] Registered calculation for cooling setpoint (h_24)");
+            
+            // Register dependencies after the calculation
+            window.TEUI.StateManager.registerDependency("d_12", "h_24"); // Occupancy type affects cooling setpoint
+            window.TEUI.StateManager.registerDependency("d_13", "h_24"); // Reference standard affects cooling setpoint
+            console.log("[Section02] Registered dependencies for h_24: d_12, d_13");
+            
+            // Register calculation for critical occupancy flag
+            window.TEUI.StateManager.registerCalculation("is_critical_occupancy", calculateCriticalOccupancy);
+            window.TEUI.StateManager.registerDependency("d_12", "is_critical_occupancy");
+            
+            // Register calculation for critical occupancy string
+            window.TEUI.StateManager.registerCalculation("occupancy_critical", calculateCriticalOccupancyString);
+            window.TEUI.StateManager.registerDependency("d_12", "occupancy_critical");
+            
+            // Register calculation for embodied carbon target
+            window.TEUI.StateManager.registerCalculation("d_16", calculateEmbodiedCarbonTarget);
+            window.TEUI.StateManager.registerDependency("d_15", "d_16"); // Carbon standard affects target
+            window.TEUI.StateManager.registerDependency("i_41", "d_16"); // Modelled value affects target
+        } catch (error) {
+            console.warn("[Section02] Error registering calculations with StateManager:", error);
+            // Continue execution even if registration fails
+        }
+    }
+    
+    //==========================================================================
+    // EVENT HANDLING AND INITIALIZATION
+    //==========================================================================
+    
+    /**
+     * Setup Carbon Standard dropdown event handler
+     * Follows the dropdown handler pattern from the framework
+     */
+    function setupCarbonStandardDropdown() {
+        const dropdown = document.querySelector('select[data-dropdown-id="dd_d_15"], select[data-field-id="d_15"]');
+        if (!dropdown) return;
+        
+        // Remove any existing handlers to avoid duplicates
+        dropdown.removeEventListener('change', handleCarbonStandardChange);
+        
+        // Add the event listener
+        dropdown.addEventListener('change', handleCarbonStandardChange);
+    }
+    
+    /**
+     * Handle Carbon Standard dropdown change
+     * Following the pattern from Section10
+     */
+    function handleCarbonStandardChange(e) {
+        const selectedValue = e.target.value;
+        const fieldId = e.target.getAttribute('data-field-id');
+        if (!fieldId) return;
+        
+        // e.isTrusted is true for real user interactions
+        if (e.isTrusted) {
+            window.TEUI.sect02.userInteracted = true;
+        }
+        
+        // Store the value in StateManager
+        if (window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
+            window.TEUI.StateManager.setValue(fieldId, selectedValue, 'user-modified');
+            
+            if (window.TEUI.StateManager.recalculateValue) {
+                window.TEUI.StateManager.recalculateValue("d_16");
+            }
+        }
+    }
+    
+    /**
+     * Set up occupancy dropdown change handler
+     * Follows the same pattern as other dropdown handlers in the framework
+     */
+    function setupOccupancyDropdown() {
+        const dropdown = document.querySelector('select[data-dropdown-id="dd_d_12"], select[data-field-id="d_12"]');
+        if (!dropdown) return;
+        
+        // Clean handler registration (using cloneNode approach to remove any existing handlers)
+        const newDropdown = dropdown.cloneNode(true);
+        dropdown.parentNode.replaceChild(newDropdown, dropdown);
+        
+        // Add the event listener (standard change handler)
+        newDropdown.addEventListener('change', function(e) {
+            const selectedValue = e.target.value;
+            
+            // Store the value in StateManager and mark as user-modified
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue("d_12", selectedValue, 'user-modified');
+                
+                // Trigger recalculation of dependent values through StateManager
+                if (window.TEUI?.StateManager?.recalculateValue) {
+                    window.TEUI.StateManager.recalculateValue("h_23");
+                    window.TEUI.StateManager.recalculateValue("h_24");
+                    window.TEUI.StateManager.recalculateValue("is_critical_occupancy");
+                    window.TEUI.StateManager.recalculateValue("occupancy_critical");
+                    
+                    // Notify Section 03 to update weather data after a short delay
+                    setTimeout(function() {
+                        if (typeof window.TEUI?.SectionModules?.sect03?.updateWeatherData === 'function') {
+                            window.TEUI.SectionModules.sect03.updateWeatherData();
+                        }
+                    }, 100);
+                }
+            }
+        });
+    }
+    
+    /**
+     * Format a number for display with thousand separators and proper decimals
+     */
+    function formatNumber(value) {
+        // Ensure value is a number
+        const numValue = parseFloat(value);
+        
+        // Handle invalid values
+        if (isNaN(numValue)) {
+            return "0.00";
+        }
+        
+        // Check if value is very small
+        if (Math.abs(numValue) < 0.01 && numValue !== 0) {
+            return numValue.toFixed(2);
+        }
+        
+        // Always use 2 decimal places for all numbers, including integers
+        return numValue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+    
+    /**
+     * Helper function to get a field value
+     */
+    function getFieldValue(fieldId) {
+        // Try to get from StateManager first
+        if (window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return value;
+            }
+        }
+        
+        // Fall back to DOM
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                return element.value;
+            } else {
+                return element.textContent;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Helper function to set a calculated field value
+     */
+    function setCalculatedValue(fieldId, value) {
+        // Store raw value in state manager
+        if (window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
+            window.TEUI.StateManager.setValue(fieldId, value, "calculated");
+        }
+        
+        // Special handling for 'N/A' values
+        const formattedValue = value === "N/A" ? "N/A" : formatNumber(value);
+        
+        // Update DOM with formatted value
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                element.value = value;
+            } else {
+                element.textContent = formattedValue;
+            }
+        }
+    }
+    
+    /**
+     * Calculate all values for this section
+     */
+    function calculateAll() {
+        // No need to directly calculate values for fields that are registered with StateManager
+        // Just make sure dependencies and calculations are registered
+        registerCalculations();
+    }
+    
+    /**
+     * Initialize all event handlers for this section
+     */
+    function initializeEventHandlers() {
+        // First, register calculations with StateManager
+        registerCalculations();
+        
+        // Set up dropdown handlers
+        setupCarbonStandardDropdown();
+        setupOccupancyDropdown();
+        
+        // Initialize user-editable area field
+        ensureAreaValueIsSet(); 
+        
+        // Area field blur event
+        const areaField = document.querySelector('[data-field-id="h_15"]');
+        if (areaField) {
+            areaField.addEventListener('blur', updateAreaValue); 
+            areaField.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    this.blur(); 
+                }
+            });
+        }
+
+        // Area adjustment slider events
+        const areaSlider = document.querySelector('[data-field-id="i_15_slider"]');
+        if (areaSlider) {
+            areaSlider.addEventListener('input', handleAreaSliderInput);
+            areaSlider.addEventListener('change', handleAreaSliderChange); 
+        }
+    }
+    
+    /**
+     * Function called when the section is rendered
+     */
+    function onSectionRendered() {
+        // Register calculations with StateManager
+        registerCalculations();
+        
+        // Initialize dropdown value in StateManager
+        const currentOccupancy = document.querySelector('select[name="d_12"]').value;
+        window.TEUI.StateManager.setValue("d_12", currentOccupancy);
+        console.log(`[Section02] Initialized d_12 with value: "${currentOccupancy}"`);
+        
+        // Force recalculation of heating and cooling setpoints
+        window.TEUI.StateManager.recalculate("h_23");
+        window.TEUI.StateManager.recalculate("h_24");
+        
+        // Then initialize event handlers
+        initializeEventHandlers();
+        
+        // Add delayed initialization to ensure everything is properly set up
+        setTimeout(function() {
+            // Re-register calculations for reliability
+            registerCalculations();
+            
+            // Force recalculation of temperature and critical flag values
+            if (window.TEUI?.StateManager?.recalculateValue) {
+                window.TEUI.StateManager.recalculateValue("h_23");
+                window.TEUI.StateManager.recalculateValue("h_24");
+                window.TEUI.StateManager.recalculateValue("is_critical_occupancy");
+                window.TEUI.StateManager.recalculateValue("occupancy_critical");
+            }
+        }, 500);
+    }
     
     /**
      * Update the StateManager value for h_15 when conditioned area changes
@@ -608,13 +1295,11 @@ window.TEUI.SectionModules.sect02 = (function() {
         const areaValue = parseFloat(displayedArea.replace(/,/g, ''));
         
         if (!isNaN(areaValue) && areaValue > 0 && window.TEUI && window.TEUI.StateManager) {
-            // console.log(`Setting conditioned area h_15 in StateManager to: ${areaValue}`);
             window.TEUI.StateManager.setValue("h_15", areaValue.toString(), "user-modified");
             
             // Trigger TEUI recalculation with the new area value
             setTimeout(() => {
                 if (typeof window.calculateTEUI === 'function') {
-                    // console.log("Triggering TEUI recalculation after area update");
                     window.calculateTEUI();
                 }
             }, 100);
@@ -622,39 +1307,7 @@ window.TEUI.SectionModules.sect02 = (function() {
     }
     
     /**
-     * Initialize event handlers for this section
-     */
-    function initializeEventHandlers() {
-        // Make sure the conditioned area value is set in StateManager initially
-        ensureAreaValueIsSet(); 
-        
-        // Add a listener for changes to the conditioned area text input
-        const areaField = document.querySelector('[data-field-id="h_15"]');
-        if (areaField) {
-            // Use blur event for text input changes
-            areaField.addEventListener('blur', updateAreaValue); 
-            // Handle Enter key for text input
-            areaField.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    this.blur(); 
-                }
-            });
-        }
-
-        // Add listener for the new area adjustment slider
-        const areaSlider = document.querySelector('[data-field-id="i_15_slider"]');
-        if (areaSlider) {
-            areaSlider.addEventListener('input', handleAreaSliderInput);
-            // Optional: Add 'change' listener if you only want updates on release
-            // areaSlider.addEventListener('change', handleAreaSliderChange); 
-            areaSlider.addEventListener('change', handleAreaSliderChange); // Use CHANGE for final update + reset
-        }
-    }
-
-    /**
-     * Handle LIVE input from the area adjustment slider (i_15)
-     * Updates the target field (h_15) display for immediate feedback.
+     * Handle Area Slider input (live updates while dragging)
      */
     function handleAreaSliderInput(event) {
         const areaField = document.querySelector('[data-field-id="h_15"]');
@@ -663,9 +1316,12 @@ window.TEUI.SectionModules.sect02 = (function() {
         if (!areaField || !slider) return;
 
         try {
-            // Get *original* area value from a temporary attribute or StateManager
-            // Store original value on focus/initial load if needed, or rely on StateManager
-            const originalAreaStr = slider.dataset.originalArea || window.TEUI.StateManager?.getValue("h_15") || areaField.dataset.originalValue || areaField.textContent.trim();
+            // Get original area value from StateManager for maximum reliability
+            const originalAreaStr = getFieldValue("h_15") || 
+                                   slider.dataset.originalArea || 
+                                   areaField.dataset.originalValue || 
+                                   areaField.textContent.trim();
+            
             let originalArea = parseFloat(String(originalAreaStr).replace(/,/g, ''));
              if (isNaN(originalArea)) originalArea = 0; 
 
@@ -678,21 +1334,22 @@ window.TEUI.SectionModules.sect02 = (function() {
             newArea = parseFloat(newArea.toFixed(2));
             
             // Update the text field display ONLY (formatted)
-            areaField.textContent = newArea.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            areaField.textContent = newArea.toLocaleString(undefined, { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
 
             // Store the original value if it's not already stored for the 'change' event
             if (!slider.dataset.originalArea) {
                 slider.dataset.originalArea = originalAreaStr; 
             }
-
         } catch (error) {
-            console.error("Error handling area slider input:", error);
+            console.warn("Error handling area slider input:", error);
         }
     }
 
     /**
-     * Handle changes from the area adjustment slider (i_15)
-     * Finalizes the update on SLIDER RELEASE (change event).
+     * Handle Area Slider change (final value on release)
      */
     function handleAreaSliderChange(event) {
         const areaField = document.querySelector('[data-field-id="h_15"]');
@@ -704,10 +1361,10 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Get current area value (remove commas, parse as float)
             const currentAreaText = areaField.textContent.trim();
             let currentArea = parseFloat(currentAreaText.replace(/,/g, ''));
+            
             if (isNaN(currentArea)) {
-                 console.warn("Could not parse current area value from h_15");
                  // Try getting from StateManager as a fallback
-                 const stateArea = window.TEUI.StateManager.getValue("h_15");
+                const stateArea = getFieldValue("h_15");
                  currentArea = parseFloat(String(stateArea).replace(/,/g, ''));
                  if(isNaN(currentArea)) currentArea = 0; // Final fallback
             }
@@ -720,32 +1377,28 @@ window.TEUI.SectionModules.sect02 = (function() {
             let newArea = Math.max(10, currentArea + adjustment);
             newArea = parseFloat(newArea.toFixed(2)); // Ensure 2 decimal places
             
-            // Update the text field display (redundant if input handler worked, but safe)
-            areaField.textContent = newArea.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            // Update the text field display
+            areaField.textContent = newArea.toLocaleString(undefined, { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
 
-            // Update the StateManager
+            // Mark this as a user interaction
+            window.TEUI.sect02.userInteracted = true;
+            
+            // Update the StateManager with user-modified state
             if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue("h_15", newArea.toFixed(2), window.TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
+                window.TEUI.StateManager.setValue("h_15", newArea.toString(), "user-modified");
             }
             
-            // **Important:** Reset the slider value back to 0 after applying the adjustment.
-            // This makes the slider represent a +/- change rather than an absolute value.
+            // Reset the slider value back to 0 after applying the adjustment
             slider.value = 0; 
 
             // Clear the stored original area value
             delete slider.dataset.originalArea;
-
         } catch (error) {
-            console.error("Error handling area slider change:", error);
+            console.warn("Error handling area slider change:", error);
         }
-    }
-    
-    /**
-     * Called when section is rendered
-     */
-    function onSectionRendered() {
-        // Initialize event handlers, which now includes the slider handler
-        initializeEventHandlers();
     }
     
     //==========================================================================
@@ -760,7 +1413,17 @@ window.TEUI.SectionModules.sect02 = (function() {
         
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
-        onSectionRendered: onSectionRendered
+        onSectionRendered: onSectionRendered,
+        
+        // Calculation functions - exposed for use by StateManager
+        calculateHeatingSetpoint: calculateHeatingSetpoint,
+        calculateCoolingSetpoint: calculateCoolingSetpoint,
+        calculateCriticalOccupancy: calculateCriticalOccupancy,
+        calculateCriticalOccupancyString: calculateCriticalOccupancyString,
+        calculateEmbodiedCarbonTarget: calculateEmbodiedCarbonTarget,
+        
+        // Public utility functions
+        registerCalculations: registerCalculations
     };
 })();
 
