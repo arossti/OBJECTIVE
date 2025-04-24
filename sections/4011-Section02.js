@@ -297,9 +297,9 @@ window.TEUI.SectionModules.sect02 = (function() {
 
         // Row 17: License Number
         "17": {
-            id: "License",
-            rowId: "License",
-            label: "Licence No",
+            id: "L",
+            rowId: "L",
+            label: "",
             cells: {
                 c: { content: "" }, // Empty but needed for alignment
                 d: { content: "" }, // Empty but needed for alignment
