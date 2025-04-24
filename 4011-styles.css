@@ -934,7 +934,7 @@ input[type=number].form-control {
 .data-table td.user-input:hover,
 .data-table td:has(input[type="number"]:hover),
 .data-table td:has([contenteditable="true"]:hover) {
-    background-color: rgba(66, 133, 244, 0.08); /* Subtle light blue on hover - removed !important */
+    background-color: rgba(66, 133, 244, 0.08) !important; /* Re-added !important */
     cursor: pointer; /* Indicate interactivity */
 }
 /* --- End Hover Style --- */
@@ -950,6 +950,16 @@ input[type=number].form-control {
   background-color: transparent !important; /* Ensure no background */
 }
 
+/* Force blue color on focused number inputs */
+.data-table td input[type="number"].user-input:focus {
+    color: var(--user-input-color) !important; /* Force color on focus */
+    /* Keep other focus styles minimal or handled by TD focus */
+    outline: none !important; 
+    box-shadow: none !important;
+    border: none !important;
+    background-color: transparent !important;
+}
+
 /* Make number inputs fill their cell and remove default browser styling */
 .data-table td input[type="number"].form-control {
   width: 100%; /* Fill cell width */
@@ -963,10 +973,9 @@ input[type=number].form-control {
   margin: 0;
   text-align: right; /* Ensure text inside input is right-aligned */
   /* Inherit font styles for consistency */
-  font-family: inherit; /* <<< ADD THIS */
+  font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  color: inherit;
 }
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
