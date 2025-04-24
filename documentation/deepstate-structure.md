@@ -28,7 +28,46 @@ SECTION 2. Building Information,,,,,,,,,,,,,,,,,,,,,,,,
 ...
 ```
 
-In Excel, this data is entirely separate from the main calculation sheet, preventing any circular references. We will convert this to a lightweight JSON format for efficient lookups.
+In Excel, this data is entirely separate from the main calculation sheet, preventing any circular references. For our implementation, we've converted this to a JavaScript module with a JSON structure for efficient lookups.
+
+## Reference Values JavaScript Module
+
+To provide fast, efficient access to reference standard values, we've created a dedicated JavaScript module:
+
+```javascript
+// 4011-ReferenceValues.js
+TEUI.ReferenceValues = (function() {
+    // Main reference data object structured by standard and field ID
+    const referenceStandards = {
+        "OBC SB12 3.1.1.2.C4": {
+            "B.4": { section: "Transmission Losses", value: "4.87" },
+            "B.5": { section: "Transmission Losses", value: "4.21" },
+            // More fields...
+        },
+        "NECB T1 (Z6)": {
+            "B.4": { section: "Transmission Losses", value: "7.246" },
+            // More fields...
+        },
+        // More standards...
+    };
+    
+    // Public API with helper methods
+    return {
+        getValue: function(standard, fieldId) { /* Implementation */ },
+        getSection: function(standard, fieldId) { /* Implementation */ },
+        // More methods...
+    };
+})();
+```
+
+This module organizes reference values by standard and field ID, making lookups extremely efficient compared to parsing CSV files. The structure includes:
+
+1. **Top-level standard organization**: Each building code standard is a top-level key
+2. **Field-based value structure**: Values are organized by field IDs that match Excel row identifiers
+3. **Section metadata**: Each value includes its section for better organization and filtering
+4. **Rich API**: Helper methods for accessing values, sections, and checking existence
+
+The module is loaded once during initialization and provides static reference data throughout the application lifecycle.
 
 ## Implementation Components
 
@@ -39,13 +78,9 @@ A lightweight service that provides access to reference values:
 ```javascript
 // 4011-ReferenceManager.js
 TEUI.ReferenceManager = (function() {
-  let standardsData = null;
   let currentStandard = null;
   
   function initialize() {
-    // Load data (initially hardcoded, can be enhanced to load from file)
-    loadStandardsData();
-    
     // Listen for standard selection
     // Since there is exact parity between Excel and DOM references, 
     // d_13 corresponds to cell D13 in Excel (Standard selection)
@@ -61,33 +96,13 @@ TEUI.ReferenceManager = (function() {
     currentStandard = TEUI.StateManager.getValue('d_13');
   }
   
-  function loadStandardsData() {
-    // This will load the actual data from your DEEPSTATE.csv
-    standardsData = {
-      "OBC SB12 3.1.1.2.C4": {
-        "B.4": "4.87",       // Roof RSI
-        "B.5": "3.34",       // Walls RSI
-        "B.8.1": "0.578",    // Windows U-value
-        "M.1.2": "1.88",     // COPheat
-        // etc.
-      },
-      "NECB T1 (Z6)": {
-        "B.4": "7.246",
-        "B.5": "4.174", 
-        "B.8.1": "0.578",
-        "M.1.2": "2.25",
-        // etc.
-      }
-      // Other standards...
-    };
-  }
-  
   function getValue(fieldId) {
-    if (!currentStandard || !standardsData || !standardsData[currentStandard]) {
+    if (!currentStandard) {
       return null;
     }
     
-    return standardsData[currentStandard][fieldId] || null;
+    // Use the ReferenceValues module for efficient lookup
+    return TEUI.ReferenceValues.getValue(currentStandard, fieldId);
   }
   
   function isCodeDefinedField(fieldId) {
@@ -118,17 +133,12 @@ TEUI.ReferenceManager = (function() {
     return editableReferenceFields.includes(fieldId);
   }
   
-  function setData(data) {
-    standardsData = data;
-  }
-  
   return {
     initialize,
     getValue,
     isCodeDefinedField,
     isEditableInReferenceMode,
-    getCurrentStandard: function() { return currentStandard; },
-    setData
+    getCurrentStandard: function() { return currentStandard; }
   };
 })();
 ```
@@ -244,7 +254,7 @@ TEUI.SectionModules.sect11 = (function() {
             element.setAttribute('data-original-value', element.textContent);
           }
           
-          // Update with reference value
+          // Get reference value using the ReferenceManager (which uses ReferenceValues internally)
           const refValue = TEUI.ReferenceManager.getValue(field.refId);
           if (refValue !== null) {
             element.textContent = refValue;
@@ -298,6 +308,8 @@ TEUI.SectionModules.sect11 = (function() {
       
       // Get reference values - direct correspondence to Excel cells
       const roofArea = parseFloat(TEUI.StateManager.getValue('d_85')); // Area from Design model
+      
+      // Use ReferenceManager to get reference values
       const roofRSI = parseFloat(TEUI.ReferenceManager.getValue('B.4')); // RSI from reference standard
       
       if (!isNaN(roofArea) && !isNaN(roofRSI) && roofRSI > 0) {
@@ -323,134 +335,45 @@ TEUI.SectionModules.sect11 = (function() {
 })();
 ```
 
-### 4. Reference Comparison Manager
+## Loading and Initialization Sequence
 
-A module for calculating comparisons between main and reference values:
+The system follows this initialization sequence:
+
+1. **Load Core Modules**:
+   - Load `4011-ReferenceValues.js` to establish the static reference data
+   - Load `4011-styles.css` which includes reference mode styling
+
+2. **Initialize Reference Manager**:
+   - Create the `ReferenceManager` which uses `ReferenceValues` for lookups
+   - Connect to standard selection dropdown (d_13)
+
+3. **Initialize UI Toggle**:
+   - Create toggle button
+   - Set up toggle functionality
+
+4. **Initialize Section Handlers**:
+   - Each section module creates its reference handler
+   - Handlers connect to the ReferenceManager for value lookups
+   - Each handler registers itself with its parent section module
+
+## JSON Data Structure Benefits
+
+Using a JavaScript module with a JSON-like structure for reference values offers several advantages:
+
+1. **Performance**: Instant lookups via JavaScript object properties
+2. **Memory Efficiency**: Only the values themselves are stored, not parsing overhead
+3. **Type Safety**: Values are stored in their original format
+4. **Maintainability**: Structured by section for easier updates
+5. **No Network Requests**: Bundled with application code
+
+The structure in `4011-ReferenceValues.js` allows for efficient lookups:
 
 ```javascript
-// 4011-ReferenceComparison.js
-TEUI.ReferenceComparison = (function() {
-  // Registry of fields that need comparison calculations
-  // NOTE: These field mappings are examples only - replace with your actual field IDs
-  const comparisonFields = [
-    // Example mappings - replace with actual field mappings from your application
-    { sourceField: 'h_10', targetField: 'm_10', refId: 'T.3', type: 'energy' },     // Example: TEUI comparison
-    { sourceField: 'f_32', targetField: 'm_32', refId: 'T.3.1', type: 'energy' },   // Example: Total Energy comparison
-    { sourceField: 'h_85', targetField: 'm_85', refId: 'B.4', type: 'insulation' }, // Example: Roof R-value comparison
-    // Add your actual comparison field mappings based on your application structure...
-  ];
-  
-  function initialize() {
-    // No listeners needed - comparisons are updated when toggling reference view
-  }
-  
-  function updateAllComparisons() {
-    comparisonFields.forEach(field => {
-      updateComparison(field.sourceField, field.targetField, field.refId, field.type);
-    });
-  }
-  
-  function updateComparison(sourceField, targetField, refId, fieldType) {
-    // Get main value from your StateManager
-    const mainValue = parseFloat(TEUI.StateManager.getValue(sourceField));
-    
-    // Get reference value from your ReferenceManager
-    const refValue = parseFloat(TEUI.ReferenceManager.getValue(refId));
-    
-    if (!isNaN(mainValue) && !isNaN(refValue) && refValue !== 0) {
-      // Calculate percentage based on field type
-      let percentage;
-      
-      // These comparison rules should be adapted to your specific comparison logic
-      switch (fieldType) {
-        case 'insulation':
-        case 'efficiency':
-          // Higher is better (like R-values, COPs)
-          percentage = (mainValue / refValue) * 100;
-          break;
-          
-        case 'energy':
-        case 'carbon':
-          // Lower is better (TEUI, emissions)
-          percentage = (refValue / mainValue) * 100;
-          break;
-          
-        default:
-          // Direct comparison (equal = 100%)
-          percentage = (mainValue / refValue) * 100;
-      }
-      
-      // Format and set the comparison value in column M
-      const formattedValue = Math.round(percentage) + '%';
-      
-      // Update DOM using your application's DOM structure
-      const comparisonElement = document.querySelector(`[data-field-id="${targetField}"]`);
-      if (comparisonElement) {
-        comparisonElement.textContent = formattedValue;
-      }
-    }
-  }
-  
-  return {
-    initialize,
-    updateAllComparisons,
-    updateComparison
-  };
-})();
-```
-
-### 5. CSS Styling for Reference Mode
-
-```css
-/* Add to 4011-styles.css */
-/* Reference mode styles */
-.reference-mode .section-content,
-.reference-mode .data-table {
-  background-color: #fff0f0; /* Light red background */
-}
-
-.reference-mode .column-header,
-.reference-mode .section-header {
-  background-color: #ffcece; /* Lighter red for headers */
-  color: #800000; /* Darker red text for headers */
-}
-
-.reference-mode .calculated-value,
-.reference-mode .data-table td:not(.user-input) {
-  color: #8b0000; /* Deep red text */
-}
-
-.reference-mode .user-input {
-  color: #c60000; /* Slightly lighter red for user inputs */
-}
-
-.reference-mode [data-locked="true"] {
-  position: relative;
-}
-
-.reference-mode [data-locked="true"]::after {
-  content: "🔒";
-  position: absolute;
-  top: 0;
-  right: 5px;
-  font-size: 10px;
-  color: #800000;
-  opacity: 0.7;
-}
-
-/* Reference toggle button */
-.reference-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  padding: 8px 16px;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
-}
+// Example lookup patterns:
+TEUI.ReferenceValues.getValue("OBC SB12 3.1.1.2.C4", "B.4") // Returns "4.87"
+TEUI.ReferenceValues.getSection("OBC SB12 3.1.1.2.C4", "B.4") // Returns "Transmission Losses"
+TEUI.ReferenceValues.getSectionFields("OBC SB12 3.1.1.2.C4", "Transmission Losses") 
+// Returns object with all fields in the Transmission Losses section
 ```
 
 ## Implementation Phases
@@ -478,12 +401,12 @@ This gives users a preview of the reference mode without any functional changes.
 Next, add the data access layer:
 
 1. **Create ReferenceManager Module**:
-   - Convert DEEPSTATE.csv to JSON format
-   - Create getValue() function to retrieve reference values
+   - Load the `4011-ReferenceValues.js` module
+   - Create getter functions to access reference values
    - Connect to standard selection dropdown (d_13)
 
 2. **Add Hardcoded Initial Data**:
-   - Start with a subset of key values for testing
+   - Ensure the `ReferenceValues` module contains key values
    - Implement `isCodeDefinedField()` helper function
 
 This establishes the data foundation without affecting existing calculations.
@@ -529,7 +452,7 @@ This completes the reference model functionality.
 
 5. **DOM-Based Storage**: Original values are preserved as data attributes on DOM elements, avoiding the need for a parallel state management system.
 
-6. **StateManager Independence**: StateManager intentionally plays no direct role in storing reference values. This is a deliberate design choice to maintain strict separation between models, prevent circular dependencies, avoid modifying existing StateManager code, and better match Excel's worksheet-based separation model. Reference values are stored in the ReferenceManager service and as DOM attributes rather than extending StateManager with a new state type.
+6. **StateManager Independence**: StateManager intentionally plays no direct role in storing reference values. This is a deliberate design choice to maintain strict separation between models, prevent circular dependencies, avoid modifying existing StateManager code, and better match Excel's worksheet-based separation model. Reference values are stored in the ReferenceValues module and as DOM attributes rather than extending StateManager with a new state type.
 
 7. **Excel-DOM Parity**: The implementation leverages the exact parity between Excel cell references and DOM field IDs, ensuring consistent naming and clear correspondence between the Excel model and the web application.
 
@@ -543,29 +466,8 @@ This completes the reference model functionality.
 4. **No Circular References**: Complete separation prevents circular dependencies
 5. **Minimal Architecture Expansion**: Leverages existing section modules rather than duplicating them
 6. **Progressive Enhancement**: Start with UI, then add functionality incrementally
-
-## DEEPSTATE.csv Conversion
-
-For converting the CSV to the optimized JSON format, a simple utility script would be created separately. The resulting format should be:
-
-```javascript
-{
-  "OBC SB12 3.1.1.2.C4": {
-    "B.4": "4.87",
-    "B.5": "3.34",
-    // More values...
-  },
-  "NECB T1 (Z6)": {
-    "B.4": "7.246",
-    "B.5": "4.174",
-    // More values...
-  },
-  // More standards...
-}
-```
-
-This flat structure optimizes lookup performance and minimizes memory usage. The conversion would be a one-time task, producing a static JSON file to be loaded by the ReferenceManager module.
+7. **Efficient Lookups**: Using the `ReferenceValues` module ensures fast, memory-efficient value access
 
 ## Conclusion
 
-This approach provides a clean, gradual implementation path for adding reference model capabilities to the TEUI 4.011 Calculator. By starting with the UI layer and adding functionality section by section, we can maintain the integrity of the existing codebase while progressively enhancing it with reference model capabilities. The embedded section-based approach avoids duplication while maintaining clear boundaries between main and reference calculations.
+This approach provides a clean, gradual implementation path for adding reference model capabilities to the TEUI 4.011 Calculator. The combination of a dedicated reference values module (`4011-ReferenceValues.js`) with section-specific handlers allows for a controlled introduction of reference model functionality without disrupting the existing codebase. This structure maintains a clear separation of concerns, optimizes performance, and provides a maintainable solution for comparing design models against reference standards.
