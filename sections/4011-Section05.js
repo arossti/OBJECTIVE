@@ -29,8 +29,8 @@ window.TEUI.SectionModules.sect05 = (function() {
                 e: { content: "E", classes: ["section-subheader"] },
                 f: { content: "kgCO2e/m2", classes: ["section-subheader"] },
                 g: { content: "G", classes: ["section-subheader"] },
-                h: { content: "kgCO2e/m2", classes: ["section-subheader"] },
-                i: { content: "I", classes: ["section-subheader"] },
+                h: { content: "", classes: ["section-subheader", "spacer"] },
+                i: { content: "kgCO2e/m2", classes: ["section-subheader"] },
                 j: { content: "J", classes: ["section-subheader"] },
                 k: { content: "K", classes: ["section-subheader"] },
                 l: { content: "L", classes: ["section-subheader"] },
@@ -49,26 +49,32 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_38", 
                     type: "calculated", 
-                    value: "6.78",
+                    value: "0.00",
                     section: "emissions",
-                    dependencies: ["f_32", "i_15"] // Depends on emissions subtotal and conditioned area
                 },
                 e: { content: "MT CO2e/yr" }, // Units
+                f: { content: "", classes: ["label-prefix", "spacer"] },
                 g: { 
                     fieldId: "g_38", 
                     type: "calculated", 
-                    value: "4.75",
+                    value: "0.00",
                     section: "emissions",
-                    dependencies: ["d_38"]
+                },
+                h: { content: "", classes: ["spacer"] },
+                i: {
+                    fieldId: "i_38",
+                    type: "calculated",
+                    value: "0.00",
+                    section: "emissions",
                 },
                 j: { 
                     fieldId: "j_38", 
                     type: "calculated", 
-                    value: "237.52",
+                    value: "0.00",
                     section: "emissions",
-                    dependencies: ["g_38", "h_13"] // Depends on annual GHGI and service life
                 },
-                k: { content: "(B6 Annual Emissions * Service Life)" }, // Description
+                k: { content: "(Lifetime Emissions)" },
+                l: { content: "", classes: ["spacer"] },
                 m: { 
                     fieldId: "m_38", 
                     type: "calculated", 
@@ -92,33 +98,34 @@ window.TEUI.SectionModules.sect05 = (function() {
                     value: "Pt.3 Mass Timber",
                     section: "emissions",
                     options: [
-                        { value: "Low Carbon", name: "Low Carbon" },
-                        { value: "Standard", name: "Standard" },
+                        { value: "Pt.9 Res. Stick Frame", name: "Pt.9 Res. Stick Frame" },
+                        { value: "Pt.9 Small Mass Timber", name: "Pt.9 Small Mass Timber" },
                         { value: "Pt.3 Mass Timber", name: "Pt.3 Mass Timber" },
                         { value: "Pt.3 Concrete", name: "Pt.3 Concrete" },
-                        { value: "Pt.9 Wood", name: "Pt.9 Wood" },
-                        { value: "Pt.9 ICF", name: "Pt.9 ICF" },
-                        { value: "Pt.9 SIP", name: "Pt.9 SIP" },
-                        { value: "Pt.9 Steel", name: "Pt.9 Steel" }
+                        { value: "Pt.3 Steel", name: "Pt.3 Steel" },
+                        { value: "Pt.3 Office", name: "Pt.3 Office" },
+                        { value: "Modelled Value", name: "Modelled Value" }
                     ]
                 },
+                e: { content: "", classes: ["spacer"] },
                 f: { content: "E.3.2", classes: ["label-prefix"] },
-                g: { content: "Typology-Based Cap (TGS4)", classes: ["label-main"] },
-                h: { 
-                    fieldId: "h_39", 
-                    type: "calculated", 
+                g: { content: "Typology-Based Cap", classes: ["label-main"] },
+                h: { content: "", classes: ["spacer"] },
+                i: {
+                    fieldId: "i_39",
+                    type: "calculated",
                     value: "350.00",
                     section: "emissions",
-                    dependencies: ["d_39"]
                 },
+                j: { content: "", classes: ["spacer"] },
+                k: { content: "", classes: ["spacer"] },
                 l: { 
                     fieldId: "l_39", 
                     type: "calculated", 
-                    value: "99%",
+                    value: "0%",
                     section: "emissions",
-                    dependencies: ["h_39", "h_40"]
                 },
-                m: { content: "✓", classes: ["checkmark"] } // Checkmark indicator
+                m: { content: "✓", classes: ["checkmark"] }
             }
         },
         
@@ -132,27 +139,28 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_40", 
                     type: "calculated", 
-                    value: "390.82",
-                    section: "emissions"
+                    value: "0.00",
+                    section: "emissions",
                 },
                 e: { content: "MT CO2e/Service Life" }, // Units
                 f: { content: "S.4", classes: ["label-prefix"] },
                 g: { content: "Embodied Carbon Target", classes: ["label-main"] },
-                h: { 
-                    fieldId: "h_40", 
-                    type: "calculated", 
-                    value: "345.82",
+                h: { content: "", classes: ["spacer"] },
+                i: {
+                    fieldId: "i_40",
+                    type: "calculated",
+                    value: "0.00",
                     section: "emissions",
-                    dependencies: ["d_16"] // Depends on embodied carbon target in Building Info
                 },
+                j: { content: "", classes: ["spacer"] },
+                k: { content: "", classes: ["spacer"] },
                 l: { 
                     fieldId: "l_40", 
                     type: "calculated", 
-                    value: "69%",
+                    value: "0%",
                     section: "emissions",
-                    dependencies: ["d_40", "h_40"]
                 },
-                m: { content: "✓", classes: ["checkmark"] } // Checkmark indicator
+                m: { content: "✓", classes: ["checkmark"] }
             }
         },
         
@@ -166,28 +174,28 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_41", 
                     type: "calculated", 
-                    value: "2,057.05",
+                    value: "0.00",
                     section: "emissions",
-                    dependencies: ["j_38", "d_40"]
                 },
                 e: { content: "MT CO2e" }, // Units
                 f: { content: "E.3.4", classes: ["label-prefix"] },
                 g: { content: "Modelled Value (A1-3)", classes: ["label-main"] },
-                h: { 
-                    fieldId: "h_41", 
-                    type: "calculated", 
+                h: { content: "", classes: ["spacer"] },
+                i: {
+                    fieldId: "i_41",
+                    type: "number",
                     value: "345.82",
                     section: "emissions",
-                    dependencies: ["h_40"]
                 },
+                j: { content: "", classes: ["spacer"] },
+                k: { content: "", classes: ["spacer"] },
                 l: { 
                     fieldId: "l_41", 
                     type: "calculated", 
-                    value: "100%",
+                    value: "0%",
                     section: "emissions",
-                    dependencies: ["h_41", "h_40"]
                 },
-                m: { content: "✓", classes: ["checkmark"] } // Checkmark indicator
+                m: { content: "✓", classes: ["checkmark"] }
             }
         }
     };
@@ -327,19 +335,29 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Calculate the typology-based cap based on selected typology
      */
     function calculateTypologyBasedCap(typology) {
-        // Default values based on typology
-        const capValues = {
-            "Low Carbon": 200,
-            "Standard": 300,
-            "Pt.3 Mass Timber": 350,
-            "Pt.3 Concrete": 450,
-            "Pt.9 Wood": 300,
-            "Pt.9 ICF": 325,
-            "Pt.9 SIP": 300,
-            "Pt.9 Steel": 375
-        };
-        
-        return capValues[typology] || 350; // Default to 350 if not found
+        // Logic based on provided formula:
+        // =IF(D39="Pt.9 Res. Stick Frame",125,IF(D39="Pt.9 Small Mass Timber",250,IF(D39="Pt.3 Mass Timber",350,IF(D39="Pt.3 Concrete",550,IF(D39="Pt.3 Steel",650,IF(D39="Pt.3 Office",600,IF(D39="Modelled Value",I$41,"Pls. Select a Value")))))))
+
+        if (typology === "Pt.9 Res. Stick Frame") {
+            return 125;
+        } else if (typology === "Pt.9 Small Mass Timber") {
+            return 250;
+        } else if (typology === "Pt.3 Mass Timber") {
+            return 350;
+        } else if (typology === "Pt.3 Concrete") {
+            return 550;
+        } else if (typology === "Pt.3 Steel") {
+            return 650;
+        } else if (typology === "Pt.3 Office") {
+            return 600;
+        } else if (typology === "Modelled Value") {
+            // If "Modelled Value" is selected, use the value from i_41
+            const modelledValue = parseFloat(getFieldValue("i_41")) || 0; // Fetch current value of i_41
+            return modelledValue;
+        } else {
+            // Default or if typology is not recognized (e.g., "Pls. Select a Value")
+            return 0; // Or handle as appropriate, e.g., return null or a default cap
+        }
     }
     
     /**
@@ -347,10 +365,10 @@ window.TEUI.SectionModules.sect05 = (function() {
      */
     function calculatePercentages() {
         // Get values
-        const typologyCap = parseFloat(getFieldValue("h_39")) || 350;
-        const carbonTarget = parseFloat(getFieldValue("h_40")) || 345.82;
+        const typologyCap = parseFloat(getFieldValue("i_39")) || 350;
+        const carbonTarget = parseFloat(getFieldValue("i_40")) || 345.82;
         const totalEmitted = parseFloat(getFieldValue("d_40")) || 390.82;
-        const modelledValue = parseFloat(getFieldValue("h_41")) || 345.82;
+        const modelledValue = parseFloat(getFieldValue("i_41")) || 345.82;
         
         // Calculate percentages
         const typologyPercent = Math.round((carbonTarget / typologyCap) * 100);
@@ -410,6 +428,53 @@ window.TEUI.SectionModules.sect05 = (function() {
     }
     
     /**
+     * Calculate Lifetime Operational kgCO2e/m2 (i_38 = g_38 * h_13)
+     */
+    function calculate_i_38() {
+        const g_38_value = parseFloat(getFieldValue("g_38")) || 0; // Annual GHGI kgCO2e/m2
+        const h_13_value = parseFloat(getFieldValue("h_13")) || 50; // Service Life (yrs)
+
+        const i_38_result = g_38_value * h_13_value;
+        setCalculatedValue("i_38", i_38_result.toFixed(2));
+    }
+    
+    /**
+     * Calculate Target kgCO2e/m2 (i_40 = d_16)
+     */
+    function calculate_i_40() {
+        const d_16_value = parseFloat(getFieldValue("d_16")) || 0; // Embodied Carbon Target
+        setCalculatedValue("i_40", d_16_value.toFixed(2));
+    }
+
+    /**
+     * Calculate Total Embedded MT CO2e (d_40 = i_41 * d_106 / 1000)
+     */
+    function calculate_d_40() {
+        const i_41_value = parseFloat(getFieldValue("i_41")) || 0; // Modelled Value kgCO2e/m2
+        const d_106_value = parseFloat(getFieldValue("d_106")) || 0; // Total Floor Area m2
+
+        const d_40_result = (i_41_value * d_106_value) / 1000; // Result in MT CO2e
+        setCalculatedValue("d_40", d_40_result.toFixed(2));
+    }
+    
+    /**
+     * Calculate Lifetime Avoided MT CO2e (d_41 = (REFERENCE_D38 - d_38) * h_13)
+     * Uses a placeholder for the reference value until DeepState is implemented.
+     */
+    function calculate_d_41() {
+        // Get the placeholder reference value from StateManager
+        // TODO: Replace this fetch with the actual DeepState lookup based on d_13
+        const reference_d_38_placeholder = parseFloat(getFieldValue("ref_d_38")) || 10.0; // Default to 10.0 if not found
+
+        const d_38_value = parseFloat(getFieldValue("d_38")) || 0; // Actual/Target MT CO2e/yr (from REPORT)
+        const h_13_value = parseFloat(getFieldValue("h_13")) || 50; // Service Life (yrs)
+
+        // Calculate Avoided Emissions
+        const d_41_result = (reference_d_38_placeholder - d_38_value) * h_13_value;
+        setCalculatedValue("d_41", d_41_result.toFixed(2));
+    }
+    
+    /**
      * Helper function to get a field value
      */
     function getFieldValue(fieldId) {
@@ -462,14 +527,24 @@ window.TEUI.SectionModules.sect05 = (function() {
         const typology = getFieldValue("d_39");
         if (typology) {
             const cap = calculateTypologyBasedCap(typology);
-            setCalculatedValue("h_39", cap.toString());
+            // Use toFixed to ensure it's stored as a number string if needed, adjust decimals as necessary
+            setCalculatedValue("i_39", cap.toFixed(2));
         }
         
-        // Calculate GHGI values
+        // Calculate GHGI values (d_38, g_38) (Needs implementation based on review)
         calculateGHGI();
         
-        // Calculate lifetime avoided emissions
-        calculateLifetimeAvoided();
+        // Calculate i_38 (depends on g_38 and h_13)
+        calculate_i_38();
+        
+        // Calculate i_40 (depends on d_16)
+        calculate_i_40();
+
+        // Calculate d_40 (depends on i_41, d_106)
+        calculate_d_40();
+        
+        // Calculate lifetime avoided emissions (Uses placeholder for REFERENCE!D38)
+        calculate_d_41();
         
         // Calculate percentages (must be done after other calculations)
         calculatePercentages();
@@ -480,44 +555,73 @@ window.TEUI.SectionModules.sect05 = (function() {
      */
     function initializeEventHandlers() {
         // Typology dropdown change handler
-        const typologyDropdown = document.querySelector('[data-dropdown-id="dd_d_39"]');
+        const typologyDropdown = document.querySelector('[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]'); // Check both potential selectors
         if (typologyDropdown) {
             typologyDropdown.addEventListener('change', function(e) {
                 const typology = e.target.value;
                 const cap = calculateTypologyBasedCap(typology);
-                setCalculatedValue("h_39", cap.toString());
-                calculatePercentages();
+                setCalculatedValue("i_39", cap.toFixed(2)); // Update i_39 when d_39 changes
+                calculatePercentages(); // Recalculate percentages that depend on i_39
             });
         }
         
-        // Listen for changes in related fields from other sections
+        // Add listener for i_41 changes IF Modelled Value is selected in d_39
         if (window.TEUI.StateManager) {
-            // Listen for changes to emissions subtotal
-            window.TEUI.StateManager.addListener("f_32", function() {
-                calculateGHGI();
-                calculateLifetimeAvoided();
-                calculatePercentages();
+            window.TEUI.StateManager.addListener("i_41", function(newValue) {
+                const currentTypology = getFieldValue("d_39");
+                if (currentTypology === "Modelled Value") {
+                    const cap = parseFloat(newValue) || 0;
+                    setCalculatedValue("i_39", cap.toFixed(2)); // Update i_39 directly
+                    calculatePercentages(); // Recalculate percentages
+                }
             });
             
-            // Listen for changes to conditioned area
-            window.TEUI.StateManager.addListener("i_15", function() {
-                calculateGHGI();
-                calculateLifetimeAvoided();
-                calculatePercentages();
-            });
+            // Listen for changes in related fields from other sections (PLACEHOLDERS - Need Update)
+            // TODO: Add listeners for d_14, g_32, k_32, h_15, h_13, d_106, REFERENCE!D38, T40
             
-            // Listen for changes to service life
+            // Listen for changes to service life (h_13 affects i_38 and d_41)
             window.TEUI.StateManager.addListener("h_13", function() {
-                calculateGHGI();
-                calculateLifetimeAvoided();
-                calculatePercentages();
+                calculate_i_38();
+                calculate_d_41();
+                calculatePercentages(); // Percentages might depend on lifetime values
             });
             
-            // Listen for changes to embodied carbon target
+            // Listen for changes affecting d_38 (which then affects d_41)
+            // Note: d_38 depends on d_14, g_32, k_32. g_38 depends on d_14, g_32, k_32, h_15.
+            // We need listeners for all unique dependencies affecting d_38 and g_38.
+            const ghgi_dependencies = ["d_14", "g_32", "k_32", "h_15"]; // Inputs for d_38/g_38
+            ghgi_dependencies.forEach(depId => {
+                window.TEUI.StateManager.addListener(depId, function() {
+                    calculateGHGI(); // Recalculates d_38 and g_38
+                    calculate_i_38(); // Recalculates i_38 (depends on g_38)
+                    calculate_d_41(); // Recalculates d_41 (depends on d_38)
+                    calculatePercentages(); // Recalculate percentages
+                });
+            });
+            
+            // Listen for changes to embodied carbon target (d_16 affects i_40)
             window.TEUI.StateManager.addListener("d_16", function() {
-                setCalculatedValue("h_40", getFieldValue("d_16"));
-                setCalculatedValue("h_41", getFieldValue("d_16"));
+                calculate_i_40(); // Call the dedicated function
+                calculatePercentages(); // Recalculate percentages that depend on i_40
+            });
+
+            // Listen for changes to modelled value (i_41 affects d_40)
+            window.TEUI.StateManager.addListener("i_41", function(newValue) {
+                // Update i_39 if typology is 'Modelled Value'
+                const currentTypology = getFieldValue("d_39");
+                if (currentTypology === "Modelled Value") {
+                    const cap = parseFloat(newValue) || 0;
+                    setCalculatedValue("i_39", cap.toFixed(2));
+                }
+                // Recalculate d_40 and percentages
+                calculate_d_40();
                 calculatePercentages();
+            });
+
+            // Listen for changes to total floor area (d_106 affects d_40)
+            window.TEUI.StateManager.addListener("d_106", function() {
+                calculate_d_40();
+                calculatePercentages(); // Recalculate percentages that depend on d_40
             });
         }
     }
@@ -553,8 +657,11 @@ window.TEUI.SectionModules.sect05 = (function() {
         // Section-specific utility functions - OPTIONAL
         calculateAll: calculateAll,
         calculateGHGI: calculateGHGI,
+        calculate_i_38: calculate_i_38,
+        calculate_i_40: calculate_i_40,
+        calculate_d_40: calculate_d_40,
+        calculate_d_41: calculate_d_41,
         calculatePercentages: calculatePercentages,
-        calculateLifetimeAvoided: calculateLifetimeAvoided
     };
 })();
 

@@ -490,6 +490,35 @@ TEUI.FieldManager = (function() {
                                 cellElement.classList.add('editable', 'user-input');
                                 cellElement.textContent = cellDef.value || '0';
                                 cellElement.setAttribute('contenteditable', 'true');
+                            } else if (cellDef.type === 'number') {
+                                // Create a number input element
+                                const inputElement = document.createElement('input');
+                                inputElement.type = 'number';
+                                inputElement.className = 'form-control form-control-sm user-input'; // Apply user-input class and Bootstrap styling
+                                inputElement.setAttribute('data-field-id', fieldId);
+                                inputElement.value = cellDef.value || '0'; // Set default value
+
+                                // Add step attribute if defined in cellDef (optional)
+                                if (cellDef.step !== undefined) {
+                                    inputElement.step = cellDef.step;
+                                }
+                                // Add min/max attributes if defined (optional)
+                                if (cellDef.min !== undefined) {
+                                    inputElement.min = cellDef.min;
+                                }
+                                if (cellDef.max !== undefined) {
+                                    inputElement.max = cellDef.max;
+                                }
+
+                                // Add listener to update StateManager on change
+                                inputElement.addEventListener('change', function() {
+                                    if (window.TEUI && window.TEUI.StateManager) {
+                                        window.TEUI.StateManager.setValue(fieldId, this.value, 'user'); // Mark as user input
+                                    }
+                                });
+
+                                cellElement.appendChild(inputElement);
+                                cellElement.classList.add('number-input-cell'); // Optional: specific class for number input cells
                             }
                             
                             // Handle other data attributes

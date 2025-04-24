@@ -44,7 +44,7 @@
   --border-color: #dee2e6;
   --hover-bg: #f8f9fa;
   --table-header-bg: #f1f3f4;
-  --user-input-color: #1a73e8;
+  --user-input-color: #0d6efd;
   --calculated-value-color: #202124;
   --derived-value-color: #202124;
   --reference-value-color: #8B0000;
@@ -240,313 +240,73 @@ body {
   text-overflow: ellipsis; /* Added */
 }
 
+/* Ensure cells have minimum vertical padding for focus glow */
+.data-table td {
+  padding-top: 4px !important; /* Reduced back to 4px */
+  padding-bottom: 4px !important; /* Reduced back to 4px */
+}
+
 /* Right-align numeric columns (D-M) */
 .data-table td.col-d,
-.data-table td.col-e,
 .data-table td.col-f,
-.data-table td.col-g,
 .data-table td.col-h,
-.data-table td.col-i,
 .data-table td.col-j,
 .data-table td.col-k,
-.data-table td.col-l,
-.data-table td.col-m {
+.data-table td.col-l {
   text-align: right;
 }
 
 /* Force specific text columns (Units, secondary labels) to left-align */
-.data-table td.col-e,
-.data-table td.col-g,
-.data-table td.col-i,
-.data-table td.col-m {
-  text-align: left;
+.data-table td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell),
+.data-table td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell),
+.data-table td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell),
+.data-table td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell) {
+  text-align: left; /* Only apply left-align if the cell doesn't contain a calculated/derived/input value */
 }
 
-/* Also right-align specific value types wherever they appear */
-.reference-value,
-.target-value,
-.actual-value {
-  /* These might appear outside cols D-M, e.g., Key Values */
-  /* Ensure the alignment applies to the container if necessary */
-  text-align: right;
-}
-
-/* Ensure user inputs in numeric columns are also right-aligned */
-.data-table td.col-d.user-input,
+/* Ensure Calculated/Derived/User Input values are RIGHT-aligned, overriding column defaults */
+.data-table td.col-e.calculated-value,
+.data-table td.col-g.calculated-value,
+.data-table td.col-i.calculated-value,
+.data-table td.col-m.calculated-value,
+.data-table td.col-e .calculated-value, /* Target inner elements too */
+.data-table td.col-g .calculated-value,
+.data-table td.col-i .calculated-value,
+.data-table td.col-m .calculated-value,
+.data-table td.col-e.derived-value,
+.data-table td.col-g.derived-value,
+.data-table td.col-i.derived-value,
+.data-table td.col-m.derived-value,
+.data-table td.col-e .derived-value,
+.data-table td.col-g .derived-value,
+.data-table td.col-i .derived-value,
+.data-table td.col-m .derived-value,
 .data-table td.col-e.user-input,
-.data-table td.col-f.user-input,
 .data-table td.col-g.user-input,
-.data-table td.col-h.user-input,
 .data-table td.col-i.user-input,
-.data-table td.col-j.user-input,
-.data-table td.col-k.user-input,
-.data-table td.col-l.user-input,
 .data-table td.col-m.user-input,
-.data-table td.col-d .user-input, /* Target elements inside the TD too */
 .data-table td.col-e .user-input,
-.data-table td.col-f .user-input,
 .data-table td.col-g .user-input,
-.data-table td.col-h .user-input,
 .data-table td.col-i .user-input,
-.data-table td.col-j .user-input,
-.data-table td.col-k .user-input,
-.data-table td.col-l .user-input,
-.data-table td.col-m .user-input {
-  text-align: right;
+.data-table td.col-m .user-input,
+.data-table td.col-e.number-input-cell,
+.data-table td.col-g.number-input-cell,
+.data-table td.col-i.number-input-cell,
+.data-table td.col-m.number-input-cell {
+    text-align: right !important; /* Use !important to ensure override */
 }
 
-/* Ensure cells in Col A have no padding */
-.data-table td.col-a {
-  padding: 0 !important;
-}
-
-/* Reduce padding for ID columns to maximize space */
-.id-cell {
-  padding-right: 2px;
-}
-
-/* Utility class for cells with long text that shouldn't wrap */
-/* .nowrap-cell { */
-/*   white-space: nowrap; */
-/*   overflow: visible; */
-/*   text-overflow: clip; */
-/*   padding-right: 4px; */
-/*   min-width: min-content; */
-/* } */
-
-.description-cell {
-  padding-left: 2px;
-}
-
-/* Apply tighter spacing to headers as well */
-.data-table th:nth-child(2) {
-  padding-right: 2px;
-}
-
-/* Table column widths based on percentage layout - used as initial size */
-.data-table col.col-a { 
-  width: 0;
-  min-width: 0;
-}
-
-.data-table col.col-b { 
-  width: 3.5%;
-  min-width: 30px;
-}
-
-.data-table col.col-c { 
-  width: 18%;
-  min-width: 200px;
-}
-
-.data-table col.col-d { 
-  width: 7.45%;
-  min-width: 60px;
-}
-
-.data-table col.col-e { 
-  width: 7.74%;
-  min-width: 20px;
-}
-
-.data-table col.col-f { 
-  width: 7.45%;
-  min-width: 80px;
-}
-
-.data-table col.col-g { 
-  width: 7.45%;
-  min-width: 80px;
-}
-
-.data-table col.col-h { 
-  width: 7.74%;
-  min-width: 60px;
-  max-width: 150px;
-}
-
-.data-table col.col-i { 
-  width: 6.30%;
-  min-width: 20px;
-  max-width: 120px;
-}
-
-.data-table col.col-j { 
-  width: 6.30%;
-  min-width: 20px;
-  max-width: 120px;
-}
-
-.data-table col.col-k { 
-  width: 7.74%;
-  min-width: 60px;
-  max-width: 150px;
-}
-
-.data-table col.col-l { 
-  width: 6.30%;
-  min-width: 60px;
-  max-width: 120px;
-}
-
-.data-table col.col-m {
-  text-align: left;
-}
-
-.data-table col.col-n { 
-  width: 2.29%;
-  min-width: 0px;
-  max-width: 40px;
-}
-
-/* Empty cells should collapse aggressively */
-.data-table td:empty {
-  width: 0;
-  padding: 0;
-  max-width: 0;
-}
-
-/* Description cell specific styling - prioritize expansion */
-.description-cell {
-  white-space: nowrap; /* No wrapping */
-  /* overflow: visible; Allow content to be fully visible */ /* Removed overflow override */
-}
-
-/* Columns F and G should also be prioritized for expansion */
-.data-table td:nth-child(6), /* Column F */
-.data-table td:nth-child(7) /* Column G */ {
-  white-space: nowrap; /* No wrapping */
-  /* overflow: visible; Allow content to be fully visible */ /* Removed overflow override */
-}
-
-/* Table header row styling */
-.data-table tr[data-id="Header"],
-.data-table tr[data-id="Header"] td {
-    background-color: var(--table-header-bg);
-    color: var(--primary-text);
-    padding: 8px 12px;
-    font-weight: 800;
-    font-size: var(--smaller-font-size);  /* Changed to use variable */
-}
-
-.data-table tr[data-id="Header"] td {
-    padding: var(--header-cell-padding);
-}
-
-/* Section subheader styling */
-.section-subheader {
-    background-color: #eaeaea;
-    color: #333;
-    font-size: var(--smaller-font-size);
-    font-weight: 600;
-    text-align: center;
-    white-space: pre-line;
-    line-height: 1.2;
-    border-bottom: 1px solid #d0d0d0;
-    padding: 3px 6px;
-}
-
-/* Apply section-subheader styling to all cells in a row with section-subheader class */
-.data-table tr td.section-subheader,
-.data-table tr:has(td.section-subheader) td {
-    background-color: #eaeaea;
-    font-size: var(--smaller-font-size);
-    font-weight: 600;
-    padding: 3px 6px;
-    border-bottom: 1px solid #d0d0d0;
-}
-
-/* Ensure empty cells in section-subheader rows maintain styling */
-.data-table tr:has(td.section-subheader) td:empty {
-    background-color: #eaeaea;
-}
-
-/* Styling for first-column subheader labels (typically in columns A-C) */
-.data-table tr:has(td.section-subheader) td:nth-child(1),
-.data-table tr:has(td.section-subheader) td:nth-child(2),
-.data-table tr:has(td.section-subheader) td:nth-child(3) {
-    background-color: #eaeaea;
-    font-size: var(--smaller-font-size);
-    font-weight: 600;
-    padding: 3px 6px;
-    border-bottom: 1px solid #d0d0d0;
-    text-align: left;
-}
-
-/* Limit width of section subheaders in column B */
-tr[data-id*="Unit Subheader"] td:nth-child(2),
-td.section-subheader:nth-child(2) {
-    max-width: 60px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Add styling for multi-line headers */
-.section-subheader[style*="white-space: pre-line"] {
-    line-height: 1.1;
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-/* =============== Editable Cells =============== */
-
-/* Force removal of borders/outlines on editable cells and their containers */
-.editable,
-[contenteditable="true"],
-.data-table td.editable, /* Target the cell itself */
-.data-table td.user-input, /* Target the cell itself */
-.data-table td [contenteditable="true"] {
-  position: relative;
-  cursor: text;
-  min-width: 30px;
-  min-height: 1.2em;
-  
-  /* Force removal of border and outline */
-  /* border: none; */ /* Removed the rule entirely */
-  outline: none !important; 
-  box-shadow: none;
-  
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  /* Allow background to be set by hover/editing rules */
-  background-color: transparent; 
-}
-
-/* User input specific styling (blue text) */
-.user-input {
-  font-weight: 500;
-  color: var(--user-input-color);
-  border: none !important; /* Ensure inner spans also have no border */
-  outline: none !important;
-  /* No background rule needed here, inherit from parent */
-}
-
-/* Subtle hover effect for editable fields - Target the TD for background */
-.data-table td.editable:hover,
-.data-table td.user-input:hover,
-.data-table td:has([contenteditable="true"]):hover /* Target TD containing contenteditable */ {
-  background-color: rgba(66, 133, 244, 0.05); /* No !important */
-}
-
-/* Visual indication when being edited - Target the TD for background */
-.data-table td.editable.editing, 
-.data-table td.user-input.editing,
-.data-table td:has([contenteditable="true"].editing) /* Target TD containing editing contenteditable */ {
-  background-color: rgba(66, 133, 244, 0.1); /* No !important */
-}
-
-/* Calculated/Derived values styling (placed here for proximity) */
+/* Calculated/Derived values styling (keep base style) */
 .calculated-value {
   font-weight: 500;
   color: var(--calculated-value-color);
-  /* Alignment handled by parent TD */
+  /* text-align is now handled by the more specific rule above */
 }
 
 .derived-value {
   font-weight: 500;
   color: var(--derived-value-color);
-  /* Alignment handled by parent TD */
+  /* text-align is now handled by the more specific rule above */
 }
 
 /* Style for fields awaiting measurement/input */
@@ -1135,4 +895,101 @@ td[colspan="2"] .form-select {
   scroll-padding-top: calc(var(--key-values-height) + var(--tab-height));
   overflow-y: auto;
   padding-bottom: 50px;
+}
+
+/* Hide default number input spinners */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* Optional: Adjust padding if needed after removing spinners */
+/* 
+input[type=number].form-control {
+    padding-right: 0.75rem; 
+}
+*/
+
+/* --- Global focus style for editable TDs and number inputs --- */
+
+/* Apply focus style to editable table cells when editing */
+.data-table td.editable.editing,
+.data-table td.user-input.editing,
+.data-table td:has([contenteditable="true"].editing),
+.data-table td:has(input[type="number"]:focus) { /* Apply to TD when child input is focused */
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25); /* Smaller blue glow on the TD */
+  border-radius: 0.25rem; /* Rounded corners */
+  outline: none; /* Remove default dotted outline */
+}
+
+/* --- End Global focus style --- */
+
+/* --- Add back subtle hover background for editable cells --- */
+.data-table td.editable:hover,
+.data-table td.user-input:hover,
+.data-table td:has(input[type="number"]:hover),
+.data-table td:has([contenteditable="true"]:hover) {
+    background-color: rgba(66, 133, 244, 0.08); /* Subtle light blue on hover - removed !important */
+    cursor: pointer; /* Indicate interactivity */
+}
+/* --- End Hover Style --- */
+
+/* --- Style input elements --- */
+
+/* Base style for user-input class (text color) */
+.user-input {
+  font-weight: 500;
+  color: var(--user-input-color); /* Removed !important */
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important; /* Ensure no background */
+}
+
+/* Make number inputs fill their cell and remove default browser styling */
+.data-table td input[type="number"].form-control {
+  width: 100%; /* Fill cell width */
+  height: 100%; /* Fill cell height (might need adjustment based on padding) */
+  box-sizing: border-box; /* Include padding/border in width/height */
+  border: none !important; /* Override Bootstrap border */
+  outline: none !important; /* Override browser outline */
+  box-shadow: none !important; /* Override browser shadow */
+  background-color: transparent !important; /* Ensure transparent background */
+  padding: 0; /* Remove default input padding to align text with TD padding */
+  margin: 0;
+  text-align: right; /* Ensure text inside input is right-aligned */
+  /* Inherit font styles for consistency */
+  font-family: inherit; /* <<< ADD THIS */
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
+/* Apply section-subheader styling to all cells in a row with section-subheader class */
+.data-table tr td.section-subheader,
+.data-table tr:has(td.section-subheader) td {
+    background-color: #eaeaea; /* Light grey background - removed !important */
+    color: #333; /* Darker text - removed !important */
+    font-size: var(--smaller-font-size); /* Use smaller font - removed !important */
+    font-weight: 600; /* Bold - removed !important */
+    padding: 3px 6px; /* Tighter padding - removed !important */
+    border-bottom: 1px solid #d0d0d0; /* Separator line - removed !important */
+    text-align: center; /* Center align by default */
+    white-space: pre-line; /* Allow wrapping on explicit newlines */
+}
+
+/* Ensure empty cells in section-subheader rows maintain styling */
+.data-table tr:has(td.section-subheader) td:empty {
+    background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
+}
+
+/* Styling for first-column subheader labels (typically in columns A-C) - Left align */
+.data-table tr:has(td.section-subheader) td:nth-child(1),
+.data-table tr:has(td.section-subheader) td:nth-child(2),
+.data-table tr:has(td.section-subheader) td:nth-child(3) {
+    text-align: left !important; /* Keep important here as it overrides the general center align */
 }
