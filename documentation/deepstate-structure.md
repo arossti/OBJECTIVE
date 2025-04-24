@@ -40,12 +40,12 @@ TEUI.ReferenceValues = (function() {
     // Main reference data object structured by standard and field ID
     const referenceStandards = {
         "OBC SB12 3.1.1.2.C4": {
-            "B.4": { section: "Transmission Losses", value: "4.87" },
-            "B.5": { section: "Transmission Losses", value: "4.21" },
+            "B.4": { section: "Transmission Losses", value: "4.87", targetCell: "h_85" },
+            "B.5": { section: "Transmission Losses", value: "4.21", targetCell: "h_86" },
             // More fields...
         },
         "NECB T1 (Z6)": {
-            "B.4": { section: "Transmission Losses", value: "7.246" },
+            "B.4": { section: "Transmission Losses", value: "7.246", targetCell: "h_85" },
             // More fields...
         },
         // More standards...
@@ -55,6 +55,8 @@ TEUI.ReferenceValues = (function() {
     return {
         getValue: function(standard, fieldId) { /* Implementation */ },
         getSection: function(standard, fieldId) { /* Implementation */ },
+        getTargetCell: function(standard, fieldId) { /* Implementation */ },
+        getFieldByTargetCell: function(standard, targetCell) { /* Implementation */ },
         // More methods...
     };
 })();
@@ -65,9 +67,10 @@ This module organizes reference values by standard and field ID, making lookups 
 1. **Top-level standard organization**: Each building code standard is a top-level key
 2. **Field-based value structure**: Values are organized by field IDs that match Excel row identifiers
 3. **Section metadata**: Each value includes its section for better organization and filtering
-4. **Rich API**: Helper methods for accessing values, sections, and checking existence
+4. **Target cell mapping**: Each value contains a `targetCell` property that maps directly to the DOM element ID where the reference value should be displayed
+5. **Rich API**: Helper methods for accessing values, sections, target cells, and checking existence
 
-The module is loaded once during initialization and provides static reference data throughout the application lifecycle.
+The module is loaded once during initialization and provides static reference data throughout the application lifecycle. The addition of targetCell mappings simplifies the process of updating the DOM with reference values, eliminating the need for complex field mapping in individual section handlers.
 
 ## Implementation Components
 
@@ -237,42 +240,43 @@ TEUI.SectionModules.sect11 = (function() {
       const sectionContainer = document.getElementById('envelopeTransmissionLosses');
       if (!sectionContainer) return;
       
-      // Since there is exact parity between Excel and DOM references,
-      // these field mappings directly correspond to the Excel structure
-      const fields = [
-        { fieldId: 'h_85', refId: 'B.4' },  // Roof U-value
-        { fieldId: 'h_86', refId: 'B.5' },  // Walls U-value
-        { fieldId: 'h_89', refId: 'B.7.0' } // Doors U-value
-        // etc.
-      ];
+      // Get the current reference standard
+      const currentStandard = TEUI.ReferenceManager.getCurrentStandard();
+      if (!currentStandard) return;
       
-      fields.forEach(field => {
-        const element = sectionContainer.querySelector(`[data-field-id="${field.fieldId}"]`);
+      // Get all reference fields for this standard
+      const standardFields = TEUI.ReferenceValues.getStandardFields(currentStandard);
+      if (!standardFields) return;
+      
+      // Process each reference field that has a targetCell
+      Object.entries(standardFields).forEach(([fieldId, fieldData]) => {
+        // Skip if no targetCell defined
+        if (!fieldData.targetCell) return;
+        
+        // Find the DOM element using the targetCell property
+        const element = sectionContainer.querySelector(`[data-field-id="${fieldData.targetCell}"]`);
         if (element) {
           // Save original value for restoration
           if (!element.hasAttribute('data-original-value')) {
             element.setAttribute('data-original-value', element.textContent);
           }
           
-          // Get reference value using the ReferenceManager (which uses ReferenceValues internally)
-          const refValue = TEUI.ReferenceManager.getValue(field.refId);
-          if (refValue !== null) {
-            element.textContent = refValue;
-            
-            // Handle special case fields that should remain editable in reference mode
-            if (TEUI.ReferenceManager.isEditableInReferenceMode(field.fieldId)) {
-              // For editable fields, don't lock them
-              element.removeAttribute('data-locked');
-              if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-                element.disabled = false;
-              }
-            } 
-            // Mark as locked if code-defined
-            else if (TEUI.ReferenceManager.isCodeDefinedField(field.fieldId)) {
-              element.setAttribute('data-locked', 'true');
-              if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-                element.disabled = true;
-              }
+          // Update the element with the reference value
+          element.textContent = fieldData.value;
+          
+          // Handle special case fields that should remain editable in reference mode
+          if (TEUI.ReferenceManager.isEditableInReferenceMode(fieldData.targetCell)) {
+            // For editable fields, don't lock them
+            element.removeAttribute('data-locked');
+            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+              element.disabled = false;
+            }
+          } 
+          // Mark as locked if code-defined
+          else if (TEUI.ReferenceManager.isCodeDefinedField(fieldData.targetCell)) {
+            element.setAttribute('data-locked', 'true');
+            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+              element.disabled = true;
             }
           }
         }
@@ -335,6 +339,16 @@ TEUI.SectionModules.sect11 = (function() {
 })();
 ```
 
+The targetCell property in the ReferenceValues module significantly simplifies the section handler implementation by:
+
+1. **Eliminating Manual Field Mapping**: No need to maintain separate mappings between reference IDs and DOM elements in each section handler
+2. **Centralizing DOM Targeting**: All DOM element targeting is defined in one place (ReferenceValues.js) rather than spread across section handlers
+3. **Enabling Generic Processing**: Section handlers can process reference values generically without needing section-specific field mappings
+4. **Reducing Code Duplication**: The same reference display logic can be reused across all sections
+5. **Simplifying Maintenance**: Updates to field mappings only need to be made in the ReferenceValues.js file
+
+This approach aligns with the principle of having a single source of truth for mapping between reference values and DOM elements.
+
 ## Loading and Initialization Sequence
 
 The system follows this initialization sequence:
@@ -365,6 +379,7 @@ Using a JavaScript module with a JSON-like structure for reference values offers
 3. **Type Safety**: Values are stored in their original format
 4. **Maintainability**: Structured by section for easier updates
 5. **No Network Requests**: Bundled with application code
+6. **Direct DOM Mapping**: The targetCell property provides a direct link between reference values and DOM elements
 
 The structure in `4011-ReferenceValues.js` allows for efficient lookups:
 
@@ -372,6 +387,8 @@ The structure in `4011-ReferenceValues.js` allows for efficient lookups:
 // Example lookup patterns:
 TEUI.ReferenceValues.getValue("OBC SB12 3.1.1.2.C4", "B.4") // Returns "4.87"
 TEUI.ReferenceValues.getSection("OBC SB12 3.1.1.2.C4", "B.4") // Returns "Transmission Losses"
+TEUI.ReferenceValues.getTargetCell("OBC SB12 3.1.1.2.C4", "B.4") // Returns "h_85"
+TEUI.ReferenceValues.getFieldByTargetCell("OBC SB12 3.1.1.2.C4", "h_85") // Returns field info for B.4
 TEUI.ReferenceValues.getSectionFields("OBC SB12 3.1.1.2.C4", "Transmission Losses") 
 // Returns object with all fields in the Transmission Losses section
 ```
