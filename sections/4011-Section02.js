@@ -31,17 +31,17 @@ window.TEUI.SectionModules.sect02 = (function() {
             label: "Building Info Units",
             cells: {
                 c: { content: "SECTION 02. Building Information", classes: ["section-header"] },
-                d: { content: "", classes: ["section-subheader"] }, // Empty D for consistency
-                e: { content: "Units", classes: ["section-subheader", "text-center"] },
-                f: { content: "Reference", classes: ["section-subheader", "text-center"] },
-                g: { content: "Target", classes: ["section-subheader", "text-center"] },
-                h: { content: "Actual", classes: ["section-subheader", "text-center"] },
-                i: { content: "Description", classes: ["section-subheader", "text-center"] },
-                j: { content: "Target", classes: ["section-subheader", "text-center"] },
-                k: { content: "Actual", classes: ["section-subheader", "text-center"] },
-                l: { content: "T.10 Cost of Energy by Source", classes: ["section-subheader", "text-center"], colspan: 3 }, // Changed T.6.7 to T.10
-                m: { content: "" }, // Covered by colspan
-                n: { content: "" } // Covered by colspan
+                d: { content: "", classes: ["section-subheader"] },
+                e: { content: "", classes: ["section-subheader"] },
+                f: { content: "", classes: ["section-subheader"] },
+                g: { content: "", classes: ["section-subheader"] },
+                h: { content: "", classes: ["section-subheader"] },
+                i: { content: "", classes: ["section-subheader"] },
+                j: { content: "", classes: ["section-subheader"] },
+                k: { content: "", classes: ["section-subheader"] },
+                l: { content: "T.10 Cost of Energy by Source", classes: ["section-subheader", "text-center"], colspan: 3 },
+                m: { content: "" },
+                n: { content: "" }
             }
         },
 
@@ -247,15 +247,15 @@ window.TEUI.SectionModules.sect02 = (function() {
                     classes: ["area-adjust-slider"] // Optional class for specific styling
                 }, 
                 j: { content: "" }, // Empty but needed for alignment
-                k: { content: "Wood", classes: ["text-end"] },
+                k: { content: "Wood", classes: ["text-end"] }, // Restored: Wood label back in K
                 l: { 
                     fieldId: "l_15", 
                     type: "editable", 
                     value: "$180.00",
                     section: "buildingInfo"
-                },
-                m: { content: "/m³", classes: ["text-start"] },
-                n: { content: "" } // Empty but needed for alignment
+                }, // Restored: Field l_15 back in L
+                m: { content: "/m³", classes: ["text-start"] }, // Restored: Unit back in M
+                n: { content: "" } // Restored: N is empty
             }
         },
 
@@ -276,10 +276,9 @@ window.TEUI.SectionModules.sect02 = (function() {
                 f: { content: "A.1", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "Certifier:", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "i_16", 
+                    fieldId: "i_16",
                     type: "editable", 
                     value: "Thomson Architecture, Inc.",
-                    classes: [],
                     section: "buildingInfo",
                     span: 2
                 },
@@ -309,10 +308,9 @@ window.TEUI.SectionModules.sect02 = (function() {
                 f: { content: "A.2", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "Licence No:", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "i_17", 
+                    fieldId: "i_17",
                     type: "editable", 
                     value: "8154",
-                    classes: [],
                     section: "buildingInfo",
                     span: 2
                 },

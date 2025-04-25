@@ -1002,3 +1002,15 @@ input[type=number].form-control {
 .data-table tr:has(td.section-subheader) td:nth-child(3) {
     text-align: left !important; /* Keep important here as it overrides the general center align */
 }
+
+/* --- Section 02 Specific Overrides --- */
+
+/* Force left alignment for specific text-based input/derived fields in Section 02 */
+#buildingInfo td[data-field-id="d_16"],
+#buildingInfo td[data-field-id="h_14"],
+#buildingInfo td[data-field-id="i_16"],
+#buildingInfo td[data-field-id="i_17"] {
+    text-align: left !important; /* !important needed to override global !important rule */
+}
+
+/* --- End Section 02 Overrides --- */
