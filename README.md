@@ -48,16 +48,19 @@ When working with this codebase, previous AI assistants have encountered several
             window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
             
             // 2. Call centralized calculation function
-            calculateAll();
+            calculateAll(); // Or a more specific calculation trigger if appropriate
         }
         ```
      3. Implement a direct calculation approach in your calculation function:
         ```javascript
         function calculateAll() {
-            // Calculate values directly without trying to use non-existent StateManager methods
-            const calculatedValue = calculateTargetField();
+            // Get necessary values using getFieldValue (which checks StateManager)
+            const inputValue = getFieldValue("dropdown_field_id"); 
             
-            // Update both StateManager and DOM
+            // Calculate values directly
+            const calculatedValue = calculateTargetFieldBasedOnInput(inputValue); 
+            
+            // Update both StateManager and DOM using setCalculatedValue
             setCalculatedValue("target_field_id", calculatedValue);
         }
         ```
@@ -66,6 +69,35 @@ When working with this codebase, previous AI assistants have encountered several
      - Reliable calculation updates when dropdown values change
      - Consistent state management across the application
      - No reliance on non-existent methods like `getCalculation()` or `recalculateField()`
+
+   - **⚠️ CRITICAL NUANCE: Updates Triggered by CALCULATED Fields**:
+     - **The Problem**: `StateManager.setValue(..., 'calculated')` *intentionally does not* automatically trigger recalculations in dependent fields that were registered using `registerDependency`. This is a safeguard against infinite calculation loops.
+     - **Scenario Example**: Section 5 calculates `i_39`. Section 2's `d_16` depends on `i_39` *only when* `d_15` is 'TGS4'. Using only `registerDependency('i_39', 'd_16')` is insufficient because the update to `i_39` (with state `calculated`) won't trigger `d_16`'s recalculation.
+     - ❌ **WRONG APPROACHES**:
+       - Directly manipulating the DOM of `d_16` from Section 5.
+       - Modifying the core `StateManager.setValue` logic.
+       - Adding complex, custom triggers in `SectionIntegrator`.
+     - ✅ **CORRECT ARCHITECTURAL PATTERN: Use StateManager Listeners**:
+       - When a calculated field (`source_calculated_field`) needs to trigger an update in another field (`dependent_field`) across sections, *especially* if the update is conditional:
+       - **In the dependent section's module** (e.g., `Section02.js`):
+         1. Add a listener in `initializeEventHandlers`:
+            ```javascript
+            // Inside initializeEventHandlers() in the DEPENDENT section's module
+            if (window.TEUI && window.TEUI.StateManager) {
+                window.TEUI.StateManager.addListener('source_calculated_field', function(newValue) {
+                    // Check any necessary conditions within the dependent section
+                    const conditionField = getFieldValue("condition_dropdown_id"); 
+                    if (conditionField === "specific_value") {
+                        // Manually trigger the recalculation of the dependent field
+                        const targetValue = calculateDependentFieldFunction(); 
+                        // Update the dependent field using the standard helper
+                        setCalculatedValue("dependent_field_id", targetValue);
+                    }
+                });
+            }
+            ```
+       - **Example (i_39 -> d_16)**: In `Section02.js`, add a listener for `i_39`. Inside the listener, check if `getFieldValue('d_15')` is 'TGS4'. If true, call `calculateEmbodiedCarbonTarget()` and `setCalculatedValue('d_16', result)`.
+       - **Why this works**: It uses the intended `StateManager` event system (`addListener`) for cross-section communication without altering core behavior or resorting to hacks. It keeps the logic for updating `d_16` within Section 2, where it belongs.
 
 4. **DOM Simplicity**:
    - ❌ **Avoid**: Over-engineering or overthinking DOM operations

@@ -109,7 +109,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 },
                 e: { content: "", classes: ["spacer"] },
                 f: { content: "E.3.2", classes: ["label-prefix"] },
-                g: { content: "Typology-Based Cap", classes: ["label-main"] },
+                g: { content: "Typology-Based Cap (TGS4)", classes: ["label-main"] },
                 h: { content: "", classes: ["spacer"] },
                 i: {
                     fieldId: "i_39",
