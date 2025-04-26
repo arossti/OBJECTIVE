@@ -247,7 +247,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                     classes: ["area-adjust-slider"] // Optional class for specific styling
                 }, 
                 j: { content: "" }, // Empty but needed for alignment
-                k: { content: "Wood", classes: ["text-end"] }, // Restored: Wood label back in K
+                k: { content: "Wood", span: 2, classes: ["text-end"] }, // Restored: Wood label back in K, added span:2 to fix alignment
                 l: { 
                     fieldId: "l_15", 
                     type: "editable", 
