@@ -11,6 +11,34 @@
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
+// --- Global Utility Functions (if needed) ---
+
+/**
+ * Format a number for display with thousand separators and proper decimals
+ * Made globally accessible to avoid scope issues in listeners.
+ */
+window.TEUI.formatNumber = function(value) {
+    // Ensure value is a number
+    const numValue = parseFloat(value);
+    
+    // Handle invalid values
+    if (isNaN(numValue)) {
+        // Return the original value if it's not parseable as a number (e.g., "N/A")
+        return value?.toString() || "0.00";
+    }
+    
+    // Check if value is very small
+    if (Math.abs(numValue) < 0.01 && numValue !== 0) {
+        return numValue.toFixed(2);
+    }
+    
+    // Always use 2 decimal places for all numbers, including integers
+    return numValue.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+};
+
 // Section 3: Climate Calculations Module
 window.TEUI.SectionModules.sect03 = (function() {
     //==========================================================================
@@ -239,8 +267,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                 g: { content: "Tset Heating", classes: ["label-main"] },
                 h: { 
                     fieldId: "h_23", 
-                    type: "derived", 
-                    value: "18",
+                    type: "calculated",
                     section: "climateCalculations",
                     dependencies: ["d_12"]
                 },
@@ -260,7 +287,7 @@ window.TEUI.SectionModules.sect03 = (function() {
             }
         },
         
-        // Row 24: Hottest Days, Cooling Setpoint
+        // Row 24: Hottest Days, Cooling Setpoint & Override
         "24": {
             id: "L.3.2",
             rowId: "L.3.2",
@@ -285,8 +312,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                 g: { content: "Tset Cooling", classes: ["label-main"] },
                 h: { 
                     fieldId: "h_24", 
-                    type: "derived", 
-                    value: "24",
+                    type: "calculated",
                     section: "climateCalculations",
                     dependencies: ["d_12"]
                 },
@@ -295,13 +321,23 @@ window.TEUI.SectionModules.sect03 = (function() {
                     type: "calculated", 
                     value: "78",
                     section: "climateCalculations",
-                    dependencies: ["h_24"]
+                    dependencies: ["h_24", "l_24"]
+                },
+                j: { content: "B.1.4", classes: ["label-prefix"] },
+                k: { content: "Cooling Override", classes: ["label-main"] },
+                l: { 
+                    fieldId: "l_24", 
+                    type: "editable", 
+                    value: "24",
+                    section: "climateCalculations",
+                    classes: ["user-input", "editable"]
                 },
                 m: { 
                     fieldId: "m_24", 
                     type: "calculated", 
                     value: "108%",
-                    section: "climateCalculations"
+                    section: "climateCalculations",
+                    dependencies: ["h_24", "l_24"]
                 }
             }
         }
@@ -340,6 +376,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
                     if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
                     if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
+                    if (cell.classes) fields[cell.fieldId].classes = cell.classes;
                 }
             });
         });
@@ -474,7 +511,13 @@ window.TEUI.SectionModules.sect03 = (function() {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
                 element.value = value;
             } else {
-                element.textContent = value;
+                // Format only if not already a formatted string (e.g., N/A or percentage)
+                let displayValue = value;
+                if (typeof value === 'number' || (typeof value === 'string' && !isNaN(parseFloat(value)) && !value.includes('%'))) {
+                     // Use global formatter
+                     displayValue = window.TEUI.formatNumber(value); 
+                }
+                element.textContent = displayValue;
             }
         }
     }
@@ -527,9 +570,9 @@ window.TEUI.SectionModules.sect03 = (function() {
      */
     function updateWeatherData() {
         // Get province and city values
-        const provinceValue = getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
-        const cityValue = getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
-        const isFuture = getElement(['[data-dropdown-id="dd_h_20"]'])?.value === 'Future';
+        const provinceValue = window.TEUI.StateManager?.getValue("d_19") || getElement(['[data-dropdown-id="dd_d_19"]'])?.value; // Wrap selector in []
+        const cityValue = window.TEUI.StateManager?.getValue("h_19") || getElement(['[data-dropdown-id="dd_h_19"]'])?.value; // Wrap selector in []
+        const isFuture = (window.TEUI.StateManager?.getValue("h_20") || getElement(['[data-dropdown-id="dd_h_20"]'])?.value) === 'Future'; // Wrap selector in []
         
         if (!provinceValue || !cityValue) return;
         
@@ -555,11 +598,25 @@ window.TEUI.SectionModules.sect03 = (function() {
         const cddValue = isFuture ? cityData.CDD24_2021_2050 : cityData.CDD24;
         setFieldValue("d_21", cddValue || '196', 'derived');
         
-        // Coldest days
-        const coldestTemp = isFuture ? 
-            cityData.January_2_5_2021_2050 || cityData.January_1_2021_2050 : 
-            cityData.January_2_5 || cityData.January_1;
-        setFieldValue("d_23", coldestTemp || '-26', 'derived');
+        // Coldest days - Check critical occupancy flag from header dataset
+        const sectionHeaderForWeather = document.querySelector('#climateCalculations .section-header');
+        const isCritical = sectionHeaderForWeather?.dataset?.isCritical === 'true';
+        
+        let coldestTempSource;
+        if (isCritical) {
+            // Use 1% data source if critical
+            coldestTempSource = isFuture ? 
+                cityData.January_1_2021_2050 : 
+                cityData.January_1;
+        } else {
+            // Use 2.5% data source otherwise (default)
+            coldestTempSource = isFuture ? 
+                cityData.January_2_5_2021_2050 : 
+                cityData.January_2_5;
+        }
+        // Use fallback if the selected source is missing
+        const coldestTemp = coldestTempSource || (isFuture ? cityData.January_1_2021_2050 : cityData.January_1) || (isFuture ? cityData.January_2_5_2021_2050 : cityData.January_2_5) || '-26';
+        setFieldValue("d_23", coldestTemp, 'derived');
         
         // Hottest days
         const hottestTemp = isFuture ? 
@@ -625,36 +682,34 @@ window.TEUI.SectionModules.sect03 = (function() {
     }
     
     /**
-     * Calculate Celsius to Fahrenheit conversions
+     * Calculate Celsius to Fahrenheit conversions (Heating only now)
      */
     function calculateTemperatures() {
-        // Coldest days conversion
-        const coldestC = parseFloat(document.querySelector('[data-field-id="d_23"]')?.textContent);
+        // Coldest days conversion (d_23 -> e_23)
+        const coldestC_str = window.TEUI.StateManager?.getValue("d_23");
+        const coldestC = parseFloat(coldestC_str);
         if (!isNaN(coldestC)) {
             const coldestF = Math.round((coldestC * 9/5) + 32);
             setFieldValue("e_23", coldestF);
         }
         
-        // Heating setpoint conversion
-        const heatingC = parseFloat(document.querySelector('[data-field-id="h_23"]')?.textContent);
+        // Heating setpoint conversion (h_23 -> i_23)
+        const heatingC_str = window.TEUI.StateManager?.getValue("h_23");
+        const heatingC = parseFloat(heatingC_str);
         if (!isNaN(heatingC)) {
             const heatingF = Math.round((heatingC * 9/5) + 32);
             setFieldValue("i_23", heatingF);
         }
         
-        // Hottest days conversion
-        const hottestC = parseFloat(document.querySelector('[data-field-id="d_24"]')?.textContent);
+        // Hottest days conversion (d_24 -> e_24)
+        const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
+        const hottestC = parseFloat(hottestC_str);
         if (!isNaN(hottestC)) {
             const hottestF = Math.round((hottestC * 9/5) + 32);
             setFieldValue("e_24", hottestF);
         }
         
-        // Cooling setpoint conversion
-        const coolingC = parseFloat(document.querySelector('[data-field-id="h_24"]')?.textContent);
-        if (!isNaN(coolingC)) {
-            const coolingF = Math.round((coolingC * 9/5) + 32);
-            setFieldValue("i_24", coolingF);
-        }
+        // Cooling setpoint conversion is now handled by updateCoolingDependents
     }
     
     /**
@@ -680,9 +735,133 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Calculate all values
      */
     function calculateAll() {
+        // Dependencies: d_19, h_19 -> d_23, d_24; h_20 -> future flag; d_12 -> critical flag
+        
+        // Calculate base setpoints (depend on d_12, which might be set by StateManager init or user)
+        calculateHeatingSetpoint(); 
+        calculateCoolingSetpoint_h24();
+        
+        // Calculate temperature conversions (depend on d_23, d_24, h_23)
         calculateTemperatures();
+        
+        // Calculate Ground Facing values (depend on d_20, d_21 from weather)
         calculateGroundFacing();
+        
+        // Calculate cooling dependents (depend on h_24, l_24)
+        updateCoolingDependents(); 
+        
+        // Add calculation for m_23 here if needed
+
+        // Update critical occupancy flag (depends on d_12)
+        updateCriticalOccupancyFlag(); 
     }
+
+    // --- New Calculation Functions --- 
+
+    /**
+     * Calculate Heating Setpoint (h_23) based on Occupancy Type (d_12)
+     */
+    function calculateHeatingSetpoint() {
+        const occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Direct StateManager access
+        let heatingSetpoint = 18; // Default to 18°C
+        
+        // Set to 22°C for Residential or Care occupancies
+        if (occupancyType === "C-Residential" || occupancyType.includes("Care")) { // Check if name includes 'Care'
+            heatingSetpoint = 22;
+        }
+        setFieldValue("h_23", heatingSetpoint); // Update state and DOM
+        return heatingSetpoint; // Return value for potential chaining
+    }
+
+    /**
+     * Calculate Base Cooling Setpoint (h_24) based on Occupancy Type (d_12)
+     */
+    function calculateCoolingSetpoint_h24() {
+        const occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Direct StateManager access
+        let coolingSetpoint = 24; // Default for all types currently
+        
+        // Add specific logic based on occupancy if needed in the future
+        setFieldValue("h_24", coolingSetpoint); // Update state and DOM
+        return coolingSetpoint; // Return value for potential chaining
+    }
+
+    /**
+     * Determine the effective cooling setpoint considering the override
+     */
+    function determineEffectiveCoolingSetpoint() {
+        const baseSetpoint_h24 = parseFloat(window.TEUI.StateManager?.getValue("h_24")) || 24; // Direct StateManager access
+        const override_l24 = parseFloat(window.TEUI.StateManager?.getValue("l_24")) || 24; // Direct StateManager access
+        
+        // Use override only if it's a valid number and > 20
+        if (!isNaN(override_l24) && override_l24 > 20) {
+            return override_l24;
+        } else {
+            return baseSetpoint_h24;
+        }
+    }
+
+    /**
+     * Update fields dependent on the effective cooling setpoint (i_24, m_24)
+     */
+    function updateCoolingDependents() {
+        const effectiveSetpointC = determineEffectiveCoolingSetpoint();
+        
+        // Update i_24 (Fahrenheit conversion)
+        if (!isNaN(effectiveSetpointC)) {
+            const effectiveSetpointF = Math.round((effectiveSetpointC * 9/5) + 32);
+            setFieldValue("i_24", effectiveSetpointF);
+        }
+        
+        // Update m_24 (Percentage calculation - Placeholder logic)
+        // Add the actual calculation logic for m_24 here when known
+        // Example placeholder:
+        const someBaseValueForM24 = 100; // Replace with actual dependency value
+        const m24Value = Math.round((effectiveSetpointC / 22) * 100); // Example calc
+        setFieldValue("m_24", `${m24Value}%`);
+    }
+
+    /**
+     * Update the critical occupancy flag display based on d_12
+     */
+    function updateCriticalOccupancyFlag() {
+        const occupancyType = window.TEUI.StateManager?.getValue("d_12") || "";
+        const sectionHeader = document.querySelector('#climateCalculations .section-header'); // Target the main header
+        if (!sectionHeader) {
+            console.warn("Section 3 header not found for critical flag.");
+            return false;
+        }
+
+        let flagSpan = sectionHeader.querySelector('.critical-occupancy-header-flag');
+        let isCritical = occupancyType.includes("Care");
+
+        if (isCritical) {
+            if (!flagSpan) {
+                // Create the span if it doesn't exist
+                flagSpan = document.createElement('span');
+                flagSpan.className = 'critical-occupancy-header-flag';
+                flagSpan.style.color = 'red';
+                flagSpan.style.marginLeft = '15px'; // Keep spacing
+                // Try to insert it after the status message or append to header
+                const statusMsg = sectionHeader.querySelector('.section-status-message');
+                if (statusMsg && statusMsg.parentNode === sectionHeader) {
+                     statusMsg.parentNode.insertBefore(flagSpan, statusMsg.nextSibling);
+                } else {
+                    sectionHeader.appendChild(flagSpan); // Fallback: append to header
+                }
+            }
+            flagSpan.textContent = "Critical Occupancy";
+        } else {
+            // If not critical, remove the span if it exists
+            flagSpan?.remove();
+        }
+
+        // Store status on the header dataset for easier access by updateWeatherData
+        sectionHeader.dataset.isCritical = isCritical;
+         
+        return isCritical; // Return the status for other functions
+    }
+
+    // --- End New Calculation Functions ---
     
     /**
      * Initialize all event handlers
@@ -713,30 +892,86 @@ window.TEUI.SectionModules.sect03 = (function() {
         // Present/Future toggle
         const presentFutureToggle = getElement(['[data-dropdown-id="dd_h_20"]']);
         if (presentFutureToggle) {
-            // Remove any existing listeners
-            const newToggle = presentFutureToggle.cloneNode(true);
-            presentFutureToggle.parentNode.replaceChild(newToggle, presentFutureToggle);
-            
-            // Add new listener
-            newToggle.addEventListener('change', updateWeatherData);
+            presentFutureToggle.removeEventListener('change', updateWeatherData);
+            presentFutureToggle.addEventListener('change', updateWeatherData);
         }
         
         // Weather data buttons
         ['showWeatherDataBtn', 'weatherDataBtn'].forEach(id => {
             const btn = document.getElementById(id);
             if (btn) {
-                // Remove any existing listeners
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-                
-                // Add new listener
-                newBtn.addEventListener('click', showWeatherData);
+                 btn.removeEventListener('click', showWeatherData); 
+                 btn.addEventListener('click', showWeatherData);
             }
         });
         
+        // Editable Cooling Override Field (l_24)
+        const overrideField = getElement(['[data-field-id="l_24"]']);
+        if (overrideField && !overrideField.hasEventListener) {
+            overrideField.setAttribute('contenteditable', 'true');
+            overrideField.addEventListener('blur', handleOverrideChange);
+            overrideField.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation(); 
+                    this.blur();
+                }
+            });
+            overrideField.hasEventListener = true; // Flag to prevent re-adding listeners
+        }
+
         // Initial update if province and city already selected
         if (provinceDropdown?.value && cityDropdown?.value) {
             updateWeatherData();
+        }
+
+        // --- StateManager Listeners --- 
+        if (window.TEUI && window.TEUI.StateManager) {
+            // Listener for d_12 (Occupancy) changes
+            window.TEUI.StateManager.addListener('d_12', function(newValue) {
+                calculateHeatingSetpoint();
+                calculateCoolingSetpoint_h24();
+                calculateTemperatures();
+                const isCritical = updateCriticalOccupancyFlag();
+                updateWeatherData();
+            });
+
+            // Listener for h_24 (Calculated Cooling Setpoint) changes
+            window.TEUI.StateManager.addListener('h_24', function(newValue) {
+                updateCoolingDependents();
+            });
+
+            // Listener for l_24 (Cooling Override) changes
+            window.TEUI.StateManager.addListener('l_24', function(newValue) {
+                 updateCoolingDependents();
+            });
+        } else {
+             console.warn("Section 03: StateManager not found, listeners not added.");
+        }
+    }
+    
+    /**
+     * Handle user changes to the cooling override field (l_24)
+     */
+    function handleOverrideChange(event) {
+        const fieldId = "l_24";
+        const element = event.target;
+        const newValue = element.textContent.trim();
+        
+        // Basic validation (optional: add more robust validation)
+        const numericValue = parseFloat(newValue);
+        if (isNaN(numericValue)) {
+            // Revert to previous value or a default if invalid?
+            // For now, just log error and maybe clear StateManager value
+             console.warn(`Invalid input for ${fieldId}: ${newValue}`);
+             // window.TEUI.StateManager.setValue(fieldId, "", 'user-modified'); // Or revert
+             return; 
+        }
+
+        // Update StateManager
+        if (window.TEUI && window.TEUI.StateManager) {
+            window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
+            // The listener for l_24 will automatically call updateCoolingDependents
         }
     }
     
@@ -744,15 +979,37 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Called when section is rendered
      */
     function onSectionRendered() {
+        // --- Set Initial Display Values --- 
+        // Manually set initial display for setpoints based on known default d_12="A-Assembly"
+        // This provides immediate visual feedback before StateManager might be fully ready.
+        const initialHeatingEl = getElement(['[data-field-id="h_23"]']);
+        if (initialHeatingEl) initialHeatingEl.textContent = window.TEUI.formatNumber(18);
+        const initialCoolingEl = getElement(['[data-field-id="h_24"]']);
+        if (initialCoolingEl) initialCoolingEl.textContent = window.TEUI.formatNumber(24);
+        // The StateManager listeners will calculate and set the correct state later.
+        // -------------------------------------
+
         // Ensure ExcelLocationHandler is ready
         if (TEUI?.ExcelLocationHandler?.getLocationData?.()) {
             initializeEventHandlers();
-            calculateAll();
+            // Trigger initial data load and calculations
+            if (getElement(['[data-dropdown-id="dd_d_19"]'])?.value && getElement(['[data-dropdown-id="dd_h_19"]'])?.value) {
+                updateWeatherData(); // Includes calculateAll() at the end
+            } else {
+                 calculateAll(); // Run calculations even if location not selected yet
+            }
         } else {
             // ExcelLocationHandler not ready, wait for it
-            document.addEventListener('location-data-ready', function() {
+            document.addEventListener('location-data-ready', function handler() {
                 initializeEventHandlers();
-                calculateAll();
+                 // Trigger initial data load and calculations
+                if (getElement(['[data-dropdown-id="dd_d_19"]'])?.value && getElement(['[data-dropdown-id="dd_h_19"]'])?.value) {
+                    updateWeatherData(); // Includes calculateAll() at the end
+                } else {
+                    calculateAll(); // Run calculations even if location not selected yet
+                }
+                // Remove listener after running once
+                document.removeEventListener('location-data-ready', handler);
             });
         }
     }

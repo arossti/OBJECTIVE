@@ -199,44 +199,71 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
 
 ### REQUIRED: StateManager Implementation Pattern for Cross-Section Functions
 
-One critical architectural pattern is how we handle functions that need to operate across multiple sections, such as temperature setpoints based on occupancy type. This approach enables consistent behavior while maintaining the single responsibility principle:
+One critical architectural pattern is how we handle functions that need to operate across multiple sections, such as temperature setpoints based on occupancy type, or how a calculated value in one section (e.g., Section 5's `i_39`) affects a field in another section (e.g., Section 2's `d_16`). This approach enables consistent behavior while maintaining the single responsibility principle and respecting `StateManager`'s role.
 
 1. **✅ PROPER ARCHITECTURE PATTERN**:
-   - Create centralized utility functions in the global namespace
-   - Use these functions across sections for consistent behavior
-   - Register calculations correctly with StateManager
-   - Follow proper dependency registration order
-   - Respect StateManager as the single source of truth
+   - Create centralized utility functions in the global namespace (e.g., `window.TEUI.getTemperaturesForOccupancy`) if logic is shared.
+   - Implement calculation functions *within the section that owns the calculated field*.
+   - Use `StateManager.registerDependency` to declare simple dependencies (where the source is typically a user input).
+   - **CRITICAL**: Use `StateManager.addListener` within the *dependent* section to react to changes in *calculated* source fields from other sections (as `setValue(..., 'calculated')` doesn't automatically trigger dependents via `registerDependency`). See point 3 below.
+   - Calculation functions *must* read input values from `StateManager` (e.g., via `getFieldValue`).
+   - Respect `StateManager` as the single source of truth.
 
-2. **🔄 PROPER REGISTRATION ORDER**:
-   ```javascript
-   // 1. FIRST register calculation functions
-   window.TEUI.StateManager.registerCalculation("h_23", calculateHeatingSetpoint);
-   window.TEUI.StateManager.registerCalculation("h_24", calculateCoolingSetpoint);
-   window.TEUI.StateManager.registerCalculation("is_critical", calculateCriticalFlag);
-   
-   // 2. THEN register dependencies (after calculations are registered)
-   window.TEUI.StateManager.registerDependency("d_12", "h_23"); // Occupancy affects heating setpoint
-   window.TEUI.StateManager.registerDependency("d_12", "h_24"); // Occupancy affects cooling setpoint
-   window.TEUI.StateManager.registerDependency("d_12", "is_critical"); // Occupancy affects critical flag
-   ```
-   
-   The order is critical - always register calculation functions before registering dependencies.
+2. **🔄 DEPENDENCY & LISTENER REGISTRATION**:
+   - Dependencies should be registered (e.g., during initialization):
+     ```javascript
+     // Register dependencies where 'd_12' (user input) affects 'h_23' (calculated)
+     window.TEUI.StateManager.registerDependency("d_12", "h_23");
+     window.TEUI.StateManager.registerDependency("d_12", "h_24");
+     
+     // If 'd_16' calculation depends on 'd_15' (dropdown) and 'i_41' (calculated, Section 5)
+     window.TEUI.StateManager.registerDependency("d_15", "d_16"); // Direct dependency
+     // NO direct dependency registration for i_41 needed if listener is used.
+     ```
+   - Listeners are added in the dependent section's initialization for calculated sources:
+     ```javascript
+     // In Section 2's initializeEventHandlers:
+     // Listen for changes in i_39 (calculated in Section 5) to update d_16
+     window.TEUI.StateManager.addListener('i_39', function(newValue) {
+         const carbonStandard = getFieldValue("d_15");
+         if (carbonStandard === "TGS4") {
+             // Trigger the calculation owned by Section 2
+             const targetValue = calculateEmbodiedCarbonTarget(); // Assumes this fn exists in Section 2
+             setCalculatedValue("d_16", targetValue); // Use helper to update state+DOM
+         }
+     });
+     ```
 
-3. **📋 CALCULATION FUNCTION PATTERN**:
+3. **📋 CALCULATION FUNCTION PATTERN (within the owning section)**:
    ```javascript
-   // Example of a proper StateManager calculation function
+   // Example: In Section 3, calculating h_23 based on d_12
    function calculateHeatingSetpoint() {
-       // Get input value from StateManager
-       const occupancyType = window.TEUI.StateManager.getValue("d_12");
+       // Get input value(s) from StateManager
+       const occupancyType = getFieldValue("d_12"); // Helper reads from StateManager
        
-       // Use centralized utility for consistent calculations across sections
+       // Perform calculation (potentially using global utility)
        const temps = window.TEUI.getTemperaturesForOccupancy(occupancyType);
+       const heatingSetpoint = temps.heating;
        
-       // Return calculated value - StateManager will store it
-       return temps.heating;
+       // Return the calculated value. The section's update logic
+       // (e.g., within calculateAll or a listener callback) will call
+       // setCalculatedValue("h_23", heatingSetpoint);
+       return heatingSetpoint; 
+   }
+
+   // Example: In Section 2, calculating d_16 based on d_15 and potentially i_41/i_39
+   function calculateEmbodiedCarbonTarget() {
+        const carbonStandard = getFieldValue("d_15") || "Self Reported";
+        // ... logic to read i_41 or use value from listener (for i_39)...
+        let targetValue;
+        // ... calculation logic ...
+        return targetValue; // Return raw calculated value
    }
    ```
+   **Triggering**: The calculation function (`calculateHeatingSetpoint`, `calculateEmbodiedCarbonTarget`, etc.) is typically called:
+    *   During the section's initial `calculateAll` or `onSectionRendered`.
+    *   When a direct dependency (registered via `registerDependency`, like `d_12` or `d_15`) changes *if* the `StateManager`'s internal mechanism or a calculation engine triggers it based on the dependency.
+    *   Explicitly within a `StateManager.addListener` callback when a *calculated* source field changes (like `i_39` triggering the update for `d_16`).
 
 4. **🌐 GLOBAL UTILITY FUNCTIONS**:
    When logic needs to be shared between sections (like occupancy-based temperature settings), 
@@ -258,13 +285,16 @@ One critical architectural pattern is how we handle functions that need to opera
    ```
 
 5. **⚠️ COMMON ANTI-PATTERNS TO AVOID**:
-   - ❌ Direct DOM manipulation inside calculation functions
-   - ❌ Setting calculated values with direct DOM updates rather than via StateManager
-   - ❌ Inlining complex condition checks in multiple places instead of using shared utilities
-   - ❌ Checking user-displayed text instead of StateManager values
-   - ❌ Implementing different logic for the same calculation in different sections
+   - ❌ Direct DOM manipulation inside calculation functions (use helpers like `setCalculatedValue`).
+   - ❌ Setting calculated values with direct DOM updates rather than via StateManager helpers.
+   - ❌ Inlining complex condition checks in multiple places instead of using shared utilities.
+   - ❌ Checking user-displayed text instead of StateManager values.
+   - ❌ Implementing different logic for the same calculation in different sections.
+   - ❌ **Attempting to use `StateManager.registerCalculation` - this function is not part of the standard pattern and may not exist or work as expected. Rely on dependency registration and listeners.**
+   - ❌ Directly calling calculation functions of *other* sections.
+   - ❌ **Relying on locally-scoped helper functions within `StateManager` listener callbacks.** Listener callbacks may execute outside the original module's scope. Prefer direct access (`window.TEUI.StateManager.getValue()`) or make genuinely shared helpers globally accessible (e.g., `window.TEUI.formatNumber`).
 
-This architecture ensures that changes to occupancy type properly propagate through the system, maintaining consistent temperature setpoints, critical occupancy flags, and weather data handling across all affected sections.
+This architecture ensures that changes propagate correctly through the system via `StateManager`, maintaining consistency and adhering to section ownership principles.
 
 ## Project Status & Implementation Summary
 
