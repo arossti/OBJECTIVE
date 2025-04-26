@@ -348,8 +348,8 @@ window.TEUI.SectionModules.sect06 = (function() {
         // Calculate subtotal (excluding i_45)
         const subtotal = wwsValue + reservedValue;
         
-        // Update the field
-        setCalculatedValue("i_43", formatNumber(subtotal));
+        // Update the field - Pass the RAW numeric value now
+        setCalculatedValue("i_43", subtotal); 
         
         return subtotal;
     }
@@ -364,8 +364,8 @@ window.TEUI.SectionModules.sect06 = (function() {
         const gasVolume = parseFloat(getFieldValue("k_45")) || 0;
         const energyContent = gasVolume * 10.3321;
         
-        // Update the calculated field
-        setCalculatedValue("i_45", formatNumber(energyContent));
+        // Update the calculated field - Pass the RAW numeric value
+        setCalculatedValue("i_45", energyContent);
         
         return energyContent;
     }
@@ -425,21 +425,26 @@ window.TEUI.SectionModules.sect06 = (function() {
     /**
      * Helper function to set a calculated field value
      * @param {string} fieldId - Field ID
-     * @param {string} value - Value to set
+     * @param {string} value - Value to set (should be the RAW numeric value)
      */
     function setCalculatedValue(fieldId, value) {
-        // Set in state manager
+        const rawValue = value; // Keep the raw value
+        const formattedValue = formatNumber(rawValue); // Format for display
+
+        // Set RAW value in state manager
         if (window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, value, "calculated");
+            // Store the raw numeric value as a string if it's a number
+            const valueToStore = (typeof rawValue === 'number') ? rawValue.toString() : rawValue;
+            window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
         }
         
-        // Also update DOM
+        // Update DOM with FORMATTED value
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = value;
+                element.value = formattedValue;
             } else {
-                element.textContent = value;
+                element.textContent = formattedValue;
             }
         }
     }
@@ -450,21 +455,29 @@ window.TEUI.SectionModules.sect06 = (function() {
      * @returns {string} - Formatted number string
      */
     function formatNumber(value) {
-        // Check if value is very small
-        if (Math.abs(value) < 0.01 && value !== 0) {
-            return value.toFixed(2);
+        // Ensure value is treated as a number first, handling potential commas
+        const numValue = parseFloat(String(value).replace(/,/g, ''));
+
+        // Handle non-numeric or NaN results after parsing
+        if (isNaN(numValue)) {
+            return "0.00"; // Or potentially return the original value or an empty string?
+        }
+
+        // Check if value is very small (use the parsed numValue)
+        if (Math.abs(numValue) < 0.01 && numValue !== 0) {
+            return numValue.toFixed(2); // Works now
         }
         
-        // Check if value is integer
-        if (Number.isInteger(parseFloat(value))) {
-            return parseFloat(value).toLocaleString(undefined, {
+        // Check if value is integer (use the parsed numValue)
+        if (Number.isInteger(numValue)) {
+            return numValue.toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             });
         }
         
-        // Format with 2 decimal places
-        return parseFloat(value).toLocaleString(undefined, {
+        // Format with 2 decimal places (use the parsed numValue)
+        return numValue.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });

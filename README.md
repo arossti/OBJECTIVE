@@ -125,6 +125,7 @@ When working with this codebase, previous AI assistants have encountered several
      - Future D3 visualizations and charts.js integrations
      - Ensuring data consistency between calculations and visual representations
    - Each section module should implement `formatNumber` and use it within `setCalculatedValue`
+   - **Store Raw Values in StateManager**: Store *raw*, unformatted numeric values in `StateManager` whenever possible (typically converted to strings for storage, e.g., `numberValue.toString()`). Perform formatting (using `formatNumber` or similar) only when updating the DOM (`element.textContent`). Storing formatted strings (e.g., "1,234.56") in `StateManager` can prevent listeners from triggering if subsequent calculations result in the identical formatted string, even if the underlying raw number changed slightly.
 
 6. **Calculation Precision and Significant Digits**:
    - ❌ **Avoid**: Truncating precision during calculation chains or using hardcoded adjustments
@@ -194,6 +195,10 @@ When working with this codebase, previous AI assistants have encountered several
        ```
      - SectionIntegrator manages cross-section dependencies and calculation order
      - The event system (`teui-section-rendered`, etc.) coordinates section calculation timing
+
+9. **Robust Input Parsing**:
+   - ✅ **ALWAYS** use the section's `parseNumeric` helper function (or equivalent) when parsing input values within calculation functions, especially values retrieved from the DOM via helpers like `getFieldValue`. 
+   - ❌ **Avoid** using `parseFloat()` directly on values that might be formatted strings (e.g., "1,234.56"). `parseFloat` stops at the first non-numeric character, leading to incorrect results (e.g., `parseFloat("1,234.56")` becomes `1`). Using `parseNumeric` ensures commas are handled correctly.
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 
@@ -292,7 +297,7 @@ One critical architectural pattern is how we handle functions that need to opera
    - ❌ Implementing different logic for the same calculation in different sections.
    - ❌ **Attempting to use `StateManager.registerCalculation` - this function is not part of the standard pattern and may not exist or work as expected. Rely on dependency registration and listeners.**
    - ❌ Directly calling calculation functions of *other* sections.
-   - ❌ **Relying on locally-scoped helper functions within `StateManager` listener callbacks.** Listener callbacks may execute outside the original module's scope. Prefer direct access (`window.TEUI.StateManager.getValue()`) or make genuinely shared helpers globally accessible (e.g., `window.TEUI.formatNumber`).
+   - ❌ **Relying on locally-scoped helper functions within `StateManager` listener callbacks.** Listener callbacks may execute outside the original module's scope. Prefer direct access (`window.TEUI.StateManager.getValue()`) or make genuinely shared helpers globally accessible (e.g., `window.TEUI.formatNumber`). **Furthermore, ensure listener callbacks are defined inline (e.g., `addListener('key', function() { ... })`) if they need access to other functions within the module's IIFE scope, allowing the callback to capture the necessary scope via closure.**
 
 This architecture ensures that changes propagate correctly through the system via `StateManager`, maintaining consistency and adhering to section ownership principles.
 
@@ -655,6 +660,12 @@ Encode the data
 Show it as a message
 Let the user copy/send it to themselves
 Decode it later from SMS by pasting it back in
+
+8. **Number Display Formatting**: 
+   - **TODO:** Implement consistent number display formatting across all sections. Ensure that:
+       - Integer inputs/calculations are displayed with two decimal places (e.g., `24` becomes `24.00`).
+       - Zero values are displayed as `0.00`.
+       - Emptying a field (e.g., via Cut/Delete/Backspace) results in `0.00` being displayed and stored (or handle appropriately based on field requirements). Refactor `formatNumber` helpers and input field `blur` event handlers as needed.
 
 ## 9. Technical Compatibility Considerations
 
