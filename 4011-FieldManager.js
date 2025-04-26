@@ -494,9 +494,9 @@ TEUI.FieldManager = (function() {
                                 // Create a number input element
                                 const inputElement = document.createElement('input');
                                 inputElement.type = 'number';
-                                inputElement.className = 'form-control form-control-sm user-input'; // Apply user-input class and Bootstrap styling
+                                inputElement.className = 'form-control form-control-sm user-input'; // Keep the styling for blue cursor
                                 inputElement.setAttribute('data-field-id', fieldId);
-                                inputElement.value = cellDef.value || '0'; // Set default value
+                                inputElement.value = cellDef.value || '0.00';
 
                                 // Add step attribute if defined in cellDef (optional)
                                 if (cellDef.step !== undefined) {
@@ -510,15 +510,15 @@ TEUI.FieldManager = (function() {
                                     inputElement.max = cellDef.max;
                                 }
 
-                                // Add listener to update StateManager on change
+                                // Simple change handler to update state manager
                                 inputElement.addEventListener('change', function() {
                                     if (window.TEUI && window.TEUI.StateManager) {
-                                        window.TEUI.StateManager.setValue(fieldId, this.value, 'user'); // Mark as user input
+                                        window.TEUI.StateManager.setValue(fieldId, this.value, 'user');
                                     }
                                 });
 
                                 cellElement.appendChild(inputElement);
-                                cellElement.classList.add('number-input-cell'); // Optional: specific class for number input cells
+                                cellElement.classList.add('number-input-cell');
                             }
                             
                             // Handle other data attributes

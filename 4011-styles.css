@@ -502,8 +502,6 @@ select.form-select,
 select.form-control,
 select,
 option,
-.dropdown-menu,
-.dropdown-item,
 .data-table td.dropdown-cell, /* Target the cell itself */
 .data-table td select.form-select {
   /* Font consistency */
@@ -523,44 +521,33 @@ option,
   font-weight: 500;
 }
 
+/* Restore Bootstrap's default for dropdown-menu and dropdown-item */
+.dropdown-menu, .dropdown-item {
+  background-color: #fff !important;
+}
+
 /* Apply to select elements within table cells */
 .data-table select.form-select {
     width: 100%;
+    min-width: 140px; /* Ensure minimum width for content */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     cursor: pointer;
-
-    /* REMOVED Explicitly add border and radius HERE */
-    /* border: 1px solid #ced4da; */
-    /* border-radius: var(--bs-border-radius, 0.25rem); */
-
-    /* REMOVED Explicitly center vertically */
-    /* vertical-align: middle; */ 
-
-    /* REMOVED Try inline-block display */
-    /* display: inline-block; */
+    border: 1px solid #ced4da !important; /* Restore Bootstrap border */
+    border-radius: 0.25rem !important; /* Bootstrap default radius */
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap default padding */
+    background-color: #fff !important; /* Ensure white background */
+    /* Ensure the select sits properly in the cell */
+    margin: 2px 0; /* Small margin to prevent border touching table lines */
+    height: calc(100% - 4px); /* Account for margins */
 }
 
 /* Ensure dropdown cells have minimum width */
 [data-dropdown-id],
 .dropdown-cell {
-  min-width: 140px;
-  cursor: pointer;
-  color: var(--user-input-color); 
-  font-weight: 500; 
-  /* Keep border/outline removal */
-  /* border: none !important; */ /* This was handled above */
-  outline: none !important;
-  background-color: transparent; /* Ensure cell itself is transparent */
-
-  /* REMOVED cell border overrides */
-  /* border-top: none !important; */
-  /* border-left: none !important; */
-  /* border-right: none !important; */
-
-  /* REMOVED vertical padding override */
-  /* padding: 0 8px; */ 
+    min-width: 140px;
+    padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
 }
 
 /* Handle dropdowns spanning columns */
@@ -960,22 +947,49 @@ input[type=number].form-control {
     background-color: transparent !important;
 }
 
-/* Make number inputs fill their cell and remove default browser styling */
-.data-table td input[type="number"].form-control {
-  width: 100%; /* Fill cell width */
-  height: 100%; /* Fill cell height (might need adjustment based on padding) */
-  box-sizing: border-box; /* Include padding/border in width/height */
-  border: none !important; /* Override Bootstrap border */
-  outline: none !important; /* Override browser outline */
-  box-shadow: none !important; /* Override browser shadow */
-  background-color: transparent !important; /* Ensure transparent background */
-  padding: 0; /* Remove default input padding to align text with TD padding */
-  margin: 0;
-  text-align: right; /* Ensure text inside input is right-aligned */
-  /* Inherit font styles for consistency */
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
+/* Remove all the recent numeric input styling we added */
+.data-table td input[type="number"].form-control,
+.data-table td input[type="number"].user-input {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: text;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    padding: 0.375rem 0.75rem !important;
+    /* Remove spinners */
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+}
+
+/* Remove spinner buttons in Webkit browsers */
+.data-table td input[type="number"]::-webkit-outer-spin-button,
+.data-table td input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Ensure the cell itself doesn't interfere */
+.data-table td.number-input-cell {
+    padding: 2px 8px !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Keep the blue color for user input */
+.data-table td input[type="number"].user-input {
+    color: var(--user-input-color) !important;
+    font-weight: 500 !important;
+}
+
+/* Ensure text alignment is preserved */
+.data-table td input[type="number"].form-control,
+.data-table td input[type="number"].user-input {
+    text-align: right !important; /* Most numeric cells are right-aligned */
 }
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
@@ -1014,3 +1028,44 @@ input[type=number].form-control {
 }
 
 /* --- End Section 02 Overrides --- */
+
+/* Make the dropdown styling more specific */
+.data-table td select.form-select,
+.data-table td select.form-control,
+table.data-table select.form-select {
+    width: 100%;
+    min-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid #ced4da !important;
+    border-radius: 0.25rem !important;
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem !important;
+    background-color: #fff !important;
+    margin: 2px 0;
+    height: calc(100% - 4px);
+    /* Remove native appearance */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    /* Add Bootstrap-style background arrow */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 16px 12px !important;
+}
+
+/* Add hover effect */
+.data-table td select.form-select:hover,
+.data-table td select.form-control:hover,
+table.data-table select.form-select:hover {
+    border-color: #86b7fe !important;
+}
+
+/* Ensure the cell itself doesn't interfere */
+.data-table td.dropdown-cell {
+    padding: 2px 8px !important;
+    background: transparent !important;
+    border: none !important;
+}

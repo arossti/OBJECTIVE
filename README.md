@@ -985,3 +985,39 @@ Please contact [andy@openbuilding.ca] for inquiries about partnerships, custom u
 
 All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support from the Ontario Association of Architects.
 
+# TODOs and Known Issues
+
+### UI/UX Improvements Needed
+
+1. **Numeric Input Field Behavior**:
+   - Current Issue: Browser's native handling of `<input type="number">` elements allows empty states, which can be confusing for users
+   - Potential Solutions to Explore:
+     - Consider using regular text inputs with numeric validation
+     - Evaluate numeric input libraries/components that handle edge cases
+     - Implement state-level validation and formatting
+   - To be addressed as part of the 4012 Visual Refactor
+
+2. **CSS Styling Conflicts**:
+   - Current Issue: Competing styles between table cells, number inputs, Bootstrap defaults, and custom styles
+   - Areas of Conflict:
+     - Input field borders and padding
+     - Table cell spacing and alignment
+     - Bootstrap form control overrides
+   - To be revisited during implementation of `4012-Visual-Refactor-Workplan.md`
+   - Consider moving from table-based layout to CSS Grid or Flexbox for better control
+
+3. **Mobile/Tablet Optimization**:
+   - Current Issue: Poor usability on mobile devices and tablets
+   - Specific Problems:
+     - Sticky header takes up too much screen space
+     - Difficult to view and scroll through sections on smaller screens
+     - Table layout not optimized for narrow viewports
+   - Potential Solutions:
+     - Implement collapsible/minimizable header for mobile
+     - Create responsive layout for different screen sizes
+     - Consider alternative navigation patterns for mobile users
+     - Optimize touch interactions for tablet users
+   - To be addressed as part of the 4012 Visual Refactor
+
+These issues will be addressed comprehensively in the upcoming 4012 release, which will focus on visual refinements and modern layout techniques.
+
