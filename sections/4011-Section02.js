@@ -634,9 +634,6 @@ window.TEUI.SectionModules.sect02 = (function() {
         }
         
         try {
-            // Register the calculation function for Embodied Carbon Target
-            window.TEUI.StateManager.registerCalculation("d_16", calculateEmbodiedCarbonTarget);
-            
             // Register dependencies - these must be registered AFTER the calculation
             window.TEUI.StateManager.registerDependency("d_15", "d_16"); // d_16 depends on the standard selected
             window.TEUI.StateManager.registerDependency("i_41", "d_16"); // d_16 depends on i_41 when standard is 'Self Reported' or default
@@ -758,6 +755,20 @@ window.TEUI.SectionModules.sect02 = (function() {
                     // If d_15 is TGS4, recalculate d_16 using the new i_39 value
                     const targetValue = calculateEmbodiedCarbonTarget(); 
                     // Update the value in StateManager and DOM for d_16
+                    setCalculatedValue("d_16", targetValue);
+                }
+            });
+        }
+
+        // Add listener for changes in i_41 (from Section 5)
+        if (window.TEUI && window.TEUI.StateManager) {
+             window.TEUI.StateManager.addListener('i_41', function(newValue, oldValue, fieldId, state) {
+                // Check if the current Carbon Standard (d_15) is Self Reported or default
+                const carbonStandard = getFieldValue("d_15") || "Self Reported";
+                if (carbonStandard === "Self Reported" || carbonStandard === "Not Reported") { // Also trigger if standard is Not Reported but i_41 changes (edge case)
+                    // The calculateEmbodiedCarbonTarget function already reads the latest i_41 value
+                    console.log(`Listener in Section 2 triggered: i_41 changed to ${newValue}. Recalculating d_16 for 'Self Reported'.`);
+                    const targetValue = calculateEmbodiedCarbonTarget(); 
                     setCalculatedValue("d_16", targetValue);
                 }
             });
