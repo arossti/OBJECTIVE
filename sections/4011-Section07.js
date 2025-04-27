@@ -583,8 +583,8 @@ window.TEUI.SectionModules.sect07 = (function() {
         setCalculatedValue("e_52", efficiency); 
         
         // Calculate Net Thermal Demand (j_51) - EXCEL: =J50/D52
-        const netThermalDemand_j51 = efficiency !== 0 ? energyDemand_j50 / efficiency : 0;
-        setCalculatedValue("j_51", netThermalDemand_j51);
+        const netThermalDemand_j_51 = efficiency !== 0 ? energyDemand_j50 / efficiency : 0;
+        setCalculatedValue("j_51", netThermalDemand_j_51);
         
         // Handle drain water heat recovery
         const recoveryOption_d53 = getFieldValue("d_53");
@@ -598,11 +598,11 @@ window.TEUI.SectionModules.sect07 = (function() {
         }
         
         // Calculate energy recovered (e_53) - EXCEL: =J51*D53
-        const energyRecovered_e53 = netThermalDemand_j51 * recoveryPercent;
+        const energyRecovered_e53 = netThermalDemand_j_51 * recoveryPercent;
         setCalculatedValue("e_53", energyRecovered_e53);
         
         // Calculate net demand after recovery (j_52 & j_53) - EXCEL: =J51-E53
-        const netDemandAfterRecovery_j52_j53 = netThermalDemand_j51 - energyRecovered_e53;
+        const netDemandAfterRecovery_j52_j53 = netThermalDemand_j_51 - energyRecovered_e53;
         setCalculatedValue("j_52", netDemandAfterRecovery_j52_j53);
         setCalculatedValue("j_53", netDemandAfterRecovery_j52_j53); // SHW Wasted is same as net demand
         

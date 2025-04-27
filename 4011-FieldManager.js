@@ -654,6 +654,7 @@ TEUI.FieldManager = (function() {
     
     /**
      * Initialize sliders for a section
+     * Includes explicit cleanup and MutationObserver to prevent incorrect editable state.
      * @param {string} sectionId - Section ID
      */
     function initializeSliders(sectionId) {
@@ -663,6 +664,11 @@ TEUI.FieldManager = (function() {
             if (field.type === 'year_slider' || field.type === 'percentage' || field.type === 'coefficient') {
                 const element = document.querySelector(`[data-field-id="${fieldId}"]`);
                 if (!element) return;
+                
+                // CRITICAL FIX: Explicitly remove any contenteditable attributes or classes
+                // that might have been incorrectly applied to slider cells
+                element.removeAttribute('contenteditable');
+                element.classList.remove('editable', 'user-input');
                 
                 // Create range input element
                 const rangeInput = document.createElement('input');
@@ -674,7 +680,7 @@ TEUI.FieldManager = (function() {
                 rangeInput.min = field.min || (field.type === 'percentage' ? 0 : 0);
                 rangeInput.max = field.max || (field.type === 'percentage' ? 100 : 100);
                 rangeInput.step = field.step || (field.type === 'percentage' ? 5 : 5);
-                rangeInput.value = field.defaultValue !== undefined ? parseInt(field.defaultValue, 10) : (field.min || 0); // Use default or min
+                rangeInput.value = field.defaultValue !== undefined ? parseInt(field.defaultValue, 10) : (field.min || 0);
                 
                 // Create display element
                 const displaySpan = document.createElement('span');
@@ -713,9 +719,37 @@ TEUI.FieldManager = (function() {
                 sliderContainer.appendChild(displaySpan);
                 element.innerHTML = '';
                 element.appendChild(sliderContainer);
+                
+                // CRITICAL PROTECTION: Apply a mutation observer to ensure the slider cell
+                // never gets the contenteditable attribute applied after initialization
+                const observer = new MutationObserver(mutations => {
+                    mutations.forEach(mutation => {
+                        if (mutation.type === 'attributes' && 
+                            (mutation.attributeName === 'contenteditable' || 
+                             mutation.attributeName === 'class')) {
+                            // If contenteditable is being added, remove it
+                            if (element.hasAttribute('contenteditable')) {
+                                element.removeAttribute('contenteditable');
+                            }
+                            // If editable class is being added, remove it
+                            if (element.classList.contains('editable') || 
+                                element.classList.contains('user-input')) {
+                                element.classList.remove('editable', 'user-input');
+                            }
+                        }
+                    });
+                });
+                
+                // Start observing the slider cell for attribute changes
+                observer.observe(element, { attributes: true });
             } else if (field.type === 'generic_slider') {
+                 // Existing logic for generic_slider - ensure it also gets protected if needed
                  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
                  if (!element) return;
+                 
+                 // Explicit cleanup for generic sliders too
+                 element.removeAttribute('contenteditable');
+                 element.classList.remove('editable', 'user-input');
  
                  // Create range input element
                  const rangeInput = document.createElement('input');
@@ -737,6 +771,10 @@ TEUI.FieldManager = (function() {
                  // Add event listener (defined in Section02.js)
                  // Note: The actual event handling logic resides in the section module (Section02.js)
                  // This ensures the FieldManager remains generic.
+                 
+                 // Add MutationObserver protection here too if generic sliders face similar issues
+                 // const genericObserver = new MutationObserver(...);
+                 // genericObserver.observe(element, { attributes: true });
             }
         });
     }

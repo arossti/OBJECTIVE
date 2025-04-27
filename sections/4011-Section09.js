@@ -819,7 +819,7 @@ window.TEUI.SectionModules.sect09 = (function() {
         const energy = plugLoadDensity * conditionedArea * occupiedHours / 1000; // W/m² to kWh/yr using occupied hours
         
         // Get heating/cooling split - Use DYNAMIC ratio for Plug Loads per user request
-        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(); 
+        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
         
         // Update energy fields
         setCalculatedValue("h_65", formatNumber(energy));
@@ -860,7 +860,7 @@ window.TEUI.SectionModules.sect09 = (function() {
         const energy = lightingDensity * conditionedArea * occupiedHours / 1000; // W/m² to kWh/yr using occupied hours
         
         // Get heating/cooling split - Use DYNAMIC ratio for Lighting Loads
-        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(); 
+        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
         
         // Update fields
         setCalculatedValue("h_66", formatNumber(energy));
@@ -976,7 +976,7 @@ window.TEUI.SectionModules.sect09 = (function() {
             const annualEnergy = (densityValue * floorArea * occupiedHours / 1000) || 0; // W/m² to kWh/yr using occupied hours
             
             // Get heating/cooling split - Use DYNAMIC ratio for Equipment Loads
-            const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(); 
+            const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
             
             const heatingPortion = annualEnergy * heatingRatio; // Use dynamic heating ratio
             const coolingPortion = annualEnergy * coolingRatio; // Use dynamic cooling ratio
@@ -1458,7 +1458,7 @@ window.TEUI.SectionModules.sect09 = (function() {
         // Register with state manager and integrator
         registerWithStateManager();
         registerWithSectionIntegrator();
-        
+
         // Initialize event handlers
         initializeEventHandlers();
 
@@ -1468,7 +1468,7 @@ window.TEUI.SectionModules.sect09 = (function() {
             const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
             const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
             const densityField = document.querySelector('[data-field-id="d_67"]');
-
+            
             if (efficiencyDropdown) {
                 efficiencyDropdown.value = "Efficient";
                 if (window.TEUI?.StateManager?.setValue) {
@@ -1483,13 +1483,13 @@ window.TEUI.SectionModules.sect09 = (function() {
             }
             if (densityField) {
                  densityField.textContent = formatNumber(5.00); // Use formatNumber for consistency
-                 if (window.TEUI?.StateManager?.setValue) {
+                if (window.TEUI?.StateManager?.setValue) {
                     window.TEUI.StateManager.setValue("d_67", "5.00", "default");
-                 }
+                }
             }
             window.TEUI.sect09.initialized = true;
             // Trigger calculation involving these defaults
-            calculateEquipmentLoads(); 
+            calculateEquipmentLoads();
         }
         
         // Add checkmark styles
@@ -1651,10 +1651,10 @@ window.TEUI.SectionModules.sect09 = (function() {
 document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail?.sectionId === 'occupantInternalGains') {
         // Use a small delay to ensure other elements might be ready
-        setTimeout(() => {
+    setTimeout(() => {
              if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
-                 window.TEUI.SectionModules.sect09.onSectionRendered();
-             }
+            window.TEUI.SectionModules.sect09.onSectionRendered();
+        }
         }, 100); 
     }
 });

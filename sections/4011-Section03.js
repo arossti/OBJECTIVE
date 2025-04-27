@@ -118,7 +118,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     type: "derived", 
                     value: "6.0",
                     section: "climateCalculations",
-                    dependencies: ["d_19", "h_19"]
+                    dependencies: ["d_20"]
                 },
                 k: { content: "L.3.3", classes: ["label-prefix"] },
                 l: { content: "Days Cooling", classes: ["label-main"] },
@@ -582,16 +582,18 @@ window.TEUI.SectionModules.sect03 = (function() {
         
         if (!cityData) return;
         
-        // Update climate data fields
-        
+        // Update climate data fields (REMOVING direct j_19 calculation from here)
+        /* No longer calculating j_19 here - handled by listener
         // Climate zone
         const climateZone = determineClimateZone(
             isFuture ? cityData.HDD18_2021_2050 : cityData.HDD18
         );
         setFieldValue("j_19", climateZone, 'derived');
+        */
         
-        // HDD value
+        // HDD value (This will trigger the j_19 listener)
         const hddValue = isFuture ? cityData.HDD18_2021_2050 : cityData.HDD18;
+        console.log(`[Debug Section 3] Fetched hddValue for ${cityValue}:`, hddValue);
         setFieldValue("d_20", hddValue || '4600', 'derived');
         
         // CDD value
@@ -639,13 +641,18 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Determine climate zone based on HDD
      */
     function determineClimateZone(hdd) {
-        if (!hdd) return '6.0';
-        hdd = parseFloat(hdd);
-        if (hdd < 3000) return '4.0';
-        if (hdd < 4000) return '5.0';
-        if (hdd < 5000) return '6.0';
-        if (hdd < 6000) return '7.0';
-        return '8.0';
+        // Excel Formula: =IF(D20<3000, 4, IF(D20<4000, 5, IF(D20<5000, 6, IF(D20<6000, 7.1, IF(D20<7000, 7.2, 8))))) )
+        if (hdd === null || hdd === undefined || hdd === '') return '6.0'; // Default if HDD is missing
+        
+        const numericHdd = parseFloat(hdd);
+        if (isNaN(numericHdd)) return '6.0'; // Default if HDD is not a number
+
+        if (numericHdd < 3000) return '4.0';
+        if (numericHdd < 4000) return '5.0';
+        if (numericHdd < 5000) return '6.0';
+        if (numericHdd < 6000) return '7.1'; // Corrected from 7.0
+        if (numericHdd < 7000) return '7.2'; // Added missing check
+        return '8.0'; // Correct: returns 8.0 only if HDD >= 7000
     }
     
     /**
@@ -886,7 +893,13 @@ window.TEUI.SectionModules.sect03 = (function() {
             cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
             
             // Add new listener
-            newCityDropdown.addEventListener('change', updateWeatherData);
+            newCityDropdown.addEventListener('change', function() {
+                const selectedCity = this.value;
+                if (window.TEUI && window.TEUI.StateManager) {
+                     window.TEUI.StateManager.setValue('h_19', selectedCity, 'user-modified');
+                }
+                updateWeatherData();
+            });
         }
         
         // Present/Future toggle
@@ -945,6 +958,15 @@ window.TEUI.SectionModules.sect03 = (function() {
             window.TEUI.StateManager.addListener('l_24', function(newValue) {
                  updateCoolingDependents();
             });
+
+            // Listener for d_20 (HDD) changes to update j_19 (Climate Zone)
+            window.TEUI.StateManager.addListener('d_20', function(newHddValue) {
+                const climateZone = determineClimateZone(newHddValue);
+                setFieldValue("j_19", climateZone, 'derived');
+                // Also recalculate Ground Facing HDD (d_22) which depends on d_20
+                calculateGroundFacing(); 
+            });
+
         } else {
              console.warn("Section 03: StateManager not found, listeners not added.");
         }
