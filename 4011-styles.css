@@ -1069,3 +1069,25 @@ table.data-table select.form-select:hover {
     background: transparent !important;
     border: none !important;
 }
+
+/* --- Utility Classes --- */
+.text-left {
+    text-align: left !important; /* Added important to override column defaults */
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+/* Style for disabled/non-applicable input fields */
+.disabled-input {
+    color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
+    font-style: italic !important;
+    cursor: default !important;
+    background-color: transparent !important; /* Ensure no background interferes */
+}
+/* --- End Utility Classes --- */
