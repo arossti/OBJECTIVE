@@ -76,7 +76,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                     fieldId: "f_73", 
                     type: "dropdown", 
                     dropdownId: "dd_f_73", 
-                    value: "0.30",
+                    value: "0.50",
                     section: "envelopeRadiantGains",
                     options: [
                         { value: "0.20", name: "0.20" },
@@ -1079,8 +1079,8 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             // Calculate cooling season solar gains
             // Corrected formula with reference SHGC adjustment:
-            // Area * GainFactor * (SHGC/0.5) * 0.1 * (1 - SummerShading)
-            const coolingGains = area * gainFactor * (shgc / 0.5) * 0.1 * (1 - summerShading);
+            // Area * GainFactor * (SHGC/0.5) * 0.5 * (1 - SummerShading)
+            const coolingGains = area * gainFactor * (shgc / 0.5) * 0.5 * (1 - summerShading);
             
             // Update calculated fields
             setCalculatedValue(`i_${rowId}`, formatNumber(heatingGains));
