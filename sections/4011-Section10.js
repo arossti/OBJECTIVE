@@ -1055,15 +1055,15 @@ window.TEUI.SectionModules.sect10 = (function() {
      */
     function calculateOrientationGains(rowId) {
         try {
-            // Get relevant values
-            const area = getNumericValue(`d_${rowId}`);
+            // Get relevant values using getFieldValue and the global parseNumeric
+            const area = window.TEUI.parseNumeric(getFieldValue(`d_${rowId}`));
             const orientation = getFieldValue(`e_${rowId}`);
-            const shgc = getNumericValue(`f_${rowId}`);
-            const winterShading = getNumericValue(`g_${rowId}`) / 100; // Convert to decimal
-            const summerShading = getNumericValue(`h_${rowId}`) / 100; // Convert to decimal
+            const shgc = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`));
+            const winterShading = window.TEUI.parseNumeric(getFieldValue(`g_${rowId}`), 0) / 100; // Default 0
+            const summerShading = window.TEUI.parseNumeric(getFieldValue(`h_${rowId}`), 100) / 100; // Default 100
             
             // Get climate zone from section 3 if available
-            const climateZone = getNumericValue("j_19") || 6.0; // Default to zone 6 if not available
+            const climateZone = window.TEUI.parseNumeric(getFieldValue("j_19"), 6.0); // Default to zone 6
             
             // Calculate gain factor based on orientation and climate zone
             const gainFactor = calculateGainFactor(orientation, climateZone);
@@ -1102,24 +1102,24 @@ window.TEUI.SectionModules.sect10 = (function() {
      */
     function calculateSubtotals() {
         try {
-            // Calculate total heating gains
+            // Calculate total heating gains using getFieldValue and global parseNumeric
             const heatingGains = [
-                getNumericValue("i_73"), // Doors
-                getNumericValue("i_74"), // North
-                getNumericValue("i_75"), // East
-                getNumericValue("i_76"), // South
-                getNumericValue("i_77"), // West
-                getNumericValue("i_78")  // Skylights
+                window.TEUI.parseNumeric(getFieldValue("i_73")), // Doors
+                window.TEUI.parseNumeric(getFieldValue("i_74")), // North
+                window.TEUI.parseNumeric(getFieldValue("i_75")), // East
+                window.TEUI.parseNumeric(getFieldValue("i_76")), // South
+                window.TEUI.parseNumeric(getFieldValue("i_77")), // West
+                window.TEUI.parseNumeric(getFieldValue("i_78"))  // Skylights
             ].reduce((sum, val) => sum + val, 0);
             
-            // Calculate total cooling gains
+            // Calculate total cooling gains using getFieldValue and global parseNumeric
             const coolingGains = [
-                getNumericValue("k_73"), // Doors
-                getNumericValue("k_74"), // North
-                getNumericValue("k_75"), // East
-                getNumericValue("k_76"), // South
-                getNumericValue("k_77"), // West
-                getNumericValue("k_78")  // Skylights
+                window.TEUI.parseNumeric(getFieldValue("k_73")), // Doors
+                window.TEUI.parseNumeric(getFieldValue("k_74")), // North
+                window.TEUI.parseNumeric(getFieldValue("k_75")), // East
+                window.TEUI.parseNumeric(getFieldValue("k_76")), // South
+                window.TEUI.parseNumeric(getFieldValue("k_77")), // West
+                window.TEUI.parseNumeric(getFieldValue("k_78"))  // Skylights
             ].reduce((sum, val) => sum + val, 0);
             
             // Update subtotal fields
@@ -1148,7 +1148,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         
         // Calculate and update percentage for each element
         ["73", "74", "75", "76", "77", "78"].forEach(rowId => {
-            const elementGains = getNumericValue(`i_${rowId}`);
+            const elementGains = window.TEUI.parseNumeric(getFieldValue(`i_${rowId}`)); // Use global parser
             const percentage = (elementGains / totalHeatingGains) * 100;
             setCalculatedValue(`j_${rowId}`, `${percentage.toFixed(2)}%`);
         });
@@ -1162,7 +1162,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         
         // Calculate and update percentage for each element
         ["73", "74", "75", "76", "77", "78"].forEach(rowId => {
-            const elementGains = getNumericValue(`k_${rowId}`);
+            const elementGains = window.TEUI.parseNumeric(getFieldValue(`k_${rowId}`)); // Use global parser
             const percentage = (elementGains / totalCoolingGains) * 100;
             setCalculatedValue(`l_${rowId}`, `${percentage.toFixed(2)}%`);
         });
@@ -1174,10 +1174,10 @@ window.TEUI.SectionModules.sect10 = (function() {
     function calculateUtilizationFactors() {
         try {
             // Get total solar gains
-            const solarGains = getNumericValue("h_79");
+            const solarGains = window.TEUI.parseNumeric(getFieldValue("h_79")); // Use global parser
             
             // Get internal gains from Section 9 if available
-            const internalGains = getNumericValue("i_71") || 100071.67; // Default if not available
+            const internalGains = window.TEUI.parseNumeric(getFieldValue("i_71"), 100071.67); // Use global parser, provide default
             
             // Calculate total gains (solar + internal)
             const totalGains = solarGains + internalGains;
@@ -1213,16 +1213,16 @@ window.TEUI.SectionModules.sect10 = (function() {
                 // I79 = Solar gains (h_79)
                 // I71 = Internal gains (i_71)
                 // I97 = Heating energy from distribution system
-                const i97 = getNumericValue("i_97") || 500000; // Conservative fallback
+                const i97 = window.TEUI.parseNumeric(getFieldValue("i_97"), 500000); // Use global parser, provide default
                 
                 // I103 = Heating energy from distribution losses
-                const i103 = getNumericValue("i_103") || 20000; // Conservative fallback
+                const i103 = window.TEUI.parseNumeric(getFieldValue("i_103"), 20000); // Use global parser, provide default
                 
                 // M121 = Energy from domestic hot water
-                const m121 = getNumericValue("m_121") || 15000; // Conservative fallback
+                const m121 = window.TEUI.parseNumeric(getFieldValue("m_121"), 15000); // Use global parser, provide default
                 
                 // I98 = Heat energy from HRV/ventilation
-                const i98 = getNumericValue("i_98") || 30000; // Conservative fallback
+                const i98 = window.TEUI.parseNumeric(getFieldValue("i_98"), 30000); // Use global parser, provide default
                 
                 // Get gain and loss values
                 const numerator = solarGains + internalGains; // Total heat gains
@@ -1271,10 +1271,10 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Always calculate PHPP method for row 81 as reference, regardless of selection
             
             // Get values for the PHPP calculation with reasonable fallbacks
-            const i97Reference = getNumericValue("i_97") || 500000;
-            const i103Reference = getNumericValue("i_103") || 20000;
-            const m121Reference = getNumericValue("m_121") || 15000;
-            const i98Reference = getNumericValue("i_98") || 30000;
+            const i97Reference = window.TEUI.parseNumeric(getFieldValue("i_97"), 500000); // Use global parser
+            const i103Reference = window.TEUI.parseNumeric(getFieldValue("i_103"), 20000); // Use global parser
+            const m121Reference = window.TEUI.parseNumeric(getFieldValue("m_121"), 15000); // Use global parser
+            const i98Reference = window.TEUI.parseNumeric(getFieldValue("i_98"), 30000); // Use global parser
             
             // Calculate gamma for PHPP reference calculation
             const numeratorReference = solarGains + internalGains;
@@ -1354,31 +1354,6 @@ window.TEUI.SectionModules.sect10 = (function() {
     }
     
     /**
-     * Helper function to get a numeric value from a field
-     */
-    function getNumericValue(fieldId) {
-        try {
-            const value = getFieldValue(fieldId);
-            
-            // Handle string values (with comma removal)
-            if (typeof value === 'string') {
-                // Remove percentage symbol and commas
-                const cleanedValue = value.replace(/[%,]/g, '');
-                return parseFloat(cleanedValue) || 0;
-            }
-            // Handle number values directly
-            else if (typeof value === 'number') {
-                return value;
-            }
-            // Default fallback
-            return 0;
-        } catch (error) {
-            // console.error(`Error getting numeric value for ${fieldId}:`, error);
-            return 0;
-        }
-    }
-    
-    /**
      * Helper function to get a field value
      */
     function getFieldValue(fieldId) {
@@ -1409,22 +1384,60 @@ window.TEUI.SectionModules.sect10 = (function() {
     }
     
     /**
-     * Helper function to set a calculated field value
+     * Helper function to set a calculated field value, updating StateManager and DOM
+     * Stores RAW value in StateManager and FORMATTED value in DOM.
      */
     function setCalculatedValue(fieldId, value) {
         try {
-            // Set in state manager if available
+            let rawValue = value;
+            // If the value is a percentage string, convert to number first
+            if (typeof value === 'string' && value.endsWith('%')) {
+                rawValue = parseFloat(value) / 100;
+            } else if (typeof value === 'string') {
+                // Attempt to parse numeric strings, removing commas
+                const parsed = parseFloat(value.replace(/,/g, ''));
+                if (!isNaN(parsed)) {
+                    rawValue = parsed;
+                } else {
+                     // If it's not easily parseable as a number (e.g., "N/A", "100%"), store original string
+                     rawValue = value; 
+                }
+            } else if (typeof value !== 'number') {
+                 // If not a number or string, convert to string for storage
+                 rawValue = String(value);
+            }
+
+            let valueToStore;
+            let displayValue;
+
+            // Check if the raw value is numeric for formatting and storage
+            if (typeof rawValue === 'number' && !isNaN(rawValue)) {
+                valueToStore = rawValue.toString(); // Store raw numeric value as string
+                displayValue = formatNumber(rawValue); // Format for display
+                 // Handle percentage display specifically if original was percentage string
+                 if (typeof value === 'string' && value.endsWith('%')) {
+                     displayValue = `${(rawValue * 100).toFixed(2)}%`;
+                 }
+            } else {
+                 // If rawValue isn't numeric (e.g., "N/A", or couldn't parse), store/display as is
+                 valueToStore = String(rawValue); 
+                 displayValue = String(rawValue); 
+            }
+
+
+            // Set RAW value (as string) in state manager if available
             if (window.TEUI?.StateManager?.setValue) {
-                window.TEUI.StateManager.setValue(fieldId, value, "calculated");
+                window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
             }
             
-            // Also update DOM
+            // Update DOM with FORMATTED value
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (element) {
                 if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                    element.value = value;
+                    // Inputs usually expect the raw value, but might need formatting depending on type
+                    element.value = displayValue; 
                 } else {
-                    element.textContent = value;
+                    element.textContent = displayValue;
                 }
             }
         } catch (error) {
@@ -1433,31 +1446,28 @@ window.TEUI.SectionModules.sect10 = (function() {
     }
     
     /**
-     * Format a number for display with commas and proper decimals
+     * Format a number for display with commas and 2 decimal places consistently.
      */
     function formatNumber(value) {
         try {
-            // Check if value is very small
-            if (Math.abs(value) < 0.01 && value !== 0) {
-                return value.toFixed(2);
+            // Ensure value is a number for formatting
+            const numValue = parseFloat(value);
+
+            // Handle non-numeric or NaN values
+            if (isNaN(numValue)) {
+                // Return the original value if non-numeric, or '0.00' if it was NaN
+                return typeof value === 'string' ? value : '0.00'; 
             }
-            
-            // Check if value is integer
-            if (Number.isInteger(parseFloat(value))) {
-                return parseFloat(value).toLocaleString(undefined, {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                });
-            }
-            
-            // Format with 2 decimal places
-            return parseFloat(value).toLocaleString(undefined, {
+
+            // Format consistently with 2 decimal places and locale-specific separators
+            return numValue.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
         } catch (error) {
             // console.error('Error formatting number:', error);
-            return value.toString();
+            // Fallback to string conversion
+            return String(value);
         }
     }
     
@@ -1623,11 +1633,33 @@ window.TEUI.SectionModules.sect10 = (function() {
                 return;
             }
             
-            // Add listeners for key fields that might change from other sections
-            // Example: Listen for climate zone changes
-            window.TEUI.StateManager.addListener('j_19', function() {
-                // console.log('Climate zone changed, recalculating solar gains');
-                calculateSolarGains();
+            // Listener for climate zone changes affecting gain factor
+            window.TEUI.StateManager.addListener('j_19', function(newValue) {
+                // console.log('Climate zone (j_19) changed, recalculating solar gains');
+                // Recalculate orientation gains which depend on gain factor
+                 try {
+                     calculateOrientationGains("73");
+                     calculateOrientationGains("74");
+                     calculateOrientationGains("75");
+                     calculateOrientationGains("76");
+                     calculateOrientationGains("77");
+                     calculateOrientationGains("78");
+                     calculateSubtotals(); // Recalculate subtotals after orientation gains change
+                     calculateUtilizationFactors(); // Utilization depends on subtotals
+                 } catch (e) { /* console.error('Error recalculating orientation gains on j_19 change:', e) */ }
+            });
+
+            // Define dependencies for Utilization Factors
+            const utilizationDependencies = ['i_71', 'i_97', 'i_103', 'm_121', 'i_98'];
+
+            // Add listeners for fields affecting utilization factors
+            utilizationDependencies.forEach(fieldId => {
+                window.TEUI.StateManager.addListener(fieldId, function(newValue) {
+                    // console.log(`Utilization dependency (${fieldId}) changed, recalculating utilization factors.`);
+                     try {
+                        calculateUtilizationFactors();
+                     } catch (e) { /* console.error(`Error recalculating utilization factors on ${fieldId} change:`, e) */ }
+                });
             });
             
             // console.log('Radiant Gains StateManager listeners added');

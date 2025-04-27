@@ -714,14 +714,15 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Calculate Occupant Activity watts based on activity level
      */
     function calculateActivityWatts(activityLevel) {
+        // Use precise values derived from SCHEDULES-3037.csv G32:G43
         const activityWatts = {
-            "Relaxed": 97,
-            "Normal": 117,
-            "Active": 220, 
-            "Hyperactive": 425
+            "Relaxed": 96.71,    // Was 97
+            "Normal": 117.23,   // Was 117
+            "Active": 219.80,   // Was 220
+            "Hyperactive": 424.95 // Was 425
         };
         
-        return activityWatts[activityLevel] || 117; // Default to Normal if not found
+        return activityWatts[activityLevel] || 117.23; // Default to Normal (precise value)
     }
     
     /**
@@ -812,17 +813,18 @@ window.TEUI.SectionModules.sect09 = (function() {
         // Update density field
         setCalculatedValue("d_65", formatNumber(plugLoadDensity));
         
-        // Calculate annual energy
+        // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
         const conditionedArea = getNumericValue("h_15");
-        const energy = plugLoadDensity * conditionedArea * 8760 / 1000; // W/m² to kWh/yr
+        const occupiedHours = getNumericValue("i_63"); // Use annual occupied hours
+        const energy = plugLoadDensity * conditionedArea * occupiedHours / 1000; // W/m² to kWh/yr using occupied hours
         
-        // Get heating/cooling split
-        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+        // Get heating/cooling split - Use DYNAMIC ratio for Plug Loads per user request
+        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(); 
         
         // Update energy fields
         setCalculatedValue("h_65", formatNumber(energy));
-        setCalculatedValue("i_65", formatNumber(energy * heatingRatio)); // Heating portion
-        setCalculatedValue("k_65", formatNumber(energy * coolingRatio)); // Cooling portion
+        setCalculatedValue("i_65", formatNumber(energy * heatingRatio)); // Use dynamic heating ratio
+        setCalculatedValue("k_65", formatNumber(energy * coolingRatio)); // Use dynamic cooling ratio
         
         // Calculate percentage against reference value
         // Reference is 5 W/m² for residential/care or 7 W/m² for others
@@ -853,20 +855,20 @@ window.TEUI.SectionModules.sect09 = (function() {
         const lightingDensity = getNumericValue("d_66");
         const conditionedArea = getNumericValue("h_15");
         
-        // Calculate annual energy
-        const energy = lightingDensity * conditionedArea * 8760 / 1000; // W/m² to kWh/yr
+        // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
+        const occupiedHours = getNumericValue("i_63"); // Use annual occupied hours
+        const energy = lightingDensity * conditionedArea * occupiedHours / 1000; // W/m² to kWh/yr using occupied hours
         
-        // Get heating/cooling split
-        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+        // Get heating/cooling split - Use DYNAMIC ratio for Lighting Loads
+        const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(); 
         
         // Update fields
         setCalculatedValue("h_66", formatNumber(energy));
-        setCalculatedValue("i_66", formatNumber(energy * heatingRatio)); // Heating portion
-        setCalculatedValue("k_66", formatNumber(energy * coolingRatio)); // Cooling portion
+        setCalculatedValue("i_66", formatNumber(energy * heatingRatio)); // Use dynamic heating ratio
+        setCalculatedValue("k_66", formatNumber(energy * coolingRatio)); // Use dynamic cooling ratio
         
         // Calculate percentage against reference value
         // Based on CSV data, reference appears to be around 1.13 W/m²
-        // (since 1.5 is shown as 133% of reference)
         const referenceLightingLoad = 1.13;
         const percentOfReference = Math.round((lightingDensity / referenceLightingLoad) * 100);
         setCalculatedValue("m_66", percentOfReference + "%");
@@ -966,17 +968,18 @@ window.TEUI.SectionModules.sect09 = (function() {
                 window.TEUI.StateManager.setValue("d_67", densityValue.toString(), 'calculated');
             }
             
-            // Calculate annual energy
-            // Use getNumericValue to safely get the floor area
+            // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
+            // Use getNumericValue to safely get the floor area and occupied hours
             const floorArea = getNumericValue("h_15");
+            const occupiedHours = getNumericValue("i_63"); // Use annual occupied hours
             
-            const annualEnergy = (densityValue * floorArea * 8760 / 1000) || 0; // W/m² to kWh/yr
+            const annualEnergy = (densityValue * floorArea * occupiedHours / 1000) || 0; // W/m² to kWh/yr using occupied hours
             
-            // Get heating/cooling split
-            const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+            // Get heating/cooling split - Use DYNAMIC ratio for Equipment Loads
+            const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit(); 
             
-            const heatingPortion = annualEnergy * heatingRatio;
-            const coolingPortion = annualEnergy * coolingRatio;
+            const heatingPortion = annualEnergy * heatingRatio; // Use dynamic heating ratio
+            const coolingPortion = annualEnergy * coolingRatio; // Use dynamic cooling ratio
             
             // Update fields
             updateField("h_67", annualEnergy);
@@ -994,7 +997,7 @@ window.TEUI.SectionModules.sect09 = (function() {
             // Update percentages and totals
             calculateTotals();
         } catch (error) {
-            // console.error("❌ Error calculating equipment loads:", error);
+            // REMOVE: console.error("❌ Error calculating equipment loads:", error);
         }
         
         // Helper function to update a field
@@ -1055,7 +1058,7 @@ window.TEUI.SectionModules.sect09 = (function() {
                     }
                 }
             } catch (e) {
-                // console.error("Error formatting building type:", e);
+                // REMOVE: console.error("Error formatting building type:", e);
             }
             
             return 'A-Assembly'; // Default fallback
@@ -1068,6 +1071,12 @@ window.TEUI.SectionModules.sect09 = (function() {
     function calculateTotals() {
         // Get values for components
         const dhwLosses = getNumericValue("h_69");
+        // Split DHW losses using DYNAMIC ratio
+        const { heatingRatio: dhwHeatingRatio, coolingRatio: dhwCoolingRatio } = calculateHeatingCoolingSplit();
+        const dhwHeating = dhwLosses * dhwHeatingRatio;
+        const dhwCooling = dhwLosses * dhwCoolingRatio;
+        setCalculatedValue("i_69", formatNumber(dhwHeating));
+        setCalculatedValue("k_69", formatNumber(dhwCooling));
         
         // Energy values
         const plugEnergy = getNumericValue("h_65");
@@ -1079,14 +1088,12 @@ window.TEUI.SectionModules.sect09 = (function() {
         const plugHeating = getNumericValue("i_65");
         const lightingHeating = getNumericValue("i_66");
         const equipmentHeating = getNumericValue("i_67");
-        const dhwHeating = getNumericValue("i_69");
         const occupantHeating = getNumericValue("i_64");
         
         // Cooling values
         const plugCooling = getNumericValue("k_65");
         const lightingCooling = getNumericValue("k_66");
         const equipmentCooling = getNumericValue("k_67");
-        const dhwCooling = getNumericValue("k_69");
         const occupantCooling = getNumericValue("k_64");
         
         // Calculate subtotals
@@ -1445,101 +1452,6 @@ window.TEUI.SectionModules.sect09 = (function() {
     }
     
     /**
-     * Setup a mutation observer to enforce our dropdown values ONLY DURING INITIALIZATION
-     * This handles the case where other code might change our dropdowns during startup,
-     * but allows user changes after initialization
-     */
-    function setupValueEnforcement() {
-        // Get section element
-        const sectionElement = document.getElementById('occupantInternalGains');
-        if (!sectionElement) return;
-
-        // Create an initialization routine to set values just once
-        function initializeDropdownValues() {
-            // console.log("Initializing dropdown values, already initialized:", window.TEUI.sect09.initialized);
-            
-            if (window.TEUI.sect09.initialized && window.TEUI.sect09.userInteracted) {
-                // console.log("Section 09 already initialized and user has interacted - skipping defaults");
-                return;
-            }
-            
-            // Set initial dropdown values
-            // console.log("Setting initial dropdown values for Section 09");
-            
-            // Use both direct DOM access and StateManager for redundancy
-            const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
-            const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
-            
-            if (efficiencyDropdown) {
-                // console.log("Setting efficiency dropdown to Efficient");
-                efficiencyDropdown.value = "Efficient";
-                const event = new Event('change', { bubbles: true });
-                efficiencyDropdown.dispatchEvent(event);
-                
-                // Also set in StateManager
-                if (window.TEUI?.StateManager?.setValue) {
-                    window.TEUI.StateManager.setValue("g_67", "Efficient", "default");
-                }
-            }
-            
-            if (elevatorDropdown) {
-                // console.log("Setting elevator dropdown to No Elevators");
-                elevatorDropdown.value = "No Elevators";
-                const event = new Event('change', { bubbles: true });
-                elevatorDropdown.dispatchEvent(event);
-                
-                // Also set in StateManager
-                if (window.TEUI?.StateManager?.setValue) {
-                    window.TEUI.StateManager.setValue("d_68", "No Elevators", "default");
-                }
-            }
-            
-            // Force set the equipment load value for consistent default state
-            const densityField = document.querySelector('[data-field-id="d_67"]');
-            if (densityField) {
-                densityField.textContent = "5.00";
-                
-                // Also set in StateManager
-                if (window.TEUI?.StateManager?.setValue) {
-                    window.TEUI.StateManager.setValue("d_67", "5.00", "default");
-                }
-            }
-            
-            // Set initialization flag to prevent re-initialization
-            window.TEUI.sect09.initialized = true;
-            
-            // Calculate with default values
-            calculateEquipmentLoads();
-        }
-        
-        // Set up listeners for user interactions with dropdowns
-        const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
-        const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
-        
-        // Add user interaction tracking to dropdowns - once user changes values, we don't enforce defaults
-        if (efficiencyDropdown) {
-            efficiencyDropdown.addEventListener('change', function(e) {
-                // Mark as user interaction if change event came from a real user action
-                if (e.isTrusted) {
-                    window.TEUI.sect09.userInteracted = true;
-                }
-            });
-        }
-        
-        if (elevatorDropdown) {
-            elevatorDropdown.addEventListener('change', function(e) {
-                // Mark as user interaction if change event came from a real user action
-                if (e.isTrusted) {
-                    window.TEUI.sect09.userInteracted = true;
-                }
-            });
-        }
-        
-        // Run initialization immediately
-        initializeDropdownValues();
-    }
-    
-    /**
      * Called when the section is rendered
      */
     function onSectionRendered() {
@@ -1549,14 +1461,41 @@ window.TEUI.SectionModules.sect09 = (function() {
         
         // Initialize event handlers
         initializeEventHandlers();
-        
-        // Setup mutation observer to enforce values
-        setupValueEnforcement();
+
+        // Initialize default dropdown values and related calculated fields (Moved from setupValueEnforcement)
+        // Check initialization/interaction flags to prevent overriding user changes
+        if (!(window.TEUI.sect09.initialized && window.TEUI.sect09.userInteracted)) {
+            const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
+            const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
+            const densityField = document.querySelector('[data-field-id="d_67"]');
+
+            if (efficiencyDropdown) {
+                efficiencyDropdown.value = "Efficient";
+                if (window.TEUI?.StateManager?.setValue) {
+                    window.TEUI.StateManager.setValue("g_67", "Efficient", "default");
+                }
+            }
+            if (elevatorDropdown) {
+                elevatorDropdown.value = "No Elevators";
+                if (window.TEUI?.StateManager?.setValue) {
+                    window.TEUI.StateManager.setValue("d_68", "No Elevators", "default");
+                }
+            }
+            if (densityField) {
+                 densityField.textContent = formatNumber(5.00); // Use formatNumber for consistency
+                 if (window.TEUI?.StateManager?.setValue) {
+                    window.TEUI.StateManager.setValue("d_67", "5.00", "default");
+                 }
+            }
+            window.TEUI.sect09.initialized = true;
+            // Trigger calculation involving these defaults
+            calculateEquipmentLoads(); 
+        }
         
         // Add checkmark styles
         addCheckmarkStyles();
         
-        // Run initial calculations
+        // Run initial full calculation (will re-run parts if defaults were set)
         calculateAll();
     }
     
@@ -1696,7 +1635,6 @@ window.TEUI.SectionModules.sect09 = (function() {
         calculateEquipmentLoads: calculateEquipmentLoads,
         calculateTotals: calculateTotals,
         setupEquipmentDropdownListeners: setupEquipmentDropdownListeners,
-        setupValueEnforcement: setupValueEnforcement,
         
         // Registration functions
         registerWithStateManager: registerWithStateManager,
@@ -1709,97 +1647,15 @@ window.TEUI.SectionModules.sect09 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
+// Initialize when the section is rendered - THIS IS THE PRIMARY INITIALIZATION POINT
 document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail?.sectionId === 'occupantInternalGains') {
-        setTimeout(() => window.TEUI.SectionModules.sect09.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('occupantInternalGains')) {
-            window.TEUI.SectionModules.sect09.onSectionRendered();
-        }
-    }, 300);
-});
-
-// Additional delayed initialization to ensure defaults are applied even if other modules override them
-setTimeout(() => {
-    if (document.getElementById('occupantInternalGains')) {
-        // console.log('Running delayed initialization for Section 9 defaults');
-        if (typeof setInitialDropdownValues === 'function') {
-            setInitialDropdownValues();
-        } else if (window.TEUI.sect09.setupValueEnforcement) {
-            window.TEUI.sect09.setupValueEnforcement();
-            window.TEUI.sect09.calculateEquipmentLoads();
-        }
-    }
-}, 1000);  // Wait a full second after page load
-
-// Clean up periodic recalculation log noise
-if (window.console && window.console.log) {
-    const originalLog = window.console.log;
-    window.console.log = function(...args) {
-        if (args[0] === "Periodic TEUI recalculation") {
-            return; // Don't log this message
-        }
-        originalLog.apply(console, args);
-    };
-}
-
-// Modified DOMContentLoaded event handler to ensure calculateEquipmentLoads is accessible
-document.addEventListener('DOMContentLoaded', function() {
-    // Create global references to key functions to ensure they're accessible
-    window.TEUI = window.TEUI || {};
-    window.TEUI.sect09 = window.TEUI.sect09 || {};
-    window.TEUI.sect09.initialized = false;
-    window.TEUI.sect09.userInteracted = false;
-    
-    // Store the original function reference before we create any wrappers
-    const originalCalculateEquipmentLoads = window.TEUI.SectionModules.sect09.calculateEquipmentLoads;
-    
-    // Add references to key functions to make them accessible outside the module
-    window.TEUI.sect09.calculateEquipmentLoads = originalCalculateEquipmentLoads;
-    window.TEUI.sect09.setupEquipmentDropdownListeners = window.TEUI.SectionModules.sect09.setupEquipmentDropdownListeners;
-    window.TEUI.sect09.setupValueEnforcement = window.TEUI.SectionModules.sect09.setupValueEnforcement;
-    
-    // Set a timeout to let the app initialize first
-    setTimeout(() => {
-        if (document.getElementById('occupantInternalGains')) {
-            window.TEUI.sect09.setupEquipmentDropdownListeners();
-            window.TEUI.sect09.setupValueEnforcement();
-            window.TEUI.sect09.calculateEquipmentLoads();
-        }
-    }, 500);
-
-    // Add a second, later timeout to ensure defaults are set after all other scripts have run
-    setTimeout(() => {
-        if (document.getElementById('occupantInternalGains')) {
-            // console.log("Running final default enforcement for Section 09");
-            if (window.TEUI.sect09.setupValueEnforcement) {
-                window.TEUI.sect09.setupValueEnforcement();
-            }
-        }
-    }, 1500);
-});
-
-// Modified teui-section-rendered handler for consistency
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'occupantInternalGains') {
+        // Use a small delay to ensure other elements might be ready
         setTimeout(() => {
-            // Use the namespace functions to ensure proper references
-            if (window.TEUI.sect09.setupEquipmentDropdownListeners) {
-                window.TEUI.sect09.setupEquipmentDropdownListeners();
-            }
-            if (window.TEUI.sect09.setupValueEnforcement) {
-                window.TEUI.sect09.setupValueEnforcement();
-            }
-            if (window.TEUI.sect09.calculateEquipmentLoads) {
-                window.TEUI.sect09.calculateEquipmentLoads();
-            }
-        }, 300);
+             if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
+                 window.TEUI.SectionModules.sect09.onSectionRendered();
+             }
+        }, 100); 
     }
 });
 
@@ -1811,76 +1667,6 @@ if (window.console && window.console.log) {
             return; // Don't log this message
         }
         originalLog.apply(console, args);
-    };
-};
-
-// Add a small wrapper for safe calculations even when the function is called as a global reference
-window.calculateEquipmentLoads = function() {
-    // Prevent infinite recursion by checking the call stack
-    if (window.calculateEquipmentLoadsRunning) {
-        // console.warn("Preventing recursive call to calculateEquipmentLoads");
-        return;
-    }
-    
-    window.calculateEquipmentLoadsRunning = true;
-    
-    try {
-        // First check if the module has been initialized
-        if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect09) {
-            // Try to call the function from the module
-            if (typeof window.TEUI.SectionModules.sect09.calculateEquipmentLoads === 'function') {
-                // console.log("Calling calculateEquipmentLoads from SectionModules.sect09");
-                window.TEUI.SectionModules.sect09.calculateEquipmentLoads();
-                return;
-            }
-        }
-        
-        // Next try the namespace reference
-        if (window.TEUI.sect09 && typeof window.TEUI.sect09.calculateEquipmentLoads === 'function') {
-            // console.log("Calling calculateEquipmentLoads from TEUI.sect09");
-            window.TEUI.sect09.calculateEquipmentLoads();
-            return;
-        }
-        
-        // Last resort - check if there's a direct reference
-        // console.warn("Could not find the calculateEquipmentLoads function in module or namespace");
-    } catch (e) {
-        // console.error("Error in global calculateEquipmentLoads wrapper:", e);
-    } finally {
-        // Clear the flag regardless of success/failure
-        window.calculateEquipmentLoadsRunning = false;
-    }
-};
-
-// Ensure setInitialDropdownValues exists globally
-if (typeof window.setInitialDropdownValues !== 'function') {
-    window.setInitialDropdownValues = function() {
-        // console.log("Global setInitialDropdownValues called");
-        
-        try {
-            // First check if we can use the namespace references
-            if (window.TEUI && window.TEUI.sect09) {
-                if (typeof window.TEUI.sect09.setupValueEnforcement === 'function') {
-                    window.TEUI.sect09.setupValueEnforcement();
-                }
-                if (typeof window.TEUI.sect09.calculateEquipmentLoads === 'function') {
-                    window.TEUI.sect09.calculateEquipmentLoads();
-                }
-                return;
-            }
-            
-            // Fallback to the module
-            if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect09) {
-                if (typeof window.TEUI.SectionModules.sect09.setupValueEnforcement === 'function') {
-                    window.TEUI.SectionModules.sect09.setupValueEnforcement();
-                }
-                if (typeof window.TEUI.SectionModules.sect09.calculateEquipmentLoads === 'function') {
-                    window.TEUI.SectionModules.sect09.calculateEquipmentLoads();
-                }
-            }
-        } catch (e) {
-            // console.error("Error in setInitialDropdownValues:", e);
-        }
     };
 }
 

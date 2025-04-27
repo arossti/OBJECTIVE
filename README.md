@@ -199,6 +199,7 @@ When working with this codebase, previous AI assistants have encountered several
 9. **Robust Input Parsing**:
    - ✅ **ALWAYS** use the section's `parseNumeric` helper function (or equivalent) when parsing input values within calculation functions, especially values retrieved from the DOM via helpers like `getFieldValue`. 
    - ❌ **Avoid** using `parseFloat()` directly on values that might be formatted strings (e.g., "1,234.56"). `parseFloat` stops at the first non-numeric character, leading to incorrect results (e.g., `parseFloat("1,234.56")` becomes `1`). Using `parseNumeric` ensures commas are handled correctly.
+   - **TODO:** Refactor all sections to use the global `window.TEUI.parseNumeric` helper (defined in `4011-init.js`) instead of local helpers (`getNumericValue`, etc.) for consistent input parsing across the application.
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 
