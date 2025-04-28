@@ -12,7 +12,7 @@ window.TEUI.SectionModules.sect11 = (function() {
     //==========================================================================
     // CONFIGURATION
     //==========================================================================
-
+    
     // Baseline values for Reference % calculation (derived from screenshot)
     const baselineValues = {
         85: { type: 'rsi', value: 5.3 },   // Roof
@@ -109,7 +109,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 m: { fieldId: "m_87", type: "calculated" }, n: { fieldId: "n_87", type: "calculated" }
             }
         },
-         "88": {
+        "88": {
             id: "B.7.0", rowId: "B.7.0", label: "Doors", cells: {
                 c: { label: "Doors" }, d: { fieldId: "d_88", type: "calculated" },
                 e: { fieldId: "e_88", type: "calculated" }, f: { fieldId: "f_88", type: "calculated" },
@@ -119,7 +119,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 m: { fieldId: "m_88", type: "calculated" }, n: { fieldId: "n_88", type: "calculated" }
             }
         },
-         "89": {
+        "89": {
             id: "B.8.1", rowId: "B.8.1", label: "Window Area North", cells: {
                 c: { label: "Window Area North" }, d: { fieldId: "d_89", type: "calculated" },
                 e: { fieldId: "e_89", type: "calculated" }, f: { fieldId: "f_89", type: "calculated" },
@@ -149,7 +149,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 m: { fieldId: "m_91", type: "calculated" }, n: { fieldId: "n_91", type: "calculated" }
             }
         },
-         "92": {
+        "92": {
             id: "B.8.4", rowId: "B.8.4", label: "Window Area West", cells: {
                 c: { label: "Window Area West" }, d: { fieldId: "d_92", type: "calculated" },
                 e: { fieldId: "e_92", type: "calculated" }, f: { fieldId: "f_92", type: "calculated" },
@@ -159,7 +159,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 m: { fieldId: "m_92", type: "calculated" }, n: { fieldId: "n_92", type: "calculated" }
             }
         },
-         "93": {
+        "93": {
             id: "B.8.5", rowId: "B.8.5", label: "Skylights", cells: {
                 c: { label: "Skylights" }, d: { fieldId: "d_93", type: "calculated" },
                 e: { fieldId: "e_93", type: "calculated" }, f: { fieldId: "f_93", type: "calculated" },
@@ -217,11 +217,11 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
         }
     };
-
+    
     //==========================================================================
     // ACCESSOR METHODS
     //==========================================================================
-
+    
     function getFields() {
         const fields = {};
         Object.values(sectionRows).forEach(row => {
@@ -234,7 +234,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         });
         return fields;
     }
-
+    
     function getDropdownOptions() { return {}; }
 
     function getLayout() {
@@ -245,7 +245,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         });
         return { rows: layoutRows };
     }
-
+    
     function createLayoutRow(row) {
         const rowDef = { id: row.id, cells: [{}, {}] };
         const columns = ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'];
@@ -254,7 +254,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             if (col === 'c' && !cell.label && row.label) cell.label = row.label;
             // Only remove properties confirmed unnecessary for rendering
             delete cell.section; delete cell.dependencies; delete cell.getOptions;
-            rowDef.cells.push(cell);
+                rowDef.cells.push(cell);
         });
         return rowDef;
     }
@@ -262,9 +262,9 @@ window.TEUI.SectionModules.sect11 = (function() {
     //==========================================================================
     // HELPER FUNCTIONS
     //==========================================================================
-
+    
     function getNumericValue(fieldId) {
-        const value = getFieldValue(fieldId);
+            const value = getFieldValue(fieldId);
         if (window.TEUI?.parseNumeric) return window.TEUI.parseNumeric(value);
         // Fallback parser
         if (typeof value === 'string') {
@@ -282,7 +282,7 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     function setCalculatedValue(fieldId, value, skipFormat = false) {
-        let displayValue = value;
+            let displayValue = value;
         let rawValue = (typeof value === 'number') ? value.toString() : (value || '').toString().replace(/,/g, '');
 
         if (!skipFormat && !isNaN(parseFloat(rawValue))) {
@@ -294,21 +294,21 @@ window.TEUI.SectionModules.sect11 = (function() {
             } else displayValue = formatNumber(numValue, 2); // Default 2 decimals
         }
 
-        if (window.TEUI?.StateManager?.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, rawValue, 'calculated');
-        }
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, rawValue, 'calculated');
+            }
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) element.textContent = displayValue;
     }
 
     function formatNumber(value, decimalPlaces = 2) {
-        value = parseFloat(value);
+            value = parseFloat(value);
         return isNaN(value) ? "" : value.toLocaleString(undefined, { minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces });
     }
 
     // Reinstated formatPercentage as it's needed for Column M display
     function formatPercentage(value) {
-        value = parseFloat(value);
+            value = parseFloat(value);
         return isNaN(value) ? "0%" : `${Math.round(value)}%`;
     }
 
@@ -317,6 +317,36 @@ window.TEUI.SectionModules.sect11 = (function() {
         if (element) {
             element.classList.remove("checkmark", "warning");
             element.classList.add(isGood ? "checkmark" : "warning");
+        }
+    }
+
+    /**
+     * Sets indicator classes (e.g., loss-high, loss-medium, loss-low) for a cell.
+     * Removes existing indicator classes before adding the new one.
+     * @param {string} fieldId - The data-field-id of the cell element.
+     * @param {string} newClass - The new indicator class to add (or empty string to remove all).
+     * @param {string[]} potentialClasses - An array of all possible indicator classes for this type.
+     */
+    function setIndicatorClass(fieldId, newClass, potentialClasses) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            // Determine base class type from potentialClasses
+            const baseClass = potentialClasses[0]?.startsWith('loss') ? 'loss-indicator' : 'gain-indicator';
+            const otherBaseClass = baseClass === 'loss-indicator' ? 'gain-indicator' : 'loss-indicator';
+
+            // Remove all potential indicator classes and the other base class
+            element.classList.remove(...potentialClasses, otherBaseClass);
+
+            if (newClass) {
+                element.classList.add(newClass);
+                // Ensure correct base class is present
+                if (!element.classList.contains(baseClass)) {
+                    element.classList.add(baseClass);
+                }
+                } else {
+                 // Remove base class if removing indicator
+                 element.classList.remove(baseClass);
+            }
         }
     }
 
@@ -341,7 +371,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 rsiValue = getNumericValue(rsiFieldId);
                 if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
                 setCalculatedValue(uValueFieldId, (uValue === Infinity ? '∞' : uValue), uValue === Infinity);
-            } else {
+                } else {
                 uValue = getNumericValue(uValueFieldId);
                 if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
                 setCalculatedValue(rsiFieldId, (rsiValue === Infinity ? '∞' : rsiValue), rsiValue === Infinity);
@@ -349,9 +379,9 @@ window.TEUI.SectionModules.sect11 = (function() {
 
             if (area === 0 || rsiValue === Infinity || uValue === Infinity) {
                 setCalculatedValue(rimpFieldId, 0); setCalculatedValue(heatlossFieldId, 0); setCalculatedValue(heatgainFieldId, 0);
-                return;
-            }
-
+            return;
+        }
+        
             setCalculatedValue(rimpFieldId, rsiValue * 5.678);
 
             let hdd, heatgainMultiplier;
@@ -369,7 +399,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             const denominator = rsiValue * 1000;
             setCalculatedValue(heatlossFieldId, (area * hdd * 24) / denominator);
             setCalculatedValue(heatgainFieldId, (area * heatgainMultiplier) / denominator);
-
+            
         } catch (error) {
             console.error(`Error calculating row ${rowNumber}:`, error);
             [rimpFieldId, rsiFieldId, uValueFieldId, heatlossFieldId, heatgainFieldId].forEach(id => setCalculatedValue(id, 0));
@@ -456,18 +486,64 @@ window.TEUI.SectionModules.sect11 = (function() {
         const totalAreaAe = totals.airAreaD > 0 ? totals.airAreaD : 1;
         const totalAreaAg = totals.groundAreaD > 0 ? totals.groundAreaD : 1;
         const rowsToProcess = [...componentConfig, { row: 97 }];
+        const lossIndicatorClasses = ['loss-high', 'loss-medium', 'loss-low'];
+        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low']; // Define gain classes
 
         rowsToProcess.forEach(config => {
             const rowStr = config.row.toString();
+            const hCellFieldId = `h_${rowStr}`; // Field ID for Column H
+            const jCellFieldId = `j_${rowStr}`; // Field ID for Column J
+
             if (config.row !== 97) { // Area % only for components
                  const area = getNumericValue(`d_${rowStr}`) || 0;
-                 if (config.type === 'air') setCalculatedValue(`h_${rowStr}`, (area / totalAreaAe) * 100);
-                 else if (config.type === 'ground') setCalculatedValue(`h_${rowStr}`, (area / totalAreaAg) * 100);
+                 const hValue = config.type === 'air' ? (area / totalAreaAe) * 100 :
+                               (config.type === 'ground' ? (area / totalAreaAg) * 100 : 0);
+                 setCalculatedValue(hCellFieldId, hValue);
+
+                 // Apply text color class to Column H based on type
+                 const hElement = document.querySelector(`[data-field-id="${hCellFieldId}"]`);
+                 if (hElement) {
+                     hElement.classList.remove('text-air-facing', 'text-ground-facing');
+                     if (config.type === 'air') {
+                         hElement.classList.add('text-air-facing');
+                     } else if (config.type === 'ground') {
+                         hElement.classList.add('text-ground-facing');
+                     }
+                 }
             }
             const heatloss = getNumericValue(`i_${rowStr}`) || 0;
-            setCalculatedValue(`j_${rowStr}`, grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) * 100 : 0);
+            const heatlossPercent = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) * 100 : 0;
+            setCalculatedValue(jCellFieldId, heatlossPercent);
+
+            // Apply Loss Indicator Class to Column J
+            let lossClass = '';
+            // Revised Thresholds: Red >= 15, Yellow >= 1, Green < 1
+            if (heatlossPercent >= 15) { lossClass = 'loss-high'; }      // Red
+            else if (heatlossPercent >= 1) { lossClass = 'loss-medium'; }  // Yellow
+            else if (heatlossPercent >= 0 ) { lossClass = 'loss-low'; }       // Green
+            setIndicatorClass(jCellFieldId, lossClass, lossIndicatorClasses);
+
             const heatgain = getNumericValue(`k_${rowStr}`) || 0;
-            setCalculatedValue(`l_${rowStr}`, Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) * 100 : 0);
+            const heatgainPercent = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) * 100 : 0;
+            const lCellFieldId = `l_${rowStr}`; // Field ID for Column L
+            setCalculatedValue(lCellFieldId, heatgainPercent);
+
+            // Apply Gain Indicator Class to Column L
+            let gainClass = '';
+            // Revised Thresholds (Absolute): Red >= 15, Yellow >= 1, Green < 1
+            const absHeatgainPercent = Math.abs(heatgainPercent);
+            if (absHeatgainPercent >= 15) { gainClass = 'gain-low'; }       // Red (High gain impact = red)
+            else if (absHeatgainPercent >= 1) { gainClass = 'gain-medium'; }  // Yellow
+            else if (absHeatgainPercent >= 0 ) { gainClass = 'gain-high'; }      // Green (Low gain impact = green)
+            setIndicatorClass(lCellFieldId, gainClass, gainIndicatorClasses);
+
+            // --- Apply Left Alignment to J & L Columns --- 
+            const jElement = document.querySelector(`[data-field-id="${jCellFieldId}"]`);
+            if (jElement) jElement.classList.add('text-left-indicator');
+            const lElement = document.querySelector(`[data-field-id="${lCellFieldId}"]`);
+            if (lElement) lElement.classList.add('text-left-indicator');
+            // --- End Left Alignment --- 
+
             updateReferenceIndicators(config.row);
         });
     }
@@ -485,7 +561,8 @@ window.TEUI.SectionModules.sect11 = (function() {
 
         if (currentFieldId === 'd_97') {
              numValue = valueStr.includes('%') ? parseFloat(valueStr.replace('%','')) / 100 : parseFloat(valueStr);
-             rawValueToStore = (!isNaN(numValue) && numValue <= 1 && numValue >= 0) ? (numValue > 1 ? numValue / 100 : numValue).toString() : '0.2'; // Clamp and default
+             // Clamp penalty between 0 and 1, default 0.2 if invalid
+             rawValueToStore = (!isNaN(numValue) && numValue >= 0 && numValue <= 1) ? numValue.toString() : '0.2';
              displayValue = formatNumber(parseFloat(rawValueToStore) * 100, 2) + '%'; // Use formatNumber here
         } else {
              numValue = parseFloat(valueStr);
@@ -494,6 +571,7 @@ window.TEUI.SectionModules.sect11 = (function() {
              else if (currentFieldId.startsWith('g_')) displayValue = formatNumber(numValue, 3);
              else displayValue = formatNumber(numValue, 2);
         }
+        // Removed console.warn for invalid input - handled by defaulting rawValueToStore
         fieldElement.textContent = displayValue;
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified');
@@ -511,6 +589,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 field.addEventListener('focusout', () => field.classList.remove('editing'));
                 handleFieldBlur.call(field); // Initial format
             }
+            // Removed console.warn for missing/non-editable fields
         });
     }
 
@@ -531,7 +610,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         });
         calculateAll();
     }
-
+    
     //==========================================================================
     // PUBLIC API
     //==========================================================================

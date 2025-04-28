@@ -1091,3 +1091,66 @@ table.data-table select.form-select:hover {
     background-color: transparent !important; /* Ensure no background interferes */
 }
 /* --- End Utility Classes --- */
+
+.text-left-indicator {
+    text-align: left !important; /* Force left alignment for specific indicator columns */
+}
+
+/* --- Section 11 Visual Indicators --- */
+
+/* Base style for indicator cells */
+.loss-indicator,
+.gain-indicator {
+    position: relative;
+}
+
+/* Dot styles using pseudo-elements */
+.loss-indicator::before,
+.gain-indicator::before {
+    content: '';
+    position: absolute;
+    left: 6px; /* Nudge dot slightly right */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px; /* Increased dot size */
+    height: 10px; /* Increased dot size */
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Apply padding only when text is left aligned AND indicator is present */
+.text-left-indicator.loss-indicator,
+.text-left-indicator.gain-indicator {
+    padding-left: 20px; /* Space for dot + small gap */
+}
+
+/* Heat Loss Indicator Colors (Loss High = Red)*/
+.loss-high::before {
+    background-color: #dc3545; /* Red */
+}
+.loss-medium::before {
+    background-color: #ffc107; /* Yellow */
+}
+.loss-low::before {
+    background-color: #28a745; /* Green */
+}
+
+/* Heat Gain Indicator Colors (Gain High = Green) */
+.gain-high::before { 
+    background-color: #28a745; /* Green */ 
+}
+.gain-medium::before { 
+    background-color: #ffc107; /* Yellow */ 
+}
+.gain-low::before { 
+    background-color: #dc3545; /* Red */ 
+}
+
+/* Text Color for Air vs Ground Facing % (Column H) */
+.text-air-facing {
+    color: #B0E0E6; /* Powder Blue */
+}
+
+.text-ground-facing {
+    color: #8B4513; /* Brown (SaddleBrown) */
+}
