@@ -1121,35 +1121,47 @@ window.TEUI.SectionModules.sect09 = (function() {
     }
     
     /**
-     * Update percentage fields
+     * Updates the percentage columns (J and L) based on calculated totals.
      */
     function updatePercentages(totalHeating, totalCooling) {
-        // Helper to calculate and set percentage
-        const setPercentage = (valueFieldId, percentageFieldId, total) => {
-            if (total > 0) {
-                const value = getNumericValue(valueFieldId);
-                const percent = Math.round((value / total) * 100);
-                setCalculatedValue(percentageFieldId, `${percent}%`);
-            }
+        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low']; // Gain indicator classes
+
+        // Helper to calculate and set percentage and indicator
+        const setPercentage = (valueFieldId, percentageFieldId, total, isCooling = false) => {
+            const value = getNumericValue(valueFieldId);
+            const percentage = total > 0 ? (value / total) * 100 : 0;
+            // Use formatNumber for 2 decimals, then add %
+            setCalculatedValue(percentageFieldId, formatNumber(percentage) + '%');
+
+            // Apply Indicator Class & Left Alignment
+            let gainClass = '';
+            const absPercentage = Math.abs(percentage);
+            // Thresholds: Green >= 67, Yellow >= 33, Red < 33 (using gain classes)
+            if (absPercentage >= 67) { gainClass = 'gain-high'; }      // Green
+            else if (absPercentage >= 33) { gainClass = 'gain-medium'; } // Yellow
+            else if (absPercentage >= 0) { gainClass = 'gain-low'; }       // Red
+            setIndicatorClass(percentageFieldId, gainClass, gainIndicatorClasses);
+
+            // Apply left alignment
+            const element = document.querySelector(`[data-field-id="${percentageFieldId}"]`);
+            if (element) element.classList.add('text-left-indicator');
         };
-        
-        // Heating percentages
-        if (totalHeating > 0) {
-            setPercentage("i_64", "j_64", totalHeating); // Occupant
-            setPercentage("i_65", "j_65", totalHeating); // Plug
-            setPercentage("i_66", "j_66", totalHeating); // Lighting
-            setPercentage("i_67", "j_67", totalHeating); // Equipment
-            setPercentage("i_69", "j_69", totalHeating); // DHW
-        }
-        
-        // Cooling percentages
-        if (totalCooling > 0) {
-            setPercentage("k_64", "l_64", totalCooling); // Occupant
-            setPercentage("k_65", "l_65", totalCooling); // Plug
-            setPercentage("k_66", "l_66", totalCooling); // Lighting
-            setPercentage("k_67", "l_67", totalCooling); // Equipment
-            setPercentage("k_69", "l_69", totalCooling); // DHW
-        }
+
+        // Update percentages for relevant rows
+        setPercentage("i_64", "j_64", totalHeating);
+        setPercentage("k_64", "l_64", totalCooling, true);
+        setPercentage("i_65", "j_65", totalHeating);
+        setPercentage("k_65", "l_65", totalCooling, true);
+        setPercentage("i_66", "j_66", totalHeating);
+        setPercentage("k_66", "l_66", totalCooling, true);
+        setPercentage("i_67", "j_67", totalHeating);
+        setPercentage("k_67", "l_67", totalCooling, true);
+        setPercentage("i_69", "j_69", totalHeating);
+        setPercentage("k_69", "l_69", totalCooling, true);
+
+        // Set totals to 100%
+        setCalculatedValue("j_71", "100%");
+        setCalculatedValue("l_71", "100%");
     }
     
     /**
@@ -1610,6 +1622,29 @@ window.TEUI.SectionModules.sect09 = (function() {
                 }
             `;
             document.head.appendChild(styleElement);
+        }
+    }
+    
+    /**
+     * Sets indicator classes (e.g., gain-high, gain-medium, gain-low) for a cell.
+     * Removes existing indicator classes before adding the new one.
+     * @param {string} fieldId - The data-field-id of the cell element.
+     * @param {string} newClass - The new indicator class to add (or empty string to remove all).
+     * @param {string[]} potentialClasses - An array of all possible indicator classes for this type.
+     */
+    function setIndicatorClass(fieldId, newClass, potentialClasses) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const baseClass = 'gain-indicator'; // Always gain for this section
+            element.classList.remove(...potentialClasses);
+            if (newClass) {
+                element.classList.add(newClass);
+                if (!element.classList.contains(baseClass)) {
+                    element.classList.add(baseClass);
+                }
+            } else {
+                 element.classList.remove(baseClass);
+            }
         }
     }
     

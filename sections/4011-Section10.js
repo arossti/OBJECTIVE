@@ -1086,31 +1086,59 @@ window.TEUI.SectionModules.sect10 = (function() {
     }
     
     /**
-     * Update heating gain percentages for each element
+     * Update the heating gain percentage column (J) and apply indicators.
      */
     function updateHeatingPercentages(totalHeatingGains) {
-        if (totalHeatingGains <= 0) return;
-        
-        // Calculate and update percentage for each element
-        ["73", "74", "75", "76", "77", "78"].forEach(rowId => {
-            const elementGains = getNumericValue(`i_${rowId}`);
-            const percentage = (elementGains / totalHeatingGains) * 100;
-            setCalculatedValue(`j_${rowId}`, `${percentage.toFixed(2)}%`);
-        });
+        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low'];
+        if (totalHeatingGains <= 0) return; // Avoid division by zero
+
+        for (let i = 73; i <= 78; i++) {
+            const heatGain = getNumericValue(`i_${i}`);
+            const percentage = (heatGain / totalHeatingGains) * 100;
+            const fieldId = `j_${i}`;
+            setCalculatedValue(fieldId, formatNumber(percentage) + '%');
+
+            // Apply Indicator Class & Left Alignment
+            let gainClass = '';
+            const absPercentage = Math.abs(percentage);
+            // Thresholds: Green >= 67, Yellow >= 33, Red < 33
+            if (absPercentage >= 67) { gainClass = 'gain-high'; }      // Green
+            else if (absPercentage >= 33) { gainClass = 'gain-medium'; } // Yellow
+            else if (absPercentage >= 0) { gainClass = 'gain-low'; }       // Red
+            setIndicatorClass(fieldId, gainClass, gainIndicatorClasses);
+
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) element.classList.add('text-left-indicator');
+        }
+        setCalculatedValue('i_79', '100%'); // Use correct field ID j_79 for Total % ? Check Excel -> No, excel uses i_79 for 100% label
     }
     
     /**
-     * Update cooling gain percentages for each element
+     * Update the cooling gain percentage column (L) and apply indicators.
      */
     function updateCoolingPercentages(totalCoolingGains) {
-        if (totalCoolingGains <= 0) return;
-        
-        // Calculate and update percentage for each element
-        ["73", "74", "75", "76", "77", "78"].forEach(rowId => {
-            const elementGains = getNumericValue(`k_${rowId}`);
-            const percentage = (elementGains / totalCoolingGains) * 100;
-            setCalculatedValue(`l_${rowId}`, `${percentage.toFixed(2)}%`);
-        });
+        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low'];
+        const effectiveTotal = Math.abs(totalCoolingGains) > 1e-6 ? totalCoolingGains : 0;
+
+        for (let i = 73; i <= 78; i++) {
+            const coolGain = getNumericValue(`k_${i}`);
+            const percentage = effectiveTotal !== 0 ? (coolGain / effectiveTotal) * 100 : 0;
+            const fieldId = `l_${i}`;
+            setCalculatedValue(fieldId, formatNumber(percentage) + '%');
+
+            // Apply Indicator Class & Left Alignment
+            let gainClass = '';
+            const absPercentage = Math.abs(percentage);
+             // Thresholds: Green >= 67, Yellow >= 33, Red < 33
+            if (absPercentage >= 67) { gainClass = 'gain-high'; }      // Green
+            else if (absPercentage >= 33) { gainClass = 'gain-medium'; } // Yellow
+            else if (absPercentage >= 0) { gainClass = 'gain-low'; }       // Red
+            setIndicatorClass(fieldId, gainClass, gainIndicatorClasses);
+
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) element.classList.add('text-left-indicator');
+        }
+         setCalculatedValue('k_79', '100%'); // Use correct field ID l_79 for Total %? Check Excel -> No, Excel uses k_79
     }
     
     /**
@@ -1416,6 +1444,29 @@ window.TEUI.SectionModules.sect10 = (function() {
             element.classList.remove('checkmark', 'warning');
             // Add the new class
             element.classList.add(className);
+        }
+    }
+    
+    /**
+     * Sets indicator classes (e.g., gain-high, gain-medium, gain-low) for a cell.
+     * Removes existing indicator classes before adding the new one.
+     * @param {string} fieldId - The data-field-id of the cell element.
+     * @param {string} newClass - The new indicator class to add (or empty string to remove all).
+     * @param {string[]} potentialClasses - An array of all possible indicator classes for this type.
+     */
+    function setIndicatorClass(fieldId, newClass, potentialClasses) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const baseClass = 'gain-indicator'; // Always gain for this section
+            element.classList.remove(...potentialClasses);
+            if (newClass) {
+                element.classList.add(newClass);
+                if (!element.classList.contains(baseClass)) {
+                    element.classList.add(baseClass);
+                }
+            } else {
+                 element.classList.remove(baseClass);
+            }
         }
     }
     
