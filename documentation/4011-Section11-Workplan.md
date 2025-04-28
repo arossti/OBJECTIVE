@@ -1,211 +1,45 @@
-# TEUI 4.011 - Section 11 Refactor Workplan
+# TEUI 4.011 - Section 11 Workplan - Updated
 
-**Goal:** Ensure `sections/4011-Section11.js` (Transmission Losses) fully aligns with architectural standards (`README.md`) and calculation methodology (`FORMULAE-3037.csv`), and optimize for clarity and size.
+**Status:** The Section 11 module (`sections/4011-Section11.js`) has been successfully refactored following a simplified, ground-up approach.
 
-**Current Status (Post-Refactor):**
-*   ✅ Architecturally compliant (uses `sectionRows`, specific event handlers, StateManager interaction).
-*   ✅ Window/Door areas (`d_88`-`d_93`) correctly synced with Section 10 via StateManager.
-*   ✅ Column N logic updated to show Pass/Fail (`✓`/`✗`) based on Column M. Column N now holds cost calculations based on formulas from FORMULAE-3037.csv.
-*   ✅ Calculation logic now exactly matches Excel formulas from FORMULAE-3037.csv.
-*   ✅ Local `getNumericValue` function updated to use global `window.TEUI.parseNumeric` with fallback.
-*   ✅ Formatting helpers improved for proper precision (3 decimal places for U-values, 2 decimal places for RSI).
-*   ✅ All commented logs and debug functions removed.
-*   ✅ Fixed implementations for all rows (85-95) with proper heat gain/loss calculations.
-*   ✅ Below-grade calculations now properly handle ground temperature effects (capacitance cooling).
-*   ❌ Still uses hardcoded reference baseline values for Column M calculations (to be addressed in future).
-*   ❌ File size has ballooned to 134kb (target is ~30kb), requiring optimization.
+*   ✅ Module adheres to the standard architectural pattern (`README.md`).
+*   ✅ Calculations align with `FORMULAE-3037.csv`, prioritizing RSI for stability.
+*   ✅ File size significantly reduced and code complexity managed via parameterized functions.
+*   ✅ Includes Rows 85-95 and 97-98.
+*   ✅ Window/Door areas (Rows 88-93) are correctly linked to Section 10 values.
+*   ✅ Basic Reference % (Column M) and Pass/Fail (Column N) indicators implemented using hardcoded baselines (pending dynamic reference model).
 
 **Remaining / Next Step Tasks:**
 
-1. **Add Capacitance Switch Function in Section 3:**
-   * **Task:** Implement the capacitance switch function for ground-facing cooling degree days (GFCDD) calculation.
-   * **Details:**
-     * Create a mini JSON object in Calculator.js to handle this functionality
-     * Formula from FORMULAE-3037.csv: `=IF(H21="Static", SCHEDULES!N4, SCHEDULES!N5)`
-     * Where:
-       * SCHEDULES!N4 = MAX(0, (10-REPORT!H24)*SCHEDULES!H4)
-       * SCHEDULES!N5 = (10-REPORT!H24)*SCHEDULES!H4
-       * SCHEDULES!H4 is equivalent to M19 (total cooling season days, default 120)
-     * This should update GFCDD based on whether "Capacitance" or "Static" is selected at dd_h_21
-     * When "Capacitance" is selected, the percentage indicated at i_21 is used (50% by default)
-     * Implementation must ensure proper negative values for cooling effect in below-grade components
+1.  **Implement Capacitance Switch Functionality (Dependency on Section 03 & Calculator):**
+    *   **Task:** Section 11's ground-facing heat gain calculations (Rows 94, 95, Column K) depend on the Ground-Facing Cooling Degree Days (GFCDD), which should vary based on a "Capacitance" vs. "Static" setting (linked to `dd_h_21` in Section 03).
+    *   **Details:**
+        *   The core logic for calculating GFCDD based on the switch needs implementation, likely involving `4011-Section03.js` and potentially a helper/lookup in `4011-Calculator.js` or `4011-init.js`.
+        *   The formula involves `H21` (Static/Capacitance), `H24` (Tset Cooling), and `M19` (Cooling Season Days) from the Excel reference.
+        *   Section 11's `calculateComponentRow` (for `type: 'ground'`) needs to reliably fetch the correctly calculated `heatgainMultiplier` based on the active GFCDD value from the StateManager.
+        *   Ensure the potentially negative heat gain (cooling effect) from ground-facing elements is calculated correctly.
+    *   **Reference Formulas (from FORMULAE-3037.csv & Workplan):**
+        *   GFCDD (`D22` in Excel? No, `H22` seems related to ground *temp factor*, `D22` is GFHDD. Let's re-verify exact field for GFCDD target.) -> Check `L.2.5 GF CDD` in Excel: `=IF(H21="Static", SCHEDULES!N4, SCHEDULES!N5)`
+        *   Where `SCHEDULES!N4` = `MAX(0, (10-REPORT!H24)*SCHEDULES!H4)`
+        *   And `SCHEDULES!N5` = `(10-REPORT!H24)*SCHEDULES!H4`
+        *   And `SCHEDULES!H4` = Cooling Season Days (`M19` in Excel, likely `d_19`? Re-verify)
+        *   Section 11 `k_94`/`k_95` formula uses: `capacitanceValue(d_21) * area * groundTempFactor(h_22) * 24 / (rsiValue * 1000)`
 
-2. **Refine Reference Calculations (Column M):**
-   * **Task:** Leave as is for now. Update later when the reference model source is implemented.
-   * **Future Work:** Replace hardcoded baseline values with dynamically loaded values from a centralized reference table.
+2.  **Implement Dynamic Reference Baselines (Future):**
+    *   **Task:** Replace the hardcoded `baselineValues` object with logic to fetch reference RSI/U-Values based on the selected Code Standard (`d_13`) or other relevant inputs.
+    *   **Status:** Deferred until reference model lookup system is implemented.
 
-3. **File Size Optimization:**
-   * **Task:** Refactor to reduce file size from 134kb to closer to the 30kb target.
-   * **Details:**
-     * Move all CSS to 4011-styles.css (remove `addCheckmarkStyles()` function and inline styles)
-     * Create a parameterized calculation function to handle all component calculations (reduce 11 separate component functions to 1-2 generic functions)
-     * Centralize error handling instead of having separate try/catch blocks for each component
-     * Move utility functions like `formatPercentage` to global namespace for reuse across sections
-     * Remove redundant comments while maintaining clarity
-     * Simplify DOM update logic to reduce repeated code
-     * Merge similar functions like all window calculation functions into a single parameterized function
-     * Consolidate tooltips and status indicator logic
+3.  **Add Remaining Cost Calculations (Column N):**
+    *   **Task:** Implement the cost calculations for column N based on formulas in `FORMULAE-3037.csv` (e.g., `n_85 = i_85 * l_12`, `n_88 = (i_88 - i_73) * l_12`, etc.).
+    *   **Status:** Pending.
 
-4. **Final Compliance Check:**
-   * Re-verify calculations against `FORMULAE-3037.csv`.
-   * Confirm adherence to `README.md` patterns.
-   * Verify all values match Excel outputs with appropriate precision.
-   * Test thoroughly with various input scenarios.
-   * Verify file size is reduced to target range of ~30kb.
+**Completed / Obsolete Tasks:**
 
-## Completed Tasks
+*   ~~File Size Optimization~~ (Resolved via refactor)
+*   ~~Initial Architectural Compliance~~ (Achieved)
+*   ~~Implement base calculations for Rows 85-95, 97-98~~ (Completed)
+*   ~~Link Window/Door Areas~~ (Completed)
+*   ~~Fix Field Formatting~~ (Completed)
+*   ~~Cleanup and Basic Optimization~~ (Completed)
 
-1. **✅ Fix Field Formatting:**
-   * Fixed formatting for RSI values (2 decimal places) and U-values (3 decimal places)
-   * Ensured proper numeric precision throughout calculations
-   * Updated field initialization to handle user input formatting correctly
-
-2. **✅ Implement Complete Calculation Functions:**
-   * Created full implementations for all rows (85-95)
-   * Added proper handling of ground temperature effects for below-grade components
-   * Ensured formulas exactly match FORMULAE-3037.csv
-
-3. **✅ Cleanup and Optimization:**
-   * Removed verbose logging and debug functions
-   * Improved error handling
-   * Made calculation functions consistent in style and documentation
-   * Added clear comments referencing Excel formulas 
-
-## Architectural Patterns to Propagate
-
-1. **✅ Reference/Status System (Columns M & N):**
-   * Consider Section 11's implementation of the percentage/checkmark system as a model for other sections
-   * Key features to reuse:
-     * `formatPercentage` helper function for consistent percentage formatting
-     * Visual indication of pass/fail status using checkmark/X symbols (`✓`/`✗`)
-     * CSS styling with color-coded indicators (green for pass, red for fail)
-     * Tooltip integration providing context for reference values
-   * This pattern enhances user understanding by providing clear visual feedback on component performance
-
-## File Size Optimization
-
-Current file size of 134kb is significantly over our target of ~30kb. This not only impacts load times but violates our architectural principles for modular, maintainable code. Issues to address:
-
-1. **CSS Rule Violations:**
-   * Inline styles have been embedded rather than using the global stylesheet
-   * The `addCheckmarkStyles()` function adds ~50 lines of CSS that should be in 4011-styles.css
-   * All styling should follow the pattern in README.md with classes defined in the global CSS file
-
-2. **Function Redundancy:**
-   * Each of the 11 component calculations (roof, walls, windows, etc.) follow nearly identical patterns
-   * These can be refactored into a single parameterized function that accepts:
-     * Row ID/number
-     * Component type (for specific calculation variations)
-     * Reference value 
-     * Special handling flags
-
-3. **Error Handling Bloat:**
-   * Each calculation has its own try/catch block with similar error logging
-   * A centralized error handling approach would be more efficient
-
-4. **Utility Function Duplication:**
-   * Functions like `formatPercentage`, `formatNumber`, etc. should be moved to global utilities
-   * Reference Section 1 for pattern of using shared utilities
-
-5. **Code Modularity:**
-   * Break large functions into smaller, focused functions
-   * Group related functions into logical units
-   * Consider using a more functional programming approach for calculations
-
-6. **Comment Optimization:**
-   * Reduce redundant comments while maintaining clarity
-   * Use JSDoc format for function documentation
-   * Remove duplicate formula explanations
-
-The refactoring should prioritize maintainability and readability while significantly reducing file size. The targeted implementation should follow patterns in README.md, particularly regarding CSS management and utility function organization.
-
-## Template Compliance Check
-
-The current Section 11 implementation should be verified against the standard sectionXX template pattern to ensure proper architectural consistency:
-
-1. **Module Pattern Verification:**
-   * Confirm proper IIFE pattern with encapsulated private functions
-   * Verify the exported public API matches the expected template structure
-   * Check that the module registers correctly with the StateManager and global namespace
-   * Ensure event handlers follow the standard pattern
-
-2. **Function Structure Check:**
-   * Validate that required template functions exist:
-     * `getFields()`
-     * `getDropdownOptions()`
-     * `getLayout()`
-     * `initializeEventHandlers()`
-     * `onSectionRendered()`
-     * `calculateAll()`
-   * Confirm functions follow standard signature and return pattern
-
-3. **Event Registration Verification:**
-   * Check for proper event listeners for 'teui-section-rendered'
-   * Ensure proper DOM event handling with correct debouncing pattern
-
-4. **Public API Consistency:**
-   * Verify the module exports the expected public functions
-   * Confirm naming conventions match the template pattern
-
-Several areas may have diverged from the template, including the addition of numerous calculation functions that aren't in the standard template, and the embedded CSS which violates the architectural pattern. These should be aligned with the template during refactoring.
-
-## Existing CSS Reuse
-
-Examination of 4011-styles.css reveals several existing styles that should be leveraged instead of duplicating with inline styles:
-
-1. **Checkmark/Warning Indicators:**
-   * The global stylesheet already defines `.checkmark` and `.warning` classes:
-   ```css
-   .checkmark {
-       color: green;
-       font-weight: bold;
-       text-align: center;
-   }
-   .warning {
-       color: red;
-       font-weight: bold;
-       text-align: center;
-   }
-   ```
-   * These styles should be used directly instead of duplicating in `addCheckmarkStyles()`
-
-2. **Tooltip Implementation:**
-   * The global stylesheet defines `.tooltip-cell` with hover effect:
-   ```css
-   .tooltip-cell {
-       position: relative;
-       cursor: help;
-   }
-   .tooltip-cell:hover::after {
-       content: attr(data-tooltip);
-       position: absolute;
-       left: 0;
-       top: 100%;
-       z-index: 100;
-       /* Additional styling... */
-   }
-   ```
-   * This pattern should be reused for consistent tooltip behavior
-
-3. **Reference Value Styling:**
-   * CSS already defines styling for reference values:
-   ```css
-   [data-field-id^="m_7"] {
-       color: var(--reference-value-color);
-       font-weight: bold;
-   }
-   ```
-   * This suggests a pattern for M-column styling that should be extended/reused
-
-4. **Editable Field Focus States:**
-   * Global focus styles exist for editable table cells:
-   ```css
-   .data-table td.editable.editing,
-   .data-table td.user-input.editing /* ... */ {
-     box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
-     border-radius: 0.25rem;
-     outline: none;
-   }
-   ```
-
-While tooltip functionality appears to be partially implemented in the global CSS, it may not be consistently used across sections. The refactored Section 11 should leverage these existing classes and help standardize the tooltip implementation as a pattern for other sections to follow. 
+This updated plan focuses on the key remaining dependency needed for full calculation accuracy in Section 11. 
