@@ -1334,6 +1334,13 @@ window.TEUI.SectionModules.sect11 = (function() {
      * This function safely handles string and number values with proper formatting
      */
     function getNumericValue(fieldId) {
+        // Use the global TEUI parseNumeric function if available
+        if (window.TEUI && window.TEUI.parseNumeric) {
+            const value = getFieldValue(fieldId);
+            return window.TEUI.parseNumeric(value);
+        }
+        
+        // Fallback to local implementation if global function isn't available
         const value = getFieldValue(fieldId);
         
         // Handle string values (with comma removal and % handling)
@@ -1413,8 +1420,20 @@ window.TEUI.SectionModules.sect11 = (function() {
                 } else if (fieldId.startsWith('n_')) {
                     // Format as currency for cost columns
                     displayValue = formatCurrency(numValue);
-                } 
-                // Format as regular number with commas
+                } else if (fieldId.startsWith('f_')) {
+                    // RSI values (f_xx) should have 2 decimal places
+                    displayValue = numValue.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                } else if (fieldId.startsWith('g_')) {
+                    // U-values (g_xx) should have 3 decimal places
+                    displayValue = numValue.toLocaleString(undefined, {
+                        minimumFractionDigits: 3,
+                        maximumFractionDigits: 3
+                    });
+                }
+                // Format as regular number with commas (2 decimal places)
                 else {
                     displayValue = formatNumber(numValue);
                 }
@@ -1654,30 +1673,14 @@ window.TEUI.SectionModules.sect11 = (function() {
         // Define editable field IDs
         const editableFields = [
             // Area columns
-            'c_63', 'c_64', 'c_65', 'c_66', 'c_67', 'c_68', 'c_69', 'c_70',
-            'c_71', 'c_72', 'c_73', 'c_74', 'c_75', 'c_76', 'c_77', 'c_78',
-            // RSI columns
-            'e_63', 'e_64', 'e_65', 'e_66', 'e_67', 'e_68', 'e_69', 'e_70',
-            'e_71', 'e_72', 'e_73', 'e_74', 'e_75', 'e_76', 'e_77', 'e_78',
-            // U-Value columns
-            'g_63', 'g_64', 'g_65', 'g_66', 'g_67', 'g_68', 'g_69', 'g_70',
-            'g_71', 'g_72', 'g_73', 'g_74', 'g_75', 'g_76', 'g_77', 'g_78',
-            // Thermal bridge penalty
-            'd_97'
-        ];
-        
-        // Also include the editable fields from the original initializeEventHandlers function
-        const additionalFields = [
-            // Area columns
             "d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", "d_94", "d_95", "d_96",
             // RSI columns
             "f_85", "f_86", "f_87", "f_94", "f_95",
             // U-Value columns
-            "g_88", "g_89", "g_90", "g_91", "g_92", "g_93"
+            "g_88", "g_89", "g_90", "g_91", "g_92", "g_93",
+            // Thermal bridge penalty
+            "d_97"
         ];
-        
-        // Combine the arrays and remove duplicates
-        const allEditableFields = [...new Set([...editableFields, ...additionalFields])];
         
         let initializedCount = 0;
         let notFoundCount = 0;
@@ -1686,7 +1689,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         const d97TooltipText = "U-Value Reduction Factor from 5-50% with 5% for PH, 50% for Conventional Design";
         
         // Force all fields to be editable
-        allEditableFields.forEach(fieldId => {
+        editableFields.forEach(fieldId => {
             // Try both selection methods to ensure field is found
             let field = document.getElementById(fieldId);
             if (!field) {
@@ -1732,29 +1735,27 @@ window.TEUI.SectionModules.sect11 = (function() {
                                 stateValue = num / 100; // Already percentage, convert to decimal
                             }
                         }
-                        // For RSI fields (e_xx) use 2 decimal places
-                        else if (fieldId.startsWith('e_')) {
+                        // For RSI fields (f_xx) use 2 decimal places
+                        else if (fieldId.startsWith('f_')) {
                             this.innerText = num.toFixed(2);
                         } 
                         // For U-Value fields (g_xx) use 3 decimal places
                         else if (fieldId.startsWith('g_')) {
                             this.innerText = num.toFixed(3);
                         }
-                        // For all other numerical fields use 1 decimal place
+                        // For all other numerical fields use 2 decimal places (consistent with requirements)
                         else {
-                            this.innerText = num.toFixed(1);
+                            this.innerText = num.toFixed(2);
                         }
                         
                         // Always save the raw value to StateManager for all fields
                         if (window.TEUI?.StateManager?.setValue) {
                             window.TEUI.StateManager.setValue(fieldId, stateValue.toString(), 'user-modified');
-                            // console.log(`Updated ${fieldId} to ${stateValue}`);
                         }
                         
                         // Force recalculation after edit
                         setTimeout(() => {
                             calculateAll();
-                            // console.log("Calculation triggered after editing field:", fieldId);
                         }, 0);
                     }
                 };
@@ -1782,11 +1783,8 @@ window.TEUI.SectionModules.sect11 = (function() {
                 initializedCount++;
             } else {
                 notFoundCount++;
-                // console.warn(`Editable field #${fieldId} not found in DOM`);
             }
         });
-        
-        // console.log(`Initialized ${initializedCount} editable fields, ${notFoundCount} not found`);
     }
     
     /**
@@ -1831,35 +1829,33 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Calculate all values for this section
      */
     function calculateAll() {
-        // debugLog('Starting calculations for Section 11');
-        
         try {
-            // Calculate values for each row
-            calculateRoofValues();
-            calculateWallsAboveGradeValues();
-            calculateFloorExposedValues();
-            calculateDoorsValues();
-            calculateWindowNorthValues();
-            calculateWindowEastValues();
-            calculateWindowSouthValues();
-            calculateWindowWestValues();
-            calculateSkylightsValues();
-            calculateWallsBelowGradeValues();
-            calculateFloorSlabValues();
-            calculateThermalBridgePenalty();
+            // Calculate values for each row in the correct order (rows 85-95)
+            calculateRoofValues();                 // Row 85
+            calculateWallsAboveGradeValues();      // Row 86
+            calculateFloorExposedValues();         // Row 87
+            calculateDoorsValues();                // Row 88
+            calculateWindowNorthValues();          // Row 89
+            calculateWindowEastValues();           // Row 90
+            calculateWindowSouthValues();          // Row 91
+            calculateWindowWestValues();           // Row 92
+            calculateSkylightsValues();            // Row 93
+            calculateWallsBelowGradeValues();      // Row 94
+            calculateFloorSlabValues();            // Row 95
+            
+            // Calculate thermal bridge penalty after all individual components
+            calculateThermalBridgePenalty();       // Row 97
             
             // Calculate totals last (after all individual rows)
-            calculateEnvelopeTotals();
+            calculateEnvelopeTotals();             // Row 98
             
             // Update percentages and reference status
             updatePercentages();
             
             // Final UI cleanup to ensure formatting is correct
             updateUIAfterCalculation();
-            
-            // debugLog('Calculation complete for Section 11');
         } catch (error) {
-            // console.error('Error calculating Section 11 values:', error);
+            console.error('Error calculating Section 11 values:', error);
         }
     }
     
@@ -1875,44 +1871,56 @@ window.TEUI.SectionModules.sect11 = (function() {
             const coolingDegreeDays = getNumericValue('d_21');
             
             // Calculation: e_85 = f_85 * 5.678 (Rimp)
+            // Per FORMULAE-3037.csv: e_85 = f_85 * 5.678
             const rimpValue = rsiValue * 5.678;
             setCalculatedValue('e_85', rimpValue);
             
             // Calculation: g_85 = 1 / f_85 (U-Value)
+            // Per FORMULAE-3037.csv: g_85 = 1 / f_85
             const uValue = 1 / rsiValue;
             setCalculatedValue('g_85', uValue);
             
-            // Get reference areas for percentage calculations (will be calculated in the totals)
+            // Get reference areas for percentage calculations
             const totalAreaAe = getTotalAreaExposedToAir();
             
             // Calculation: h_85 = d_85 / d_101 (% of Ae)
+            // Per FORMULAE-3037.csv: h_85 = d_85 / d_101
             const percentageOfAe = (area / totalAreaAe) * 100;
-            setCalculatedValue('h_85', formatPercentage(percentageOfAe));
+            setCalculatedValue('h_85', percentageOfAe);
             
             // Calculation: i_85 = d_85 * (d_20 * 24) / (f_85 * 1000) (Heatloss kWh/yr)
+            // Per FORMULAE-3037.csv: i_85 = d_85 * (d_20 * 24) / (f_85 * 1000)
             const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
             setCalculatedValue('i_85', heatloss);
             
-            // Totals will be calculated separately to get percentages
+            // Calculate percentage of total heatloss (j_85)
+            // Will be set in updatePercentages() after all rows are calculated
             
             // Calculation: k_85 = d_85 * (d_21 * 24) / (f_85 * 1000) (Heatgain kWh/Cool Season)
+            // Per FORMULAE-3037.csv: k_85 = d_85 * (d_21 * 24) / (f_85 * 1000)
             const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
             setCalculatedValue('k_85', heatgain);
             
-            // Reference percentages will be calculated after all rows
+            // Calculate percentage of total heatgain (l_85)
+            // Will be set in updatePercentages() after all rows are calculated
             
             // Calculation: m_85 = f_85 / baseline (Reference %)
-            // For now, hardcoding the baseline, but should be retrieved from a code reference table
+            // For now, hardcoding the baseline (matches Excel reference)
             const baseline = 4.87; // Baseline RSI value for row 85 (Roof)
             const referencePercent = (rsiValue / baseline) * 100;
-            // IMPORTANT: Format this as a percentage string for column M
-            setCalculatedValue('m_85', `${Math.round(referencePercent)}%`, true);
+            setCalculatedValue('m_85', referencePercent);
+            
+            // Calculation: n_85 = i_85 * l_12 (Heating Costs Net $/yr)
+            // Per FORMULAE-3037.csv: n_85 = i_85 * l_12
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = heatloss * electricityCost;
+            setCalculatedValue('n_85', heatingCosts);
             
             // Set reference status indicator (checkmark/X)
             updateReferenceStatusForRow(85);
             
         } catch (error) {
-            // console.error('Error calculating Roof values:', error);
+            console.error('Error calculating Roof values:', error);
         }
     }
     
@@ -1972,7 +1980,6 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Calculate values for Floor Exposed (row 87)
      */
     function calculateFloorExposedValues() {
-        // Similar implementation to rows 85-86, following the same pattern
         try {
             // Get input values
             const area = getNumericValue('d_87');
@@ -1981,10 +1988,12 @@ window.TEUI.SectionModules.sect11 = (function() {
             const coolingDegreeDays = getNumericValue('d_21');
             
             // Calculation: e_87 = f_87 * 5.678 (Rimp)
+            // Per FORMULAE-3037.csv: e_87 = f_87 * 5.678
             const rimpValue = rsiValue * 5.678;
             setCalculatedValue('e_87', rimpValue);
             
             // Calculation: g_87 = 1 / f_87 (U-Value)
+            // Per FORMULAE-3037.csv: g_87 = 1 / f_87
             const uValue = 1 / rsiValue;
             setCalculatedValue('g_87', uValue);
             
@@ -1992,21 +2001,36 @@ window.TEUI.SectionModules.sect11 = (function() {
             const totalAreaAe = getTotalAreaExposedToAir();
             
             // Calculation: h_87 = d_87 / d_101 (% of Ae)
+            // Per FORMULAE-3037.csv: h_87 = d_87 / d_101
             const percentageOfAe = (area / totalAreaAe) * 100;
-            setCalculatedValue('h_87', formatPercentage(percentageOfAe));
+            setCalculatedValue('h_87', percentageOfAe);
             
             // Calculation: i_87 = d_87 * (d_20 * 24) / (f_87 * 1000) (Heatloss kWh/yr)
+            // Per FORMULAE-3037.csv: i_87 = d_87 * (d_20 * 24) / (f_87 * 1000)
             const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
             setCalculatedValue('i_87', heatloss);
             
+            // Calculate percentage of total heatloss (j_87)
+            // Will be set in updatePercentages() after all rows are calculated
+            
             // Calculation: k_87 = d_87 * (d_21 * 24) / (f_87 * 1000) (Heatgain kWh/Cool Season)
+            // Per FORMULAE-3037.csv: k_87 = d_87 * (d_21 * 24) / (f_87 * 1000)
             const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
             setCalculatedValue('k_87', heatgain);
+            
+            // Calculate percentage of total heatgain (l_87)
+            // Will be set in updatePercentages() after all rows are calculated
             
             // Calculation: m_87 = f_87 / baseline (Reference %)
             const baseline = 5.64; // Baseline RSI value for row 87 (Floor Exposed)
             const referencePercent = (rsiValue / baseline) * 100;
-            setCalculatedValue('m_87', formatPercentage(referencePercent));
+            setCalculatedValue('m_87', referencePercent);
+            
+            // Calculation: n_87 = i_87 * l_12 (Heating Costs Net $/yr)
+            // Per FORMULAE-3037.csv: n_87 = i_87 * l_12
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = heatloss * electricityCost;
+            setCalculatedValue('n_87', heatingCosts);
             
             // Set reference status indicator (checkmark/X)
             updateReferenceStatusForRow(87);
@@ -2029,9 +2053,11 @@ window.TEUI.SectionModules.sect11 = (function() {
             const coolingDegreeDays = getNumericValue('d_21');
             
             // Calculation: f_88 = 1 / g_88 (RSI from U-Value)
+            // Per FORMULAE-3037.csv: f_88 = 1 / g_88
             setCalculatedValue('f_88', rsiValue);
             
             // Calculation: e_88 = f_88 * 5.678 (Rimp)
+            // Per FORMULAE-3037.csv: e_88 = f_88 * 5.678
             const rimpValue = rsiValue * 5.678;
             setCalculatedValue('e_88', rimpValue);
             
@@ -2039,21 +2065,38 @@ window.TEUI.SectionModules.sect11 = (function() {
             const totalAreaAe = getTotalAreaExposedToAir();
             
             // Calculation: h_88 = d_88 / d_101 (% of Ae)
+            // Per FORMULAE-3037.csv: h_88 = d_88 / d_101
             const percentageOfAe = (area / totalAreaAe) * 100;
-            setCalculatedValue('h_88', formatPercentage(percentageOfAe));
+            setCalculatedValue('h_88', percentageOfAe);
             
             // Calculation: i_88 = d_88 * (d_20 * 24) / (f_88 * 1000) (Heatloss kWh/yr)
+            // Per FORMULAE-3037.csv: i_88 = d_88 * (d_20 * 24) / (f_88 * 1000)
             const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
             setCalculatedValue('i_88', heatloss);
             
+            // Calculate percentage of total heatloss (j_88)
+            // Will be set in updatePercentages() after all rows are calculated
+            
             // Calculation: k_88 = d_88 * (d_21 * 24) / (f_88 * 1000) (Heatgain kWh/Cool Season)
+            // Per FORMULAE-3037.csv: k_88 = d_88 * (d_21 * 24) / (f_88 * 1000)
             const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
             setCalculatedValue('k_88', heatgain);
             
+            // Calculate percentage of total heatgain (l_88)
+            // Will be set in updatePercentages() after all rows are calculated
+            
             // Calculation: m_88 = baseline / g_88 (Reference %)
+            // For doors, we compare U-values, not RSI values
             const baseline = 1.6; // Baseline U-value for row 88 (Doors)
             const referencePercent = (baseline / uValue) * 100;
-            setCalculatedValue('m_88', formatPercentage(referencePercent));
+            setCalculatedValue('m_88', referencePercent);
+            
+            // Calculation: n_88 = (i_88 - i_73) * l_12 (Heating Costs Net $/yr)
+            // Per FORMULAE-3037.csv: n_88 = (i_88 - i_73) * l_12
+            const solarGains = getNumericValue('i_73');
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = (heatloss - solarGains) * electricityCost;
+            setCalculatedValue('n_88', heatingCosts);
             
             // Set reference status indicator (checkmark/X)
             updateReferenceStatusForRow(88);
@@ -2264,39 +2307,452 @@ window.TEUI.SectionModules.sect11 = (function() {
     // Adding placeholder functions to be implemented as needed
     
     function calculateWindowNorthValues() {
-        // Similar implementation to calculateDoorsValues
+        try {
+            // Get input values
+            const area = getNumericValue('d_89');
+            const uValue = getNumericValue('g_89');
+            const rsiValue = 1 / uValue; // Calculate RSI from U-Value
+            const heatingDegreeDays = getNumericValue('d_20');
+            const coolingDegreeDays = getNumericValue('d_21');
+            
+            // Calculation: f_89 = 1 / g_89 (RSI from U-Value)
+            // Per FORMULAE-3037.csv: f_89 = 1 / g_89
+            setCalculatedValue('f_89', rsiValue);
+            
+            // Calculation: e_89 = f_89 * 5.678 (Rimp)
+            // Per FORMULAE-3037.csv: e_89 = f_89 * 5.678
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_89', rimpValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAe = getTotalAreaExposedToAir();
+            
+            // Calculation: h_89 = d_89 / d_101 (% of Ae)
+            // Per FORMULAE-3037.csv: h_89 = d_89 / d_101
+            const percentageOfAe = (area / totalAreaAe) * 100;
+            setCalculatedValue('h_89', percentageOfAe);
+            
+            // Calculation: i_89 = d_89 * (d_20 * 24) / (f_89 * 1000) (Heatloss kWh/yr)
+            // Per FORMULAE-3037.csv: i_89 = d_89 * (d_20 * 24) / (f_89 * 1000)
+            const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_89', heatloss);
+            
+            // Calculate percentage of total heatloss (j_89)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_89 = d_89 * (d_21 * 24) / (f_89 * 1000) (Heatgain kWh/Cool Season)
+            // Per FORMULAE-3037.csv: k_89 = d_89 * (d_21 * 24) / (f_89 * 1000)
+            const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('k_89', heatgain);
+            
+            // Calculate percentage of total heatgain (l_89)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_89 = baseline / g_89 (Reference %)
+            // For windows, we compare U-values, not RSI values
+            const baseline = 1.6; // Baseline U-value for row 89 (Windows North)
+            const referencePercent = (baseline / uValue) * 100;
+            setCalculatedValue('m_89', referencePercent);
+            
+            // Calculation: n_89 = (i_89 - i_74) * l_12 (Heating Costs Net $/yr)
+            // Per FORMULAE-3037.csv: n_89 = (i_89 - i_74) * l_12
+            // This subtracts solar gain benefits from heatloss
+            const solarGains = getNumericValue('i_74');
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = (heatloss - solarGains) * electricityCost;
+            setCalculatedValue('n_89', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(89);
+            
+        } catch (error) {
+            console.error('Error calculating Window North values:', error);
+        }
     }
     
     function calculateWindowEastValues() {
-        // Similar implementation to calculateDoorsValues
+        try {
+            // Get input values
+            const area = getNumericValue('d_90');
+            const uValue = getNumericValue('g_90');
+            const rsiValue = 1 / uValue; // Calculate RSI from U-Value
+            const heatingDegreeDays = getNumericValue('d_20');
+            const coolingDegreeDays = getNumericValue('d_21');
+            
+            // Calculation: f_90 = 1 / g_90 (RSI from U-Value)
+            setCalculatedValue('f_90', rsiValue);
+            
+            // Calculation: e_90 = f_90 * 5.678 (Rimp)
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_90', rimpValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAe = getTotalAreaExposedToAir();
+            
+            // Calculation: h_90 = d_90 / d_101 (% of Ae)
+            const percentageOfAe = (area / totalAreaAe) * 100;
+            setCalculatedValue('h_90', percentageOfAe);
+            
+            // Calculation: i_90 = d_90 * (d_20 * 24) / (f_90 * 1000) (Heatloss kWh/yr)
+            const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_90', heatloss);
+            
+            // Calculate percentage of total heatloss (j_90)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_90 = d_90 * (d_21 * 24) / (f_90 * 1000) (Heatgain kWh/Cool Season)
+            const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('k_90', heatgain);
+            
+            // Calculate percentage of total heatgain (l_90)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_90 = baseline / g_90 (Reference %)
+            const baseline = 1.6; // Baseline U-value for row 90 (Windows East)
+            const referencePercent = (baseline / uValue) * 100;
+            setCalculatedValue('m_90', referencePercent);
+            
+            // Calculation: n_90 = (i_90 - i_75) * l_12 (Heating Costs Net $/yr)
+            const solarGains = getNumericValue('i_75');
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = (heatloss - solarGains) * electricityCost;
+            setCalculatedValue('n_90', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(90);
+            
+        } catch (error) {
+            console.error('Error calculating Window East values:', error);
+        }
     }
     
     function calculateWindowSouthValues() {
-        // Similar implementation to calculateDoorsValues
+        try {
+            // Get input values
+            const area = getNumericValue('d_91');
+            const uValue = getNumericValue('g_91');
+            const rsiValue = 1 / uValue; // Calculate RSI from U-Value
+            const heatingDegreeDays = getNumericValue('d_20');
+            const coolingDegreeDays = getNumericValue('d_21');
+            
+            // Calculation: f_91 = 1 / g_91 (RSI from U-Value)
+            setCalculatedValue('f_91', rsiValue);
+            
+            // Calculation: e_91 = f_91 * 5.678 (Rimp)
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_91', rimpValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAe = getTotalAreaExposedToAir();
+            
+            // Calculation: h_91 = d_91 / d_101 (% of Ae)
+            const percentageOfAe = (area / totalAreaAe) * 100;
+            setCalculatedValue('h_91', percentageOfAe);
+            
+            // Calculation: i_91 = d_91 * (d_20 * 24) / (f_91 * 1000) (Heatloss kWh/yr)
+            const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_91', heatloss);
+            
+            // Calculate percentage of total heatloss (j_91)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_91 = d_91 * (d_21 * 24) / (f_91 * 1000) (Heatgain kWh/Cool Season)
+            const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('k_91', heatgain);
+            
+            // Calculate percentage of total heatgain (l_91)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_91 = baseline / g_91 (Reference %)
+            const baseline = 1.6; // Baseline U-value for row 91 (Windows South)
+            const referencePercent = (baseline / uValue) * 100;
+            setCalculatedValue('m_91', referencePercent);
+            
+            // Calculation: n_91 = (i_91 - i_76) * l_12 (Heating Costs Net $/yr)
+            const solarGains = getNumericValue('i_76');
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = (heatloss - solarGains) * electricityCost;
+            setCalculatedValue('n_91', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(91);
+            
+        } catch (error) {
+            console.error('Error calculating Window South values:', error);
+        }
     }
     
     function calculateWindowWestValues() {
-        // Similar implementation to calculateDoorsValues
+        try {
+            // Get input values
+            const area = getNumericValue('d_92');
+            const uValue = getNumericValue('g_92');
+            const rsiValue = 1 / uValue; // Calculate RSI from U-Value
+            const heatingDegreeDays = getNumericValue('d_20');
+            const coolingDegreeDays = getNumericValue('d_21');
+            
+            // Calculation: f_92 = 1 / g_92 (RSI from U-Value)
+            setCalculatedValue('f_92', rsiValue);
+            
+            // Calculation: e_92 = f_92 * 5.678 (Rimp)
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_92', rimpValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAe = getTotalAreaExposedToAir();
+            
+            // Calculation: h_92 = d_92 / d_101 (% of Ae)
+            const percentageOfAe = (area / totalAreaAe) * 100;
+            setCalculatedValue('h_92', percentageOfAe);
+            
+            // Calculation: i_92 = d_92 * (d_20 * 24) / (f_92 * 1000) (Heatloss kWh/yr)
+            const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_92', heatloss);
+            
+            // Calculate percentage of total heatloss (j_92)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_92 = d_92 * (d_21 * 24) / (f_92 * 1000) (Heatgain kWh/Cool Season)
+            const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('k_92', heatgain);
+            
+            // Calculate percentage of total heatgain (l_92)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_92 = baseline / g_92 (Reference %)
+            const baseline = 1.6; // Baseline U-value for row 92 (Windows West)
+            const referencePercent = (baseline / uValue) * 100;
+            setCalculatedValue('m_92', referencePercent);
+            
+            // Calculation: n_92 = (i_92 - i_77) * l_12 (Heating Costs Net $/yr)
+            const solarGains = getNumericValue('i_77');
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = (heatloss - solarGains) * electricityCost;
+            setCalculatedValue('n_92', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(92);
+            
+        } catch (error) {
+            console.error('Error calculating Window West values:', error);
+        }
     }
     
     function calculateSkylightsValues() {
-        // Similar implementation to calculateDoorsValues
+        try {
+            // Get input values
+            const area = getNumericValue('d_93');
+            const uValue = getNumericValue('g_93');
+            const rsiValue = 1 / uValue; // Calculate RSI from U-Value
+            const heatingDegreeDays = getNumericValue('d_20');
+            const coolingDegreeDays = getNumericValue('d_21');
+            
+            // Calculation: f_93 = 1 / g_93 (RSI from U-Value)
+            setCalculatedValue('f_93', rsiValue);
+            
+            // Calculation: e_93 = f_93 * 5.678 (Rimp)
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_93', rimpValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAe = getTotalAreaExposedToAir();
+            
+            // Calculation: h_93 = d_93 / d_101 (% of Ae)
+            const percentageOfAe = (area / totalAreaAe) * 100;
+            setCalculatedValue('h_93', percentageOfAe);
+            
+            // Calculation: i_93 = d_93 * (d_20 * 24) / (f_93 * 1000) (Heatloss kWh/yr)
+            const heatloss = (area * (heatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_93', heatloss);
+            
+            // Calculate percentage of total heatloss (j_93)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_93 = d_93 * (d_21 * 24) / (f_93 * 1000) (Heatgain kWh/Cool Season)
+            const heatgain = (area * (coolingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('k_93', heatgain);
+            
+            // Calculate percentage of total heatgain (l_93)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_93 = baseline / g_93 (Reference %)
+            const baseline = 1.6; // Baseline U-value for row 93 (Skylights)
+            const referencePercent = (baseline / uValue) * 100;
+            setCalculatedValue('m_93', referencePercent);
+            
+            // Calculation: n_93 = (i_93 - i_78) * l_12 (Heating Costs Net $/yr)
+            const solarGains = getNumericValue('i_78');
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = (heatloss - solarGains) * electricityCost;
+            setCalculatedValue('n_93', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(93);
+            
+        } catch (error) {
+            console.error('Error calculating Skylights values:', error);
+        }
     }
     
+    /**
+     * Calculate values for Walls Below Grade (row 94)
+     */
     function calculateWallsBelowGradeValues() {
-        // Similar implementation to rows 85-86, but uses ground-facing HDD
+        try {
+            // Get input values
+            const area = getNumericValue('d_94');
+            const rsiValue = getNumericValue('f_94');
+            
+            // Important: Below-grade walls use ground-facing degree days
+            const groundHeatingDegreeDays = getNumericValue('d_22'); // Ground-facing HDD
+            const capacitanceValue = getNumericValue('d_21');        // Cooling degree days used for capacitance
+            
+            // Calculation: e_94 = f_94 * 5.678 (Rimp)
+            // Per FORMULAE-3037.csv: e_94 = f_94 * 5.678
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_94', rimpValue);
+            
+            // Calculation: g_94 = 1 / f_94 (U-Value)
+            // Per FORMULAE-3037.csv: g_94 = 1 / f_94
+            const uValue = 1 / rsiValue;
+            setCalculatedValue('g_94', uValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAg = getTotalAreaExposedToGround();
+            
+            // Calculation: h_94 = d_94 / d_102 (% of Ag)
+            // Per FORMULAE-3037.csv: h_94 = d_94 / d_102
+            const percentageOfAg = totalAreaAg > 0 ? (area / totalAreaAg) * 100 : 0;
+            setCalculatedValue('h_94', percentageOfAg);
+            
+            // Calculation: i_94 = d_94 * (d_22 * 24) / (f_94 * 1000) (Heatloss kWh/yr)
+            // Per FORMULAE-3037.csv: i_94 = d_94 * (d_22 * 24) / (f_94 * 1000)
+            const heatloss = (area * (groundHeatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_94', heatloss);
+            
+            // Calculate percentage of total heatloss (j_94)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_94 = i_21 * d_94 * h_22 * 24 / (f_94 * 1000) (Heatgain kWh/Cool Season)
+            // For below-grade components, the ground has a cooling effect (negative heatgain)
+            // Get ground temperature factor (h_22)
+            const groundTemperatureFactor = getNumericValue('h_22');
+            
+            // Per FORMULAE-3037.csv - adjusted formula based on your example
+            const heatgain = capacitanceValue * area * groundTemperatureFactor * 24 / (rsiValue * 1000);
+            setCalculatedValue('k_94', heatgain);
+            
+            // Calculate percentage of total heatgain (l_94)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_94 = f_94 / baseline (Reference %)
+            const baseline = 3.7; // Baseline RSI value for row 94 (Walls Below Grade)
+            const referencePercent = (rsiValue / baseline) * 100;
+            setCalculatedValue('m_94', referencePercent);
+            
+            // Calculation: n_94 = i_94 * l_12 (Heating Costs Net $/yr)
+            // Per FORMULAE-3037.csv: n_94 = i_94 * l_12
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = heatloss * electricityCost;
+            setCalculatedValue('n_94', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(94);
+            
+        } catch (error) {
+            console.error('Error calculating Walls Below Grade values:', error);
+        }
     }
     
+    /**
+     * Helper function to get the total area exposed to ground
+     */
+    function getTotalAreaExposedToGround() {
+        // Sum of all areas exposed to ground (rows 94-95)
+        const areas = [
+            getNumericValue('d_94'), // Walls Below Grade
+            getNumericValue('d_95')  // Floor Slab
+        ];
+        
+        // Ensure we never return zero to avoid division by zero issues
+        const total = areas.reduce((sum, area) => sum + area, 0);
+        return total > 0 ? total : 0.0000001; // Small non-zero value if total is zero
+    }
+    
+    /**
+     * Calculate values for Floor Slab (row 95)
+     */
     function calculateFloorSlabValues() {
-        // Similar implementation to walls below grade
+        try {
+            // Get input values
+            const area = getNumericValue('d_95');
+            const rsiValue = getNumericValue('f_95');
+            
+            // Important: Floor slabs use ground-facing degree days
+            const groundHeatingDegreeDays = getNumericValue('d_22'); // Ground-facing HDD
+            const capacitanceValue = getNumericValue('d_21');        // Cooling degree days used for capacitance
+
+            // Calculation: e_95 = f_95 * 5.678 (Rimp)
+            // Per FORMULAE-3037.csv: e_95 = f_95 * 5.678
+            const rimpValue = rsiValue * 5.678;
+            setCalculatedValue('e_95', rimpValue);
+            
+            // Calculation: g_95 = 1 / f_95 (U-Value)
+            // Per FORMULAE-3037.csv: g_95 = 1 / f_95
+            const uValue = 1 / rsiValue;
+            setCalculatedValue('g_95', uValue);
+            
+            // Get reference areas for percentage calculations
+            const totalAreaAg = getTotalAreaExposedToGround();
+            
+            // Calculation: h_95 = d_95 / d_102 (% of Ag)
+            // Per FORMULAE-3037.csv: h_95 = d_95 / d_102
+            const percentageOfAg = totalAreaAg > 0 ? (area / totalAreaAg) * 100 : 0;
+            setCalculatedValue('h_95', percentageOfAg);
+            
+            // Calculation: i_95 = d_95 * (d_22 * 24) / (f_95 * 1000) (Heatloss kWh/yr)
+            // Per FORMULAE-3037.csv: i_95 = d_95 * (d_22 * 24) / (f_95 * 1000)
+            const heatloss = (area * (groundHeatingDegreeDays * 24)) / (rsiValue * 1000);
+            setCalculatedValue('i_95', heatloss);
+            
+            // Calculate percentage of total heatloss (j_95)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: k_95 = i_21 * d_95 * h_22 * 24 / (f_95 * 1000) (Heatgain kWh/Cool Season)
+            // For below-grade components, the ground has a cooling effect (negative heatgain)
+            // Get ground temperature factor (h_22)
+            const groundTemperatureFactor = getNumericValue('h_22');
+            
+            // Per FORMULAE-3037.csv - adjusted to match Excel behavior
+            const heatgain = capacitanceValue * area * groundTemperatureFactor * 24 / (rsiValue * 1000);
+            setCalculatedValue('k_95', heatgain);
+            
+            // Calculate percentage of total heatgain (l_95)
+            // Will be set in updatePercentages() after all rows are calculated
+            
+            // Calculation: m_95 = f_95 / baseline (Reference %)
+            const baseline = 1.96; // Baseline RSI value for row 95 (Floor Slab)
+            const referencePercent = (rsiValue / baseline) * 100;
+            setCalculatedValue('m_95', referencePercent);
+            
+            // Calculation: n_95 = i_95 * l_12 (Heating Costs Net $/yr)
+            // Per FORMULAE-3037.csv: n_95 = i_95 * l_12
+            const electricityCost = getNumericValue('l_12');
+            const heatingCosts = heatloss * electricityCost;
+            setCalculatedValue('n_95', heatingCosts);
+            
+            // Set reference status indicator (checkmark/X)
+            updateReferenceStatusForRow(95);
+            
+        } catch (error) {
+            console.error('Error calculating Floor Slab values:', error);
+        }
     }
     
     /**
      * Calculate the thermal bridge penalty
      */
     function calculateThermalBridgePenalty() {
-        debugLog('Calculating thermal bridge penalty');
-        
         try {
             // Get the thermal bridge penalty percentage from state or DOM
             // StateManager should have the raw decimal value (0.2 for 20%)
@@ -2308,7 +2764,6 @@ window.TEUI.SectionModules.sect11 = (function() {
                 if (stateValue !== null && stateValue !== undefined) {
                     // Parse decimal value from state (should be 0.XX format)
                     penalty = parseFloat(stateValue);
-                    debugLog(`Retrieved penalty from StateManager: ${penalty} (raw: ${stateValue})`);
                 }
             }
             
@@ -2317,19 +2772,16 @@ window.TEUI.SectionModules.sect11 = (function() {
                 const penaltyField = document.querySelector('[data-field-id="d_97"]');
                 if (penaltyField) {
                     let value = penaltyField.textContent.trim();
-                    debugLog(`Reading penalty from DOM element: "${value}"`);
                     
                     // Handle percentage display format (e.g., "20%")
                     if (value.includes('%')) {
                         penalty = parseFloat(value.replace(/[%,]/g, '')) / 100;
-                        debugLog(`Parsed percentage value: ${penalty}`);
                     } else {
                         // Handle direct decimal input (0.2) or number input (20)
                         penalty = parseFloat(value.replace(/,/g, ''));
                         // If number is > 1, assume it's a percentage and convert
                         if (penalty > 1) {
                             penalty = penalty / 100;
-                            debugLog(`Converted large number to decimal: ${penalty}`);
                         }
                     }
                 }
@@ -2338,7 +2790,6 @@ window.TEUI.SectionModules.sect11 = (function() {
             // Default to 20% if no valid value found
             if (isNaN(penalty) || penalty === 0) {
                 penalty = 0.2; // 20% is the default
-                debugLog('Using default penalty value (20%)');
                 
                 // Update the DOM display
                 const penaltyField = document.querySelector('[data-field-id="d_97"]');
@@ -2357,18 +2808,11 @@ window.TEUI.SectionModules.sect11 = (function() {
             if (penaltyField && !penaltyField.textContent.includes('%')) {
                 const percentValue = Math.round(penalty * 100);
                 penaltyField.textContent = `${percentValue}%`;
-                debugLog(`Updated display to show percentage: ${percentValue}%`);
             }
             
             // Get the total heat loss/gain values
             const totalHeatloss = getNumericValue('i_98');
             const totalHeatgain = Math.abs(getNumericValue('k_98')); // Use absolute value for calculation
-            
-            debugLog('Calculation values:', {
-                penalty: penalty,
-                totalHeatloss: totalHeatloss,
-                totalHeatgain: totalHeatgain
-            });
             
             // Thermal bridge penalty is a percentage of total heatloss and heatgain
             const penaltyHeatloss = totalHeatloss * penalty;
@@ -2383,12 +2827,6 @@ window.TEUI.SectionModules.sect11 = (function() {
             const heatingCosts = penaltyHeatloss * electricityCost;
             setCalculatedValue('n_97', heatingCosts);
             
-            debugLog('Penalty results:', {
-                penaltyHeatloss: penaltyHeatloss,
-                penaltyHeatgain: penaltyHeatgain,
-                heatingCosts: heatingCosts
-            });
-            
             // Critical: Set values for columns j and l
             // Set percentage for column j (format as percentage value)
             const tbpHeatlossPercent = (penaltyHeatloss / totalHeatloss) * 100;
@@ -2402,18 +2840,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             // Set m column display value (stored as % of reference)
             setCalculatedValue('m_97', formatPercentage(penalty * 100 * 2), true); // 2x for reference display
             
-            debugLog('Percentage values:', {
-                tbpHeatlossPercent: tbpHeatlossPercent,
-                tbpHeatgainPercent: tbpHeatgainPercent,
-                referencePercent: penalty * 100 * 2
-            });
-            
             // Set checkmark status in column n based on thermal bridge penalty
             // Rule: Lower thermal bridge penalty (<=20%) is better
             const isGood = penalty <= 0.2; // 20% or less is good
             updateReferenceStatusForRow(97);
-            
-            debugLog('Thermal bridge penalty calculation complete');
             
         } catch (error) {
             console.error("Error in calculateThermalBridgePenalty:", error);
