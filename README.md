@@ -132,16 +132,26 @@ When working with this codebase, previous AI assistants have encountered several
    - ✅ **Prefer**: Maintaining maximum floating-point precision through all calculation steps
    - General calculations must maintain at least 4 decimal places internally
    - Thermal calculations (involving U-values, RSI, etc.) require 6+ decimal places of precision
-   - **Why Precision Matters - A Note from Our Scientific Advisor**:
+   - **Why Precision & Calculation Method Matters - A Note from Our Esteemed Engineering Advisor**:
      > "With this application, we are measuring a horse turd with calipers." — Dr. Ted Kesik
-     
+
      This colorful metaphor acknowledges that while our models have inherent limitations in perfectly representing reality (the "horse turd"), we must still maintain mathematical precision (the "calipers") throughout our calculations. Imprecise math can introduce up to 5% additional variance in results—error that is completely avoidable. Our mathematical implementation should never add error or uncertainty to an already imperfect modeling process.
    - **Critical considerations**:
-     - Even when user inputs have only 2 decimal places, intermediate calculation results often expand to many more places
+     - Even when user inputs have only 2 decimal places, intermediate calculation results often expand to many more places that a user may never see
      - Division and multiplication operations can significantly affect precision (e.g., 1/3 * 3 ≠ 1 if truncated between steps)
      - Match Excel's calculation precision exactly to ensure identical results
      - Only apply formatting (toFixed, etc.) at the final display step, never during calculations
      - Store raw values at full precision in StateManager
+   - **Numerical Stability - RSI vs. U-Value**:
+     - ❌ **Avoid**: Calculating U-Value (`1 / RSI`) as an intermediate step and then using that potentially very small, multi-decimal U-value in subsequent heat loss/gain formulas. This can introduce rounding errors, especially if the intermediate U-value is truncated or formatted before use.
+     - ✅ **Prefer**: Using RSI directly within the heat loss/gain formulas for improved numerical stability. The preferred, more stable formulas are:
+       - Heat Loss: `kWh = Area * (HDD * 24) / (RSI * 1000)`
+       - Heat Gain (Air-Facing): `kWh_gains = Area * (CDD * 24) / (RSI * 1000)`
+     - This approach minimizes the manipulation of small floating-point numbers (like U-values) and avoids potential precision loss inherent in the `1 / RSI` calculation if not handled carefully.
+   - **Parsing Input**: 
+     - ❌ **Avoid**: Using `parseFloat()` directly on user-facing, potentially formatted strings (e.g., `"1,234.56"` or even a displayed U-value like `"0.123"`). `parseFloat` stops parsing at the first invalid character (like a comma), leading to incorrect values (e.g., `parseFloat("1,234.56")` yields `1`).
+     - ✅ **Prefer**: Retrieving raw, unformatted numeric values (usually stored as strings) from `StateManager` for calculations, or using a robust helper function like the global `window.TEUI.parseNumeric` (see Point 9) that correctly handles separators.
+   - **Importance for Dynamic Modeling**: While these precision and stability concerns are important now, they become critical for future dynamic modeling. When performing calculations hourly across hundreds of assemblies for an entire year (millions of calculations), small, repeated errors from precision loss or incorrect parsing can accumulate into significant deviations from expected results.
    - Example implementation:
      ```javascript
      // CORRECT APPROACH
@@ -150,11 +160,11 @@ When working with this codebase, previous AI assistants have encountered several
        const uValue = parseFloat(getFieldValue("g_101")); // e.g., 0.123
        const area = parseFloat(getFieldValue("d_85"));    // e.g., 25.00
        
-       // Perform calculations with full floating-point precision
+       // Perform calculations with full floating-point precision (using RSI directly is preferred where possible)
        const heatLoss = uValue * area * temperatureDifference;
        
        // Store raw result in StateManager (full precision)
-       StateManager.setValue("cf_g_120", heatLoss);
+       StateManager.setValue("cf_g_120", heatLoss.toString()); // Store as string
        
        // Format ONLY for display
        displayElement.textContent = formatNumber(heatLoss); // e.g., "345.82"
@@ -566,6 +576,17 @@ To prevent excessive recalculations and optimize performance, the system impleme
    
    This approach ensures users get immediate, precise feedback on all changes within the section they're working on, while still preventing unnecessary updates to summary values from minor changes.
 
+   **7. Refactoring for Performance & Maintainability (Case Study: Section 11)**:
+      - **Problem**: Sections involving repetitive calculations across many similar rows (e.g., Section 11 - Transmission Losses, Section 09 - Internal Gains, Section 10 - Radiant Gains) can lead to large file sizes (e.g., >3000 lines) and duplicated code, making them difficult to maintain and potentially impacting performance.
+      - **Solution Pattern (See `sections/4011-Section11.js`)**:
+         1.  **Centralized Calculation Function**: Create a single, parameterized function (e.g., `calculateComponentRow`) that handles the core calculation logic for a single row.
+         2.  **Configuration-Driven**: Define a configuration array (e.g., `componentConfig`) that specifies the properties and inputs for each row (e.g., row number, type like 'air'/'ground', primary input like 'rsi'/'uvalue').
+         3.  **Iterative Execution**: In the main `calculateAll` function for the section, loop through the configuration array, calling the centralized calculation function for each entry.
+         4.  **Subtotals & Grand Totals**: Calculate subtotals within the loop or after, and compute grand totals and final percentages (which depend on totals) after all individual rows are processed.
+         5.  **Numerically Stable Formulas**: Prioritize formulas that minimize manipulation of small floating-point numbers where precision loss is a risk (e.g., using RSI directly in denominators for heat loss/gain instead of calculating and using an intermediate U-value).
+      - **Benefits**: This approach drastically reduces code duplication, significantly shrinks file size (e.g., Section 11 reduced from ~3,300 to ~630 lines), improves maintainability, and clarifies the calculation flow.
+      - **Recommendation**: Apply this pattern when refactoring other sections with similar multi-row calculation structures (e.g., Sections 04, 09, 10, 12).
+
 These optimization techniques significantly improve performance while maintaining calculation integrity, especially when handling large datasets or complex interdependencies between sections.
 
 ## 4. Cross-Section Integration
@@ -645,7 +666,7 @@ A comprehensive verification process ensures accuracy:
 4. **Field Verification**: Continued verification of field alignments and calculations
 5. **Improved whitespace optimization through flex columns, etc.
 6. **SIMPLE or n00b MODE, where all redundant organizational descriptive text is hidden from the UI and only relevant user inputs and tooltips are rendered per each section
-7. **SMS-based file save/open and transfer system. 🧮 Rough Estimate:
+7. **SMS-based file save/open and transfer system**. 🧮 Rough Estimate:
 
 If each field has max value 999999, we need:
 
@@ -668,315 +689,24 @@ Decode it later from SMS by pasting it back in
        - Zero values are displayed as `0.00`.
        - Emptying a field (e.g., via Cut/Delete/Backspace) results in `0.00` being displayed and stored (or handle appropriately based on field requirements). Refactor `formatNumber` helpers and input field `blur` event handlers as needed.
 
-## 9. Technical Compatibility Considerations
-
-The TEUI 4.011 Calculator has been deliberately designed with specific technical choices to maximize compatibility, accessibility, and usability across diverse environments:
-
-### No-Dependencies Architecture
-
-The application is built with a "no external dependencies" philosophy:
-
-1. **Vanilla JavaScript**: Uses standard JavaScript without requiring modern frameworks like React, Vue, or Angular
-2. **No ES Modules**: Avoids ES module syntax (`import`/`export`) to ensure compatibility with older browsers (and older devs ;)
-3. **No Bundling Required**: No need for webpack, Rollup, or other build tools to deploy the application
-4. **Script Tag Loading**: All code is loaded via traditional `<script>` tags in a controlled sequence
-
-### Offline-First Approach
-
-The application is designed to function fully in offline and (optionally thru inclusion of libraries, bootstrap, chart.js, xlsx.js) air-gapped environments:
-
-1. **Local File Access**: Uses FileReader API for loading files from the local system
-2. **No CDN Dependencies**: All required resources are packaged with the application
-3. **Local Storage**: User data can be saved to the browser's localStorage or exported to files
-4. **Zero External API Calls**: No reliance on external web services or APIs
-
-### Global Accessibility
-
-Technical choices were made to ensure the broadest possible accessibility:
-
-1. **Cross-Browser Compatibility**: Tested and supported on major browsers (Chrome, Safari)
-2. **Low-Bandwidth Friendly**: Minimal asset sizes and no large libraries
-3. **Low-Resource Requirements**: Functions well on older hardware with limited resources - or poor/rural/copper internet
-4. **Degradation Grace**: Provides fallbacks when advanced features aren't available (even when styles unloaded)
-
-### Developer Accessibility
-
-The codebase is structured to be accessible to a diverse range of developers:
-
-1. **Clear Code Organization**: Straightforward directory structure and naming conventions
-2. **Self-Documenting Patterns**: Consistent patterns that are easy to understand and extend
-3. **Minimal Learning Curve**: Does not require knowledge of specific frameworks or build systems
-4. **Academic & Volunteer Friendly**: Designed to be approachable for non-professional developers
-
-### Implementation Examples
-
-```javascript
-// Example of file loading without external dependencies
-function loadFile(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsText(file);
-    });
-}
-
-// Traditional script loading with controlled sequence
-function loadScripts(scripts) {
-    return scripts.reduce((promise, script) => {
-        return promise.then(() => {
-            return new Promise((resolve) => {
-                const scriptEl = document.createElement('script');
-                scriptEl.src = script;
-                scriptEl.onload = resolve;
-                document.head.appendChild(scriptEl);
-            });
-        });
-    }, Promise.resolve());
-}
-```
-
-These technical choices ensure the TEUI 4.011 Calculator can be used by energy modelers in various working environments, including those with limited connectivity, strict security requirements, or technology constraints. The application remains accessible to a broad community of developers, academics, practitioners, and volunteers who can contribute to its continued development and application in building energy modeling.
-
-## 10. Documentation & Privacy Approach
-
-### Planned Documentation Features
-
-The TEUI 4.011 Calculator has several documentation features planned for implementation:
-
-1. **Comprehensive Tooltips System**:
-   - Every user-input field will have contextual tooltips
-   - Tooltips will explain default values, acceptable ranges, and impact on calculations
-   - Implementation planned as a progressive enhancement to the existing UI
-
-2. **Reference Blogs and Help Content**:
-   - Detailed explanations of energy modeling concepts
-   - Methodology documentation for key calculations
-   - Best practices for different building types
-   - Tutorial content for new users
-
-3. **Field References**:
-   - Cross-references to relevant standards and regulations
-   - Unit conversion explanations where applicable
-   - Interactive guidance for complex inputs
-
-These documentation features will be implemented as an overlay to the existing UI, maintaining the application's performance and compatibility while enhancing usability.
-
-### Zero-Server Storage Privacy Model
-
-A fundamental design principle of the TEUI 4.011 Calculator is complete privacy through zero server-side data storage:
-
-1. **Client-Side Only Operation**:
-   - All calculation and data processing occurs entirely on the user's device
-   - No user data is ever transmitted to or stored on remote servers
-   - "Like a ball bouncing off a wall" - data interacts with the application but never persists on the server
-
-2. **Local Data Management**:
-   - Project data can be saved locally to the user's device
-   - Import/export functionality using standard file formats
-   - Browser's localStorage used only for temporary session persistence
-
-3. **No Account Requirements**:
-   - No user accounts, logins, or identity tracking
-   - No usage analytics collection
-   - No remote logging of calculation results
-
-This zero-storage approach ensures maximum privacy and data security for users working with potentially sensitive building design information, while still providing full functionality through local file operations.
-
-### Technical Confirmation of Data Isolation
-
-After reviewing the application architecture, we can definitively confirm:
-
-1. **Zero Data Transmission**:
-   - **No** data is ever transmitted to any cloud service or webserver
-   - **No** remote storage, even temporarily, of any user calculations
-   - **No** API calls that include user project data
-
-2. **Excel File Operations**:
-   - Loading Excel files is performed using JavaScript's FileReader API, which operates entirely on the client side
-   - Importing Excel variant data into the app occurs exclusively in the user's browser memory
-   - Saving/exporting data to files happens locally on the user's device without any server intermediation
-   - All file parsing and generation is handled by client-side JavaScript with no server involvement
-
-3. **Technical Implementation**:
-   - The application uses pure frontend JavaScript for all operations
-   - Web-hosted components (HTML, CSS, JavaScript) are delivered to the browser once and then operate independently
-   - Network activity ceases after initial page load (except for explicitly user-requested resources like documentation)
-   - No background processes transmit data outside the local browser context
-
-4. **Validation Method**:
-   - This isolation can be verified by using browser developer tools to monitor network traffic
-   - After the initial application load, no further network requests should occur during normal calculation operations
-   - This can be independently confirmed by running the application with network connectivity disabled
-
-The application's JavaScript code runs entirely within the user's browser, making it functionally equivalent to a desktop application in terms of data privacy, with the added benefit of cross-platform compatibility.
-
-## 11. Versioning, Open Source & Business Model
-
-### Versioning Strategy
-
-The TEUI Calculator follows a clear versioning approach to manage the transition from Excel to web:
-
-1. **Version Naming Convention**:
-   - **TEUI 3.x**: Excel-based versions (3.037 is the final maintained Excel version)
-   - **TEUI 4.x**: Web-based versions (4.011 is the launch edition)
-   - **TEUI 5.x**: Reserved for future major enhancements
-
-2. **Excel to Web Transition Plan**:
-   - 2-year transition period until 2027
-   - Web version maintains backward compatibility with Excel files
-   - Users can import existing Excel models during transition
-   - Excel codebase will be officially retired in 2027
-
-3. **Version Display**:
-   - Current version number prominently displayed in the application header
-   - Version history maintained in documentation
-
-### Open Source Development
-
-The TEUI 4.011 Calculator is developed as an open source project:
-
-1. **Source Code Management**:
-   - Complete codebase hosted on Git repository
-   - Open for public review and community contributions
-   - Issue tracking and feature requests managed through Git
-
-2. **Development Transparency**:
-   - Design decisions documented in repository
-   - Roadmap publicly available
-   - Community input welcomed for feature prioritization
-
-3. **License Model**:
-   - See LICENSE (This codebase is licensed under the [Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)](https://creativecommons.org/licenses/by-nd/4.0/).
-
-### Verification and Validation
-
-To ensure calculation accuracy and reliability:
-
-1. **Excel Parity**:
-   - 100% calculation parity with Excel version targeted
-   - All formulas directly converted without methodology changes
-   - Each section verified against Excel reference implementation
-
-2. **Case Study Validation**:
-   - Testing against 20+ real-world building case studies
-   - Verification across different building types and climate zones
-   - Edge case testing with extreme inputs
-
-3. **Continuous Verification**:
-   - Automated testing for core calculations
-   - Regression testing for compatibility with saved files and against more granular climate data (we use static annual but LR model maps monthly by common % values for Ontario climate)
-   - Community-reported verification results tracked and addressed
-
-### Environmental Impact & Purpose
-
-The TEUI Calculator supports sustainable building design:
-
-1. **Early Design Integration**:
-   - Makes carbon, energy, and cost intensity of design decisions obvious from earliest design stages
-   - Usable by professionals without specialized energy modeling expertise
-   - Facilitates integration between architects and engineers
-
-2. **Tangible Outcomes**:
-   - Reduces operational energy costs and carbon emissions
-   - Lowers capital costs through early-stage design team integration
-   - Simplifies compliance with energy codes and standards
-
-3. **Educational Value**:
-   - Helps designers understand energy and carbon implications
-   - Creates common language between disciplines
-   - Supports building science education
-
-### Business Model & Integrations
-
-As a project of OpenBuilding.ca (a Canadian nonprofit), the business model balances open access with sustainability:
-
-1. **Core Calculator**:
-   - Free and open source
-   - No usage restrictions for the basic application (no derivs)
-   - Community-supported development
-
-2. **API Strategy**:
-   - BIM software integrations encouraged
-   - API access is a planned revenue stream
-   - Developer documentation for integrations
-
-3. **Premium Features**:
-   - Economics engine planned as premium/monetized feature
-   - Extended functionalities may be offered as paid services
-   - Enterprise support available for commercial applications
-
-4. **Nonprofit Mission**:
-   - Revenue supports continued development and maintenance
-   - Aligns with OpenBuilding.ca's mission to advance sustainable construction
-   - Provides free tools while maintaining financial sustainability
-
-## 12. Acknowledgments & Professional Responsibility
-
-### Funding & Support
-
-The TEUI 4.011 Calculator has been developed with generous support:
-
-1. **Ontario Association of Architects (OAA)**:
-   - Primary funding support for development
-   - Collaboration on professional requirements
-   - Support for industry adoption in Ontario
-
-2. **Future Expansion Plans**:
-   - National stage rollout planned for late 2025
-   - Engagement with provincial/territorial architectural associations
-   - Expansion of climate data and regional compliance verification
-
-### Regulatory & Standards Compliance
-
-The calculator is designed to work with multiple regulatory frameworks:
-
-1. **Code Compliance Verification**:
-   - Provincial and national building energy codes
-   - Municipal green building standards
-   - Energy step code requirements
-
-2. **Green Building Certification**:
-   - Integration with major third-party green standards
-   - Performance verification for certification pathways
-   - Documentation support for submission requirements
-
-### Professional Usage Disclaimer
-
-Important considerations for professional users:
-
-1. **Duty of Care Reminder**:
-   - This tool is a design aid, not a replacement for professional judgment
-   - Users must exercise their professional duty of care
-   - Results should be reviewed and validated by qualified professionals
-
-2. **Performance Claims Limitations**:
-   - Users should NEVER make unsupported claims of "predicted performance"
-   - The tool defines a reference case and relative performance improvements
-   - Absolute performance predictions require additional post-occupamcy validation (utility bills, BAS, Commissioning Reports)
-
-3. **Closing the Performance Gap**:
-   - The tool sets TARGET values, it does not predict ACTUAL performance (although our case studies show how to align these)
-   - True validation requires collection and analysis of utility bills
-   - Post-occupancy verification is essential to close the performance gap
-   - This circular validation process improves future modeling accuracy, so that user-definitions can rely more on precedent than gut feel, and variables become constants
-
-4. **Documentation Requirements**:
-   - Professional submissions should include methodology explanations (the reason the printout format = REPORT = the entire set of app settings)
-   - Assumptions must be clearly documented
-   - Sensitivity analysis recommended for critical parameters
-
-The TEUI Calculator represents a significant advancement in making energy modeling accessible, but it remains a tool whose results must be interpreted and applied with professional care and judgment.
-
-## Conclusion
-
-The TEUI 4.011 Calculator represents a significant evolution from its Excel origins into a modular, maintainable web application. The architecture balances fidelity to the original Excel model with modern web development practices, creating a foundation for future enhancements and extensions.
-
-The modular architecture enables easier maintenance, extension, and validation while preserving the core calculation methodology that makes TEUI a valuable tool for building energy modeling. 
+9. **Section Naming Refactor**:
+   - **Current State**: Sections use verbose, natural language IDs (e.g., 'envelopeTransmissionLosses', 'mechanicalLoads')
+   - **Target State**: Return to simple numeric nomenclature ('sect01', 'sect02', etc.)
+   - **Rationale**:
+     - Simpler, more consistent naming across the architecture
+     - Easier to maintain and debug
+     - Reduces confusion in section references and event handling
+     - Aligns with original architectural intent
+   - **Implementation Plan**:
+     - Pre-production refactor to standardize all section IDs
+     - Update all section references in HTML, JS, and CSS
+     - Maintain natural language labels in UI for user readability
+     - Create mapping documentation between numeric IDs and their functions
+   - **Note**: Current verbose names are a temporary workaround and should not be replicated in new section implementations
 
 ## Domain Setup
 
-Git first. 
+Git first.
 
 ## License
 
@@ -1022,3 +752,4 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
 
 These issues will be addressed comprehensively in the upcoming 4012 release, which will focus on visual refinements and modern layout techniques.
 
+The modular architecture enables easier maintenance, extension, and validation while preserving the core calculation methodology that makes TEUI a valuable tool for building energy modeling.
