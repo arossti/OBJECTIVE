@@ -56,3 +56,14 @@
    * Improved error handling
    * Made calculation functions consistent in style and documentation
    * Added clear comments referencing Excel formulas 
+
+## Architectural Patterns to Propagate
+
+1. **✅ Reference/Status System (Columns M & N):**
+   * Consider Section 11's implementation of the percentage/checkmark system as a model for other sections
+   * Key features to reuse:
+     * `formatPercentage` helper function for consistent percentage formatting
+     * Visual indication of pass/fail status using checkmark/X symbols (`✓`/`✗`)
+     * CSS styling with color-coded indicators (green for pass, red for fail)
+     * Tooltip integration providing context for reference values
+   * This pattern enhances user understanding by providing clear visual feedback on component performance 

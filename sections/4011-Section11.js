@@ -40,7 +40,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 k: { content: "Heatgain kWh/Cool Season", classes: ["section-subheader", "align-center"] },
                 l: { content: "Heatgain %", classes: ["section-subheader", "align-center"] },
                 m: { content: "Reference", classes: ["section-subheader", "align-center"] },
-                n: { content: "PASS/FAIL", classes: ["section-subheader", "align-center"] }
+                n: { content: "N", classes: ["section-subheader", "align-center"] }
             }
         },
         
@@ -1466,16 +1466,19 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     /**
-     * Set the class of an element
+     * Sets the class for an element, removing existing status classes first
+     * @param {string} fieldId - The data-field-id of the element
+     * @param {string} className - The class to add (checkmark or warning)
      */
     function setElementClass(fieldId, className) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            // Remove existing status classes
-            element.classList.remove('checkmark', 'warning', 'neutral');
-            
-            // Add the new class
-            element.classList.add(className);
+            // Remove existing style classes
+            element.classList.remove("checkmark", "warning");
+            // Add new class
+            if (className) {
+                element.classList.add(className);
+            }
         }
     }
 
@@ -1543,23 +1546,10 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Format a percentage value
      */
     function formatPercentage(value) {
-        // Handle string percentages
-        if (typeof value === 'string' && value.endsWith('%')) {
-            value = parseFloat(value.replace('%', ''));
+        if (isNaN(value) || typeof value !== 'number') {
+            return "0%";
         }
-        
-        if (typeof value !== 'number') {
-            value = parseFloat(value);
-        }
-        
-        // Return empty string for NaN
-        if (isNaN(value)) {
-            return "";
-        }
-        
-        // Format percentage - using 0 decimal places for a cleaner look
-        // This matches what's in Sections 9 and 10
-        return `${Math.round(value)}%`;
+        return Math.round(value) + "%";
     }
     
     /**
@@ -1635,9 +1625,6 @@ window.TEUI.SectionModules.sect11 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
-        // console.log("Section 11 rendered");
-        // ... existing code ...
-        
         // Initialize editable fields with improved approach
         forceFieldInitialization();
         
@@ -1658,11 +1645,112 @@ window.TEUI.SectionModules.sect11 = (function() {
             });
         });
         
+        // Initialize reference values and PASS/FAIL indicators
+        initializeReferenceStatusIndicators();
+        
+        // Force calculation to ensure all values are up-to-date
+        calculateAll();
+        
         // Second initialization with delay to ensure DOM is fully loaded
         setTimeout(function() {
             forceFieldInitialization();
-            // console.log("Section 11 re-initialized after timeout");
+            // Ensure reference indicators are set properly
+            updateUIAfterCalculation();
         }, 500);
+    }
+    
+    /**
+     * Initialize reference status indicators (column M percentages and column N checkmarks)
+     * This ensures they are shown properly even before the first calculation
+     */
+    function initializeReferenceStatusIndicators() {
+        // Set baseline RSI values for reference calculations
+        const baselineValues = {
+            '85': 4.87,  // Roof
+            '86': 4.21,  // Walls Above Grade
+            '87': 5.64,  // Floor Exposed
+            '88': 0.625, // Doors (U-value baseline 1.6, stored as inverse for RSI)
+            '89': 0.625, // Window North (U-value baseline 1.6, stored as inverse for RSI)
+            '90': 0.625, // Window East (U-value baseline 1.6, stored as inverse for RSI)
+            '91': 0.625, // Window South (U-value baseline 1.6, stored as inverse for RSI)
+            '92': 0.625, // Window West (U-value baseline 1.6, stored as inverse for RSI)
+            '93': 0.625, // Skylights (U-value baseline 1.6, stored as inverse for RSI)
+            '94': 3.7,   // Walls Below Grade
+            '95': 1.96   // Floor Slab
+        };
+
+        // Initialize reference values for all rows
+        for (let rowNum = 85; rowNum <= 95; rowNum++) {
+            if (rowNum === 96) continue; // Skip row 96 (interior floors)
+            
+            // Get the M column element (reference percentage)
+            const refCell = document.querySelector(`[data-field-id="m_${rowNum}"]`);
+            // Get the N column element (PASS/FAIL indicator)
+            const statusCell = document.querySelector(`[data-field-id="n_${rowNum}"]`);
+            
+            if (refCell && statusCell) {
+                // Get the RSI or U-value for this row
+                let value, refValue;
+                
+                // For windows and doors (rows 88-93), we use U-value
+                if (rowNum >= 88 && rowNum <= 93) {
+                    value = getNumericValue(`g_${rowNum}`);
+                    // For windows/doors, compare U-values (baseline/actual)
+                    const baseline = 1.6; // Baseline U-value for windows/doors
+                    refValue = value > 0 ? (baseline / value) * 100 : 100;
+                } else {
+                    // For other components, we use RSI values
+                    value = getNumericValue(`f_${rowNum}`);
+                    // Get the baseline RSI value for this row
+                    const baseline = baselineValues[rowNum.toString()] || 1;
+                    refValue = value > 0 ? (value / baseline) * 100 : 100;
+                }
+                
+                // For column M, set percentage value using setCalculatedValue
+                setCalculatedValue(`m_${rowNum}`, refValue);
+                
+                // For column N, set checkmark or X based on reference value
+                const isGood = refValue >= 100;
+                setCalculatedValue(`n_${rowNum}`, isGood ? "✓" : "✗", true);
+                setElementClass(`n_${rowNum}`, isGood ? "checkmark" : "warning");
+                
+                // Add tooltip to the checkmark/warning cell
+                statusCell.classList.add('tooltip-cell');
+                statusCell.setAttribute('title', isGood ? 
+                    'This component meets or exceeds the reference standard' : 
+                    'This component does not meet the reference standard');
+            }
+        }
+        
+        // Handle thermal bridge penalty (row 97)
+        const tbpRefCell = document.querySelector(`[data-field-id="m_97"]`);
+        const tbpStatusCell = document.querySelector(`[data-field-id="n_97"]`);
+        
+        if (tbpRefCell && tbpStatusCell) {
+            // Get thermal bridge penalty value
+            const tbpValue = getNumericValue('d_97');
+            const isGood = tbpValue <= 0.2; // 20% or less is good
+            
+            // Set reference display
+            setCalculatedValue('m_97', formatPercentage(tbpValue * 100 * 2), true);
+            
+            // Set checkmark or X using helper functions
+            setCalculatedValue('n_97', isGood ? "✓" : "✗", true);
+            setElementClass('n_97', isGood ? "checkmark" : "warning");
+            
+            // Add tooltip
+            tbpStatusCell.classList.add('tooltip-cell');
+            tbpStatusCell.setAttribute('title', isGood ? 
+                'Thermal bridge penalty is within acceptable range' : 
+                'Thermal bridge penalty exceeds recommended value');
+        }
+        
+        // Set total indicator
+        const totalStatusCell = document.querySelector(`[data-field-id="n_98"]`);
+        if (totalStatusCell) {
+            setCalculatedValue('n_98', "✓", true);
+            setElementClass('n_98', 'checkmark');
+        }
     }
     
     /**
@@ -2272,35 +2360,82 @@ window.TEUI.SectionModules.sect11 = (function() {
      * This sets checkmarks/X based on whether values meet standards
      */
     function updateReferenceStatusForRow(rowId) {
-        try {
-            // Skip rows that don't have reference values
-            if (rowId === 96 || rowId === 98) return;
+        // Skip rows that don't have reference values
+        if (rowId === "96" || rowId === "98") {
+            return;
+        }
+        
+        // Get the reference percentage cell
+        const refCell = document.querySelector(`[data-field-id="m_${rowId}"]`);
+        
+        // Get the checkmark/warning cell
+        const statusCell = document.querySelector(`[data-field-id="n_${rowId}"]`);
+        
+        if (!refCell || !statusCell) {
+            return;
+        }
+        
+        // Get numeric value for this row
+        let value, refValue;
+        
+        // For thermal bridge penalty (row 97), use special handling
+        if (rowId === "97") {
+            const tbpValue = getNumericValue(`d_${rowId}`);
+            const isGood = tbpValue <= 0.2; // 20% or less is good
             
-            // Get the reference percentage value
-            let refValue = getNumericValue(`m_${rowId}`);
-            if (isNaN(refValue) || refValue === 0) return;
+            // Format as percentage (double the value to match Excel)
+            setCalculatedValue(`m_${rowId}`, formatPercentage(tbpValue * 100 * 2), true);
             
-            // For column M, ensure it shows percentage
-            setCalculatedValue(`m_${rowId}`, `${Math.round(refValue)}%`, true);
-            
-            // For column N, if reference value is > 100%, component is better than code
-            const isGood = refValue >= 100;
-            
-            // Set checkmark or X in column N
+            // Set checkmark or X
             setCalculatedValue(`n_${rowId}`, isGood ? "✓" : "✗", true);
             setElementClass(`n_${rowId}`, isGood ? "checkmark" : "warning");
             
-            // Add tooltip to the checkmark/warning cell
-            const statusCell = document.querySelector(`[data-field-id="n_${rowId}"]`);
-            if (statusCell) {
-                statusCell.classList.add('tooltip-cell');
-                statusCell.setAttribute('title', isGood ? 
-                    'This component meets or exceeds the reference standard' : 
-                    'This component does not meet the reference standard');
-            }
-        } catch (error) {
-            console.error(`Error updating reference status for row ${rowId}:`, error);
+            // Update tooltip
+            statusCell.classList.add('tooltip-cell');
+            statusCell.setAttribute('title', isGood ? 
+                'Thermal bridge penalty is within acceptable range' : 
+                'Thermal bridge penalty exceeds recommended value');
+            
+            return;
         }
+        
+        // For windows and doors (rows 88-93), we use U-value
+        if (rowId >= 88 && rowId <= 93) {
+            value = getNumericValue(`g_${rowId}`);
+            
+            // Calculate reference percentage based on baseline U-value of 1.6
+            const baseline = 1.6; // Baseline U-value for windows/doors
+            refValue = value > 0 ? (baseline / value) * 100 : 100;
+        } else {
+            // For other components, we use RSI values
+            value = getNumericValue(`f_${rowId}`);
+            
+            // Get the baseline RSI value based on row
+            const baselineValues = {
+                '85': 4.87,  // Roof
+                '86': 4.21,  // Walls Above Grade
+                '87': 5.64,  // Floor Exposed
+                '94': 3.7,   // Walls Below Grade
+                '95': 1.96   // Floor Slab
+            };
+            
+            const baseline = baselineValues[rowId] || 1;
+            refValue = value > 0 ? (value / baseline) * 100 : 100;
+        }
+        
+        // Update reference percentage value
+        setCalculatedValue(`m_${rowId}`, formatPercentage(refValue), true);
+        
+        // Update checkmark or X based on reference value
+        const isGood = refValue >= 100;
+        setCalculatedValue(`n_${rowId}`, isGood ? "✓" : "✗", true);
+        setElementClass(`n_${rowId}`, isGood ? "checkmark" : "warning");
+        
+        // Update tooltip
+        statusCell.classList.add('tooltip-cell');
+        statusCell.setAttribute('title', isGood ? 
+            'This component meets or exceeds the reference standard' : 
+            'This component does not meet the reference standard');
     }
     
     // Functions for calculating other rows follow the same pattern
@@ -2863,7 +2998,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             // l column (Heatgain %)
             "l_85", "l_86", "l_87", "l_88", "l_89", "l_90", "l_91", "l_92", "l_93", "l_94", "l_95", "l_97", "l_98",
             // m column (Reference %)
-            "m_85", "m_86", "m_87", "m_88", "m_89", "m_90", "m_91", "m_92", "m_93", "m_94", "m_95"
+            "m_85", "m_86", "m_87", "m_88", "m_89", "m_90", "m_91", "m_92", "m_93", "m_94", "m_95", "m_97"
         ];
         
         percentageCells.forEach(cellId => {
@@ -2889,16 +3024,24 @@ window.TEUI.SectionModules.sect11 = (function() {
                 if (value === "✓" || value === "✗") {
                     // Already correct
                 } 
-                // If it has a $ sign, it's a currency value that needs to be replaced
-                else if (value.includes("$")) {
+                // If it has a $ sign or any other value, replace it with checkmark/X
+                else {
                     // Check if the reference value is good
                     const rowId = cellId.split("_")[1];
                     const refCell = document.querySelector(`[data-field-id="m_${rowId}"]`);
                     if (refCell) {
                         const refValue = parseFloat(refCell.textContent.replace(/,/g, '').replace(/%/g, ''));
                         const isGood = refValue >= 100;
+                        
+                        // Always update the cell to checkmark/X
                         cell.textContent = isGood ? "✓" : "✗";
                         setElementClass(cellId, isGood ? "checkmark" : "warning");
+                        
+                        // Add tooltip if needed
+                        cell.classList.add('tooltip-cell');
+                        cell.setAttribute('title', isGood ? 
+                            'This component meets or exceeds the reference standard' : 
+                            'This component does not meet the reference standard');
                     }
                 }
             }
