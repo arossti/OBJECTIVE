@@ -200,7 +200,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         "97": {
             id: "B.12", rowId: "B.12", label: "Thermal Bridge Penalty (min. 5-70%)", cells: {
                 c: { label: "Thermal Bridge Penalty (min. 5-70%)" },
-                d: { fieldId: "d_97", type: "editable", value: "20%", title: "Assume Code Minimum Construction at 50%, PassiveHouse at 5-10%" },
+                d: { fieldId: "d_97", type: "editable", value: "20.00", title: "Enter percentage (e.g., 20 for 20%). Assume Code Minimum Construction at 50%, PassiveHouse at 5-10%" },
                 e: { fieldId: "e_97", type: "calculated" }, f: {}, g: {}, h: {},
                 i: { fieldId: "i_97", type: "calculated" }, j: { fieldId: "j_97", type: "calculated" },
                 k: { fieldId: "k_97", type: "calculated" }, l: { fieldId: "l_97", type: "calculated" },
@@ -260,17 +260,23 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     //==========================================================================
-    // HELPER FUNCTIONS
+    // HELPER FUNCTIONS (Standardized)
     //==========================================================================
     
     function getNumericValue(fieldId) {
-            const value = getFieldValue(fieldId);
-        if (window.TEUI?.parseNumeric) return window.TEUI.parseNumeric(value);
-        // Fallback parser
+        // Use global parser if available
+        if (window.TEUI?.parseNumeric) return window.TEUI.parseNumeric(getFieldValue(fieldId));
+        
+        // Fallback parser (if global isn't loaded yet or for some reason)
+        const value = getFieldValue(fieldId);
+        if (value === null || value === undefined) return 0;
+        if (typeof value === 'number') return value;
         if (typeof value === 'string') {
-            if (value.endsWith('%')) return parseFloat(value.replace(/[%|,]/g, '')) / 100 || 0;
-            return parseFloat(value.replace(/,/g, '')) || 0;
-        } else if (typeof value === 'number') return value;
+            const cleanedValue = value.replace(/[$,%]/g, '').trim();
+            if (cleanedValue === '') return 0;
+            const parsed = parseFloat(cleanedValue);
+            return isNaN(parsed) ? 0 : parsed;
+        }
         return 0;
     }
 
@@ -281,35 +287,69 @@ window.TEUI.SectionModules.sect11 = (function() {
         return element ? (element.value ?? element.textContent?.trim()) : null;
     }
 
-    function setCalculatedValue(fieldId, value, skipFormat = false) {
-            let displayValue = value;
-        let rawValue = (typeof value === 'number') ? value.toString() : (value || '').toString().replace(/,/g, '');
-
-        if (!skipFormat && !isNaN(parseFloat(rawValue))) {
-            const numValue = parseFloat(rawValue);
-            if (fieldId.startsWith('g_')) displayValue = formatNumber(numValue, 3); // U-Values
-            // Updated: Format H, J, L columns as numbers with 2 decimals, then add %
-            else if (/[hjl]_[\d]{2,}/.test(fieldId) || fieldId === 'h_98' || fieldId === 'j_98' || fieldId === 'l_98') {
-                 displayValue = formatNumber(numValue, 2) + '%';
-            } else displayValue = formatNumber(numValue, 2); // Default 2 decimals
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * Uses the standardized formatNumber helper.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {string} [format='number'] - The format type for display.
+     */
+    function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        // Handle potential N/A cases first
+        if (isNaN(rawValue) || rawValue === null || rawValue === undefined) {
+             window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
+             const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
+             if (elementNA) elementNA.textContent = 'N/A';
+             return; // Stop processing if value is not a valid number
         }
-
-            if (window.TEUI?.StateManager?.setValue) {
-                window.TEUI.StateManager.setValue(fieldId, rawValue, 'calculated');
-            }
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) element.textContent = displayValue;
+        
+        // Determine format if not explicitly passed (needed for percentages in this section)
+        if (format === 'number') {
+             if (fieldId.startsWith('g_')) { format = 'W/m2'; } // U-Values are 3 decimals
+             else if (/[hjl]_[\\d]{2,}/.test(fieldId) || fieldId === 'h_98' || fieldId === 'j_98' || fieldId === 'l_98') { format = 'percent'; }
+             // Default remains 'number' for others (i_, k_, e_)
+        }
+        
+        const formattedValue = formatNumber(rawValue, format);
+        
+        if (window.TEUI?.StateManager?.setValue) {
+            // Store raw value as string in StateManager for precision
+            window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
+        }
+        
+        // Update DOM with formatted value
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', rawValue < 0);
+        } else {
+             console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+        }
     }
 
-    function formatNumber(value, decimalPlaces = 2) {
-            value = parseFloat(value);
-        return isNaN(value) ? "" : value.toLocaleString(undefined, { minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces });
-    }
-
-    // Reinstated formatPercentage as it's needed for Column M display
-    function formatPercentage(value) {
-            value = parseFloat(value);
-        return isNaN(value) ? "0%" : `${Math.round(value)}%`;
+    /**
+     * Formats a number according to the project's display rules.
+     * Handles specific formats like percentages, currency, W/m2.
+     * @param {number} value - The number to format.
+     * @param {string} [format='number'] - The type of format.
+     * @returns {string} The formatted number as a string.
+     */
+    function formatNumber(value, format = 'number') {
+        if (value === null || value === undefined || isNaN(value)) {
+            // Return 0 or 0% based on expected format
+            return format === 'percent' ? '0%' : (format === 'W/m2' ? '0.000' : '0.00');
+        }
+        
+        const num = Number(value);
+        
+        if (format === 'percent') {
+            // Input is raw decimal (e.g., 0.2 for 20%), output integer percent
+            return (num * 100).toFixed(0) + '%';
+        } else if (format === 'W/m2') { // U-Values (3 decimals)
+            return num.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+        } else { // Default: kWh, RSI, Rimp, Area etc. (2 decimals)
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
     }
 
     function setElementClass(fieldId, isGood) {
@@ -410,7 +450,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         try {
             const penaltyPercent = getNumericValue('d_97');
             const validatedPenalty = Math.max(0, Math.min(1, penaltyPercent));
-            const penaltyHeatloss = componentHeatlossSubtotal * validatedPenalty;
+            let penaltyHeatloss = componentHeatlossSubtotal * validatedPenalty;
             setCalculatedValue('i_97', penaltyHeatloss);
             const penaltyHeatgain = Math.abs(componentHeatgainSubtotal) * validatedPenalty;
             setCalculatedValue('k_97', -penaltyHeatgain);
@@ -439,19 +479,23 @@ window.TEUI.SectionModules.sect11 = (function() {
                 const currentPenalty = getNumericValue(`d_${rowId}`);
                 isGood = currentPenalty <= baseline.value;
                 setCalculatedValue(mFieldId, isGood ? "Pass" : "Fail", true); // Special display for TBP M col
-                setCalculatedValue(nFieldId, isGood ? "✓" : "✗", true);
+                const nElementCheck = document.querySelector(`[data-field-id="${nFieldId}"]`);
+                if (nElementCheck) nElementCheck.textContent = isGood ? "✓" : "✗";
                 setElementClass(nFieldId, isGood);
                 return;
             }
             // Set Column M (Reference %)
-            // Corrected: Call the reinstated formatPercentage function
-            setCalculatedValue(mFieldId, formatPercentage(referencePercent), true);
+            setCalculatedValue(mFieldId, referencePercent / 100, 'percent'); // Use standard helper for numeric percentage display
             // Set Column N (Pass/Fail Checkmark)
-            setCalculatedValue(nFieldId, isGood ? "✓" : "✗", true);
+            const nElementCheck = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElementCheck) nElementCheck.textContent = isGood ? "✓" : "✗";
             setElementClass(nFieldId, isGood);
         } catch (error) {
             console.error(`Error updating reference indicators for row ${rowId}:`, error);
-            setCalculatedValue(mFieldId, "Error", true); setCalculatedValue(nFieldId, "?", true);
+            const mElementErr = document.querySelector(`[data-field-id="${mFieldId}"]`);
+            if (mElementErr) mElementErr.textContent = "Error";
+            const nElementErr = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElementErr) nElementErr.textContent = "?";
         }
     }
 
@@ -498,7 +542,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                  const area = getNumericValue(`d_${rowStr}`) || 0;
                  const hValue = config.type === 'air' ? (area / totalAreaAe) * 100 :
                                (config.type === 'ground' ? (area / totalAreaAg) * 100 : 0);
-                 setCalculatedValue(hCellFieldId, hValue);
+                 setCalculatedValue(hCellFieldId, hValue / 100, 'percent');
 
                  // Apply text color class to Column H based on type
                  const hElement = document.querySelector(`[data-field-id="${hCellFieldId}"]`);
@@ -512,8 +556,8 @@ window.TEUI.SectionModules.sect11 = (function() {
                  }
             }
             const heatloss = getNumericValue(`i_${rowStr}`) || 0;
-            const heatlossPercent = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) * 100 : 0;
-            setCalculatedValue(jCellFieldId, heatlossPercent);
+            const heatlossPercent = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) : 0; // Pass raw fraction
+            setCalculatedValue(jCellFieldId, heatlossPercent, 'percent');
 
             // Apply Loss Indicator Class to Column J
             let lossClass = '';
@@ -524,9 +568,9 @@ window.TEUI.SectionModules.sect11 = (function() {
             setIndicatorClass(jCellFieldId, lossClass, lossIndicatorClasses);
 
             const heatgain = getNumericValue(`k_${rowStr}`) || 0;
-            const heatgainPercent = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) * 100 : 0;
+            const heatgainPercent = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) : 0; // Pass raw fraction
             const lCellFieldId = `l_${rowStr}`; // Field ID for Column L
-            setCalculatedValue(lCellFieldId, heatgainPercent);
+            setCalculatedValue(lCellFieldId, heatgainPercent, 'percent');
 
             // Apply Gain Indicator Class to Column L
             let gainClass = '';
@@ -560,16 +604,19 @@ window.TEUI.SectionModules.sect11 = (function() {
         let numValue = NaN, rawValueToStore = valueStr, displayValue = valueStr;
 
         if (currentFieldId === 'd_97') {
-             numValue = valueStr.includes('%') ? parseFloat(valueStr.replace('%','')) / 100 : parseFloat(valueStr);
-             // Clamp penalty between 0 and 1, default 0.2 if invalid
-             rawValueToStore = (!isNaN(numValue) && numValue >= 0 && numValue <= 1) ? numValue.toString() : '0.2';
-             displayValue = formatNumber(parseFloat(rawValueToStore) * 100, 2) + '%'; // Use formatNumber here
-        } else {
-             numValue = parseFloat(valueStr);
-             rawValueToStore = !isNaN(numValue) ? numValue.toString() : '0';
-             if (currentFieldId.startsWith('f_')) displayValue = formatNumber(numValue, 2);
-             else if (currentFieldId.startsWith('g_')) displayValue = formatNumber(numValue, 3);
-             else displayValue = formatNumber(numValue, 2);
+             numValue = window.TEUI.parseNumeric(valueStr, NaN); // Use global parser
+             // Convert input number to decimal (assume input "20" means 20% -> 0.2)
+             let decimalValue = numValue / 100;
+             // Clamp the DECIMAL value between 0 and 1 
+             decimalValue = Math.max(0, Math.min(1, decimalValue)); 
+             rawValueToStore = decimalValue.toString(); // Store clamped decimal value
+             displayValue = formatNumber(decimalValue * 100, 'number'); // Display as number 0-100, not percentage string
+        } else if (currentFieldId.startsWith('g_')) { // U-Value (3 decimals)
+             displayValue = formatNumber(numValue, 'W/m2'); // Use specific format
+             rawValueToStore = numValue.toString();
+        } else { // Default: Area (d_), RSI (f_) - 2 decimals
+             displayValue = formatNumber(numValue, 'number'); 
+             rawValueToStore = numValue.toString();
         }
         // Removed console.warn for invalid input - handled by defaulting rawValueToStore
         fieldElement.textContent = displayValue;
@@ -587,13 +634,37 @@ window.TEUI.SectionModules.sect11 = (function() {
                 field.addEventListener('blur', handleFieldBlur.bind(field)); // Ensure 'this' context
                 field.addEventListener('focus', () => field.classList.add('editing'));
                 field.addEventListener('focusout', () => field.classList.remove('editing'));
-                handleFieldBlur.call(field); // Initial format
             }
             // Removed console.warn for missing/non-editable fields
         });
     }
 
     function onSectionRendered() {
+        // Ensure StateManager has default values for editable fields before first calculation
+        let isStateInitialized = false; // Flag to track if we set any default state
+        if (window.TEUI?.StateManager) {
+            editableFields.forEach(fieldId => {
+                const fieldConfig = Object.values(sectionRows).flatMap(r => Object.values(r.cells)).find(c => c.fieldId === fieldId);
+                if (fieldConfig && fieldConfig.value !== undefined) {
+                    // Use parseNumeric to handle potential % in default value like d_97
+                    let defaultValue = fieldConfig.value.toString();
+                    let rawNumericValue = window.TEUI.parseNumeric(defaultValue, 0); // Default to 0 if parse fails
+                    // For d_97, convert initial percentage string to decimal for storage
+                    if (fieldId === 'd_97') {
+                        rawNumericValue = rawNumericValue / 100;
+                    }
+                    // Always set the default value using 'default' priority.
+                    // This won't overwrite saved/user-modified state loaded earlier.
+                    window.TEUI.StateManager.setValue(fieldId, rawNumericValue.toString(), 'default');
+                    // console.log(`Set default state for ${fieldId} to ${rawNumericValue.toString()}`); // Optional log
+                    isStateInitialized = true; // Flag that we attempted init
+                }
+            });
+        } else {
+             console.warn("StateManager not available during onSectionRendered for state init");
+        }
+
+        // Initialize listeners AFTER potential state initialization
         initializeEventHandlers();
         Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
             if (window.TEUI?.StateManager?.addListener) {
@@ -608,7 +679,14 @@ window.TEUI.SectionModules.sect11 = (function() {
                 });
             }
         });
-        calculateAll();
+
+        // Run initial calculation AFTER listeners are set up
+        // Use a slight delay if state was just initialized to allow propagation?
+        const initialCalcDelay = isStateInitialized ? 50 : 0; 
+        setTimeout(() => {
+             console.log("Running initial calculateAll for Section 11");
+             calculateAll();
+        }, initialCalcDelay);
     }
     
     //==========================================================================
