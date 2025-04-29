@@ -743,7 +743,7 @@ window.TEUI.SectionModules.sect14 = (function() {
         console.log("TEDI & TELI section (sect14) rendered");
         
         if (window.TEUI.StateManager) {
-             registerDependencies();
+        registerDependencies();
         } else {
             console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
         }

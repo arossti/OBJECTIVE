@@ -27,7 +27,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- Initialize core TEUI helpers and namespace -->
+    <!-- Calculator module that depends on everything else - soon to be removed as all calcs except cooling occur in sections files -->
+    <script src="4011-Calculator.js"></script>
+    
+    <!-- Initialize everything -->
     <script src="4011-init.js"></script>
     
     <!-- Section modules (from Index-Includes.js) -->
@@ -78,9 +81,6 @@
     <script src="4011-ComponentBridge.js"></script>
     <script src="4011-ExcelLocationHandler.js"></script>
     <script src="4011-FileHandler.js"></script>
-    
-    <!-- Calculator module that depends on everything else - soon to be removed as all calcs except cooling occur in sections files -->
-    <script src="4011-Calculator.js"></script>
 </head>
 <body>
     <!-- Main container -->

@@ -13,6 +13,35 @@ window.TEUI = window.TEUI || {};
 // State Manager Module
 TEUI.StateManager = (function() {
     
+    /**
+     * Global utility to safely parse numeric values from strings.
+     * Handles commas and returns a default value if parsing fails.
+     * Moved here from init.js to ensure availability before section modules load.
+     * @param {string|number|null|undefined} value - The value to parse.
+     * @param {number} [defaultValue=0] - The value to return if parsing fails.
+     * @returns {number} The parsed number or the default value.
+     */
+    window.TEUI.parseNumeric = function(value, defaultValue = 0) {
+        if (value === null || value === undefined) {
+            return defaultValue;
+        }
+        let numericValue;
+        if (typeof value === 'string') {
+            // Remove commas, trim whitespace
+            const cleanedValue = value.replace(/,/g, '').trim();
+            if (cleanedValue === '' || cleanedValue.toUpperCase() === 'N/A') {
+                return defaultValue;
+            }
+            numericValue = parseFloat(cleanedValue);
+        } else if (typeof value === 'number') {
+            numericValue = value;
+        } else {
+            numericValue = NaN; // Handle other types if needed
+        }
+        // Return defaultValue if parsing resulted in NaN
+        return isNaN(numericValue) ? defaultValue : numericValue;
+    };
+    
     // Value state constants
     const VALUE_STATES = {
         DEFAULT: 'default',        // Original default value
