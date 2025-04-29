@@ -307,11 +307,56 @@ TEUI.ExcelLocationHandler = (function() {
     // Initialize when document is ready
     document.addEventListener('DOMContentLoaded', initialize);
 
+    // Note: Moved init call to the bottom AFTER defining loadExcelFile
+    /**
+     * Reads an Excel file and processes location data.
+     * @param {File} file - The Excel file object.
+     * @returns {Promise<object>} A promise that resolves with the processed location data.
+     */
+    function loadExcelFile(file) {
+        return new Promise((resolve, reject) => {
+            if (!file) {
+                return reject(new Error('No file selected'));
+            }
+            
+            showStatus('Reading Excel file...', 'info');
+            const reader = new FileReader();
+    
+            reader.onload = function(e) {
+                try {
+                    const data = e.target.result;
+                    // Use {cellDates: true} if date parsing is needed later
+                    const workbook = XLSX.read(data, { type: 'binary' });    
+                    
+                    // Process the data
+                    const processedData = processLocationData(workbook);
+                    
+                    // Trigger event for other modules (like init.js) to update UI
+                    document.dispatchEvent(new CustomEvent('location-data-ready'));
+                    
+                    resolve(processedData); // Resolve promise with data
+                } catch (error) {
+                    console.error('Error processing Excel file:', error);
+                    showStatus(`Error processing file: ${error.message}`, 'error');
+                    reject(error); // Reject promise on error
+                }
+            };
+    
+            reader.onerror = function(e) {
+                console.error('Error reading file:', e);
+                showStatus('Error reading file', 'error');
+                reject(new Error('File reading error'));
+            };
+    
+            reader.readAsBinaryString(file);
+        });
+    }
+
     // Public API
     return {
         initialize,
         getLocationData: () => locationData,
-        processLocationData,
+        loadExcelFile, // Expose the file loading function
         updateProvinceDropdowns,
         updateCityDropdowns
     };

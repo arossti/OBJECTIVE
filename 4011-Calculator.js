@@ -287,12 +287,14 @@ TEUI.Calculator = (function() {
      * Ground-Facing HDD = (Heating Setpoint - 10) * 365 - Cooling Season Length
      */
     function recalculateGroundFacingHDD() {
-        const heatingSetpoint = parseFloat(stateManager.getValue('h_23'));
-        const coolingSeason = parseFloat(stateManager.getValue('m_19'));
+        // Get values from stateManager using parseNumeric for robust parsing and defaults
+        const stateManager = window.TEUI.StateManager; // Ensure we have the reference
+        const heatingSetpoint = window.TEUI.parseNumeric(stateManager.getValue('h_23'), 21); // Default 21C
+        const coolingSeason = window.TEUI.parseNumeric(stateManager.getValue('m_19'), 120); // Default 120 days
         
-        // Skip if missing data
+        // If defaults were used, values should be valid numbers, but add safety check
         if (isNaN(heatingSetpoint) || isNaN(coolingSeason)) {
-            console.warn('Missing data for Ground-Facing HDD calculation');
+            console.error('Critical error: Could not determine valid heating setpoint or cooling season length for GF HDD calc.');
             return;
         }
         

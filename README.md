@@ -418,7 +418,7 @@ function getFields() { ... }
 function getDropdownOptions() { ... }
 function getLayout() { ... }
 function initializeEventHandlers() { ... }
-function onSectionRendered() { ... }
+function onSectionRendered() { ... } // Should ensure default state is set BEFORE first calculateAll()
 
 // Calculation methods specific to this section
 function calculateDerivedValues() { ... }
@@ -600,11 +600,11 @@ To prevent excessive recalculations and optimize performance, the system impleme
    **7. Refactoring for Performance & Maintainability (Case Study: Section 11)**:
       - **Problem**: Sections involving repetitive calculations across many similar rows (e.g., Section 11 - Transmission Losses, Section 09 - Internal Gains, Section 10 - Radiant Gains) can lead to large file sizes (e.g., >3000 lines) and duplicated code, making them difficult to maintain and potentially impacting performance.
       - **Implemented Solution Pattern (Example: `sections/4011-Section11.js`)**: The following pattern *has been successfully implemented* in Section 11 to address this:
-          1.  **Centralized Calculation Function**: Create a single, parameterized function (e.g., `calculateComponentRow`) that handles the core calculation logic for a single row.
-          2.  **Configuration-Driven**: Define a configuration array (e.g., `componentConfig`) that specifies the properties and inputs for each row (e.g., row number, type like \'air\'/\'ground\', primary input like \'rsi\'/\'uvalue\').
-          3.  **Iterative Execution**: In the main `calculateAll` function for the section, loop through the configuration array, calling the centralized calculation function for each entry.
-          4.  **Subtotals & Grand Totals**: Calculate subtotals within the loop or after, and compute grand totals and final percentages (which depend on totals) after all individual rows are processed.
-          5.  **Numerically Stable Formulas**: Prioritize formulas that minimize manipulation of small floating-point numbers where precision loss is a risk (e.g., using RSI directly in denominators for heat loss/gain instead of calculating and using an intermediate U-value).
+         1.  **Centralized Calculation Function**: Create a single, parameterized function (e.g., `calculateComponentRow`) that handles the core calculation logic for a single row.
+         2.  **Configuration-Driven**: Define a configuration array (e.g., `componentConfig`) that specifies the properties and inputs for each row (e.g., row number, type like 'air'/'ground', primary input like 'rsi'/'uvalue').
+         3.  **Iterative Execution**: In the main `calculateAll` function for the section, loop through the configuration array, calling the centralized calculation function for each entry.
+         4.  **Subtotals & Grand Totals**: Calculate subtotals within the loop or after, and compute grand totals and final percentages (which depend on totals) after all individual rows are processed.
+         5.  **Numerically Stable Formulas**: Prioritize formulas that minimize manipulation of small floating-point numbers where precision loss is a risk (e.g., using RSI directly in denominators for heat loss/gain instead of calculating and using an intermediate U-value).
       - **Achieved Benefits**: This approach drastically reduced code duplication, significantly shrank the file size (Section 11 reduced from ~3,300 to ~630 lines), improved maintainability, and clarified the calculation flow.
       - **Recommendation**: Apply this pattern when refactoring other sections with similar multi-row calculation structures (e.g., Sections 04, 09, 10, 12).
 
@@ -617,6 +617,8 @@ To prevent excessive recalculations and optimize performance, the system impleme
        4.  **After the loop**, calculate the final section subtotals and totals (e.g., `i_98` - Total Envelope Heatloss).
        5.  **Crucially, call `setCalculatedValue` (or `StateManager.setValue(..., 'calculated')`) ONLY for these final totals** that other sections (like Section 14, 15, or 01) depend upon.
      - **Rationale**: This approach significantly reduces the number of expensive `StateManager` calls and potentially smooths rendering. It respects `StateManager` as the source of truth for *shared, cross-section data* (the totals) while allowing a necessary performance optimization for internal, non-shared display values. This is considered an acceptable deviation from Point 10 for these specific, performance-critical sections.
+
+     **Update (Post-Attempt):** While the optimization described above (direct DOM updates for rows) was implemented, it did not result in a noticeable improvement in initial load time or reduction of the UI "blink". The bottleneck appears to be the overall calculation load across all sections and/or the rendering of numerous DOM elements, rather than specifically the `StateManager` calls within Section 11. Therefore, this optimization was **reverted** in favor of maintaining architectural consistency (using standard helpers like `setCalculatedValue` for all updates). Future performance improvements should likely focus on optimizing the rendering process itself or providing better user feedback during load (e.g., a loading indicator or progress bar) rather than bypassing the StateManager for intermediate values.
 
 These optimization techniques significantly improve performance while maintaining calculation integrity, especially when handling large datasets or complex interdependencies between sections.
 
