@@ -343,8 +343,8 @@ window.TEUI.SectionModules.sect11 = (function() {
         const num = Number(value);
         
         if (format === 'percent') {
-            // Input is raw decimal (e.g., 0.2 for 20%), output integer percent
-            return (num * 100).toFixed(0) + '%';
+            // Multiply decimal by 100, then format to 2 decimal places and add %
+            return (num * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
         } else if (format === 'W/m2') { // U-Values (3 decimals)
             return num.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
         } else { // Default: kWh, RSI, Rimp, Area etc. (2 decimals)
@@ -477,11 +477,17 @@ window.TEUI.SectionModules.sect11 = (function() {
                 isGood = currentUValue <= baseline.value;
             } else if (baseline.type === 'penalty') {
                 const currentPenalty = getNumericValue(`d_${rowId}`);
-                isGood = currentPenalty <= baseline.value;
-                setCalculatedValue(mFieldId, isGood ? "Pass" : "Fail", true); // Special display for TBP M col
+                isGood = currentPenalty <= 0.50; // Fail if penalty > 50%
                 const nElementCheck = document.querySelector(`[data-field-id="${nFieldId}"]`);
                 if (nElementCheck) nElementCheck.textContent = isGood ? "✓" : "✗";
                 setElementClass(nFieldId, isGood);
+                const mElement = document.querySelector(`[data-field-id="${mFieldId}"]`);
+                const jElement = document.querySelector(`[data-field-id="j_${rowId}"]`); // Get corresponding J element
+                if (mElement && jElement) {
+                    mElement.textContent = jElement.textContent; // Copy the percentage text
+                } else {
+                    if (mElement) mElement.textContent = 'N/A'; // Fallback if J element not found
+                }
                 return;
             }
             // Set Column M (Reference %)
@@ -556,30 +562,31 @@ window.TEUI.SectionModules.sect11 = (function() {
                  }
             }
             const heatloss = getNumericValue(`i_${rowStr}`) || 0;
-            const heatlossPercent = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) : 0; // Pass raw fraction
-            setCalculatedValue(jCellFieldId, heatlossPercent, 'percent');
+            const heatingPercentDecimal = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) : 0; // Pass raw fraction
+            setCalculatedValue(jCellFieldId, heatingPercentDecimal, 'percent');
 
             // Apply Loss Indicator Class to Column J
-            let lossClass = '';
-            // Revised Thresholds: Red >= 15, Yellow >= 1, Green < 1
-            if (heatlossPercent >= 15) { lossClass = 'loss-high'; }      // Red
-            else if (heatlossPercent >= 1) { lossClass = 'loss-medium'; }  // Yellow
-            else if (heatlossPercent >= 0 ) { lossClass = 'loss-low'; }       // Green
-            setIndicatorClass(jCellFieldId, lossClass, lossIndicatorClasses);
+            let htgGainClass = '';
+            const absHtgPercent = Math.abs(heatingPercentDecimal * 100);
+            // Thresholds for loss contribution: Red >= 15%, Yellow >= 5%, Green < 5%
+            if (absHtgPercent >= 15) { htgGainClass = 'loss-high'; }      // Red for high heat loss contribution
+            else if (absHtgPercent >= 5) { htgGainClass = 'loss-medium'; } // Yellow
+            else if (absHtgPercent >= 0) { htgGainClass = 'loss-low'; }       // Green
+            setIndicatorClass(jCellFieldId, htgGainClass, gainIndicatorClasses);
 
             const heatgain = getNumericValue(`k_${rowStr}`) || 0;
-            const heatgainPercent = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) : 0; // Pass raw fraction
+            const coolingPercentDecimal = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) : 0; // Pass raw fraction
             const lCellFieldId = `l_${rowStr}`; // Field ID for Column L
-            setCalculatedValue(lCellFieldId, heatgainPercent, 'percent');
+            setCalculatedValue(lCellFieldId, coolingPercentDecimal, 'percent');
 
             // Apply Gain Indicator Class to Column L
-            let gainClass = '';
-            // Revised Thresholds (Absolute): Red >= 15, Yellow >= 1, Green < 1
-            const absHeatgainPercent = Math.abs(heatgainPercent);
-            if (absHeatgainPercent >= 15) { gainClass = 'gain-low'; }       // Red (High gain impact = red)
-            else if (absHeatgainPercent >= 1) { gainClass = 'gain-medium'; }  // Yellow
-            else if (absHeatgainPercent >= 0 ) { gainClass = 'gain-high'; }      // Green (Low gain impact = green)
-            setIndicatorClass(lCellFieldId, gainClass, gainIndicatorClasses);
+            let coolGainClass = '';
+            // Thresholds for gain contribution: Red >= 15% (bad), Yellow >= 5%, Green < 5% (good)
+            const absCoolPercent = Math.abs(coolingPercentDecimal * 100);
+            if (absCoolPercent >= 15) { coolGainClass = 'gain-high'; }      // Red for high heat gain contribution
+            else if (absCoolPercent >= 5) { coolGainClass = 'gain-medium'; } // Yellow
+            else if (absCoolPercent >= 0) { coolGainClass = 'gain-low'; }       // Green
+            setIndicatorClass(lCellFieldId, coolGainClass, gainIndicatorClasses);
 
             // --- Apply Left Alignment to J & L Columns --- 
             const jElement = document.querySelector(`[data-field-id="${jCellFieldId}"]`);
@@ -588,6 +595,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             if (lElement) lElement.classList.add('text-left-indicator');
             // --- End Left Alignment --- 
 
+            // Update reference indicators for all rows
             updateReferenceIndicators(config.row);
         });
     }
@@ -615,7 +623,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 let decimalValue = numValue / 100;
                 // Clamp the DECIMAL value between 0 and 1 
                 decimalValue = Math.max(0, Math.min(1, decimalValue));
-                rawValueToStore = decimalValue.toString(); // Overwrite with clamped decimal value for state
+                rawValueToStore = decimalValue.toString(); // Overwrite with clamped decimal value for storage
                 displayValue = formatNumber(decimalValue * 100, 'number'); // Display as number 0-100, not percentage string
             } else if (currentFieldId.startsWith('g_')) { // U-Value (3 decimals)
                 displayValue = formatNumber(numValue, 'W/m2'); // Use specific format

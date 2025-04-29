@@ -1112,18 +1112,19 @@ window.TEUI.SectionModules.sect10 = (function() {
                 // Apply Indicator Class & Left Alignment (similar to Section 11)
                 const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low'];
                 let htgGainClass = '';
-                const absHtgPercent = Math.abs(heatingPercentDecimal * 100);
-                // Thresholds: Green >= 67, Yellow >= 33, Red < 33
-                if (absHtgPercent >= 67) { htgGainClass = 'gain-high'; }      // Green
-                else if (absHtgPercent >= 33) { htgGainClass = 'gain-medium'; } // Yellow
-                else if (absHtgPercent >= 0) { htgGainClass = 'gain-low'; }       // Red
+                const htgPercent = heatingPercentDecimal * 100; // Use actual value for thresholds
+                // Heating Gain: Higher is better. Thresholds: Green >= 33, Yellow >= 10, Red < 10
+                if (htgPercent >= 33) { htgGainClass = 'gain-high'; }      // Green
+                else if (htgPercent >= 10) { htgGainClass = 'gain-medium'; } // Yellow
+                else if (htgPercent >= 0) { htgGainClass = 'gain-low'; }       // Red
                 setIndicatorClass(jFieldId, htgGainClass, gainIndicatorClasses);
 
                 let coolGainClass = '';
-                const absCoolPercent = Math.abs(coolingPercentDecimal * 100);
-                if (absCoolPercent >= 67) { coolGainClass = 'gain-high'; }      // Green
-                else if (absCoolPercent >= 33) { coolGainClass = 'gain-medium'; } // Yellow
-                else if (absCoolPercent >= 0) { coolGainClass = 'gain-low'; }       // Red
+                const coolPercentValue = coolingPercentDecimal * 100; // Use actual value
+                // Cooling Gain: Higher is worse. Thresholds: Red >= 15, Yellow >= 5, Green < 5
+                if (coolPercentValue >= 15) { coolGainClass = 'gain-low'; }      // Red (High contribution = Bad)
+                else if (coolPercentValue >= 5) { coolGainClass = 'gain-medium'; } // Yellow
+                else if (coolPercentValue >= 0) { coolGainClass = 'gain-high'; }      // Green (Low contribution = Good)
                 setIndicatorClass(lFieldId, coolGainClass, gainIndicatorClasses);
 
                 const jElement = document.querySelector(`[data-field-id="${jFieldId}"]`);
@@ -1366,7 +1367,7 @@ window.TEUI.SectionModules.sect10 = (function() {
 
         if (format === 'percent') {
             // Input is raw decimal (e.g., 0.7769 for 78%), output integer percent
-            return (num * 100).toFixed(0) + '%'; 
+            return (num * 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'; 
         } else if (format === 'currency') {
             return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         } else { // Default number format (kWh, Gain Factor, etc.)
