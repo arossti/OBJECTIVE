@@ -17,7 +17,95 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 window.TEUI.SectionModules.sect14 = (function() {
     
     //==========================================================================
-    // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
+    // HELPER FUNCTIONS (Copied from Section 15 Refactor)
+    //==========================================================================
+
+    /**
+     * Safely parses a numeric value from StateManager or DOM, handling potential strings with commas.
+     * Uses the global parseNumeric if available, otherwise provides a fallback.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     */
+    function getNumericValue(fieldId) {
+        if (typeof window.TEUI?.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(fieldId)) || 0;
+        } else {
+            // Fallback parsing logic
+            const value = window.TEUI.StateManager?.getValue(fieldId);
+            if (value === null || value === undefined) return 0;
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                // Remove $, commas, % and handle potential empty strings or non-numeric values
+                const cleanedValue = value.replace(/[$,%]/g, '').trim();
+                if (cleanedValue === '') return 0;
+                const parsed = parseFloat(cleanedValue);
+                return isNaN(parsed) ? 0 : parsed;
+            }
+            return 0;
+        }
+    }
+
+    /**
+     * Formats a number according to the project's display rules (2 decimal places, commas).
+     * Handles specific formats like percentages and currency.
+     * @param {number} value - The number to format.
+     * @param {string} [format='number'] - The type of format ('number', 'currency', 'percent', 'W/m2').
+     * @returns {string} The formatted number as a string.
+     */
+    function formatNumber(value, format = 'number') {
+        if (value === null || value === undefined || isNaN(value)) {
+            return '0.00'; // Default numeric format for errors/NaN
+        }
+
+        const num = Number(value);
+
+        if (format === 'currency') {
+            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (format === 'percent') {
+            return (num * 100).toFixed(0) + '%';
+        } else if (format === 'btu') {
+            return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        } else if (format === 'tons') {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (format === 'integer') {
+             return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        } else { // Default number format (kWh, kWh/m2, W/m2)
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    }
+
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {string} [format='number'] - The format type for display.
+     */
+    function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        // Handle potential N/A cases first
+        if (isNaN(rawValue) || rawValue === null || rawValue === undefined) {
+             window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
+             const elementNA = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+             if (elementNA) elementNA.textContent = 'N/A';
+             return; // Stop processing if value is not a valid number
+        }
+
+        const formattedValue = formatNumber(rawValue, format);
+        
+        // Store raw value as string in StateManager for precision
+        window.TEUI.StateManager?.setValue(fieldId, rawValue.toString(), 'calculated');
+        
+        // Update DOM with formatted value
+        const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', rawValue < 0);
+        } else {
+            console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+        }
+    }
+
+    //==========================================================================
+    // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT (Update Defaults)
     //==========================================================================
     
     // Define rows with integrated field definitions
@@ -53,7 +141,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 d: { 
                     fieldId: "d_126", 
                     type: "calculated", 
-                    value: "119,171.78",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -63,20 +151,14 @@ window.TEUI.SectionModules.sect14 = (function() {
                 h: { 
                     fieldId: "h_126", 
                     type: "calculated", 
-                    value: "83.50",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
                 i: { content: "Includes V.5 Net Ventilation Losses, Excludes T.7.3 CEDI Ae", classes: ["note-text"] },
                 j: { content: "" },
                 k: { content: "" },
-                l: { 
-                    fieldId: "l_126", 
-                    type: "calculated", 
-                    value: "N/A",
-                    classes: ["reference-value"],
-                    section: "tediSummary"
-                },
+                l: { content: "" }, // l_126 removed, no formula
                 m: { content: "" },
                 n: { content: "" }
             }
@@ -92,7 +174,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 d: { 
                     fieldId: "d_127", 
                     type: "calculated", 
-                    value: "70,190.98",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -102,7 +184,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 h: { 
                     fieldId: "h_127", 
                     type: "calculated", 
-                    value: "49.18",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -125,7 +207,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 d: { 
                     fieldId: "d_128", 
                     type: "calculated", 
-                    value: "76,437.53",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -135,7 +217,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 h: { 
                     fieldId: "h_128", 
                     type: "calculated", 
-                    value: "53.56",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -145,7 +227,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 l: { 
                     fieldId: "l_128", 
                     type: "calculated", 
-                    value: "8,038.67",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -164,7 +246,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 d: { 
                     fieldId: "d_129", 
                     type: "calculated", 
-                    value: "6.11",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -174,7 +256,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 h: { 
                     fieldId: "h_129", 
                     type: "calculated", 
-                    value: "0.64",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -197,7 +279,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 d: { 
                     fieldId: "d_130", 
                     type: "calculated", 
-                    value: "116,070.33",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -207,7 +289,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 h: { 
                     fieldId: "h_130", 
                     type: "calculated", 
-                    value: "81.33",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -230,7 +312,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 d: { 
                     fieldId: "d_131", 
                     type: "calculated", 
-                    value: "-2,964.68",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -240,7 +322,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 h: { 
                     fieldId: "h_131", 
                     type: "calculated", 
-                    value: "-2.08",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -255,7 +337,7 @@ window.TEUI.SectionModules.sect14 = (function() {
     };
     
     //==========================================================================
-    // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
+    // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT (Unchanged)
     //==========================================================================
     
     /**
@@ -384,7 +466,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 // Remove field-specific properties that aren't needed for rendering
                 delete cell.getOptions;
                 delete cell.section;
-                delete cell.dependencies;
+                delete cell.dependencies; // Renderer doesn't need these
                 
                 rowDef.cells.push(cell);
             } else {
@@ -403,124 +485,164 @@ window.TEUI.SectionModules.sect14 = (function() {
     }
     
     //==========================================================================
-    // CALCULATIONS AND DEPENDENCIES
+    // CALCULATIONS AND DEPENDENCIES (Refactored)
     //==========================================================================
     
     /**
-     * Register all field dependencies with the StateManager
+     * Register all field dependencies with the StateManager based on FORMULAE-3037.csv
      */
     function registerDependencies() {
         if (!window.TEUI.StateManager) {
-            // console.warn("StateManager not available for TEDI/TELI dependency registration");
+            console.warn("StateManager not available for TEDI/TELI dependency registration");
             return;
         }
+        const sm = window.TEUI.StateManager;
         
-        // Register dependencies for field calculations
+        // Dependencies for d_126: =(I97+I98+I103+M121)-I80
+        ['i_97', 'i_98', 'i_103', 'm_121', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_126'));
         
-        // Relationship between area and intensity values
-        window.TEUI.StateManager.registerDependency('h_15', 'h_126'); // Area affects TEDI
-        window.TEUI.StateManager.registerDependency('d_126', 'h_126'); // TED Targeted affects TEDI
+        // Dependencies for h_126: =D126/H15
+        sm.registerDependency('d_126', 'h_126');
+        sm.registerDependency('h_15', 'h_126');
         
-        window.TEUI.StateManager.registerDependency('h_15', 'h_127'); // Area affects TEDI (Excludes Ventilation)
-        window.TEUI.StateManager.registerDependency('d_127', 'h_127'); // TED Envelope affects TEDI (Excludes Ventilation)
+        // Dependencies for d_127: =(I97+I98+I103)-I80
+        ['i_97', 'i_98', 'i_103', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_127'));
         
-        window.TEUI.StateManager.registerDependency('h_15', 'h_128'); // Area affects CEDI Unmitigated
-        window.TEUI.StateManager.registerDependency('d_128', 'h_128'); // CED Cooling Load affects CEDI Unmitigated
+        // Dependencies for h_127: =D127/H15
+        sm.registerDependency('d_127', 'h_127');
+        sm.registerDependency('h_15', 'h_127');
+
+        // Dependencies for d_128: =K71+K79+K97+K104+K103+D122
+        ['k_71', 'k_79', 'k_97', 'k_104', 'k_103', 'd_122'].forEach(dep => sm.registerDependency(dep, 'd_128'));
+
+        // Dependencies for h_128: =D128/H15
+        sm.registerDependency('d_128', 'h_128');
+        sm.registerDependency('h_15', 'h_128');
+
+        // Dependencies for l_128: =D128-H124-D123
+        sm.registerDependency('d_128', 'l_128');
+        sm.registerDependency('h_124', 'l_128');
+        sm.registerDependency('d_123', 'l_128');
+
+        // Dependencies for d_129: =(D128/8760*1000)/H15
+        sm.registerDependency('d_128', 'd_129');
+        sm.registerDependency('h_15', 'd_129');
+
+        // Dependencies for h_129: =(M129/8760*1000)/H15 (Note: M129 = l_128 in this context)
+        sm.registerDependency('l_128', 'h_129'); // M129 is derived from l_128
+        sm.registerDependency('h_15', 'h_129');
         
-        window.TEUI.StateManager.registerDependency('h_15', 'h_130'); // Area affects TELI
-        window.TEUI.StateManager.registerDependency('d_130', 'h_130'); // TEL Total Envelope Heatloss affects TELI
+        // Dependencies for d_130: =SUM(I97:I98)+I103
+        ['i_97', 'i_98', 'i_103'].forEach(dep => sm.registerDependency(dep, 'd_130'));
         
-        window.TEUI.StateManager.registerDependency('h_15', 'h_131'); // Area affects CEGI
-        window.TEUI.StateManager.registerDependency('d_131', 'h_131'); // CEG Cooling Envelope Heatgain affects CEGI
+        // Dependencies for h_130: =D130/H15
+        sm.registerDependency('d_130', 'h_130');
+        sm.registerDependency('h_15', 'h_130');
         
-        // Dependency on envelope and ventilation heat loss
-        window.TEUI.StateManager.registerDependency('d_130', 'd_126'); // Envelope heatloss affects TED Targeted
-        window.TEUI.StateManager.registerDependency('d_121', 'd_126'); // Ventilation affects TED Targeted
+        // Dependencies for d_131: =SUM(K97:K98)+K103
+        ['k_97', 'k_98', 'k_103'].forEach(dep => sm.registerDependency(dep, 'd_131'));
+
+        // Dependencies for h_131: =D131/H15
+        sm.registerDependency('d_131', 'h_131');
+        sm.registerDependency('h_15', 'h_131');
         
-        // console.log("TEDI/TELI dependencies registered");
+        console.log("TEDI/TELI dependencies registered");
     }
     
     /**
-     * Calculate all values for this section 
+     * Calculate all values for this section based on FORMULAE-3037.csv
      * This is triggered when dependencies change or on initial load
      */
     function calculateValues() {
         try {
             if (!window.TEUI.StateManager) {
-                // console.warn("StateManager not available for TEDI/TELI calculations");
+                console.warn("StateManager not available for TEDI/TELI calculations");
                 return;
             }
             
             // Get building area from StateManager
-            const areaStr = window.TEUI.StateManager.getValue('h_15') || "1427.20";
-            const area = parseFloat(areaStr.replace(/,/g, ''));
+            const area = getNumericValue('h_15');
             
-            // Calculations based on the FORMULAE-3037.csv
+            // Get input values for calculations
+            const i97 = getNumericValue('i_97');   // Thermal Bridge Penalty Heatloss
+            const i98 = getNumericValue('i_98');   // Envelope Totals Heatloss
+            const i103 = getNumericValue('i_103'); // Natural Air Leakage Heatloss
+            const m121 = getNumericValue('m_121'); // Net Htg Season Ventil. Lost
+            const i80 = getNumericValue('i_80');    // G.3 Net Usable Gains by Method Selected
             
-            // T.4.0 TED Targeted (d_126) - Get from envelope loss and ventilation values
-            // In the real calculation this would need the actual envelope loss and ventilation values
-            // For now, we'll use a simplified calculation or default value
-            const envelopeLossStr = window.TEUI.StateManager.getValue('d_130') || "116070.33";
-            const envelopeLoss = parseFloat(envelopeLossStr.replace(/,/g, ''));
+            const k71 = getNumericValue('k_71');   // Internal Gains Totals (Cooling Gain kWh/yr)
+            const k79 = getNumericValue('k_79');   // Subtotal Solar Gains (Cool Load kWh/yr)
+            const k97 = getNumericValue('k_97');   // Thermal Bridge Penalty Heatgain (Cooling)
+            const k98 = getNumericValue('k_98');   // Envelope Totals Heatgain (Cooling)
+            const k103 = getNumericValue('k_103'); // Cooling Natural Air Leakage Heatgain
+            const d122 = getNumericValue('d_122'); // Incoming Cooling Season Ventil. Energy
             
-            // Simplified TED Targeted (should use actual envelope and ventilation)
-            const tedTargeted = envelopeLoss * 1.027; // Simple approximation
-            window.TEUI.StateManager.setValue('d_126', tedTargeted.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            const h124 = getNumericValue('h_124'); // Ventilation Free Cooling/Vent Capacity
+            const d123 = getNumericValue('d_123'); // Outgoing Cooling Season Ventil. Energy
             
-            // T.4.1 TEDI (h_126) - TED Targeted divided by area
-            const tedi = tedTargeted / area;
-            window.TEUI.StateManager.setValue('h_126', tedi.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // --- Perform Calculations ---
             
-            // T.4.2 TED Envelope (d_127) - This would be calculated from other values
-            // For now, use 60% of TED Targeted as an approximation
-            const tedEnvelope = tedTargeted * 0.59;
-            window.TEUI.StateManager.setValue('d_127', tedEnvelope.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_126: =(I97+I98+I103+M121)-I80 
+            // (TB Loss + Env Loss + Air Loss + Vent Loss) - Usable Gains
+            const tedTargeted_d126 = (i97 + i98 + i103 + m121) - i80;
+            setCalculatedValue('d_126', tedTargeted_d126);
             
-            // T.4.3 TEDI (Excludes Ventilation) (h_127)
-            const tediExcludesVent = tedEnvelope / area;
-            window.TEUI.StateManager.setValue('h_127', tediExcludesVent.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_126: =D126/H15
+            const tedi_h126 = area > 0 ? tedTargeted_d126 / area : 0;
+            setCalculatedValue('h_126', tedi_h126);
             
-            // T.4.4 CED Cooling Load Unmitigated (d_128) - Based on other calculations
-            // For now, use default value or approx
-            const cedCoolingUnmitigated = 76437.53;
-            window.TEUI.StateManager.setValue('d_128', cedCoolingUnmitigated.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_127: =(I97+I98+I103)-I80
+            // (TB Loss + Env Loss + Air Loss) - Usable Gains
+            const tedEnvelope_d127 = (i97 + i98 + i103) - i80;
+            setCalculatedValue('d_127', tedEnvelope_d127);
             
-            // T.4.5 CEDI Unmitigated (h_128)
-            const cediUnmitigated = cedCoolingUnmitigated / area;
-            window.TEUI.StateManager.setValue('h_128', cediUnmitigated.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_127: =D127/H15
+            const tediExcludesVent_h127 = area > 0 ? tedEnvelope_d127 / area : 0;
+            setCalculatedValue('h_127', tediExcludesVent_h127);
             
-            // T.4.6 CEDI Cooling Load (d_129) - Watts per square meter
-            const cediCoolingLoad = 6.11;
-            window.TEUI.StateManager.setValue('d_129', cediCoolingLoad.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_128: =K71+K79+K97+K104+K103+D122 
+            // Note: K104 is Cooling Envelope Gain Total (SUM K97:K103+K104?), k_104 is not a field in the source CSV, seems to be SUM(K97:K98)+K103 based on d_131?
+            // Let's assume K104 represents Envelope Gains = SUM(K97:K98)+K103 = d_131
+            const d131_ceg = (k97 + k98) + k103; // Recalculate d_131 value for clarity
+            const cedCoolingUnmitigated_d128 = k71 + k79 + d131_ceg + d122;
+            setCalculatedValue('d_128', cedCoolingUnmitigated_d128);
             
-            // T.4.7 CEDI Mitigated (h_129)
-            const cediMitigated = 0.64;
-            window.TEUI.StateManager.setValue('h_129', cediMitigated.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_128: =D128/H15
+            const cediUnmitigated_h128 = area > 0 ? cedCoolingUnmitigated_d128 / area : 0;
+            setCalculatedValue('h_128', cediUnmitigated_h128);
             
-            // T.5.1 TEL Total Envelope Heatloss (d_130)
-            // For now, use the constant value since this is a source value
-            window.TEUI.StateManager.setValue('d_130', envelopeLoss.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // l_128: =D128-H124-D123 (Mitigated Cooling Load in kWh/yr)
+            const mitigatedCoolingLoad_l128 = cedCoolingUnmitigated_d128 - h124 - d123;
+            setCalculatedValue('l_128', mitigatedCoolingLoad_l128);
             
-            // T.5.2 TELI (h_130)
-            const teli = envelopeLoss / area;
-            window.TEUI.StateManager.setValue('h_130', teli.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_129: =(D128/8760*1000)/H15 (Unmitigated CEDI in W/m2)
+            const cediCoolingLoad_d129 = area > 0 ? (cedCoolingUnmitigated_d128 / 8760 * 1000) / area : 0;
+            setCalculatedValue('d_129', cediCoolingLoad_d129, 'W/m2'); // Format as W/m2
             
-            // T.5.3 CEG Cooling Envelope Heatgain (d_131)
-            const cegHeatgain = -2964.68;
-            window.TEUI.StateManager.setValue('d_131', cegHeatgain.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_129: =(M129/8760*1000)/H15 (Mitigated CEDI in W/m2 - M129 is l_128)
+            const cediMitigated_h129 = area > 0 ? (mitigatedCoolingLoad_l128 / 8760 * 1000) / area : 0;
+            setCalculatedValue('h_129', cediMitigated_h129, 'W/m2'); // Format as W/m2
             
-            // T.5.4 CEGI (h_131)
-            const cegi = cegHeatgain / area;
-            window.TEUI.StateManager.setValue('h_131', cegi.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_130: =SUM(I97:I98)+I103 (Total Envelope Heatloss - excluding Vent)
+            const telHeatloss_d130 = i97 + i98 + i103;
+            setCalculatedValue('d_130', telHeatloss_d130);
             
-            // T.5.2 less Free Cool & Vent Exhaust (l_128)
-            const lessFreeVent = 8038.67;
-            window.TEUI.StateManager.setValue('l_128', lessFreeVent.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_130: =D130/H15
+            const teli_h130 = area > 0 ? telHeatloss_d130 / area : 0;
+            setCalculatedValue('h_130', teli_h130);
+            
+            // d_131: =SUM(K97:K98)+K103 (Total Cooling Envelope Heatgain)
+            // Already calculated as d131_ceg
+            setCalculatedValue('d_131', d131_ceg);
+            
+            // h_131: =D131/H15
+            const cegi_h131 = area > 0 ? d131_ceg / area : 0;
+            setCalculatedValue('h_131', cegi_h131);
             
             // console.log("TEDI/TELI calculations completed");
             
         } catch (error) {
-            // console.error("Error in TEDI/TELI calculations:", error);
+            console.error("Error in TEDI/TELI calculations:", error);
         }
     }
     
@@ -533,23 +655,15 @@ window.TEUI.SectionModules.sect14 = (function() {
             // console.log("TEDI/TELI calculateAll function called");
             
             // First perform internal calculations for this section
-            calculateValues();
-            
-            // Update the DOM to match calculated values
-            updateDisplay();
+            calculateValues(); // Also updates display via setCalculatedValue
             
             // Then signal any dependent sections via the SectionIntegrator
-            if (window.TEUI.SectionIntegrator) {
-                // If we have a global function for TEUI summary recalculation, call it
-                if (typeof window.TEUI.updateTEUIValues === 'function') {
-                    // console.log("Triggering TEUI value recalculation from TEDI/TELI");
-                    window.TEUI.updateTEUIValues();
-                }
-            }
+            // Section 15 listens for changes in h_126 and h_130 from this section.
+            // The setCalculatedValue calls in calculateValues handle triggering those listeners.
             
             // console.log("TEDI/TELI full calculation cycle completed");
         } catch (error) {
-            // console.error("Error in TEDI/TELI calculateAll:", error);
+            console.error("Error in TEDI/TELI calculateAll:", error);
         }
     }
     
@@ -559,57 +673,88 @@ window.TEUI.SectionModules.sect14 = (function() {
     
     /**
      * Update the DOM with the current values from the StateManager
+     * Note: Redundant if setCalculatedValue handles DOM updates reliably.
      */
     function updateDisplay() {
         if (!window.TEUI.StateManager) return;
         
-        // Get all fields in this section
         const fields = getFields();
         
-        // Update each field in the DOM
         Object.keys(fields).forEach(fieldId => {
             const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null) {
-                const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (value !== null && value !== undefined) {
+                const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
                 if (element) {
-                    element.textContent = value;
+                    let format = 'number'; // Default
+                    let rawValue = value; // Assume raw for N/A check
+                    
+                    // Determine format based on field ID
+                    if (fieldId === 'd_129' || fieldId === 'h_129') {
+                        format = 'W/m2';
+                        rawValue = getNumericValue(fieldId);
+                    } else if (value === 'N/A') {
+                         element.textContent = 'N/A';
+                         return; // Skip formatting
+                    } else {
+                         rawValue = getNumericValue(fieldId);
+                    }
+                    
+                    element.textContent = formatNumber(rawValue, format);
+                    element.classList.toggle('negative-value', rawValue < 0);
                 }
             }
         });
+         console.log("TEDI/TELI display updated");
     }
     
     /**
      * Initialize event handlers for this section
+     * Sets up listeners for changes in dependency values from other sections.
      */
     function initializeEventHandlers() {
-        // Register for area change events to recalculate intensity values
-        if (window.TEUI.StateManager) {
-            window.TEUI.StateManager.addListener('h_15', () => {
-                calculateValues();
-                updateDisplay();
-            });
-        }
+        if (!window.TEUI.StateManager) return;
+        const sm = window.TEUI.StateManager;
+
+        // Create a list of all unique dependencies needed by this section's calculations
+        const dependencies = [
+            'h_15', 'i_97', 'i_98', 'i_103', 'm_121', 'i_80',
+            'k_71', 'k_79', 'k_97', 'k_98', 'k_103', 'd_122',
+            'h_124', 'd_123'
+        ];
         
-        // Add listeners for other dependencies as needed
+        // Remove duplicates
+        const uniqueDependencies = [...new Set(dependencies)];
+
+        // Add listeners for all unique dependencies
+        uniqueDependencies.forEach(dep => {
+            sm.addListener(dep, () => {
+                console.log(`Listener triggered for dependency: ${dep} in Section 14`);
+                calculateAll(); 
+            });
+        });
+
+        console.log("TEDI/TELI event listeners initialized.");
     }
     
     /**
      * Called when section is rendered
      */
     function onSectionRendered() {
-        // console.log("TEDI & TELI section rendered");
+        console.log("TEDI & TELI section (sect14) rendered");
         
-        // Register dependencies first
-        registerDependencies();
+        if (window.TEUI.StateManager) {
+             registerDependencies();
+        } else {
+            console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
+        }
         
-        // Calculate initial values
-        calculateValues();
-        
-        // Update display with calculated values
-        updateDisplay();
-        
-        // Initialize event handlers
         initializeEventHandlers();
+
+        // Defer initial calculation slightly
+        setTimeout(() => {
+             console.log("Running initial calculations for sect14.");
+            calculateAll();
+        }, 160); // Slightly longer delay than S15?
     }
     
     //==========================================================================
@@ -623,9 +768,7 @@ window.TEUI.SectionModules.sect14 = (function() {
         getLayout: getLayout,
         
         // Calculations
-        calculateValues: calculateValues,
         calculateAll: calculateAll,
-        updateDisplay: updateDisplay,
         
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
@@ -636,15 +779,30 @@ window.TEUI.SectionModules.sect14 = (function() {
 // Initialize when the section is rendered
 document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail?.sectionId === 'tediSummary') {
-        window.TEUI.SectionModules.sect14.onSectionRendered();
+        if (window.TEUI.SectionModules.sect14) {
+             console.log("teui-section-rendered event caught for tediSummary");
+             // Add a small delay
+             setTimeout(() => window.TEUI.SectionModules.sect14.onSectionRendered(), 60);
+        } else {
+            console.error("Sect14 module not found when teui-section-rendered event fired.");
+        }
     }
 });
 
 // Fallback to rendering complete event
 document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('tediSummary')) {
-            window.TEUI.SectionModules.sect14.onSectionRendered();
+    if (document.getElementById('tediSummary') && (!window.TEUI.SectionModules.sect14 || !window.TEUI.SectionModules.sect14.initialized)) {
+         console.log("teui-rendering-complete event fallback for tediSummary");
+        if (window.TEUI.SectionModules.sect14) {
+             window.TEUI.SectionModules.sect14.initialized = true;
+             setTimeout(() => window.TEUI.SectionModules.sect14.onSectionRendered(), 360);
+        } else {
+            console.error("Sect14 module not found when teui-rendering-complete event fired.");
         }
-    }, 300);
+    }
 });
+
+// Add an initialized flag to prevent multiple runs
+if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect14) {
+    window.TEUI.SectionModules.sect14.initialized = false; 
+}

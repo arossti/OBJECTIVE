@@ -17,6 +17,88 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 window.TEUI.SectionModules.sect15 = (function() {
     
     //==========================================================================
+    // HELPER FUNCTIONS
+    //==========================================================================
+
+    /**
+     * Safely parses a numeric value from StateManager or DOM, handling potential strings with commas.
+     * Uses the global parseNumeric if available, otherwise provides a fallback.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     */
+    function getNumericValue(fieldId) {
+        if (typeof window.TEUI?.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(fieldId)) || 0;
+        } else {
+            // Fallback parsing logic
+            const value = window.TEUI.StateManager?.getValue(fieldId);
+            if (value === null || value === undefined) return 0;
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                // Remove $, commas, % and handle potential empty strings or non-numeric values
+                const cleanedValue = value.replace(/[$,%]/g, '').trim();
+                if (cleanedValue === '') return 0;
+                const parsed = parseFloat(cleanedValue);
+                return isNaN(parsed) ? 0 : parsed;
+            }
+            return 0;
+        }
+    }
+
+    /**
+     * Formats a number according to the project's display rules (2 decimal places, commas).
+     * Handles specific formats like percentages and currency.
+     * @param {number} value - The number to format.
+     * @param {string} [format='number'] - The type of format ('number', 'currency', 'percent').
+     * @returns {string} The formatted number as a string.
+     */
+    function formatNumber(value, format = 'number') {
+        if (value === null || value === undefined || isNaN(value)) {
+            return format === 'currency' ? '$0.00' : (format === 'percent' ? '0%' : '0.00');
+        }
+
+        const num = Number(value);
+
+        if (format === 'currency') {
+            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (format === 'percent') {
+            // Assuming the input value is the raw decimal (e.g., 0.59 for 59%)
+            return (num * 100).toFixed(0) + '%';
+        } else if (format === 'btu') {
+            return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        } else if (format === 'tons') {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else if (format === 'integer') {
+             return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        } else { // Default number format (e.g., kWh, kWh/m2, W/m2)
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    }
+
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {string} [format='number'] - The format type for display.
+     */
+    function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        const formattedValue = formatNumber(rawValue, format);
+        
+        // Store raw value as string in StateManager for precision (as per README Point 5)
+        window.TEUI.StateManager?.setValue(fieldId, rawValue.toString(), 'calculated');
+        
+        // Update DOM with formatted value
+        const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            // Add/remove classes based on value if needed (e.g., for negatives)
+            element.classList.toggle('negative-value', rawValue < 0);
+        } else {
+            console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+        }
+    }
+    
+    //==========================================================================
     // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -53,7 +135,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_135", 
                     type: "calculated", 
-                    value: "219,408.30",
+                    value: "0.00", // Default to 0.00, will be calculated
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -63,7 +145,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_135", 
                     type: "calculated", 
-                    value: "153.73",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -86,7 +168,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_136", 
                     type: "calculated", 
-                    value: "132,765.65",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -96,7 +178,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_136", 
                     type: "calculated", 
-                    value: "93.03",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -119,21 +201,21 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_137", 
                     type: "calculated", 
-                    value: "46.03",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
                 e: { content: "kW" },
                 f: { content: "T.6.4", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "TEUI-imp", classes: ["label-main", "text-left", "no-wrap"] },
-                h: { content: "" },
+                h: { content: "" }, // Removed fieldId, no calculation for h_137
                 i: { content: "" },
                 j: { content: "" },
                 k: { content: "" },
                 l: { 
                     fieldId: "l_137", 
                     type: "calculated", 
-                    value: "157,076",
+                    value: "0", // Default to 0
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -152,7 +234,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_138", 
                     type: "calculated", 
-                    value: "10.46",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -162,7 +244,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_138", 
                     type: "calculated", 
-                    value: "2.97",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -172,7 +254,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 l: { 
                     fieldId: "l_138", 
                     type: "calculated", 
-                    value: "35,699",
+                    value: "0", // Default to 0
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -191,17 +273,17 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_139", 
                     type: "calculated", 
-                    value: "48.04",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
                 e: { content: "kW" },
-                f: { content: "T.6.9", classes: ["label-prefix", "text-right", "no-wrap"] },
+                f: { content: "T.6.9", classes: ["label-prefix", "text-right", "no-wrap"] }, // Note: CSV says T.6.7, but UI label suggests T.6.9? Assuming T.6.9 for field h_139
                 g: { content: "Peak Cooling Imp", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
                     fieldId: "h_139", 
                     type: "calculated", 
-                    value: "13.66",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -211,7 +293,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 l: { 
                     fieldId: "l_139", 
                     type: "calculated", 
-                    value: "163,912",
+                    value: "0", // Default to 0
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -230,7 +312,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_140", 
                     type: "calculated", 
-                    value: "32.26",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -240,20 +322,14 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_140", 
                     type: "calculated", 
-                    value: "7.33",
+                    value: "0.00", // Default to 0.00 - Max Cool Intsty in W/m² (Enclosure Only)
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
-                i: { content: "" },
+                i: { content: "" }, // Unit removed as it's W/m2
                 j: { content: "T.6.6 Mx. Cool Intsty in W/m² (Enclosure Only)" },
                 k: { content: "" },
-                l: { 
-                    fieldId: "l_140", 
-                    type: "calculated", 
-                    value: "65%",
-                    classes: ["calculated-value"],
-                    section: "teuiSummary"
-                },
+                l: { content: "" }, // l_140 removed, no formula in CSV
                 m: { content: "" },
                 n: { content: "" }
             }
@@ -269,7 +345,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_141", 
                     type: "calculated", 
-                    value: "$28,523.08",
+                    value: "$0.00", // Default to $0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -279,7 +355,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_141", 
                     type: "calculated", 
-                    value: "$17,259.53",
+                    value: "$0.00", // Default to $0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -289,7 +365,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 l: { 
                     fieldId: "l_141", 
                     type: "calculated", 
-                    value: "$0.00",
+                    value: "$0.00", // Default to $0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -306,10 +382,11 @@ window.TEUI.SectionModules.sect15 = (function() {
             cells: {
                 c: { label: "Cost Premium of HP Equipment" },
                 d: { 
+                    // This seems like an input, not calculated. Assuming it's an editable field for now.
                     fieldId: "d_142", 
-                    type: "calculated", 
-                    value: "$30,000.00",
-                    classes: ["calculated-value"],
+                    type: "editable", 
+                    value: "30000.00", // Default value from CSV example
+                    classes: ["user-input"], // Assuming user input style
                     section: "teuiSummary"
                 },
                 e: { content: "" },
@@ -318,7 +395,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_142", 
                     type: "calculated", 
-                    value: "2.66",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -341,8 +418,8 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_143", 
                     type: "calculated", 
-                    value: "226.86",
-                    classes: ["reference-value"],
+                    value: "0.00", // Default to 0.00
+                    classes: ["reference-value"], // Keep reference style
                     section: "teuiSummary"
                 },
                 e: { content: "Reference" },
@@ -351,7 +428,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_143", 
                     type: "calculated", 
-                    value: "93.03",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -361,7 +438,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 l: { 
                     fieldId: "l_143", 
                     type: "calculated", 
-                    value: "93.15",
+                    value: "0.00", // Default to 0.00
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -380,7 +457,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_144", 
                     type: "calculated", 
-                    value: "59%",
+                    value: "0%", // Default to 0%
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -390,7 +467,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 h: { 
                     fieldId: "h_144", 
                     type: "calculated", 
-                    value: "100%",
+                    value: "0%", // Default to 0%
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -400,7 +477,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 l: { 
                     fieldId: "l_144", 
                     type: "calculated", 
-                    value: "100%",
+                    value: "0%", // Default to 0%
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -419,7 +496,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d: { 
                     fieldId: "d_145", 
                     type: "calculated", 
-                    value: "86%",
+                    value: "0%", // Default to 0%
                     classes: ["calculated-value"],
                     section: "teuiSummary"
                 },
@@ -455,12 +532,14 @@ window.TEUI.SectionModules.sect15 = (function() {
             
             // Process each cell in the row
             Object.entries(row.cells).forEach(([colKey, cell]) => {
-                if (cell.fieldId && cell.type) {
+                // Include 'editable' types now
+                if (cell.fieldId && (cell.type === 'calculated' || cell.type === 'editable')) {
                     // Create field definition with all relevant properties
                     fields[cell.fieldId] = {
                         type: cell.type,
                         label: cell.label || row.label,
-                        defaultValue: cell.value || "",
+                        // Use 'value' from cell definition as defaultValue
+                        defaultValue: cell.value !== undefined ? cell.value.toString() : "", 
                         section: cell.section || "teuiSummary"
                     };
                     
@@ -567,7 +646,9 @@ window.TEUI.SectionModules.sect15 = (function() {
                 // Remove field-specific properties that aren't needed for rendering
                 delete cell.getOptions;
                 delete cell.section;
-                delete cell.dependencies;
+                delete cell.dependencies; // Dependencies are handled by StateManager, not renderer
+                // Keep 'value' for editable fields' initial display
+                // Keep 'type' for renderer to identify editable vs calculated
                 
                 rowDef.cells.push(cell);
             } else {
@@ -590,182 +671,333 @@ window.TEUI.SectionModules.sect15 = (function() {
     //==========================================================================
     
     /**
-     * Register all field dependencies with the StateManager
+     * Register all field dependencies with the StateManager based on FORMULAE-3037.csv
      */
     function registerDependencies() {
         if (!window.TEUI.StateManager) {
-            // console.warn("StateManager not available for TEUI dependency registration");
+            console.warn("StateManager not available for TEUI dependency registration");
             return;
         }
+        const sm = window.TEUI.StateManager;
+
+        // Dependencies for d_135: =M43+K51+H70+D117+I104+M121-I80
+        ['m_43', 'k_51', 'h_70', 'd_117', 'i_104', 'm_121', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_135'));
         
-        // Register dependencies for field calculations
+        // Dependencies for h_135: =D135/H15
+        sm.registerDependency('d_135', 'h_135');
+        sm.registerDependency('h_15', 'h_135');
+
+        // Dependencies for d_136: =IF(D113="Electricity",D135,IF(D113="Heatpump",(K51+D117+D114+M43+H70),IF(D113="Gas",(K51+D117+M43+H70),IF(D113="Oil",(K51+D117+M43+H70)))))
+        sm.registerDependency('d_113', 'd_136'); // Primary Heating System
+        sm.registerDependency('d_135', 'd_136'); // Dependency if electric
+        ['k_51', 'd_117', 'd_114', 'm_43', 'h_70'].forEach(dep => sm.registerDependency(dep, 'd_136')); // Dependencies if HP/Gas/Oil
         
-        // Primary energy source values
-        window.TEUI.StateManager.registerDependency('f_32', 'd_135'); // Actual energy affects TEU Targeted Electricity
-        window.TEUI.StateManager.registerDependency('j_32', 'd_136'); // Target energy affects TEU Targeted if HP/Gas/Oil
+        // Dependencies for h_136: =D136/H15
+        sm.registerDependency('d_136', 'h_136');
+        sm.registerDependency('h_15', 'h_136');
+
+        // Dependencies for d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
+        ['g_101', 'd_101', 'd_102', 'g_102', 'h_23', 'd_23'].forEach(dep => sm.registerDependency(dep, 'd_137'));
+
+        // Dependencies for l_137: =D137*3412.14245
+        sm.registerDependency('d_137', 'l_137');
+
+        // Dependencies for d_138: =(G101*D101+D102*G102)*(D24-H24)/1000
+        ['g_101', 'd_101', 'd_102', 'g_102', 'd_24', 'h_24'].forEach(dep => sm.registerDependency(dep, 'd_138'));
+
+        // Dependencies for h_138: =D138*0.2843451361
+        sm.registerDependency('d_138', 'h_138');
+
+        // Dependencies for l_138: =D138*3412.14245
+        sm.registerDependency('d_138', 'l_138');
+
+        // Dependencies for d_139: =((G101*D101+D102*G102)*(D24-H24)+(D65+D66+D67)*H15)/1000+((K79+D122+K64-H124)/(M19*24))
+        ['g_101', 'd_101', 'd_102', 'g_102', 'd_24', 'h_24', 'd_65', 'd_66', 'd_67', 'h_15', 'k_79', 'd_122', 'k_64', 'h_124', 'm_19'].forEach(dep => sm.registerDependency(dep, 'd_139'));
+
+        // Dependencies for h_139: =D139*0.2843451361
+        sm.registerDependency('d_139', 'h_139');
+
+        // Dependencies for l_139: =D139*3412.14245
+        sm.registerDependency('d_139', 'l_139');
+
+        // Dependencies for d_140: =D137*1000/H15
+        sm.registerDependency('d_137', 'd_140');
+        sm.registerDependency('h_15', 'd_140');
+
+        // Dependencies for h_140: =D138/H15*1000
+        sm.registerDependency('d_138', 'h_140');
+        sm.registerDependency('h_15', 'h_140');
         
-        // Relationship between energy and intensity values
-        window.TEUI.StateManager.registerDependency('h_15', 'h_135'); // Area affects TEUI
-        window.TEUI.StateManager.registerDependency('d_135', 'h_135'); // TEU Targeted affects TEUI
+        // Dependencies for d_141: =D135*L12
+        sm.registerDependency('d_135', 'd_141');
+        sm.registerDependency('l_12', 'd_141'); // Electricity price
+
+        // Dependencies for h_141: =D136*L12
+        sm.registerDependency('d_136', 'h_141');
+        sm.registerDependency('l_12', 'h_141'); // Electricity price
+
+        // Dependencies for l_141: =(L13*D28)+(D29*L14)+(L15*D31)
+        ['l_13', 'd_28', 'd_29', 'l_14', 'l_15', 'd_31'].forEach(dep => sm.registerDependency(dep, 'l_141'));
+
+        // Dependencies for h_142: =IF(D113="Heatpump",D142/(D141-H141), 0)
+        sm.registerDependency('d_113', 'h_142'); // Primary Heating System
+        sm.registerDependency('d_142', 'h_142'); // Cost Premium (Input)
+        sm.registerDependency('d_141', 'h_142'); // Pre-HP cost
+        sm.registerDependency('h_141', 'h_142'); // Post-HP cost
+
+        // Dependencies for d_143: =E10 (Reference TEUI)
+        sm.registerDependency('e_10', 'd_143'); // Note: e_10 might be calculated elsewhere
+
+        // Dependencies for h_143: =H10 (Target TEUI)
+        sm.registerDependency('h_10', 'h_143'); 
         
-        window.TEUI.StateManager.registerDependency('h_15', 'h_136'); // Area affects TEUI for HP/Gas/Oil
-        window.TEUI.StateManager.registerDependency('d_136', 'h_136'); // TEU Targeted affects TEUI for HP/Gas/Oil
-        
-        // Reference values
-        window.TEUI.StateManager.registerDependency('h_136', 'h_143'); // Target TEUI
-        window.TEUI.StateManager.registerDependency('k_10', 'l_143'); // Actual TEUI from Section 1
-        
-        // Relationships for reduction percentages
-        window.TEUI.StateManager.registerDependency('d_143', 'd_144'); // Reference affects reduction
-        window.TEUI.StateManager.registerDependency('h_143', 'd_144'); // Target affects reduction
-        
-        // Relationships for cost calculations
-        window.TEUI.StateManager.registerDependency('l_12', 'd_141'); // Electricity price affects annual cost
-        window.TEUI.StateManager.registerDependency('d_135', 'd_141'); // TEU affects annual cost
-        
-        // Dependencies for ROI calculation
-        window.TEUI.StateManager.registerDependency('d_141', 'h_142'); // Annual cost affects ROI
-        window.TEUI.StateManager.registerDependency('h_141', 'h_142'); // Post heat pump cost affects ROI
-        window.TEUI.StateManager.registerDependency('d_142', 'h_142'); // Equipment cost affects ROI
-        
-        // console.log("TEUI dependencies registered");
+        // Dependencies for l_143: =IF(D14="Targeted Use", "N/A", K10)
+        sm.registerDependency('d_14', 'l_143'); // Reporting Mode
+        sm.registerDependency('k_10', 'l_143'); // Actual TEUI from Sec 1
+
+        // Dependencies for d_144: =1-(H143/D143)
+        sm.registerDependency('h_143', 'd_144');
+        sm.registerDependency('d_143', 'd_144');
+
+        // Dependencies for h_144: =IF(L143="N/A", "N/A", IF(L143=0, 0, H143/L143))
+        sm.registerDependency('l_143', 'h_144');
+        sm.registerDependency('h_143', 'h_144');
+
+        // Dependencies for l_144: =IF(D14="Targeted Use", "N/A", L143/H143)
+        sm.registerDependency('d_14', 'l_144'); // Reporting Mode
+        sm.registerDependency('l_143', 'l_144');
+        sm.registerDependency('h_143', 'l_144');
+
+        // Dependencies for d_145: =1-(K32/REFERENCE!K32)
+        // Requires k_32 (Target Net Emissions) and a reference emission value (REFERENCE!K32)
+        // Assuming REFERENCE!K32 needs to be defined/retrieved, maybe from section 4 or 5? Using a placeholder.
+        sm.registerDependency('k_32', 'd_145');
+        // Placeholder: sm.registerDependency('reference_k_32', 'd_145'); 
+
+        console.log("TEUI Summary dependencies registered");
     }
     
     /**
-     * Calculate all values for this section 
+     * Calculate all values for this section based on FORMULAE-3037.csv
      * This is triggered when dependencies change or on initial load
      */
     function calculateValues() {
         try {
             if (!window.TEUI.StateManager) {
-                // console.warn("StateManager not available for TEUI Summary calculations");
+                console.warn("StateManager not available for TEUI Summary calculations");
                 return;
             }
+            const sm = window.TEUI.StateManager;
+
+            // --- Get Input Values ---
+            const area = getNumericValue('h_15');
+            const elecPrice = getNumericValue('l_12');
+            const gasPrice = getNumericValue('l_13'); // Price per m3
+            const propanePrice = getNumericValue('l_14'); // Price per kg
+            const oilPrice = getNumericValue('l_16'); // Price per litre (CSV says l_16, form says l_15?) - Assuming l_16 from formula
+            const woodPrice = getNumericValue('l_15'); // Price per m3 (CSV says l_15, form says l_16?) - Assuming l_15 from formula
+
+            const m43 = getNumericValue('m_43'); // Onsite Energy Subtotals
+            const k51 = getNumericValue('k_51'); // W.3.3 Net Electrical Demand (DHW)
+            const h70 = getNumericValue('h_70'); // Plug/Light/Eqpt. Subtotals (Annual kWh)
+            const d117 = getNumericValue('d_117'); // Heatpump Cool Elect. Load
+            const i104 = getNumericValue('i_104'); // Building Transmission Losses (Heatloss kWh/yr)
+            const m121 = getNumericValue('m_121'); // Net Htg Season Ventil. Lost
+            const i80 = getNumericValue('i_80');   // G.3 Net Usable Gains by Method Selected
+
+            const primaryHeating = sm.getValue('d_113'); // e.g., "Heatpump", "Gas", "Oil", "Electricity"
+            const d114 = getNumericValue('d_114'); // Heating System Demand (after COP/AFUE)
             
-            // Get building area from StateManager
-            const areaStr = window.TEUI.StateManager.getValue('h_15') || "1427.20";
-            const area = parseFloat(areaStr.replace(/,/g, ''));
+            const g101 = getNumericValue('g_101'); // U-Val. for Ae
+            const d101 = getNumericValue('d_101'); // Total Area Exposed to Air (Ae)
+            const d102 = getNumericValue('d_102'); // Total Area Exposed to Ground (Ag)
+            const g102 = getNumericValue('g_102'); // U-Val. for Ag
+            const h23 = getNumericValue('h_23');   // Tset Heating
+            const d23 = getNumericValue('d_23');   // Coldest Days Temp
+            const d24 = getNumericValue('d_24');   // Hottest Days Temp
+            const h24 = getNumericValue('h_24');   // Tset Cooling
+
+            const d65 = getNumericValue('d_65'); // Plug Loads W/m2
+            const d66 = getNumericValue('d_66'); // Lighting Loads W/m2
+            const d67 = getNumericValue('d_67'); // Equipment Loads W/m2
+            const k79 = getNumericValue('k_79'); // Subtotal Solar Gains (Cool Load kWh/yr)
+            const d122 = getNumericValue('d_122'); // Incoming Cooling Season Ventil. Energy
+            const k64 = getNumericValue('k_64'); // Occupant Activity (Cooling Gain kWh/yr)
+            const h124 = getNumericValue('h_124'); // Ventilation Free Cooling/Vent Capacity (kWh/yr)
+            const m19_days = getNumericValue('m_19') || 120; // L.3.3 Days Cooling (default 120 if not set)
             
-            // Get energy values
-            const actualEnergyStr = window.TEUI.StateManager.getValue('f_32') || "132938.00";
-            const actualEnergy = parseFloat(actualEnergyStr.replace(/,/g, ''));
+            const d28 = getNumericValue('d_28'); // Total Fossil Gas Use (m3/yr) - Actual
+            const d29 = getNumericValue('d_29'); // Total Propane Use (kg/yr) - Actual
+            const d31 = getNumericValue('d_31'); // Total Wood Use (m3/yr) - Actual
+            const d30_litres = getNumericValue('d_30'); // Total Oil Use (litres/yr) - Actual (Need value for l_141 calc)
+
+            const hpCostPremium = getNumericValue('d_142'); // User input cost premium
             
-            const targetEnergyStr = window.TEUI.StateManager.getValue('j_32') || "132765.65";
-            const targetEnergy = parseFloat(targetEnergyStr.replace(/,/g, ''));
+            const refTEUI_e10 = getNumericValue('e_10'); // Reference TEUI (Sec 1)
+            const targetTEUI_h10 = getNumericValue('h_10'); // Target TEUI (Sec 1)
+            const actualTEUI_k10 = getNumericValue('k_10'); // Actual TEUI (Sec 1)
+            const reportingMode_d14 = sm.getValue('d_14'); // "Utility Bills" or "Targeted Use"
             
-            // Get electricity price
-            const electricityPriceStr = window.TEUI.StateManager.getValue('l_12') || "$0.1300";
-            const electricityPrice = parseFloat(electricityPriceStr.replace(/[$,]/g, ''));
+            const targetEmissions_k32 = getNumericValue('k_32'); // Target Net Emissions kgCO2/yr
+            // TODO: Need the value for REFERENCE!K32 for d_145. Placeholder for now.
+            const referenceEmissions_REF_k32 = getNumericValue('reference_k_32') || 0; // Placeholder
+
+
+            // --- Perform Calculations ---
+
+            // d_135: =M43+K51+H70+D117+I104+M121-I80 
+            // (Onsite Energy + DHW elec + InternalGains + HP Cool + Transm.Loss + Vent.Loss - Usable Gains)
+            // Note: This formula looks like TEU Target Calculation, not TEU *Targeted* Electricity (which usually excludes fossil fuels)
+            // The label "TEU Targeted Electricity" and note "Excludes ekWh of any Gas or Oil loads" conflict with the formula.
+            // Assuming the formula represents the total TARGET energy demand before system efficiencies/fuel choice.
+            let teuTargetTotal = m43 + k51 + h70 + d117 + i104 + m121 - i80;
+            // For display as "Targeted Electricity", we perhaps should use d_136 logic? Sticking to CSV formula for now.
+            setCalculatedValue('d_135', teuTargetTotal);
+
+            // h_135: =D135/H15
+            let teui_h135 = area > 0 ? teuTargetTotal / area : 0;
+            setCalculatedValue('h_135', teui_h135);
+
+            // d_136: =IF(D113="Electricity",D135,IF(D113="Heatpump",(K51+D117+D114+M43+H70),IF(D113="Gas",(K51+D117+M43+H70),IF(D113="Oil",(K51+D117+M43+H70)))))
+            let teuTargetedElecHPGasOil;
+            if (primaryHeating === 'Electricity') {
+                teuTargetedElecHPGasOil = teuTargetTotal; // If primary is electric, use the total calculated above
+            } else if (primaryHeating === 'Heatpump') {
+                 // Sum of elec loads: DHW + HP Cool + HP Heat Demand + Onsite + Internal Gains
+                teuTargetedElecHPGasOil = k51 + d117 + d114 + m43 + h70;
+            } else { // Gas or Oil - sum elec loads only, exclude heating demand (d114)
+                teuTargetedElecHPGasOil = k51 + d117 + m43 + h70;
+            }
+            setCalculatedValue('d_136', teuTargetedElecHPGasOil);
+
+            // h_136: =D136/H15
+            let teui_h136 = area > 0 ? teuTargetedElecHPGasOil / area : 0;
+            setCalculatedValue('h_136', teui_h136);
             
-            // Calculate T.6.0 TEU Targeted Electricity (d_135)
-            const teuTargetedElectricity = actualEnergy * 1.65; // Simple approximation
-            window.TEUI.StateManager.setValue('d_135', teuTargetedElectricity.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
+            let peakHeatingLoad_d137 = ((g101 * d101) + (d102 * g102)) * (h23 - d23) / 1000;
+            setCalculatedValue('d_137', peakHeatingLoad_d137);
+
+            // l_137: =D137*3412.14245
+            let peakHeatingBTU_l137 = peakHeatingLoad_d137 * 3412.14245;
+            setCalculatedValue('l_137', peakHeatingBTU_l137, 'btu');
+
+            // d_138: =(G101*D101+D102*G102)*(D24-H24)/1000
+            let peakCoolingLoad_d138 = ((g101 * d101) + (d102 * g102)) * (d24 - h24) / 1000;
+            setCalculatedValue('d_138', peakCoolingLoad_d138);
             
-            // Calculate T.6.1 TEUI (h_135)
-            const teui = teuTargetedElectricity / area;
-            window.TEUI.StateManager.setValue('h_135', teui.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_138: =D138*0.2843451361
+            let peakCoolingTons_h138 = peakCoolingLoad_d138 * 0.2843451361;
+            setCalculatedValue('h_138', peakCoolingTons_h138, 'tons');
             
-            // Calculate T.6.2 TEU Targeted Electricity if HP/Gas/Oil (d_136)
-            // Use target energy directly
-            window.TEUI.StateManager.setValue('d_136', targetEnergy.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // l_138: =D138*3412.14245
+            let peakCoolingBTU_l138 = peakCoolingLoad_d138 * 3412.14245;
+            setCalculatedValue('l_138', peakCoolingBTU_l138, 'btu');
+
+            // d_139: =((G101*D101+D102*G102)*(D24-H24)+(D65+D66+D67)*H15)/1000+((K79+D122+K64-H124)/(M19*24))
+            let enclosureCoolLoad = ((g101 * d101) + (d102 * g102)) * (d24 - h24);
+            let internalGainsW = (d65 + d66 + d67) * area; // Gains in Watts
+            let solarVentOccGains = k79 + d122 + k64 - h124; // Gains in kWh/yr
+            let peakCoolingLoadGains_d139 = (enclosureCoolLoad + internalGainsW) / 1000; // Convert W to kW
+            if (m19_days > 0) {
+                 // Convert annual kWh gains to average kW during cooling days
+                peakCoolingLoadGains_d139 += (solarVentOccGains / (m19_days * 24)); 
+            }
+            setCalculatedValue('d_139', peakCoolingLoadGains_d139);
             
-            // Calculate T.6.3 TEUI (h_136)
-            const teuiHp = targetEnergy / area;
-            window.TEUI.StateManager.setValue('h_136', teuiHp.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_139: =D139*0.2843451361
+            let peakCoolingTonsGains_h139 = peakCoolingLoadGains_d139 * 0.2843451361;
+            setCalculatedValue('h_139', peakCoolingTonsGains_h139, 'tons');
             
-            // T.6.4 Peak Heating Load (d_137) - Based on other calculations
-            const peakHeatingLoad = 46.03;
-            window.TEUI.StateManager.setValue('d_137', peakHeatingLoad.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // l_139: =D139*3412.14245
+            let peakCoolingBTUGains_l139 = peakCoolingLoadGains_d139 * 3412.14245;
+            setCalculatedValue('l_139', peakCoolingBTUGains_l139, 'btu');
             
-            // T.6.4 TEUI-imp (l_137)
-            const teuilmp = 157076;
-            window.TEUI.StateManager.setValue('l_137', teuilmp.toLocaleString('en-US', {maximumFractionDigits: 0}), "calculated");
+            // d_140: =D137*1000/H15
+            let maxHeatingIntensity_d140 = area > 0 ? (peakHeatingLoad_d137 * 1000 / area) : 0;
+            setCalculatedValue('d_140', maxHeatingIntensity_d140);
             
-            // T.6.5 Peak Cooling Load (d_138)
-            const peakCoolingLoad = 10.46;
-            window.TEUI.StateManager.setValue('d_138', peakCoolingLoad.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_140: =D138/H15*1000
+            let maxCoolingIntensity_h140 = area > 0 ? (peakCoolingLoad_d138 * 1000 / area) : 0;
+            setCalculatedValue('h_140', maxCoolingIntensity_h140);
             
-            // T.6.6 Peak Cooling Imp (h_138)
-            const peakCoolingImp = 2.97;
-            window.TEUI.StateManager.setValue('h_138', peakCoolingImp.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // d_141: =D135*L12
+            let annualCostElecPre_d141 = teuTargetTotal * elecPrice; // Using d_135 value
+            setCalculatedValue('d_141', annualCostElecPre_d141, 'currency');
             
-            // BTU/hr (l_138)
-            const btuhr138 = 35699;
-            window.TEUI.StateManager.setValue('l_138', btuhr138.toLocaleString('en-US', {maximumFractionDigits: 0}), "calculated");
+            // h_141: =D136*L12
+            let annualCostElecPost_h141 = teuTargetedElecHPGasOil * elecPrice; // Using d_136 value
+            setCalculatedValue('h_141', annualCostElecPost_h141, 'currency');
             
-            // T.6.7 Peak Cooling Load (Enclosure + Gains) (d_139)
-            const peakCoolingLoadGains = 48.04;
-            window.TEUI.StateManager.setValue('d_139', peakCoolingLoadGains.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // l_141: =(L13*D28)+(D29*L14)+(L15*D31)
+            let otherEnergyCost_l141 = (gasPrice * d28) + (propanePrice * d29) + (woodPrice * d31) + (oilPrice * d30_litres);
+            setCalculatedValue('l_141', otherEnergyCost_l141, 'currency');
             
-            // T.6.9 Peak Cooling Imp (h_139)
-            const peakCoolingImpGains = 13.66;
-            window.TEUI.StateManager.setValue('h_139', peakCoolingImpGains.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_142: =IF(D113="Heatpump",D142/(D141-H141), 0)
+            let roi_h142 = 0;
+            let costSavings = annualCostElecPre_d141 - annualCostElecPost_h141;
+            if (primaryHeating === 'Heatpump' && costSavings > 0) {
+                roi_h142 = hpCostPremium / costSavings;
+            }
+            setCalculatedValue('h_142', roi_h142);
             
-            // BTU/hr (l_139)
-            const btuhr139 = 163912;
-            window.TEUI.StateManager.setValue('l_139', btuhr139.toLocaleString('en-US', {maximumFractionDigits: 0}), "calculated");
+            // d_143: =E10 (Reference TEUI)
+            setCalculatedValue('d_143', refTEUI_e10);
             
-            // T.6.8 Max. Heating Load Intensity (d_140)
-            const maxHeatingLoadIntensity = 32.26;
-            window.TEUI.StateManager.setValue('d_140', maxHeatingLoadIntensity.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // h_143: =H10 (Target TEUI)
+            setCalculatedValue('h_143', targetTEUI_h10);
             
-            // T.6.8 Heat Load Imp (h_140)
-            const heatLoadImp = 7.33;
-            window.TEUI.StateManager.setValue('h_140', heatLoadImp.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
+            // l_143: =IF(D14="Targeted Use", "N/A", K10)
+            let actualTEUI_l143 = (reportingMode_d14 === 'Utility Bills') ? actualTEUI_k10 : NaN; // Use NaN to represent N/A
+             if (!isNaN(actualTEUI_l143)) {
+                 setCalculatedValue('l_143', actualTEUI_l143);
+             } else {
+                 sm?.setValue('l_143', "N/A", 'calculated');
+                 const element = document.querySelector(`[data-field-id=\"l_143\"]`);
+                 if (element) element.textContent = "N/A";
+             }
+
+
+            // d_144: =1-(H143/D143)
+            let teuiReduction_d144 = (refTEUI_e10 > 0) ? (1 - (targetTEUI_h10 / refTEUI_e10)) : 0;
+            setCalculatedValue('d_144', teuiReduction_d144, 'percent');
             
-            // Efficiency percentage (l_140)
-            const efficiencyPercentage = "65%";
-            window.TEUI.StateManager.setValue('l_140', efficiencyPercentage, "calculated");
-            
-            // T.7.1 Annual Cost of Electricity (d_141)
-            const annualCost = teuTargetedElectricity * electricityPrice;
-            window.TEUI.StateManager.setValue('d_141', "$" + annualCost.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
-            
-            // T.7.2 post heat pump (h_141)
-            const postHeatPumpCost = targetEnergy * electricityPrice;
-            window.TEUI.StateManager.setValue('h_141', "$" + postHeatPumpCost.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
-            
-            // T.7.3 ∑ Other Energy (l_141)
-            window.TEUI.StateManager.setValue('l_141', "$0.00", "calculated");
-            
-            // T.7.4 Cost Premium of HP Equipment (d_142)
-            window.TEUI.StateManager.setValue('d_142', "$30,000.00", "calculated");
-            
-            // T.7.5 ROI (h_142)
-            const costSavings = annualCost - postHeatPumpCost;
-            const equipmentCost = 30000;
-            const roi = equipmentCost / costSavings;
-            window.TEUI.StateManager.setValue('h_142', roi.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
-            
-            // T.3.1 TEUI Reference (d_143)
-            const teuiReference = 226.86;
-            window.TEUI.StateManager.setValue('d_143', teuiReference.toString(), "calculated");
-            
-            // T.3.2 Targeted TEUI (h_143)
-            window.TEUI.StateManager.setValue('h_143', teuiHp.toLocaleString('en-US', {maximumFractionDigits: 2}), "calculated");
-            
-            // T.3.3 Actual (l_143)
-            // Try to get actual TEUI from Section 1 or calculate it
-            const actualTEUI = window.TEUI.StateManager.getValue('k_10') || (actualEnergy / area).toFixed(2);
-            window.TEUI.StateManager.setValue('l_143', actualTEUI, "calculated");
-            
-            // T.8.1 TEUI Energy Reduction from Reference (d_144)
-            const teuiReduction = ((teuiReference - teuiHp) / teuiReference) * 100;
-            window.TEUI.StateManager.setValue('d_144', teuiReduction.toFixed(0) + "%", "calculated");
-            
-            // T.8.2 Target % of Utility Data (h_144)
-            window.TEUI.StateManager.setValue('h_144', "100%", "calculated");
-            
-            // T.8.3 Actual % of Targeted Design (l_144)
-            window.TEUI.StateManager.setValue('l_144', "100%", "calculated");
-            
-            // T.9.1 GHGe Reduction from Reference (d_145)
-            window.TEUI.StateManager.setValue('d_145', "86%", "calculated");
+            // h_144: =IF(L143="N/A", "N/A", IF(L143=0, 0, H143/L143))
+            let targetVsActual_h144 = NaN;
+             if (!isNaN(actualTEUI_l143)) {
+                 targetVsActual_h144 = (actualTEUI_l143 > 0) ? (targetTEUI_h10 / actualTEUI_l143) : 0;
+                 setCalculatedValue('h_144', targetVsActual_h144, 'percent');
+             } else {
+                 sm?.setValue('h_144', "N/A", 'calculated');
+                 const element = document.querySelector(`[data-field-id=\"h_144\"]`);
+                 if (element) element.textContent = "N/A";
+             }
+
+            // l_144: =IF(D14="Targeted Use", "N/A", L143/H143)
+            let actualVsTarget_l144 = NaN;
+            if (reportingMode_d14 === 'Utility Bills' && targetTEUI_h10 > 0) {
+                actualVsTarget_l144 = actualTEUI_l143 / targetTEUI_h10;
+                 setCalculatedValue('l_144', actualVsTarget_l144, 'percent');
+             } else {
+                 sm?.setValue('l_144', "N/A", 'calculated');
+                 const element = document.querySelector(`[data-field-id=\"l_144\"]`);
+                 if (element) element.textContent = "N/A";
+             }
+
+            // d_145: =1-(K32/REFERENCE!K32)
+            let ghgReduction_d145 = (referenceEmissions_REF_k32 > 0) ? (1 - (targetEmissions_k32 / referenceEmissions_REF_k32)) : 0;
+            // Check if targetEmissions is negative (sequestration), handle division by zero
+             if (referenceEmissions_REF_k32 === 0 && targetEmissions_k32 < 0) {
+                ghgReduction_d145 = 1; // Or some indicator of 100%+ reduction if baseline is zero
+             } else if (referenceEmissions_REF_k32 === 0 && targetEmissions_k32 >= 0) {
+                ghgReduction_d145 = 0; // No reduction if baseline and target are zero or positive
+            }
+            setCalculatedValue('d_145', ghgReduction_d145, 'percent');
             
             // console.log("TEUI calculations completed");
             
         } catch (error) {
-            // console.error("Error in TEUI Summary calculations:", error);
+            console.error("Error in TEUI Summary calculations:", error);
         }
     }
     
@@ -778,23 +1010,15 @@ window.TEUI.SectionModules.sect15 = (function() {
             // console.log("TEUI Summary calculateAll function called");
             
             // First perform internal calculations for this section
-            calculateValues();
-            
-            // Update the DOM to match calculated values
-            updateDisplay();
+            calculateValues(); // This now also updates the display via setCalculatedValue
             
             // Then signal any dependent sections via the SectionIntegrator
-            if (window.TEUI.SectionIntegrator) {
-                // If we have a global function to notify other sections, call it
-                if (typeof window.TEUI.updateTEUIValues === 'function') {
-                    // console.log("Triggering TEUI value recalculation from TEUI Summary");
-                    window.TEUI.updateTEUIValues();
-                }
-            }
+            // (No direct outputs from S15 known to trigger other sections, mostly consumes)
+            // if (window.TEUI.SectionIntegrator) { ... } 
             
             // console.log("TEUI Summary full calculation cycle completed");
         } catch (error) {
-            // console.error("Error in TEUI Summary calculateAll:", error);
+            console.error("Error in TEUI Summary calculateAll:", error);
         }
     }
     
@@ -804,81 +1028,111 @@ window.TEUI.SectionModules.sect15 = (function() {
     
     /**
      * Update the DOM with the current values from the StateManager
+     * Note: This might become redundant if setCalculatedValue handles DOM updates reliably.
+     * Keeping it for now as a fallback or explicit refresh mechanism if needed.
      */
     function updateDisplay() {
         if (!window.TEUI.StateManager) return;
         
-        // Get all fields in this section
+        // Get all fields managed by this section
         const fields = getFields();
         
-        // Update each field in the DOM
         Object.keys(fields).forEach(fieldId => {
             const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null) {
-                const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (value !== null && value !== undefined) {
+                const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
                 if (element) {
-                    element.textContent = value;
+                    // Find the field definition to know the format
+                    let format = 'number'; // Default format
+                    let rawValue = getNumericValue(fieldId); // Get raw value for formatting check
+                    
+                     if (fieldId === 'd_141' || fieldId === 'h_141' || fieldId === 'l_141' || fieldId === 'd_142') {
+                         format = 'currency';
+                     } else if (fieldId === 'd_144' || fieldId === 'h_144' || fieldId === 'l_144' || fieldId === 'd_145') {
+                         format = 'percent';
+                     } else if (fieldId === 'l_137' || fieldId === 'l_138' || fieldId === 'l_139') {
+                         format = 'btu';
+                     } else if (fieldId === 'h_138' || fieldId === 'h_139') {
+                         format = 'tons';
+                     } else if (fieldId === 'h_142') {
+                         format = 'number'; // Years, 2 decimals ok
+                     } else if (fieldId === 'l_143' && value === "N/A") {
+                         element.textContent = "N/A";
+                         return; // Skip formatting for N/A
+                     } else if (fieldId === 'h_144' && value === "N/A") {
+                         element.textContent = "N/A";
+                         return; 
+                      } else if (fieldId === 'l_144' && value === "N/A") {
+                         element.textContent = "N/A";
+                         return; 
+                     }
+                    
+                    // Use formatNumber for display consistency
+                    element.textContent = formatNumber(rawValue, format); 
                 }
             }
         });
+         console.log("TEUI Summary display updated");
     }
     
     /**
      * Initialize event handlers for this section
+     * Sets up listeners for changes in dependency values from other sections.
      */
     function initializeEventHandlers() {
-        // Register for area change events to recalculate intensity values
-        if (window.TEUI.StateManager) {
-            window.TEUI.StateManager.addListener('h_15', () => {
-                calculateValues();
-                updateDisplay();
+        if (!window.TEUI.StateManager) return;
+        const sm = window.TEUI.StateManager;
+
+        // Create a list of all unique dependencies needed by this section's calculations
+        const dependencies = [
+            'm_43', 'k_51', 'h_70', 'd_117', 'i_104', 'm_121', 'i_80', 'h_15', 'd_113', 
+            'd_114', 'g_101', 'd_101', 'd_102', 'g_102', 'h_23', 'd_23', 'd_24', 'h_24', 
+            'd_65', 'd_66', 'd_67', 'k_79', 'd_122', 'k_64', 'h_124', 'm_19', 'l_12', 
+            'l_13', 'd_28', 'd_29', 'l_14', 'l_15', 'd_31', 'l_16', 'd_30', 'd_142', 'e_10', 
+            'h_10', 'k_10', 'd_14', 'k_32', 'reference_k_32' // Include placeholder reference
+        ];
+        
+        // Remove duplicates
+        const uniqueDependencies = [...new Set(dependencies)];
+
+        // Add listeners for all unique dependencies
+        uniqueDependencies.forEach(dep => {
+            // Using an anonymous function to ensure calculateAll is called in the module's scope
+            sm.addListener(dep, () => {
+                console.log(`Listener triggered for dependency: ${dep} in Section 15`);
+                calculateAll(); 
+            });
             });
             
-            // Add listeners for TEDI/TELI values from Section 14
-            window.TEUI.StateManager.addListener('h_126', () => {
-                // console.log('TEDI value changed, updating TEUI Summary');
-                calculateValues();
-                updateDisplay();
-            });
-            
-            window.TEUI.StateManager.addListener('h_130', () => {
-                // console.log('TELI value changed, updating TEUI Summary');
-                calculateValues();
-                updateDisplay();
-            });
-            
-            // Listen for changes in main TEUI values from Section 1
-            window.TEUI.StateManager.addListener('h_10', () => {
-                // console.log('Target TEUI value changed, updating TEUI Summary');
-                calculateValues();
-                updateDisplay();
-            });
-            
-            window.TEUI.StateManager.addListener('k_10', () => {
-                // console.log('Actual TEUI value changed, updating TEUI Summary');
-                calculateValues();
-                updateDisplay();
-            });
-        }
+        console.log("TEUI Summary event listeners initialized.");
     }
     
     /**
      * Called when section is rendered
      */
     function onSectionRendered() {
-        // console.log("TEUI Summary section rendered");
+        console.log("TEUI Summary section (sect15) rendered");
         
         // Register dependencies first
+        // Dependencies might rely on other sections being registered, so ensure StateManager is ready
+        if (window.TEUI.StateManager) {
         registerDependencies();
+        } else {
+            console.warn("StateManager not ready during sect15 onSectionRendered dependency registration.");
+            // Optionally, retry registration later or listen for a StateManager ready event
+        }
         
-        // Calculate initial values
-        calculateValues();
-        
-        // Update display with calculated values
-        updateDisplay();
-        
-        // Initialize event handlers
+        // Initialize event handlers AFTER dependencies are registered
         initializeEventHandlers();
+
+        // Calculate initial values
+        // Defer initial calculation slightly to allow dependencies from other sections to potentially load
+        setTimeout(() => {
+             console.log("Running initial calculations for sect15.");
+            calculateAll();
+             // Explicitly call updateDisplay after initial calc if needed, though calculateAll should handle it.
+             // updateDisplay(); 
+        }, 150); // Small delay
     }
     
     //==========================================================================
@@ -892,9 +1146,9 @@ window.TEUI.SectionModules.sect15 = (function() {
         getLayout: getLayout,
         
         // Calculations
-        calculateValues: calculateValues,
+        // calculateValues: calculateValues, // calculateAll calls this internally
         calculateAll: calculateAll,
-        updateDisplay: updateDisplay,
+        // updateDisplay: updateDisplay, // calculateAll calls helpers that update display
         
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
@@ -902,18 +1156,38 @@ window.TEUI.SectionModules.sect15 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
+// Initialize when the section is rendered using the correct section ID from the layout
 document.addEventListener('teui-section-rendered', function(event) {
+    // Use the actual section ID defined in sectionRows ('teuiSummary' based on getFields)
     if (event.detail?.sectionId === 'teuiSummary') {
-        window.TEUI.SectionModules.sect15.onSectionRendered();
+        // Ensure the module is loaded before calling onSectionRendered
+        if (window.TEUI.SectionModules.sect15) {
+             console.log("teui-section-rendered event caught for teuiSummary");
+            // Add a small delay to potentially allow other modules to finish registering
+             setTimeout(() => window.TEUI.SectionModules.sect15.onSectionRendered(), 50);
+        } else {
+            console.error("Sect15 module not found when teui-section-rendered event fired.");
+        }
     }
 });
 
-// Fallback to rendering complete event
+// Fallback to rendering complete event - use as a safety net
 document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('teuiSummary')) {
-            window.TEUI.SectionModules.sect15.onSectionRendered();
+    // Check if the section element exists and hasn't been initialized yet
+    if (document.getElementById('teuiSummary') && (!window.TEUI.SectionModules.sect15 || !window.TEUI.SectionModules.sect15.initialized)) { 
+         console.log("teui-rendering-complete event fallback for teuiSummary");
+        if (window.TEUI.SectionModules.sect15) {
+            // Mark as initialized to prevent double calls if onSectionRendered runs later
+             window.TEUI.SectionModules.sect15.initialized = true; 
+            // Use a longer delay for the fallback
+            setTimeout(() => window.TEUI.SectionModules.sect15.onSectionRendered(), 350);
+        } else {
+             console.error("Sect15 module not found when teui-rendering-complete event fired.");
         }
-    }, 300);
+    }
 });
+
+// Add an initialized flag to prevent multiple runs of onSectionRendered
+if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect15) {
+    window.TEUI.SectionModules.sect15.initialized = false; 
+}
