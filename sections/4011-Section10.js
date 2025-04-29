@@ -816,6 +816,9 @@ window.TEUI.SectionModules.sect10 = (function() {
         }
     };
     
+    // Define configuration for orientation rows (similar to Section 11)
+    const orientationConfig = [73, 74, 75, 76, 77, 78];
+    
     //==========================================================================
     // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
     //==========================================================================
@@ -985,17 +988,16 @@ window.TEUI.SectionModules.sect10 = (function() {
     //==========================================================================
     
     /**
-     * Calculate solar gains for windows and doors based on area, SHGC, and shading
+     * Calculate all values for this section
+     * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
      */
-    function calculateSolarGains() {
+    function calculateAll() {
+        // console.log("Calculating Section 10");
         try {
-            // Calculate solar gains for each orientation
-            calculateOrientationGains("73");    // Doors (uses average gain factor)
-            calculateOrientationGains("74");    // North Windows
-            calculateOrientationGains("75");    // East Windows
-            calculateOrientationGains("76");    // South Windows
-            calculateOrientationGains("77");    // West Windows
-            calculateOrientationGains("78");    // Skylights
+            // Calculate individual orientation rows
+            orientationConfig.forEach(rowId => {
+                calculateOrientationGains(rowId.toString());
+            });
             
             // Calculate subtotals
             calculateSubtotals();
@@ -1003,7 +1005,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Calculate utilization factors
             calculateUtilizationFactors();
         } catch (error) {
-            // console.error('Error calculating solar gains:', error);
+            // console.error('Error calculating all values:', error);
         }
     }
     
@@ -1269,35 +1271,31 @@ window.TEUI.SectionModules.sect10 = (function() {
      */
     function calculateGainFactor(orientation, climateZone = 6) {
         try {
-            // Implementation of the formula:
-            // =IF($J$19>6,
-            //     CHOOSE(MATCH(E73, {"North","NorthEast","East","SouthEast","South","SouthWest","West","NorthWest"}, 0), 0.19, 0.89, 2.09, 6.01, 24.76, 82.25, 64.37, 18.14, 24.84),
-            //     CHOOSE(MATCH(E73, {"North","NorthEast","East","SouthEast","South","SouthWest","West","NorthWest"}, 0), 1.31, 34.69, 76.94, 86.59, 70.74, 60.4, 25.86, 2.88, 50)
-            // )
-            
-            // Define the orientation options and their indices
-            const orientations = ["North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest"];
-            let orientationIndex = orientations.indexOf(orientation);
-            
-            // If orientation is not in the list, use default (Average)
-            if (orientationIndex === -1) {
-                return 50.0; // Default value for Average
+            // Handle Skylight explicitly first
+            if (orientation === "Skylight") {
+                return climateZone > 6 ? 25.0 : 75.0;
             }
+
+            // Define orientations for MATCH and values for CHOOSE
+            const orientations = ["North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest"];
+            // CHOOSE values including the default (9th value for IFERROR)
+            const northernValues = [0.19, 0.89, 2.09, 6.01, 24.76, 82.25, 64.37, 18.14, 24.84]; 
+            const southernValues = [1.31, 34.69, 76.94, 86.59, 70.74, 60.4, 25.86, 2.88, 50.00]; 
             
-            // Values for northern latitudes (Climate Zone > 6)
-            const northernValues = [0.19, 0.89, 2.09, 6.01, 24.76, 82.25, 64.37, 18.14];
-            
-            // Values for southern latitudes (Climate Zone <= 6)
-            const southernValues = [1.31, 34.69, 76.94, 86.59, 70.74, 60.4, 25.86, 2.88];
-            
-            // Choose the appropriate set of values based on climate zone
+            // Find index corresponding to MATCH
+            let orientationIndex = orientations.indexOf(orientation);
+
+            // Select the correct value array based on climate zone
             const values = climateZone > 6 ? northernValues : southernValues;
             
-            // Return the gain factor for this orientation
-            return values[orientationIndex];
+            // If index is -1 (MATCH failed -> IFERROR), use the default index (8 for 9th value)
+            // Otherwise, use the found index (0-7)
+            const valueIndex = (orientationIndex === -1) ? 8 : orientationIndex;
+            
+            return values[valueIndex];
         } catch (error) {
-            // console.error('Error calculating gain factor:', error);
-            return 50.0; // Return default value in case of error
+            console.error('Error calculating gain factor:', error);
+            return 50.0; // Fallback default value in case of unexpected error
         }
     }
     
@@ -1305,18 +1303,9 @@ window.TEUI.SectionModules.sect10 = (function() {
      * Helper function to get a numeric value from a field
      */
     function getNumericValue(fieldId) {
-        if (window.TEUI?.parseNumeric) return window.TEUI.parseNumeric(getFieldValue(fieldId));
-        // Fallback parser
-        const value = getFieldValue(fieldId); 
-        if (value === null || value === undefined) return 0;
-        if (typeof value === 'number') return value;
-        if (typeof value === 'string') {
-            const cleanedValue = value.replace(/[$,%]/g, '').trim();
-            if (cleanedValue === '') return 0;
-            const parsed = parseFloat(cleanedValue);
-            return isNaN(parsed) ? 0 : parsed;
-        }
-        return 0;
+        // Directly use the global parser, assuming it's loaded correctly due to index.html order
+        // Use || 0 as a fallback if parseNumeric returns null/undefined/NaN
+        return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
     }
     
     /**
@@ -1457,7 +1446,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                     }
                     
                     // Recalculate
-                    calculateSolarGains();
+                    calculateAll();
                 }
             });
             
@@ -1483,7 +1472,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                 }
                 
                 // Recalculate
-                calculateSolarGains();
+                calculateAll();
             });
         });
         
@@ -1506,7 +1495,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                 }
                 
                 // Recalculate with a slight delay to improve performance
-                setTimeout(calculateSolarGains, 100);
+                setTimeout(calculateAll, 100);
             });
         });
     }
@@ -1574,7 +1563,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Example: Listen for climate zone changes
             window.TEUI.StateManager.addListener('j_19', function() {
                 // console.log('Climate zone changed, recalculating solar gains');
-                calculateSolarGains();
+                calculateAll();
             });
             
             // Add listener for internal gains (i_71)
@@ -1625,22 +1614,13 @@ window.TEUI.SectionModules.sect10 = (function() {
                 registerWithStateManager();
                 addStateManagerListeners();
                 registerWithIntegrator();
-                calculateSolarGains();
+                calculateAll();
             } catch (error) {
                 // console.error('Error in Section10 onSectionRendered:', error);
             }
         },
         
-        // Calculation functions
-        calculateAll: function() {
-            try {
-                calculateSolarGains();
-            } catch (error) {
-                // console.error('Error in Section10 calculateAll:', error);
-            }
-        },
-        
-        calculateSolarGains: calculateSolarGains,
+        calculateAll: calculateAll,
         calculateUtilizationFactors: calculateUtilizationFactors,
         setupDropdownDefaults: setupDropdownDefaults,
         registerWithStateManager: registerWithStateManager,
