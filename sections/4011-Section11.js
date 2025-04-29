@@ -296,7 +296,7 @@ window.TEUI.SectionModules.sect11 = (function() {
      */
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
         // Handle potential N/A cases first
-        if (isNaN(rawValue) || rawValue === null || rawValue === undefined) {
+        if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
              window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
              const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
              if (elementNA) elementNA.textContent = 'N/A';
@@ -601,24 +601,30 @@ window.TEUI.SectionModules.sect11 = (function() {
         const currentFieldId = fieldElement.getAttribute('data-field-id');
         if (!currentFieldId) return;
         let valueStr = fieldElement.textContent.trim().replace(/,/g, '');
-        let numValue = NaN, rawValueToStore = valueStr, displayValue = valueStr;
+        let displayValue = '0.00';
+        let rawValueToStore = '0';
 
-        if (currentFieldId === 'd_97') {
-             numValue = window.TEUI.parseNumeric(valueStr, NaN); // Use global parser
-             // Convert input number to decimal (assume input "20" means 20% -> 0.2)
-             let decimalValue = numValue / 100;
-             // Clamp the DECIMAL value between 0 and 1 
-             decimalValue = Math.max(0, Math.min(1, decimalValue)); 
-             rawValueToStore = decimalValue.toString(); // Store clamped decimal value
-             displayValue = formatNumber(decimalValue * 100, 'number'); // Display as number 0-100, not percentage string
-        } else if (currentFieldId.startsWith('g_')) { // U-Value (3 decimals)
-             displayValue = formatNumber(numValue, 'W/m2'); // Use specific format
-             rawValueToStore = numValue.toString();
-        } else { // Default: Area (d_), RSI (f_) - 2 decimals
-             displayValue = formatNumber(numValue, 'number'); 
-             rawValueToStore = numValue.toString();
+        let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+
+        if (!isNaN(numValue)) { // Successfully parsed a number
+            rawValueToStore = numValue.toString(); // Store the raw number string *first* for all valid number cases
+
+            // Apply specific formatting based on field type
+            if (currentFieldId === 'd_97') { // Thermal Bridge Penalty (%)
+                // Convert input number to decimal (assume input "20" means 20% -> 0.2)
+                let decimalValue = numValue / 100;
+                // Clamp the DECIMAL value between 0 and 1 
+                decimalValue = Math.max(0, Math.min(1, decimalValue));
+                rawValueToStore = decimalValue.toString(); // Overwrite with clamped decimal value for state
+                displayValue = formatNumber(decimalValue * 100, 'number'); // Display as number 0-100, not percentage string
+            } else if (currentFieldId.startsWith('g_')) { // U-Value (3 decimals)
+                displayValue = formatNumber(numValue, 'W/m2'); // Use specific format
+            } else { // Default: Area (d_), RSI (f_) - 2 decimals
+                displayValue = formatNumber(numValue, 'number'); 
+            }
+        } else {
+            // Removed console.warn for invalid input - handled by defaulting rawValueToStore
         }
-        // Removed console.warn for invalid input - handled by defaulting rawValueToStore
         fieldElement.textContent = displayValue;
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified');
@@ -640,6 +646,7 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     function onSectionRendered() {
+        console.log("Section 11 onSectionRendered: Initializing state..."); // DEBUG LOG
         // Ensure StateManager has default values for editable fields before first calculation
         let isStateInitialized = false; // Flag to track if we set any default state
         if (window.TEUI?.StateManager) {
@@ -664,6 +671,7 @@ window.TEUI.SectionModules.sect11 = (function() {
              console.warn("StateManager not available during onSectionRendered for state init");
         }
 
+        console.log("Section 11 onSectionRendered: Initializing event handlers..."); // DEBUG LOG
         // Initialize listeners AFTER potential state initialization
         initializeEventHandlers();
         Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
@@ -682,9 +690,9 @@ window.TEUI.SectionModules.sect11 = (function() {
 
         // Run initial calculation AFTER listeners are set up
         // Use a slight delay if state was just initialized to allow propagation?
-        const initialCalcDelay = isStateInitialized ? 50 : 0; 
+        const initialCalcDelay = 10; // Use a small, consistent delay
         setTimeout(() => {
-             console.log("Running initial calculateAll for Section 11");
+             console.log("Section 11 onSectionRendered: Running initial calculateAll() via setTimeout"); // DEBUG LOG
              calculateAll();
         }, initialCalcDelay);
     }
