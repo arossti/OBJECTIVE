@@ -98,6 +98,7 @@ When working with this codebase, previous AI assistants have encountered several
             ```
        - **Example (i_39 -> d_16)**: In `Section02.js`, add a listener for `i_39`. Inside the listener, check if `getFieldValue('d_15')` is 'TGS4'. If true, call `calculateEmbodiedCarbonTarget()` and `setCalculatedValue('d_16', result)`.
        - **Why this works**: It uses the intended `StateManager` event system (`addListener`) for cross-section communication without altering core behavior or resorting to hacks. It keeps the logic for updating `d_16` within Section 2, where it belongs.
+       - **Source Section Responsibility**: This listener pattern relies on the **source section** (e.g., Section 5 in the example) correctly calling `setCalculatedValue('source_calculated_field', newValue)` or `StateManager.setValue('source_calculated_field', newValue.toString(), 'calculated')` after it calculates its value. This `setValue` call is what triggers the listener in the dependent section.
 
 4. **DOM Simplicity**:
    - ❌ **Avoid**: Over-engineering or overthinking DOM operations
@@ -155,24 +156,22 @@ When working with this codebase, previous AI assistants have encountered several
    - Example implementation:
      ```javascript
      // CORRECT APPROACH
-     function calculateValue() {
-       // Get values at full precision
-       const uValue = parseFloat(getFieldValue("g_101")); // e.g., 0.123
-       const area = parseFloat(getFieldValue("d_85"));    // e.g., 25.00
+     function calculateAndUpdateValue() {
+       // Get values at full precision using standardized helpers
+       const uValue = getNumericValue("g_101"); // e.g., 0.123
+       const area = getNumericValue("d_85");    // e.g., 25.00
        
        // Perform calculations with full floating-point precision (using RSI directly is preferred where possible)
        const heatLoss = uValue * area * temperatureDifference;
        
-       // Store raw result in StateManager (full precision)
-       StateManager.setValue("cf_g_120", heatLoss.toString()); // Store as string
-       
-       // Format ONLY for display
-       displayElement.textContent = formatNumber(heatLoss); // e.g., "345.82"
+       // Update StateManager (raw value) and DOM (formatted) using standardized helper
+       setCalculatedValue("cf_g_120", heatLoss); // e.g., helper formats to "345.82" for display
      }
      ```
 
 7. **Field Naming Conventions**:
    - Field IDs are defined in `3037DOM.csv` and calculation relationships in `FORMULAE-3037.csv`
+   - **Note on `REFERENCE!`:** Formulas in `FORMULAE-3037.csv` may refer to `REFERENCE!E6`, `REFERENCE!K32`, etc. This refers to values calculated using a parallel "Reference Model" based on code minimums or baseline standards, distinct from the primary "Targeted Design" or "Actual Utility Bill" calculations. The structure and intent of this reference model layer are further described in `deepstate-structure.md`. It is planned for future implementation, and current sections should handle missing reference values gracefully (e.g., defaulting to 0 or assuming a baseline).
    - Special prefixes indicate field types:
      - `dd_` = Dropdown field
      - `cf_` = Calculated field (formula result)
@@ -196,12 +195,12 @@ When working with this codebase, previous AI assistants have encountered several
      - Always register dependency sources before dependent values
      - When implementing calculations, follow the pattern:
        ```javascript
-       // 1. Get values from StateManager
-       const value1 = parseFloat(TEUI.StateManager.getValue('d_10'));
+       // 1. Get values from StateManager using robust parsing
+       const value1 = getNumericValue('d_10'); // Use helper like getNumericValue
        // 2. Perform calculation
        const result = value1 * 2;
-       // 3. Store result in StateManager
-       TEUI.StateManager.setValue('cf_d_12', result, TEUI.StateManager.VALUE_STATES.CALCULATED);
+       // 3. Store result in StateManager and update DOM using standardized helper
+       setCalculatedValue('cf_d_12', result); // Helper handles state and formatting
        ```
      - SectionIntegrator manages cross-section dependencies and calculation order
      - The event system (`teui-section-rendered`, etc.) coordinates section calculation timing
@@ -209,13 +208,35 @@ When working with this codebase, previous AI assistants have encountered several
 9. **Robust Input Parsing**:
    - ✅ **ALWAYS** use the section's `parseNumeric` helper function (or equivalent) when parsing input values within calculation functions, especially values retrieved from the DOM via helpers like `getFieldValue`. 
    - ❌ **Avoid** using `parseFloat()` directly on values that might be formatted strings (e.g., "1,234.56"). `parseFloat` stops at the first non-numeric character, leading to incorrect results (e.g., `parseFloat("1,234.56")` becomes `1`). Using `parseNumeric` ensures commas are handled correctly.
-   - **TODO:** Refactor all sections to use the global `window.TEUI.parseNumeric` helper (defined in `4011-init.js`) instead of local helpers (`getNumericValue`, etc.) for consistent input parsing across the application.
+   - **TODO:** Refactor all sections to use the global `window.TEUI.parseNumeric` helper (defined in `4011-init.js`) instead of local helpers (`getNumericValue`, etc.) for consistent input parsing across the application. Note that `window.TEUI.parseNumeric` was a more recent addition, so older sections may require this refactoring.
+
+10. **Standardize Calculation Updates**:
+   - ✅ **ALWAYS** use a standardized helper function (e.g., `window.TEUI.setCalculatedValue(fieldId, rawValue, format)`) for updating calculated fields within a section's `calculateAll` or listener callbacks.
+   - This helper should ideally:
+     1.  Update the `StateManager` with the raw, unformatted numeric value (stored as a string for precision) using the `'calculated'` state: `StateManager.setValue(fieldId, rawValue.toString(), 'calculated')`. This is critical for triggering listeners correctly.
+     2.  Update the corresponding DOM element with the appropriately formatted value, potentially using `window.TEUI.formatNumber`.
+   - ❌ **Avoid** direct DOM manipulation (`element.textContent = ...`) inside calculation logic or setting state directly without using the standard helper.
+   - This ensures consistency, proper state management, correct listener triggering, and adherence to formatting rules.
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 
 ### REQUIRED: StateManager Implementation Pattern for Cross-Section Functions
 
 One critical architectural pattern is how we handle functions that need to operate across multiple sections, such as temperature setpoints based on occupancy type, or how a calculated value in one section (e.g., Section 5's `i_39`) affects a field in another section (e.g., Section 2's `d_16`). This approach enables consistent behavior while maintaining the single responsibility principle and respecting `StateManager`'s role.
+
+#### Simplified Cross-Section Calculated Update Flow:
+```
+1. Source Section: Input Change OR Trigger
+2. Source Section: calculateSourceValue() -> newValue
+3. Source Section: setCalculatedValue('sourceFieldId', newValue) 
+   (Internally calls -> StateManager.setValue('sourceFieldId', ..., 'calculated'))
+4. StateManager:   -> Event triggered for 'sourceFieldId'
+5. Dependent Section: Listener for 'sourceFieldId' executes
+6. Dependent Section: -> Calls calculateAll() / recalculateDependentField()
+7. Dependent Section: -> Reads updated 'sourceFieldId' (and others) via getNumericValue()
+8. Dependent Section: -> Calculates dependentValue
+9. Dependent Section: -> Calls setCalculatedValue('dependentFieldId', dependentValue)
+```
 
 1. **✅ PROPER ARCHITECTURE PATTERN**:
    - Create centralized utility functions in the global namespace (e.g., `window.TEUI.getTemperaturesForOccupancy`) if logic is shared.
@@ -286,7 +307,7 @@ One critical architectural pattern is how we handle functions that need to opera
    implement it as a global utility in the TEUI namespace:
    
    ```javascript
-   // Global utility function for consistent behavior across sections
+   // Global utility function example
    window.TEUI.getTemperaturesForOccupancy = function(occupancyType) {
        // Formatting and normalization logic
        // ...
@@ -301,8 +322,8 @@ One critical architectural pattern is how we handle functions that need to opera
    ```
 
 5. **⚠️ COMMON ANTI-PATTERNS TO AVOID**:
-   - ❌ Direct DOM manipulation inside calculation functions (use helpers like `setCalculatedValue`).
-   - ❌ Setting calculated values with direct DOM updates rather than via StateManager helpers.
+   - ❌ Direct DOM manipulation inside calculation functions or listeners (use helpers like `setCalculatedValue`).
+   - ❌ Setting calculated values with direct DOM updates rather than via `StateManager` and standardized helpers (`setCalculatedValue`).
    - ❌ Inlining complex condition checks in multiple places instead of using shared utilities.
    - ❌ Checking user-displayed text instead of StateManager values.
    - ❌ Implementing different logic for the same calculation in different sections.
@@ -578,14 +599,24 @@ To prevent excessive recalculations and optimize performance, the system impleme
 
    **7. Refactoring for Performance & Maintainability (Case Study: Section 11)**:
       - **Problem**: Sections involving repetitive calculations across many similar rows (e.g., Section 11 - Transmission Losses, Section 09 - Internal Gains, Section 10 - Radiant Gains) can lead to large file sizes (e.g., >3000 lines) and duplicated code, making them difficult to maintain and potentially impacting performance.
-      - **Solution Pattern (See `sections/4011-Section11.js`)**:
-         1.  **Centralized Calculation Function**: Create a single, parameterized function (e.g., `calculateComponentRow`) that handles the core calculation logic for a single row.
-         2.  **Configuration-Driven**: Define a configuration array (e.g., `componentConfig`) that specifies the properties and inputs for each row (e.g., row number, type like 'air'/'ground', primary input like 'rsi'/'uvalue').
-         3.  **Iterative Execution**: In the main `calculateAll` function for the section, loop through the configuration array, calling the centralized calculation function for each entry.
-         4.  **Subtotals & Grand Totals**: Calculate subtotals within the loop or after, and compute grand totals and final percentages (which depend on totals) after all individual rows are processed.
-         5.  **Numerically Stable Formulas**: Prioritize formulas that minimize manipulation of small floating-point numbers where precision loss is a risk (e.g., using RSI directly in denominators for heat loss/gain instead of calculating and using an intermediate U-value).
-      - **Benefits**: This approach drastically reduces code duplication, significantly shrinks file size (e.g., Section 11 reduced from ~3,300 to ~630 lines), improves maintainability, and clarifies the calculation flow.
+      - **Implemented Solution Pattern (Example: `sections/4011-Section11.js`)**: The following pattern *has been successfully implemented* in Section 11 to address this:
+          1.  **Centralized Calculation Function**: Create a single, parameterized function (e.g., `calculateComponentRow`) that handles the core calculation logic for a single row.
+          2.  **Configuration-Driven**: Define a configuration array (e.g., `componentConfig`) that specifies the properties and inputs for each row (e.g., row number, type like \'air\'/\'ground\', primary input like \'rsi\'/\'uvalue\').
+          3.  **Iterative Execution**: In the main `calculateAll` function for the section, loop through the configuration array, calling the centralized calculation function for each entry.
+          4.  **Subtotals & Grand Totals**: Calculate subtotals within the loop or after, and compute grand totals and final percentages (which depend on totals) after all individual rows are processed.
+          5.  **Numerically Stable Formulas**: Prioritize formulas that minimize manipulation of small floating-point numbers where precision loss is a risk (e.g., using RSI directly in denominators for heat loss/gain instead of calculating and using an intermediate U-value).
+      - **Achieved Benefits**: This approach drastically reduced code duplication, significantly shrank the file size (Section 11 reduced from ~3,300 to ~630 lines), improved maintainability, and clarified the calculation flow.
       - **Recommendation**: Apply this pattern when refactoring other sections with similar multi-row calculation structures (e.g., Sections 04, 09, 10, 12).
+
+  **8. Performance Exception for Repetitive Sections**:
+     - **Challenge**: Sections like 11, 09, and 10 involve many rows of identical calculations. Strictly following Point 10 (updating every calculated cell via `setCalculatedValue` -> `StateManager`) can lead to hundreds of StateManager calls and DOM updates within a single `calculateAll` cycle, causing significant performance bottlenecks (e.g., noticeable UI lag).
+     - **Optimization Strategy (Acceptable Exception):** For these specific sections, prioritize performance by:
+       1.  Calculating intermediate row values (e.g., heat loss for a single window `i_89`) within the loop.
+       2.  Updating the DOM element for that row *directly* (`element.textContent = formattedValue`) **without** calling `StateManager.setValue` for these internal, non-shared values.
+       3.  Accumulating the necessary values required for section totals (e.g., summing individual heat losses).
+       4.  **After the loop**, calculate the final section subtotals and totals (e.g., `i_98` - Total Envelope Heatloss).
+       5.  **Crucially, call `setCalculatedValue` (or `StateManager.setValue(..., 'calculated')`) ONLY for these final totals** that other sections (like Section 14, 15, or 01) depend upon.
+     - **Rationale**: This approach significantly reduces the number of expensive `StateManager` calls and potentially smooths rendering. It respects `StateManager` as the source of truth for *shared, cross-section data* (the totals) while allowing a necessary performance optimization for internal, non-shared display values. This is considered an acceptable deviation from Point 10 for these specific, performance-critical sections.
 
 These optimization techniques significantly improve performance while maintaining calculation integrity, especially when handling large datasets or complex interdependencies between sections.
 
