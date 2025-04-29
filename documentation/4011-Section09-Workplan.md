@@ -4,45 +4,34 @@
 
 **Current Status:**
 *   Section 09 calculates internal gains from occupants, plug loads, lighting, equipment, and DHW system losses.
-*   The section appears functional but likely uses older helper function patterns and might benefit from structural review based on the Section 11 refactor (it has several similar rows for different gain types).
-*   Needs verification against `README.md` guidelines and `FORMULAE-3037.csv`.
+*   The section is functional and has been updated to use standardized global helper functions (`parseNumeric`, `formatNumber`) and a corrected local `setCalculatedValue` that integrates properly with StateManager and global formatting.
+*   Calculation verification against Excel model is considered complete due to prior parity matching.
 
-**Proposed Refactoring Strategy:**
+**Refactoring Status:**
 
-1.  **Helper Function Standardization (High Priority):**
-    *   Replace any local `getNumericValue` implementation with one that primarily uses the global `window.TEUI.parseNumeric`.
-    *   Replace any local `formatNumber` with the standardized version accepting a `format` string (e.g., `'number'`, `'percent'`). Update internal calls accordingly.
-    *   Replace any local `setCalculatedValue` with the standard version that stores raw string values in `StateManager` (with `'calculated'` state) and updates the DOM using `formatNumber`. Ensure all calculated outputs use this helper.
+1.  **Helper Function Standardization (High Priority):** ✅ **Complete**
+    *   Input parsing uses `window.TEUI.parseNumeric`.
+    *   Formatting uses `window.TEUI.formatNumber`.
+    *   The local `setCalculatedValue` helper correctly utilizes `window.TEUI.StateManager.setValue` and `window.TEUI.formatNumber`.
 
-2.  **Calculation Verification:**
-    *   Review all calculation logic within the section against the corresponding formulas in `FORMULAE-3037.csv` (Rows 62-71).
-    *   Ensure correct field IDs are being read and written.
-    *   Pay attention to handling of units (e.g., W/m² vs. total W, kWh/yr vs W).
+2.  **Calculation Verification:** ✅ **Complete**
+    *   Considered complete based on prior parity matching with the Excel model and internalized schedule data.
 
-3.  **StateManager Integration:**
-    *   Verify that all outputs intended for use by other sections are correctly updated in `StateManager` using `setCalculatedValue`.
-    *   Identify any *calculated* inputs *from other sections* (if any) and ensure `StateManager.addListener` is used correctly in `initializeEventHandlers` to trigger recalculations. (Section 9 mostly takes inputs or uses constants/schedules).
+3.  **StateManager Integration:** ✅ **Complete**
+    *   Outputs are updated via the corrected `setCalculatedValue`.
+    *   `StateManager.addListener` is used correctly for inputs from other sections.
 
-4.  **Structural Review (Consider Section 11 Pattern):**
-    *   Analyze rows 64-69. While inputs differ slightly (W/pp vs W/m²), the calculation structure for annual kWh (`H_XX`), heating gain (`I_XX`), cooling gain (`K_XX`), and percentages (`J_XX`, `L_XX`) appears highly repetitive.
-    *   **Consider:** Creating a configuration array defining the input parameters for each row (input field, gain type, schedule lookup key, etc.).
-    *   **Consider:** Creating a single parameterized function `calculateGainRow(config)` that takes the row config and performs the common calculations.
-    *   **Consider:** Refactoring `calculateAll` (or equivalent) to loop through the config array, call `calculateGainRow`, and aggregate totals (`H_70`, `I_71`, `K_71`). This would significantly reduce code duplication.
+4.  **Structural Review (Consider Section 11 Pattern):** ❌ **Skipped**
+    *   Decision made not to apply the Section 11 configuration-driven pattern to this section, as the current structure is deemed sufficient and unlikely to require adding similar rows in the future.
 
-5.  **UI Consistency:**
-    *   Ensure percentage columns (J, L) use the standard formatting ("0.00%") and have the `text-left-indicator` class applied.
-    *   Implement the Red/Yellow/Green indicator dot logic for columns J and L based on appropriate thresholds for heating/cooling gain contribution.
+5.  **UI Consistency:** ✅ **Complete**
+    *   Percentage formatting and indicator dot logic are implemented correctly.
 
-6.  **README Compliance:**
-    *   Check for adherence to naming conventions, precision guidelines, and other architectural principles outlined in `README.md`.
+6.  **README Compliance:** ✅ **Complete (with note)**
+    *   Adheres to naming conventions, precision guidelines, and helper function usage (using standardized global functions where available/appropriate).
+    *   Note: Does not implement the multi-row structural pattern from Section 11 per decision in point 4.
 
 **Next Steps:**
 
-1.  Create a new branch (e.g., `refactor/section09`).
-2.  Implement Helper Function Standardization (Task 1). Test thoroughly.
-3.  Verify Calculations (Task 2). Test thoroughly.
-4.  Verify StateManager Integration (Task 3).
-5.  **Decision Point:** Assess feasibility and benefit of the structural refactor (Task 4). If pursued, implement it.
-6.  Implement UI Consistency (Task 5).
-7.  Final review against README guidelines (Task 6).
-8.  Commit changes and merge. 
+1.  Perform cleanup and filesize optimization on `sections/4011-Section09.js` (e.g., remove commented-out code, unnecessary whitespace). Test thoroughly.
+2.  Commit final changes and merge. 
