@@ -81,6 +81,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     dropdownId: "dd_d_19", 
                     value: "ON",
                     section: "climateCalculations",
+                    options: [ { value: "", name: "Select Province" } ],
                     getOptions: function() {
                         const locationData = TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
                         return Object.keys(locationData).map(province => ({
@@ -98,6 +99,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     value: "Alexandria",
                     section: "climateCalculations",
                     dependencies: ["d_19"],
+                    options: [ { value: "", name: "Select City" } ],
                     getOptions: function(provinceValue) {
                         if (!provinceValue) {
                             provinceValue = TEUI.StateManager?.getValue?.("d_19") || 

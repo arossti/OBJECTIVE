@@ -1099,12 +1099,58 @@ window.TEUI.SectionModules.sect15 = (function() {
         uniqueDependencies.forEach(dep => {
             // Using an anonymous function to ensure calculateAll is called in the module's scope
             sm.addListener(dep, () => {
-                console.log(`Listener triggered for dependency: ${dep} in Section 15`);
+                // No log here
                 calculateAll(); 
             });
+        });
+        
+        // Helper function to create listeners that trigger calculateAll without logging
+        const addCalculationListener = (key) => {
+            sm.addListener(key, () => {
+                // No log here
+                calculateAll();
             });
-            
-        console.log("TEUI Summary event listeners initialized.");
+        };
+
+        // Add calculation listeners
+        addCalculationListener('d_23'); // Coldest Day Temp
+        addCalculationListener('h_23'); // Heating Setpoint
+        addCalculationListener('d_24'); // Hottest Day Temp
+        addCalculationListener('h_24'); // Cooling Setpoint
+
+        // Add listeners for other relevant changes that should trigger recalculations
+        // These might come from Sections 10, 11, 12, 13, 14
+        const dependentFields = [
+            'd_67', // Eqpt Load (S09)
+            'h_70', // P/L/E Subtotal (S09)
+            'i_80', // Total Radiant Gain (S10)
+            'd_97', // Ground Loss (S11)
+            'i_97', // Ground Loss (S11) - heating portion?
+            'i_98', // Total Envelope Loss (S11)
+            'd_101', // Wall Area (S12)
+            'g_101', // Wall U-value (S12)
+            'd_102', // Roof Area (S12)
+            'g_102', // Roof U-value (S12)
+            'i_103', // Below Grade Loss (S12)
+            'k_103', // Below Grade Gain (S12)
+            'i_104', // Total Heat Loss Intensity (S12)
+            'd_114', // Net Energy Needs (S13)
+            'i_114', // Heating Needs (S13)
+            'k_114', // Cooling Needs (S13)
+            'i_129', // TEDI (S14)
+            'k_129', // TELI (S14)
+            'h_10' // TEUI Actual (S1)
+            // Add any other specific field IDs from other sections that affect S15 calculations
+        ];
+
+        dependentFields.forEach(fieldId => {
+             sm.addListener(fieldId, () => {
+                // No log here
+                calculateAll();
+             });
+        });
+
+         console.log("TEUI Summary event listeners initialized.");
     }
     
     /**

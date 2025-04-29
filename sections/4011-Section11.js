@@ -651,6 +651,17 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
             // Removed console.warn for missing/non-editable fields
         });
+
+        // Add listeners for climate data changes from Section 3
+        if (window.TEUI?.StateManager?.addListener) {
+            window.TEUI.StateManager.addListener('d_20', calculateAll); // HDD
+            window.TEUI.StateManager.addListener('d_21', calculateAll); // CDD
+            window.TEUI.StateManager.addListener('h_22', calculateAll); // GF CDD (affects ground gain)
+            window.TEUI.StateManager.addListener('d_22', calculateAll); // GF HDD (affects ground loss)
+            // console.log("Section 11 listeners for climate data added.");
+        } else {
+            console.warn("Section 11: StateManager not available to add climate listeners.");
+        }
     }
 
     function onSectionRendered() {

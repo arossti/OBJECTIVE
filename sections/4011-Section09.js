@@ -746,7 +746,7 @@ window.TEUI.SectionModules.sect09 = (function() {
      */
     function calculateHeatingCoolingSplit() {
         // Get cooling days from Section 03, cell m_19
-        const coolingDays = getNumericValue("m_19") || 120; // Default to 120 if not set
+        const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // Default to 120 if not set
         
         // Calculate heating days
         const heatingDays = 365 - coolingDays;
@@ -766,9 +766,9 @@ window.TEUI.SectionModules.sect09 = (function() {
      */
     function calculateOccupantEnergy() {
         // Get values
-        const occupants = getNumericValue("d_63");
-        const dailyHours = getNumericValue("g_63");
-        const watts = getNumericValue("f_64");
+        const occupants = window.TEUI.parseNumeric(getFieldValue("d_63"));
+        const dailyHours = window.TEUI.parseNumeric(getFieldValue("g_63"));
+        const watts = window.TEUI.parseNumeric(getFieldValue("f_64"));
         
         // Calculate annual energy
         const annualHours = dailyHours * 365;
@@ -814,8 +814,8 @@ window.TEUI.SectionModules.sect09 = (function() {
         setCalculatedValue("d_65", formatNumber(plugLoadDensity));
         
         // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-        const conditionedArea = getNumericValue("h_15");
-        const occupiedHours = getNumericValue("i_63"); // Use annual occupied hours
+        const conditionedArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
+        const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
         const energy = plugLoadDensity * conditionedArea * occupiedHours / 1000; // W/m² to kWh/yr using occupied hours
         
         // Get heating/cooling split - Use DYNAMIC ratio for Plug Loads per user request
@@ -852,11 +852,11 @@ window.TEUI.SectionModules.sect09 = (function() {
      */
     function calculateLightingLoads() {
         // Get values
-        const lightingDensity = getNumericValue("d_66");
-        const conditionedArea = getNumericValue("h_15");
+        const lightingDensity = window.TEUI.parseNumeric(getFieldValue("d_66"));
+        const conditionedArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
         
         // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-        const occupiedHours = getNumericValue("i_63"); // Use annual occupied hours
+        const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
         const energy = lightingDensity * conditionedArea * occupiedHours / 1000; // W/m² to kWh/yr using occupied hours
         
         // Get heating/cooling split - Use DYNAMIC ratio for Lighting Loads
@@ -969,9 +969,9 @@ window.TEUI.SectionModules.sect09 = (function() {
             }
             
             // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-            // Use getNumericValue to safely get the floor area and occupied hours
-            const floorArea = getNumericValue("h_15");
-            const occupiedHours = getNumericValue("i_63"); // Use annual occupied hours
+            // Use window.TEUI.parseNumeric to safely get the floor area and occupied hours
+            const floorArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
+            const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
             
             const annualEnergy = (densityValue * floorArea * occupiedHours / 1000) || 0; // W/m² to kWh/yr using occupied hours
             
@@ -997,7 +997,7 @@ window.TEUI.SectionModules.sect09 = (function() {
             // Update percentages and totals
             calculateTotals();
         } catch (error) {
-            // REMOVE: console.error("❌ Error calculating equipment loads:", error);
+            // Removed console.error
         }
         
         // Helper function to update a field
@@ -1058,7 +1058,7 @@ window.TEUI.SectionModules.sect09 = (function() {
                     }
                 }
             } catch (e) {
-                // REMOVE: console.error("Error formatting building type:", e);
+                // Removed console.error
             }
             
             return 'A-Assembly'; // Default fallback
@@ -1070,7 +1070,7 @@ window.TEUI.SectionModules.sect09 = (function() {
      */
     function calculateTotals() {
         // Get values for components
-        const dhwLosses = getNumericValue("h_69");
+        const dhwLosses = window.TEUI.parseNumeric(getFieldValue("h_69"));
         // Split DHW losses using DYNAMIC ratio
         const { heatingRatio: dhwHeatingRatio, coolingRatio: dhwCoolingRatio } = calculateHeatingCoolingSplit();
         const dhwHeating = dhwLosses * dhwHeatingRatio;
@@ -1079,22 +1079,22 @@ window.TEUI.SectionModules.sect09 = (function() {
         setCalculatedValue("k_69", formatNumber(dhwCooling));
         
         // Energy values
-        const plugEnergy = getNumericValue("h_65");
-        const lightingEnergy = getNumericValue("h_66");
-        const equipmentEnergy = getNumericValue("h_67");
-        const occupantEnergy = getNumericValue("h_64");
+        const plugEnergy = window.TEUI.parseNumeric(getFieldValue("h_65"));
+        const lightingEnergy = window.TEUI.parseNumeric(getFieldValue("h_66"));
+        const equipmentEnergy = window.TEUI.parseNumeric(getFieldValue("h_67"));
+        const occupantEnergy = window.TEUI.parseNumeric(getFieldValue("h_64"));
         
         // Heating values
-        const plugHeating = getNumericValue("i_65");
-        const lightingHeating = getNumericValue("i_66");
-        const equipmentHeating = getNumericValue("i_67");
-        const occupantHeating = getNumericValue("i_64");
+        const plugHeating = window.TEUI.parseNumeric(getFieldValue("i_65"));
+        const lightingHeating = window.TEUI.parseNumeric(getFieldValue("i_66"));
+        const equipmentHeating = window.TEUI.parseNumeric(getFieldValue("i_67"));
+        const occupantHeating = window.TEUI.parseNumeric(getFieldValue("i_64"));
         
         // Cooling values
-        const plugCooling = getNumericValue("k_65");
-        const lightingCooling = getNumericValue("k_66");
-        const equipmentCooling = getNumericValue("k_67");
-        const occupantCooling = getNumericValue("k_64");
+        const plugCooling = window.TEUI.parseNumeric(getFieldValue("k_65"));
+        const lightingCooling = window.TEUI.parseNumeric(getFieldValue("k_66"));
+        const equipmentCooling = window.TEUI.parseNumeric(getFieldValue("k_67"));
+        const occupantCooling = window.TEUI.parseNumeric(getFieldValue("k_64"));
         
         // Calculate subtotals
         const pleTotalEnergy = plugEnergy + lightingEnergy + equipmentEnergy + dhwLosses;
@@ -1128,7 +1128,7 @@ window.TEUI.SectionModules.sect09 = (function() {
 
         // Helper to calculate and set percentage and indicator
         const setPercentage = (valueFieldId, percentageFieldId, total, isCooling = false) => {
-            const value = getNumericValue(valueFieldId);
+            const value = window.TEUI.parseNumeric(getFieldValue(valueFieldId));
             const percentage = total > 0 ? (value / total) * 100 : 0;
             // Use formatNumber for 2 decimals, then add %
             setCalculatedValue(percentageFieldId, formatNumber(percentage) + '%');
@@ -1187,24 +1187,6 @@ window.TEUI.SectionModules.sect09 = (function() {
         }
         
         return "";
-    }
-    
-    /**
-     * Helper function to safely get a numeric value from a field
-     * This handles both string and number input types
-     */
-    function getNumericValue(fieldId) {
-        const value = getFieldValue(fieldId);
-        // Handle string values (with comma removal)
-        if (typeof value === 'string') {
-            return parseFloat(value.replace(/,/g, '')) || 0;
-        }
-        // Handle number values directly
-        else if (typeof value === 'number') {
-            return value;
-        }
-        // Default fallback
-        return 0;
     }
     
     /**
@@ -1693,17 +1675,6 @@ document.addEventListener('teui-section-rendered', function(event) {
         }, 100); 
     }
 });
-
-// Clean up periodic recalculation log noise
-if (window.console && window.console.log) {
-    const originalLog = window.console.log;
-    window.console.log = function(...args) {
-        if (args[0] === "Periodic TEUI recalculation") {
-            return; // Don't log this message
-        }
-        originalLog.apply(console, args);
-    };
-}
 
 // Make sure we have the calculateTEUI function
 if (typeof window.calculateTEUI !== 'function' && window.TEUI?.StateManager?.updateTEUICalculations) {

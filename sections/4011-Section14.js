@@ -733,7 +733,15 @@ window.TEUI.SectionModules.sect14 = (function() {
             });
         });
 
-        console.log("TEDI/TELI event listeners initialized.");
+        // Add listeners for climate data changes from Section 3 (needed for some calcs)
+        if (window.TEUI?.StateManager?.addListener) {
+            sm.addListener('d_20', calculateAll); // HDD
+            sm.addListener('d_21', calculateAll); // CDD
+            sm.addListener('h_22', calculateAll); // GF CDD 
+            sm.addListener('d_22', calculateAll); // GF HDD
+        } else {
+            console.warn("Section 14: StateManager not available to add climate listeners.");
+        }
     }
     
     /**

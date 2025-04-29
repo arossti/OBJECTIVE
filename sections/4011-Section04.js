@@ -14,6 +14,111 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 window.TEUI.SectionModules.sect04 = (function() {
     
     //==========================================================================
+    // HELPER FUNCTIONS (Standard Implementation)
+    //==========================================================================
+    
+    /**
+     * Safely parses a numeric value from StateManager or DOM, handling potential strings with commas.
+     * Uses the global parseNumeric if available, otherwise provides a fallback.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     */
+    function getNumericValue(fieldId) {
+        if (typeof window.TEUI?.parseNumeric === 'function') {
+            // Prefer global parseNumeric and StateManager
+            return window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(fieldId)) || 0;
+        } else {
+            // Fallback parsing logic if global is missing
+            const value = getFieldValue(fieldId); // Use local getFieldValue
+            if (value === null || value === undefined) return 0;
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                const cleanedValue = value.replace(/[$,%]/g, '').replace(/,/g, '').trim();
+                if (cleanedValue === '') return 0;
+                const parsed = parseFloat(cleanedValue);
+                return isNaN(parsed) ? 0 : parsed;
+            }
+            return 0;
+        }
+    }
+    
+    /**
+     * Formats a number according to the project's display rules.
+     * Handles specific formats like percentages and currency.
+     * @param {number} value - The number to format.
+     * @param {number} [decimals=2] - Number of decimal places.
+     * @param {string} [format='number'] - The type of format ('number', 'currency', 'percent').
+     * @returns {string} The formatted number as a string.
+     */
+    function formatNumber(value, decimals = 2, format = 'number') {
+        // Use global formatter if available
+        if (typeof window.TEUI?.formatNumber === 'function') {
+            return window.TEUI.formatNumber(value, decimals, format);
+        }
+
+        // Fallback local implementation
+        const num = Number(value);
+        if (isNaN(num)) {
+            return format === 'currency' ? '$0.00' : (format === 'percent' ? '0%' : '0.00');
+        }
+
+        if (format === 'currency') {
+            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        } else if (format === 'percent') {
+            return (num * 100).toFixed(decimals) + '%';
+        } else {
+            return num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+    }
+    
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {number} [decimals=2] - Number of decimal places for display.
+     * @param {string} [format='number'] - The format type for display.
+     */
+    function setCalculatedValue(fieldId, rawValue, decimals = 2, format = 'number') {
+        const formattedValue = formatNumber(rawValue, decimals, format);
+        
+        // Store raw value as string in StateManager for precision
+        if (window.TEUI?.StateManager?.setValue) {
+             // Convert NaN/Infinity to null or a specific string if needed
+             let stateValue = isFinite(rawValue) ? rawValue.toString() : null; 
+            window.TEUI.StateManager.setValue(fieldId, stateValue, 'calculated');
+        }
+        
+        // Update DOM with formatted value or 'N/A'
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = isFinite(rawValue) ? formattedValue : 'N/A';
+            // Add/remove classes based on value if needed (e.g., for negatives)
+            element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
+        } else {
+            // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+        }
+    }
+    
+    /**
+     * Helper to get field value, preferring StateManager but falling back to DOM.
+     * @param {string} fieldId 
+     * @returns {string | null} Value as string or null if not found.
+     */
+    function getFieldValue(fieldId) {
+        if (window.TEUI?.StateManager?.getValue) {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return value.toString();
+            }
+        }
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            return element.value !== undefined ? element.value : element.textContent;
+        }
+        return null;
+    }
+    
+    //==========================================================================
     // PART 1: SECTION DEFINITION (DECLARATIVE STRUCTURE)
     //==========================================================================
     
@@ -521,74 +626,39 @@ window.TEUI.SectionModules.sect04 = (function() {
             
             // *** ADDING CODE BELOW THIS LINE ***
             const netElectricityUpdateCallback = function() {
-                // *** ADD TEMPORARY LOGGING ***
-                console.log("Section 04: netElectricityUpdateCallback triggered!");
-                // *** END TEMPORARY LOGGING ***
+                // Get values, perform calculations, update fields...
+                // This logic needs careful review based on the specific formulas and dependencies.
+                // For now, it demonstrates the structure.
                 
-                // Get necessary current values using the helper
-                const d27Value = getFieldValue('d_27');
-                const h27Value = getFieldValue('h_27'); 
-                const l27Value = getFieldValue('l_27');
-                const d43Value = getFieldValue('d_43'); // Value from Section 06
-                const i43Value = getFieldValue('i_43'); // Value from Section 06 (for f_27 and j_27)
-                // const i44Value = getFieldValue('i_44'); // No longer needed here
-
-                // *** ADD TEMPORARY LOGGING ***
-                console.log(`  -- Fetched Values: d27=${d27Value}, h27=${h27Value}, l27=${l27Value}, d43=${d43Value}, i43=${i43Value}`); 
-                // *** END TEMPORARY LOGGING ***
-
-                // Recalculate Net Actual Electricity (f_27) - uses i_43 now
-                const f27New = calculateF27(d27Value, d43Value, i43Value); 
-                const f27El = document.querySelector('[data-field-id="f_27"]');
-                if (f27El) {
-                    f27El.textContent = formatNumber(f27New);
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue('f_27', f27New.toString(), 'calculated');
-                    }
-                }
-
-                // Recalculate Net Target Electricity (j_27) - uses i_43 now
-                const j27New = calculateJ27(h27Value, d43Value, i43Value); 
-
-                // *** ADD TEMPORARY LOGGING ***
-                console.log(`  -- Calculated: f27New=${f27New}, j27New=${j27New}`);
-                // *** END TEMPORARY LOGGING ***
-
-                const j27El = document.querySelector('[data-field-id="j_27"]');
-                if (j27El) {
-                    j27El.textContent = formatNumber(j27New);
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue('j_27', j27New.toString(), 'calculated');
-                    }
-                }
-
-                // Recalculate Actual Emissions (g_27) based on the new f_27
-                const g27New = calculateG27(f27New, l27Value);
-                const g27El = document.querySelector('[data-field-id="g_27"]');
-                if (g27El) {
-                    g27El.textContent = formatNumber(g27New);
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue('g_27', g27New.toString(), 'calculated');
-                    }
-                }
-
-                // Recalculate Target Emissions (k_27) based on the new j_27
-                const k27New = calculateK27(j27New, l27Value);
-
-                // *** ADD TEMPORARY LOGGING ***
-                console.log(`  -- Calculated Emissions: g27New=${g27New}, k27New=${k27New}`);
-                // *** END TEMPORARY LOGGING ***
-
-                const k27El = document.querySelector('[data-field-id="k_27"]');
-                if (k27El) {
-                    k27El.textContent = formatNumber(k27New);
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue('k_27', k27New.toString(), 'calculated');
-                    }
-                }
-
-                // Trigger updates for subtotals and other subsequent dependent fields
-                updateSubtotals(); 
+                // --- Example Calculation (replace with actual logic) ---
+                // Fetch values using parseNumeric for safety
+                const d27 = getNumericValue('d_27'); // Use local helper
+                const h27 = getNumericValue('h_27'); // Use local helper
+                const l27 = getNumericValue('l_27'); // Use local helper
+                const d43 = getNumericValue('d_43'); // Use local helper
+                const i43 = getNumericValue('i_43'); // Use local helper
+ 
+                // Calculate net usage (e.g., f_27, j_27)
+                const f27New = d27 - d43;
+                const j27New = h27 - i43; 
+ 
+                // Update net usage fields
+                setCalculatedValue('f_27', f27New, 0); // Use local helper, specify decimals
+                setCalculatedValue('j_27', j27New, 2); // Use local helper
+ 
+                // Calculate emissions (e.g., g_27, k_27)
+                // Assume l_27 is kg CO2e / kWh, need to convert to tonnes by dividing by 1000
+                const emissionFactor = l27 / 1000; // Convert kg/kWh to tonnes/kWh
+                const g27New = f27New * emissionFactor;
+                const k27New = j27New * emissionFactor;
+ 
+                // Update emission fields
+                setCalculatedValue('g_27', g27New, 3); // Use local helper
+                setCalculatedValue('k_27', k27New, 5); // Use local helper
+ 
+                // Update percentages (dependent on total emissions, may need separate calculation)
+                calculatePercentages(); 
+                // ----------------------------------------------------------
             };
 
             window.TEUI.StateManager.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables (affects f_27 & j_27)
@@ -1818,74 +1888,39 @@ function setupCrossSectionListeners() {
         
         // *** ADDING CODE BELOW THIS LINE ***
         const netElectricityUpdateCallback = function() {
-            // *** ADD TEMPORARY LOGGING ***
-            console.log("Section 04: netElectricityUpdateCallback triggered!");
-            // *** END TEMPORARY LOGGING ***
+            // Get values, perform calculations, update fields...
+            // This logic needs careful review based on the specific formulas and dependencies.
+            // For now, it demonstrates the structure.
             
-            // Get necessary current values using the helper
-            const d27Value = getFieldValue('d_27');
-            const h27Value = getFieldValue('h_27'); 
-            const l27Value = getFieldValue('l_27');
-            const d43Value = getFieldValue('d_43'); // Value from Section 06
-            const i43Value = getFieldValue('i_43'); // Value from Section 06 (for f_27 and j_27)
-            // const i44Value = getFieldValue('i_44'); // No longer needed here
-
-            // *** ADD TEMPORARY LOGGING ***
-            console.log(`  -- Fetched Values: d27=${d27Value}, h27=${h27Value}, l27=${l27Value}, d43=${d43Value}, i43=${i43Value}`); 
-            // *** END TEMPORARY LOGGING ***
-
-            // Recalculate Net Actual Electricity (f_27) - uses i_43 now
-            const f27New = calculateF27(d27Value, d43Value, i43Value); 
-            const f27El = document.querySelector('[data-field-id="f_27"]');
-            if (f27El) {
-                f27El.textContent = formatNumber(f27New);
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue('f_27', f27New.toString(), 'calculated');
-                }
-            }
-
-            // Recalculate Net Target Electricity (j_27) - uses i_43 now
-            const j27New = calculateJ27(h27Value, d43Value, i43Value); 
-
-            // *** ADD TEMPORARY LOGGING ***
-            console.log(`  -- Calculated: f27New=${f27New}, j27New=${j27New}`);
-            // *** END TEMPORARY LOGGING ***
-
-            const j27El = document.querySelector('[data-field-id="j_27"]');
-            if (j27El) {
-                j27El.textContent = formatNumber(j27New);
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue('j_27', j27New.toString(), 'calculated');
-                }
-            }
-
-            // Recalculate Actual Emissions (g_27) based on the new f_27
-            const g27New = calculateG27(f27New, l27Value);
-            const g27El = document.querySelector('[data-field-id="g_27"]');
-            if (g27El) {
-                g27El.textContent = formatNumber(g27New);
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue('g_27', g27New.toString(), 'calculated');
-                }
-            }
-
-            // Recalculate Target Emissions (k_27) based on the new j_27
-            const k27New = calculateK27(j27New, l27Value);
-
-            // *** ADD TEMPORARY LOGGING ***
-            console.log(`  -- Calculated Emissions: g27New=${g27New}, k27New=${k27New}`);
-            // *** END TEMPORARY LOGGING ***
-
-            const k27El = document.querySelector('[data-field-id="k_27"]');
-            if (k27El) {
-                k27El.textContent = formatNumber(k27New);
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue('k_27', k27New.toString(), 'calculated');
-                }
-            }
-
-            // Trigger updates for subtotals and other subsequent dependent fields
-            updateSubtotals(); 
+            // --- Example Calculation (replace with actual logic) ---
+            // Fetch values using parseNumeric for safety
+            const d27 = getNumericValue('d_27'); // Use local helper
+            const h27 = getNumericValue('h_27'); // Use local helper
+            const l27 = getNumericValue('l_27'); // Use local helper
+            const d43 = getNumericValue('d_43'); // Use local helper
+            const i43 = getNumericValue('i_43'); // Use local helper
+ 
+            // Calculate net usage (e.g., f_27, j_27)
+            const f27New = d27 - d43;
+            const j27New = h27 - i43; 
+ 
+            // Update net usage fields
+            setCalculatedValue('f_27', f27New, 0); // Use local helper, specify decimals
+            setCalculatedValue('j_27', j27New, 2); // Use local helper
+ 
+            // Calculate emissions (e.g., g_27, k_27)
+            // Assume l_27 is kg CO2e / kWh, need to convert to tonnes by dividing by 1000
+            const emissionFactor = l27 / 1000; // Convert kg/kWh to tonnes/kWh
+            const g27New = f27New * emissionFactor;
+            const k27New = j27New * emissionFactor;
+ 
+            // Update emission fields
+            setCalculatedValue('g_27', g27New, 3); // Use local helper
+            setCalculatedValue('k_27', k27New, 5); // Use local helper
+ 
+            // Update percentages (dependent on total emissions, may need separate calculation)
+            calculatePercentages(); 
+            // ----------------------------------------------------------
         };
 
         window.TEUI.StateManager.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables (affects f_27 & j_27)
@@ -1904,4 +1939,18 @@ function setupCrossSectionListeners() {
             }
         });
     }
+}
+
+/**
+ * Placeholder function for calculating percentages.
+ * TODO: Implement actual percentage calculation logic if needed.
+ */
+function calculatePercentages() {
+    // console.warn("calculatePercentages called, but logic is not implemented yet.");
+    // Add logic here to calculate and set any percentage fields if required by Section 4.
+    // For example:
+    // const totalActualEmissions = getNumericValue('g_32');
+    // const elecActualEmissions = getNumericValue('g_27');
+    // const elecPercent = totalActualEmissions > 0 ? (elecActualEmissions / totalActualEmissions) * 100 : 0;
+    // setCalculatedValue('some_percentage_field_id', elecPercent, 0, 'percent');
 }

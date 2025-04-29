@@ -777,6 +777,22 @@ window.TEUI.SectionModules.sect12 = (function() {
         }
     }
 
+    function initializeListeners() {
+        if (!window.TEUI || !window.TEUI.StateManager) return;
+        const sm = window.TEUI.StateManager;
+        // Listen for changes in area totals and TBP from Section 11
+        sm.addListener('d_98', calculateAll);
+        sm.addListener('i_98', calculateAll);
+        sm.addListener('k_98', calculateAll);
+        sm.addListener('d_97', calculateAll);
+        // Listen for changes in climate data from Section 3
+        sm.addListener('d_20', calculateAll); // HDD
+        sm.addListener('d_21', calculateAll); // CDD
+        sm.addListener('d_22', calculateAll); // GF HDD
+        sm.addListener('h_22', calculateAll); // GF CDD
+        // Add listeners for other inputs if S12 calculates things based on them
+    }
+
     function onSectionRendered() {
         if (isInitialized) return;
         // console.log('Section 12 rendered, initializing...');
@@ -784,6 +800,7 @@ window.TEUI.SectionModules.sect12 = (function() {
         registerDependencies();
         initializeEventHandlers();
         addStateManagerListeners();
+        initializeListeners();
         calculateAll();
         addCheckmarkStyles();
         isInitialized = true;

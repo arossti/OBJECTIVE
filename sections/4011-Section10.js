@@ -13,6 +13,171 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 // Section 10: Radiant Gains Module
 window.TEUI.SectionModules.sect10 = (function() {
     //==========================================================================
+    // HELPER FUNCTIONS (Standardized)
+    //==========================================================================
+    // Note: Using standardized helpers based on S11/S15
+    function getNumericValue(fieldId) {
+        // Directly use the global parser, assuming it's loaded correctly due to index.html order
+        // Use || 0 as a fallback if parseNumeric returns null/undefined/NaN
+        return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
+    }
+
+    function getFieldValue(fieldId) {
+        const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+        if (stateValue != null) return stateValue;
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        return element ? (element.value ?? element.textContent?.trim()) : null;
+    }
+
+    /**
+     * Formats a number for display.
+     * Handles specific formats like percentage (integer + %), currency.
+     * @param {number} value - The number to format.
+     * @param {string} [format='number'] - 'number', 'percent', 'currency'.
+     * @returns {string} The formatted number.
+     */
+    function formatNumber(value, format = 'number') {
+        if (value === null || value === undefined || isNaN(value)) {
+            return format === 'percent' ? '0%' : (format === 'currency' ? '$0.00' : '0.00');
+        }
+
+        const num = Number(value);
+
+        if (format === 'percent') {
+            // Input is raw decimal (e.g., 0.152 for 15.20%), output with 2 decimal places + %
+            return (num * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+        } else if (format === 'currency') {
+            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else { // Default number format (kWh, Gain Factor, etc.)
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    }
+
+    /**
+     * Sets calculated value in StateManager and updates DOM using standard formatNumber.
+     * @param {string} fieldId
+     * @param {number} rawValue
+     * @param {string} [format='number']
+     */
+    function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        // Handle N/A for non-finite numbers
+        if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) { 
+            window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
+            const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (elementNA) elementNA.textContent = 'N/A';
+            return; 
+        }
+
+        // Determine format if not specified
+        if (format === 'number') {
+            if (/[jl]_[\\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) { format = 'percent'; }
+            else if (fieldId.startsWith('p_')) { format = 'currency'; }
+            // default is 'number' (2 decimals)
+        }
+
+        const formattedValue = formatNumber(rawValue, format);
+        
+        if (window.TEUI?.StateManager?.setValue) {
+            // Store raw value as string for precision
+            window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
+        }
+        
+        // Update DOM
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', rawValue < 0);
+        } else {
+             // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`); // Commented out to reduce noise
+        }
+    }
+
+    function handleFieldBlur(event) {
+        const fieldElement = this;
+        const currentFieldId = fieldElement.getAttribute('data-field-id');
+        if (!currentFieldId) return;
+        let valueStr = fieldElement.textContent.trim().replace(/,/g, '');
+        let displayValue = '0.00';
+        let rawValueToStore = '0';
+
+        let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+
+        if (!isNaN(numValue)) { // Successfully parsed a number
+            // Store the raw number string *first* for all valid number cases
+            rawValueToStore = numValue.toString(); 
+
+            // Apply specific formatting based on field type
+            if (currentFieldId === 'd_97') { // Thermal Bridge Penalty (%)
+                // Convert input number to decimal (assume input "20" means 20% -> 0.2)
+                let decimalValue = numValue / 100;
+                // Clamp the DECIMAL value between 0 and 1 
+                decimalValue = Math.max(0, Math.min(1, decimalValue));
+                rawValueToStore = decimalValue.toString(); // Overwrite with clamped decimal value for state
+                displayValue = formatNumber(decimalValue * 100, 'number'); // Display as number 0-100, not percentage string
+            } else if (currentFieldId.startsWith('g_')) { // U-Value (3 decimals)
+                displayValue = formatNumber(numValue, 'W/m2'); // Use specific format
+                // rawValueToStore is already set to numValue.toString()
+            } else { // Default: Area (d_), RSI (f_) - 2 decimals
+                displayValue = formatNumber(numValue, 'number'); 
+                // rawValueToStore is already set to numValue.toString()
+            }
+        } else {
+            // Handle invalid input (set to 0 or 0%)
+            if (currentFieldId === 'd_97') {
+                displayValue = '0%';
+                rawValueToStore = '0'; // Store 0 for invalid TBP
+            } else if (currentFieldId.startsWith('g_')) {
+                displayValue = formatNumber(0, 'W/m2'); 
+                rawValueToStore = '0';
+            } else {
+                displayValue = formatNumber(0, 'number');
+                rawValueToStore = '0';
+            }
+            console.warn(`Invalid input "${valueStr}" for ${currentFieldId}. Resetting to 0.`);
+        }
+        fieldElement.textContent = displayValue; // Update DOM display
+
+        // Store the validated, raw numeric string for user inputs
+        if (window.TEUI?.StateManager?.setValue) {
+            window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified'); 
+            console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
+        }
+
+        // Trigger recalculation using the standardized calculateAll function
+        if (typeof calculateAll === 'function') {
+            calculateAll();
+        } else {
+            console.error('calculateAll function not found in Section 10');
+        }
+    }
+
+    function setElementClass(fieldId, className) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            // Remove existing status classes
+            element.classList.remove('checkmark', 'warning');
+            // Add the new class
+            element.classList.add(className);
+        }
+    }
+
+    function setIndicatorClass(fieldId, newClass, potentialClasses) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const baseClass = 'gain-indicator'; // Always gain for this section
+            element.classList.remove(...potentialClasses);
+            if (newClass) {
+                element.classList.add(newClass);
+                if (!element.classList.contains(baseClass)) {
+                    element.classList.add(baseClass);
+                }
+            } else {
+                 element.classList.remove(baseClass);
+            }
+        }
+    }
+
+    //==========================================================================
     // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -137,7 +302,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                     section: "envelopeRadiantGains",
                     dependencies: ["e_73"],
                     classes: ["reference-value"]
-                }
+                },
+                p: { fieldId: "p_73", type: "calculated", dependencies: ["l_12", "k_73", "i_73"] } // Column P (Cost)
             }
         },
         
@@ -239,7 +405,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                     value: "1.31",
                     section: "envelopeRadiantGains",
                     dependencies: ["e_74"],
-                    classes: ["reference-value"]
+                    classes: ["reference-value"],
+                    p: { fieldId: "p_74", type: "calculated", dependencies: ["l_12", "k_74", "i_74"] }
                 }
             }
         },
@@ -339,7 +506,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                     value: "76.94",
                     section: "envelopeRadiantGains",
                     dependencies: ["e_75"],
-                    classes: ["reference-value"]
+                    classes: ["reference-value"],
+                    p: { fieldId: "p_75", type: "calculated", dependencies: ["l_12", "k_75", "i_75"] }
                 }
             }
         },
@@ -439,7 +607,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                     value: "70.74",
                     section: "envelopeRadiantGains",
                     dependencies: ["e_76"],
-                    classes: ["reference-value"]
+                    classes: ["reference-value"],
+                    p: { fieldId: "p_76", type: "calculated", dependencies: ["l_12", "k_76", "i_76"] }
                 }
             }
         },
@@ -539,7 +708,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                     value: "25.86",
                     section: "envelopeRadiantGains",
                     dependencies: ["e_77"],
-                    classes: ["reference-value"]
+                    classes: ["reference-value"],
+                    p: { fieldId: "p_77", type: "calculated", dependencies: ["l_12", "k_77", "i_77"] }
                 }
             }
         },
@@ -639,7 +809,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                     value: "75",
                     section: "envelopeRadiantGains",
                     dependencies: ["e_78"],
-                    classes: ["reference-value"]
+                    classes: ["reference-value"],
+                    p: { fieldId: "p_78", type: "calculated", dependencies: ["l_12", "k_78", "i_78"] }
                 }
             }
         },
@@ -982,11 +1153,11 @@ window.TEUI.SectionModules.sect10 = (function() {
         
         return rowDef;
     }
-    
+
     //==========================================================================
     // EVENT HANDLING AND CALCULATIONS
     //==========================================================================
-    
+
     /**
      * Calculate all values for this section
      * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
@@ -1301,117 +1472,6 @@ window.TEUI.SectionModules.sect10 = (function() {
     }
     
     /**
-     * Helper function to get a numeric value from a field
-     */
-    function getNumericValue(fieldId) {
-        // Directly use the global parser, assuming it's loaded correctly due to index.html order
-        // Use || 0 as a fallback if parseNumeric returns null/undefined/NaN
-        return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
-    }
-    
-    /**
-     * Helper function to get a field value
-     */
-    function getFieldValue(fieldId) {
-        const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
-        if (stateValue != null) return stateValue;
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        return element ? (element.value ?? element.textContent?.trim()) : null;
-    }
-    
-    /**
-     * Helper function to set a calculated field value
-     */
-    function setCalculatedValue(fieldId, rawValue, format = 'number') {
-        // Handle N/A for non-finite numbers
-        if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) { 
-            window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
-            const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (elementNA) elementNA.textContent = 'N/A';
-            return; 
-        }
-
-        // Determine format if not specified
-        if (format === 'number') {
-            if (/[jl]_[\\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) { format = 'percent'; }
-            else if (fieldId.startsWith('p_')) { format = 'currency'; }
-            // default is 'number' (2 decimals)
-        }
-
-        const formattedValue = formatNumber(rawValue, format);
-        
-        if (window.TEUI?.StateManager?.setValue) {
-            // Store raw value as string for precision
-            window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
-        }
-        
-        // Update DOM
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
-            element.classList.toggle('negative-value', rawValue < 0);
-        } else {
-             console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
-        }
-    }
-    
-    /**
-     * Format a number for display with commas and proper decimals
-     */
-    function formatNumber(value, format = 'number') {
-        if (value === null || value === undefined || isNaN(value)) {
-            return format === 'percent' ? '0%' : (format === 'currency' ? '$0.00' : '0.00');
-        }
-
-        const num = Number(value);
-
-        if (format === 'percent') {
-            // Input is raw decimal (e.g., 0.7769 for 78%), output integer percent
-            return (num * 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'; 
-        } else if (format === 'currency') {
-            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else { // Default number format (kWh, Gain Factor, etc.)
-            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-    }
-    
-    /**
-     * Set element class for visual indicators
-     */
-    function setElementClass(fieldId, className) {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            // Remove existing status classes
-            element.classList.remove('checkmark', 'warning');
-            // Add the new class
-            element.classList.add(className);
-        }
-    }
-    
-    /**
-     * Sets indicator classes (e.g., gain-high, gain-medium, gain-low) for a cell.
-     * Removes existing indicator classes before adding the new one.
-     * @param {string} fieldId - The data-field-id of the cell element.
-     * @param {string} newClass - The new indicator class to add (or empty string to remove all).
-     * @param {string[]} potentialClasses - An array of all possible indicator classes for this type.
-     */
-    function setIndicatorClass(fieldId, newClass, potentialClasses) {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            const baseClass = 'gain-indicator'; // Always gain for this section
-            element.classList.remove(...potentialClasses);
-            if (newClass) {
-                element.classList.add(newClass);
-                if (!element.classList.contains(baseClass)) {
-                    element.classList.add(baseClass);
-                }
-            } else {
-                 element.classList.remove(baseClass);
-            }
-        }
-    }
-    
-    /**
      * Initialize event handlers for this section
      */
     function initializeEventHandlers() {
@@ -1427,29 +1487,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             }
             
             // Handle blur event for text fields
-            field.addEventListener('blur', function() {
-                const fieldId = this.getAttribute('data-field-id');
-                if (!fieldId) return;
-                
-                // Handle numeric values
-                if (this.getAttribute('contenteditable') === 'true') {
-                    // Get and clean the value
-                    const newValue = this.textContent.trim().replace(/,/g, '');
-                    
-                    // Format the display
-                    if (!isNaN(parseFloat(newValue))) {
-                        this.textContent = formatNumber(newValue);
-                    }
-                    
-                    // Store the value in StateManager
-                    if (window.TEUI?.StateManager?.setValue) {
-                        window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-                    }
-                    
-                    // Recalculate
-                    calculateAll();
-                }
-            });
+            field.addEventListener('blur', handleFieldBlur);
             
             // Handle Enter key
             field.addEventListener('keydown', function(e) {
@@ -1468,7 +1506,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                 if (!fieldId) return;
                 
                 // Store the value in StateManager
-                if (window.TEUI?.StateManager?.setValue) {
+                    if (window.TEUI?.StateManager?.setValue) {
                     window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
                 }
                 

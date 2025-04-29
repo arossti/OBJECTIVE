@@ -1252,6 +1252,24 @@ window.TEUI.SectionModules.sect13 = (function() {
                 calculateCoolingVentilation();
             });
         });
+
+        // Add listeners for climate data changes from Section 3
+        if (window.TEUI?.StateManager?.addListener) {
+            window.TEUI.StateManager.addListener('d_20', calculateAll); // HDD
+            window.TEUI.StateManager.addListener('d_21', calculateAll); // CDD
+            window.TEUI.StateManager.addListener('d_23', calculateAll); // Coldest Day Temp
+            window.TEUI.StateManager.addListener('d_24', calculateAll); // Hottest Day Temp
+            window.TEUI.StateManager.addListener('h_23', calculateAll); // Heating Setpoint
+            window.TEUI.StateManager.addListener('h_24', calculateAll); // Cooling Setpoint
+            // Listen to relevant outputs from Section 12 (e.g., total losses)
+            window.TEUI.StateManager.addListener('i_104', calculateAll);
+            window.TEUI.StateManager.addListener('k_104', calculateAll);
+            // Listen to relevant outputs from Section 9/10 (gains)
+            window.TEUI.StateManager.addListener('i_71', calculateAll);
+            window.TEUI.StateManager.addListener('i_79', calculateAll);
+        } else {
+            console.warn("Section 13: StateManager not available to add climate/loss/gain listeners.");
+        }
     }
     
     /**
