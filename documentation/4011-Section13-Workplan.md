@@ -29,9 +29,9 @@
 
 3.  **UI Formatting & Dynamic Visibility:**
     *   Apply appropriate number formatting using the new global `window.TEUI.formatNumber` via `setCalculatedValue`.
-    *   Implement dynamic visibility/styling ("ghost text"/disabled appearance) for fields that become irrelevant based on user selections (e.g., if 'Heating Fuel' is 'Electric', gas efficiency fields might be grayed out). This likely involves:
-        *   Adding/removing CSS classes (like `disabled-input`) in JavaScript event handlers (dropdown changes) or calculation functions.
-        *   Potentially clearing/setting StateManager values to 'N/A' for disabled fields.
+    *   Implement dynamic visibility/styling ("ghost text"/disabled appearance) for fields that become irrelevant based on user selections (e.g., if 'Heating Fuel' is 'Electric', gas efficiency fields might be grayed out). This uses exisiting 'ghost' or 'pending' styles in 4011-styles.css:
+        *   Applying/removing CSS classes (like `disabled-input`) in JavaScript event handlers (dropdown changes) or calculation functions.
+        *   Potentially clearing/setting StateManager values to 'N/A' for disabled fields - (although generally our intent is to show user options that can be enabled, but are inactive with the current options).
 
 4.  **General Cleanup:**
     *   Remove all commented-out code blocks.
@@ -45,14 +45,15 @@
         *   Reference `COOLING` worksheet logic if helpful for defining thresholds.
         *   Implement a simple calculation to determine risk level (e.g., Low/Medium/High).
         *   Add a new (non-editable) cell in the layout to display an indicator (icon/text) based on the calculated risk level. Update via `setCalculatedValue`.
+        *   Ask the Human about their linear-regression force-fit model for approximating monthly weather from annual weather data to determine peaks
 
 6.  **NEW Feature - Unmet Hours Analysis (Exploratory - Lower Priority):**
     *   **Goal:** Provide a *rough estimate* of potential unmet heating/cooling hours based on the building's passive performance (envelope + leakage + solar/internal gains) *without* active mechanical systems.
     *   **Method (Initial Exploration):**
-        *   Acknowledge limitations: Static model cannot perform true hourly simulation.
+        *   Leverage the model's accurate annual energy balance calculations.
         *   Calculate simple Balance Point Temperatures for heating and cooling based on envelope losses (S12 `i_104`), internal/solar gains (S9 `i_71`/`k_71`, S10?).
         *   Compare balance points to average/design temperatures (S3) to *estimate* periods where passive measures are insufficient.
-        *   *Defer complex regression modeling.* Focus on providing a basic, clearly caveated indicator.
+        *   Focus on providing a basic indicator derived from the model's core calculations.
         *   Add new (non-editable) cells in the layout for estimated unmet heating/cooling indicators (could be qualitative or simplified hours/percentage). Update via `setCalculatedValue`.
 
 **Next Steps:**
