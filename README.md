@@ -151,7 +151,7 @@ When working with this codebase, previous AI assistants have encountered several
    - **Why Precision & Calculation Method Matters - A Note from Our Esteemed Engineering Advisor**:
      > "With this application, we are measuring a horse turd with calipers." — Dr. Ted Kesik
 
-     This colorful metaphor acknowledges that while our models have inherent limitations in perfectly representing reality (the "horse turd"), we must still maintain mathematical precision (the "calipers") throughout our calculations. Imprecise math can introduce up to 5% additional variance in results—error that is completely avoidable. Our mathematical implementation should never add error or uncertainty to an already imperfect modeling process.
+     This colorful metaphor acknowledges that while our models have inherent limitations in perfectly representing fraught energy models as truthful (the "horse turd"), we should still maintain mathematical precision (the "calipers") throughout our calculations, so that at least our tool is not to blame for the turd's measurements. Imprecise math can introduce up to 5% additional variance in results—error that is completely avoidable. Our mathematical implementation should never add error or uncertainty to an already imperfect modeling process.
    - **Critical considerations**:
      - Even when user inputs have only 2 decimal places, intermediate calculation results often expand to many more places that a user may never see
      - Division and multiplication operations can significantly affect precision (e.g., 1/3 * 3 ≠ 1 if truncated between steps)
