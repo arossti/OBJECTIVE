@@ -752,7 +752,7 @@ window.TEUI.SectionModules.sect03 = (function() {
         } */
         
         // Ground facing CDD
-        const cdd = parseFloat(document.querySelector('[data-field-id="d_21"]')?.textContent);
+        const cdd = getNumericValue('d_21');
         if (!isNaN(cdd)) {
             const gfcdd = Math.round(cdd * -0.85);
             setFieldValue("h_22", gfcdd);
