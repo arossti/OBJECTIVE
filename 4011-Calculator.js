@@ -89,18 +89,6 @@ TEUI.Calculator = (function() {
                 TEUI.Calculator.calculateAll();
         });
         
-        // Fallback in case the event doesn't fire
-        setTimeout(function() {
-            if (!document.weatherHandlersInitialized) {
-                console.log('Fallback: Initializing weather handlers after timeout');
-                initializeWeatherHandlers();
-                
-                // Calculate all values
-                console.log('Fallback: Starting initial calculations');
-                TEUI.Calculator.calculateAll();
-            }
-        }, 2000);
-        
         console.log('TEUI Calculator 4.011 initialization complete');
     }
     
@@ -459,7 +447,7 @@ TEUI.Calculator = (function() {
      * Recalculate all values
      */
     function calculateAll() {
-        console.log('Central calculateAll triggered...');
+        // console.log('Central calculateAll triggered...'); // Keep this one for now? Or remove? Let's remove for less noise.
         
         // Define a logical calculation order based on major dependencies
         const calcOrder = [
@@ -480,24 +468,24 @@ TEUI.Calculator = (function() {
             'sect01'  // Key Values (depends on S15, S05)
         ];
 
-        console.log("Calculation Order:", calcOrder.join(' -> '));
+        // console.log("Calculation Order:", calcOrder.join(' -> ')); // Remove calculation order log
 
         // Explicitly call each section's calculateAll if it exists
         calcOrder.forEach(sectionKey => {
             const sectionModule = window.TEUI.SectionModules?.[sectionKey];
             if (sectionModule && typeof sectionModule.calculateAll === 'function') {
                 try {
-                    console.log(`Calculating Section: ${sectionKey}`);
+                    // console.log(`Calculating Section: ${sectionKey}`); // Remove per-section log
                     sectionModule.calculateAll();
                 } catch (error) {
                     console.error(`Error calculating section ${sectionKey}:`, error);
                 }
             } else {
-                // console.warn(`Section ${sectionKey} or its calculateAll method not found.`);
+                // console.warn(`Section ${sectionKey} or its calculateAll method not found.`); // Keep warnings? Or remove? Let's remove.
             }
         });
         
-        console.log('Central calculateAll finished.');
+        // console.log('Central calculateAll finished.'); // Remove finished log
     }
     
     /**
@@ -954,13 +942,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize weather data handlers after calculator is initialized
-    initializeWeatherDataHandlers();
+    // initializeWeatherDataHandlers(); // REMOVED: Called from teui-rendering-complete listener instead
 });
 
 // Move function outside the DOMContentLoaded event handler for proper scope access
 function initializeWeatherDataHandlers() {
-    console.log('Initializing weather data handlers...');
+    // console.log('Initializing weather data handlers...'); // Remove init log
     
     // Check for the presence of a feedback area
     const feedbackArea = document.getElementById('feedback-area');
@@ -1090,7 +1077,7 @@ function initializeWeatherDataHandlers() {
         });
     }
     
-    console.log('All weather data handlers successfully initialized');
+    // console.log('All weather data handlers successfully initialized'); // Remove success log
 }
 
 /**

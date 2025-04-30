@@ -333,11 +333,6 @@ TEUI.FieldManager = (function() {
             renderSection(sectionId);
         });
         
-        // Initialize event handlers for all sections
-        Object.keys(sections).forEach(sectionId => {
-            initializeSectionEventHandlers(sectionId);
-        });
-        
         // Dispatch event to notify other components that rendering is complete
         document.dispatchEvent(new CustomEvent('teui-rendering-complete', { 
             detail: { message: 'All sections rendered successfully' } 

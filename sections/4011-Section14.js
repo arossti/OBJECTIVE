@@ -758,11 +758,8 @@ window.TEUI.SectionModules.sect14 = (function() {
         
         initializeEventHandlers();
 
-        // Defer initial calculation slightly
-        setTimeout(() => {
-             console.log("Running initial calculations for sect14.");
-            calculateAll();
-        }, 160); // Slightly longer delay than S15?
+        // Initial calculation should now be triggered by the central Calculator.calculateAll
+        // or by listeners responding to dependency updates.
     }
     
     //==========================================================================
@@ -784,31 +781,7 @@ window.TEUI.SectionModules.sect14 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'tediSummary') {
-        if (window.TEUI.SectionModules.sect14) {
-             console.log("teui-section-rendered event caught for tediSummary");
-             // Add a small delay
-             setTimeout(() => window.TEUI.SectionModules.sect14.onSectionRendered(), 60);
-        } else {
-            console.error("Sect14 module not found when teui-section-rendered event fired.");
-        }
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    if (document.getElementById('tediSummary') && (!window.TEUI.SectionModules.sect14 || !window.TEUI.SectionModules.sect14.initialized)) {
-         console.log("teui-rendering-complete event fallback for tediSummary");
-        if (window.TEUI.SectionModules.sect14) {
-             window.TEUI.SectionModules.sect14.initialized = true;
-             setTimeout(() => window.TEUI.SectionModules.sect14.onSectionRendered(), 360);
-        } else {
-            console.error("Sect14 module not found when teui-rendering-complete event fired.");
-        }
-    }
-});
+// Event listeners removed in ORDERING branch
 
 // Add an initialized flag to prevent multiple runs
 if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect14) {

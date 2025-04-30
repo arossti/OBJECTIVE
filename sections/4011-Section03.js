@@ -755,6 +755,7 @@ window.TEUI.SectionModules.sect03 = (function() {
         
         // Ground facing CDD
         const capacitanceSetting = getFieldValue('h_21'); // Read dropdown value
+        const cdd = getNumericValue('d_21'); // Define cdd here
         let gfcdd;
 
         if (capacitanceSetting === 'Capacitance') {
@@ -762,11 +763,10 @@ window.TEUI.SectionModules.sect03 = (function() {
             gfcdd = -1680;
         } else { // Assumes 'Static' mode
             // Use the calculation likely intended for Static mode (matches previous JS logic)
-            const cdd = getNumericValue('d_21'); 
-            gfcdd = Math.round(cdd * -0.85);
+            gfcdd = Math.round(cdd * -0.85); 
         }
 
-        if (!isNaN(cdd)) {
+        if (!isNaN(cdd)) { // Check if the original cdd value was valid before setting
             // Value is now calculated above based on capacitanceSetting
             setFieldValue("h_22", gfcdd);
         }
@@ -1100,22 +1100,6 @@ window.TEUI.SectionModules.sect03 = (function() {
         calculateAll: calculateAll
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'climateCalculations') {
-        setTimeout(() => window.TEUI.SectionModules.sect03.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('climateCalculations')) {
-            window.TEUI.SectionModules.sect03.onSectionRendered();
-        }
-    }, 300);
-});
 
 /**
  * Helper to get numeric value using the global parser.
