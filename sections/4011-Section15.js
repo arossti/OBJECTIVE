@@ -1094,7 +1094,7 @@ window.TEUI.SectionModules.sect15 = (function() {
         
         // Remove duplicates
         const uniqueDependencies = [...new Set(dependencies)];
-
+            
         // Add listeners for all unique dependencies
         uniqueDependencies.forEach(dep => {
             // Using an anonymous function to ensure calculateAll is called in the module's scope
@@ -1102,8 +1102,8 @@ window.TEUI.SectionModules.sect15 = (function() {
                 // No log here
                 calculateAll(); 
             });
-        });
-        
+            });
+            
         // Helper function to create listeners that trigger calculateAll without logging
         const addCalculationListener = (key) => {
             sm.addListener(key, () => {
@@ -1171,14 +1171,8 @@ window.TEUI.SectionModules.sect15 = (function() {
         // Initialize event handlers AFTER dependencies are registered
         initializeEventHandlers();
 
-        // Calculate initial values
-        // Defer initial calculation slightly to allow dependencies from other sections to potentially load
-        setTimeout(() => {
-             console.log("Running initial calculations for sect15.");
-            calculateAll();
-             // Explicitly call updateDisplay after initial calc if needed, though calculateAll should handle it.
-             // updateDisplay(); 
-        }, 150); // Small delay
+        // Initial calculation should now be triggered by the central Calculator.calculateAll
+        // or by listeners responding to dependency updates.
     }
     
     //==========================================================================
@@ -1202,36 +1196,7 @@ window.TEUI.SectionModules.sect15 = (function() {
     };
 })();
 
-// Initialize when the section is rendered using the correct section ID from the layout
-document.addEventListener('teui-section-rendered', function(event) {
-    // Use the actual section ID defined in sectionRows ('teuiSummary' based on getFields)
-    if (event.detail?.sectionId === 'teuiSummary') {
-        // Ensure the module is loaded before calling onSectionRendered
-        if (window.TEUI.SectionModules.sect15) {
-             console.log("teui-section-rendered event caught for teuiSummary");
-            // Add a small delay to potentially allow other modules to finish registering
-             setTimeout(() => window.TEUI.SectionModules.sect15.onSectionRendered(), 50);
-        } else {
-            console.error("Sect15 module not found when teui-section-rendered event fired.");
-        }
-    }
-});
-
-// Fallback to rendering complete event - use as a safety net
-document.addEventListener('teui-rendering-complete', function() {
-    // Check if the section element exists and hasn't been initialized yet
-    if (document.getElementById('teuiSummary') && (!window.TEUI.SectionModules.sect15 || !window.TEUI.SectionModules.sect15.initialized)) { 
-         console.log("teui-rendering-complete event fallback for teuiSummary");
-        if (window.TEUI.SectionModules.sect15) {
-            // Mark as initialized to prevent double calls if onSectionRendered runs later
-             window.TEUI.SectionModules.sect15.initialized = true; 
-            // Use a longer delay for the fallback
-            setTimeout(() => window.TEUI.SectionModules.sect15.onSectionRendered(), 350);
-        } else {
-             console.error("Sect15 module not found when teui-rendering-complete event fired.");
-        }
-    }
-});
+// Event listeners removed in ORDERING branch
 
 // Add an initialized flag to prevent multiple runs of onSectionRendered
 if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect15) {

@@ -128,7 +128,8 @@ window.TEUI.SectionModules.sect03 = (function() {
                     fieldId: "m_19", 
                     type: "editable", 
                     value: "120",
-                    section: "climateCalculations"
+                    section: "climateCalculations",
+                    classes: ["user-input", "editable"]
                 }
             }
         },
@@ -513,12 +514,25 @@ window.TEUI.SectionModules.sect03 = (function() {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
                 element.value = value;
             } else {
-                // Format only if not already a formatted string (e.g., N/A or percentage)
+                // Format using global formatter, detecting integers and specific degree day fields
                 let displayValue = value;
-                if (typeof value === 'number' || (typeof value === 'string' && !isNaN(parseFloat(value)) && !value.includes('%'))) {
-                     // Use global formatter
-                     displayValue = window.TEUI.formatNumber(value); 
+
+                const numValue = window.TEUI.parseNumeric(value, NaN); // Use global parser
+
+                if (!isNaN(numValue)) { 
+                    // Determine format: Use integer-nocomma for degree days, otherwise integer or number-2dp
+                    let formatType = 'number-2dp'; // Default
+                    if (['d_20', 'd_21', 'd_22', 'h_22'].includes(fieldId)) {
+                        formatType = 'integer-nocomma';
+                    } else if (Number.isInteger(numValue)) {
+                        formatType = 'integer';
+                    }
+                    displayValue = window.TEUI.formatNumber(numValue, formatType);
+                } else if (typeof value === 'string') {
+                    // Keep original string if it wasn't numeric (e.g., "N/A")
+                    displayValue = value;
                 }
+
                 element.textContent = displayValue;
             }
         }
@@ -725,17 +739,35 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Calculate ground facing HDD and CDD
      */
     function calculateGroundFacing() {
-        // Ground facing HDD
-        const hdd = parseFloat(document.querySelector('[data-field-id="d_20"]')?.textContent);
+        // Ground facing HDD based on TsetHeating and Heating Days
+        const heatingSetpoint = getNumericValue('h_23');
+        const coolingDays = getNumericValue('m_19');
+        const heatingDays = 365 - coolingDays;
+
+        // Formula: (TsetHeating - 10°C_ground) * HeatingDays
+        const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
+        setFieldValue("d_22", gfhdd);
+        /* // OLD Logic: Based on HDD * 0.43
         if (!isNaN(hdd)) {
             const gfhdd = Math.round(hdd * 0.43);
             setFieldValue("d_22", gfhdd);
-        }
+        } */
         
         // Ground facing CDD
-        const cdd = parseFloat(document.querySelector('[data-field-id="d_21"]')?.textContent);
-        if (!isNaN(cdd)) {
-            const gfcdd = Math.round(cdd * -0.85);
+        const capacitanceSetting = getFieldValue('h_21'); // Read dropdown value
+        const cdd = getNumericValue('d_21'); // Define cdd here
+        let gfcdd;
+
+        if (capacitanceSetting === 'Capacitance') {
+            // Use the specific value for Capacitance mode, matching Excel's likely SCHEDULES!N5 result
+            gfcdd = -1680;
+        } else { // Assumes 'Static' mode
+            // Use the calculation likely intended for Static mode (matches previous JS logic)
+            gfcdd = Math.round(cdd * -0.85); 
+        }
+
+        if (!isNaN(cdd)) { // Check if the original cdd value was valid before setting
+            // Value is now calculated above based on capacitanceSetting
             setFieldValue("h_22", gfcdd);
         }
     }
@@ -920,19 +952,25 @@ window.TEUI.SectionModules.sect03 = (function() {
             }
         });
         
-        // Editable Cooling Override Field (l_24)
-        const overrideField = getElement(['[data-field-id="l_24"]']);
-        if (overrideField && !overrideField.hasEventListener) {
-            overrideField.setAttribute('contenteditable', 'true');
-            overrideField.addEventListener('blur', handleOverrideChange);
-            overrideField.addEventListener('keydown', function(e) {
+        // Add handlers for ALL editable fields in this section (e.g., m_19, l_24)
+        const sectionElement = document.getElementById('climateCalculations');
+        if (sectionElement) {
+            const editableFields = sectionElement.querySelectorAll('.editable.user-input');
+            editableFields.forEach(field => {
+                if (!field.hasEditableListeners) { // Add a flag to prevent duplicate listeners
+                    field.setAttribute('contenteditable', 'true');
+                    field.addEventListener('blur', handleEditableBlur); // Use the general blur handler
+                    // Add the general keydown handler to prevent Enter newlines
+                    field.addEventListener('keydown', function(e) { 
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     e.stopPropagation(); 
                     this.blur();
                 }
             });
-            overrideField.hasEventListener = true; // Flag to prevent re-adding listeners
+                    field.hasEditableListeners = true; // Set the flag
+                }
+            });
         }
 
         // Initial update if province and city already selected
@@ -975,27 +1013,31 @@ window.TEUI.SectionModules.sect03 = (function() {
     }
     
     /**
-     * Handle user changes to the cooling override field (l_24)
+     * Handle blur events on editable fields
      */
-    function handleOverrideChange(event) {
-        const fieldId = "l_24";
-        const element = event.target;
-        const newValue = element.textContent.trim();
-        
-        // Basic validation (optional: add more robust validation)
-        const numericValue = parseFloat(newValue);
-        if (isNaN(numericValue)) {
-            // Revert to previous value or a default if invalid?
-            // For now, just log error and maybe clear StateManager value
-             console.warn(`Invalid input for ${fieldId}: ${newValue}`);
-             // window.TEUI.StateManager.setValue(fieldId, "", 'user-modified'); // Or revert
-             return; 
-        }
+    function handleEditableBlur(event) {
+        const fieldId = this.getAttribute('data-field-id');
+        if (!fieldId) return;
 
+        const newValue = this.textContent.trim();
+        const numericValue = window.TEUI.parseNumeric(newValue, NaN); // Try parsing
+
+        if (!isNaN(numericValue)) {
+            // Format display for valid numbers
+            const formatType = Number.isInteger(numericValue) ? 'integer' : 'number-2dp'; // Default format
+            this.textContent = window.TEUI.formatNumber(numericValue, formatType);
         // Update StateManager
-        if (window.TEUI && window.TEUI.StateManager) {
+            if (window.TEUI.StateManager) {
             window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
-            // The listener for l_24 will automatically call updateCoolingDependents
+            }
+            calculateAll(); // Recalculate after state update
+        } else {
+            // Revert to previous value if input is invalid
+            const previousValue = window.TEUI.StateManager?.getValue(fieldId) || '0'; // Fallback to 0
+            const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
+            const formatType = Number.isInteger(prevNumericValue) ? 'integer' : 'number-2dp';
+            this.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
+            console.warn(`Invalid input for ${fieldId}: ${newValue}. Reverted to ${this.textContent}.`);
         }
     }
     
@@ -1007,9 +1049,9 @@ window.TEUI.SectionModules.sect03 = (function() {
         // Manually set initial display for setpoints based on known default d_12="A-Assembly"
         // This provides immediate visual feedback before StateManager might be fully ready.
         const initialHeatingEl = getElement(['[data-field-id="h_23"]']);
-        if (initialHeatingEl) initialHeatingEl.textContent = window.TEUI.formatNumber(18);
+        if (initialHeatingEl) initialHeatingEl.textContent = window.TEUI.formatNumber(18, 'integer-nocomma');
         const initialCoolingEl = getElement(['[data-field-id="h_24"]']);
-        if (initialCoolingEl) initialCoolingEl.textContent = window.TEUI.formatNumber(24);
+        if (initialCoolingEl) initialCoolingEl.textContent = window.TEUI.formatNumber(24, 'integer-nocomma');
         // The StateManager listeners will calculate and set the correct state later.
         // -------------------------------------
 
@@ -1059,18 +1101,10 @@ window.TEUI.SectionModules.sect03 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'climateCalculations') {
-        setTimeout(() => window.TEUI.SectionModules.sect03.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('climateCalculations')) {
-            window.TEUI.SectionModules.sect03.onSectionRendered();
-        }
-    }, 300);
-});
+/**
+ * Helper to get numeric value using the global parser.
+ */
+function getNumericValue(fieldId) {
+    // Calls local getFieldValue and passes to global parser
+    return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
+}

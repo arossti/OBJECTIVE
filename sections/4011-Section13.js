@@ -711,14 +711,13 @@ window.TEUI.SectionModules.sect13 = (function() {
                 },
                 e: {},
                 f: { 
-                    content: "V.1.2 Ventilation Method",
+                    content: "Ventil. Method",
                     classes: ["label-prefix"]
                 },
-                g: {},
-                h: { 
-                    fieldId: "h_118", 
+                g: {
+                    fieldId: "g_118", 
                     type: "dropdown", 
-                    dropdownId: "dd_h_118", 
+                    dropdownId: "dd_g_118", 
                     value: "Volume by Schedule",
                     section: "mechanicalLoads",
                     options: [
@@ -727,15 +726,16 @@ window.TEUI.SectionModules.sect13 = (function() {
                         { value: "Occupant by Schedule", name: "Occupant by Schedule" }
                     ]
                 },
-                i: {},
-                j: { 
+                h: {},
+                i: { 
                     content: "V.1.3",
                     classes: ["label-prefix"]
                 },
-                k: { 
+                j: { 
                     content: "ACH",  //(Only if Volume-Based)
                     classes: ["label"]
                 },
+                k: {},
                 l: { 
                     fieldId: "l_118", 
                     type: "editable", 
@@ -1233,7 +1233,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         });
         
         // Ventilation method dropdown change handler
-        document.querySelectorAll('[data-field-id="h_118"]').forEach(dropdown => {
+        document.querySelectorAll('[data-field-id="g_118"]').forEach(dropdown => {
             dropdown.addEventListener('change', function(e) {
                 calculateVentilationRates();
             });
@@ -1403,6 +1403,7 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function calculateHeatingFuelImpact() {
         const systemType = getFieldValue('d_113');
+        const heatingDemand = getNumericValue('d_114'); // Get the calculated heating demand
         const tedTarget = getNumericValue('d_127'); // From Section 14
         const afue = getNumericValue('j_115');
         
@@ -1414,11 +1415,13 @@ window.TEUI.SectionModules.sect13 = (function() {
         if (systemType === 'Gas') {
             fuelImpact = tedTarget / afue;
             gasM3 = fuelImpact / (0.0373 * 277.7778);
-            exhaust = fuelImpact - tedTarget;
+            // Exhaust calculation based on CSV: D115 - D114
+            exhaust = fuelImpact - heatingDemand; 
         } else if (systemType === 'Oil') {
             fuelImpact = tedTarget / afue;
             oilLitres = fuelImpact / (36.72 * 0.2777778);
-            exhaust = fuelImpact - tedTarget;
+            // Exhaust calculation based on CSV: D115 - D114
+            exhaust = fuelImpact - heatingDemand; 
         }
         
         // Update fields
@@ -1477,7 +1480,7 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate ventilation rates based on method, occupancy, and building data
      */
     function calculateVentilationRates() {
-        const ventMethod = getFieldValue('h_118');
+        const ventMethod = getFieldValue('g_118');
         const occupants = getNumericValue('d_63'); // From Section 9
         const perPersonRate = getNumericValue('d_119');
         const volume = getNumericValue('d_105'); // From Section 12
@@ -1534,7 +1537,7 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateCoolingVentilation() {
         const ventRate = getNumericValue('d_120');
         const cdd = getNumericValue('d_21'); // From Section 3
-        const ventMethod = getFieldValue('h_118');
+        const ventMethod = getFieldValue('g_118');
         const summerBoost = getFieldValue('l_119');
         const occupiedHours = getNumericValue('i_63'); // From Section 9
         const totalHours = getNumericValue('j_63'); // Usually 8760

@@ -84,24 +84,10 @@ TEUI.Calculator = (function() {
             // Initialize weather handlers when rendering is complete
             initializeWeatherHandlers();
             
-            // Calculate all values
-            setTimeout(function() {
-                console.log('Starting initial calculations');
+            // Calculate all values immediately after rendering and weather handlers are ready
+            console.log('Starting initial calculations immediately after rendering complete');
                 TEUI.Calculator.calculateAll();
-            }, 500);
         });
-        
-        // Fallback in case the event doesn't fire
-        setTimeout(function() {
-            if (!document.weatherHandlersInitialized) {
-                console.log('Fallback: Initializing weather handlers after timeout');
-                initializeWeatherHandlers();
-                
-                // Calculate all values
-                console.log('Fallback: Starting initial calculations');
-                TEUI.Calculator.calculateAll();
-            }
-        }, 2000);
         
         console.log('TEUI Calculator 4.011 initialization complete');
     }
@@ -461,26 +447,45 @@ TEUI.Calculator = (function() {
      * Recalculate all values
      */
     function calculateAll() {
-        console.log('Calculating all values...');
+        // console.log('Central calculateAll triggered...'); // Keep this one for now? Or remove? Let's remove for less noise.
         
-        // Calculate sections in dependency order - may need to be re-ordered as some key values deopend on TEDI/TEUI sections
-        calculateSection(SECTIONS.BUILDING_INFO);
-        calculateSection(SECTIONS.CLIMATE);
-        calculateSection(SECTIONS.KEY_VALUES);
-        calculateSection(SECTIONS.ENERGY_CARBON);
-        calculateSection(SECTIONS.EMISSIONS);
-        calculateSection(SECTIONS.RENEWABLE);
-        calculateSection(SECTIONS.WATER);
-        calculateSection(SECTIONS.AIR_QUALITY);
-        calculateSection(SECTIONS.INTERNAL_GAINS);
-        calculateSection(SECTIONS.RADIANT_GAINS);
-        calculateSection(SECTIONS.TRANSMISSION_LOSSES);
-        calculateSection(SECTIONS.VOLUME_METRICS);
-        calculateSection(SECTIONS.MECHANICAL);
-        calculateSection(SECTIONS.TEDI);
-        calculateSection(SECTIONS.TEUI);
+        // Define a logical calculation order based on major dependencies
+        const calcOrder = [
+            'sect02', // Building Info (Area, Occupancy Type)
+            'sect03', // Climate (HDD, CDD, Temps - depends on S2)
+            'sect08', // IAQ (Ventilation dependencies?)
+            'sect09', // Internal Gains (Occupants, Schedules - depends on S3?)
+            'sect10', // Radiant Gains (depends on S3?)
+            'sect11', // Transmission Losses (depends on S3)
+            'sect12', // Volume Metrics (depends on S11, S3)
+            'sect14', // TEDI (depends on S9, S10, S11, S12, S13)
+            'sect07', // Water Use (depends on S9? DHW losses)
+            'sect13', // Mechanical Loads (depends on S14, S3, S9)
+            'sect05', // Emissions (depends on S13, S07, S06)
+            'sect06', // Renewable Energy
+            'sect04', // Actual/Target Energy (depends on S13, S05, S06, S07)
+            'sect15', // TEUI Summary (depends on S14, S04)
+            'sect01'  // Key Values (depends on S15, S05)
+        ];
+
+        // console.log("Calculation Order:", calcOrder.join(' -> ')); // Remove calculation order log
+
+        // Explicitly call each section's calculateAll if it exists
+        calcOrder.forEach(sectionKey => {
+            const sectionModule = window.TEUI.SectionModules?.[sectionKey];
+            if (sectionModule && typeof sectionModule.calculateAll === 'function') {
+                try {
+                    // console.log(`Calculating Section: ${sectionKey}`); // Remove per-section log
+                    sectionModule.calculateAll();
+                } catch (error) {
+                    console.error(`Error calculating section ${sectionKey}:`, error);
+                }
+            } else {
+                // console.warn(`Section ${sectionKey} or its calculateAll method not found.`); // Keep warnings? Or remove? Let's remove.
+            }
+        });
         
-        console.log('All calculations complete');
+        // console.log('Central calculateAll finished.'); // Remove finished log
     }
     
     /**
@@ -937,13 +942,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize weather data handlers after calculator is initialized
-    initializeWeatherDataHandlers();
+    // initializeWeatherDataHandlers(); // REMOVED: Called from teui-rendering-complete listener instead
 });
 
 // Move function outside the DOMContentLoaded event handler for proper scope access
 function initializeWeatherDataHandlers() {
-    console.log('Initializing weather data handlers...');
+    // console.log('Initializing weather data handlers...'); // Remove init log
     
     // Check for the presence of a feedback area
     const feedbackArea = document.getElementById('feedback-area');
@@ -1073,7 +1077,7 @@ function initializeWeatherDataHandlers() {
         });
     }
     
-    console.log('All weather data handlers successfully initialized');
+    // console.log('All weather data handlers successfully initialized'); // Remove success log
 }
 
 /**
