@@ -18,47 +18,30 @@ window.TEUI.SectionModules.sect12 = (function() {
         "header": {
             id: "12-ID",
             rowId: "12-ID",
-            label: "Volume and Surface Metrics",
+            label: "Volume and Surface Metrics Units",
             cells: {
                 c: { content: "SECTION 12. Volume and Surface Metrics", classes: ["section-header"], colspan: 4 },
-                d: {}, e: {}, f: {},
-                g: { content: "U-Value", classes: ["section-subheader", "align-center"] },
-                h: { content: "Loss Rate", classes: ["section-subheader", "align-center"] },
-                i: { content: "Heatloss", classes: ["section-subheader", "align-center"] },
-                j: { content: "Gain Rate", classes: ["section-subheader", "align-center"] },
-                k: { content: "Heatgain", classes: ["section-subheader", "align-center"] },
+                d: { content: "", classes: ["section-subheader"] },
+                e: { content: "", classes: ["section-subheader"] },
+                f: { content: "", classes: ["section-subheader"] },
+                g: { content: "U-Value\nW/m²·K", classes: ["section-subheader", "align-center"] },
+                h: { content: "Loss Rate\nkWh/m²", classes: ["section-subheader", "align-center"] },
+                i: { content: "Heatloss\nHtg Season\nkWh/yr", classes: ["section-subheader", "align-center"] },
+                j: { content: "Gain Rate\nkWh/m²", classes: ["section-subheader", "align-center"] },
+                k: { content: "Heatgain\nCool Season\nkWh/yr", classes: ["section-subheader", "align-center"] },
                 l: { content: "Heatloss %", classes: ["section-subheader", "align-center"] },
                 m: { content: "Reference", classes: ["section-subheader", "align-center"] },
-                n: { content: "PASS/FAIL", classes: ["section-subheader", "align-center"] }
-            }
-        },
-        "subheader": {
-            id: "12-Units",
-            rowId: "12-Units",
-            label: "Units",
-            cells: {
-                c: { content: "", classes: ["section-label"] },
-                d: { content: "", classes: ["section-label"] },
-                e: { content: "", classes: ["section-label"] },
-                f: { content: "", classes: ["section-label"] },
-                g: { content: "W/m²·K", classes: ["section-subheader", "align-center"] },
-                h: { content: "kWh/m²", classes: ["section-subheader", "align-center"] },
-                i: { content: "kWh/yr", classes: ["section-subheader", "align-center"] },
-                j: { content: "kWh/m²", classes: ["section-subheader", "align-center"] },
-                k: { content: "kWh/Cool Season", classes: ["section-subheader", "align-center"] },
-                l: { content: "", classes: ["section-subheader", "align-center"] },
-                m: { content: "", classes: ["section-subheader", "align-center"] },
-                n: { content: "", classes: ["section-subheader"] }
+                n: { content: "N", classes: ["section-subheader", "align-center"] }
             }
         },
         "101": {
             id: "B.16", rowId: "B.16", label: "Total Area Exposed to Air (Ae)",
             cells: {
                 c: { label: "Total Area Exposed to Air (Ae)" },
-                d: { fieldId: "d_101", type: "calculated", value: "2476.62", section: "volumeSurfaceMetrics", dependencies: ["d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93"] },
+                d: { fieldId: "d_101", type: "calculated", value: "2476.62", section: "volumeSurfaceMetrics", dependencies: ["d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93"], classes: ["text-air-facing"] },
                 e: { content: "m²", classes: ["unit-label"] },
                 f: { content: "U-Val. for Ae", classes: ["label-main"] },
-                g: { fieldId: "g_101", type: "calculated", value: "0.278", section: "volumeSurfaceMetrics", dependencies: ["d_85", "h_85", "d_86", "h_86", "d_87", "h_87", "d_88", "h_88", "d_89", "h_89", "d_90", "h_90", "d_91", "h_91", "d_92", "h_92", "d_93", "h_93", "d_101", "d_97"] },
+                g: { fieldId: "g_101", type: "calculated", value: "0.278", section: "volumeSurfaceMetrics", dependencies: ["d_85", "h_85", "d_86", "h_86", "d_87", "h_87", "d_88", "h_88", "d_89", "h_89", "d_90", "h_90", "d_91", "h_91", "d_92", "h_92", "d_93", "h_93", "d_101", "d_97"], classes: ["text-air-facing"] },
                 h: { fieldId: "h_101", type: "calculated", value: "30.73", section: "volumeSurfaceMetrics", dependencies: ["g_101", "d_20"] },
                 i: { fieldId: "i_101", type: "calculated", value: "76,103.69", section: "volumeSurfaceMetrics", dependencies: ["h_101", "d_101"] },
                 j: { fieldId: "j_101", type: "calculated", value: "1.31", section: "volumeSurfaceMetrics", dependencies: ["g_101", "d_21"] },
@@ -71,10 +54,10 @@ window.TEUI.SectionModules.sect12 = (function() {
             id: "B.17", rowId: "B.17", label: "Total Area Exposed to Ground (Ag)",
             cells: {
                 c: { label: "Total Area Exposed to Ground (Ag)" },
-                d: { fieldId: "d_102", type: "calculated", value: "1100.42", section: "volumeSurfaceMetrics", dependencies: ["d_94", "d_95"] },
+                d: { fieldId: "d_102", type: "calculated", value: "1100.42", section: "volumeSurfaceMetrics", dependencies: ["d_94", "d_95"], classes: ["text-ground-facing"] },
                 e: { content: "m²", classes: ["unit-label"] },
                 f: { content: "U-Val. for Ag", classes: ["label-main"] },
-                g: { fieldId: "g_102", type: "calculated", value: "0.324", section: "volumeSurfaceMetrics", dependencies: ["d_94", "h_94", "d_95", "h_95", "d_102", "d_97"] },
+                g: { fieldId: "g_102", type: "calculated", value: "0.324", section: "volumeSurfaceMetrics", dependencies: ["d_94", "h_94", "d_95", "h_95", "d_102", "d_97"], classes: ["text-ground-facing"] },
                 h: { fieldId: "h_102", type: "calculated", value: "15.26", section: "volumeSurfaceMetrics", dependencies: ["g_102", "d_22"] },
                 i: { fieldId: "i_102", type: "calculated", value: "16,788.25", section: "volumeSurfaceMetrics", dependencies: ["h_102", "d_102"] },
                 j: { fieldId: "j_102", type: "calculated", value: "-13.08", section: "volumeSurfaceMetrics", dependencies: ["g_102", "h_22"] },
@@ -91,9 +74,9 @@ window.TEUI.SectionModules.sect12 = (function() {
                 e: { content: "Stories", classes: ["unit-label"] },
                 f: { content: "B.18.3 Shielding", classes: ["label-main"] },
                 g: { fieldId: "g_103", type: "dropdown", dropdownId: "dd_g_103", value: "Normal", section: "volumeSurfaceMetrics", options: [{ value: "Shielded", name: "Shielded" }, { value: "Normal", name: "Normal" }, { value: "Exposed", name: "Exposed" }] },
-                h: { fieldId: "h_103", type: "calculated", value: "9.35", section: "volumeSurfaceMetrics", dependencies: ["i_103", "d_101"] },
+                h: {},
                 i: { fieldId: "i_103", type: "calculated", value: "23,178.39", section: "volumeSurfaceMetrics", dependencies: ["g_109", "g_110", "d_105", "d_20"] },
-                j: { fieldId: "j_103", type: "calculated", value: "0.40", section: "volumeSurfaceMetrics", dependencies: ["k_103", "d_101"] },
+                j: {},
                 k: { fieldId: "k_103", type: "calculated", value: "987.60", section: "volumeSurfaceMetrics", dependencies: ["g_109", "g_110", "d_105", "d_21"] },
                 l: { fieldId: "l_103", type: "calculated", value: "19.97%", section: "volumeSurfaceMetrics", dependencies: ["i_103", "i_104"], classes: ["percentage-value"] },
                 m: { content: "", classes: ["reference-value"] }, n: { content: "" }
@@ -102,15 +85,15 @@ window.TEUI.SectionModules.sect12 = (function() {
         "104": {
             id: "T.4", rowId: "T.4", label: "Building U-Value Combined Total & Transmission Losses & Gains",
             cells: {
-                c: { label: "Building U-Value Combined Total & Transmission Losses & Gains" },
+                c: { label: "Building U-Value Combined Total & Transmission Losses & Gains", classes: ["total-row-text"] },
                 d: {}, e: { content: "", classes: ["unit-label"] }, f: {}, 
-                g: { fieldId: "d_104", type: "calculated", value: "0.292", section: "volumeSurfaceMetrics", dependencies: ["g_101", "d_101", "g_102", "d_102"] }, 
+                g: { fieldId: "d_104", type: "calculated", value: "0.292", section: "volumeSurfaceMetrics", dependencies: ["g_101", "d_101", "g_102", "d_102"], classes: ["total-row-text"] }, 
                 h: {}, 
-                i: { fieldId: "i_104", type: "calculated", value: "116,070.33", section: "volumeSurfaceMetrics", dependencies: ["i_101", "i_102", "i_103"] },
-                j: {}, 
-                k: { fieldId: "k_104", type: "calculated", value: "-10,160.19", section: "volumeSurfaceMetrics", dependencies: ["k_101", "k_102", "k_103"] },
-                l: { fieldId: "l_104", type: "calculated", value: "100%", section: "volumeSurfaceMetrics", classes: ["percentage-value"], dependencies: ["l_101", "l_102", "l_103"] },
-                m: { content: "N/A", classes: ["reference-value"] }, n: { content: "" }
+                i: { fieldId: "i_104", type: "calculated", value: "116,070.33", section: "volumeSurfaceMetrics", dependencies: ["i_101", "i_102", "i_103"], classes: ["total-row-text"] },
+                j: {},
+                k: { fieldId: "k_104", type: "calculated", value: "-10,160.19", section: "volumeSurfaceMetrics", dependencies: ["k_101", "k_102", "k_103"], classes: ["total-row-text"] },
+                l: { fieldId: "l_104", type: "calculated", value: "100%", section: "volumeSurfaceMetrics", classes: ["percentage-value", "total-row-text"], dependencies: ["l_101", "l_102", "l_103"] },
+                m: { content: "N/A", classes: ["reference-value", "total-row-text"] }, n: { content: "" }
             }
         },
         "105": {
@@ -282,16 +265,8 @@ window.TEUI.SectionModules.sect12 = (function() {
     //==========================================================================
     
     function getNumericValue(fieldId) {
-        const value = getFieldValue(fieldId);
-        if (value === null || value === undefined) return 0;
-        if (typeof value === 'string') {
-            if (value.trim() === '') return 0;
-            if (value.includes('%')) {
-                return parseFloat(value.replace(/[%,]/g, '')) / 100 || 0;
-            }
-            return parseFloat(value.replace(/,/g, '')) || 0;
-        }
-        return typeof value === 'number' ? value : 0;
+        // Use global parseNumeric, retrieving value via getFieldValue
+        return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
     }
 
     function getFieldValue(fieldId) {
@@ -311,19 +286,66 @@ window.TEUI.SectionModules.sect12 = (function() {
         return null;
     }
 
-    function setCalculatedValue(fieldId, value, skipFormat = false) {
-        const displayValue = skipFormat ? value : formatDisplayValue(fieldId, value);
-        const rawValue = typeof value === 'number' ? value : (typeof value === 'string' ? value.replace(/,/g, '') : value);
+    /**
+     * Helper function to set a calculated field value in StateManager and update the DOM.
+     * Uses the global window.TEUI.formatNumber for formatting.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {*} rawValue - The raw, unformatted value to store in StateManager.
+     * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw', 'number-3dp').
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number') {
+        // Ensure rawValue is numeric for calculations where appropriate
+        const numericValue = typeof rawValue === 'string' ? window.TEUI.parseNumeric(rawValue) : rawValue;
+
+        // Set raw value in state manager with 'calculated' state
         if (window.TEUI?.StateManager?.setValue) {
-             window.TEUI.StateManager.setValue(fieldId, rawValue, 'calculated');
+            // Ensure rawValue is stored as a string for consistency, especially numbers
+            window.TEUI.StateManager.setValue(fieldId, String(numericValue), "calculated"); // Store the cleaned numeric value as string
         } else {
              console.error("StateManager not available to set value for", fieldId);
              return;
         }
+
+        // Determine the correct format type based on field ID conventions
+        let determinedFormatType;
+
+        // Determine format based on fieldId for precision matching Excel
+        if (fieldId === 'g_101' || fieldId === 'g_102' || fieldId === 'd_104') {
+            determinedFormatType = 'u-value'; // Alias for number-3dp
+        } else if (fieldId === 'd_110') {
+            determinedFormatType = 'number-3dp'; // ELA
+        } else if (fieldId === 'g_110') {
+            determinedFormatType = 'number-1dp'; // N-Factor
+        } else if (fieldId === 'i_110') {
+            determinedFormatType = 'integer'; // Zone number
+        } else if (fieldId === 'd_107') { 
+            determinedFormatType = 'percent-2dp'; // WWR % with 2dp
+        } else if (fieldId === 'l_101' || fieldId === 'l_102' || fieldId === 'l_103') {
+            determinedFormatType = 'percent-2dp'; // Heatloss component %
+        } else if (fieldId === 'l_104' || fieldId === 'l_107' || fieldId === 'l_109' || fieldId === 'l_110') {
+            determinedFormatType = 'percent-0dp'; // Total or reference % (no decimals)
+        } else if (['d_101', 'd_102', 'd_106', 'i_101', 'i_102', 'i_103', 'i_104', 'k_101', 'k_102', 'k_103', 'k_104'].includes(fieldId)) {
+             determinedFormatType = 'number-2dp-comma'; // Areas and kWh values with commas
+        } else {
+             // Default for other calculated numbers (rates, ratios, ACH50 etc.)
+             determinedFormatType = 'number-2dp'; 
+        }
+
+        // Override if a specific format was passed and it's not the default 'number'
+        if (formatType !== 'number') {
+             determinedFormatType = formatType;
+        }
+
+        // Call the NEW GLOBAL formatter
+        const formattedValue = window.TEUI.formatNumber(numericValue, determinedFormatType);
+
+        // Update the corresponding DOM element
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            if (element.textContent !== displayValue) { 
-                element.textContent = displayValue;
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                element.value = formattedValue; // Update input/select value
+            } else {
+                element.textContent = formattedValue; // Update other element text content
             }
             element.classList.add('calculated-value');
             element.classList.remove('user-input', 'editable', 'PendingValue');
@@ -333,52 +355,6 @@ window.TEUI.SectionModules.sect12 = (function() {
         }
     }
 
-    function formatDisplayValue(fieldId, value) {
-        if (typeof value !== 'number' && typeof value !== 'string') return value;
-        let numValue = value;
-        if (typeof value === 'string') {
-            if (value.includes('%')) return value;
-            if (value.includes('$')) return value;
-            numValue = parseFloat(value.replace(/,/g, ''));
-        }
-        if (isNaN(numValue) || !isFinite(numValue)) {
-            return (typeof value === 'string' && value.trim() !== '') ? value : ""; 
-        }
-        const isPercentCol = fieldId.startsWith('l_') || fieldId === 'g_105' || fieldId === 'i_105';
-        const isWwr = fieldId === 'd_107';
-        const isCurrencyCol = fieldId.startsWith('n_') && fieldId !== 'n_98';
-        if (isPercentCol || isWwr) {
-            return formatPercentage(numValue);
-        } else if (isCurrencyCol) {
-             return formatCurrency(numValue);
-        } else {
-             const decimals = (fieldId === 'g_101' || fieldId === 'g_102' || fieldId === 'd_104' || fieldId === 'd_110') ? 3 : 2; 
-             return formatNumber(numValue, decimals);
-        }
-    }
-    
-    function formatNumber(value, decimals = 2) { 
-        if (isNaN(value) || !isFinite(value)) return "0.00";
-        return value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-    }
-    
-    function formatPercentage(value) { 
-         if (isNaN(value)) return "0%";
-         let percentage = value;
-         if (Math.abs(value) <= 1 && value !== 0) { 
-              percentage = value * 100;
-         } else if (Math.abs(value) > 100) {
-             // console.warn(`Potential percentage formatting issue for value: ${value}`);
-         }
-         const decimals = (Math.abs(percentage) < 1 && percentage !== 0) ? 1 : 0;
-         return percentage.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + '%';
-    }
-    
-    function formatCurrency(value) { 
-        if (isNaN(value)) return "$0.00";
-        return value.toLocaleString(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    
     function setElementClass(fieldId, className, removeClasses = []) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
@@ -402,13 +378,13 @@ window.TEUI.SectionModules.sect12 = (function() {
         const d101_areaAir = d85 + d86 + d87 + d88 + d89 + d90 + d91 + d92 + d93;
         const d102_areaGround = (d94 + d95 === 0) ? 0.0000001 : d94 + d95;
         const d106_floorArea = d87 + d95 + d96;
-        setCalculatedValue('d_101', d101_areaAir);
+        setCalculatedValue('d_101', d101_areaAir); // Uses auto-determined format ('number-2dp-comma')
         setCalculatedValue('d_102', d102_areaGround);
         setCalculatedValue('d_106', d106_floorArea);
         const g105_volAreaRatio = (d101_areaAir > 0) ? d105_vol / d101_areaAir : 0;
-        setCalculatedValue('g_105', g105_volAreaRatio);
+        setCalculatedValue('g_105', g105_volAreaRatio, 'percent-0dp'); // Format as percentage, 0 decimal places
         const i105_areaVolRatio = (d105_vol > 0) ? d101_areaAir / d105_vol : 0;
-        setCalculatedValue('i_105', i105_areaVolRatio);
+        setCalculatedValue('i_105', i105_areaVolRatio, 'percent-0dp'); // Format as percentage, 0 decimal places
     }
 
     function calculateCombinedUValue() {
@@ -435,13 +411,13 @@ window.TEUI.SectionModules.sect12 = (function() {
         const tbFactor = 1 + d97_tbPenaltyPercent; 
         const sumProductAir = (d85 * g85) + (d86 * g86) + (d87 * g87) + (d88 * g88) + (d89 * g89) + (d90 * g90) + (d91 * g91) + (d92 * g92) + (d93 * g93);
         const g101_uAir = (d101_areaAir > 0) ? (sumProductAir / d101_areaAir) * tbFactor : 0;
-        setCalculatedValue('g_101', g101_uAir);
+        setCalculatedValue('g_101', g101_uAir); // Uses auto ('number-3dp')
         const sumProductGround = (d94 * g94) + (d95 * g95);
         const g102_uGround = (d102_areaGround > 0) ? (sumProductGround / d102_areaGround) * tbFactor : 0;
-        setCalculatedValue('g_102', g102_uGround);
+        setCalculatedValue('g_102', g102_uGround); // Uses auto ('number-3dp')
         const totalArea = d101_areaAir + d102_areaGround;
         const d104_uCombined = (totalArea > 0) ? (g101_uAir * d101_areaAir + g102_uGround * d102_areaGround) / totalArea : 0;
-        setCalculatedValue('d_104', d104_uCombined);
+        setCalculatedValue('d_104', d104_uCombined); // Uses auto ('number-3dp')
     }
 
     function calculateWWR() {
@@ -453,10 +429,10 @@ window.TEUI.SectionModules.sect12 = (function() {
         const windowDoorArea = d88 + d89 + d90 + d91 + d92 + d93;
         const totalWallArea = d86 + windowDoorArea;
         const wwr = (totalWallArea > 0) ? windowDoorArea / totalWallArea : 0;
-        setCalculatedValue('d_107', wwr);
+        setCalculatedValue('d_107', wwr); // Uses auto ('percent-2dp')
         const refWWR = 0.4; // Placeholder for reference value T107/T108
         const l107 = (refWWR > 0) ? wwr / refWWR : 0;
-        setCalculatedValue('l_107', l107);
+        setCalculatedValue('l_107', l107); // Uses auto ('percent-0dp')
     }
 
     function calculateACH50Target() {
@@ -481,23 +457,23 @@ window.TEUI.SectionModules.sect12 = (function() {
         } else {
             g108_nrl50Target = nrlTargets[d108_method] || 0;
         }
-        setCalculatedValue("g_108", g108_nrl50Target);
+        setCalculatedValue("g_108", g108_nrl50Target); // Uses auto ('number-2dp')
         const ach50Target = (d105_vol > 0 && d101_areaAir > 0) ? g108_nrl50Target * (d101_areaAir / d105_vol) * 3.6 : 0;
-        setCalculatedValue("d_109", ach50Target);
+        setCalculatedValue("d_109", ach50Target); // Uses auto ('number-2dp')
          const targetACH = getNumericValue('d_109');
          const measuredACH = (d108_method === "MEASURED") ? g109_measured : ach50Target; 
          const l109 = (targetACH > 0) ? measuredACH / targetACH : 0;
-         setCalculatedValue('l_109', l109);
+         setCalculatedValue('l_109', l109); // Uses auto ('percent-0dp')
     }
 
     function calculateAe10() {
         const ach50Target = getNumericValue("d_109");
         const volume = getNumericValue("d_105");
         const ae10 = (volume > 0) ? ach50Target * volume / 3600 : 0;
-        setCalculatedValue("d_110", ae10);
+        setCalculatedValue("d_110", ae10); // Uses auto ('number-3dp')
         const refAe10 = 1.68; // Placeholder reference T110
         const l110 = (refAe10 > 0) ? ae10 / refAe10 : 0;
-        setCalculatedValue('l_110', l110);
+        setCalculatedValue('l_110', l110); // Uses auto ('percent-0dp')
     }
     
      function calculateNFactor() {
@@ -507,7 +483,7 @@ window.TEUI.SectionModules.sect12 = (function() {
         let zoneNum = 2;
         if (climateZone <= 4) zoneNum = 1;
         else if (climateZone >= 7) zoneNum = 3;
-        setCalculatedValue('i_110', zoneNum.toString(), true);
+        setCalculatedValue('i_110', zoneNum.toString()); // Uses auto ('integer')
         const shieldingKey = shielding === 'Shielded' ? 'Shielded' : shielding === 'Exposed' ? 'Exposed' : 'Normal';
         const nFactorTable = {
             1: { "Shielded": { 1: 18.6, 1.5: 16.7, 2: 14.8, 3: 13.0 }, "Normal": { 1: 15.5, 1.5: 14.0, 2: 12.4, 3: 10.9 }, "Exposed": { 1: 14.0, 1.5: 12.6, 2: 11.2, 3: 9.8 } },
@@ -523,28 +499,34 @@ window.TEUI.SectionModules.sect12 = (function() {
         if (nFactorTable[zoneNum]?.[shieldingKey]?.[storyKey]) {
             nFactor = nFactorTable[zoneNum][shieldingKey][storyKey];
         }
-        setCalculatedValue('g_110', nFactor);
+        setCalculatedValue('g_110', nFactor); // Uses auto ('number-1dp')
     }
 
     function calculateAirLeakageHeatLoss() {
-        const g109_ach50 = getNumericValue('g_109');
+        // Get necessary values using global parseNumeric
+        const g108_nrl50Target = getNumericValue('g_108'); // NRL50 Target (L/s*m2)
         const g110_nFactor = getNumericValue('g_110');
-        const d105_volume = getNumericValue('d_105');
         const d20_hdd = getNumericValue('d_20');
         const d21_cdd = getNumericValue('d_21');
         const d101_areaAir = getNumericValue('d_101');
-        const n_ach = (g110_nFactor > 0) ? g109_ach50 / g110_nFactor : 0;
-        const airHeatCapacityFactor = 0.33; 
+        const h15_conditionedArea = getNumericValue('h_15'); // Get Conditioned Floor Area from S2
+
+        // Constants from Excel formula structure
+        const leakageFactor = 1.21; // Factor representing conversion and heat capacity (Ws/m³K?)
         const hoursPerDay = 24;
         const wattsToKw = 1000;
-        const i103_heatloss = (airHeatCapacityFactor * n_ach * d105_volume * d20_hdd * hoursPerDay) / wattsToKw;
-        setCalculatedValue('i_103', i103_heatloss);
-        const h103_lossRate = (d101_areaAir > 0) ? i103_heatloss / d101_areaAir : 0;
-        setCalculatedValue('h_103', h103_lossRate);
-        const k103_heatgain = (airHeatCapacityFactor * n_ach * d105_volume * d21_cdd * hoursPerDay) / wattsToKw;
-        setCalculatedValue('k_103', k103_heatgain);
-        const j103_gainRate = (d101_areaAir > 0) ? k103_heatgain / d101_areaAir : 0;
-        setCalculatedValue('j_103', j103_gainRate);
+
+        // Base calculation factor from Excel: (1.21 * G108 * D101 / G110)
+        // This likely represents some form of effective heat loss coefficient due to leakage (W/K)
+        const baseLeakageCoefficient = (g110_nFactor > 0) ? (leakageFactor * g108_nrl50Target * d101_areaAir / g110_nFactor) : 0;
+
+        // i_103 Heatloss Calc: =(1.21*G108*D20*24/1000)*D101/G110
+        const i103_heatloss = (baseLeakageCoefficient * d20_hdd * hoursPerDay) / wattsToKw;
+        setCalculatedValue('i_103', i103_heatloss); // Uses auto ('number-2dp-comma')
+
+        // k_103 Heatgain Calc: =(1.21*G108*D21*24/1000)*D101/G110
+        const k103_heatgain = (baseLeakageCoefficient * d21_cdd * hoursPerDay) / wattsToKw;
+        setCalculatedValue('k_103', k103_heatgain); // Uses auto ('number-2dp-comma')
     }
 
     function calculateEnvelopeHeatLossGain() {
@@ -562,18 +544,18 @@ window.TEUI.SectionModules.sect12 = (function() {
         const i101_heatlossAir = h101_lossRateAir * d101_areaAir;
         const j101_gainRateAir = (g101_uAir * d21_cdd * hoursPerDay) / wattsToKw;
         const k101_heatgainAir = j101_gainRateAir * d101_areaAir;
-        setCalculatedValue('h_101', h101_lossRateAir);
-        setCalculatedValue('i_101', i101_heatlossAir);
-        setCalculatedValue('j_101', j101_gainRateAir);
-        setCalculatedValue('k_101', k101_heatgainAir);
+        setCalculatedValue('h_101', h101_lossRateAir); // Uses auto ('number-2dp')
+        setCalculatedValue('i_101', i101_heatlossAir); // Uses auto ('number-2dp-comma')
+        setCalculatedValue('j_101', j101_gainRateAir); // Uses auto ('number-2dp')
+        setCalculatedValue('k_101', k101_heatgainAir); // Uses auto ('number-2dp-comma')
         const h102_lossRateGround = (g102_uGround * d22_gfHDD * hoursPerDay) / wattsToKw;
         const i102_heatlossGround = h102_lossRateGround * d102_areaGround;
         const j102_gainRateGround = (g102_uGround * h22_gfCDD * hoursPerDay) / wattsToKw;
         const k102_heatgainGround = j102_gainRateGround * d102_areaGround;
-        setCalculatedValue('h_102', h102_lossRateGround);
-        setCalculatedValue('i_102', i102_heatlossGround);
-        setCalculatedValue('j_102', j102_gainRateGround);
-        setCalculatedValue('k_102', k102_heatgainGround);
+        setCalculatedValue('h_102', h102_lossRateGround); // Uses auto ('number-2dp')
+        setCalculatedValue('i_102', i102_heatlossGround); // Uses auto ('number-2dp-comma')
+        setCalculatedValue('j_102', j102_gainRateGround); // Uses auto ('number-2dp')
+        setCalculatedValue('k_102', k102_heatgainGround); // Uses auto ('number-2dp-comma')
     }
 
     function calculateEnvelopeTotals() {
@@ -582,19 +564,32 @@ window.TEUI.SectionModules.sect12 = (function() {
         const i103 = getNumericValue('i_103');
         const k101 = getNumericValue('k_101');
         const k102 = getNumericValue('k_102');
-        const k103 = getNumericValue('k_103');
+        const k103 = getNumericValue('k_103'); // Air leakage gain
+        const h21_capacitanceSetting = getFieldValue('h_21'); // Get Capacitance/Static setting
+        const k98_totalEnvelopeGainS11 = getNumericValue('k_98'); // Get S11 total gain
+
         const i104_totalLoss = i101 + i102 + i103;
-        const k104_totalGain = k101 + k102 + k103;
-        setCalculatedValue('i_104', i104_totalLoss);
-        setCalculatedValue('k_104', k104_totalGain);
+
+        // Conditional calculation for k_104 based on Capacitance setting (h_21)
+        let k104_totalGain;
+        if (h21_capacitanceSetting === 'Capacitance') {
+            // Use Section 11's total envelope gain (includes solar etc.)
+            k104_totalGain = k98_totalEnvelopeGainS11;
+        } else { 
+            // Use SUM(K101:K102) - Air + Ground transmission gain only (exclude leakage k_103)
+            k104_totalGain = k101 + k102;
+        }
+
+        setCalculatedValue('i_104', i104_totalLoss); // Uses auto ('number-2dp-comma')
+        setCalculatedValue('k_104', k104_totalGain); // Uses auto ('number-2dp-comma')
         const l101 = (i104_totalLoss > 0) ? i101 / i104_totalLoss : 0;
         const l102 = (i104_totalLoss > 0) ? i102 / i104_totalLoss : 0;
         const l103 = (i104_totalLoss > 0) ? i103 / i104_totalLoss : 0;
         const l104 = l101 + l102 + l103;
-        setCalculatedValue('l_101', l101);
-        setCalculatedValue('l_102', l102);
-        setCalculatedValue('l_103', l103);
-        setCalculatedValue('l_104', l104);
+        setCalculatedValue('l_101', l101); // Uses auto ('percent-2dp')
+        setCalculatedValue('l_102', l102); // Uses auto ('percent-2dp')
+        setCalculatedValue('l_103', l103); // Uses auto ('percent-2dp')
+        setCalculatedValue('l_104', l104); // Uses auto ('percent-0dp')
     }
 
     function calculateAll() {
@@ -608,28 +603,9 @@ window.TEUI.SectionModules.sect12 = (function() {
             calculateAirLeakageHeatLoss();
             calculateEnvelopeHeatLossGain();
             calculateEnvelopeTotals();
-            updateUIAfterCalculation();
         } catch (error) {
              console.error("Error during Section 12 calculateAll:", error);
         }
-    }
-    
-    function updateUIAfterCalculation() {
-        const fields = getFields();
-        Object.keys(fields).forEach(fieldId => {
-            const fieldDef = fields[fieldId];
-            if (fieldDef.type === 'calculated') {
-                 const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-                 if (element) {
-                     const rawValue = getFieldValue(fieldId);
-                     const displayValue = formatDisplayValue(fieldId, rawValue);
-                     if (element.textContent !== displayValue) {
-                          element.textContent = displayValue;
-                     }
-                 }
-            }
-        });
-        // console.log("UI formatting updated after Section 12 calculation.");
     }
     
     //==========================================================================
@@ -638,10 +614,8 @@ window.TEUI.SectionModules.sect12 = (function() {
     
     function registerDependencies() {
         if (!window.TEUI?.StateManager) {
-            // console.warn("StateManager not available for Section 12 dependency registration");
             return;
         }
-        // console.log("Registering dependencies for Section 12");
         const fields = getFields();
         let count = 0;
         Object.entries(fields).forEach(([fieldId, fieldDef]) => {
@@ -650,13 +624,10 @@ window.TEUI.SectionModules.sect12 = (function() {
                     if (window.TEUI.StateManager.getValue(depId) !== null || document.querySelector(`[data-field-id="${depId}"]`)) {
                          window.TEUI.StateManager.registerDependency(depId, fieldId);
                          count++;
-                    } else {
-                         // console.warn(`Section 12: Dependency ${depId} for ${fieldId} not found initially.`);
                     }
                 });
             }
         });
-        // console.log(`Registered ${count} dependencies for Section 12.`);
     }
     
     function initializeEventHandlers() {
@@ -711,27 +682,35 @@ window.TEUI.SectionModules.sect12 = (function() {
         const field = event.target;
         if (field.hasAttribute('contenteditable') && field.getAttribute('contenteditable') === 'true' && field.classList.contains('user-input')) {
             const fieldId = field.getAttribute('data-field-id');
-            if (!fieldId) return;
-            let rawValue = field.textContent.trim().replace(/,/g, '');
+            if (!fieldId) return; 
+            // Use parseNumeric to handle input
+            const numValue = window.TEUI.parseNumeric(field.textContent);
             const originalText = field.textContent;
-            let numValue = parseFloat(rawValue);
+
             if (!isNaN(numValue) && isFinite(numValue)) {
-                 const formattedValue = formatDisplayValue(fieldId, numValue);
-                 if (field.textContent !== formattedValue) {
-                      field.textContent = formattedValue;
-                 }
-                 if (window.TEUI?.StateManager?.setValue) {
-                    window.TEUI.StateManager.setValue(fieldId, numValue, 'user-modified');
-                    calculateAll();
-                 }
-            } else {
-                 const previousValue = window.TEUI?.StateManager?.getValue(fieldId);
-                 if (previousValue !== null && previousValue !== undefined) {
-                    field.textContent = formatDisplayValue(fieldId, previousValue);
-                 } else {
-                     field.textContent = formatDisplayValue(fieldId, 0); 
-                 }
-            }
+                 // Determine format (e.g., integer or number-2dp)
+                 const formatType = Number.isInteger(numValue) ? 'integer' : 'number-2dp';
+                 const formattedValue = window.TEUI.formatNumber(numValue, formatType);
+                  if (field.textContent !== formattedValue) {
+                       field.textContent = formattedValue;
+                  }
+                  if (window.TEUI?.StateManager?.setValue) {
+                     // Store the parsed numeric value as a string
+                     window.TEUI.StateManager.setValue(fieldId, String(numValue), 'user-modified');
+                     calculateAll();
+                  }
+             } else {
+                  // Handle invalid input - revert to previous state value or 0
+                  const previousValue = window.TEUI?.StateManager?.getValue(fieldId);
+                  if (previousValue !== null && previousValue !== undefined) {
+                      // Determine format for previous value
+                      const prevNumValue = window.TEUI.parseNumeric(previousValue);
+                      const formatType = Number.isInteger(prevNumValue) ? 'integer' : 'number-2dp';
+                     field.textContent = window.TEUI.formatNumber(prevNumValue, formatType);
+                  } else {
+                      field.textContent = window.TEUI.formatNumber(0, 'number-2dp'); 
+                  }
+             }
         }
     }
 
@@ -759,7 +738,7 @@ window.TEUI.SectionModules.sect12 = (function() {
                  const currentValue = window.TEUI.StateManager.getValue('g_109');
                  const defaultValue = g109FieldDef?.defaultValue || '0';
                  const valueToDisplay = (currentValue !== null && !isNaN(parseFloat(currentValue))) ? currentValue : defaultValue;
-                 g109Cell.textContent = formatDisplayValue('g_109', valueToDisplay);
+                 g109Cell.textContent = window.TEUI.formatNumber(valueToDisplay, 'number-2dp'); // ACH is 2dp
                  g109Cell.removeEventListener('focus', handleFieldFocus);
                  g109Cell.removeEventListener('focusout', handleFieldFocusOut);
                  g109Cell.addEventListener('focus', handleFieldFocus);
@@ -777,34 +756,16 @@ window.TEUI.SectionModules.sect12 = (function() {
         }
     }
 
-    function initializeListeners() {
-        if (!window.TEUI || !window.TEUI.StateManager) return;
-        const sm = window.TEUI.StateManager;
-        // Listen for changes in area totals and TBP from Section 11
-        sm.addListener('d_98', calculateAll);
-        sm.addListener('i_98', calculateAll);
-        sm.addListener('k_98', calculateAll);
-        sm.addListener('d_97', calculateAll);
-        // Listen for changes in climate data from Section 3
-        sm.addListener('d_20', calculateAll); // HDD
-        sm.addListener('d_21', calculateAll); // CDD
-        sm.addListener('d_22', calculateAll); // GF HDD
-        sm.addListener('h_22', calculateAll); // GF CDD
-        // Add listeners for other inputs if S12 calculates things based on them
-    }
-
     function onSectionRendered() {
-        if (isInitialized) return;
-        // console.log('Section 12 rendered, initializing...');
+        if (isInitialized) return; // Run initialization only once
+
         registerWithStateManager();
         registerDependencies();
-        initializeEventHandlers();
+        initializeEventHandlers(); // Event handlers now only added once
         addStateManagerListeners();
-        initializeListeners();
         calculateAll();
-        addCheckmarkStyles();
+        addCheckmarkStyles(); // Add section-specific styles if needed
         isInitialized = true;
-        // console.log('Section 12 initialization complete.');
     }
 
     function registerWithStateManager() {
@@ -823,12 +784,28 @@ window.TEUI.SectionModules.sect12 = (function() {
      function addStateManagerListeners() {
         if (!window.TEUI?.StateManager) return;
         const externalDependencies = [
-             'd_85', 'f_85', 'g_85', 'd_86', 'f_86', 'g_86', 'd_87', 'f_87', 'g_87', 
-             'd_88', 'f_88', 'g_88', 'd_89', 'f_89', 'g_89', 'd_90', 'f_90', 'g_90', 
-             'd_91', 'f_91', 'g_91', 'd_92', 'f_92', 'g_92', 'd_93', 'f_93', 'g_93', 
-             'd_94', 'f_94', 'g_94', 'd_95', 'f_95', 'g_95', 'd_96',
+             // Section 11 Inputs influencing U-Values (g_101, g_102) and Areas (d_101, d_102)
+             'd_85', 'f_85', 'g_85', // Roof
+             'd_86', 'f_86', 'g_86', // Walls AG
+             'd_87', 'f_87', 'g_87', // Floor Exp
+             'd_88', 'g_88',         // Doors (Area d_88 comes from S10, listen to g_88 U-Value)
+             'd_89', 'g_89',         // Win N (Area d_89 comes from S10, listen to g_89 U-Value)
+             'd_90', 'g_90',         // Win E (Area d_90 comes from S10, listen to g_90 U-Value)
+             'd_91', 'g_91',         // Win S (Area d_91 comes from S10, listen to g_91 U-Value)
+             'd_92', 'g_92',         // Win W (Area d_92 comes from S10, listen to g_92 U-Value)
+             'd_93', 'g_93',         // Skylights (Area d_93 comes from S10, listen to g_93 U-Value)
+             'd_94', 'f_94', 'g_94', // Walls BG
+             'd_95', 'f_95', 'g_95', // Floor Slab
+             'd_96',                 // Interior Floor Area (Used for d_106)
+             // Section 11 Thermal Bridge Penalty
              'd_97',
-             'd_20', 'd_21', 'd_22', 'h_22', 'j_19'
+             // Section 3 Climate Data
+             'd_20', // HDD
+             'd_21', // CDD
+             'd_22', // GF HDD
+             'h_22', // GF CDD
+             'j_19', // Climate Zone (for N-Factor)
+             'h_21'  // Capacitance Setting (for k_104)
         ]; 
         externalDependencies.forEach(depId => {
              window.TEUI.StateManager.addListener(depId, () => {
@@ -876,8 +853,6 @@ document.addEventListener('teui-section-rendered', function(event) {
                  if (!window.TEUI.SectionModules.sect12.isInitialized) { 
                       window.TEUI.SectionModules.sect12.onSectionRendered();
                  }
-             } else {
-                  // console.warn("Section 12 module not ready when teui-section-rendered fired.");
              }
          });
     }
@@ -892,12 +867,3 @@ document.addEventListener('teui-rendering-complete', function() {
         }
      });
 });
-
-window.calculateVolumeMetricsSection = function() {
-     if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
-          // console.log("Globally triggering Section 12 calculateAll...");
-          window.TEUI.SectionModules.sect12.calculateAll();
-     } else {
-          console.warn("Section 12 calculateAll not available for global trigger.");
-     }
-};

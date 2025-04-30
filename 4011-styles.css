@@ -1154,3 +1154,8 @@ table.data-table select.form-select:hover {
 .text-ground-facing {
     color: #8B4513; /* Brown (SaddleBrown) */
 }
+
+/* Style for bolding text in total rows */
+.total-row-text {
+    font-weight: 600; /* Semi-bold */
+}

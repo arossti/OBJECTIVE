@@ -118,15 +118,30 @@ When working with this codebase, previous AI assistants have encountered several
      - Exactly 2 decimal places (e.g., "2,057.00" not "2,057"), even for integers or whole numbers
      - **Exceptions**: 
        - U-values must display with 3 decimal places (e.g., "0.123")
-       - Cost values may require 4 decimal places in some contexts
-   - Raw values should be stored in StateManager for calculations, but formatted values should be displayed in the DOM
-   - Consistent number formatting is critical for:
-     - Readability of large numbers
-     - UI stability when values change (prevents layout shifts when switching between values with/without decimals)
-     - Future D3 visualizations and charts.js integrations
-     - Ensuring data consistency between calculations and visual representations
-   - Each section module should implement `formatNumber` and use it within `setCalculatedValue`
-   - **Store Raw Values in StateManager**: Store *raw*, unformatted numeric values in `StateManager` whenever possible (typically converted to strings for storage, e.g., `numberValue.toString()`). Perform formatting (using `formatNumber` or similar) only when updating the DOM (`element.textContent`). Storing formatted strings (e.g., "1,234.56") in `StateManager` can prevent listeners from triggering if subsequent calculations result in the identical formatted string, even if the underlying raw number changed slightly.
+       - RSI values should display with 2 decimal places (e.g., "2.75")
+       - Cost values may require 3 or more decimal places in some contexts (e.g., energy costs per kWh)
+     - Raw values should be stored in StateManager for calculations, but formatted values should be displayed in the DOM
+     - Consistent number formatting is critical for:
+       - Readability of large numbers
+       - UI stability when values change (prevents layout shifts when switching between values with/without decimals)
+       - Future D3 visualizations and charts.js integrations
+       - Ensuring data consistency between calculations and visual representations
+     - Each section module should implement `formatNumber` and use it within `setCalculatedValue`
+     - **Store Raw Values in StateManager**: Store *raw*, unformatted numeric values in `StateManager` whenever possible (typically converted to strings for storage, e.g., `numberValue.toString()`). Perform formatting (using `formatNumber` or similar) only when updating the DOM (`element.textContent`). Storing formatted strings (e.g., "1,234.56") in `StateManager` can prevent listeners from triggering if subsequent calculations result in the identical formatted string, even if the underlying raw number changed slightly.
+     - **Global Formatting Function (New - 2024-07-26)**:
+       - ✅ **PREFER**: Using the new global `window.TEUI.formatNumber(value, formatType)` function defined in `4011-StateManager.js`.
+       - This function provides a centralized, robust way to format numbers according to specific requirements.
+       - It accepts `formatType` strings like: 
+         - `'number-2dp'`, `'number-3dp'` (for numbers with specific decimals)
+         - `'number-2dp-comma'` (adds thousands separators)
+         - `'percent-0dp'`, `'percent-1dp'`, `'percent-2dp'` (formats fractions like 0.65 to percentages)
+         - `'integer'` (for whole numbers with commas)
+         - `'currency-2dp'`, `'currency-3dp'` (for dollar values)
+         - `'u-value'` (alias for `'number-3dp'`)
+         - `'rsi'` (alias for `'number-2dp'`)
+         - `'raw'` (outputs the value as a string without formatting)
+       - **Usage**: Call this function typically within a section's `setCalculatedValue` helper to generate the display string *after* storing the raw numeric value (as a string) in `StateManager`.
+       - **Future Work (Post 2025.04.29)**: Refactor existing sections (01-11, 13-15) to remove their local `formatNumber` helpers and adopt this global function. Section 12 serves as the initial implementation example.
 
 6. **Calculation Precision and Significant Digits**:
    - ❌ **Avoid**: Truncating precision during calculation chains or using hardcoded adjustments

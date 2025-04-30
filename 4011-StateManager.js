@@ -14,6 +14,94 @@ window.TEUI = window.TEUI || {};
 TEUI.StateManager = (function() {
     
     /**
+     * Global utility to format numbers based on specified types.
+     * Handles various decimal places, percentages, commas, specific types like U-Value/RSI, and raw output.
+     * @param {string|number|null|undefined} value - The value to format.
+     * @param {string} [formatType='number-2dp'] - The format rule (e.g., 'number-2dp', 'number-3dp', 'number-2dp-comma', 'percent-0dp', 'percent-1dp', 'percent-2dp', 'integer', 'currency-2dp', 'currency-3dp', 'u-value', 'rsi', 'raw').
+     * @returns {string} The formatted string.
+     */
+    window.TEUI.formatNumber = function(value, formatType = 'number-2dp') {
+        // Handle N/A or null/undefined input first
+        if (value === null || value === undefined || String(value).trim().toUpperCase() === 'N/A') {
+            return "N/A";
+        }
+        // Handle raw format type
+        if (formatType === 'raw') {
+            return String(value);
+        }
+
+        // Use global parseNumeric to get a clean number or NaN
+        const numValue = window.TEUI.parseNumeric(value, NaN); 
+
+        // Handle non-numeric values after parsing
+        if (isNaN(numValue)) {
+             // Return original string if it wasn't parseable but wasn't explicitly N/A
+             if (typeof value === 'string' && value.trim() !== '') return value;
+             // Otherwise return a default based on expected format
+             if (formatType.startsWith('percent')) return '0%';
+             if (formatType.startsWith('currency')) return '$0.00'; // Basic currency default
+             return '0.00'; // Default numeric format
+        }
+
+        try {
+            // Handle Aliases
+            if (formatType === 'u-value') formatType = 'number-3dp';
+            if (formatType === 'rsi') formatType = 'number-2dp';
+
+            // Handle Integer
+            if (formatType === 'integer') {
+                return numValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true }); // Integers with commas
+            }
+
+            // Parsing complex format types
+            const formatParts = formatType.split('-');
+            const type = formatParts[0]; // 'number', 'percent', 'currency'
+            const dpPart = formatParts[1] || ''; // e.g., '0dp', '2dp', '3dp'
+            const useCommas = formatParts.includes('comma'); // Relevant for 'number' type
+
+            let decimals = 2; // Default decimal places
+            if (dpPart) {
+                const match = dpPart.match(/(\d+)d/); // Match 0dp, 1dp, 2dp, 3dp etc.
+                if (match) decimals = parseInt(match[1], 10);
+            }
+
+            // Percentage Formatting
+            if (type === 'percent') {
+                 let percentValue = numValue;
+                 // Assume values passed for percentage formatting are fractions (e.g., 0.6557)
+                 // unless format suggests otherwise (maybe a future 'percent-asis' type)
+                 // Note: We multiply by 100 *within* toLocaleString using style:'percent'
+                 // WRONG: percentValue = numValue * 100; 
+                 return numValue.toLocaleString(undefined, { 
+                     style: 'percent', 
+                     minimumFractionDigits: decimals, 
+                     maximumFractionDigits: decimals 
+                 });
+            }
+            // Currency Formatting
+            else if (type === 'currency') {
+                 return numValue.toLocaleString(undefined, { 
+                     style: 'currency', 
+                     currency: 'USD', // Or make dynamic if needed later
+                     minimumFractionDigits: decimals, 
+                     maximumFractionDigits: decimals 
+                 });
+            }
+            // Number Formatting (Default)
+            else { 
+                return numValue.toLocaleString(undefined, { 
+                    minimumFractionDigits: decimals, 
+                    maximumFractionDigits: decimals, 
+                    useGrouping: useCommas 
+                });
+            }
+        } catch (e) {
+            console.error(`Error formatting value ${value} with format ${formatType}:`, e);
+            return String(value); // Fallback to string representation on error
+        }
+    };
+    
+    /**
      * Global utility to safely parse numeric values from strings.
      * Handles commas and returns a default value if parsing fails.
      * Moved here from init.js to ensure availability before section modules load.
