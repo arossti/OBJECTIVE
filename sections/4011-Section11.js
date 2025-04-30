@@ -707,13 +707,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
         });
 
-        // Run initial calculation AFTER listeners are set up
-        // Use a slight delay if state was just initialized to allow propagation?
-        const initialCalcDelay = 10; // Use a small, consistent delay
-        setTimeout(() => {
-             console.log("Section 11 onSectionRendered: Running initial calculateAll() via setTimeout"); // DEBUG LOG
-        calculateAll();
-        }, initialCalcDelay);
+        // Initial calculation is now triggered centrally after all sections render
+        // console.log("Section 11 onSectionRendered: Skipping initial calculateAll() call.");
+
+        isStateInitialized = true; // Set flag after setup
     }
     
     //==========================================================================

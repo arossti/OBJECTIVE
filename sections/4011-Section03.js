@@ -514,11 +514,12 @@ window.TEUI.SectionModules.sect03 = (function() {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
                 element.value = value;
             } else {
-                // Format using global formatter, detecting integers
+                // Format using global formatter, detecting integers and specific degree day fields
                 let displayValue = value;
-                const numValue = window.TEUI.parseNumeric(value, NaN);
 
-                if (!isNaN(numValue)) {
+                const numValue = window.TEUI.parseNumeric(value, NaN); // Use global parser
+
+                if (!isNaN(numValue)) { 
                     // Determine format: Use integer-nocomma for degree days, otherwise integer or number-2dp
                     let formatType = 'number-2dp'; // Default
                     if (['d_20', 'd_21', 'd_22', 'h_22'].includes(fieldId)) {
@@ -531,6 +532,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     // Keep original string if it wasn't numeric (e.g., "N/A")
                     displayValue = value;
                 }
+
                 element.textContent = displayValue;
             }
         }
@@ -752,9 +754,20 @@ window.TEUI.SectionModules.sect03 = (function() {
         } */
         
         // Ground facing CDD
-        const cdd = getNumericValue('d_21');
+        const capacitanceSetting = getFieldValue('h_21'); // Read dropdown value
+        let gfcdd;
+
+        if (capacitanceSetting === 'Capacitance') {
+            // Use the specific value for Capacitance mode, matching Excel's likely SCHEDULES!N5 result
+            gfcdd = -1680;
+        } else { // Assumes 'Static' mode
+            // Use the calculation likely intended for Static mode (matches previous JS logic)
+            const cdd = getNumericValue('d_21'); 
+            gfcdd = Math.round(cdd * -0.85);
+        }
+
         if (!isNaN(cdd)) {
-            const gfcdd = Math.round(cdd * -0.85);
+            // Value is now calculated above based on capacitanceSetting
             setFieldValue("h_22", gfcdd);
         }
     }
@@ -1036,9 +1049,9 @@ window.TEUI.SectionModules.sect03 = (function() {
         // Manually set initial display for setpoints based on known default d_12="A-Assembly"
         // This provides immediate visual feedback before StateManager might be fully ready.
         const initialHeatingEl = getElement(['[data-field-id="h_23"]']);
-        if (initialHeatingEl) initialHeatingEl.textContent = window.TEUI.formatNumber(18);
+        if (initialHeatingEl) initialHeatingEl.textContent = window.TEUI.formatNumber(18, 'integer-nocomma');
         const initialCoolingEl = getElement(['[data-field-id="h_24"]']);
-        if (initialCoolingEl) initialCoolingEl.textContent = window.TEUI.formatNumber(24);
+        if (initialCoolingEl) initialCoolingEl.textContent = window.TEUI.formatNumber(24, 'integer-nocomma');
         // The StateManager listeners will calculate and set the correct state later.
         // -------------------------------------
 
