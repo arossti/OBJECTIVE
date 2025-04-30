@@ -120,14 +120,14 @@ When working with this codebase, previous AI assistants have encountered several
        - U-values must display with 3 decimal places (e.g., "0.123")
        - RSI values should display with 2 decimal places (e.g., "2.75")
        - Cost values may require 3 or more decimal places in some contexts (e.g., energy costs per kWh)
-     - Raw values should be stored in StateManager for calculations, but formatted values should be displayed in the DOM
-     - Consistent number formatting is critical for:
-       - Readability of large numbers
-       - UI stability when values change (prevents layout shifts when switching between values with/without decimals)
-       - Future D3 visualizations and charts.js integrations
-       - Ensuring data consistency between calculations and visual representations
-     - Each section module should implement `formatNumber` and use it within `setCalculatedValue`
-     - **Store Raw Values in StateManager**: Store *raw*, unformatted numeric values in `StateManager` whenever possible (typically converted to strings for storage, e.g., `numberValue.toString()`). Perform formatting (using `formatNumber` or similar) only when updating the DOM (`element.textContent`). Storing formatted strings (e.g., "1,234.56") in `StateManager` can prevent listeners from triggering if subsequent calculations result in the identical formatted string, even if the underlying raw number changed slightly.
+   - Raw values should be stored in StateManager for calculations, but formatted values should be displayed in the DOM
+   - Consistent number formatting is critical for:
+     - Readability of large numbers
+     - UI stability when values change (prevents layout shifts when switching between values with/without decimals)
+     - Future D3 visualizations and charts.js integrations
+     - Ensuring data consistency between calculations and visual representations
+   - Each section module should implement `formatNumber` and use it within `setCalculatedValue`
+   - **Store Raw Values in StateManager**: Store *raw*, unformatted numeric values in `StateManager` whenever possible (typically converted to strings for storage, e.g., `numberValue.toString()`). Perform formatting (using `formatNumber` or similar) only when updating the DOM (`element.textContent`). Storing formatted strings (e.g., "1,234.56") in `StateManager` can prevent listeners from triggering if subsequent calculations result in the identical formatted string, even if the underlying raw number changed slightly.
      - **Global Formatting Function (New - 2024-07-26)**:
        - ✅ **PREFER**: Using the new global `window.TEUI.formatNumber(value, formatType)` function defined in `4011-StateManager.js`.
        - This function provides a centralized, robust way to format numbers according to specific requirements.
@@ -797,6 +797,18 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
      - Consider alternative navigation patterns for mobile users
      - Optimize touch interactions for tablet users
    - To be addressed as part of the 4012 Visual Refactor
+
+4. **Architecture & Calculation Flow (Ongoing Refactor - Branch: `ORDERING`)
+
+4.  **Initialization Order & Calculation Stability:**
+    *   **Observation:** UI "flickers" or brief incorrect values appearing during initial page load, particularly in sections with complex dependencies (e.g., S11, S14 depending on S03, S12). This suggests potential race conditions or uncoordinated calculation triggers.
+    *   **Likely Cause:** Multiple calculation triggers during initialization (individual section `onSectionRendered` timeouts, central `Calculator.js` calls, `SectionIntegrator` pushes, StateManager listeners firing before initial state is fully stable).
+    *   **Refactoring Goal (Branch: `ORDERING`):** Establish a single, reliable, and predictable calculation sequence for the initial page load.
+    *   **Planned Steps:**
+        1.  Remove `setTimeout` calculation triggers from individual section `onSectionRendered` functions.
+        2.  Ensure `TEUI.Calculator.calculateAll` is the primary trigger after initial rendering (`teui-rendering-complete` event), potentially adjusting its timing/trigger condition.
+        3.  Modify `TEUI.Calculator.calculateAll` to *explicitly* call each section module's `.calculateAll()` method in a defined, logical dependency order.
+        4.  Investigate and potentially eliminate causes of duplicate event handler initialization (possibly in `FieldManager.js`).
 
 These issues will be addressed comprehensively in the upcoming 4012 release, which will focus on visual refinements and modern layout techniques.
 

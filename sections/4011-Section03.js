@@ -962,17 +962,17 @@ window.TEUI.SectionModules.sect03 = (function() {
                     field.addEventListener('blur', handleEditableBlur); // Use the general blur handler
                     // Add the general keydown handler to prevent Enter newlines
                     field.addEventListener('keydown', function(e) { 
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            e.stopPropagation(); 
-                            this.blur();
-                        }
-                    });
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation(); 
+                    this.blur();
+                }
+            });
                     field.hasEditableListeners = true; // Set the flag
                 }
             });
         }
-        
+
         // Initial update if province and city already selected
         if (provinceDropdown?.value && cityDropdown?.value) {
             updateWeatherData();
@@ -1026,9 +1026,9 @@ window.TEUI.SectionModules.sect03 = (function() {
             // Format display for valid numbers
             const formatType = Number.isInteger(numericValue) ? 'integer' : 'number-2dp'; // Default format
             this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-            // Update StateManager
+        // Update StateManager
             if (window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
+            window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
             }
             calculateAll(); // Recalculate after state update
         } else {

@@ -84,11 +84,9 @@ TEUI.Calculator = (function() {
             // Initialize weather handlers when rendering is complete
             initializeWeatherHandlers();
             
-            // Calculate all values
-            setTimeout(function() {
-                console.log('Starting initial calculations');
+            // Calculate all values immediately after rendering and weather handlers are ready
+            console.log('Starting initial calculations immediately after rendering complete');
                 TEUI.Calculator.calculateAll();
-            }, 500);
         });
         
         // Fallback in case the event doesn't fire

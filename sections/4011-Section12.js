@@ -90,7 +90,7 @@ window.TEUI.SectionModules.sect12 = (function() {
                 g: { fieldId: "d_104", type: "calculated", value: "0.292", section: "volumeSurfaceMetrics", dependencies: ["g_101", "d_101", "g_102", "d_102"], classes: ["total-row-text"] }, 
                 h: {}, 
                 i: { fieldId: "i_104", type: "calculated", value: "116,070.33", section: "volumeSurfaceMetrics", dependencies: ["i_101", "i_102", "i_103"], classes: ["total-row-text"] },
-                j: {},
+                j: {}, 
                 k: { fieldId: "k_104", type: "calculated", value: "-10,160.19", section: "volumeSurfaceMetrics", dependencies: ["k_101", "k_102", "k_103"], classes: ["total-row-text"] },
                 l: { fieldId: "l_104", type: "calculated", value: "100%", section: "volumeSurfaceMetrics", classes: ["percentage-value", "total-row-text"], dependencies: ["l_101", "l_102", "l_103"] },
                 m: { content: "N/A", classes: ["reference-value", "total-row-text"] }, n: { content: "" }
@@ -354,7 +354,7 @@ window.TEUI.SectionModules.sect12 = (function() {
              console.warn("DOM element not found for calculated field:", fieldId);
         }
     }
-
+    
     function setElementClass(fieldId, className, removeClasses = []) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
@@ -682,7 +682,7 @@ window.TEUI.SectionModules.sect12 = (function() {
         const field = event.target;
         if (field.hasAttribute('contenteditable') && field.getAttribute('contenteditable') === 'true' && field.classList.contains('user-input')) {
             const fieldId = field.getAttribute('data-field-id');
-            if (!fieldId) return; 
+            if (!fieldId) return;
             // Use parseNumeric to handle input
             const numValue = window.TEUI.parseNumeric(field.textContent);
             const originalText = field.textContent;
@@ -691,26 +691,26 @@ window.TEUI.SectionModules.sect12 = (function() {
                  // Determine format (e.g., integer or number-2dp)
                  const formatType = Number.isInteger(numValue) ? 'integer' : 'number-2dp';
                  const formattedValue = window.TEUI.formatNumber(numValue, formatType);
-                  if (field.textContent !== formattedValue) {
-                       field.textContent = formattedValue;
-                  }
-                  if (window.TEUI?.StateManager?.setValue) {
+                 if (field.textContent !== formattedValue) {
+                      field.textContent = formattedValue;
+                 }
+                 if (window.TEUI?.StateManager?.setValue) {
                      // Store the parsed numeric value as a string
                      window.TEUI.StateManager.setValue(fieldId, String(numValue), 'user-modified');
-                     calculateAll();
-                  }
-             } else {
+                    calculateAll();
+                 }
+            } else {
                   // Handle invalid input - revert to previous state value or 0
-                  const previousValue = window.TEUI?.StateManager?.getValue(fieldId);
-                  if (previousValue !== null && previousValue !== undefined) {
+                 const previousValue = window.TEUI?.StateManager?.getValue(fieldId);
+                 if (previousValue !== null && previousValue !== undefined) {
                       // Determine format for previous value
                       const prevNumValue = window.TEUI.parseNumeric(previousValue);
                       const formatType = Number.isInteger(prevNumValue) ? 'integer' : 'number-2dp';
                      field.textContent = window.TEUI.formatNumber(prevNumValue, formatType);
-                  } else {
+                 } else {
                       field.textContent = window.TEUI.formatNumber(0, 'number-2dp'); 
-                  }
-             }
+                 }
+            }
         }
     }
 

@@ -1094,7 +1094,7 @@ window.TEUI.SectionModules.sect15 = (function() {
         
         // Remove duplicates
         const uniqueDependencies = [...new Set(dependencies)];
-
+            
         // Add listeners for all unique dependencies
         uniqueDependencies.forEach(dep => {
             // Using an anonymous function to ensure calculateAll is called in the module's scope
@@ -1102,8 +1102,8 @@ window.TEUI.SectionModules.sect15 = (function() {
                 // No log here
                 calculateAll(); 
             });
-        });
-        
+            });
+            
         // Helper function to create listeners that trigger calculateAll without logging
         const addCalculationListener = (key) => {
             sm.addListener(key, () => {
