@@ -17,7 +17,7 @@ TEUI.StateManager = (function() {
      * Global utility to format numbers based on specified types.
      * Handles various decimal places, percentages, commas, specific types like U-Value/RSI, and raw output.
      * @param {string|number|null|undefined} value - The value to format.
-     * @param {string} [formatType='number-2dp'] - The format rule (e.g., 'number-2dp', 'number-3dp', 'number-2dp-comma', 'percent-0dp', 'percent-1dp', 'percent-2dp', 'integer', 'currency-2dp', 'currency-3dp', 'u-value', 'rsi', 'raw').
+     * @param {string} [formatType='number-2dp'] - The format rule (e.g., 'number-2dp', 'number-3dp', 'number-2dp-comma', 'percent-0dp', 'percent-1dp', 'percent-2dp', 'integer', 'integer-nocomma', 'currency-2dp', 'currency-3dp', 'u-value', 'rsi', 'raw').
      * @returns {string} The formatted string.
      */
     window.TEUI.formatNumber = function(value, formatType = 'number-2dp') {
@@ -48,9 +48,12 @@ TEUI.StateManager = (function() {
             if (formatType === 'u-value') formatType = 'number-3dp';
             if (formatType === 'rsi') formatType = 'number-2dp';
 
-            // Handle Integer
+            // Handle Integer types first
             if (formatType === 'integer') {
-                return numValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true }); // Integers with commas
+                return numValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true }); // With commas
+            }
+            if (formatType === 'integer-nocomma') {
+                return numValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: false }); // No commas
             }
 
             // Parsing complex format types
@@ -67,11 +70,6 @@ TEUI.StateManager = (function() {
 
             // Percentage Formatting
             if (type === 'percent') {
-                 let percentValue = numValue;
-                 // Assume values passed for percentage formatting are fractions (e.g., 0.6557)
-                 // unless format suggests otherwise (maybe a future 'percent-asis' type)
-                 // Note: We multiply by 100 *within* toLocaleString using style:'percent'
-                 // WRONG: percentValue = numValue * 100; 
                  return numValue.toLocaleString(undefined, { 
                      style: 'percent', 
                      minimumFractionDigits: decimals, 

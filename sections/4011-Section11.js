@@ -268,7 +268,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         if (window.TEUI?.parseNumeric) return window.TEUI.parseNumeric(getFieldValue(fieldId));
         
         // Fallback parser (if global isn't loaded yet or for some reason)
-        const value = getFieldValue(fieldId);
+            const value = getFieldValue(fieldId);
         if (value === null || value === undefined) return 0;
         if (typeof value === 'number') return value;
         if (typeof value === 'string') {
@@ -311,14 +311,14 @@ window.TEUI.SectionModules.sect11 = (function() {
         }
         
         const formattedValue = formatNumber(rawValue, format);
-        
-        if (window.TEUI?.StateManager?.setValue) {
+
+            if (window.TEUI?.StateManager?.setValue) {
             // Store raw value as string in StateManager for precision
             window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
-        }
+            }
         
         // Update DOM with formatted value
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', rawValue < 0);
@@ -631,7 +631,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 displayValue = formatNumber(numValue, 'number'); 
             }
         } else {
-            // Removed console.warn for invalid input - handled by defaulting rawValueToStore
+        // Removed console.warn for invalid input - handled by defaulting rawValueToStore
         }
         fieldElement.textContent = displayValue;
         if (window.TEUI?.StateManager?.setValue) {
@@ -712,7 +712,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         const initialCalcDelay = 10; // Use a small, consistent delay
         setTimeout(() => {
              console.log("Section 11 onSectionRendered: Running initial calculateAll() via setTimeout"); // DEBUG LOG
-             calculateAll();
+        calculateAll();
         }, initialCalcDelay);
     }
     
