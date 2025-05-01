@@ -675,7 +675,8 @@ TEUI.FieldManager = (function() {
                 rangeInput.min = field.min || (field.type === 'percentage' ? 0 : 0);
                 rangeInput.max = field.max || (field.type === 'percentage' ? 100 : 100);
                 rangeInput.step = field.step || (field.type === 'percentage' ? 5 : 5);
-                rangeInput.value = field.defaultValue !== undefined ? parseInt(field.defaultValue, 10) : (field.min || 0);
+                // Use parseFloat to handle potential decimal default values correctly
+                rangeInput.value = field.defaultValue !== undefined ? parseFloat(field.defaultValue) : (field.min || 0);
                 
                 // Create display element
                 const displaySpan = document.createElement('span');

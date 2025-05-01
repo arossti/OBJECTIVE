@@ -427,10 +427,13 @@ window.TEUI.SectionModules.sect13 = (function() {
                 },
                 f: { 
                     fieldId: "f_113", 
-                    type: "editable", 
-                    value: "12.5",
-                    section: "mechanicalLoads",
-                    classes: ["user-input", "editable"]
+                    type: "coefficient", // Changed from editable to coefficient slider type
+                    value: "12.5",      // Default value
+                    min: 3.5,           // Min value
+                    max: 20,            // Max value
+                    step: 0.1,          // Step increment
+                    section: "mechanicalLoads"
+                    // Removed classes: ["user-input", "editable"]
                 },
                 g: { 
                     content: "M.1.2 COPheat",
@@ -1287,8 +1290,8 @@ window.TEUI.SectionModules.sect13 = (function() {
 
             // Listener for l_119 (Summer Boost) changes
             sm.addListener('l_119', calculateCoolingVentilation);
-            
-            // Add listeners for climate data changes from Section 3
+
+        // Add listeners for climate data changes from Section 3
             sm.addListener('d_20', calculateAll); // HDD
             sm.addListener('d_21', calculateAll); // CDD
             sm.addListener('d_23', calculateAll); // Coldest Day Temp
@@ -1372,7 +1375,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             console.warn(`Invalid input for ${fieldId}: "${newValue}". Reverted to ${this.textContent}.`);
         }
     }
-
+    
     /**
      * Called when the section is rendered
      * This is a good place to initialize values and run initial calculations
@@ -1455,11 +1458,45 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateHeatingSystem() {
         const systemType = getFieldValue('d_113');
         const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
-        const copheat = window.TEUI.parseNumeric(getFieldValue('h_113')) || 1;
-        let heatingDemand = (systemType === 'Heatpump' && copheat > 0) ? tedTarget / copheat : tedTarget;
-        setCalculatedValue('d_114', heatingDemand, 'number-2dp-comma'); 
-        let heatingSink = (systemType === 'Heatpump') ? (heatingDemand * copheat) - heatingDemand : 0;
-        setCalculatedValue('l_113', heatingSink, 'number-2dp-comma');
+        const copheat_h113 = window.TEUI.parseNumeric(getFieldValue('h_113')) || 1;
+        let heatingDemand_d114 = 0;
+        let heatingSink_l113 = 0;
+        let isHeatpump = (systemType === 'Heatpump');
+        
+        // --- Apply dynamic styling/values --- 
+        setFieldDisabled('f_113', !isHeatpump); // Disable HSPF slider if not Heatpump
+        setFieldDisabled('h_113', !isHeatpump); // Disable COPheat display if not Heatpump
+        setFieldDisabled('j_113', !isHeatpump); // Disable COPcool display if not Heatpump
+        setFieldDisabled('l_113', !isHeatpump); // Disable HP Sink display if not Heatpump
+        // Style labels too? (e.g., f_113 label is in cell e, h_113 label in g, j_113 label in i, l_113 label in k)
+        // Example: document.querySelector('[data-id="M.1.0"] .col-e').classList.toggle('ghost-text', !isHeatpump);
+        
+        if (isHeatpump) {
+            const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 3.5; // Use current/default HSPF
+            const calculated_copheat = (hspf > 0) ? hspf / 3.412 : 1;
+            if (calculated_copheat > 0) {
+                 heatingDemand_d114 = tedTarget / calculated_copheat;
+                 heatingSink_l113 = heatingDemand_d114 * (calculated_copheat - 1);
+            }
+            // Ensure COP values recalculate if HSPF was used - REMOVED CALL, handled by listener
+            // calculateCOPValues(); // Recalculate COPs based on potentially enabled slider
+        } else {
+            // Not a Heatpump - Use TEDI directly, sink is 0, force COPs to 1/0
+            heatingDemand_d114 = tedTarget;
+            heatingSink_l113 = 0;
+            // Force COP values for non-heatpump systems
+            setCalculatedValue('h_113', 1.0, 'number-2dp'); 
+            setCalculatedValue('j_113', 0.0, 'number-1dp'); 
+            setCalculatedValue('j_114', 0.0, 'number-1dp'); // CEER is also 0
+            // Optionally reset HSPF slider/value to min when disabled?
+            // const slider = document.querySelector('[data-field-id="f_113"] input[type="range"]');
+            // if (slider) slider.value = 3.5;
+            // setCalculatedValue('f_113', 3.5, 'number-1dp'); // Update display too
+        }
+        
+        setCalculatedValue('d_114', heatingDemand_d114, 'number-2dp-comma'); 
+        setCalculatedValue('l_113', heatingSink_l113, 'number-2dp-comma');
+
         calculateHeatingFuelImpact();
         calculateCoolingSystem();
     }
@@ -1506,7 +1543,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                 coolingSink_l114 = (coolingElectLoad_d117 * copcool_hp) - coolingElectLoad_d117;
             } else if (dedicatedCopcool > 0) { 
                 coolingSink_l116 = (coolingElectLoad_d117 * dedicatedCopcool) - coolingElectLoad_d117;
-            }
+        }
         }
         setCalculatedValue('d_117', coolingElectLoad_d117, 'number-2dp-comma');
         setCalculatedValue('l_114', coolingSink_l114, 'number-2dp-comma');
@@ -1534,7 +1571,7 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate ventilation rates based on method, occupancy, and building data
      */
     function calculateVentilationRates() {
-        const ventMethod = getFieldValue('g_118'); 
+        const ventMethod = getFieldValue('g_118');
         const occupants = window.TEUI.parseNumeric(getFieldValue('d_63')) || 0;
         const perPersonRate = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
         const volume = window.TEUI.parseNumeric(getFieldValue('d_105')) || 0;
@@ -1607,7 +1644,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         } else if (window.TEUI.StateManager?.getValue) {
             freeCoolingLimit = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_freeCoolingLimit')) || 0;
             daysActiveCooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_daysActiveCooling')) || 120;
-        } else {
+            } else {
             const ventRate = window.TEUI.parseNumeric(getFieldValue('d_120')) || 0;
             const cdd = window.TEUI.parseNumeric(getFieldValue('d_21')) || 0;
             freeCoolingLimit = 1.21 * ventRate * 4 * (120*24) / 1000; 
@@ -1663,10 +1700,10 @@ window.TEUI.SectionModules.sect13 = (function() {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             return element.value || element.textContent;
-        }
+            }
         return null;
     }
-
+    
     /**
      * Sets a calculated value in the StateManager and updates the corresponding DOM element.
      * Ensures the raw numeric value is stored in StateManager and the formatted
@@ -1693,13 +1730,13 @@ window.TEUI.SectionModules.sect13 = (function() {
 
         // Store raw value as string in StateManager for precision and consistency
         window.TEUI.StateManager?.setValue(fieldId, numericValue.toString(), 'calculated');
-
+        
         // Update DOM with formatted value
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', numericValue < 0);
-        } 
+        }
     }
     
     /**
@@ -1781,3 +1818,22 @@ document.addEventListener('cooling-calculations-loaded', function() {
         window.TEUI.SectionModules.sect13.calculateCoolingVentilation();
     }
 });
+
+// Helper function to apply/remove disabled styling
+function setFieldDisabled(fieldId, isDisabled) {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    // Also target associated labels if needed by adjusting selector or passing label ID
+    if (element) {
+        // Find the parent TD cell to apply styling more broadly if needed
+        const cell = element.closest('td');
+        if (cell) {
+            cell.classList.toggle('ghost-text', isDisabled);
+            // Maybe disable slider interaction directly?
+            const slider = cell.querySelector('input[type="range"]');
+            if (slider) slider.disabled = isDisabled;
+        } else {
+            element.classList.toggle('ghost-text', isDisabled);
+        }
+    } 
+    // Could add logic here to find and style the label cell (e.g., the cell with M.1.1 HSPF)
+}
