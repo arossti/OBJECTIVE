@@ -118,30 +118,30 @@ window.TEUI.SectionModules.sect14 = (function() {
             cells: {
                 c: { content: "SECTION 14. TEDI & TELI Targeted", classes: ["section-header"] },
                 d: { content: "kWh/yr", classes: ["section-subheader", "text-center"] },
-                e: { content: "Column E", classes: ["section-subheader"] },
-                f: { content: "Column F", classes: ["section-subheader"] },
-                g: { content: "Column G", classes: ["section-subheader"] },
+                e: { content: "", classes: ["section-subheader"] },
+                f: { content: "", classes: ["section-subheader"] },
+                g: { content: "", classes: ["section-subheader"] },
                 h: { content: "kWh/m²/yr", classes: ["section-subheader", "text-center"] },
-                i: { content: "Column I", classes: ["section-subheader"] },
-                j: { content: "Column J", classes: ["section-subheader"] },
-                k: { content: "Column K", classes: ["section-subheader"] },
+                i: { content: "", classes: ["section-subheader"] },
+                j: { content: "", classes: ["section-subheader"] },
+                k: { content: "", classes: ["section-subheader"] },
                 l: { content: "kWh/yr", classes: ["section-subheader", "text-center"] },
-                m: { content: "Column M", classes: ["section-subheader"] },
-                n: { content: "Column N", classes: ["section-subheader"] }
+                m: { content: "", classes: ["section-subheader"] },
+                n: { content: "", classes: ["section-subheader"] }
             }
         },
 
-        // Row 126: T.4.0 TED Targeted / T.4.1 TEDI
-        "126": {
+        // Row 127: T.4.0 TED Targeted / T.4.1 TEDI
+        "127": {
             id: "T.4.0",
-            rowId: "T.4.0",
+            rowId: "127",
             label: "TED Targeted",
             cells: {
                 c: { label: "TED Targeted" },
                 d: { 
-                    fieldId: "d_126", 
+                    fieldId: "d_127",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -149,32 +149,32 @@ window.TEUI.SectionModules.sect14 = (function() {
                 f: { content: "T.4.1", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "TEDI", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "h_126", 
+                    fieldId: "h_127",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
                 i: { content: "Includes V.5 Net Ventilation Losses, Excludes T.7.3 CEDI Ae", classes: ["note-text"] },
                 j: { content: "" },
                 k: { content: "" },
-                l: { content: "" }, // l_126 removed, no formula
+                l: { content: "" },
                 m: { content: "" },
                 n: { content: "" }
             }
         },
 
-        // Row 127: T.4.2 TED Envelope / T.4.3 TEDI (Excludes Ventilation)
-        "127": {
+        // Row 128: T.4.2 TED Envelope / T.4.3 TEDI (Excludes Ventilation)
+        "128": {
             id: "T.4.2",
-            rowId: "T.4.2",
+            rowId: "128",
             label: "TED Envelope (Excludes Ventilation)",
             cells: {
                 c: { label: "TED Envelope (Excludes Ventilation)" },
                 d: { 
-                    fieldId: "d_127", 
+                    fieldId: "d_128",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -182,9 +182,9 @@ window.TEUI.SectionModules.sect14 = (function() {
                 f: { content: "T.4.3", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "TEDI (Excludes Ventilation)", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "h_127", 
+                    fieldId: "h_128",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -197,17 +197,17 @@ window.TEUI.SectionModules.sect14 = (function() {
             }
         },
 
-        // Row 128: T.4.4 CED Cooling Load / T.4.5 CEDI Unmitigated
-        "128": {
+        // Row 129: T.4.4 CED Cooling Load Unmitigated / T.4.5 CEDI Unmitigated
+        "129": {
             id: "T.4.4",
-            rowId: "T.4.4",
+            rowId: "129",
             label: "CED Cooling Load Unmitigated",
             cells: {
                 c: { label: "CED Cooling Load Unmitigated" },
                 d: { 
-                    fieldId: "d_128", 
+                    fieldId: "d_129",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -215,9 +215,9 @@ window.TEUI.SectionModules.sect14 = (function() {
                 f: { content: "T.4.5", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "CEDI Unmitigated", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "h_128", 
+                    fieldId: "h_129",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -225,9 +225,9 @@ window.TEUI.SectionModules.sect14 = (function() {
                 j: { content: "" },
                 k: { content: "" },
                 l: { 
-                    fieldId: "l_128", 
+                    fieldId: "l_128",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -236,17 +236,17 @@ window.TEUI.SectionModules.sect14 = (function() {
             }
         },
 
-        // Row 129: T.4.6 CEDI Cooling Load / T.4.7 CEDI Mitigated
-        "129": {
+        // Row 130: T.4.6 CEDI Cooling Load (W/m2) / T.4.7 CEDI Mitigated (W/m2)
+        "130": {
             id: "T.4.6",
-            rowId: "T.4.6",
+            rowId: "130",
             label: "CEDI Cooling Load",
             cells: {
                 c: { label: "CEDI Cooling Load" },
                 d: { 
-                    fieldId: "d_129", 
+                    fieldId: "d_130",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -254,9 +254,9 @@ window.TEUI.SectionModules.sect14 = (function() {
                 f: { content: "T.4.7", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "CEDI Mitigated", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "h_129", 
+                    fieldId: "h_130",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -269,17 +269,17 @@ window.TEUI.SectionModules.sect14 = (function() {
             }
         },
 
-        // Row 130: T.5.1 TEL Total Envelope Heatloss / T.5.2 TELI
-        "130": {
+        // Row 131: T.5.1 TEL Total Envelope Heatloss / T.5.2 TELI
+        "131": {
             id: "T.5.1",
-            rowId: "T.5.1",
+            rowId: "131",
             label: "TEL Total Envelope Heatloss",
             cells: {
                 c: { label: "TEL Total Envelope Heatloss" },
                 d: { 
-                    fieldId: "d_130", 
+                    fieldId: "d_131",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -287,9 +287,9 @@ window.TEUI.SectionModules.sect14 = (function() {
                 f: { content: "T.5.2", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "TELI", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "h_130", 
+                    fieldId: "h_131",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -301,18 +301,18 @@ window.TEUI.SectionModules.sect14 = (function() {
                 n: { content: "" }
             }
         },
-
-        // Row 131: T.5.3 CEG Cooling Envelope Heatgain / T.5.4 CEGI
-        "131": {
+        
+        // Row 132: T.5.3 CEG Cooling Envelope Heatgain / T.5.4 CEGI
+        "132": {
             id: "T.5.3",
-            rowId: "T.5.3",
+            rowId: "132",
             label: "CEG Cooling Envelope Heatgain",
             cells: {
                 c: { label: "CEG Cooling Envelope Heatgain" },
                 d: { 
-                    fieldId: "d_131", 
+                    fieldId: "d_132",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -320,9 +320,9 @@ window.TEUI.SectionModules.sect14 = (function() {
                 f: { content: "T.5.4", classes: ["label-prefix", "text-right", "no-wrap"] },
                 g: { content: "CEGI", classes: ["label-main", "text-left", "no-wrap"] },
                 h: { 
-                    fieldId: "h_131", 
+                    fieldId: "h_132",
                     type: "calculated", 
-                    value: "0.00", // Default to 0.00
+                    value: "0.00",
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
@@ -498,53 +498,49 @@ window.TEUI.SectionModules.sect14 = (function() {
         }
         const sm = window.TEUI.StateManager;
         
-        // Dependencies for d_126: =(I97+I98+I103+M121)-I80
-        ['i_97', 'i_98', 'i_103', 'm_121', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_126'));
-        
-        // Dependencies for h_126: =D126/H15
-        sm.registerDependency('d_126', 'h_126');
-        sm.registerDependency('h_15', 'h_126');
-        
-        // Dependencies for d_127: =(I97+I98+I103)-I80
-        ['i_97', 'i_98', 'i_103', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_127'));
-        
-        // Dependencies for h_127: =D127/H15
+        // D127 (TED Targeted): =(I97+I98+I103+M121)-I80
+        ['i_97', 'i_98', 'i_103', 'm_121', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_127'));
+        // H127 (TEDI): =D127/H15
         sm.registerDependency('d_127', 'h_127');
         sm.registerDependency('h_15', 'h_127');
-
-        // Dependencies for d_128: =K71+K79+K97+K104+K103+D122
-        ['k_71', 'k_79', 'k_97', 'k_104', 'k_103', 'd_122'].forEach(dep => sm.registerDependency(dep, 'd_128'));
-
-        // Dependencies for h_128: =D128/H15
+        
+        // D128 (TED Envelope): =(I97+I98+I103)-I80
+        ['i_97', 'i_98', 'i_103', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_128'));
+        // H128 (TEDI Envelope): =D128/H15
         sm.registerDependency('d_128', 'h_128');
         sm.registerDependency('h_15', 'h_128');
 
-        // Dependencies for l_128: =D128-H124-D123
-        sm.registerDependency('d_128', 'l_128');
+        // D129 (CED Cooling Unmitigated): =K71+K79+K97+K104+K103+D122 - NOTE: Formula uses K104, Code used D131 (K97+K98+K103)
+        // Assuming formula sheet K104 implies SUM(K97:K103) based on context/other formulas.
+        ['k_71', 'k_79', 'k_97', 'k_98', 'k_103', 'd_122'].forEach(dep => sm.registerDependency(dep, 'd_129')); 
+        // H129 (CEDI Unmitigated kWh/m2/yr): =D129/H15
+        sm.registerDependency('d_129', 'h_129'); 
+        sm.registerDependency('h_15', 'h_129');
+        
+        // L128 (CED Mitigated kWh/yr): =D129-H124-D123
+        sm.registerDependency('d_129', 'l_128'); 
         sm.registerDependency('h_124', 'l_128');
         sm.registerDependency('d_123', 'l_128');
 
-        // Dependencies for d_129: =(D128/8760*1000)/H15
-        sm.registerDependency('d_128', 'd_129');
-        sm.registerDependency('h_15', 'd_129');
+        // D130 (CEDI Cooling Load W/m2 Unmitigated): =(D129/8760*1000)/H15
+        sm.registerDependency('d_129', 'd_130'); 
+        sm.registerDependency('h_15', 'd_130');
 
-        // Dependencies for h_129: =(M129/8760*1000)/H15 (Note: M129 = l_128 in this context)
-        sm.registerDependency('l_128', 'h_129'); // M129 is derived from l_128
-        sm.registerDependency('h_15', 'h_129');
-        
-        // Dependencies for d_130: =SUM(I97:I98)+I103
-        ['i_97', 'i_98', 'i_103'].forEach(dep => sm.registerDependency(dep, 'd_130'));
-        
-        // Dependencies for h_130: =D130/H15
-        sm.registerDependency('d_130', 'h_130');
+        // H130 (CEDI Mitigated W/m2): =(L128/8760*1000)/H15 
+        sm.registerDependency('l_128', 'h_130');
         sm.registerDependency('h_15', 'h_130');
         
-        // Dependencies for d_131: =SUM(K97:K98)+K103
-        ['k_97', 'k_98', 'k_103'].forEach(dep => sm.registerDependency(dep, 'd_131'));
-
-        // Dependencies for h_131: =D131/H15
+        // D131 (TEL Total Envelope Heatloss): =SUM(I97:I98)+I103
+        ['i_97', 'i_98', 'i_103'].forEach(dep => sm.registerDependency(dep, 'd_131'));
+        // H131 (TELI): =D131/H15
         sm.registerDependency('d_131', 'h_131');
         sm.registerDependency('h_15', 'h_131');
+        
+        // D132 (CEG Cooling Envelope Heatgain): =SUM(K97:K98)+K103
+        ['k_97', 'k_98', 'k_103'].forEach(dep => sm.registerDependency(dep, 'd_132'));
+        // H132 (CEGI): =D132/H15
+        sm.registerDependency('d_132', 'h_132');
+        sm.registerDependency('h_15', 'h_132');
         
         console.log("TEDI/TELI dependencies registered");
     }
@@ -582,64 +578,58 @@ window.TEUI.SectionModules.sect14 = (function() {
             
             // --- Perform Calculations ---
             
-            // d_126: =(I97+I98+I103+M121)-I80 
-            // (TB Loss + Env Loss + Air Loss + Vent Loss) - Usable Gains
-            const tedTargeted_d126 = (i97 + i98 + i103 + m121) - i80;
-            setCalculatedValue('d_126', tedTargeted_d126);
+            // d_127: TED Targeted (kWh/yr) = (I97+I98+I103+M121)-I80 
+            const tedTargeted_d127 = (i97 + i98 + i103 + m121) - i80;
+            setCalculatedValue('d_127', tedTargeted_d127);
             
-            // h_126: =D126/H15
-            const tedi_h126 = area > 0 ? tedTargeted_d126 / area : 0;
-            setCalculatedValue('h_126', tedi_h126);
+            // h_127: TEDI (kWh/m2/yr) = D127/H15
+            const tedi_h127 = area > 0 ? tedTargeted_d127 / area : 0;
+            setCalculatedValue('h_127', tedi_h127);
             
-            // d_127: =(I97+I98+I103)-I80
-            // (TB Loss + Env Loss + Air Loss) - Usable Gains
-            const tedEnvelope_d127 = (i97 + i98 + i103) - i80;
-            setCalculatedValue('d_127', tedEnvelope_d127);
+            // d_128: TED Envelope (kWh/yr) = (I97+I98+I103)-I80
+            const tedEnvelope_d128 = (i97 + i98 + i103) - i80; 
+            setCalculatedValue('d_128', tedEnvelope_d128);
             
-            // h_127: =D127/H15
-            const tediExcludesVent_h127 = area > 0 ? tedEnvelope_d127 / area : 0;
-            setCalculatedValue('h_127', tediExcludesVent_h127);
+            // h_128: TEDI Envelope (kWh/m2/yr) = D128/H15
+            const tediEnvelope_h128 = area > 0 ? tedEnvelope_d128 / area : 0; 
+            setCalculatedValue('h_128', tediEnvelope_h128);
+
+            // d_132: CEG Cooling Envelope Heatgain (kWh/yr) = SUM(K97:K98)+K103
+            const cegHeatgain_d132 = (k97 + k98) + k103; 
+            setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 correctly
+
+            // d_129: CED Cooling Load Unmitigated (kWh/yr) = K71+K79+K97+K104+K103+D122 
+            // Using K97+K98+K103 (value of d_132) instead of K97+K104+K103 per formula sheet ambiguity resolved by context
+            const cedCoolingUnmitigated_d129 = k71 + k79 + cegHeatgain_d132 + d122;
+            setCalculatedValue('d_129', cedCoolingUnmitigated_d129);
             
-            // d_128: =K71+K79+K97+K104+K103+D122 
-            // Note: K104 is Cooling Envelope Gain Total (SUM K97:K103+K104?), k_104 is not a field in the source CSV, seems to be SUM(K97:K98)+K103 based on d_131?
-            // Let's assume K104 represents Envelope Gains = SUM(K97:K98)+K103 = d_131
-            const d131_ceg = (k97 + k98) + k103; // Recalculate d_131 value for clarity
-            const cedCoolingUnmitigated_d128 = k71 + k79 + d131_ceg + d122;
-            setCalculatedValue('d_128', cedCoolingUnmitigated_d128);
+            // h_129: CEDI Unmitigated (kWh/m2/yr) = D129/H15 (Matches formula sheet, Excel label shows W/m2)
+            const cediUnmitigated_h129 = area > 0 ? cedCoolingUnmitigated_d129 / area : 0;
+            setCalculatedValue('h_129', cediUnmitigated_h129); // Keep kWh/m2/yr based on formula
             
-            // h_128: =D128/H15
-            const cediUnmitigated_h128 = area > 0 ? cedCoolingUnmitigated_d128 / area : 0;
-            setCalculatedValue('h_128', cediUnmitigated_h128);
+            // l_128: CED Mitigated (kWh/yr) = D129-H124-D123
+            const cedMitigated_l128 = cedCoolingUnmitigated_d129 - h124 - d123;
+            setCalculatedValue('l_128', cedMitigated_l128);
             
-            // l_128: =D128-H124-D123 (Mitigated Cooling Load in kWh/yr)
-            const mitigatedCoolingLoad_l128 = cedCoolingUnmitigated_d128 - h124 - d123;
-            setCalculatedValue('l_128', mitigatedCoolingLoad_l128);
+            // d_130: CEDI Cooling Load W/m2 Unmitigated = (D129/8760*1000)/H15
+            const cediUnmitigatedWm2_d130 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
+            setCalculatedValue('d_130', cediUnmitigatedWm2_d130, 'W/m2');
             
-            // d_129: =(D128/8760*1000)/H15 (Unmitigated CEDI in W/m2)
-            const cediCoolingLoad_d129 = area > 0 ? (cedCoolingUnmitigated_d128 / 8760 * 1000) / area : 0;
-            setCalculatedValue('d_129', cediCoolingLoad_d129, 'W/m2'); // Format as W/m2
+            // h_130: CEDI Mitigated W/m2 = (L128/8760*1000)/H15 
+            const cediMitigatedWm2_h130 = area > 0 ? (cedMitigated_l128 / 8760 * 1000) / area : 0;
+            setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
             
-            // h_129: =(M129/8760*1000)/H15 (Mitigated CEDI in W/m2 - M129 is l_128)
-            const cediMitigated_h129 = area > 0 ? (mitigatedCoolingLoad_l128 / 8760 * 1000) / area : 0;
-            setCalculatedValue('h_129', cediMitigated_h129, 'W/m2'); // Format as W/m2
+            // d_131: TEL Total Envelope Heatloss (kWh/yr) = SUM(I97:I98)+I103
+            const telHeatloss_d131 = i97 + i98 + i103;
+            setCalculatedValue('d_131', telHeatloss_d131);
             
-            // d_130: =SUM(I97:I98)+I103 (Total Envelope Heatloss - excluding Vent)
-            const telHeatloss_d130 = i97 + i98 + i103;
-            setCalculatedValue('d_130', telHeatloss_d130);
+            // h_131: TELI (kWh/m2/yr) = D131/H15
+            const teli_h131 = area > 0 ? telHeatloss_d131 / area : 0;
+            setCalculatedValue('h_131', teli_h131);
             
-            // h_130: =D130/H15
-            const teli_h130 = area > 0 ? telHeatloss_d130 / area : 0;
-            setCalculatedValue('h_130', teli_h130);
-            
-            // d_131: =SUM(K97:K98)+K103 (Total Cooling Envelope Heatgain)
-            // Already calculated as d131_ceg
-            setCalculatedValue('d_131', d131_ceg);
-            
-            // h_131: =D131/H15
-            const cegi_h131 = area > 0 ? d131_ceg / area : 0;
-            setCalculatedValue('h_131', cegi_h131);
-            
-            // console.log("TEDI/TELI calculations completed");
+            // h_132: CEGI (kWh/m2/yr) = D132/H15 (Uses calculated d_132/cegHeatgain_d132)
+            const cegi_h132 = area > 0 ? cegHeatgain_d132 / area : 0;
+            setCalculatedValue('h_132', cegi_h132);
             
         } catch (error) {
             console.error("Error in TEDI/TELI calculations:", error);
