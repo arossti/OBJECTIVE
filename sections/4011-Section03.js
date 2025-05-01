@@ -748,26 +748,7 @@ window.TEUI.SectionModules.sect03 = (function() {
         const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
         setFieldValue("d_22", gfhdd);
         
-<<<<<<< HEAD
-        // Ground facing CDD
-        const capacitanceSetting = getFieldValue('h_21'); // Read dropdown value
-        const cdd = getNumericValue('d_21'); // Define cdd here
-        let gfcdd;
-
-        if (capacitanceSetting === 'Capacitance') {
-            // Use the specific value for Capacitance mode, matching Excel's likely SCHEDULES!N5 result
-            gfcdd = -1680;
-        } else { // Assumes 'Static' mode
-            // Use the calculation likely intended for Static mode (matches previous JS logic)
-            gfcdd = Math.round(cdd * -0.85); 
-        }
-
-        if (!isNaN(cdd)) { // Check if the original cdd value was valid before setting
-            // Value is now calculated above based on capacitanceSetting
-            setFieldValue("h_22", gfcdd);
-        }
-=======
-        // --- Ground facing CDD (h_22) --- NEW LOGIC ---
+        // --- Ground facing CDD (h_22) --- NEW LOGIC --- 
         const capacitanceSetting = getFieldValue('h_21') || 'Static'; // Default to Static if undefined
         const coolingSetpoint_h24 = getNumericValue('h_24'); // TsetCool
         const coolingDays_m19 = getNumericValue('m_19');     // DaysCooling
@@ -784,7 +765,6 @@ window.TEUI.SectionModules.sect03 = (function() {
         // Update h_22 field with the newly calculated GF CDD value
         // Use Math.round as Excel likely rounds this
         setFieldValue("h_22", Math.round(gfcdd)); 
->>>>>>> SECTION03COMPLETE
     }
     
     /**
@@ -927,27 +907,28 @@ window.TEUI.SectionModules.sect03 = (function() {
         const provinceDropdown = getElement(['[data-dropdown-id="dd_d_19"]']);
         if (provinceDropdown) {
             // Remove any existing listeners
-            // const newProvinceDropdown = provinceDropdown.cloneNode(true);
-            // provinceDropdown.parentNode.replaceChild(newProvinceDropdown, provinceDropdown);
-            provinceDropdown.removeEventListener('change', handleProvinceChange);
-            provinceDropdown.addEventListener('change', handleProvinceChange);
+            const newProvinceDropdown = provinceDropdown.cloneNode(true);
+            provinceDropdown.parentNode.replaceChild(newProvinceDropdown, provinceDropdown);
+            
+            // Add new listener
+            newProvinceDropdown.addEventListener('change', handleProvinceChange);
         }
         
         // City dropdown change
         const cityDropdown = getElement(['[data-dropdown-id="dd_h_19"]']);
         if (cityDropdown) {
             // Remove any existing listeners
-            // const newCityDropdown = cityDropdown.cloneNode(true);
-            // cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
-            const cityChangeHandler = function() { // Define named handler to remove
+            const newCityDropdown = cityDropdown.cloneNode(true);
+            cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
+            
+            // Add new listener
+            newCityDropdown.addEventListener('change', function() {
                 const selectedCity = this.value;
                 if (window.TEUI && window.TEUI.StateManager) {
                      window.TEUI.StateManager.setValue('h_19', selectedCity, 'user-modified');
                 }
                 updateWeatherData();
-            };
-            cityDropdown.removeEventListener('change', cityChangeHandler);
-            cityDropdown.addEventListener('change', cityChangeHandler);
+            });
         }
         
         // Present/Future toggle
@@ -958,17 +939,13 @@ window.TEUI.SectionModules.sect03 = (function() {
         }
         
         // Weather data buttons
-        // Simplified: Assuming only one showWeatherDataBtn and weatherDataBtn exist now
-        const showWeatherDataBtn = document.getElementById('showWeatherDataBtn');
-        if (showWeatherDataBtn) {
-            showWeatherDataBtn.removeEventListener('click', showWeatherData); 
-            showWeatherDataBtn.addEventListener('click', showWeatherData);
-        }
-        const weatherDataBtn = document.getElementById('weatherDataBtn');
-        if (weatherDataBtn) {
-            weatherDataBtn.removeEventListener('click', showWeatherData); 
-            weatherDataBtn.addEventListener('click', showWeatherData);
-        }
+        ['showWeatherDataBtn', 'weatherDataBtn'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                 btn.removeEventListener('click', showWeatherData); 
+                 btn.addEventListener('click', showWeatherData);
+            }
+        });
         
         // Add handlers for ALL editable fields in this section (e.g., m_19, l_24)
         const sectionElement = document.getElementById('climateCalculations');
@@ -980,17 +957,17 @@ window.TEUI.SectionModules.sect03 = (function() {
                     field.addEventListener('blur', handleEditableBlur); // Use the general blur handler
                     // Add the general keydown handler to prevent Enter newlines
                     field.addEventListener('keydown', function(e) { 
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation(); 
-                    this.blur();
-                }
-            });
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            e.stopPropagation(); 
+                            this.blur();
+                        }
+                    });
                     field.hasEditableListeners = true; // Set the flag
                 }
             });
         }
-
+        
         // Initial update if province and city already selected
         if (provinceDropdown?.value && cityDropdown?.value) {
             updateWeatherData();
@@ -1010,16 +987,16 @@ window.TEUI.SectionModules.sect03 = (function() {
             // Listener for h_24 (Calculated Cooling Setpoint) changes
             window.TEUI.StateManager.addListener('h_24', function(newValue) {
                 updateCoolingDependents();
-                calculateGroundFacing(); // Recalculate GF CDD when cooling setpoint changes
+                calculateGroundFacing(); // Re-add call needed for GF CDD
             });
 
             // Listener for l_24 (Cooling Override) changes
             window.TEUI.StateManager.addListener('l_24', function(newValue) {
                  updateCoolingDependents();
-                 calculateGroundFacing(); // Recalculate GF CDD when override changes (via effective setpoint)
+                 calculateGroundFacing(); // Re-add call needed for GF CDD
             });
 
-            // Listener for d_20 (HDD) changes to update j_19 (Climate Zone) & GF HDD
+            // Listener for d_20 (HDD) changes to update j_19 (Climate Zone)
             window.TEUI.StateManager.addListener('d_20', function(newHddValue) {
                 const climateZone = determineClimateZone(newHddValue);
                 setFieldValue("j_19", climateZone, 'derived');
@@ -1056,9 +1033,9 @@ window.TEUI.SectionModules.sect03 = (function() {
             // Format display for valid numbers
             const formatType = Number.isInteger(numericValue) ? 'integer' : 'number-2dp'; // Default format
             this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-        // Update StateManager
+            // Update StateManager
             if (window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
+                window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
             }
             calculateAll(); // Recalculate after state update
         } else {
@@ -1130,6 +1107,22 @@ window.TEUI.SectionModules.sect03 = (function() {
         calculateAll: calculateAll
     };
 })();
+
+// Initialize when the section is rendered
+document.addEventListener('teui-section-rendered', function(event) {
+    if (event.detail?.sectionId === 'climateCalculations') {
+        setTimeout(() => window.TEUI.SectionModules.sect03.onSectionRendered(), 100);
+    }
+});
+
+// Fallback to rendering complete event
+document.addEventListener('teui-rendering-complete', function() {
+    setTimeout(() => {
+        if (document.getElementById('climateCalculations')) {
+            window.TEUI.SectionModules.sect03.onSectionRendered();
+        }
+    }, 300);
+});
 
 /**
  * Helper to get numeric value using the global parser.
