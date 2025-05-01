@@ -739,20 +739,16 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Calculate ground facing HDD and CDD
      */
     function calculateGroundFacing() {
-        // Ground facing HDD based on TsetHeating and Heating Days
+        // --- Ground facing HDD --- 
         const heatingSetpoint = getNumericValue('h_23');
-        const coolingDays = getNumericValue('m_19');
-        const heatingDays = 365 - coolingDays;
+        const coolingDaysGFH = getNumericValue('m_19'); // Use a separate variable name to avoid confusion
+        const heatingDays = 365 - coolingDaysGFH;
 
         // Formula: (TsetHeating - 10°C_ground) * HeatingDays
         const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
         setFieldValue("d_22", gfhdd);
-        /* // OLD Logic: Based on HDD * 0.43
-        if (!isNaN(hdd)) {
-            const gfhdd = Math.round(hdd * 0.43);
-            setFieldValue("d_22", gfhdd);
-        } */
         
+<<<<<<< HEAD
         // Ground facing CDD
         const capacitanceSetting = getFieldValue('h_21'); // Read dropdown value
         const cdd = getNumericValue('d_21'); // Define cdd here
@@ -770,6 +766,25 @@ window.TEUI.SectionModules.sect03 = (function() {
             // Value is now calculated above based on capacitanceSetting
             setFieldValue("h_22", gfcdd);
         }
+=======
+        // --- Ground facing CDD (h_22) --- NEW LOGIC ---
+        const capacitanceSetting = getFieldValue('h_21') || 'Static'; // Default to Static if undefined
+        const coolingSetpoint_h24 = getNumericValue('h_24'); // TsetCool
+        const coolingDays_m19 = getNumericValue('m_19');     // DaysCooling
+        let gfcdd;
+
+        if (capacitanceSetting === 'Static') {
+            // Formula: MAX(0, (10 - TsetCool) * DaysCooling)
+            gfcdd = Math.max(0, (10 - coolingSetpoint_h24) * coolingDays_m19);
+        } else { // Assumes 'Capacitance' or any other value
+            // Formula: (10 - TsetCool) * DaysCooling
+            gfcdd = (10 - coolingSetpoint_h24) * coolingDays_m19;
+        }
+
+        // Update h_22 field with the newly calculated GF CDD value
+        // Use Math.round as Excel likely rounds this
+        setFieldValue("h_22", Math.round(gfcdd)); 
+>>>>>>> SECTION03COMPLETE
     }
     
     /**
@@ -912,28 +927,27 @@ window.TEUI.SectionModules.sect03 = (function() {
         const provinceDropdown = getElement(['[data-dropdown-id="dd_d_19"]']);
         if (provinceDropdown) {
             // Remove any existing listeners
-            const newProvinceDropdown = provinceDropdown.cloneNode(true);
-            provinceDropdown.parentNode.replaceChild(newProvinceDropdown, provinceDropdown);
-            
-            // Add new listener
-            newProvinceDropdown.addEventListener('change', handleProvinceChange);
+            // const newProvinceDropdown = provinceDropdown.cloneNode(true);
+            // provinceDropdown.parentNode.replaceChild(newProvinceDropdown, provinceDropdown);
+            provinceDropdown.removeEventListener('change', handleProvinceChange);
+            provinceDropdown.addEventListener('change', handleProvinceChange);
         }
         
         // City dropdown change
         const cityDropdown = getElement(['[data-dropdown-id="dd_h_19"]']);
         if (cityDropdown) {
             // Remove any existing listeners
-            const newCityDropdown = cityDropdown.cloneNode(true);
-            cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
-            
-            // Add new listener
-            newCityDropdown.addEventListener('change', function() {
+            // const newCityDropdown = cityDropdown.cloneNode(true);
+            // cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
+            const cityChangeHandler = function() { // Define named handler to remove
                 const selectedCity = this.value;
                 if (window.TEUI && window.TEUI.StateManager) {
                      window.TEUI.StateManager.setValue('h_19', selectedCity, 'user-modified');
                 }
                 updateWeatherData();
-            });
+            };
+            cityDropdown.removeEventListener('change', cityChangeHandler);
+            cityDropdown.addEventListener('change', cityChangeHandler);
         }
         
         // Present/Future toggle
@@ -944,13 +958,17 @@ window.TEUI.SectionModules.sect03 = (function() {
         }
         
         // Weather data buttons
-        ['showWeatherDataBtn', 'weatherDataBtn'].forEach(id => {
-            const btn = document.getElementById(id);
-            if (btn) {
-                 btn.removeEventListener('click', showWeatherData); 
-                 btn.addEventListener('click', showWeatherData);
-            }
-        });
+        // Simplified: Assuming only one showWeatherDataBtn and weatherDataBtn exist now
+        const showWeatherDataBtn = document.getElementById('showWeatherDataBtn');
+        if (showWeatherDataBtn) {
+            showWeatherDataBtn.removeEventListener('click', showWeatherData); 
+            showWeatherDataBtn.addEventListener('click', showWeatherData);
+        }
+        const weatherDataBtn = document.getElementById('weatherDataBtn');
+        if (weatherDataBtn) {
+            weatherDataBtn.removeEventListener('click', showWeatherData); 
+            weatherDataBtn.addEventListener('click', showWeatherData);
+        }
         
         // Add handlers for ALL editable fields in this section (e.g., m_19, l_24)
         const sectionElement = document.getElementById('climateCalculations');
@@ -992,19 +1010,31 @@ window.TEUI.SectionModules.sect03 = (function() {
             // Listener for h_24 (Calculated Cooling Setpoint) changes
             window.TEUI.StateManager.addListener('h_24', function(newValue) {
                 updateCoolingDependents();
+                calculateGroundFacing(); // Recalculate GF CDD when cooling setpoint changes
             });
 
             // Listener for l_24 (Cooling Override) changes
             window.TEUI.StateManager.addListener('l_24', function(newValue) {
                  updateCoolingDependents();
+                 calculateGroundFacing(); // Recalculate GF CDD when override changes (via effective setpoint)
             });
 
-            // Listener for d_20 (HDD) changes to update j_19 (Climate Zone)
+            // Listener for d_20 (HDD) changes to update j_19 (Climate Zone) & GF HDD
             window.TEUI.StateManager.addListener('d_20', function(newHddValue) {
                 const climateZone = determineClimateZone(newHddValue);
                 setFieldValue("j_19", climateZone, 'derived');
                 // Also recalculate Ground Facing HDD (d_22) which depends on d_20
                 calculateGroundFacing(); 
+            });
+
+            // Listener for h_21 (Capacitance Setting) changes
+            window.TEUI.StateManager.addListener('h_21', function(newValue) {
+                calculateAll(); // Recalculate everything as GF CDD changes
+            });
+
+            // Listener for m_19 (Cooling Days) changes
+            window.TEUI.StateManager.addListener('m_19', function(newValue) {
+                calculateAll(); // Recalculate everything as GF HDD and GF CDD change
             });
 
         } else {
