@@ -1248,7 +1248,15 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Ventilation method dropdown change handler
         document.querySelectorAll('[data-field-id="g_118"]').forEach(dropdown => {
             dropdown.addEventListener('change', function(e) {
-                calculateVentilationRates();
+                // Use e.target.value instead of this.value
+                const newValue = e.target.value;
+                // Add StateManager update
+                if (window.TEUI.StateManager) {
+                    // Use newValue and the correct fieldId from the event target's dataset
+                    window.TEUI.StateManager.setValue(e.target.dataset.fieldId, newValue, 'user-modified');
+                }
+                // Call calculateAll instead of just calculateVentilationRates
+                calculateAll(); 
             });
         });
         
@@ -1568,25 +1576,38 @@ window.TEUI.SectionModules.sect13 = (function() {
     }
     
     /**
-     * Calculate ventilation rates based on method, occupancy, and building data
+     * Calculate ventilation rates based on method (g_118) and per-person rate (d_119)
      */
     function calculateVentilationRates() {
+        // console.log("[Debug S13] calculateVentilationRates START"); // REMOVE Log 4
         const ventMethod = getFieldValue('g_118');
-        const occupants = window.TEUI.parseNumeric(getFieldValue('d_63')) || 0;
-        const perPersonRate = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
+        // console.log(`[Debug S13] ventMethod read inside calculateVentilationRates: ${ventMethod}`); // REMOVE Log 5
+        
+        // Define these variables at the start of the function
+        const isOccupantBased = ventMethod.includes("Occupant");
+        const isVolumeBased = ventMethod.includes("Volume");
+        
+        // Use global parser
+        const ratePerPerson_d119 = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
         const volume = window.TEUI.parseNumeric(getFieldValue('d_105')) || 0;
         const ach = window.TEUI.parseNumeric(getFieldValue('l_118')) || 0;
         const occupiedHours = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
         const totalHours = window.TEUI.parseNumeric(getFieldValue('j_63')) || 8760;
         let ventRate = 0;
-        if (ventMethod === 'Occupant Constant') { ventRate = occupants * perPersonRate; }
-        else if (ventMethod === 'Occupant by Schedule') { ventRate = totalHours > 0 ? (occupants * perPersonRate * (occupiedHours / totalHours)) : 0; }
+        if (ventMethod === 'Occupant Constant') { ventRate = ratePerPerson_d119 * 14; }
+        else if (ventMethod === 'Occupant by Schedule') { ventRate = totalHours > 0 ? (ratePerPerson_d119 * 14 * (occupiedHours / totalHours)) : 0; }
         else if (ventMethod === 'Volume by Schedule') { ventRate = totalHours > 0 && volume > 0 ? ((ach * volume / 3.6) * (occupiedHours / totalHours)) : 0; }
         else if (ventMethod === 'Volume Constant') { ventRate = volume > 0 ? (ach * volume / 3.6) : 0; }
         else { ventRate = volume > 0 ? (ach * volume / 3.6) : 0; } // Default
-        setCalculatedValue('d_120', ventRate, 'number-2dp-comma');
+        const ventilationRateLs_d120 = ventRate;
+        const ventilationRateM3h_h120 = ventilationRateLs_d120 * 3.6;
+
+        // console.log(`[Debug S13] Calculated d_120 value: ${ventilationRateLs_d120}`); // REMOVE Log 6
+
+        // Specify format types explicitly
+        setCalculatedValue('d_120', ventilationRateLs_d120, 'number-2dp-comma');
         setCalculatedValue('f_120', ventRate * 2.11888, 'number-2dp-comma');
-        setCalculatedValue('h_120', ventRate * 3.6, 'number-2dp-comma');
+        setCalculatedValue('h_120', ventilationRateM3h_h120, 'number-2dp-comma');
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) || 0;
         setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp'); 
     }
@@ -1659,9 +1680,11 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate all values for this section
      */
     function calculateAll() {
-        calculateCOPValues();
-        calculateHeatingSystem();
-        calculateVentilationValues();
+        // console.log("[Debug S13] calculateAll START"); // REMOVE Log 3
+        // Run calculations in a logical dependency order
+        calculateCOPValues();           // Depends on f_113 (HSPF)
+        calculateHeatingSystem();        // Depends on d_113 (Heating System)
+        calculateVentilationValues();     // Depends on d_119 (Per Person Rate)
     }
     
     /**
@@ -1690,18 +1713,16 @@ window.TEUI.SectionModules.sect13 = (function() {
      * @returns {string|number|null} The value of the field, or null if not found.
      */
     function getFieldValue(fieldId) {
-        if (window.TEUI?.StateManager) {
+        if (window.TEUI && window.TEUI.StateManager) {
             const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null && value !== undefined) {
+            // Return the value directly if it exists and is not null/undefined
+            if (value !== undefined && value !== null) {
                 return value;
             }
         }
-        // Fallback to checking the DOM if StateManager doesn't have the value
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            return element.value || element.textContent;
-            }
-        return null;
+        // If value not in StateManager, return empty string or default
+        // console.warn(`getFieldValue: Value for ${fieldId} not found in StateManager.`);
+        return ""; // Return empty string if not found in state
     }
     
     /**
@@ -1713,29 +1734,56 @@ window.TEUI.SectionModules.sect13 = (function() {
      * @param {string} [formatType='number-2dp'] - The format type string (e.g., 'number-2dp', 'currency', 'percent-0dp', 'integer') passed to window.TEUI.formatNumber.
      */
     function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp') {
-        // Handle non-numeric or invalid rawValues gracefully
-        if (rawValue === null || rawValue === undefined || isNaN(Number(rawValue))) {
-            const displayValue = "N/A"; // Or '0.00' or '--' depending on desired display
-            window.TEUI.StateManager?.setValue(fieldId, displayValue, 'calculated');
-            const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (elementNA) {
-                elementNA.textContent = displayValue;
-                elementNA.classList.remove('negative-value'); // Ensure no negative styling
+        // console.log(`[Debug S13] setCalculatedValue called for ${fieldId} with rawValue: ${rawValue}, formatType: ${formatType}`); // REMOVE Log 7
+        try {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            // Handle non-numeric or invalid rawValues gracefully
+            if (rawValue === null || rawValue === undefined || isNaN(Number(rawValue))) {
+                const displayValue = "N/A"; // Or '0.00' or '--' depending on desired display
+                if (window.TEUI.StateManager) { window.TEUI.StateManager.setValue(fieldId, displayValue, 'calculated'); }
+                // const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`); // Use element declared above
+                if (element) {
+                    element.textContent = displayValue;
+                    element.classList.remove('negative-value'); // Ensure no negative styling
+                }
+                return; 
             }
-            return; 
-        }
-
-        const numericValue = Number(rawValue);
-        const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
-
-        // Store raw value as string in StateManager for precision and consistency
-        window.TEUI.StateManager?.setValue(fieldId, numericValue.toString(), 'calculated');
-        
-        // Update DOM with formatted value
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
-            element.classList.toggle('negative-value', numericValue < 0);
+    
+            const numericValue = Number(rawValue);
+            const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+    
+            // Store raw value as string in StateManager for precision and consistency
+            // Note: Added check to prevent unnecessary state updates & listener triggers
+            if (window.TEUI.StateManager) {
+                const rawValueString = numericValue.toString();
+                // Update the StateManager with the raw numeric value (converted to string for precision) and 'calculated' state
+                // --- REINSTATED state check, comparing numbers --- 
+                const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
+                const currentNumericValue = window.TEUI.parseNumeric(currentStateValue); // Parse current state to number
+                
+                // Compare numeric values instead of strings
+                if (numericValue !== currentNumericValue) { 
+                    // console.log(`[Debug S13] State different for ${fieldId}, setting value: ${rawValueString}`); // REMOVE Log 8
+                    window.TEUI.StateManager.setValue(fieldId, rawValueString, 'calculated');
+                } else {
+                    // console.log(`[Debug S13] State same for ${fieldId}, skipping StateManager.setValue.`); // REMOVE Log 9
+                }
+            }
+            
+            // Update DOM with formatted value
+            // REMOVED redundant element declaration: const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                // Avoid updating if the display value hasn't changed (prevents unnecessary redraws/flicker)
+                if (element.textContent !== formattedValue) {
+                     element.textContent = formattedValue;
+                }
+                element.classList.toggle('negative-value', numericValue < 0);
+            } else {
+                 // console.warn(`setCalculatedValue: Element not found for fieldId: ${fieldId}`);
+            }
+        } catch (error) {
+            console.error("Error in setCalculatedValue:", error);
+            // Handle any other errors that might occur
         }
     }
     
