@@ -40,7 +40,7 @@ REPORT,$D$103,d_103,B.18.3 Heating Natural Air Leakage Heatloss,"1, 1.5, 2, 3, 4
 REPORT,$G$103,g_103,B.18.3 Shielding,"Shielded, Normal, Exposed"
 REPORT,$D$108,d_108,B.18.1 NRL50 Target Method NBC2025 (Part 9),"Measured, PH Classic, PH Low, PH+, AL-1A, AL-2A, AL-3A, AL-4A, AL-5A, AL-1B, AL-2B, AL-3B, AL-4B, AL-5B, AL-6B"
 REPORT,$I$110,i_110,B.18.3 Zone,"1, 2, 3, 4"
-REPORT,$D$113,d_113,M.1.0 Primary Heating System ,"Heatpump, Electricity, Gas"
+REPORT,$D$113,d_113,M.1.0 Primary Heating System ,"Heatpump, Electricity, Gas, Oil"
 REPORT,$D$116,d_116,M.3.0 Heatpump or Dedicated Cooling System,"Cooling, No Cooling"
 REPORT,$H$118,h_118,V.1.2 Ventilation Method,"Volume Constant, Volume by Schedule, Occupant Constant, Occupant by Schedule"
 REPORT,$L$118,l_118,V.1.3 ACH (Only if Volume-Based),"GENERIC Number, 0-15 range, steps of 0.01"

@@ -364,6 +364,7 @@ window.TEUI.sect13.userInteracted = false;
 
 // Section 13: Mechanical Loads Module
 window.TEUI.SectionModules.sect13 = (function() {
+    // console.log("[Debug S13] Checking for global formatter: ", typeof window.TEUI.formatNumber); // REMOVE THIS LOG
     //==========================================================================
     // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
@@ -428,7 +429,8 @@ window.TEUI.SectionModules.sect13 = (function() {
                     fieldId: "f_113", 
                     type: "editable", 
                     value: "12.5",
-                    section: "mechanicalLoads"
+                    section: "mechanicalLoads",
+                    classes: ["user-input", "editable"]
                 },
                 g: { 
                     content: "M.1.2 COPheat",
@@ -721,6 +723,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                     value: "Volume by Schedule",
                     section: "mechanicalLoads",
                     options: [
+                        { value: "Volume Constant", name: "Volume Constant" }, // ADDED MISSING
                         { value: "Volume by Schedule", name: "Volume by Schedule" },
                         { value: "Occupant Constant", name: "Occupant Constant" },
                         { value: "Occupant by Schedule", name: "Occupant by Schedule" }
@@ -806,11 +809,18 @@ window.TEUI.SectionModules.sect13 = (function() {
                     dropdownId: "dd_l_119", 
                     value: "None",
                     section: "mechanicalLoads",
-                    options: [
+                    options: [ // CORRECTED OPTIONS
                         { value: "None", name: "None" },
-                        { value: "1.5", name: "1.5x" },
-                        { value: "2", name: "2x" },
-                        { value: "3", name: "3x" }
+                        { value: "1.10", name: "1.10x" },
+                        { value: "1.20", name: "1.20x" },
+                        { value: "1.30", name: "1.30x" },
+                        { value: "1.40", name: "1.40x" },
+                        { value: "1.50", name: "1.50x" },
+                        { value: "1.60", name: "1.60x" },
+                        { value: "1.70", name: "1.70x" },
+                        { value: "1.80", name: "1.80x" },
+                        { value: "1.90", name: "1.90x" },
+                        { value: "2.00", name: "2.00x" }
                     ]
                 },
                 m: { 
@@ -1253,25 +1263,116 @@ window.TEUI.SectionModules.sect13 = (function() {
             });
         });
 
-        // Add listeners for climate data changes from Section 3
-        if (window.TEUI?.StateManager?.addListener) {
-            window.TEUI.StateManager.addListener('d_20', calculateAll); // HDD
-            window.TEUI.StateManager.addListener('d_21', calculateAll); // CDD
-            window.TEUI.StateManager.addListener('d_23', calculateAll); // Coldest Day Temp
-            window.TEUI.StateManager.addListener('d_24', calculateAll); // Hottest Day Temp
-            window.TEUI.StateManager.addListener('h_23', calculateAll); // Heating Setpoint
-            window.TEUI.StateManager.addListener('h_24', calculateAll); // Cooling Setpoint
+        // --- StateManager Listeners --- 
+        if (window.TEUI && window.TEUI.StateManager) {
+            const sm = window.TEUI.StateManager; // Alias for brevity
+
+            // Listener for d_113 (Heating System) changes
+            sm.addListener('d_113', calculateHeatingSystem);
+            
+            // Listener for f_113 (HSPF) changes
+            sm.addListener('f_113', calculateCOPValues);
+
+            // Listener for d_116 (Cooling System) changes
+            sm.addListener('d_116', calculateCoolingSystem);
+
+            // Listener for d_118 (Ventilation Efficiency) changes
+            sm.addListener('d_118', calculateVentilationValues);
+
+            // Listener for g_118 (Ventilation Method) changes
+            sm.addListener('g_118', calculateVentilationRates);
+
+            // Listener for d_119 (Per Person Rate) changes
+            sm.addListener('d_119', calculateVentilationRates);
+
+            // Listener for l_119 (Summer Boost) changes
+            sm.addListener('l_119', calculateCoolingVentilation);
+            
+            // Add listeners for climate data changes from Section 3
+            sm.addListener('d_20', calculateAll); // HDD
+            sm.addListener('d_21', calculateAll); // CDD
+            sm.addListener('d_23', calculateAll); // Coldest Day Temp
+            sm.addListener('d_24', calculateAll); // Hottest Day Temp
+            sm.addListener('h_23', calculateAll); // Heating Setpoint
+            sm.addListener('h_24', calculateAll); // Cooling Setpoint
             // Listen to relevant outputs from Section 12 (e.g., total losses)
-            window.TEUI.StateManager.addListener('i_104', calculateAll);
-            window.TEUI.StateManager.addListener('k_104', calculateAll);
+            sm.addListener('i_104', calculateAll);
+            sm.addListener('k_104', calculateAll);
             // Listen to relevant outputs from Section 9/10 (gains)
-            window.TEUI.StateManager.addListener('i_71', calculateAll);
-            window.TEUI.StateManager.addListener('i_79', calculateAll);
+            sm.addListener('i_71', calculateAll);
+            sm.addListener('i_79', calculateAll);
         } else {
             console.warn("Section 13: StateManager not available to add climate/loss/gain listeners.");
         }
+
+        // --- Standard Editable Field Handlers (Moved Inside initializeEventHandlers) --- 
+        const sectionElement = document.getElementById('mechanicalLoads'); // Use the correct section ID
+        if (sectionElement) {
+            const editableFields = sectionElement.querySelectorAll('.editable.user-input');
+            // console.log(`[Debug S13] Found ${editableFields.length} editable fields in Section 13.`); // Keep logs for now
+            editableFields.forEach(field => {
+                const fieldId = field.getAttribute('data-field-id'); // Get field ID for logging
+                // Prevent adding listeners multiple times
+                if (!field.hasEditableListeners) {
+                    // console.log(`[Debug S13] Attaching listeners to editable field: ${fieldId}`); // Keep logs for now
+                    field.setAttribute('contenteditable', 'true');
+                    
+                    // Use a single blur handler for consistency
+                    field.addEventListener('blur', handleEditableBlur); 
+                    
+                    // Add keydown listener to handle Enter key
+                    field.addEventListener('keydown', function(e) { 
+                        // console.log(`[Debug S13] Keydown on ${fieldId}: Key = ${e.key}`); // Keep logs for now
+                        if (e.key === 'Enter') {
+                            // console.log(`[Debug S13] Enter detected on ${fieldId}. Preventing default and blurring.`); // Keep logs for now
+                            e.preventDefault(); // Prevent adding newline
+                            e.stopPropagation(); // Prevent event bubbling
+                            this.blur(); // Trigger blur to save value
+                        }
+                    });
+                    
+                    field.hasEditableListeners = true; // Mark as having listeners attached
+                }
+            });
+        } else {
+             console.warn("Section 13 element not found for attaching editable field handlers.");
+        }
     }
     
+    /**
+     * Handle blur events on editable fields (Standard Handler - Defined inside IIFE)
+     */
+    function handleEditableBlur(event) {
+        const fieldId = this.getAttribute('data-field-id');
+        if (!fieldId) return;
+
+        const newValue = this.textContent.trim();
+        const numericValue = window.TEUI.parseNumeric(newValue, NaN); // Use global parser
+
+        if (!isNaN(numericValue)) {
+            // Format display using the global formatter - infer format or use default
+            const formatType = (fieldId === 'j_115' || fieldId === 'l_118') ? 'number-2dp' : 'number-2dp'; // Adjust format as needed
+            this.textContent = window.TEUI.formatNumber(numericValue, formatType);
+            
+            // Update StateManager with the raw numeric value (as string for precision)
+            if (window.TEUI.StateManager) {
+                window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'user-modified');
+            }
+            // Trigger calculateAll explicitly AFTER state is set if blur handler doesn't rely on listeners
+            // Check if a listener for this fieldId already triggers calculateAll via StateManager
+            // If not, uncomment the line below. For f_113, a listener exists.
+            // if (fieldId !== 'f_113') { calculateAll(); } 
+        } else {
+            // Revert to previous valid value if input is invalid
+            const previousValue = window.TEUI.StateManager?.getValue(fieldId) || '0'; // Fallback to 0 or previous state
+            const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
+            // Determine format for previous value
+            const formatType = (fieldId === 'j_115' || fieldId === 'l_118') ? 'number-2dp' : 'number-2dp';
+            this.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
+            console.warn(`Invalid input for ${fieldId}: "${newValue}". Reverted to ${this.textContent}.`);
+        }
+    }
+
     /**
      * Called when the section is rendered
      * This is a good place to initialize values and run initial calculations
@@ -1336,28 +1437,15 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate COPh and COPc values based on heating system and HSPF
      */
     function calculateCOPValues() {
-        const hspf = getNumericValue('f_113');
+        const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 0;
         const systemType = getFieldValue('d_113');
-        
-        // Calculate COPheat from HSPF
-        let copheat = 1; // Default for electric resistance
-        
-        if (systemType === 'Heatpump' && hspf > 0) {
-            // Convert HSPF to COP (HSPF/3.412 = COPhtg)
-            copheat = hspf / 3.412;
-        }
-        
-        // Calculate COPcool (typically COPheat - 1)
+        let copheat = 1;
+        if (systemType === 'Heatpump' && hspf > 0) { copheat = hspf / 3.412; }
         let copcool = Math.max(1, copheat - 1);
-        
-        // Update the calculated fields
-        setCalculatedValue('h_113', copheat.toFixed(2));
-        setCalculatedValue('j_113', copcool.toFixed(1));
-        
-        // Update CEER value (3.412 * COPcool)
+        setCalculatedValue('h_113', copheat, 'number-2dp'); 
+        setCalculatedValue('j_113', copcool, 'number-1dp'); 
         const ceer = 3.412 * copcool;
-        setCalculatedValue('j_114', ceer.toFixed(1));
-        
+        setCalculatedValue('j_114', ceer, 'number-1dp'); 
         calculateHeatingSystem();
     }
     
@@ -1366,35 +1454,13 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function calculateHeatingSystem() {
         const systemType = getFieldValue('d_113');
-        const tedTarget = getNumericValue('d_127'); // From Section 14
-        const copheat = getNumericValue('h_113');
-        
-        // Calculate heating system demand
-        let heatingDemand = 0;
-        
-        if (systemType === 'Heatpump') {
-            heatingDemand = tedTarget / copheat;
-        } else {
-            heatingDemand = tedTarget;
-        }
-        
-        // Update heating demand field
-        setCalculatedValue('d_114', formatNumber(heatingDemand));
-        
-        // Calculate heating sink value (the unpurchased energy from environment)
-        let heatingSink = 0;
-        
-        if (systemType === 'Heatpump') {
-            heatingSink = (heatingDemand * copheat) - heatingDemand;
-        }
-        
-        // Update sink field
-        setCalculatedValue('l_113', formatNumber(heatingSink));
-        
-        // Calculate fuel impact for gas/oil systems
+        const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
+        const copheat = window.TEUI.parseNumeric(getFieldValue('h_113')) || 1;
+        let heatingDemand = (systemType === 'Heatpump' && copheat > 0) ? tedTarget / copheat : tedTarget;
+        setCalculatedValue('d_114', heatingDemand, 'number-2dp-comma'); 
+        let heatingSink = (systemType === 'Heatpump') ? (heatingDemand * copheat) - heatingDemand : 0;
+        setCalculatedValue('l_113', heatingSink, 'number-2dp-comma');
         calculateHeatingFuelImpact();
-        
-        // Also update cooling values since they depend on heating system type
         calculateCoolingSystem();
     }
     
@@ -1403,32 +1469,24 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function calculateHeatingFuelImpact() {
         const systemType = getFieldValue('d_113');
-        const heatingDemand = getNumericValue('d_114'); // Get the calculated heating demand
-        const tedTarget = getNumericValue('d_127'); // From Section 14
-        const afue = getNumericValue('j_115');
-        
-        let fuelImpact = 0;
-        let oilLitres = 0;
-        let gasM3 = 0;
-        let exhaust = 0;
-        
-        if (systemType === 'Gas') {
+        const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
+        const afue = window.TEUI.parseNumeric(getFieldValue('j_115')) || 1; 
+        let fuelImpact = 0, oilLitres = 0, gasM3 = 0, exhaust = 0;
+        if (systemType === 'Gas' && afue > 0) {
             fuelImpact = tedTarget / afue;
-            gasM3 = fuelImpact / (0.0373 * 277.7778);
-            // Exhaust calculation based on CSV: D115 - D114
-            exhaust = fuelImpact - heatingDemand; 
-        } else if (systemType === 'Oil') {
+            gasM3 = fuelImpact / 10.36; // kWh to m3 approx
+            exhaust = fuelImpact - tedTarget; 
+        } else if (systemType === 'Oil' && afue > 0) {
             fuelImpact = tedTarget / afue;
-            oilLitres = fuelImpact / (36.72 * 0.2777778);
-            // Exhaust calculation based on CSV: D115 - D114
-            exhaust = fuelImpact - heatingDemand; 
+            oilLitres = fuelImpact / 10.2; // kWh to Litres approx
+            exhaust = fuelImpact - tedTarget; 
         }
-        
-        // Update fields
-        setCalculatedValue('d_115', formatNumber(fuelImpact));
-        setCalculatedValue('f_115', formatNumber(oilLitres));
-        setCalculatedValue('h_115', formatNumber(gasM3));
-        setCalculatedValue('l_115', formatNumber(exhaust));
+        setCalculatedValue('d_115', fuelImpact, 'number-2dp-comma');
+        setCalculatedValue('f_115', oilLitres, 'number-2dp-comma');
+        setCalculatedValue('h_115', gasM3, 'number-2dp-comma');
+        setCalculatedValue('l_115', exhaust, 'number-2dp-comma');
+        const m115_percent = afue > 0 ? 1 / afue : 0;
+        setCalculatedValue('m_115', m115_percent, 'percent-0dp');
     }
     
     /**
@@ -1437,34 +1495,30 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateCoolingSystem() {
         const systemType = getFieldValue('d_113');
         const coolingEnabled = getFieldValue('d_116');
-        const coolingLoad = getNumericValue('m_129'); // From Section 14 (unmitigated cooling load)
-        const copcool = getNumericValue('j_113');
-        const dedicatedCopcool = getNumericValue('j_116');
-        
-        let coolingElectLoad = 0;
-        let coolingSink = 0;
-        
-        // Calculate based on system type and cooling setting
-        if (coolingEnabled === 'No Cooling') {
-            coolingElectLoad = 0;
-            coolingSink = 0;
-        } else if (systemType === 'Heatpump') {
-            coolingElectLoad = coolingLoad / copcool;
-            coolingSink = ((coolingElectLoad * copcool) - coolingElectLoad);
-        } else if (coolingEnabled === 'Cooling') {
-            coolingElectLoad = coolingLoad / dedicatedCopcool;
-            coolingSink = ((coolingElectLoad * dedicatedCopcool) - coolingElectLoad);
+        const coolingLoad = window.TEUI.parseNumeric(getFieldValue('l_128')) || 0;
+        const copcool_hp = window.TEUI.parseNumeric(getFieldValue('j_113')) || 1;
+        const dedicatedCopcool = window.TEUI.parseNumeric(getFieldValue('j_116')) || 1;
+        let coolingElectLoad_d117=0, coolingSink_l114=0, coolingSink_l116=0;
+        if (coolingEnabled === 'Cooling') {
+            let activeCOP = (systemType === 'Heatpump' && copcool_hp > 0) ? copcool_hp : (dedicatedCopcool > 0 ? dedicatedCopcool : 1);
+            if (activeCOP > 0) { coolingElectLoad_d117 = coolingLoad / activeCOP; }
+            if (systemType === 'Heatpump' && copcool_hp > 0) {
+                coolingSink_l114 = (coolingElectLoad_d117 * copcool_hp) - coolingElectLoad_d117;
+            } else if (dedicatedCopcool > 0) { 
+                coolingSink_l116 = (coolingElectLoad_d117 * dedicatedCopcool) - coolingElectLoad_d117;
+            }
         }
-        
-        // Update fields
-        setCalculatedValue('d_117', formatNumber(coolingElectLoad));
-        setCalculatedValue('l_116', formatNumber(coolingSink));
-        
-        // Calculate cooling intensity (kWh/m2/yr)
-        const area = getNumericValue('h_15'); // From Section 2
-        const intensity = area > 0 ? coolingElectLoad / area : 0;
-        
-        setCalculatedValue('f_117', intensity.toFixed(2));
+        setCalculatedValue('d_117', coolingElectLoad_d117, 'number-2dp-comma');
+        setCalculatedValue('l_114', coolingSink_l114, 'number-2dp-comma');
+        setCalculatedValue('l_116', coolingSink_l116, 'number-2dp-comma');
+        const m116_percent = dedicatedCopcool > 0 ? 1 / dedicatedCopcool : 0;
+        setCalculatedValue('m_116', m116_percent, 'percent-0dp');
+        const area = window.TEUI.parseNumeric(getFieldValue('h_15')) || 1; 
+        const intensity = area > 0 ? coolingElectLoad_d117 / area : 0;
+        setCalculatedValue('f_117', intensity, 'number-2dp'); 
+        const activeCOPForM117 = (coolingEnabled==='No Cooling')?0:(systemType==='Heatpump'?copcool_hp:dedicatedCopcool);
+        const m117_percent = activeCOPForM117 > 0 ? intensity / activeCOPForM117 : 0;
+        setCalculatedValue('m_117', m117_percent, 'percent-0dp');
     }
     
     /**
@@ -1480,182 +1534,88 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate ventilation rates based on method, occupancy, and building data
      */
     function calculateVentilationRates() {
-        const ventMethod = getFieldValue('g_118');
-        const occupants = getNumericValue('d_63'); // From Section 9
-        const perPersonRate = getNumericValue('d_119');
-        const volume = getNumericValue('d_105'); // From Section 12
-        const ach = getNumericValue('l_118');
-        const occupiedHours = getNumericValue('i_63'); // From Section 9
-        const totalHours = getNumericValue('j_63'); // Usually 8760
-        
+        const ventMethod = getFieldValue('g_118'); 
+        const occupants = window.TEUI.parseNumeric(getFieldValue('d_63')) || 0;
+        const perPersonRate = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
+        const volume = window.TEUI.parseNumeric(getFieldValue('d_105')) || 0;
+        const ach = window.TEUI.parseNumeric(getFieldValue('l_118')) || 0;
+        const occupiedHours = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
+        const totalHours = window.TEUI.parseNumeric(getFieldValue('j_63')) || 8760;
         let ventRate = 0;
-        
-        // Calculate based on method
-        if (ventMethod === 'Occupant Constant') {
-            ventRate = occupants * perPersonRate;
-        } else if (ventMethod === 'Occupant by Schedule') {
-            ventRate = occupants * perPersonRate * (occupiedHours / totalHours);
-        } else if (ventMethod === 'Volume by Schedule') {
-            ventRate = (ach * volume / 3.6) * (occupiedHours / totalHours);
-        } else {
-            // Default to volume based
-            ventRate = ach * volume / 3.6;
-        }
-        
-        // Update ventilation rate fields
-        setCalculatedValue('d_120', formatNumber(ventRate));
-        setCalculatedValue('f_120', formatNumber(ventRate * 2.11888)); // Convert to cfm
-        setCalculatedValue('h_120', formatNumber(ventRate * 3.6)); // Convert to m3/hr
+        if (ventMethod === 'Occupant Constant') { ventRate = occupants * perPersonRate; }
+        else if (ventMethod === 'Occupant by Schedule') { ventRate = totalHours > 0 ? (occupants * perPersonRate * (occupiedHours / totalHours)) : 0; }
+        else if (ventMethod === 'Volume by Schedule') { ventRate = totalHours > 0 && volume > 0 ? ((ach * volume / 3.6) * (occupiedHours / totalHours)) : 0; }
+        else if (ventMethod === 'Volume Constant') { ventRate = volume > 0 ? (ach * volume / 3.6) : 0; }
+        else { ventRate = volume > 0 ? (ach * volume / 3.6) : 0; } // Default
+        setCalculatedValue('d_120', ventRate, 'number-2dp-comma');
+        setCalculatedValue('f_120', ventRate * 2.11888, 'number-2dp-comma');
+        setCalculatedValue('h_120', ventRate * 3.6, 'number-2dp-comma');
+        const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) || 0;
+        setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp'); 
     }
     
     /**
-     * Calculate ventilation energy for heating season
+     * Calculate ventilation energy exchange during heating season
      */
     function calculateVentilationEnergy() {
-        const ventRate = getNumericValue('d_120');
-        const hdd = getNumericValue('d_20'); // From Section 3
-        const efficiency = getNumericValue('d_118') / 100; // Convert from percentage
-        
-        // Calculate heating season ventilation energy (1.21 * ventRate * HDD * 24 / 1000)
-        const ventEnergy = 1.21 * ventRate * hdd * 24 / 1000;
-        
-        // Calculate recovered energy
-        const recoveredEnergy = ventEnergy * efficiency;
-        
-        // Calculate net heat loss
-        const netHeatLoss = ventEnergy - recoveredEnergy;
-        
-        // Update fields
-        setCalculatedValue('d_121', formatNumber(ventEnergy));
-        setCalculatedValue('i_121', formatNumber(recoveredEnergy));
-        setCalculatedValue('m_121', formatNumber(netHeatLoss));
+        const ventRate = window.TEUI.parseNumeric(getFieldValue('d_120')) || 0;
+        const hdd = window.TEUI.parseNumeric(getFieldValue('d_20')) || 0;
+        const efficiency = (window.TEUI.parseNumeric(getFieldValue('d_118')) || 0) / 100;
+        const heatingVentEnergy = 1.21 * ventRate * hdd * 24 / 1000;
+        setCalculatedValue('d_121', heatingVentEnergy, 'number-2dp-comma');
+        const recoveredEnergy = heatingVentEnergy * efficiency;
+        setCalculatedValue('i_121', recoveredEnergy, 'number-2dp-comma');
+        const netHeatLoss = heatingVentEnergy - recoveredEnergy;
+        setCalculatedValue('m_121', netHeatLoss, 'number-2dp-comma');
     }
     
     /**
-     * Calculate cooling season ventilation values
+     * Calculate ventilation energy exchange during cooling season
      */
     function calculateCoolingVentilation() {
-        const ventRate = getNumericValue('d_120');
-        const cdd = getNumericValue('d_21'); // From Section 3
-        const ventMethod = getFieldValue('g_118');
-        const summerBoost = getFieldValue('l_119');
-        const occupiedHours = getNumericValue('i_63'); // From Section 9
-        const totalHours = getNumericValue('j_63'); // Usually 8760
-        const efficiency = getNumericValue('d_118') / 100; // Convert from percentage
-        
-        // Get latent load factor from cooling module or use fallback calculation
-        let latentLoadFactor = 1.0;
-        
-        if (window.TEUI.CoolingCalculations && typeof window.TEUI.CoolingCalculations.getLatentLoadFactor === 'function') {
-            latentLoadFactor = window.TEUI.CoolingCalculations.getLatentLoadFactor();
-        } else if (window.TEUI.StateManager) {
-            // Try to get from StateManager
-            const storedFactor = window.TEUI.StateManager.getValue('cooling_latentLoadFactor');
-            if (storedFactor) {
-                latentLoadFactor = parseFloat(storedFactor);
-            } else {
-                // Fallback calculation (simplified)
-                latentLoadFactor = 1.59; // Default from example
-            }
-        } else {
-            // Hard fallback
-            latentLoadFactor = 1.59;
-        }
-        
-        // Update latent load factor display
-        setCalculatedValue('i_122', `${Math.round(latentLoadFactor * 100)}%`);
-        
-        // Calculate cooling season ventilation energy
-        let coolingVentEnergy = 0;
-        
-        // Apply summer boost factor if selected
+        const ventRate = window.TEUI.parseNumeric(getFieldValue('d_120')) || 0;
+        const cdd = window.TEUI.parseNumeric(getFieldValue('d_21')) || 0;
+        const summerBoostStr = getFieldValue('l_119') || "None";
+        const efficiency = (window.TEUI.parseNumeric(getFieldValue('d_118')) || 0) / 100;
+        let latentLoadFactor = 1.2;
+        if (window.TEUI?.CoolingCalculations?.getLatentLoadFactor) { latentLoadFactor = window.TEUI.CoolingCalculations.getLatentLoadFactor() || 1.2; }
+        else if (window.TEUI?.StateManager?.getValue) { latentLoadFactor = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_latentLoadFactor')) || 1.2; }
+        setCalculatedValue('i_122', latentLoadFactor, 'percent-0dp'); 
         let boostFactor = 1;
-        if (summerBoost !== 'None') {
-            boostFactor = parseFloat(summerBoost);
-        }
-        
-        if (ventMethod === 'Yes') {
-            // This path in the Excel formula seems odd - ventMethod doesn't have 'Yes' as an option
-            // Using the formula from Excel anyway
-            if (summerBoost === 'None') {
-                coolingVentEnergy = (1.21 * ventRate * cdd * 24 / 1000) * (occupiedHours / totalHours) * latentLoadFactor;
-            } else {
-                coolingVentEnergy = (1.21 * ventRate * cdd * 24 / 1000) * (occupiedHours / totalHours) * boostFactor * latentLoadFactor;
-            }
-        } else {
-            if (summerBoost === 'None') {
-                coolingVentEnergy = (1.21 * ventRate * cdd * 24 / 1000) * latentLoadFactor;
-            } else {
-                coolingVentEnergy = (1.21 * ventRate * cdd * 24 / 1000) * latentLoadFactor * boostFactor;
-            }
-        }
-        
-        // Calculate outgoing energy
-        const outgoingEnergy = efficiency * coolingVentEnergy;
-        
-        // Update fields
-        setCalculatedValue('d_122', formatNumber(coolingVentEnergy));
-        setCalculatedValue('d_123', formatNumber(outgoingEnergy));
-        
-        // Also calculate free cooling since ventilation parameters changed
-        calculateFreeCooling();
+        if (summerBoostStr !== 'None') { boostFactor = parseFloat(summerBoostStr) || 1; }
+        const boostedVentRate = ventRate * boostFactor;
+        const incomingCoolingEnergy = 1.21 * boostedVentRate * cdd * 24 / 1000 * latentLoadFactor;
+        setCalculatedValue('d_122', incomingCoolingEnergy, 'number-2dp-comma');
+        const outgoingCoolingEnergy = incomingCoolingEnergy * efficiency;
+        setCalculatedValue('d_123', outgoingCoolingEnergy, 'number-2dp-comma');
+        // Placeholder for m_119 - need actual formula
+        const perPersonRate_d119 = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
+        setCalculatedValue('m_119', perPersonRate_d119, 'number-2dp'); // Assuming raw value display for now
     }
     
     /**
-     * Calculate free cooling capacity based on ventilation and cooling module data
+     * Calculate free cooling capacity and related metrics
      */
     function calculateFreeCooling() {
-        // Get cooling load
-        const coolingLoad = getNumericValue('d_129');
-        
-        // Get free cooling limit from cooling module or use fallback
+        const coolingLoadTotal = window.TEUI.parseNumeric(getFieldValue('d_128')) || 0;
         let freeCoolingLimit = 0;
-        
-        if (window.TEUI.CoolingCalculations && typeof window.TEUI.CoolingCalculations.getFreeCoolingLimit === 'function') {
-            freeCoolingLimit = window.TEUI.CoolingCalculations.getFreeCoolingLimit();
-            
-            // Adjust by the climate zone multiplier - m_19 from Section 3
-            const climateMultiplier = getNumericValue('m_19');
-            freeCoolingLimit *= climateMultiplier;
-        } else if (window.TEUI.StateManager) {
-            // Try to get from StateManager
-            const storedLimit = window.TEUI.StateManager.getValue('cooling_freeCoolingLimit');
-            if (storedLimit) {
-                freeCoolingLimit = parseFloat(storedLimit);
-                
-                // Adjust by the climate zone multiplier
-                const climateMultiplier = getNumericValue('m_19');
-                freeCoolingLimit *= climateMultiplier;
-            } else {
-                // Fallback calculation
-                freeCoolingLimit = 41469.81; // Default from example
-            }
+        let daysActiveCooling = 120;
+        if (window.TEUI?.CoolingCalculations?.getFreeCoolingLimit) {
+            freeCoolingLimit = window.TEUI.CoolingCalculations.getFreeCoolingLimit() || 0;
+            window.TEUI.CoolingCalculations.updateCoolingLoad(coolingLoadTotal);
+            daysActiveCooling = window.TEUI.CoolingCalculations.getDaysActiveCooling() || 120;
+        } else if (window.TEUI.StateManager?.getValue) {
+            freeCoolingLimit = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_freeCoolingLimit')) || 0;
+            daysActiveCooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_daysActiveCooling')) || 120;
         } else {
-            // Hard fallback
-            freeCoolingLimit = 41469.81;
+            const ventRate = window.TEUI.parseNumeric(getFieldValue('d_120')) || 0;
+            const cdd = window.TEUI.parseNumeric(getFieldValue('d_21')) || 0;
+            freeCoolingLimit = 1.21 * ventRate * 4 * (120*24) / 1000; 
         }
-        
-        // Calculate percentage
-        const percentCapacity = coolingLoad > 0 ? (freeCoolingLimit / coolingLoad) * 100 : 0;
-        
-        // Update fields
-        setCalculatedValue('h_124', formatNumber(freeCoolingLimit));
-        setCalculatedValue('d_124', `${Math.round(percentCapacity)}%`);
-        
-        // Get days active cooling from cooling module or use fallback
-        let daysActiveCooling = -31; // Default from example
-        
-        if (window.TEUI.CoolingCalculations && typeof window.TEUI.CoolingCalculations.getDaysActiveCooling === 'function') {
-            daysActiveCooling = window.TEUI.CoolingCalculations.getDaysActiveCooling();
-        } else if (window.TEUI.StateManager) {
-            // Try to get from StateManager
-            const storedDays = window.TEUI.StateManager.getValue('cooling_daysActiveCooling');
-            if (storedDays) {
-                daysActiveCooling = parseInt(storedDays);
-            }
-        }
-        
-        setCalculatedValue('m_124', daysActiveCooling.toString());
+        setCalculatedValue('h_124', freeCoolingLimit, 'number-2dp-comma'); 
+        const percentFreeCooling = coolingLoadTotal > 0 ? (freeCoolingLimit / coolingLoadTotal) : 0;
+        setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
+        setCalculatedValue('m_124', daysActiveCooling, 'integer');
     }
     
     /**
@@ -1687,46 +1647,59 @@ window.TEUI.SectionModules.sect13 = (function() {
     }
     
     /**
-     * Helper function to get field values from StateManager or DOM
+     * Safely retrieves the field value from StateManager or the DOM element.
+     * Prefers StateManager for reliability.
+     * @param {string} fieldId - The ID of the field to retrieve.
+     * @returns {string|number|null} The value of the field, or null if not found.
      */
     function getFieldValue(fieldId) {
-        // Try StateManager first
-        if (window.TEUI.StateManager) {
+        if (window.TEUI?.StateManager) {
             const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null) {
+            if (value !== null && value !== undefined) {
                 return value;
             }
         }
-        
-        // Fallback to DOM
-        const field = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (field) {
-            if (field.tagName === 'SELECT') {
-                return field.value;
-            } else if (field.tagName === 'INPUT' && field.type === 'range') {
-                return field.value;
-            } else {
-                return field.textContent.trim();
-            }
+        // Fallback to checking the DOM if StateManager doesn't have the value
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            return element.value || element.textContent;
         }
-        
         return null;
     }
-    
+
     /**
-     * Helper function to set calculated values in StateManager and DOM
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * Ensures the raw numeric value is stored in StateManager and the formatted
+     * value is displayed in the DOM, according to the global formatting function.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {string} [formatType='number-2dp'] - The format type string (e.g., 'number-2dp', 'currency', 'percent-0dp', 'integer') passed to window.TEUI.formatNumber.
      */
-    function setCalculatedValue(fieldId, value) {
-        // Update StateManager
-        if (window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue(fieldId, value.toString(), 'calculated');
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp') {
+        // Handle non-numeric or invalid rawValues gracefully
+        if (rawValue === null || rawValue === undefined || isNaN(Number(rawValue))) {
+            const displayValue = "N/A"; // Or '0.00' or '--' depending on desired display
+            window.TEUI.StateManager?.setValue(fieldId, displayValue, 'calculated');
+            const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (elementNA) {
+                elementNA.textContent = displayValue;
+                elementNA.classList.remove('negative-value'); // Ensure no negative styling
+            }
+            return; 
         }
-        
-        // Update DOM
-        const field = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (field) {
-            field.textContent = value;
-        }
+
+        const numericValue = Number(rawValue);
+        const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+
+        // Store raw value as string in StateManager for precision and consistency
+        window.TEUI.StateManager?.setValue(fieldId, numericValue.toString(), 'calculated');
+
+        // Update DOM with formatted value
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', numericValue < 0);
+        } 
     }
     
     /**

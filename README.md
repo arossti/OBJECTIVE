@@ -233,6 +233,20 @@ When working with this codebase, previous AI assistants have encountered several
    - ❌ **Avoid** direct DOM manipulation (`element.textContent = ...`) inside calculation logic or setting state directly without using the standard helper.
    - This ensures consistency, proper state management, correct listener triggering, and adherence to formatting rules.
 
+11. **Correct Handling of `contenteditable` Fields:** (Added 2024-07-31)
+    - **Problem**: Incorrectly implemented event handlers for `contenteditable` elements (used for editable numeric inputs) can lead to issues like the Enter key inserting newlines instead of saving the value.
+    - ❌ **Avoid**: Attaching simple `change` listeners to `contenteditable` elements (they don't fire reliably); Defining handler functions (like `handleEditableBlur`) *outside* the module's IIFE scope, making them inaccessible to listeners defined inside.
+    - ✅ **REQUIRED PATTERN (See Section 13 for example):**
+        1.  Define the standard `handleEditableBlur` function *inside* the section module's main `(function() { ... })();` scope.
+        2.  Inside the `initializeEventHandlers` function (also within the module scope):
+            *   Get the section's main container element (e.g., `document.getElementById('sectionId')`).
+            *   Use `sectionElement.querySelectorAll('.editable.user-input')` to find all editable fields within that section.
+            *   Iterate through the found `editableFields`:
+                *   Attach the `blur` event listener, calling the module-scoped `handleEditableBlur` function.
+                *   Attach the `keydown` event listener, which checks `if (e.key === 'Enter')`, calls `e.preventDefault()`, `e.stopPropagation()`, and then `this.blur()`.
+                *   Use a flag (e.g., `field.hasEditableListeners = true`) to prevent attaching listeners multiple times if `initializeEventHandlers` is somehow called more than once.
+    - **Why**: This pattern ensures the `keydown` listener correctly prevents the default Enter behavior and triggers the `blur` event. The `blur` listener then calls the `handleEditableBlur` function (which is accessible because it's defined in the same scope), correctly parsing, formatting, and saving the value to `StateManager`.
+
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 
 ### REQUIRED: StateManager Implementation Pattern for Cross-Section Functions
