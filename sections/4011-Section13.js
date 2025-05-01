@@ -1431,13 +1431,15 @@ window.TEUI.SectionModules.sect13 = (function() {
     function initializeCoolingModule() {
         // Check if the cooling module exists
         if (typeof window.TEUI.CoolingCalculations !== 'undefined') {
-            console.log('Initializing Cooling Calculations module');
+            // console.log('Initializing Cooling Calculations module from S13');
             
-            // Initialize with section-specific parameters
+            // Explicitly pass necessary parameters from S13/StateManager
+            const nightTimeTemp = (window.TEUI.parseNumeric(getFieldValue('d_24')) || 20) - 4; // Approx night = Day hottest - 4C (Default 20 if d_24 missing)
+            const coolingRH = 0.5585; // Default value from Cooling Module - Refine if source identified
+            
             window.TEUI.CoolingCalculations.initialize({
-                // Get any needed values from StateManager
-                nightTimeTemp: getNumericValue('d_24') - 4, // Approximate night temp as 4°C below day temp
-                coolingSeasonMeanRH: 0.5585, // Default value, could be from weather data
+                nightTimeTemp: nightTimeTemp, 
+                coolingSeasonMeanRH: coolingRH 
             });
         } else {
             // console.warn('Cooling Calculations module not available - some features will be limited');
@@ -1465,8 +1467,10 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function calculateHeatingSystem() {
         const systemType = getFieldValue('d_113');
+        // Use global parser
         const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
-        const copheat_h113 = window.TEUI.parseNumeric(getFieldValue('h_113')) || 1;
+        // --- REMOVE Log for d_127 --- 
+        // console.log(`[Debug S13] calculateHeatingSystem: Using d_127 (tedTarget) = ${tedTarget}`);
         let heatingDemand_d114 = 0;
         let heatingSink_l113 = 0;
         let isHeatpump = (systemType === 'Heatpump');
@@ -1480,16 +1484,20 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Example: document.querySelector('[data-id="M.1.0"] .col-e').classList.toggle('ghost-text', !isHeatpump);
         
         if (isHeatpump) {
-            const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 3.5; // Use current/default HSPF
-            const calculated_copheat = (hspf > 0) ? hspf / 3.412 : 1;
-            if (calculated_copheat > 0) {
-                 heatingDemand_d114 = tedTarget / calculated_copheat;
-                 heatingSink_l113 = heatingDemand_d114 * (calculated_copheat - 1);
+            // Re-calculate COP locally based on f_113 (HSPF) for this calculation
+            const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 3.5; // Get HSPF
+            const local_copheat = (hspf > 0) ? hspf / 3.412 : 1; // Calculate local COP
+            
+            // Use the locally calculated COP value for d_114 calculation
+            if (local_copheat > 0) { // Ensure COP > 0 before dividing
+                 heatingDemand_d114 = tedTarget / local_copheat; 
+                 heatingSink_l113 = heatingDemand_d114 * (local_copheat - 1);
+            } else {
+                 heatingDemand_d114 = tedTarget; // Fallback if COP is invalid
+                 heatingSink_l113 = 0;
             }
-            // Ensure COP values recalculate if HSPF was used - REMOVED CALL, handled by listener
-            // calculateCOPValues(); // Recalculate COPs based on potentially enabled slider
         } else {
-            // Not a Heatpump - Use TEDI directly, sink is 0, force COPs to 1/0
+            // Not a Heatpump - Use TEDI directly, sink is 0
             heatingDemand_d114 = tedTarget;
             heatingSink_l113 = 0;
             // Force COP values for non-heatpump systems
@@ -1538,32 +1546,95 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate cooling system values
      */
     function calculateCoolingSystem() {
-        const systemType = getFieldValue('d_113');
-        const coolingEnabled = getFieldValue('d_116');
-        const coolingLoad = window.TEUI.parseNumeric(getFieldValue('l_128')) || 0;
-        const copcool_hp = window.TEUI.parseNumeric(getFieldValue('j_113')) || 1;
-        const dedicatedCopcool = window.TEUI.parseNumeric(getFieldValue('j_116')) || 1;
-        let coolingElectLoad_d117=0, coolingSink_l114=0, coolingSink_l116=0;
-        if (coolingEnabled === 'Cooling') {
-            let activeCOP = (systemType === 'Heatpump' && copcool_hp > 0) ? copcool_hp : (dedicatedCopcool > 0 ? dedicatedCopcool : 1);
-            if (activeCOP > 0) { coolingElectLoad_d117 = coolingLoad / activeCOP; }
-            if (systemType === 'Heatpump' && copcool_hp > 0) {
-                coolingSink_l114 = (coolingElectLoad_d117 * copcool_hp) - coolingElectLoad_d117;
-            } else if (dedicatedCopcool > 0) { 
-                coolingSink_l116 = (coolingElectLoad_d117 * dedicatedCopcool) - coolingElectLoad_d117;
+        const coolingSystemType = getFieldValue('d_116');
+        const heatingSystemType = getFieldValue('d_113');
+        // Use global parser
+        const coolingDemandTEDI_m129 = window.TEUI.parseNumeric(getFieldValue('m_129')) || 0; // From TEDI Section 14 Summary
+        const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue('j_113')) || 0;
+        const copcool_dedicated_h116 = 2.7; // Default value for dedicated - NEEDS SOURCE or INPUT FIELD? Currently hardcoded
+        
+        let copcool_to_use = 0;
+        let coolingLoad_d117 = 0;
+        let coolingSink_l116 = 0; // Sink for Dedicated Cooling
+        let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
+        let isCoolingActive = (coolingSystemType === 'Cooling');
+
+        // --- Dynamic Styling --- // (Logic remains unchanged)
+        // ...
+
+        if (isCoolingActive) {
+            if (heatingSystemType === 'Heatpump') {
+                copcool_to_use = copcool_hp_j113; // Uses HP COPcool
+                
+                // --- Add Debug Logs --- 
+                // console.log(`[Debug S13] Inside calculateCoolingSystem (Heatpump Active):`);
+                // console.log(`  - coolingDemandTEDI_m129 (from m_129/l_128): ${coolingDemandTEDI_m129}`);
+                // console.log(`  - copcool_hp_j113 (from j_113): ${copcool_hp_j113}`);
+                // console.log(`  - copcool_to_use: ${copcool_to_use}`);
+                
+                // Calculate L114 Sink = (Load * COP) - Load = Load * (COP - 1)
+                // Need to calculate D117 (Load) first
+                if (copcool_to_use > 0) { // Check HP COPcool
+                     coolingLoad_d117 = coolingDemandTEDI_m129 / copcool_to_use;
+                     coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1);
+                } else {
+                     coolingLoad_d117 = 0; // Avoid division by zero if COP is invalid
+                     coolingSink_l114 = 0;
+                }
+                // Dedicated sink is 0 if HP is used
+                coolingSink_l116 = 0;
+                // HP sink is 0 if dedicated is used
+                coolingSink_l114 = 0;
+                // --- REMOVE Debug Logs --- 
+                // console.log(`[Debug S13] Inside calculateCoolingSystem (Dedicated Active):`);
+                // console.log(`  - coolingDemandTEDI_m129 (from m_129/l_128): ${coolingDemandTEDI_m129}`);
+                // console.log(`  - copcool_dedicated_h116: ${copcool_dedicated_h116}`);
+                // console.log(`  - copcool_to_use: ${copcool_to_use}`);
+            } else {
+                // Assumes dedicated cooling system if not Heatpump and Cooling is active
+                copcool_to_use = copcool_dedicated_h116; // Use the hardcoded/default dedicated value
+                 // Calculate load and L116 sink
+                 if (copcool_to_use > 0) {
+                    coolingLoad_d117 = coolingDemandTEDI_m129 / copcool_to_use;
+                    coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); 
+                } else {
+                    coolingLoad_d117 = 0;
+                    coolingSink_l116 = 0;
+                }
+                // HP sink is 0 if dedicated is used
+                coolingSink_l114 = 0;
+            }
+            
+        } else {
+            // No Cooling selected
+            coolingLoad_d117 = 0;
+            coolingSink_l116 = 0;
+            coolingSink_l114 = 0; // Also set HP sink to 0 if no cooling
+            copcool_to_use = 0; // Reflects no active cooling efficiency
         }
-        }
-        setCalculatedValue('d_117', coolingElectLoad_d117, 'number-2dp-comma');
-        setCalculatedValue('l_114', coolingSink_l114, 'number-2dp-comma');
-        setCalculatedValue('l_116', coolingSink_l116, 'number-2dp-comma');
-        const m116_percent = dedicatedCopcool > 0 ? 1 / dedicatedCopcool : 0;
-        setCalculatedValue('m_116', m116_percent, 'percent-0dp');
-        const area = window.TEUI.parseNumeric(getFieldValue('h_15')) || 1; 
-        const intensity = area > 0 ? coolingElectLoad_d117 / area : 0;
-        setCalculatedValue('f_117', intensity, 'number-2dp'); 
-        const activeCOPForM117 = (coolingEnabled==='No Cooling')?0:(systemType==='Heatpump'?copcool_hp:dedicatedCopcool);
-        const m117_percent = activeCOPForM117 > 0 ? intensity / activeCOPForM117 : 0;
-        setCalculatedValue('m_117', m117_percent, 'percent-0dp');
+
+        // Specify format types explicitly
+        setCalculatedValue('j_116', copcool_to_use, 'number-1dp'); // Use the effective COPc
+        setCalculatedValue('l_116', coolingSink_l116, 'number-2dp-comma'); // Dedicated Sink
+        setCalculatedValue('l_114', coolingSink_l114, 'number-2dp-comma'); // ADDED: Heatpump Sink
+        setCalculatedValue('d_117', coolingLoad_d117, 'number-2dp-comma');
+        
+        // Calculate intensity f_117
+        // Use global parser
+        const area_h15 = window.TEUI.parseNumeric(getFieldValue('h_15')) || 0;
+        const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
+        setCalculatedValue('f_117', intensity_f117, 'number-2dp');
+        
+        // Update other COP/CEER displays based on effective COPc
+        const ceer_j117 = 3.412 * copcool_to_use;
+        setCalculatedValue('j_117', ceer_j117, 'number-1dp');
+        
+        // Update percentage comparison m_116, m_117 (assuming ref values are 1?)
+        setCalculatedValue('m_116', copcool_to_use / 1 * 100, 'percent-0dp'); // Example: compare to COP=1
+        setCalculatedValue('m_117', intensity_f117 / 5 * 100, 'percent-0dp'); // Example: compare to 5 kWh/m2
+
+        // Trigger downstream calcs like ventilation
+        calculateCoolingVentilation();
     }
     
     /**
@@ -1755,19 +1826,19 @@ window.TEUI.SectionModules.sect13 = (function() {
             // Store raw value as string in StateManager for precision and consistency
             // Note: Added check to prevent unnecessary state updates & listener triggers
             if (window.TEUI.StateManager) {
-                const rawValueString = numericValue.toString();
-                // Update the StateManager with the raw numeric value (converted to string for precision) and 'calculated' state
-                // --- REINSTATED state check, comparing numbers --- 
-                const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
-                const currentNumericValue = window.TEUI.parseNumeric(currentStateValue); // Parse current state to number
-                
-                // Compare numeric values instead of strings
-                if (numericValue !== currentNumericValue) { 
-                    // console.log(`[Debug S13] State different for ${fieldId}, setting value: ${rawValueString}`); // REMOVE Log 8
+                 // Store raw value as string to preserve precision and avoid floating point issues
+                 // Check if state value is different before setting to avoid unnecessary listener triggers
+                 const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
+                 const rawValueString = numericValue.toString(); 
+                 // REMOVED const currentNumericValue = window.TEUI.parseNumeric(currentStateValue); 
+                 
+                 // --- Revert to comparing STRINGS --- 
+                 if (currentStateValue !== rawValueString) { 
+                    // console.log(`[Debug S13] State different for ${fieldId}, setting value: ${rawValueString}`); 
                     window.TEUI.StateManager.setValue(fieldId, rawValueString, 'calculated');
-                } else {
-                    // console.log(`[Debug S13] State same for ${fieldId}, skipping StateManager.setValue.`); // REMOVE Log 9
-                }
+                 } else {
+                     // console.log(`[Debug S13] State same for ${fieldId}, skipping StateManager.setValue.`);
+                 }
             }
             
             // Update DOM with formatted value
