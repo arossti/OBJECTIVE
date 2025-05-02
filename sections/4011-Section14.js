@@ -609,12 +609,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             setCalculatedValue('h_129', cediUnmitigatedWm2_h129, 'W/m2'); 
             
             // m_129: CED Mitigated (kWh/yr) = D129-H124-D123 (Moved from l_128)
-            console.log(`[Debug S14] Calculating m_129 (CED Mitigated):`); // Updated log
-            console.log(`  - d_129 (Unmitigated CED): ${cedCoolingUnmitigated_d129}`);
-            console.log(`  - h_124 (Free Cooling Limit): ${h124}`);
-            console.log(`  - d_123 (Outgoing Vent Energy): ${d123}`);
             const cedMitigated_m129 = cedCoolingUnmitigated_d129 - h124 - d123;
-            console.log(`  - Result m_129: ${cedMitigated_m129}`); // Updated log
             setCalculatedValue('m_129', cedMitigated_m129); // Use m_129
             
             // d_130: CEDI Cooling Load W/m2 Unmitigated = (D129/8760*1000)/H15

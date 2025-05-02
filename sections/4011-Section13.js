@@ -1116,7 +1116,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                     fieldId: "k_120", 
                     type: "percentage", // Change to percentage
                     dropdownId: "dd_k_120", // Add ID
-                    value: "0.9", // Set default to 90%
+                    value: "90", // Set default to 90%
                     section: "mechanicalLoads",
                     options: [ // Add options
                         { value: "0.1", name: "10%" },
@@ -1469,61 +1469,40 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Initialize all event handlers for this section
      */
     function initializeEventHandlers() {
-        // Heating system dropdown change handler
-        document.querySelectorAll('[data-field-id="d_113"]').forEach(dropdown => {
-            dropdown.addEventListener('change', function(e) {
-                calculateHeatingSystem();
-            });
-        });
-        
-        // HSPF input change handler
-        document.querySelectorAll('[data-field-id="f_113"]').forEach(input => {
-            input.addEventListener('change', function(e) {
-                calculateCOPValues();
-            });
-        });
-        
-        // Cooling system dropdown change handler
-        document.querySelectorAll('[data-field-id="d_116"]').forEach(dropdown => {
-            dropdown.addEventListener('change', function(e) {
-                calculateCoolingSystem();
-            });
-        });
-        
-        // Ventilation efficiency slider change handler
-        document.querySelectorAll('[data-field-id="d_118"]').forEach(slider => {
-            slider.addEventListener('input', function(e) {
-                calculateVentilationValues();
-            });
-        });
-        
-        // Ventilation method dropdown change handler
-        document.querySelectorAll('[data-field-id="g_118"]').forEach(dropdown => {
-            dropdown.addEventListener('change', function(e) {
-                // Use e.target.value instead of this.value
-                const newValue = e.target.value;
-                // Add StateManager update
-                if (window.TEUI.StateManager) {
-                    // Use newValue and the correct fieldId from the event target's dataset
-                    window.TEUI.StateManager.setValue(e.target.dataset.fieldId, newValue, 'user-modified');
-                }
-                // Call calculateAll instead of just calculateVentilationRates
-                calculateAll(); 
-            });
-        });
-        
-        // Per person ventilation rate input handler
-        document.querySelectorAll('[data-field-id="d_119"]').forEach(input => {
-            input.addEventListener('change', function(e) {
-                calculateVentilationRates();
-            });
-        });
-        
-        // Summer boost dropdown change handler
-        document.querySelectorAll('[data-field-id="l_119"]').forEach(dropdown => {
-            dropdown.addEventListener('change', function(e) {
-                calculateCoolingVentilation();
-            });
+        // Get the section container element once
+        const sectionElement = document.getElementById('mechanicalLoads');
+        if (!sectionElement) {
+            console.warn("Section 13 container #mechanicalLoads not found. Cannot initialize handlers.");
+            return; // Exit if container not found
+        }
+
+        // --- Standard Editable Field Handlers --- 
+        // Use the already defined sectionElement
+        const editableFields = sectionElement.querySelectorAll('.editable.user-input');
+        // console.log(`[Debug S13] Found ${editableFields.length} editable fields in Section 13.`); // Keep logs for now
+        editableFields.forEach(field => {
+            const fieldId = field.getAttribute('data-field-id'); // Get field ID for logging
+            // Prevent adding listeners multiple times
+            if (!field.hasEditableListeners) {
+                // console.log(`[Debug S13] Attaching listeners to editable field: ${fieldId}`); // Keep logs for now
+                field.setAttribute('contenteditable', 'true');
+                
+                // Use a single blur handler for consistency
+                field.addEventListener('blur', handleEditableBlur); 
+                
+                // Add keydown listener to handle Enter key
+                field.addEventListener('keydown', function(e) { 
+                    // console.log(`[Debug S13] Keydown on ${fieldId}: Key = ${e.key}`); // Keep logs for now
+                    if (e.key === 'Enter') {
+                        // console.log(`[Debug S13] Enter detected on ${fieldId}. Preventing default and blurring.`); // Keep logs for now
+                        e.preventDefault(); // Prevent adding newline
+                        e.stopPropagation(); // Prevent event bubbling
+                        this.blur(); // Trigger blur to save value
+                    }
+                });
+                
+                field.hasEditableListeners = true; // Mark as having listeners attached
+            }
         });
 
         // --- StateManager Listeners --- 
@@ -1564,54 +1543,109 @@ window.TEUI.SectionModules.sect13 = (function() {
             // Listen to relevant outputs from Section 9/10 (gains)
             sm.addListener('i_71', calculateAll);
             sm.addListener('i_79', calculateAll);
+            sm.addListener('d_127', calculateHeatingSystem); // TED (from S14, for d_114)
+            // Listener for m_129 (CED Mitigated) - NEEDED
+            sm.addListener('m_129', () => { 
+                console.log("[S13 Listener] m_129 changed! Calling calculateCoolingSystem."); // ADDED TEMP LOG
+                calculateCoolingSystem(); 
+            }); 
         } else {
             console.warn("Section 13: StateManager not available to add climate/loss/gain listeners.");
         }
 
-        // --- Standard Editable Field Handlers (Moved Inside initializeEventHandlers) --- 
-        const sectionElement = document.getElementById('mechanicalLoads'); // Use the correct section ID
-        if (sectionElement) {
-            const editableFields = sectionElement.querySelectorAll('.editable.user-input');
-            // console.log(`[Debug S13] Found ${editableFields.length} editable fields in Section 13.`); // Keep logs for now
-            editableFields.forEach(field => {
-                const fieldId = field.getAttribute('data-field-id'); // Get field ID for logging
-                // Prevent adding listeners multiple times
-                if (!field.hasEditableListeners) {
-                    // console.log(`[Debug S13] Attaching listeners to editable field: ${fieldId}`); // Keep logs for now
-                    field.setAttribute('contenteditable', 'true');
-                    
-                    // Use a single blur handler for consistency
-                    field.addEventListener('blur', handleEditableBlur); 
-                    
-                    // Add keydown listener to handle Enter key
-                    field.addEventListener('keydown', function(e) { 
-                        // console.log(`[Debug S13] Keydown on ${fieldId}: Key = ${e.key}`); // Keep logs for now
-                        if (e.key === 'Enter') {
-                            // console.log(`[Debug S13] Enter detected on ${fieldId}. Preventing default and blurring.`); // Keep logs for now
-                            e.preventDefault(); // Prevent adding newline
-                            e.stopPropagation(); // Prevent event bubbling
-                            this.blur(); // Trigger blur to save value
-                        }
-                    });
-                    
-                    field.hasEditableListeners = true; // Mark as having listeners attached
-                }
-            });
-        } else {
-             console.warn("Section 13 element not found for attaching editable field handlers.");
+        // --- Use Event Delegation for k_120 dropdown/slider --- 
+        // Use the sectionElement declared earlier
+        // const sectionElement = document.getElementById('mechanicalLoads'); // REMOVE this duplicate declaration
+        if (sectionElement && !sectionElement.hasK120DelegateListener) { // Just use sectionElement
+            console.log("[S13 Init] Attaching delegated listener for k_120 control to #mechanicalLoads");
+            // Listen for both input (for slider drag) and change (for select or slider release)
+            sectionElement.addEventListener('input', handleK120Change);
+            sectionElement.addEventListener('change', handleK120Change);
+            sectionElement.hasK120DelegateListener = true; // Add flag
+        } else if (!sectionElement) {
+            console.warn("[S13 Init] Could not find #mechanicalLoads element to attach delegated listener.");
         }
+        // --- End Event Delegation ---
 
-        // Unoccupied Setback dropdown change handler (k_120)
-        document.querySelectorAll('[data-dropdown-id="dd_k_120"]').forEach(dropdown => {
+        // --- Remove previous direct listener attempt ---
+        /*
+        const k120Dropdowns = document.querySelectorAll('[data-dropdown-id="dd_k_120"]');
+        console.log(`[S13 Init] Found ${k120Dropdowns.length} elements for dd_k_120 listener.`); 
+        k120Dropdowns.forEach(dropdown => {
+            if (dropdown.hasK120Listener) {
+                 console.log(`[S13 Init] Listener already attached to dd_k_120.`); 
+                 return;
+            }
+            console.log(`[S13 Init] Attaching listener to dd_k_120:`, dropdown); 
             dropdown.addEventListener('change', function(e) {
+                console.log("[S13 Listener] k_120 changed!");
                 const fieldId = this.getAttribute('data-field-id');
-                if (!fieldId) return;
+                const decimalValueStr = this.value; 
+                const decimalValue = parseFloat(decimalValueStr); 
+                console.log(`[S13 Listener] Field ID: ${fieldId}, New Value: ${decimalValueStr}`);
+                
+                if (!fieldId || isNaN(decimalValue)) return;
+                
                 if (window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
+                    console.log(`[S13 Listener] Updating StateManager for ${fieldId} with value ${decimalValueStr}`);
+                    window.TEUI.StateManager.setValue(fieldId, decimalValueStr, 'user-modified'); 
+                    console.log(`[S13 Listener] StateManager value for ${fieldId} is now: ${window.TEUI.StateManager.getValue(fieldId)}`);
                 }
-                calculateAll(); // Recalculate needed, affects h_124
+                
+                if (window.TEUI.SectionModules.sect13?.calculateFreeCooling) {
+                     console.log(`[S13 Listener] Calling calculateFreeCooling directly with setback override: ${decimalValue}`);
+                     window.TEUI.SectionModules.sect13.calculateFreeCooling(decimalValue); 
+                } else {
+                    console.warn("Could not find calculateFreeCooling function to call directly.");
+                    calculateAll(); 
+                }
             });
+            dropdown.hasK120Listener = true;
         });
+        */
+
+        // --- Handler function for k_120 change (defined within IIFE scope) ---
+        function handleK120Change(e) {
+            if (e.target && e.target.matches('[data-field-id="k_120"]')) {
+                console.log(`[S13 Listener] k_120 ${e.type} event!`);
+                const controlElement = e.target;
+                const fieldId = controlElement.getAttribute('data-field-id');
+                
+                // Value from slider is likely 0-100, need decimal 0.0-1.0
+                const sliderValueStr = controlElement.value; 
+                const sliderValue = parseFloat(sliderValueStr);
+                const decimalValue = sliderValue / 100; // Convert to decimal
+                const decimalValueStrForState = decimalValue.toString(); // Store as string
+
+                console.log(`[S13 Listener] Field ID: ${fieldId}, Slider Value: ${sliderValueStr}, Decimal Value: ${decimalValue}`); // Updated Log
+                
+                if (!fieldId || isNaN(decimalValue)) {
+                    console.warn(`[S13 Listener] Invalid value or fieldId for k_120.`);
+                    return;
+                }
+                
+                // Update display span with percentage
+                const displaySpan = document.querySelector(`#mechanicalLoads span[data-display-for="${fieldId}"]`); 
+                if (displaySpan) {
+                    displaySpan.textContent = `${sliderValue.toFixed(0)}%`; // Use the original slider value for display
+                }
+
+                if (window.TEUI.StateManager) {
+                    console.log(`[S13 Listener] Updating StateManager for ${fieldId} with value ${decimalValueStrForState}`); // Log decimal string
+                    window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); // Store decimal string
+                    console.log(`[S13 Listener] StateManager value for ${fieldId} is now: ${window.TEUI.StateManager.getValue(fieldId)}`);
+                }
+                
+                if (window.TEUI.SectionModules.sect13?.calculateFreeCooling) {
+                     console.log(`[S13 Listener] Calling calculateFreeCooling directly with setback override: ${decimalValue}`); // Log decimal
+                     window.TEUI.SectionModules.sect13.calculateFreeCooling(decimalValue); // Pass decimal
+                } else {
+                    console.warn("Could not find calculateFreeCooling function to call directly.");
+                    calculateAll(); 
+                }
+            }
+        }
+        // --- End Handler function ---
     }
     
     /**
@@ -1885,9 +1919,16 @@ window.TEUI.SectionModules.sect13 = (function() {
         const ceer_j117 = 3.412 * copcool_to_use;
         setCalculatedValue('j_117', ceer_j117, 'number-1dp');
         
-        // Update percentage comparison m_116, m_117 (assuming ref values are 1?)
-        setCalculatedValue('m_116', copcool_to_use / 1 * 100, 'percent-0dp'); // Example: compare to COP=1
-        setCalculatedValue('m_117', intensity_f117 / 5 * 100, 'percent-0dp'); // Example: compare to 5 kWh/m2
+        // Update percentage comparison m_116, m_117 using FORMULAE-3037 logic
+        // TODO: Fetch actual Reference values (T116, T117) when available
+        const ref_cop_cool_T116 = 3.35; // Placeholder for Reference COPcool
+        const ref_intensity_T117 = 138; // Placeholder for Reference Intensity
+        
+        const m116_value = (copcool_to_use > 0) ? ref_cop_cool_T116 / copcool_to_use : 0;
+        setCalculatedValue('m_116', m116_value, 'percent-0dp'); 
+
+        const m117_value = (ref_intensity_T117 > 0) ? intensity_f117 / ref_intensity_T117 : 0;
+        setCalculatedValue('m_117', m117_value, 'percent-0dp'); 
 
         // Trigger downstream calcs like ventilation
         calculateCoolingVentilation();
@@ -2021,32 +2062,42 @@ window.TEUI.SectionModules.sect13 = (function() {
     
     /**
      * Calculate free cooling capacity and related metrics
+     * @param {number|null} [setbackFactorOverride=null] - Optional override for k_120, passed from event listener.
      */
-    function calculateFreeCooling() {
+    function calculateFreeCooling(setbackFactorOverride = null) { 
+        console.log(`[S13 Calc] calculateFreeCooling started. Override: ${setbackFactorOverride}`);
         // Run integrated cooling calculations first to ensure state is up-to-date
         runIntegratedCoolingCalculations(); 
 
         // Get the potential free cooling limit from the integrated calculation
         let potentialFreeCoolingLimit = coolingState.freeCoolingLimit;
         let finalFreeCoolingLimit = 0; // Default to 0
+        console.log(`[S13 Calc] Potential Free Cooling Limit: ${potentialFreeCoolingLimit}`);
 
         // Get the ventilation method
-        const ventMethod = coolingState.ventilationMethod; // Already fetched in updateCoolingInputs
+        const ventMethod = coolingState.ventilationMethod; 
+        console.log(`[S13 Calc] Ventilation Method: ${ventMethod}`);
 
         // Apply the logic: If method is Constant, use full potential.
-        // If scheduled, multiply potential by the setback factor from k_120.
+        // If scheduled, multiply potential by the setback factor from k_120 (using override if provided).
         if (ventMethod && ventMethod.includes('Constant')) {
             finalFreeCoolingLimit = potentialFreeCoolingLimit;
-            // console.log(`[S13] calculateFreeCooling: Using calculated limit (${finalFreeCoolingLimit}) for Constant method.`); // Keep commented
+            console.log(`[S13 Calc] Using Constant method logic. Final Limit: ${finalFreeCoolingLimit}`);
         } else { // Assumes 'by Schedule'
-            const setbackFactor_k120 = window.TEUI.parseNumeric(getFieldValue('k_120')) || 0.5; // Read setback, default 0.5
+            let setbackFactor_k120;
+            if (setbackFactorOverride !== null && !isNaN(setbackFactorOverride)) {
+                 setbackFactor_k120 = setbackFactorOverride;
+                 console.log(`[S13 Calc] Using PROVIDED setback override: ${setbackFactor_k120}`);
+            } else {
+                 // Fallback: Read from state if not called by listener (e.g., during initial calculateAll)
+                 setbackFactor_k120 = window.TEUI.parseNumeric(getFieldValue('k_120')) || 0.5; // Default 0.5
+                 console.log(`[S13 Calc] Using fallback read setback (k_120): ${setbackFactor_k120}`);
+            }
             finalFreeCoolingLimit = potentialFreeCoolingLimit * setbackFactor_k120;
-            // console.log(`[S13] calculateFreeCooling: Applying setback ${setbackFactor_k120} to potential ${potentialFreeCoolingLimit} for Scheduled method (${ventMethod}). Result: ${finalFreeCoolingLimit}`); // Keep commented
+            console.log(`[S13 Calc] Calculated Final Limit (Potential * Setback): ${finalFreeCoolingLimit}`);
         }
 
         // Days Active Cooling - Use value from integrated coolingState (this depends on free cooling limit)
-        // Recalculate days active cooling AFTER potentially modifying the free cooling limit
-        // We need to temporarily set the state for the calculation
         const originalFreeCooling = coolingState.freeCoolingLimit;
         coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Use the adjusted limit
         calculateDaysActiveCooling(); // Recalculate based on potentially modified free cooling

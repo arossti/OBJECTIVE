@@ -664,17 +664,19 @@ Section 03 (Climate Calculations) provides core climate data to other sections t
 
 ### Cooling Integration
 
-**Section 13 Cooling Calculation Revisions (Ventilation Method Impact - 2024-08-01):**
+**Section 13 Cooling Calculation Revisions (Ventilation Method Impact - 2024-08-01 / 2024-08-02):**
 
 - **Challenge:** Accurately modelling the impact of different ventilation strategies (selected in `g_118`) on both the cooling load imposed by ventilation and the potential benefit from free cooling, particularly concerning night-time setbacks in "by Schedule" methods.
 - **Revised Approach:** 
-    1.  **Incoming Cooling Ventilation Energy (`d_122`):** This calculation represents the energy *load* added by ventilating with warmer/moister outdoor air. It should *always* be calculated based on the **average schedule-adjusted ventilation rate (`d_120`)**, as even scheduled systems introduce a load during occupied hours. Zeroing this out for scheduled methods was incorrect. The corresponding JavaScript function is `calculateCoolingVentilation`.
+    1.  **Incoming Cooling Ventilation Energy (`d_122`):** This calculation remains based on the **average schedule-adjusted ventilation rate (`d_120`)**.
         - **Excel Formula (D122):** `=IF(D116="Cooling",IF(L119="None", (1.21*D120*D21*24/1000)*(I63/J63)*I122, (1.21*D120*D21*24/1000)*(I63/J63)*L119*I122),IF(L119="None", (1.21*D120*D21*24/1000)*I122, (1.21*D120*D21*24/1000)*I122*L119)))`
-    2.  **Free Cooling Limit (`h_124`):** This calculation represents the energy *benefit* from free cooling. Since scheduled ventilation significantly reduces or eliminates night-time operation when free cooling potential is highest, the *benefit* is nullified for these methods. Constant methods retain their calculated potential. The corresponding JavaScript function is `calculateFreeCooling`.
-        - **Excel Formula (H124):** `=IF(ISNUMBER(SEARCH("Constant", G118)), 'COOLING-TARGET'!A33*M19, 0)`
-- **Outcome:** This approach correctly calculates the cooling load based on the average ventilation rate while separately adjusting the free cooling *benefit* based on the ventilation strategy, providing a more accurate representation without requiring hourly simulation.
-- **Note:** An intermediate field `k_120` was temporarily introduced but is not needed for the final `d_122` calculation, as `d_120` already reflects the necessary schedule adjustments for the average rate.
-- **Additional Refinements (Implemented 2024-08-01):**
+    2.  **Free Cooling Limit (`h_124`):** To account for reduced night-time potential with scheduled ventilation without completely eliminating the benefit, this is now modulated by a user-adjustable setback factor.
+        - **Implementation:** A new percentage dropdown field `k_120` ("Unoccupied Setback", default 90%) was added. 
+        - **Logic:** The `calculateFreeCooling` function checks the ventilation method (`g_118`). If "Constant", the full potential free cooling limit is used. If "by Schedule", the potential free cooling limit is multiplied by the percentage selected in `k_120`.
+        - **Excel Formula (H124):** `=IF(ISNUMBER(SEARCH("Constant", G118)), 'COOLING-TARGET'!A33*M19, ('COOLING-TARGET'!A33*M19)*K120)`
+- **Outcome:** This approach allows users to estimate the reduction in free cooling effectiveness due to scheduled setbacks, offering flexibility for calibrating against known building performance or legacy models, while still acknowledging that scheduled ventilation differs from constant operation. 
+- **Note:** The `k_120` field replaces a previous approach that overbroadly zeroed out free cooling for scheduled methods, removing both the benefit of mechanical overnight ventilation but also the probability of user-behaviour (opening windows when appropriate, not modelled, but assumed to have some unknown effect).
+- **Additional Refinements (Implemented 2024-05-01):**
     - **Elevation Adjustment:** Atmospheric pressure used in humidity calculations (`coolingState.atmPressure`) is now adjusted based on project elevation (`l_22`, defaulting to 80m) for improved accuracy.
     - **`A50_temp` Implementation:** The specific psychrometric approximation for average outdoor saturation temperature from `COOLING-TARGET.csv` (cell A50) is now implemented in `calculateA50Temp` and used for outdoor air property calculations within the cooling logic.
 
