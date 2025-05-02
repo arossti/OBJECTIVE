@@ -6,36 +6,53 @@
  * and requires SectionIntegrator and StateManager connections to function properly.
  * 
  * ====================================================================
- * COOLING MODULE INTEGRATION REQUIREMENTS
+ * INTERNAL COOLING CALCULATIONS
  * ====================================================================
  * 
- * This section depends on 4011-Cooling.js for several key calculations:
- * 1. LATENT LOAD FACTOR (cell i_122) - Used for ventilation cooling energy
- * 2. FREE COOLING LIMIT (cell h_124) - Used for free cooling capacity
- * 3. DAYS ACTIVE COOLING (cell m_124) - Shows efficiency of passive cooling
+ * This section contains integrated logic for calculating key cooling-related factors,
+ * replacing the previous dependency on an external Cooling.js module.
  * 
- * When 4011-Cooling.js is loaded, it:
- * - Registers StateManager values with "cooling_" prefix (cooling_latentLoadFactor, etc.)
- * - Dispatches 'cooling-calculations-loaded' event which Section13 listens for
- * - Provides getter methods for direct access: getLatentLoadFactor(), getFreeCoolingLimit(), etc.
- * 
- * Section13 implements multiple fallback methods when cooling calculations are unavailable:
- * - First tries StateManager.getValue('cooling_latentLoadFactor')
- * - Then falls back to default values (defined in calculateCoolingVentilation, etc.)
+ * 1. Internal State: Uses an internal `coolingState` object to manage inputs,
+ *    constants (like Air Mass, Specific Heat Capacity, Latent Heat of Vaporization),
+ *    and intermediate/final calculated values.
+ * 2. Core Functions: Relies on internal helper functions:
+ *    - `updateCoolingInputs`: Fetches required values from StateManager.
+ *    - `calculateA50Temp`: Calculates intermediate outdoor temperature for psychrometrics.
+ *    - `calculateAtmosphericValues`: Calculates saturation/partial pressures.
+ *    - `calculateHumidityRatios`: Calculates indoor/outdoor humidity ratios.
+ *    - `calculateLatentLoadFactor`: Calculates the factor used in `i_122`.
+ *    - `calculateFreeCoolingLimit`: Calculates potential free cooling (kWh/yr).
+ *    - `calculateDaysActiveCooling`: Estimates active cooling days needed.
+ *    - `runIntegratedCoolingCalculations`: Orchestrates these internal calculations.
+ * 3. Key Outputs Used Internally:
+ *    - `coolingState.latentLoadFactor` -> Used for `i_122` calculation.
+ *    - `coolingState.freeCoolingLimit` -> Used for `h_124` calculation (conditionally zeroed based on `g_118`).
+ *    - `coolingState.daysActiveCooling` -> Used for `m_124` calculation.
+ * 4. Execution: `runIntegratedCoolingCalculations` is called within 
+ *    `calculateCoolingVentilation` and `calculateFreeCooling` to ensure the 
+ *    `coolingState` is up-to-date before relevant fields (`i_122`, `h_124`, `m_124`) are set.
  * 
  * ====================================================================
  * STATEMANAGER DEPENDENCIES
  * ====================================================================
  * 
- * This section has many cross-section dependencies managed by StateManager:
- * - FROM Section02: Building area (h_15) affects cooling intensity
- * - FROM Section03: HDD and CDD (d_20, d_21) affect ventilation energy 
- * - FROM Section09: Occupants (d_63) affect ventilation rates
- * - FROM Section12: Building volume (d_105) affects ventilation rates
- * - FROM Section14: Heating/cooling loads (d_127, d_129) affect system sizing
+ * This section has cross-section dependencies managed by StateManager, including:
+ * - FROM Section 02: `h_15` (Building area) - Affects cooling calcs & intensity.
+ * - FROM Section 03: 
+ *    - `d_20` (HDD) - Affects heating ventilation energy.
+ *    - `d_21` (CDD) - Affects cooling ventilation energy & internal cooling calcs.
+ *    - `h_24` / `l_24` (Cooling Setpoint) - Affects internal cooling calcs.
+ *    - `l_22` (Elevation) - Affects atmospheric pressure in internal cooling calcs.
+ * - FROM Section 08/09(?): `d_59` (Indoor RH) - Affects internal cooling calcs.
+ * - FROM Section 09: `d_63`, `i_63`, `j_63` (Occupants / Schedule) - Affects ventilation rates.
+ * - FROM Section 12: `d_105` (Building volume) - Affects ventilation rates & internal cooling calcs.
+ * - FROM Section 14: 
+ *    - `d_127` (TED) - Affects heating demand.
+ *    - `m_129` (CED Mitigated) - Affects cooling system electrical load.
  * 
- * In registerWithStateManager(), this section formally declares these dependencies
- * using sm.registerDependency() to ensure proper calculation ordering.
+ * The `registerWithStateManager()` function declares dependencies relevant for 
+ * StateManager's change propagation, though not all internal dependencies might be 
+ * explicitly listed there if calculations are handled internally via `calculateAll` triggers.
  * 
  * ====================================================================
  * SECTIONINTEGRATOR CONNECTIONS
@@ -389,7 +406,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         humidityRatioAvg: 0,
         humidityRatioDifference: 0,
         wetBulbTemperature: 0,
-        A50_temp: 0 // Added for A50 temperature calculation
+        A50_temp: 0, // Added for A50 temperature calculation
+        ventilationMethod: '' // Added for g_118
     };
 
     /** [Cooling Calc] Calculate latent load factor */
@@ -403,21 +421,18 @@ window.TEUI.SectionModules.sect13 = (function() {
         const Cp = coolingState.specificHeatCapacity;
         // Use the Tdiff definition from Excel: Outdoor Avg - Indoor Set
         const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp; 
-        console.log(`[S13 Debug] In calculateLatentLoadFactor - hDiff: ${hDiff}, LHV: ${LHV}, Cp: ${Cp}, Tdiff: ${Tdiff}`); // ADDED LOG
+        // console.log(`[S13 Debug] In calculateLatentLoadFactor - hDiff: ${hDiff}, LHV: ${LHV}, Cp: ${Cp}, Tdiff: ${Tdiff}`); // REMOVED LOG
 
         // Check for division by zero or invalid inputs
         if (Cp === 0 || Tdiff === 0 || isNaN(hDiff) || isNaN(LHV) || isNaN(Cp) || isNaN(Tdiff)) {
-            console.warn("[S13 Debug] Latent Load Factor: Invalid inputs or division by zero."); // ADDED LOG
-            return 1.0; // Return default factor of 1 if calculation is not possible
+            console.warn("Latent Load Factor: Invalid inputs or division by zero."); 
+            return 1.0; 
         }
 
         const ratio = (hDiff * LHV) / (Cp * Tdiff);
         const factor = 1 + ratio;
         const finalFactor = Math.max(1.0, factor);
-        console.log(`[S13 Debug] Latent Load Factor - Ratio: ${ratio}, Factor: ${factor}, Final (capped): ${finalFactor}`); // ADDED LOG
-        
-        // Return the calculated factor, ensuring it's not negative (which is physically unlikely here)
-        // return Math.max(1.0, factor); // Original return replaced by logging
+        // console.log(`[S13 Debug] Latent Load Factor - Ratio: ${ratio}, Factor: ${factor}, Final (capped): ${finalFactor}`); // REMOVED LOG
         return finalFactor;
     }
 
@@ -435,10 +450,10 @@ window.TEUI.SectionModules.sect13 = (function() {
         const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue('d_59')) || 45;
         const indoorRH = indoorRH_percent / 100;
         coolingState.partialPressureIndoor = coolingState.pSatIndoor * indoorRH; 
-        // console.log(`[S13 Debug] Indoor RH raw: ${getFieldValue('d_59')}, Parsed %: ${indoorRH_percent}, Used fraction: ${indoorRH}`); // Keep for one more check
+        // console.log(`[S13 Debug] Indoor RH raw: ${getFieldValue('d_59')}, Parsed %: ${indoorRH_percent}, Used fraction: ${indoorRH}`); // REMOVED LOG
         
-        // console.log(`[S13 Debug] In calculateAtmosphericValues - Outdoor t: ${t_outdoor}, RH: ${coolingState.coolingSeasonMeanRH}, pSatAvg: ${coolingState.pSatAvg}, pPartial: ${coolingState.partialPressure}`); // Keep log
-        // console.log(`[S13 Debug] In calculateAtmosphericValues - Indoor t: ${t_indoor}, RH: ${indoorRH}, pSatIndoor: ${coolingState.pSatIndoor}, pPartialIndoor: ${coolingState.partialPressureIndoor}`); // Keep log
+        // console.log(`[S13 Debug] In calculateAtmosphericValues - Outdoor t: ${t_outdoor}, RH: ${coolingState.coolingSeasonMeanRH}, pSatAvg: ${coolingState.pSatAvg}, pPartial: ${coolingState.partialPressure}`); // REMOVED LOG
+        // console.log(`[S13 Debug] In calculateAtmosphericValues - Indoor t: ${t_indoor}, RH: ${indoorRH}, pSatIndoor: ${coolingState.pSatIndoor}, pPartialIndoor: ${coolingState.partialPressureIndoor}`); // REMOVED LOG
     }
 
     /** [Cooling Calc] Calculate humidity ratios */
@@ -455,7 +470,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         coolingState.humidityRatioIndoor = 0.62198 * coolingState.partialPressureIndoor / (atmPressure - coolingState.partialPressureIndoor);
         coolingState.humidityRatioAvg = 0.62198 * coolingState.partialPressure / (atmPressure - coolingState.partialPressure);
         coolingState.humidityRatioDifference = coolingState.humidityRatioAvg - coolingState.humidityRatioIndoor;
-        console.log(`[S13 Debug] In calculateHumidityRatios - hRatioIndoor: ${coolingState.humidityRatioIndoor}, hRatioAvg: ${coolingState.humidityRatioAvg}, hDiff: ${coolingState.humidityRatioDifference}`); // ADDED LOG
+        // console.log(`[S13 Debug] In calculateHumidityRatios - hRatioIndoor: ${coolingState.humidityRatioIndoor}, hRatioAvg: ${coolingState.humidityRatioAvg}, hDiff: ${coolingState.humidityRatioDifference}`); // REMOVED LOG
     }
 
     /** [Cooling Calc] Calculate free cooling capacity limit */
@@ -468,8 +483,12 @@ window.TEUI.SectionModules.sect13 = (function() {
         const sensibleCooling = totalMass * coolingState.specificHeatCapacity * tempDiff / (3.6e6); // Convert J to kWh
         const latentAdjustment = totalMass * coolingState.latentHeatVaporization * coolingState.humidityRatioDifference / (3.6e6); // Convert J to kWh
         const dailyFreeCooling = Math.max(0, sensibleCooling - latentAdjustment);
-        // Use 120 cooling days approximation 
-        coolingState.freeCoolingLimit = dailyFreeCooling * 120; 
+        
+        // Get Cooling Days from m_19, default to 120
+        const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120; 
+
+        // Use the cooling days value from m_19 
+        coolingState.freeCoolingLimit = dailyFreeCooling * coolingDays; 
         return coolingState.freeCoolingLimit;
     }
 
@@ -514,7 +533,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         
         // Store in coolingState for use in atmospheric calcs
         coolingState.A50_temp = A50;
-        console.log(`[S13 Debug] Calculated A50 Temp: ${A50}`); // ADDED LOG
+        // console.log(`[S13 Debug] Calculated A50 Temp: ${A50}`); // REMOVED LOG
         return A50;
     }
 
@@ -535,8 +554,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const projectElevation = parseNum(getValue('l_22')) || 80; // Read from Sec 03, fallback to 80m
         const seaLevelPressure = 101325; // E13
         coolingState.atmPressure = seaLevelPressure * Math.exp(-projectElevation / 8434); // E15 logic
-        console.log(`[S13 Debug] Updated coolingState.atmPressure: ${coolingState.atmPressure}`); // ADDED LOG
-        console.log(`[S13 Debug] Updated coolingState.coolingSeasonMeanRH: ${coolingState.coolingSeasonMeanRH}`); // ADDED LOG
+        // console.log(`[S13 Debug] Updated coolingState.atmPressure: ${coolingState.atmPressure}`); // REMOVED LOG
+        // console.log(`[S13 Debug] Updated coolingState.coolingSeasonMeanRH: ${coolingState.coolingSeasonMeanRH}`); // REMOVED LOG
 
         // Check for user override for cooling setpoint in l_24, otherwise use h_24
         const coolingSetTempOverride_l24 = parseNum(getValue('l_24')); // Check l_24 first
@@ -550,6 +569,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         coolingState.buildingVolume = parseNum(getValue('d_105')) || 8000;
         coolingState.buildingArea = parseNum(getValue('h_15')) || 1427.2;
         coolingState.coolingLoad = getNumericValue('l_128'); // Read mitigated cooling load from S14
+        coolingState.ventilationMethod = getFieldValue('g_118') || 'Volume Constant'; // Get Vent method
 
         // Calculate the intermediate A50 temperature needed for atmospheric calcs
         calculateA50Temp();
@@ -560,10 +580,22 @@ window.TEUI.SectionModules.sect13 = (function() {
         updateCoolingInputs(); // Get latest inputs
         coolingState.latentLoadFactor = calculateLatentLoadFactor();
         calculateFreeCoolingLimit(); // Includes atmospheric and humidity ratio calcs
+        
+        // --- Removed adjustment based on Ventilation Method (Reverted 2024-08-01) ---
+        // Let the schedule-adjusted d_120 implicitly affect free cooling calc magnitude.
+        /*
+        if (coolingState.ventilationMethod && coolingState.ventilationMethod.includes('by Schedule')) {
+            console.log(`[S13] Vent method (${coolingState.ventilationMethod}) is scheduled. Setting free cooling limit to 0.`);
+            coolingState.freeCoolingLimit = 0;
+        } else {
+            console.log(`[S13] Vent method (${coolingState.ventilationMethod}) is constant. Using calculated free cooling limit: ${coolingState.freeCoolingLimit}`);
+        }
+        */
+        // --------------------------------------------------------
+
         calculateDaysActiveCooling();
         calculateWetBulbTemperature();
 
-        // Directly update relevant Section 13 fields (no need for StateManager here)
         // Values are used internally by other S13 functions
         // Note: These might be set again later by setCalculatedValue if they are actual table cells
     }
@@ -1003,10 +1035,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                     content: "m3/hr",
                     classes: ["label"]
                 },
-                j: { 
-                    content: "V.1.5",
-                    classes: ["label-prefix"]
-                },
+                j: { content: "V.1.7", classes: ["label-prefix"] }, // New Label ID
                 k: { 
                     content: "Summer Boost",
                     classes: ["label"]
@@ -1082,9 +1111,27 @@ window.TEUI.SectionModules.sect13 = (function() {
                     content: "m3/hr",
                     classes: ["label"]
                 },
-                j: {},
-                k: {},
-                l: {},
+                j: { content: "V.1.7", classes: ["label-prefix"] }, // Label for k_120 Unoccupied Ventilation Setback 
+                k: { 
+                    fieldId: "k_120", 
+                    type: "percentage", // Change to percentage
+                    dropdownId: "dd_k_120", // Add ID
+                    value: "0.9", // Set default to 90%
+                    section: "mechanicalLoads",
+                    options: [ // Add options
+                        { value: "0.1", name: "10%" },
+                        { value: "0.2", name: "20%" },
+                        { value: "0.3", name: "30%" },
+                        { value: "0.4", name: "40%" },
+                        { value: "0.5", name: "50%" },
+                        { value: "0.6", name: "60%" },
+                        { value: "0.7", name: "70%" },
+                        { value: "0.8", name: "80%" },
+                        { value: "0.9", name: "90%" }
+                    ],
+                    classes: ["col-small"] // Add class
+                 }, 
+                l: { content: "Unoccupied Setback", classes: ["label"] }, // Unoccupied Setback label
                 m: {},
                 n: {}
             }
@@ -1553,6 +1600,18 @@ window.TEUI.SectionModules.sect13 = (function() {
         } else {
              console.warn("Section 13 element not found for attaching editable field handlers.");
         }
+
+        // Unoccupied Setback dropdown change handler (k_120)
+        document.querySelectorAll('[data-dropdown-id="dd_k_120"]').forEach(dropdown => {
+            dropdown.addEventListener('change', function(e) {
+                const fieldId = this.getAttribute('data-field-id');
+                if (!fieldId) return;
+                if (window.TEUI.StateManager) {
+                    window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
+                }
+                calculateAll(); // Recalculate needed, affects h_124
+            });
+        });
     }
     
     /**
@@ -1594,6 +1653,11 @@ window.TEUI.SectionModules.sect13 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
+        // Register default value for the new setback dropdown
+        if (window.TEUI?.StateManager?.setValue) {
+            window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90%
+        }
+
         // Initialize event handlers
         initializeEventHandlers();
         
@@ -1621,6 +1685,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         sm.registerDependency('d_127', 'd_114'); // TED affects heating demand
         sm.registerDependency('l_128', 'd_117'); // Mitigated cooling load affects HP elect load
         sm.registerDependency('l_128', 'h_130'); // Mitigated cooling load affects CEDI Mitigated W/m2
+        sm.registerDependency('g_118', 'h_124'); // Ventilation method affects Free Cooling Limit
+        sm.registerDependency('k_120', 'h_124'); // Setback % affects Free Cooling Limit (if scheduled)
         
         // REMOVED listener registration for cooling module values
         /*
@@ -1659,8 +1725,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         const systemType = getFieldValue('d_113');
         // Use global parser
         const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
-        // --- REMOVE Log for d_127 --- 
-        // console.log(`[Debug S13] calculateHeatingSystem: Using d_127 (tedTarget) = ${tedTarget}`);
+        // console.log(`[S13 Debug] Inside calculateHeatingSystem - tedTarget (d_127) = ${tedTarget}`); // REMOVED LOG
         let heatingDemand_d114 = 0;
         let heatingSink_l113 = 0;
         let isHeatpump = (systemType === 'Heatpump');
@@ -1739,9 +1804,10 @@ window.TEUI.SectionModules.sect13 = (function() {
         const coolingSystemType = getFieldValue('d_116');
         const heatingSystemType = getFieldValue('d_113');
         // Use global parser
-        const coolingDemandTEDI_m129 = window.TEUI.parseNumeric(getFieldValue('m_129')) || 0; // From TEDI Section 14 Summary
+        // Read m_129 (CED Mitigated) from S14
+        const coolingDemand_m129 = window.TEUI.parseNumeric(getFieldValue('m_129')) || 0; 
         const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue('j_113')) || 0;
-        const copcool_dedicated_h116 = 2.7; // Default value for dedicated - NEEDS SOURCE or INPUT FIELD? Currently hardcoded
+        const copcool_dedicated_h116 = 2.7; // Default value for dedicated
         
         let copcool_to_use = 0;
         let coolingLoad_d117 = 0;
@@ -1765,7 +1831,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                 // Calculate L114 Sink = (Load * COP) - Load = Load * (COP - 1)
                 // Need to calculate D117 (Load) first
                 if (copcool_to_use > 0) { // Check HP COPcool
-                     coolingLoad_d117 = coolingDemandTEDI_m129 / copcool_to_use;
+                     coolingLoad_d117 = coolingDemand_m129 / copcool_to_use; // Use m_129
                      coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1);
                 } else {
                      coolingLoad_d117 = 0; // Avoid division by zero if COP is invalid
@@ -1785,7 +1851,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                 copcool_to_use = copcool_dedicated_h116; // Use the hardcoded/default dedicated value
                  // Calculate load and L116 sink
                  if (copcool_to_use > 0) {
-                    coolingLoad_d117 = coolingDemandTEDI_m129 / copcool_to_use;
+                    coolingLoad_d117 = coolingDemand_m129 / copcool_to_use; // Use m_129
                     coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); 
                 } else {
                     coolingLoad_d117 = 0;
@@ -1838,37 +1904,42 @@ window.TEUI.SectionModules.sect13 = (function() {
     
     /**
      * Calculate ventilation rates based on method (g_118) and per-person rate (d_119)
+     * Also calculates k_120 (Vent Volume for Cooling) based on method.
      */
     function calculateVentilationRates() {
-        // console.log("[Debug S13] calculateVentilationRates START"); // REMOVE Log 4
         const ventMethod = getFieldValue('g_118');
-        // console.log(`[Debug S13] ventMethod read inside calculateVentilationRates: ${ventMethod}`); // REMOVE Log 5
         
-        // Define these variables at the start of the function
-        const isOccupantBased = ventMethod.includes("Occupant");
-        const isVolumeBased = ventMethod.includes("Volume");
-        
-        // Use global parser
         const ratePerPerson_d119 = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
         const volume = window.TEUI.parseNumeric(getFieldValue('d_105')) || 0;
         const ach = window.TEUI.parseNumeric(getFieldValue('l_118')) || 0;
         const occupiedHours = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
         const totalHours = window.TEUI.parseNumeric(getFieldValue('j_63')) || 8760;
-        let ventRate = 0;
-        if (ventMethod === 'Occupant Constant') { ventRate = ratePerPerson_d119 * 14; }
-        else if (ventMethod === 'Occupant by Schedule') { ventRate = totalHours > 0 ? (ratePerPerson_d119 * 14 * (occupiedHours / totalHours)) : 0; }
-        else if (ventMethod === 'Volume by Schedule') { ventRate = totalHours > 0 && volume > 0 ? ((ach * volume / 3.6) * (occupiedHours / totalHours)) : 0; }
-        else if (ventMethod === 'Volume Constant') { ventRate = volume > 0 ? (ach * volume / 3.6) : 0; }
-        else { ventRate = volume > 0 ? (ach * volume / 3.6) : 0; } // Default
-        const ventilationRateLs_d120 = ventRate;
+        let ventRateLs = 0;
+        if (ventMethod === 'Occupant Constant') { ventRateLs = ratePerPerson_d119 * 14; }
+        else if (ventMethod === 'Occupant by Schedule') { ventRateLs = totalHours > 0 ? (ratePerPerson_d119 * 14 * (occupiedHours / totalHours)) : 0; }
+        else if (ventMethod === 'Volume by Schedule') { ventRateLs = totalHours > 0 && volume > 0 ? ((ach * volume / 3.6) * (occupiedHours / totalHours)) : 0; }
+        else if (ventMethod === 'Volume Constant') { ventRateLs = volume > 0 ? (ach * volume / 3.6) : 0; }
+        else { ventRateLs = volume > 0 ? (ach * volume / 3.6) : 0; } // Default to Volume Constant
+        
+        const ventilationRateLs_d120 = ventRateLs;
         const ventilationRateM3h_h120 = ventilationRateLs_d120 * 3.6;
 
-        // console.log(`[Debug S13] Calculated d_120 value: ${ventilationRateLs_d120}`); // REMOVE Log 6
-
-        // Specify format types explicitly
         setCalculatedValue('d_120', ventilationRateLs_d120, 'number-2dp-comma');
-        setCalculatedValue('f_120', ventRate * 2.11888, 'number-2dp-comma');
-        setCalculatedValue('h_120', ventilationRateM3h_h120, 'number-2dp-comma');
+        setCalculatedValue('f_120', ventRateLs * 2.11888, 'number-2dp-comma'); // cfm conversion
+        setCalculatedValue('h_120', ventilationRateM3h_h120, 'number-2dp-comma'); // m3/hr
+
+        // REMOVED Calculation for k_120 - Now a user input dropdown
+        /*
+        let ventVolumeCooling_k120 = 0;
+        if (ventMethod && ventMethod.includes('Constant')) {
+            ventVolumeCooling_k120 = ventilationRateM3h_h120; // Use full avg rate if constant
+        } else { 
+            ventVolumeCooling_k120 = 0; // Assume zero effective rate for cooling if scheduled
+        }
+        setCalculatedValue('k_120', ventVolumeCooling_k120, 'number-2dp-comma');
+        */
+
+        // Update SRE % display (m_118)
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) || 0;
         setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp'); 
     }
@@ -1896,7 +1967,11 @@ window.TEUI.SectionModules.sect13 = (function() {
         runIntegratedCoolingCalculations(); 
 
         // Use global parser
+        // REVERTING: Use d_120 (average rate) for cooling load calculation, not k_120.
         const ventilationRateLs_d120 = window.TEUI.parseNumeric(getFieldValue('d_120')) || 0;
+        // const ventVolumeCooling_m3hr_k120 = window.TEUI.parseNumeric(getFieldValue('k_120')) || 0;
+        // const ventilationRateCoolingLs = ventVolumeCooling_m3hr_k120 / 3.6; // Convert m3/hr to L/s
+
         const cdd_d21 = coolingState.coolingDegreeDays; // Use updated value from coolingState
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) / 100 || 0; // Convert % to fraction
         const summerBoostRawValue = getFieldValue('l_119'); // Get raw value (could be "None" or numeric string)
@@ -1907,23 +1982,24 @@ window.TEUI.SectionModules.sect13 = (function() {
         
         // --- Get values needed for the revised formula ---
         const coolingSystem_d116 = getFieldValue('d_116');
-        const occupiedHours_i63 = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
-        const totalHours_j63 = window.TEUI.parseNumeric(getFieldValue('j_63')) || 8760; // Default to 8760 if not found
-        const occupancyFactor = (totalHours_j63 > 0) ? (occupiedHours_i63 / totalHours_j63) : 0;
+        // Occupancy factor variables no longer needed here as k_120 handles schedule impact
         const baseConstant = 1.21; // Using 1.21 as per Excel formula
 
         let ventEnergyCoolingIncoming_d122 = 0;
         
-        // Apply the conditional logic from the revised Excel formula
+        // NOTE: OccupancyFactor multiplication was removed (2024-07-31) because d_120 already includes
+        // the schedule adjustment based on the selected Ventilation Method (g_118). Applying it
+        // here would double-count the schedule reduction.
+        // FURTHER NOTE: Now using d_120 (converted to L/s) which correctly reflects avg schedule.
         if (coolingSystem_d116 === 'Cooling') {
-            // If cooling is active, apply occupancy factor
-            ventEnergyCoolingIncoming_d122 = baseConstant * ventilationRateLs_d120 * cdd_d21 * 24 / 1000 * occupancyFactor * latentLoadFactor_i122;
+            // If cooling is active
+            ventEnergyCoolingIncoming_d122 = baseConstant * ventilationRateLs_d120 * cdd_d21 * 24 / 1000 * latentLoadFactor_i122;
             // Apply summer boost if not "None"
             if (summerBoostFactor !== 1.0) {
                 ventEnergyCoolingIncoming_d122 *= summerBoostFactor;
             }
         } else {
-            // If no cooling, do not apply occupancy factor
+            // If no cooling
             ventEnergyCoolingIncoming_d122 = baseConstant * ventilationRateLs_d120 * cdd_d21 * 24 / 1000 * latentLoadFactor_i122;
             // Apply summer boost if not "None"
             if (summerBoostFactor !== 1.0) {
@@ -1931,10 +2007,8 @@ window.TEUI.SectionModules.sect13 = (function() {
             }
         }
         
-        // Calculate Outgoing Energy (using the INCORRECTLY NAMED boostedVentRate from original code - needs refactor?)
-        // Original calculation used boostedVentRate here, let's maintain for now but flag potential issue
-        const boostedVentRate = ventilationRateLs_d120 * summerBoostFactor; // KEEPING THIS FOR D123 CALC CONSISTENCY FOR NOW
-        const ventEnergyCoolingOutgoing_d123 = ventEnergyCoolingIncoming_d122 * (1 - sre_d118); // Outgoing depends on Incoming * SRE
+        // Calculate Outgoing Energy (d_123)
+        const ventEnergyCoolingOutgoing_d123 = ventEnergyCoolingIncoming_d122 * (1 - sre_d118);
 
         // Specify format types explicitly
         setCalculatedValue('i_122', latentLoadFactor_i122, 'percent-0dp'); // Display as percentage
@@ -1952,32 +2026,50 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Run integrated cooling calculations first to ensure state is up-to-date
         runIntegratedCoolingCalculations(); 
 
-        // Free cooling limit - Use value from integrated coolingState
-        let freeCoolingLimit_h124 = coolingState.freeCoolingLimit;
+        // Get the potential free cooling limit from the integrated calculation
+        let potentialFreeCoolingLimit = coolingState.freeCoolingLimit;
+        let finalFreeCoolingLimit = 0; // Default to 0
 
-        // Days Active Cooling - Use value from integrated coolingState
+        // Get the ventilation method
+        const ventMethod = coolingState.ventilationMethod; // Already fetched in updateCoolingInputs
+
+        // Apply the logic: If method is Constant, use full potential.
+        // If scheduled, multiply potential by the setback factor from k_120.
+        if (ventMethod && ventMethod.includes('Constant')) {
+            finalFreeCoolingLimit = potentialFreeCoolingLimit;
+            // console.log(`[S13] calculateFreeCooling: Using calculated limit (${finalFreeCoolingLimit}) for Constant method.`); // Keep commented
+        } else { // Assumes 'by Schedule'
+            const setbackFactor_k120 = window.TEUI.parseNumeric(getFieldValue('k_120')) || 0.5; // Read setback, default 0.5
+            finalFreeCoolingLimit = potentialFreeCoolingLimit * setbackFactor_k120;
+            // console.log(`[S13] calculateFreeCooling: Applying setback ${setbackFactor_k120} to potential ${potentialFreeCoolingLimit} for Scheduled method (${ventMethod}). Result: ${finalFreeCoolingLimit}`); // Keep commented
+        }
+
+        // Days Active Cooling - Use value from integrated coolingState (this depends on free cooling limit)
+        // Recalculate days active cooling AFTER potentially modifying the free cooling limit
+        // We need to temporarily set the state for the calculation
+        const originalFreeCooling = coolingState.freeCoolingLimit;
+        coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Use the adjusted limit
+        calculateDaysActiveCooling(); // Recalculate based on potentially modified free cooling
+        coolingState.freeCoolingLimit = originalFreeCooling; // Restore original for other potential uses? Or leave adjusted?
+                                                              // Let's leave adjusted for now, as it reflects reality.
         let daysActiveCooling_m124 = coolingState.daysActiveCooling;
 
         // Use global parser
-        const coolingLoadTotal = window.TEUI.parseNumeric(getFieldValue('d_128')) || 0;
-        let freeCoolingLimit = 0;
-        let daysActiveCooling = 120;
-        if (window.TEUI?.CoolingCalculations?.getFreeCoolingLimit) {
-            freeCoolingLimit = window.TEUI.CoolingCalculations.getFreeCoolingLimit() || 0;
-            window.TEUI.CoolingCalculations.updateCoolingLoad(coolingLoadTotal);
-            daysActiveCooling = window.TEUI.CoolingCalculations.getDaysActiveCooling() || 120;
-        } else if (window.TEUI.StateManager?.getValue) {
-            freeCoolingLimit = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_freeCoolingLimit')) || 0;
-            daysActiveCooling = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('cooling_daysActiveCooling')) || 120;
-            } else {
-            const ventRate = window.TEUI.parseNumeric(getFieldValue('d_120')) || 0;
-            const cdd = window.TEUI.parseNumeric(getFieldValue('d_21')) || 0;
-            freeCoolingLimit = 1.21 * ventRate * 4 * (120*24) / 1000; 
-        }
-        setCalculatedValue('h_124', freeCoolingLimit, 'number-2dp-comma'); 
-        const percentFreeCooling = coolingLoadTotal > 0 ? (freeCoolingLimit / coolingLoadTotal) : 0;
+        const coolingLoadTotal = window.TEUI.parseNumeric(getFieldValue('d_128')) || 0; // Get total load from S14 d_128 (TED Envelope)
+                                                                                        // Note: Formula sheet uses d_129 (CED Unmitigated)
+                                                                                        // Let's switch to d_129 based on formula sheet
+        const coolingLoadUnmitigated_d129 = getNumericValue('d_129');
+
+        // Set H124 (Free Cooling Limit kWh/yr)
+        setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma'); 
+        
+        // Calculate D124 (% Free Cooling of Total Cooling Load)
+        // Use d_129 (Unmitigated CED) as the denominator based on formula sheet
+        const percentFreeCooling = coolingLoadUnmitigated_d129 > 0 ? (finalFreeCoolingLimit / coolingLoadUnmitigated_d129) : 0;
         setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
-        setCalculatedValue('m_124', daysActiveCooling, 'integer');
+        
+        // Set M124 (Days Active Cooling Required)
+        setCalculatedValue('m_124', daysActiveCooling_m124, 'integer');
     }
     
     /**

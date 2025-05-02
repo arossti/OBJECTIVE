@@ -664,10 +664,19 @@ Section 03 (Climate Calculations) provides core climate data to other sections t
 
 ### Cooling Integration
 
-The cooling calculations bridge between Sections 03 and 13:
-- Climate data affects cooling loads and capacity
-- Free cooling limits are calculated based on weather data
-- Results feed into Mechanical Loads calculations
+**Section 13 Cooling Calculation Revisions (Ventilation Method Impact - 2024-08-01):**
+
+- **Challenge:** Accurately modelling the impact of different ventilation strategies (selected in `g_118`) on both the cooling load imposed by ventilation and the potential benefit from free cooling, particularly concerning night-time setbacks in "by Schedule" methods.
+- **Revised Approach:** 
+    1.  **Incoming Cooling Ventilation Energy (`d_122`):** This calculation represents the energy *load* added by ventilating with warmer/moister outdoor air. It should *always* be calculated based on the **average schedule-adjusted ventilation rate (`d_120`)**, as even scheduled systems introduce a load during occupied hours. Zeroing this out for scheduled methods was incorrect. The corresponding JavaScript function is `calculateCoolingVentilation`.
+        - **Excel Formula (D122):** `=IF(D116="Cooling",IF(L119="None", (1.21*D120*D21*24/1000)*(I63/J63)*I122, (1.21*D120*D21*24/1000)*(I63/J63)*L119*I122),IF(L119="None", (1.21*D120*D21*24/1000)*I122, (1.21*D120*D21*24/1000)*I122*L119)))`
+    2.  **Free Cooling Limit (`h_124`):** This calculation represents the energy *benefit* from free cooling. Since scheduled ventilation significantly reduces or eliminates night-time operation when free cooling potential is highest, the *benefit* is nullified for these methods. Constant methods retain their calculated potential. The corresponding JavaScript function is `calculateFreeCooling`.
+        - **Excel Formula (H124):** `=IF(ISNUMBER(SEARCH("Constant", G118)), 'COOLING-TARGET'!A33*M19, 0)`
+- **Outcome:** This approach correctly calculates the cooling load based on the average ventilation rate while separately adjusting the free cooling *benefit* based on the ventilation strategy, providing a more accurate representation without requiring hourly simulation.
+- **Note:** An intermediate field `k_120` was temporarily introduced but is not needed for the final `d_122` calculation, as `d_120` already reflects the necessary schedule adjustments for the average rate.
+- **Additional Refinements (Implemented 2024-08-01):**
+    - **Elevation Adjustment:** Atmospheric pressure used in humidity calculations (`coolingState.atmPressure`) is now adjusted based on project elevation (`l_22`, defaulting to 80m) for improved accuracy.
+    - **`A50_temp` Implementation:** The specific psychrometric approximation for average outdoor saturation temperature from `COOLING-TARGET.csv` (cell A50) is now implemented in `calculateA50Temp` and used for outdoor air property calculations within the cooling logic.
 
 ## 5. UI Implementation
 
@@ -770,6 +779,10 @@ Decode it later from SMS by pasting it back in
     - **Status**: Placeholder added (`l_22` in Section 03). Dynamic fetching pending.
     - **Issue**: Cooling calculations require project elevation ASL (metres) to accurately adjust atmospheric pressure. Currently, this defaults to 80m (Alexandria, ON) in Section 13.
     - **Plan**: A placeholder field (`l_22`) has been added to the Section 03 layout. Future work involves refactoring Section 03 to dynamically populate `l_22` based on the selected city's elevation from the weather data source. Section 13's cooling calculations will then read this dynamic value.
+
+11. **Ventilation Constant Discrepancy:**
+    - **Issue:** There's a potential inconsistency in constants used for ventilation calculations. Formulas involving ventilation energy (e.g., `d_121`, `d_122`) often use a factor of `1.21` (which implicitly includes density and specific heat for L/s flow rates). However, the `coolingState` object defines `airMass` as `1.204` (kg/m³) and `specificHeatCapacity` as `1005` (J/kg·K). 
+    - **Plan:** Review these constants and their application in Sections 13 and potentially other sections during future refactoring to ensure consistent physics are applied (either stick to the `1.21` convention or refactor formulas to explicitly use density and specific heat with m³/s rates).
 
 ## Domain Setup
 

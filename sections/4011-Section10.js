@@ -240,7 +240,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                 f: { 
                     fieldId: "f_73", 
                     type: "percentage",
-                    value: "30",
+                    value: "50",
                     min: 20,
                     max: 65,
                     step: 5,
