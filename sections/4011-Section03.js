@@ -219,7 +219,7 @@ window.TEUI.SectionModules.sect03 = (function() {
             }
         },
         
-        // Row 22: Ground Facing HDD, Ground Facing CDD
+        // Row 22: Ground Facing HDD, Ground Facing CDD, Elevation
         "22": {
             id: "L.2.4",
             rowId: "L.2.4",
@@ -233,6 +233,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     section: "climateCalculations",
                     dependencies: ["d_20"]
                 },
+                e: { content: "ºC•days", classes: ["unit-label"] },
                 f: { content: "L.2.5", classes: ["label-prefix"] },
                 g: { content: "GF CDD", classes: ["label-main"] },
                 h: { 
@@ -241,7 +242,18 @@ window.TEUI.SectionModules.sect03 = (function() {
                     value: "-1680",
                     section: "climateCalculations",
                     dependencies: ["d_21"]
-                }
+                },
+                i: { content: "ºC•days", classes: ["unit-label"] },
+                j: { content: "L.1.3", classes: ["label-prefix"] },
+                k: { content: "Elevation (ASL)", classes: ["label-main"] },
+                l: { 
+                    fieldId: "l_22", 
+                    type: "editable",
+                    value: "80", 
+                    section: "climateCalculations",
+                    classes: ["user-input", "editable"]
+                },
+                m: { content: "m", classes: ["unit-label"] }
             }
         },
         
@@ -1052,6 +1064,15 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Called when section is rendered
      */
     function onSectionRendered() {
+        // --- Explicitly register default values --- 
+        if (window.TEUI.StateManager) {
+            // Ensure default elevation is in StateManager for other sections to read
+            window.TEUI.StateManager.setValue('l_22', '80', 'default');
+        } else {
+            console.warn("Section 03: StateManager not available for default value registration.");
+        }
+        // -----------------------------------------
+
         // --- Set Initial Display Values --- 
         // Manually set initial display for setpoints based on known default d_12="A-Assembly"
         // This provides immediate visual feedback before StateManager might be fully ready.

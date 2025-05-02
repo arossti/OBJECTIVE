@@ -225,7 +225,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 j: { content: "" },
                 k: { content: "" },
                 l: { 
-                    fieldId: "l_128",
+                    fieldId: "l_128", 
                     type: "calculated", 
                     value: "0.00",
                     classes: ["calculated-value"],
@@ -301,7 +301,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 n: { content: "" }
             }
         },
-        
+
         // Row 132: T.5.3 CEG Cooling Envelope Heatgain / T.5.4 CEGI
         "132": {
             id: "T.5.3",
@@ -503,7 +503,7 @@ window.TEUI.SectionModules.sect14 = (function() {
         // H127 (TEDI): =D127/H15
         sm.registerDependency('d_127', 'h_127');
         sm.registerDependency('h_15', 'h_127');
-        
+
         // D128 (TED Envelope): =(I97+I98+I103)-I80
         ['i_97', 'i_98', 'i_103', 'i_80'].forEach(dep => sm.registerDependency(dep, 'd_128'));
         // H128 (TEDI Envelope): =D128/H15
@@ -593,7 +593,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             // h_128: TEDI Envelope (kWh/m2/yr) = D128/H15
             const tediEnvelope_h128 = area > 0 ? tedEnvelope_d128 / area : 0; 
             setCalculatedValue('h_128', tediEnvelope_h128);
-
+            
             // d_132: CEG Cooling Envelope Heatgain (kWh/yr) = SUM(K97:K98)+K103
             const cegHeatgain_d132 = (k97 + k98) + k103; 
             setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 correctly
