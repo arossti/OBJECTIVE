@@ -403,18 +403,22 @@ window.TEUI.SectionModules.sect13 = (function() {
         const Cp = coolingState.specificHeatCapacity;
         // Use the Tdiff definition from Excel: Outdoor Avg - Indoor Set
         const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp; 
+        console.log(`[S13 Debug] In calculateLatentLoadFactor - hDiff: ${hDiff}, LHV: ${LHV}, Cp: ${Cp}, Tdiff: ${Tdiff}`); // ADDED LOG
 
         // Check for division by zero or invalid inputs
         if (Cp === 0 || Tdiff === 0 || isNaN(hDiff) || isNaN(LHV) || isNaN(Cp) || isNaN(Tdiff)) {
-            console.warn("Cooling Calc: Invalid inputs or division by zero prevented in Latent Load Factor calculation.");
+            console.warn("[S13 Debug] Latent Load Factor: Invalid inputs or division by zero."); // ADDED LOG
             return 1.0; // Return default factor of 1 if calculation is not possible
         }
 
         const ratio = (hDiff * LHV) / (Cp * Tdiff);
         const factor = 1 + ratio;
+        const finalFactor = Math.max(1.0, factor);
+        console.log(`[S13 Debug] Latent Load Factor - Ratio: ${ratio}, Factor: ${factor}, Final (capped): ${finalFactor}`); // ADDED LOG
         
         // Return the calculated factor, ensuring it's not negative (which is physically unlikely here)
-        return Math.max(1.0, factor); // Latent load factor should be >= 1
+        // return Math.max(1.0, factor); // Original return replaced by logging
+        return finalFactor;
     }
 
     /** [Cooling Calc] Calculate atmospheric values */
@@ -427,9 +431,14 @@ window.TEUI.SectionModules.sect13 = (function() {
 
         const t_indoor = coolingState.coolingSetTemp;
         coolingState.pSatIndoor = 610.94 * Math.exp(17.625 * t_indoor / (t_indoor + 243.04));
-        // Assume 45% indoor RH (from d_59 or similar) - Check if this needs to be dynamic
-        const indoorRH = window.TEUI.parseNumeric(getFieldValue('d_59')) || 0.45;
+        // Get indoor RH from d_59, parse, DIVIDE BY 100, default to 0.45
+        const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue('d_59')) || 45;
+        const indoorRH = indoorRH_percent / 100;
         coolingState.partialPressureIndoor = coolingState.pSatIndoor * indoorRH; 
+        // console.log(`[S13 Debug] Indoor RH raw: ${getFieldValue('d_59')}, Parsed %: ${indoorRH_percent}, Used fraction: ${indoorRH}`); // Keep for one more check
+        
+        // console.log(`[S13 Debug] In calculateAtmosphericValues - Outdoor t: ${t_outdoor}, RH: ${coolingState.coolingSeasonMeanRH}, pSatAvg: ${coolingState.pSatAvg}, pPartial: ${coolingState.partialPressure}`); // Keep log
+        // console.log(`[S13 Debug] In calculateAtmosphericValues - Indoor t: ${t_indoor}, RH: ${indoorRH}, pSatIndoor: ${coolingState.pSatIndoor}, pPartialIndoor: ${coolingState.partialPressureIndoor}`); // Keep log
     }
 
     /** [Cooling Calc] Calculate humidity ratios */
@@ -446,6 +455,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         coolingState.humidityRatioIndoor = 0.62198 * coolingState.partialPressureIndoor / (atmPressure - coolingState.partialPressureIndoor);
         coolingState.humidityRatioAvg = 0.62198 * coolingState.partialPressure / (atmPressure - coolingState.partialPressure);
         coolingState.humidityRatioDifference = coolingState.humidityRatioAvg - coolingState.humidityRatioIndoor;
+        console.log(`[S13 Debug] In calculateHumidityRatios - hRatioIndoor: ${coolingState.humidityRatioIndoor}, hRatioAvg: ${coolingState.humidityRatioAvg}, hDiff: ${coolingState.humidityRatioDifference}`); // ADDED LOG
     }
 
     /** [Cooling Calc] Calculate free cooling capacity limit */
@@ -504,6 +514,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         
         // Store in coolingState for use in atmospheric calcs
         coolingState.A50_temp = A50;
+        console.log(`[S13 Debug] Calculated A50 Temp: ${A50}`); // ADDED LOG
         return A50;
     }
 
@@ -524,6 +535,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const projectElevation = parseNum(getValue('l_22')) || 80; // Read from Sec 03, fallback to 80m
         const seaLevelPressure = 101325; // E13
         coolingState.atmPressure = seaLevelPressure * Math.exp(-projectElevation / 8434); // E15 logic
+        console.log(`[S13 Debug] Updated coolingState.atmPressure: ${coolingState.atmPressure}`); // ADDED LOG
+        console.log(`[S13 Debug] Updated coolingState.coolingSeasonMeanRH: ${coolingState.coolingSeasonMeanRH}`); // ADDED LOG
 
         // Check for user override for cooling setpoint in l_24, otherwise use h_24
         const coolingSetTempOverride_l24 = parseNum(getValue('l_24')); // Check l_24 first
