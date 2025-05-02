@@ -510,10 +510,13 @@ window.TEUI.SectionModules.sect14 = (function() {
         sm.registerDependency('d_128', 'h_128');
         sm.registerDependency('h_15', 'h_128');
 
-        // D129 (CED Cooling Unmitigated): =K71+K79+K97+K104+K103+D122 - NOTE: Formula uses K104, Code used D131 (K97+K98+K103)
-        // Assuming formula sheet K104 implies SUM(K97:K103) based on context/other formulas.
-        ['k_71', 'k_79', 'k_97', 'k_98', 'k_103', 'd_122'].forEach(dep => sm.registerDependency(dep, 'd_129')); 
-        // H129 (CEDI Unmitigated kWh/m2/yr): =D129/H15
+        // D129 (CED Unmitigated): = K71+K79+K98+D122 (Using K98 for A47)
+        sm.registerDependency('k_71', 'd_129');
+        sm.registerDependency('k_79', 'd_129');
+        sm.registerDependency('k_98', 'd_129'); // Changed from d_132 / k_97/k_103
+        sm.registerDependency('d_122', 'd_129');
+        
+        // H129 (CEDI Unmitigated W/m2): =(D129/8760*1000)/H15
         sm.registerDependency('d_129', 'h_129'); 
         sm.registerDependency('h_15', 'h_129');
         
@@ -566,16 +569,21 @@ window.TEUI.SectionModules.sect14 = (function() {
             const m121 = getNumericValue('m_121'); // Net Htg Season Ventil. Lost
             const i80 = getNumericValue('i_80');    // G.3 Net Usable Gains by Method Selected
             
-            const k71 = getNumericValue('k_71');   // Internal Gains Totals (Cooling Gain kWh/yr)
-            const k79 = getNumericValue('k_79');   // Subtotal Solar Gains (Cool Load kWh/yr)
-            const k97 = getNumericValue('k_97');   // Thermal Bridge Penalty Heatgain (Cooling)
-            const k98 = getNumericValue('k_98');   // Envelope Totals Heatgain (Cooling)
-            const k103 = getNumericValue('k_103'); // Cooling Natural Air Leakage Heatgain
-            const d122 = getNumericValue('d_122'); // Incoming Cooling Season Ventil. Energy
+            const k71 = getNumericValue('k_71') || 0; // Internal gains people
+            const k79 = getNumericValue('k_79') || 0; // Internal gains equip/light
+            // Envelope/Solar Gains
+            const k97 = getNumericValue('k_97') || 0; // Solar 
+            const k98 = getNumericValue('k_98') || 0; // Transmission
+            const k103 = getNumericValue('k_103') || 0; // Ground
             
-            const h124 = getNumericValue('h_124'); // Ventilation Free Cooling/Vent Capacity
-            const d123 = getNumericValue('d_123'); // Outgoing Cooling Season Ventil. Energy
+            // Re-calculate CEG (d_132) as it's needed for CEGI (h_132)
+            const cegHeatgain_d132 = k97 + k98 + k103; 
+            setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 value
             
+            const d122 = getNumericValue('d_122') || 0; // Incoming Cooling Vent Energy from S13
+            const h124 = getNumericValue('h_124') || 0; // Free Cooling Limit from S13
+            const d123 = getNumericValue('d_123') || 0; // Outgoing Cooling Vent Energy from S13
+
             // --- Perform Calculations ---
             
             // d_127: TED Targeted (kWh/yr) = (I97+I98+I103+M121)-I80 
@@ -595,12 +603,11 @@ window.TEUI.SectionModules.sect14 = (function() {
             setCalculatedValue('h_128', tediEnvelope_h128);
             
             // d_132: CEG Cooling Envelope Heatgain (kWh/yr) = SUM(K97:K98)+K103
-            const cegHeatgain_d132 = (k97 + k98) + k103; 
-            setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 correctly
+            // const cegHeatgain_d132 = (k97 + k98) + k103; 
+            // setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 correctly
 
-            // d_129: CED Cooling Load Unmitigated (kWh/yr) = K71+K79+K97+K104+K103+D122 
-            // Using K97+K98+K103 (value of d_132) instead of K97+K104+K103 per formula sheet ambiguity resolved by context
-            const cedCoolingUnmitigated_d129 = k71 + k79 + cegHeatgain_d132 + d122;
+            // d_129: CED Unmitigated (kWh/yr) = K71+K79+K98+D122 (Matching Excel formula structure)
+            const cedCoolingUnmitigated_d129 = k71 + k79 + k98 + d122;
             setCalculatedValue('d_129', cedCoolingUnmitigated_d129);
             
             // h_129: CEDI Unmitigated (W/m2) = (D129/8760*1000)/H15

@@ -475,21 +475,32 @@ window.TEUI.SectionModules.sect13 = (function() {
 
     /** [Cooling Calc] Calculate free cooling capacity limit */
     function calculateFreeCoolingLimit() {
-        if (coolingState.buildingArea === 0) return 0; // Prevent division by zero
+        // console.log("[S13 Calc] calculateFreeCoolingLimit started."); // REMOVE Log
+        if (coolingState.buildingArea === 0) {
+            // console.log("[S13 Calc] Building area is 0, returning 0."); // REMOVE Log
+            return 0;
+        }
+        // Ensure atmospheric values and humidity ratios are up-to-date
         calculateAtmosphericValues();
         calculateHumidityRatios();
+
         const totalMass = coolingState.buildingVolume * coolingState.airMass;
         const tempDiff = coolingState.coolingSetTemp - coolingState.nightTimeTemp;
+        const hDiff = coolingState.humidityRatioDifference; // For logging
         const sensibleCooling = totalMass * coolingState.specificHeatCapacity * tempDiff / (3.6e6); // Convert J to kWh
-        const latentAdjustment = totalMass * coolingState.latentHeatVaporization * coolingState.humidityRatioDifference / (3.6e6); // Convert J to kWh
+        const latentAdjustment = totalMass * coolingState.latentHeatVaporization * hDiff / (3.6e6); // Convert J to kWh
         const dailyFreeCooling = Math.max(0, sensibleCooling - latentAdjustment);
-        
-        // Get Cooling Days from m_19, default to 120
         const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120; 
+        const potentialLimit = dailyFreeCooling * coolingDays; 
 
-        // Use the cooling days value from m_19 
-        coolingState.freeCoolingLimit = dailyFreeCooling * coolingDays; 
-        return coolingState.freeCoolingLimit;
+        // console.log(`[S13 Calc] Inputs for FreeCoolingLimit: Vol=${coolingState.buildingVolume}, Area=${coolingState.buildingArea}, AirMass=${coolingState.airMass}, Cp=${coolingState.specificHeatCapacity}, LHV=${coolingState.latentHeatVaporization}`); // REMOVE Log
+        // console.log(`[S13 Calc] Intermediate values: IndoorT=${coolingState.coolingSetTemp}, OutdoorT=${coolingState.nightTimeTemp}, Tdiff=${tempDiff}, hDiff=${hDiff}`); // REMOVE Log
+        // console.log(`[S13 Calc] Calculated components: TotalMass=${totalMass}, SensibleCooling_kWh/d=${sensibleCooling}, LatentAdjustment_kWh/d=${latentAdjustment}, DailyFreeCooling_kWh/d=${dailyFreeCooling}`); // REMOVE Log
+        // console.log(`[S13 Calc] CoolingDays (m_19)=${coolingDays}`); // REMOVE Log
+        // console.log(`[S13 Calc] Potential Free Cooling Limit (Daily * Days): ${potentialLimit}`); // REMOVE Log
+
+        coolingState.freeCoolingLimit = potentialLimit; 
+        return potentialLimit;
     }
 
     /** [Cooling Calc] Calculate days of active cooling required */
@@ -1546,7 +1557,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_127', calculateHeatingSystem); // TED (from S14, for d_114)
             // Listener for m_129 (CED Mitigated) - NEEDED
             sm.addListener('m_129', () => { 
-                console.log("[S13 Listener] m_129 changed! Calling calculateCoolingSystem."); // ADDED TEMP LOG
+                // console.log("[S13 Listener] m_129 changed! Calling calculateCoolingSystem."); // REMOVE Log
                 calculateCoolingSystem(); 
             }); 
         } else {
@@ -1955,10 +1966,18 @@ window.TEUI.SectionModules.sect13 = (function() {
         const ach = window.TEUI.parseNumeric(getFieldValue('l_118')) || 0;
         const occupiedHours = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
         const totalHours = window.TEUI.parseNumeric(getFieldValue('j_63')) || 8760;
+        const occupants_d63 = window.TEUI.parseNumeric(getFieldValue('d_63')) || 0; // Fetch d_63 value
         let ventRateLs = 0;
-        if (ventMethod === 'Occupant Constant') { ventRateLs = ratePerPerson_d119 * 14; }
-        else if (ventMethod === 'Occupant by Schedule') { ventRateLs = totalHours > 0 ? (ratePerPerson_d119 * 14 * (occupiedHours / totalHours)) : 0; }
-        else if (ventMethod === 'Volume by Schedule') { ventRateLs = totalHours > 0 && volume > 0 ? ((ach * volume / 3.6) * (occupiedHours / totalHours)) : 0; }
+
+        if (ventMethod === 'Occupant Constant') { 
+            ventRateLs = ratePerPerson_d119 * occupants_d63; // CORRECT: Use d_63 value
+        }
+        else if (ventMethod === 'Occupant by Schedule') { 
+             ventRateLs = totalHours > 0 ? (ratePerPerson_d119 * occupants_d63 * (occupiedHours / totalHours)) : 0; // CORRECT: Use d_63 value
+        }
+        else if (ventMethod === 'Volume by Schedule') { 
+            ventRateLs = totalHours > 0 && volume > 0 ? ((ach * volume / 3.6) * (occupiedHours / totalHours)) : 0; 
+        }
         else if (ventMethod === 'Volume Constant') { ventRateLs = volume > 0 ? (ach * volume / 3.6) : 0; }
         else { ventRateLs = volume > 0 ? (ach * volume / 3.6) : 0; } // Default to Volume Constant
         
@@ -1983,6 +2002,11 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Update SRE % display (m_118)
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) || 0;
         setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp'); 
+
+        // console.log(`[S13 Vent Calc] Method: ${ventMethod}, Calculated ventRateLs (d_120): ${ventRateLs.toFixed(2)}`); // REMOVED LOG
+
+        // Update d_120 (L/s)
+        setCalculatedValue('d_120', ventRateLs, 'number-2dp-comma');
     }
     
     /**
@@ -2024,23 +2048,29 @@ window.TEUI.SectionModules.sect13 = (function() {
         // --- Get values needed for the revised formula ---
         const coolingSystem_d116 = getFieldValue('d_116');
         // Occupancy factor variables no longer needed here as k_120 handles schedule impact
+        const occupiedHours_i63 = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0; 
+        const totalHours_j63 = window.TEUI.parseNumeric(getFieldValue('j_63')) || 8760; // Default to 8760 if not found
+        const occupancyFactor = (totalHours_j63 > 0) ? (occupiedHours_i63 / totalHours_j63) : 0;
         const baseConstant = 1.21; // Using 1.21 as per Excel formula
 
         let ventEnergyCoolingIncoming_d122 = 0;
         
+        // console.log(`[S13 Calc] d_122 Inputs: d120=${ventilationRateLs_d120.toFixed(2)} L/s, cdd=${cdd_d21}, LLF=${latentLoadFactor_i122.toFixed(3)}, summerBoost=${summerBoostFactor}, coolingActive=${coolingSystem_d116}`); // REMOVE Log
+
         // NOTE: OccupancyFactor multiplication was removed (2024-07-31) because d_120 already includes
         // the schedule adjustment based on the selected Ventilation Method (g_118). Applying it
         // here would double-count the schedule reduction.
-        // FURTHER NOTE: Now using d_120 (converted to L/s) which correctly reflects avg schedule.
+        // REVERTING (2024-08-02): Excel formula *does* include this factor, re-adding it for parity.
         if (coolingSystem_d116 === 'Cooling') {
             // If cooling is active
-            ventEnergyCoolingIncoming_d122 = baseConstant * ventilationRateLs_d120 * cdd_d21 * 24 / 1000 * latentLoadFactor_i122;
+            ventEnergyCoolingIncoming_d122 = baseConstant * ventilationRateLs_d120 * cdd_d21 * 24 / 1000 * occupancyFactor * latentLoadFactor_i122; // ADDED occupancyFactor
             // Apply summer boost if not "None"
             if (summerBoostFactor !== 1.0) {
                 ventEnergyCoolingIncoming_d122 *= summerBoostFactor;
             }
         } else {
             // If no cooling
+            // NOTE: Excel formula implies occupancy factor is NOT used if cooling is inactive.
             ventEnergyCoolingIncoming_d122 = baseConstant * ventilationRateLs_d120 * cdd_d21 * 24 / 1000 * latentLoadFactor_i122;
             // Apply summer boost if not "None"
             if (summerBoostFactor !== 1.0) {
@@ -2048,13 +2078,19 @@ window.TEUI.SectionModules.sect13 = (function() {
             }
         }
         
+        // console.log(`[S13 Calc] d_122 Result: ${ventEnergyCoolingIncoming_d122.toFixed(2)}`); // REMOVE Log
+
         // Calculate Outgoing Energy (d_123)
-        const ventEnergyCoolingOutgoing_d123 = ventEnergyCoolingIncoming_d122 * (1 - sre_d118);
+        // Formula Sheet: =D118*D122 (Energy RECOVERED)
+        // Despite label "Outgoing", this seems to represent recovered energy based on downstream usage.
+        // Previous app code used d122*(1-d118) which calculated LOST energy.
+        // CORRECTING to match Excel formula (Recovered Energy):
+        const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118; 
 
         // Specify format types explicitly
         setCalculatedValue('i_122', latentLoadFactor_i122, 'percent-0dp'); // Display as percentage
         setCalculatedValue('d_122', ventEnergyCoolingIncoming_d122, 'number-2dp-comma');
-        setCalculatedValue('d_123', ventEnergyCoolingOutgoing_d123, 'number-2dp-comma');
+        setCalculatedValue('d_123', ventEnergyRecovered_d123, 'number-2dp-comma'); // Set d_123 with RECOVERED value
         // Placeholder for m_119 - need actual formula
         const perPersonRate_d119 = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
         setCalculatedValue('m_119', perPersonRate_d119, 'number-2dp'); // Assuming raw value display for now
@@ -2082,19 +2118,19 @@ window.TEUI.SectionModules.sect13 = (function() {
         // If scheduled, multiply potential by the setback factor from k_120 (using override if provided).
         if (ventMethod && ventMethod.includes('Constant')) {
             finalFreeCoolingLimit = potentialFreeCoolingLimit;
-            console.log(`[S13 Calc] Using Constant method logic. Final Limit: ${finalFreeCoolingLimit}`);
+            console.log(`[S13 Calc] Using Constant method logic. Final Limit: ${finalFreeCoolingLimit}`); // UNCOMMENT Log
         } else { // Assumes 'by Schedule'
             let setbackFactor_k120;
             if (setbackFactorOverride !== null && !isNaN(setbackFactorOverride)) {
                  setbackFactor_k120 = setbackFactorOverride;
-                 console.log(`[S13 Calc] Using PROVIDED setback override: ${setbackFactor_k120}`);
+                 console.log(`[S13 Calc] Using PROVIDED setback override: ${setbackFactor_k120}`); // UNCOMMENT Log
             } else {
                  // Fallback: Read from state if not called by listener (e.g., during initial calculateAll)
                  setbackFactor_k120 = window.TEUI.parseNumeric(getFieldValue('k_120')) || 0.5; // Default 0.5
-                 console.log(`[S13 Calc] Using fallback read setback (k_120): ${setbackFactor_k120}`);
+                 console.log(`[S13 Calc] Using fallback read setback (k_120): ${setbackFactor_k120}`); // UNCOMMENT Log
             }
             finalFreeCoolingLimit = potentialFreeCoolingLimit * setbackFactor_k120;
-            console.log(`[S13 Calc] Calculated Final Limit (Potential * Setback): ${finalFreeCoolingLimit}`);
+            console.log(`[S13 Calc] Calculated Final Limit (Potential * Setback): ${finalFreeCoolingLimit}`); // UNCOMMENT Log
         }
 
         // Days Active Cooling - Use value from integrated coolingState (this depends on free cooling limit)
@@ -2112,15 +2148,19 @@ window.TEUI.SectionModules.sect13 = (function() {
         const coolingLoadUnmitigated_d129 = getNumericValue('d_129');
 
         // Set H124 (Free Cooling Limit kWh/yr)
+        console.log(`[S13 Calc] Setting h_124 value to: ${finalFreeCoolingLimit}`); // UNCOMMENT Log
         setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma'); 
         
         // Calculate D124 (% Free Cooling of Total Cooling Load)
         // Use d_129 (Unmitigated CED) as the denominator based on formula sheet
         const percentFreeCooling = coolingLoadUnmitigated_d129 > 0 ? (finalFreeCoolingLimit / coolingLoadUnmitigated_d129) : 0;
+        console.log(`[S13 Calc] Setting d_124 value to: ${percentFreeCooling}`); // UNCOMMENT Log
         setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
         
         // Set M124 (Days Active Cooling Required)
+        console.log(`[S13 Calc] Setting m_124 value to: ${daysActiveCooling_m124}`); // UNCOMMENT Log
         setCalculatedValue('m_124', daysActiveCooling_m124, 'integer');
+        console.log("[S13 Calc] calculateFreeCooling finished."); // UNCOMMENT Log
     }
     
     /**
