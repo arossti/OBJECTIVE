@@ -1,8 +1,14 @@
-# Section 13 Developer Notes (Moved from JS Source)
+# Section 13 Developer Notes & Troubleshooting History
 
-These notes were originally located at the beginning of `sections/4011-Section13.js` and have been moved here for documentation purposes (Commit `92bbc76`). They provide context on the section's internal logic, dependencies, and original design patterns. Note that some details might be slightly outdated due to recent refactoring.
+This document consolidates historical notes, troubleshooting steps, and findings related to the development and debugging of Section 13 (Mechanical Loads), particularly focusing on achieving calculation parity with the Excel model for cooling calculations.
+
+**Last Major Update:** 2024-08-02 (Commit `9fde294` - Achieved parity for `h_124` and `m_129`)
 
 ---
+
+## 1. Original Developer Notes (Moved from JS Source)
+
+_These notes were originally located at the beginning of `sections/4011-Section13.js` and provide context on the section's internal logic, dependencies, and original design patterns as of commit `43f5588`. Some details might be slightly outdated due to subsequent refactoring._
 
 /**
  * 4011-Section13.js
@@ -375,3 +381,75 @@ These notes were originally located at the beginning of `sections/4011-Section13
  * in browser environments (especially with page refreshes and state persistence), these 
  * defensive patterns make the difference between a frustrating bug and seamless recovery.
  */ 
+
+---
+
+## 2. Troubleshooting History (Summary)
+
+_This section summarizes the key issues encountered and resolved during the Section 13 debugging process._
+
+### Initial Problem (Early May 2024)
+
+-   **Symptom:** Mitigated Cooling Energy Demand (`m_129`) was vastly incorrect (~44k kWh/yr vs. target ~10.5k kWh/yr).
+-   **Initial Suspicion:** StateManager propagation issues between Section 13 and Section 14, potentially causing Section 14 to use stale values for `h_124` (Free Cooling Limit) or `d_123` (Ventilation Recovery).
+
+### Investigation & Root Cause Analysis (Ref: `section13-last-mile.md` v1.3)
+
+1.  **Recursive Calls:** Identified recursive calls involving `calculateFreeCoolingLimit` and `calculateFreeCooling`, causing console flooding. **(Fixed in commit `92bbc76`)**
+2.  **Incorrect Outdoor Humidity Ratio:** Found that `calculateHumidityRatios` used the average seasonal RH (55.85%) instead of the required 70% RH for calculating the outdoor component (`coolingState.humidityRatioAvg`), mismatching Excel's `A62` calculation. **(Fixed in commit `92bbc76`)**
+3.  **Incorrect Free Cooling Basis (Volume vs. Flow Rate):** Discovered that `calculateFreeCoolingLimit` based its calculation on the total building air mass (from volume `d_105`) instead of the ventilation flow rate (`h_120`) used in the Excel model. **(Fixed in commit `9fde294`)**
+4.  **Incorrect Setback Factor Calculation:** Found a bug where the setback factor for scheduled ventilation (`k_120`) was being divided by 100 unnecessarily. **(Fixed in commit `9fde294`)**
+5.  **Incorrect Power-to-Energy Conversion:** Identified the final error where the conversion factor from Watts to kWh/day in `calculateFreeCoolingLimit` was incorrect (`0.0864` instead of `0.024`). **(Fixed in commit `9fde294`)**
+
+### Historical Note (Ref: `Section13-troubleshooting.md`, line 195)
+
+-   During earlier troubleshooting phases (before the fixes above were implemented systematically), the *correct target value* for `h_124` (37,322.83 kWh/yr) was observed *intermittently* in logs or the UI, but was quickly overwritten or became stuck. This suggested that while parts of the calculation might have been momentarily correct, issues like recursion, incorrect humidity inputs, or the volume-based calculation prevented the correct value from persisting reliably.
+
+### Current Status (Post-Fixes)
+
+-   The major calculation discrepancies for `h_124` and `m_129` have been resolved.
+-   The application now calculates values very close to the Excel targets using default inputs.
+-   The code has been cleaned of most diagnostic logs and obsolete commented-out blocks.
+
+---
+
+## 3. Notes from `Section13-troubleshooting.md`
+
+_The following includes relevant points and proposed strategies from the original troubleshooting document, some of which may be superseded by the implemented fixes but provide historical context._
+
+**Key Findings Summary (from Troubleshooting Doc):**
+
+-   Confirmed formula for `m_129` (`=D129-H124-D123`) was correct in JS, but inputs were wrong.
+-   Noted `d_129` calculation differed from Excel, potentially due to inputs `k71`, `k79`, `k98` (Sections 9/10).
+-   Included analysis of `d_122` calculation (Ventilation Energy) and its dependencies.
+-   Included analysis of `h_124` calculation (Free Cooling) based on the **(now known to be incorrect)** volume-based approach.
+-   Identified potential inconsistencies in `coolingState` constant initialization.
+-   Questioned alignment of `calculateLatentLoadFactor` with Excel.
+-   Questioned alignment of `calculateHumidityRatios` with Excel.
+-   Presented a table comparing Excel vs. JS values (**Note:** This table reflects the state *before* the final fixes).
+-   Outlined correct architectural patterns for StateManager, listeners, and calculation flow.
+-   Included a step-wise implementation strategy (Phases 1-6) focusing on diagnostics, fixing constants, then calculations, then integration. (This strategy was broadly followed but adapted based on findings).
+-   Discussed potential timing/race conditions and dependency ordering.
+-   Included a dependency flow diagram.
+
+**Specific Code Snippets/Recommendations (from Troubleshooting Doc - May be Outdated):**
+
+-   Provided examples of diagnostic logging for StateManager and function tracing.
+-   Recommended standardizing `setCalculatedValue` (partially implemented).
+-   Recommended ensuring proper dependency registration in Section 14 (verified).
+-   Recommended standardizing `getFieldValue` / `getNumericValue` (partially implemented).
+-   Showed patterns for listener registration.
+-   Showed patterns for ensuring StateManager/local state consistency.
+
+---
+
+## 4. Next Steps / Future Considerations
+
+-   **Edge Case Testing:** Verify calculations across a wider range of inputs and ventilation methods.
+-   **Input Source Verification:** Double-check inputs coming from other sections (e.g., `k71`, `k79`, `k98` affecting `d_129`).
+-   **Dynamic Inputs:** Implement dynamic fetching for values currently hardcoded or using defaults (e.g., `nightTimeTemp`, `coolingSeasonMeanRH` from weather data; `projectElevation` `l_22`).
+-   **Code Performance:** While major issues are fixed, monitor for any performance bottlenecks, especially during complex calculations or frequent updates.
+-   **Refactoring Opportunities:** Consider if `coolingState` management or calculation function structure could be further simplified or aligned with global utilities (e.g., using `TEUI.formatNumber`).
+
+
+</rewritten_file> 

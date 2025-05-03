@@ -31,7 +31,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         specificHeatCapacity: 1005,           // E4
         latentHeatVaporization: 2501000,      // E6
         coolingSetTemp: 24,                   // A8 / h_24
-        freeCoolingLimit: 0,                  // Calculated A33
+        freeCoolingLimit: 0,                  // Calculated based on A33, M19, K120
         daysActiveCooling: 120,               // Calculated E55, default 120
         buildingVolume: 8000,                 // Default, updated from d_105
         buildingArea: 1427.2,                 // Default, updated from h_15
@@ -51,27 +51,20 @@ window.TEUI.SectionModules.sect13 = (function() {
 
     /** [Cooling Calc] Calculate latent load factor */
     function calculateLatentLoadFactor() {
-        // Ensure intermediate values are calculated
-
         const hDiff = coolingState.humidityRatioDifference;
         const LHV = coolingState.latentHeatVaporization;
         const Cp = coolingState.specificHeatCapacity;
         const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp; 
-        // console.log("=== [S13 DIAG] Latent Load Factor Calc ==="); // REMOVE Log
-        // console.log(`  Inputs: hDiff=${hDiff.toFixed(6)}, LHV=${LHV}, Cp=${Cp}, Tdiff=${Tdiff.toFixed(2)}`); // REMOVE Log
 
         // Check for division by zero or invalid inputs
         if (Cp === 0 || Tdiff === 0 || isNaN(hDiff) || isNaN(LHV) || isNaN(Cp) || isNaN(Tdiff)) {
-            // console.warn("Latent Load Factor: Invalid inputs or division by zero."); 
-            // console.log("=========================================="); // REMOVE Log
+            console.warn("Latent Load Factor: Invalid inputs or division by zero."); 
             return 1.0; 
         }
 
         const ratio = (hDiff * LHV) / (Cp * Tdiff);
         const factor = 1 + ratio;
         const finalFactor = Math.max(1.0, factor);
-        // console.log(`  Calculated: Ratio=${ratio.toFixed(6)}, Factor=${factor.toFixed(6)}, Final(i_122)=${finalFactor.toFixed(6)}`); // REMOVE Log
-        // console.log("=========================================="); // REMOVE Log
         return finalFactor;
     }
 
@@ -83,31 +76,19 @@ window.TEUI.SectionModules.sect13 = (function() {
         const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue('d_59')) || 45;
         const indoorRH = indoorRH_percent / 100;
         
-        // console.log("=== [S13 DIAG] Atmospheric Values Calc ==="); // REMOVE Log
-        // console.log(`  Inputs: t_outdoor(A50)=${t_outdoor.toFixed(4)}, outdoorRH=${outdoorRH.toFixed(4)}, t_indoor=${t_indoor}, indoorRH=${indoorRH.toFixed(4)}`); // REMOVE Log
-
         coolingState.pSatAvg = 610.94 * Math.exp(17.625 * t_outdoor / (t_outdoor + 243.04));
         coolingState.partialPressure = coolingState.pSatAvg * outdoorRH; 
 
         coolingState.pSatIndoor = 610.94 * Math.exp(17.625 * t_indoor / (t_indoor + 243.04));
         coolingState.partialPressureIndoor = coolingState.pSatIndoor * indoorRH; 
-        
-        // console.log(`  Outdoor Calcs: pSatAvg=${coolingState.pSatAvg.toFixed(4)}, pPartial=${coolingState.partialPressure.toFixed(4)}`); // REMOVE Log
-        // console.log(`  Indoor Calcs: pSatIndoor=${coolingState.pSatIndoor.toFixed(4)}, pPartialIndoor=${coolingState.partialPressureIndoor.toFixed(4)}`); // REMOVE Log
-        // console.log("========================================"); // REMOVE Log
     }
 
     /** [Cooling Calc] Calculate humidity ratios */
     function calculateHumidityRatios() {
         const atmPressure = coolingState.atmPressure || 101325; 
         const pPartialIndoor = coolingState.partialPressureIndoor;
-        // Keep the existing outdoor partial pressure calculation based on coolingSeasonMeanRH (55.85%)
-        // const pPartialOutdoor = coolingState.partialPressure; 
         const pSatAvgOutdoor = coolingState.pSatAvg; // Get Saturation Pressure Outdoor (A56)
         
-        // console.log("=== [S13 DIAG] Humidity Ratios Calc ==="); // REMOVE Log
-        // console.log(`  Inputs: atmPressure=${atmPressure.toFixed(2)}, pPartialIndoor=${pPartialIndoor.toFixed(4)}, pSatAvgOutdoor=${pSatAvgOutdoor.toFixed(4)}`); // REMOVE Log
-
         // Calculate Indoor Humidity Ratio (A61)
         if ((atmPressure - pPartialIndoor) === 0) {
             console.warn("Cooling Calc: Division by zero prevented in indoor humidity ratio.");
@@ -120,7 +101,6 @@ window.TEUI.SectionModules.sect13 = (function() {
         // First, calculate the outdoor partial pressure *using the required 70% RH* (Excel A57)
         const outdoorRH_forA62 = 0.70; 
         const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
-        // console.log(`  Outdoor Calcs for A62: outdoorRH_forA62=${outdoorRH_forA62}, pPartialOutdoor_forA62=${pPartialOutdoor_forA62.toFixed(4)}`); // REMOVE Log
 
         if ((atmPressure - pSatAvgOutdoor) === 0) { // Check denominator using pSatAvgOutdoor (A56)
             console.warn("Cooling Calc: Division by zero prevented in outdoor humidity ratio.");
@@ -132,24 +112,19 @@ window.TEUI.SectionModules.sect13 = (function() {
 
         // Calculate Difference (A63)
         coolingState.humidityRatioDifference = coolingState.humidityRatioAvg - coolingState.humidityRatioIndoor;
-        
-        // console.log(`  Calculated: hRatioIndoor=${coolingState.humidityRatioIndoor.toFixed(6)}, hRatioAvg(Outdoor)=${coolingState.humidityRatioAvg.toFixed(6)}, hDiff=${coolingState.humidityRatioDifference.toFixed(6)}`); // REMOVE Log
-        // console.log("====================================="); // REMOVE Log
     }
 
-    /** [Cooling Calc] Calculate free cooling capacity limit */
+    /** [Cooling Calc] Calculate free cooling capacity limit (Potential Annual Sensible kWh) */
     function calculateFreeCoolingLimit() {
         // Add recursion protection
         if (window.TEUI.sect13.calculatingFreeCooling) {
-            // console.warn("[S13 Recursion] Preventing recursive call to calculateFreeCoolingLimit. Returning cached:", coolingState.freeCoolingLimit);
             return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
         }
         window.TEUI.sect13.calculatingFreeCooling = true;
-        console.log("--- [S13 LOG] Entering calculateFreeCoolingLimit ---"); // LOG START
         
         let potentialLimit = 0; // Initialize potentialLimit
         try { 
-            // --- REFACTORED Calculation based on SENSIBLE Component Only (Excel A33 * M19) --- 
+            // --- Calculation based on SENSIBLE Component Only (Excel A33 * M19) --- 
             
             // 1. Get necessary values
             const ventFlowRateM3hr = window.TEUI.parseNumeric(getFieldValue('h_120')) || 0;
@@ -160,15 +135,12 @@ window.TEUI.SectionModules.sect13 = (function() {
             const T_indoor = coolingState.coolingSetTemp; // °C
             const T_outdoor_night = coolingState.nightTimeTemp; // °C
             const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120; 
-            console.log(`[S13 LOG] Inputs Sensible: h_120=${ventFlowRateM3hr.toFixed(2)}, airMass=${coolingState.airMass}, Cp=${Cp}, T_indoor=${T_indoor}, T_outdoor_night=${T_outdoor_night}, m_19=${coolingDays}`); // LOG INPUTS
             
             // 2. Calculate Temperature Difference
             const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
-            console.log(`[S13 LOG] Intermediate Sensible: tempDiff=${tempDiff.toFixed(2)}`); // LOG INTERMEDIATE
 
             // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
             const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
-            console.log(`[S13 LOG] Intermediate Sensible: sensiblePowerWatts=${sensiblePowerWatts.toFixed(2)}`); // LOG INTERMEDIATE
             
             // 4. Determine potential SENSIBLE free cooling power
             let sensibleCoolingPowerWatts = 0;
@@ -176,18 +148,13 @@ window.TEUI.SectionModules.sect13 = (function() {
                  // Use the positive magnitude of heat removal power
                  sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts); 
             }
-            console.log(`[S13 LOG] Intermediate Sensible: sensibleCoolingPowerWatts=${sensibleCoolingPowerWatts.toFixed(2)}`); // LOG INTERMEDIATE
 
             // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
             // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
             const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
-            console.log(`[S13 LOG] Intermediate Sensible: dailySensibleCoolingKWh=${dailySensibleCoolingKWh.toFixed(4)}`); // LOG INTERMEDIATE
 
             // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
             potentialLimit = dailySensibleCoolingKWh * coolingDays; 
-            console.log(`[S13 LOG] Result Sensible: potentialLimit (kWh/yr)=${potentialLimit.toFixed(2)}`); // LOG RESULT
-
-            // --- END REFACTORED Calculation (Sensible Only) --- 
 
             // Store this sensible-only potential limit
             coolingState.calculatedPotentialFreeCooling = potentialLimit; 
@@ -197,16 +164,16 @@ window.TEUI.SectionModules.sect13 = (function() {
             potentialLimit = 0; 
         } finally {
             window.TEUI.sect13.calculatingFreeCooling = false;
-            console.log("--- [S13 LOG] Exiting calculateFreeCoolingLimit ---"); // LOG END
         }
         return potentialLimit; 
     }
 
     /** [Cooling Calc] Calculate days of active cooling required */
     function calculateDaysActiveCooling(currentFreeCoolingLimit) {
-        // Use the passed limit, not the potentially stale coolingState one
+        // Note: This calculation might need review against Excel E55 logic.
+        // It currently depends on coolingLoad (l_128 from S14) and the passed free cooling limit.
         if (coolingState.coolingLoad > 0 && currentFreeCoolingLimit >= 0) { 
-            const dailyCoolingLoad = coolingState.coolingLoad / 120; 
+            const dailyCoolingLoad = coolingState.coolingLoad / 120; // Assumes 120 cooling days
             if (dailyCoolingLoad > 0) {
                  const daysCovered = currentFreeCoolingLimit / dailyCoolingLoad;
                  coolingState.daysActiveCooling = Math.max(0, 120 - daysCovered); 
@@ -216,12 +183,12 @@ window.TEUI.SectionModules.sect13 = (function() {
         } else {
             coolingState.daysActiveCooling = 0; 
         }
-        // Return value isn't strictly needed if state is set, but good practice
         return coolingState.daysActiveCooling; 
     }
 
-    /** [Cooling Calc] Calculate wet bulb temperature */
+    /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
     function calculateWetBulbTemperature() {
+        // Note: This is an approximation, potentially from COOLING-TARGET.csv E64
         const tdb = coolingState.nightTimeTemp;
         const rh = coolingState.coolingSeasonMeanRH * 100; 
         const twbSimple = tdb - (tdb - (tdb - (100 - rh)/5)) * (0.1 + 0.9 * (rh / 100));
@@ -232,14 +199,10 @@ window.TEUI.SectionModules.sect13 = (function() {
 
     /** [Cooling Calc] Calculate the intermediate temperature A50 based on Excel logic */
     function calculateA50Temp() {
+        // Based on Excel E64 = E60 - (E60 - (E60 - (100 - E59)/5)) * (0.1 + 0.9 * (E59 / 100))
         const E60 = coolingState.nightTimeTemp; 
-        const A4 = 0.5585; 
-        const E59 = A4 * 100;
+        const E59 = (coolingState.coolingSeasonMeanRH || 0.5585) * 100; // Use state value or default
         
-        // console.log("=== [S13 DIAG] A50 Temp Calc ==="); // REMOVE Log
-        // console.log(`  Inputs: E60(T_night)=${E60}, A4(RH_night)=${A4}`); // REMOVE Log
-
-        // A50 = E60 - (E60 - (E60 - (100 - E59)/5)) * (0.1 + 0.9 * (E59 / 100))
         const term1 = (100 - E59) / 5;
         const term2 = E60 - term1;
         const term3 = E60 - term2;
@@ -247,14 +210,11 @@ window.TEUI.SectionModules.sect13 = (function() {
         const A50 = E60 - term3 * term4;
         
         coolingState.A50_temp = A50;
-        // console.log(`  Calculated: A50_temp=${A50.toFixed(4)}`); // REMOVE Log
-        // console.log("=============================="); // REMOVE Log
         return A50;
     }
 
     /** [Cooling Calc] Update internal state from external sources */
     function updateCoolingInputs() {
-        // Use the globally available parseNumeric function
         const parseNum = window.TEUI?.parseNumeric || function(v) { return parseFloat(v) || 0; }; 
         const getValue = window.TEUI?.StateManager?.getValue || function(id) { return null; };
 
@@ -263,17 +223,16 @@ window.TEUI.SectionModules.sect13 = (function() {
         coolingState.nightTimeTemp = 20.43; // Hardcoded default: Summer Mean Overnight Temp (See COOLING-TARGET.csv A3/A49)
         
         // TODO: This value should eventually be dynamic, likely from Section 03 weather data or user input
-        coolingState.coolingSeasonMeanRH = 0.70; // Use 70% for Seasonal Average Outdoor RH (per user clarification)
+        coolingState.coolingSeasonMeanRH = 0.5585; // Default A4 (55.85%) NOT A57 (70%) used elsewhere
         
-        // Fetch elevation - TODO: Should be dynamic from weather data lookup in Section 03
+        // Fetch elevation 
+        // TODO: Should be dynamic from weather data lookup in Section 03
         const projectElevation = parseNum(getValue('l_22')) || 80; // Read from Sec 03, fallback to 80m
         const seaLevelPressure = 101325; // E13
         coolingState.atmPressure = seaLevelPressure * Math.exp(-projectElevation / 8434); // E15 logic
-        // console.log(`[S13 Debug] Updated coolingState.atmPressure: ${coolingState.atmPressure}`); // REMOVED LOG
-        // console.log(`[S13 Debug] Updated coolingState.coolingSeasonMeanRH: ${coolingState.coolingSeasonMeanRH}`); // REMOVED LOG
 
         // Check for user override for cooling setpoint in l_24, otherwise use h_24
-        const coolingSetTempOverride_l24 = parseNum(getValue('l_24')); // Check l_24 first
+        const coolingSetTempOverride_l24 = parseNum(getValue('l_24')); 
         if (coolingSetTempOverride_l24 && !isNaN(coolingSetTempOverride_l24)) {
             coolingState.coolingSetTemp = coolingSetTempOverride_l24;
         } else {
@@ -283,30 +242,27 @@ window.TEUI.SectionModules.sect13 = (function() {
         coolingState.coolingDegreeDays = parseNum(getValue('d_21')) || 196;
         coolingState.buildingVolume = parseNum(getValue('d_105')) || 8000;
         coolingState.buildingArea = parseNum(getValue('h_15')) || 1427.2;
-        coolingState.coolingLoad = getNumericValue('l_128'); // Read mitigated cooling load from S14
-        coolingState.ventilationMethod = getFieldValue('g_118') || 'Volume Constant'; // Get Vent method
+        coolingState.coolingLoad = getNumericValue('l_128') || 0; // Read mitigated cooling load from S14 - Note: May cause dependency loop issues if S14 reads S13 outputs
+        coolingState.ventilationMethod = getFieldValue('g_118') || 'Constant'; // Default to Constant
 
         // Calculate the intermediate A50 temperature needed for atmospheric calcs
         calculateA50Temp();
     }
 
-    /** [Cooling Calc] Run all integrated cooling calculations */
+    /** [Cooling Calc] Orchestrates the internal cooling-related calculations */
     function runIntegratedCoolingCalculations() {
-        updateCoolingInputs(); // Get latest inputs
+        updateCoolingInputs(); 
         
-        // MOVED: Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
+        // Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
         calculateAtmosphericValues(); 
         calculateHumidityRatios();    
 
         // Now calculate factors/limits that use the results
         coolingState.latentLoadFactor = calculateLatentLoadFactor(); 
-        // REMOVED redundant call: calculateFreeCoolingLimit(); // This is called within calculateFreeCooling or other places
-        
-        calculateDaysActiveCooling(); // Requires coolingState.coolingLoad, potentially updated by inputs
+        // Calculate other intermediate cooling values if needed by core S13 funcs
         calculateWetBulbTemperature();
-
-        // Values are used internally by other S13 functions
-        // Note: These might be set again later by setCalculatedValue if they are actual table cells
+        // Note: calculateFreeCoolingLimit() is NOT called here, it's called by calculateFreeCooling()
+        // Note: calculateDaysActiveCooling() is called within calculateFreeCooling()
     }
 
     // --- End of Integrated Cooling Logic ---
@@ -1269,7 +1225,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             console.warn("Section 13: StateManager not available to add climate/loss/gain listeners.");
         }
 
-        // --- Use Event Delegation for k_120 dropdown/slider --- 
+        // --- Use Event Delegation for k_120 control --- 
         // Use the sectionElement declared earlier
         // const sectionElement = document.getElementById('mechanicalLoads'); // REMOVE this duplicate declaration
         if (sectionElement && !sectionElement.hasK120DelegateListener) { // Just use sectionElement
@@ -1797,43 +1753,32 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate free cooling capacity and related metrics
      * @param {number|null} [setbackFactorOverride=null] - Optional override for k_120, passed from event listener.
      */
-    function calculateFreeCooling(/* REMOVED setbackFactorOverride = null */) { 
+    function calculateFreeCooling() { 
         // Add recursion protection
         if (window.TEUI.sect13.freeCalculationInProgress) {
             // console.warn("[S13 Recursion] Preventing recursive call to calculateFreeCooling. Returning cached:", coolingState.freeCoolingLimit);
             return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
         }
         window.TEUI.sect13.freeCalculationInProgress = true;
-        console.log("--- [S13 LOG] Entering calculateFreeCooling ---"); // LOG START
+        // LOG START Removed
 
-        let finalFreeCoolingLimit = 0; // Initialize return value
+        let finalFreeCoolingLimit = 0; 
         try { 
-            runIntegratedCoolingCalculations(); // Ensure coolingState is up-to-date
+            runIntegratedCoolingCalculations(); 
             
-            // Retrieve the potential limit calculated by calculateFreeCoolingLimit()
-            const potentialLimit = calculateFreeCoolingLimit(); // kWh/yr
-            console.log(`[S13 LOG] calculateFreeCooling: potentialLimit received = ${potentialLimit.toFixed(2)}`); // LOG RECEIVED VALUE
+            const potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
 
-            // Retrieve the ventilation method from StateManager
             const ventilationMethod = getFieldValue('g_118') || 'Constant'; 
             
-            // Retrieve the Unoccupied Setback percentage from k_120
-            let setbackFactor = 1.0; // Default to 100% (no setback)
-            const setbackValueStr = getFieldValue('k_120'); // Reads value like "0.9" from StateManager
+            let setbackFactor = 1.0; 
+            const setbackValueStr = getFieldValue('k_120'); 
             if (setbackValueStr) {
-                // FIX: Directly parse the string value from state, which is already the decimal factor
                 const parsedFactor = parseFloat(setbackValueStr);
-                if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) { // Validate it's a valid factor (0-1)
+                if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) {
                     setbackFactor = parsedFactor;
                 }
-                /* // OLD INCORRECT LOGIC:
-                const setbackPercent = parseFloat(setbackValueStr.replace('%', '').trim());
-                if (!isNaN(setbackPercent) && setbackPercent >= 0 && setbackPercent <= 100) {
-                    setbackFactor = setbackPercent / 100; // ERROR: Divided by 100 again
-                }
-                */
             }
-            console.log(`[S13 LOG] calculateFreeCooling: ventilationMethod=${ventilationMethod}, setbackFactor=${setbackFactor}`); // LOG FACTORS
+            // LOG FACTORS Removed
 
             // Determine the final free cooling limit based on ventilation method
             if (ventilationMethod.toLowerCase().includes('constant')) {
@@ -1844,7 +1789,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                 finalFreeCoolingLimit = potentialLimit; 
             }
             
-            console.log(`[S13 LOG] calculateFreeCooling: finalFreeCoolingLimit BEFORE set = ${finalFreeCoolingLimit.toFixed(2)}`); // LOG FINAL VALUE
+            // LOG FINAL VALUE Removed
 
             setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma');
             coolingState.freeCoolingLimit = finalFreeCoolingLimit; 
@@ -1854,7 +1799,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             finalFreeCoolingLimit = 0; 
         } finally {
             window.TEUI.sect13.freeCalculationInProgress = false;
-            console.log("--- [S13 LOG] Exiting calculateFreeCooling ---"); // LOG END
+            // LOG END Removed
         }
         return finalFreeCoolingLimit;
     }
