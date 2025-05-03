@@ -1,6 +1,6 @@
 /**
  * 4011-Section14.js
- * TEDI & TELI (Section 14) module for TEUI Calculator 4.011
+ * TEDI & TELI (Section 14) module for TEUI Calculator 4.011 (this file shows as uncommitted, but it works betetr than the committed one so commit THIS to over-write the committed one)
  * 
  * This file contains field definitions, layout templates, and rendering logic
  * specific to the TEDI & TELI section.
@@ -559,85 +559,76 @@ window.TEUI.SectionModules.sect14 = (function() {
                 return;
             }
             
-            // Get building area from StateManager
+            // --- Fetch ALL Dependencies FIRST ---
             const area = getNumericValue('h_15');
-            
-            // Get input values for calculations
             const i97 = getNumericValue('i_97');   // Thermal Bridge Penalty Heatloss
             const i98 = getNumericValue('i_98');   // Envelope Totals Heatloss
             const i103 = getNumericValue('i_103'); // Natural Air Leakage Heatloss
             const m121 = getNumericValue('m_121'); // Net Htg Season Ventil. Lost
-            const i80 = getNumericValue('i_80');    // G.3 Net Usable Gains by Method Selected
-            
-            const k71 = getNumericValue('k_71') || 0; // Internal gains people
-            const k79 = getNumericValue('k_79') || 0; // Internal gains equip/light
-            // Envelope/Solar Gains
-            const k97 = getNumericValue('k_97') || 0; // Solar 
-            const k98 = getNumericValue('k_98') || 0; // Transmission
-            const k103 = getNumericValue('k_103') || 0; // Ground
-            
-            // Re-calculate CEG (d_132) as it's needed for CEGI (h_132)
-            const cegHeatgain_d132 = k97 + k98 + k103; 
-            setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 value
-            
-            const d122 = getNumericValue('d_122') || 0; // Incoming Cooling Vent Energy from S13
-            const h124 = getNumericValue('h_124') || 0; // Free Cooling Limit from S13
-            const d123 = getNumericValue('d_123') || 0; // Outgoing Cooling Vent Energy from S13
+            const i80 = getNumericValue('i_80');   // Internal heat gains - Occupants
+            const k71 = getNumericValue('k_71');   // Internal gains people
+            const k79 = getNumericValue('k_79');   // Internal gains equip/light
+            const k97 = getNumericValue('k_97');   // Solar 
+            const k98 = getNumericValue('k_98');   // Transmission
+            const d122 = getNumericValue('d_122'); // Incoming Cooling Vent Energy from S13
+            const h124 = getNumericValue('h_124'); // Free Cooling Limit from S13
+            const d123 = getNumericValue('d_123'); // Recovered Cooling Vent Energy from S13
 
             // --- Perform Calculations ---
             
-            // d_127: TED Targeted (kWh/yr) = (I97+I98+I103+M121)-I80 
-            const tedTargeted_d127 = (i97 + i98 + i103 + m121) - i80;
-            setCalculatedValue('d_127', tedTargeted_d127);
-            
-            // h_127: TEDI (kWh/m2/yr) = D127/H15
-            const tedi_h127 = area > 0 ? tedTargeted_d127 / area : 0;
-            setCalculatedValue('h_127', tedi_h127);
-            
-            // d_128: TED Envelope (kWh/yr) = (I97+I98+I103)-I80
-            const tedEnvelope_d128 = (i97 + i98 + i103) - i80; 
-            setCalculatedValue('d_128', tedEnvelope_d128);
-            
-            // h_128: TEDI Envelope (kWh/m2/yr) = D128/H15
-            const tediEnvelope_h128 = area > 0 ? tedEnvelope_d128 / area : 0; 
-            setCalculatedValue('h_128', tediEnvelope_h128);
-            
-            // d_132: CEG Cooling Envelope Heatgain (kWh/yr) = SUM(K97:K98)+K103
-            // const cegHeatgain_d132 = (k97 + k98) + k103; 
-            // setCalculatedValue('d_132', cegHeatgain_d132); // Set d_132 correctly
+            // d_127: TED (Heating Load)
+            const tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
+            setCalculatedValue('d_127', tedHeatloss_d127);
 
-            // d_129: CED Unmitigated (kWh/yr) = K71+K79+K98+D122 (Matching Excel formula structure)
-            const cedCoolingUnmitigated_d129 = k71 + k79 + k98 + d122;
-            setCalculatedValue('d_129', cedCoolingUnmitigated_d129);
+            // h_127: TEDI (Heating Load Intensity W/m2)
+            const tediWm2_h127 = area > 0 ? (tedHeatloss_d127 / 8760 * 1000) / area : 0;
+            setCalculatedValue('h_127', tediWm2_h127, 'W/m2'); 
             
-            // h_129: CEDI Unmitigated (W/m2) = (D129/8760*1000)/H15
-            // Formula sheet shows =D129/H15 (kWh/m2/yr). Code uses W/m2. Sticking with code for now.
+            // d_128: TED Envelope (Heating Load - Envelope Only)
+            const tediEnvelope_d128 = i97 + i98 + i103 - i80;
+            setCalculatedValue('d_128', tediEnvelope_d128);
+
+            // h_128: TEDI Envelope (Heating Load Intensity - Envelope Only W/m2)
+            const tediEnvelope_h128 = area > 0 ? (tediEnvelope_d128 / 8760 * 1000) / area : 0;
+            setCalculatedValue('h_128', tediEnvelope_h128);
+
+            // Calculate d_129 value needed for h_129, m_129, d_130
+            const cedCoolingUnmitigated_d129 = k71 + k79 + k98 + d122; 
+            
+            // h_129: CEDI Unmitigated (W/m2) 
             const cediUnmitigatedWm2_h129 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
             setCalculatedValue('h_129', cediUnmitigatedWm2_h129, 'W/m2'); 
             
-            // m_129: CED Mitigated (kWh/yr) = D129-H124-D123 (Moved from l_128)
+            // m_129: CED Mitigated (kWh/yr)
+            // Calculate using the fetched values
             const cedMitigated_m129 = cedCoolingUnmitigated_d129 - h124 - d123;
-            setCalculatedValue('m_129', cedMitigated_m129); // Use m_129
+            setCalculatedValue('m_129', cedMitigated_m129);
+
+            // Set d_129 display value now
+            setCalculatedValue('d_129', cedCoolingUnmitigated_d129);
             
-            // d_130: CEDI Cooling Load W/m2 Unmitigated = (D129/8760*1000)/H15
-            const cediUnmitigatedWm2_d130 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
-            setCalculatedValue('d_130', cediUnmitigatedWm2_d130, 'W/m2');
+            // d_130: CEDI Cooling Load W/m2 Unmitigated: =(D129/8760*1000)/H15
+            const cediCoolingWm2_d130 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
+            setCalculatedValue('d_130', cediCoolingWm2_d130, 'W/m2');
             
-            // h_130: CEDI Mitigated W/m2 = (M129/8760*1000)/H15 (Uses M129 now)
-            const cediMitigatedWm2_h130 = area > 0 ? (cedMitigated_m129 / 8760 * 1000) / area : 0;
-            setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
-            
-            // d_131: TEL Total Envelope Heatloss (kWh/yr) = SUM(I97:I98)+I103
-            const telHeatloss_d131 = i97 + i98 + i103;
+            // d_131: TEL Heatloss (Heating + DHW)
+            const d111 = getNumericValue('d_111'); // DHW Load
+            const telHeatloss_d131 = tedHeatloss_d127 + d111;
             setCalculatedValue('d_131', telHeatloss_d131);
             
-            // h_131: TELI (kWh/m2/yr) = D131/H15
+            // h_131: TELI Heatloss Intensity W/m2
             const teli_h131 = area > 0 ? telHeatloss_d131 / area : 0;
             setCalculatedValue('h_131', teli_h131);
             
-            // h_132: CEGI (kWh/m2/yr) = D132/H15 (Uses calculated d_132/cegHeatgain_d132)
+            // d_132 & h_132: CEG and CEGI
+            const cegHeatgain_d132 = k97 + k98;
+            setCalculatedValue('d_132', cegHeatgain_d132);
             const cegi_h132 = area > 0 ? cegHeatgain_d132 / area : 0;
             setCalculatedValue('h_132', cegi_h132);
+            
+            // h_130: CEDI Mitigated W/m2
+            const cediMitigatedWm2_h130 = area > 0 ? (cedMitigated_m129 / 8760 * 1000) / area : 0;
+            setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
             
         } catch (error) {
             console.error("Error in TEDI/TELI calculations:", error);
