@@ -125,8 +125,8 @@ window.TEUI.SectionModules.sect14 = (function() {
                 i: { content: "", classes: ["section-subheader"] },
                 j: { content: "", classes: ["section-subheader"] },
                 k: { content: "", classes: ["section-subheader"] },
-                l: { content: "kWh/yr", classes: ["section-subheader", "text-center"] },
-                m: { content: "", classes: ["section-subheader"] },
+                l: { content: "", classes: ["section-subheader"] },
+                m: { content: "kWh/yr", classes: ["section-subheader", "text-center"] },
                 n: { content: "", classes: ["section-subheader"] }
             }
         },
@@ -221,8 +221,8 @@ window.TEUI.SectionModules.sect14 = (function() {
                     classes: ["calculated-value"],
                     section: "tediSummary"
                 },
-                i: { content: "T.5.2 less Free Cool. & Vent. Exhaust", classes: ["note-text"] },
-                j: { content: "" },
+                i: { content: "" },
+                j: { content: "T.5.2 less Free Cool. & Vent. Exhaust", classes: ["note-text"]  },
                 k: { content: "" },
                 l: { content: "" },
                 m: { 
@@ -261,7 +261,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                     section: "tediSummary"
                 },
                 i: { content: "W/m²", classes: ["unit-text"] },
-                j: { content: "Mitigated", classes: ["note-text"] },
+                j: { content: "" },
                 k: { content: "" },
                 l: { content: "" },
                 m: { content: "" },
