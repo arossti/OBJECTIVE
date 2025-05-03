@@ -42,11 +42,11 @@ The following targeted fixes were implemented in `sections/4011-Section13.js`:
 
 1.  **Corrected Humidity Ratio Calculation:**
     - The `calculateHumidityRatios` function was modified to use the required **70% RH** when calculating the outdoor component (`coolingState.humidityRatioAvg`), aligning with Excel's `A62` logic.
-    ```javascript
+   ```javascript
     // In calculateHumidityRatios():
     const outdoorRH_forA62 = 0.70; 
     const pPartialOutdoor_forA62 = pSatAvgOutdoor * outdoorRH_forA62;
-    // ...
+       // ...
     coolingState.humidityRatioAvg = 0.62198 * pPartialOutdoor_forA62 / (atmPressure - pSatAvgOutdoor); 
     ```
 

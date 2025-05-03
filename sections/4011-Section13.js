@@ -141,49 +141,65 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateFreeCoolingLimit() {
         // Add recursion protection
         if (window.TEUI.sect13.calculatingFreeCooling) {
-            console.warn("[S13 Recursion] Preventing recursive call to calculateFreeCoolingLimit. Returning cached:", coolingState.freeCoolingLimit);
+            // console.warn("[S13 Recursion] Preventing recursive call to calculateFreeCoolingLimit. Returning cached:", coolingState.freeCoolingLimit);
             return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
         }
         window.TEUI.sect13.calculatingFreeCooling = true;
+        console.log("--- [S13 LOG] Entering calculateFreeCoolingLimit ---"); // LOG START
         
-        // console.log("[S13 Calc] calculateFreeCoolingLimit started."); // REMOVE Log
         let potentialLimit = 0; // Initialize potentialLimit
-        try { // Wrap core logic in try/finally
-            if (coolingState.buildingArea === 0) {
-                // console.log("[S13 Calc] Building area is 0, returning 0."); // REMOVE Log
-                // No need to return early, just let potentialLimit stay 0
-            }
-            // Ensure atmospheric values and humidity ratios are up-to-date
-            calculateAtmosphericValues();
-            calculateHumidityRatios();
-
-            const totalMass = coolingState.buildingVolume * coolingState.airMass;
-            const tempDiff = coolingState.coolingSetTemp - coolingState.nightTimeTemp;
-            const hDiff = coolingState.humidityRatioDifference; // For logging
-            const sensibleCooling = totalMass * coolingState.specificHeatCapacity * tempDiff / (3.6e6); // Convert J to kWh
-            const latentAdjustment = totalMass * coolingState.latentHeatVaporization * hDiff / (3.6e6); // Convert J to kWh
-            const dailyFreeCooling = Math.max(0, sensibleCooling - latentAdjustment);
+        try { 
+            // --- REFACTORED Calculation based on SENSIBLE Component Only (Excel A33 * M19) --- 
+            
+            // 1. Get necessary values
+            const ventFlowRateM3hr = window.TEUI.parseNumeric(getFieldValue('h_120')) || 0;
+            const ventFlowRateM3s = ventFlowRateM3hr / 3600;
+            const massFlowRateKgS = ventFlowRateM3s * coolingState.airMass; // kg/s
+            
+            const Cp = coolingState.specificHeatCapacity; // J/kg·K
+            const T_indoor = coolingState.coolingSetTemp; // °C
+            const T_outdoor_night = coolingState.nightTimeTemp; // °C
             const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120; 
-            potentialLimit = dailyFreeCooling * coolingDays; 
+            console.log(`[S13 LOG] Inputs Sensible: h_120=${ventFlowRateM3hr.toFixed(2)}, airMass=${coolingState.airMass}, Cp=${Cp}, T_indoor=${T_indoor}, T_outdoor_night=${T_outdoor_night}, m_19=${coolingDays}`); // LOG INPUTS
+            
+            // 2. Calculate Temperature Difference
+            const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
+            console.log(`[S13 LOG] Intermediate Sensible: tempDiff=${tempDiff.toFixed(2)}`); // LOG INTERMEDIATE
 
-            // console.log(`[S13 Calc] Inputs for FreeCoolingLimit: Vol=${coolingState.buildingVolume}, Area=${coolingState.buildingArea}, AirMass=${coolingState.airMass}, Cp=${coolingState.specificHeatCapacity}, LHV=${coolingState.latentHeatVaporization}`); // REMOVE Log
-            // console.log(`[S13 Calc] Intermediate values: IndoorT=${coolingState.coolingSetTemp}, OutdoorT=${coolingState.nightTimeTemp}, Tdiff=${tempDiff}, hDiff=${hDiff}`); // REMOVE Log
-            // console.log(`[S13 Calc] Calculated components: TotalMass=${totalMass}, SensibleCooling_kWh/d=${sensibleCooling}, LatentAdjustment_kWh/d=${latentAdjustment}, DailyFreeCooling_kWh/d=${dailyFreeCooling}`); // REMOVE Log
-            // console.log(`[S13 Calc] CoolingDays (m_19)=${coolingDays}`); // REMOVE Log
-            // console.log(`[S13 Calc] Potential Free Cooling Limit (Daily * Days): ${potentialLimit}`); // REMOVE Log
+            // 3. Calculate Sensible Power (Watts) - Based on Excel A55 / A31
+            const sensiblePowerWatts = massFlowRateKgS * Cp * tempDiff;
+            console.log(`[S13 LOG] Intermediate Sensible: sensiblePowerWatts=${sensiblePowerWatts.toFixed(2)}`); // LOG INTERMEDIATE
+            
+            // 4. Determine potential SENSIBLE free cooling power
+            let sensibleCoolingPowerWatts = 0;
+            if (tempDiff < 0) { // Only possible if outdoor air is cooler
+                 // Use the positive magnitude of heat removal power
+                 sensibleCoolingPowerWatts = Math.abs(sensiblePowerWatts); 
+            }
+            console.log(`[S13 LOG] Intermediate Sensible: sensibleCoolingPowerWatts=${sensibleCoolingPowerWatts.toFixed(2)}`); // LOG INTERMEDIATE
 
-            // Store intermediate value for debugging or potential future use
+            // 5. Convert Sensible Power to Daily Sensible Energy (kWh/day) - Based on Excel A33
+            // Correct Factor: (J/s) * (86400 s/day) / (3.6e6 J/kWh) = 0.024
+            const dailySensibleCoolingKWh = sensibleCoolingPowerWatts * 0.024;
+            console.log(`[S13 LOG] Intermediate Sensible: dailySensibleCoolingKWh=${dailySensibleCoolingKWh.toFixed(4)}`); // LOG INTERMEDIATE
+
+            // 6. Calculate Annual Potential Limit (kWh/yr) - Based on Excel A33 * M19
+            potentialLimit = dailySensibleCoolingKWh * coolingDays; 
+            console.log(`[S13 LOG] Result Sensible: potentialLimit (kWh/yr)=${potentialLimit.toFixed(2)}`); // LOG RESULT
+
+            // --- END REFACTORED Calculation (Sensible Only) --- 
+
+            // Store this sensible-only potential limit
             coolingState.calculatedPotentialFreeCooling = potentialLimit; 
             
-            // console.log(`[S13 Calc] Calculated free cooling potential limit: ${potentialLimit.toFixed(2)} kWh/yr`); // REMOVE Log
         } catch (error) {
             console.error("[S13 Error] Error during calculateFreeCoolingLimit:", error);
-            potentialLimit = 0; // Ensure return value is a number on error
+            potentialLimit = 0; 
         } finally {
-            // Add recursion protection flag reset
             window.TEUI.sect13.calculatingFreeCooling = false;
+            console.log("--- [S13 LOG] Exiting calculateFreeCoolingLimit ---"); // LOG END
         }
-        return potentialLimit;
+        return potentialLimit; 
     }
 
     /** [Cooling Calc] Calculate days of active cooling required */
@@ -277,22 +293,16 @@ window.TEUI.SectionModules.sect13 = (function() {
     /** [Cooling Calc] Run all integrated cooling calculations */
     function runIntegratedCoolingCalculations() {
         updateCoolingInputs(); // Get latest inputs
-        coolingState.latentLoadFactor = calculateLatentLoadFactor();
-        calculateFreeCoolingLimit(); // Includes atmospheric and humidity ratio calcs
         
-        // --- Removed adjustment based on Ventilation Method (Reverted 2024-08-01) ---
-        // Let the schedule-adjusted d_120 implicitly affect free cooling calc magnitude.
-        /*
-        if (coolingState.ventilationMethod && coolingState.ventilationMethod.includes('by Schedule')) {
-            console.log(`[S13] Vent method (${coolingState.ventilationMethod}) is scheduled. Setting free cooling limit to 0.`);
-            coolingState.freeCoolingLimit = 0;
-        } else {
-            console.log(`[S13] Vent method (${coolingState.ventilationMethod}) is constant. Using calculated free cooling limit: ${coolingState.freeCoolingLimit}`);
-        }
-        */
-        // --------------------------------------------------------
+        // MOVED: Ensure atmospheric & humidity are calculated BEFORE factors/limits that depend on them
+        calculateAtmosphericValues(); 
+        calculateHumidityRatios();    
 
-        calculateDaysActiveCooling();
+        // Now calculate factors/limits that use the results
+        coolingState.latentLoadFactor = calculateLatentLoadFactor(); 
+        // REMOVED redundant call: calculateFreeCoolingLimit(); // This is called within calculateFreeCooling or other places
+        
+        calculateDaysActiveCooling(); // Requires coolingState.coolingLoad, potentially updated by inputs
         calculateWetBulbTemperature();
 
         // Values are used internally by other S13 functions
@@ -1790,62 +1800,61 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateFreeCooling(/* REMOVED setbackFactorOverride = null */) { 
         // Add recursion protection
         if (window.TEUI.sect13.freeCalculationInProgress) {
-            console.warn("[S13 Recursion] Preventing recursive call to calculateFreeCooling. Returning cached:", coolingState.freeCoolingLimit);
+            // console.warn("[S13 Recursion] Preventing recursive call to calculateFreeCooling. Returning cached:", coolingState.freeCoolingLimit);
             return coolingState.freeCoolingLimit || 0; // Return cached value if already calculating
         }
         window.TEUI.sect13.freeCalculationInProgress = true;
+        console.log("--- [S13 LOG] Entering calculateFreeCooling ---"); // LOG START
 
         let finalFreeCoolingLimit = 0; // Initialize return value
-        try { // Wrap core logic in try/finally
-            // console.log("--- [S13 Calc] calculateFreeCooling --- START ---"); // REMOVE Log
+        try { 
             runIntegratedCoolingCalculations(); // Ensure coolingState is up-to-date
             
             // Retrieve the potential limit calculated by calculateFreeCoolingLimit()
             const potentialLimit = calculateFreeCoolingLimit(); // kWh/yr
-            // console.log(`[S13 Calc] Potential Free Cooling Limit (from calculateFreeCoolingLimit): ${potentialLimit.toFixed(2)}`); // REMOVE Log
+            console.log(`[S13 LOG] calculateFreeCooling: potentialLimit received = ${potentialLimit.toFixed(2)}`); // LOG RECEIVED VALUE
 
             // Retrieve the ventilation method from StateManager
-            const ventilationMethod = getFieldValue('g_118') || 'Constant'; // Default to Constant if not set
-            // console.log(`[S13 Calc] Ventilation Method (g_118): ${ventilationMethod}`); // REMOVE Log
-
+            const ventilationMethod = getFieldValue('g_118') || 'Constant'; 
+            
             // Retrieve the Unoccupied Setback percentage from k_120
             let setbackFactor = 1.0; // Default to 100% (no setback)
-            const setbackPercentStr = getFieldValue('k_120'); // e.g., "90%"
-            if (setbackPercentStr) {
-                const setbackPercent = parseFloat(setbackPercentStr.replace('%', '').trim());
-                if (!isNaN(setbackPercent) && setbackPercent >= 0 && setbackPercent <= 100) {
-                    setbackFactor = setbackPercent / 100;
+            const setbackValueStr = getFieldValue('k_120'); // Reads value like "0.9" from StateManager
+            if (setbackValueStr) {
+                // FIX: Directly parse the string value from state, which is already the decimal factor
+                const parsedFactor = parseFloat(setbackValueStr);
+                if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) { // Validate it's a valid factor (0-1)
+                    setbackFactor = parsedFactor;
                 }
+                /* // OLD INCORRECT LOGIC:
+                const setbackPercent = parseFloat(setbackValueStr.replace('%', '').trim());
+                if (!isNaN(setbackPercent) && setbackPercent >= 0 && setbackPercent <= 100) {
+                    setbackFactor = setbackPercent / 100; // ERROR: Divided by 100 again
+                }
+                */
             }
-            // console.log(`[S13 Calc] Unoccupied Setback Factor (k_120): ${setbackFactor}`); // REMOVE Log
+            console.log(`[S13 LOG] calculateFreeCooling: ventilationMethod=${ventilationMethod}, setbackFactor=${setbackFactor}`); // LOG FACTORS
 
             // Determine the final free cooling limit based on ventilation method
             if (ventilationMethod.toLowerCase().includes('constant')) {
-                finalFreeCoolingLimit = potentialLimit; // Use full potential for constant ventilation
-                // console.log("[S13 Calc] Using full potential limit for Constant ventilation."); // REMOVE Log
+                finalFreeCoolingLimit = potentialLimit; 
             } else if (ventilationMethod.toLowerCase().includes('schedule')) {
-                finalFreeCoolingLimit = potentialLimit * setbackFactor; // Apply setback factor for scheduled ventilation
-                // console.log(`[S13 Calc] Applying setback factor (${setbackFactor}) for Scheduled ventilation.`); // REMOVE Log
+                finalFreeCoolingLimit = potentialLimit * setbackFactor; 
             } else {
-                // Handle other cases or default (e.g., 'None' or unexpected values)
-                finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
-                // console.warn(`[S13 Calc] Unknown ventilation method '${ventilationMethod}', defaulting to full potential limit.`); // REMOVE Log
+                finalFreeCoolingLimit = potentialLimit; 
             }
             
-            // console.log(`[S13 Calc] Final Free Cooling Limit (h_124, before setting): ${finalFreeCoolingLimit.toFixed(2)}`); // REMOVE Log
+            console.log(`[S13 LOG] calculateFreeCooling: finalFreeCoolingLimit BEFORE set = ${finalFreeCoolingLimit.toFixed(2)}`); // LOG FINAL VALUE
 
-            // Update the calculated value for h_124 in StateManager and DOM
             setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma');
-            // Store locally ONLY IF NECESSARY for internal logic (prefer StateManager)
             coolingState.freeCoolingLimit = finalFreeCoolingLimit; 
 
-            // console.log("--- [S13 Calc] calculateFreeCooling --- END ---"); // REMOVE Log
         } catch (error) {
             console.error("[S13 Error] Error during calculateFreeCooling:", error);
-            finalFreeCoolingLimit = 0; // Ensure return value is a number on error
+            finalFreeCoolingLimit = 0; 
         } finally {
-            // Add recursion protection flag reset
             window.TEUI.sect13.freeCalculationInProgress = false;
+            console.log("--- [S13 LOG] Exiting calculateFreeCooling ---"); // LOG END
         }
         return finalFreeCoolingLimit;
     }
