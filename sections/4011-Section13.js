@@ -412,27 +412,27 @@ window.TEUI.SectionModules.sect13 = (function() {
 
     /** [Cooling Calc] Calculate latent load factor */
     function calculateLatentLoadFactor() {
-        // Ensure intermediate values are calculated (now done in runIntegratedCoolingCalculations)
+        // Ensure intermediate values are calculated
 
         const hDiff = coolingState.humidityRatioDifference;
         const LHV = coolingState.latentHeatVaporization;
         const Cp = coolingState.specificHeatCapacity;
         const Tdiff = coolingState.nightTimeTemp - coolingState.coolingSetTemp; 
-        console.log("=== [S13 DIAG] Latent Load Factor Calc ==="); // ADDED Log
-        console.log(`  Inputs: hDiff=${hDiff.toFixed(6)}, LHV=${LHV}, Cp=${Cp}, Tdiff=${Tdiff.toFixed(2)}`); // ADDED Log
+        // console.log("=== [S13 DIAG] Latent Load Factor Calc ==="); // REMOVE Log
+        // console.log(`  Inputs: hDiff=${hDiff.toFixed(6)}, LHV=${LHV}, Cp=${Cp}, Tdiff=${Tdiff.toFixed(2)}`); // REMOVE Log
 
         // Check for division by zero or invalid inputs
         if (Cp === 0 || Tdiff === 0 || isNaN(hDiff) || isNaN(LHV) || isNaN(Cp) || isNaN(Tdiff)) {
-            console.warn("Latent Load Factor: Invalid inputs or division by zero."); 
-            console.log("=========================================="); // ADDED Log
+            // console.warn("Latent Load Factor: Invalid inputs or division by zero."); 
+            // console.log("=========================================="); // REMOVE Log
             return 1.0; 
         }
 
         const ratio = (hDiff * LHV) / (Cp * Tdiff);
         const factor = 1 + ratio;
         const finalFactor = Math.max(1.0, factor);
-        console.log(`  Calculated: Ratio=${ratio.toFixed(6)}, Factor=${factor.toFixed(6)}, Final(i_122)=${finalFactor.toFixed(6)}`); // ADDED Log
-        console.log("=========================================="); // ADDED Log
+        // console.log(`  Calculated: Ratio=${ratio.toFixed(6)}, Factor=${factor.toFixed(6)}, Final(i_122)=${finalFactor.toFixed(6)}`); // REMOVE Log
+        // console.log("=========================================="); // REMOVE Log
         return finalFactor;
     }
 
@@ -444,8 +444,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue('d_59')) || 45;
         const indoorRH = indoorRH_percent / 100;
         
-        console.log("=== [S13 DIAG] Atmospheric Values Calc ==="); // ADDED Log
-        console.log(`  Inputs: t_outdoor(A50)=${t_outdoor.toFixed(4)}, outdoorRH=${outdoorRH.toFixed(4)}, t_indoor=${t_indoor}, indoorRH=${indoorRH.toFixed(4)}`); // ADDED Log
+        // console.log("=== [S13 DIAG] Atmospheric Values Calc ==="); // REMOVE Log
+        // console.log(`  Inputs: t_outdoor(A50)=${t_outdoor.toFixed(4)}, outdoorRH=${outdoorRH.toFixed(4)}, t_indoor=${t_indoor}, indoorRH=${indoorRH.toFixed(4)}`); // REMOVE Log
 
         coolingState.pSatAvg = 610.94 * Math.exp(17.625 * t_outdoor / (t_outdoor + 243.04));
         coolingState.partialPressure = coolingState.pSatAvg * outdoorRH; 
@@ -453,9 +453,9 @@ window.TEUI.SectionModules.sect13 = (function() {
         coolingState.pSatIndoor = 610.94 * Math.exp(17.625 * t_indoor / (t_indoor + 243.04));
         coolingState.partialPressureIndoor = coolingState.pSatIndoor * indoorRH; 
         
-        console.log(`  Outdoor Calcs: pSatAvg=${coolingState.pSatAvg.toFixed(4)}, pPartial=${coolingState.partialPressure.toFixed(4)}`); // ADDED Log
-        console.log(`  Indoor Calcs: pSatIndoor=${coolingState.pSatIndoor.toFixed(4)}, pPartialIndoor=${coolingState.partialPressureIndoor.toFixed(4)}`); // ADDED Log
-        console.log("========================================"); // ADDED Log
+        // console.log(`  Outdoor Calcs: pSatAvg=${coolingState.pSatAvg.toFixed(4)}, pPartial=${coolingState.partialPressure.toFixed(4)}`); // REMOVE Log
+        // console.log(`  Indoor Calcs: pSatIndoor=${coolingState.pSatIndoor.toFixed(4)}, pPartialIndoor=${coolingState.partialPressureIndoor.toFixed(4)}`); // REMOVE Log
+        // console.log("========================================"); // REMOVE Log
     }
 
     /** [Cooling Calc] Calculate humidity ratios */
@@ -465,8 +465,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const pPartialOutdoor = coolingState.partialPressure;
         const pSatAvgOutdoor = coolingState.pSatAvg; // Get Saturation Pressure Outdoor (A56)
         
-        console.log("=== [S13 DIAG] Humidity Ratios Calc ==="); // ADDED Log
-        console.log(`  Inputs: atmPressure=${atmPressure.toFixed(2)}, pPartialIndoor=${pPartialIndoor.toFixed(4)}, pPartialOutdoor=${pPartialOutdoor.toFixed(4)}, pSatAvgOutdoor=${pSatAvgOutdoor.toFixed(4)}`); // Updated Log
+        // console.log("=== [S13 DIAG] Humidity Ratios Calc ==="); // REMOVE Log
+        // console.log(`  Inputs: atmPressure=${atmPressure.toFixed(2)}, pPartialIndoor=${pPartialIndoor.toFixed(4)}, pPartialOutdoor=${pPartialOutdoor.toFixed(4)}, pSatAvgOutdoor=${pSatAvgOutdoor.toFixed(4)}`); // REMOVE Log
 
         // Calculate Indoor Humidity Ratio (A61)
         if ((atmPressure - pPartialIndoor) === 0) {
@@ -487,8 +487,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Calculate Difference (A63)
         coolingState.humidityRatioDifference = coolingState.humidityRatioAvg - coolingState.humidityRatioIndoor;
         
-        console.log(`  Calculated: hRatioIndoor=${coolingState.humidityRatioIndoor.toFixed(6)}, hRatioAvg(Outdoor)=${coolingState.humidityRatioAvg.toFixed(6)}, hDiff=${coolingState.humidityRatioDifference.toFixed(6)}`); // ADDED Log
-        console.log("===================================="); // ADDED Log
+        // console.log(`  Calculated: hRatioIndoor=${coolingState.humidityRatioIndoor.toFixed(6)}, hRatioAvg(Outdoor)=${coolingState.humidityRatioAvg.toFixed(6)}, hDiff=${coolingState.humidityRatioDifference.toFixed(6)}`); // REMOVE Log
+        // console.log("===================================="); // REMOVE Log
     }
 
     /** [Cooling Calc] Calculate free cooling capacity limit */
@@ -522,19 +522,21 @@ window.TEUI.SectionModules.sect13 = (function() {
     }
 
     /** [Cooling Calc] Calculate days of active cooling required */
-    function calculateDaysActiveCooling() {
-        if (coolingState.coolingLoad > 0 && coolingState.freeCoolingLimit >= 0) { 
+    function calculateDaysActiveCooling(currentFreeCoolingLimit) {
+        // Use the passed limit, not the potentially stale coolingState one
+        if (coolingState.coolingLoad > 0 && currentFreeCoolingLimit >= 0) { 
             const dailyCoolingLoad = coolingState.coolingLoad / 120; 
             if (dailyCoolingLoad > 0) {
-                 const daysCovered = coolingState.freeCoolingLimit / dailyCoolingLoad;
-                 coolingState.daysActiveCooling = Math.max(0, 120 - daysCovered); // Ensure non-negative
+                 const daysCovered = currentFreeCoolingLimit / dailyCoolingLoad;
+                 coolingState.daysActiveCooling = Math.max(0, 120 - daysCovered); 
             } else {
-                 coolingState.daysActiveCooling = 0; // No load, no active cooling days
+                 coolingState.daysActiveCooling = 0; 
             }
         } else {
-            coolingState.daysActiveCooling = 0; // No load or negative free cooling -> no active cooling needed beyond passive
+            coolingState.daysActiveCooling = 0; 
         }
-        return coolingState.daysActiveCooling;
+        // Return value isn't strictly needed if state is set, but good practice
+        return coolingState.daysActiveCooling; 
     }
 
     /** [Cooling Calc] Calculate wet bulb temperature */
@@ -553,8 +555,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const A4 = 0.5585; 
         const E59 = A4 * 100;
         
-        console.log("=== [S13 DIAG] A50 Temp Calc ==="); // ADDED Log
-        console.log(`  Inputs: E60(T_night)=${E60}, A4(RH_night)=${A4}`); // ADDED Log
+        // console.log("=== [S13 DIAG] A50 Temp Calc ==="); // REMOVE Log
+        // console.log(`  Inputs: E60(T_night)=${E60}, A4(RH_night)=${A4}`); // REMOVE Log
 
         // A50 = E60 - (E60 - (E60 - (100 - E59)/5)) * (0.1 + 0.9 * (E59 / 100))
         const term1 = (100 - E59) / 5;
@@ -564,8 +566,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const A50 = E60 - term3 * term4;
         
         coolingState.A50_temp = A50;
-        console.log(`  Calculated: A50_temp=${A50.toFixed(4)}`); // ADDED Log
-        console.log("=============================="); // ADDED Log
+        // console.log(`  Calculated: A50_temp=${A50.toFixed(4)}`); // REMOVE Log
+        // console.log("=============================="); // REMOVE Log
         return A50;
     }
 
@@ -1562,6 +1564,13 @@ window.TEUI.SectionModules.sect13 = (function() {
             // Listener for l_119 (Summer Boost) changes
             sm.addListener('l_119', calculateCoolingVentilation);
 
+            // --- Listeners for m_129 Dependencies ---
+            // These ensure m_129 recalculates ONLY when its direct inputs change
+            sm.addListener('d_129', calculateMitigatedCED); // d_129 from S14
+            sm.addListener('h_124', calculateMitigatedCED); // h_124 from S13 (Free Cooling)
+            sm.addListener('d_123', calculateMitigatedCED); // d_123 from S13 (Vent Recovery)
+            // -----------------------------------------
+
         // Add listeners for climate data changes from Section 3
             sm.addListener('d_20', calculateAll); // HDD
             sm.addListener('d_21', calculateAll); // CDD
@@ -1639,42 +1648,45 @@ window.TEUI.SectionModules.sect13 = (function() {
         // --- Handler function for k_120 change (defined within IIFE scope) ---
         function handleK120Change(e) {
             if (e.target && e.target.matches('[data-field-id="k_120"]')) {
-                console.log(`[S13 Listener] k_120 ${e.type} event!`);
+                // console.log(`[S13 Listener] k_120 ${e.type} event!`); // REMOVE Log
                 const controlElement = e.target;
                 const fieldId = controlElement.getAttribute('data-field-id');
                 
-                // Value from slider is likely 0-100, need decimal 0.0-1.0
                 const sliderValueStr = controlElement.value; 
                 const sliderValue = parseFloat(sliderValueStr);
-                const decimalValue = sliderValue / 100; // Convert to decimal
-                const decimalValueStrForState = decimalValue.toString(); // Store as string
+                const decimalValue = sliderValue / 100; 
+                const decimalValueStrForState = decimalValue.toString();
 
-                console.log(`[S13 Listener] Field ID: ${fieldId}, Slider Value: ${sliderValueStr}, Decimal Value: ${decimalValue}`); // Updated Log
+                // console.log(`[S13 Listener] Field ID: ${fieldId}, Slider Value: ${sliderValueStr}, Decimal Value: ${decimalValue}`); // REMOVE Log
                 
                 if (!fieldId || isNaN(decimalValue)) {
-                    console.warn(`[S13 Listener] Invalid value or fieldId for k_120.`);
+                    // console.warn(`[S13 Listener] Invalid value or fieldId for k_120.`); // REMOVE Log
                     return;
                 }
                 
-                // Update display span with percentage
                 const displaySpan = document.querySelector(`#mechanicalLoads span[data-display-for="${fieldId}"]`); 
                 if (displaySpan) {
-                    displaySpan.textContent = `${sliderValue.toFixed(0)}%`; // Use the original slider value for display
+                    displaySpan.textContent = `${sliderValue.toFixed(0)}%`; 
                 }
 
                 if (window.TEUI.StateManager) {
-                    console.log(`[S13 Listener] Updating StateManager for ${fieldId} with value ${decimalValueStrForState}`); // Log decimal string
-                    window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); // Store decimal string
-                    console.log(`[S13 Listener] StateManager value for ${fieldId} is now: ${window.TEUI.StateManager.getValue(fieldId)}`);
+                    // console.log(`[S13 Listener] Updating StateManager for ${fieldId} with value ${decimalValueStrForState}`); // REMOVE Log
+                    window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); 
+                    // console.log(`[S13 Listener] StateManager value for ${fieldId} is now: ${window.TEUI.StateManager.getValue(fieldId)}`); // REMOVE Log
                 }
                 
+                // REVERT: Remove direct call, rely on calculateAll trigger
+                /*
                 if (window.TEUI.SectionModules.sect13?.calculateFreeCooling) {
-                     console.log(`[S13 Listener] Calling calculateFreeCooling directly with setback override: ${decimalValue}`); // Log decimal
-                     window.TEUI.SectionModules.sect13.calculateFreeCooling(decimalValue); // Pass decimal
+                     console.log(`[S13 Listener] Calling calculateFreeCooling directly with setback override: ${decimalValue}`); 
+                     window.TEUI.SectionModules.sect13.calculateFreeCooling(decimalValue); 
                 } else {
                     console.warn("Could not find calculateFreeCooling function to call directly.");
                     calculateAll(); 
                 }
+                */
+                console.log(`[S13 Listener] Calling calculateAll() after k_120 change.`); // KEEP Log
+                calculateAll(); // Trigger full recalculation via standard flow
             }
         }
         // --- End Handler function ---
@@ -1761,6 +1773,10 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('cooling_freeCoolingLimit', calculateFreeCooling);
         }
         */
+        sm.registerDependency('d_129', 'm_129');
+        // ADDED: Need h_124 and d_123 from S13 itself to calculate m_129
+        sm.registerDependency('h_124', 'm_129');
+        sm.registerDependency('d_123', 'm_129');
     }
     
     /**
@@ -2065,8 +2081,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const baseConstant = 1.21; 
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) / 100 || 0; // Convert %
 
-        console.log("=== [S13 DIAG] Cooling Ventilation Diagnostics ==="); // ADDED Log Start
-        console.log(`  Inputs: d120=${ventilationRateLs_d120.toFixed(2)}, cdd=${cdd_d21}, i63=${occupiedHours_i63}, j63=${totalHours_j63}, occFactor=${occupancyFactor.toFixed(4)}, LLF(i122)=${latentLoadFactor_i122.toFixed(4)}, boost=${summerBoostFactor}, coolingActive=${coolingSystem_d116}, SRE(d118)=${sre_d118}`); // ADDED Log Inputs
+        // console.log("=== [S13 DIAG] Cooling Ventilation Diagnostics ==="); // REMOVE Log
+        // console.log(`  Inputs: d120=${ventilationRateLs_d120.toFixed(2)}, cdd=${cdd_d21}, i63=${occupiedHours_i63}, j63=${totalHours_j63}, occFactor=${occupancyFactor.toFixed(4)}, LLF(i122)=${latentLoadFactor_i122.toFixed(4)}, boost=${summerBoostFactor}, coolingActive=${coolingSystem_d116}, SRE(d118)=${sre_d118}`); // REMOVE Log
 
         let ventEnergyCoolingIncoming_d122 = 0;
 
@@ -2087,8 +2103,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         
         const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118;
 
-        console.log(`  Calculated: d_122 (Incoming)=${ventEnergyCoolingIncoming_d122.toFixed(2)}, d_123 (Recovered)=${ventEnergyRecovered_d123.toFixed(2)}`); // ADDED Log Results
-        console.log("=============================================="); // ADDED Log End
+        // console.log(`  Calculated: d_122 (Incoming)=${ventEnergyCoolingIncoming_d122.toFixed(2)}, d_123 (Recovered)=${ventEnergyRecovered_d123.toFixed(2)}`); // REMOVE Log
+        // console.log("=============================================="); // REMOVE Log
 
         // Update StateManager (single source of truth) and DOM
         setCalculatedValue('i_122', latentLoadFactor_i122, 'percent-0dp'); // Display LLF
@@ -2115,8 +2131,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         let finalFreeCoolingLimit = 0; 
         const ventMethod = getFieldValue('g_118') || 'Volume Constant'; 
 
-        console.log("=== [S13 DIAG] Free Cooling Diagnostics ==="); // ADDED Log Start
-        console.log(`  Potential Limit (from internal physics): ${potentialFreeCoolingLimit.toFixed(2)}`); // ADDED Log Potential
+        // console.log("=== [S13 DIAG] Free Cooling Diagnostics ==="); // REMOVE Log
+        // console.log(`  Potential Limit (from internal physics): ${potentialFreeCoolingLimit.toFixed(2)}`); // REMOVE Log
 
         if (ventMethod && ventMethod.includes('Constant')) {
             finalFreeCoolingLimit = potentialFreeCoolingLimit;
@@ -2127,11 +2143,16 @@ window.TEUI.SectionModules.sect13 = (function() {
             // console.log(`[S13 Calc] Using Scheduled method ( ${ventMethod} ) * setback ${setbackFactor} = ${finalFreeCoolingLimit}`); 
         }
         
-        console.log(`  Final Limit (h_124): ${finalFreeCoolingLimit.toFixed(2)}`); // ADDED Log Final Limit
-        console.log("======================================="); // ADDED Log End
+        // console.log(`  Final Limit (h_124): ${finalFreeCoolingLimit.toFixed(2)}`); // REMOVE Log
+        // console.log("======================================="); // REMOVE Log
 
+        // Set h_124 value in StateManager
         setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma'); 
         
+        // --- REMOVE internal state update for freeCoolingLimit --- 
+        // coolingState.freeCoolingLimit = finalFreeCoolingLimit; // No longer needed, h_124 is source of truth
+        // -------------------------------------------------------
+
         const coolingLoadUnmitigated = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
         let percentFreeCooling = 0;
         if (coolingLoadUnmitigated > 0) {
@@ -2139,13 +2160,10 @@ window.TEUI.SectionModules.sect13 = (function() {
         }
         setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
         
-        coolingState.freeCoolingLimit = finalFreeCoolingLimit;
-        
-        calculateDaysActiveCooling();
+        // Calculate days active cooling (needs the final limit)
+        // Pass finalFreeCoolingLimit directly instead of relying on state side-effect
+        calculateDaysActiveCooling(finalFreeCoolingLimit); 
         setCalculatedValue('m_124', coolingState.daysActiveCooling, 'integer');
-        
-        // console.log(`Final values: freeCoolingLimit (h_124): ${finalFreeCoolingLimit}, daysActiveCooling (m_124): ${coolingState.daysActiveCooling}`);
-        // console.log("====================================");
         
         return finalFreeCoolingLimit;
     }
@@ -2164,27 +2182,9 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Now calculate the specific S13 outputs using updated state
         calculateFreeCooling();         // Sets h_124, d_124, m_124 based on coolingState
         calculateCoolingVentilation();  // Sets d_122, d_123, i_122 based on coolingState
-        calculateCoolingSystem();       // Sets d_117, l_114, l_116 etc. using m_129 from PREVIOUS cycle
-        // FINALLY, calculate m_129 using the latest S13/S14 values
-        calculateMitigatedCED();        // Sets m_129 based on latest d_129, h_124, d_123
-    }
-    
-    /**
-     * Calculate Mitigated CED (m_129) - MOVED INSIDE IIFE
-     */
-    function calculateMitigatedCED() {
-        const d129 = getNumericValue('d_129'); // Get latest from S14 via StateManager
-        // Use the most recently calculated h_124 directly from coolingState
-        const h124 = coolingState.freeCoolingLimit; 
-        const d123 = getNumericValue('d_123'); // Get latest d_123 (set in calculateCoolingVentilation)
-        
-        console.log("=== [S13 DIAG] m_129 Calculation ==="); // ADDED Log
-        console.log(`  Inputs: d129=${d129.toFixed(2)}, h124(from state)=${h124.toFixed(2)}, d123=${d123.toFixed(2)}`); // ADDED Log
-
-        const m129 = d129 - h124 - d123;
-        console.log(`  Calculated: m_129=${m129.toFixed(2)}`); // ADDED Log
-        setCalculatedValue('m_129', m129, 'number-2dp-comma');
-        console.log("====================================="); // ADDED Log
+        calculateCoolingSystem();       // Sets d_117, l_114, l_116 etc.
+        // REMOVED: Let m_129 be calculated only via listeners
+        // calculateMitigatedCED();        // Sets m_129 based on latest d_129, h_124, d_123
     }
     
     /**
@@ -2308,6 +2308,24 @@ window.TEUI.SectionModules.sect13 = (function() {
         }); // Format with commas and 2 decimal places
     }
     
+    /**
+     * Calculate Mitigated CED (m_129) - MOVED EARLIER INSIDE IIFE
+     */
+    function calculateMitigatedCED() {
+        const d129 = getNumericValue('d_129'); // Get latest from S14 via StateManager
+        // Fetch h_124 using getNumericValue to ensure we get the StateManager value
+        const h124 = getNumericValue('h_124'); 
+        const d123 = getNumericValue('d_123'); // Get latest d_123
+        
+        // console.log("=== [S13 DIAG] m_129 Calculation ==="); // Keep commented for now
+        // console.log(`  Inputs: d129=${d129.toFixed(2)}, h124(fetched)=${h124.toFixed(2)}, d123=${d123.toFixed(2)}`); 
+
+        const m129 = d129 - h124 - d123;
+        // console.log(`  Calculated: m_129=${m129.toFixed(2)}`); 
+        setCalculatedValue('m_129', m129, 'number-2dp-comma');
+        // console.log("====================================="); 
+    }
+
     //==========================================================================
     // PUBLIC API
     //==========================================================================
