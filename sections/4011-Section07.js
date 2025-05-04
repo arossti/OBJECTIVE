@@ -1059,40 +1059,53 @@ window.TEUI.SectionModules.sect07 = (function() {
         const d52Display = document.querySelector('span[data-display-for="d_52"]'); 
         const d52Cell = document.querySelector('td[data-field-id="d_52"]');
 
-        let newEfficiencyPercent = 300; // Default for Heatpump
-        let isDisabled = false;
+        let newMinValue = 50;
+        let newMaxValue = 400;
+        let newStep = 2;
+        let newValue = 300; // Default for Heatpump
+        let isEditable = true; // Assume editable by default
 
         if (selectedSource === "Gas" || selectedSource === "Oil") {
-            newEfficiencyPercent = 90; // Set to 90% for Gas/Oil
-            isDisabled = true;
+            newMinValue = 50;
+            newMaxValue = 100;
+            newStep = 1;
+            newValue = 90; // Reset value to 90%
+            isEditable = true; // Still editable, but within new range
         } else if (selectedSource === "Electric") {
-            newEfficiencyPercent = 100; // Set to 100% (COP=1) for Electric resistance
-            isDisabled = true;
-        } else {
-            // Heatpump selected (or unknown), keep default and enable
-            // Optionally read last user value from state if available?
-            // For simplicity, we reset to 300% now.
-            newEfficiencyPercent = 300;
-            isDisabled = false;
+            newMinValue = 50;
+            newMaxValue = 100;
+            newStep = 1;
+            newValue = 100; // Reset value to 100%
+            isEditable = true; // Still editable
+        } else { // Heatpump
+            newMinValue = 50;
+            newMaxValue = 400;
+            newStep = 2;
+            // Maybe restore last HP value? For now, reset to default.
+            newValue = 300; 
+            isEditable = true;
         }
 
         // Update StateManager first
         if (window.TEUI.StateManager) {
             // Store the percentage value (as string)
-            window.TEUI.StateManager.setValue("d_52", newEfficiencyPercent.toString(), 'system-update');
+            window.TEUI.StateManager.setValue("d_52", newValue.toString(), 'system-update');
         }
 
-        // Update Slider & Display
+        // Update Slider Attributes & Value & Display
         if (d52Slider) {
-            d52Slider.value = newEfficiencyPercent; // Update slider value
-            d52Slider.disabled = isDisabled; // Disable/enable slider
+            d52Slider.min = newMinValue;
+            d52Slider.max = newMaxValue;
+            d52Slider.step = newStep;
+            d52Slider.value = newValue; // Update slider value to the new default/reset value
+            // d52Slider.disabled = isDisabled; // REMOVED - Keep slider enabled
             if (d52Display) { 
-                d52Display.textContent = `${newEfficiencyPercent}%`; // Update display
+                d52Display.textContent = `${newValue}%`; // Update display
             }
         }
-        // Also update cell appearance
+        // Also update cell appearance (using disabled-input class for styling if needed)
         if(d52Cell){
-            d52Cell.classList.toggle('disabled-input', isDisabled);
+            d52Cell.classList.toggle('disabled-input', !isEditable); // Style based on editability flag if needed
             // If we have a slider, remove editable class just in case
             if(d52Slider) d52Cell.classList.remove('editable', 'user-input');
         }

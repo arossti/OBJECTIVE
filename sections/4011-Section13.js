@@ -1889,23 +1889,47 @@ function setFieldGhosted(fieldId, shouldBeGhosted) {
 function handleHeatingSystemChangeForGhosting(newValue) {
     const systemType = newValue; // e.g., "Gas", "Oil", "Heatpump", "Electricity"
 
-    // Fields related to Gas
-    setFieldGhosted('h_115', systemType !== 'Gas'); // Target Gas Use
-    setFieldGhosted('j_115', systemType === 'Heatpump' || systemType === 'Electricity'); // AFUE (ghost if HP/Elec)
-
-    // Fields related to Oil
-    setFieldGhosted('f_115', systemType !== 'Oil'); // Target Oil Use
-    // AFUE (j_115) is already handled above
-
-    // Fields related to Heatpump
+    // Determine active state based on system type
     const isHP = systemType === 'Heatpump';
+    const isGas = systemType === 'Gas';
+    const isOil = systemType === 'Oil';
+    const isElectric = systemType === 'Electricity';
+    const isFossilFuel = isGas || isOil;
+
+    // --- Ghosting based on Heating System --- 
+    
+    // Heatpump specific fields
     setFieldGhosted('f_113', !isHP); // HSPF
     setFieldGhosted('h_113', !isHP); // COPheat
-    setFieldGhosted('j_113', !isHP); // COPcool
-    setFieldGhosted('j_114', !isHP); // CEER
+    setFieldGhosted('j_113', !isHP); // COPcool (HP specific)
+    setFieldGhosted('j_114', !isHP); // CEER (HP specific)
     setFieldGhosted('l_113', !isHP); // Heatpump Sink
 
-    // Ensure dedicated cooling COP (j_116) is NOT ghosted if Cooling is active (d_116) and system is NOT HP
+    // Gas specific fields
+    setFieldGhosted('h_115', !isGas); // Target Gas Use (m3/yr)
+    
+    // Oil specific fields
+    setFieldGhosted('f_115', !isOil); // Target Oil Use (l/yr)
+    
+    // AFUE field (j_115) - Active only for Gas/Oil
+    setFieldGhosted('j_115', !isFossilFuel);
+    
+    // Exhaust field (l_115) - Active only for Gas/Oil
+    setFieldGhosted('l_115', !isFossilFuel);
+    
+    // --- Ghosting based on Cooling System (d_116) --- 
     const isCoolingActive = getFieldValue('d_116') === 'Cooling';
+    
+    // Dedicated Cooling COP (j_116) - Active only if Cooling is ON *and* Heating is NOT Heatpump
     setFieldGhosted('j_116', !(isCoolingActive && !isHP)); 
+    
+    // Heatpump Cool Elect Load (d_117 / f_117) - Active only if Cooling is ON
+    setFieldGhosted('d_117', !isCoolingActive); 
+    setFieldGhosted('f_117', !isCoolingActive); 
+
+    // Sink for Dedicated Cooling (l_116) - Active only if Cooling is ON *and* Heating is NOT Heatpump
+    setFieldGhosted('l_116', !(isCoolingActive && !isHP));
+
+    // Sink for Heatpump Cooling (l_114) - Active only if Cooling is ON *and* Heating IS Heatpump
+    setFieldGhosted('l_114', !(isCoolingActive && isHP));
 }
