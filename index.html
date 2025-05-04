@@ -105,18 +105,28 @@
                     <i class="bi bi-info-circle"></i> Disclaimer
                 </button>
                 <div class="btn-group d-inline-block">
+                    <!-- Main button (remains Download Report) -->
                     <button id="downloadReport" class="btn btn-primary">
-                        <i class="bi bi-download"></i> Download Report
+                        <i class="bi bi-download"></i> Download Report (PDF)
                     </button>
+                    <!-- Dropdown Toggle -->
                     <button class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="visually-hidden">Toggle Dropdown</span>
                     </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" id="teui-factsheet">TEUI Factsheet</a></li>
-                        <li><a class="dropdown-item" href="#" id="tedi-factsheet">TEDI Factsheet</a></li>
-                        <li><a class="dropdown-item" href="#" id="export-data">Full Dataset</a></li>
+                    <!-- Dropdown Menu -->
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" id="import-data-btn"><i class="bi bi-upload me-2"></i>Import Data (Excel/CSV)</a></li>
+                        <li><a class="dropdown-item" href="#" id="export-data-btn"><i class="bi bi-save me-2"></i>Export User Data (CSV)</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="downloadReport">Download Report (PDF)</a></li>
+                        <li><a class="dropdown-item" href="#" id="teui-factsheet">TEUI Factsheet (PDF)</a></li>
+                        <li><a class="dropdown-item" href="#" id="tedi-factsheet">TEDI Factsheet (PDF)</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="export-excel"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export All Data (Excel)</a></li> 
                     </ul>
                 </div>
+                <!-- Hidden File Input for Import -->
+                <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="display: none;">
             </div>
         </div>
 

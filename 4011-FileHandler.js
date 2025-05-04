@@ -1,5 +1,5 @@
 // File handler module for TEUI Calculator
-// Handles file operations like importing and exporting Excel files
+// Handles file operations like importing and exporting Excel/CSV files
 
 (function(window) {
     'use strict';
@@ -7,143 +7,90 @@
     // Define FileHandler class
     class FileHandler {
         constructor() {
-            this.stateManager = window.StateManager ? window.StateManager.getInstance() : null;
-            this.workbook = null;
-            this.locationData = null;
-            this.buildingCodeData = null;
-            this.scheduleData = null;
+            // Ensure references to other modules are robust
+            this.stateManager = window.TEUI?.StateManager;
+            this.fieldManager = window.TEUI?.FieldManager;
+            this.calculator = window.TEUI?.Calculator;
+            this.excelMapper = window.TEUI?.ExcelMapper;
+            this.excelLocationHandler = window.TEUI?.ExcelLocationHandler; // Keep reference if needed
+            this.workbook = null; // Store the last loaded workbook if needed
+
             this.setupEventListeners();
         }
         
         setupEventListeners() {
-            // Import Excel button
-            const importButton = document.getElementById('import-excel');
-            if (importButton) {
-                importButton.addEventListener('click', () => {
-                    document.getElementById('excel-file-input').click();
+            // --- Import/Export Button Wiring --- 
+            const importBtn = document.getElementById('import-data-btn'); // Assuming new ID for import menu item
+            const exportBtn = document.getElementById('export-data-btn'); // Assuming new ID for export menu item
+            const fileInput = document.getElementById('excel-file-input'); // Keep existing hidden input
+
+            if (importBtn && fileInput) {
+                importBtn.addEventListener('click', () => {
+                    fileInput.value = null; // Reset file input
+                    fileInput.click();
                 });
-            }
-            
-            // Excel file input
-            const fileInput = document.getElementById('excel-file-input');
-            if (fileInput) {
                 fileInput.addEventListener('change', (event) => {
                     this.handleFileSelect(event);
                 });
             }
-            
-            // Export Excel button
-            const exportButton = document.getElementById('export-excel');
-            if (exportButton) {
-                exportButton.addEventListener('click', () => {
-                    this.exportToExcel();
-                });
-            }
-            
-            // Add event handlers for climate section Excel buttons
-            const selectExcelBtn = document.getElementById('selectExcelBtn');
-            if (selectExcelBtn) {
-                selectExcelBtn.addEventListener('click', () => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.xlsx,.xlsm';
-                    input.onchange = (event) => {
-                        this.handleFileSelect(event);
-                    };
-                    input.click();
-                });
-            }
-            
-            const applyExcelBtn = document.getElementById('applyExcelBtn');
-            if (applyExcelBtn) {
-                applyExcelBtn.addEventListener('click', () => {
-                    this.applyData();
-                });
-            }
 
-            const debugExcelBtn = document.getElementById('debugExcelBtn');
-            if (debugExcelBtn) {
-                debugExcelBtn.addEventListener('click', () => {
-                    console.log('=== DEBUG INFORMATION ===');
-                    
-                    // Check if location data exists
-                    if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-                        const locationData = window.TEUI.ExcelLocationHandler.getLocationData();
-                        console.log('ExcelLocationHandler exists');
-                        console.log('Location data:', locationData ? 'Available' : 'Not available');
-                        
-                        if (locationData) {
-                            console.log(`Provinces: ${Object.keys(locationData).join(', ')}`);
-                            const sampleProvince = Object.keys(locationData)[0];
-                            if (sampleProvince) {
-                                console.log(`Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`);
-                            }
-                        }
-                    } else {
-                        console.log('ExcelLocationHandler not available');
-                    }
-                    
-                    // Check weather data fields
-                    console.log('=== WEATHER DATA FIELDS ===');
-                    const hddField = document.getElementById('in_l_2_1');
-                    const cddField = document.getElementById('in_l_2_2');
-                    const designTempField = document.getElementById('in_l_2_3');
-                    console.log('HDD Field:', hddField ? `${hddField.value}` : 'Not found');
-                    console.log('CDD Field:', cddField ? `${cddField.value}` : 'Not found');
-                    console.log('Design Temp:', designTempField ? `${designTempField.value}` : 'Not found');
-                    
-                    // Check selected province and city
-                    const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-                    const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-                    const presentFutureDropdown = document.querySelector('[data-dropdown-id="dd_h_20"]');
-                    
-                    console.log('Selected Province:', provinceDropdown ? provinceDropdown.value : 'No dropdown');
-                    console.log('Selected City:', cityDropdown ? cityDropdown.value : 'No dropdown');
-                    console.log('Present/Future Setting:', presentFutureDropdown ? presentFutureDropdown.value : 'No dropdown');
-                    
-                    // Find dropdown elements
-                    const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
-                    const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
-                    
-                    console.log(`Province dropdowns: ${provinceDropdowns.length} found`);
-                    console.log(`City dropdowns: ${cityDropdowns.length} found`);
-                    
-                    // Check if climate section is rendered
-                    const climateSection = document.getElementById('climateCalculations');
-                    console.log(`Climate section: ${climateSection ? 'Found' : 'Not found'}`);
-                    
-                    if (climateSection) {
-                        console.log('Climate section content:', climateSection.innerHTML.substring(0, 100) + '...');
-                    }
-                    
-                    // Force re-rendering of dropdowns
-                    if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-                        console.log('Forcing dropdown refresh...');
-                        window.TEUI.ExcelLocationHandler.updateProvinceDropdowns();
-                        
-                        // If province is selected, also refresh cities
-                        if (provinceDropdown && provinceDropdown.value) {
-                            console.log(`Refreshing cities for province: ${provinceDropdown.value}`);
-                            window.TEUI.ExcelLocationHandler.updateCityDropdowns(provinceDropdown.value);
-                            
-                            // If city is also selected, try to update weather data
-                            if (cityDropdown && cityDropdown.value && window.TEUI.Calculator) {
-                                console.log(`Forcing weather data update for ${cityDropdown.value}, ${provinceDropdown.value}`);
-                                try {
-                                    window.TEUI.Calculator.updateWeatherData(provinceDropdown.value, cityDropdown.value);
-                                } catch (e) {
-                                    console.error('Error updating weather data:', e);
-                                }
-                            }
-                        }
-                    }
-                    
-                    this.showStatus('Debug information logged to console', 'info');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', () => {
+                    this.exportToCSV(); 
                 });
+            }
+            
+            // Remove or repurpose old button listeners if they are redundant
+            const oldImportButton = document.getElementById('import-excel');
+            if (oldImportButton) oldImportButton.style.display = 'none'; // Hide old button
+            const oldExportButton = document.getElementById('export-excel');
+            if (oldExportButton) oldExportButton.style.display = 'none'; // Hide old button
+
+            // Keep Climate section Excel button handlers if still needed by ExcelLocationHandler
+            // Or integrate them fully into this FileHandler if appropriate.
+            const selectExcelBtn = document.getElementById('selectExcelBtn');
+            const applyExcelBtn = document.getElementById('applyExcelBtn');
+            const debugExcelBtn = document.getElementById('debugExcelBtn');
+
+            if (selectExcelBtn) {
+                 // Maybe trigger the main fileInput instead?
+                selectExcelBtn.addEventListener('click', () => {
+                    fileInput.value = null;
+                    fileInput.click(); // Use the same file input 
+                });
+            }
+             if (applyExcelBtn) {
+                 // This button might become redundant if import happens automatically
+                 // Keeping for now, but consider removing if processImportedExcel handles updates.
+                 applyExcelBtn.addEventListener('click', () => {
+                     this.applyImportedData(); // Renamed for clarity
+                 });
+             }
+             if (debugExcelBtn) { /* Keep existing debug logic */ 
+                 debugExcelBtn.addEventListener('click', () => {
+                     console.log('=== DEBUG INFORMATION ===');
+                     if (window.TEUI && window.TEUI.ExcelLocationHandler) {
+                         const locationData = window.TEUI.ExcelLocationHandler.getLocationData();
+                         console.log('ExcelLocationHandler exists');
+                         console.log('Location data:', locationData ? 'Available' : 'Not available');
+                         if (locationData) {
+                             console.log(`Provinces: ${Object.keys(locationData).join(', ')}`);
+                             const sampleProvince = Object.keys(locationData)[0];
+                             if (sampleProvince) {
+                                 console.log(`Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`);
+                             }
+                         }
+                     } else {
+                         console.log('ExcelLocationHandler not available');
+                     }
+                     // ... rest of debug code ...
+                     this.showStatus('Debug information logged to console', 'info');
+                 });
             }
         }
         
-        // Handle file selection for import
+        // --- IMPORT LOGIC --- 
+
         handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) {
@@ -151,288 +98,328 @@
                 return;
             }
             
-            console.log(`Selected file: ${file.name} (${file.size} bytes)`);
-            this.showStatus('Reading file...', 'info');
-            
+            this.showStatus(`Reading file: ${file.name}...`, 'info');
             const reader = new FileReader();
+
             reader.onload = (e) => {
                 try {
-                    console.log('File loaded successfully, parsing Excel data...');
-                    const data = new Uint8Array(e.target.result);
-                    this.workbook = XLSX.read(data, { type: 'array' });
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
                     
-                    console.log(`Excel sheets found: ${this.workbook.SheetNames.join(', ')}`);
-                    
-                    this.showStatus('Processing Excel data...', 'info');
-                    
-                    // First, immediately show the Apply button
-                    const applyBtn = document.getElementById('applyExcelBtn');
-                    if (applyBtn) {
-                        applyBtn.classList.remove('d-none');
-                        applyBtn.disabled = false;
-                        console.log('Apply button is now visible');
+                    if (fileExtension === 'csv') {
+                        console.log('Detected CSV file.');
+                        const csvString = new TextDecoder("utf-8").decode(new Uint8Array(e.target.result));
+                        this.processImportedCSV(csvString);
+                    } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                        console.log('Detected Excel file.');
+                        const data = new Uint8Array(e.target.result);
+                        this.workbook = XLSX.read(data, { type: 'array' });
+                        this.processImportedExcel(this.workbook);
+                    } else {
+                        throw new Error(`Unsupported file type: .${fileExtension}`);
                     }
-                    
-                    // Process location data first with a direct call to ExcelLocationHandler
-                    if (window.TEUI.ExcelLocationHandler) {
-                        // Process the data directly
-                        const locationData = window.TEUI.ExcelLocationHandler.processLocationData(this.workbook);
-                        
-                        if (locationData) {
-                            console.log('Location data processed successfully');
-                            
-                            // Update dropdown right away
-                            window.TEUI.ExcelLocationHandler.updateProvinceDropdowns();
-                            
-                            // Notify any other components that may be listening
-                            document.dispatchEvent(new CustomEvent('location-data-ready'));
-                            
-                            // Show success message
-                            this.showStatus('Location data loaded successfully', 'success');
-                        } else {
-                            console.error('Failed to process location data');
-                            this.showStatus('Failed to process location data', 'error');
-                        }
-                    }
-                    
-                    // Process other data types
-                    this.processAllData();
-                    
                 } catch (error) {
-                    console.error('Error processing Excel file:', error);
-                    this.showStatus(`Error processing Excel file: ${error.message}`, 'error');
+                    console.error('Error processing file:', error);
+                    this.showStatus(`Error processing file: ${error.message}`, 'error');
                 }
             };
-            
+
             reader.onerror = () => {
                 console.error('Error reading file');
                 this.showStatus('Error reading file', 'error');
             };
-            
-            reader.readAsArrayBuffer(file);
-            
-            // Reset the file input
-            event.target.value = '';
+
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                 reader.readAsArrayBuffer(file); // Read as buffer for TextDecoder
+            } else {
+                 reader.readAsArrayBuffer(file); // readAsArrayBuffer works for XLSX too
+            }
+
+            event.target.value = null; // Reset file input
         }
         
-        processAllData() {
+        processImportedExcel(workbook) {
+             if (!this.excelMapper) {
+                 this.showStatus('Excel Mapper module is not available.', 'error');
+                 return;
+             }
+             this.showStatus('Mapping data from Excel REPORT! sheet...', 'info');
+             const importedData = this.excelMapper.mapExcelToReportModel(workbook);
+
+             if (importedData === null) { // mapExcelToReportModel returns null on sheet error
+                  this.showStatus('Error: REPORT! sheet not found in Excel file.', 'error');
+                 return;
+             }
+             
+             if (Object.keys(importedData).length === 0) {
+                 this.showStatus('No mappable data found on REPORT! sheet.', 'warning');
+                 return;
+             }
+             
+             this.updateStateFromImportData(importedData);
+        }
+
+        processImportedCSV(csvString) {
+            this.showStatus('Parsing CSV data...', 'info');
+            const importedData = {};
+            let skippedCount = 0;
+
             try {
-                console.log('Processing Excel data types...');
-                
-                // Process location data using ExcelLocationHandler
-                if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-                    console.log('Processing location data with ExcelLocationHandler...');
-                    this.locationData = window.TEUI.ExcelLocationHandler.processLocationData(this.workbook);
-                    
-                    if (this.locationData) {
-                        console.log(`Location data processed: ${Object.keys(this.locationData).length} provinces found`);
-                        document.dispatchEvent(new CustomEvent('location-data-ready'));
-                        console.log('Dispatched location-data-ready event');
+                const rows = csvString.split(/\r?\n/); // Split lines
+                if (rows.length < 2) throw new Error("CSV has no data rows.");
+
+                // Very basic header check (adjust column names if needed)
+                const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                const fieldIdIndex = headers.indexOf('fieldId');
+                const valueIndex = headers.indexOf('value');
+
+                if (fieldIdIndex === -1 || valueIndex === -1) {
+                    throw new Error("CSV must contain 'fieldId' and 'value' columns.");
+                }
+
+                for (let i = 1; i < rows.length; i++) {
+                    if (!rows[i].trim()) continue; // Skip empty lines
+                    // Simple split, assumes no commas within quoted values for now
+                    // TODO: Implement a more robust CSV parser if needed
+                    const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, '')); 
+                    const fieldId = cols[fieldIdIndex];
+                    const value = cols[valueIndex];
+
+                    if (fieldId && value !== undefined) {
+                        importedData[fieldId] = value;
                     } else {
-                        console.error('ExcelLocationHandler returned null location data');
+                        skippedCount++;
                     }
-                } else {
-                    console.error('ExcelLocationHandler not available');
+                }
+
+                if (Object.keys(importedData).length === 0) {
+                    this.showStatus('No valid data rows found in CSV.', 'warning');
+                    return;
                 }
                 
-                // Process building code data
-                this.buildingCodeData = this.processBuildingCodeData(this.workbook);
-                document.dispatchEvent(new CustomEvent('building-code-data-loaded'));
-                
-                // Process schedule data
-                this.scheduleData = this.processScheduleData(this.workbook);
-                document.dispatchEvent(new CustomEvent('schedule-data-loaded'));
-                
-                this.showStatus('All data processed successfully!', 'success');
-                
-                // Update state manager with processed data
-                if (this.stateManager) {
-                    this.stateManager.importValues({
-                        locationData: this.locationData,
-                        buildingCodeData: this.buildingCodeData,
-                        scheduleData: this.scheduleData
-                    });
-                }
-                
+                 this.updateStateFromImportData(importedData, skippedCount);
+
             } catch (error) {
-                console.error('Error processing data:', error);
-                this.showStatus(`Error processing data: ${error.message}`, 'error');
+                console.error("Error parsing CSV:", error);
+                this.showStatus(`Error parsing CSV: ${error.message}`, 'error');
             }
         }
         
+        updateStateFromImportData(importedData, csvSkippedCount = 0) {
+            if (!this.stateManager || !this.fieldManager) {
+                this.showStatus('StateManager or FieldManager not available.', 'error');
+                return;
+            }
+            this.showStatus('Updating application state...', 'info');
+            let updatedCount = 0;
+            let skippedValidationCount = 0;
+
+            Object.entries(importedData).forEach(([fieldId, value]) => {
+                const fieldDef = this.fieldManager.getField(fieldId);
+                if (!fieldDef) {
+                    console.warn(`Skipping import for unknown fieldId: ${fieldId}`);
+                    skippedValidationCount++;
+                    return;
+                }
+
+                let parsedValue = value; // Keep original string for text types
+                let isValid = true;
+
+                try {
+                    if (fieldDef.type === 'editable' || fieldDef.type === 'year_slider' || fieldDef.type === 'percentage' || fieldDef.type === 'coefficient') {
+                        // Try parsing numbers, allow text fallbacks for generic editable
+                        const numericValue = window.TEUI.parseNumeric(value, NaN);
+                        if (!isNaN(numericValue)) {
+                            parsedValue = numericValue.toString(); // Store as string
+                            // Optional: Add min/max validation for sliders here
+                        } else if (fieldDef.type !== 'editable') { // If not generic editable, and not a number, it's invalid
+                            isValid = false;
+                        } // Keep original string value for generic 'editable' if not numeric
+                    } else if (fieldDef.type === 'dropdown') {
+                         // Basic validation: Check if value exists in options (case-sensitive)
+                        const options = this.fieldManager.getDropdownOptions(fieldDef.dropdownId, { parentValue: null }); // Get base options
+                        const validValues = options.map(opt => typeof opt === 'object' ? opt.value : opt);
+                        if (!validValues.includes(value)) {
+                            isValid = false;
+                        }
+                        // Keep original string value if valid
+                    }
+                    
+                    if (isValid) {
+                        this.stateManager.setValue(fieldId, parsedValue, 'imported');
+                        updatedCount++;
+                    } else {
+                        console.warn(`Skipping import for field ${fieldId}: Invalid value "${value}" for type ${fieldDef.type}.`);
+                        skippedValidationCount++;
+                    }
+                } catch (error) {
+                     console.error(`Error processing field ${fieldId} with value "${value}":`, error);
+                     skippedValidationCount++;
+                }
+            });
+
+            // Trigger recalculation after all updates
+            if (this.calculator && typeof this.calculator.calculateAll === 'function') {
+                this.calculator.calculateAll();
+                this.showStatus(`Import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`, 'success');
+            } else {
+                 this.showStatus('Import finished, but could not trigger recalculation.', 'warning');
+            }
+        }
+        
+        // --- EXPORT LOGIC --- 
+
+        exportToCSV() {
+             if (!this.stateManager || !this.fieldManager) {
+                this.showStatus('StateManager or FieldManager not available for export.', 'error');
+                return;
+             }
+             this.showStatus('Generating CSV export...', 'info');
+
+             try {
+                const header = ["fieldId", "domSelector", "description", "value", "units"];
+                const rows = [header];
+
+                const allFields = this.fieldManager.getAllFields();
+                const editableFields = Object.entries(allFields).filter(([id, def]) => def.type === 'editable');
+
+                // Need a way to map fieldId back to its section and layout to get description/units
+                // This requires enhancing FieldManager or iterating through section modules
+                // For now, we'll export without description/units as a placeholder
+                console.warn("CSV Export currently omits description and units due to complexity in retrieving layout info.");
+
+                editableFields.forEach(([fieldId, fieldDef]) => {
+                    const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
+                    const domSelector = `td[data-field-id="${fieldId}"]`; // Example selector
+                    const description = fieldDef.label || fieldId; // Use label or fieldId as fallback
+                    const units = ""; // Placeholder - needs lookup
+                    
+                    // Basic CSV escaping (handles commas, quotes)
+                    const escapeCSV = (val) => {
+                        const strVal = String(val ?? '');
+                        if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
+                            return `"${strVal.replace(/"/g, '""')}"`;
+                        }
+                        return strVal;
+                    };
+
+                    rows.push([
+                        escapeCSV(fieldId),
+                        escapeCSV(domSelector),
+                        escapeCSV(description),
+                        escapeCSV(currentValue),
+                        escapeCSV(units)
+                    ]);
+                });
+
+                const csvContent = rows.map(row => row.join(',')).join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "TEUI_Data_Export.csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                this.showStatus('CSV export complete.', 'success');
+
+             } catch (error) {
+                 console.error("Error generating CSV export:", error);
+                 this.showStatus(`Error during CSV export: ${error.message}`, 'error');
+             }
+        }
+
+        // --- OLD / OTHER METHODS --- 
+
         processBuildingCodeData(workbook) {
-            // Placeholder for future implementation
-            console.log('Building code data processing not yet implemented');
+            // Placeholder 
+            // console.log('Building code data processing not yet implemented');
             return null;
         }
-        
+
         processScheduleData(workbook) {
-            // Placeholder for future implementation
-            console.log('Schedule data processing not yet implemented');
+            // Placeholder
+            // console.log('Schedule data processing not yet implemented');
             return null;
         }
-        
-        // Export to Excel
-        exportToExcel() {
+
+        exportToExcel() { // Keep old method for potential full state export?
             try {
-                this.showStatus('Preparing Excel export...', 'info');
-                
-                // Get the current data from the state manager
-                const currentData = this.stateManager.exportValues();
-                
-                // Create a workbook
-                const workbook = window.excelMapper ? 
-                    window.excelMapper.createWorkbook(currentData) : 
-                    this.fallbackCreateWorkbook(currentData);
-                
-                // Write the workbook to a binary string
+                this.showStatus('Preparing full Excel export (legacy method)...', 'info');
+                const currentData = this.stateManager ? this.stateManager.exportValues() : {}; // Export all values
+                const workbook = this.excelMapper ? this.excelMapper.createWorkbook(currentData) : this.fallbackCreateWorkbook(currentData);
                 const excelOutput = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
-                
-                // Convert binary string to Blob
                 const blob = this.binaryStringToBlob(excelOutput);
-                
-                // Create download link
                 const downloadUrl = URL.createObjectURL(blob);
                 const downloadLink = document.createElement('a');
                 downloadLink.href = downloadUrl;
-                downloadLink.download = 'TEUI_Calculator_Export.xlsx';
-                
-                // Trigger download
+                downloadLink.download = 'TEUI_Full_Export.xlsx';
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
-                
-                this.showStatus('Excel export completed', 'success');
+                this.showStatus('Full Excel export completed', 'success');
             } catch (error) {
-                console.error('Error exporting Excel:', error);
-                this.showStatus(`Error exporting Excel: ${error.message}`, 'error');
-            }
-        }
-        
-        // Simple fallback for creating workbook if excelMapper is not available
-        fallbackCreateWorkbook(data) {
-            console.warn('Using fallback Excel creation - limited functionality');
-            
-            const workbook = XLSX.utils.book_new();
-            const worksheet = XLSX.utils.aoa_to_sheet([['Field ID', 'Value']]);
-            
-            let row = 1;
-            Object.entries(data).forEach(([id, value]) => {
-                XLSX.utils.sheet_add_aoa(worksheet, [[id, value]], { origin: { r: row++, c: 0 }});
-            });
-            
-            XLSX.utils.book_append_sheet(workbook, worksheet, "TEUI Calculator Data");
-            return workbook;
-        }
-        
-        // Helper method to convert binary string to Blob
-        binaryStringToBlob(binaryString) {
-            const byteArray = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                byteArray[i] = binaryString.charCodeAt(i) & 0xff;
-            }
-            return new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        }
-        
-        // Display status message
-        showStatus(message, type) {
-            console.log(`[FileHandler] ${message}`);
-            
-            // Get the feedback area
-            const feedbackArea = document.getElementById('feedback-area');
-            if (feedbackArea) {
-                // Define colors for different message types
-                const colors = {
-                    'info': '#0dcaf0',    // light blue
-                    'success': '#198754', // green
-                    'warning': '#ffc107', // yellow
-                    'error': '#dc3545'    // red
-                };
-                
-                // Set the message with appropriate color
-                feedbackArea.textContent = message;
-                feedbackArea.style.color = colors[type] || '#0dcaf0';
-                
-                // Auto-clear success and info messages after a delay
-                if (type === 'success' || type === 'info') {
-                    setTimeout(() => {
-                        if (feedbackArea.textContent === message) {
-                            feedbackArea.textContent = '';
-                        }
-                    }, 5000);
-                }
-            } else {
-                // Fallback if the feedback area doesn't exist
-                const statusElement = document.createElement('div');
-                statusElement.className = `status-message status-${type}`;
-                statusElement.textContent = message;
-                
-                // Add to document
-                document.body.appendChild(statusElement);
-                
-                // Remove after timeout
-                setTimeout(() => {
-                    statusElement.classList.add('status-fade');
-                    setTimeout(() => {
-                        if (document.body.contains(statusElement)) {
-                            document.body.removeChild(statusElement);
-                        }
-                    }, 500);
-                }, 3000);
+                console.error('Error exporting full Excel:', error);
+                this.showStatus(`Error exporting full Excel: ${error.message}`, 'error');
             }
         }
 
-        // New method to apply the data (also called from applyExcelBtn click handler)
-        applyData() {
-            if (!this.workbook) {
-                this.showStatus('Please load an Excel file first', 'warning');
-                return;
-            }
-            
-            try {
-                if (window.TEUI.ExcelLocationHandler) {
-                    // Get existing location data or process it if not already done
-                    let locationData = window.TEUI.ExcelLocationHandler.getLocationData();
-                    if (!locationData) {
-                        console.log('Location data not found, processing now...');
-                        locationData = window.TEUI.ExcelLocationHandler.processLocationData(this.workbook);
-                        
-                        if (!locationData) {
-                            this.showStatus('Failed to process location data', 'error');
-                            return;
-                        }
-                    }
-                    
-                    console.log('Location data available, updating dropdowns directly');
-                    
-                    // Ensure dropdowns are updated with a slight delay to avoid timing issues
-                    setTimeout(() => {
-                        // Update province dropdowns
-                        if (window.TEUI.ExcelLocationHandler.updateProvinceDropdowns) {
-                            window.TEUI.ExcelLocationHandler.updateProvinceDropdowns();
-                            console.log('Province dropdowns updated');
-                        } else {
-                            console.error('updateProvinceDropdowns function not available');
-                        }
-                        
-                        // Notify any other components that may be listening
-                        document.dispatchEvent(new CustomEvent('location-data-ready'));
-                        
-                        this.showStatus('Location data applied successfully', 'success');
-                    }, 100);
-                } else {
-                    this.showStatus('ExcelLocationHandler not available', 'error');
+        fallbackCreateWorkbook(data) { // Used by legacy export
+             console.warn('Using fallback Excel creation - limited functionality');
+             const workbook = XLSX.utils.book_new();
+             const worksheet = XLSX.utils.aoa_to_sheet([['Field ID', 'Value']]);
+             let row = 1;
+             Object.entries(data).forEach(([id, value]) => {
+                 XLSX.utils.sheet_add_aoa(worksheet, [[id, value]], { origin: { r: row++, c: 0 }});
+             });
+             XLSX.utils.book_append_sheet(workbook, worksheet, "TEUI Calculator Data");
+             return workbook;
+         }
+
+        binaryStringToBlob(binaryString) { // Used by legacy export
+             const byteArray = new Uint8Array(binaryString.length);
+             for (let i = 0; i < binaryString.length; i++) {
+                 byteArray[i] = binaryString.charCodeAt(i) & 0xff;
+             }
+             return new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+         }
+        
+        showStatus(message, type) {
+            // console.log(`[FileHandler] ${message}`); // Keep logs minimal
+            const feedbackArea = document.getElementById('feedback-area');
+            if (feedbackArea) {
+                const colors = {
+                    'info': '#0dcaf0',
+                    'success': '#198754',
+                    'warning': '#ffc107',
+                    'error': '#dc3545' 
+                };
+                feedbackArea.textContent = message;
+                feedbackArea.style.color = colors[type] || '#0dcaf0';
+                if (type === 'success' || type === 'info') {
+                    setTimeout(() => { if (feedbackArea.textContent === message) { feedbackArea.textContent = ''; } }, 5000);
                 }
-            } catch (error) {
-                console.error('Error applying location data:', error);
-                this.showStatus(`Error applying location data: ${error.message}`, 'error');
-            }
+            } 
+        }
+
+        applyImportedData() { // Potentially redundant if import is automatic
+             if (!this.workbook) {
+                 this.showStatus('Please load an Excel file first', 'warning');
+                 return;
+             }
+             // Logic here might need refinement - currently focused on location data
+             if (window.TEUI.ExcelLocationHandler?.updateProvinceDropdowns) { 
+                 window.TEUI.ExcelLocationHandler.updateProvinceDropdowns(); 
+                 this.showStatus('Data applied (focused on locations).', 'info');
+             }
         }
     }
 
     // Initialize when document is ready
     document.addEventListener('DOMContentLoaded', function() {
-        window.fileHandler = new FileHandler();
+        window.TEUI = window.TEUI || {}; // Ensure namespace
+        window.TEUI.FileHandler = new FileHandler();
     });
 
 })(window);
