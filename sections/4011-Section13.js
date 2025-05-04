@@ -21,6 +21,66 @@ window.TEUI.sect13.freeCalculationInProgress = false;
 // Section 13: Mechanical Loads Module
 window.TEUI.SectionModules.sect13 = (function() {
     
+    //==========================================================================
+    // ADDED: HELPER FUNCTIONS (Standard Implementation)
+    //==========================================================================
+    
+    /**
+     * Safely parses a numeric value from StateManager, using the global parseNumeric.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     */
+    function getNumericValue(fieldId) {
+        const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+        // Use the global parseNumeric if available
+        return window.TEUI?.parseNumeric?.(rawValue) || 0;
+    }
+    
+    /**
+     * Helper to get field value, preferring StateManager but falling back to DOM.
+     * @param {string} fieldId 
+     * @returns {string | null} Value as string or null if not found.
+     */
+    function getFieldValue(fieldId) {
+        if (window.TEUI?.StateManager?.getValue) {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return value.toString();
+            }
+        }
+        const element = document.querySelector(`[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`); 
+        if (element) {
+            return element.value !== undefined ? element.value : element.textContent;
+        }
+        return null;
+    }
+
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {string} [formatType='number-2dp-comma'] - The format type string (e.g., 'number-2dp-comma', 'percent-1dp', 'integer').
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        // Use global formatter - ensuring window.TEUI and formatNumber exist
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        
+        // Store raw value as string in StateManager for precision
+        if (window.TEUI?.StateManager?.setValue) {
+             let stateValue = isFinite(rawValue) ? rawValue.toString() : null; 
+            window.TEUI.StateManager.setValue(fieldId, stateValue, 'calculated');
+        }
+        
+        // Update DOM
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
+        } else {
+            // console.warn(`setCalculatedValue (S13): Element not found for fieldId ${fieldId}`);
+        }
+    }
+
     // --- Integrated Cooling Calculation State & Logic --- 
     const coolingState = {
         nightTimeTemp: 20.43,                 // Default, updated from d_24
@@ -1696,70 +1756,6 @@ window.TEUI.SectionModules.sect13 = (function() {
         calculateCoolingSystem();       // Depends on m_129 which depends on h_124
         calculateMitigatedCED(); // Recalculate m_129 based on potentially updated h_124/d_123
     }
-    
-    // Removed local getNumericValue function definition
-    
-    /**
-     * Safely retrieves the field value from StateManager or the DOM element.
-     * Prefers StateManager for reliability.
-     * @param {string} fieldId - The ID of the field to retrieve.
-     * @returns {string|number|null} The value of the field, or null if not found.
-     */
-    function getFieldValue(fieldId) {
-        if (window.TEUI && window.TEUI.StateManager) {
-            const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== undefined && value !== null) {
-                return value;
-            }
-        }
-        return ""; // Return empty string if not found in state
-    }
-    
-    /**
-     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
-     * Ensures the raw numeric value is stored in StateManager and the formatted
-     * value is displayed in the DOM, according to the global formatting function.
-     * @param {string} fieldId - The ID of the field to update.
-     * @param {number} rawValue - The raw calculated numeric value.
-     * @param {string} [formatType='number-2dp'] - The format type string passed to window.TEUI.formatNumber.
-     */
-    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp') {
-        try {
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (rawValue === null || rawValue === undefined || isNaN(Number(rawValue))) {
-                const displayValue = "N/A"; 
-                if (window.TEUI.StateManager) { window.TEUI.StateManager.setValue(fieldId, displayValue, 'calculated'); }
-                if (element) {
-                    element.textContent = displayValue;
-                    element.classList.remove('negative-value'); 
-            }
-            return; 
-        }
-
-        const numericValue = Number(rawValue);
-            // Use global formatter
-        const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
-
-            if (window.TEUI.StateManager) {
-                 const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
-                 const rawValueString = numericValue.toString(); 
-                 if (currentStateValue !== rawValueString) { 
-                    window.TEUI.StateManager.setValue(fieldId, rawValueString, 'calculated');
-                 }
-            }
-        
-        if (element) {
-                if (element.textContent !== formattedValue) {
-            element.textContent = formattedValue;
-                }
-            element.classList.toggle('negative-value', numericValue < 0);
-            }
-        } catch (error) {
-            console.error("Error in setCalculatedValue:", error);
-        }
-    }
-    
-    // Removed local formatNumber function definition
     
     /**
      * Calculate Mitigated CED (m_129)
