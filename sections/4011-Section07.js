@@ -1066,7 +1066,8 @@ window.TEUI.SectionModules.sect07 = (function() {
     function handleDHWSourceChange(event) {
         const selectedSource = event.target.value;
         const d52Slider = document.querySelector('input[type="range"][data-field-id="d_52"]');
-        const d52Display = document.querySelector('span[data-display-for="d_52"]'); 
+        // Find the display span relative to the slider
+        const d52Display = d52Slider ? d52Slider.parentElement.querySelector('.slider-value') : null; 
         const d52Cell = document.querySelector('td[data-field-id="d_52"]');
 
         let newMinValue = 50;
