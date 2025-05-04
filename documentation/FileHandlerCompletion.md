@@ -1,111 +1,114 @@
-# File Handler Strategy (Excel/CSV Import & CSV Export)
+# File Handler Strategy & Implementation Status (Excel/CSV Import & CSV Export)
 
-This document outlines the strategy for implementing data import (from Excel `.xlsx` and `.csv`) and data export (to `.csv`) functionalities within the TEUI Calculator v4.011. The primary goal is to allow users to transfer data from previous Excel versions and save/load project scenarios locally via CSV.
+This document outlines the strategy and current implementation status for data import/export functionalities within the TEUI Calculator v4.011.
 
-## 1. UI Integration (`4011-Index.html`)
+**Goal:** Allow users to import data from legacy Excel files (`.xlsx`/`.xls`) focusing on user inputs from the `REPORT!` sheet, and enable users to save/load scenarios locally via CSV export/import of user-editable fields.
 
--   Modify the existing "Download Report" button (currently a simple button) into a Bootstrap dropdown button group.
--   Add the following items to the dropdown menu:
-    -   "Import Data (Excel/CSV)": Triggers a file input element (`<input type="file" accept=".xlsx, .xls, .csv">`).
-    -   "Export Data (CSV)": Triggers the `exportToCSV` JavaScript function.
-    -   "Download Report (PDF)": (Existing/future functionality)
+## 1. UI Integration (`4011-Index.html`) - *To Be Implemented*
 
-## 2. File Handling Logic (`4011-FileHandler.js`)
+-   [ ] Modify the existing "Download Report" button into a Bootstrap dropdown button group.
+-   [ ] Add menu item: "Import Data (Excel/CSV)" linked to trigger the hidden file input (`id="excel-file-input"`). Assign `id="import-data-btn"` to this menu item.
+-   [ ] Add menu item: "Export Data (CSV)" linked to trigger the `TEUI.FileHandler.exportToCSV()` function. Assign `id="export-data-btn"` to this menu item.
+-   [ ] Keep/Update "Download Report (PDF)" menu item.
+-   [ ] Hide or remove the old standalone `import-excel` and `export-excel` buttons if they exist.
+
+## 2. File Handling Logic (`4011-FileHandler.js`) - *Partially Implemented*
 
 ### 2.1. Import Process
 
--   **`handleFileSelect(event)`:**
-    -   Activated by the file input triggered by the "Import Data" menu item.
-    -   Accepts `.xlsx`, `.xls`, and `.csv` files.
-    -   Reads the selected file using `FileReader`.
-    -   **Detect File Type:** Determines if the file is Excel (`.xlsx`, `.xls`) or CSV (`.csv`) based on file extension or MIME type.
-    -   **Dispatch:**
-        -   If Excel: Parses the workbook using `XLSX.read(data, { type: 'array' })` and calls `processImportedExcel(workbook)`.
-        -   If CSV: Reads the file content as text and calls `processImportedCSV(csvString)`.
-    -   Provides user feedback via `showStatus()`.
+-   **`handleFileSelect(event)`:** *Implemented*
+    -   Accepts `.xlsx`, `.xls`, `.csv`.
+    -   Reads file using `FileReader` (`readAsArrayBuffer`).
+    -   Detects file type based on extension.
+    -   Dispatches to `processImportedExcel` or `processImportedCSV`.
+    -   Resets file input value after processing.
 
--   **`processImportedExcel(workbook)`:** (Handles `.xlsx`/`.xls` imports)
-    -   **Focus:** Imports data for *user-editable* fields mapped from the `REPORT!` sheet of the legacy Excel file.
-    -   Verifies the `REPORT!` sheet exists in the `workbook`. Shows error if not.
-    -   Calls `TEUI.ExcelMapper.mapExcelToReportModel(workbook)` (passing `workbook` and expecting it to use the specific `excelReportInputMapping`) to get an `importedData = { fieldId: excelValue }` object.
-    -   Calls the shared `updateStateFromImportData(importedData)` function.
-    -   Updates UI feedback.
+-   **`processImportedExcel(workbook)`:** *Implemented*
+    -   Requires `TEUI.ExcelMapper`.
+    -   Calls `TEUI.ExcelMapper.mapExcelToReportModel(workbook)` to get user-editable data from `REPORT!` sheet.
+    -   Handles null return (sheet not found error).
+    -   Handles empty data scenario.
+    -   Calls `updateStateFromImportData(importedData)`.
 
--   **`processImportedCSV(csvString)`:** (Handles `.csv` imports)
-    -   **Focus:** Imports data based on `fieldId` and `value` columns from a CSV previously exported by this application.
-    -   Parses the `csvString` (using a simple robust parser or a lightweight library). Expects a header row and columns: `fieldId`, `domSelector`, `description`, `value`, `units`.
-    -   Validates required columns (`fieldId`, `value`) exist. Shows error if not.
-    -   Iterates through data rows:
-        -   Extracts `fieldId` and `value`.
-        -   Creates an `importedData = { fieldId: value, ... }` object (accumulating all rows).
-    -   Calls the shared `updateStateFromImportData(importedData)` function.
-    -   Updates UI feedback.
+-   **`processImportedCSV(csvString)`:** *Implemented (Basic Parser)*
+    -   Parses CSV string (simple split, assumes no complex quoting/escaping - **TODO:** Enhance parser if needed).
+    -   Expects `fieldId` and `value` columns (validates header).
+    -   Builds `importedData` object.
+    -   Calls `updateStateFromImportData(importedData)`.
 
--   **`updateStateFromImportData(importedData)`:** (New Shared Function for Excel & CSV)
-    -   Iterates through the `importedData` object (`{ fieldId: value }`).
-    -   For each `fieldId` and `value`:
-        -   **Get Field Type:** Retrieves the field definition using `TEUI.FieldManager.getField(fieldId)`. If no field definition exists, logs a warning and skips.
-        -   **Parse & Validate:**
-            -   Based on `field.type`:
-                -   'editable' (numeric like costs, area): Use `window.TEUI.parseNumeric(value)` to get a number. Handle potential errors (NaN). Store the *raw numeric string*.
-                -   'dropdown': Check if `value` is a valid option for this `fieldId`'s dropdown. If not, log a warning and skip (or potentially use default?). Store the validated `value`.
-                -   'year_slider', 'percentage', 'coefficient': Use `window.TEUI.parseNumeric(value)`. Validate against min/max if defined. Store the *raw numeric string* (e.g., "2025", "0.9").
-                -   'editable' (text like project name): Use the `value` string directly, perhaps after trimming. Store the string.
-        -   **Update StateManager:** If parsing/validation succeeds, call `window.TEUI.StateManager.setValue(fieldId, parsedValueString, 'imported')`. Using the `'imported'` state allows differentiation from user edits or defaults.
-    -   **Trigger Recalculation:** After processing all valid fields, call `window.TEUI.Calculator.calculateAll()` to update the entire model based on the imported data.
-    -   Provides final success/error summary via `showStatus()`.
+-   **`updateStateFromImportData(importedData, csvSkippedCount)`:** *Implemented*
+    -   Requires `TEUI.StateManager` and `TEUI.FieldManager`.
+    -   Iterates through imported `{ fieldId: value }` pairs.
+    -   Uses `FieldManager.getField(fieldId)` to check existence and type.
+    -   Parses/validates `value` based on `fieldDef.type` (using `window.TEUI.parseNumeric` for numbers/sliders, checking dropdown options).
+    -   Handles invalid/unknown fields by logging warnings and skipping.
+    -   Updates `StateManager` using `setValue(fieldId, parsedValueString, 'imported')` for valid data.
+    -   Triggers `TEUI.Calculator.calculateAll()` after processing.
+    -   Provides summary feedback via `showStatus()`.
 
 ### 2.2. Export Process
 
--   **`exportToCSV()`:**
-    -   **Focus:** Exports the *current values* of all *user-editable* fields into a CSV format.
-    -   Initializes CSV content string with header: `"fieldId","domSelector","description","value","units"\n`.
-    -   Gets all field definitions: `const allFields = TEUI.FieldManager.getAllFields();`.
-    -   Filters for user-editable fields: `const editableFields = Object.entries(allFields).filter(([id, def]) => def.type === 'editable');`.
-    -   Iterates through `editableFields`:
-        -   For each `[fieldId, fieldDef]`:
-            -   Get current value: `const currentValue = window.TEUI.StateManager.getValue(fieldId);`.
-            -   Get description: Look up the corresponding row/cell in the owning section's `sectionRows` definition to find the 'label' in the 'C' column. (Requires mapping `fieldId` back to its section and layout position).
-            *   Get units: Similarly, find the content of the cell immediately following the value cell in the layout (typically E, I, M based on the column of `fieldId`).
-            *   Generate DOM selector: `const domSelector = \`td[data-field-id="${fieldId}"]\`;` (or similar representative selector).
-            *   Format CSV row: Ensure values (especially description and value) containing commas or quotes are properly escaped/quoted.
-            *   Append the formatted row string to the main CSV content string.
-        -   Create Blob: `const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });`.
-        -   Trigger Download: Create a temporary download link (`<a>`), set its `href` using `URL.createObjectURL(blob)`, set the `download` attribute (e.g., `TEUI_Data_Export.csv`), click the link, and remove it.
-    -   Updates UI feedback via `showStatus()`.
+-   **`exportToCSV()`:** *Implemented (Basic)*
+    -   Requires `TEUI.StateManager` and `TEUI.FieldManager`.
+    -   Generates CSV header: `"fieldId","domSelector","description","value","units"`.
+    -   Filters `FieldManager.getAllFields()` for `type: 'editable'`.
+    -   Iterates through editable fields:
+        -   Gets current value from `StateManager`.
+        -   Generates basic `domSelector`.
+        -   Uses `fieldDef.label` or `fieldId` as description (placeholder).
+        -   **Limitation:** Currently exports empty string for units.
+        -   **Limitation:** Does not currently retrieve descriptions/units by looking up layout info in `sectionRows`. (Marked with `console.warn`).
+        -   Formats row using basic CSV escaping.
+    -   Creates Blob and triggers download.
+    -   Provides feedback via `showStatus()`.
 
-## 3. Mapping Logic (`4011-ExcelMapper.js`)
+### 2.3. Event Listeners & Helpers
 
--   **`excelReportInputMapping`:** (New Object)
-    -   Define this constant mapping object.
-    -   Keys: Excel cell references from the `REPORT!` sheet corresponding to user inputs (e.g., `"B10"`, `"D13"`).
-    -   Values: Corresponding web application `fieldId`s (e.g., `"d_12"`, `"h_15"`).
-    -   Populate based on TEUI v3.037 Excel structure for user-editable fields ONLY.
-    -   **Exclude:** Fields managed by other systems (e.g., climate data `l_22`, `l_24` from weather import).
--   **`mapExcelToReportModel(workbook)`:** (New Function or Modified `mapExcelToModel`)
-    -   Takes the `workbook` as input.
-    -   Accesses the `REPORT!` sheet specifically: `const worksheet = workbook.Sheets['REPORT!'];`. Handles error if sheet not found.
-    -   Iterates through the `excelReportInputMapping`:
-        -   For each `[cellRef, fieldId]` pair:
-            -   Reads the value from `worksheet[cellRef]` using `extractCellValue`.
-            -   Adds the `{ [fieldId]: value }` pair to the result object.
-    -   Returns the resulting `importedData` object.
--   **`extractCellValue(cell)`:** (Existing helper) Remains unchanged.
--   **`reverseMapping`, `createWorkbook`:** Not strictly needed for the initial import/export scope focusing on user inputs via CSV, but can be kept for potential future full Excel export functionality.
+-   **`setupEventListeners()`:** *Implemented*
+    -   Connects UI buttons (`import-data-btn`, `export-data-btn`) to corresponding handler functions.
+    -   Hides old buttons.
+    -   Keeps climate-related button listeners (potentially for `ExcelLocationHandler`).
+-   **`showStatus()`:** *Implemented* (Provides UI feedback).
+-   **`applyImportedData()`:** *Retained* (May be redundant now, was tied to old climate import flow).
+-   **Legacy Methods:** `exportToExcel`, `fallbackCreateWorkbook`, `binaryStringToBlob` retained for potential future use but are not part of the primary CSV workflow.
 
-## 4. Field & Layout Definitions (`sections/4011-SectionXX.js`)
+## 3. Mapping Logic (`4011-ExcelMapper.js`) - *Partially Implemented*
 
--   **Consistency Check:** Review all section modules (`4011-Section01.js` to `4011-Section15.js`).
-    -   Ensure all fields intended for user input have `type: 'editable'`.
-    -   Ensure layout definitions (`sectionRows`) accurately contain:
-        -   The descriptive label in the 'C' column cell for each row containing user inputs.
-        -   The correct unit string in the cell immediately following the value cell (e.g., Column E for a value in D, Column I for H, Column M for L).
+-   **Syntax Errors:** *Fixed*.
+-   **`excelReportInputMapping`:** *Defined (Needs Population)*
+    -   Object structure is in place.
+    -   **Requires:** Populating with all correct `REPORT!CellRef` -> `fieldId` mappings for user-editable fields based on v3.037.
+-   **`mapExcelToReportModel(workbook)`:** *Implemented*
+    -   Correctly targets the `REPORT!` sheet.
+    -   Uses `excelReportInputMapping`.
+    -   Returns `{ fieldId: value }` object or `null` on error.
+-   **Helper Functions:** `extractCellValue`, `cellRefToColRow` retained and functional.
 
-## 5. Key Considerations & Decisions
+## 4. Field & Layout Definitions (`sections/4011-SectionXX.js`) - *Requires Review*
 
--   **User-Editable Field Identification (Export):** Using `FieldManager.getAllFields()` and filtering by `type: 'editable'` is the proposed method.
--   **DOM Selector (Export):** The purpose is primarily informational/mapping reference. Using `td[data-field-id="${fieldId}"]` is sufficient.
--   **Units/Description Source (Export):** Relying on data structured within `sectionRows` requires diligent setup across all section files but keeps data definitions co-located.
--   **Invalid Dropdown Values (Import):** Recommended approach: Log a warning to the console detailing the invalid field and value, and **skip** importing that specific field, leaving its current value unchanged. Do not default, as this might silently overwrite user intent.
--   **CSV Parsing:** Implement a simple, robust parser within `FileHandler.js` that handles basic CSV rules (comma delimiters, quote escaping). Avoid adding external libraries if possible.
--   **Error Handling:** Provide clear user feedback via `showStatus()` for file read errors, sheet not found errors, CSV parsing errors, and potentially a summary of skipped fields due to validation issues. 
+-   [ ] Review all core sections (01-15).
+-   [ ] Ensure all user-editable fields have `type: 'editable'`. (Most seem correct, but requires systematic check).
+-   [ ] Ensure `sectionRows` contain accurate description labels (Column C) and unit strings (Column E/I/M) for all editable fields to support CSV export fully.
+
+## 5. Key Decisions & Considerations (Confirmations)
+
+-   **Import State:** Using `'imported'` state in `StateManager` is confirmed.
+-   **Invalid Dropdown Values (Import):** Strategy is to **skip** invalid fields and log a console warning.
+-   **CSV Parsing:** Using a simple built-in parser. Robustness for complex CSVs might need future enhancement.
+-   **CSV Export Scope:** Currently exports only `type: 'editable'` fields.
+-   **CSV Export Units/Description:** Currently limited; full implementation requires enhancing `exportToCSV` to map `fieldId` back to section layout data.
+
+## 6. Implementation Progress & Next Steps
+
+-   **DONE:** Strategy defined.
+-   **DONE:** Syntax errors in `ExcelMapper.js` fixed.
+-   **DONE:** Core import/export functions (`handleFileSelect`, `processImportedExcel`, `processImportedCSV`, `updateStateFromImportData`, `exportToCSV`) implemented in `FileHandler.js`.
+-   **DONE:** Specific Excel mapping function (`mapExcelToReportModel`) created in `ExcelMapper.js`.
+-   **NEXT:** Populate `excelReportInputMapping` in `ExcelMapper.js` with correct cell references.
+-   **NEXT:** Update `index.html` to add the Import/Export menu items.
+-   **NEXT:** Test Excel Import.
+-   **NEXT:** Test CSV Export.
+-   **NEXT:** Test CSV Import.
+-   **FUTURE:** Enhance `exportToCSV` to include accurate units and descriptions.
+-   **FUTURE:** Review/Refactor `applyImportedData` and climate-related button handlers if needed.
+-   **FUTURE:** Review field definitions and layouts across all sections for export completeness. 
