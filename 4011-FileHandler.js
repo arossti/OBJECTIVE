@@ -33,7 +33,7 @@
                     this.handleFileSelect(event);
                 });
             }
-
+            
             if (exportBtn) {
                 exportBtn.addEventListener('click', () => {
                     this.exportToCSV(); 
@@ -59,33 +59,33 @@
                     fileInput.click(); // Use the same file input 
                 });
             }
-             if (applyExcelBtn) {
+            if (applyExcelBtn) {
                  // This button might become redundant if import happens automatically
                  // Keeping for now, but consider removing if processImportedExcel handles updates.
-                 applyExcelBtn.addEventListener('click', () => {
+                applyExcelBtn.addEventListener('click', () => {
                      this.applyImportedData(); // Renamed for clarity
-                 });
-             }
+                });
+            }
              if (debugExcelBtn) { /* Keep existing debug logic */ 
-                 debugExcelBtn.addEventListener('click', () => {
-                     console.log('=== DEBUG INFORMATION ===');
-                     if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-                         const locationData = window.TEUI.ExcelLocationHandler.getLocationData();
-                         console.log('ExcelLocationHandler exists');
-                         console.log('Location data:', locationData ? 'Available' : 'Not available');
-                         if (locationData) {
-                             console.log(`Provinces: ${Object.keys(locationData).join(', ')}`);
-                             const sampleProvince = Object.keys(locationData)[0];
-                             if (sampleProvince) {
-                                 console.log(`Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`);
-                             }
-                         }
-                     } else {
-                         console.log('ExcelLocationHandler not available');
-                     }
+                debugExcelBtn.addEventListener('click', () => {
+                    console.log('=== DEBUG INFORMATION ===');
+                    if (window.TEUI && window.TEUI.ExcelLocationHandler) {
+                        const locationData = window.TEUI.ExcelLocationHandler.getLocationData();
+                        console.log('ExcelLocationHandler exists');
+                        console.log('Location data:', locationData ? 'Available' : 'Not available');
+                        if (locationData) {
+                            console.log(`Provinces: ${Object.keys(locationData).join(', ')}`);
+                            const sampleProvince = Object.keys(locationData)[0];
+                            if (sampleProvince) {
+                                console.log(`Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`);
+                            }
+                        }
+                    } else {
+                        console.log('ExcelLocationHandler not available');
+                    }
                      // ... rest of debug code ...
-                     this.showStatus('Debug information logged to console', 'info');
-                 });
+                    this.showStatus('Debug information logged to console', 'info');
+                });
             }
         }
         
@@ -114,7 +114,7 @@
                         const data = new Uint8Array(e.target.result);
                         this.workbook = XLSX.read(data, { type: 'array' });
                         this.processImportedExcel(this.workbook);
-                    } else {
+                        } else {
                         throw new Error(`Unsupported file type: .${fileExtension}`);
                     }
                 } catch (error) {
@@ -122,12 +122,12 @@
                     this.showStatus(`Error processing file: ${error.message}`, 'error');
                 }
             };
-
+            
             reader.onerror = () => {
                 console.error('Error reading file');
                 this.showStatus('Error reading file', 'error');
             };
-
+            
             if (file.name.toLowerCase().endsWith('.csv')) {
                  reader.readAsArrayBuffer(file); // Read as buffer for TextDecoder
             } else {
@@ -276,41 +276,29 @@
              this.showStatus('Generating CSV export...', 'info');
 
              try {
-                // 1. Build lookup maps for layout details AND find max row number
-                const layoutLookup = {}; // Maps fieldId -> { excelRow, rowId, description, units }
-                const rowInfoMap = {};   // Maps excelRow -> { rowId, description } for placeholder generation
-                let maxExcelRow = 0;
-                
-                const sections = this.fieldManager.getSections(); 
+                // 1. Build a lookup map for layout details
+                const layoutLookup = {};
+                const sections = this.fieldManager.getSections(); // Get { uiSectionId: moduleSectionId }
                 Object.keys(sections).forEach(uiSectionId => {
                     const layout = this.fieldManager.getLayoutForSection(uiSectionId);
                     if (layout && layout.rows) {
                         layout.rows.forEach(rowDef => {
-                            const excelRow = parseInt(rowDef.id, 10); 
-                            if (isNaN(excelRow) || excelRow <= 0) {
-                                // console.warn(`Skipping layout row with invalid ID: ${rowDef.id} in section ${uiSectionId}`);
-                                return; // Skip rows without a valid numeric ID
-                            }
+                            const excelRow = rowDef.id; // Assuming rowDef.id is the Excel row number
+                            let rowId = ''; // Column B
+                            let description = ''; // Column C
 
-                            maxExcelRow = Math.max(maxExcelRow, excelRow);
-                            let rowId = excelRow.toString(); // Default RowID to ExcelRow number as string
-                            let description = '';
-
-                            // Extract RowID (Col B) and Description (Col C)
-                            if (rowDef.cells && rowDef.cells.length > 2) {
-                                rowId = rowDef.cells[1]?.content || rowId; // Use content from Col B if available
-                                description = rowDef.cells[2]?.label || rowDef.cells[2]?.content || ''; // Use label or content from Col C
-                            }
-                            rowInfoMap[excelRow] = { rowId: rowId, description: description };
-                            
-                            // Map FieldIDs to their layout info
                             rowDef.cells.forEach((cellDef, index) => {
-                                if (cellDef.fieldId && index > 2) { // Only map value columns (D onwards)
+                                if (index === 1) { // Column B - RowID
+                                    rowId = cellDef.content || excelRow; // Use content if exists, else excelRow
+                                } else if (index === 2) { // Column C - Description
+                                    description = cellDef.label || cellDef.content || '';
+                                } else if (cellDef.fieldId) {
+                                    // Store layout info against fieldId
                                     layoutLookup[cellDef.fieldId] = {
                                         excelRow: excelRow,
-                                        rowId: rowId, 
-                                        description: description, 
-                                        units: cellDef.units || '' 
+                                        rowId: rowId, // Use the ID found in col B
+                                        description: description, // Use the label found in col C
+                                        units: cellDef.units || '' // Get units if defined in cellDef
                                     };
                                 }
                             });
@@ -318,101 +306,68 @@
                     }
                 });
                 
-                // console.log("Max Excel Row Found:", maxExcelRow);
-                // console.log("Layout Lookup keys:", Object.keys(layoutLookup).length);
-                // console.log("Row Info Map keys:", Object.keys(rowInfoMap).length);
-
-                // 2. Prepare data structure keyed by ExcelRow for user-editable fields
-                const rowDataMap = {};
+                // 2. Generate CSV rows for editable fields
+                const header = ["ExcelRow", "RowID", "Description", "FieldID", "Value", "Units"];
+                const rows = [header];
                 const allFields = this.fieldManager.getAllFields();
-                const editableFieldTypes = ['editable', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'number'];
-                
-                Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
-                    if (editableFieldTypes.includes(fieldDef.type)) {
-                        const layoutInfo = layoutLookup[fieldId];
-                        // Ensure layoutInfo exists and has a valid excelRow before proceeding
-                        if (layoutInfo && layoutInfo.excelRow) {
-                             const excelRow = layoutInfo.excelRow;
-                             const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
-                             // console.log(`Field: ${fieldId}, Row: ${excelRow}, Value: ${currentValue}`); // Debugging values
-                             
-                             // Store data keyed by excelRow, ready for final formatting
-                             // Important: Ensure only ONE field's data is stored per row (usually column D's value)
-                             // We might need a more sophisticated way if multiple editable fields can exist on one row
-                             // For now, assume the first encountered editable field for a row is the primary one to export.
-                             if (!rowDataMap[excelRow]) { // Only store the first editable field found for this row
-                                 rowDataMap[excelRow] = {
-                                     excelRow: excelRow,
-                                     rowId: layoutInfo.rowId,
-                                     description: layoutInfo.description,
-                                     fieldId: fieldId, // Store the FieldID itself
-                                     value: currentValue,
-                                     units: layoutInfo.units
-                                 };
-                             } else {
-                                // console.warn(`Row ${excelRow} already has data from ${rowDataMap[excelRow].fieldId}, skipping field ${fieldId}`);
-                             }
-                        }
-                    }
-                });
+                 // Filter for fields explicitly marked as editable
+                const editableFields = Object.entries(allFields).filter(([id, def]) => 
+                    def.type === 'editable' || 
+                    def.type === 'dropdown' || 
+                    def.type === 'year_slider' || 
+                    def.type === 'percentage' || 
+                    def.type === 'coefficient' ||
+                    def.type === 'number' // Include number inputs as user-editable for export
+                );
 
-                // 3. Generate final CSV rows, inserting placeholders for missing rows
-                const header = ["ExcelRow", "RowID", "Description", "Value", "Units", "FieldID"]; // Reordered columns
-                const finalRows = [header];
-                
+                // Basic CSV escaping (handles commas, quotes, newlines)
                 const escapeCSV = (val) => {
-                    const strVal = String(val ?? ''); 
+                    const strVal = String(val ?? ''); // Ensure string conversion, handle null/undefined
                     if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
+                        // Escape quotes by doubling them and wrap in quotes
                         return `"${strVal.replace(/"/g, '""')}"`;
                     }
                     return strVal;
                 };
+
+                editableFields.forEach(([fieldId, fieldDef]) => {
+                    const layoutInfo = layoutLookup[fieldId] || {}; // Get layout details
+                    const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
+
+                    rows.push([
+                        escapeCSV(layoutInfo.excelRow || ''), // Excel Row from layout
+                        escapeCSV(layoutInfo.rowId || ''),     // Row ID from layout (Col B)
+                        escapeCSV(layoutInfo.description || fieldDef.label || fieldId), // Description from layout (Col C) or fallback
+                        escapeCSV(fieldId),                  // Field ID (Col D)
+                        escapeCSV(currentValue),             // Current Value (Col E)
+                        escapeCSV(layoutInfo.units || '')      // Units from layout
+                    ]);
+                });
                 
-                if (maxExcelRow === 0) {
-                    console.warn("No valid rows with numeric IDs found in layout definitions.");
-                    maxExcelRow = 150; // Fallback to a default number of rows if none found
-                }
+                // Sort rows numerically by the ExcelRow (first column)
+                // Skip header row (index 0) for sorting
+                // NOTE: Reverting to this sort which might have caused issues if excelRow is missing/NaN
+                rows.slice(1).sort((a, b) => {
+                    const rowA = parseInt(a[0].replace(/"/g, ''), 10) || 0; // Potential issue if a[0] is not a number string
+                    const rowB = parseInt(b[0].replace(/"/g, ''), 10) || 0;
+                    return rowA - rowB;
+                });
+
+                // Reconstruct CSV content with sorted rows (header + sorted data)
+                const csvContent = [rows[0].join(',')].concat(rows.slice(1).map(row => row.join(','))).join('\n');
                 
-                for (let i = 1; i <= maxExcelRow; i++) {
-                    const data = rowDataMap[i];
-                    const placeholderInfo = rowInfoMap[i] || {}; // Get RowID/Desc even for placeholders
-                    
-                    if (data) {
-                        // Format row for existing editable field
-                        finalRows.push([
-                            escapeCSV(data.excelRow),        // A: ExcelRow
-                            escapeCSV(data.rowId),           // B: RowID
-                            escapeCSV(data.description),     // C: Description
-                            escapeCSV(data.value),           // D: Value (Moved)
-                            escapeCSV(data.units),           // E: Units (Moved)
-                            escapeCSV(data.fieldId)          // F: FieldID (Moved Last)
-                        ]);
-                    } else {
-                        // Insert placeholder row for row parity
-                        finalRows.push([
-                            escapeCSV(i),                          // A: ExcelRow
-                            escapeCSV(placeholderInfo.rowId || ''),     // B: RowID (if found)
-                            escapeCSV(placeholderInfo.description || ''),// C: Description (if found)
-                            '', // D: Empty Value
-                            '', // E: Empty Units
-                            ''  // F: Empty FieldID
-                        ]);
-                    }
-                }
-                
-                // 4. Construct CSV content and trigger Download (Sorting removed as we now build in order)
-                const csvContent = finalRows.map(row => row.join(',')).join('\n');
-                
-                // Get project name for filename
+                // 3. Trigger Download
+                 // Get project name for filename
                 const projectName = this.stateManager.getValue('h_14') || 'Project';
+                // Sanitize project name for filename
                 const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, '_');
-                const filename = `TEUIv4011-${safeProjectName}.csv`;
+                const filename = `TEUIv4011-${safeProjectName}.csv`; // Keep dynamic filename
 
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.setAttribute("href", url);
-                link.setAttribute("download", filename); 
+                link.setAttribute("download", filename); // Keep dynamic filename
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
@@ -427,19 +382,19 @@
         }
 
         // --- OLD / OTHER METHODS --- 
-
+        
         processBuildingCodeData(workbook) {
             // Placeholder 
             // console.log('Building code data processing not yet implemented');
             return null;
         }
-
+        
         processScheduleData(workbook) {
             // Placeholder
             // console.log('Schedule data processing not yet implemented');
             return null;
         }
-
+        
         exportToExcel() { // Keep old method for potential full state export?
             try {
                 this.showStatus('Preparing full Excel export (legacy method)...', 'info');
@@ -460,26 +415,26 @@
                 this.showStatus(`Error exporting full Excel: ${error.message}`, 'error');
             }
         }
-
+        
         fallbackCreateWorkbook(data) { // Used by legacy export
-             console.warn('Using fallback Excel creation - limited functionality');
-             const workbook = XLSX.utils.book_new();
-             const worksheet = XLSX.utils.aoa_to_sheet([['Field ID', 'Value']]);
-             let row = 1;
-             Object.entries(data).forEach(([id, value]) => {
-                 XLSX.utils.sheet_add_aoa(worksheet, [[id, value]], { origin: { r: row++, c: 0 }});
-             });
-             XLSX.utils.book_append_sheet(workbook, worksheet, "TEUI Calculator Data");
-             return workbook;
-         }
-
+            console.warn('Using fallback Excel creation - limited functionality');
+            const workbook = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.aoa_to_sheet([['Field ID', 'Value']]);
+            let row = 1;
+            Object.entries(data).forEach(([id, value]) => {
+                XLSX.utils.sheet_add_aoa(worksheet, [[id, value]], { origin: { r: row++, c: 0 }});
+            });
+            XLSX.utils.book_append_sheet(workbook, worksheet, "TEUI Calculator Data");
+            return workbook;
+        }
+        
         binaryStringToBlob(binaryString) { // Used by legacy export
-             const byteArray = new Uint8Array(binaryString.length);
-             for (let i = 0; i < binaryString.length; i++) {
-                 byteArray[i] = binaryString.charCodeAt(i) & 0xff;
-             }
-             return new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-         }
+            const byteArray = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                byteArray[i] = binaryString.charCodeAt(i) & 0xff;
+            }
+            return new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        }
         
         showStatus(message, type) {
             // console.log(`[FileHandler] ${message}`); // Keep logs minimal
@@ -500,15 +455,15 @@
         }
 
         applyImportedData() { // Potentially redundant if import is automatic
-             if (!this.workbook) {
-                 this.showStatus('Please load an Excel file first', 'warning');
-                 return;
-             }
+            if (!this.workbook) {
+                this.showStatus('Please load an Excel file first', 'warning');
+                return;
+            }
              // Logic here might need refinement - currently focused on location data
              if (window.TEUI.ExcelLocationHandler?.updateProvinceDropdowns) { 
-                 window.TEUI.ExcelLocationHandler.updateProvinceDropdowns(); 
+                            window.TEUI.ExcelLocationHandler.updateProvinceDropdowns();
                  this.showStatus('Data applied (focused on locations).', 'info');
-             }
+            }
         }
     }
 
