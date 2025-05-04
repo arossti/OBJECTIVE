@@ -42,6 +42,42 @@ window.TEUI.formatNumber = function(value) {
 // Section 3: Climate Calculations Module
 window.TEUI.SectionModules.sect03 = (function() {
     //==========================================================================
+    // ADDED: HELPER FUNCTIONS (Standard Implementation like S04)
+    //==========================================================================
+    
+    /**
+     * Safely parses a numeric value from StateManager, using the global parseNumeric.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     */
+    function getNumericValue(fieldId) {
+        // Always use global parseNumeric and StateManager
+        // Ensure window.TEUI and window.TEUI.parseNumeric exist
+        const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+        return window.TEUI?.parseNumeric?.(rawValue) || 0;
+    }
+    
+    /**
+     * Helper to get field value, preferring StateManager but falling back to DOM.
+     * @param {string} fieldId 
+     * @returns {string | null} Value as string or null if not found.
+     */
+    function getFieldValue(fieldId) {
+        if (window.TEUI?.StateManager?.getValue) {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return value.toString();
+            }
+        }
+        // Fallback to DOM - useful for dropdowns or elements not strictly state-managed?
+        const element = document.querySelector(`[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`); 
+        if (element) {
+            return element.value !== undefined ? element.value : element.textContent;
+        }
+        return null;
+    }
+
+    //==========================================================================
     // PART 1: CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -1144,11 +1180,3 @@ document.addEventListener('teui-rendering-complete', function() {
         }
     }, 300);
 });
-
-/**
- * Helper to get numeric value using the global parser.
- */
-function getNumericValue(fieldId) {
-    // Calls local getFieldValue and passes to global parser
-    return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
-}
