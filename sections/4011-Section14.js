@@ -100,7 +100,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', rawValue < 0);
         } else {
-            console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+            // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
         }
     }
 
@@ -493,7 +493,7 @@ window.TEUI.SectionModules.sect14 = (function() {
      */
     function registerDependencies() {
         if (!window.TEUI.StateManager) {
-            console.warn("StateManager not available for TEDI/TELI dependency registration");
+            // console.warn("StateManager not available for TEDI/TELI dependency registration");
             return;
         }
         const sm = window.TEUI.StateManager;
@@ -545,7 +545,7 @@ window.TEUI.SectionModules.sect14 = (function() {
         sm.registerDependency('d_132', 'h_132');
         sm.registerDependency('h_15', 'h_132');
         
-        console.log("TEDI/TELI dependencies registered");
+        // console.log("TEDI/TELI dependencies registered");
     }
     
     /**
@@ -555,7 +555,7 @@ window.TEUI.SectionModules.sect14 = (function() {
     function calculateValues() {
         try {
             if (!window.TEUI.StateManager) {
-                console.warn("StateManager not available for TEDI/TELI calculations");
+                // console.warn("StateManager not available for TEDI/TELI calculations");
                 return;
             }
             
@@ -631,7 +631,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
             
         } catch (error) {
-            console.error("Error in TEDI/TELI calculations:", error);
+            // console.error("Error in TEDI/TELI calculations:", error);
         }
     }
     
@@ -652,7 +652,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             
             // console.log("TEDI/TELI full calculation cycle completed");
         } catch (error) {
-            console.error("Error in TEDI/TELI calculateAll:", error);
+            // console.error("Error in TEDI/TELI calculateAll:", error);
         }
     }
     
@@ -693,7 +693,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                 }
             }
         });
-         console.log("TEDI/TELI display updated");
+         // console.log("TEDI/TELI display updated");
     }
     
     /**
@@ -718,7 +718,7 @@ window.TEUI.SectionModules.sect14 = (function() {
         // Add listeners for all unique dependencies
         uniqueDependencies.forEach(dep => {
             sm.addListener(dep, () => {
-                console.log(`Listener triggered for dependency: ${dep} in Section 14`);
+                // console.log(`Listener triggered for dependency: ${dep} in Section 14`);
                 calculateAll(); 
             });
         });
@@ -730,7 +730,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             sm.addListener('h_22', calculateAll); // GF CDD 
             sm.addListener('d_22', calculateAll); // GF HDD
         } else {
-            console.warn("Section 14: StateManager not available to add climate listeners.");
+            // console.warn("Section 14: StateManager not available to add climate listeners.");
         }
     }
     
@@ -738,12 +738,12 @@ window.TEUI.SectionModules.sect14 = (function() {
      * Called when section is rendered
      */
     function onSectionRendered() {
-        console.log("TEDI & TELI section (sect14) rendered");
+        // console.log("TEDI & TELI section (sect14) rendered");
         
         if (window.TEUI.StateManager) {
         registerDependencies();
         } else {
-            console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
+            // console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
         }
         
         initializeEventHandlers();

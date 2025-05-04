@@ -46,50 +46,50 @@ TEUI.Calculator = (function() {
      * Initialize the calculator
      */
     function initialize() {
-        console.log('Initializing TEUI Calculator...');
+        // console.log('Initializing TEUI Calculator...');
         
         // Get state manager reference
         stateManager = window.TEUI.StateManager;
         
         // Register all calculations with state manager
-        registerCalculations();
+        // registerCalculations(); // Assuming registration happens elsewhere or within sections now
         
         // Initialize state manager first
         if (TEUI.StateManager) {
             TEUI.StateManager.initialize();
             TEUI.StateManager.loadState();
-            console.log('State Manager initialized');
+            // console.log('State Manager initialized');
         }
         
         // Initialize FieldManager to generate content for all sections
         if (TEUI.FieldManager) {
             TEUI.FieldManager.renderAllSections();
-            console.log('Field Manager initialized and sections rendered');
+            // console.log('Field Manager initialized and sections rendered');
         }
         
         // Initialize Component Bridge
         if (TEUI.ComponentBridge) {
             TEUI.ComponentBridge.initAll();
-            console.log('Component Bridge initialized');
+            // console.log('Component Bridge initialized');
         }
         
         // Set up event listeners after DOM is ready
-        setupEventListeners();
-        console.log('Event listeners set up');
+        // setupEventListeners(); // Assuming event listeners are set up elsewhere now
+        // console.log('Event listeners set up');
         
         // Listen for rendering completion
         document.addEventListener('teui-rendering-complete', function(event) {
-            console.log('Rendering complete event received:', event.detail.message);
+            // console.log('Rendering complete event received:', event.detail.message);
             
             // Initialize weather handlers when rendering is complete
-            initializeWeatherHandlers();
+            // initializeWeatherHandlers(); // Moved to 4011-init.js?
             
             // Calculate all values immediately after rendering and weather handlers are ready
-            console.log('Starting initial calculations immediately after rendering complete');
-                TEUI.Calculator.calculateAll();
+            // console.log('Starting initial calculations immediately after rendering complete');
+                // TEUI.Calculator.calculateAll(); // Initial calculation likely triggered by events now
         });
         
-        console.log('TEUI Calculator 4.011 initialization complete');
+        // console.log('TEUI Calculator 4.011 initialization complete');
     }
     
     /**
@@ -212,14 +212,14 @@ TEUI.Calculator = (function() {
     function executeFormula(formulaId) {
         const formula = FormulaRegistry[formulaId];
         if (!formula) {
-            console.warn(`Formula ${formulaId} not found in registry`);
+            // console.warn(`Formula ${formulaId} not found in registry`);
             return null;
         }
         
         try {
             return formula(stateManager);
         } catch (error) {
-            console.error(`Error executing formula ${formulaId}:`, error);
+            // console.error(`Error executing formula ${formulaId}:`, error); // Keep errors
             return null;
         }
     }
@@ -420,7 +420,7 @@ TEUI.Calculator = (function() {
      * @param {string} section - Section ID
      */
     function calculateSection(section) {
-        console.log(`Calculating section ${section}`);
+        // console.log(`Calculating section ${section}`);
         
         // Implementation would depend on the section
         switch (section) {
@@ -437,7 +437,7 @@ TEUI.Calculator = (function() {
                 break;
                 
             default:
-                console.log(`No specific calculation handler for section ${section}`);
+                // console.log(`No specific calculation handler for section ${section}`);
                 // Process any dirty fields in this section
                 recalculateDirtyFields();
         }
@@ -493,7 +493,7 @@ TEUI.Calculator = (function() {
      * @param {string} csv - CSV string with formulas
      */
     function importFormulasFromCSV(csv) {
-        console.log('Importing formulas from CSV...');
+        // console.log('Importing formulas from CSV...');
         
         // Split into lines
         const lines = csv.split('\n');
@@ -510,18 +510,18 @@ TEUI.Calculator = (function() {
             const formulaText = parts[1].trim();
             
             // Store in the formula registry for future implementation
-            console.log(`Imported formula ${formulaId}: ${formulaText}`);
+            // console.log(`Imported formula ${formulaId}: ${formulaText}`);
             
             // This would be expanded to actually parse and convert the formula
             // For now, we just log it
         });
         
-        console.log(`Imported ${lines.length} formulas from CSV`);
+        // console.log(`Imported ${lines.length} formulas from CSV`);
     }
     
     // Add to the initialization section
     function initializeWeatherHandlers() {
-        console.log('Initializing weather handlers...');
+        // console.log('Initializing weather handlers...');
         
         // Add a short delay to ensure the DOM elements are available
         setTimeout(function() {
@@ -537,7 +537,7 @@ TEUI.Calculator = (function() {
             // Show full weather data modal
             attachWeatherDataButtonListener();
             
-            console.log('All weather handlers initialized');
+            // console.log('All weather handlers initialized');
             
             // Mark as initialized to prevent duplicate initialization
             document.weatherHandlersInitialized = true;
@@ -546,34 +546,34 @@ TEUI.Calculator = (function() {
 
     function attachCityChangeListener() {
         const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
-        console.log(`Found ${cityDropdowns.length} city dropdowns to attach listeners to`);
+        // console.log(`Found ${cityDropdowns.length} city dropdowns to attach listeners to`);
         
         cityDropdowns.forEach(dropdown => {
             dropdown.addEventListener('change', function(e) {
                 const city = e.target.value;
                 const province = document.querySelector('[data-dropdown-id="dd_d_19"]').value;
                 if (city && province) {
-                    console.log(`City changed to ${city}, updating weather data...`);
+                    // console.log(`City changed to ${city}, updating weather data...`);
                     updateWeatherData(province, city);
                 }
             });
-            console.log(`Attached change listener to city dropdown: ${dropdown.id || 'unnamed'}`);
+            // console.log(`Attached change listener to city dropdown: ${dropdown.id || 'unnamed'}`);
         });
         
         // If no dropdowns found, add a mutation observer to watch for them
         if (cityDropdowns.length === 0) {
-            console.log('No city dropdowns found, setting up mutation observer');
+            // console.log('No city dropdowns found, setting up mutation observer');
             setupDropdownMutationObserver();
         }
     }
 
     function attachProvinceChangeListener() {
         const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
-        console.log(`Found ${provinceDropdowns.length} province dropdowns to attach listeners to`);
+        // console.log(`Found ${provinceDropdowns.length} province dropdowns to attach listeners to`);
         
         provinceDropdowns.forEach(dropdown => {
             dropdown.addEventListener('change', function(e) {
-                console.log(`Province changed to ${e.target.value}`);
+                // console.log(`Province changed to ${e.target.value}`);
                 // Clear city dropdown values when province changes
                 const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
                 cityDropdowns.forEach(cityDropdown => {
@@ -594,30 +594,30 @@ TEUI.Calculator = (function() {
                     }
                 });
             });
-            console.log(`Attached change listener to province dropdown: ${dropdown.id || 'unnamed'}`);
+            // console.log(`Attached change listener to province dropdown: ${dropdown.id || 'unnamed'}`);
         });
     }
 
     function attachPresentFutureToggleListener() {
         const futureToggles = document.querySelectorAll('[data-dropdown-id="dd_h_20"]');
-        console.log(`Found ${futureToggles.length} present/future toggles to attach listeners to`);
+        // console.log(`Found ${futureToggles.length} present/future toggles to attach listeners to`);
         
         futureToggles.forEach(toggle => {
             toggle.addEventListener('change', function(e) {
-                console.log('Present/Future value changed:', e.target.value);
+                // console.log('Present/Future value changed:', e.target.value);
                 const city = document.querySelector('[data-dropdown-id="dd_h_19"]')?.value;
                 const province = document.querySelector('[data-dropdown-id="dd_d_19"]')?.value;
                 if (city && province) {
                     updateWeatherData(province, city);
                 }
             });
-            console.log(`Attached change listener to present/future toggle: ${toggle.id || 'unnamed'}`);
+            // console.log(`Attached change listener to present/future toggle: ${toggle.id || 'unnamed'}`);
         });
     }
 
     function attachWeatherDataButtonListener() {
         const weatherDataBtns = document.querySelectorAll('#showWeatherDataBtn, #weatherDataBtn');
-        console.log(`Found ${weatherDataBtns.length} weather data buttons to attach listeners to`);
+        // console.log(`Found ${weatherDataBtns.length} weather data buttons to attach listeners to`);
         
         weatherDataBtns.forEach(btn => {
             btn.addEventListener('click', function() {
@@ -629,7 +629,7 @@ TEUI.Calculator = (function() {
                     alert('Please select a province and city first.');
                 }
             });
-            console.log(`Attached click listener to weather data button: ${btn.id || 'unnamed'}`);
+            // console.log(`Attached click listener to weather data button: ${btn.id || 'unnamed'}`);
         });
     }
 
@@ -640,7 +640,7 @@ TEUI.Calculator = (function() {
                 if (mutation.type === 'childList') {
                     const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
                     if (cityDropdowns.length > 0) {
-                        console.log('City dropdowns now found, attaching listeners');
+                        // console.log('City dropdowns now found, attaching listeners');
                         attachCityChangeListener();
                         observer.disconnect(); // Stop observing once dropdowns are found
                     }
@@ -653,7 +653,7 @@ TEUI.Calculator = (function() {
     }
 
     function updateWeatherData(province, city) {
-        console.log(`Updating weather data for ${city}, ${province}`);
+        // console.log(`Updating weather data for ${city}, ${province}`);
         
         // Get the location data
         const locationData = TEUI.ExcelLocationHandler.getLocationData();
@@ -674,17 +674,17 @@ TEUI.Calculator = (function() {
             return;
         }
         
-        console.log(`Found weather data for ${city}:`, cityData.data);
+        // console.log(`Found weather data for ${city}:`, cityData.data);
         
         // Check if we should use future values or present values
         const presentFutureEl = document.querySelector('[data-dropdown-id="dd_h_20"]');
         const presentFutureValue = presentFutureEl ? presentFutureEl.value : '';
-        console.log('Present/Future dropdown value:', presentFutureValue);
+        // console.log('Present/Future dropdown value:', presentFutureValue);
         
         // If the value is explicitly "Future", use future data
         // Otherwise (empty or "Present"), use present data
         const isFuture = presentFutureValue === 'Future';
-        console.log('Using future climate data:', isFuture);
+        // console.log('Using future climate data:', isFuture);
         
         const feedbackArea = document.getElementById('feedback-area');
         if (feedbackArea) {
@@ -744,8 +744,8 @@ TEUI.Calculator = (function() {
         updateFieldValue('d_24', hottestTemp);
         
         // Log what data we're using
-        console.log(`Using ${isFuture ? 'future' : 'current'} climate data values:`);
-        console.log(`HDD: ${hddValue}, CDD: ${cddValue}, Cold: ${designTemp}, Hot: ${hottestTemp}`);
+        // console.log(`Using ${isFuture ? 'future' : 'current'} climate data values:`);
+        // console.log(`HDD: ${hddValue}, CDD: ${cddValue}, Cold: ${designTemp}, Hot: ${hottestTemp}`);
         
         // Trigger Celsius to Fahrenheit conversions for temperature fields
         recalculateTemperatures();
@@ -776,21 +776,21 @@ TEUI.Calculator = (function() {
             fieldElements.forEach(element => {
                 element.textContent = value || '0';
             });
-            console.log(`Updated ${fieldElements.length} DOM elements with field ID ${fieldId} to ${value}`);
+            // console.log(`Updated ${fieldElements.length} DOM elements with field ID ${fieldId} to ${value}`);
         } else {
-            console.warn(`No DOM elements found with field ID ${fieldId}`);
+            // console.warn(`No DOM elements found with field ID ${fieldId}`);
         }
         
         // Update in StateManager if available
         if (window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.setValue(fieldId, (value || '0').toString(), 'derived');
-            console.log(`Updated StateManager value for ${fieldId} to ${value}`);
+            // console.log(`Updated StateManager value for ${fieldId} to ${value}`);
         }
     }
 
     function showFullWeatherData(province, city) {
         try {
-            console.log(`Attempting to show weather data for ${city}, ${province}`);
+            // console.log(`Attempting to show weather data for ${city}, ${province}`);
             const locationData = TEUI.ExcelLocationHandler.getLocationData();
             if (!locationData || !locationData[province]) {
                 console.error(`Province ${province} not found in location data`);
@@ -828,7 +828,7 @@ TEUI.Calculator = (function() {
             // Initialize and show the modal (cleanup is handled by global event handler)
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
-            console.log('Weather data modal should now be visible');
+            // console.log('Weather data modal should now be visible');
         } catch (error) {
             console.error('Error showing weather data modal:', error);
             alert('Error showing weather data modal. Check console for details.');
@@ -894,14 +894,14 @@ TEUI.Calculator = (function() {
         if (heatingSetpointInput) {
             heatingSetpointInput.addEventListener('change', calculateGFHDD);
         } else {
-            console.log('Warning: Heating setpoint input (in_d_13_1) not found');
+            // console.log('Warning: Heating setpoint input (in_d_13_1) not found');
         }
         
         const coolingSetpointInput = document.getElementById('in_d_13_2');
         if (coolingSetpointInput) {
             coolingSetpointInput.addEventListener('change', calculateGFCDD);
         } else {
-            console.log('Warning: Cooling setpoint input (in_d_13_2) not found');
+            // console.log('Warning: Cooling setpoint input (in_d_13_2) not found');
         }
     }
     
@@ -969,22 +969,14 @@ function initializeWeatherDataHandlers() {
             
             if (province && TEUI.ExcelLocationHandler.getLocationData()) {
                 const locationData = TEUI.ExcelLocationHandler.getLocationData();
-                if (feedbackArea) {
-                    feedbackArea.textContent = `Loading cities for ${locationData[province].name}...`;
-                }
-                
-                const cities = locationData[province].cities;
-                
-                // Populate cities dropdown
-                cities.forEach(city => {
-                    const option = document.createElement('option');
-                    option.value = city.name;
-                    option.textContent = city.name;
-                    citySelect.appendChild(option);
-                });
-                
-                if (feedbackArea) {
-                    feedbackArea.textContent = `Loaded ${cities.length} cities for ${locationData[province].name}`;
+                if (locationData && locationData[province]) {
+                    const cities = locationData[province].cities;
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        option.textContent = city.name;
+                        citySelect.appendChild(option);
+                    });
                 }
             }
         });
@@ -1021,13 +1013,13 @@ function initializeWeatherDataHandlers() {
             futureOption.textContent = 'Future (2021-2050)';
             futureToggle.appendChild(futureOption);
             
-            console.log('Added options to the Present/Future toggle dropdown');
+            // console.log('Added options to the Present/Future toggle dropdown');
         } else if (futureToggle.value === '') {
             // If empty selection, select 'Present' by default
             for (let i = 0; i < futureToggle.options.length; i++) {
                 if (futureToggle.options[i].value === 'Present') {
                     futureToggle.options[i].selected = true;
-                    console.log('Selected Present by default in Present/Future toggle');
+                    // console.log('Selected Present by default in Present/Future toggle');
                     break;
                 }
             }
@@ -1035,7 +1027,7 @@ function initializeWeatherDataHandlers() {
         
         // Add event listener
         futureToggle.addEventListener('change', function(e) {
-            console.log('Present/Future value changed:', e.target.value);
+            // console.log('Present/Future value changed:', e.target.value);
             const city = document.querySelector('[data-dropdown-id="dd_h_19"]').value;
             const province = document.querySelector('[data-dropdown-id="dd_d_19"]').value;
             if (city && province) {

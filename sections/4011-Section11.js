@@ -323,7 +323,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', rawValue < 0);
         } else {
-             console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+             // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
         }
     }
 
@@ -660,12 +660,12 @@ window.TEUI.SectionModules.sect11 = (function() {
             window.TEUI.StateManager.addListener('d_22', calculateAll); // GF HDD (affects ground loss)
             // console.log("Section 11 listeners for climate data added.");
         } else {
-            console.warn("Section 11: StateManager not available to add climate listeners.");
+            // console.warn("Section 11: StateManager not available to add climate listeners.");
         }
     }
 
     function onSectionRendered() {
-        console.log("Section 11 onSectionRendered: Initializing state..."); // DEBUG LOG
+        // console.log("Section 11 onSectionRendered: Initializing state..."); // DEBUG LOG
         // Ensure StateManager has default values for editable fields before first calculation
         let isStateInitialized = false; // Flag to track if we set any default state
         if (window.TEUI?.StateManager) {
@@ -687,10 +687,10 @@ window.TEUI.SectionModules.sect11 = (function() {
                 }
             });
         } else {
-             console.warn("StateManager not available during onSectionRendered for state init");
+             // console.warn("StateManager not available during onSectionRendered for state init");
         }
 
-        console.log("Section 11 onSectionRendered: Initializing event handlers..."); // DEBUG LOG
+        // console.log("Section 11 onSectionRendered: Initializing event handlers..."); // DEBUG LOG
         // Initialize listeners AFTER potential state initialization
         initializeEventHandlers();
         Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {

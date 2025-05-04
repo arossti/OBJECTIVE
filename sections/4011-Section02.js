@@ -556,24 +556,24 @@ window.TEUI.SectionModules.sect02 = (function() {
      * Standard calculation function pattern from SectionXX template
      */
     function calculateEmbodiedCarbonTarget() {
-        console.log("Calculating d_16..."); // DEBUG LOG
+        // console.log("Calculating d_16..."); // DEBUG LOG
         const carbonStandard = getFieldValue("d_15") || "Self Reported";
         const modelledValueI41 = parseFloat(getFieldValue("i_41")) || 345.82;
-        console.log(`  d_15 (Carbon Standard): ${carbonStandard}`); // DEBUG LOG
+        // console.log(`  d_15 (Carbon Standard): ${carbonStandard}`); // DEBUG LOG
         
         // Special case: 'Not Reported' should return 'N/A'
         if (carbonStandard === "Not Reported") {
-            console.log("  Returning N/A for Not Reported"); // DEBUG LOG
+            // console.log("  Returning N/A for Not Reported"); // DEBUG LOG
             return "N/A";
         }
 
         // Handle TGS4 standard specifically by using the typology-based cap from Section 5
         if (carbonStandard === "TGS4") {
             const i39Value = getFieldValue("i_39"); // Get raw value first
-            console.log(`  TGS4 selected. Raw i_39 value fetched: ${i39Value}`); // DEBUG LOG
+            // console.log(`  TGS4 selected. Raw i_39 value fetched: ${i39Value}`); // DEBUG LOG
             const tgs4Value = parseFloat(i39Value) || 0; // Get value from i_39 (Sect 5)
             const result = tgs4Value.toFixed(2);
-            console.log(`  Returning TGS4 value (from i_39): ${result}`); // DEBUG LOG
+            // console.log(`  Returning TGS4 value (from i_39): ${result}`); // DEBUG LOG
             return result; 
         }
         
@@ -583,7 +583,7 @@ window.TEUI.SectionModules.sect02 = (function() {
         
         // Implement the formula for other standards
         let targetValue;
-        console.log("  Using switch statement for other standards..."); // DEBUG LOG
+        // console.log("  Using switch statement for other standards..."); // DEBUG LOG
         
         switch(carbonStandard) {
             case "BR18 (Denmark)":
@@ -608,7 +608,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             default:
                 targetValue = modelledValueI41; // Default to modelled/Self Reported value
         }
-        console.log(`  Switch result (raw): ${targetValue}`); // DEBUG LOG
+        // console.log(`  Switch result (raw): ${targetValue}`); // DEBUG LOG
         
         // Format numeric values to 2 decimal places consistently
         // Check if targetValue is already a string (from i_39) before applying toFixed
@@ -620,7 +620,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Or consider parsing it first if needed. For now, assume it's correctly formatted.
             formattedResult = targetValue; 
         }
-        console.log(`  Returning formatted result: ${formattedResult}`); // DEBUG LOG
+        // console.log(`  Returning formatted result: ${formattedResult}`); // DEBUG LOG
         return formattedResult;
     }
     
@@ -639,7 +639,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             window.TEUI.StateManager.registerDependency("i_41", "d_16"); // d_16 depends on i_41 when standard is 'Self Reported' or default
             window.TEUI.StateManager.registerDependency("i_39", "d_16"); // d_16 depends on i_39 when standard is 'TGS4'
         } catch (error) {
-            console.warn("Error registering calculations:", error);
+            // console.warn("Error registering calculations:", error);
         }
     }
     
@@ -659,7 +659,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Pass the value directly (already formatted correctly in the calculation function)
             setCalculatedValue("d_16", targetValue);
         } catch (error) {
-            console.warn("Error calculating values:", error);
+            // console.warn("Error calculating values:", error);
         }
     }
     
@@ -751,7 +751,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                 // Check if the current Carbon Standard (d_15) is TGS4
                 const carbonStandard = getFieldValue("d_15");
                 if (carbonStandard === "TGS4") {
-                    console.log(`Listener in Section 2 triggered: i_39 changed to ${newValue}. Recalculating d_16.`);
+                    // console.log(`Listener in Section 2 triggered: i_39 changed to ${newValue}. Recalculating d_16.`);
                     // If d_15 is TGS4, recalculate d_16 using the new i_39 value
                     const targetValue = calculateEmbodiedCarbonTarget(); 
                     // Update the value in StateManager and DOM for d_16
@@ -767,7 +767,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                 const carbonStandard = getFieldValue("d_15") || "Self Reported";
                 if (carbonStandard === "Self Reported" || carbonStandard === "Not Reported") { // Also trigger if standard is Not Reported but i_41 changes (edge case)
                     // The calculateEmbodiedCarbonTarget function already reads the latest i_41 value
-                    console.log(`Listener in Section 2 triggered: i_41 changed to ${newValue}. Recalculating d_16 for 'Self Reported'.`);
+                    // console.log(`Listener in Section 2 triggered: i_41 changed to ${newValue}. Recalculating d_16 for 'Self Reported'.`);
                     const targetValue = calculateEmbodiedCarbonTarget(); 
                     setCalculatedValue("d_16", targetValue);
                 }
@@ -968,7 +968,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                 slider.dataset.originalArea = originalAreaStr; 
             }
         } catch (error) {
-            console.warn("Error handling area slider input:", error);
+            // console.warn("Error handling area slider input:", error);
         }
     }
 
@@ -1021,7 +1021,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Clear the stored original area value
             delete slider.dataset.originalArea;
         } catch (error) {
-            console.warn("Error handling area slider change:", error);
+            // console.warn("Error handling area slider change:", error);
         }
     }
     

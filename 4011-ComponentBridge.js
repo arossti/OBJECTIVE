@@ -98,13 +98,13 @@ TEUI.ComponentBridge = (function() {
     function initField(fieldId) {
         const field = TEUI.getField(fieldId);
         if (!field) {
-            console.warn(`Field ${fieldId} not found in definitions`);
+            // console.warn(`Field ${fieldId} not found in definitions`);
             return;
         }
         
         const element = findFieldElement(fieldId);
         if (!element) {
-            console.warn(`Field element with data-field-id="${fieldId}" not found in DOM`);
+            // console.warn(`Field element with data-field-id="${fieldId}" not found in DOM`);
             return;
         }
         
@@ -128,7 +128,7 @@ TEUI.ComponentBridge = (function() {
                 
                 // Ensure we have an array
                 if (!Array.isArray(dropdownOptions)) {
-                    console.warn(`Invalid options format for dropdown ${dropdownId}, expected array`);
+                    // console.warn(`Invalid options format for dropdown ${dropdownId}, expected array`);
                     dropdownOptions = [];
                 }
                 
@@ -165,7 +165,7 @@ TEUI.ComponentBridge = (function() {
             const inputElement = element.querySelector('input, select');
             if (inputElement) {
                 inputElement.addEventListener('change', function(e) {
-                    console.log(`Field ${fieldId} changed to ${e.target.value}`);
+                    // console.log(`Field ${fieldId} changed to ${e.target.value}`);
                     
                     // Update state manager if available
                     if (window.TEUI.StateManager) {
@@ -209,7 +209,7 @@ TEUI.ComponentBridge = (function() {
     function updateCityDropdown(provinceValue) {
         const cityDropdownElement = document.querySelector('[data-dropdown-id="dd_h_19"]');
         if (!cityDropdownElement) {
-            console.warn('City dropdown not found');
+            // console.warn('City dropdown not found');
             return;
         }
         
@@ -221,7 +221,7 @@ TEUI.ComponentBridge = (function() {
         
         // Check if location data handler is available
         if (!TEUI.ExcelLocationHandler || !TEUI.ExcelLocationHandler.getLocationData) {
-            console.warn('Location data handler not available');
+            // console.warn('Location data handler not available');
             return;
         }
         
@@ -230,7 +230,7 @@ TEUI.ComponentBridge = (function() {
         const provinceData = locationData[provinceValue];
         
         if (!provinceData || !provinceData.cities) {
-            console.warn(`No cities found for province: ${provinceValue}`);
+            // console.warn(`No cities found for province: ${provinceValue}`);
             return;
         }
         
@@ -255,7 +255,7 @@ TEUI.ComponentBridge = (function() {
             initField(fieldId);
         });
         
-        console.log(`Initialized section: ${sectionId}`);
+        // console.log(`Initialized section: ${sectionId}`);
     }
     
     /**
@@ -270,7 +270,7 @@ TEUI.ComponentBridge = (function() {
             initSection(sectionId);
         });
         
-        console.log('Initialized all components');
+        // console.log('Initialized all components');
     }
     
     /**
@@ -280,12 +280,12 @@ TEUI.ComponentBridge = (function() {
     function initializeDropdown(dropdownElement, dropdownId) {
         // Check if FieldManager is available 
         if (!window.TEUI.FieldManager) {
-            console.warn(`FieldManager not available for dropdown initialization: ${dropdownId}`);
+            // console.warn(`FieldManager not available for dropdown initialization: ${dropdownId}`);
             return;
         }
         
         if (!dropdownElement || !dropdownId) {
-            console.warn(`Invalid dropdown element or ID: ${dropdownId}`);
+            // console.warn(`Invalid dropdown element or ID: ${dropdownId}`);
             return;
         }
         
@@ -377,7 +377,7 @@ TEUI.ComponentBridge = (function() {
 
 // Initialize when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('TEUI ComponentBridge ready...');
+    // console.log('TEUI ComponentBridge ready...');
     
     // Initialize components after a short delay to ensure all scripts are loaded
     setTimeout(function() {

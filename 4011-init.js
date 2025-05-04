@@ -5,7 +5,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('TEUI 4.011 Calculator Initializing...');
+    // console.log('TEUI 4.011 Calculator Initializing...');
     
     // Ensure TEUI namespace exists
     window.TEUI = window.TEUI || {};
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } catch (e) {
-            console.error('Error restoring collapsed state:', e);
+            // console.error('Error restoring collapsed state:', e);
         }
     }
     
@@ -617,22 +617,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup download button actions
     document.getElementById('downloadReport').addEventListener('click', function() {
-        console.log('Download report clicked');
+        // console.log('Download report clicked');
         // This will be implemented later
     });
     
     document.getElementById('teui-factsheet').addEventListener('click', function() {
-        console.log('TEUI factsheet download clicked');
+        // console.log('TEUI factsheet download clicked');
         // This will be implemented later
     });
     
     document.getElementById('tedi-factsheet').addEventListener('click', function() {
-        console.log('TEDI factsheet download clicked');
+        // console.log('TEDI factsheet download clicked');
         // This will be implemented later
     });
     
     document.getElementById('export-data').addEventListener('click', function() {
-        console.log('Full dataset export clicked');
+        // console.log('Full dataset export clicked');
         // This will be implemented later
     });
     
@@ -665,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             })
                             .catch(error => {
                                 feedbackArea.textContent = `Error loading Excel file: ${error.message}`;
-                                console.error('Error loading Excel file:', error);
+                                // console.error('Error loading Excel file:', error);
                             });
                     }
                 });
@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (debugExcelBtn) {
             debugExcelBtn.addEventListener('click', function() {
                 const data = TEUI.ExcelLocationHandler.getLocationData();
-                console.log('Location data:', data);
+                // console.log('Location data:', data);
                 
                 if (data) {
                     alert('See console for location data');
@@ -743,7 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    console.log('TEUI 4.011 Calculator Initialized');
+    // console.log('TEUI 4.011 Calculator Initialized');
 
     // Replace the scroll event listener with a much simpler approach
     document.addEventListener('scroll', function() {

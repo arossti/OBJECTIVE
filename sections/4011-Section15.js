@@ -94,7 +94,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             // Add/remove classes based on value if needed (e.g., for negatives)
             element.classList.toggle('negative-value', rawValue < 0);
         } else {
-            console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+            // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
         }
     }
     
@@ -675,7 +675,7 @@ window.TEUI.SectionModules.sect15 = (function() {
      */
     function registerDependencies() {
         if (!window.TEUI.StateManager) {
-            console.warn("StateManager not available for TEUI dependency registration");
+            // console.warn("StateManager not available for TEUI dependency registration");
             return;
         }
         const sm = window.TEUI.StateManager;
@@ -774,7 +774,7 @@ window.TEUI.SectionModules.sect15 = (function() {
         sm.registerDependency('k_32', 'd_145');
         // Placeholder: sm.registerDependency('reference_k_32', 'd_145'); 
 
-        console.log("TEUI Summary dependencies registered");
+        // console.log("TEUI Summary dependencies registered");
     }
     
     /**
@@ -784,7 +784,7 @@ window.TEUI.SectionModules.sect15 = (function() {
     function calculateValues() {
         try {
             if (!window.TEUI.StateManager) {
-                console.warn("StateManager not available for TEUI Summary calculations");
+                // console.warn("StateManager not available for TEUI Summary calculations");
                 return;
             }
             const sm = window.TEUI.StateManager;
@@ -997,7 +997,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             // console.log("TEUI calculations completed");
             
         } catch (error) {
-            console.error("Error in TEUI Summary calculations:", error);
+            // console.error("Error in TEUI Summary calculations:", error);
         }
     }
     
@@ -1018,7 +1018,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             
             // console.log("TEUI Summary full calculation cycle completed");
         } catch (error) {
-            console.error("Error in TEUI Summary calculateAll:", error);
+            // console.error("Error in TEUI Summary calculateAll:", error);
         }
     }
     
@@ -1072,7 +1072,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 }
             }
         });
-         console.log("TEUI Summary display updated");
+         // console.log("TEUI Summary display updated");
     }
     
     /**
@@ -1150,21 +1150,21 @@ window.TEUI.SectionModules.sect15 = (function() {
              });
         });
 
-         console.log("TEUI Summary event listeners initialized.");
+         // console.log("TEUI Summary event listeners initialized.");
     }
     
     /**
      * Called when section is rendered
      */
     function onSectionRendered() {
-        console.log("TEUI Summary section (sect15) rendered");
+        // console.log("TEUI Summary section (sect15) rendered");
         
         // Register dependencies first
         // Dependencies might rely on other sections being registered, so ensure StateManager is ready
         if (window.TEUI.StateManager) {
         registerDependencies();
         } else {
-            console.warn("StateManager not ready during sect15 onSectionRendered dependency registration.");
+            // console.warn("StateManager not ready during sect15 onSectionRendered dependency registration.");
             // Optionally, retry registration later or listen for a StateManager ready event
         }
         

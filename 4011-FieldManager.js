@@ -232,7 +232,7 @@ TEUI.FieldManager = (function() {
      * @param {string} sectionId - Section ID
      */
     function initializeSectionEventHandlers(sectionId) {
-        console.log(`[FieldManager] Initializing event handlers for section: ${sectionId}`);
+        // console.log(`[FieldManager] Initializing event handlers for section: ${sectionId}`);
         const internalSectionId = sections[sectionId];
         if (!internalSectionId || !TEUI.SectionModules[internalSectionId]) {
             console.warn(`Module not found for section ${sectionId}`);
@@ -261,7 +261,7 @@ TEUI.FieldManager = (function() {
             }
         }
 
-        console.log(`[FieldManager] Finished initializing event handlers for section: ${sectionId}`);
+        // console.log(`[FieldManager] Finished initializing event handlers for section: ${sectionId}`);
     }
 
     /**
@@ -350,13 +350,13 @@ TEUI.FieldManager = (function() {
         const sectionElement = document.getElementById(sectionId);
         
         if (!sectionElement) {
-            console.warn(`Section element with ID '${sectionId}' not found in DOM`);
+            // console.warn(`Section element with ID '${sectionId}' not found in DOM`);
             return;
         }
         
         const contentContainer = sectionElement.querySelector('.section-content');
         if (!contentContainer) {
-            console.warn(`Content container not found in section '${sectionId}'`);
+            // console.warn(`Content container not found in section '${sectionId}'`);
             return;
         }
         
@@ -806,7 +806,7 @@ TEUI.FieldManager = (function() {
                 }
                 
                 if (!options || options.length === 0) {
-                    console.warn(`No options found for dropdown ${field.dropdownId}`);
+                    // console.warn(`No options found for dropdown ${field.dropdownId}`);
                     
                     // Add a placeholder option
                     const placeholderOption = document.createElement('option');

@@ -18,54 +18,14 @@ window.TEUI.SectionModules.sect04 = (function() {
     //==========================================================================
     
     /**
-     * Safely parses a numeric value from StateManager or DOM, handling potential strings with commas.
-     * Uses the global parseNumeric if available, otherwise provides a fallback.
+     * Safely parses a numeric value from StateManager, using the global parseNumeric.
      * @param {string} fieldId - The ID of the field to retrieve the value for.
      * @returns {number} The parsed numeric value, or 0 if parsing fails.
      */
     function getNumericValue(fieldId) {
-        // Always use global parseNumeric and StateManager
-        return window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(fieldId)) || 0;
-    }
-    
-    /**
-     * Formats a number according to the project's display rules.
-     * Handles specific formats like percentages and currency.
-     * @param {number} value - The number to format.
-     * @param {number} [decimals=2] - Number of decimal places.
-     * @param {string} [format='number'] - The type of format ('number', 'currency', 'percent').
-     * @returns {string} The formatted number as a string.
-     */
-    function formatNumber(value, formatType = 'number-2dp-comma') {
-        // Always use global formatter
-        return window.TEUI.formatNumber(value, formatType);
-    }
-    
-    /**
-     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
-     * @param {string} fieldId - The ID of the field to update.
-     * @param {number} rawValue - The raw calculated numeric value.
-     * @param {string} [formatType='number-2dp-comma'] - The format type string (e.g., 'number-2dp-comma', 'percent-1dp').
-     */
-    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
-        const formattedValue = formatNumber(rawValue, formatType); // Use the updated formatNumber helper
-        
-        // Store raw value as string in StateManager for precision
-        if (window.TEUI?.StateManager?.setValue) {
-             // Convert NaN/Infinity to null or a specific string if needed
-             let stateValue = isFinite(rawValue) ? rawValue.toString() : null; 
-            window.TEUI.StateManager.setValue(fieldId, stateValue, 'calculated');
-        }
-        
-        // Update DOM with formatted value or 'N/A'
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = isFinite(rawValue) ? formattedValue : 'N/A';
-            // Add/remove classes based on value if needed (e.g., for negatives)
-            element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
-        } else {
-            // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
-        }
+        const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+        // Use the global parseNumeric if available
+        return window.TEUI?.parseNumeric?.(rawValue) || 0;
     }
     
     /**
@@ -80,11 +40,37 @@ window.TEUI.SectionModules.sect04 = (function() {
                 return value.toString();
             }
         }
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        const element = document.querySelector(`[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`); 
         if (element) {
             return element.value !== undefined ? element.value : element.textContent;
         }
         return null;
+    }
+    
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number} rawValue - The raw calculated numeric value.
+     * @param {string} [formatType='number-2dp-comma'] - The format type string (e.g., 'number-2dp-comma', 'percent-1dp', 'integer').
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        // Use global formatter - ensuring window.TEUI and formatNumber exist
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        
+        // Store raw value as string in StateManager for precision
+        if (window.TEUI?.StateManager?.setValue) {
+             let stateValue = isFinite(rawValue) ? rawValue.toString() : null; 
+            window.TEUI.StateManager.setValue(fieldId, stateValue, 'calculated');
+        }
+        
+        // Update DOM
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
+        } else {
+            // console.warn(`setCalculatedValue (S13): Element not found for fieldId ${fieldId}`);
+        }
     }
     
     //==========================================================================
