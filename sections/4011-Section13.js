@@ -1254,6 +1254,8 @@ window.TEUI.SectionModules.sect13 = (function() {
                 calculateDaysActiveCooling(coolingState.freeCoolingLimit); 
                 setCalculatedValue('m_124', coolingState.daysActiveCooling, 'integer');
             }); 
+            // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
+            sm.addListener('d_113', handleHeatingSystemChangeForGhosting);
         } else {
             console.warn("Section 13: StateManager not available to add listeners.");
         }
@@ -1783,12 +1785,16 @@ window.TEUI.SectionModules.sect13 = (function() {
         initializeEventHandlers: initializeEventHandlers,
         onSectionRendered: onSectionRendered,
         
-        // Section-specific utility functions
+        // Section-specific utility functions - OPTIONAL
         calculateAll: calculateAll,
         calculateHeatingSystem: calculateHeatingSystem,
         calculateCoolingSystem: calculateCoolingSystem,
         calculateVentilationValues: calculateVentilationValues,
         calculateFreeCooling: calculateFreeCooling
+        // *** ADDED: Listener for d_113 to handle ghosting ***
+        // sm.addListener('d_113', handleHeatingSystemChangeForGhosting),
+        // *** END ADDED ***
+        
         // Removed getNumericValue from public API
     };
 })();
@@ -1845,4 +1851,61 @@ function setFieldDisabled(fieldId, isDisabled) {
             element.classList.toggle('ghost-text', isDisabled);
         }
     } 
+}
+
+//==========================================================================
+// GHOSTING LOGIC ADDED
+//==========================================================================
+
+/**
+ * Helper to add/remove a ghosting class to a field's TD element.
+ * @param {string} fieldId 
+ * @param {boolean} shouldBeGhosted 
+ */
+function setFieldGhosted(fieldId, shouldBeGhosted) {
+    const element = document.querySelector(`td[data-field-id="${fieldId}"]`);
+    if (element) {
+        element.classList.toggle('ghosted', shouldBeGhosted); // Assuming 'ghosted' is the CSS class
+        // Optionally disable input elements within if needed
+        const input = element.querySelector('input, select, [contenteditable="true"]'); // Target input, select, or editable
+        if(input) {
+            if(input.hasAttribute('contenteditable')) {
+                input.contentEditable = !shouldBeGhosted;
+            } else {
+                input.disabled = shouldBeGhosted;
+            }
+        }
+        // Ensure contenteditable is explicitly removed/set if needed, even if no input found
+        if(element.hasAttribute('contenteditable')) element.contentEditable = !shouldBeGhosted;
+        
+    } else {
+        // console.warn(`Ghosting: Element for field ${fieldId} not found.`);
+    }
+}
+
+/**
+ * Handles changes to d_113 to apply/remove ghosting styles.
+ */
+function handleHeatingSystemChangeForGhosting(newValue) {
+    const systemType = newValue; // e.g., "Gas", "Oil", "Heatpump", "Electricity"
+
+    // Fields related to Gas
+    setFieldGhosted('h_115', systemType !== 'Gas'); // Target Gas Use
+    setFieldGhosted('j_115', systemType === 'Heatpump' || systemType === 'Electricity'); // AFUE (ghost if HP/Elec)
+
+    // Fields related to Oil
+    setFieldGhosted('f_115', systemType !== 'Oil'); // Target Oil Use
+    // AFUE (j_115) is already handled above
+
+    // Fields related to Heatpump
+    const isHP = systemType === 'Heatpump';
+    setFieldGhosted('f_113', !isHP); // HSPF
+    setFieldGhosted('h_113', !isHP); // COPheat
+    setFieldGhosted('j_113', !isHP); // COPcool
+    setFieldGhosted('j_114', !isHP); // CEER
+    setFieldGhosted('l_113', !isHP); // Heatpump Sink
+
+    // Ensure dedicated cooling COP (j_116) is NOT ghosted if Cooling is active (d_116) and system is NOT HP
+    const isCoolingActive = getFieldValue('d_116') === 'Cooling';
+    setFieldGhosted('j_116', !(isCoolingActive && !isHP)); 
 }

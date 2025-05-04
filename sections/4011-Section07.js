@@ -843,6 +843,13 @@ window.TEUI.SectionModules.sect07 = (function() {
             return; // Exit gracefully if section element not found
         }
         
+        // --- ADDED: Listener for DHW Source change (d_51) ---
+        const d51Dropdown = sectionElement.querySelector('select[data-field-id="d_51"]');
+        if (d51Dropdown) {
+            d51Dropdown.addEventListener('change', handleDHWSourceChange);
+        }
+        // --- END ADDED --- 
+
         // Setup dropdown change handlers
         const dropdowns = sectionElement.querySelectorAll('[data-dropdown-id]');
         dropdowns.forEach(dropdown => {
@@ -949,6 +956,9 @@ window.TEUI.SectionModules.sect07 = (function() {
                 calculateAll();
             });
         }
+
+        // Mark section as initialized
+        window.TEUI.sect07.initialized = true;
     }
     
     /**
@@ -1037,6 +1047,58 @@ window.TEUI.SectionModules.sect07 = (function() {
         
         // Run initialization
         initializeDropdownValues();
+    }
+    
+    /**
+     * NEW: Handles changes to the DHW Energy Source dropdown (d_51)
+     * Updates the efficiency field (d_52) based on the selection.
+     */
+    function handleDHWSourceChange(event) {
+        const selectedSource = event.target.value;
+        const d52Slider = document.querySelector('input[type="range"][data-field-id="d_52"]');
+        const d52Display = document.querySelector('span[data-display-for="d_52"]'); 
+        const d52Cell = document.querySelector('td[data-field-id="d_52"]');
+
+        let newEfficiencyPercent = 300; // Default for Heatpump
+        let isDisabled = false;
+
+        if (selectedSource === "Gas" || selectedSource === "Oil") {
+            newEfficiencyPercent = 90; // Set to 90% for Gas/Oil
+            isDisabled = true;
+        } else if (selectedSource === "Electric") {
+            newEfficiencyPercent = 100; // Set to 100% (COP=1) for Electric resistance
+            isDisabled = true;
+        } else {
+            // Heatpump selected (or unknown), keep default and enable
+            // Optionally read last user value from state if available?
+            // For simplicity, we reset to 300% now.
+            newEfficiencyPercent = 300;
+            isDisabled = false;
+        }
+
+        // Update StateManager first
+        if (window.TEUI.StateManager) {
+            // Store the percentage value (as string)
+            window.TEUI.StateManager.setValue("d_52", newEfficiencyPercent.toString(), 'system-update');
+        }
+
+        // Update Slider & Display
+        if (d52Slider) {
+            d52Slider.value = newEfficiencyPercent; // Update slider value
+            d52Slider.disabled = isDisabled; // Disable/enable slider
+            if (d52Display) { 
+                d52Display.textContent = `${newEfficiencyPercent}%`; // Update display
+            }
+        }
+        // Also update cell appearance
+        if(d52Cell){
+            d52Cell.classList.toggle('disabled-input', isDisabled);
+            // If we have a slider, remove editable class just in case
+            if(d52Slider) d52Cell.classList.remove('editable', 'user-input');
+        }
+
+        // Trigger recalculations that depend on d_52
+        calculateAll(); // Recalculate section
     }
     
     //==========================================================================
