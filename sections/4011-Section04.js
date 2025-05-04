@@ -38,7 +38,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             const value = window.TEUI.StateManager.getValue(fieldId);
             if (value !== null && value !== undefined) {
                 return value.toString();
-            }
+        }
         }
         const element = document.querySelector(`[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`); 
         if (element) {
@@ -522,13 +522,9 @@ window.TEUI.SectionModules.sect04 = (function() {
                         window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
                     }
                     
-                    // Immediately update dependent calculated fields visually
-                    updateDependentFields(fieldId, newValue);
+                    // Removed call to updateDependentFields - rely on StateManager listeners
                     
-                    // Trigger calculations
-                    if (window.TEUI && window.TEUI.Calculator) {
-                        window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
-                    }
+                    // Removed calculateSection call - Rely solely on StateManager listeners to trigger calcs
                 }
             });
             
@@ -575,7 +571,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             const updateFactorCallback = () => { 
                  updateElectricityEmissionFactor(); 
             };
-
+            
             // Listen for province changes (dd_d_19)
             sm.addListener('dd_d_19', updateFactorCallback);
             sm.addListener('d_19', updateFactorCallback); // Also listen for d_19
@@ -583,10 +579,15 @@ window.TEUI.SectionModules.sect04 = (function() {
             // Listen for reporting year changes (h_12)
             sm.addListener('h_12', updateFactorCallback);
             sm.addListener('d_12', updateFactorCallback);
-
+            
             // Listener function for Net Electricity changes (Renewables)
             const netElectricityUpdateCallback = function(newValue, oldValue, sourceFieldId) { // Added params
                 console.log(`[S4 DEBUG] netElectricityUpdateCallback triggered by ${sourceFieldId}. New value: ${newValue}, Old value: ${oldValue}`); 
+                
+                // Specific log when d_27 changes
+                if (sourceFieldId === 'd_27') {
+                    console.log(`[S4 DEBUG] d_27 changed. Reading current values...`);
+                }
                 
                 // Fetch CURRENT values from StateManager using helper
                 const d27 = getNumericValue('d_27');
@@ -602,7 +603,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 const g27New = calculateG27(); // No args needed
                 const k27New = calculateK27(); // No args needed
                 console.log(`[S4 DEBUG] Calculated values: f27New=${f27New}, j27New=${j27New}, g27New=${g27New}, k27New=${k27New}`);
-  
+ 
                 // Update net usage fields using standard helper
                 setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
                 setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
@@ -610,10 +611,11 @@ window.TEUI.SectionModules.sect04 = (function() {
                 setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
                 setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
                 console.log("[S4 DEBUG] Called setCalculatedValue for f_27, j_27, g_27, k_27.");
-  
+ 
                 updateSubtotals(); // Update totals after row 27 changes
             };
 
+            sm.addListener('d_27', netElectricityUpdateCallback); // *** ADDED: Listen for Actual Electricity Use ***
             sm.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables
             // window.TEUI.StateManager.addListener('i_44', netElectricityUpdateCallback); // Listener no longer needed
             sm.addListener('i_43', netElectricityUpdateCallback); // Offsite REC Subtotal
@@ -648,6 +650,45 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             sm.addListener('d_136', handleD136Update); // Listen for d_136 now
             // --- End Listener for d_136 ---
+            
+            // --- Listeners for Target Fuel Updates (Gas/Oil from S07/S13) ---
+            const targetFuelUpdateCallback = () => {
+                console.log("[S4 DEBUG] targetFuelUpdateCallback triggered.");
+
+                // Recalculate H28/J28/K28 (Gas)
+                const h28Value = calculateH28();
+                setCalculatedValue('h_28', h28Value, 'number-2dp-comma');
+                const j28Value = calculateJ28();
+                setCalculatedValue('j_28', j28Value, 'number-2dp-comma');
+                const k28Value = calculateK28();
+                setCalculatedValue('k_28', k28Value, 'number-2dp-comma');
+                console.log(`[S4 DEBUG] Updated Gas Target: h28=${h28Value}, j28=${j28Value}, k28=${k28Value}`);
+
+                // Recalculate H30/J30/K30 (Oil)
+                const h30Value = calculateH30();
+                setCalculatedValue('h_30', h30Value, 'number-2dp-comma');
+                const j30Value = calculateJ30();
+                setCalculatedValue('j_30', j30Value, 'number-2dp-comma');
+                const k30Value = calculateK30();
+                setCalculatedValue('k_30', k30Value, 'number-2dp-comma');
+                console.log(`[S4 DEBUG] Updated Oil Target: h30=${h30Value}, j30=${j30Value}, k30=${k30Value}`);
+
+                // Update subtotals that depend on these rows
+                updateSubtotals();
+            };
+
+            // Dependencies for H28/J28/K28 (Gas)
+            sm.addListener('d_113', targetFuelUpdateCallback); // S13 Primary Heating System
+            sm.addListener('h_115', targetFuelUpdateCallback); // S13 Target Gas Use (Calc)
+            sm.addListener('d_51', targetFuelUpdateCallback);  // S07 DHW Source
+            sm.addListener('e_51', targetFuelUpdateCallback);  // S07 DHW User kWh (if Gas)
+
+            // Dependencies for H30/J30/K30 (Oil) - Assuming k_54 is target DHW Oil use
+            sm.addListener('d_113', targetFuelUpdateCallback); // S13 Primary Heating System (already added, listener handles multiple calls)
+            sm.addListener('f_115', targetFuelUpdateCallback); // S13 Target Oil Use (Calc)
+            sm.addListener('d_51', targetFuelUpdateCallback);  // S07 DHW Source (already added)
+            sm.addListener('l_54', targetFuelUpdateCallback);  // CORRECTED: Listen to Net Oil Litres (l_54)
+            // --- End Target Fuel Listeners ---
 
             // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
             document.addEventListener('input', function(e) {
@@ -1124,26 +1165,26 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Update f_32 (Operational GHG & Energy Subtotals)
         const f32Value = calculateF32(f27Value, f28Value, f29Value, f30Value, f31Value);
         setCalculatedValue('f_32', f32Value, 'number-2dp-comma');
-        
-        // Check for zero energy case and force immediate TEUI update
+                
+                // Check for zero energy case and force immediate TEUI update
         if (f32Value === 0 && window.TEUI?.StateManager) { // Check StateManager exists
-            // console.log("Zero energy detected - forcing TEUI update");
-            if (typeof window.calculateTEUI === 'function') {
-                window.calculateTEUI();
-            } else if (window.TEUI.StateManager.updateTEUICalculations) {
-                window.TEUI.StateManager.updateTEUICalculations('zero-energy-case');
+                    // console.log("Zero energy detected - forcing TEUI update");
+                    if (typeof window.calculateTEUI === 'function') {
+                        window.calculateTEUI();
+                    } else if (window.TEUI.StateManager.updateTEUICalculations) {
+                        window.TEUI.StateManager.updateTEUICalculations('zero-energy-case');
             } else if (window.TEUI.SectionModules?.sect01?.runAllCalculations) {
                 // Fallback: directly call S01 calculation if specific hook is missing
                 window.TEUI.SectionModules.sect01.runAllCalculations();
-            }
+                }
         } else {
             // Force TEUI recalculation after energy update (if not zero)
-            setTimeout(() => {
-                if (typeof window.calculateTEUI === 'function') {
-                    window.calculateTEUI();
+                setTimeout(() => {
+                    if (typeof window.calculateTEUI === 'function') {
+                        window.calculateTEUI();
                 } else if (window.TEUI?.SectionModules?.sect01?.runAllCalculations) {
                      window.TEUI.SectionModules.sect01.runAllCalculations();
-                }
+                    }
             }, 100); // Delay slightly
         }
         
@@ -1219,7 +1260,7 @@ window.TEUI.SectionModules.sect04 = (function() {
      * @param {number} value - The number to format
      * @returns {string} - Formatted number string
      */
-
+    
     /**
      * Define section-specific calculation functions here
      * These will be called by the Calculator module based on field dependencies
@@ -1358,14 +1399,18 @@ window.TEUI.SectionModules.sect04 = (function() {
     function calculateH30() {
         const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
         const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
-        const k54 = getNumericValue('k_54'); // Get numeric value
+        const l54 = getNumericValue('l_54'); // CORRECT: Use Net Oil Demand Ltrs
         const f115 = getNumericValue('f_115'); // Get numeric value
         // =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
+        // --- CORRECTED LOGIC ---
         if (d113 === "Oil" && d51 === "Oil") {
-            return k54 + f115;
+            // Sum target Oil Litres from S13 heating (f_115) and S07 DHW (l_54)
+            return l54 + f115; 
         } else if (d51 === "Oil") {
-            return k54;
+            // Only DHW uses Oil
+            return l54; 
         } else if (d113 === "Oil") {
+            // Only Heating uses Oil
             return f115;
         } else {
             return 0;
@@ -1636,14 +1681,14 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Update electricity emission factor based on province and year
         // Moved the timeout wrapper here to ensure factors are updated after potential defaults are set
         setTimeout(() => {
-            updateElectricityEmissionFactor();
-            // Update subtotals immediately to ensure correct initial values
-            updateSubtotals();
-
+        updateElectricityEmissionFactor();
+        // Update subtotals immediately to ensure correct initial values
+        updateSubtotals();
+        
             // Trigger initial calculations after factors and subtotals are set
-            if (window.TEUI && window.TEUI.Calculator) {
-                window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
-            }
+        if (window.TEUI && window.TEUI.Calculator) {
+            window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
+        }
             // console.log("Section 4 Initial Calculation Triggered");
         }, 50); // Short delay to allow potential state updates
     }
