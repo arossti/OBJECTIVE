@@ -671,8 +671,8 @@ window.TEUI.SectionModules.sect01 = (function() {
                     calculateAnnualCarbon(); // Recalculates T.2 and triggers T.1
                 } else if (['i_41', 'h_13'].includes(sourceFieldId)) {
                     calculateLifetimeCarbon(); // Recalculate T.1 only
-                } else if (['f_32', 'h_15'].includes(sourceFieldId)) {
-                    calculateTEUI(); // Recalculate T.3
+                } else if (['f_32', 'j_32', 'h_15'].includes(sourceFieldId)) {
+                    calculateTEUI(); // Recalculate T.3 (reads f_32 and j_32)
                 } else if (sourceFieldId === 'd_14' || ['h_6','k_6','h_8','k_8','h_10','k_10','e_10','d_6','d_8'].includes(sourceFieldId)) {
                     // If mode changes or any direct value/ref changes, update display and gauges
                     // Also trigger tier calc if h_10 or e_10 changes

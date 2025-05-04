@@ -36,23 +36,19 @@ window.TEUI.SectionModules.sect04 = (function() {
      * @param {string} [format='number'] - The type of format ('number', 'currency', 'percent').
      * @returns {string} The formatted number as a string.
      */
-    function formatNumber(value, decimals = 2, format = 'number') {
+    function formatNumber(value, formatType = 'number-2dp-comma') {
         // Always use global formatter
-        // Note: The global formatter might use different arguments (e.g., formatType string)
-        // Adjust call signature if necessary based on the global function's definition.
-        // Assuming the global function can handle decimals/format for now:
-        return window.TEUI.formatNumber(value, decimals, format); 
+        return window.TEUI.formatNumber(value, formatType);
     }
     
     /**
      * Sets a calculated value in the StateManager and updates the corresponding DOM element.
      * @param {string} fieldId - The ID of the field to update.
      * @param {number} rawValue - The raw calculated numeric value.
-     * @param {number} [decimals=2] - Number of decimal places for display.
-     * @param {string} [format='number'] - The format type for display.
+     * @param {string} [formatType='number-2dp-comma'] - The format type string (e.g., 'number-2dp-comma', 'percent-1dp').
      */
-    function setCalculatedValue(fieldId, rawValue, decimals = 2, format = 'number') {
-        const formattedValue = formatNumber(rawValue, decimals, format);
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const formattedValue = formatNumber(rawValue, formatType); // Use the updated formatNumber helper
         
         // Store raw value as string in StateManager for precision
         if (window.TEUI?.StateManager?.setValue) {
@@ -587,53 +583,85 @@ window.TEUI.SectionModules.sect04 = (function() {
      */
     function setupCrossSectionListeners() {
         if (window.TEUI && window.TEUI.StateManager) {
+            const sm = window.TEUI.StateManager; // Alias for brevity
+
+            // Listener function for Electricity Emission Factor
+            const updateFactorCallback = () => { 
+                 updateElectricityEmissionFactor(); 
+            };
+
             // Listen for province changes (dd_d_19)
-            window.TEUI.StateManager.addListener('dd_d_19', updateElectricityEmissionFactor);
-            
-            // Also listen for province changes with d_19 as a fallback
-            window.TEUI.StateManager.addListener('d_19', updateElectricityEmissionFactor);
+            sm.addListener('dd_d_19', updateFactorCallback);
+            sm.addListener('d_19', updateFactorCallback); // Also listen for d_19
             
             // Listen for reporting year changes (h_12)
-            window.TEUI.StateManager.addListener('h_12', updateElectricityEmissionFactor);
-            window.TEUI.StateManager.addListener('d_12', updateElectricityEmissionFactor);
-            
-            // *** ADDING CODE BELOW THIS LINE ***
+            sm.addListener('h_12', updateFactorCallback);
+            sm.addListener('d_12', updateFactorCallback);
+
+            // Listener function for Net Electricity changes (Renewables)
             const netElectricityUpdateCallback = function() {
-                console.log("[S4 DEBUG] Entering netElectricityUpdateCallback"); 
+                console.log("[S4 DEBUG] Entering netElectricityUpdateCallback (d_43/i_43 changed)"); 
                 
                 // Fetch values 
-                const d27 = window.TEUI.parseNumeric(getFieldValue('d_27')) || 0;
-                const h27 = window.TEUI.parseNumeric(getFieldValue('h_27')) || 0; 
-                const l27 = window.TEUI.parseNumeric(getFieldValue('l_27')) || 0; 
-                const d43 = window.TEUI.parseNumeric(getFieldValue('d_43')) || 0; // Onsite Renewables
-                const i43 = window.TEUI.parseNumeric(getFieldValue('i_43')) || 0; // Offsite REC
+                const d27 = getNumericValue('d_27') || 0; // Use helper
+                const h27 = getNumericValue('h_27') || 0; // Use helper
+                const l27 = getNumericValue('l_27') || 0; // Use helper
+                const d43 = getNumericValue('d_43') || 0; // Onsite Renewables - Triggering value
+                const i43 = getNumericValue('i_43') || 0; // Offsite REC - Triggering value
                 console.log(`[S4 DEBUG] netElectricityUpdateCallback read values: h27=${h27}, d43=${d43}, i43=${i43}, l27=${l27}`);
 
-                // Perform calculations directly
-                // Note: Formula for f27 might depend only on d27 & d43, check requirements.
-                // Assuming F27 = D27 - D43 based on common practice & lack of i43 dependency in Excel for F27.
-                const f27New = d27 - d43;
-                // CORRECTED FORMULA: Calculate j_27 = h27 - d43 - i43
-                const j27New = h27 - d43 - i43; 
-                const g27New = f27New * (l27 / 1000); 
-                const k27New = j27New * (l27 / 1000); 
- 
-                // Update net usage fields
-                setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
-                setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
-                // Update emission fields
-                setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
-                setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
- 
+                // Perform calculations using calculation helpers
+                const f27New = calculateF27(d27, d43, i43);
+                const j27New = calculateJ27(h27, d43, i43); 
+                const g27New = calculateG27(f27New, l27); 
+                const k27New = calculateK27(j27New, l27); 
+  
+                // Update net usage fields using standard helper
+                setCalculatedValue('f_27', f27New, 'number-2dp-comma'); // Added formatType
+                setCalculatedValue('j_27', j27New, 'number-2dp-comma'); // Added formatType
+                // Update emission fields using standard helper
+                setCalculatedValue('g_27', g27New, 'number-2dp-comma'); // Added formatType
+                setCalculatedValue('k_27', k27New, 'number-2dp-comma'); // Added formatType
+  
                 updateSubtotals(); // Update totals after row 27 changes
             };
 
-            window.TEUI.StateManager.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables (affects f_27 & j_27)
+            sm.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables
             // window.TEUI.StateManager.addListener('i_44', netElectricityUpdateCallback); // Listener no longer needed
-            window.TEUI.StateManager.addListener('i_43', netElectricityUpdateCallback); // Offsite REC Subtotal (affects f_27 & j_27)
-            // *** ADDING CODE ABOVE THIS LINE ***
-            
-            // Direct DOM event listener as fallback
+            sm.addListener('i_43', netElectricityUpdateCallback); // Offsite REC Subtotal
+
+            // --- Listener for d_136 (Target Energy from S15) ---
+            const handleD136Update = () => {
+                console.log("[S4 DEBUG] Entering handleD136Update (d_136 changed)");
+                const d136Value = getNumericValue('d_136');
+                
+                // Update h_27 (Target Electricity Use in S04)
+                setCalculatedValue('h_27', d136Value, 'number-2dp-comma'); // Added formatType
+                console.log(`[S4 DEBUG] Updated h_27 with d_136 value: ${d136Value}`);
+                
+                // Now trigger j_27 recalculation using the NEW h_27 value
+                const h27Value = d136Value; // Use the value we just set
+                const d43Value = getNumericValue('d_43');
+                const i43Value = getNumericValue('i_43');
+                const l27Value = getNumericValue('l_27'); // Needed for k_27 calculation
+                
+                const j27Value = calculateJ27(h27Value, d43Value, i43Value);
+                setCalculatedValue('j_27', j27Value, 'number-2dp-comma'); // Added formatType
+                console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using h_27=${h27Value}, d_43=${d43Value}, i_43=${i43Value})`);
+
+                // Also trigger k_27 recalculation (Target Emissions)
+                const k27Value = calculateK27(j27Value, l27Value);
+                setCalculatedValue('k_27', k27Value, 'number-2dp-comma'); // Added formatType
+                console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using j_27=${j27Value}, l_27=${l27Value})`);
+
+                // Trigger subtotal update
+                updateSubtotals();
+            };
+
+            sm.addListener('d_136', handleD136Update); // Listen for d_136 now
+            // --- End Listener for d_136 ---
+
+            // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
             document.addEventListener('input', function(e) {
                 const target = e.target;
                 if (target && (target.getAttribute('data-field-id') === 'h_12' || 
@@ -748,7 +776,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Update the l_27 field and StateManager
         const l27El = document.querySelector('[data-field-id="l_27"]');
         if (l27El) {
-            l27El.textContent = formatNumber(factor);
+            // Use standard helper with formatType
+            setCalculatedValue('l_27', factor, 'integer'); // Emission factors usually shown as integers
             
             // Also update StateManager
             if (window.TEUI && window.TEUI.StateManager) {
@@ -760,14 +789,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             const g27El = document.querySelector('[data-field-id="g_27"]');
             
             if (f27El && g27El) {
-                const f27Value = parseNumeric(f27El.textContent.trim());
+                // Use getNumericValue to read state
+                const f27Value = getNumericValue('f_27');
                 const g27Value = calculateG27(f27Value, factor);
-                g27El.textContent = formatNumber(g27Value);
-                
-                // Update StateManager
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue('g_27', g27Value.toString(), 'calculated');
-                }
+                // Update state and DOM using standard helper
+                setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
             }
             
             // Update dependent emissions calculations for TARGET emissions
@@ -775,14 +801,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             const k27El = document.querySelector('[data-field-id="k_27"]');
             
             if (j27El && k27El) {
-                const j27Value = parseNumeric(j27El.textContent.trim());
+                // Use getNumericValue to read state
+                const j27Value = getNumericValue('j_27');
                 const k27Value = calculateK27(j27Value, factor);
-                k27El.textContent = formatNumber(k27Value);
-                
-                // Update StateManager
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue('k_27', k27Value.toString(), 'calculated');
-                }
+                 // Update state and DOM using standard helper
+                setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
             }
             
             // Update subtotals after both actual and target emissions are updated
@@ -1083,174 +1106,124 @@ window.TEUI.SectionModules.sect04 = (function() {
      * Helper function to update the subtotal rows (row 32)
      */
     function updateSubtotals() {
-        // Get all the values needed for subtotals
-        const f27El = document.querySelector('[data-field-id="f_27"]');
-        const f28El = document.querySelector('[data-field-id="f_28"]');
-        const f29El = document.querySelector('[data-field-id="f_29"]');
-        const f30El = document.querySelector('[data-field-id="f_30"]');
-        const f31El = document.querySelector('[data-field-id="f_31"]');
+        // Get all the values needed for subtotals using the standard helper
+        const f27Value = getNumericValue('f_27');
+        const f28Value = getNumericValue('f_28');
+        const f29Value = getNumericValue('f_29');
+        const f30Value = getNumericValue('f_30');
+        const f31Value = getNumericValue('f_31');
         
-        const g27El = document.querySelector('[data-field-id="g_27"]');
-        const g28El = document.querySelector('[data-field-id="g_28"]');
-        const g29El = document.querySelector('[data-field-id="g_29"]');
-        const g30El = document.querySelector('[data-field-id="g_30"]');
-        const g31El = document.querySelector('[data-field-id="g_31"]');
+        const g27Value = getNumericValue('g_27');
+        const g28Value = getNumericValue('g_28');
+        const g29Value = getNumericValue('g_29');
+        const g30Value = getNumericValue('g_30');
+        const g31Value = getNumericValue('g_31');
         
-        const j27El = document.querySelector('[data-field-id="j_27"]');
-        const j28El = document.querySelector('[data-field-id="j_28"]');
-        const j29El = document.querySelector('[data-field-id="j_29"]');
-        const j30El = document.querySelector('[data-field-id="j_30"]');
-        const j31El = document.querySelector('[data-field-id="j_31"]');
+        const j27Value = getNumericValue('j_27');
+        const j28Value = getNumericValue('j_28');
+        const j29Value = getNumericValue('j_29');
+        const j30Value = getNumericValue('j_30');
+        const j31Value = getNumericValue('j_31');
         
-        const k27El = document.querySelector('[data-field-id="k_27"]');
-        const k28El = document.querySelector('[data-field-id="k_28"]');
-        const k29El = document.querySelector('[data-field-id="k_29"]');
-        const k30El = document.querySelector('[data-field-id="k_30"]');
-        const k31El = document.querySelector('[data-field-id="k_31"]');
+        const k27Value = getNumericValue('k_27');
+        const k28Value = getNumericValue('k_28');
+        const k29Value = getNumericValue('k_29');
+        const k30Value = getNumericValue('k_30');
+        const k31Value = getNumericValue('k_31');
         
-        const d60El = document.querySelector('[data-field-id="d_60"]');
+        const d60Value = getNumericValue('d_60'); // Offsets (tCO2e), will be multiplied by 1000 later
         
         // Update f_32 (Operational GHG & Energy Subtotals)
-        const f32El = document.querySelector('[data-field-id="f_32"]');
-        if (f32El && f27El && f28El && f29El && f30El && f31El) {
-            // Sum the values directly rather than using the calculation function
-            const f27Value = parseNumeric(f27El.textContent.trim());
-            const f28Value = parseNumeric(f28El.textContent.trim());
-            const f29Value = parseNumeric(f29El.textContent.trim());
-            const f30Value = parseNumeric(f30El.textContent.trim());
-            const f31Value = parseNumeric(f31El.textContent.trim());
-            
-            const f32Value = f27Value + f28Value + f29Value + f30Value + f31Value;
-            f32El.textContent = formatNumber(f32Value);
-            
-            // Replace multiple console logs with one concise log
-            // console.log(`f_32 updated: ${formatNumber(f32Value)}`);
-            
-            // CRITICAL: Update StateManager with this real value for TEUI calculation
-            if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue("f_32", f32Value.toString(), "calculated");
-                
-                // Check for zero energy case and force immediate TEUI update
-                if (f32Value === 0) {
-                    // Keep this important log
-                    // console.log("Zero energy detected - forcing TEUI update");
-                    if (typeof window.calculateTEUI === 'function') {
-                        window.calculateTEUI();
-                    } else if (window.TEUI.StateManager.updateTEUICalculations) {
-                        window.TEUI.StateManager.updateTEUICalculations('zero-energy-case');
-                    }
-                    return;
-                }
-                
-                // Force TEUI recalculation after energy update
-                setTimeout(() => {
-                    if (typeof window.calculateTEUI === 'function') {
-                        window.calculateTEUI();
-                    }
-                }, 100);
+        const f32Value = calculateF32(f27Value, f28Value, f29Value, f30Value, f31Value);
+        setCalculatedValue('f_32', f32Value, 'number-2dp-comma');
+        
+        // Check for zero energy case and force immediate TEUI update
+        if (f32Value === 0 && window.TEUI?.StateManager) { // Check StateManager exists
+            // console.log("Zero energy detected - forcing TEUI update");
+            if (typeof window.calculateTEUI === 'function') {
+                window.calculateTEUI();
+            } else if (window.TEUI.StateManager.updateTEUICalculations) {
+                window.TEUI.StateManager.updateTEUICalculations('zero-energy-case');
+            } else if (window.TEUI.SectionModules?.sect01?.runAllCalculations) {
+                // Fallback: directly call S01 calculation if specific hook is missing
+                window.TEUI.SectionModules.sect01.runAllCalculations();
             }
+        } else {
+            // Force TEUI recalculation after energy update (if not zero)
+            setTimeout(() => {
+                if (typeof window.calculateTEUI === 'function') {
+                    window.calculateTEUI();
+                } else if (window.TEUI?.SectionModules?.sect01?.runAllCalculations) {
+                     window.TEUI.SectionModules.sect01.runAllCalculations();
+                }
+            }, 100); // Delay slightly
         }
         
         // Update g_32 (Emissions subtotal)
-        const g32El = document.querySelector('[data-field-id="g_32"]');
-        if (g32El && g27El && g28El && g29El && g30El && g31El) {
-            // Sum the values directly rather than using the calculation function
-            const g27Value = parseNumeric(g27El.textContent.trim());
-            const g28Value = parseNumeric(g28El.textContent.trim());
-            const g29Value = parseNumeric(g29El.textContent.trim());
-            const g30Value = parseNumeric(g30El.textContent.trim());
-            const g31Value = parseNumeric(g31El.textContent.trim());
-            
-            // Get offsets value (if available)
-            const d60Value = d60El ? parseNumeric(d60El.textContent.trim()) * 1000 : 0;
-            
-            const g32Value = g27Value + g28Value + g29Value + g30Value + g31Value - d60Value;
-            g32El.textContent = formatNumber(g32Value);
-            
-            // Replace verbose log with concise one
-            // console.log(`g_32 updated: ${formatNumber(g32Value)}`);
-            
-            // CRITICAL: Update StateManager for g_32
-            if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue("g_32", g32Value.toString(), "calculated");
-            }
-        }
+        const g32Value = calculateG32(g27Value, g28Value, g29Value, g30Value, g31Value, d60Value);
+        setCalculatedValue('g_32', g32Value, 'number-2dp-comma');
         
         // Update j_32 (Target subtotal)
-        const j32El = document.querySelector('[data-field-id="j_32"]');
-        if (j32El && j27El && j28El && j29El && j30El && j31El) {
-            // Sum the values directly rather than using the calculation function
-            const j27Value = parseNumeric(j27El.textContent.trim());
-            const j28Value = parseNumeric(j28El.textContent.trim());
-            const j29Value = parseNumeric(j29El.textContent.trim());
-            const j30Value = parseNumeric(j30El.textContent.trim());
-            const j31Value = parseNumeric(j31El.textContent.trim());
-            
-            const j32Value = j27Value + j28Value + j29Value + j30Value + j31Value;
-            j32El.textContent = formatNumber(j32Value);
-            
-            // Replace verbose log with concise one
-            // console.log(`j_32 updated: ${formatNumber(j32Value)}`);
-            
-            // CRITICAL: Update StateManager with this real value for TEUI calculation
-            if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue("j_32", j32Value.toString(), "calculated");
-            }
-        }
+        const j32Value = calculateJ32(j27Value, j28Value, j29Value, j30Value, j31Value);
+        setCalculatedValue('j_32', j32Value, 'number-2dp-comma');
         
         // Update k_32 (Target emissions subtotal)
-        const k32El = document.querySelector('[data-field-id="k_32"]');
-        if (k32El && k27El && k28El && k29El && k30El && k31El) {
-            // Sum the values directly rather than using the calculation function
-            const k27Value = parseNumeric(k27El.textContent.trim());
-            const k28Value = parseNumeric(k28El.textContent.trim());
-            const k29Value = parseNumeric(k29El.textContent.trim());
-            const k30Value = parseNumeric(k30El.textContent.trim());
-            const k31Value = parseNumeric(k31El.textContent.trim());
-            
-            // Get offsets value (if available)
-            const d60Value = d60El ? parseNumeric(d60El.textContent.trim()) * 1000 : 0;
-            
-            const k32Value = k27Value + k28Value + k29Value + k30Value + k31Value - d60Value;
-            k32El.textContent = formatNumber(k32Value);
-            
-            // Replace verbose log with concise one
-            // console.log(`k_32 updated: ${formatNumber(k32Value)}`);
-            
-            // CRITICAL: Update StateManager for k_32
-            if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue("k_32", k32Value.toString(), "calculated");
-            }
-        }
+        const k32Value = calculateK32(k27Value, k28Value, k29Value, k30Value, k31Value, d60Value);
+        setCalculatedValue('k_32', k32Value, 'number-2dp-comma');
         
         // Also update other dependent fields if needed
-        updateDependentTotals();
+        updateDependentTotals(); // This function should also use getNumericValue
     }
     
     /**
      * Update any other fields that depend on the subtotals
      */
     function updateDependentTotals() {
-        // Update d_33, h_33, etc. if needed
-        // For example:
-        const f32El = document.querySelector('[data-field-id="f_32"]');
-        const d43El = document.querySelector('[data-field-id="d_43"]');
-        const i43El = document.querySelector('[data-field-id="i_43"]');
-        const d33El = document.querySelector('[data-field-id="d_33"]');
+        // Update d_33, h_33, etc. using standard helpers
+        const f27Value = getNumericValue('f_27');
+        const f28Value = getNumericValue('f_28');
+        const f29Value = getNumericValue('f_29');
+        const f30Value = getNumericValue('f_30');
+        const f31Value = getNumericValue('f_31');
+        const d43Value = getNumericValue('d_43');
+        const i43Value = getNumericValue('i_43');
+        const j27Value = getNumericValue('j_27');
+        const j28Value = getNumericValue('j_28');
+        const j29Value = getNumericValue('j_29');
+        const j30Value = getNumericValue('j_30');
+        const j31Value = getNumericValue('j_31');
+        const k32Value = getNumericValue('k_32'); // For L34
+        const d63Value = getNumericValue('d_63'); // For L34
+        const h15Value = getNumericValue('h_15'); // For F35
+        const d14Value = window.TEUI.StateManager?.getValue('d_14'); // For D35
+        const h35Value = getNumericValue('h_35'); // For D35
+
+        const d33Value = calculateD33(f27Value, f28Value, f29Value, f30Value, f31Value, d43Value, i43Value);
+        setCalculatedValue('d_33', d33Value, 'number-2dp-comma');
+
+        const h33Value = calculateH33(j27Value, j28Value, j29Value, j30Value, j31Value, i43Value, d43Value);
+        setCalculatedValue('h_33', h33Value, 'number-2dp-comma');
         
-        if (f32El && d33El) {
-            const f32Value = parseNumeric(f32El.textContent.trim());
-            const d43Value = d43El ? parseNumeric(d43El.textContent.trim()) : 0;
-            const i43Value = i43El ? parseNumeric(i43El.textContent.trim()) : 0;
-            
-            // Calculate d_33 = (f32 - d43 - i43) / 277.7777
-            if (d33El) {
-                const d33Value = (f32Value - d43Value - i43Value) / 277.7777;
-                d33El.textContent = formatNumber(d33Value);
-            }
-        }
-        
-        // Update other dependent values as needed
+        const d34Value = calculateD34(f27Value, f28Value, d63Value);
+        setCalculatedValue('d_34', d34Value, 'number-2dp-comma');
+
+        const f34Value = calculateF34(d33Value, d63Value);
+        setCalculatedValue('f_34', f34Value, 'number-2dp-comma');
+
+        const h34Value = calculateH34(j27Value, j28Value, d63Value);
+        setCalculatedValue('h_34', h34Value, 'number-2dp-comma');
+
+        const j34Value = calculateJ34(h33Value, d63Value);
+        setCalculatedValue('j_34', j34Value, 'number-2dp-comma');
+
+        const l34Value = calculateL34(k32Value, d63Value);
+        setCalculatedValue('l_34', l34Value, 'number-2dp-comma');
+
+        const d35Value = calculateD35(d14Value, j27Value, h35Value, f27Value);
+        setCalculatedValue('d_35', d35Value, 'number-2dp-comma');
+
+        const f35Value = calculateF35(d35Value, h15Value);
+        setCalculatedValue('f_35', f35Value, 'number-2dp-comma');
     }
     
     /**
