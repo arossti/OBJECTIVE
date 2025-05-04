@@ -276,47 +276,91 @@
              this.showStatus('Generating CSV export...', 'info');
 
              try {
-                const header = ["fieldId", "domSelector", "description", "value", "units"];
+                // 1. Build a lookup map for layout details
+                const layoutLookup = {};
+                const sections = this.fieldManager.getSections(); // Get { uiSectionId: moduleSectionId }
+                Object.keys(sections).forEach(uiSectionId => {
+                    const layout = this.fieldManager.getLayoutForSection(uiSectionId);
+                    if (layout && layout.rows) {
+                        layout.rows.forEach(rowDef => {
+                            const excelRow = rowDef.id; // Assuming rowDef.id is the Excel row number
+                            let rowId = ''; // Column B
+                            let description = ''; // Column C
+
+                            rowDef.cells.forEach((cellDef, index) => {
+                                if (index === 1) { // Column B - RowID
+                                    rowId = cellDef.content || excelRow; // Use content if exists, else excelRow
+                                } else if (index === 2) { // Column C - Description
+                                    description = cellDef.label || cellDef.content || '';
+                                } else if (cellDef.fieldId) {
+                                    // Store layout info against fieldId
+                                    layoutLookup[cellDef.fieldId] = {
+                                        excelRow: excelRow,
+                                        rowId: rowId, // Use the ID found in col B
+                                        description: description, // Use the label found in col C
+                                        units: cellDef.units || '' // Get units if defined in cellDef
+                                    };
+                                }
+                            });
+                        });
+                    }
+                });
+                
+                // 2. Generate CSV rows for editable fields
+                const header = ["ExcelRow", "RowID", "Description", "FieldID", "Value", "Units"];
                 const rows = [header];
-
                 const allFields = this.fieldManager.getAllFields();
-                const editableFields = Object.entries(allFields).filter(([id, def]) => def.type === 'editable');
+                 // Filter for fields explicitly marked as editable
+                const editableFields = Object.entries(allFields).filter(([id, def]) => 
+                    def.type === 'editable' || 
+                    def.type === 'dropdown' || 
+                    def.type === 'year_slider' || 
+                    def.type === 'percentage' || 
+                    def.type === 'coefficient' ||
+                    def.type === 'number' // Include number inputs as user-editable for export
+                );
 
-                // Need a way to map fieldId back to its section and layout to get description/units
-                // This requires enhancing FieldManager or iterating through section modules
-                // For now, we'll export without description/units as a placeholder
-                console.warn("CSV Export currently omits description and units due to complexity in retrieving layout info.");
+                // Basic CSV escaping (handles commas, quotes, newlines)
+                const escapeCSV = (val) => {
+                    const strVal = String(val ?? ''); // Ensure string conversion, handle null/undefined
+                    if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
+                        // Escape quotes by doubling them and wrap in quotes
+                        return `"${strVal.replace(/"/g, '""')}"`;
+                    }
+                    return strVal;
+                };
 
                 editableFields.forEach(([fieldId, fieldDef]) => {
+                    const layoutInfo = layoutLookup[fieldId] || {}; // Get layout details
                     const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
-                    const domSelector = `td[data-field-id="${fieldId}"]`; // Example selector
-                    const description = fieldDef.label || fieldId; // Use label or fieldId as fallback
-                    const units = ""; // Placeholder - needs lookup
-                    
-                    // Basic CSV escaping (handles commas, quotes)
-                    const escapeCSV = (val) => {
-                        const strVal = String(val ?? '');
-                        if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
-                            return `"${strVal.replace(/"/g, '""')}"`;
-                        }
-                        return strVal;
-                    };
 
                     rows.push([
-                        escapeCSV(fieldId),
-                        escapeCSV(domSelector),
-                        escapeCSV(description),
-                        escapeCSV(currentValue),
-                        escapeCSV(units)
+                        escapeCSV(layoutInfo.excelRow || ''), // Excel Row from layout
+                        escapeCSV(layoutInfo.rowId || ''),     // Row ID from layout (Col B)
+                        escapeCSV(layoutInfo.description || fieldDef.label || fieldId), // Description from layout (Col C) or fallback
+                        escapeCSV(fieldId),                  // Field ID (Col D)
+                        escapeCSV(currentValue),             // Current Value (Col E)
+                        escapeCSV(layoutInfo.units || '')      // Units from layout
                     ]);
                 });
+                
+                // Sort rows numerically by the ExcelRow (first column)
+                // Skip header row (index 0) for sorting
+                rows.slice(1).sort((a, b) => {
+                    const rowA = parseInt(a[0].replace(/"/g, ''), 10) || 0;
+                    const rowB = parseInt(b[0].replace(/"/g, ''), 10) || 0;
+                    return rowA - rowB;
+                });
 
-                const csvContent = rows.map(row => row.join(',')).join('\n');
+                // Reconstruct CSV content with sorted rows (header + sorted data)
+                const csvContent = [rows[0].join(',')].concat(rows.slice(1).map(row => row.join(','))).join('\n');
+                
+                // 3. Trigger Download
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.setAttribute("href", url);
-                link.setAttribute("download", "TEUI_Data_Export.csv");
+                link.setAttribute("download", "TEUI_User_Data_Export.csv"); // Renamed file
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
