@@ -582,11 +582,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             
             // Listener function for Net Electricity changes (Renewables)
             const netElectricityUpdateCallback = function(newValue, oldValue, sourceFieldId) { // Added params
-                console.log(`[S4 DEBUG] netElectricityUpdateCallback triggered by ${sourceFieldId}. New value: ${newValue}, Old value: ${oldValue}`); 
+                // console.log(`[S4 DEBUG] netElectricityUpdateCallback triggered by ${sourceFieldId}. New value: ${newValue}, Old value: ${oldValue}`); 
                 
                 // Specific log when d_27 changes
                 if (sourceFieldId === 'd_27') {
-                    console.log(`[S4 DEBUG] d_27 changed. Reading current values...`);
+                    // console.log(`[S4 DEBUG] d_27 changed. Reading current values...`);
                 }
                 
                 // Fetch CURRENT values from StateManager using helper
@@ -595,24 +595,26 @@ window.TEUI.SectionModules.sect04 = (function() {
                 const l27 = getNumericValue('l_27'); 
                 const d43 = getNumericValue('d_43'); // Should reflect the trigger if sourceFieldId was d_43
                 const i43 = getNumericValue('i_43'); // Should reflect the trigger if sourceFieldId was i_43
-                console.log(`[S4 DEBUG] Current values read: d27=${d27}, h27=${h27}, l27=${l27}, d43=${d43}, i43=${i43}`);
 
+                // console.log(`[S4 DEBUG] Current values read: d27=${d27}, h27=${h27}, l27=${l27}, d43=${d43}, i43=${i43}`);
+ 
                 // Perform calculations using calculation helpers
                 const f27New = calculateF27(); // No args needed
                 const j27New = calculateJ27(); // No args needed
                 const g27New = calculateG27(); // No args needed
                 const k27New = calculateK27(); // No args needed
-                console.log(`[S4 DEBUG] Calculated values: f27New=${f27New}, j27New=${j27New}, g27New=${g27New}, k27New=${k27New}`);
- 
-                // Update net usage fields using standard helper
+                 // console.log(`[S4 DEBUG] Calculated values: f27New=${f27New}, j27New=${j27New}, g27New=${g27New}, k27New=${k27New}`);
+  
+                 // Update net usage fields using standard helper
                 setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
                 setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
                 // Update emission fields using standard helper
                 setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
                 setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
-                console.log("[S4 DEBUG] Called setCalculatedValue for f_27, j_27, g_27, k_27.");
+
+               // console.log("[S4 DEBUG] Called setCalculatedValue for f_27, j_27, g_27, k_27.");
  
-                updateSubtotals(); // Update totals after row 27 changes
+                 updateSubtotals(); // Update totals after row 27 changes
             };
 
             sm.addListener('d_27', netElectricityUpdateCallback); // *** ADDED: Listen for Actual Electricity Use ***
@@ -622,12 +624,12 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // --- Listener for d_136 (Target Energy from S15) ---
             const handleD136Update = () => {
-                console.log("[S4 DEBUG] Entering handleD136Update (d_136 changed)");
+                 // console.log("[S4 DEBUG] Entering handleD136Update (d_136 changed)");
                 const d136Value = getNumericValue('d_136');
                 
                 // Update h_27 (Target Electricity Use in S04)
                 setCalculatedValue('h_27', d136Value, 'number-2dp-comma'); // Added formatType
-                console.log(`[S4 DEBUG] Updated h_27 with d_136 value: ${d136Value}`);
+                 // console.log(`[S4 DEBUG] Updated h_27 with d_136 value: ${d136Value}`);
                 
                 // Now trigger j_27 recalculation using the NEW h_27 value
                 const h27Value = d136Value; // Use the value we just set
@@ -637,12 +639,14 @@ window.TEUI.SectionModules.sect04 = (function() {
                 
                 const j27Value = calculateJ27(); // No args needed
                 setCalculatedValue('j_27', j27Value, 'number-2dp-comma'); 
-                console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using internal h_27, d_43, i_43)`); // Updated log
+
+               // console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using internal h_27, d_43, i_43)`); // Updated log
 
                 // Also trigger k_27 recalculation (Target Emissions)
                 const k27Value = calculateK27(); // No args needed
                 setCalculatedValue('k_27', k27Value, 'number-2dp-comma'); 
-                console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using internal j_27, l_27)`); // Updated log
+
+               // console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using internal j_27, l_27)`); // Updated log
 
                 // Trigger subtotal update
                 updateSubtotals();
@@ -692,7 +696,7 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // --- Listeners for Actual Fuel Inputs (d_28 to d_31) ---
             const actualFuelUpdateCallback = (newValue, oldValue, sourceFieldId) => {
-                console.log(`[S4 DEBUG] actualFuelUpdateCallback triggered by ${sourceFieldId}`);
+                // console.log(`[S4 DEBUG] actualFuelUpdateCallback triggered by ${sourceFieldId}`);
 
                 // Determine which calculation pair to run based on the source
                 switch (sourceFieldId) {
@@ -701,21 +705,21 @@ window.TEUI.SectionModules.sect04 = (function() {
                         setCalculatedValue('f_28', f28Value, 'number-2dp-comma');
                         const g28Value = calculateG28();
                         setCalculatedValue('g_28', g28Value, 'number-2dp-comma');
-                        console.log(`[S4 DEBUG] Updated Actual Gas: f28=${f28Value}, g28=${g28Value}`);
+                        // console.log(`[S4 DEBUG] Updated Actual Gas: f28=${f28Value}, g28=${g28Value}`);
                         break;
                     case 'd_29': // Propane
                         const f29Value = calculateF29();
                         setCalculatedValue('f_29', f29Value, 'number-2dp-comma');
                         const g29Value = calculateG29();
                         setCalculatedValue('g_29', g29Value, 'number-2dp-comma');
-                        console.log(`[S4 DEBUG] Updated Actual Propane: f29=${f29Value}, g29=${g29Value}`);
+                        // console.log(`[S4 DEBUG] Updated Actual Propane: f29=${f29Value}, g29=${g29Value}`);
                         break;
                     case 'd_30': // Oil
                         const f30Value = calculateF30();
                         setCalculatedValue('f_30', f30Value, 'number-2dp-comma');
                         const g30Value = calculateG30();
                         setCalculatedValue('g_30', g30Value, 'number-2dp-comma');
-                        console.log(`[S4 DEBUG] Updated Actual Oil: f30=${f30Value}, g30=${g30Value}`);
+                        // console.log(`[S4 DEBUG] Updated Actual Oil: f30=${f30Value}, g30=${g30Value}`);
                         break;
                     case 'd_31': // Wood
                         const f31Value = calculateF31();
@@ -725,7 +729,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                         setCalculatedValue('h_31', h31Value, 'number-2dp-comma'); // Update target too
                         const g31Value = calculateG31(); 
                         setCalculatedValue('g_31', g31Value, 'number-2dp-comma');
-                        console.log(`[S4 DEBUG] Updated Actual Wood: f31=${f31Value}, g31=${g31Value}`);
+                        // console.log(`[S4 DEBUG] Updated Actual Wood: f31=${f31Value}, g31=${g31Value}`);
                         break;
                 }
 
