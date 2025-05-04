@@ -599,29 +599,31 @@ window.TEUI.SectionModules.sect04 = (function() {
             sm.addListener('d_12', updateFactorCallback);
 
             // Listener function for Net Electricity changes (Renewables)
-            const netElectricityUpdateCallback = function() {
-                console.log("[S4 DEBUG] Entering netElectricityUpdateCallback (d_43/i_43 changed)"); 
+            const netElectricityUpdateCallback = function(newValue, oldValue, sourceFieldId) { // Added params
+                console.log(`[S4 DEBUG] netElectricityUpdateCallback triggered by ${sourceFieldId}. New value: ${newValue}, Old value: ${oldValue}`); 
                 
-                // Fetch values 
-                const d27 = getNumericValue('d_27') || 0; // Use helper
-                const h27 = getNumericValue('h_27') || 0; // Use helper
-                const l27 = getNumericValue('l_27') || 0; // Use helper
-                const d43 = getNumericValue('d_43') || 0; // Onsite Renewables - Triggering value
-                const i43 = getNumericValue('i_43') || 0; // Offsite REC - Triggering value
-                console.log(`[S4 DEBUG] netElectricityUpdateCallback read values: h27=${h27}, d43=${d43}, i43=${i43}, l27=${l27}`);
+                // Fetch CURRENT values from StateManager using helper
+                const d27 = getNumericValue('d_27');
+                const h27 = getNumericValue('h_27'); 
+                const l27 = getNumericValue('l_27'); 
+                const d43 = getNumericValue('d_43'); // Should reflect the trigger if sourceFieldId was d_43
+                const i43 = getNumericValue('i_43'); // Should reflect the trigger if sourceFieldId was i_43
+                console.log(`[S4 DEBUG] Current values read: d27=${d27}, h27=${h27}, l27=${l27}, d43=${d43}, i43=${i43}`);
 
                 // Perform calculations using calculation helpers
-                const f27New = calculateF27(d27, d43, i43);
-                const j27New = calculateJ27(h27, d43, i43); 
-                const g27New = calculateG27(f27New, l27); 
-                const k27New = calculateK27(j27New, l27); 
+                const f27New = calculateF27(); // No args needed
+                const j27New = calculateJ27(); // No args needed
+                const g27New = calculateG27(); // No args needed
+                const k27New = calculateK27(); // No args needed
+                console.log(`[S4 DEBUG] Calculated values: f27New=${f27New}, j27New=${j27New}, g27New=${g27New}, k27New=${k27New}`);
   
                 // Update net usage fields using standard helper
-                setCalculatedValue('f_27', f27New, 'number-2dp-comma'); // Added formatType
-                setCalculatedValue('j_27', j27New, 'number-2dp-comma'); // Added formatType
+                setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
+                setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
                 // Update emission fields using standard helper
-                setCalculatedValue('g_27', g27New, 'number-2dp-comma'); // Added formatType
-                setCalculatedValue('k_27', k27New, 'number-2dp-comma'); // Added formatType
+                setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
+                setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
+                console.log("[S4 DEBUG] Called setCalculatedValue for f_27, j_27, g_27, k_27.");
   
                 updateSubtotals(); // Update totals after row 27 changes
             };
@@ -645,14 +647,14 @@ window.TEUI.SectionModules.sect04 = (function() {
                 const i43Value = getNumericValue('i_43');
                 const l27Value = getNumericValue('l_27'); // Needed for k_27 calculation
                 
-                const j27Value = calculateJ27(h27Value, d43Value, i43Value);
-                setCalculatedValue('j_27', j27Value, 'number-2dp-comma'); // Added formatType
-                console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using h_27=${h27Value}, d_43=${d43Value}, i_43=${i43Value})`);
+                const j27Value = calculateJ27(); // No args needed
+                setCalculatedValue('j_27', j27Value, 'number-2dp-comma'); 
+                console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using internal h_27, d_43, i_43)`); // Updated log
 
                 // Also trigger k_27 recalculation (Target Emissions)
-                const k27Value = calculateK27(j27Value, l27Value);
-                setCalculatedValue('k_27', k27Value, 'number-2dp-comma'); // Added formatType
-                console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using j_27=${j27Value}, l_27=${l27Value})`);
+                const k27Value = calculateK27(); // No args needed
+                setCalculatedValue('k_27', k27Value, 'number-2dp-comma'); 
+                console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using internal j_27, l_27)`); // Updated log
 
                 // Trigger subtotal update
                 updateSubtotals();
@@ -1238,17 +1240,20 @@ window.TEUI.SectionModules.sect04 = (function() {
      */
     
     // Row 27: Electricity calculations
-    function calculateF27(d27, d43, i43) { 
+    function calculateF27() {
         // =D27-D43-I43 (Total Electricity Use - Onsite Energy - Offsite REC Subtotal)
-        // Use parseNumeric to handle potential commas from getFieldValue
-        return parseNumeric(d27) - parseNumeric(d43) - parseNumeric(i43);
+        const d27 = getNumericValue('d_27'); // Use helper
+        const d43 = getNumericValue('d_43'); // Use helper
+        const i43 = getNumericValue('i_43'); // Use helper
+        return d27 - d43 - i43;
     }
     
-    function calculateG27(f27, l27) {
+    function calculateG27() {
         // =F27*L27/1000 (Actual Net * Emission factor / 1000)
+        const f27 = getNumericValue('f_27'); // Use helper
+        const l27 = getNumericValue('l_27'); // Use helper
         // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric here too for consistency
-        return (parseNumeric(f27) * parseNumeric(l27)) / 1000;
+        return (f27 * l27) / 1000;
     }
     
     function calculateH27(d136) {
@@ -1257,258 +1262,301 @@ window.TEUI.SectionModules.sect04 = (function() {
         return parseNumeric(d136);
     }
     
-    function calculateJ27(h27, d43, i43) { 
+    function calculateJ27() {
         // =H27-D43-I43 (Target Energy - Onsite Energy - Offsite REC Subtotal)
-        // Use parseNumeric to handle potential commas from getFieldValue
-        return parseNumeric(h27) - parseNumeric(d43) - parseNumeric(i43);
+        const h27 = getNumericValue('h_27'); // Use helper
+        const d43 = getNumericValue('d_43'); // Use helper
+        const i43 = getNumericValue('i_43'); // Use helper
+        return h27 - d43 - i43;
     }
     
-    function calculateK27(j27, l27) {
+    function calculateK27() {
         // =J27*L27/1000 (Target Net * Emission factor / 1000)
+        const j27 = getNumericValue('j_27'); // Use helper
+        const l27 = getNumericValue('l_27'); // Use helper
         // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric here too for consistency
-        return (parseNumeric(j27) * parseNumeric(l27)) / 1000;
+        return (j27 * l27) / 1000;
     }
     
     // Row 28: Gas calculations
-    function calculateF28(d28) {
+    function calculateF28() {
+        const d28 = getNumericValue('d_28'); // Use helper
         // =D28*0.0373*277.7778 (Gas volume to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(d28) * 0.0373 * 277.7778;
+        return d28 * 0.0373 * 277.7778;
     }
     
-    function calculateG28(d28, l28) {
+    function calculateG28() {
+        const d28 = getNumericValue('d_28'); // Use helper
+        const l28 = getNumericValue('l_28'); // Use helper
         // =(D28)*L28/1000 (Gas volume * Emission factor / 1000)
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric
-        return (parseNumeric(d28) * parseNumeric(l28)) / 1000;
+        return (d28 * l28) / 1000;
     }
     
-    function calculateH28(d51, e51, d113, h115) {
+    function calculateH28() {
+        const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
+        const e51 = getNumericValue('e_51'); // Get numeric value
+        const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
+        const h115 = getNumericValue('h_115'); // Get numeric value
         // =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
-        // String comparison is fine, but parse numbers
         if (d113 === "Gas" && d51 === "Gas") {
-            return parseNumeric(e51) + parseNumeric(h115);
+            return e51 + h115;
         } else if (d51 === "Gas") {
-            return parseNumeric(e51);
+            return e51;
         } else if (d113 === "Gas") {
-            return parseNumeric(h115);
+            return h115;
         } else {
             return 0;
         }
     }
     
-    function calculateJ28(h28) {
+    function calculateJ28() {
+        const h28 = getNumericValue('h_28'); // Use helper
         // =H28*0.0373*277.7778 (Gas volume to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(h28) * 0.0373 * 277.7778;
+        return h28 * 0.0373 * 277.7778;
     }
     
-    function calculateK28(h28, l28) {
+    function calculateK28() {
+        const h28 = getNumericValue('h_28'); // Use helper
+        const l28 = getNumericValue('l_28'); // Use helper
         // =H28*L28/1000 (Gas volume * Emission factor / 1000)
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric
-        return (parseNumeric(h28) * parseNumeric(l28)) / 1000;
+        return (h28 * l28) / 1000;
     }
     
     // Row 29: Propane calculations
-    function calculateF29(d29) {
+    function calculateF29() {
+        const d29 = getNumericValue('d_29'); // Use helper
         // =D29*14.019 (Propane to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(d29) * 14.019;
+        return d29 * 14.019;
     }
     
-    function calculateG29(d29, l29) {
+    function calculateG29() {
+        const d29 = getNumericValue('d_29'); // Use helper
+        const l29 = getNumericValue('l_29'); // Use helper
         // =D29*L29/1000 (Propane * Emission factor / 1000)
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric
-        return (parseNumeric(d29) * parseNumeric(l29)) / 1000;
+        return (d29 * l29) / 1000;
     }
     
-    function calculateH29(d29) {
+    function calculateH29() {
+        const d29 = getNumericValue('d_29'); // Use helper
         // =D29 (Target is same as actual for this case)
-        // Use parseNumeric
-        return parseNumeric(d29);
+        return d29;
     }
     
-    function calculateJ29(h29) {
+    function calculateJ29() {
+        const h29 = getNumericValue('h_29'); // Use helper
         // =H29*14.019 (Propane to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(h29) * 14.019;
+        return h29 * 14.019;
     }
     
-    function calculateK29(h29, l29) {
+    function calculateK29() {
+        const h29 = getNumericValue('h_29'); // Use helper
+        const l29 = getNumericValue('l_29'); // Use helper
         // =H29*L29/1000 (Propane * Emission factor / 1000)
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric
-        return (parseNumeric(h29) * parseNumeric(l29)) / 1000;
+        return (h29 * l29) / 1000;
     }
     
     // Row 30: Oil calculations
-    function calculateF30(d30) {
+    function calculateF30() {
+        const d30 = getNumericValue('d_30'); // Use helper
         // =D30*36.72*0.2777778 (Oil to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(d30) * 36.72 * 0.2777778;
+        return d30 * 36.72 * 0.2777778;
     }
     
-    function calculateG30(d30, l30) {
+    function calculateG30() {
+        const d30 = getNumericValue('d_30'); // Use helper
+        const l30 = getNumericValue('l_30'); // Use helper
         // =D30*L30/1000 (Oil * Emission factor / 1000)
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric
-        return (parseNumeric(d30) * parseNumeric(l30)) / 1000;
+        return (d30 * l30) / 1000;
     }
     
-    function calculateH30(d51, d113, k54, f115) {
+    function calculateH30() {
+        const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
+        const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
+        const k54 = getNumericValue('k_54'); // Get numeric value
+        const f115 = getNumericValue('f_115'); // Get numeric value
         // =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
-        // String comparison fine, parse numbers
         if (d113 === "Oil" && d51 === "Oil") {
-            return parseNumeric(k54) + parseNumeric(f115);
+            return k54 + f115;
         } else if (d51 === "Oil") {
-            return parseNumeric(k54);
+            return k54;
         } else if (d113 === "Oil") {
-            return parseNumeric(f115);
+            return f115;
         } else {
             return 0;
         }
     }
     
-    function calculateJ30(h30) {
+    function calculateJ30() {
+        const h30 = getNumericValue('h_30'); // Use helper
         // =H30*36.72*0.2777778 (Oil to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(h30) * 36.72 * 0.2777778;
+        return h30 * 36.72 * 0.2777778;
     }
     
-    function calculateK30(h30, l30) {
+    function calculateK30() {
+        const h30 = getNumericValue('h_30'); // Use helper
+        const l30 = getNumericValue('l_30'); // Use helper
         // =H30*L30/1000 (Oil * Emission factor / 1000)
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        // Use parseNumeric
-        return (parseNumeric(h30) * parseNumeric(l30)) / 1000;
+        return (h30 * l30) / 1000;
     }
     
     // Row 31: Wood calculations
-    function calculateF31(d31) {
+    function calculateF31() {
+        const d31 = getNumericValue('d_31'); // Use helper
         // =D31*1000 (Wood to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(d31) * 1000;
+        return d31 * 1000;
     }
     
-    function calculateG31(h31, l31) {
+    function calculateG31() {
+        const h31 = getNumericValue('h_31'); // Use helper
+        const l31 = getNumericValue('l_31'); // Use helper
         // =H31*L31 (Wood * Emission factor)
-        // Use parseNumeric
-        return parseNumeric(h31) * parseNumeric(l31);
+        return h31 * l31;
     }
     
-    function calculateH31(d31) {
+    function calculateH31() {
+        const d31 = getNumericValue('d_31'); // Use helper
         // =D31 (Target is same as actual for this case)
-        // Use parseNumeric
-        return parseNumeric(d31);
+        return d31;
     }
     
-    function calculateJ31(h31) {
+    function calculateJ31() {
+        const h31 = getNumericValue('h_31'); // Use helper
         // =H31*1000 (Wood to energy conversion)
-        // Use parseNumeric
-        return parseNumeric(h31) * 1000;
+        return h31 * 1000;
     }
     
-    function calculateK31(h31, l31) {
+    function calculateK31() {
+        const h31 = getNumericValue('h_31'); // Use helper
+        const l31 = getNumericValue('l_31'); // Use helper
         // =H31*L31 (Wood * Emission factor)
-        // Use parseNumeric
-        return parseNumeric(h31) * parseNumeric(l31);
+        return h31 * l31;
     }
     
     // Row 32: Subtotals
-    function calculateF32(f27, f28, f29, f30, f31) {
+    function calculateF32() {
+        const f27 = getNumericValue('f_27'); // Use helper
+        const f28 = getNumericValue('f_28'); // Use helper
+        const f29 = getNumericValue('f_29'); // Use helper
+        const f30 = getNumericValue('f_30'); // Use helper
+        const f31 = getNumericValue('f_31'); // Use helper
         // =SUM(F27:F31) (Sum of all energy sources)
-        // Use parseNumeric
-        return parseNumeric(f27) + parseNumeric(f28) + parseNumeric(f29) + 
-               parseNumeric(f30) + parseNumeric(f31);
+        return f27 + f28 + f29 + f30 + f31;
     }
     
-    function calculateG32(g27, g28, g29, g30, g31, d60) {
+    function calculateG32() {
+        const g27 = getNumericValue('g_27'); // Use helper
+        const g28 = getNumericValue('g_28'); // Use helper
+        const g29 = getNumericValue('g_29'); // Use helper
+        const g30 = getNumericValue('g_30'); // Use helper
+        const g31 = getNumericValue('g_31'); // Use helper
+        const d60 = getNumericValue('d_60'); // Use helper (Offsets in tCO2e)
         // =SUM(G27:G31)-(D60*1000) (Sum of emissions minus offsets)
-        // Use parseNumeric
-        return parseNumeric(g27) + parseNumeric(g28) + parseNumeric(g29) + 
-               parseNumeric(g30) + parseNumeric(g31) - (parseNumeric(d60) * 1000);
+        return g27 + g28 + g29 + g30 + g31 - (d60 * 1000);
     }
     
-    function calculateJ32(j27, j28, j29, j30, j31) {
+    function calculateJ32() {
+        const j27 = getNumericValue('j_27'); // Use helper
+        const j28 = getNumericValue('j_28'); // Use helper
+        const j29 = getNumericValue('j_29'); // Use helper
+        const j30 = getNumericValue('j_30'); // Use helper
+        const j31 = getNumericValue('j_31'); // Use helper
         // =SUM(J27:J31) (Sum of all energy sources)
-        // Use parseNumeric
-        return parseNumeric(j27) + parseNumeric(j28) + parseNumeric(j29) + 
-               parseNumeric(j30) + parseNumeric(j31);
+        return j27 + j28 + j29 + j30 + j31;
     }
     
-    function calculateK32(k27, k28, k29, k30, k31, d60) {
+    function calculateK32() {
+        const k27 = getNumericValue('k_27'); // Use helper
+        const k28 = getNumericValue('k_28'); // Use helper
+        const k29 = getNumericValue('k_29'); // Use helper
+        const k30 = getNumericValue('k_30'); // Use helper
+        const k31 = getNumericValue('k_31'); // Use helper
+        const d60 = getNumericValue('d_60'); // Use helper (Offsets in tCO2e)
         // =SUM(K27:K31)-(D60*1000) (Sum of emissions minus offsets)
-        // Use parseNumeric
-        return parseNumeric(k27) + parseNumeric(k28) + parseNumeric(k29) + 
-               parseNumeric(k30) + parseNumeric(k31) - (parseNumeric(d60) * 1000);
+        return k27 + k28 + k29 + k30 + k31 - (d60 * 1000);
     }
     
     // Row 33: Total Net Energy
-    function calculateD33(f27, f28, f29, f30, f31, d43, i43) { 
+    function calculateD33() {
+        const f27 = getNumericValue('f_27'); // Use helper
+        const f28 = getNumericValue('f_28'); // Use helper
+        const f29 = getNumericValue('f_29'); // Use helper
+        const f30 = getNumericValue('f_30'); // Use helper
+        const f31 = getNumericValue('f_31'); // Use helper
+        const d43 = getNumericValue('d_43'); // Use helper
+        const i43 = getNumericValue('i_43'); // Use helper
         // =SUM(F$27+F$28+F$29+F$30+F$31-D43-I43)/277.7777
-        // Use parseNumeric
-        return (parseNumeric(f27) + parseNumeric(f28) + parseNumeric(f29) + 
-                parseNumeric(f30) + parseNumeric(f31) - parseNumeric(d43) - 
-                parseNumeric(i43)) / 277.7777;
+        return (f27 + f28 + f29 + f30 + f31 - d43 - i43) / 277.7777;
     }
     
-    // Fixed function signature and body to use i_43 (consistent with j_27)
-    function calculateH33(j27, j28, j29, j30, j31, i43, d43) { 
+    function calculateH33() {
+        const j27 = getNumericValue('j_27'); // Use helper
+        const j28 = getNumericValue('j_28'); // Use helper
+        const j29 = getNumericValue('j_29'); // Use helper
+        const j30 = getNumericValue('j_30'); // Use helper
+        const j31 = getNumericValue('j_31'); // Use helper
+        const i43 = getNumericValue('i_43'); // Use helper
+        const d43 = getNumericValue('d_43'); // Use helper
         // =SUM(J$27+J$28+J$29+J$30+J$31-I43-D43)/277.7777 
-        // Use parseNumeric
-        return (parseNumeric(j27) + parseNumeric(j28) + parseNumeric(j29) + 
-                parseNumeric(j30) + parseNumeric(j31) - parseNumeric(i43) - 
-                parseNumeric(d43)) / 277.7777;
+        return (j27 + j28 + j29 + j30 + j31 - i43 - d43) / 277.7777;
     }
     
     // Row 34: Annual Percapita Energy
-    function calculateD34(f27, f28, d63) {
+    function calculateD34() {
+        const f27 = getNumericValue('f_27'); // Use helper
+        const f28 = getNumericValue('f_28'); // Use helper
+        const d63 = getNumericValue('d_63'); // Use helper
         // =(F27+F28)/D63 (Sum of electricity and gas divided by occupants)
-        // Use parseNumeric
-        return (parseNumeric(f27) + parseNumeric(f28)) / parseNumeric(d63 || 1);
+        return (f27 + f28) / (d63 || 1);
     }
     
-    function calculateF34(d33, d63) {
+    function calculateF34() {
+        const d33 = getNumericValue('d_33'); // Use helper
+        const d63 = getNumericValue('d_63'); // Use helper
         // =D33/D63 (Total energy per person)
-        // Use parseNumeric
-        return parseNumeric(d33) / parseNumeric(d63 || 1);
+        return d33 / (d63 || 1);
     }
     
-    function calculateH34(j27, j28, d63) {
+    function calculateH34() {
+        const j27 = getNumericValue('j_27'); // Use helper
+        const j28 = getNumericValue('j_28'); // Use helper
+        const d63 = getNumericValue('d_63'); // Use helper
         // =(J27+J28)/D63 (Target energy per person)
-        // Use parseNumeric
-        return (parseNumeric(j27) + parseNumeric(j28)) / parseNumeric(d63 || 1);
+        return (j27 + j28) / (d63 || 1);
     }
     
-    function calculateJ34(h33, d63) {
+    function calculateJ34() {
+        const h33 = getNumericValue('h_33'); // Use helper
+        const d63 = getNumericValue('d_63'); // Use helper
         // =H33/D63 (Target GJ per person)
-        // Use parseNumeric
-        return parseNumeric(h33) / parseNumeric(d63 || 1);
+        return h33 / (d63 || 1);
     }
     
-    function calculateL34(k32, d63) {
+    function calculateL34() {
+        const k32 = getNumericValue('k_32'); // Use helper
+        const d63 = getNumericValue('d_63'); // Use helper
         // =K32/D63 (Emissions per person)
-        // Use parseNumeric
-        return parseNumeric(k32) / parseNumeric(d63 || 1);
+        return k32 / (d63 || 1);
     }
     
     // Row 35: Primary Energy
-    function calculateD35(d14, j27, h35, f27) {
+    function calculateD35() {
+        const d14 = window.TEUI.StateManager?.getValue('d_14'); // Get raw string value
+        const j27 = getNumericValue('j_27'); // Use helper
+        const h35 = getNumericValue('h_35'); // Use helper
+        const f27 = getNumericValue('f_27'); // Use helper
         // =IF(D14="Targeted Use", J27*H35, F27*H35)
-        // String comparison fine, parse numbers
         if (d14 === "Targeted Use") {
-            return parseNumeric(j27) * parseNumeric(h35);
+            return j27 * h35;
         } else {
-            return parseNumeric(f27) * parseNumeric(h35);
+            return f27 * h35;
         }
     }
     
-    function calculateF35(d35, h15) {
+    function calculateF35() {
+        const d35 = getNumericValue('d_35'); // Use helper
+        const h15 = getNumericValue('h_15'); // Use helper
         // =D35/H15 (Energy per floor area)
-        // Use parseNumeric
-        return parseNumeric(d35) / parseNumeric(h15 || 1);
+        return d35 / (h15 || 1);
     }
     
     // Register calculation functions
