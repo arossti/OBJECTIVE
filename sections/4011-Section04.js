@@ -24,22 +24,8 @@ window.TEUI.SectionModules.sect04 = (function() {
      * @returns {number} The parsed numeric value, or 0 if parsing fails.
      */
     function getNumericValue(fieldId) {
-        if (typeof window.TEUI?.parseNumeric === 'function') {
-            // Prefer global parseNumeric and StateManager
-            return window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(fieldId)) || 0;
-        } else {
-            // Fallback parsing logic if global is missing
-            const value = getFieldValue(fieldId); // Use local getFieldValue
-            if (value === null || value === undefined) return 0;
-            if (typeof value === 'number') return value;
-            if (typeof value === 'string') {
-                const cleanedValue = value.replace(/[$,%]/g, '').replace(/,/g, '').trim();
-                if (cleanedValue === '') return 0;
-                const parsed = parseFloat(cleanedValue);
-                return isNaN(parsed) ? 0 : parsed;
-            }
-            return 0;
-        }
+        // Always use global parseNumeric and StateManager
+        return window.TEUI.parseNumeric(window.TEUI.StateManager?.getValue(fieldId)) || 0;
     }
     
     /**
@@ -51,24 +37,11 @@ window.TEUI.SectionModules.sect04 = (function() {
      * @returns {string} The formatted number as a string.
      */
     function formatNumber(value, decimals = 2, format = 'number') {
-        // Use global formatter if available
-        if (typeof window.TEUI?.formatNumber === 'function') {
-            return window.TEUI.formatNumber(value, decimals, format);
-        }
-
-        // Fallback local implementation
-        const num = Number(value);
-        if (isNaN(num)) {
-            return format === 'currency' ? '$0.00' : (format === 'percent' ? '0%' : '0.00');
-        }
-
-        if (format === 'currency') {
-            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-        } else if (format === 'percent') {
-            return (num * 100).toFixed(decimals) + '%';
-        } else {
-            return num.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-        }
+        // Always use global formatter
+        // Note: The global formatter might use different arguments (e.g., formatType string)
+        // Adjust call signature if necessary based on the global function's definition.
+        // Assuming the global function can handle decimals/format for now:
+        return window.TEUI.formatNumber(value, decimals, format); 
     }
     
     /**
@@ -771,7 +744,6 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Get emission factor based on province and year
         const factor = getElectricityFactor(province, year);
         // Keep one consolidated log with all important info
-        // console.log(`Emission factor for ${province} in ${year}: ${factor}`);
         
         // Update the l_27 field and StateManager
         const l27El = document.querySelector('[data-field-id="l_27"]');
@@ -1286,47 +1258,7 @@ window.TEUI.SectionModules.sect04 = (function() {
      * @param {number} value - The number to format
      * @returns {string} - Formatted number string
      */
-    function formatNumber(value) {
-        // Check if number is very small
-        if (Math.abs(value) < 0.01 && value !== 0) {
-            return value.toExponential(2);
-        }
-        
-        // For subtotal rows, always use 2 decimal places for consistency
-        if (arguments.callee.caller && 
-            (arguments.callee.caller.name === 'updateSubtotals' || 
-             arguments.callee.caller.name === 'updateDependentTotals')) {
-            return parseFloat(value).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-        
-        // Check if number is integer
-        if (Number.isInteger(value)) {
-            return value.toLocaleString();
-        }
-        
-        // Otherwise format with 2 decimal places
-        return parseFloat(value).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-    
-    //==========================================================================
-    // PART 6: CALCULATION FUNCTIONS
-    //==========================================================================
-    
-    // Helper function to safely parse numeric values with commas
-    function parseNumeric(value) {
-        if (typeof value === 'string') {
-            // Remove commas from string values before parsing
-            return parseFloat(value.replace(/,/g, '')) || 0;
-        }
-        return parseFloat(value || 0);
-    }
-    
+
     /**
      * Define section-specific calculation functions here
      * These will be called by the Calculator module based on field dependencies
@@ -1673,6 +1605,21 @@ window.TEUI.SectionModules.sect04 = (function() {
     function onSectionRendered() {
         // console.log(`${sectionRows.metadata.sectionName} section rendered, initializing`);
         
+        // --- Start: Add Default Province Initialization ---
+        // Ensure Ontario is selected by default for emissions calculations
+        if (window.TEUI && window.TEUI.StateManager) {
+            // Only set default if no province is already set
+            if (!window.TEUI.StateManager.getValue('d_19')) {
+                window.TEUI.StateManager.setValue('d_19', 'ON', 'default');
+                // If a dropdown exists, ensure its state is also set
+                if (!window.TEUI.StateManager.getValue('dd_d_19')) {
+                    window.TEUI.StateManager.setValue('dd_d_19', 'ON', 'default');
+                }
+                // console.log("Set default province to ON in StateManager.");
+            }
+        }
+        // --- End: Add Default Province Initialization ---
+        
         // Initialize event handlers
         initializeEventHandlers();
         
@@ -1680,15 +1627,18 @@ window.TEUI.SectionModules.sect04 = (function() {
         registerCalculations();
         
         // Update electricity emission factor based on province and year
-        updateElectricityEmissionFactor();
-        
-        // Update subtotals immediately to ensure correct initial values
-        updateSubtotals();
-        
-        // Trigger initial calculations
-        if (window.TEUI && window.TEUI.Calculator) {
-            window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
-        }
+        // Moved the timeout wrapper here to ensure factors are updated after potential defaults are set
+        setTimeout(() => {
+            updateElectricityEmissionFactor();
+            // Update subtotals immediately to ensure correct initial values
+            updateSubtotals();
+
+            // Trigger initial calculations after factors and subtotals are set
+            if (window.TEUI && window.TEUI.Calculator) {
+                window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
+            }
+            // console.log("Section 4 Initial Calculation Triggered");
+        }, 50); // Short delay to allow potential state updates
     }
     
     //==========================================================================
@@ -1758,187 +1708,3 @@ window.TEUI.SectionModules.sect04 = (function() {
         updateDependentTotals: updateDependentTotals
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail && event.detail.sectionId === window.TEUI.SectionModules.sect04.getMetadata().sectionId) {
-        // console.log(`${window.TEUI.SectionModules.sect04.getMetadata().sectionName} section rendering complete event received`);
-        window.TEUI.SectionModules.sect04.onSectionRendered();
-    }
-});
-
-// Also hook into the overall rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    // console.log("All rendering complete, checking section");
-    const sectionId = window.TEUI.SectionModules.sect04.getMetadata().sectionId;
-    const section = document.getElementById(sectionId);
-    if (section && section.querySelector('.section-content')) {
-        window.TEUI.SectionModules.sect04.onSectionRendered();
-    }
-});
-
-// Add initialization function to handle default values
-// Rename to avoid conflicts with Section09
-function initializeEmissionsFactorDefaults() {
-    // Replace detailed log with a simpler one
-    // console.log("Initializing emission factor defaults");
-    
-    // We need to ensure Ontario is selected by default for emissions calculations
-    if (window.TEUI && window.TEUI.StateManager) {
-        // Only set default if no province is already set
-        if (!window.TEUI.StateManager.getValue('d_19')) {
-            // Remove redundant log
-            window.TEUI.StateManager.setValue('d_19', 'ON', 'default');
-            window.TEUI.StateManager.setValue('dd_d_19', 'ON', 'default');
-        }
-    }
-    
-    // Use safe function calling approach
-    try {
-        // Check if the function exists in this module
-        if (typeof updateElectricityEmissionFactor === 'function') {
-            // Remove redundant log
-            updateElectricityEmissionFactor();
-        } 
-        // Check if it's available in the module's public API
-        else if (window.TEUI?.SectionModules?.sect04?.updateElectricityEmissionFactor) {
-            // Remove redundant log
-            window.TEUI.SectionModules.sect04.updateElectricityEmissionFactor();
-        }
-        else {
-            // Keep this diagnostic log
-            // console.log("updateElectricityEmissionFactor function not available yet");
-        }
-    } catch (error) {
-        // console.warn("Could not update electricity emission factor during initialization:", error);
-    }
-}
-
-// Move the function to run at the end of the initialization
-/**
- * Called when section is rendered
- */
-function onSectionRendered() {
-    // Replace detailed log with a simpler one
-    // console.log("Section04 rendering");
-
-    // Initialize event handlers
-    initializeEventHandlers();
-    
-    // Set up cross-section listeners
-    setupCrossSectionListeners();
-    
-    // Run initial calculations
-    calculateAll();
-    
-    // Update subtotals initially
-    updateSubtotals();
-    
-    // Set initial values AFTER all functions are defined
-    setTimeout(function() {
-        // Remove redundant log
-        initializeEmissionsFactorDefaults(); // Updated function name
-        
-        // Force electricity emission factor update
-        if (typeof updateElectricityEmissionFactor === 'function') {
-            updateElectricityEmissionFactor();
-        }
-    }, 100);
-    
-    // Keep this to confirm completion
-    // console.log("Section04 initialization complete");
-}
-
-/**
- * Helper function to get a field value, preferring StateManager
- */
-function getFieldValue(fieldId) {
-    if (window.TEUI && window.TEUI.StateManager) {
-        const stateValue = window.TEUI.StateManager.getValue(fieldId);
-        if (stateValue !== null && stateValue !== undefined) return stateValue;
-    }
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-        // Use textContent for spans/divs, value for inputs/selects
-        return element.value !== undefined ? element.value : element.textContent.trim();
-    }
-    return '0'; // Default to 0 if not found
-}
-
-/**
- * Set up listeners for values from other sections that affect calculations in this section
- */
-function setupCrossSectionListeners() {
-    if (window.TEUI && window.TEUI.StateManager) {
-        // Listen for province changes (dd_d_19)
-        window.TEUI.StateManager.addListener('dd_d_19', updateElectricityEmissionFactor);
-        
-        // Also listen for province changes with d_19 as a fallback
-        window.TEUI.StateManager.addListener('d_19', updateElectricityEmissionFactor);
-        
-        // Listen for reporting year changes (h_12)
-        window.TEUI.StateManager.addListener('h_12', updateElectricityEmissionFactor);
-        window.TEUI.StateManager.addListener('d_12', updateElectricityEmissionFactor);
-        
-        // *** ADDING CODE BELOW THIS LINE ***
-        const netElectricityUpdateCallback = function() {
-            console.log("[S4 DEBUG] Entering netElectricityUpdateCallback"); 
-            
-            // Fetch values 
-            const d27 = window.TEUI.parseNumeric(getFieldValue('d_27')) || 0;
-            const h27 = window.TEUI.parseNumeric(getFieldValue('h_27')) || 0; 
-            const l27 = window.TEUI.parseNumeric(getFieldValue('l_27')) || 0; 
-            const d43 = window.TEUI.parseNumeric(getFieldValue('d_43')) || 0; // Onsite Renewables
-            const i43 = window.TEUI.parseNumeric(getFieldValue('i_43')) || 0; // Offsite REC
-            console.log(`[S4 DEBUG] netElectricityUpdateCallback read values: h27=${h27}, d43=${d43}, i43=${i43}, l27=${l27}`);
-
-            // Perform calculations directly
-            // Note: Formula for f27 might depend only on d27 & d43, check requirements.
-            // Assuming F27 = D27 - D43 based on common practice & lack of i43 dependency in Excel for F27.
-            const f27New = d27 - d43;
-            // CORRECTED FORMULA: Calculate j_27 = h27 - d43 - i43
-            const j27New = h27 - d43 - i43; 
-            const g27New = f27New * (l27 / 1000); 
-            const k27New = j27New * (l27 / 1000); 
- 
-            // Update net usage fields
-            setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
-            setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
-            // Update emission fields
-            setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
-            setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
- 
-            updateSubtotals(); // Update totals after row 27 changes
-        };
-
-        window.TEUI.StateManager.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables (affects f_27 & j_27)
-        // window.TEUI.StateManager.addListener('i_44', netElectricityUpdateCallback); // Listener no longer needed
-        window.TEUI.StateManager.addListener('i_43', netElectricityUpdateCallback); // Offsite REC Subtotal (affects f_27 & j_27)
-        // *** ADDING CODE ABOVE THIS LINE ***
-        
-        // Direct DOM event listener as fallback
-        document.addEventListener('input', function(e) {
-            const target = e.target;
-            if (target && (target.getAttribute('data-field-id') === 'h_12' || 
-                           target.getAttribute('data-field-id') === 'd_12' ||
-                           target.getAttribute('data-field-id') === 'd_19' ||
-                           target.getAttribute('data-field-id') === 'dd_d_19')) {
-                updateElectricityEmissionFactor();
-            }
-        });
-    }
-}
-
-/**
- * Placeholder function for calculating percentages.
- * TODO: Implement actual percentage calculation logic if needed.
- */
-function calculatePercentages() {
-    // console.warn("calculatePercentages called, but logic is not implemented yet.");
-    // Add logic here to calculate and set any percentage fields if required by Section 4.
-    // For example:
-    // const totalActualEmissions = getNumericValue('g_32');
-    // const elecActualEmissions = getNumericValue('g_27');
-    // const elecPercent = totalActualEmissions > 0 ? (elecActualEmissions / totalActualEmissions) * 100 : 0;
-    // setCalculatedValue('some_percentage_field_id', elecPercent, 0, 'percent');
-}
