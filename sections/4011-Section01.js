@@ -10,6 +10,9 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
 window.TEUI.SectionModules.sect01 = (function() {
     
+    // Animation state tracking
+    const activeAnimations = {}; // Stores { fieldId: animationFrameId }
+
     //==========================================================================
     // PART 1: FIELD DEFINITIONS
     //==========================================================================
@@ -165,25 +168,131 @@ window.TEUI.SectionModules.sect01 = (function() {
     }
 
     /**
+     * Parses the *currently displayed* numeric value from a key value cell,
+     * handling potential embedded spans (like the tier indicator).
+     */
+    function getCurrentNumericValue(element) {
+        if (!element) return NaN;
+
+        // Find the specific span holding the number if it exists (like for e_10)
+        const numericSpan = element.querySelector('.numeric-value');
+        let textContent = numericSpan ? numericSpan.textContent : element.textContent;
+
+        // If no specific span, strip out any child elements (like the tier span in h_10)
+        if (!numericSpan) {
+            // Clone the element to avoid modifying the original temporarily
+            const clone = element.cloneNode(true);
+            // Remove known non-numeric child spans
+            clone.querySelectorAll('.tier-indicator, .checkmark').forEach(el => el.remove());
+            textContent = clone.textContent;
+        }
+
+        const cleanedText = textContent.replace(/[^\d.-]/g, '').trim(); // Keep digits, dot, minus
+        return parseFloat(cleanedText);
+    }
+
+    /**
      * Update display value for a specific field
+     * Includes animation for specific key TEUI/Carbon fields.
      */
     function updateDisplayValue(fieldId, value) {
         const element = document.querySelector(`[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`);
-        if (element) {
-            if (fieldId === "h_10") {
-                const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
-                const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
-                element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
-            } else if (fieldId === "e_10") {
-                const numericSpan = element.querySelector('.numeric-value');
-                if (numericSpan) numericSpan.textContent = value;
-                // Static tier1 is handled by HTML
-            } else if (fieldId === "j_8" || fieldId === "j_10") {
-                const percentSpan = element.closest('td').querySelector('.percent-value');
-                if (percentSpan) percentSpan.textContent = value;
-            } else {
-                element.textContent = value;
+        if (!element) return;
+
+        // --- Fields to Animate --- 
+        const fieldsToAnimate = ["h_10", "k_10", "e_10"]; // Add d_6, h_6, k_6, d_8, h_8, k_8 later if desired
+
+        if (fieldsToAnimate.includes(fieldId)) {
+            const startValue = getCurrentNumericValue(element); // Get current numeric value from DOM
+            const endValue = parseFloat(value); // Target numeric value
+            const duration = 500; // Animation duration in ms
+
+            // Only animate if values are valid numbers and different
+            if (!isNaN(startValue) && !isNaN(endValue) && Math.abs(startValue - endValue) > 0.01) {
+
+                // Cancel any ongoing animation for this field
+                if (activeAnimations[fieldId]) {
+                    cancelAnimationFrame(activeAnimations[fieldId]);
+                }
+
+                const startTime = performance.now();
+
+                const animateStep = (timestamp) => {
+                    const elapsedTime = timestamp - startTime;
+                    const progress = Math.min(1, elapsedTime / duration);
+                    const easedProgress = 1 - Math.pow(1 - progress, 2); // Quadratic ease-out
+                    const currentValue = startValue + (endValue - startValue) * easedProgress; // Eased
+                    const formattedValue = currentValue.toFixed(1);
+
+                    // Update the DOM (handle embedded spans)
+                    if (fieldId === "h_10") {
+                        const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+                        const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
+                        element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${formattedValue}`;
+                    } else if (fieldId === "e_10") {
+                        const numericSpan = element.querySelector('.numeric-value');
+                        if (numericSpan) numericSpan.textContent = formattedValue;
+                        // Ensure tier span is present (static tier1)
+                         if (!element.querySelector('.tier-indicator')) {
+                             const tierSpan = document.createElement('span');
+                             tierSpan.className = 'tier-indicator t1-tag';
+                             tierSpan.textContent = 'tier1';
+                             element.prepend(tierSpan, ' ');
+                         }
+                    } else { // k_10 or others added later
+                        element.textContent = formattedValue;
+                    }
+
+                    if (progress < 1) {
+                        activeAnimations[fieldId] = requestAnimationFrame(animateStep);
+                    } else {
+                        // Ensure final value is exact and formatted
+                        const finalFormattedValue = endValue.toFixed(1);
+                        if (fieldId === "h_10") {
+                             const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+                            const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
+                            element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${finalFormattedValue}`;
+                        } else if (fieldId === "e_10") {
+                             const numericSpan = element.querySelector('.numeric-value');
+                            if (numericSpan) numericSpan.textContent = finalFormattedValue;
+                             if (!element.querySelector('.tier-indicator')) {
+                                const tierSpan = document.createElement('span');
+                                tierSpan.className = 'tier-indicator t1-tag';
+                                tierSpan.textContent = 'tier1';
+                                element.prepend(tierSpan, ' ');
+                            }
+                        } else {
+                            element.textContent = finalFormattedValue;
+                        }
+                        delete activeAnimations[fieldId]; // Clean up
+                    }
+                };
+
+                activeAnimations[fieldId] = requestAnimationFrame(animateStep);
+                return; // Skip the standard update below
             }
+        }
+
+        // --- Standard non-animated update for other fields --- 
+        if (fieldId === "h_10") {
+            const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+            const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
+            element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
+        } else if (fieldId === "e_10") {
+            const numericSpan = element.querySelector('.numeric-value');
+            if (numericSpan) numericSpan.textContent = value;
+            // Ensure tier span is present (static tier1)
+            if (!element.querySelector('.tier-indicator')) {
+                const tierSpan = document.createElement('span');
+                tierSpan.className = 'tier-indicator t1-tag';
+                tierSpan.textContent = 'tier1';
+                element.prepend(tierSpan, ' ');
+            }
+        } else if (fieldId === "j_8" || fieldId === "j_10") {
+            const percentSpan = element.closest('td').querySelector('.percent-value');
+            if (percentSpan) percentSpan.textContent = value;
+        } else {
+            element.textContent = value;
         }
     }
 
