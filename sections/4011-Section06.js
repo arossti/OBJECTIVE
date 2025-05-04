@@ -321,17 +321,14 @@ window.TEUI.SectionModules.sect06 = (function() {
      * Calculate the subtotal of on-site renewable generation
      */
     function calculateOnSiteSubtotal() {
-        // Get values from PV (d_44) and Wind (d_45) fields
-        const pvValue = parseFloat(getFieldValue("d_44")) || 0;
-        const windValue = parseFloat(getFieldValue("d_45")) || 0;
-        const evRemoval = parseFloat(getFieldValue("d_46")) || 0;
-        
-        // Calculate subtotal
+        // Use global parser on values fetched via local getFieldValue
+        const pvValue = window.TEUI.parseNumeric(getFieldValue("d_44")) || 0;
+        const windValue = window.TEUI.parseNumeric(getFieldValue("d_45")) || 0;
+        const evRemoval = window.TEUI.parseNumeric(getFieldValue("d_46")) || 0;
         const subtotal = pvValue + windValue + evRemoval;
         
-        // Update the field
-        setCalculatedValue("d_43", formatNumber(subtotal));
-        
+        // Update using standard pattern with global formatter
+        setCalculatedValueHelper("d_43", subtotal, 'number-2dp-comma');
         return subtotal;
     }
     
@@ -341,16 +338,12 @@ window.TEUI.SectionModules.sect06 = (function() {
      * excluding R.7 Green Natural Gas (i_45) as requested
      */
     function calculateOffsiteRenewable() {
-        // Get values from WWS (i_44) and Reserved (i_46) fields only
-        const wwsValue = parseFloat(getFieldValue("i_44")) || 0;
-        const reservedValue = parseFloat(getFieldValue("i_46")) || 0;
-        
-        // Calculate subtotal (excluding i_45)
+        const wwsValue = window.TEUI.parseNumeric(getFieldValue("i_44")) || 0;
+        const reservedValue = window.TEUI.parseNumeric(getFieldValue("i_46")) || 0;
         const subtotal = wwsValue + reservedValue;
         
-        // Update the field - Pass the RAW numeric value now
-        setCalculatedValue("i_43", subtotal); 
-        
+        // Update using standard pattern with global formatter
+        setCalculatedValueHelper("i_43", subtotal, 'number-2dp-comma'); 
         return subtotal;
     }
     
@@ -359,14 +352,11 @@ window.TEUI.SectionModules.sect06 = (function() {
      * Converts gas volume in m³ (k_45) to energy in kWh (i_45)
      */
     function calculateGreenNaturalGasEnergy() {
-        // Calculate energy from user-provided gas volume
-        // Energy content of natural gas is approx 10.3321 kWh/m³
-        const gasVolume = parseFloat(getFieldValue("k_45")) || 0;
+        const gasVolume = window.TEUI.parseNumeric(getFieldValue("k_45")) || 0;
         const energyContent = gasVolume * 10.3321;
         
-        // Update the calculated field - Pass the RAW numeric value
-        setCalculatedValue("i_45", energyContent);
-        
+        // Update using standard pattern with global formatter
+        setCalculatedValueHelper("i_45", energyContent, 'number-2dp-comma');
         return energyContent;
     }
     
@@ -385,13 +375,8 @@ window.TEUI.SectionModules.sect06 = (function() {
      * Calculate all values for the Renewable Energy section
      */
     function calculateAll() {
-        // Calculate on-site energy subtotal
         calculateOnSiteSubtotal();
-        
-        // Calculate Green Natural Gas energy from user-provided gas volume
         calculateGreenNaturalGasEnergy();
-        
-        // Calculate Offsite Renewable (REC) (h_43)
         calculateOffsiteRenewable();
     }
     
@@ -401,163 +386,126 @@ window.TEUI.SectionModules.sect06 = (function() {
      * @returns {string} - Field value
      */
     function getFieldValue(fieldId) {
-        // Try to get from StateManager first
-        if (window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
+        if (window.TEUI?.StateManager?.getValue) {
             const value = window.TEUI.StateManager.getValue(fieldId);
             if (value !== null && value !== undefined) {
                 return value;
             }
         }
-        
-        // Fall back to DOM
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                return element.value;
-            } else {
-                return element.textContent;
-            }
+            return element.value !== undefined ? element.value : element.textContent;
         }
-        
-        return '0';
+        return '0'; // Return '0' as string fallback to match previous behavior
     }
     
     /**
-     * Helper function to set a calculated field value
-     * @param {string} fieldId - Field ID
-     * @param {string} value - Value to set (should be the RAW numeric value)
+     * Helper function to set a calculated value using the global pattern.
+     * (Replaces the old local setCalculatedValue)
      */
-    function setCalculatedValue(fieldId, value) {
-        const rawValue = value; // Keep the raw value
-        const formattedValue = formatNumber(rawValue); // Format for display
+    function setCalculatedValueHelper(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const numericValue = Number(rawValue);
+        if (isNaN(numericValue)) { 
+             if (window.TEUI?.StateManager) {
+                 window.TEUI.StateManager.setValue(fieldId, '0', 'calculated');
+             }
+             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+             if(element) element.textContent = window.TEUI.formatNumber(0, formatType);
+             return; 
+        }
 
-        // Set RAW value in state manager
-        if (window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
-            // Store the raw numeric value as a string if it's a number
-            const valueToStore = (typeof rawValue === 'number') ? rawValue.toString() : rawValue;
-            window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+        const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+        const valueToStore = numericValue.toString();
+
+        if (window.TEUI?.StateManager) {
+            const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
+            if (currentStateValue !== valueToStore) {
+                window.TEUI.StateManager.setValue(fieldId, valueToStore, 'calculated');
+            }
         }
         
-        // Update DOM with FORMATTED value
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = formattedValue;
-            } else {
+            if (element.textContent !== formattedValue) {
                 element.textContent = formattedValue;
             }
+             element.classList.toggle('negative-value', numericValue < 0);
         }
-    }
-    
-    /**
-     * Format a number for display with thousand separators and proper decimals
-     * @param {number} value - The value to format
-     * @returns {string} - Formatted number string
-     */
-    function formatNumber(value) {
-        // Ensure value is treated as a number first, handling potential commas
-        const numValue = parseFloat(String(value).replace(/,/g, ''));
-
-        // Handle non-numeric or NaN results after parsing
-        if (isNaN(numValue)) {
-            return "0.00"; // Or potentially return the original value or an empty string?
-        }
-
-        // Check if value is very small (use the parsed numValue)
-        if (Math.abs(numValue) < 0.01 && numValue !== 0) {
-            return numValue.toFixed(2); // Works now
-        }
-        
-        // Check if value is integer (use the parsed numValue)
-        if (Number.isInteger(numValue)) {
-            return numValue.toLocaleString(undefined, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            });
-        }
-        
-        // Format with 2 decimal places (use the parsed numValue)
-        return numValue.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
     }
     
     /**
      * Initialize all event handlers for this section
      */
     function initializeEventHandlers() {
-        // Get the onSiteEnergy section element
         const sectionElement = document.getElementById('onSiteEnergy');
-        if (!sectionElement) {
-            // console.warn("Renewable Energy section element not found in DOM");
-            return;
-        }
+        if (!sectionElement) return;
         
-        // Find all editable fields within this section
-        const editableFields = sectionElement.querySelectorAll('.user-input, [data-field-id^="d_4"][data-field-id$="4"], [data-field-id^="d_4"][data-field-id$="5"], [data-field-id^="d_4"][data-field-id$="6"], [data-field-id^="i_4"][data-field-id$="4"], [data-field-id^="i_4"][data-field-id$="6"], [data-field-id^="k_4"][data-field-id$="5"], [data-field-id^="m_4"][data-field-id$="3"]');
+        const editableFields = sectionElement.querySelectorAll('.user-input.editable'); 
         
-        // Add event listeners for input changes
         editableFields.forEach(field => {
-            // Make editable fields actually editable
-            if (field.classList.contains('user-input') || field.classList.contains('editable')) {
+            if (!field.hasEditableListeners) { 
                 field.setAttribute('contenteditable', 'true');
                 
-                // Also add a focus styling
                 field.addEventListener('focus', function() {
                     this.classList.add('editing');
-                    
-                    // Store original value to detect changes
-                    this.dataset.originalValue = this.textContent.trim();
+                    this.dataset.originalValue = window.TEUI.StateManager.getValue(this.dataset.fieldId) || '0';
                 });
                 
                 field.addEventListener('blur', function() {
                     this.classList.remove('editing');
+                    handleEditableBlur(this); 
                 });
+
+                field.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); 
+                        this.blur(); 
+                    }
+                });
+                field.hasEditableListeners = true;
             }
-            
-            // Handle changes to the field value
-            field.addEventListener('blur', function(e) {
-                const fieldId = this.getAttribute('data-field-id');
-                if (!fieldId) return;
-                
-                // Get new value
-                let newValue = this.textContent.trim();
-                
-                // Clean the value - remove commas before parsing
-                newValue = newValue.replace(/,/g, '');
-                
-                // Only update if value has changed
-                if (this.dataset.originalValue !== newValue) {
-                    // console.log(`Field ${fieldId} changed to ${newValue}`);
-                    
-                    // Update state manager if available
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-                    }
-                    
-                    // Special handling for gas volume input (k_45)
-                    if (fieldId === "k_45") {
-                        calculateGreenNaturalGasEnergy();
-                    }
-                    
-                    // Recalculate all values
-                    calculateAll();
-                }
-            });
-            
-            // Also handle Enter key (common way to "commit" edits)
-            field.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent adding a newline
-                    this.blur(); // Remove focus to trigger the blur event
-                }
-            });
         });
+    }
+    
+    /**
+     * Standard blur handler for editable fields in this section
+     */
+    function handleEditableBlur(element) {
+        const fieldId = element.getAttribute('data-field-id');
+        if (!fieldId) return;
+
+        const originalValue = element.dataset.originalValue || '0'; 
+        const newValueText = element.textContent.trim();
         
-        // Listen for changes to related fields from other sections
-        if (window.TEUI && window.TEUI.StateManager) {
-            // No specific dependencies for now, but can be added as needed
+        // Use global parser
+        const numericValue = window.TEUI.parseNumeric(newValueText, NaN); 
+
+        if (!isNaN(numericValue)) {
+            const valueToStore = numericValue.toString();
+            // Only update if value has actually changed from the stored raw value
+            if (valueToStore !== originalValue) { 
+                // Use global formatter
+                const formatType = 'number-2dp-comma'; 
+                const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
+                element.textContent = formattedDisplay;
+                
+                if (window.TEUI.StateManager) {
+                    window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
+                    calculateAll(); // Recalculate Section 06 subtotals
+                }
+            } else {
+                 // Value didn't change numerically, just reformat display if needed
+                 const formatType = 'number-2dp-comma'; 
+                 // Use global formatter
+                 element.textContent = window.TEUI.formatNumber(numericValue, formatType);
+            }
+        } else {
+            // Revert to original value if input is invalid
+            // Use global parser and formatter
+            const prevNumericValue = window.TEUI.parseNumeric(originalValue, 0);
+            const formatType = 'number-2dp-comma';
+            element.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
+            console.warn(`Invalid input for ${fieldId}: "${newValueText}". Reverted to ${element.textContent}.`);
         }
     }
     
@@ -566,12 +514,7 @@ window.TEUI.SectionModules.sect06 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
-        // console.log('Renewable Energy section rendered, initializing...');
-        
-        // Initialize event handlers
         initializeEventHandlers();
-        
-        // Run initial calculations
         calculateAll();
     }
     

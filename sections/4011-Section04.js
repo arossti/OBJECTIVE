@@ -626,39 +626,33 @@ window.TEUI.SectionModules.sect04 = (function() {
             
             // *** ADDING CODE BELOW THIS LINE ***
             const netElectricityUpdateCallback = function() {
-                // Get values, perform calculations, update fields...
-                // This logic needs careful review based on the specific formulas and dependencies.
-                // For now, it demonstrates the structure.
+                console.log("[S4 DEBUG] Entering netElectricityUpdateCallback"); 
                 
-                // --- Example Calculation (replace with actual logic) ---
-                // Fetch values using parseNumeric for safety
-                const d27 = getNumericValue('d_27'); // Use local helper
-                const h27 = getNumericValue('h_27'); // Use local helper
-                const l27 = getNumericValue('l_27'); // Use local helper
-                const d43 = getNumericValue('d_43'); // Use local helper
-                const i43 = getNumericValue('i_43'); // Use local helper
- 
-                // Calculate net usage (e.g., f_27, j_27)
-                const f27New = d27 - d43;
-                const j27New = h27 - i43; 
- 
+                // Fetch values 
+                const d27 = window.TEUI.parseNumeric(getFieldValue('d_27')) || 0;
+                const h27 = window.TEUI.parseNumeric(getFieldValue('h_27')) || 0; 
+                const l27 = window.TEUI.parseNumeric(getFieldValue('l_27')) || 0; 
+                const d43 = window.TEUI.parseNumeric(getFieldValue('d_43')) || 0; // Onsite Renewables
+                const i43 = window.TEUI.parseNumeric(getFieldValue('i_43')) || 0; // Offsite REC
+                console.log(`[S4 DEBUG] netElectricityUpdateCallback read values: h27=${h27}, d43=${d43}, i43=${i43}, l27=${l27}`);
+
+                // Perform calculations directly
+                // Note: Formula for f27 might depend only on d27 & d43, check requirements.
+                // Assuming F27 = D27 - D43 based on common practice & lack of i43 dependency in Excel for F27.
+                const f27New = d27 - d43; 
+                // CORRECTED FORMULA: Calculate j_27 = h27 - d43 - i43
+                const j27New = h27 - d43 - i43; 
+                const g27New = f27New * (l27 / 1000); 
+                const k27New = j27New * (l27 / 1000); 
+
                 // Update net usage fields
-                setCalculatedValue('f_27', f27New, 0); // Use local helper, specify decimals
-                setCalculatedValue('j_27', j27New, 2); // Use local helper
- 
-                // Calculate emissions (e.g., g_27, k_27)
-                // Assume l_27 is kg CO2e / kWh, need to convert to tonnes by dividing by 1000
-                const emissionFactor = l27 / 1000; // Convert kg/kWh to tonnes/kWh
-                const g27New = f27New * emissionFactor;
-                const k27New = j27New * emissionFactor;
- 
+                setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
+                setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
                 // Update emission fields
-                setCalculatedValue('g_27', g27New, 3); // Use local helper
-                setCalculatedValue('k_27', k27New, 5); // Use local helper
- 
-                // Update percentages (dependent on total emissions, may need separate calculation)
-                calculatePercentages(); 
-                // ----------------------------------------------------------
+                setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
+                setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
+
+                updateSubtotals(); // Update totals after row 27 changes
             };
 
             window.TEUI.StateManager.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables (affects f_27 & j_27)
@@ -1888,39 +1882,33 @@ function setupCrossSectionListeners() {
         
         // *** ADDING CODE BELOW THIS LINE ***
         const netElectricityUpdateCallback = function() {
-            // Get values, perform calculations, update fields...
-            // This logic needs careful review based on the specific formulas and dependencies.
-            // For now, it demonstrates the structure.
+            console.log("[S4 DEBUG] Entering netElectricityUpdateCallback"); 
             
-            // --- Example Calculation (replace with actual logic) ---
-            // Fetch values using parseNumeric for safety
-            const d27 = getNumericValue('d_27'); // Use local helper
-            const h27 = getNumericValue('h_27'); // Use local helper
-            const l27 = getNumericValue('l_27'); // Use local helper
-            const d43 = getNumericValue('d_43'); // Use local helper
-            const i43 = getNumericValue('i_43'); // Use local helper
- 
-            // Calculate net usage (e.g., f_27, j_27)
-            const f27New = d27 - d43;
-            const j27New = h27 - i43; 
- 
+            // Fetch values 
+            const d27 = window.TEUI.parseNumeric(getFieldValue('d_27')) || 0;
+            const h27 = window.TEUI.parseNumeric(getFieldValue('h_27')) || 0; 
+            const l27 = window.TEUI.parseNumeric(getFieldValue('l_27')) || 0; 
+            const d43 = window.TEUI.parseNumeric(getFieldValue('d_43')) || 0; // Onsite Renewables
+            const i43 = window.TEUI.parseNumeric(getFieldValue('i_43')) || 0; // Offsite REC
+            console.log(`[S4 DEBUG] netElectricityUpdateCallback read values: h27=${h27}, d43=${d43}, i43=${i43}, l27=${l27}`);
+
+            // Perform calculations directly
+            // Note: Formula for f27 might depend only on d27 & d43, check requirements.
+            // Assuming F27 = D27 - D43 based on common practice & lack of i43 dependency in Excel for F27.
+            const f27New = d27 - d43; 
+            // CORRECTED FORMULA: Calculate j_27 = h27 - d43 - i43
+            const j27New = h27 - d43 - i43; 
+            const g27New = f27New * (l27 / 1000); 
+            const k27New = j27New * (l27 / 1000); 
+
             // Update net usage fields
-            setCalculatedValue('f_27', f27New, 0); // Use local helper, specify decimals
-            setCalculatedValue('j_27', j27New, 2); // Use local helper
- 
-            // Calculate emissions (e.g., g_27, k_27)
-            // Assume l_27 is kg CO2e / kWh, need to convert to tonnes by dividing by 1000
-            const emissionFactor = l27 / 1000; // Convert kg/kWh to tonnes/kWh
-            const g27New = f27New * emissionFactor;
-            const k27New = j27New * emissionFactor;
- 
+            setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
+            setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
             // Update emission fields
-            setCalculatedValue('g_27', g27New, 3); // Use local helper
-            setCalculatedValue('k_27', k27New, 5); // Use local helper
- 
-            // Update percentages (dependent on total emissions, may need separate calculation)
-            calculatePercentages(); 
-            // ----------------------------------------------------------
+            setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
+            setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
+
+            updateSubtotals(); // Update totals after row 27 changes
         };
 
         window.TEUI.StateManager.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables (affects f_27 & j_27)
