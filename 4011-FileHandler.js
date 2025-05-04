@@ -276,91 +276,124 @@
              this.showStatus('Generating CSV export...', 'info');
 
              try {
-                // 1. Build a lookup map for layout details
+                // 1. Build a lookup map for layout details AND find max row number
                 const layoutLookup = {};
-                const sections = this.fieldManager.getSections(); // Get { uiSectionId: moduleSectionId }
+                let maxExcelRow = 0;
+                const rowIdDescriptionMap = {}; // Store RowID and Description per ExcelRow
+                
+                const sections = this.fieldManager.getSections(); 
                 Object.keys(sections).forEach(uiSectionId => {
                     const layout = this.fieldManager.getLayoutForSection(uiSectionId);
                     if (layout && layout.rows) {
                         layout.rows.forEach(rowDef => {
-                            const excelRow = rowDef.id; // Assuming rowDef.id is the Excel row number
-                            let rowId = ''; // Column B
-                            let description = ''; // Column C
+                            const excelRow = parseInt(rowDef.id, 10); // Ensure numeric row number
+                            if (isNaN(excelRow)) return; // Skip if row ID is not a number
+
+                            maxExcelRow = Math.max(maxExcelRow, excelRow);
+                            let rowId = excelRow.toString(); // Default RowID to ExcelRow
+                            let description = '';
 
                             rowDef.cells.forEach((cellDef, index) => {
                                 if (index === 1) { // Column B - RowID
-                                    rowId = cellDef.content || excelRow; // Use content if exists, else excelRow
+                                    rowId = cellDef.content || rowId; // Use content if exists
                                 } else if (index === 2) { // Column C - Description
                                     description = cellDef.label || cellDef.content || '';
                                 } else if (cellDef.fieldId) {
                                     // Store layout info against fieldId
                                     layoutLookup[cellDef.fieldId] = {
                                         excelRow: excelRow,
-                                        rowId: rowId, // Use the ID found in col B
-                                        description: description, // Use the label found in col C
-                                        units: cellDef.units || '' // Get units if defined in cellDef
+                                        rowId: rowId, 
+                                        description: description, 
+                                        units: cellDef.units || '' 
                                     };
                                 }
                             });
+                            // Store RowID and Description for potential blank row generation
+                            if (!rowIdDescriptionMap[excelRow]) {
+                                 rowIdDescriptionMap[excelRow] = { rowId: rowId, description: description };
+                            }
                         });
                     }
                 });
                 
-                // 2. Generate CSV rows for editable fields
-                const header = ["ExcelRow", "RowID", "Description", "FieldID", "Value", "Units"];
-                const rows = [header];
+                // 2. Prepare data structure keyed by ExcelRow for sorting/filling gaps
+                const rowDataMap = {};
                 const allFields = this.fieldManager.getAllFields();
-                 // Filter for fields explicitly marked as editable
-                const editableFields = Object.entries(allFields).filter(([id, def]) => 
-                    def.type === 'editable' || 
-                    def.type === 'dropdown' || 
-                    def.type === 'year_slider' || 
-                    def.type === 'percentage' || 
-                    def.type === 'coefficient' ||
-                    def.type === 'number' // Include number inputs as user-editable for export
-                );
+                const editableFieldTypes = ['editable', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'number'];
+                
+                Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
+                    if (editableFieldTypes.includes(fieldDef.type)) {
+                        const layoutInfo = layoutLookup[fieldId];
+                        if (layoutInfo && layoutInfo.excelRow) {
+                             const excelRow = layoutInfo.excelRow;
+                             const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
+                            
+                             // Store data keyed by excelRow, ready for final formatting
+                             rowDataMap[excelRow] = {
+                                 excelRow: excelRow,
+                                 rowId: layoutInfo.rowId,
+                                 description: layoutInfo.description,
+                                 fieldId: fieldId,
+                                 value: currentValue,
+                                 units: layoutInfo.units
+                             };
+                        }
+                    }
+                });
 
+                // 3. Generate final CSV rows, inserting placeholders for missing rows
+                const header = ["ExcelRow", "RowID", "Description", "Value", "Units", "FieldID"]; // Reordered columns
+                const finalRows = [header];
+                
                 // Basic CSV escaping (handles commas, quotes, newlines)
                 const escapeCSV = (val) => {
-                    const strVal = String(val ?? ''); // Ensure string conversion, handle null/undefined
+                    const strVal = String(val ?? ''); 
                     if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
-                        // Escape quotes by doubling them and wrap in quotes
                         return `"${strVal.replace(/"/g, '""')}"`;
                     }
                     return strVal;
                 };
-
-                editableFields.forEach(([fieldId, fieldDef]) => {
-                    const layoutInfo = layoutLookup[fieldId] || {}; // Get layout details
-                    const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
-
-                    rows.push([
-                        escapeCSV(layoutInfo.excelRow || ''), // Excel Row from layout
-                        escapeCSV(layoutInfo.rowId || ''),     // Row ID from layout (Col B)
-                        escapeCSV(layoutInfo.description || fieldDef.label || fieldId), // Description from layout (Col C) or fallback
-                        escapeCSV(fieldId),                  // Field ID (Col D)
-                        escapeCSV(currentValue),             // Current Value (Col E)
-                        escapeCSV(layoutInfo.units || '')      // Units from layout
-                    ]);
-                });
                 
-                // Sort rows numerically by the ExcelRow (first column)
-                // Skip header row (index 0) for sorting
-                rows.slice(1).sort((a, b) => {
-                    const rowA = parseInt(a[0].replace(/"/g, ''), 10) || 0;
-                    const rowB = parseInt(b[0].replace(/"/g, ''), 10) || 0;
-                    return rowA - rowB;
-                });
-
-                // Reconstruct CSV content with sorted rows (header + sorted data)
-                const csvContent = [rows[0].join(',')].concat(rows.slice(1).map(row => row.join(','))).join('\n');
+                for (let i = 1; i <= maxExcelRow; i++) {
+                    const data = rowDataMap[i];
+                    if (data) {
+                        // Format row for existing editable field
+                        finalRows.push([
+                            escapeCSV(data.excelRow),
+                            escapeCSV(data.rowId),
+                            escapeCSV(data.description),
+                            escapeCSV(data.value),       // Value moved earlier
+                            escapeCSV(data.units),
+                            escapeCSV(data.fieldId)      // FieldID moved last
+                        ]);
+                    } else {
+                        // Insert placeholder row for row parity
+                        const placeholderInfo = rowIdDescriptionMap[i] || {};
+                        finalRows.push([
+                            escapeCSV(i),                      // ExcelRow
+                            escapeCSV(placeholderInfo.rowId || ''), // RowID (if found)
+                            escapeCSV(placeholderInfo.description || ''),// Description (if found)
+                            '', // Empty Value
+                            '', // Empty Units
+                            ''  // Empty FieldID
+                        ]);
+                    }
+                }
                 
-                // 3. Trigger Download
+                // 4. Construct CSV content and trigger Download
+                const csvContent = finalRows.map(row => row.join(',')).join('\n');
+                
+                // Get project name for filename
+                const projectName = this.stateManager.getValue('h_14') || 'Project';
+                // Sanitize project name for filename
+                const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, '_');
+                const filename = `TEUIv4011-${safeProjectName}.csv`;
+
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.setAttribute("href", url);
-                link.setAttribute("download", "TEUI_User_Data_Export.csv"); // Renamed file
+                link.setAttribute("download", filename); 
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
