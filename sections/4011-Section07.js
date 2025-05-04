@@ -769,68 +769,78 @@ window.TEUI.SectionModules.sect07 = (function() {
     }
     
     /**
+     * NEW: Helper to add/remove a ghosting class to a field's TD element.
+     * Uses '.disabled-input' class for visual consistency with previous S07 implementation.
+     * @param {string} fieldId 
+     * @param {boolean} shouldBeGhosted 
+     */
+    function setFieldGhosted(fieldId, shouldBeGhosted) {
+        const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
+        if (valueCell) {
+            valueCell.classList.toggle('disabled-input', shouldBeGhosted); // Use S07's existing class
+            
+            // Disable/enable controls within the value cell
+            const input = valueCell.querySelector('input, select, [contenteditable="true"]');
+            if(input) {
+                if(input.hasAttribute('contenteditable')) {
+                    input.contentEditable = !shouldBeGhosted;
+                } else {
+                    input.disabled = shouldBeGhosted;
+                }
+            }
+            if(valueCell.hasAttribute('contenteditable')) valueCell.contentEditable = !shouldBeGhosted;
+
+            // Ghost the preceding label cell (if it exists and seems like a label)
+            const labelCell = valueCell.previousElementSibling;
+            if (labelCell && labelCell.tagName === 'TD' && !labelCell.hasAttribute('data-field-id')) { 
+                labelCell.classList.toggle('disabled-input', shouldBeGhosted);
+            }
+        } else {
+            // console.warn(`[S07 Ghosting] Element for field ${fieldId} not found.`);
+        }
+    }
+    
+    /**
      * Updates the visibility and editability of conditional input fields (e_49, d_50)
      * and related fields (Gas/Oil outputs) based on the selected methods.
-     * @param {string} waterMethod - Value from d_49 dropdown.
-     * @param {string} systemType - Value from d_51 dropdown.
      */
     function updateSection7Visibility(waterMethod, systemType) {
-        // Get relevant elements
-        const e49Element = document.querySelector('[data-field-id="e_49"]');
-        const f49Element = document.querySelector('.data-table tr[data-id="W.1.0"] td:nth-child(6)'); // F49
-        const d50Element = document.querySelector('[data-field-id="d_50"]');
-        const e50Element = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(5)'); // E50
-        const f50Element = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(6)'); // F50
-        
-        const e51Element = document.querySelector('[data-field-id="e_51"]'); // Gas Volume
-        const f51Element = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)'); // F51 Label
-        const k54Element = document.querySelector('[data-field-id="k_54"]'); // Exhaust
-        const l54Element = document.querySelector('[data-field-id="l_54"]'); // Oil Volume
-        const h54Element = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); // H54 Label
-        const l54LabelElement = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); // L54 Label
-
-
         // --- Handle User Defined inputs (e_49, f_49) based on waterMethod ---
-        if (e49Element && f49Element) {
-            const isActive = (waterMethod === "User Defined");
-            e49Element.contentEditable = isActive ? "true" : "false";
-            e49Element.classList.toggle('user-input', isActive);
-            e49Element.classList.toggle('editable', isActive);
-            e49Element.classList.toggle('disabled-input', !isActive);
-            f49Element.classList.toggle('disabled-input', !isActive);
-        }
+        const isUserDefined = waterMethod === "User Defined";
+        setFieldGhosted('e_49', !isUserDefined);
+        // Also ghost the adjacent label cell F49
+        const f49Cell = document.querySelector('.data-table tr[data-id="W.1.0"] td:nth-child(6)');
+        if (f49Cell) f49Cell.classList.toggle('disabled-input', !isUserDefined);
 
         // --- Handle By Engineer inputs (d_50, e_50, f_50) based on waterMethod ---
-        if (d50Element && e50Element && f50Element) {
-            const isActive = (waterMethod === "By Engineer");
-            d50Element.contentEditable = isActive ? "true" : "false";
-            d50Element.classList.toggle('user-input', isActive);
-            d50Element.classList.toggle('editable', isActive);
-            d50Element.classList.toggle('disabled-input', !isActive);
-            e50Element.classList.toggle('disabled-input', !isActive); 
-            f50Element.classList.toggle('disabled-input', !isActive); 
-        }
+        const isByEngineer = waterMethod === "By Engineer";
+        setFieldGhosted('d_50', !isByEngineer);
+        // Also ghost adjacent labels E50 and F50
+        const e50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(5)');
+        const f50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(6)');
+        if (e50Cell) e50Cell.classList.toggle('disabled-input', !isByEngineer);
+        if (f50Cell) f50Cell.classList.toggle('disabled-input', !isByEngineer);
         
         // --- Handle Gas specific fields (e_51, f_51) based on systemType ---
-        if (e51Element && f51Element) {
-            const isActive = (systemType === "Gas");
-            e51Element.classList.toggle('disabled-input', !isActive);
-            f51Element.classList.toggle('disabled-input', !isActive);
-        }
+        const isGas = systemType === "Gas";
+        setFieldGhosted('e_51', !isGas); // Ghosts value cell and attempts preceding label (D51)
+        // Also ghost label cell F51
+        const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)');
+        if (f51Cell) f51Cell.classList.toggle('disabled-input', !isGas);
 
         // --- Handle Oil specific field (l_54) and its label based on systemType ---
-        if (l54Element && l54LabelElement) {
-            const isActive = (systemType === "Oil");
-            l54Element.classList.toggle('disabled-input', !isActive);
-            l54LabelElement.classList.toggle('disabled-input', !isActive);
-        }
+        const isOil = systemType === "Oil";
+        setFieldGhosted('l_54', !isOil); // Ghosts value cell L54 and preceding label K54
+        // Also ghost label cell L54 Label itself
+        const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
+        if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
         
         // --- Handle Gas/Oil specific fields (k_54, h_54) based on systemType ---
-        if (k54Element && h54Element) {
-            const isActive = (systemType === "Gas" || systemType === "Oil");
-            k54Element.classList.toggle('disabled-input', !isActive);
-            h54Element.classList.toggle('disabled-input', !isActive);
-        }
+        const isFossil = isGas || isOil;
+        setFieldGhosted('k_54', !isFossil); // Ghosts value cell K54 and preceding label J54
+        // Also ghost label cell H54
+        const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
+        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isFossil);
     }
     
     /**
@@ -1098,17 +1108,15 @@ window.TEUI.SectionModules.sect07 = (function() {
             d52Slider.max = newMaxValue;
             d52Slider.step = newStep;
             d52Slider.value = newValue; // Update slider value to the new default/reset value
-            // d52Slider.disabled = isDisabled; // REMOVED - Keep slider enabled
             if (d52Display) { 
                 d52Display.textContent = `${newValue}%`; // Update display
             }
         }
-        // Also update cell appearance (using disabled-input class for styling if needed)
-        if(d52Cell){
-            d52Cell.classList.toggle('disabled-input', !isEditable); // Style based on editability flag if needed
-            // If we have a slider, remove editable class just in case
-            if(d52Slider) d52Cell.classList.remove('editable', 'user-input');
-        }
+        // Removed direct class toggle - rely on updateSection7Visibility call below
+
+        // Update visibility based on the *new* system type
+        const currentWaterMethod = getFieldValue("d_49"); // Get the other controlling value
+        updateSection7Visibility(currentWaterMethod, selectedSource); // Call the main visibility function
 
         // Trigger recalculations that depend on d_52
         calculateAll(); // Recalculate section
