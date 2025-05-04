@@ -1347,12 +1347,20 @@ window.TEUI.SectionModules.sect13 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
+        console.log("[S13] onSectionRendered called."); // Log entry
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90%
         }
         initializeEventHandlers();
         registerWithStateManager();
-        calculateAll();
+        calculateAll(); // Run initial calculations first
+        
+        // Set initial ghosting state after calculations might have populated values
+        setTimeout(() => { // Use timeout to ensure initial state is settled
+            const initialHeatingSystem = getFieldValue('d_113') || 'Heatpump'; // Get current value or default
+            console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
+            handleHeatingSystemChangeForGhosting(initialHeatingSystem);
+        }, 100); // Short delay might be needed
     }
     
     /**
@@ -1863,11 +1871,15 @@ function setFieldDisabled(fieldId, isDisabled) {
  * @param {boolean} shouldBeGhosted 
  */
 function setFieldGhosted(fieldId, shouldBeGhosted) {
-    const element = document.querySelector(`td[data-field-id="${fieldId}"]`);
-    if (element) {
-        element.classList.toggle('ghosted', shouldBeGhosted); // Assuming 'ghosted' is the CSS class
-        // Optionally disable input elements within if needed
-        const input = element.querySelector('input, select, [contenteditable="true"]'); // Target input, select, or editable
+    // console.log(`[S13 Ghosting] Setting ghosted=${shouldBeGhosted} for field ${fieldId}`); // Add log
+    const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
+    
+    if (valueCell) {
+        // Ghost the value cell itself
+        valueCell.classList.toggle('disabled-input', shouldBeGhosted);
+        
+        // Disable/enable controls within the value cell
+        const input = valueCell.querySelector('input, select, [contenteditable="true"]'); // Target input, select, or editable
         if(input) {
             if(input.hasAttribute('contenteditable')) {
                 input.contentEditable = !shouldBeGhosted;
@@ -1876,8 +1888,14 @@ function setFieldGhosted(fieldId, shouldBeGhosted) {
             }
         }
         // Ensure contenteditable is explicitly removed/set if needed, even if no input found
-        if(element.hasAttribute('contenteditable')) element.contentEditable = !shouldBeGhosted;
-        
+        if(valueCell.hasAttribute('contenteditable')) valueCell.contentEditable = !shouldBeGhosted;
+
+        // Ghost the preceding label cell (if it exists and seems like a label)
+        const labelCell = valueCell.previousElementSibling;
+        if (labelCell && labelCell.tagName === 'TD' && !labelCell.hasAttribute('data-field-id')) { // Basic check: is it a TD and not another value cell?
+            // Optional stricter check: if (labelCell && labelCell.classList.contains('label-prefix')) { ... }
+            labelCell.classList.toggle('disabled-input', shouldBeGhosted);
+        }
     } else {
         // console.warn(`Ghosting: Element for field ${fieldId} not found.`);
     }
@@ -1888,6 +1906,7 @@ function setFieldGhosted(fieldId, shouldBeGhosted) {
  */
 function handleHeatingSystemChangeForGhosting(newValue) {
     const systemType = newValue; // e.g., "Gas", "Oil", "Heatpump", "Electricity"
+    console.log(`[S13 Ghosting] System changed to: ${systemType}`); // Log system type
 
     // Determine active state based on system type
     const isHP = systemType === 'Heatpump';
@@ -1899,8 +1918,8 @@ function handleHeatingSystemChangeForGhosting(newValue) {
     // --- Ghosting based on Heating System --- 
     
     // Heatpump specific fields
-    setFieldGhosted('f_113', !isHP); // HSPF
-    setFieldGhosted('h_113', !isHP); // COPheat
+    setFieldGhosted('f_113', !isHP); // HSPF Slider
+    setFieldGhosted('h_113', !isHP); // COPheat (Calc)
     setFieldGhosted('j_113', !isHP); // COPcool (HP specific)
     setFieldGhosted('j_114', !isHP); // CEER (HP specific)
     setFieldGhosted('l_113', !isHP); // Heatpump Sink
@@ -1918,9 +1937,7 @@ function handleHeatingSystemChangeForGhosting(newValue) {
     setFieldGhosted('l_115', !isFossilFuel);
     
     // --- Ghosting based on Cooling System (d_116) --- 
-    const isCoolingActive = getFieldValue('d_116') === 'Cooling';
-    
-    // Dedicated Cooling COP (j_116) - Active only if Cooling is ON *and* Heating is NOT Heatpump
+    const isCoolingActive = window.TEUI?.StateManager?.getValue('d_116') === 'Cooling'; // Use StateManager directly
     setFieldGhosted('j_116', !(isCoolingActive && !isHP)); 
     
     // Heatpump Cool Elect Load (d_117 / f_117) - Active only if Cooling is ON
@@ -1932,4 +1949,26 @@ function handleHeatingSystemChangeForGhosting(newValue) {
 
     // Sink for Heatpump Cooling (l_114) - Active only if Cooling is ON *and* Heating IS Heatpump
     setFieldGhosted('l_114', !(isCoolingActive && isHP));
+
+    // Row 115: Heating Fuel Impact - Ghost entire row if not Gas or Oil
+    const row115 = document.querySelector('tr[data-id="M.2.2"]');
+    if (row115) {
+        row115.classList.toggle('ghosted', !isFossilFuel);
+        // Also disable/enable controls within the row
+        const controlsInRow = row115.querySelectorAll('input, select, [contenteditable="true"]');
+        controlsInRow.forEach(control => {
+            if (control.getAttribute('data-field-id') !== 'j_115') { // Don't disable j_115 based on row ghosting alone
+                if(control.hasAttribute('contenteditable')) {
+                    control.contentEditable = isFossilFuel; 
+                } else {
+                    control.disabled = !isFossilFuel;
+                }
+            } else {
+                // Handle j_115 separately based on its specific logic
+                setFieldGhosted('j_115', !isFossilFuel);
+            }
+        });
+    } else {
+        console.warn("[S13 Ghosting] Could not find row TR element for M.2.2");
+    }
 }
