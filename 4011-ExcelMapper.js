@@ -47,42 +47,114 @@ class ExcelMapper {
         this.reverseMapping = reverseMapping;
         // Define the NEW specific mapping for user input import
         this.excelReportInputMapping = {
-            // Populate this based on TEUI v3.037 REPORT sheet for USER-EDITABLE fields
-            // Example: Cell B10 (Major Occupancy) -> field d_12
-            'B10': 'd_12', 
-            // Example: Cell D12 (Project Name) -> field h_14
-            'D12': 'h_14',
-            // Example: Cell D13 (Conditioned Area) -> field h_15
-            'D13': 'h_15',
-            // Add other user-editable fields from Section 2 (REPORT! sheet)
-            'D10': 'd_13', // Reference Standard (Dropdown)
-            'D11': 'd_14', // Actual/Target Use (Dropdown) 
-            'B15': 'd_15', // Carbon Standard (Dropdown) 
-            'D15': 'h_13', // Service Life (Slider -> Number)
-            'H15': 'i_16', // Certifier (Text)
-            'H16': 'i_17', // License No (Text)
-            'L10': 'l_12', // Elec Cost
-            'L11': 'l_13', // Gas Cost
-            'L12': 'l_14', // Propane Cost
-            'L13': 'l_15', // Wood Cost
-            'L14': 'l_16', // Oil Cost 
-            // Example: Section 4 Inputs (Actuals only, from REPORT sheet)
-            'B19': 'd_27', // Actual Elec Use
-            'B20': 'd_28', // Actual Gas Use
-            'B21': 'd_29', // Actual Propane Use
-            'B22': 'd_30', // Actual Oil Use
-            'B23': 'd_31', // Actual Wood Use
-            'K19': 'l_27', // Elec Emission Factor
-            'K20': 'l_28', // Gas Emission Factor
-            'K21': 'l_29', // Propane Emission Factor
-            'K22': 'l_30', // Oil Emission Factor
-            'K23': 'l_31', // Wood Emission Factor
-            // Section 13 AFUE (Assuming it's editable)
-            'F28': 'j_115' // AFUE - Assuming F28 based on formula, needs verification
-            // ADD OTHER USER-EDITABLE FIELDS FROM OTHER SECTIONS AS IDENTIFIED
-            // e.g., Section 6 renewables, Section 11 RSI/U-values, Section 13 costs/efficiencies?
-            // Placeholder for k_120 if mapped: 'SomeCell': 'k_120'
-            // Placeholder for d_142 if mapped: 'SomeCell': 'd_142'
+            // Section 02: Building Information (REPORT! Sheet)
+            'D12': 'd_12', // Major Occupancy (Dropdown)
+            'D13': 'd_13', // Reference Standard (Dropdown)
+            'D14': 'd_14', // Actual/Target Use (Dropdown)
+            'D15': 'd_15', // Carbon Standard (Dropdown)
+            'H12': 'h_12', // Reporting Period (Slider -> Number)
+            'H13': 'h_13', // Service Life (Slider -> Number)
+            'H14': 'h_14', // Project Name (Editable Text)
+            'H15': 'h_15', // Conditioned Area (Editable Number)
+            'H16': 'i_16', // Certifier (Editable Text) - Assumed H16
+            'H17': 'i_17', // License No (Editable Text) - Assumed H17
+            'L12': 'l_12', // Elec Cost
+            'L13': 'l_13', // Gas Cost
+            'L14': 'l_14', // Propane Cost
+            'L15': 'l_15', // Wood Cost 
+            'L16': 'l_16', // Oil Cost 
+
+            // Section 03: Climate Calculations (REPORT! Sheet)
+            'M19': 'm_19', // Days Cooling (Editable Number)
+            // Note: L22 (Elevation) & L24 (Cooling Override) are handled by weather/location import, not general user data import.
+
+            // Section 04: Actual vs Target Energy (REPORT! Sheet)
+            'D27': 'd_27', // Actual Elec Use
+            'D28': 'd_28', // Actual Gas Use
+            'D29': 'd_29', // Actual Propane Use
+            'D30': 'd_30', // Actual Oil Use
+            'D31': 'd_31', // Actual Wood Use
+            'L27': 'l_27', // Elec Emission Factor
+            'L28': 'l_28', // Gas Emission Factor
+            'L29': 'l_29', // Propane Emission Factor
+            'L30': 'l_30', // Oil Emission Factor
+            'L31': 'l_31', // Wood Emission Factor
+            'H35': 'h_35', // PER Factor (Editable Number)
+
+            // Section 05: Emissions (REPORT! Sheet)
+            'D60': 'd_60', // Offsets (tCO2e)
+            'I41': 'i_41', // Modelled Embodied Carbon (A1-3)
+
+            // Section 06: Renewable Energy (REPORT! Sheet)
+            'D44': 'd_44', // Photovoltaics kWh/yr
+            'D45': 'd_45', // Wind kWh/yr
+            'D46': 'd_46', // Remove EV Charging kWh/yr
+            'I45': 'i_45', // WWS Electricity kWh/yr
+            'K45': 'k_45', // Green Natural Gas m3/yr
+            'I46': 'i_46', // Other Removals kWh/yr
+
+            // Section 07: Water Use (REPORT! Sheet)
+            'D49': 'd_49', // Water Use Method (Dropdown)
+            'E49': 'e_49', // User Defined Water Use l/pp/day (Only used if d_49 is User Defined)
+            'E50': 'e_50', // By Engineer DHW kWh/yr (Only used if d_49 is By Engineer)
+            'D51': 'd_51', // DHW Energy Source (Dropdown)
+            'D52': 'd_52', // DHW EF/COP (Editable Number)
+            'D53': 'd_53', // DHW Recovery Eff % (Editable Number)
+
+            // Section 08: Indoor Air Quality (REPORT! Sheet)
+            'D56': 'd_56', // Radon Bq/m3
+            'D57': 'd_57', // CO2 ppm
+            'D58': 'd_58', // TVOC ppm
+            'D59': 'd_59', // Rel Humidity %
+
+            // Section 09: Occupant Internal Gains (REPORT! Sheet)
+            'D63': 'd_63', // Occupants
+            'I63': 'i_63', // Occupied Hrs/Day
+            'J63': 'j_63', // Total Hrs/Year
+            'D64': 'd_64', // Occupant Activity (Dropdown)
+            'D65': 'd_65', // Plug Loads W/m2
+            'D66': 'd_66', // Lighting Loads W/m2
+            'D67': 'd_67', // Equipment Loads W/m2
+            'D68': 'd_68', // Elevator Loads (Dropdown)
+            'G67': 'g_67', // Equipment Spec (Dropdown)
+
+            // Section 10: Radiant Gains (REPORT! Sheet)
+            'E73': 'e_73', 'E74': 'e_74', 'E75': 'e_75', 'E76': 'e_76', 'E77': 'e_77', 'E78': 'e_78', // Orientations (Dropdowns)
+            'F73': 'f_73', 'F74': 'f_74', 'F75': 'f_75', 'F76': 'f_76', 'F77': 'f_77', 'F78': 'f_78', // SHGCs (Editable Numbers)
+            'G73': 'g_73', 'G74': 'g_74', 'G75': 'g_75', 'G76': 'g_76', 'G77': 'g_77', 'G78': 'g_78', // Winter Shading % (Editable Numbers)
+            'H73': 'h_73', 'H74': 'h_74', 'H75': 'h_75', 'H76': 'h_76', 'H77': 'h_77', 'H78': 'h_78', // Summer Shading % (Editable Numbers)
+            'D80': 'd_80', // Gains Utilisation Method (Dropdown)
+
+            // Section 11: Transmission Losses (REPORT! Sheet)
+            'D85': 'd_85', 'F85': 'f_85', // Roof Area, RSI
+            'D86': 'd_86', 'F86': 'f_86', // Walls AG Area, RSI
+            'D87': 'd_87', 'F87': 'f_87', // Floor Exp Area, RSI
+            'G88': 'g_88', 'G89': 'g_89', 'G90': 'g_90', 'G91': 'g_91', 'G92': 'g_92', 'G93': 'g_93', // Window/Door/Skylight U-values
+            'D94': 'd_94', 'F94': 'f_94', // Walls BG Area, RSI
+            'D95': 'd_95', 'F95': 'f_95', // Floor Slab Area, RSI
+            'D96': 'd_96', // Interior Floor Area
+            'D97': 'd_97', // Thermal Bridge Penalty %
+
+            // Section 12: Volume Metrics (REPORT! Sheet)
+            'D103': 'd_103', // Stories
+            'F103': 'f_103', // Shielding (Dropdown)
+            'D108': 'd_108', // NRL50 Target Method (Dropdown)
+            'G109': 'g_109', // Measured ACH50 (Editable Number)
+
+            // Section 13: Mechanical Loads (REPORT! Sheet)
+            'D113': 'd_113', // Primary Heating System (Dropdown)
+            'F113': 'f_113', // HSPF (Slider/Coefficient -> Number)
+            'J115': 'j_115', // AFUE (Editable Number)
+            'D116': 'd_116', // Cooling System (Dropdown)
+            'D118': 'd_118', // HRV/ERV SRE % (Percentage Slider -> Number 0-100)
+            'G118': 'g_118', // Ventilation Method (Dropdown)
+            'L118': 'l_118', // ACH (Editable Number)
+            'D119': 'd_119', // Rate Per Person (Editable Number)
+            'L119': 'l_119', // Summer Boost (Dropdown)
+            'K120': 'k_120', // Unoccupied Setback % (Percentage Dropdown/Slider) - NOTE: Stores value like "0.9"
+
+            // Section 15: TEUI Summary (REPORT! Sheet)
+            'D142': 'd_142' // Cost Premium HP (Editable Number)
         };
     }
     
