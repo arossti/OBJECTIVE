@@ -219,6 +219,7 @@ When working with this codebase, previous AI assistants have encountered several
        ```
      - SectionIntegrator manages cross-section dependencies and calculation order
      - The event system (`teui-section-rendered`, etc.) coordinates section calculation timing
+   - **Dependency Verification**: Ensure that when a value like Section 15's `d_136` (Target Electricity) is needed in another section (e.g., Section 4's `h_27`), the receiving section (S04) uses a `StateManager.addListener('d_136', ...)` in its `initializeEventHandlers` (or equivalent setup function). The listener's callback must then explicitly read the new value (`getNumericValue('d_136')`) and update the target field (`setCalculatedValue('h_27', ...)`), triggering any subsequent calculations within that section (e.g., `calculateJ27`, `updateSubtotals`). Relying solely on `registerDependency` for cross-section updates triggered by *calculated* source values is insufficient.
 
 9. **Robust Input Parsing**:
    - ✅ **ALWAYS** use the section's `parseNumeric` helper function (or equivalent) when parsing input values within calculation functions, especially values retrieved from the DOM via helpers like `getFieldValue`. 
@@ -233,7 +234,12 @@ When working with this codebase, previous AI assistants have encountered several
    - ❌ **Avoid** direct DOM manipulation (`element.textContent = ...`) inside calculation logic or setting state directly without using the standard helper.
    - This ensures consistency, proper state management, correct listener triggering, and adherence to formatting rules.
 
-11. **Correct Handling of `contenteditable` Fields:** (Added 2024-07-31)
+11. **Standardized Helper Functions**:
+   - ✅ **REQUIRED PATTERN**: Each section module's IIFE scope *must* define standard helper functions (`getNumericValue`, `getFieldValue`, `setCalculatedValue`, `formatNumber`) that directly utilize the globally defined utilities (e.g., `window.TEUI.parseNumeric`, `window.TEUI.formatNumber`).
+   - ❌ **AVOID**: Defining redundant local helper functions later in the module or including fallback logic within the primary helpers. Assume the global utilities are always available.
+   - **Why**: Ensures consistent data handling (parsing, formatting, state updates) across all sections, reduces code duplication, and improves maintainability. Sections 04 and 03 have been refactored to follow this pattern.
+
+12. **Correct Handling of `contenteditable` Fields:** (Added 2024-07-31)
     - **Problem**: Incorrectly implemented event handlers for `contenteditable` elements (used for editable numeric inputs) can lead to issues like the Enter key inserting newlines instead of saving the value.
     - ❌ **Avoid**: Attaching simple `change` listeners to `contenteditable` elements (they don't fire reliably); Defining handler functions (like `handleEditableBlur`) *outside* the module's IIFE scope, making them inaccessible to listeners defined inside.
     - ✅ **REQUIRED PATTERN (See Section 13 for example):**
@@ -472,8 +478,8 @@ The following table provides the current implementation status of all calculator
 |---------|------|------|--------|-------|
 | 01 | Key Values | 4011-Section01.js | ✅ Complete | Custom HTML rendering, summary values |
 | 02 | Building Information | 4011-Section02.js | ✅ Complete | Project details, area inputs |
-| 03 | Climate Calculations | 4011-Section03.js | ✅ Complete | Weather data integration |
-| 04 | Actual vs. Target Energy | 4011-Section04.js | ✅ Complete | Energy comparison calculations |
+| 03 | Climate Calculations | 4011-Section03.js | ✅ Complete | Weather data integration. Refactored helpers (May 2025). |
+| 04 | Actual vs. Target Energy | 4011-Section04.js | ✅ Complete | Energy comparison calculations. Refactored helpers & d136 listener (May 2025). |
 | 05 | CO2e Emissions | 4011-Section05.js | ✅ Complete | Emission calculations |
 | 06 | Renewable Energy | 4011-Section06.js | ✅ Complete | On-site energy generation |
 | 07 | Water Use | 4011-Section07.js | ✅ Complete | Water consumption metrics |
@@ -490,6 +496,13 @@ The following table provides the current implementation status of all calculator
 | 18 | Notes | (Partial) | 🔄 Partial | User notes and documentation |
 
 All core calculator sections (01-15) have been implemented with the declarative approach, replacing the previous imperative implementation. Each section follows the standard pattern with field definitions, layouts, and calculation methods. Dev team must verify compliance with DOM standards and correct mapping of all cells with dependencies and calculations. 
+
+### Future Work & Refactoring Opportunities
+
+- **Standardize Helpers**: Apply the helper function pattern (using only global utilities within standard helpers defined inside the IIFE) consistently across all remaining sections (e.g., Sections 01, 02, 05-15). Remove redundant local helpers and fallbacks. Section 13, in particular, requires this refactoring to resolve existing errors.
+- **Review Listeners**: Ensure all cross-section calculations triggered by calculated fields use the `StateManager.addListener` pattern correctly, triggering necessary downstream calculations within the listener's callback.
+- **Refine `registerCalculations`**: Examine the `registerCalculations` function in sections like Section 04 to ensure it aligns with the primary dependency/listener patterns and doesn't conflict with StateManager's intended flow (as noted in the README).
+- **Code Cleanup**: Remove commented-out code blocks and unnecessary console logs (excluding specific DEBUG logs) from all sections.
 
 The visualization sections (16-17) are currently pending implementation, with planned features for interactive energy flow diagrams and calculation dependency visualization - or possibly a unified graphics panel where stacked bar-graph energy-balance diagrams and cooling balance diagrams are integrated with the sankey (as they have been in the standalone sankey app).
 
@@ -855,3 +868,6 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
 These issues will be addressed comprehensively in the upcoming 4012 release, which will focus on visual refinements and modern layout techniques.
 
 The modular architecture enables easier maintenance, extension, and validation while preserving the core calculation methodology that makes TEUI a valuable tool for building energy modeling.
+
+---
+*Document maintained with assistance from Cognizant Architect Gemini ("Cosmo") - May 2025*
