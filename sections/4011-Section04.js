@@ -639,19 +639,19 @@ window.TEUI.SectionModules.sect04 = (function() {
                 // Perform calculations directly
                 // Note: Formula for f27 might depend only on d27 & d43, check requirements.
                 // Assuming F27 = D27 - D43 based on common practice & lack of i43 dependency in Excel for F27.
-                const f27New = d27 - d43; 
+                const f27New = d27 - d43;
                 // CORRECTED FORMULA: Calculate j_27 = h27 - d43 - i43
                 const j27New = h27 - d43 - i43; 
                 const g27New = f27New * (l27 / 1000); 
                 const k27New = j27New * (l27 / 1000); 
-
+ 
                 // Update net usage fields
                 setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
                 setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
                 // Update emission fields
                 setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
                 setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
-
+ 
                 updateSubtotals(); // Update totals after row 27 changes
             };
 
@@ -1895,19 +1895,19 @@ function setupCrossSectionListeners() {
             // Perform calculations directly
             // Note: Formula for f27 might depend only on d27 & d43, check requirements.
             // Assuming F27 = D27 - D43 based on common practice & lack of i43 dependency in Excel for F27.
-            const f27New = d27 - d43; 
+            const f27New = d27 - d43;
             // CORRECTED FORMULA: Calculate j_27 = h27 - d43 - i43
             const j27New = h27 - d43 - i43; 
             const g27New = f27New * (l27 / 1000); 
             const k27New = j27New * (l27 / 1000); 
-
+ 
             // Update net usage fields
             setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
             setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
             // Update emission fields
             setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
             setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
-
+ 
             updateSubtotals(); // Update totals after row 27 changes
         };
 

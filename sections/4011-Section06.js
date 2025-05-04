@@ -395,7 +395,7 @@ window.TEUI.SectionModules.sect06 = (function() {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             return element.value !== undefined ? element.value : element.textContent;
-        }
+            }
         return '0'; // Return '0' as string fallback to match previous behavior
     }
     
@@ -421,7 +421,7 @@ window.TEUI.SectionModules.sect06 = (function() {
             const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
             if (currentStateValue !== valueToStore) {
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'calculated');
-            }
+        }
         }
         
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -472,11 +472,11 @@ window.TEUI.SectionModules.sect06 = (function() {
      */
     function handleEditableBlur(element) {
         const fieldId = element.getAttribute('data-field-id');
-        if (!fieldId) return;
-
+                if (!fieldId) return;
+                
         const originalValue = element.dataset.originalValue || '0'; 
         const newValueText = element.textContent.trim();
-        
+                
         // Use global parser
         const numericValue = window.TEUI.parseNumeric(newValueText, NaN); 
 

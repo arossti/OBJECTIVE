@@ -4,7 +4,7 @@
  * 
  * This section integrates with 4011-Cooling.js for complex cooling calculations
  * and requires SectionIntegrator and StateManager connections to function properly.
-*/
+ */
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
@@ -75,7 +75,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         const t_indoor = coolingState.coolingSetTemp;
         const indoorRH_percent = window.TEUI.parseNumeric(getFieldValue('d_59')) || 45;
         const indoorRH = indoorRH_percent / 100;
-        
+
         coolingState.pSatAvg = 610.94 * Math.exp(17.625 * t_outdoor / (t_outdoor + 243.04));
         coolingState.partialPressure = coolingState.pSatAvg * outdoorRH; 
 
@@ -88,7 +88,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         const atmPressure = coolingState.atmPressure || 101325; 
         const pPartialIndoor = coolingState.partialPressureIndoor;
         const pSatAvgOutdoor = coolingState.pSatAvg; // Get Saturation Pressure Outdoor (A56)
-        
+
         // Calculate Indoor Humidity Ratio (A61)
         if ((atmPressure - pPartialIndoor) === 0) {
             console.warn("Cooling Calc: Division by zero prevented in indoor humidity ratio.");
@@ -134,7 +134,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             const Cp = coolingState.specificHeatCapacity; // J/kg·K
             const T_indoor = coolingState.coolingSetTemp; // °C
             const T_outdoor_night = coolingState.nightTimeTemp; // °C
-            const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120; 
+        const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120; 
             
             // 2. Calculate Temperature Difference
             const tempDiff = T_outdoor_night - T_indoor; // °C or K difference
@@ -165,7 +165,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         } finally {
             window.TEUI.sect13.calculatingFreeCooling = false;
         }
-        return potentialLimit; 
+        return potentialLimit;
     }
 
     /** [Cooling Calc] Calculate days of active cooling required */
@@ -1208,7 +1208,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             console.warn("[S13 Init] Could not find #mechanicalLoads element to attach delegated listener.");
         }
 
-        // --- Handler function for k_120 change (defined within IIFE scope) --- 
+        // --- Handler function for k_120 change (defined within IIFE scope) ---
         function handleK120Change(e) {
             if (e.target && e.target.matches('[data-field-id="k_120"]')) {
                 const controlElement = e.target;
@@ -1324,7 +1324,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         sm.registerDependency('d_115', 'l_115'); 
         sm.registerDependency('d_114', 'l_115'); 
     }
-        
+    
     /**
      * Calculate COPh and COPc values based on heating system and HSPF
      */
@@ -1394,7 +1394,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         setCalculatedValue('l_113', heatingSink_l113, 'number-2dp-comma');
 
         calculateHeatingFuelImpact();
-        calculateCoolingSystem(); 
+        calculateCoolingSystem();
     }
     
     /**
@@ -1650,25 +1650,25 @@ window.TEUI.SectionModules.sect13 = (function() {
                 finalFreeCoolingLimit = potentialLimit; // Use full potential for constant ventilation
             } else if (ventilationMethod.toLowerCase().includes('schedule')) {
                 finalFreeCoolingLimit = potentialLimit * setbackFactor; // Apply setback factor for scheduled ventilation
-            } else {
+        } else { 
                 finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
-            }
-            
-            setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma');
+        }
+        
+        setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma'); 
             coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
-
+        
             // Calculate D124 (% Free Cooling Capacity)
-            const coolingLoadUnmitigated = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
-            let percentFreeCooling = 0;
-            if (coolingLoadUnmitigated > 0) {
-                 percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
-            }
-            setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
-
+        const coolingLoadUnmitigated = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
+        let percentFreeCooling = 0;
+        if (coolingLoadUnmitigated > 0) {
+            percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
+        }
+        setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
+        
             // Calculate M124 (Days Active Cooling) - Moved calculation here as it depends on final limit
-            calculateDaysActiveCooling(finalFreeCoolingLimit); 
-            setCalculatedValue('m_124', coolingState.daysActiveCooling, 'integer');
-
+        calculateDaysActiveCooling(finalFreeCoolingLimit); 
+        setCalculatedValue('m_124', coolingState.daysActiveCooling, 'integer');
+        
         } catch (error) {
             console.error("[S13 Error] Error during calculateFreeCooling:", error);
             finalFreeCoolingLimit = 0; 
@@ -1726,19 +1726,19 @@ window.TEUI.SectionModules.sect13 = (function() {
     function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp') {
         try {
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (rawValue === null || rawValue === undefined || isNaN(Number(rawValue))) {
+        if (rawValue === null || rawValue === undefined || isNaN(Number(rawValue))) {
                 const displayValue = "N/A"; 
                 if (window.TEUI.StateManager) { window.TEUI.StateManager.setValue(fieldId, displayValue, 'calculated'); }
                 if (element) {
                     element.textContent = displayValue;
                     element.classList.remove('negative-value'); 
-                }
-                return; 
             }
+            return; 
+        }
 
-            const numericValue = Number(rawValue);
+        const numericValue = Number(rawValue);
             // Use global formatter
-            const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
+        const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
 
             if (window.TEUI.StateManager) {
                  const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
@@ -1748,11 +1748,11 @@ window.TEUI.SectionModules.sect13 = (function() {
                  }
             }
         
-            if (element) {
+        if (element) {
                 if (element.textContent !== formattedValue) {
-                    element.textContent = formattedValue;
+            element.textContent = formattedValue;
                 }
-                element.classList.toggle('negative-value', numericValue < 0);
+            element.classList.toggle('negative-value', numericValue < 0);
             }
         } catch (error) {
             console.error("Error in setCalculatedValue:", error);
@@ -1812,7 +1812,7 @@ document.addEventListener('teui-rendering-complete', function() {
         if (document.getElementById('mechanicalLoads')) { 
             // Check if already initialized to prevent double init
             if (!window.TEUI.sect13.initialized) {
-                window.TEUI.SectionModules.sect13.onSectionRendered();
+            window.TEUI.SectionModules.sect13.onSectionRendered();
             }
         }
     }, 300);
