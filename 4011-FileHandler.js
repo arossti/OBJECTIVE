@@ -276,30 +276,36 @@
              this.showStatus('Generating CSV export...', 'info');
 
              try {
-                // 1. Build a lookup map for layout details AND find max row number
-                const layoutLookup = {};
+                // 1. Build lookup maps for layout details AND find max row number
+                const layoutLookup = {}; // Maps fieldId -> { excelRow, rowId, description, units }
+                const rowInfoMap = {};   // Maps excelRow -> { rowId, description } for placeholder generation
                 let maxExcelRow = 0;
-                const rowIdDescriptionMap = {}; // Store RowID and Description per ExcelRow
                 
                 const sections = this.fieldManager.getSections(); 
                 Object.keys(sections).forEach(uiSectionId => {
                     const layout = this.fieldManager.getLayoutForSection(uiSectionId);
                     if (layout && layout.rows) {
                         layout.rows.forEach(rowDef => {
-                            const excelRow = parseInt(rowDef.id, 10); // Ensure numeric row number
-                            if (isNaN(excelRow)) return; // Skip if row ID is not a number
+                            const excelRow = parseInt(rowDef.id, 10); 
+                            if (isNaN(excelRow) || excelRow <= 0) {
+                                // console.warn(`Skipping layout row with invalid ID: ${rowDef.id} in section ${uiSectionId}`);
+                                return; // Skip rows without a valid numeric ID
+                            }
 
                             maxExcelRow = Math.max(maxExcelRow, excelRow);
-                            let rowId = excelRow.toString(); // Default RowID to ExcelRow
+                            let rowId = excelRow.toString(); // Default RowID to ExcelRow number as string
                             let description = '';
 
+                            // Extract RowID (Col B) and Description (Col C)
+                            if (rowDef.cells && rowDef.cells.length > 2) {
+                                rowId = rowDef.cells[1]?.content || rowId; // Use content from Col B if available
+                                description = rowDef.cells[2]?.label || rowDef.cells[2]?.content || ''; // Use label or content from Col C
+                            }
+                            rowInfoMap[excelRow] = { rowId: rowId, description: description };
+                            
+                            // Map FieldIDs to their layout info
                             rowDef.cells.forEach((cellDef, index) => {
-                                if (index === 1) { // Column B - RowID
-                                    rowId = cellDef.content || rowId; // Use content if exists
-                                } else if (index === 2) { // Column C - Description
-                                    description = cellDef.label || cellDef.content || '';
-                                } else if (cellDef.fieldId) {
-                                    // Store layout info against fieldId
+                                if (cellDef.fieldId && index > 2) { // Only map value columns (D onwards)
                                     layoutLookup[cellDef.fieldId] = {
                                         excelRow: excelRow,
                                         rowId: rowId, 
@@ -308,15 +314,15 @@
                                     };
                                 }
                             });
-                            // Store RowID and Description for potential blank row generation
-                            if (!rowIdDescriptionMap[excelRow]) {
-                                 rowIdDescriptionMap[excelRow] = { rowId: rowId, description: description };
-                            }
                         });
                     }
                 });
                 
-                // 2. Prepare data structure keyed by ExcelRow for sorting/filling gaps
+                // console.log("Max Excel Row Found:", maxExcelRow);
+                // console.log("Layout Lookup keys:", Object.keys(layoutLookup).length);
+                // console.log("Row Info Map keys:", Object.keys(rowInfoMap).length);
+
+                // 2. Prepare data structure keyed by ExcelRow for user-editable fields
                 const rowDataMap = {};
                 const allFields = this.fieldManager.getAllFields();
                 const editableFieldTypes = ['editable', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'number'];
@@ -324,19 +330,28 @@
                 Object.entries(allFields).forEach(([fieldId, fieldDef]) => {
                     if (editableFieldTypes.includes(fieldDef.type)) {
                         const layoutInfo = layoutLookup[fieldId];
+                        // Ensure layoutInfo exists and has a valid excelRow before proceeding
                         if (layoutInfo && layoutInfo.excelRow) {
                              const excelRow = layoutInfo.excelRow;
                              const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
-                            
+                             // console.log(`Field: ${fieldId}, Row: ${excelRow}, Value: ${currentValue}`); // Debugging values
+                             
                              // Store data keyed by excelRow, ready for final formatting
-                             rowDataMap[excelRow] = {
-                                 excelRow: excelRow,
-                                 rowId: layoutInfo.rowId,
-                                 description: layoutInfo.description,
-                                 fieldId: fieldId,
-                                 value: currentValue,
-                                 units: layoutInfo.units
-                             };
+                             // Important: Ensure only ONE field's data is stored per row (usually column D's value)
+                             // We might need a more sophisticated way if multiple editable fields can exist on one row
+                             // For now, assume the first encountered editable field for a row is the primary one to export.
+                             if (!rowDataMap[excelRow]) { // Only store the first editable field found for this row
+                                 rowDataMap[excelRow] = {
+                                     excelRow: excelRow,
+                                     rowId: layoutInfo.rowId,
+                                     description: layoutInfo.description,
+                                     fieldId: fieldId, // Store the FieldID itself
+                                     value: currentValue,
+                                     units: layoutInfo.units
+                                 };
+                             } else {
+                                // console.warn(`Row ${excelRow} already has data from ${rowDataMap[excelRow].fieldId}, skipping field ${fieldId}`);
+                             }
                         }
                     }
                 });
@@ -345,7 +360,6 @@
                 const header = ["ExcelRow", "RowID", "Description", "Value", "Units", "FieldID"]; // Reordered columns
                 const finalRows = [header];
                 
-                // Basic CSV escaping (handles commas, quotes, newlines)
                 const escapeCSV = (val) => {
                     const strVal = String(val ?? ''); 
                     if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
@@ -354,38 +368,43 @@
                     return strVal;
                 };
                 
+                if (maxExcelRow === 0) {
+                    console.warn("No valid rows with numeric IDs found in layout definitions.");
+                    maxExcelRow = 150; // Fallback to a default number of rows if none found
+                }
+                
                 for (let i = 1; i <= maxExcelRow; i++) {
                     const data = rowDataMap[i];
+                    const placeholderInfo = rowInfoMap[i] || {}; // Get RowID/Desc even for placeholders
+                    
                     if (data) {
                         // Format row for existing editable field
                         finalRows.push([
-                            escapeCSV(data.excelRow),
-                            escapeCSV(data.rowId),
-                            escapeCSV(data.description),
-                            escapeCSV(data.value),       // Value moved earlier
-                            escapeCSV(data.units),
-                            escapeCSV(data.fieldId)      // FieldID moved last
+                            escapeCSV(data.excelRow),        // A: ExcelRow
+                            escapeCSV(data.rowId),           // B: RowID
+                            escapeCSV(data.description),     // C: Description
+                            escapeCSV(data.value),           // D: Value (Moved)
+                            escapeCSV(data.units),           // E: Units (Moved)
+                            escapeCSV(data.fieldId)          // F: FieldID (Moved Last)
                         ]);
                     } else {
                         // Insert placeholder row for row parity
-                        const placeholderInfo = rowIdDescriptionMap[i] || {};
                         finalRows.push([
-                            escapeCSV(i),                      // ExcelRow
-                            escapeCSV(placeholderInfo.rowId || ''), // RowID (if found)
-                            escapeCSV(placeholderInfo.description || ''),// Description (if found)
-                            '', // Empty Value
-                            '', // Empty Units
-                            ''  // Empty FieldID
+                            escapeCSV(i),                          // A: ExcelRow
+                            escapeCSV(placeholderInfo.rowId || ''),     // B: RowID (if found)
+                            escapeCSV(placeholderInfo.description || ''),// C: Description (if found)
+                            '', // D: Empty Value
+                            '', // E: Empty Units
+                            ''  // F: Empty FieldID
                         ]);
                     }
                 }
                 
-                // 4. Construct CSV content and trigger Download
+                // 4. Construct CSV content and trigger Download (Sorting removed as we now build in order)
                 const csvContent = finalRows.map(row => row.join(',')).join('\n');
                 
                 // Get project name for filename
                 const projectName = this.stateManager.getValue('h_14') || 'Project';
-                // Sanitize project name for filename
                 const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, '_');
                 const filename = `TEUIv4011-${safeProjectName}.csv`;
 
