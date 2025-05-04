@@ -631,11 +631,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // This will be implemented later
     });
     
-    document.getElementById('export-data').addEventListener('click', function() {
-        // console.log('Full dataset export clicked');
-        // This will be implemented later
-    });
-    
     // Initialize ExcelLocationHandler if it exists
     if (TEUI.ExcelLocationHandler) {
         TEUI.ExcelLocationHandler.initialize();
