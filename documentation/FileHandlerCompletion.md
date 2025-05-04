@@ -4,7 +4,7 @@ This document outlines the strategy and current implementation status for data i
 
 **Goal:** Allow users to import data from legacy Excel files (`.xlsx`/`.xls`) focusing on user inputs from the `REPORT!` sheet, and enable users to save/load scenarios locally via CSV export/import of user-editable fields, maintaining parity with the Excel row structure.
 
-## 1. UI Integration (`4011-Index.html`) - *To Be Implemented*
+## 1. UI Integration (`index.html`) - *To Be Implemented*
 
 -   [ ] Modify the existing "Download Report" button into a Bootstrap dropdown button group.
 -   [ ] Add menu item: "Import Data (Excel/CSV)" linked to trigger the hidden file input (`id="excel-file-input"`). Assign `id="import-data-btn"` to this menu item.
@@ -87,7 +87,13 @@ This document outlines the strategy and current implementation status for data i
 -   **Units/Description Source (Export):** Relying on data structured within `sectionRows` requires diligent setup across all section files but keeps data definitions co-located.
 -   **Invalid Dropdown Values (Import):** Strategy is to **skip** invalid fields and log a console warning.
 -   **CSV Parsing (Import):** Implement a simple parser focusing on extracting the `FieldID` and `Value` columns. Robustness for complex CSVs might need future enhancement.
--   **CSV Export Format:** The target format (`ExcelRow,RowID,Description,FieldID,Value,Units`) provides user context but requires mapping logic during export generation.
+-   **CSV Export Format:** The target format (`ExcelRow`,`RowID`,`Description`,`FieldID`,`Value`,`Units`) provides user context and aligns with reference CSVs (`FORMULAE-3037.csv`, `3037DOM.csv`), but requires mapping logic during export generation.
+-   **Excel v3.038 Parity:** For complete structural alignment with the latest Excel version (v3.038), ensure the following fields/labels are correctly represented in the relevant section's `sectionRows` definition and reflected in `3037DOM.csv`:
+       -   Row 22: `L.1.3` (J22), `Elevation (ASL)` (K22), Value `l_22` (L22) - *Note: Value likely comes from weather data, not user import.* 
+       -   Row 24: `B.1.4` (J24), `Cooling Override` (K24), Value `l_24` (L24) - *Note: Value may come from weather data/defaults, check if user-editable import is needed.*
+       -   Row 120: `V.1.7` (J120), Value `k_120` (K120), `Unoccupied Setback` (L120).
+       -   Row 129: Ensure label `T.5.2 less Free Cool. & Vent. Exhaust` is in J129, Value `m_129` is in M129.
+       -   *(This ensures the exported CSV structure fully matches the reference Excel layout, even for calculated fields or fields populated by other means).*
 -   **Error Handling:** Provide clear user feedback via `showStatus()` for file read errors, sheet not found errors, CSV parsing errors, and potentially a summary of skipped fields due to validation issues.
 
 ## 4. Field & Layout Definitions (`sections/4011-SectionXX.js`) - *Requires Review*
@@ -118,4 +124,5 @@ This document outlines the strategy and current implementation status for data i
 -   **FUTURE:** Enhance `exportToCSV` to include accurate units and descriptions.
 -   **FUTURE:** Implement the necessary lookup logic in `exportToCSV` to retrieve `ExcelRow`, `RowID`, `Description`, and `Units` based on `fieldId` by referencing `sectionRows` data.
 -   **FUTURE:** Review/Refactor `applyImportedData` and climate-related button handlers if needed.
--   **FUTURE:** Review field definitions and layouts across all sections for export completeness. 
+-   **FUTURE:** Review field definitions and layouts across all sections for export completeness.
+-   **FUTURE:** Systematically verify and update all `sectionRows` definitions to match the v3.038 Excel layout, including the fields noted above, to ensure full structural parity for CSV export context. 
