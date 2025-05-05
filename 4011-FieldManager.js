@@ -530,6 +530,12 @@ TEUI.FieldManager = (function() {
                         } else if (cellDef.content) {
                             cellElement.textContent = cellDef.content;
                             
+                            // --- ADDED DEBUG LOG for initial textContent --- 
+                            if (cellDef.fieldId === 'd_119' || cellDef.fieldId === 'j_115') {
+                                console.log(`[FieldManager] Setting initial textContent for ${cellDef.fieldId} to: "${cellElement.textContent}"`);
+                            }
+                            // --- END DEBUG LOG ---
+                            
                             // Add calculated-value class if this is a calculated cell
                             if (cellDef.isCalculated) {
                                 cellElement.classList.add('calculated-value');

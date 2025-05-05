@@ -274,13 +274,13 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
 
         // --- Standard non-animated update for other fields --- 
-        if (fieldId === "h_10") {
-            const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
-            const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
-            element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
-        } else if (fieldId === "e_10") {
-            const numericSpan = element.querySelector('.numeric-value');
-            if (numericSpan) numericSpan.textContent = value;
+            if (fieldId === "h_10") {
+                const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+                const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
+                element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
+            } else if (fieldId === "e_10") {
+                const numericSpan = element.querySelector('.numeric-value');
+                if (numericSpan) numericSpan.textContent = value;
             // Ensure tier span is present (static tier1)
             if (!element.querySelector('.tier-indicator')) {
                 const tierSpan = document.createElement('span');
@@ -288,11 +288,11 @@ window.TEUI.SectionModules.sect01 = (function() {
                 tierSpan.textContent = 'tier1';
                 element.prepend(tierSpan, ' ');
             }
-        } else if (fieldId === "j_8" || fieldId === "j_10") {
-            const percentSpan = element.closest('td').querySelector('.percent-value');
-            if (percentSpan) percentSpan.textContent = value;
-        } else {
-            element.textContent = value;
+            } else if (fieldId === "j_8" || fieldId === "j_10") {
+                const percentSpan = element.closest('td').querySelector('.percent-value');
+                if (percentSpan) percentSpan.textContent = value;
+            } else {
+                element.textContent = value;
         }
     }
 

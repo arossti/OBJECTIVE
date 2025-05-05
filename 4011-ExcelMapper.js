@@ -2,27 +2,27 @@
 // Maps between Excel file structure and the calculator's data model
 
 // Script Block 1: Core Configuration and Initial Data Structure
-const CONFIG = {
-    // System Value Limits and Defaults
-    EMISSIONS: {
-        GAS_INTENSITY: 1921,  // gCO2e/m3
-        GAS_ENERGY_DENSITY: 10.36,  // ekWh/m3
-        DEFAULT_GAS_COST: 0.507,  // $/m3
-        DEFAULT_ELECTRICITY_COST: 0.13  // $/kWh
-    },
-    // Excel cell mapping configuration
-    EXCEL_MAPPING: {
-        SHEETS: {
-            ENERGY_BALANCE: "ENERGY BALANCE",
-            REPORT: "REPORT",
-            NBC2025C2: "NBC-2025-C2",
-        },
+const CONFIG = {		
+  // System Value Limits and Defaults
+  EMISSIONS: {
+    GAS_INTENSITY: 1921,  // gCO2e/m3
+    GAS_ENERGY_DENSITY: 10.36,  // ekWh/m3
+    DEFAULT_GAS_COST: 0.507,  // $/m3
+    DEFAULT_ELECTRICITY_COST: 0.13  // $/kWh
+  },
+// Excel cell mapping configuration
+EXCEL_MAPPING: {
+  SHEETS: {
+    ENERGY_BALANCE: "ENERGY BALANCE",
+    REPORT: "REPORT",
+	NBC2025C2: "NBC-2025-C2",
+  },
         // Placeholder for the old/combined mapping structure
         // We will define a specific mapping for Report sheet import later
-        NODE_VALUES: { 
+  NODE_VALUES: {
             // Example mappings from previous structure (to be replaced/refined)
             'e-6': 'REPORT!E6', // Adjusted sheet assumption
-            'T.1_target': 'REPORT!C5',
+    'T.1_target': 'REPORT!C5',
             'T.1_actual': 'REPORT!D5',
             // ... other mappings ...
             'a-5':   'NBC-2025-C2!A5', // Climate Data mappings remain separate
@@ -201,7 +201,7 @@ class ExcelMapper {
         });
         return result;
     }
-
+    
     createWorkbook(data) {
         const workbook = XLSX.utils.book_new();
         const worksheet = XLSX.utils.aoa_to_sheet([]);
@@ -209,8 +209,8 @@ class ExcelMapper {
             if (data[fieldId] !== undefined) {
                 const colRow = this.cellRefToColRow(cellRef);
                  if (colRow) { // Check if conversion was successful
-                    const value = data[fieldId];
-                    XLSX.utils.sheet_add_aoa(worksheet, [[value]], { origin: colRow });
+                const value = data[fieldId];
+                XLSX.utils.sheet_add_aoa(worksheet, [[value]], { origin: colRow });
                 }
             }
         });
@@ -225,7 +225,7 @@ class ExcelMapper {
         if (cell.t === 'b') return cell.v; // Boolean
         if (cell.t === 'd') return cell.v; // Date
         return cell.v; // Default
-    }
+        }
     
     cellRefToColRow(cellRef) {
         const match = cellRef.match(/([A-Z]+)(\d+)/);

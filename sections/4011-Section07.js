@@ -859,7 +859,7 @@ window.TEUI.SectionModules.sect07 = (function() {
             d51Dropdown.addEventListener('change', handleDHWSourceChange);
         }
         // --- END ADDED --- 
-
+        
         // Setup dropdown change handlers
         const dropdowns = sectionElement.querySelectorAll('[data-dropdown-id]');
         dropdowns.forEach(dropdown => {

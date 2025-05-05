@@ -970,13 +970,13 @@ function initializeWeatherDataHandlers() {
             if (province && TEUI.ExcelLocationHandler.getLocationData()) {
                 const locationData = TEUI.ExcelLocationHandler.getLocationData();
                 if (locationData && locationData[province]) {
-                    const cities = locationData[province].cities;
-                    cities.forEach(city => {
-                        const option = document.createElement('option');
-                        option.value = city.name;
-                        option.textContent = city.name;
-                        citySelect.appendChild(option);
-                    });
+                const cities = locationData[province].cities;
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.name;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
                 }
             }
         });
