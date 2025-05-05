@@ -167,13 +167,16 @@
                 const rows = csvString.split(/\r?\n/); // Split lines
                 if (rows.length < 2) throw new Error("CSV has no data rows.");
 
-                // Very basic header check (adjust column names if needed)
+                // Robust header processing
                 const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-                const fieldIdIndex = headers.indexOf('fieldId');
-                const valueIndex = headers.indexOf('value');
+                const fieldIdIndex = headers.indexOf('FieldID'); // Case-sensitive match to our export
+                const valueIndex = headers.indexOf('Value');     // Case-sensitive match to our export
 
-                if (fieldIdIndex === -1 || valueIndex === -1) {
-                    throw new Error("CSV must contain 'fieldId' and 'value' columns.");
+                if (fieldIdIndex === -1) {
+                    throw new Error("CSV header missing required column: 'FieldID'");
+                }
+                if (valueIndex === -1) {
+                    throw new Error("CSV header missing required column: 'Value'");
                 }
 
                 for (let i = 1; i < rows.length; i++) {
@@ -181,12 +184,31 @@
                     // Simple split, assumes no commas within quoted values for now
                     // TODO: Implement a more robust CSV parser if needed
                     const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, '')); 
-                    const fieldId = cols[fieldIdIndex];
-                    const value = cols[valueIndex];
 
-                    if (fieldId && value !== undefined) {
-                        importedData[fieldId] = value;
+                    // Ensure row has enough columns before trying to access indices
+                    if (cols.length > Math.max(fieldIdIndex, valueIndex)) {
+                        const fieldId = cols[fieldIdIndex];
+                        const value = cols[valueIndex];
+
+                        // --- ADDED: Skip Section 03 Fields ---
+                        const section03Pattern = /_([1][9]|[2][0-4])$/; // Matches _19, _20, _21, _22, _23, _24
+                        if (section03Pattern.test(fieldId)) {
+                            console.log(`[CSV Import] Skipping Section 03 field: ${fieldId}`);
+                            skippedCount++; // Increment skipped count for reporting
+                            continue; // Move to the next row
+                        }
+                        // --- END ADDED ---
+
+                        // Only add if fieldId is not empty (skip placeholder rows)
+                        if (fieldId && value !== undefined) {
+                            importedData[fieldId] = value;
+                        } else {
+                            // Don't count placeholders as skipped, just ignore them for import
+                            // skippedCount++; 
+                        }
                     } else {
+                        // This row doesn't have enough columns, likely malformed or placeholder
+                        console.warn(`Skipping malformed CSV row ${i + 1}: Not enough columns.`);
                         skippedCount++;
                     }
                 }
