@@ -1220,7 +1220,11 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_118', calculateVentilationValues);
 
             // Listener for g_118 (Ventilation Method) changes
-            sm.addListener('g_118', calculateVentilationValues); // Changed from calculateVentilationRates
+            sm.addListener('g_118', () => { 
+                calculateVentilationValues(); // Recalculates d_120, h_120 etc.
+                calculateFreeCooling();     // Reads updated h_120, recalculates row 124
+                calculateMitigatedCED();    // Updates m_129 based on updated h_124
+            });
 
             // Listener for d_119 (Per Person Rate) changes
             sm.addListener('d_119', calculateVentilationRates);
@@ -1292,8 +1296,9 @@ window.TEUI.SectionModules.sect13 = (function() {
                     window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); 
                 }
                 
-                // Trigger full recalculation via standard flow (Handled by StateManager listeners)
-                // calculateAll(); 
+                // Trigger calculations that depend on k_120
+                calculateFreeCooling();
+                calculateMitigatedCED();
             }
         }
     }
