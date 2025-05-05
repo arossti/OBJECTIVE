@@ -430,10 +430,14 @@ window.TEUI.SectionModules.sect11 = (function() {
                 heatgainMultiplier = (getNumericValue('d_21') || 0) * 24;
             } else { // ground
                 hdd = getNumericValue('d_22') || 0;
-                // TEMPORARY FIX: Hardcode capacitance factor (d_21/I21) to 0.5 to match Excel 
-                // and avoid Section 3 dependency issues for now. TODO: Link properly later.
-                const capacitanceFactor = 0.5; 
-                heatgainMultiplier = capacitanceFactor * (getNumericValue('h_22') || 0) * 24;
+                // Get value from i_21 (assume it's stored as percentage, e.g., 50 for 50%)
+                let capacitanceFactor_i21 = getNumericValue('i_21'); 
+                // Convert percentage to decimal, fallback to 0.5 (50%) if input is invalid or missing
+                capacitanceFactor_i21 = (capacitanceFactor_i21 / 100);
+                if (isNaN(capacitanceFactor_i21) || capacitanceFactor_i21 === 0) {
+                    capacitanceFactor_i21 = 0.5; // Apply fallback if result is invalid or zero
+                }
+                heatgainMultiplier = capacitanceFactor_i21 * (getNumericValue('h_22') || 0) * 24;
             }
 
             const denominator = rsiValue * 1000;
@@ -658,6 +662,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             window.TEUI.StateManager.addListener('d_21', calculateAll); // CDD
             window.TEUI.StateManager.addListener('h_22', calculateAll); // GF CDD (affects ground gain)
             window.TEUI.StateManager.addListener('d_22', calculateAll); // GF HDD (affects ground loss)
+            window.TEUI.StateManager.addListener('i_21', calculateAll); // Capacitance Factor (affects ground gain)
             // console.log("Section 11 listeners for climate data added.");
         } else {
             // console.warn("Section 11: StateManager not available to add climate listeners.");
