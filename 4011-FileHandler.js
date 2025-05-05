@@ -33,7 +33,7 @@
                     this.handleFileSelect(event);
                 });
             }
-            
+
             if (exportBtn) {
                 exportBtn.addEventListener('click', () => {
                     this.exportToCSV(); 
@@ -59,33 +59,33 @@
                     fileInput.click(); // Use the same file input 
                 });
             }
-            if (applyExcelBtn) {
+             if (applyExcelBtn) {
                  // This button might become redundant if import happens automatically
                  // Keeping for now, but consider removing if processImportedExcel handles updates.
-                applyExcelBtn.addEventListener('click', () => {
+                 applyExcelBtn.addEventListener('click', () => {
                      this.applyImportedData(); // Renamed for clarity
-                });
-            }
+                 });
+             }
              if (debugExcelBtn) { /* Keep existing debug logic */ 
-                debugExcelBtn.addEventListener('click', () => {
-                    console.log('=== DEBUG INFORMATION ===');
-                    if (window.TEUI && window.TEUI.ExcelLocationHandler) {
-                        const locationData = window.TEUI.ExcelLocationHandler.getLocationData();
-                        console.log('ExcelLocationHandler exists');
-                        console.log('Location data:', locationData ? 'Available' : 'Not available');
-                        if (locationData) {
-                            console.log(`Provinces: ${Object.keys(locationData).join(', ')}`);
-                            const sampleProvince = Object.keys(locationData)[0];
-                            if (sampleProvince) {
-                                console.log(`Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`);
-                            }
-                        }
-                    } else {
-                        console.log('ExcelLocationHandler not available');
-                    }
+                 debugExcelBtn.addEventListener('click', () => {
+                     console.log('=== DEBUG INFORMATION ===');
+                     if (window.TEUI && window.TEUI.ExcelLocationHandler) {
+                         const locationData = window.TEUI.ExcelLocationHandler.getLocationData();
+                         console.log('ExcelLocationHandler exists');
+                         console.log('Location data:', locationData ? 'Available' : 'Not available');
+                         if (locationData) {
+                             console.log(`Provinces: ${Object.keys(locationData).join(', ')}`);
+                             const sampleProvince = Object.keys(locationData)[0];
+                             if (sampleProvince) {
+                                 console.log(`Sample province ${sampleProvince} has ${locationData[sampleProvince].cities.length} cities`);
+                             }
+                         }
+                     } else {
+                         console.log('ExcelLocationHandler not available');
+                     }
                      // ... rest of debug code ...
-                    this.showStatus('Debug information logged to console', 'info');
-                });
+                     this.showStatus('Debug information logged to console', 'info');
+                 });
             }
         }
         
@@ -114,7 +114,7 @@
                         const data = new Uint8Array(e.target.result);
                         this.workbook = XLSX.read(data, { type: 'array' });
                         this.processImportedExcel(this.workbook);
-                        } else {
+                    } else {
                         throw new Error(`Unsupported file type: .${fileExtension}`);
                     }
                 } catch (error) {
@@ -122,12 +122,12 @@
                     this.showStatus(`Error processing file: ${error.message}`, 'error');
                 }
             };
-            
+
             reader.onerror = () => {
                 console.error('Error reading file');
                 this.showStatus('Error reading file', 'error');
             };
-            
+
             if (file.name.toLowerCase().endsWith('.csv')) {
                  reader.readAsArrayBuffer(file); // Read as buffer for TextDecoder
             } else {
@@ -346,9 +346,8 @@
                 
                 // Sort rows numerically by the ExcelRow (first column)
                 // Skip header row (index 0) for sorting
-                // NOTE: Reverting to this sort which might have caused issues if excelRow is missing/NaN
                 rows.slice(1).sort((a, b) => {
-                    const rowA = parseInt(a[0].replace(/"/g, ''), 10) || 0; // Potential issue if a[0] is not a number string
+                    const rowA = parseInt(a[0].replace(/"/g, ''), 10) || 0;
                     const rowB = parseInt(b[0].replace(/"/g, ''), 10) || 0;
                     return rowA - rowB;
                 });
@@ -356,18 +355,20 @@
                 // Reconstruct CSV content with sorted rows (header + sorted data)
                 const csvContent = [rows[0].join(',')].concat(rows.slice(1).map(row => row.join(','))).join('\n');
                 
-                // 3. Trigger Download
-                 // Get project name for filename
+                // Get project name for filename
                 const projectName = this.stateManager.getValue('h_14') || 'Project';
                 // Sanitize project name for filename
                 const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, '_');
-                const filename = `TEUIv4011-${safeProjectName}.csv`; // Keep dynamic filename
+                const filename = `TEUIv4011-${safeProjectName}.csv`; // Constructs filename
 
+                console.log(`[CSV Export] Generated filename: ${filename}`); // DEBUG LOG
+
+                // 3. Trigger Download
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.setAttribute("href", url);
-                link.setAttribute("download", filename); // Keep dynamic filename
+                link.setAttribute("download", filename);
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
@@ -382,19 +383,19 @@
         }
 
         // --- OLD / OTHER METHODS --- 
-        
+
         processBuildingCodeData(workbook) {
             // Placeholder 
             // console.log('Building code data processing not yet implemented');
             return null;
         }
-        
+
         processScheduleData(workbook) {
             // Placeholder
             // console.log('Schedule data processing not yet implemented');
             return null;
         }
-        
+
         exportToExcel() { // Keep old method for potential full state export?
             try {
                 this.showStatus('Preparing full Excel export (legacy method)...', 'info');
@@ -415,26 +416,26 @@
                 this.showStatus(`Error exporting full Excel: ${error.message}`, 'error');
             }
         }
-        
+
         fallbackCreateWorkbook(data) { // Used by legacy export
-            console.warn('Using fallback Excel creation - limited functionality');
-            const workbook = XLSX.utils.book_new();
-            const worksheet = XLSX.utils.aoa_to_sheet([['Field ID', 'Value']]);
-            let row = 1;
-            Object.entries(data).forEach(([id, value]) => {
-                XLSX.utils.sheet_add_aoa(worksheet, [[id, value]], { origin: { r: row++, c: 0 }});
-            });
-            XLSX.utils.book_append_sheet(workbook, worksheet, "TEUI Calculator Data");
-            return workbook;
-        }
-        
+             console.warn('Using fallback Excel creation - limited functionality');
+             const workbook = XLSX.utils.book_new();
+             const worksheet = XLSX.utils.aoa_to_sheet([['Field ID', 'Value']]);
+             let row = 1;
+             Object.entries(data).forEach(([id, value]) => {
+                 XLSX.utils.sheet_add_aoa(worksheet, [[id, value]], { origin: { r: row++, c: 0 }});
+             });
+             XLSX.utils.book_append_sheet(workbook, worksheet, "TEUI Calculator Data");
+             return workbook;
+         }
+
         binaryStringToBlob(binaryString) { // Used by legacy export
-            const byteArray = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                byteArray[i] = binaryString.charCodeAt(i) & 0xff;
-            }
-            return new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        }
+             const byteArray = new Uint8Array(binaryString.length);
+             for (let i = 0; i < binaryString.length; i++) {
+                 byteArray[i] = binaryString.charCodeAt(i) & 0xff;
+             }
+             return new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+         }
         
         showStatus(message, type) {
             // console.log(`[FileHandler] ${message}`); // Keep logs minimal
@@ -455,15 +456,15 @@
         }
 
         applyImportedData() { // Potentially redundant if import is automatic
-            if (!this.workbook) {
-                this.showStatus('Please load an Excel file first', 'warning');
-                return;
-            }
+             if (!this.workbook) {
+                 this.showStatus('Please load an Excel file first', 'warning');
+                 return;
+             }
              // Logic here might need refinement - currently focused on location data
              if (window.TEUI.ExcelLocationHandler?.updateProvinceDropdowns) { 
-                            window.TEUI.ExcelLocationHandler.updateProvinceDropdowns();
+                 window.TEUI.ExcelLocationHandler.updateProvinceDropdowns(); 
                  this.showStatus('Data applied (focused on locations).', 'info');
-            }
+             }
         }
     }
 
