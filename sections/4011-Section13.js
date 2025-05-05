@@ -1179,7 +1179,7 @@ window.TEUI.SectionModules.sect13 = (function() {
     function initializeEventHandlers() {
         const sectionElement = document.getElementById('mechanicalLoads');
         if (!sectionElement) {
-            console.warn("Section 13 container #mechanicalLoads not found. Cannot initialize handlers.");
+            // console.warn("Section 13 container #mechanicalLoads not found. Cannot initialize handlers.");
             return; 
         }
 
@@ -1257,7 +1257,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
             sm.addListener('d_113', handleHeatingSystemChangeForGhosting);
         } else {
-            console.warn("Section 13: StateManager not available to add listeners.");
+            // console.warn("Section 13: StateManager not available to add listeners.");
         }
 
         // --- Use Event Delegation for k_120 control --- 
@@ -1267,7 +1267,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             sectionElement.addEventListener('change', handleK120Change);
             sectionElement.hasK120DelegateListener = true; 
         } else if (!sectionElement) {
-            console.warn("[S13 Init] Could not find #mechanicalLoads element to attach delegated listener.");
+            // console.warn("[S13 Init] Could not find #mechanicalLoads element to attach delegated listener.");
         }
 
         // --- Handler function for k_120 change (defined within IIFE scope) ---
@@ -1292,8 +1292,8 @@ window.TEUI.SectionModules.sect13 = (function() {
                     window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); 
                 }
                 
-                // Trigger full recalculation via standard flow
-                calculateAll(); 
+                // Trigger full recalculation via standard flow (Handled by StateManager listeners)
+                // calculateAll(); 
             }
         }
     }
@@ -1309,9 +1309,9 @@ window.TEUI.SectionModules.sect13 = (function() {
         const numericValue = window.TEUI.parseNumeric(newValue, NaN); 
 
         // --- Add Log for j_115 ---
-        if (fieldId === 'j_115') {
-            console.log(`[S13 DEBUG] j_115 Blur: Read "${newValue}", Parsed: ${numericValue}`);
-        }
+        // if (fieldId === 'j_115') {
+        //     console.log(`[S13 DEBUG] j_115 Blur: Read "${newValue}", Parsed: ${numericValue}`);
+        // }
         // --- End Log ---
 
         if (!isNaN(numericValue)) {
@@ -1322,15 +1322,15 @@ window.TEUI.SectionModules.sect13 = (function() {
             if (window.TEUI.StateManager) {
                 const valueToStore = numericValue.toString();
                  // --- Add Log for j_115 ---
-                if (fieldId === 'j_115') {
-                    console.log(`[S13 DEBUG] j_115 Blur: Storing "${valueToStore}" in StateManager. Formatted display: "${formattedDisplay}"`);
-                }
+                // if (fieldId === 'j_115') {
+                //     console.log(`[S13 DEBUG] j_115 Blur: Storing "${valueToStore}" in StateManager. Formatted display: "${formattedDisplay}"`);
+                // }
                 // --- End Log ---
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
                 // ADDED: Explicitly trigger calculateAll after user modifies AFUE
                 if (fieldId === 'j_115') {
-                    console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
-                    calculateAll();
+                    // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
+                    calculateAll(); // Keep this trigger for AFUE changes
                 }
             }
         } else {
@@ -1344,7 +1344,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
             const formatType = (fieldId === 'j_115' || fieldId === 'l_118') ? 'number-2dp' : 'number-2dp';
             this.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
-            console.warn(`Invalid input for ${fieldId}: "${newValue}". Reverted to ${this.textContent}.`);
+            // console.warn(`Invalid input for ${fieldId}: "${newValue}". Reverted to ${this.textContent}.`);
         }
     }
     
@@ -1354,10 +1354,10 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function onSectionRendered() {
         // Log initial DOM state
-        const d119ElementInitial = document.querySelector('td[data-field-id="d_119"]');
-        const j115ElementInitial = document.querySelector('td[data-field-id="j_115"]');
-        console.log(`[S13 Init] Initial d_119 textContent: "${d119ElementInitial?.textContent}"`);
-        console.log(`[S13 Init] Initial j_115 textContent: "${j115ElementInitial?.textContent}"`);
+        // const d119ElementInitial = document.querySelector('td[data-field-id="d_119"]');
+        // const j115ElementInitial = document.querySelector('td[data-field-id="j_115"]');
+        // console.log(`[S13 Init] Initial d_119 textContent: "${d119ElementInitial?.textContent}"`);
+        // console.log(`[S13 Init] Initial j_115 textContent: "${j115ElementInitial?.textContent}"`);
 
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90%
@@ -1376,17 +1376,17 @@ window.TEUI.SectionModules.sect13 = (function() {
                         // console.log(`[S13 Init Defaults] Setting default for ${fieldId} to ${fieldDef.defaultValue}`);
                         window.TEUI.StateManager.setValue(fieldId, fieldDef.defaultValue, 'default');
                     }
-                    else {
-                        console.log(`[S13 Init Defaults] StateManager already has value for ${fieldId}: ${window.TEUI.StateManager.getValue(fieldId)}`);
-                    }
+                    // else {
+                    //    console.log(`[S13 Init Defaults] StateManager already has value for ${fieldId}: ${window.TEUI.StateManager.getValue(fieldId)}`);
+                    // }
                 }
             });
         }
         // --- END ADDED --- 
         
         // Log DOM state BEFORE calculateAll
-        console.log(`[S13 Init] BEFORE calculateAll - d_119 textContent: "${d119ElementInitial?.textContent}"`);
-        console.log(`[S13 Init] BEFORE calculateAll - j_115 textContent: "${j115ElementInitial?.textContent}"`);
+        // console.log(`[S13 Init] BEFORE calculateAll - d_119 textContent: "${d119ElementInitial?.textContent}"`);
+        // console.log(`[S13 Init] BEFORE calculateAll - j_115 textContent: "${j115ElementInitial?.textContent}"`);
 
         calculateAll(); // Run initial calculations first
 
@@ -1401,7 +1401,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                     if (!isNaN(numericValue)) {
                         const formatType = 'number-2dp'; // Assuming 2 decimal places for both
                         const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
-                        console.log(`[S13 Init Display Fix] Setting ${fieldId} textContent to: "${formattedDisplay}" from state value "${stateValue}"`);
+                        // console.log(`[S13 Init Display Fix] Setting ${fieldId} textContent to: "${formattedDisplay}" from state value "${stateValue}"`);
                         element.textContent = formattedDisplay;
                     }
                 }
@@ -1412,7 +1412,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Set initial ghosting state after calculations might have populated values
         setTimeout(() => { // Use timeout to ensure initial state is settled
             const initialHeatingSystem = getFieldValue('d_113') || 'Heatpump'; // Get current value or default
-            console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
+            // console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
             handleHeatingSystemChangeForGhosting(initialHeatingSystem);
         }, 100); // Short delay might be needed
     }
@@ -1505,7 +1505,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             heatingSink_l113 = 0;
             // --- Add Log for j_115 --- 
             const current_j115 = getFieldValue('j_115');
-            console.log(`[S13 DEBUG] Switching away from Heatpump. Current j_115 state: "${current_j115}". Forcing COPs to 1/0.`);
+            // console.log(`[S13 DEBUG] Switching away from Heatpump. Current j_115 state: "${current_j115}". Forcing COPs to 1/0.`);
             // --- End Log ---
             // Force COP values for non-heatpump systems
             setCalculatedValue('h_113', 1.0, 'number-2dp'); 
@@ -1971,7 +1971,7 @@ function setFieldGhosted(fieldId, shouldBeGhosted) {
  */
 function handleHeatingSystemChangeForGhosting(newValue) {
     const systemType = newValue; // e.g., "Gas", "Oil", "Heatpump", "Electricity"
-    console.log(`[S13 Ghosting] System changed to: ${systemType}`); // Log system type
+    // console.log(`[S13 Ghosting] System changed to: ${systemType}`); // Log system type
 
     // Determine active state based on system type
     const isHP = systemType === 'Heatpump';
@@ -2034,6 +2034,6 @@ function handleHeatingSystemChangeForGhosting(newValue) {
             }
         });
     } else {
-        console.warn("[S13 Ghosting] Could not find row TR element for M.2.2");
+        // console.warn("[S13 Ghosting] Could not find row TR element for M.2.2");
     }
 }
