@@ -241,14 +241,14 @@ window.TEUI.SectionModules.sect13 = (function() {
         if (coolingLoad > 0 && freeCoolingLimit >= 0) {
             if (coolingDays > 0) {
                 dailyCoolingLoad = coolingLoad / coolingDays; // Avg kWh/day
-                if (dailyCoolingLoad > 0) {
+            if (dailyCoolingLoad > 0) {
                     daysCoveredByFreeCooling = freeCoolingLimit / dailyCoolingLoad;
                     // Calculate the actual value (can be negative), but don't clamp or assign to state for now
                     calculatedDays = coolingDays - daysCoveredByFreeCooling;
-                } else {
-                    calculatedDays = 0; // No load
-                }
             } else {
+                    calculatedDays = 0; // No load
+            }
+        } else {
                 calculatedDays = 0; // No cooling season
             }
         } else {
@@ -1793,7 +1793,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         }
         window.TEUI.sect13.freeCalculationInProgress = true;
 
-        let finalFreeCoolingLimit = 0;
+        let finalFreeCoolingLimit = 0; 
         let potentialLimit = 0;
         let setbackFactor = 1.0;
         const ventilationMethod = getFieldValue('g_118') || 'Constant';
@@ -1808,7 +1808,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             // runIntegratedCoolingCalculations(); 
             
             potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
-            
+
             if (setbackValueStr) {
                 const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // Already a decimal factor
                 if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) {
@@ -1828,24 +1828,24 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Logging removed
         // console.warn(`[S13 Debug FreeCool Outputs] Potential Limit: ${potentialLimit.toFixed(2)}, Setback Applied: ${setbackFactor.toFixed(2)}, Final Limit(h124): ${finalFreeCoolingLimit.toFixed(2)}`);
         
-        setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma');
-        coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
-
-        // Calculate D124 (% Free Cooling Capacity)
+        setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma'); 
+            coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
+        
+            // Calculate D124 (% Free Cooling Capacity)
         const coolingLoadUnmitigated = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
         let percentFreeCooling = 0;
         if (coolingLoadUnmitigated > 0) {
             percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
         }
         setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
-
+        
         // Calculate M124 (Days Active Cooling) - Set to TBD for now
         // calculateDaysActiveCooling(finalFreeCoolingLimit);
         setCalculatedValue('m_124', 'TBD', 'raw'); // Set display to TBD
-
+        
         } catch (error) {
             console.error("[S13 Error] Error during calculateFreeCooling:", error);
-            finalFreeCoolingLimit = 0;
+            finalFreeCoolingLimit = 0; 
         } finally {
             window.TEUI.sect13.freeCalculationInProgress = false;
         }
@@ -1876,9 +1876,9 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function calculateMitigatedCED() {
         // Use global parser directly
-        const d129 = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
-        const h124 = window.TEUI.parseNumeric(getFieldValue('h_124')) || 0;
-        const d123 = window.TEUI.parseNumeric(getFieldValue('d_123')) || 0;
+        const d129 = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0; 
+        const h124 = window.TEUI.parseNumeric(getFieldValue('h_124')) || 0; 
+        const d123 = window.TEUI.parseNumeric(getFieldValue('d_123')) || 0; 
 
         // Logging removed
         // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);

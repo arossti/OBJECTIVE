@@ -80,6 +80,8 @@
     <!-- State management -->
     <script src="4011-StateManager.js"></script>
     <script src="4011-SectionIntegrator.js"></script>
+    <script src="4011-ReferenceValues.js"></script>
+    <script src="4011-ReferenceToggle.js"></script>
     
     <!-- UI components that depend on definitions and state -->
     <script src="4011-ComponentBridge.js"></script>
@@ -106,14 +108,13 @@
                 <p class="fs-5 mb-0">The early-stage modelling & validation tool with code-based references.</p>
             </div>
             <div class="col-md-5 text-end">
-                <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">
-                    <i class="bi bi-info-circle"></i> Disclaimer
-                </button>
-                <div class="btn-group d-inline-block">
-                    <!-- Main button (remains Download Report) -->
-                    <button id="downloadReport" class="btn btn-primary">
-                        <i class="bi bi-download"></i> Download Report (PDF)
-                    </button>
+                <div class="col text-end controls-container">
+                    <!-- Reference Model Toggle Button -->
+                    <button id="toggleReferenceBtn" class="btn btn-sm btn-danger reference-model-toggle">Show Reference</button>
+                    <!-- Existing Buttons -->
+                    <button id="disclaimerBtn" class="btn btn-sm btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">ⓘ Disclaimer</button>
+                    <div class="btn-group">
+                        <button id="downloadBtn" type="button" class="btn btn-sm btn-primary">↓ Download Report (PDF)</button>
                     <!-- Dropdown Toggle -->
                     <button class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="visually-hidden">Toggle Dropdown</span>
@@ -129,6 +130,7 @@
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" id="export-excel"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export All Data (Excel)</a></li>
                     </ul>
+                    </div>
                 </div>
                 <!-- Hidden File Input for Import -->
                 <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="display: none;">

@@ -1299,3 +1299,63 @@ table.data-table select.form-select:hover {
 .dependency-graph-svg-wrapper:-ms-fullscreen .node text {
     fill: #0dcaf0; /* Teal color from btn-outline-info */
 }
+
+/* ==========================================================================
+   Reference Model Toggle Styles
+   ========================================================================== */
+
+.reference-model-toggle {
+    /* Rely on Bootstrap classes (e.g., btn-danger, btn-primary) for background/border */
+    color: white !important; /* Ensure white text (overrides Bootstrap potentially) */
+    margin-right: 0.5rem; /* Space before disclaimer button */
+}
+
+/* Remove specific hover/active states, let Bootstrap handle via class change */
+
+/* Reference Mode Body Class Styles */
+body.reference-mode .section {
+    border-color: var(--reference-value-color) !important; /* Use #8B0000 */
+}
+
+body.reference-mode .section-header {
+    background-color: var(--reference-value-color) !important; /* Use #8B0000 */
+    color: white !important;
+    border: 1px solid var(--reference-value-color); /* Match border to bg */
+}
+
+/* Style section subheaders (unit rows) in reference mode */
+body.reference-mode .data-table tr td.section-subheader,
+body.reference-mode .data-table tr:has(td.section-subheader) td {
+    background-color: rgba(139, 0, 0, 0.5) !important; /* 50% opacity of #8B0000 */
+    color: #ffffff !important; /* White text for contrast */
+    border-bottom-color: rgba(139, 0, 0, 0.7) !important; /* Darker, semi-transparent border */
+}
+body.reference-mode .data-table tr:has(td.section-subheader) td:empty {
+    background-color: rgba(139, 0, 0, 0.5) !important; /* Ensure empty cells match */
+}
+
+
+/* Example: Style locked fields in reference mode (adjust selector as needed) */
+body.reference-mode [data-locked="true"] {
+    color: var(--reference-value-color) !important; /* Red text #8B0000 */
+    font-style: italic;
+    /* background-color: #f8d7da; /* Optional light red background */
+    pointer-events: none; /* Prevent interaction */
+}
+
+/* Ensure user-input fields retain their blue color unless locked */
+body.reference-mode .user-input:not([data-locked="true"]) {
+    color: #0d6efd !important; /* Keep blue */
+}
+
+/* Style reference values differently (example using a class, adjust as needed) */
+body.reference-mode .reference-value-display {
+    color: #dc3545 !important; /* Red text for reference values */
+    font-weight: bold;
+}
+
+/* Style the tab container in reference mode */
+body.reference-mode .tab-container {
+    background-color: var(--reference-value-color) !important; /* Use #8B0000 */
+    border-color: var(--reference-value-color) !important; /* Match border */
+}

@@ -774,4 +774,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Call updateStickyElementHeights after DOM is loaded
     setTimeout(updateStickyElementHeights, 300);
+
+    // Initialize core components after DOM is loaded
+    if (window.TEUI && window.TEUI.StateManager && window.TEUI.FieldManager) {
+        window.TEUI.StateManager.initialize();
+        window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
+        window.TEUI.SectionIntegrator.initialize(); 
+        // Initialize the Reference Toggle UI
+        if (window.TEUI.ReferenceToggle) {
+            window.TEUI.ReferenceToggle.initialize();
+        }
+        // Initialize other UI handlers
+        initializeUIHandlers();
+    } else {
+        console.error("Core TEUI modules (StateManager, FieldManager) not found!");
+    }
 });

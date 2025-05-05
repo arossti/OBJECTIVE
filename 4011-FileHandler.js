@@ -374,11 +374,11 @@
                 document.body.removeChild(link);
 
                 this.showStatus('CSV export complete.', 'success');
-
-             } catch (error) {
+                
+            } catch (error) {
                  console.error("Error generating CSV export:", error);
                  this.showStatus(`Error during CSV export: ${error.message}`, 'error');
-             }
+            }
         }
 
         // --- OLD / OTHER METHODS --- 
