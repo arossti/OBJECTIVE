@@ -17,25 +17,26 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         
         // Visualization settings (Copied from 4007, may need adjustments)
         this.settings = {
-            nodeRadius: 6,
-            linkDistance: 100,
-            chargeStrength: -300,
+            nodeRadius: 10, // Increased node size further
+            linkDistance: 120, // Increased link distance slightly
+            chargeStrength: -400, // Slightly stronger repulsion
             colorScheme: {
-                Building: '#4e79a7', // Section 02
-                Location: '#f28e2c', // Section 03 (Climate)
-                Target: '#e15759', // Section 04 (Actual/Target)
-                Emissions: '#59a14f', // Section 05
-                Gains: '#76b7b2', // Section 09, 10 (Internal/Radiant)
-                Ventilation: '#edc949', // Section 13 (Ventilation part)
-                Mechanical: '#af7aa1', // Section 13 (HVAC part)
-                Water: '#1170aa', // Section 07
-                Air: '#66c2a5', // Section 08
-                Transmission: '#ff9da7', // Section 11
-                Metrics: '#9c755f', // Section 12
-                Summary: '#bab0ab', // Section 14, 15
-                Key: '#b07aa1', // Section 01
-                Renewables: '#59a14f', // Section 06 (Group with Emissions?)
-                Other: '#8da0cb' // Fallback
+                '1. Key Values': '#b07aa1', // Purple (Keep distinct)
+                '2. Building Information': '#4e79a7', // Blue
+                '3. Climate Calculations': '#f28e2c', // Orange
+                '4. Actual vs. Target Energy': '#e15759', // Red (Energy Input/Target)
+                '5. CO2e Emissions': '#59a14f', // Green
+                '6. Renewable Energy': '#59a14f', // Green (Same as Emissions?)
+                '7. Water Use': '#1170aa', // Dark Blue
+                '8. Indoor Air Quality': '#66c2a5', // Teal
+                '9. Occupant + Internal Gains': '#ff9d9a', // Light Orange/Peach (Gains)
+                '10. Radiant Gains': '#ff9d9a', // Light Orange/Peach (Gains)
+                '11. Transmission Losses': '#76b7b2', // Teal/Green (Losses)
+                '12. Volume and Surface Metrics': '#9c755f', // Brown (Metrics)
+                '13. Mechanical Loads': '#af7aa1', // Purple (Distinct)
+                '14. TEDI & TELI': '#bab0ab', // Grey (Summary)
+                '15. TEUI Summary': '#bab0ab', // Grey (Summary)
+                'Other': '#8da0cb' // Light Blue/Grey Fallback
             },
             labelFontSize: 10,
             tooltipDelay: 500
@@ -48,19 +49,17 @@ window.TEUI.DependencyGraph = class DependencyGraph {
      * Initialize the graph from state manager data
      */
     initialize() {
-        // TODO: Ensure StateManager and FieldManager are available
         const stateManager = window.TEUI?.StateManager;
         const fieldManager = window.TEUI?.FieldManager;
         
         if (!stateManager || !fieldManager) {
-            console.error('StateManager or FieldManager is required to initialize dependency graph');
+            console.error('[DependencyGraph] StateManager or FieldManager is required.');
             this.showErrorMessage('Initialization failed: Core modules not found.');
-            return;
+            return false; // Indicate failure
         }
         
-        // Get dependency data
+        // Get dependency data FIRST
         try {
-            // TODO: Implement stateManager.exportDependencyGraph()
             if (typeof stateManager.exportDependencyGraph !== 'function') {
                 throw new Error('StateManager does not have exportDependencyGraph method.');
             }
@@ -70,38 +69,60 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             }
             console.log('[DependencyGraph] Data loaded:', this.data.nodes.length, 'nodes,', this.data.links.length, 'links');
             
-            // Add group/type info to nodes using FieldManager (more reliable)
-            this.data.nodes.forEach(node => {
-                const fieldDef = fieldManager.getField(node.id);
-                node.type = fieldDef?.type || 'unknown';
-                // Basic grouping by prefix (can be refined)
-                if (!node.group) {
-                    if (node.id.startsWith('d_')) node.group = 'Building'; // Example
-                    else if (node.id.includes('_11')) node.group = 'Transmission'; // Example
-                    // Add more grouping rules based on field IDs or sections
-                    else node.group = 'Other';
-                }
-            });
+            // Add group/type info to nodes
+            this.enhanceNodeData(fieldManager);
 
         } catch (error) {
             console.error('[DependencyGraph] Failed to get or process dependency data:', error);
             this.showErrorMessage(`Data loading failed: ${error.message}`);
-            return;
+            return false; // Indicate failure
         }
         
-        // Set up the SVG container
-        this.setupSvg();
-        
-        // Render the graph only if SVG setup was successful
-        if (this.svg) {
-            this.render();
-            this.setupEvents();
-            console.log('[DependencyGraph] Initialized successfully.');
-        } else {
-            this.showErrorMessage('SVG container setup failed.');
-        }
+        // Data is loaded, now safe to setup UI that might depend on it
+        return true; // Indicate success
     }
-    
+
+    /** Helper to add group/type info */
+    enhanceNodeData(fieldManager) {
+         this.data.nodes.forEach(node => {
+            const fieldDef = fieldManager.getField(node.id);
+            node.type = fieldDef?.type || 'unknown';
+            // Basic grouping (can be refined)
+            if (!node.group) {
+                node.group = this.getNodeGroup(node.id, fieldDef); // Use internal helper
+            }
+        });
+    }
+
+    /** Helper to determine node group */
+    getNodeGroup(nodeId, fieldDef) {
+        // Prioritize section info if available
+        if (fieldDef?.section) {
+            switch (fieldDef.section) {
+                case 'keyValues': return 'Key';
+                case 'buildingInfo': return 'Building';
+                case 'climateCalculations': return 'Location';
+                case 'actualTargetEnergy': return 'Target';
+                case 'emissions': return 'Emissions';
+                case 'onSiteEnergy': return 'Renewables';
+                case 'waterUse': return 'Water';
+                case 'indoorAirQuality': return 'Air';
+                case 'occupantInternalGains':
+                case 'envelopeRadiantGains': return 'Gains';
+                case 'envelopeTransmissionLosses': return 'Transmission';
+                case 'volumeSurfaceMetrics': return 'Metrics';
+                case 'mechanicalLoads': return 'Mechanical'; 
+                case 'tediSummary':
+                case 'teuiSummary': return 'Summary';
+                default: break; 
+            }
+        }
+        // Fallback to prefix
+        if (nodeId.includes('_11')) return 'Transmission';
+        if (nodeId.includes('_13')) return 'Mechanical';
+        return 'Other';
+    }
+
     /**
      * Setup the SVG container
      */
@@ -161,7 +182,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         this.svg.append('defs').append('marker')
             .attr('id', 'arrowhead')
             .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 15) // Adjust refX based on node radius + desired gap
+            .attr('refX', 20) // Increased again (10 + gap)
             .attr('refY', 0)
             .attr('orient', 'auto')
             .attr('markerWidth', 6) // Smaller arrowhead
@@ -221,14 +242,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         allOption.text = 'All Groups';
         groupSelect.appendChild(allOption);
         
-        // Add group options based on detected groups in data
-        const groupsInData = new Set(this.data.nodes.map(n => n.group).filter(g => g));
-        groupsInData.forEach(group => {
-            const option = document.createElement('option');
-            option.value = group;
-            option.text = group;
-            groupSelect.appendChild(option);
-        });
+        // Group options will be populated AFTER data is loaded
         
         groupFilterContainer.appendChild(groupSelect);
         controlsContainer.appendChild(groupFilterContainer);
@@ -239,9 +253,19 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         layoutContainer.style.gap = '5px';
         layoutContainer.style.alignItems = 'center';
         
-        // TODO: Add Force/Dagre layout buttons later if needed
         // Force directed button
-        // const forceButton = document.createElement('button'); ...
+        const forceButton = document.createElement('button');
+        forceButton.textContent = 'Force Layout';
+        forceButton.className = 'btn btn-outline-secondary btn-sm layout-button active'; // Start with force active
+        forceButton.onclick = () => this.switchLayout('force');
+        this.forceButton = forceButton; // Store ref
+
+        // Dagre (hierarchical) button
+        const dagreButton = document.createElement('button');
+        dagreButton.textContent = 'Hierarchical';
+        dagreButton.className = 'btn btn-outline-secondary btn-sm layout-button';
+        dagreButton.onclick = () => this.switchLayout('dagre');
+        this.dagreButton = dagreButton; // Store ref
         
         // Reset button
         const resetButton = document.createElement('button');
@@ -249,7 +273,18 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         resetButton.className = 'btn btn-outline-secondary btn-sm'; // Bootstrap button
         this.resetButton = resetButton; // Store reference
 
+        // Fullscreen button
+        const fullscreenButton = document.createElement('button');
+        fullscreenButton.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>'; // Bootstrap icon
+        fullscreenButton.title = 'Toggle Fullscreen';
+        fullscreenButton.className = 'btn btn-outline-secondary btn-sm'; 
+        fullscreenButton.style.marginLeft = 'auto'; // Push to the right
+        this.fullscreenButton = fullscreenButton; // Store ref
+
+        layoutContainer.appendChild(forceButton);
+        layoutContainer.appendChild(dagreButton);
         layoutContainer.appendChild(resetButton);
+        layoutContainer.appendChild(fullscreenButton);
         controlsContainer.appendChild(layoutContainer);
         
         // Prepend controls to the parent element
@@ -310,6 +345,11 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Reset button event
         if (this.resetButton) {
             this.resetButton.onclick = () => this.resetView();
+        }
+
+        // Fullscreen button event
+        if (this.fullscreenButton) {
+            this.fullscreenButton.onclick = () => this.toggleFullscreen();
         }
 
         // Node hover/click events (add after nodes are created in render)
@@ -415,13 +455,17 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
         // --- Update Node Appearance (for enter and update selections) ---
         this.nodeGroups.select('circle')
-             .style('fill', d => this.settings.colorScheme[d.group] || this.settings.colorScheme.Other);
+             .style('fill', d => {
+                const color = this.settings.colorScheme[d.group] || this.settings.colorScheme.Other;
+                // console.log(`Node: ${d.id}, Group: ${d.group}, Color: ${color}`); // DEBUG LOG
+                return color;
+             });
 
         this.nodeGroups.select('text')
-            .text(d => d.id); 
+            .text(d => d.label || d.id);
 
         this.nodeGroups.select('title')
-             .text(d => `${d.id}\nGroup: ${d.group}\nType: ${d.type}`);
+             .text(d => `${d.label || d.id} (${d.id})\nGroup: ${d.group}\nType: ${d.type}`);
 
         // Re-attach event handlers after join operation
         // (D3's .join() handles this automatically if listeners are on the joined selection)
@@ -496,12 +540,90 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     }
     
     // TODO: Implement switchLayout and applyDagreLayout if hierarchical view is desired.
-    switchLayout(layout) {
-        alert(`Layout switching to ${layout} is not yet implemented in v4.011.`);
+    switchLayout(layout) { 
+        // Update button states
+        document.querySelectorAll('.layout-button').forEach(button => button.classList.remove('active'));
+        if (layout === 'force' && this.forceButton) this.forceButton.classList.add('active');
+        if (layout === 'dagre' && this.dagreButton) this.dagreButton.classList.add('active');
+
+        if (layout === 'force') {
+            // Restore forces and restart simulation
+            if (!this.simulation) return; // Should not happen if rendered
+            this.simulation
+                .force('link', d3.forceLink(this.data.links).id(d => d.id).distance(this.settings.linkDistance))
+                .force('charge', d3.forceManyBody().strength(this.settings.chargeStrength))
+                .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+                .force('collision', d3.forceCollide().radius(this.settings.nodeRadius * 2))
+                .alpha(1) // Reheat the simulation
+                .restart();
+            console.log('[DependencyGraph] Switched to Force layout.');
+        } else if (layout === 'dagre') {
+            // Stop force simulation before applying Dagre
+            if (this.simulation) this.simulation.stop();
+
+            // Check if dagre library is loaded
+            if (typeof dagre === 'undefined') {
+                console.error('Dagre library not loaded. Cannot apply hierarchical layout.');
+                alert('Hierarchical layout library (Dagre) is not loaded. Please ensure it is included.');
+                this.switchLayout('force'); // Revert to force layout
+                return;
+            }
+            this.applyDagreLayout();
+            console.log('[DependencyGraph] Switched to Dagre layout.');
+        }
     }
 
+    /** Apply dagre hierarchical layout */
     applyDagreLayout() {
-        alert('Dagre layout not implemented yet.');
+        if (!this.data || !this.nodeGroups || !this.links) return;
+        
+        // Create a new directed graph
+        const g = new dagre.graphlib.Graph();
+
+        // Set an object for the graph label
+        g.setGraph({});
+
+        // Default to assigning a new object as a label for each edge.
+        g.setDefaultEdgeLabel(function() { return {}; });
+
+        // Add nodes to the graph. The first argument is the node id.
+        // We link the node object from our data to the graph node.
+        this.data.nodes.forEach(node => {
+            g.setNode(node.id, { label: node.id, width: 20, height: 20 }); // Give some basic dimensions
+        });
+
+        // Add edges to the graph.
+        this.data.links.forEach(link => {
+            // Ensure source and target are IDs
+            const sourceId = link.source.id || link.source;
+            const targetId = link.target.id || link.target;
+            g.setEdge(sourceId, targetId);
+        });
+
+        // Run the layout algorithm
+        dagre.layout(g);
+
+        // Apply the calculated positions with a transition
+        this.nodeGroups.transition().duration(750)
+            .attr('transform', d => {
+                const nodeInfo = g.node(d.id);
+                if (nodeInfo) {
+                    d.x = nodeInfo.x; // Update data positions
+                    d.y = nodeInfo.y;
+                    return `translate(${nodeInfo.x}, ${nodeInfo.y})`;
+                } 
+                return `translate(${d.x || 0}, ${d.y || 0})`; // Fallback
+            });
+
+        // Update link positions after transition (or immediately)
+        // Using a delay might look smoother if nodes transition
+        setTimeout(() => {
+             this.links
+                 .attr('x1', d => d.source.x)
+                 .attr('y1', d => d.source.y)
+                 .attr('x2', d => d.target.x)
+                 .attr('y2', d => d.target.y);
+        }, 750);
     }
 
     resetView() {
@@ -530,7 +652,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         const dependencies = this.infoPanel.querySelector('.info-dependencies');
         const dependents = this.infoPanel.querySelector('.info-dependents');
         
-        title.textContent = `Field: ${node.id}`;
+        title.textContent = `${node.label || node.id} (${node.id})`;
         
         const currentValue = stateManager.getValue(node.id);
         value.innerHTML = `<strong>Current Value:</strong> ${currentValue !== null && currentValue !== undefined ? currentValue : 'N/A'}`;
@@ -635,6 +757,59 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             container.innerHTML = `<div class="alert alert-danger">${message}</div>`;
         }
     }
+
+    /** Toggle fullscreen mode for the graph container */
+    toggleFullscreen() {
+        // Target the SVG wrapper directly for fullscreen
+        const graphWrapper = document.querySelector('#dependencyDiagram .dependency-graph-svg-wrapper');
+        if (!graphWrapper) return;
+
+        if (!document.fullscreenElement) {
+            // Enter fullscreen
+            if (graphWrapper.requestFullscreen) {
+                graphWrapper.requestFullscreen();
+            } else if (graphWrapper.mozRequestFullScreen) { /* Firefox */
+                graphWrapper.mozRequestFullScreen();
+            } else if (graphWrapper.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                graphWrapper.webkitRequestFullscreen();
+            } else if (graphWrapper.msRequestFullscreen) { /* IE/Edge */
+                graphWrapper.msRequestFullscreen();
+            }
+            if(this.fullscreenButton) this.fullscreenButton.innerHTML = '<i class="bi bi-fullscreen-exit"></i>'; // Change icon
+
+        } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE/Edge */
+                document.msExitFullscreen();
+            }
+             if(this.fullscreenButton) this.fullscreenButton.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>'; // Change icon back
+        }
+    }
+
+    /** Populate the group filter dropdown based on node data */
+    populateGroupFilter() {
+        if (!this.groupSelect || !this.data?.nodes) return;
+
+        // Clear existing options except 'All Groups'
+        while (this.groupSelect.options.length > 1) {
+            this.groupSelect.remove(1);
+        }
+
+        // Get unique, sorted groups from the enhanced node data
+        const groupsInData = [...new Set(this.data.nodes.map(n => n.group).filter(g => g))].sort();
+        groupsInData.forEach(group => {
+            const option = document.createElement('option');
+            option.value = group;
+            option.text = group; // Use the full section name now
+            this.groupSelect.appendChild(option);
+        });
+    }
 }
 
 // --- Initialization Logic (Adapted from 4007) --- 
@@ -648,61 +823,71 @@ let teuiDependencyGraphInstance = null;
 function initializeDependencyGraph() {
     // Prevent double initialization
     if (teuiDependencyGraphInstance) {
-        console.log('[DependencyGraph] Already initialized.');
+        // console.log('[DependencyGraph] Already initialized.');
         return;
     }
 
-    // Check if D3 is available
+    // Assume D3 is loaded globally via index.html
     if (typeof d3 === 'undefined') {
-        console.error('D3.js is required. Attempting to load...');
-        const script = document.createElement('script');
-        script.src = 'https://d3js.org/d3.v7.min.js';
-        script.onload = initializeAfterD3Load;
-        script.onerror = () => {
-            console.error('Failed to load D3.js');
-            const container = document.querySelector('#dependencyDiagram .section-content');
-            if (container) container.innerHTML = '<div class="alert alert-danger">Error: D3.js library could not be loaded.</div>';
-        };
-        document.head.appendChild(script);
-    } else {
-        initializeAfterD3Load();
+        console.error('D3.js not found. Ensure it is included in index.html.');
+        const container = document.querySelector('#dependencyDiagram .section-content');
+        if (container) container.innerHTML = '<div class="alert alert-danger">Error: D3.js library not loaded.</div>';
+        return;
     }
+    
+    // Proceed with initialization now that D3 is assumed available
+    initializeGraphInstanceAndUI(); 
 }
 
 /**
- * Contains the core initialization logic after D3 is confirmed loaded.
+ * Creates the graph instance, loads data, creates UI elements, and renders.
  */
-function initializeAfterD3Load() {
-    console.log('[DependencyGraph] D3 loaded. Initializing graph...');
-    const graphContainer = document.querySelector('#dependencyDiagram .section-content');
+function initializeGraphInstanceAndUI() {
+    console.log('[DependencyGraph] Initializing graph instance and UI...');
+    const graphContainer = document.querySelector('#dependencyDiagram .section-content .dependency-graph-container');
     const controlsContainer = document.querySelector('#dependencyDiagram .dependency-graph-controls-wrapper'); // Separate container for controls
     const infoPanelContainer = document.querySelector('#dependencyDiagram .dependency-graph-info-wrapper'); // Separate container for info
 
     if (!graphContainer || !controlsContainer || !infoPanelContainer) {
-        console.warn('[DependencyGraph] Required containers (#dependencyDiagram .section-content / controls-wrapper / info-wrapper) not found. Initialization deferred.');
+        console.warn('[DependencyGraph] Required containers not found. Initialization deferred.');
         return; 
     }
 
-    // Get the state manager
-    const stateManager = window.TEUI?.StateManager;
-    if (!stateManager) {
-        console.error('[DependencyGraph] StateManager not available.');
-        graphContainer.innerHTML = '<div class="alert alert-danger">Error: StateManager not found.</div>';
-        return;
+    // Create the graph instance
+    teuiDependencyGraphInstance = new window.TEUI.DependencyGraph(); 
+    
+    // Call initialize which gets data
+    if (teuiDependencyGraphInstance.initialize()) { // initialize now returns true on success
+        // If data loaded successfully, THEN create UI and render
+        teuiDependencyGraphInstance.createInfoPanel(infoPanelContainer);
+        teuiDependencyGraphInstance.createFilterControls(controlsContainer); // Creates structure
+        teuiDependencyGraphInstance.populateGroupFilter(); // Populate dropdown NOW
+        teuiDependencyGraphInstance.setupSvg(); // Setup SVG container
+        if (teuiDependencyGraphInstance.svg) {
+            // Attempt Dagre layout first, then render
+            if (typeof dagre !== 'undefined') {
+                teuiDependencyGraphInstance.applyDagreLayout(); 
+                // Update button state after applying layout
+                if(teuiDependencyGraphInstance.dagreButton) teuiDependencyGraphInstance.dagreButton.classList.add('active');
+                if(teuiDependencyGraphInstance.forceButton) teuiDependencyGraphInstance.forceButton.classList.remove('active');
+                console.log('[DependencyGraph] Applied Dagre layout on init.');
+                // Rendering happens implicitly via applyDagreLayout/ticked
+                // Or explicitly call render if needed to ensure elements exist
+                teuiDependencyGraphInstance.render(); 
+            } else {
+                // Fallback to force layout if Dagre not available
+                console.warn('[DependencyGraph] Dagre not found on init, using force layout.');
+                teuiDependencyGraphInstance.render(); 
+            }
+            teuiDependencyGraphInstance.setupEvents(); 
+        } else {
+            console.error('[DependencyGraph] SVG setup failed after data load.');
+            teuiDependencyGraphInstance.showErrorMessage('Graph rendering failed (SVG setup).');
+        }
+    } else {
+         console.error('[DependencyGraph] Initialization failed (data loading).');
+         // Error message is shown within initialize()
     }
-    
-    // TODO: Ensure registerInitialDependencies runs if needed, maybe triggered elsewhere?
-    // registerInitialDependencies(stateManager); 
-
-    // Create and initialize the graph instance
-    teuiDependencyGraphInstance = new window.TEUI.DependencyGraph('#dependencyDiagram .dependency-graph-svg-wrapper'); // Point to SVG wrapper
-    
-    // Create controls and info panel *outside* the SVG wrapper
-    teuiDependencyGraphInstance.createInfoPanel(infoPanelContainer);
-    teuiDependencyGraphInstance.createFilterControls(controlsContainer);
-
-    // Call initialize which gets data and renders
-    teuiDependencyGraphInstance.initialize(); 
 }
 
 // --- Trigger Initialization --- 

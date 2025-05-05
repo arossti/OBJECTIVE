@@ -53,5 +53,6 @@ This document outlines the steps to integrate an interactive dependency graph vi
 
 *   Improve node grouping logic.
 *   Enhance info panel details.
+    *   **(Deferred)** Investigate feasibility of showing calculation formula/logic in info panel.
 *   Optimize layout performance for large graphs.
 *   Integrate Sankey diagram logic (separate task). 

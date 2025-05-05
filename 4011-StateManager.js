@@ -858,13 +858,13 @@ TEUI.StateManager = (function() {
      * Exports the dependency data in a format suitable for visualization.
      * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
      */
-    exportDependencyGraph() {
+    function exportDependencyGraph() {
         console.log("[StateManager] Exporting dependency graph data...");
         const nodes = new Map(); // Use a Map to easily track unique nodes
         const links = [];
 
         // Iterate through the dependencies map (source -> Set<target>)
-        this.dependencies.forEach((targets, sourceId) => {
+        dependencies.forEach((targets, sourceId) => {
             // Add source node if not already added
             if (!nodes.has(sourceId)) {
                 nodes.set(sourceId, { id: sourceId });
@@ -880,23 +880,53 @@ TEUI.StateManager = (function() {
             });
         });
 
-        // TODO: Enhance node data (add group, type using FieldManager if available)
-        // This requires FieldManager to be accessible here or passed in.
-        // Example (if FieldManager is available globally):
-        /*
+        // Enhance node data using FieldManager
         if (window.TEUI?.FieldManager) {
+            const fieldManager = window.TEUI.FieldManager;
             nodes.forEach(node => {
-                const fieldDef = window.TEUI.FieldManager.getField(node.id);
+                const fieldDef = fieldManager.getField(node.id);
                 node.type = fieldDef?.type || 'unknown';
+                node.label = fieldDef?.label || node.id; // Use fieldDef label or fallback to ID
+                node.rowId = fieldDef?.rowId || node.id.split('_')[1] || '?'; // Try to get rowId
                 // Add grouping logic based on fieldDef or node.id
-                node.group = 'Other'; // Placeholder
+                node.group = getNodeGroup(node.id, fieldDef); // Use helper function
             });
         }
-        */
+        else {
+            console.warn("[StateManager] FieldManager not available to enhance node data.");
+        }
         
         const nodesArray = Array.from(nodes.values());
         console.log(`[StateManager] Exported ${nodesArray.length} nodes and ${links.length} links.`);
         return { nodes: nodesArray, links: links };
+    }
+    
+    /**
+     * Helper function (moved inside StateManager IIFE)
+     * Determines the group for a node based on its ID or field definition.
+     * @param {string} nodeId 
+     * @param {object | null} fieldDef 
+     * @returns {string} The determined group name.
+     */
+    function getNodeGroup(nodeId, fieldDef) {
+        // RESTORED: Fallback to prefix/pattern matching (less reliable, but maybe better coverage?)
+        if (nodeId.includes('_1') && nodeId.split('_').length > 1) return '1. Key Values'; // Approximate
+        if (nodeId.includes('_2') && nodeId.split('_').length > 1) return '2. Building Information';
+        if (nodeId.includes('_3') && nodeId.split('_').length > 1) return '3. Climate Calculations';
+        if (nodeId.includes('_4') && nodeId.split('_').length > 1) return '4. Actual vs. Target Energy';
+        if (nodeId.includes('_5') && nodeId.split('_').length > 1) return '5. CO2e Emissions';
+        if (nodeId.includes('_6') && nodeId.split('_').length > 1) return '6. Renewable Energy';
+        if (nodeId.includes('_7') && nodeId.split('_').length > 1) return '7. Water Use';
+        if (nodeId.includes('_8') && nodeId.split('_').length > 1) return '8. Indoor Air Quality';
+        if (nodeId.includes('_9') && nodeId.split('_').length > 1) return '9. Occupant + Internal Gains';
+        if (nodeId.includes('_10') && nodeId.split('_').length > 1) return '10. Radiant Gains';
+        if (nodeId.includes('_11') && nodeId.split('_').length > 1) return '11. Transmission Losses';
+        if (nodeId.includes('_12') && nodeId.split('_').length > 1) return '12. Volume and Surface Metrics';
+        if (nodeId.includes('_13') && nodeId.split('_').length > 1) return '13. Mechanical Loads';
+        if (nodeId.includes('_14') && nodeId.split('_').length > 1) return '14. TEDI & TELI';
+        if (nodeId.includes('_15') && nodeId.split('_').length > 1) return '15. TEUI Summary';
+
+        return 'Other'; // Default fallback
     }
     
     // Public API
