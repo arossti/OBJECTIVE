@@ -451,5 +451,17 @@ _The following includes relevant points and proposed strategies from the origina
 -   **Code Performance:** While major issues are fixed, monitor for any performance bottlenecks, especially during complex calculations or frequent updates.
 -   **Refactoring Opportunities:** Consider if `coolingState` management or calculation function structure could be further simplified or aligned with global utilities (e.g., using `TEUI.formatNumber`).
 
+## TODOs
+
+### m_124 (Cooling Days) Calculation Discrepancy
+
+**Issue:** The value calculated for `m_124` (representing active cooling days needed) does not match the expected values based on the original Excel model's logic, especially when different ventilation methods (`g_118`) are selected. Expected values (e.g., -31, -78, -9, 3) indicate a surplus or deficit of free cooling days, but the current JS calculation produces different results (e.g., -212.09 unclamped, based on logs).
+
+**Diagnosis:** Logging indicates the core formula `coolingDays - (freeCoolingLimit / (coolingLoad / coolingDays))` is being used correctly, but the inputs it receives (`Load(m129)` and `FreeCooling(h124)`) appear inconsistent with the Excel model's intermediate values for the same scenarios.
+
+**Likely Cause:** Discrepancies in the upstream calculations for the Mitigated Cooling Load (`m_129`, calculated in `calculateMitigatedCED`) and/or the Free Cooling Limit (`h_124`, calculated in `calculateFreeCooling` and `calculateFreeCoolingLimit`), potentially due to subtle differences in formula implementation compared to Excel.
+
+**Action:** Temporarily set `m_124` display to "TBD". Requires further investigation in a future release to compare the JS implementation of `h_124` and `m_129` calculations step-by-step against the Excel (`COOLING-TARGET.csv`) logic and source values (`d_129`, `d_123`) to identify the root cause. Once fixed, remove the `Math.max(0, ...)` clamp in `calculateDaysActiveCooling` and restore the numeric calculation for `m_124`.
+
 
 </rewritten_file> 

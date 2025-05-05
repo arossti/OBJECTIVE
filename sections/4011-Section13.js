@@ -229,21 +229,41 @@ window.TEUI.SectionModules.sect13 = (function() {
     }
 
     /** [Cooling Calc] Calculate days of active cooling required */
-    function calculateDaysActiveCooling(currentFreeCoolingLimit) {
-        // Note: This calculation might need review against Excel E55 logic.
-        // It currently depends on coolingLoad (l_128 from S14) and the passed free cooling limit.
-        if (coolingState.coolingLoad > 0 && currentFreeCoolingLimit >= 0) { 
-            const dailyCoolingLoad = coolingState.coolingLoad / 120; // Assumes 120 cooling days
-            if (dailyCoolingLoad > 0) {
-                 const daysCovered = currentFreeCoolingLimit / dailyCoolingLoad;
-                 coolingState.daysActiveCooling = Math.max(0, 120 - daysCovered); 
+    function calculateDaysActiveCooling(currentFreeCoolingLimit /* h_124 */) { // Keep signature for now
+        const coolingLoad = coolingState.coolingLoad; // Annual kWh load (m_129)
+        // Get cooling days from m_19, default to 120
+        const coolingDays = window.TEUI.parseNumeric(getFieldValue('m_19')) || 120;
+        const freeCoolingLimit = currentFreeCoolingLimit; // Annual kWh free cooling (h_124)
+        let calculatedDays = 0;
+        let dailyCoolingLoad = 0;
+        let daysCoveredByFreeCooling = 0;
+
+        if (coolingLoad > 0 && freeCoolingLimit >= 0) {
+            if (coolingDays > 0) {
+                dailyCoolingLoad = coolingLoad / coolingDays; // Avg kWh/day
+                if (dailyCoolingLoad > 0) {
+                    daysCoveredByFreeCooling = freeCoolingLimit / dailyCoolingLoad;
+                    // Calculate the actual value (can be negative), but don't clamp or assign to state for now
+                    calculatedDays = coolingDays - daysCoveredByFreeCooling;
+                } else {
+                    calculatedDays = 0; // No load
+                }
             } else {
-                 coolingState.daysActiveCooling = 0; 
+                calculatedDays = 0; // No cooling season
             }
         } else {
-            coolingState.daysActiveCooling = 0; 
+            // Handle cases with no load or negative free cooling if needed for internal logic
+            // For now, just setting to 0 for internal consistency if load <= 0
+            calculatedDays = 0;
         }
-        return coolingState.daysActiveCooling; 
+
+        // Logging removed
+        // console.warn(`[S13 Debug m_124] Inputs -> Load(m129): ${coolingLoad.toFixed(2)}, FreeCooling(h124): ${freeCoolingLimit.toFixed(2)}, SeasonDays(m19): ${coolingDays}`);
+        // console.warn(`[S13 Debug m_124] Calcs -> DailyLoad: ${dailyCoolingLoad.toFixed(2)}, DaysCovered: ${daysCoveredByFreeCooling.toFixed(2)}, Result(m124): ${calculatedDays.toFixed(2)} (clamped >= 0 for logging)`);
+
+        // Don't update state with this potentially incorrect value yet
+        // coolingState.daysActiveCooling = calculatedDays;
+        return calculatedDays; // Return the calculated value, even though it won't be directly displayed
     }
 
     /** [Cooling Calc] Calculate wet bulb temperature (Approximation) */
@@ -1728,6 +1748,9 @@ window.TEUI.SectionModules.sect13 = (function() {
         const baseConstant = 1.21; 
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) / 100 || 0; 
 
+        // Logging removed
+        // console.warn(`[S13 Debug CoolVent Inputs] d120: ${ventilationRateLs_d120.toFixed(2)}, d21: ${cdd_d21}, i63: ${occupiedHours_i63}, j63: ${totalHours_j63}, i122_factor: ${latentLoadFactor_i122.toFixed(2)}, l119_boost: ${summerBoostFactor.toFixed(2)}, d116_cool: ${coolingSystem_d116}, d118_sre: ${sre_d118.toFixed(2)}`);
+
         let ventEnergyCoolingIncoming_d122 = 0;
 
         // Match the Excel formula structure exactly (D122)
@@ -1746,6 +1769,9 @@ window.TEUI.SectionModules.sect13 = (function() {
         }
         
         const ventEnergyRecovered_d123 = ventEnergyCoolingIncoming_d122 * sre_d118;
+
+        // Logging removed
+        // console.warn(`[S13 Debug CoolVent Outputs] Incoming(d122): ${ventEnergyCoolingIncoming_d122.toFixed(2)}, Recovered(d123): ${ventEnergyRecovered_d123.toFixed(2)}`);
 
         setCalculatedValue('i_122', latentLoadFactor_i122, 'percent-0dp'); 
         setCalculatedValue('d_122', ventEnergyCoolingIncoming_d122, 'number-2dp-comma');
@@ -1767,17 +1793,22 @@ window.TEUI.SectionModules.sect13 = (function() {
         }
         window.TEUI.sect13.freeCalculationInProgress = true;
 
-        let finalFreeCoolingLimit = 0; 
+        let finalFreeCoolingLimit = 0;
+        let potentialLimit = 0;
+        let setbackFactor = 1.0;
+        const ventilationMethod = getFieldValue('g_118') || 'Constant';
+        const setbackValueStr = getFieldValue('k_120');
+        const ventRateM3hr_h120 = window.TEUI.parseNumeric(getFieldValue('h_120')) || 0; // Get h_120 value used in limit calc
+
+        // Logging removed
+        // console.warn(`[S13 Debug FreeCool Inputs] Vent Method(g118): ${ventilationMethod}, Setback Factor(k120 str): ${setbackValueStr}, Vent Rate(h120): ${ventRateM3hr_h120.toFixed(2)}`);
+
         try { 
             // REMOVED: Call moved to calculateAll
             // runIntegratedCoolingCalculations(); 
             
-            const potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
-
-            const ventilationMethod = getFieldValue('g_118') || 'Constant'; 
+            potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
             
-            let setbackFactor = 1.0; 
-            const setbackValueStr = getFieldValue('k_120'); 
             if (setbackValueStr) {
                 const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // Already a decimal factor
                 if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) {
@@ -1793,25 +1824,28 @@ window.TEUI.SectionModules.sect13 = (function() {
         } else { 
                 finalFreeCoolingLimit = potentialLimit; // Default to full potential if method is unclear
         }
+
+        // Logging removed
+        // console.warn(`[S13 Debug FreeCool Outputs] Potential Limit: ${potentialLimit.toFixed(2)}, Setback Applied: ${setbackFactor.toFixed(2)}, Final Limit(h124): ${finalFreeCoolingLimit.toFixed(2)}`);
         
-        setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma'); 
-            coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
-        
-            // Calculate D124 (% Free Cooling Capacity)
+        setCalculatedValue('h_124', finalFreeCoolingLimit, 'number-2dp-comma');
+        coolingState.freeCoolingLimit = finalFreeCoolingLimit; // Keep local state consistent
+
+        // Calculate D124 (% Free Cooling Capacity)
         const coolingLoadUnmitigated = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
         let percentFreeCooling = 0;
         if (coolingLoadUnmitigated > 0) {
             percentFreeCooling = finalFreeCoolingLimit / coolingLoadUnmitigated;
         }
         setCalculatedValue('d_124', percentFreeCooling, 'percent-0dp');
-        
-            // Calculate M124 (Days Active Cooling) - Moved calculation here as it depends on final limit
-        calculateDaysActiveCooling(finalFreeCoolingLimit); 
-        setCalculatedValue('m_124', coolingState.daysActiveCooling, 'integer');
-        
+
+        // Calculate M124 (Days Active Cooling) - Set to TBD for now
+        // calculateDaysActiveCooling(finalFreeCoolingLimit);
+        setCalculatedValue('m_124', 'TBD', 'raw'); // Set display to TBD
+
         } catch (error) {
             console.error("[S13 Error] Error during calculateFreeCooling:", error);
-            finalFreeCoolingLimit = 0; 
+            finalFreeCoolingLimit = 0;
         } finally {
             window.TEUI.sect13.freeCalculationInProgress = false;
         }
@@ -1842,10 +1876,18 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function calculateMitigatedCED() {
         // Use global parser directly
-        const d129 = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0; 
-        const h124 = window.TEUI.parseNumeric(getFieldValue('h_124')) || 0; 
-        const d123 = window.TEUI.parseNumeric(getFieldValue('d_123')) || 0; 
+        const d129 = window.TEUI.parseNumeric(getFieldValue('d_129')) || 0;
+        const h124 = window.TEUI.parseNumeric(getFieldValue('h_124')) || 0;
+        const d123 = window.TEUI.parseNumeric(getFieldValue('d_123')) || 0;
+
+        // Logging removed
+        // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
+
         const m129 = d129 - h124 - d123;
+
+        // Logging removed
+        // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);
+
         setCalculatedValue('m_129', m129, 'number-2dp-comma');
     }
 
