@@ -77,25 +77,9 @@
  *     - Handle out-of-range or anomalous values with clear validation
  *     - Include UI feedback for special cases (warnings, colors, etc.)
  * 
- * 11. VISUALIZATION OF DEPENDENCIES
- *     - Future implementation will reintroduce dependency graphs and Sankey diagrams
- *     - SectionIntegrator should maintain a formal representation of cross-section dependencies
- *     - Store metadata about energy/carbon flows for visualization
- *     - Use registerDependency() not just for calculation order but to build a complete dependency graph
- *     - Design data structures that can feed directly into visualization components
- *     - Key visualizations to anticipate: dependency graphs showing calculation flows and 
- *       Sankey diagrams showing energy/carbon flows between systems
- * 
- * EXAMPLE: TEUI CALCULATION FLOW SUMMARY
- * --------------------------------------
- * 1. User changes energy inputs in Section 4 cells d_27 through d_31
- * 2. Section 4 calculates subtotals and updates f_32 in both DOM and StateManager
- * 3. StateManager listener for f_32 triggers updateTEUICalculations
- * 4. updateTEUICalculations retrieves f_32, j_32, and h_15 from StateManager
- * 5. TEUI values are calculated (actual = f_32/h_15, target = j_32/h_15)
- * 6. Results are stored in StateManager (k_10 and h_10)
- * 7. Section 1 display is updated via updateTEUIDisplay
- * 8. Additional UI elements (gauges, percentages) update based on new values
+ * 10. DOCUMENTATION AND NOTES
+ *     - SectionIntegrator should automatically handle cross-section references
+ *     - User notes section can capture specific project details
  */
 
 // Ensure namespace exists
