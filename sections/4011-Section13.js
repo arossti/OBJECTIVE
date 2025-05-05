@@ -1292,8 +1292,8 @@ window.TEUI.SectionModules.sect13 = (function() {
                     window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); 
                 }
                 
-                console.log(`[S13 Listener] Calling calculateAll() after k_120 change.`); // KEEP Log
-                calculateAll(); // Trigger full recalculation via standard flow
+                // Trigger full recalculation via standard flow
+                calculateAll(); 
             }
         }
     }
@@ -1334,7 +1334,13 @@ window.TEUI.SectionModules.sect13 = (function() {
                 }
             }
         } else {
-            const previousValue = window.TEUI.StateManager?.getValue(fieldId) || '0'; 
+            // Revert logic if input is not a number
+            let previousValue = window.TEUI.StateManager?.getValue(fieldId);
+            // If StateManager has no value, fallback to the defined default from the layout
+            if (previousValue === null || previousValue === undefined) {
+                const fieldDef = getField(fieldId); // Use the module's getField helper
+                previousValue = fieldDef?.defaultValue || '0';
+            }
             const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
             const formatType = (fieldId === 'j_115' || fieldId === 'l_118') ? 'number-2dp' : 'number-2dp';
             this.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
@@ -1347,14 +1353,62 @@ window.TEUI.SectionModules.sect13 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
-        console.log("[S13] onSectionRendered called."); // Log entry
+        // Log initial DOM state
+        const d119ElementInitial = document.querySelector('td[data-field-id="d_119"]');
+        const j115ElementInitial = document.querySelector('td[data-field-id="j_115"]');
+        console.log(`[S13 Init] Initial d_119 textContent: "${d119ElementInitial?.textContent}"`);
+        console.log(`[S13 Init] Initial j_115 textContent: "${j115ElementInitial?.textContent}"`);
+
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90%
         }
         initializeEventHandlers();
         registerWithStateManager();
-        calculateAll(); // Run initial calculations first
+
+        // --- ADDED: Ensure editable field defaults are in StateManager BEFORE first calculation ---
+        if (window.TEUI?.StateManager?.setValue) {
+            const fields = getFields(); // Get field definitions for this section
+            Object.entries(fields).forEach(([fieldId, fieldDef]) => {
+                // Check if it's one of the problematic editable fields with a defined default
+                if ((fieldId === 'd_119' || fieldId === 'j_115') && fieldDef.defaultValue) {
+                    // Check if StateManager *doesn't* already have a value (to avoid overwriting user/imported data later)
+                    if (window.TEUI.StateManager.getValue(fieldId) === null) {
+                        // console.log(`[S13 Init Defaults] Setting default for ${fieldId} to ${fieldDef.defaultValue}`);
+                        window.TEUI.StateManager.setValue(fieldId, fieldDef.defaultValue, 'default');
+                    }
+                    else {
+                        console.log(`[S13 Init Defaults] StateManager already has value for ${fieldId}: ${window.TEUI.StateManager.getValue(fieldId)}`);
+                    }
+                }
+            });
+        }
+        // --- END ADDED --- 
         
+        // Log DOM state BEFORE calculateAll
+        console.log(`[S13 Init] BEFORE calculateAll - d_119 textContent: "${d119ElementInitial?.textContent}"`);
+        console.log(`[S13 Init] BEFORE calculateAll - j_115 textContent: "${j115ElementInitial?.textContent}"`);
+
+        calculateAll(); // Run initial calculations first
+
+        // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
+        if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
+            const fieldsToUpdate = ['d_119', 'j_115'];
+            fieldsToUpdate.forEach(fieldId => {
+                const element = document.querySelector(`td[data-field-id="${fieldId}"]`);
+                const stateValue = window.TEUI.StateManager.getValue(fieldId);
+                if (element && stateValue !== null && stateValue !== undefined) {
+                    const numericValue = window.TEUI.parseNumeric(stateValue, NaN);
+                    if (!isNaN(numericValue)) {
+                        const formatType = 'number-2dp'; // Assuming 2 decimal places for both
+                        const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
+                        console.log(`[S13 Init Display Fix] Setting ${fieldId} textContent to: "${formattedDisplay}" from state value "${stateValue}"`);
+                        element.textContent = formattedDisplay;
+                    }
+                }
+            });
+        }
+        // --- END ADDED ---
+
         // Set initial ghosting state after calculations might have populated values
         setTimeout(() => { // Use timeout to ensure initial state is settled
             const initialHeatingSystem = getFieldValue('d_113') || 'Heatpump'; // Get current value or default
@@ -1471,11 +1525,11 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate heating fuel impact for gas and oil systems
      */
     function calculateHeatingFuelImpact() {
-        console.log("[S13 DEBUG] Entering calculateHeatingFuelImpact"); // LOG ENTRY
+        // console.log("[S13 DEBUG] Entering calculateHeatingFuelImpact"); // LOG ENTRY
         const systemType = getFieldValue('d_113');
         const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
         const afue = window.TEUI.parseNumeric(getFieldValue('j_115')) || 1; // Read current AFUE
-        console.log(`[S13 DEBUG] calculateHeatingFuelImpact using AFUE (j_115) = ${afue}`); // LOG AFUE value used
+        // console.log(`[S13 DEBUG] calculateHeatingFuelImpact using AFUE (j_115) = ${afue}`); // LOG AFUE value used
         const heatingDemand_d114 = window.TEUI.parseNumeric(getFieldValue('d_114')) || 0;
         
         let fuelImpact = 0, oilLitres = 0, gasM3 = 0, exhaust = 0;
@@ -1586,8 +1640,19 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate ventilation rates based on method (g_118) and per-person rate (d_119)
      */
     function calculateVentilationRates() {
-        const ventMethod = getFieldValue('g_118');
+        // Use helper defined in this module
+        const ratePerPerson = getNumericValue('d_119'); 
+        // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson}`); // Log value read
+        const cfm = ratePerPerson * 2.11888;
+        const m3hr = ratePerPerson * 3.6;
+        setCalculatedValue('f_119', cfm, 'number-2dp');
+        setCalculatedValue('h_119', m3hr, 'number-2dp');
+        // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
+
+        // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
+        const ventMethod = getFieldValue('g_118'); // This was likely causing issues, use getNumericValue/parseNum if needed
         const ratePerPerson_d119 = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
+        // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
         const volume = window.TEUI.parseNumeric(getFieldValue('d_105')) || 0;
         const ach = window.TEUI.parseNumeric(getFieldValue('l_118')) || 0;
         const occupiedHours = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
