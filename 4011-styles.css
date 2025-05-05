@@ -1334,9 +1334,10 @@ body.reference-mode .data-table tr:has(td.section-subheader) td:empty {
     background-color: rgba(139, 0, 0, 0.5) !important; /* Ensure empty cells match */
 }
 
-
 /* Example: Style locked fields in reference mode (adjust selector as needed) */
-body.reference-mode [data-locked="true"] {
+/* Increase specificity by targeting the TD as well */
+body.reference-mode td[data-locked="true"],
+body.reference-mode td [data-locked="true"] /* Target elements within the TD too */ {
     color: var(--reference-value-color) !important; /* Red text #8B0000 */
     font-style: italic;
     /* background-color: #f8d7da; /* Optional light red background */
