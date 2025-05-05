@@ -854,6 +854,51 @@ TEUI.StateManager = (function() {
         }
     }
     
+    /**
+     * Exports the dependency data in a format suitable for visualization.
+     * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
+     */
+    exportDependencyGraph() {
+        console.log("[StateManager] Exporting dependency graph data...");
+        const nodes = new Map(); // Use a Map to easily track unique nodes
+        const links = [];
+
+        // Iterate through the dependencies map (source -> Set<target>)
+        this.dependencies.forEach((targets, sourceId) => {
+            // Add source node if not already added
+            if (!nodes.has(sourceId)) {
+                nodes.set(sourceId, { id: sourceId });
+            }
+
+            targets.forEach(targetId => {
+                // Add target node if not already added
+                if (!nodes.has(targetId)) {
+                    nodes.set(targetId, { id: targetId });
+                }
+                // Add the link
+                links.push({ source: sourceId, target: targetId });
+            });
+        });
+
+        // TODO: Enhance node data (add group, type using FieldManager if available)
+        // This requires FieldManager to be accessible here or passed in.
+        // Example (if FieldManager is available globally):
+        /*
+        if (window.TEUI?.FieldManager) {
+            nodes.forEach(node => {
+                const fieldDef = window.TEUI.FieldManager.getField(node.id);
+                node.type = fieldDef?.type || 'unknown';
+                // Add grouping logic based on fieldDef or node.id
+                node.group = 'Other'; // Placeholder
+            });
+        }
+        */
+        
+        const nodesArray = Array.from(nodes.values());
+        console.log(`[StateManager] Exported ${nodesArray.length} nodes and ${links.length} links.`);
+        return { nodes: nodesArray, links: links };
+    }
+    
     // Public API
     return {
         // Constants
@@ -887,7 +932,8 @@ TEUI.StateManager = (function() {
         
         // Debugging
         getAllKeys: getAllKeys,
-        getDebugInfo: getDebugInfo
+        getDebugInfo: getDebugInfo,
+        exportDependencyGraph: exportDependencyGraph
     };
 })();
 
