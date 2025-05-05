@@ -303,6 +303,19 @@ TEUI.SectionModules.sect11 = (function() {
               element.disabled = true;
             }
           }
+
+          // *** ADDED CLARIFICATION ***
+          // CRITICAL: After displaying the reference value, trigger recalculation 
+          // for dependent derived values within the same row/component. 
+          // This ensures the entire row visually reflects the reference standard.
+          // The calculation function (e.g., calculateComponentRow) should read 
+          // the value just placed in the DOM or use the reference value directly.
+          // This temporary recalculation does NOT permanently affect StateManager design values.
+          // Example:
+          // const currentRowNumber = ...; 
+          // const componentConf = ...; 
+          // calculateComponentRow(currentRowNumber, componentConf);
+          // *** END CLARIFICATION ***
         }
       });
       
@@ -327,6 +340,11 @@ TEUI.SectionModules.sect11 = (function() {
           element.disabled = false;
         }
       });
+
+      // CRITICAL: Recalculate the entire section based on the restored 
+      // design values stored in StateManager to ensure the display fully 
+      // reverts to the Design Model state.
+      calculateAll();
     },
     
     // Reference-specific calculations

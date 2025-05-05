@@ -32,27 +32,51 @@ TEUI.ReferenceToggle = (function() {
     // Update button text and appearance
     updateButtonAppearance();
 
-    // TODO: Replace this placeholder with actual refresh logic later
-    // refreshReferenceDisplay(); 
+    // Refresh the display based on the new mode
+    refreshReferenceDisplay(); 
+    /* // Keep placeholder logs for now until refresh is fully tested
     if (referenceMode) {
         console.log("Reference Mode Activated - placeholder for refreshReferenceDisplay()");
     } else {
         console.log("Design Mode Activated - placeholder for restoring display");
     }
+    */
   }
 
-  // Placeholder for future integration
-  // function refreshReferenceDisplay() {
-  //   Object.values(TEUI.SectionModules).forEach(module => {
-  //     if (module.referenceHandler) {
-  //       if (referenceMode) {
-  //         module.referenceHandler.updateReferenceDisplay();
-  //       } else {
-  //         module.referenceHandler.restoreDisplay();
-  //       }
-  //     }
-  //   });
-  // }
+  // Calls the appropriate handler in each section module
+  function refreshReferenceDisplay() {
+    console.log("ReferenceToggle: Refreshing display for all sections..."); // Debug
+    // Check if TEUI and SectionModules exist
+    if (!window.TEUI || !window.TEUI.SectionModules) {
+        console.error("Cannot refresh reference display: TEUI.SectionModules not found.");
+        return;
+    }
+    Object.values(TEUI.SectionModules).forEach(module => {
+      // Check if module and its referenceHandler exist and are functions
+      if (module && typeof module.referenceHandler === 'object' && module.referenceHandler !== null) {
+        if (referenceMode && typeof module.referenceHandler.updateReferenceDisplay === 'function') {
+          try {
+            module.referenceHandler.updateReferenceDisplay();
+          } catch (e) {
+            console.error(`Error calling updateReferenceDisplay for module:`, module, e);
+          }
+        } else if (!referenceMode && typeof module.referenceHandler.restoreDisplay === 'function') {
+          try {
+            module.referenceHandler.restoreDisplay();
+          } catch (e) {
+            console.error(`Error calling restoreDisplay for module:`, module, e);
+          }
+        }
+      } else {
+        // Optional: Warn if a module is missing the handler structure
+        // console.warn("Module found without a valid referenceHandler:", module);
+      }
+    });
+    // TODO: Update comparison values if in reference mode (Phase 4)
+    // if (referenceMode && TEUI.ReferenceComparison) {
+    //   TEUI.ReferenceComparison.updateAllComparisons();
+    // }
+  }
 
   function updateButtonAppearance() {
       const toggleBtn = document.getElementById(BUTTON_ID);

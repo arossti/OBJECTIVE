@@ -394,35 +394,64 @@ window.TEUI.SectionModules.sect11 = (function() {
     // CALCULATION FUNCTIONS
     //==========================================================================
 
-    function calculateComponentRow(rowNumber, config) {
+    function calculateComponentRow(rowNumber, config, referenceFieldId = null) {
         const { type, input } = config;
         const rowStr = rowNumber.toString();
-        const areaFieldId = `d_${rowStr}`, rsiFieldId = `f_${rowStr}`, uValueFieldId = `g_${rowStr}`,
+        const areaFieldId = `d_${rowStr}`, rsiFieldId = `f_${rowStr}`, uValueFieldId = `g_${rowStr}`, 
               rimpFieldId = `e_${rowStr}`, heatlossFieldId = `i_${rowStr}`, heatgainFieldId = `k_${rowStr}`;
 
+        const isRefMode = TEUI.ReferenceToggle?.isReferenceMode() || false;
+        console.warn(` S11 Calc Row: START calculateComponentRow(${rowNumber}, refId=${referenceFieldId || 'N/A'}) | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
+
         try {
+            // Area always comes from Design Model (via StateManager -> getNumericValue)
             let area = 0;
             const sourceAreaFieldId = areaSourceMap[rowNumber];
             area = sourceAreaFieldId ? (getNumericValue(sourceAreaFieldId) || 0) : (getNumericValue(areaFieldId) || 0);
-            if (sourceAreaFieldId) setCalculatedValue(areaFieldId, area); // Update linked display
-
-            let rsiValue, uValue;
-            if (input === 'rsi') {
-                rsiValue = getNumericValue(rsiFieldId);
-                if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
-                setCalculatedValue(uValueFieldId, (uValue === Infinity ? '∞' : uValue), uValue === Infinity);
-                } else {
-                uValue = getNumericValue(uValueFieldId);
-                if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
-                setCalculatedValue(rsiFieldId, (rsiValue === Infinity ? '∞' : rsiValue), rsiValue === Infinity);
+            if (sourceAreaFieldId && !isRefMode) { // Only update linked area display in Design mode
+                 setCalculatedValue(areaFieldId, area);
             }
-
-            if (area === 0 || rsiValue === Infinity || uValue === Infinity) {
-                setCalculatedValue(rimpFieldId, 0); setCalculatedValue(heatlossFieldId, 0); setCalculatedValue(heatgainFieldId, 0);
-            return;
-        }
-        
-            setCalculatedValue(rimpFieldId, rsiValue * 5.678);
+            
+            let rsiValue, uValue, inputValue;
+            
+            // Determine the primary input value based on mode
+            if (isRefMode && referenceFieldId) {
+                // --- REFERENCE MODE --- 
+                // Get the reference value directly using the original field ID (e.g., "B.4")
+                const refValueStr = TEUI.ReferenceManager?.getValue(referenceFieldId);
+                inputValue = window.TEUI.parseNumeric(refValueStr, NaN); // Use global parser
+                console.warn(`  S11 Calc Row ${rowNumber}: Using REFERENCE value for ${referenceFieldId} = ${inputValue}`);
+                
+                // Assign to rsiValue or uValue based on config.input
+                 if (input === 'rsi') {
+                    rsiValue = inputValue;
+                    if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
+                } else { // input === 'uvalue'
+                    uValue = inputValue;
+                    if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
+                }
+            } else {
+                // --- DESIGN MODE (or if referenceFieldId missing) ---
+                if (input === 'rsi') {
+                    inputValue = getNumericValue(rsiFieldId); // Read from state/DOM
+                    console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN RSI (f_${rowStr}) = ${inputValue}`);
+                    rsiValue = inputValue;
+                    if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
+                } else { // input === 'uvalue'
+                    inputValue = getNumericValue(uValueFieldId); // Read from state/DOM
+                    console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN U-Value (g_${rowStr}) = ${inputValue}`);
+                    uValue = inputValue;
+                    if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
+                }
+            }
+            
+            // Update complementary value display (unless in ref mode and it IS the ref value)
+            if (!isRefMode || (isRefMode && input !== 'uvalue')) { // Don't overwrite ref U-Value
+                setCalculatedValue(uValueFieldId, (uValue === Infinity ? 'N/A' : uValue), 'W/m2'); // Use N/A for Infinity
+            }
+            if (!isRefMode || (isRefMode && input !== 'rsi')) { // Don't overwrite ref RSI
+                setCalculatedValue(rsiFieldId, (rsiValue === Infinity ? 'N/A' : rsiValue), 'number'); // Use N/A for Infinity
+            }
 
             let hdd, heatgainMultiplier;
             if (type === 'air') {
@@ -441,9 +470,20 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
 
             const denominator = rsiValue * 1000;
-            setCalculatedValue(heatlossFieldId, (area * hdd * 24) / denominator);
-            setCalculatedValue(heatgainFieldId, (area * heatgainMultiplier) / denominator);
+            let calcHeatloss = 0, calcHeatgain = 0, calcRimp = 0;
+            if (area > 0 && rsiValue !== Infinity && uValue !== Infinity) {
+                calcRimp = rsiValue * 5.678;
+                calcHeatloss = (area * hdd * 24) / denominator;
+                calcHeatgain = (area * heatgainMultiplier) / denominator;
+            }
             
+            console.warn(`  S11 Calc Row ${rowNumber}: Calculated -> Rimp=${calcRimp.toFixed(2)}, Loss=${calcHeatloss.toFixed(2)}, Gain=${calcHeatgain.toFixed(2)}`); // Log calculated derived values
+            
+            setCalculatedValue(rimpFieldId, calcRimp);
+            setCalculatedValue(heatlossFieldId, calcHeatloss);
+            setCalculatedValue(heatgainFieldId, calcHeatgain);
+            
+            console.warn(` S11 Calc Row: END calculateComponentRow(${rowNumber})`);
         } catch (error) {
             console.error(`Error calculating row ${rowNumber}:`, error);
             [rimpFieldId, rsiFieldId, uValueFieldId, heatlossFieldId, heatgainFieldId].forEach(id => setCalculatedValue(id, 0));
@@ -510,6 +550,7 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     function calculateAll() {
+        console.warn("S11: calculateAll called."); // Add log
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
@@ -719,9 +760,153 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
     
     //==========================================================================
+    // REFERENCE MODEL HANDLING (NEW)
+    //==========================================================================
+
+    const referenceHandler = {
+        // Placeholder for any section-specific initialization if needed
+        initialize: function() {},
+
+        // Update display when switching TO reference mode
+        updateReferenceDisplay: function() {
+            const sectionContainer = document.getElementById('envelopeTransmissionLosses');
+            if (!sectionContainer) return;
+            const currentStandard = TEUI.ReferenceManager?.getCurrentStandard();
+            if (!currentStandard) return;
+
+            const standardFields = TEUI.ReferenceValues?.getStandardFields(currentStandard);
+            if (!standardFields) return;
+
+            console.warn(`S11 Ref Handler: Updating reference display for standard: ${currentStandard}`); 
+
+            // Iterate through reference values defined for this standard
+            Object.entries(standardFields).forEach(([fieldId, fieldData]) => {
+                // Only process fields belonging to this section and having a targetCell
+                if (fieldData.section !== "Transmission Losses" || !fieldData.targetCell) return;
+                
+                console.warn(` S11 Ref Handler: Processing ${fieldId} -> ${fieldData.targetCell}`);
+
+                const element = sectionContainer.querySelector(`[data-field-id="${fieldData.targetCell}"]`);
+                if (element) {
+                    // Save original value if not already saved
+                    let originalValue = "";
+                    if (!element.hasAttribute('data-original-value')) {
+                        originalValue = element.value !== undefined ? element.value : element.textContent;
+                        element.setAttribute('data-original-value', originalValue);
+                         console.warn(`  -> Saved original value for ${fieldData.targetCell}: ${originalValue}`);
+                    }
+                    
+                    // Update element with reference value 
+                    let formattedRefValue = fieldData.value; // Start with the raw string value
+                    const numRefValue = parseFloat(formattedRefValue);
+                    if (!isNaN(numRefValue)) { // Check if it's a number
+                        if (fieldData.targetCell.startsWith('f_')) { // RSI
+                            formattedRefValue = formatNumber(numRefValue, 'number'); // Format RSI with 2 decimals
+                        } else if (fieldData.targetCell.startsWith('g_')) { // U-Value
+                            formattedRefValue = formatNumber(numRefValue, 'W/m2'); // Format U-value with 3 decimals
+                        } else if (fieldData.targetCell === 'd_97') { // TBP
+                            formattedRefValue = formatNumber(numRefValue, 'number'); // Display TBP % as a number
+                        } else {
+                            formattedRefValue = formatNumber(numRefValue, 'number'); // Default format
+                        }
+                    }
+                     console.warn(`  -> BEFORE setting DOM for ${fieldData.targetCell}. Current value: ${element.textContent || element.value}, Trying to set: ${formattedRefValue}`);
+                     if (element.value !== undefined) {
+                         element.value = formattedRefValue; // Use formatted for input consistency if needed
+                     } else {
+                         element.textContent = formattedRefValue;
+                     }
+                     // Read back immediately to confirm
+                     let readbackValue = element.value !== undefined ? element.value : element.textContent;
+                     console.warn(`  -> AFTER setting DOM for ${fieldData.targetCell}. Read back: ${readbackValue}`);
+
+                    // Determine if field should be locked
+                    const isLocked = TEUI.ReferenceManager.isCodeDefinedField(fieldData.targetCell) && 
+                                     !TEUI.ReferenceManager.isEditableInReferenceMode(fieldData.targetCell);
+                    console.warn(`  -> Locking status for ${fieldData.targetCell}: ${isLocked}`);
+                    element.toggleAttribute('data-locked', isLocked);
+                    if (isLocked) {
+                        element.setAttribute('disabled', ''); // Disable input/select
+                        element.removeAttribute('contenteditable'); // Ensure contenteditable is off
+                        element.classList.add('reference-locked'); // Add class for styling
+                    } else {
+                        element.removeAttribute('disabled');
+                        if(element.classList.contains('editable')) { // Only add back if it was originally editable
+                             element.setAttribute('contenteditable', 'true');
+                        }
+                        element.classList.remove('reference-locked');
+                    }
+                    
+                    // --- RECALCULATE ROW BASED ON REFERENCE VALUE --- 
+                    const currentRowNumber = parseInt(fieldData.targetCell.split('_')[1]);
+                    const componentConf = componentConfig.find(conf => conf.row === currentRowNumber);
+                    if (componentConf) {
+                        console.warn(`  -> Calling calculateComponentRow for row ${currentRowNumber} (using reference value via fieldId: ${fieldId}).`);
+                        // Pass the original reference field ID (e.g., "B.4") to use for fetching the value in reference mode
+                        calculateComponentRow(currentRowNumber, componentConf, fieldId); 
+                        console.warn(`  -> FINISHED calculateComponentRow for row ${currentRowNumber}.`);
+                        // Trigger indicator update immediately after recalculation
+                        updateReferenceIndicators(currentRowNumber);
+                        console.warn(`  -> FINISHED updateReferenceIndicators for row ${currentRowNumber}.`);
+                    } else {
+                         console.warn(`  -> Could not find componentConf for row ${currentRowNumber} to recalculate.`);
+                    }
+                    // --- END RECALCULATION ---
+
+                } else {
+                     console.warn(` S11 Ref Handler: Element not found for targetCell ${fieldData.targetCell}`);
+                }
+            });
+             console.warn(`S11 Ref Handler: Finished updateReferenceDisplay.`);
+        },
+
+        // Restore display when switching FROM reference mode
+        restoreDisplay: function() {
+            console.warn("S11 Ref Handler: restoreDisplay called."); // Add log
+            const sectionContainer = document.getElementById('envelopeTransmissionLosses');
+            if (!sectionContainer) return;
+
+            console.log("S11: Restoring design display"); // Debug
+
+            const elements = sectionContainer.querySelectorAll('[data-original-value]');
+            elements.forEach(element => {
+                const originalValue = element.getAttribute('data-original-value');
+                 if (element.value !== undefined) {
+                     element.value = originalValue;
+                 } else {
+                    element.textContent = originalValue;
+                 }
+                 
+                element.removeAttribute('data-original-value');
+                element.removeAttribute('data-locked');
+                element.removeAttribute('disabled');
+                if(element.classList.contains('editable')) { // Only add back if it was originally editable
+                     element.setAttribute('contenteditable', 'true');
+                }
+                element.classList.remove('reference-locked');
+            });
+
+            // Recalculate the design values to ensure everything is up-to-date
+             console.warn("S11 Ref Handler: Calling calculateAll to restore design state.");
+            calculateAll();
+        },
+
+        // Optional: Placeholder for reference-specific calculations
+        // calculateReferenceValues: function() { ... }
+    };
+
+    //==========================================================================
     // PUBLIC API
     //==========================================================================
-    return { getFields, getDropdownOptions, getLayout, initializeEventHandlers, onSectionRendered, calculateAll };
+    return { 
+        getFields, 
+        getDropdownOptions, 
+        getLayout, 
+        initializeEventHandlers, 
+        onSectionRendered, 
+        calculateAll,
+        referenceHandler // Expose the handler
+    };
 })();
 
 // Standard initialization listeners
