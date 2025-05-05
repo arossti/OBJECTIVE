@@ -1220,7 +1220,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_118', calculateVentilationValues);
 
             // Listener for g_118 (Ventilation Method) changes
-            sm.addListener('g_118', calculateVentilationRates);
+            sm.addListener('g_118', calculateVentilationValues); // Changed from calculateVentilationRates
 
             // Listener for d_119 (Per Person Rate) changes
             sm.addListener('d_119', calculateVentilationRates);
@@ -2035,5 +2035,5 @@ function handleHeatingSystemChangeForGhosting(newValue) {
         });
     } else {
         // console.warn("[S13 Ghosting] Could not find row TR element for M.2.2");
-    }
+    } 
 }
