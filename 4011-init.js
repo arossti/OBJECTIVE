@@ -780,7 +780,12 @@ document.addEventListener('DOMContentLoaded', function() {
         window.TEUI.StateManager.initialize();
         window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
         window.TEUI.SectionIntegrator.initialize(); 
-        // Initialize the Reference Toggle UI
+        // Initialize Reference components (Manager depends on Values, Toggle is independent UI)
+        if (window.TEUI.ReferenceValues) { // Manager depends on this data
+            if (window.TEUI.ReferenceManager) {
+                window.TEUI.ReferenceManager.initialize();
+            }
+        }
         if (window.TEUI.ReferenceToggle) {
             window.TEUI.ReferenceToggle.initialize();
         }

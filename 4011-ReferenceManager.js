@@ -1,0 +1,139 @@
+/**
+ * 4011-ReferenceManager.js
+ * Service to manage access to reference standard values based on the current selection.
+ * It interacts with TEUI.ReferenceValues for data and TEUI.StateManager for the current standard.
+ */
+
+// Create TEUI namespace if it doesn't exist
+window.TEUI = window.TEUI || {};
+
+TEUI.ReferenceManager = (function() {
+  let currentStandard = null;
+
+  function initialize() {
+    // Ensure core dependencies are loaded
+    if (!window.TEUI || !window.TEUI.StateManager || !window.TEUI.ReferenceValues) {
+        console.error("ReferenceManager: Missing core dependencies (StateManager or ReferenceValues).");
+        return;
+    }
+
+    // Listen for standard selection changes from Section 2 dropdown (d_13)
+    TEUI.StateManager.addListener('d_13', function(newValue) {
+      console.log(`ReferenceManager: Standard changed to: ${newValue}`); // Debug log
+      currentStandard = newValue;
+      // Trigger update in reference mode if it's active
+      if (window.TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
+        // Use a short delay to allow other listeners potentially related to d_13 to complete first
+        setTimeout(() => {
+            if (TEUI.ReferenceToggle.isReferenceMode()) { // Double-check mode hasn't changed
+                 console.log("ReferenceManager: Refreshing reference display due to standard change.");
+                 TEUI.ReferenceToggle.refreshReferenceDisplay();
+            }
+        }, 50); 
+      }
+    });
+
+    // Initialize with the current standard value from StateManager
+    // Use timeout to ensure StateManager has loaded initial values
+    setTimeout(() => {
+        currentStandard = TEUI.StateManager.getValue('d_13');
+        if (!currentStandard) {
+            // console.warn("ReferenceManager: Could not get initial standard from d_13. Defaulting might occur later.");
+            // Attempt to get default from field definition if available (robustness)
+            const d13Field = TEUI.FieldManager?.getField('d_13');
+            currentStandard = d13Field?.defaultValue || null;
+        }
+        console.log(`ReferenceManager: Initialized with standard: ${currentStandard}`); // Debug log
+    }, 200); // Delay slightly after main init
+  }
+
+  /**
+   * Get a reference value for the current standard and field ID.
+   * @param {string} fieldId - The field ID (e.g., "B.4") corresponding to the row identifier in DEEPSTATE.
+   * @returns {string|null} The reference value string or null if not found.
+   */
+  function getValue(fieldId) {
+    if (!currentStandard) {
+      // console.warn(`ReferenceManager.getValue: Current standard not set. Cannot get value for ${fieldId}`);
+      return null;
+    }
+    return TEUI.ReferenceValues.getValue(currentStandard, fieldId);
+  }
+
+  /**
+   * Get the targetCell ID for a given reference field ID under the current standard.
+   * @param {string} fieldId - The field ID (e.g., "B.4") corresponding to the row identifier in DEEPSTATE.
+   * @returns {string|null} The target DOM cell ID (e.g., "f_85") or null.
+   */
+   function getTargetCell(fieldId) {
+     if (!currentStandard) return null;
+     return TEUI.ReferenceValues.getTargetCell(currentStandard, fieldId);
+   }
+
+   /**
+    * Get all defined fields (with value, section, targetCell) for the current standard.
+    * @returns {Object|null} An object mapping field IDs to their data, or null if standard not set/found.
+    */
+   function getCurrentStandardFields() {
+     if (!currentStandard) return null;
+     return TEUI.ReferenceValues.getStandardFields(currentStandard);
+   }
+
+  /**
+   * Checks if a field is primarily defined by the reference code standard.
+   * Used to determine if a field should be locked/overwritten in Reference Mode.
+   * Excludes fields shared directly from the Design model (like area, volume) 
+   * and fields designated as editable even in reference mode.
+   * @param {string} fieldId - The DOM data-field-id (e.g., "h_15", "f_85").
+   * @returns {boolean} True if the field value comes from the code standard.
+   */
+  function isCodeDefinedField(fieldId) {
+    // Fields directly shared/synced from the Design model (should NOT be locked)
+    const sharedFields = [
+      'h_15',   // Conditioned Area (S2)
+      'd_105',  // Volume (S12)
+      'd_63'    // Occupant Count (S9)
+      // Add other essential shared fields as identified
+    ];
+
+    // Fields that should remain editable even when in Reference Mode
+    const editableReferenceFields = [
+      'h_12'    // Reporting Period (S2)
+      // Add any others as needed
+    ];
+
+    // If it's shared or explicitly editable-in-reference, it's NOT code-defined
+    if (sharedFields.includes(fieldId) || editableReferenceFields.includes(fieldId)) {
+      return false;
+    }
+
+    // Otherwise, assume it *could* be code-defined. The display logic will
+    // check if a value actually *exists* for the current standard.
+    // This function mainly filters out the explicitly shared/editable ones.
+    return true; 
+  }
+
+  /**
+   * Checks if a specific field should remain user-editable when Reference Mode is active.
+   * @param {string} fieldId - The DOM data-field-id.
+   * @returns {boolean} True if the field should be editable in reference mode.
+   */
+  function isEditableInReferenceMode(fieldId) {
+    const editableReferenceFields = [
+      'h_12'    // Reporting Period (S2)
+      // Add any other reference fields that should remain editable
+    ];
+    return editableReferenceFields.includes(fieldId);
+  }
+
+  // Public API
+  return {
+    initialize,
+    getValue,
+    getTargetCell,
+    getCurrentStandardFields,
+    isCodeDefinedField,
+    isEditableInReferenceMode,
+    getCurrentStandard: function() { return currentStandard; }
+  };
+})(); 

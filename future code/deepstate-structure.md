@@ -40,12 +40,12 @@ TEUI.ReferenceValues = (function() {
     // Main reference data object structured by standard and field ID
     const referenceStandards = {
         "OBC SB12 3.1.1.2.C4": {
-            "B.4": { section: "Transmission Losses", value: "4.87", targetCell: "h_85" },
+            "B.4": { section: "Transmission Losses", value: "4.87", targetCell: "f_85" },
             "B.5": { section: "Transmission Losses", value: "4.21", targetCell: "h_86" },
             // More fields...
         },
         "NECB T1 (Z6)": {
-            "B.4": { section: "Transmission Losses", value: "7.246", targetCell: "h_85" },
+            "B.4": { section: "Transmission Losses", value: "7.246", targetCell: "f_85" },
             // More fields...
         },
         // More standards...
@@ -71,6 +71,30 @@ This module organizes reference values by standard and field ID, making lookups 
 5. **Rich API**: Helper methods for accessing values, sections, target cells, and checking existence
 
 The module is loaded once during initialization and provides static reference data throughout the application lifecycle. The addition of targetCell mappings simplifies the process of updating the DOM with reference values, eliminating the need for complex field mapping in individual section handlers.
+
+**Crucially, the accuracy of the `targetCell` values within `4011-ReferenceValues.js` is paramount.** This mapping dictates which cell's value in the Design Model is compared against the code reference for display (e.g., in column M) and styling. Verification of this mapping during implementation and testing is essential. **If there is any ambiguity about which cell a specific reference standard value should target for a given row, clarification should be sought before proceeding.**
+
+## Reference Value Targets by Section
+
+The following outlines the primary Design Model cells (`targetCell` IDs) that reference values from `4011-ReferenceValues.js` will typically overwrite or compare against in Reference Mode. Note that not all standards provide values for every cell listed.
+
+*   **Section 01 (Key Values):** No direct reference value lookups. Comparisons are derived from other sections.
+*   **Section 02 (Building Info):** `h_13` (Standard Name - informational). No numeric comparisons.
+*   **Section 03 (Climate):** `h_23` (Heating TSet), `h_24` (Cooling TSet).
+*   **Section 04 (Actual vs Target):** No direct reference value lookups from DEEPSTATE for comparison columns. `m_35` performs an internal comparison based on other calculated values.
+*   **Section 05 (Emissions):** `h_38` (GHGI Target), `h_40` (Typology Carbon Intensity Target). Note: Some standards might use internal calculations rather than direct DEEPSTATE lookups for these targets.
+*   **Section 06 (Renewables):** No reference value lookups.
+*   **Section 07 (Water):** `h_49` (Total Water Use), `h_50` (DHW Use), `h_52` (DHW Efficiency), `h_53` (DWHR Efficiency).
+     *   **TODO:** Verify DOM mapping for S07 reference targets (`h_49`, `h_50`, `h_52`, `h_53`) and related display cells (e.g., Columns K/L/M if used for comparison) against `3037DOM.csv` due to potential historical mapping issues.
+*   **Section 08 (IAQ):** `h_56` (Radon), `h_57` (CO2), `h_58` (TVOC), `h_59` (Indoor RH - informational).
+*   **Section 09 (Internal Gains):** `h_65` (Plug Load W/m2), `h_66` (Lighting Load W/m2).
+*   **Section 10 (Radiant Gains):** No reference value lookups.
+*   **Section 11 (Transmission):** `f_85`-`f_87` (RSI Opaque), `g_88`-`g_93` (U-Value Fenestration), `f_94`-`f_95` (RSI Ground), `d_97` (TBP % - compared for status, M column copies J column).
+*   **Section 12 (Metrics):** `h_104` (Target U-value - derived), `h_107` (WWR %), `h_108` (NRL50 Target), `h_109` (ACH50 Target), `h_110` (ELA10 Target).
+*   **Section 13 (Mechanical):** `h_113` (HSPF), `h_115` (AFUE), `h_116` (Cooling CEER/COP), `h_117` (Cooling kWh/m2), `h_118` (SRE %), `h_119` (Per Person Vent L/s), `h_120` (Volumetric Vent m3/hr).
+*   **Section 14 (TEDI/TELI):** `h_127` (TED Target kWh/yr).
+*   **Section 15 (TEUI):** `h_140` (Max Heating Load Intensity W/m2).
+*   **Sections 16+:** Not applicable.
 
 ## Implementation Components
 
@@ -387,8 +411,8 @@ The structure in `4011-ReferenceValues.js` allows for efficient lookups:
 // Example lookup patterns:
 TEUI.ReferenceValues.getValue("OBC SB12 3.1.1.2.C4", "B.4") // Returns "4.87"
 TEUI.ReferenceValues.getSection("OBC SB12 3.1.1.2.C4", "B.4") // Returns "Transmission Losses"
-TEUI.ReferenceValues.getTargetCell("OBC SB12 3.1.1.2.C4", "B.4") // Returns "h_85"
-TEUI.ReferenceValues.getFieldByTargetCell("OBC SB12 3.1.1.2.C4", "h_85") // Returns field info for B.4
+TEUI.ReferenceValues.getTargetCell("OBC SB12 3.1.1.2.C4", "B.4") // Returns "f_85"
+TEUI.ReferenceValues.getFieldByTargetCell("OBC SB12 3.1.1.2.C4", "f_85") // Returns field info for B.4
 TEUI.ReferenceValues.getSectionFields("OBC SB12 3.1.1.2.C4", "Transmission Losses") 
 // Returns object with all fields in the Transmission Losses section
 ```
