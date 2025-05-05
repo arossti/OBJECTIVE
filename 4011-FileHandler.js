@@ -353,16 +353,16 @@
                 });
 
                 // Reconstruct CSV content with sorted rows (header + sorted data)
-                const csvContent = [rows[0].join(',')].concat(rows.slice(1).map(row => row.join(','))).join('\n');
+                const csvContent = rows.map(row => row.join(',')).join('\n');
                 
                 // Get project name for filename
                 const projectName = this.stateManager.getValue('h_14') || 'Project';
                 // Sanitize project name for filename
                 const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, '_');
                 const filename = `TEUIv4011-${safeProjectName}.csv`; // Constructs filename
-
+ 
                 console.log(`[CSV Export] Generated filename: ${filename}`); // DEBUG LOG
-
+                
                 // 3. Trigger Download
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
