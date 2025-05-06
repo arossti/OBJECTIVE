@@ -51,14 +51,37 @@
             const selectExcelBtn = document.getElementById('selectExcelBtn');
             const applyExcelBtn = document.getElementById('applyExcelBtn');
             const debugExcelBtn = document.getElementById('debugExcelBtn');
+            // Get the new dedicated file input for location/weather Excel files
+            const locationFileInput = document.getElementById('location-excel-input');
 
-            if (selectExcelBtn) {
-                 // Maybe trigger the main fileInput instead?
+            if (selectExcelBtn && locationFileInput) {
                 selectExcelBtn.addEventListener('click', () => {
-                    fileInput.value = null;
-                    fileInput.click(); // Use the same file input 
+                    locationFileInput.value = null; // Reset file input
+                    locationFileInput.click(); 
                 });
+                locationFileInput.addEventListener('change', async (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        if (window.TEUI && window.TEUI.ExcelLocationHandler && typeof window.TEUI.ExcelLocationHandler.loadExcelFile === 'function') {
+                            try {
+                                await window.TEUI.ExcelLocationHandler.loadExcelFile(file);
+                                // ExcelLocationHandler.loadExcelFile now handles its own status updates and dispatches 'location-data-ready'
+                            } catch (error) {
+                                console.error('[FileHandler] Error calling ExcelLocationHandler.loadExcelFile:', error);
+                                this.showStatus(`Error loading location file: ${error.message}`, 'error');
+                            }
+                        } else {
+                            console.error('[FileHandler] ExcelLocationHandler.loadExcelFile is not available.');
+                            this.showStatus('Location handler module is not available.', 'error');
+                        }
+                    }
+                    event.target.value = null; // Reset this specific file input
+                });
+            } else {
+                if (!selectExcelBtn) console.warn('[FileHandler] \'selectExcelBtn\' not found.');
+                if (!locationFileInput) console.warn('[FileHandler] \'location-excel-input\' not found.');
             }
+            
              if (applyExcelBtn) {
                  // This button might become redundant if import happens automatically
                  // Keeping for now, but consider removing if processImportedExcel handles updates.
@@ -269,6 +292,12 @@
                     if (isValid) {
                         this.stateManager.setValue(fieldId, parsedValue, 'imported');
                         updatedCount++;
+                        // NEW: Call FieldManager to update the visual display of the field
+                        if (window.TEUI && window.TEUI.FieldManager && typeof window.TEUI.FieldManager.updateFieldDisplay === 'function') {
+                            window.TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue);
+                        } else {
+                            console.warn(`[FileHandler] TEUI.FieldManager.updateFieldDisplay is not available. UI for ${fieldId} may not update visually.`);
+                        }
                     } else {
                         console.warn(`Skipping import for field ${fieldId}: Invalid value "${value}" for type ${fieldDef.type}.`);
                         skippedValidationCount++;
