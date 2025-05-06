@@ -997,7 +997,71 @@ TEUI.FieldManager = (function() {
         initializeSliders,
         initializeDropdown,
         updateDependentDropdowns,
-        initializeSectionEventHandlers
+        initializeSectionEventHandlers,
+
+        /**
+         * NEW FUNCTION: Updates the visual display of a single field element.
+         * @param {string} fieldId - The ID of the field to update.
+         * @param {string} newValue - The new value to display.
+         */
+        updateFieldDisplay: function(fieldId, newValue) {
+            // console.log(`[FieldManager.updateFieldDisplay] Called for ${fieldId} with value: ${newValue}`);
+            const element = document.getElementById(fieldId);
+            const fieldDef = this.getField(fieldId);
+
+            if (!element) {
+                // console.warn(`[FieldManager.updateFieldDisplay] Element with ID ${fieldId} not found.`);
+                return;
+            }
+
+            if (!fieldDef) {
+                // console.warn(`[FieldManager.updateFieldDisplay] Field definition for ${fieldId} not found.`);
+                // Still attempt to set value if element exists, might be a simple display span
+                if (element.tagName === 'SPAN' || element.tagName === 'DIV') {
+                    element.textContent = newValue;
+                } else if (typeof element.value !== 'undefined') {
+                    element.value = newValue;
+                }
+                return;
+            }
+
+            // Handle different field types
+            switch (fieldDef.type) {
+                case 'editable':
+                case 'number': // Assuming 'number' type renders an <input type="number">
+                case 'year_slider': // Sliders might have a direct input part or need more complex handling
+                case 'percentage':
+                case 'coefficient':
+                    if (typeof element.value !== 'undefined') {
+                        element.value = newValue;
+                    } else {
+                        // Fallback for elements that don't have a .value property but are editable (e.g. contenteditable divs/spans)
+                        element.textContent = newValue;
+                    }
+                    // For sliders, we might need to also update the visual range element if separate
+                    // This will be handled in Phase A2 if necessary.
+                    break;
+                case 'dropdown':
+                    element.value = newValue;
+                    // Dispatch a change event to trigger any dependent logic or UI updates
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                    // console.log(`[FieldManager.updateFieldDisplay] Set dropdown ${fieldId} to ${newValue} and dispatched change event.`);
+                    break;
+                case 'calculated':
+                case 'derived':
+                    element.textContent = newValue; // These are usually display-only
+                    break;
+                // TODO: Add specific handling for 'generic_slider' if its UI update needs are different
+                default:
+                    // console.warn(`[FieldManager.updateFieldDisplay] Unhandled field type: ${fieldDef.type} for field ${fieldId}. Attempting generic value set.`);
+                    if (typeof element.value !== 'undefined') {
+                        element.value = newValue;
+                    } else {
+                        element.textContent = newValue;
+                    }
+                    break;
+            }
+        }
     };
 })();
 
