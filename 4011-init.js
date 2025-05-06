@@ -4,6 +4,24 @@
  * Implements layout switching and section collapsing
  */
 
+// --- UI Initialization --- 
+
+/**
+ * Initializes general UI handlers like modals, tooltips, etc.
+ */
+function initializeUIHandlers() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // Disclaimer Modal Button listener (already implicitly handled by Bootstrap attributes)
+
+    // Add any other general UI setup here
+     console.log("General UI Handlers Initialized.");
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // console.log('TEUI 4.011 Calculator Initializing...');
     
@@ -774,4 +792,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Call updateStickyElementHeights after DOM is loaded
     setTimeout(updateStickyElementHeights, 300);
+
+    // Initialize core components after DOM is loaded
+    if (window.TEUI && window.TEUI.StateManager && window.TEUI.FieldManager) {
+        window.TEUI.StateManager.initialize();
+        window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
+        window.TEUI.SectionIntegrator.initialize(); 
+        // Initialize Reference components (Manager depends on Values, Toggle is independent UI)
+        if (window.TEUI.ReferenceValues) { // Manager depends on this data
+            if (window.TEUI.ReferenceManager) {
+                window.TEUI.ReferenceManager.initialize();
+            }
+        }
+        if (window.TEUI.ReferenceToggle) {
+            window.TEUI.ReferenceToggle.initialize();
+        }
+        // Initialize other UI handlers
+        initializeUIHandlers();
+    } else {
+        console.error("Core TEUI modules (StateManager, FieldManager) not found!");
+    }
 });

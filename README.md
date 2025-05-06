@@ -845,7 +845,13 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
      - Optimize touch interactions for tablet users
    - To be addressed as part of the 4012 Visual Refactor
 
-4. **Architecture & Calculation Flow (Ongoing Refactor - Branch: `ORDERING`)
+4. **Dependency Graph Initialization & Enhancements**:
+    *   **Issue:** Console warning `[DependencyGraph] Container has zero dimensions` appears on load. Graph initialization likely runs before the container element is fully sized by CSS/layout.
+    *   **Symptom:** May contribute to the graph appearing initially "zoomed-in" or not optimally scaled until user interaction.
+    *   **Action (Low Priority):** Investigate delaying graph initialization (e.g., `setTimeout`, `requestAnimationFrame`, or tying to a later event like `teui-rendering-complete`) to ensure container dimensions are available. Fix is low priority as the graph is still functional.
+    *   **Future Enhancements:** Revisit CSS, add better navigation/zoom controls, potentially display related formulas or more node information on hover/click.
+
+4. **Architecture & Calculation Flow (Ongoing Refactor - Branch: `ORDERING`)**
 
 4.  **Initialization Order & Calculation Stability (Branch: `ORDERING`)**
     *   **Status:** ✅ Refactoring Complete

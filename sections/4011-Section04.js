@@ -657,7 +657,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             
             // --- Listeners for Target Fuel Updates (Gas/Oil from S07/S13) ---
             const targetFuelUpdateCallback = () => {
-                console.log("[S4 DEBUG] targetFuelUpdateCallback triggered.");
+                // console.log("[S4 DEBUG] targetFuelUpdateCallback triggered.");
 
                 // Recalculate H28/J28/K28 (Gas)
                 const h28Value = calculateH28();
@@ -666,7 +666,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 setCalculatedValue('j_28', j28Value, 'number-2dp-comma');
                 const k28Value = calculateK28();
                 setCalculatedValue('k_28', k28Value, 'number-2dp-comma');
-                console.log(`[S4 DEBUG] Updated Gas Target: h28=${h28Value}, j28=${j28Value}, k28=${k28Value}`);
+                // console.log(`[S4 DEBUG] Updated Gas Target: h28=${h28Value}, j28=${j28Value}, k28=${k28Value}`);
 
                 // Recalculate H30/J30/K30 (Oil)
                 const h30Value = calculateH30();
@@ -675,7 +675,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 setCalculatedValue('j_30', j30Value, 'number-2dp-comma');
                 const k30Value = calculateK30();
                 setCalculatedValue('k_30', k30Value, 'number-2dp-comma');
-                console.log(`[S4 DEBUG] Updated Oil Target: h30=${h30Value}, j30=${j30Value}, k30=${k30Value}`);
+                // console.log(`[S4 DEBUG] Updated Oil Target: h30=${h30Value}, j30=${j30Value}, k30=${k30Value}`);
 
                 // Update subtotals that depend on these rows
                 updateSubtotals();

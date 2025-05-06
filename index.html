@@ -26,61 +26,46 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre-d3/0.6.4/dagre-d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     
-    <!-- Calculator module that depends on everything else - soon to be removed as all calcs except cooling occur in sections files -->
-    <script src="4011-Calculator.js"></script>
-    
-    <!-- Initialize everything -->
-    <script src="4011-init.js"></script>
-    
-    <!-- Section modules (from Index-Includes.js) -->
-    <!-- Section 01: Key Values -->
-    <script src="sections/4011-Section01.js"></script>
-    <!-- Section 02: Building Information -->
-    <script src="sections/4011-Section02.js"></script>
-    <!-- Section 03: Climate Calculations -->
-    <script src="sections/4011-Section03.js"></script>
-    <!-- Section 04: Actual vs. Target Energy & Carbon -->
-    <script src="sections/4011-Section04.js"></script>
-    <!-- Section 05: CO2e Emissions -->
-    <script src="sections/4011-Section05.js"></script>
-    <!-- Section 06: Renewable Energy -->
-    <script src="sections/4011-Section06.js"></script>
-    <!-- Section 07: Water Use -->
-    <script src="sections/4011-Section07.js"></script>
-    <!-- Section 08: Indoor Air Quality -->
-    <script src="sections/4011-Section08.js"></script>
-    <!-- Section 09: Occupant + Internal Gains -->
-    <script src="sections/4011-Section09.js"></script>
-    <!-- Section 10: Radiant Gains -->
-    <script src="sections/4011-Section10.js"></script>
-    <!-- Section 11: Transmission Losses -->
-    <script src="sections/4011-Section11.js"></script>
-    <!-- Section 12: Volume and Surface Metrics -->
-    <script src="sections/4011-Section12.js"></script>
-    <!-- Section 13: Mechanical Loads -->
-    <script src="sections/4011-Section13.js"></script>
-    <!-- Section 14: TEDI & TELI -->
-    <script src="sections/4011-Section14.js"></script>
-    <!-- Section 15: TEUI -->
-    <script src="sections/4011-Section15.js"></script>
-    <!-- Section 16: Sankey Diagram -->
-    <script src="sections/4011-Section16.js"></script>
-    <!-- Section 17: Dependency Graph -->
-    <script src="sections/4011-Section17.js"></script>
-    <!-- Section 18: Notes -->
-    <script src="sections/4011-Section18.js"></script>
-    
-    <!-- Core data definitions first -->
-    <script src="4011-FieldManager.js"></script>
-    <!-- State management -->
+    <!-- Core Logic & Managers FIRST -->
     <script src="4011-StateManager.js"></script>
-    <script src="4011-SectionIntegrator.js"></script>
-    
-    <!-- UI components that depend on definitions and state -->
+    <script src="4011-ReferenceValues.js"></script> 
+    <script src="4011-ReferenceManager.js"></script> 
+    <script src="4011-ReferenceToggle.js"></script> 
+    <script src="4011-FieldManager.js"></script> <!-- FieldManager depends on StateManager -->
+    <script src="4011-SectionIntegrator.js"></script> <!-- Integrator might depend on managers -->
+    <script src="4011-Calculator.js"></script> <!-- Calculator logic -->
     <script src="4011-ComponentBridge.js"></script>
     <script src="4011-ExcelLocationHandler.js"></script>
     <script src="4011-FileHandler.js"></script>
+    <script src="4011-Dependency.js"></script>
+
+    <!-- Initialize everything AFTER core scripts are loaded -->
+    <script src="4011-init.js"></script>
+    
+    <!-- Section modules LAST (they depend on core managers/utils) -->
+    <script src="sections/4011-Section01.js"></script>
+    <script src="sections/4011-Section02.js"></script>
+    <script src="sections/4011-Section03.js"></script>
+    <script src="sections/4011-Section04.js"></script>
+    <script src="sections/4011-Section05.js"></script>
+    <script src="sections/4011-Section06.js"></script>
+    <script src="sections/4011-Section07.js"></script>
+    <script src="sections/4011-Section08.js"></script>
+    <script src="sections/4011-Section09.js"></script>
+    <script src="sections/4011-Section10.js"></script>
+    <script src="sections/4011-Section11.js"></script>
+    <script src="sections/4011-Section12.js"></script>
+    <script src="sections/4011-Section13.js"></script>
+    <script src="sections/4011-Section14.js"></script>
+    <script src="sections/4011-Section15.js"></script>
+    <script src="sections/4011-Section16.js"></script>
+    <script src="sections/4011-Section17.js"></script>
+    <script src="sections/4011-Section18.js"></script>
 </head>
 <body>
     <!-- Main container -->
@@ -101,14 +86,13 @@
                 <p class="fs-5 mb-0">The early-stage modelling & validation tool with code-based references.</p>
             </div>
             <div class="col-md-5 text-end">
-                <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">
-                    <i class="bi bi-info-circle"></i> Disclaimer
-                </button>
-                <div class="btn-group d-inline-block">
-                    <!-- Main button (remains Download Report) -->
-                    <button id="downloadReport" class="btn btn-primary">
-                        <i class="bi bi-download"></i> Download Report (PDF)
-                    </button>
+                <div class="col text-end controls-container">
+                    <!-- Reference Model Toggle Button -->
+                    <button id="toggleReferenceBtn" class="btn btn-sm btn-danger reference-model-toggle">Show Reference</button>
+                    <!-- Existing Buttons -->
+                    <button id="disclaimerBtn" class="btn btn-sm btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">ⓘ Disclaimer</button>
+                    <div class="btn-group">
+                        <button id="downloadBtn" type="button" class="btn btn-sm btn-primary">↓ Download Report (PDF)</button>
                     <!-- Dropdown Toggle -->
                     <button class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="visually-hidden">Toggle Dropdown</span>
@@ -124,6 +108,7 @@
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#" id="export-excel"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export All Data (Excel)</a></li>
                     </ul>
+                    </div>
                 </div>
                 <!-- Hidden File Input for Import -->
                 <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="display: none;">
@@ -356,7 +341,12 @@
                         SECTION 17. Dependency Graph
                     </div>
                     <div class="section-content">
-                        <div data-render-section="dependencyDiagram"></div>
+                        <!-- Containers for Dependency Graph Components -->
+                        <div class="dependency-graph-controls-wrapper mb-3"></div> <!-- Wrapper for filters/controls -->
+                        <div class="dependency-graph-info-wrapper mb-3"></div>    <!-- Wrapper for info panel -->
+                        <div class="dependency-graph-container" style="height: 600px; width: 100%; border: 1px solid #eee;">
+                            <!-- SVG will be injected here by 4011-Dependency.js -->
+                        </div>
                     </div>
                 </div>
 

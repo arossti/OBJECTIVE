@@ -1159,3 +1159,204 @@ table.data-table select.form-select:hover {
 .total-row-text {
     font-weight: 600; /* Semi-bold */
 }
+
+/* ======================================
+   Dependency Graph Styles (Section 17)
+   ====================================== */
+
+.dependency-graph-controls-wrapper,
+.dependency-graph-info-wrapper {
+    /* Wrappers for placement above the SVG */
+    padding-left: 1rem; /* Align with section content padding */
+    padding-right: 1rem;
+    background-color: #f8f9fa; /* Add light background for fullscreen contrast */
+    border-radius: 0.25rem; /* Optional rounding */
+}
+
+.dependency-graph-controls {
+    /* Styles for the filter/button container */
+    background-color: #f8f9fa; /* Light background */
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.dependency-graph-controls .form-control-sm,
+.dependency-graph-controls .form-select-sm,
+.dependency-graph-controls .btn-sm {
+    font-size: 0.875rem; /* Match Bootstrap small size */
+}
+
+.layout-button.active {
+    background-color: #0d6efd; /* Bootstrap primary blue */
+    color: white;
+    border-color: #0d6efd;
+}
+
+.dependency-info-panel {
+    font-size: 0.9rem;
+    max-height: 150px; /* Limit height */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+.dependency-graph-svg-wrapper {
+    /* Container for the SVG element */
+    overflow: hidden; /* Hide scrollbars caused by D3 layout */
+    /* Keep initial border */
+    border: 1px solid #eee;
+}
+
+.dependency-graph-svg-wrapper svg {
+    display: block; /* Remove extra space below SVG */
+    width: 100%;   /* Make SVG fill wrapper width */
+    height: 100%;  /* Make SVG fill wrapper height */
+}
+
+/* Graph element styles (can be overridden by D3) */
+.link {
+    stroke: #999;
+    stroke-opacity: 0.6;
+    stroke-width: 1.5px;
+}
+
+.node circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+.node text {
+    font-size: 10px;
+    fill: #333;
+    pointer-events: none; /* Ensure circle is clickable */
+}
+
+/* Styles for highlighted nodes/links */
+.node.highlight circle {
+    stroke: #333;
+    stroke-width: 2.5px;
+}
+
+.link.highlight-source {
+    stroke: #cc0000; /* Red for outgoing */
+    stroke-opacity: 0.9;
+    stroke-width: 2px;
+}
+
+.link.highlight-target {
+    stroke: #0077cc; /* Blue for incoming */
+    stroke-opacity: 0.9;
+    stroke-width: 2px;
+}
+
+/* Style wrapper AND SVG in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen {
+    background-color: transparent; /* Keep transparent */
+    width: 100%; /* Fill available width */
+    height: 100%; /* Fill available height */
+    border: none; /* Ensure no border */
+}
+.dependency-graph-svg-wrapper:fullscreen svg {
+    /* Ensure SVG also fills */
+    width: 100%; 
+    height: 100%;
+}
+.dependency-graph-svg-wrapper:-webkit-full-screen {
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.dependency-graph-svg-wrapper:-webkit-full-screen svg {
+    width: 100%;
+    height: 100%;
+}
+.dependency-graph-svg-wrapper:-moz-full-screen {
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.dependency-graph-svg-wrapper:-moz-full-screen svg {
+    width: 100%;
+    height: 100%;
+}
+.dependency-graph-svg-wrapper:-ms-fullscreen {
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.dependency-graph-svg-wrapper:-ms-fullscreen svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Change node text color in fullscreen for better contrast */
+.dependency-graph-svg-wrapper:fullscreen .node text,
+.dependency-graph-svg-wrapper:-webkit-full-screen .node text,
+.dependency-graph-svg-wrapper:-moz-full-screen .node text,
+.dependency-graph-svg-wrapper:-ms-fullscreen .node text {
+    fill: #0dcaf0; /* Teal color from btn-outline-info */
+}
+
+/* ==========================================================================
+   Reference Model Toggle Styles
+   ========================================================================== */
+
+.reference-model-toggle {
+    /* Rely on Bootstrap classes (e.g., btn-danger, btn-primary) for background/border */
+    color: white !important; /* Ensure white text (overrides Bootstrap potentially) */
+    margin-right: 0.5rem; /* Space before disclaimer button */
+}
+
+/* Remove specific hover/active states, let Bootstrap handle via class change */
+
+/* Reference Mode Body Class Styles */
+body.reference-mode .section {
+    border-color: var(--reference-value-color) !important; /* Use #8B0000 */
+}
+
+body.reference-mode .section-header {
+    background-color: var(--reference-value-color) !important; /* Use #8B0000 */
+    color: white !important;
+    border: 1px solid var(--reference-value-color); /* Match border to bg */
+}
+
+/* Style section subheaders (unit rows) in reference mode */
+body.reference-mode .data-table tr td.section-subheader,
+body.reference-mode .data-table tr:has(td.section-subheader) td {
+    background-color: rgba(139, 0, 0, 0.5) !important; /* 50% opacity of #8B0000 */
+    color: #ffffff !important; /* White text for contrast */
+    border-bottom-color: rgba(139, 0, 0, 0.7) !important; /* Darker, semi-transparent border */
+}
+body.reference-mode .data-table tr:has(td.section-subheader) td:empty {
+    background-color: rgba(139, 0, 0, 0.5) !important; /* Ensure empty cells match */
+}
+
+/* Example: Style locked fields in reference mode */
+/* Use the class added by JS for styling */
+body.reference-mode .reference-locked {
+    color: var(--reference-value-color) !important; /* Red text #8B0000 */
+    font-weight: bold !important; 
+    font-style: italic !important; 
+    background-color: transparent !important; 
+    cursor: default !important; 
+    pointer-events: none !important; 
+    /* Visually disable contenteditable */
+    -webkit-user-modify: read-only !important;
+    -moz-user-modify: read-only !important;
+    user-modify: read-only !important;
+}
+
+/* Ensure user-input fields retain their blue color ONLY IF NOT locked */
+body.reference-mode .user-input:not(.reference-locked) { 
+    color: var(--user-input-color) !important; 
+    font-weight: 500 !important; 
+    font-style: normal !important; 
+    cursor: text !important; 
+    pointer-events: auto !important; 
+    -webkit-user-modify: read-write !important;
+    -moz-user-modify: read-write !important;
+    user-modify: read-write !important;
+}
