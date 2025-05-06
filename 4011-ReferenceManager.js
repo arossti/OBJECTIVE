@@ -126,6 +126,165 @@ TEUI.ReferenceManager = (function() {
     return editableReferenceFields.includes(fieldId);
   }
 
+  // --- Generic Reference Handler Factory (Moved INSIDE IIFE) --- 
+
+  /**
+   * Creates a standardized reference handler object for a given section.
+   * @param {string} sectionId - The HTML ID of the section container (e.g., 'envelopeTransmissionLosses').
+   * @param {string} sectionName - The name used for filtering in ReferenceValues (e.g., 'Transmission Losses').
+   * @param {Function} sectionCalculateAll - Reference to the section's own calculateAll function.
+   * @param {Function} [sectionRecalculateRow] - Optional: Reference to a function that recalculates a specific row/component (like S11's calculateComponentRow).
+   * @param {Object} [componentConfig] - Optional: Configuration mapping rows/inputs for sectionRecalculateRow (like S11's componentConfig).
+   * @returns {object} A reference handler object with initialize, updateReferenceDisplay, and restoreDisplay methods.
+   */
+  function createReferenceHandler(config) {
+    const { 
+        sectionId, 
+        sectionName, 
+        sectionCalculateAll, 
+        sectionRecalculateRow, 
+        componentConfig,
+        sectionUpdateIndicators // Added callback for indicators
+    } = config;
+
+    if (!sectionId || !sectionName || !sectionCalculateAll) {
+        console.error(`createReferenceHandler: Missing required config properties for section: ${sectionName || sectionId}`);
+        // Return a dummy handler to avoid errors
+        return { initialize: ()=>{}, updateReferenceDisplay: ()=>{}, restoreDisplay: ()=>{} };
+    }
+
+    // --- Private Helper --- 
+    function formatReferenceValue(targetCellId, rawValue) {
+        // Basic formatting based on target cell ID conventions
+        const numValue = parseFloat(rawValue);
+        if (isNaN(numValue)) return rawValue; // Return original if not parseable
+
+        if (targetCellId.startsWith('f_')) { // RSI
+             return window.TEUI.formatNumber?.(numValue, 'number') || rawValue;
+        } else if (targetCellId.startsWith('g_')) { // U-Value
+             return window.TEUI.formatNumber?.(numValue, 'W/m2') || rawValue;
+        } else if (targetCellId === 'd_97') { // Special TBP % display
+            return window.TEUI.formatNumber?.(numValue * 100, 'number') || rawValue;
+        } else if (targetCellId.startsWith('h_')) { // Often percentage or specific unit
+             // Heuristic: If value is between 0 and 1, format as percent, otherwise number
+             // This might need refinement based on specific section needs
+             if (numValue > 0 && numValue <= 1 && !targetCellId.includes('113') && !targetCellId.includes('116')) { 
+                 return window.TEUI.formatNumber?.(numValue, 'percent') || rawValue;
+             } else {
+                return window.TEUI.formatNumber?.(numValue, 'number') || rawValue;
+             }
+        } else {
+             return window.TEUI.formatNumber?.(numValue, 'number') || rawValue; // Default formatting
+        }
+    }
+
+    // --- Returned Handler Object --- 
+    return {
+        initialize: function() { /* Placeholder for future use */ },
+
+        updateReferenceDisplay: function() {
+            const sectionContainer = document.getElementById(sectionId);
+            if (!sectionContainer) return;
+            const currentStandard = TEUI.ReferenceManager?.getCurrentStandard();
+            if (!currentStandard) return;
+
+            const standardFields = TEUI.ReferenceValues?.getStandardFields(currentStandard);
+            if (!standardFields) return;
+
+            console.warn(`Ref Handler (${sectionName}): Updating display for standard: ${currentStandard}`);
+
+            Object.entries(standardFields).forEach(([fieldId, fieldData]) => {
+                if (fieldData.section !== sectionName || !fieldData.targetCell) return;
+
+                const element = sectionContainer.querySelector(`[data-field-id="${fieldData.targetCell}"]`);
+                if (element) {
+                    // Save original value
+                    if (!element.hasAttribute('data-original-value')) {
+                        let originalValue = element.value !== undefined ? element.value : element.textContent;
+                        element.setAttribute('data-original-value', originalValue);
+                    }
+
+                    // Display formatted reference value
+                    const formattedRefValue = formatReferenceValue(fieldData.targetCell, fieldData.value);
+                     if (element.value !== undefined) {
+                         element.value = formattedRefValue;
+                     } else {
+                         element.textContent = formattedRefValue;
+                     }
+
+                    // Lock/Unlock based on definition
+                    const isLocked = TEUI.ReferenceManager.isCodeDefinedField(fieldData.targetCell) && 
+                                     !TEUI.ReferenceManager.isEditableInReferenceMode(fieldData.targetCell);
+                    
+                    element.classList.toggle('reference-locked', isLocked);
+                    element.toggleAttribute('data-locked', isLocked); // Keep attribute for CSS selector
+
+                    if (isLocked) {
+                        element.setAttribute('disabled', '');
+                        element.removeAttribute('contenteditable');
+                    } else {
+                        element.removeAttribute('disabled');
+                        // Only restore contenteditable if the element was originally editable
+                        if (element.classList.contains('editable')) {
+                            element.setAttribute('contenteditable', 'true');
+                        }
+                    }
+
+                    // Trigger row recalculation if applicable function provided
+                    if (sectionRecalculateRow && componentConfig) {
+                        const currentRowNumber = parseInt(fieldData.targetCell.split('_')[1]);
+                        const componentConf = componentConfig.find(conf => conf.row === currentRowNumber);
+                        if (componentConf) {
+                            console.warn(`  -> Calling sectionRecalculateRow for row ${currentRowNumber} (using reference value via fieldId: ${fieldId}).`);
+                            sectionRecalculateRow(currentRowNumber, componentConf, fieldId); // Pass original fieldId
+                        }
+                    }
+                    
+                    // Update indicators if function provided
+                    if (sectionUpdateIndicators) {
+                        const currentRowNumber = parseInt(fieldData.targetCell.split('_')[1]);
+                        sectionUpdateIndicators(currentRowNumber);
+                    }
+                }
+            });
+            console.warn(`Ref Handler (${sectionName}): Finished updateReferenceDisplay.`);
+        },
+
+        restoreDisplay: function() {
+            const sectionContainer = document.getElementById(sectionId);
+            if (!sectionContainer) return;
+
+            console.warn(`Ref Handler (${sectionName}): Restoring design display`);
+
+            const elements = sectionContainer.querySelectorAll('[data-original-value]');
+            elements.forEach(element => {
+                const originalValue = element.getAttribute('data-original-value');
+                if (element.value !== undefined) {
+                    element.value = originalValue;
+                } else {
+                    element.textContent = originalValue;
+                }
+                element.removeAttribute('data-original-value');
+                element.removeAttribute('data-locked');
+                element.removeAttribute('disabled');
+                element.classList.remove('reference-locked');
+                // Only restore contenteditable if the element was originally editable
+                if (element.classList.contains('editable')) {
+                     element.setAttribute('contenteditable', 'true');
+                }
+            });
+
+            // Recalculate the entire section using its design values
+            if (typeof sectionCalculateAll === 'function') {
+                console.warn(`Ref Handler (${sectionName}): Calling sectionCalculateAll to restore design state.`);
+                sectionCalculateAll();
+            } else {
+                 console.error(`Ref Handler (${sectionName}): sectionCalculateAll function is not valid!`);
+            }
+        }
+    };
+  }
+
   // Public API
   return {
     initialize,
@@ -134,6 +293,7 @@ TEUI.ReferenceManager = (function() {
     getCurrentStandardFields,
     isCodeDefinedField,
     isEditableInReferenceMode,
-    getCurrentStandard: function() { return currentStandard; }
+    getCurrentStandard: function() { return currentStandard; },
+    createReferenceHandler
   };
 })(); 

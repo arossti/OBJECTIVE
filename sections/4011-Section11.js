@@ -784,140 +784,18 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
     
     //==========================================================================
-    // REFERENCE MODEL HANDLING (NEW)
+    // REFERENCE MODEL HANDLING (Refactored to use Factory)
     //==========================================================================
 
-    const referenceHandler = {
-        // Placeholder for any section-specific initialization if needed
-        initialize: function() {},
-
-        // Update display when switching TO reference mode
-        updateReferenceDisplay: function() {
-            const sectionContainer = document.getElementById('envelopeTransmissionLosses');
-            if (!sectionContainer) return;
-            const currentStandard = TEUI.ReferenceManager?.getCurrentStandard();
-            if (!currentStandard) return;
-
-            const standardFields = TEUI.ReferenceValues?.getStandardFields(currentStandard);
-            if (!standardFields) return;
-
-            console.warn(`S11 Ref Handler: Updating reference display for standard: ${currentStandard}`); 
-
-            // Iterate through reference values defined for this standard
-            Object.entries(standardFields).forEach(([fieldId, fieldData]) => {
-                // Only process fields belonging to this section and having a targetCell
-                if (fieldData.section !== "Transmission Losses" || !fieldData.targetCell) return;
-                
-                console.warn(` S11 Ref Handler: Processing ${fieldId} -> ${fieldData.targetCell}`);
-
-                const element = sectionContainer.querySelector(`[data-field-id="${fieldData.targetCell}"]`);
-                if (element) {
-                    // Save original value if not already saved
-                    let originalValue = "";
-                    if (!element.hasAttribute('data-original-value')) {
-                        originalValue = element.value !== undefined ? element.value : element.textContent;
-                        element.setAttribute('data-original-value', originalValue);
-                         console.warn(`  -> Saved original value for ${fieldData.targetCell}: ${originalValue}`);
-                    }
-                    
-                    // Update element with reference value 
-                    let formattedRefValue = fieldData.value; // Start with the raw string value
-                    const numRefValue = parseFloat(formattedRefValue);
-                    if (!isNaN(numRefValue)) { // Check if it's a number
-                        if (fieldData.targetCell.startsWith('f_')) { // RSI
-                            formattedRefValue = formatNumber(numRefValue, 'number'); // Format RSI with 2 decimals
-                        } else if (fieldData.targetCell.startsWith('g_')) { // U-Value
-                            formattedRefValue = formatNumber(numRefValue, 'W/m2'); // Format U-value with 3 decimals
-                        } else if (fieldData.targetCell === 'd_97') { // TBP
-                            formattedRefValue = formatNumber(numRefValue, 'number'); // Display TBP % as a number
-                        } else {
-                            formattedRefValue = formatNumber(numRefValue, 'number'); // Default format
-                        }
-                    }
-                     console.warn(`  -> BEFORE setting DOM for ${fieldData.targetCell}. Current value: ${element.textContent || element.value}, Trying to set: ${formattedRefValue}`);
-                     if (element.value !== undefined) {
-                         element.value = formattedRefValue; // Use formatted for input consistency if needed
-                     } else {
-                         element.textContent = formattedRefValue;
-                     }
-                     // Read back immediately to confirm
-                     let readbackValue = element.value !== undefined ? element.value : element.textContent;
-                     console.warn(`  -> AFTER setting DOM for ${fieldData.targetCell}. Read back: ${readbackValue}`);
-
-                    // Determine if field should be locked
-                    const isLocked = TEUI.ReferenceManager.isCodeDefinedField(fieldData.targetCell) && 
-                                     !TEUI.ReferenceManager.isEditableInReferenceMode(fieldData.targetCell);
-                    console.warn(`  -> Locking status for ${fieldData.targetCell}: ${isLocked}`);
-                    element.toggleAttribute('data-locked', isLocked);
-                    if (isLocked) {
-                        element.setAttribute('disabled', ''); // Disable input/select
-                        element.removeAttribute('contenteditable'); // Ensure contenteditable is off
-                        element.classList.add('reference-locked'); // Add class for styling
-                    } else {
-                        element.removeAttribute('disabled');
-                        if(element.classList.contains('editable')) { // Only add back if it was originally editable
-                             element.setAttribute('contenteditable', 'true');
-                        }
-                        element.classList.remove('reference-locked');
-                    }
-                    
-                    // --- RECALCULATE ROW BASED ON REFERENCE VALUE --- 
-                    const currentRowNumber = parseInt(fieldData.targetCell.split('_')[1]);
-                    const componentConf = componentConfig.find(conf => conf.row === currentRowNumber);
-                    if (componentConf) {
-                        console.warn(`  -> Calling calculateComponentRow for row ${currentRowNumber} (using reference value via fieldId: ${fieldId}).`);
-                        // Pass the original reference field ID (e.g., "B.4") to use for fetching the value in reference mode
-                        calculateComponentRow(currentRowNumber, componentConf, fieldId); 
-                        console.warn(`  -> FINISHED calculateComponentRow for row ${currentRowNumber}.`);
-                        // Trigger indicator update immediately after recalculation
-                        updateReferenceIndicators(currentRowNumber);
-                        console.warn(`  -> FINISHED updateReferenceIndicators for row ${currentRowNumber}.`);
-                    } else {
-                         console.warn(`  -> Could not find componentConf for row ${currentRowNumber} to recalculate.`);
-                    }
-                    // --- END RECALCULATION ---
-
-                } else {
-                     console.warn(` S11 Ref Handler: Element not found for targetCell ${fieldData.targetCell}`);
-                }
-            });
-             console.warn(`S11 Ref Handler: Finished updateReferenceDisplay.`);
-        },
-
-        // Restore display when switching FROM reference mode
-        restoreDisplay: function() {
-            console.warn("S11 Ref Handler: restoreDisplay called."); // Add log
-            const sectionContainer = document.getElementById('envelopeTransmissionLosses');
-            if (!sectionContainer) return;
-
-            console.log("S11: Restoring design display"); // Debug
-
-            const elements = sectionContainer.querySelectorAll('[data-original-value]');
-            elements.forEach(element => {
-                const originalValue = element.getAttribute('data-original-value');
-                 if (element.value !== undefined) {
-                     element.value = originalValue;
-                 } else {
-                    element.textContent = originalValue;
-                 }
-                 
-                element.removeAttribute('data-original-value');
-                element.removeAttribute('data-locked');
-                element.removeAttribute('disabled');
-                if(element.classList.contains('editable')) { // Only add back if it was originally editable
-                     element.setAttribute('contenteditable', 'true');
-                }
-                element.classList.remove('reference-locked');
-            });
-
-            // Recalculate the design values to ensure everything is up-to-date
-             console.warn("S11 Ref Handler: Calling calculateAll to restore design state.");
-            calculateAll();
-        },
-
-        // Optional: Placeholder for reference-specific calculations
-        // calculateReferenceValues: function() { ... }
-    };
+    // Create the reference handler using the factory function from ReferenceManager
+    const referenceHandler = TEUI.ReferenceManager.createReferenceHandler({
+        sectionId: 'envelopeTransmissionLosses',
+        sectionName: 'Transmission Losses',
+        sectionCalculateAll: calculateAll,
+        sectionRecalculateRow: calculateComponentRow, // Pass the specific row recalculation function
+        componentConfig: componentConfig, // Pass the config needed by sectionRecalculateRow
+        sectionUpdateIndicators: updateReferenceIndicators // Pass the indicator update function
+    });
 
     //==========================================================================
     // PUBLIC API
@@ -929,7 +807,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         initializeEventHandlers, 
         onSectionRendered, 
         calculateAll,
-        referenceHandler // Expose the handler
+        referenceHandler // Expose the generated handler
     };
 })();
 

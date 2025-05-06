@@ -31,64 +31,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     
-    <!-- Calculator module that depends on everything else - soon to be removed as all calcs except cooling occur in sections files -->
-    <script src="4011-Calculator.js"></script>
-    
-    <!-- Initialize everything -->
-    <script src="4011-init.js"></script>
-    
-    <!-- Section modules (from Index-Includes.js) -->
-    <!-- Section 01: Key Values -->
-    <script src="sections/4011-Section01.js"></script>
-    <!-- Section 02: Building Information -->
-    <script src="sections/4011-Section02.js"></script>
-    <!-- Section 03: Climate Calculations -->
-    <script src="sections/4011-Section03.js"></script>
-    <!-- Section 04: Actual vs. Target Energy & Carbon -->
-    <script src="sections/4011-Section04.js"></script>
-    <!-- Section 05: CO2e Emissions -->
-    <script src="sections/4011-Section05.js"></script>
-    <!-- Section 06: Renewable Energy -->
-    <script src="sections/4011-Section06.js"></script>
-    <!-- Section 07: Water Use -->
-    <script src="sections/4011-Section07.js"></script>
-    <!-- Section 08: Indoor Air Quality -->
-    <script src="sections/4011-Section08.js"></script>
-    <!-- Section 09: Occupant + Internal Gains -->
-    <script src="sections/4011-Section09.js"></script>
-    <!-- Section 10: Radiant Gains -->
-    <script src="sections/4011-Section10.js"></script>
-    <!-- Section 11: Transmission Losses -->
-    <script src="sections/4011-Section11.js"></script>
-    <!-- Section 12: Volume and Surface Metrics -->
-    <script src="sections/4011-Section12.js"></script>
-    <!-- Section 13: Mechanical Loads -->
-    <script src="sections/4011-Section13.js"></script>
-    <!-- Section 14: TEDI & TELI -->
-    <script src="sections/4011-Section14.js"></script>
-    <!-- Section 15: TEUI -->
-    <script src="sections/4011-Section15.js"></script>
-    <!-- Section 16: Sankey Diagram -->
-    <script src="sections/4011-Section16.js"></script>
-    <!-- Section 17: Dependency Graph -->
-    <script src="sections/4011-Section17.js"></script>
-    <!-- Section 18: Notes -->
-    <script src="sections/4011-Section18.js"></script>
-    
-    <!-- Core data definitions first -->
-    <script src="4011-FieldManager.js"></script>
-    <!-- State management -->
+    <!-- Core Logic & Managers FIRST -->
     <script src="4011-StateManager.js"></script>
-    <script src="4011-SectionIntegrator.js"></script>
-    <script src="4011-ReferenceValues.js"></script>
-    <script src="4011-ReferenceToggle.js"></script>
-    <script src="4011-ReferenceManager.js"></script>
-    
-    <!-- UI components that depend on definitions and state -->
+    <script src="4011-ReferenceValues.js"></script> 
+    <script src="4011-ReferenceManager.js"></script> 
+    <script src="4011-ReferenceToggle.js"></script> 
+    <script src="4011-FieldManager.js"></script> <!-- FieldManager depends on StateManager -->
+    <script src="4011-SectionIntegrator.js"></script> <!-- Integrator might depend on managers -->
+    <script src="4011-Calculator.js"></script> <!-- Calculator logic -->
     <script src="4011-ComponentBridge.js"></script>
     <script src="4011-ExcelLocationHandler.js"></script>
     <script src="4011-FileHandler.js"></script>
     <script src="4011-Dependency.js"></script>
+
+    <!-- Initialize everything AFTER core scripts are loaded -->
+    <script src="4011-init.js"></script>
+    
+    <!-- Section modules LAST (they depend on core managers/utils) -->
+    <script src="sections/4011-Section01.js"></script>
+    <script src="sections/4011-Section02.js"></script>
+    <script src="sections/4011-Section03.js"></script>
+    <script src="sections/4011-Section04.js"></script>
+    <script src="sections/4011-Section05.js"></script>
+    <script src="sections/4011-Section06.js"></script>
+    <script src="sections/4011-Section07.js"></script>
+    <script src="sections/4011-Section08.js"></script>
+    <script src="sections/4011-Section09.js"></script>
+    <script src="sections/4011-Section10.js"></script>
+    <script src="sections/4011-Section11.js"></script>
+    <script src="sections/4011-Section12.js"></script>
+    <script src="sections/4011-Section13.js"></script>
+    <script src="sections/4011-Section14.js"></script>
+    <script src="sections/4011-Section15.js"></script>
+    <script src="sections/4011-Section16.js"></script>
+    <script src="sections/4011-Section17.js"></script>
+    <script src="sections/4011-Section18.js"></script>
 </head>
 <body>
     <!-- Main container -->

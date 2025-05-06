@@ -4,6 +4,24 @@
  * Implements layout switching and section collapsing
  */
 
+// --- UI Initialization --- 
+
+/**
+ * Initializes general UI handlers like modals, tooltips, etc.
+ */
+function initializeUIHandlers() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // Disclaimer Modal Button listener (already implicitly handled by Bootstrap attributes)
+
+    // Add any other general UI setup here
+     console.log("General UI Handlers Initialized.");
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // console.log('TEUI 4.011 Calculator Initializing...');
     
