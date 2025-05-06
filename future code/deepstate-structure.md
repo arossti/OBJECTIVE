@@ -7,8 +7,8 @@ The goal is to integrate Reference Model capabilities into the TEUI Calculator, 
 **Current Status & Challenges (as of 2024-05-06, after DEEPSTATE2 branch efforts):**
 *   **Current Base Commit:** `87e8c36` ("Data: Restore fully populated ReferenceValues.js from backup").
 *   **Functionality Achieved:** The application is stable in Design Mode. Reference Mode can be toggled. Section 11 correctly displays reference values, styles, and 100% M/N indicators for the *initial* standard active when Reference Mode is entered (typically "OBC SB10 5.5-6 Z6"). `4011-ReferenceValues.js` is fully populated.
-*   **Persistent Issue:** When in Reference Mode, changing the selected standard via the `d_13` dropdown does *not* cause Section 11's UI (specifically the `targetCell` values like `f_85`, `g_88`, etc.) to update to reflect the newly selected standard's values. The UI remains stuck displaying the values of the standard that was active upon entering Reference Mode. This issue has been under investigation for an extended period.
-*   **Architectural Direction:** The sole recommended path forward is StateManager integration for managing Reference Mode data and calculations, moving away from direct DOM manipulation for state.
+*   **Persistent Issue:** When in Reference Mode, changing the selected standard via the `d_13` dropdown does *not* cause Section 11's UI (specifically the `targetCell` values like `f_85`, `g_88`, etc.) to update to reflect the newly selected standard's values. The UI remains stuck displaying the values of the standard that was active upon entering Reference Mode. This issue has been under investigation for an extended period (like 4 days! Hole, Shovel, Dig, Deeper!).
+*   **Architectural Direction:** The sole recommended path forward is StateManager integration for managing Reference Mode data and calculations, moving away from direct DOM manipulation for state, but StateManager is fussy, and BREAKS EASILY!
 
 ## Recommended Architecture: StateManager Integration
 
@@ -18,10 +18,10 @@ This involves:
 1.  **Extending `StateManager.state`**: Add a new object (e.g., `state.referenceValuesState`) to hold the active reference standard's values, keyed by `targetCell` ID (e.g., `f_85`).
 2.  **Modifying `StateManager.getValue(fieldId)`**: This function will become mode-aware. If Reference Mode is active (checked via `TEUI.ReferenceToggle.isReferenceMode()`), it will attempt to return the value from `state.referenceValuesState[fieldId]`. If not found, or if in Design Mode, it falls back to the existing priority (userModified, imported, default).
 3.  **Data Loading**: `StateManager.initialize` will call a new internal function (e.g., `loadReferenceData(standardName)`) on application start and whenever the selected standard (`d_13`) changes. This function populates `state.referenceValuesState` from `TEUI.ReferenceValues.js`.
-4.  **Calculation Engine**: The existing calculation engine (`calculateAll` in `Calculator.js` and section-specific calculation functions) should **automatically use the reference values** when `getValue` returns them in Reference Mode. No separate calculation path is needed.
+4.  **Calculation Engine**: The existing calculation engine (`calculateAll` in `Calculator.js` and section-specific calculation functions) should **automatically use the reference values** when `getValue` returns them in Reference Mode. No separate calculation path is needed. **INVESTIGATE** Does section-based calculation have anything to do with stuck values ie. `g_88`, etc.
 5.  **UI Updates**: Section UI will update based on `StateManager` events as it already does. Input fields representing reference values will be made read-only via CSS when in Reference Mode. Comparison indicators (M/N columns) will read their "current value" using `getValue` (which provides the reference value in Ref Mode) and compare against the same `state.referenceValuesState`.
 
-This approach centralizes state, leverages the existing calculation and update mechanisms, and aligns with the single-source-of-truth principle.
+This approach centralizes STATE, leverages the existing calculation and update mechanisms, and aligns with the single-source-of-truth principle.
 
 
 ## Implementation Phases (StateManager Approach - Recommended)
@@ -71,7 +71,9 @@ This approach centralizes state, leverages the existing calculation and update m
 
 ## Implementation Components (Legacy - DOM-Based Approach Context)
 
-**Important Note:** The component descriptions below (`ReferenceManager`, `ReferenceToggle`, section `referenceHandler`) were part of an earlier **DOM-manipulation-based approach**. While some modules (`ReferenceToggle`, `ReferenceValues`) are still used, their interaction and the core logic for displaying/calculating reference values will shift significantly with the **StateManager Integration approach described above.** This section is kept for historical context of the `DEEPSTATE2` branch development but should not guide new implementation.
+**Important Note:** The component descriptions below (`ReferenceManager`, `ReferenceToggle`, section `referenceHandler`) were part of an earlier **DOM-manipulation-based approach**. While some modules (`ReferenceToggle`, `ReferenceValues`) are still used, their interaction and the core logic for displaying/calculating reference values will shift significantly with the **StateManager Integration approach described above.** This section is kept for historical context of the `DEEPSTATE2` branch development but should NOT guide new implementation.SERIOUSLY, DON'T FOLLOW what is Directly below!!!
+
+**START WARNING**
 
 *   **`4011-ReferenceValues.js`**: (Core Data)
     *   **Purpose**: A static data module containing the actual reference values for different standards (OBC, NECB, etc.), keyed by standard name and then by a unique `fieldId` (e.g., "B.4" for Roof RSI).
@@ -91,6 +93,8 @@ This approach centralizes state, leverages the existing calculation and update m
 *   **Section Module `referenceHandler` Object (DEPRECATED / To Be Replaced)**:
     *   **Purpose (Original DOM-based concept)**: Each section module (e.g., `sections/4011-Section11.js`) was to have a `referenceHandler` object (created by the factory in `ReferenceManager`). This handler was responsible for directly manipulating its section's DOM to display reference values, lock/unlock fields, and restore design values.
     *   **Replacement (StateManager Integration context)**: This explicit `referenceHandler` object in each section module **will be removed**. The standard UI update mechanisms, driven by `FieldManager` and section rendering functions reacting to `StateManager.getValue()`, will handle the display. Styling/locking will be managed globally by `ReferenceToggle` or CSS driven by the `reference-mode` body class and attributes set on fields by `StateManager` (if needed for differentiation).
+
+**END OF WARNING**
 
 ## Reference Value Targets by Section (for StateManager `targetCell` mapping)
 
@@ -152,4 +156,4 @@ This list details which UI cell ID (`targetCell`) within each section correspond
 *   **Section 15 (TEUI & GHG):**
     *   `d_140` (GHGI Target kgCO2e/m2) -> `C.1` (Similar to TEDI target)
 
-*(This list is a guideline and needs to be cross-referenced with `3037DEEPSTATE.csv` and `4011-ReferenceValues.js` for exact `fieldId`s used in the data file.)*
+*(This list is a guideline and needs to be cross-referenced with `3037DEEPSTATE.csv` however `4011-ReferenceValues.js` has been created and matches exact `fieldId`s used in the data file.)*
