@@ -1334,29 +1334,29 @@ body.reference-mode .data-table tr:has(td.section-subheader) td:empty {
     background-color: rgba(139, 0, 0, 0.5) !important; /* Ensure empty cells match */
 }
 
-/* Example: Style locked fields in reference mode (adjust selector as needed) */
-/* Increase specificity by targeting the TD as well */
-body.reference-mode td[data-locked="true"],
-body.reference-mode td [data-locked="true"] /* Target elements within the TD too */ {
+/* Example: Style locked fields in reference mode */
+/* Use the class added by JS for styling */
+body.reference-mode .reference-locked {
     color: var(--reference-value-color) !important; /* Red text #8B0000 */
-    font-style: italic;
-    /* background-color: #f8d7da; /* Optional light red background */
-    pointer-events: none; /* Prevent interaction */
+    font-weight: bold !important; 
+    font-style: italic !important; 
+    background-color: transparent !important; 
+    cursor: default !important; 
+    pointer-events: none !important; 
+    /* Visually disable contenteditable */
+    -webkit-user-modify: read-only !important;
+    -moz-user-modify: read-only !important;
+    user-modify: read-only !important;
 }
 
-/* Ensure user-input fields retain their blue color unless locked */
-body.reference-mode .user-input:not([data-locked="true"]) {
-    color: #0d6efd !important; /* Keep blue */
-}
-
-/* Style reference values differently (example using a class, adjust as needed) */
-body.reference-mode .reference-value-display {
-    color: #dc3545 !important; /* Red text for reference values */
-    font-weight: bold;
-}
-
-/* Style the tab container in reference mode */
-body.reference-mode .tab-container {
-    background-color: var(--reference-value-color) !important; /* Use #8B0000 */
-    border-color: var(--reference-value-color) !important; /* Match border */
+/* Ensure user-input fields retain their blue color ONLY IF NOT locked */
+body.reference-mode .user-input:not(.reference-locked) { 
+    color: var(--user-input-color) !important; 
+    font-weight: 500 !important; 
+    font-style: normal !important; 
+    cursor: text !important; 
+    pointer-events: auto !important; 
+    -webkit-user-modify: read-write !important;
+    -moz-user-modify: read-write !important;
+    user-modify: read-write !important;
 }
