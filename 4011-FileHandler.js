@@ -213,15 +213,6 @@
                         const fieldId = cols[fieldIdIndex];
                         const value = cols[valueIndex];
 
-                        // --- ADDED: Skip Section 03 Fields ---
-                        const section03Pattern = /_([1][9]|[2][0-4])$/; // Matches _19, _20, _21, _22, _23, _24
-                        if (section03Pattern.test(fieldId)) {
-                            console.log(`[CSV Import] Skipping Section 03 field: ${fieldId}`);
-                            skippedCount++; // Increment skipped count for reporting
-                            continue; // Move to the next row
-                        }
-                        // --- END ADDED ---
-
                         // Only add if fieldId is not empty (skip placeholder rows)
                         if (fieldId && value !== undefined) {
                             importedData[fieldId] = value;
@@ -361,14 +352,16 @@
                 const header = ["ExcelRow", "RowID", "Description", "FieldID", "Value", "Units"];
                 const rows = [header];
                 const allFields = this.fieldManager.getAllFields();
-                 // Filter for fields explicitly marked as editable
-                const editableFields = Object.entries(allFields).filter(([id, def]) => 
-                    def.type === 'editable' || 
-                    def.type === 'dropdown' || 
-                    def.type === 'year_slider' || 
-                    def.type === 'percentage' || 
-                    def.type === 'coefficient' ||
-                    def.type === 'number' // Include number inputs as user-editable for export
+                 // Filter for fields explicitly marked as editable OR belonging to Section 03 (Climate)
+                const fieldsToExportEntries = Object.entries(allFields).filter(([id, def]) => 
+                    (
+                        def.type === 'editable' || 
+                        def.type === 'dropdown' || 
+                        def.type === 'year_slider' || 
+                        def.type === 'percentage' || 
+                        def.type === 'coefficient' ||
+                        def.type === 'number'
+                    ) || (def.sectionId === 'sect03') // Include all fields from sect03
                 );
 
                 // Basic CSV escaping (handles commas, quotes, newlines)
@@ -381,7 +374,7 @@
                     return strVal;
                 };
 
-                editableFields.forEach(([fieldId, fieldDef]) => {
+                fieldsToExportEntries.forEach(([fieldId, fieldDef]) => {
                     const layoutInfo = layoutLookup[fieldId] || {}; // Get layout details
                     const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
 
