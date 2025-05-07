@@ -186,6 +186,8 @@ window.TEUI.SectionModules.sect05 = (function() {
                     type: "number",  // This implies it should be an input field handled by FieldManager
                     value: "345.82", // Default raw value
                     section: "emissions",
+                    classes: ["user-input"],
+                    // TODO: Future - Integrate with C.Scale API to fetch/populate this value.
                 },
                 j: { content: "", classes: ["spacer"] },
                 k: { content: "", classes: ["spacer"] },
@@ -478,7 +480,7 @@ window.TEUI.SectionModules.sect05 = (function() {
         
         const g_32_default = 6779.84;
         const k_32_default = 6771.048;
-        
+
         const actual_g_32 = g_32_value === 0 && getFieldValue("g_32") === null ? g_32_default : g_32_value;
         const actual_k_32 = k_32_value === 0 && getFieldValue("k_32") === null ? k_32_default : k_32_value;
 
@@ -585,6 +587,19 @@ window.TEUI.SectionModules.sect05 = (function() {
         calculate_d_41(); // Uses placeholder, depends on d_38, h_13
         
         calculatePercentages(); // Must be done after other calculations
+
+        // --- DEBUG LOGGING for i_41 --- 
+        // try {
+        //     const i41Element = document.querySelector('[data-field-id="i_41"]');
+        //     if (i41Element) {
+        //         console.log(`[S05 calculateAll] i_41 state: disabled=${i41Element.disabled}, classList=${i41Element.classList.toString()}`);
+        //     } else {
+        //         console.log("[S05 calculateAll] i_41 element not found.");
+        //     }
+        // } catch (e) {
+        //     console.error("[S05 calculateAll] Error logging i_41 state:", e);
+        // }
+        // --- END DEBUG LOGGING --- 
     }
     
     /**
@@ -603,6 +618,19 @@ window.TEUI.SectionModules.sect05 = (function() {
                 const cap = calculateTypologyBasedCap(typology);
                 setCalculatedValue("i_39", cap, 'number-2dp-comma');
                 calculatePercentages(); // Recalculate percentages that depend on i_39
+
+                // --- DEBUG LOGGING for i_41 --- 
+                // try {
+                //     const i41Element = document.querySelector('[data-field-id="i_41"]');
+                //     if (i41Element) {
+                //         console.log(`[S05 d_39 Listener] i_41 state: disabled=${i41Element.disabled}, classList=${i41Element.classList.toString()}`);
+                //     } else {
+                //         console.log("[S05 d_39 Listener] i_41 element not found.");
+                //     }
+                // } catch (err) {
+                //     console.error("[S05 d_39 Listener] Error logging i_41 state:", err);
+                // }
+                // --- END DEBUG LOGGING --- 
             });
         }
         
