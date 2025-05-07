@@ -1369,6 +1369,10 @@ window.TEUI.SectionModules.sect13 = (function() {
                     // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
                     calculateAll(); 
                 }
+                // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
+                if (fieldId === 'd_119') {
+                    calculateAll();
+                }
             }
         } else {
             // Revert logic if input is not a number
@@ -1612,8 +1616,9 @@ window.TEUI.SectionModules.sect13 = (function() {
                 copcool_to_use = copcool_hp_j113; 
                 
                 if (copcool_to_use > 0) { 
-                     coolingLoad_d117 = coolingDemand_m129 / copcool_to_use; 
-                     coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1);
+                     // Clamp the result at 0 to prevent negative electrical load
+                     coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use); 
+                     coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
                 } else {
                      coolingLoad_d117 = 0; 
                      coolingSink_l114 = 0;
@@ -1623,8 +1628,9 @@ window.TEUI.SectionModules.sect13 = (function() {
             } else {
                 copcool_to_use = copcool_dedicated_h116; 
                  if (copcool_to_use > 0) {
-                    coolingLoad_d117 = coolingDemand_m129 / copcool_to_use; 
-                    coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); 
+                    // Clamp the result at 0 here as well
+                    coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use); 
+                    coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
                 } else {
                     coolingLoad_d117 = 0;
                     coolingSink_l116 = 0;
