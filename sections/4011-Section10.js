@@ -96,6 +96,11 @@ window.TEUI.SectionModules.sect10 = (function() {
         const fieldElement = this;
         const currentFieldId = fieldElement.getAttribute('data-field-id');
         if (!currentFieldId) return;
+
+        if (currentFieldId === 'd_74') {
+            console.log(`[S10 handleFieldBlur DEBUG] Entered for d_74. Initial textContent: "${fieldElement.textContent}"`);
+        }
+
         let valueStr = fieldElement.textContent.trim().replace(/,/g, '');
         let displayValue = '0.00';
         let rawValueToStore = '0';
@@ -1177,6 +1182,12 @@ window.TEUI.SectionModules.sect10 = (function() {
             calculateUtilizationFactors();
         } catch (error) {
             // console.error('Error calculating all values:', error);
+        }
+
+        // DEBUG: Log d_74 textContent at the end of S10 calculateAll
+        const d74Element = document.getElementById('d_74');
+        if (d74Element) {
+            console.log(`[S10 calculateAll DEBUG END] d_74 textContent: "${d74Element.textContent}"`);
         }
     }
     
