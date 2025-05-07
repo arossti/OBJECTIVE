@@ -1079,12 +1079,18 @@ TEUI.FieldManager = (function() {
                             rangeInput.value = numericValue;
                             if (displaySpan) {
                                 let formattedDisplay = numericValue.toString();
-                                if (fieldDef.type === 'percentage') {
-                                    formattedDisplay = formatNumber(numericValue, 'percent-0dp'); // Display as integer percent, e.g. 55%
-                                } else if (fieldDef.type === 'coefficient') {
-                                    formattedDisplay = formatNumber(numericValue, 'number-2dp'); // Or appropriate format
-                                } else { // year_slider
-                                    formattedDisplay = formatNumber(numericValue, 'integer');
+                                if (typeof window.TEUI?.formatNumber === 'function') {
+                                    if (fieldDef.type === 'percentage') {
+                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'percent-0dp'); 
+                                    } else if (fieldDef.type === 'coefficient') {
+                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'number-2dp'); 
+                                    } else { // year_slider
+                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'integer');
+                                    }
+                                } else {
+                                    // Fallback if global formatter isn't ready (should ideally not happen with correct load order)
+                                    console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);
+                                    if (fieldDef.type === 'percentage') formattedDisplay = numericValue + '%'; // Basic fallback
                                 }
                                 displaySpan.textContent = formattedDisplay;
                                 console.log(`[FieldManager.updateFieldDisplay] SLIDER UI updated for ${fieldId}: range set to ${numericValue}, display to "${formattedDisplay}"`);
@@ -1146,6 +1152,10 @@ TEUI.FieldManager = (function() {
                         element.textContent = newValue;
                     }
                     break;
+            }
+
+            if (fieldId === 'f_113' || fieldId === 'd_118' || fieldId === 'k_120') {
+                console.log(`[FieldManager DEBUG] For ${fieldId}, about to call window.TEUI.formatNumber. Is it available?`, typeof window.TEUI.formatNumber, window.TEUI);
             }
         }
     };
