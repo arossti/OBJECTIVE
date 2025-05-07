@@ -434,7 +434,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             return element.value !== undefined ? String(element.value) : String(element.textContent);
-        }
+            }
         return null;
     }
     
@@ -490,7 +490,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         if (element) {
             element.classList.remove('checkmark', 'warning');
             if (className) { // Only add if a class is provided
-                 element.classList.add(className);
+            element.classList.add(className);
             }
         }
     }
@@ -519,7 +519,7 @@ window.TEUI.SectionModules.sect08 = (function() {
             
             // Handle blur event for actual editable text fields
             if (field.getAttribute('contenteditable') === 'true') {
-                field.addEventListener('blur', function() {
+            field.addEventListener('blur', function() {
                     const currentFieldId = this.getAttribute('data-field-id');
                     let rawTextValue = this.textContent.trim();
                     let numericValue = window.TEUI.parseNumeric(rawTextValue, NaN); // Parse first
@@ -536,16 +536,16 @@ window.TEUI.SectionModules.sect08 = (function() {
                     }
                     calculatePercentagesAndStatus();
                 });
-            }
+                }
             
             // Prevent newlines and handle Enter key in contenteditable fields
             if (field.getAttribute('contenteditable') === 'true') {
-                field.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
                         e.preventDefault(); 
                         this.blur(); 
-                    }
-                });
+                }
+            });
             }
 
             // Add listener for StateManager changes for all user inputs to re-trigger calculations if needed
@@ -581,7 +581,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         setCalculatedValue("f_57", 1000, 'number-0dp');
         setCalculatedValue("f_58", 400, 'number-0dp');
         setCalculatedValue("f_59", "30-60", 'raw'); // This is a string range
-
+        
         initializeEventHandlers();
         calculatePercentagesAndStatus(); // Initial calculation based on defaults
     }

@@ -276,7 +276,7 @@ window.TEUI.SectionModules.sect05 = (function() {
             }
         }
     }
-
+    
     //==========================================================================
     // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
     //==========================================================================
@@ -483,7 +483,7 @@ window.TEUI.SectionModules.sect05 = (function() {
 
         const actual_g_32 = g_32_value === 0 && getFieldValue("g_32") === null ? g_32_default : g_32_value;
         const actual_k_32 = k_32_value === 0 && getFieldValue("k_32") === null ? k_32_default : k_32_value;
-
+        
         const ghgiMT = (d_14_value === "Utility Bills") ? 
             actual_g_32 / 1000 : 
             actual_k_32 / 1000;
@@ -514,7 +514,7 @@ window.TEUI.SectionModules.sect05 = (function() {
         // Original S05 used `toFixed(2)` which implies a numeric result desired.
         // Placeholder logic:
         const referenceLifetimeEmissions = lifetimeEmissions * 5; 
-        const avoidedEmissions = referenceLifetimeEmissions - lifetimeEmissions;
+            const avoidedEmissions = referenceLifetimeEmissions - lifetimeEmissions;
             
         setCalculatedValue("d_41", avoidedEmissions, 'number-2dp-comma');
     }
