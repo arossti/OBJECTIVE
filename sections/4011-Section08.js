@@ -45,29 +45,29 @@ window.TEUI.SectionModules.sect08 = (function() {
                 d: { 
                     fieldId: "d_56", 
                     type: "editable", 
-                    value: "50",
+                    value: "50", // Default raw value
                     section: "indoorAirQuality",
                     classes: ["user-input"]
                 },
                 e: { content: "Bq/m³" },
                 f: { 
                     fieldId: "f_56", 
-                    type: "calculated", // Changed from editable to calculated
-                    value: "150",
+                    type: "calculated",
+                    value: "150", // Default raw value for the limit
                     section: "indoorAirQuality"
                 },
                 g: { content: "Bq/m³" },
                 m: { 
                     fieldId: "m_56", 
                     type: "calculated", 
-                    value: "33%",
+                    value: "0%", // Default display
                     section: "indoorAirQuality",
                     dependencies: ["d_56", "f_56"]
                 },
                 n: {
                     fieldId: "n_56",
                     type: "calculated",
-                    value: "✓", // Default to checkmark
+                    value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
                     dependencies: ["d_56", "f_56"]
@@ -85,29 +85,29 @@ window.TEUI.SectionModules.sect08 = (function() {
                 d: { 
                     fieldId: "d_57", 
                     type: "editable", 
-                    value: "550",
+                    value: "550", // Default raw value
                     section: "indoorAirQuality",
                     classes: ["user-input"]
                 },
                 e: { content: "ppm" },
                 f: { 
                     fieldId: "f_57", 
-                    type: "calculated", // Changed from editable to calculated
-                    value: "1000",
+                    type: "calculated", 
+                    value: "1000", // Default raw value for the limit
                     section: "indoorAirQuality"
                 },
                 g: { content: "ppm" },
                 m: { 
                     fieldId: "m_57", 
                     type: "calculated", 
-                    value: "55%",
+                    value: "0%", // Default display
                     section: "indoorAirQuality",
                     dependencies: ["d_57", "f_57"]
                 },
                 n: {
                     fieldId: "n_57",
                     type: "calculated",
-                    value: "✓", // Default to checkmark
+                    value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
                     dependencies: ["d_57", "f_57"]
@@ -125,29 +125,29 @@ window.TEUI.SectionModules.sect08 = (function() {
                 d: { 
                     fieldId: "d_58", 
                     type: "editable", 
-                    value: "100",
+                    value: "100", // Default raw value
                     section: "indoorAirQuality",
                     classes: ["user-input"]
                 },
                 e: { content: "ppm" },
                 f: { 
                     fieldId: "f_58", 
-                    type: "calculated", // Changed from editable to calculated
-                    value: "400",
+                    type: "calculated",
+                    value: "400", // Default raw value for the limit
                     section: "indoorAirQuality"
                 },
                 g: { content: "ppm" },
                 m: { 
                     fieldId: "m_58", 
                     type: "calculated", 
-                    value: "25%",
+                    value: "0%", // Default display
                     section: "indoorAirQuality",
                     dependencies: ["d_58", "f_58"]
                 },
                 n: {
                     fieldId: "n_58",
                     type: "calculated",
-                    value: "✓", // Default to checkmark
+                    value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
                     dependencies: ["d_58", "f_58"]
@@ -164,33 +164,33 @@ window.TEUI.SectionModules.sect08 = (function() {
                 c: { label: "Rel. Indoor Humidity (annual avg.)" },
                 d: { 
                     fieldId: "d_59", 
-                    type: "percentage", // Changed to percentage for slider
-                    value: "45",
+                    type: "percentage", 
+                    value: "45", // Default raw value (slider 0-100)
                     min: 0,
                     max: 100,
                     step: 1,
                     section: "indoorAirQuality",
-                    classes: ["user-input"]
+                    classes: ["user-input"] // FieldManager will create slider
                 },
                 e: { content: "% RH" },
                 f: { 
                     fieldId: "f_59", 
-                    type: "calculated", // Changed from editable to calculated
-                    value: "30-60",
+                    type: "calculated",
+                    value: "30-60", // String range, handle as raw
                     section: "indoorAirQuality"
                 },
                 g: { content: "%" },
                 m: { 
                     fieldId: "m_59", 
                     type: "calculated", 
-                    value: "100%", // For RH, show how close to ideal range
+                    value: "0%", // Default display
                     section: "indoorAirQuality",
                     dependencies: ["d_59", "f_59"]
                 },
                 n: {
                     fieldId: "n_59",
                     type: "calculated",
-                    value: "✓", // Default to checkmark
+                    value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
                     dependencies: ["d_59", "f_59"]
@@ -208,7 +208,7 @@ window.TEUI.SectionModules.sect08 = (function() {
                 d: { 
                     fieldId: "d_60", 
                     type: "editable", 
-                    value: "0.00",
+                    value: "0.00", // Default raw value
                     section: "indoorAirQuality",
                     classes: ["user-input"]
                 },
@@ -327,84 +327,96 @@ window.TEUI.SectionModules.sect08 = (function() {
      */
     function calculatePercentagesAndStatus() {
         // Calculate Radon percentage and status
-        const radonValue = parseFloat(getFieldValue("d_56")) || 0;
-        const radonLimit = parseFloat(getFieldValue("f_56")) || 150;
+        const radonValue = getNumericValue("d_56", 0);
+        const radonLimit = getNumericValue("f_56", 150);
+        let radonPercentRaw = 0;
         if (radonLimit > 0) {
-            const radonPercent = Math.round((radonValue / radonLimit) * 100);
-            setCalculatedValue("m_56", `${radonPercent}%`);
+            radonPercentRaw = radonValue / radonLimit;
+            setCalculatedValue("m_56", radonPercentRaw, 'percent-0dp');
             
-            // Set status - checkmark if under limit, X if over
             if (radonValue <= radonLimit) {
-                setCalculatedValue("n_56", "✓");
+                setCalculatedValue("n_56", "✓", 'raw');
                 setElementClass("n_56", "checkmark");
             } else {
-                setCalculatedValue("n_56", "✗");
+                setCalculatedValue("n_56", "✗", 'raw');
                 setElementClass("n_56", "warning");
             }
+        } else {
+            setCalculatedValue("m_56", 0, 'percent-0dp');
+            setCalculatedValue("n_56", "-", 'raw'); 
+            setElementClass("n_56", null);
         }
         
         // Calculate CO2 percentage and status
-        const co2Value = parseFloat(getFieldValue("d_57")) || 0;
-        const co2Limit = parseFloat(getFieldValue("f_57")) || 1000;
+        const co2Value = getNumericValue("d_57", 0);
+        const co2Limit = getNumericValue("f_57", 1000);
+        let co2PercentRaw = 0;
         if (co2Limit > 0) {
-            const co2Percent = Math.round((co2Value / co2Limit) * 100);
-            setCalculatedValue("m_57", `${co2Percent}%`);
+            co2PercentRaw = co2Value / co2Limit;
+            setCalculatedValue("m_57", co2PercentRaw, 'percent-0dp');
             
-            // Set status - checkmark if under limit, X if over
             if (co2Value <= co2Limit) {
-                setCalculatedValue("n_57", "✓");
+                setCalculatedValue("n_57", "✓", 'raw');
                 setElementClass("n_57", "checkmark");
             } else {
-                setCalculatedValue("n_57", "✗");
+                setCalculatedValue("n_57", "✗", 'raw');
                 setElementClass("n_57", "warning");
             }
+        } else {
+            setCalculatedValue("m_57", 0, 'percent-0dp');
+            setCalculatedValue("n_57", "-", 'raw');
+            setElementClass("n_57", null);
         }
         
         // Calculate TVOC percentage and status
-        const tvocValue = parseFloat(getFieldValue("d_58")) || 0;
-        const tvocLimit = parseFloat(getFieldValue("f_58")) || 400;
+        const tvocValue = getNumericValue("d_58", 0);
+        const tvocLimit = getNumericValue("f_58", 400);
+        let tvocPercentRaw = 0;
         if (tvocLimit > 0) {
-            const tvocPercent = Math.round((tvocValue / tvocLimit) * 100);
-            setCalculatedValue("m_58", `${tvocPercent}%`);
+            tvocPercentRaw = tvocValue / tvocLimit;
+            setCalculatedValue("m_58", tvocPercentRaw, 'percent-0dp');
             
-            // Set status - checkmark if under limit, X if over
             if (tvocValue <= tvocLimit) {
-                setCalculatedValue("n_58", "✓");
+                setCalculatedValue("n_58", "✓", 'raw');
                 setElementClass("n_58", "checkmark");
             } else {
-                setCalculatedValue("n_58", "✗");
+                setCalculatedValue("n_58", "✗", 'raw');
                 setElementClass("n_58", "warning");
             }
+        } else {
+            setCalculatedValue("m_58", 0, 'percent-0dp');
+            setCalculatedValue("n_58", "-", 'raw');
+            setElementClass("n_58", null);
         }
         
-        // Calculate Humidity percentage and status (special case for range)
-        const humidityValue = parseFloat(getFieldValue("d_59")) || 0;
-        const humidityLimit = getFieldValue("f_59") || "30-60";
+        // Calculate Humidity percentage and status
+        const humidityValue = getNumericValue("d_59", 0); // d_59 is a percentage 0-100 from slider
+        const humidityLimitRaw = getFieldValue("f_59") || "30-60"; // String "30-60"
         
-        // Extract range for humidity
         let minHumidity = 30;
         let maxHumidity = 60;
-        if (humidityLimit.includes("-")) {
-            const [min, max] = humidityLimit.split("-").map(v => parseFloat(v));
-            if (!isNaN(min) && !isNaN(max)) {
-                minHumidity = min;
-                maxHumidity = max;
+        if (typeof humidityLimitRaw === 'string' && humidityLimitRaw.includes("-")) {
+            const parts = humidityLimitRaw.split("-").map(v => window.TEUI.parseNumeric(v.trim(), NaN));
+            if (!isNaN(parts[0]) && !isNaN(parts[1])) {
+                minHumidity = parts[0];
+                maxHumidity = parts[1];
             }
         }
         
-        // Calculate middle of the range for percentage display
         const middleOfRange = (minHumidity + maxHumidity) / 2;
+        let humidityPercentRaw = 0;
+        if (middleOfRange > 0) {
+            // d_59 is already a percentage (e.g. 45 means 45%). 
+            // To show how it relates to the middle of the range (e.g. 45 / ((30+60)/2) = 45 / 45 = 100%)
+            humidityPercentRaw = humidityValue / middleOfRange;
+        }
+        setCalculatedValue("m_59", humidityPercentRaw, 'percent-0dp');
         
-        // For humidity, calculate how close to ideal range
-        const humidityPercent = Math.round((humidityValue / middleOfRange) * 100);
-        setCalculatedValue("m_59", `${humidityPercent}%`);
-        
-        // Set status - checkmark if within range, X if outside
         if (humidityValue >= minHumidity && humidityValue <= maxHumidity) {
-            setCalculatedValue("n_59", "✓");
+            setCalculatedValue("n_59", "✓", 'raw');
             setElementClass("n_59", "checkmark");
         } else {
-            setCalculatedValue("n_59", "✗");
+            setCalculatedValue("n_59", "✗", 'raw');
             setElementClass("n_59", "warning");
         }
     }
@@ -413,43 +425,59 @@ window.TEUI.SectionModules.sect08 = (function() {
      * Helper function to get a field value
      */
     function getFieldValue(fieldId) {
-        // Try to get from StateManager first
-        if (window.TEUI?.StateManager?.getValue) {
+        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.getValue === 'function') {
             const value = window.TEUI.StateManager.getValue(fieldId);
             if (value !== null && value !== undefined) {
-                return value;
+                return String(value);
             }
         }
-        
-        // Fall back to DOM
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                return element.value;
-            } else {
-                return element.textContent;
-            }
+            return element.value !== undefined ? String(element.value) : String(element.textContent);
         }
-        
         return null;
+    }
+    
+    function getNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = getFieldValue(fieldId);
+        if (window.TEUI && typeof window.TEUI.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(rawValue, defaultValue);
+        }
+        const parsed = parseFloat(rawValue);
+        return isNaN(parsed) ? defaultValue : parsed;
     }
     
     /**
      * Helper function to set a calculated field value
      */
-    function setCalculatedValue(fieldId, value) {
-        // Set in state manager
-        if (window.TEUI?.StateManager?.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, value, "calculated");
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-0dp') { // Default to 0dp for this section unless specified
+        const isNumb = typeof rawValue === 'number' && isFinite(rawValue);
+        // For StateManager: store numbers as strings, "N/A" as "N/A", other direct strings (like "✓") as is.
+        const valueToStore = rawValue === "N/A" ? "N/A" : (isNumb ? rawValue.toString() : String(rawValue));
+
+        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.setValue === 'function') {
+            window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
         }
         
-        // Also update DOM
+        let formattedValue;
+        if (rawValue === "N/A") {
+            formattedValue = "N/A";
+        } else if (formatType === 'raw') {
+            formattedValue = String(rawValue); // Used for symbols like "✓" or "✗"
+        } else if (formatType.startsWith('percent')) {
+             // Global formatter expects a fraction for percent types (e.g. 0.5 for 50%)
+            const numericValForPercent = typeof rawValue === 'number' ? rawValue : getNumericValue(fieldId, 0); 
+            formattedValue = window.TEUI.formatNumber(numericValForPercent, formatType);
+        } else {
+            formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+        }
+        
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = value;
+                element.value = formattedValue; 
             } else {
-                element.textContent = value;
+                element.textContent = formattedValue;
             }
         }
     }
@@ -460,10 +488,10 @@ window.TEUI.SectionModules.sect08 = (function() {
     function setElementClass(fieldId, className) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            // Remove existing status classes
             element.classList.remove('checkmark', 'warning');
-            // Add the new class
-            element.classList.add(className);
+            if (className) { // Only add if a class is provided
+                 element.classList.add(className);
+            }
         }
     }
     
@@ -473,113 +501,70 @@ window.TEUI.SectionModules.sect08 = (function() {
     function initializeEventHandlers() {
         // Event handling for sliders will be managed by FieldManager
         
-        // Add handler for editable fields
         const sectionElement = document.getElementById('indoorAirQuality');
         if (!sectionElement) return;
         
         const editableFields = sectionElement.querySelectorAll('.user-input, [contenteditable="true"]');
         editableFields.forEach(field => {
-            // Make text fields editable
+            const fieldId = field.getAttribute('data-field-id');
+            if (!fieldId) return;
+
+            // Make text fields editable if they are not sliders
             if (field.classList.contains('user-input') && 
-                !field.classList.contains('slider-cell') && 
+                !field.classList.contains('slider-cell') && // FieldManager handles slider display
+                field.getAttribute('type') !== 'percentage' && // FieldManager handles slider input
                 field.tagName !== 'SELECT') {
                 field.setAttribute('contenteditable', 'true');
             }
             
-            // Handle blur event for text fields
-            field.addEventListener('blur', function() {
-                const fieldId = this.getAttribute('data-field-id');
-                if (!fieldId) return;
-                
-                // Only for text fields that are contenteditable
-                if (this.getAttribute('contenteditable') === 'true') {
-                    // Get and clean the value (remove existing commas)
-                    let newValue = this.textContent.trim().replace(/,/g, '');
-                    
-                    // Check if this is a numeric field that should be formatted
-                    if (!isNaN(parseFloat(newValue)) && isFinite(newValue)) {
-                        // Format and display the number
-                        const formattedValue = formatNumber(newValue);
-                        this.textContent = formattedValue;
-                        
-                        // Store the raw value in the state manager
-                        if (window.TEUI?.StateManager?.setValue) {
-                            window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-                        }
+            // Handle blur event for actual editable text fields
+            if (field.getAttribute('contenteditable') === 'true') {
+                field.addEventListener('blur', function() {
+                    const currentFieldId = this.getAttribute('data-field-id');
+                    let rawTextValue = this.textContent.trim();
+                    let numericValue = window.TEUI.parseNumeric(rawTextValue, NaN); // Parse first
+
+                    if (!isNaN(numericValue)) {
+                        // Store the raw numeric string in StateManager
+                        window.TEUI.StateManager.setValue(currentFieldId, numericValue.toString(), 'user-modified');
+                        // Update the display with formatting (default 0dp for this section as per old formatNumber logic)
+                        this.textContent = window.TEUI.formatNumber(numericValue, 'number-0dp'); 
                     } else {
-                        // Non-numeric value, just store as is
-                        if (window.TEUI?.StateManager?.setValue) {
-                            window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-                        }
+                        // If not a valid number after parsing, store as is, display as is (or could default to 0)
+                        window.TEUI.StateManager.setValue(currentFieldId, rawTextValue, 'user-modified');
+                        this.textContent = rawTextValue; // Or window.TEUI.formatNumber(0, 'number-0dp');
                     }
-                    
-                    // Recalculate percentages and status
                     calculatePercentagesAndStatus();
-                }
-            });
-            
-            // Prevent newlines and handle Enter key in editable fields
-            field.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent adding a newline
-                    this.blur(); // Remove focus to trigger the blur event
-                }
-            });
-            
-            // Also handle slider changes
-            if (field.classList.contains('slider-cell') || 
-                field.getAttribute('data-type') === 'percentage') {
-                // The actual slider event is handled by FieldManager, but we want to 
-                // ensure our calculations run when the slider changes
-                field.addEventListener('input', function() {
-                    // Recalculate after a short delay to allow the value to update
-                    setTimeout(calculatePercentagesAndStatus, 100);
                 });
             }
-        });
-        
-        // Special handling for the humidity slider
-        const humiditySlider = sectionElement.querySelector('[data-field-id="d_59"]');
-        if (humiditySlider) {
-            // Ensure we have a way to detect when slider changes value
-            const sliderObserver = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList' || mutation.type === 'characterData') {
+            
+            // Prevent newlines and handle Enter key in contenteditable fields
+            if (field.getAttribute('contenteditable') === 'true') {
+                field.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); 
+                        this.blur(); 
+                    }
+                });
+            }
+
+            // Add listener for StateManager changes for all user inputs to re-trigger calculations if needed
+            // This is more for sliders/dropdowns handled by FieldManager or if state changes externally
+            if (window.TEUI && window.TEUI.StateManager && fieldId.startsWith('d_')) { // Assuming d_ are inputs
+                 window.TEUI.StateManager.addListener(fieldId, function(newValue, oldValue) {
+                    if (newValue !== oldValue) { // Only if value actually changed
+                        // For editable fields, the blur handler already calls calculatePercentagesAndStatus.
+                        // For sliders/dropdowns (d_59), this ensures calculation runs.
+                        if (fieldId === 'd_59') { // Specifically for the humidity slider
+                             const displayElement = sectionElement.querySelector(`[data-display-for="${fieldId}"]`);
+                             if (displayElement) { // Update slider display value if one exists
+                                 displayElement.textContent = window.TEUI.formatNumber(window.TEUI.parseNumeric(newValue,0), 'number-0dp') + '%';
+                             }
+                        }
                         calculatePercentagesAndStatus();
                     }
                 });
-            });
-            
-            // Observe both the slider element and any child elements
-            sliderObserver.observe(humiditySlider, { 
-                childList: true, 
-                characterData: true, 
-                subtree: true 
-            });
-        }
-    }
-    
-    /**
-     * Format a number for display with commas and proper decimals
-     */
-    function formatNumber(value) {
-        // Check if value is very small
-        if (Math.abs(value) < 0.01 && value !== 0) {
-            return value.toFixed(2);
-        }
-        
-        // Check if value is integer
-        if (Number.isInteger(parseFloat(value))) {
-            return parseFloat(value).toLocaleString(undefined, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            });
-        }
-        
-        // Format with 2 decimal places
-        return parseFloat(value).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            }
         });
     }
     
@@ -590,11 +575,15 @@ window.TEUI.SectionModules.sect08 = (function() {
         // Add CSS for status indicators
         addStatusStyles();
         
+        // Set initial values for calculated limits (f_56, f_57, f_58, f_59)
+        // These are static but should be in StateManager and formatted in DOM
+        setCalculatedValue("f_56", 150, 'number-0dp');
+        setCalculatedValue("f_57", 1000, 'number-0dp');
+        setCalculatedValue("f_58", 400, 'number-0dp');
+        setCalculatedValue("f_59", "30-60", 'raw'); // This is a string range
+
         initializeEventHandlers();
-        calculatePercentagesAndStatus();
-        
-        // TODO: Future enhancement - add dropdown for Targeted/Actual values in the subheader
-        // console.log('Note: Future enhancement needed for Targeted/Actual toggle dropdown in subheader');
+        calculatePercentagesAndStatus(); // Initial calculation based on defaults
     }
     
     /**

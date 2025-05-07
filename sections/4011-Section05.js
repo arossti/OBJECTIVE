@@ -49,7 +49,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_38", 
                     type: "calculated", 
-                    value: "0.00",
+                    value: "0.00", // Default display, raw will be calculated
                     section: "emissions",
                 },
                 e: { content: "MT CO2e/yr" }, // Units
@@ -57,20 +57,20 @@ window.TEUI.SectionModules.sect05 = (function() {
                 g: { 
                     fieldId: "g_38", 
                     type: "calculated", 
-                    value: "0.00",
+                    value: "0.00", // Default display
                     section: "emissions",
                 },
                 h: { content: "", classes: ["spacer"] },
                 i: {
                     fieldId: "i_38",
                     type: "calculated",
-                    value: "0.00",
+                    value: "0.00", // Default display
                     section: "emissions",
                 },
                 j: { 
                     fieldId: "j_38", 
                     type: "calculated", 
-                    value: "0.00",
+                    value: "0.00", // Default display
                     section: "emissions",
                 },
                 k: { content: "(Lifetime Emissions)" },
@@ -78,7 +78,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 m: { 
                     fieldId: "m_38", 
                     type: "calculated", 
-                    value: "N/A",
+                    value: "N/A", // Default display
                     section: "emissions"
                 }
             }
@@ -95,7 +95,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                     fieldId: "d_39", 
                     type: "dropdown", 
                     dropdownId: "dd_d_39", 
-                    value: "Pt.3 Mass Timber",
+                    value: "Pt.3 Mass Timber", // Default selection
                     section: "emissions",
                     options: [
                         { value: "Pt.9 Res. Stick Frame", name: "Pt.9 Res. Stick Frame" },
@@ -114,7 +114,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 i: {
                     fieldId: "i_39",
                     type: "calculated",
-                    value: "350.00",
+                    value: "350.00", // Default display
                     section: "emissions",
                 },
                 j: { content: "", classes: ["spacer"] },
@@ -122,7 +122,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 l: { 
                     fieldId: "l_39", 
                     type: "calculated", 
-                    value: "0%",
+                    value: "0%", // Default display
                     section: "emissions",
                 },
                 m: { content: "✓", classes: ["checkmark"] }
@@ -139,7 +139,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_40", 
                     type: "calculated", 
-                    value: "0.00",
+                    value: "0.00", // Default display
                     section: "emissions",
                 },
                 e: { content: "MT CO2e/Service Life" }, // Units
@@ -149,7 +149,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 i: {
                     fieldId: "i_40",
                     type: "calculated",
-                    value: "0.00",
+                    value: "0.00", // Default display
                     section: "emissions",
                 },
                 j: { content: "", classes: ["spacer"] },
@@ -157,7 +157,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 l: { 
                     fieldId: "l_40", 
                     type: "calculated", 
-                    value: "0%",
+                    value: "0%", // Default display
                     section: "emissions",
                 },
                 m: { content: "✓", classes: ["checkmark"] }
@@ -174,7 +174,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_41", 
                     type: "calculated", 
-                    value: "0.00",
+                    value: "0.00", // Default display
                     section: "emissions",
                 },
                 e: { content: "MT CO2e" }, // Units
@@ -182,9 +182,9 @@ window.TEUI.SectionModules.sect05 = (function() {
                 g: { content: "Modelled Value (A1-3)", classes: ["label-main"] },
                 h: { content: "", classes: ["spacer"] },
                 i: {
-                    fieldId: "i_41",
-                    type: "number",
-                    value: "345.82",
+                    fieldId: "i_41", // User input field
+                    type: "number",  // This implies it should be an input field handled by FieldManager
+                    value: "345.82", // Default raw value
                     section: "emissions",
                 },
                 j: { content: "", classes: ["spacer"] },
@@ -192,7 +192,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 l: { 
                     fieldId: "l_41", 
                     type: "calculated", 
-                    value: "0%",
+                    value: "0%", // Default display
                     section: "emissions",
                 },
                 m: { content: "✓", classes: ["checkmark"] }
@@ -200,6 +200,81 @@ window.TEUI.SectionModules.sect05 = (function() {
         }
     };
     
+    //==========================================================================
+    // HELPER FUNCTIONS (Standardized)
+    //==========================================================================
+
+    /**
+     * Helper function to get a field value primarily from StateManager, with a DOM fallback.
+     * This function's main purpose is to retrieve the raw string value.
+     */
+    function getFieldValue(fieldId) {
+        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.getValue === 'function') {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return String(value); // Ensure it's a string
+            }
+        }
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            return element.value !== undefined ? String(element.value) : String(element.textContent);
+        }
+        return null; // Return null if not found
+    }
+
+    /**
+     * Helper function to get a numeric field value, using global parseNumeric.
+     * Provides a default value if parsing fails or field is not found.
+     */
+    function getNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = getFieldValue(fieldId);
+        // Use global parseNumeric, ensure it's available
+        if (window.TEUI && typeof window.TEUI.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(rawValue, defaultValue);
+        }
+        // Fallback to basic parseFloat if global is not available (should not happen in normal operation)
+        const parsed = parseFloat(rawValue);
+        return isNaN(parsed) ? defaultValue : parsed;
+    }
+    
+    /**
+     * Helper function to set a calculated field value.
+     * Stores raw numeric value (as string) in StateManager.
+     * Updates DOM with formatted value using global window.TEUI.formatNumber.
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const isNumb = typeof rawValue === 'number' && isFinite(rawValue);
+        const valueToStore = rawValue === "N/A" ? "N/A" : (isNumb ? rawValue.toString() : String(rawValue));
+
+        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.setValue === 'function') {
+            window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+        }
+        
+        let formattedValue;
+        if (rawValue === "N/A") {
+            formattedValue = "N/A";
+        } else if (formatType.startsWith('percent')) {
+            // Ensure rawValue for percent is a fraction (e.g., 0.5 for 50%)
+            // The global formatter expects a fraction for percent types.
+            const numericValForPercent = typeof rawValue === 'number' ? rawValue : getNumericValue(fieldId, 0);
+            formattedValue = window.TEUI.formatNumber(numericValForPercent, formatType);
+        } 
+        else {
+            formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+        }
+        
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            // For input/select, set value, for others, textContent.
+            // This was in S05 original, kept for safety, though calc fields are usually not inputs.
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                element.value = formattedValue; // Or rawValue if the input should not be formatted display
+            } else {
+                element.textContent = formattedValue;
+            }
+        }
+    }
+
     //==========================================================================
     // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
     //==========================================================================
@@ -352,8 +427,7 @@ window.TEUI.SectionModules.sect05 = (function() {
             return 600;
         } else if (typology === "Modelled Value") {
             // If "Modelled Value" is selected, use the value from i_41
-            const modelledValue = parseFloat(getFieldValue("i_41")) || 0; // Fetch current value of i_41
-            return modelledValue;
+            return getNumericValue("i_41", 0); // Use getNumericValue
         } else {
             // Default or if typology is not recognized (e.g., "Pls. Select a Value")
             return 0; // Or handle as appropriate, e.g., return null or a default cap
@@ -364,116 +438,107 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Calculate percentage of target achieved
      */
     function calculatePercentages() {
-        // Get values
-        const typologyCap = parseFloat(getFieldValue("i_39")) || 350;
-        const carbonTargetValue = getFieldValue("i_40");
-        const totalEmitted = parseFloat(getFieldValue("d_40")) || 390.82;
-        const modelledValue = parseFloat(getFieldValue("i_41")) || 345.82;
+        // Get values using getNumericValue for robustness
+        const typologyCap = getNumericValue("i_39", 350); // Default if i_39 not set
+        const carbonTargetValue = getFieldValue("i_40"); // Get raw value to check for "N/A"
+        const totalEmitted = getNumericValue("d_40", 0); // Default if d_40 not set or invalid
+        const modelledValue = getNumericValue("i_41", 0); // Default if i_41 not set or invalid
         
         // Handle special case when carbon target is 'N/A'
         if (carbonTargetValue === "N/A") {
-            // When carbon standard is "Not Reported", we don't show percentages
-            setCalculatedValue("l_39", "N/A");
-            setCalculatedValue("l_40", "N/A");
-            setCalculatedValue("l_41", "N/A");
+            setCalculatedValue("l_39", "N/A", 'raw'); // Pass 'raw' or a specific N/A format if available
+            setCalculatedValue("l_40", "N/A", 'raw');
+            setCalculatedValue("l_41", "N/A", 'raw');
             return;
         }
         
-        // Convert to number for calculations
-        const carbonTarget = parseFloat(carbonTargetValue) || 345.82;
+        const carbonTarget = window.TEUI.parseNumeric(carbonTargetValue, 0); // Use global parseNumeric
         
-        // Calculate percentages
-        const typologyPercent = Math.round((carbonTarget / typologyCap) * 100);
-        const targetPercent = Math.round((carbonTarget / totalEmitted) * 100);
-        const modelledPercent = Math.round((modelledValue / carbonTarget) * 100);
+        // Calculate percentages - ensure inputs to division are not zero where it makes sense
+        const typologyPercentRaw = typologyCap !== 0 ? (carbonTarget / typologyCap) : 0;
+        const targetPercentRaw = totalEmitted !== 0 ? (carbonTarget / totalEmitted) : 0;
+        const modelledPercentRaw = carbonTarget !== 0 ? (modelledValue / carbonTarget) : 0;
         
-        // Set calculated values
-        setCalculatedValue("l_39", `${typologyPercent}%`);
-        setCalculatedValue("l_40", `${targetPercent}%`);
-        setCalculatedValue("l_41", `${modelledPercent}%`);
+        // Set calculated values using appropriate percentage format
+        // The global formatter expects a fraction (e.g., 0.5 for 50%)
+        setCalculatedValue("l_39", typologyPercentRaw, 'percent-0dp');
+        setCalculatedValue("l_40", targetPercentRaw, 'percent-0dp');
+        setCalculatedValue("l_41", modelledPercentRaw, 'percent-0dp');
     }
     
     /**
      * Calculate GHGI operational values
      */
     function calculateGHGI() {
-        // Get values - retrieve all values at maximum available precision
-        const d_14_value = getFieldValue("d_14") || "Utility Bills"; // Determine calculation method
-        const g_32_value = parseFloat(getFieldValue("g_32")); // Utility Bills emissions
-        const k_32_value = parseFloat(getFieldValue("k_32")); // Targeted Use emissions
-        const conditionedArea = parseFloat(getFieldValue("i_15")) || 1427.20;
+        // Get values using getNumericValue for robustness
+        const d_14_value = getFieldValue("d_14") || "Utility Bills"; // Determine calculation method (string)
+        const g_32_value = getNumericValue("g_32");
+        const k_32_value = getNumericValue("k_32");
+        const conditionedArea = getNumericValue("i_15", 1); // Avoid division by zero, default to 1 if not set
         
-        // Default values only if not available from StateManager - maintaining precise defaults
         const g_32_default = 6779.84;
-        const k_32_default = 6771.048; // Using precise value from Excel
+        const k_32_default = 6771.048;
         
-        // Calculate MT CO2e/yr based on selection in d_14 with maximum precision
+        const actual_g_32 = g_32_value === 0 && getFieldValue("g_32") === null ? g_32_default : g_32_value;
+        const actual_k_32 = k_32_value === 0 && getFieldValue("k_32") === null ? k_32_default : k_32_value;
+
         const ghgiMT = (d_14_value === "Utility Bills") ? 
-            (g_32_value || g_32_default) / 1000 : // Convert kg to metric tons for Utility Bills
-            (k_32_value || k_32_default) / 1000;  // Convert kg to metric tons for Targeted Use
+            actual_g_32 / 1000 : 
+            actual_k_32 / 1000;
         
-        // Calculate kgCO2e/m² using the same emissions value chosen above
         const emissionsKg = (d_14_value === "Utility Bills") ? 
-            (g_32_value || g_32_default) : 
-            (k_32_value || k_32_default);
-        const ghgiPerM2 = emissionsKg / conditionedArea;
+            actual_g_32 : 
+            actual_k_32;
+
+        const ghgiPerM2 = conditionedArea !== 0 ? emissionsKg / conditionedArea : 0;
         
-        // Maintain full floating point precision in StateManager for calculations
-        // Only format for display in the DOM
-        setCalculatedValue("d_38", ghgiMT);
-        setCalculatedValue("g_38", ghgiPerM2);
+        setCalculatedValue("d_38", ghgiMT, 'number-2dp-comma'); // MT CO2e/yr
+        setCalculatedValue("g_38", ghgiPerM2, 'number-2dp-comma'); // kgCO2e/m2
         
-        // Calculate lifetime emissions with maximum precision
-        const serviceLife = parseFloat(getFieldValue("h_13")) || 50;
+        const serviceLife = getNumericValue("h_13", 50); // Default 50 years
         const lifetimeEmissions = ghgiPerM2 * serviceLife;
-        setCalculatedValue("j_38", lifetimeEmissions);
+        setCalculatedValue("j_38", lifetimeEmissions, 'number-2dp-comma'); // kgCO2e/m2 lifetime
     }
     
     /**
      * Calculate lifetime avoided emissions
      */
     function calculateLifetimeAvoided() {
-        // Get values
-        const lifetimeEmissions = parseFloat(getFieldValue("j_38")) || 237.52;
-        const embeddedCarbon = parseFloat(getFieldValue("d_40")) || 390.82;
-        
-        if (lifetimeEmissions && embeddedCarbon) {
-            // Reference lifetime emissions would be much higher
-            const referenceLifetimeEmissions = lifetimeEmissions * 5; // Assumption
+        // This function seems to have placeholder logic ("referenceLifetimeEmissions = lifetimeEmissions * 5;")
+        // We will keep the logic but ensure it uses new helpers.
+        const lifetimeEmissions = getNumericValue("j_38", 0);
+        // const embeddedCarbon = getNumericValue("d_40", 0); // This was in original but not used in calc
+
+        // Original S05 used `toFixed(2)` which implies a numeric result desired.
+        // Placeholder logic:
+        const referenceLifetimeEmissions = lifetimeEmissions * 5; 
+        const avoidedEmissions = referenceLifetimeEmissions - lifetimeEmissions;
             
-            // Calculate avoided emissions
-            const avoidedEmissions = referenceLifetimeEmissions - lifetimeEmissions;
-            
-            // Set calculated value
-            setCalculatedValue("d_41", avoidedEmissions.toFixed(2));
-        }
+        setCalculatedValue("d_41", avoidedEmissions, 'number-2dp-comma');
     }
     
     /**
      * Calculate Lifetime Operational kgCO2e/m2 (i_38 = g_38 * h_13)
      */
     function calculate_i_38() {
-        const g_38_value = parseFloat(getFieldValue("g_38")) || 0; // Annual GHGI kgCO2e/m2
-        const h_13_value = parseFloat(getFieldValue("h_13")) || 50; // Service Life (yrs)
+        const g_38_value = getNumericValue("g_38", 0); // Annual GHGI kgCO2e/m2
+        const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
 
         const i_38_result = g_38_value * h_13_value;
-        setCalculatedValue("i_38", i_38_result.toFixed(2));
+        setCalculatedValue("i_38", i_38_result, 'number-2dp-comma');
     }
     
     /**
      * Calculate Target kgCO2e/m2 (i_40 = d_16)
      */
     function calculate_i_40() {
-        // Get the embodied carbon target
-        const d_16_value = getFieldValue("d_16");
+        const d_16_value_raw = getFieldValue("d_16"); // Get raw to check "N/A"
         
-        // Special handling for 'N/A'
-        if (d_16_value === "N/A") {
-            setCalculatedValue("i_40", "N/A");
+        if (d_16_value_raw === "N/A") {
+            setCalculatedValue("i_40", "N/A", 'raw');
         } else {
-            // Regular handling for numeric values
-            const numericValue = parseFloat(d_16_value) || 0;
-            setCalculatedValue("i_40", numericValue.toFixed(2));
+            const numericValue = getNumericValue("d_16", 0);
+            setCalculatedValue("i_40", numericValue, 'number-2dp-comma');
         }
     }
 
@@ -481,11 +546,11 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Calculate Total Embedded MT CO2e (d_40 = i_41 * d_106 / 1000)
      */
     function calculate_d_40() {
-        const i_41_value = parseFloat(getFieldValue("i_41")) || 0; // Modelled Value kgCO2e/m2
-        const d_106_value = parseFloat(getFieldValue("d_106")) || 0; // Total Floor Area m2
+        const i_41_value = getNumericValue("i_41", 0); // Modelled Value kgCO2e/m2
+        const d_106_value = getNumericValue("d_106", 0); // Total Floor Area m2
 
         const d_40_result = (i_41_value * d_106_value) / 1000; // Result in MT CO2e
-        setCalculatedValue("d_40", d_40_result.toFixed(2));
+        setCalculatedValue("d_40", d_40_result, 'number-2dp-comma');
     }
     
     /**
@@ -493,121 +558,33 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Uses a placeholder for the reference value until DeepState is implemented.
      */
     function calculate_d_41() {
-        // Get the placeholder reference value from StateManager
-        // TODO: Replace this fetch with the actual DeepState lookup based on d_13
-        const reference_d_38_placeholder = parseFloat(getFieldValue("ref_d_38")) || 47.9209; // Default to 47.9209 until reference model is implemented
+        // Placeholder for REFERENCE_D38
+        const reference_d_38_placeholder = getNumericValue("ref_d_38", 47.9209); 
 
-        const d_38_value = parseFloat(getFieldValue("d_38")) || 0; // Actual/Target MT CO2e/yr (from REPORT)
-        const h_13_value = parseFloat(getFieldValue("h_13")) || 50; // Service Life (yrs)
+        const d_38_value = getNumericValue("d_38", 0); // Actual/Target MT CO2e/yr
+        const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
 
-        // Calculate Avoided Emissions with maximum precision through the calculation chain
         const d_41_result = (reference_d_38_placeholder - d_38_value) * h_13_value;
-        
-        // Apply formatting only at the final display step - maintaining calculation precision
-        setCalculatedValue("d_41", d_41_result.toFixed(2));
-    }
-    
-    /**
-     * Format a number for display with thousand separators and proper decimals
-     */
-    function formatNumber(value) {
-        // Ensure value is a number
-        const numValue = parseFloat(value);
-        
-        // Handle invalid values
-        if (isNaN(numValue)) {
-            return "0.00";
-        }
-        
-        // Check if value is very small
-        if (Math.abs(numValue) < 0.01 && numValue !== 0) {
-            return numValue.toFixed(2);
-        }
-        
-        // Always use 2 decimal places for all numbers, including integers
-        return numValue.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-    
-    /**
-     * Helper function to get a field value
-     */
-    function getFieldValue(fieldId) {
-        // Try to get from StateManager first
-        if (window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
-            const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null && value !== undefined) {
-                return value;
-            }
-        }
-        
-        // Fall back to DOM
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                return element.value;
-            } else {
-                return element.textContent;
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Helper function to set a calculated field value
-     */
-    function setCalculatedValue(fieldId, value) {
-        // Store raw value in state manager
-        if (window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, value, "calculated");
-        }
-        
-        // Special handling for 'N/A' values
-        const formattedValue = value === "N/A" ? "N/A" : formatNumber(value);
-        
-        // Update DOM with formatted value
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = value;
-            } else {
-                element.textContent = formattedValue;
-            }
-        }
+        setCalculatedValue("d_41", d_41_result, 'number-2dp-comma'); // Original S05 d_41 uses toFixed(2)
     }
     
     /**
      * Calculate all values for this section
      */
     function calculateAll() {
-        // Calculate typology-based cap based on selected typology
-        const typology = getFieldValue("d_39");
+        const typology = getFieldValue("d_39"); // String value is fine for this
         if (typology) {
             const cap = calculateTypologyBasedCap(typology);
-            // Use toFixed to ensure it's stored as a number string if needed, adjust decimals as necessary
-            setCalculatedValue("i_39", cap.toFixed(2));
+            setCalculatedValue("i_39", cap, 'number-2dp-comma'); // Typology cap is kgCO2e/m2
         }
         
-        // Calculate GHGI values (d_38, g_38) (Needs implementation based on review)
-        calculateGHGI();
+        calculateGHGI(); // Calculates d_38, g_38, j_38
+        calculate_i_38(); // Depends on g_38 and h_13
+        calculate_i_40(); // Depends on d_16
+        calculate_d_40(); // Depends on i_41, d_106
+        calculate_d_41(); // Uses placeholder, depends on d_38, h_13
         
-        // Calculate i_38 (depends on g_38 and h_13)
-        calculate_i_38();
-        
-        // Calculate i_40 (depends on d_16)
-        calculate_i_40();
-
-        // Calculate d_40 (depends on i_41, d_106)
-        calculate_d_40();
-        
-        // Calculate lifetime avoided emissions (Uses placeholder for REFERENCE!D38)
-        calculate_d_41();
-        
-        // Calculate percentages (must be done after other calculations)
-        calculatePercentages();
+        calculatePercentages(); // Must be done after other calculations
     }
     
     /**
@@ -619,8 +596,12 @@ window.TEUI.SectionModules.sect05 = (function() {
         if (typologyDropdown) {
             typologyDropdown.addEventListener('change', function(e) {
                 const typology = e.target.value;
+                // Update StateManager for d_39 directly as it's a user-modified field
+                if (window.TEUI && window.TEUI.StateManager) {
+                    window.TEUI.StateManager.setValue("d_39", typology, "user-modified");
+                }
                 const cap = calculateTypologyBasedCap(typology);
-                setCalculatedValue("i_39", cap.toFixed(2)); // Update i_39 when d_39 changes
+                setCalculatedValue("i_39", cap, 'number-2dp-comma');
                 calculatePercentages(); // Recalculate percentages that depend on i_39
             });
         }
@@ -630,10 +611,14 @@ window.TEUI.SectionModules.sect05 = (function() {
             window.TEUI.StateManager.addListener("i_41", function(newValue) {
                 const currentTypology = getFieldValue("d_39");
                 if (currentTypology === "Modelled Value") {
-                    const cap = parseFloat(newValue) || 0;
-                    setCalculatedValue("i_39", cap.toFixed(2)); // Update i_39 directly
-                    calculatePercentages(); // Recalculate percentages
+                    const cap = window.TEUI.parseNumeric(newValue, 0); // Use global parse
+                    setCalculatedValue("i_39", cap, 'number-2dp-comma');
+                    // calculate_d_40(); // d_40 depends on i_41, recalculate it
+                    // calculatePercentages(); // Recalculate percentages
+                    // calculateAll(); // Simpler to just call calculateAll if i_41 changes and it's used as typology cap
                 }
+                // i_41 also directly affects d_40, so ensure calculateAll or specific chain is called
+                 calculateAll(); // Call calculateAll to ensure all dependent values are updated
             });
             
             // Listen for changes in related fields from other sections (PLACEHOLDERS - Need Update)
@@ -641,9 +626,10 @@ window.TEUI.SectionModules.sect05 = (function() {
             
             // Listen for changes to service life (h_13 affects i_38 and d_41)
             window.TEUI.StateManager.addListener("h_13", function() {
-                calculate_i_38();
-                calculate_d_41();
-                calculatePercentages(); // Percentages might depend on lifetime values
+                // calculate_i_38();
+                // calculate_d_41();
+                // calculatePercentages(); // Percentages might depend on lifetime values
+                calculateAll(); // Simpler to call calculateAll
             });
             
             // Listen for changes affecting d_38 (which then affects d_41)
@@ -652,36 +638,28 @@ window.TEUI.SectionModules.sect05 = (function() {
             const ghgi_dependencies = ["d_14", "g_32", "k_32", "h_15"]; // Inputs for d_38/g_38
             ghgi_dependencies.forEach(depId => {
                 window.TEUI.StateManager.addListener(depId, function() {
-                    calculateGHGI(); // Recalculates d_38 and g_38
-                    calculate_i_38(); // Recalculates i_38 (depends on g_38)
-                    calculate_d_41(); // Recalculates d_41 (depends on d_38)
-                    calculatePercentages(); // Recalculate percentages
+                    // calculateGHGI(); 
+                    // calculate_i_38(); 
+                    // calculate_d_41(); 
+                    // calculatePercentages(); 
+                    calculateAll(); // Simpler to call calculateAll
                 });
             });
             
             // Listen for changes to embodied carbon target (d_16 affects i_40)
             window.TEUI.StateManager.addListener("d_16", function() {
-                calculate_i_40(); // Call the dedicated function
-                calculatePercentages(); // Recalculate percentages that depend on i_40
+                // calculate_i_40(); 
+                // calculatePercentages(); 
+                calculateAll(); // Simpler to call calculateAll
             });
 
-            // Listen for changes to modelled value (i_41 affects d_40)
-            window.TEUI.StateManager.addListener("i_41", function(newValue) {
-                // Update i_39 if typology is 'Modelled Value'
-                const currentTypology = getFieldValue("d_39");
-                if (currentTypology === "Modelled Value") {
-                    const cap = parseFloat(newValue) || 0;
-                    setCalculatedValue("i_39", cap.toFixed(2));
-                }
-                // Recalculate d_40 and percentages
-                calculate_d_40();
-                calculatePercentages();
-            });
+            // Listener for i_41 already exists above, merged dependency recalculation.
+            // The existing i_41 listener above already calls calculateAll()
 
-            // Listen for changes to total floor area (d_106 affects d_40)
             window.TEUI.StateManager.addListener("d_106", function() {
-                calculate_d_40();
-                calculatePercentages(); // Recalculate percentages that depend on d_40
+                // calculate_d_40();
+                // calculatePercentages(); 
+                calculateAll(); // Simpler to call calculateAll
             });
         }
     }
