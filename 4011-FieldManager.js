@@ -1004,24 +1004,37 @@ TEUI.FieldManager = (function() {
          * @param {string} fieldId - The ID of the field to update.
          * @param {string} newValue - The new value to display.
          */
-        updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) {
-            console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
-                fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue} : null
-            }); // KWW DEBUG
+        updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) { 
+            /* KWW DEBUG ENTRY */ console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
+                fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue, sectionId: fieldDefFromCaller.sectionId} : null
+            });
 
-            const element = document.getElementById(fieldId);
-            const fieldDef = fieldDefFromCaller || this.getField(fieldId);
+            // Attempt to get the element more reliably, preferring data-field-id, then direct id.
+            // Many interactive elements are nested and might not have the fieldId as their direct HTML id.
+            let element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (!element) {
+                element = document.getElementById(fieldId); // Fallback to direct ID if data-field-id not found
+            }
+            
+            // Prioritize fieldDef passed from caller, then try to get it internally.
+            const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
 
             if (!element) {
-                // console.warn(`[FieldManager.updateFieldDisplay] Element with ID ${fieldId} not found.`);
+                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log for critical test cases
+                    console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Element for fieldId "${fieldId}" NOT FOUND.`);
+                }
                 return;
+            }
+            // Log the found element for critical fields
+            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
+                 console.log(`[FieldManager.updateFieldDisplay] Found element for ${fieldId}:`, element);
             }
 
             if (!fieldDef) {
-                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') { // Log if critical fieldDef is missing
+                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log if critical fieldDef is missing
                     console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Field definition for ${fieldId} is missing/null. Cannot determine type. Element:`, element);
                 }
-                // Still attempt to set value if element exists, might be a simple display span
+                // Attempt generic update if no fieldDef but element exists (e.g. simple span)
                 if (element.tagName === 'SPAN' || element.tagName === 'DIV') {
                     element.textContent = newValue;
                 } else if (typeof element.value !== 'undefined') {
@@ -1029,11 +1042,16 @@ TEUI.FieldManager = (function() {
                 }
                 return;
             }
+            
+            // Log the confirmed fieldDef.type for critical fields
+            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
+                 console.log(`[FieldManager.updateFieldDisplay] Processing ${fieldId} with fieldDef.type = ${fieldDef.type}`);
+            }
 
             // Handle different field types
             switch (fieldDef.type) {
                 case 'editable':
-                case 'number': // Assuming 'number' type renders an <input type="number">
+                case 'number': 
                     if (typeof element.value !== 'undefined') {
                         element.value = newValue;
                         console.log(`[FieldManager.updateFieldDisplay] Set INPUT value for ${fieldId} to: ${newValue}`, element); // KWW DEBUG
