@@ -1068,18 +1068,40 @@ TEUI.FieldManager = (function() {
                         // console.log(`[FieldManager.updateFieldDisplay] Dispatched BLUR for ${fieldId}`); // KWW DEBUG
                     }
                     break;
-                case 'year_slider': // Sliders might have a direct input part or need more complex handling
+                case 'year_slider': 
                 case 'percentage':
                 case 'coefficient':
-                    // This is a placeholder - proper slider handling will be in Phase A5
-                    // For now, try to set value if it's a direct input, or textContent if not.
-                    if (typeof element.value !== 'undefined') {
-                        element.value = newValue;
+                    // Slider types - the 'element' is the parent TD.
+                    // We need to find the actual <input type="range"> and the display span inside it.
+                    const rangeInput = element.querySelector('input[type="range"]');
+                    const displaySpan = element.querySelector('.slider-value'); // Assumes initializeSliders adds this class
+
+                    if (rangeInput) {
+                        const numericValue = window.TEUI.parseNumeric(newValue, NaN);
+                        if (!isNaN(numericValue)) {
+                            rangeInput.value = numericValue;
+                            if (displaySpan) {
+                                let formattedDisplay = numericValue.toString();
+                                if (fieldDef.type === 'percentage') {
+                                    formattedDisplay = formatNumber(numericValue, 'percent-0dp'); // Display as integer percent, e.g. 55%
+                                } else if (fieldDef.type === 'coefficient') {
+                                    formattedDisplay = formatNumber(numericValue, 'number-2dp'); // Or appropriate format
+                                } else { // year_slider
+                                    formattedDisplay = formatNumber(numericValue, 'integer');
+                                }
+                                displaySpan.textContent = formattedDisplay;
+                                console.log(`[FieldManager.updateFieldDisplay] SLIDER UI updated for ${fieldId}: range set to ${numericValue}, display to "${formattedDisplay}"`);
+                            }
+                            rangeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            // console.log(`[FieldManager.updateFieldDisplay] Dispatched INPUT event for slider ${fieldId}`);
+                        } else {
+                            console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for slider ${fieldId}`);
+                        }
                     } else {
-                        element.textContent = newValue;
+                        console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for slider ${fieldId}. Initial textContent was: "${element.textContent}". Setting textContent as fallback.`);
+                        // Fallback if structure isn't as expected (e.g. if initializeSliders hasn't run or was cleared)
+                        element.textContent = newValue; 
                     }
-                    console.log(`[FieldManager.updateFieldDisplay] Attempted update for slider-like ${fieldId} (type: ${fieldDef.type}) to: ${newValue}`, element);
-                    // TODO: Add specific slider UI update logic here (Phase A5)
                     break;
                 case 'dropdown':
                     // Ensure we target the actual <select> element

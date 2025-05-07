@@ -72,89 +72,93 @@ This document outlines a plan to address this core UI reactivity and data handli
 *   **Re-rendering or Explicit Refresh of Complex Controls:** ...
 *   **Centralized State Management:** ...
 
-## 7. The "55555" CSV Import Study & Related UI Bug Findings (NEW)
+## 7. The "55555" CSV Import Study & Related UI Bug Findings
 
-A test CSV file (`documentation/TEUIv4011-55555.csv`) was created where most user-editable values were set to variations of "5" (e.g., 555, 55.5, 55%). This file was imported to observe the behavior of the import process and UI updates.
+A test CSV file (`documentation/TEUIv4011-55555.csv`) was created where most user-editable values were set to variations of "5" (e.g., 555, 55.5, 55%). This file was imported into the system to observe the behavior of the import process and UI updates.
 
-**Key Findings from "55555 Study":**
+**Key Findings from "55555 Study" & Subsequent Tests:**
 
 1.  **`StateManager` Correctly Updated, Calculations Reflect Changes:**
-    *   Logs and overall application calculations (TEUI, TEDI, Section 11 component losses) confirmed that `StateManager` was indeed being updated with the imported "555" values. This indicates the data parsing (`processImportedCSV`) and the core `StateManager.setValue()` parts of the import process are fundamentally working for the data layer.
+    *   Logs and overall application calculations (TEUI, TEDI, Section 11 component losses, Section 13 fuel calculations) confirmed that `StateManager` was indeed being updated with the imported values. This indicates the data parsing (`processImportedCSV`) and the core `StateManager.setValue()` parts of the import process are fundamentally working for the data layer.
 
 2.  **Inconsistent UI Visual Updates (The "Secret" Application):**
-    *   A significant number of UI elements did **not** visually update to reflect the imported "555" values, even though `StateManager` held these values. This was termed the "secret" application of data—correct in the backend data model, but incorrect or stale in the frontend visual representation.
-    *   **Example (Failure - `contenteditable` `<td>`):** Window Areas (e.g., `d_74` in Section 10). The UI cell in Section 10 continued to show its default area (e.g., 81.14 m²). However, calculation logs for Section 11 confirmed that it *used* the imported 555 m² value for `d_74` (as `d_74` is the source for the S11 window area `d_89`), clearly demonstrating the UI-State desynchronization.
-    *   **Example (Success - KWW - `contenteditable` `<td>`):** Window U-Values (e.g., `g_89`, `g_90` etc. in Section 11). If a U-value was manually changed to 0.5, exported, and then re-imported, the `contenteditable` `<td>` UI element in Section 11 correctly displayed "0.500". Analysis showed these fields have `type: "editable"` in `sectionRows` and `FieldManager.updateFieldDisplay` was successfully setting their `textContent` and dispatching `blur`.
-    *   **Dropdowns Not Updating Visually or Functionally:** Dropdown fields (e.g., `d_113` Primary Heating System, `d_51` DHW Energy Source, which were set to "Oil" in the "55555.csv") did not visually change from their default "Heatpump" selection in the UI, nor did their dependent UI (like showing AFUE input for "Oil") update, despite console logs indicating the `change` event was dispatched. This requires further investigation into the event listeners or rendering logic in the affected sections.
+    *   Many UI elements initially did **not** visually update to reflect the imported values, even though `StateManager` held these values.
+    *   **Example (Failure - `contenteditable` `<td>` - `d_74` S10 Area):** The UI cell in Section 10 (`d_74`) initially continued to show its default area (e.g., "81.14"). However, calculation logs for Section 11 (which derives its window area `d_89` from S10's `d_74`) confirmed that Section 11 *used* the imported "555" value for its calculations. This highlighted a UI-State desynchronization for the `d_74` display cell itself. The root cause is suspected to be that `FieldManager.updateFieldDisplay` sets `textContent`, but subsequent logic in `Section10.js` (likely its `handleEditableBlur` or `calculateAll`) overwrites this visual update before it's persistently rendered, or the programmatic `blur` event isn't correctly processed by S10's handlers to re-render with the new value.
+    *   **Example (Success - KWW - `contenteditable` `<td>` - `g_89` S11 U-Value):** The UI for `g_89` (and similar U-value fields in S11, also `type: "editable"`) *does* correctly update to display the imported value (e.g., "0.500"). `FieldManager.updateFieldDisplay` successfully sets its `textContent`, and the dispatched `blur` event, when handled by `Section11.js`'s `handleFieldBlur`, correctly finalizes the display and state. This is the KWW pattern.
+    *   **Dropdowns Partially Fixed (`d_113` S13 Heating):** After changes to `FieldManager.updateFieldDisplay` (to explicitly set `option.selected = true` and re-set `.value`), the *dependent UI and calculations* for `d_113` (Primary Heating System) reacted correctly as if "Oil" was selected (e.g., AFUE fields unghosted, oil consumption calculated). However, the main dropdown UI element itself *still visually showed "Heatpump"*. This indicates that while the `change` event is firing and being handled correctly by S13's logic, the browser is not visually updating the collapsed select element's displayed text. This specific visual issue for dropdowns remains.
+    *   **Sliders Broken by Import:** Sliders (e.g., `f_74` SHGC in S10, `k_120` Setback in S13, `d_118` SRE in S13) visually disappear after import, showing only their raw numeric value (e.g., "50" for a 50% percentage slider). This is because `FieldManager.updateFieldDisplay` (in its current iteration for `type: "percentage"` or `type: "coefficient"`) sets `element.textContent` on the parent `<td>` (e.g., `k_120`), which overwrites the `<input type="range">` and associated `<span>` elements dynamically created by `FieldManager.initializeSliders()`.
 
-3.  **Climate Data (Section 03) Import Issues & Decision:**
-    *   Initial attempts to import Section 03 fields led to validation errors for dependent dropdowns (`h_19` City).
-    *   **Decision:** **Section 03 fields are explicitly skipped during CSV import.** This was implemented in `processImportedCSV`. `ExcelLocationHandler.js` remains the dedicated mechanism for loading full climate datasets.
-    *   **New Finding:** 'Skipping import for field h_19...` warning is still expected if `h_19` is not correctly defined with `sectionId: 'sect03'` or if the skip logic in `processImportedCSV` needs refinement, but the primary decision to skip S03 via CSV is firm.
+3.  **Climate Data (Section 03) Import Skipped:**
+    *   The decision to explicitly skip Section 03 fields in `processImportedCSV` (by checking `fieldDef.sectionId === 'sect03'`) is working. Warnings for `d_19` and `h_19` still appear in `FileHandler.updateStateFromImportData`'s validation if these fields are not perfectly excluded by the `processImportedCSV`'s skip or if their `sectionId` isn't `'sect03'`. This is minor as the core intent (no S03 data import via general CSV) is achieved. The future plan is JSON-based weather data for S03.
 
 **Related UI Bug Insights (e.g., `l_118` ACH & `j_115` AFUE in Section 13):**
 
-*   **`l_118` (ACH):** Initially displayed "0" instead of default "3". Fix involved ensuring `onSectionRendered` in S13 set the default in `StateManager` *and* explicitly updated the UI `textContent` post-calculation. User edits now correctly trigger calculations after an explicit `calculateAll()` call was added to its `handleEditableBlur`.
-*   **`j_115` (AFUE):** Had similar past issues. Its fix involved ensuring `defaultValue` was correct in `sectionRows` and the `onSectionRendered` explicit UI update.
+*   **`l_118` (ACH):** Initially displayed "0" instead of default "3". Adding `l_118` to `onSectionRendered` in S13 (to set default in `StateManager` and explicitly update UI `textContent` post-calculation) fixed its default display. Adding an explicit `calculateAll()` call within `Section13.js`'s `handleEditableBlur` for `l_118` fixed the issue where user edits didn't trigger recalculations. This highlights the need for both correct initial "painting" from state and ensuring user input events trigger necessary updates.
+*   **`j_115` (AFUE):** Its previous fix also involved correct `defaultValue` in `sectionRows` and the `onSectionRendered` explicit UI update in S13.
 
 **Overall Conclusion from Study & Bug Analysis:**
 
-*   The core challenge is achieving **reliable, universal, and consistent synchronization between `StateManager` and the visual UI** across all field types.
-*   This requires:
-    1.  Standardized field definitions (`type`, `defaultValue`).
-    2.  Robust default value initialization (`StateManager` + initial UI paint).
-    3.  Consistent event handling for user edits (UI -> `StateManager` -> Calculations).
-    4.  A universal `FieldManager.updateFieldDisplay` function for programmatic changes (`StateManager` -> UI -> Events).
-*   The successful update of `g_89` (U-Value) and the fixes for `j_115`/`l_118` provide patterns (direct `textContent`/`.value` update + appropriate event dispatch).
+*   The primary challenge remains: **reliable, universal, and consistent synchronization between `StateManager` data and the visual UI** across all field types.
+*   Key components of the solution involve:
+    1.  **Standardized Field Definitions:** Consistent use of `type` and `defaultValue` in `sectionRows`.
+    2.  **Robust Default Value Propagation:** `StateManager` must be initialized with defaults, and then the UI must be "painted" from this initial state.
+    3.  **Consistent User Edit Handling:** UI events (`blur`, `change`, `input`) must reliably update `StateManager` and trigger section-specific calculations.
+    4.  **A Centralized `FieldManager.updateFieldDisplay`:** This function must correctly target DOM elements for all field types and dispatch appropriate events to mimic user interaction, ensuring that section-specific handlers are invoked.
+*   The successful UI updates for `g_89` (U-Value) and the functional (though not visual for the select itself) updates for `d_113` (Heating System dropdown) provide crucial patterns. The slider breakage points to a clear flaw in how `updateFieldDisplay` handles slider-type cells.
 
-## 8. Revised Implementation Plan: Towards Universal UI & Data Handling
+## 8. Revised Implementation Plan: Universal UI Updates
 
 This plan prioritizes creating a robust and universal UI update mechanism.
 
-### Phase A.0: Systemic Review & Standardization of Editable Fields (NEW)
+### Phase A.0: Systemic Review & Standardization of Editable Fields (Ongoing)
 
 **Goal:** Understand and standardize the definition, rendering, and event handling of all user-interactive fields.
 
-*   **Action:**
-    1.  **Survey Field Definitions:** Systematically review `sectionRows` across sections (S10, S11, S13 first). Document `fieldId`, intended `type` (editable text/number, input number, dropdown, slider), `defaultValue`, rendering method (`contenteditable`, `<input>`, `<select>`), and user edit event handlers.
-    2.  **Standardize `type`:** Ensure consistent use (e.g., `editable` for `contenteditable`, `number` for `<input type="number">`, etc.).
-    3.  **Standardize User Event Handling:** Aim for a consistent pattern in section `initializeEventHandlers` (using section-specific `handleEditableBlur` or equivalent) that reliably updates `StateManager` and triggers necessary section calculations.
+*   **Action (Ongoing):**
+    1.  **Survey Field Definitions:** Continue reviewing `sectionRows` across all sections. Document `fieldId`, `type`, `defaultValue`, rendering method, and user edit event handlers.
+    2.  **Standardize `type` Usage:** Enforce consistent use.
+    3.  **Standardize User Event Handling:** Ensure section-specific handlers consistently update `StateManager` and trigger calculations. The pattern in S13's `handleEditableBlur` (parse, validate, format display, update StateManager, call section's `calculateAll`) is a good model for `contenteditable` fields.
 
 ### Phase A: Mastering UI Updates (`FieldManager.updateFieldDisplay`)
 
-**Goal:** Ensure `TEUI.FieldManager.updateFieldDisplay(fieldId, newValue, fieldDef)` reliably updates the UI for all field types and triggers dependent logic via event dispatch.
+**Goal:** Ensure `TEUI.FieldManager.updateFieldDisplay(fieldId, newValue, fieldDef)` reliably updates the UI for ALL relevant field types and triggers dependent logic.
 
-*   **A1: Robust Default Value Handling & Initial UI Paint (Prerequisite)**
-    *   **Action (Global):** Implement a mechanism (e.g., in `TEUI.init.js` or `FieldManager.renderAllSections`) to:
-        1.  Iterate all fields after section module loading; set `defaultValue` in `StateManager` (priority 'default') if no other state exists.
-        2.  After state initialization, iterate again and call `FieldManager.updateFieldDisplay` for all fields to ensure the initial UI matches the state.
-    *   **Testing:** Verify all fields show correct defaults on load. Test `l_118`.
+*   **A1: Default Value Propagation & Initial UI "Paint" (Critical Prerequisite - Partially Addressed by S13 Fixes)**
+    *   **Action (Global):** Implement a robust global mechanism (e.g., called from `TEUI.init.js` after `FieldManager.renderAllSections()`) that:
+        1.  Iterates all fields from `FieldManager.getAllFields()`. If `StateManager.getValue(fieldId)` is `null`, sets `fieldDef.defaultValue` into `StateManager` (priority 'default').
+        2.  Then, iterates again and calls `FieldManager.updateFieldDisplay(fieldId, StateManager.getValue(fieldId), fieldDef)` for all fields with UI elements. This ensures initial UI matches the true initial state.
+    *   **Testing:** `l_118` now shows its default "3". This needs to be true for all fields.
 
-*   **A2: Fix/Verify `contenteditable` Fields (`editable`)**
-    *   **Target:** `d_74` (S10 Area), `f_85` (S11 RSI), `g_89` (S11 U-Value - KWW).
-    *   **Action (in `updateFieldDisplay`):**
-        *   Confirm `element = document.getElementById(fieldId)` gets the `<td>`.
-        *   Set `element.textContent = formattedNewValue;` (using universal `TEUI.formatNumber`).
-        *   Dispatch `blur` event: `element.dispatchEvent(new Event('blur', { bubbles: true }));`.
-    *   **Testing:** Import "55555.csv". `d_74` UI in S10 must show "555.00". `g_89` UI in S11 must show "0.500". Check console logs for `textContent` set and `blur` dispatched.
+*   **A2: Fix `contenteditable` Input Fields (e.g., `d_74` Area in S10)**
+    *   **Target:** `d_74` (S10 Area), `f_85` (S11 RSI).
+    *   **Current Status for `g_89` (KWW):** Works because `updateFieldDisplay` sets `textContent`, and its `blur` event (handled by S11) correctly finalizes.
+    *   **Hypothesis for `d_74`:** `updateFieldDisplay` likely sets `textContent` correctly, but `Section10.js`'s `handleEditableBlur` (when triggered by the programmatic `blur`) or its `calculateAll` might be reverting the `textContent`.
+    *   **Action:**
+        1.  Thoroughly review `Section10.js`'s `handleEditableBlur` and `calculateAll`. Ensure that when `handleEditableBlur` is called for `d_74` with the imported value (e.g., "555"), it correctly updates `StateManager` and that its subsequent call to `Section10.js`'s `calculateAll` does not then wrongly overwrite `d_74.textContent` with a default or unrelated value. The `formatNumber` call within `handleEditableBlur` should use the (newly parsed) `numericValue`.
+        2.  Ensure the `blur` event dispatched by `updateFieldDisplay` for `d_74` is effectively triggering the `handleEditableBlur` in `Section10.js`.
+    *   **Goal:** `d_74` UI in S10 should visually show the imported "555.00".
 
-*   **A3: Fix/Verify Dropdown Fields (`dropdown`)**
-    *   **Target:** `d_113` (Heating), `d_51` (DHW), `e_74` (Orientation).
-    *   **Action (in `updateFieldDisplay`):**
-        1.  Use `selectElement = element.querySelector(\`select[data-field-id='${fieldId}']\`) || document.getElementById(fieldId);` to reliably find the `<select>` element.
-        2.  Set `selectElement.value = newValue;`.
-        3.  Dispatch `change` event: `selectElement.dispatchEvent(new Event('change', { bubbles: true }));`.
-    *   **Testing:** Import "55555.csv". `d_113`/`d_51` UI show "Oil"? Does dependent UI change? Does `e_74` UI show "North"? Check console logs for value set and event dispatch.
+*   **A3: Fix Dropdown Visual Update (The Final "Robofinger" Detail)**
+    *   **Target:** `d_113` (Primary Heating), `e_74` (S10 Orientation).
+    *   **Current Status:** Dependent logic/calculations fire correctly (due to `selectElement.value` being set and `change` event dispatched). Only the *visual display* of the collapsed select element is stale.
+    *   **Action (in `updateFieldDisplay` for `case 'dropdown'`):**
+        1.  The current loop setting `option.selected = true/false` and then re-setting `selectElement.value = newValue` is the correct approach.
+        2.  **If still not visually updating:** This might be a browser-specific rendering quirk with dynamically updated `<select>` elements that are not in focus. A potential, slightly more involved step if the above isn't enough might be to briefly remove and re-add the `selectElement` to/from the DOM to force a full repaint, or to trigger a reflow in a less disruptive way. However, this should be a last resort. For now, let's assume the current iteration in `FieldManager` should be sufficient once any console errors related to it are resolved.
+    *   **Goal:** Dropdowns (`d_113`, `e_74`, etc.) visually show the imported selected option.
 
-*   **A4: Fix/Verify Slider Fields (`percentage`, `coefficient`, etc.)**
-    *   **Target:** `d_118` (SRE), `f_113` (HSPF), `f_74` (SHGC).
-    *   **Action (in `updateFieldDisplay`):**
-        1.  Find the `<input type="range">` (e.g., `element.querySelector('input[type="range"]')`).
-        2.  Find the display `<span>` (e.g., `element.querySelector('.slider-value')`).
-        3.  Set `rangeInput.value = numericNewValue;`.
-        4.  Update `displaySpan.textContent` (formatted).
-        5.  Dispatch `input` event: `rangeInput.dispatchEvent(new Event('input', { bubbles: true }));`.
-    *   **Testing:** Import "55555.csv". Sliders should visually update to imported values (e.g., `d_118` to 55%).
+*   **A4: Fix Slider Fields (UI Vanishing Act)**
+    *   **Target:** `f_74` (S10 SHGC), `d_118` (S13 SRE), `f_113` (S13 HSPF).
+    *   **Problem:** `updateFieldDisplay` currently sets `textContent` on the parent `<td>` for these types, wiping out the slider's HTML structure.
+    *   **Action (in `updateFieldDisplay` for `type: 'percentage'`, `type: 'coefficient'`, `type: 'year_slider'`):**
+        1.  The `element` passed is the `<td>` (e.g., `td#f_74`).
+        2.  Find the actual `<input type="range">` inside this `element` (e.g., `const rangeInput = element.querySelector('input[type="range"]');`).
+        3.  Find the associated display `<span>` (e.g., `const displaySpan = element.querySelector('.slider-value');` — ensure `initializeSliders` consistently adds this class or another reliable selector).
+        4.  If `rangeInput` and `displaySpan` are found:
+            *   Convert `newValue` to a number suitable for `rangeInput.value`.
+            *   Set `rangeInput.value = numericNewValue;`.
+            *   Format `numericNewValue` appropriately (e.g., add '%') and set `displaySpan.textContent`.
+            *   Dispatch an `input` event on the `rangeInput`: `rangeInput.dispatchEvent(new Event('input', { bubbles: true }));` to trigger its own listeners (which update `StateManager` and the display span again, ensuring consistency).
+    *   **Goal:** Sliders reflect imported values visually and functionally without disappearing.
 
 ### Phase B: Comprehensive Testing & Refinement
 *   Test CSV and Excel import thoroughly across all sections and field types.
@@ -169,21 +173,24 @@ This plan prioritizes creating a robust and universal UI update mechanism.
 *   Full regression testing.
 
 ### Phase E: Universal Helper Functions (Future Enhancement)
-*   **Action:** Review all section modules (`calculateAll`, `handleFieldBlur`, helper functions). Identify common logic (like number parsing/formatting, standard calculations).
-*   **Goal:** Abstract common logic into global utilities (e.g., enhance `TEUI.parseNumeric`, `TEUI.formatNumber`, potentially add helpers in `TEUI.Calculator` or a new `TEUI.Utils` module) to reduce code duplication and improve maintainability. Ensure all sections adopt these universal helpers.
+*   **Action:** Review all section modules. Abstract common logic (number parsing using `TEUI.parseNumeric`, display formatting using a global `TEUI.formatNumber`, standardized blur/change handlers where possible) into global utilities or `FieldManager` base methods to reduce duplication and improve maintainability.
 
 ## 9. Implementation Progress & Next Steps
 
-*   **DONE:** Strategy defined, `ExcelMapper` syntax fixed, core import/export implemented (needs UI update fix), `mapExcelToReportModel` created, weather import routing fixed, `l_118`/`j_115` default display/calculation fixed.
+*   **DONE:** Strategy defined, `ExcelMapper` syntax fixed, core import/export in `FileHandler` (data layer mostly sound), `mapExcelToReportModel` created, weather import routing fixed, `l_118`/`j_115` default display/calculation fixed (locally in S13), S16/S18 placeholders fixed. CSV export includes S03 data; CSV import skips S03 data.
 *   **IN PROGRESS:** Phase A: Mastering UI Updates (`FieldManager.updateFieldDisplay`).
-    *   A1: Skip S03 in CSV import (DONE).
-    *   A2-A5: Debugging & implementing robust UI updates for editable fields, dropdowns, and sliders.
-*   **NEXT:**
-    1.  Perform testing based on the latest `FieldManager.updateFieldDisplay` changes (from the previous commit) focusing on logs and UI behavior for `d_74`, `g_89`, `d_113`.
-    2.  Iteratively refine `FieldManager.updateFieldDisplay` based on test results (Phase A2-A5).
-    3.  Address the two specific bugs you mentioned after the import mechanism is stable.
-    4.  Continue through Phases B, C, D, E.
-*   **OUTSTANDING (Low Priority / Post-Core Functionality):**
+    *   A1 (Default/Initial Paint): Partially addressed via S13 fixes; needs global implementation.
+    *   A2 (`contenteditable` `g_89`): Works. `d_74` UI does not update.
+    *   A3 (Dropdowns `d_113`): Functional logic (ghosting, calcs) updates; visual selection in dropdown does not.
+    *   A4 (Sliders): Broken by current `updateFieldDisplay` logic for these types.
+*   **NEXT (When you return):**
+    1.  **Test CSV Import of "55555.csv" with current code.**
+        *   Provide detailed console logs from `FileHandler.updateStateFromImportData` AND `FieldManager.updateFieldDisplay` (especially the `ENTRY` and internal decision/action logs) for `d_74`, `e_74`, `f_74` (S10) and `d_113` (S13).
+        *   Describe the UI state for these fields after import.
+    2.  Based on these logs, we will iteratively refine `FieldManager.updateFieldDisplay` and, if necessary, the event handlers in Section 10 (for `d_74`) and Section 13 (for `d_113` dropdown visual) to achieve correct UI updates.
+    3.  Once `editable` fields and dropdowns are working, implement Phase A.4 for sliders.
+    4.  Address the two specific bugs you mentioned previously after the import mechanism is stable.
+*   **OUTSTANDING (Post-Core UI Update Functionality):**
     *   Update `index.html` menu items.
     *   Final `excelReportInputMapping` verification.
     *   Systematic review of `sectionRows` for export metadata.
