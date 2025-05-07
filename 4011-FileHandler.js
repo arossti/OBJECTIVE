@@ -308,11 +308,16 @@
                         this.stateManager.setValue(fieldId, parsedValue, 'imported');
                         updatedCount++;
                         if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                            console.log(`[FileHandler DEBUG] fieldId=${fieldId} passed isValid. StateManager updated. Attempting FieldManager.updateFieldDisplay.`);
+                            console.log(`[FileHandler DEBUG] fieldId=${fieldId} passed isValid. StateManager updated. Preparing to call FieldManager.updateFieldDisplay.`);
+                            console.log(`[FileHandler DEBUG] Args for updateFieldDisplay: fieldId=${fieldId}, parsedValue=${parsedValue}, fieldDef type=${fieldDef?.type}, fieldDef label=${fieldDef?.label}`);
                         }
                         // NEW: Call FieldManager to update the visual display of the field
                         if (window.TEUI && window.TEUI.FieldManager && typeof window.TEUI.FieldManager.updateFieldDisplay === 'function') {
-                            window.TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue, fieldDef);
+                            try {
+                                window.TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue, fieldDef); 
+                            } catch (e) {
+                                console.error(`[FileHandler] Error calling FieldManager.updateFieldDisplay for ${fieldId}:`, e);
+                            }
                         } else {
                             console.warn(`[FileHandler] TEUI.FieldManager.updateFieldDisplay is not available. UI for ${fieldId} may not update visually.`);
                         }
