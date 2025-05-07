@@ -54,8 +54,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         'd_85', 'f_85', 'd_86', 'f_86', 'd_87', 'f_87', // Air-facing RSI inputs
         'g_88', 'g_89', 'g_90', 'g_91', 'g_92', 'g_93', // Window/Door U-value inputs
         'd_94', 'f_94', 'd_95', 'f_95', // Ground-facing RSI inputs
-        'd_96', // Interior Floor Area
-        'd_97'  // Thermal Bridge Penalty %
+        'd_96' // Interior Floor Area
     ];
 
     //==========================================================================
@@ -82,111 +81,111 @@ window.TEUI.SectionModules.sect11 = (function() {
         "85": {
             id: "B.4", rowId: "B.4", label: "Roof", cells: {
                 c: { label: "Roof" }, d: { fieldId: "d_85", type: "editable", value: "1411.52" },
-                e: { fieldId: "e_85", type: "calculated" }, f: { fieldId: "f_85", type: "editable", value: "9.35" },
-                g: { fieldId: "g_85", type: "calculated" }, h: { fieldId: "h_85", type: "calculated" },
-                i: { fieldId: "i_85", type: "calculated" }, j: { fieldId: "j_85", type: "calculated" },
-                k: { fieldId: "k_85", type: "calculated" }, l: { fieldId: "l_85", type: "calculated" },
-                m: { fieldId: "m_85", type: "calculated" }, n: { fieldId: "n_85", type: "calculated" }
+                e: { fieldId: "e_85", type: "calculated", value: "0.00" }, f: { fieldId: "f_85", type: "editable", value: "9.35" },
+                g: { fieldId: "g_85", type: "calculated", value: "0.00" }, h: { fieldId: "h_85", type: "calculated", value: "0%" },
+                i: { fieldId: "i_85", type: "calculated", value: "0.00" }, j: { fieldId: "j_85", type: "calculated", value: "0%" },
+                k: { fieldId: "k_85", type: "calculated", value: "0.00" }, l: { fieldId: "l_85", type: "calculated", value: "0%" },
+                m: { fieldId: "m_85", type: "calculated", value: "0%" }, n: { fieldId: "n_85", type: "calculated", value: "✓" }
             }
         },
         "86": {
             id: "B.5", rowId: "B.5", label: "Walls Above Grade (Exclude Openings!)", cells: {
                 c: { label: "Walls Above Grade (Exclude Openings!)" }, d: { fieldId: "d_86", type: "editable", value: "712.97" },
-                e: { fieldId: "e_86", type: "calculated" }, f: { fieldId: "f_86", type: "editable", value: "6.69" },
-                g: { fieldId: "g_86", type: "calculated" }, h: { fieldId: "h_86", type: "calculated" },
-                i: { fieldId: "i_86", type: "calculated" }, j: { fieldId: "j_86", type: "calculated" },
-                k: { fieldId: "k_86", type: "calculated" }, l: { fieldId: "l_86", type: "calculated" },
-                m: { fieldId: "m_86", type: "calculated" }, n: { fieldId: "n_86", type: "calculated" }
+                e: { fieldId: "e_86", type: "calculated", value: "0.00" }, f: { fieldId: "f_86", type: "editable", value: "6.69" },
+                g: { fieldId: "g_86", type: "calculated", value: "0.00" }, h: { fieldId: "h_86", type: "calculated", value: "0%" },
+                i: { fieldId: "i_86", type: "calculated", value: "0.00" }, j: { fieldId: "j_86", type: "calculated", value: "0%" },
+                k: { fieldId: "k_86", type: "calculated", value: "0.00" }, l: { fieldId: "l_86", type: "calculated", value: "0%" },
+                m: { fieldId: "m_86", type: "calculated", value: "0%" }, n: { fieldId: "n_86", type: "calculated", value: "✓" }
             }
         },
         "87": {
              id: "B.6", rowId: "B.6", label: "Floor Exposed", cells: {
                 c: { label: "Floor Exposed" }, d: { fieldId: "d_87", type: "editable", value: "0.00" },
-                e: { fieldId: "e_87", type: "calculated" }, f: { fieldId: "f_87", type: "editable", value: "9.52" },
-                g: { fieldId: "g_87", type: "calculated" }, h: { fieldId: "h_87", type: "calculated" },
-                i: { fieldId: "i_87", type: "calculated" }, j: { fieldId: "j_87", type: "calculated" },
-                k: { fieldId: "k_87", type: "calculated" }, l: { fieldId: "l_87", type: "calculated" },
-                m: { fieldId: "m_87", type: "calculated" }, n: { fieldId: "n_87", type: "calculated" }
+                e: { fieldId: "e_87", type: "calculated", value: "0.00" }, f: { fieldId: "f_87", type: "editable", value: "9.52" },
+                g: { fieldId: "g_87", type: "calculated", value: "0.00" }, h: { fieldId: "h_87", type: "calculated", value: "0%" },
+                i: { fieldId: "i_87", type: "calculated", value: "0.00" }, j: { fieldId: "j_87", type: "calculated", value: "0%" },
+                k: { fieldId: "k_87", type: "calculated", value: "0.00" }, l: { fieldId: "l_87", type: "calculated", value: "0%" },
+                m: { fieldId: "m_87", type: "calculated", value: "0%" }, n: { fieldId: "n_87", type: "calculated", value: "✓" }
             }
         },
         "88": {
             id: "B.7.0", rowId: "B.7.0", label: "Doors", cells: {
-                c: { label: "Doors" }, d: { fieldId: "d_88", type: "calculated" },
-                e: { fieldId: "e_88", type: "calculated" }, f: { fieldId: "f_88", type: "calculated" },
-                g: { fieldId: "g_88", type: "editable", value: "0.900" }, h: { fieldId: "h_88", type: "calculated" },
-                i: { fieldId: "i_88", type: "calculated" }, j: { fieldId: "j_88", type: "calculated" },
-                k: { fieldId: "k_88", type: "calculated" }, l: { fieldId: "l_88", type: "calculated" },
-                m: { fieldId: "m_88", type: "calculated" }, n: { fieldId: "n_88", type: "calculated" }
+                c: { label: "Doors" }, d: { fieldId: "d_88", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_88", type: "calculated", value: "0.00" }, f: { fieldId: "f_88", type: "calculated", value: "0.00" },
+                g: { fieldId: "g_88", type: "editable", value: "0.900" }, h: { fieldId: "h_88", type: "calculated", value: "0%" },
+                i: { fieldId: "i_88", type: "calculated", value: "0.00" }, j: { fieldId: "j_88", type: "calculated", value: "0%" },
+                k: { fieldId: "k_88", type: "calculated", value: "0.00" }, l: { fieldId: "l_88", type: "calculated", value: "0%" },
+                m: { fieldId: "m_88", type: "calculated", value: "0%" }, n: { fieldId: "n_88", type: "calculated", value: "✓" }
             }
         },
         "89": {
             id: "B.8.1", rowId: "B.8.1", label: "Window Area North", cells: {
-                c: { label: "Window Area North" }, d: { fieldId: "d_89", type: "calculated" },
-                e: { fieldId: "e_89", type: "calculated" }, f: { fieldId: "f_89", type: "calculated" },
-                g: { fieldId: "g_89", type: "editable", value: "0.900" }, h: { fieldId: "h_89", type: "calculated" },
-                i: { fieldId: "i_89", type: "calculated" }, j: { fieldId: "j_89", type: "calculated" },
-                k: { fieldId: "k_89", type: "calculated" }, l: { fieldId: "l_89", type: "calculated" },
-                m: { fieldId: "m_89", type: "calculated" }, n: { fieldId: "n_89", type: "calculated" }
+                c: { label: "Window Area North" }, d: { fieldId: "d_89", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_89", type: "calculated", value: "0.00" }, f: { fieldId: "f_89", type: "calculated", value: "0.00" },
+                g: { fieldId: "g_89", type: "editable", value: "0.900" }, h: { fieldId: "h_89", type: "calculated", value: "0%" },
+                i: { fieldId: "i_89", type: "calculated", value: "0.00" }, j: { fieldId: "j_89", type: "calculated", value: "0%" },
+                k: { fieldId: "k_89", type: "calculated", value: "0.00" }, l: { fieldId: "l_89", type: "calculated", value: "0%" },
+                m: { fieldId: "m_89", type: "calculated", value: "0%" }, n: { fieldId: "n_89", type: "calculated", value: "✓" }
             }
         },
         "90": {
              id: "B.8.2", rowId: "B.8.2", label: "Window Area East", cells: {
-                c: { label: "Window Area East" }, d: { fieldId: "d_90", type: "calculated" },
-                e: { fieldId: "e_90", type: "calculated" }, f: { fieldId: "f_90", type: "calculated" },
-                g: { fieldId: "g_90", type: "editable", value: "0.900" }, h: { fieldId: "h_90", type: "calculated" },
-                i: { fieldId: "i_90", type: "calculated" }, j: { fieldId: "j_90", type: "calculated" },
-                k: { fieldId: "k_90", type: "calculated" }, l: { fieldId: "l_90", type: "calculated" },
-                m: { fieldId: "m_90", type: "calculated" }, n: { fieldId: "n_90", type: "calculated" }
+                c: { label: "Window Area East" }, d: { fieldId: "d_90", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_90", type: "calculated", value: "0.00" }, f: { fieldId: "f_90", type: "calculated", value: "0.00" },
+                g: { fieldId: "g_90", type: "editable", value: "0.900" }, h: { fieldId: "h_90", type: "calculated", value: "0%" },
+                i: { fieldId: "i_90", type: "calculated", value: "0.00" }, j: { fieldId: "j_90", type: "calculated", value: "0%" },
+                k: { fieldId: "k_90", type: "calculated", value: "0.00" }, l: { fieldId: "l_90", type: "calculated", value: "0%" },
+                m: { fieldId: "m_90", type: "calculated", value: "0%" }, n: { fieldId: "n_90", type: "calculated", value: "✓" }
              }
         },
         "91": {
              id: "B.8.3", rowId: "B.8.3", label: "Window Area South", cells: {
-                c: { label: "Window Area South" }, d: { fieldId: "d_91", type: "calculated" },
-                e: { fieldId: "e_91", type: "calculated" }, f: { fieldId: "f_91", type: "calculated" },
-                g: { fieldId: "g_91", type: "editable", value: "0.900" }, h: { fieldId: "h_91", type: "calculated" },
-                i: { fieldId: "i_91", type: "calculated" }, j: { fieldId: "j_91", type: "calculated" },
-                k: { fieldId: "k_91", type: "calculated" }, l: { fieldId: "l_91", type: "calculated" },
-                m: { fieldId: "m_91", type: "calculated" }, n: { fieldId: "n_91", type: "calculated" }
+                c: { label: "Window Area South" }, d: { fieldId: "d_91", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_91", type: "calculated", value: "0.00" }, f: { fieldId: "f_91", type: "calculated", value: "0.00" },
+                g: { fieldId: "g_91", type: "editable", value: "0.900" }, h: { fieldId: "h_91", type: "calculated", value: "0%" },
+                i: { fieldId: "i_91", type: "calculated", value: "0.00" }, j: { fieldId: "j_91", type: "calculated", value: "0%" },
+                k: { fieldId: "k_91", type: "calculated", value: "0.00" }, l: { fieldId: "l_91", type: "calculated", value: "0%" },
+                m: { fieldId: "m_91", type: "calculated", value: "0%" }, n: { fieldId: "n_91", type: "calculated", value: "✓" }
             }
         },
         "92": {
             id: "B.8.4", rowId: "B.8.4", label: "Window Area West", cells: {
-                c: { label: "Window Area West" }, d: { fieldId: "d_92", type: "calculated" },
-                e: { fieldId: "e_92", type: "calculated" }, f: { fieldId: "f_92", type: "calculated" },
-                g: { fieldId: "g_92", type: "editable", value: "0.900" }, h: { fieldId: "h_92", type: "calculated" },
-                i: { fieldId: "i_92", type: "calculated" }, j: { fieldId: "j_92", type: "calculated" },
-                k: { fieldId: "k_92", type: "calculated" }, l: { fieldId: "l_92", type: "calculated" },
-                m: { fieldId: "m_92", type: "calculated" }, n: { fieldId: "n_92", type: "calculated" }
+                c: { label: "Window Area West" }, d: { fieldId: "d_92", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_92", type: "calculated", value: "0.00" }, f: { fieldId: "f_92", type: "calculated", value: "0.00" },
+                g: { fieldId: "g_92", type: "editable", value: "0.900" }, h: { fieldId: "h_92", type: "calculated", value: "0%" },
+                i: { fieldId: "i_92", type: "calculated", value: "0.00" }, j: { fieldId: "j_92", type: "calculated", value: "0%" },
+                k: { fieldId: "k_92", type: "calculated", value: "0.00" }, l: { fieldId: "l_92", type: "calculated", value: "0%" },
+                m: { fieldId: "m_92", type: "calculated", value: "0%" }, n: { fieldId: "n_92", type: "calculated", value: "✓" }
             }
         },
         "93": {
             id: "B.8.5", rowId: "B.8.5", label: "Skylights", cells: {
-                c: { label: "Skylights" }, d: { fieldId: "d_93", type: "calculated" },
-                e: { fieldId: "e_93", type: "calculated" }, f: { fieldId: "f_93", type: "calculated" },
-                g: { fieldId: "g_93", type: "editable", value: "0.900" }, h: { fieldId: "h_93", type: "calculated" },
-                i: { fieldId: "i_93", type: "calculated" }, j: { fieldId: "j_93", type: "calculated" },
-                k: { fieldId: "k_93", type: "calculated" }, l: { fieldId: "l_93", type: "calculated" },
-                m: { fieldId: "m_93", type: "calculated" }, n: { fieldId: "n_93", type: "calculated" }
+                c: { label: "Skylights" }, d: { fieldId: "d_93", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_93", type: "calculated", value: "0.00" }, f: { fieldId: "f_93", type: "calculated", value: "0.00" },
+                g: { fieldId: "g_93", type: "editable", value: "0.900" }, h: { fieldId: "h_93", type: "calculated", value: "0%" },
+                i: { fieldId: "i_93", type: "calculated", value: "0.00" }, j: { fieldId: "j_93", type: "calculated", value: "0%" },
+                k: { fieldId: "k_93", type: "calculated", value: "0.00" }, l: { fieldId: "l_93", type: "calculated", value: "0%" },
+                m: { fieldId: "m_93", type: "calculated", value: "0%" }, n: { fieldId: "n_93", type: "calculated", value: "✓" }
             }
         },
         "94": {
              id: "B.9", rowId: "B.9", label: "Walls Below Grade (Conditioned Space)", cells: {
                 c: { label: "Walls Below Grade (Conditioned Space)" }, d: { fieldId: "d_94", type: "editable", value: "0.00" },
-                e: { fieldId: "e_94", type: "calculated" }, f: { fieldId: "f_94", type: "editable", value: "4.00" },
-                g: { fieldId: "g_94", type: "calculated" }, h: { fieldId: "h_94", type: "calculated" },
-                i: { fieldId: "i_94", type: "calculated" }, j: { fieldId: "j_94", type: "calculated" },
-                k: { fieldId: "k_94", type: "calculated" }, l: { fieldId: "l_94", type: "calculated" },
-                m: { fieldId: "m_94", type: "calculated" }, n: { fieldId: "n_94", type: "calculated" }
+                e: { fieldId: "e_94", type: "calculated", value: "0.00" }, f: { fieldId: "f_94", type: "editable", value: "4.00" },
+                g: { fieldId: "g_94", type: "calculated", value: "0.00" }, h: { fieldId: "h_94", type: "calculated", value: "0%" },
+                i: { fieldId: "i_94", type: "calculated", value: "0.00" }, j: { fieldId: "j_94", type: "calculated", value: "0%" },
+                k: { fieldId: "k_94", type: "calculated", value: "0.00" }, l: { fieldId: "l_94", type: "calculated", value: "0%" },
+                m: { fieldId: "m_94", type: "calculated", value: "0%" }, n: { fieldId: "n_94", type: "calculated", value: "✓" }
             }
         },
         "95": {
              id: "B.10", rowId: "B.10", label: "Floor Slab (Conditioned Space)", cells: {
                 c: { label: "Floor Slab (Conditioned Space)" }, d: { fieldId: "d_95", type: "editable", value: "1100.42" },
-                e: { fieldId: "e_95", type: "calculated" }, f: { fieldId: "f_95", type: "editable", value: "3.70" },
-                g: { fieldId: "g_95", type: "calculated" }, h: { fieldId: "h_95", type: "calculated" },
-                i: { fieldId: "i_95", type: "calculated" }, j: { fieldId: "j_95", type: "calculated" },
-                k: { fieldId: "k_95", type: "calculated" }, l: { fieldId: "l_95", type: "calculated" },
-                m: { fieldId: "m_95", type: "calculated" }, n: { fieldId: "n_95", type: "calculated" }
+                e: { fieldId: "e_95", type: "calculated", value: "0.00" }, f: { fieldId: "f_95", type: "editable", value: "3.70" },
+                g: { fieldId: "g_95", type: "calculated", value: "0.00" }, h: { fieldId: "h_95", type: "calculated", value: "100%" },
+                i: { fieldId: "i_95", type: "calculated", value: "0.00" }, j: { fieldId: "j_95", type: "calculated", value: "0%" },
+                k: { fieldId: "k_95", type: "calculated", value: "0.00" }, l: { fieldId: "l_95", type: "calculated", value: "0%" },
+                m: { fieldId: "m_95", type: "calculated", value: "0%" }, n: { fieldId: "n_95", type: "calculated", value: "✓" }
              }
         },
         "96": {
@@ -198,22 +197,33 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
         },
         "97": {
-            id: "B.12", rowId: "B.12", label: "Thermal Bridge Penalty (min. 5-70%)", cells: {
+            id: "B.12", rowId: "B.12", label: "Thermal Bridge Penalty (min. 5-70%)",
+            cells: {
                 c: { label: "Thermal Bridge Penalty (min. 5-70%)" },
-                d: { fieldId: "d_97", type: "editable", value: "20.00", title: "Enter percentage (e.g., 20 for 20%). Assume Code Minimum Construction at 50%, PassiveHouse at 5-10%" },
-                e: { fieldId: "e_97", type: "calculated" }, f: {}, g: {}, h: {},
-                i: { fieldId: "i_97", type: "calculated" }, j: { fieldId: "j_97", type: "calculated" },
-                k: { fieldId: "k_97", type: "calculated" }, l: { fieldId: "l_97", type: "calculated" },
-                m: { fieldId: "m_97", type: "calculated" }, n: { fieldId: "n_97", type: "calculated" }
+                d: { 
+                    fieldId: "d_97", 
+                    type: "percentage", // Changed type to percentage for slider
+                    value: "20",       // Default percentage value
+                    min: 5,           // Min percentage
+                    max: 100,         // Max percentage
+                    step: 5,          // Step percentage
+                    title: "Enter percentage (e.g., 20 for 20%). Assume Code Minimum Construction at 50%, PassiveHouse at 5-10%",
+                    section: "transmissionLosses", // Added section for consistency
+                    classes: ["user-input", "slider-container"] // Added slider class
+                },
+                e: { fieldId: "e_97", type: "calculated", value: "0.00" }, f: {}, g: {}, h: {}, // e_97 might display the decimal factor if needed
+                i: { fieldId: "i_97", type: "calculated", value: "0.00" }, j: { fieldId: "j_97", type: "calculated", value: "0%" },
+                k: { fieldId: "k_97", type: "calculated", value: "0.00" }, l: { fieldId: "l_97", type: "calculated", value: "0%" },
+                m: { fieldId: "m_97", type: "calculated", value: "0%" }, n: { fieldId: "n_97", type: "calculated", value: "✓" }
             }
         },
         "98": {
             id: "ET", rowId: "ET", label: "ET", cells: {
-                c: { label: "Envelope Totals" }, d: { fieldId: "d_98", type: "calculated" },
-                e: { fieldId: "e_98", type: "calculated" }, f: {}, g: {},
-                h: { fieldId: "h_98", type: "calculated", value: "100%" }, i: { fieldId: "i_98", type: "calculated" },
-                j: { fieldId: "j_98", type: "calculated", value: "100%" }, k: { fieldId: "k_98", type: "calculated" },
-                l: { fieldId: "l_98", type: "calculated", value: "100%" }, m: {}, n: { fieldId: "n_98", type: "calculated" }
+                c: { label: "Envelope Totals" }, d: { fieldId: "d_98", type: "calculated", value: "0.00" },
+                e: { fieldId: "e_98", type: "calculated", value: "0.00" }, f: {}, g: {},
+                h: { fieldId: "h_98", type: "calculated", value: "100%" }, i: { fieldId: "i_98", type: "calculated", value: "0.00" },
+                j: { fieldId: "j_98", type: "calculated", value: "100%" }, k: { fieldId: "k_98", type: "calculated", value: "0.00" },
+                l: { fieldId: "l_98", type: "calculated", value: "100%" }, m: {}, n: { fieldId: "n_98", type: "calculated", value: "✓" }
             }
         }
     };
@@ -492,8 +502,15 @@ window.TEUI.SectionModules.sect11 = (function() {
 
     function calculateThermalBridgePenalty(componentHeatlossSubtotal, componentHeatgainSubtotal) {
         try {
-            const penaltyPercent = getNumericValue('d_97');
-            const validatedPenalty = Math.max(0, Math.min(1, penaltyPercent));
+            // Read the percentage value directly from state/slider
+            const penaltyPercent = getNumericValue('d_97'); 
+            // Convert percentage to decimal factor for calculation
+            const penaltyDecimal = penaltyPercent / 100;
+            const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal)); // Keep validation just in case
+            
+            // Update e_97 to display the decimal factor if desired
+            setCalculatedValue('e_97', validatedPenalty, 'number-3dp'); // Show decimal with 3dp
+
             let penaltyHeatloss = componentHeatlossSubtotal * validatedPenalty;
             setCalculatedValue('i_97', penaltyHeatloss);
             const penaltyHeatgain = Math.abs(componentHeatgainSubtotal) * validatedPenalty;
@@ -673,6 +690,16 @@ window.TEUI.SectionModules.sect11 = (function() {
     // EVENT HANDLING & INITIALIZATION
     //==========================================================================
 
+    /**
+    * TODO: Optimize initial calculation flow.
+    * The current sequence involves rendering with defaults (often "0.00"), 
+    * then running calculateAll which updates the values, causing a visual "flash".
+    * Future improvements could involve:
+    * - Calculating values *before* initial render.
+    * - Using placeholders ("---") instead of "0.00" as defaults.
+    * - Optimizing the calculateAll sequence itself.
+    * For now, the flash is accepted as known behavior.
+    */
     function handleFieldBlur(event) {
         const fieldElement = this;
         const currentFieldId = fieldElement.getAttribute('data-field-id');
@@ -712,14 +739,50 @@ window.TEUI.SectionModules.sect11 = (function() {
     function initializeEventHandlers() {
         editableFields.forEach(fieldId => {
             const field = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (field?.classList.contains('editable')) {
-                field.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); field.blur(); } });
-                field.addEventListener('blur', handleFieldBlur.bind(field)); // Ensure 'this' context
-                field.addEventListener('focus', () => field.classList.add('editing'));
-                field.addEventListener('focusout', () => field.classList.remove('editing'));
+            // Attach listeners only to fields actually found and marked as editable
+            if (field?.classList.contains('editable')) { 
+                if (!field.hasEditableListeners) { // Prevent adding multiple listeners
+                    field.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); field.blur(); } });
+                    field.addEventListener('blur', handleFieldBlur.bind(field)); // Ensure 'this' context
+                    field.addEventListener('focus', () => field.classList.add('editing'));
+                    field.addEventListener('focusout', () => field.classList.remove('editing'));
+                    field.hasEditableListeners = true; // Mark as listener attached
+                }
             }
             // Removed console.warn for missing/non-editable fields
         });
+
+        // *** ADDED: Specific listener for d_97 slider ***
+        const d97Slider = document.querySelector('input[type="range"][data-field-id="d_97"]');
+        if (d97Slider) {
+            if (!d97Slider.hasSliderListener) { // Prevent adding multiple listeners
+                d97Slider.addEventListener('input', function() {
+                    const percentageValue = parseFloat(this.value);
+                    if (isNaN(percentageValue)) return;
+                    
+                    // Update the display span
+                    const displaySpan = this.parentElement.querySelector('.slider-value');
+                    if (displaySpan) {
+                        displaySpan.textContent = percentageValue.toFixed(0) + '%'; // Show percentage
+                    }
+                    
+                    // Store the PERCENTAGE value string in StateManager
+                    const valueToStore = percentageValue.toString();
+
+                    // Update StateManager
+                    if (window.TEUI && window.TEUI.StateManager) {
+                        window.TEUI.StateManager.setValue('d_97', valueToStore, 'user-modified');
+                    }
+                    
+                    // Recalculate everything after slider moves
+                    calculateAll(); 
+                });
+                d97Slider.hasSliderListener = true; // Mark as listener attached
+            }
+        } else {
+            console.warn("Slider for d_97 not found during initialization.");
+        }
+        // *** END ADDED ***
 
         // Add listeners for climate data changes from Section 3
         if (window.TEUI?.StateManager?.addListener) {
