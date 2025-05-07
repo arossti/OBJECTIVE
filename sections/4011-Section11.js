@@ -401,7 +401,7 @@ window.TEUI.SectionModules.sect11 = (function() {
               rimpFieldId = `e_${rowStr}`, heatlossFieldId = `i_${rowStr}`, heatgainFieldId = `k_${rowStr}`;
 
         const isRefMode = TEUI.ReferenceToggle?.isReferenceMode() || false;
-        console.warn(` S11 Calc Row: START calculateComponentRow(${rowNumber}, refId=${referenceFieldId || 'N/A'}) | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
+        // console.warn(` S11 Calc Row: START calculateComponentRow(${rowNumber}, refId=${referenceFieldId || 'N/A'}) | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
 
         try {
             // Area always comes from Design Model (via StateManager -> getNumericValue)
@@ -420,7 +420,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 // Get the reference value directly using the original field ID (e.g., "B.4")
                 const refValueStr = TEUI.ReferenceManager?.getValue(referenceFieldId);
                 inputValue = window.TEUI.parseNumeric(refValueStr, NaN); // Use global parser
-                console.warn(`  S11 Calc Row ${rowNumber}: Using REFERENCE value for ${referenceFieldId} = ${inputValue}`);
+                // console.warn(`  S11 Calc Row ${rowNumber}: Using REFERENCE value for ${referenceFieldId} = ${inputValue}`);
                 
                 // Assign to rsiValue or uValue based on config.input
                  if (input === 'rsi') {
@@ -434,12 +434,12 @@ window.TEUI.SectionModules.sect11 = (function() {
                 // --- DESIGN MODE (or if referenceFieldId missing) ---
                 if (input === 'rsi') {
                     inputValue = getNumericValue(rsiFieldId); // Read from state/DOM
-                    console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN RSI (f_${rowStr}) = ${inputValue}`);
+                    // console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN RSI (f_${rowStr}) = ${inputValue}`);
                     rsiValue = inputValue;
                     if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
                 } else { // input === 'uvalue'
                     inputValue = getNumericValue(uValueFieldId); // Read from state/DOM
-                    console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN U-Value (g_${rowStr}) = ${inputValue}`);
+                    // console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN U-Value (g_${rowStr}) = ${inputValue}`);
                     uValue = inputValue;
                     if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
                 }
@@ -477,13 +477,13 @@ window.TEUI.SectionModules.sect11 = (function() {
                 calcHeatgain = (area * heatgainMultiplier) / denominator;
             }
             
-            console.warn(`  S11 Calc Row ${rowNumber}: Calculated -> Rimp=${calcRimp.toFixed(2)}, Loss=${calcHeatloss.toFixed(2)}, Gain=${calcHeatgain.toFixed(2)}`); // Log calculated derived values
+            // console.warn(`  S11 Calc Row ${rowNumber}: Calculated -> Rimp=${calcRimp.toFixed(2)}, Loss=${calcHeatloss.toFixed(2)}, Gain=${calcHeatgain.toFixed(2)}`); // Log calculated derived values
             
             setCalculatedValue(rimpFieldId, calcRimp);
             setCalculatedValue(heatlossFieldId, calcHeatloss);
             setCalculatedValue(heatgainFieldId, calcHeatgain);
             
-            console.warn(` S11 Calc Row: END calculateComponentRow(${rowNumber})`);
+            // console.warn(` S11 Calc Row: END calculateComponentRow(${rowNumber})`);
         } catch (error) {
             console.error(`Error calculating row ${rowNumber}:`, error);
             [rimpFieldId, rsiFieldId, uValueFieldId, heatlossFieldId, heatgainFieldId].forEach(id => setCalculatedValue(id, 0));
@@ -512,7 +512,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         let currentValue = NaN; // Initialize currentValue
         const isRefMode = TEUI.ReferenceToggle?.isReferenceMode() || false;
 
-        console.warn(`S11 Ref Indicators: Updating row ${rowId} | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
+        // console.warn(`S11 Ref Indicators: Updating row ${rowId} | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
 
         try {
             let valueSourceElementId = null;
@@ -530,34 +530,34 @@ window.TEUI.SectionModules.sect11 = (function() {
                     const element = document.querySelector(`[data-field-id="${valueSourceElementId}"]`);
                     const domValue = element ? (element.value !== undefined ? element.value : element.textContent) : null;
                     currentValue = window.TEUI.parseNumeric(domValue, NaN); // Parse the DOM value
-                    console.warn(`  -> Ref Mode: Reading value directly from DOM element ${valueSourceElementId}: ${domValue} -> Parsed: ${currentValue}`);
+                    // console.warn(`  -> Ref Mode: Reading value directly from DOM element ${valueSourceElementId}: ${domValue} -> Parsed: ${currentValue}`);
                 } else {
                     // In Design Mode, read normally (prioritizes StateManager)
                     currentValue = getNumericValue(valueSourceElementId);
-                     console.warn(`  -> Design Mode: Reading value via getNumericValue(${valueSourceElementId}) = ${currentValue}`);
+                     // console.warn(`  -> Design Mode: Reading value via getNumericValue(${valueSourceElementId}) = ${currentValue}`);
                 }
             } else {
-                 console.warn(`  -> Could not determine source element ID for comparison.`);
+                 // console.warn(`  -> Could not determine source element ID for comparison.`);
                  currentValue = NaN;
             }
 
             // Perform comparison based on the currentValue read above
             if (baseline.type === 'rsi') {
-                console.warn(`  -> Comparing RSI. Current value = ${currentValue}, Baseline = ${baseline.value}`);
+                // console.warn(`  -> Comparing RSI. Current value = ${currentValue}, Baseline = ${baseline.value}`);
                 if (baseline.value > 0 && !isNaN(currentValue)) referencePercent = (currentValue / baseline.value) * 100;
                 isGood = referencePercent >= 100;
             } else if (baseline.type === 'uvalue') {
-                console.warn(`  -> Comparing U-Value. Current value = ${currentValue}, Baseline = ${baseline.value}`);
+                // console.warn(`  -> Comparing U-Value. Current value = ${currentValue}, Baseline = ${baseline.value}`);
                 if (currentValue > 0 && !isNaN(currentValue)) referencePercent = (baseline.value / currentValue) * 100;
                 isGood = currentValue <= baseline.value;
             } else if (baseline.type === 'penalty') {
-                 console.warn(`  -> Comparing Penalty %. Current value = ${currentValue}, Baseline <= 0.50?`);
+                 // console.warn(`  -> Comparing Penalty %. Current value = ${currentValue}, Baseline <= 0.50?`);
                  isGood = currentValue <= 0.50; // Check against 50%
                  // ... [rest of penalty logic] ...
                  return; // Exit after handling penalty row
             }
             
-            console.warn(`  -> Calculated Comparison: Percent = ${referencePercent.toFixed(2)}%, Pass = ${isGood}`);
+            // console.warn(`  -> Calculated Comparison: Percent = ${referencePercent.toFixed(2)}%, Pass = ${isGood}`);
             // Set Column M (Reference %)
             setCalculatedValue(mFieldId, referencePercent / 100, 'percent'); // Use standard helper for numeric percentage display
             // Set Column N (Pass/Fail Checkmark)
@@ -574,7 +574,7 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     function calculateAll() {
-        console.warn("S11: calculateAll called."); // Add log
+        // console.warn("S11: calculateAll called."); // Add log
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {

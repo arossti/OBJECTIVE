@@ -157,3 +157,97 @@ This list details which UI cell ID (`targetCell`) within each section correspond
     *   `d_140` (GHGI Target kgCO2e/m2) -> `C.1` (Similar to TEDI target)
 
 *(This list is a guideline and needs to be cross-referenced with `3037DEEPSTATE.csv` however `4011-ReferenceValues.js` has been created and matches exact `fieldId`s used in the data file.)*
+
+
+Added possibly out of order due to model glitches: ## 7. The "55555" CSV Import Study & UI Update Iterations (Updated)
+
+A test CSV file (`documentation/TEUIv4011-55555.csv`) was used to systematically test and debug the UI update mechanism after data import. This led to several iterations and fixes.
+
+**Key Successes & Resolved Issues:**
+
+1.  **`StateManager` Correctly Updated:** Confirmed that `StateManager` is correctly updated with imported values, and these values are used in backend calculations.
+2.  **`contenteditable` Fields (e.g., `d_74` S10 Area, `g_89` S11 U-Value):** **FIXED.** `FieldManager.updateFieldDisplay` now correctly sets `element.textContent` and programmatically dispatches a `blur` event. Section-specific `handleEditableBlur` functions (e.g., in S10, S11, S13) have been reviewed or adjusted to correctly process these events, ensuring UI updates and `StateManager` are synchronized.
+3.  **Dropdown Fields (e.g., `d_113` S13 Heating System, `e_74` S10 Orientation):** **FIXED.** `FieldManager.updateFieldDisplay` now correctly targets the `<select>` element, sets its `.value`, explicitly sets the `option.selected` property on the matching option, and dispatches a `change` event. This ensures the UI visually reflects the selection and that dependent logic (like UI ghosting in S13) is triggered.
+4.  **Slider Fields (e.g., `f_74` S10 SHGC, `d_118` S13 SRE):** **FIXED.** The `ReferenceError: Can't find variable: formatNumber` was resolved by ensuring `FieldManager.updateFieldDisplay` calls the global `window.TEUI.formatNumber` (defined in `StateManager.js`) for formatting slider display values. The logic now correctly targets the internal `<input type="range">` and display `<span>` of sliders, setting their values and dispatching an `input` event. Sliders now update visually and remain interactive after import.
+5.  **ACH Field `l_118` (S13):** Initial display of default value ("3.00") and calculations based on user edits are now working correctly due to fixes in S13's `onSectionRendered` and `handleEditableBlur`.
+6.  **Climate Data (Section 03) Import:** Remains skipped during CSV import by `processImportedCSV` (checking `fieldDef.sectionId`), which is the desired behavior. Any lingering validation warnings for S03 fields in `updateStateFromImportData` are minor as the fields aren't actually processed into the state.
+
+**Newly Identified Issue During Testing:**
+
+*   **`TypeError` in `Section08.js`'s local `formatNumber`:**
+    *   Log: `[Error] TypeError: value.toFixed is not a function. (In 'value.toFixed(2)', 'value.toFixed' is undefined) formatNumber (4011-Section08.js:568)`
+    *   This occurs when `FieldManager.updateFieldDisplay` processes an editable field from Section 08, dispatches `blur`, and Section 08's `handleEditableBlur` calls its *local* `formatNumber` with a non-numeric value (likely an empty string or a string that `parseFloat` couldn't handle).
+    *   This highlights the need to standardize on the more robust global `window.TEUI.formatNumber` and `window.TEUI.parseNumeric` across all sections.
+
+**Remaining Primary Bug for Import Functionality:**
+
+*   **`i_41` (Embodied Carbon / Modelled Value A1-3) Loses Editability:** Despite being `type: "number"` (which should render as an editable `<input type="number">`), this field becomes non-editable ("non-blue") after CSV import. This is the next critical item to investigate.
+
+## 8. Revised Implementation Plan: Universal UI & Data Handling - Finalizing Import
+
+The core UI update mechanisms in `FieldManager.updateFieldDisplay` are now largely robust for `contenteditable`, `dropdown`, and `slider` types, thanks to iterative debugging and fixes.
+
+### Phase A: Mastering UI Updates (`FieldManager.updateFieldDisplay`) - Mostly Complete
+
+*   **A.0: Systemic Review & Standardization:** This is an ongoing effort, but critical patterns for `editable` and `number` types, and their event handling, have been established and proven effective in S10, S11, S13.
+*   **A1: Default Value Propagation & Initial UI "Paint":** Partially addressed by section-specific `onSectionRendered` fixes (e.g., `l_118`, `j_115`). A global pass is still desirable (Phase E).
+*   **A2: `contenteditable` Input Fields:** **RESOLVED.**
+*   **A3: Dropdown Fields:** **RESOLVED.** (Visual and functional updates working).
+*   **A4: Slider Fields:** **RESOLVED.** (Visuals, functionality, and `formatNumber` errors fixed).
+*   **A5: Revert Section 03 CSV Import:** **DONE.**
+
+### Next Immediate Coding Steps:
+
+1.  **BUG FIX: `i_41` Loses Editability (Section 05)**
+    *   **Goal:** Ensure `i_41` remains editable and visually "blue" after CSV import.
+    *   **Action:**
+        1.  Verify `i_41` is rendered as `<input type="number" class="user-input ...">` by `FieldManager.generateSectionContent` (its `fieldDef.type` in `Section05.js` is "number").
+        2.  During CSV import, trace `FieldManager.updateFieldDisplay` for `i_41`:
+            *   Confirm it correctly identifies `element` as the `<input type="number">`.
+            *   Confirm `element.value` is set.
+            *   Confirm no `disabled` attribute is being added or `user-input` class removed by this function.
+        3.  If `updateFieldDisplay` appears correct, investigate `Section05.js`:
+            *   Examine its `calculateAll()` and any functions it calls that might affect `i_41`.
+            *   Does any logic in Section 05 (perhaps related to the `d_39` Typology dropdown being "Modelled Value") programmatically set `i_41.disabled = true` or remove its `user-input` styling class after the import-triggered calculations?
+            *   The local `setCalculatedValue` in S05 sets `input.value` directly; this should not break editability unless the *element reference itself* is being replaced or its attributes modified elsewhere.
+
+2.  **BUG FIX & Refactor: `TypeError` in `Section08.js`'s local `formatNumber`**
+    *   **Goal:** Prevent the `TypeError` and standardize Section 08 to use global utilities.
+    *   **Action:**
+        1.  In `sections/4011-Section08.js`, remove its local `formatNumber`, `getFieldValue`, `getNumericValue`, and `setCalculatedValue` helper functions.
+        2.  Update all call sites within `Section08.js` to use `window.TEUI.StateManager.getValue()`, `window.TEUI.parseNumeric()`, `window.TEUI.StateManager.setValue()`, and `window.TEUI.formatNumber()` appropriately, ensuring correct `formatType` strings are passed to the global formatter.
+    *   **Testing:** Ensure Section 08 calculations and display still work correctly. Import a CSV with Section 08 values to confirm the `TypeError` is gone.
+
+### Phase B: Comprehensive Testing & Refinement
+*   After `i_41` and the S08 `formatNumber` bug are fixed.
+*   (As previously outlined)
+
+### Phase C: Integration with Reference Model UI
+*   (As previously outlined)
+
+### Phase D: Final Review and Documentation Update
+*   (As previously outlined)
+*   **Action:** Remove all remaining temporary debug `console.log` statements from `FileHandler.js`, `FieldManager.js`, and section files.
+
+### Phase E: Universal Helper Functions (Future Enhancement)
+*   **Action:** After core stability, systematically refactor remaining sections to use global `TEUI.parseNumeric` and `TEUI.formatNumber`. Review and standardize `handleEditableBlur` patterns or abstract further if feasible.
+
+## 9. Implementation Progress & Next Steps
+
+*   **DONE:**
+    *   Strategy defined, `ExcelMapper` syntax fixed, core import/export in `FileHandler.js`.
+    *   `mapExcelToReportModel` created.
+    *   Weather file import routing fixed.
+    *   `l_118`/`j_115` default display/calculation fixed.
+    *   S16/S18 placeholders fixed.
+    *   CSV import skips Section 03.
+    *   **UI updates via `FieldManager.updateFieldDisplay` for `contenteditable`, dropdowns (visual & functional), and sliders (visual, functional, and `formatNumber` error) are NOW WORKING for CSV imports.**
+*   **NEXT:**
+    1.  **BUG FIX:** Address `i_41` losing editability after import (Phase A - `i_41` from current section).
+    2.  **BUG FIX & REFACTOR:** Modify `Section08.js` to use global `formatNumber` and `parseNumeric` to fix `TypeError` (Phase A - S08 from current section).
+    3.  Comprehensive Testing (Phase B).
+    4.  Clean up remaining debug logs (Phase D partial).
+    5.  Proceed to Reference Model Integration (Phase C).
+*   **OUTSTANDING (Post-Core Functionality):**
+    *   (As previously listed)
+*   **NOTE:** Using a local web server for development is still recommended to avoid `file:///` resource loading issues and 404 errors for missing files like `favicon.ico` or any other actual section files if they were missing/misnamed.
