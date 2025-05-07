@@ -1395,7 +1395,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             const fields = getFields(); // Get field definitions for this section
             Object.entries(fields).forEach(([fieldId, fieldDef]) => {
                 // Check if it's one of the problematic editable fields with a defined default
-                if ((fieldId === 'd_119' || fieldId === 'j_115') && fieldDef.defaultValue) {
+                if ((fieldId === 'd_119' || fieldId === 'j_115' || fieldId === 'l_118') && fieldDef.defaultValue) { // ADDED l_118
                     // Check if StateManager *doesn't* already have a value (to avoid overwriting user/imported data later)
                     if (window.TEUI.StateManager.getValue(fieldId) === null) {
                         // console.log(`[S13 Init Defaults] Setting default for ${fieldId} to ${fieldDef.defaultValue}`);
@@ -1417,7 +1417,7 @@ window.TEUI.SectionModules.sect13 = (function() {
 
         // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
         if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
-            const fieldsToUpdate = ['d_119', 'j_115'];
+            const fieldsToUpdate = ['d_119', 'j_115', 'l_118']; // ADDED l_118
             fieldsToUpdate.forEach(fieldId => {
                 const element = document.querySelector(`td[data-field-id="${fieldId}"]`);
                 const stateValue = window.TEUI.StateManager.getValue(fieldId);

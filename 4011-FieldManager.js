@@ -1029,23 +1029,47 @@ TEUI.FieldManager = (function() {
             switch (fieldDef.type) {
                 case 'editable':
                 case 'number': // Assuming 'number' type renders an <input type="number">
-                case 'year_slider': // Sliders might have a direct input part or need more complex handling
-                case 'percentage':
-                case 'coefficient':
                     if (typeof element.value !== 'undefined') {
                         element.value = newValue;
+                        console.log(`[FieldManager.updateFieldDisplay] Set INPUT value for ${fieldId} to: ${newValue}`, element); // KWW DEBUG
+                        // If it's an input, a 'change' or 'input' event might be more appropriate if blur doesn't trigger all dependent logic
+                        // For now, let's see if direct value setting is enough, as blur is usually for user interaction completion.
+                        // element.dispatchEvent(new Event('input', { bubbles: true })); 
+                        // element.dispatchEvent(new Event('change', { bubbles: true })); 
                     } else {
                         // Fallback for elements that don't have a .value property but are editable (e.g. contenteditable divs/spans)
                         element.textContent = newValue;
+                        console.log(`[FieldManager.updateFieldDisplay] Set TEXTCONTENT for ${fieldId} (type: ${fieldDef.type}) to: ${newValue}`, element); // KWW DEBUG
+                        // For contenteditable elements, dispatching 'blur' can help trigger validation/save logic
+                        element.dispatchEvent(new Event('blur', { bubbles: true }));
+                        // console.log(`[FieldManager.updateFieldDisplay] Dispatched BLUR for ${fieldId}`); // KWW DEBUG
                     }
-                    // For sliders, we might need to also update the visual range element if separate
-                    // This will be handled in Phase A2 if necessary.
+                    break;
+                case 'year_slider': // Sliders might have a direct input part or need more complex handling
+                case 'percentage':
+                case 'coefficient':
+                    // This is a placeholder - proper slider handling will be in Phase A5
+                    // For now, try to set value if it's a direct input, or textContent if not.
+                    if (typeof element.value !== 'undefined') {
+                        element.value = newValue;
+                    } else {
+                        element.textContent = newValue;
+                    }
+                    console.log(`[FieldManager.updateFieldDisplay] Attempted update for slider-like ${fieldId} (type: ${fieldDef.type}) to: ${newValue}`, element);
+                    // TODO: Add specific slider UI update logic here (Phase A5)
                     break;
                 case 'dropdown':
-                    element.value = newValue;
-                    // Dispatch a change event to trigger any dependent logic or UI updates
-                    element.dispatchEvent(new Event('change', { bubbles: true }));
-                    // console.log(`[FieldManager.updateFieldDisplay] Set dropdown ${fieldId} to ${newValue} and dispatched change event.`);
+                    // Ensure we target the actual <select> element
+                    const selectElement = element.tagName === 'SELECT' ? element : element.querySelector('select[data-field-id="' + fieldId + '"]');
+                    if (selectElement) {
+                        selectElement.value = newValue;
+                        console.log(`[FieldManager.updateFieldDisplay] Set SELECT value for ${fieldId} to: ${newValue}`, selectElement); // KWW DEBUG
+                        // Dispatch a change event to trigger any dependent logic or UI updates
+                        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+                        // console.log(`[FieldManager.updateFieldDisplay] Dispatched CHANGE for ${fieldId}`); // KWW DEBUG
+                    } else {
+                        console.warn(`[FieldManager.updateFieldDisplay] Could not find SELECT element for dropdown ${fieldId}`);
+                    }
                     break;
                 case 'calculated':
                 case 'derived':
