@@ -259,10 +259,10 @@
             let skippedValidationCount = 0;
 
             Object.entries(importedData).forEach(([fieldId, value]) => {
-                // DEBUG: Log entry for each field being processed
-                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                    console.log(`[FileHandler DEBUG] Processing imported: fieldId=${fieldId}, value=${value}`);
-                }
+                // DEBUG: Log entry for each field being processed - REMOVE/COMMENT OUT
+                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                //     console.log(`[FileHandler DEBUG] Processing imported: fieldId=${fieldId}, value=${value}`);
+                // }
 
                 const fieldDef = this.fieldManager.getField(fieldId);
                 if (!fieldDef) {
@@ -271,10 +271,10 @@
                     return; // Use return to continue to next iteration of forEach
                 }
 
-                // DEBUG: Log fieldDef type
-                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                    console.log(`[FileHandler DEBUG] fieldId=${fieldId}, fieldDef.type=${fieldDef.type}`);
-                }
+                // DEBUG: Log fieldDef type - REMOVE/COMMENT OUT
+                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                //     console.log(`[FileHandler DEBUG] fieldId=${fieldId}, fieldDef.type=${fieldDef.type}`);
+                // }
 
                 let parsedValue = value; 
                 let isValid = true;
@@ -287,9 +287,9 @@
                             parsedValue = numericValue.toString(); 
                         } else if (fieldDef.type !== 'editable') { 
                             isValid = false;
-                            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                                console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because non-editable and not a number.`);
-                            }
+                            // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                            //     console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because non-editable and not a number.`);
+                            // }
                         } 
                     } else if (fieldDef.type === 'dropdown') {
                          // Basic validation: Check if value exists in options (case-sensitive)
@@ -297,9 +297,9 @@
                         const validValues = options.map(opt => typeof opt === 'object' ? opt.value : opt);
                         if (!validValues.includes(value)) {
                             isValid = false;
-                            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                                console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because dropdown value not in options. Options:`, validValues, `Value: ${value}`);
-                            }
+                            // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                            //     console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because dropdown value not in options. Options:`, validValues, `Value: ${value}`);
+                            // }
                         }
                         // Keep original string value if valid
                     }
@@ -307,10 +307,10 @@
                     if (isValid) {
                         this.stateManager.setValue(fieldId, parsedValue, 'imported');
                         updatedCount++;
-                        if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                            console.log(`[FileHandler DEBUG] fieldId=${fieldId} passed isValid. StateManager updated. Preparing to call FieldManager.updateFieldDisplay.`);
-                            console.log(`[FileHandler DEBUG] Args for updateFieldDisplay: fieldId=${fieldId}, parsedValue=${parsedValue}, fieldDef type=${fieldDef?.type}, fieldDef label=${fieldDef?.label}`);
-                        }
+                        // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') { // REMOVE/COMMENT OUT
+                        //     console.log(`[FileHandler DEBUG] fieldId=${fieldId} passed isValid. StateManager updated. Preparing to call FieldManager.updateFieldDisplay.`);
+                        //     console.log(`[FileHandler DEBUG] Args for updateFieldDisplay: fieldId=${fieldId}, parsedValue=${parsedValue}, fieldDef type=${fieldDef?.type}, fieldDef label=${fieldDef?.label}`);
+                        // }
                         // NEW: Call FieldManager to update the visual display of the field
                         if (window.TEUI && window.TEUI.FieldManager && typeof window.TEUI.FieldManager.updateFieldDisplay === 'function') {
                             try {
@@ -331,10 +331,10 @@
                      isValid = false; // Ensure isValid is false on error
                 }
 
-                // DEBUG: Log isValid status before the conditional update
-                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
-                    console.log(`[FileHandler DEBUG] fieldId=${fieldId}, isValid=${isValid}, parsedValue=${parsedValue}`);
-                }
+                // DEBUG: Log isValid status before the conditional update - REMOVE/COMMENT OUT
+                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                //     console.log(`[FileHandler DEBUG] fieldId=${fieldId}, isValid=${isValid}, parsedValue=${parsedValue}`);
+                // }
             });
 
             // Trigger recalculation after all updates

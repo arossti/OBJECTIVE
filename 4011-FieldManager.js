@@ -1003,11 +1003,12 @@ TEUI.FieldManager = (function() {
          * NEW FUNCTION: Updates the visual display of a single field element.
          * @param {string} fieldId - The ID of the field to update.
          * @param {string} newValue - The new value to display.
+         * @param {object} fieldDefFromCaller - The field definition object.
          */
         updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) { 
-            /* KWW DEBUG ENTRY */ console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
-                fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue, sectionId: fieldDefFromCaller.sectionId} : null
-            });
+            // /* KWW DEBUG ENTRY */ console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
+            //     fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue, sectionId: fieldDefFromCaller.sectionId} : null
+            // });
 
             // Attempt to get the element more reliably, preferring data-field-id, then direct id.
             // Many interactive elements are nested and might not have the fieldId as their direct HTML id.
@@ -1020,20 +1021,20 @@ TEUI.FieldManager = (function() {
             const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
 
             if (!element) {
-                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log for critical test cases
-                    console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Element for fieldId "${fieldId}" NOT FOUND.`);
-                }
+                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log for critical test cases
+                //     console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Element for fieldId "${fieldId}" NOT FOUND.`);
+                // }
                 return;
             }
             // Log the found element for critical fields
-            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
-                 console.log(`[FieldManager.updateFieldDisplay] Found element for ${fieldId}:`, element);
-            }
+            // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
+            //      console.log(`[FieldManager.updateFieldDisplay] Found element for ${fieldId}:`, element);
+            // }
 
             if (!fieldDef) {
-                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log if critical fieldDef is missing
-                    console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Field definition for ${fieldId} is missing/null. Cannot determine type. Element:`, element);
-                }
+                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log if critical fieldDef is missing
+                //     console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Field definition for ${fieldId} is missing/null. Cannot determine type. Element:`, element);
+                // }
                 // Attempt generic update if no fieldDef but element exists (e.g. simple span)
                 if (element.tagName === 'SPAN' || element.tagName === 'DIV') {
                     element.textContent = newValue;
@@ -1044,9 +1045,9 @@ TEUI.FieldManager = (function() {
             }
             
             // Log the confirmed fieldDef.type for critical fields
-            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
-                 console.log(`[FieldManager.updateFieldDisplay] Processing ${fieldId} with fieldDef.type = ${fieldDef.type}`);
-            }
+            // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
+            //      console.log(`[FieldManager.updateFieldDisplay] Processing ${fieldId} with fieldDef.type = ${fieldDef.type}`);
+            // }
 
             // Handle different field types
             switch (fieldDef.type) {
@@ -1054,18 +1055,14 @@ TEUI.FieldManager = (function() {
                 case 'number': 
                     if (typeof element.value !== 'undefined') {
                         element.value = newValue;
-                        console.log(`[FieldManager.updateFieldDisplay] Set INPUT value for ${fieldId} to: ${newValue}`, element); // KWW DEBUG
-                        // If it's an input, a 'change' or 'input' event might be more appropriate if blur doesn't trigger all dependent logic
-                        // For now, let's see if direct value setting is enough, as blur is usually for user interaction completion.
-                        // element.dispatchEvent(new Event('input', { bubbles: true })); 
-                        // element.dispatchEvent(new Event('change', { bubbles: true })); 
+                        // console.log(`[FieldManager.updateFieldDisplay] Set INPUT value for ${fieldId} to: ${newValue}`, element); 
                     } else {
                         // Fallback for elements that don't have a .value property but are editable (e.g. contenteditable divs/spans)
                         element.textContent = newValue;
-                        console.log(`[FieldManager.updateFieldDisplay] Set TEXTCONTENT for ${fieldId} (type: ${fieldDef.type}) to: ${newValue}`, element); // KWW DEBUG
+                        // console.log(`[FieldManager.updateFieldDisplay] Set TEXTCONTENT for ${fieldId} (type: ${fieldDef.type}) to: ${newValue}`, element); 
                         // For contenteditable elements, dispatching 'blur' can help trigger validation/save logic
                         element.dispatchEvent(new Event('blur', { bubbles: true }));
-                        // console.log(`[FieldManager.updateFieldDisplay] Dispatched BLUR for ${fieldId}`); // KWW DEBUG
+                        // console.log(`[FieldManager.updateFieldDisplay] Dispatched BLUR for ${fieldId}`);
                     }
                     break;
                 case 'year_slider': 
@@ -1108,7 +1105,7 @@ TEUI.FieldManager = (function() {
                     const selectElement = element.tagName === 'SELECT' ? element : element.querySelector(`select[data-field-id='${fieldId}']`); // Template literal for querySelector
                     if (selectElement) {
                         // selectElement.value = newValue; // Setting .value should ideally be enough, but browsers can be tricky with visual updates
-                        // console.log(`[FieldManager.updateFieldDisplay] Set SELECT value for ${fieldId} to: ${newValue}`, selectElement); // KWW DEBUG
+                        // console.log(`[FieldManager.updateFieldDisplay] Set SELECT value for ${fieldId} to: ${newValue}`, selectElement);
 
                         let optionFoundAndSelected = false;
                         for (let i = 0; i < selectElement.options.length; i++) {
@@ -1124,11 +1121,11 @@ TEUI.FieldManager = (function() {
                         // This ensures the select's internal value is correct even if no specific <option> tag matched.
                         selectElement.value = newValue;
                         
-                        if (optionFoundAndSelected) {
-                            console.log(`[FieldManager.updateFieldDisplay] Option for value "${newValue}" SELECTED for dropdown ${fieldId}.`);
-                        } else {
-                            console.warn(`[FieldManager.updateFieldDisplay] Value "${newValue}" for dropdown ${fieldId} not explicitly found among its <option>s. Set .value directly.`);
-                        }
+                        // if (optionFoundAndSelected) { // Keep this more general log for now
+                        //     console.log(`[FieldManager.updateFieldDisplay] Option for value "${newValue}" SELECTED for dropdown ${fieldId}.`);
+                        // } else {
+                        //     console.warn(`[FieldManager.updateFieldDisplay] Value "${newValue}" for dropdown ${fieldId} not explicitly found among its <option>s. Set .value directly.`);
+                        // }
 
                         // Dispatch a change event to trigger any dependent logic or UI updates
                         selectElement.dispatchEvent(new Event('change', { bubbles: true }));
