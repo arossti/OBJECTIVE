@@ -29,12 +29,12 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
 
 **Phase 0: Prerequisite - Standardize Helpers (In Progress)**
 *   **Goal:** Ensure all section modules consistently use global `window.TEUI.parseNumeric` and `window.TEUI.formatNumber`.
-*   **Status:** S05, S08 completed. Remaining sections (01-04, 06, 07, 09, 10, 12, 14, 15) need review and refactoring.
+*   **Status:** S02, S05, S08 completed. Remaining sections (01, 03, 04, 06, 07, 09, 10, 12, 14, 15) need review and refactoring. S01 reverted, to be revisited.
 *   **Action:** Systematically refactor remaining sections before proceeding with core Reference Model logic.
 
 **Phase 1: StateManager Structure & Data Loading**
 *   **Goal:** Implement the storage and loading of reference values within `StateManager` without affecting Design Mode.
-*   **Actions:**
+    *   **Actions:**
     *   Modify `StateManager` to include internal storage for reference values (e.g., `referenceValuesState`).
     *   Implement `loadReferenceData(standard)` function in `StateManager` to populate this state from `TEUI.ReferenceValues`.
     *   Trigger `loadReferenceData` on init and on `d_13` change.
@@ -43,14 +43,14 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
 
 **Phase 2: Mode-Aware `StateManager.getValue`**
 *   **Goal:** Enable `StateManager.getValue` to return reference values when Reference Mode is active.
-*   **Actions:**
+    *   **Actions:**
     *   Modify `StateManager.getValue` to check `TEUI.ReferenceToggle.isReferenceMode()` and return value from `referenceValuesState` if applicable.
     *   Handle cases where a reference value might not exist for a given `fieldId` (return `null` or a specific constant).
 *   **Testing:** Design Mode must work. In Reference Mode, calculations should start using reference values pulled via `getValue`. UI *may* start reflecting changes partially.
 
 **Phase 3: UI Update Triggering & Styling/Locking**
 *   **Goal:** Correctly trigger UI updates via `FieldManager` and apply visual locking/styling.
-*   **Actions:**
+    *   **Actions:**
     *   Modify `ReferenceToggle.js`: When entering Reference Mode or when `d_13` changes *while in Reference Mode*, iterate through the `targetCell` fields for the selected standard.
     *   For each `targetCell`: Call `TEUI.FieldManager.updateFieldDisplay(fieldId, referenceValue, fieldDef)`. *(Note: `StateManager` should already contain the value from Phase 1)*.
     *   Ensure `ReferenceToggle.js` correctly adds/removes the `reference-mode` body class.
@@ -60,7 +60,7 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
 
 **Phase 4: End-to-End Calculation & Key Values**
 *   **Goal:** Ensure reference calculations propagate correctly through the entire application and update Section 01 Key Values (Column E).
-*   **Actions:**
+    *   **Actions:**
     *   Verify that calculations in all sections produce expected results based on the selected reference standard.
     *   Ensure Section 01 display logic for Column E correctly reflects the final calculated reference totals.
 *   **Testing:** Run through various reference standards. Check key calculated outputs in different sections and verify Section 01 Column E totals match expectations.

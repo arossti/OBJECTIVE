@@ -58,13 +58,13 @@ TEUI.StateManager = (function() {
 
             // Parsing complex format types
             const formatParts = formatType.split('-');
-            const type = formatParts[0]; // 'number', 'percent', 'currency'
-            const dpPart = formatParts[1] || ''; // e.g., '0dp', '2dp', '3dp'
-            const useCommas = formatParts.includes('comma'); // Relevant for 'number' type
+            let type = formatParts[0]; // 'number', 'percent', 'cad'
+            const dpPart = formatParts[1] || ''; // e.g., '0dp', '2dp', '3dp', '4dp'
+            const useCommas = formatParts.includes('comma');
 
             let decimals = 2; // Default decimal places
             if (dpPart) {
-                const match = dpPart.match(/(\d+)d/); // Match 0dp, 1dp, 2dp, 3dp etc.
+                const match = dpPart.match(/(\d+)d/);
                 if (match) decimals = parseInt(match[1], 10);
             }
 
@@ -76,14 +76,18 @@ TEUI.StateManager = (function() {
                      maximumFractionDigits: decimals 
                  });
             }
-            // Currency Formatting
-            else if (type === 'currency') {
-                 return numValue.toLocaleString(undefined, { 
-                     style: 'currency', 
-                     currency: 'USD', // Or make dynamic if needed later
-                     minimumFractionDigits: decimals, 
-                     maximumFractionDigits: decimals 
-                 });
+            // CAD Currency Formatting (using toFixed)
+            else if (type === 'cad') {
+                 if (isNaN(decimals) || decimals < 0) decimals = 2; // Safety check
+                 const fixedString = numValue.toFixed(decimals);
+                 // Basic comma insertion - might need refinement for edge cases
+                 let finalString = fixedString;
+                 if (useCommas) {
+                     const parts = fixedString.split('.');
+                     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                     finalString = parts.join('.');
+                 }
+                 return '$' + finalString;
             }
             // Number Formatting (Default)
             else { 

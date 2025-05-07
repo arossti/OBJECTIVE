@@ -531,24 +531,40 @@ window.TEUI.SectionModules.sect02 = (function() {
      * Follows the standard pattern across sections
      */
     function formatNumber(value) {
+        // *** S02 LOCAL FORMATTER LOG ***
+        console.log(`[S02 Local formatNumber] Input: ${value}`);
+
         // Ensure value is a number
-        const numValue = parseFloat(value);
+        // ORIGINAL PARSING - Keep for logging study
+        let numValue;
+        if (typeof value === 'string') {
+            // Original local parser didn't remove '$'
+            const cleanedValue = value.replace(/,/g, '').trim(); 
+            numValue = parseFloat(cleanedValue); 
+        } else {
+            numValue = parseFloat(value);
+        }
         
         // Handle invalid values
         if (isNaN(numValue)) {
+            console.log(`[S02 Local formatNumber] Output (NaN): "0.00"`);
             return "0.00";
         }
         
         // Check if value is very small
         if (Math.abs(numValue) < 0.01 && numValue !== 0) {
-            return numValue.toFixed(2);
+            const smallFormatted = numValue.toFixed(2);
+             console.log(`[S02 Local formatNumber] Output (Small): ${smallFormatted}`);
+            return smallFormatted;
         }
         
         // Always use 2 decimal places for all numbers, including integers
-        return numValue.toLocaleString(undefined, {
+        const formatted = numValue.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+         console.log(`[S02 Local formatNumber] Output (toLocaleString): ${formatted}`);
+        return formatted;
     }
     
     /**
@@ -780,6 +796,14 @@ window.TEUI.SectionModules.sect02 = (function() {
      * Standard implementation from SectionXX template
      */
     function onSectionRendered() {
+        // *** S02 RENDER LOG ***
+        console.log("[S02 onSectionRendered] START");
+        const costFields = ['l_12', 'l_13', 'l_14', 'l_15', 'l_16'];
+        costFields.forEach(id => {
+            const el = document.querySelector(`[data-field-id="${id}"]`);
+            console.log(`[S02 onSectionRendered] Initial textContent for ${id}: "${el?.textContent}"`);
+        });
+
         // Initialize event handlers
         initializeEventHandlers();
         
@@ -853,6 +877,11 @@ window.TEUI.SectionModules.sect02 = (function() {
         userInputFields.forEach(fieldId => {
             const field = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (field) {
+                // *** S02 STYLING LOG ***
+                if (fieldId.startsWith('l_') && fieldId !== 'l_118') { // Log for cost fields
+                    console.log(`[S02 Styling ${fieldId}] Before style/attr changes: textContent="${field.textContent}"`);
+                }
+
                 // Make sure it's properly styled and editable
                 field.setAttribute('contenteditable', 'true');
                 field.classList.add('user-input', 'editable');
@@ -883,6 +912,10 @@ window.TEUI.SectionModules.sect02 = (function() {
                     });
                     
                     field.hasEventListener = true;
+                }
+
+                if (fieldId.startsWith('l_') && fieldId !== 'l_118') { // Log for cost fields
+                    console.log(`[S02 Styling ${fieldId}] After style/attr changes: textContent="${field.textContent}"`);
                 }
             }
         });
@@ -1059,3 +1092,17 @@ document.addEventListener('teui-rendering-complete', function() {
         }
     }, 300);
 });
+
+function syncCostFieldDisplays() {
+    const costFields = ['l_12', 'l_13', 'l_14', 'l_15', 'l_16'];
+    costFields.forEach(fieldId => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const rawValue = getNumericValue(fieldId);
+            // Apply specific formatting based on field ID
+            const formatType = (fieldId === 'l_15') ? 'cad-2dp' : 'cad-4dp'; // Use new format type
+            const formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+            element.textContent = formattedValue;
+        }
+    });
+}
