@@ -259,14 +259,24 @@
             let skippedValidationCount = 0;
 
             Object.entries(importedData).forEach(([fieldId, value]) => {
+                // DEBUG: Log entry for each field being processed
+                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                    console.log(`[FileHandler DEBUG] Processing imported: fieldId=${fieldId}, value=${value}`);
+                }
+
                 const fieldDef = this.fieldManager.getField(fieldId);
                 if (!fieldDef) {
                     console.warn(`Skipping import for unknown fieldId: ${fieldId}`);
                     skippedValidationCount++;
-                    return;
+                    return; // Use return to continue to next iteration of forEach
                 }
 
-                let parsedValue = value; // Keep original string for text types
+                // DEBUG: Log fieldDef type
+                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                    console.log(`[FileHandler DEBUG] fieldId=${fieldId}, fieldDef.type=${fieldDef.type}`);
+                }
+
+                let parsedValue = value; 
                 let isValid = true;
 
                 try {
@@ -274,17 +284,22 @@
                         // Try parsing numbers, allow text fallbacks for generic editable
                         const numericValue = window.TEUI.parseNumeric(value, NaN);
                         if (!isNaN(numericValue)) {
-                            parsedValue = numericValue.toString(); // Store as string
-                            // Optional: Add min/max validation for sliders here
-                        } else if (fieldDef.type !== 'editable') { // If not generic editable, and not a number, it's invalid
+                            parsedValue = numericValue.toString(); 
+                        } else if (fieldDef.type !== 'editable') { 
                             isValid = false;
-                        } // Keep original string value for generic 'editable' if not numeric
+                            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                                console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because non-editable and not a number.`);
+                            }
+                        } 
                     } else if (fieldDef.type === 'dropdown') {
                          // Basic validation: Check if value exists in options (case-sensitive)
                         const options = this.fieldManager.getDropdownOptions(fieldDef.dropdownId, { parentValue: null }); // Get base options
                         const validValues = options.map(opt => typeof opt === 'object' ? opt.value : opt);
                         if (!validValues.includes(value)) {
                             isValid = false;
+                            if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                                console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because dropdown value not in options. Options:`, validValues, `Value: ${value}`);
+                            }
                         }
                         // Keep original string value if valid
                     }
@@ -292,9 +307,12 @@
                     if (isValid) {
                         this.stateManager.setValue(fieldId, parsedValue, 'imported');
                         updatedCount++;
+                        if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                            console.log(`[FileHandler DEBUG] fieldId=${fieldId} passed isValid. StateManager updated. Attempting FieldManager.updateFieldDisplay.`);
+                        }
                         // NEW: Call FieldManager to update the visual display of the field
                         if (window.TEUI && window.TEUI.FieldManager && typeof window.TEUI.FieldManager.updateFieldDisplay === 'function') {
-                            window.TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue);
+                            window.TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue, fieldDef);
                         } else {
                             console.warn(`[FileHandler] TEUI.FieldManager.updateFieldDisplay is not available. UI for ${fieldId} may not update visually.`);
                         }
@@ -305,6 +323,12 @@
                 } catch (error) {
                      console.error(`Error processing field ${fieldId} with value "${value}":`, error);
                      skippedValidationCount++;
+                     isValid = false; // Ensure isValid is false on error
+                }
+
+                // DEBUG: Log isValid status before the conditional update
+                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
+                    console.log(`[FileHandler DEBUG] fieldId=${fieldId}, isValid=${isValid}, parsedValue=${parsedValue}`);
                 }
             });
 
