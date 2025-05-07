@@ -18,6 +18,123 @@ window.TEUI.sect07.userInteracted = false;
 // Section 7: Water Use Module
 window.TEUI.SectionModules.sect07 = (function() {
     //==========================================================================
+    // ADDED: HELPER FUNCTIONS (Standard Implementation)
+    //==========================================================================
+
+    /**
+     * Helper function to get a field value primarily from StateManager, with a DOM fallback.
+     */
+    function getFieldValue(fieldId) {
+        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.getValue === 'function') {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return String(value); // Ensure it's a string
+            }
+        }
+        // Query for elements with data-field-id or data-dropdown-id
+        const element = document.querySelector(`[data-field-id="${fieldId}"], [data-dropdown-id="${fieldId}"]`); 
+        if (element) {
+            // For sliders, read the value attribute directly
+            if (element.type === 'range') {
+                return String(element.value);
+            }
+            return element.value !== undefined ? String(element.value) : String(element.textContent);
+        }
+        return null; // Return null if not found
+    }
+
+    /**
+     * Helper function to get a numeric field value, using global parseNumeric.
+     */
+    function getNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = getFieldValue(fieldId);
+        if (window.TEUI && typeof window.TEUI.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(rawValue, defaultValue);
+        }
+        // Fallback parsing
+        const parsed = parseFloat(String(rawValue).replace(/[$,%]/g, '')); // Handle currency/percentage symbols
+        return isNaN(parsed) ? defaultValue : parsed;
+    }
+    
+    /**
+     * Helper function to set a calculated field value.
+     * Stores raw numeric value (as string) in StateManager.
+     * Updates DOM with formatted value using global window.TEUI.formatNumber.
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') { // Default format
+        const isNumb = typeof rawValue === 'number' && isFinite(rawValue);
+        // Store numbers as strings, keep "N/A" or other specific strings as is
+        const valueToStore = rawValue === "N/A" ? "N/A" : (isNumb ? rawValue.toString() : String(rawValue));
+
+        if (window.TEUI?.StateManager?.setValue) {
+            window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+        }
+        
+        let formattedValue;
+        if (rawValue === "N/A") {
+            formattedValue = "N/A";
+        } else if (formatType === 'raw') {
+            formattedValue = String(rawValue);
+        } else {
+            // Use global formatter, ensuring it's available
+            formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? valueToStore; // Fallback to stored value
+        }
+        
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                element.value = formattedValue; // Or potentially rawValue depending on input type
+            } else {
+                element.textContent = formattedValue;
+            }
+            // Optional: Add negative value class if applicable
+            if (isNumb) {
+                element.classList.toggle('negative-value', rawValue < 0);
+            }
+        }
+    }
+
+     /**
+     * Standard blur handler for editable fields.
+     * Parses input, updates state, formats display.
+     */
+    function handleEditableBlur(event) {
+        const fieldElement = this; // `this` is the element that triggered the blur
+        const fieldId = fieldElement.getAttribute('data-field-id');
+        if (!fieldId) return;
+
+        let rawTextValue = fieldElement.textContent.trim();
+        let valueToStore;
+        let formatType = 'number-2dp-comma'; // Default format
+
+        let numericValue = window.TEUI.parseNumeric(rawTextValue, NaN);
+
+        if (isNaN(numericValue)) { // Handle invalid numeric input -> default to 0 or revert
+             console.warn(`Invalid input for ${fieldId}: "${rawTextValue}". Reverting or defaulting.`);
+             // Revert to previous value from StateManager
+             const previousValue = getFieldValue(fieldId); // Get potentially old value from state
+             numericValue = window.TEUI.parseNumeric(previousValue, 0); // Parse previous or default to 0
+        }
+        
+        // Determine specific formatting if needed (example)
+        // if (fieldId === 'some_specific_field') { formatType = 'some-format'; }
+
+        valueToStore = numericValue.toString(); // Store raw number string
+        const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
+        fieldElement.textContent = formattedDisplay;
+
+        // Update StateManager only if the stored value differs
+        if (window.TEUI?.StateManager) {
+            const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
+             if (currentStateValue !== valueToStore) {
+                window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
+                // Trigger dependent calculations if this field is a dependency for others
+                 calculateAll(); // Recalculate section on change
+            }
+        }
+    }
+
+    //==========================================================================
     // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -292,31 +409,36 @@ window.TEUI.SectionModules.sect07 = (function() {
             cells: {
                 c: { label: "System Losses (% → W.1.3 Eqpt Gains)" },
                 d: {
-                    fieldId: "d_54",
+                    fieldId: "d_54", // System Losses kWh
                     type: "calculated",
                     value: "0.00",
                     section: "waterUse",
                     dependencies: ["d_51", "d_52", "j_51", "d_49", "j_50"]
                 },
-                f: { content: "kWh/yr", classes: ["text-left"] },
-                g: { content: "W.X", classes: ["text-left"] },
-                h: { content: "Exhaust (if Gas or Oil)", classes: ["text-left"] },
-                i: { }, // Empty cell for alignment
-                j: {
-                    fieldId: "k_54",
+                f: { content: "kWh/yr", classes: ["text-left"] }, // Unit for d_54
+                h: { content: "Exhaust (if Gas or Oil)", classes: ["text-left"] }, // Label for k_54
+                j: { 
+                    fieldId: "j_54", // CORRECT Field ID for Column J - User's target formula
+                    type: "calculated", 
+                    value: "0.00",
+                    section: "waterUse",
+                    dependencies: ["d_51", "j_52", "d_52"] // Depends on source, net demand, efficiency
+                },
+                k: {
+                    fieldId: "k_54", // CORRECT Field ID for Column K - Exhaust kWh/yr
                     type: "calculated",
                     value: "0.00",
                     section: "waterUse",
-                    dependencies: ["d_51", "j_51", "j_52", "d_52"]
+                    dependencies: ["d_51", "j_51", "j_52", "d_52"] // Depends on source, gross/net demand, efficiency
                 },
-                k: {
-                    fieldId: "l_54",
-                    type: "calculated",
+                l: { content: "W.3.4 Net Oil Demand Ltrs", classes: ["text-left"] }, // Label for l_54
+                m: { 
+                    fieldId: "l_54", // CORRECT Field ID for Column M - Net Oil Litres
+                    type: "calculated", 
                     value: "0.00",
                     section: "waterUse",
                     dependencies: ["d_51", "j_52", "d_53", "d_52"]
-                },
-                l: { content: "W.3.4 Net Oil Demand Ltrs", classes: ["text-left"] }
+                }
             }
         }
     };
@@ -476,296 +598,280 @@ window.TEUI.SectionModules.sect07 = (function() {
      * Calculate water use based on method and occupants
      */
     function calculateWaterUse() {
-        // Get values with full precision
         const method = getFieldValue("d_49");
         const userDefinedValue = getNumericValue("e_49");
         const occupants = getNumericValue("d_63");
         
         let litersPerPersonDay = 0;
         
-        // Determine water use based on selected method
         switch(method) {
-            case "User Defined":
-                litersPerPersonDay = userDefinedValue;
-                break;
-            case "By Engineer":
-                // Use the value from d_50 to calculate backwards using exact Excel formula
+            case "User Defined": litersPerPersonDay = userDefinedValue; break;
+            case "By Engineer": 
                 const engineerValue = getNumericValue("d_50");
-                const waterHeatFactor = 0.0524; // kWh per liter for temp rise (from Excel)
-                litersPerPersonDay = (engineerValue / 365 / waterHeatFactor / occupants) / 0.4;
+                const waterHeatFactor = 0.0524;
+                litersPerPersonDay = (occupants > 0 && waterHeatFactor > 0) ? (engineerValue / 365 / waterHeatFactor / occupants) / 0.4 : 0;
                 break;
-            case "PHPP Method":
-                litersPerPersonDay = 62.5; // Standard PHPP value
-                break;
-            case "NBC Method":
-                litersPerPersonDay = 220; // Standard NBC value
-                break;
-            case "OBC Method":
-                litersPerPersonDay = 275; // Standard OBC value
-                break;
-            case "Luxury":
-                litersPerPersonDay = 400; // Luxury water use
-                break;
-            default:
-                litersPerPersonDay = 40; // Default value
+            case "PHPP Method": litersPerPersonDay = 62.5; break;
+            case "NBC Method": litersPerPersonDay = 220; break;
+            case "OBC Method": litersPerPersonDay = 275; break;
+            case "Luxury": litersPerPersonDay = 400; break;
+            default: litersPerPersonDay = 40;
         }
         
-        // Store raw values in StateManager
-        setCalculatedValue("h_49", litersPerPersonDay);
-        
-        // Calculate total annual water use (liters/year)
+        setCalculatedValue("h_49", litersPerPersonDay, 'number-2dp'); 
         const annualWaterUse = litersPerPersonDay * occupants * 365;
-        setCalculatedValue("i_49", annualWaterUse);
-        
-        // Hot water is exactly 40% of total water use (from Excel)
-        const hotWaterPercentage = 0.4;
-        const hotWaterLitersPerDay = litersPerPersonDay * hotWaterPercentage;
-        setCalculatedValue("h_50", hotWaterLitersPerDay);
-        
-        // Calculate hot water annual volume
+        setCalculatedValue("i_49", annualWaterUse, 'integer-comma');
+        const hotWaterLitersPerDay = litersPerPersonDay * 0.4;
+        setCalculatedValue("h_50", hotWaterLitersPerDay, 'number-2dp');
         const hotWaterAnnualLiters = hotWaterLitersPerDay * occupants * 365;
-        setCalculatedValue("i_50", hotWaterAnnualLiters);
+        setCalculatedValue("i_50", hotWaterAnnualLiters, 'integer-comma'); 
         
-        // Calculate hot water energy demand (kWh/yr) using exact Excel formula
         let hotWaterEnergyDemand = 0;
         if (method === "By Engineer") {
-            // If specified by engineer, use provided value from d_50 (updated)
-            hotWaterEnergyDemand = getNumericValue("d_50"); 
+            hotWaterEnergyDemand = getNumericValue("d_50");
         } else {
-            // Otherwise use formula: H50*D63*0.0523*365
             hotWaterEnergyDemand = hotWaterLitersPerDay * occupants * 0.0523 * 365;
         }
+        setCalculatedValue("j_50", hotWaterEnergyDemand, 'number-2dp-comma');
         
-        setCalculatedValue("j_50", hotWaterEnergyDemand);
+        const waterUseReference = 275;
+        const waterUsePercentRaw = waterUseReference !== 0 ? (litersPerPersonDay / waterUseReference) : 0;
+        setCalculatedValue("n_49", waterUsePercentRaw, 'percent-0dp');
+        const dhwUseReference = 110;
+        const dhwUsePercentRaw = dhwUseReference !== 0 ? (hotWaterLitersPerDay / dhwUseReference) : 0;
+        setCalculatedValue("n_50", dhwUsePercentRaw, 'percent-0dp');
         
-        // Calculate reference percentages
-        // These should compare to standard values from Excel
-        const waterUseReference = 275; // OBC standard value
-        const waterUsePercent = Math.round((litersPerPersonDay / waterUseReference) * 100);
-        setCalculatedValue("n_49", `${waterUsePercent}%`);
-        
-        const dhwUseReference = 110; // From Excel reference
-        const dhwUsePercent = Math.round((hotWaterLitersPerDay / dhwUseReference) * 100);
-        setCalculatedValue("n_50", `${dhwUsePercent}%`);
-        
-        // Return calculated values for use in other calculations
-        return {
-            litersPerPersonDay,
-            annualWaterUse,
-            hotWaterLitersPerDay,
-            hotWaterAnnualLiters,
-            hotWaterEnergyDemand
-        };
+        return { hotWaterEnergyDemand }; // Return only what's needed by next calc
     }
     
     /**
      * Calculate heating system parameters based on water use and system type
      */
-    function calculateHeatingSystem() {
-        // Get energy demand from prior calculation using type-safe approach
-        const energyDemand_j50 = getNumericValue("j_50"); // Gross hot water energy demand
-        
-        // Get system type and efficiency
+    function calculateHeatingSystem(hotWaterEnergyDemand_j50) {
         const systemType = getFieldValue("d_51");
-        const efficiencyInput_d52 = getFieldValue("d_52"); // Raw input (e.g., "90.00")
+        const efficiencyInput_d52 = getNumericValue("d_52");
+        let efficiency = !isNaN(efficiencyInput_d52) ? efficiencyInput_d52 / 100 : 1.0;
+        setCalculatedValue("e_52", efficiency, 'number-2dp');
         
-        // Convert efficiency input (percentage number) to decimal factor
-        let efficiency = 1.0; // Default value
-        if (efficiencyInput_d52) {
-            // Directly parse the number, assuming it represents a percentage
-            const parsedEfficiency = parseFloat(efficiencyInput_d52.toString().replace(/,/g, '')); 
-            if (!isNaN(parsedEfficiency)) {
-                efficiency = parsedEfficiency / 100;
-            }
-        }
+        const netThermalDemand_j_51 = efficiency !== 0 ? hotWaterEnergyDemand_j50 / efficiency : 0;
+        setCalculatedValue("j_51", netThermalDemand_j_51, 'number-2dp-comma');
         
-        // Set COP value (e_52)
-        setCalculatedValue("e_52", efficiency); 
-        
-        // Calculate Net Thermal Demand (j_51) - EXCEL: =J50/D52
-        const netThermalDemand_j_51 = efficiency !== 0 ? energyDemand_j50 / efficiency : 0;
-        setCalculatedValue("j_51", netThermalDemand_j_51);
-        
-        // Handle drain water heat recovery
-        const recoveryOption_d53 = getFieldValue("d_53");
-        let recoveryPercent = 0;
-        if (recoveryOption_d53) {
-            // Slider provides a numeric value directly (e.g., 25), convert to decimal
-            const parsedRecovery = parseFloat(recoveryOption_d53);
-            if (!isNaN(parsedRecovery)) {
-                recoveryPercent = parsedRecovery / 100;
-            }
-        }
-        
-        // Calculate energy recovered (e_53) - EXCEL: =J51*D53
+        const recoveryOption_d53 = getNumericValue("d_53");
+        let recoveryPercent = !isNaN(recoveryOption_d53) ? recoveryOption_d53 / 100 : 0;
         const energyRecovered_e53 = netThermalDemand_j_51 * recoveryPercent;
-        setCalculatedValue("e_53", energyRecovered_e53);
+        setCalculatedValue("e_53", energyRecovered_e53, 'number-2dp-comma');
         
-        // Calculate net demand after recovery (j_52 & j_53) - EXCEL: =J51-E53
-        const netDemandAfterRecovery_j52_j53 = netThermalDemand_j_51 - energyRecovered_e53;
-        setCalculatedValue("j_52", netDemandAfterRecovery_j52_j53);
-        setCalculatedValue("j_53", netDemandAfterRecovery_j52_j53); // SHW Wasted is same as net demand
+        const netDemandAfterRecovery = netThermalDemand_j_51 - energyRecovered_e53;
+        setCalculatedValue("j_52", netDemandAfterRecovery, 'number-2dp-comma');
+        setCalculatedValue("j_53", netDemandAfterRecovery, 'number-2dp-comma');
         
-        // Define netDemand for clarity in subsequent calculations (this is j_52/j_53)
-        const netDemand = netDemandAfterRecovery_j52_j53; 
-
-        // Calculate final energy consumption (k_51 - Sticking with JS logic) & fuel volumes (e_51, l_54 - OK)
-        let finalEnergy = 0;
-        let gasVolume = 0;
-        let oilVolume = 0;
-        
+        let finalEnergy = 0, gasVolume = 0, oilVolume = 0;
+        const netDemand = netDemandAfterRecovery;
         switch(systemType) {
-            case "Heatpump":
-                finalEnergy = efficiency !== 0 ? netDemand / efficiency : netDemand; // Avoid division by zero
-                break;
-            case "Electric":
-                finalEnergy = netDemand;
-                break;
+            case "Heatpump": finalEnergy = efficiency !== 0 ? netDemand / efficiency : netDemand; break;
+            case "Electric": finalEnergy = netDemand; break;
             case "Gas":
-                const gasEfficiency = efficiency || 0.9; // Fallback to 90%
-                finalEnergy = gasEfficiency !== 0 ? netDemand / gasEfficiency : netDemand;
-                gasVolume = gasEfficiency !== 0 ? finalEnergy / 10.33 : 0; // kWh per m³ of natural gas
-                setCalculatedValue("e_51", gasVolume);
+                const gasEff = efficiency || 0.9;
+                finalEnergy = gasEff !== 0 ? netDemand / gasEff : netDemand;
+                gasVolume = gasEff !== 0 ? finalEnergy / 10.33 : 0;
+                setCalculatedValue("e_51", gasVolume, 'number-2dp-comma');
                 break;
             case "Oil":
-                const oilEfficiency = efficiency || 0.82; // Fallback to 82%
-                finalEnergy = oilEfficiency !== 0 ? netDemand / oilEfficiency : netDemand;
-                oilVolume = oilEfficiency !== 0 ? finalEnergy / (36.72 * 0.2777778) : 0; // kWh per liter of oil
-                setCalculatedValue("l_54", oilVolume);
+                const oilEff = efficiency || 0.82;
+                finalEnergy = oilEff !== 0 ? netDemand / oilEff : netDemand;
+                oilVolume = oilEff !== 0 ? finalEnergy / (36.72 * 0.2777778) : 0;
+                setCalculatedValue("l_54", oilVolume, 'number-2dp-comma');
                 break;
         }
-        
-        // Update net electrical demand (k_51) - Using EXACT Excel formula: =IF(OR(D51="Gas", D51="Oil"), 0, J52)
-        let netElectricalDemand_k51 = 0;
-        if (systemType !== "Gas" && systemType !== "Oil") {
-            netElectricalDemand_k51 = netDemand; // Use netDemand (which is j_52)
-        }
-        setCalculatedValue("k_51", netElectricalDemand_k51);
-        
-        // Calculate System Losses (d_54) - EXCEL: =IF(D52>1, 0, IF(D49="PHPP Method", J50*0.25, J50*0.1))
+
+        let netElectricalDemand_k51 = (systemType !== "Gas" && systemType !== "Oil") ? netDemand : 0;
+        setCalculatedValue("k_51", netElectricalDemand_k51, 'number-2dp-comma');
+
         let systemLosses_d54 = 0;
         const waterUseMethod_d49 = getFieldValue("d_49");
-        if (efficiency <= 1) { // Check if D52 (efficiency) is NOT > 1 (i.e., not a heat pump)
-            if (waterUseMethod_d49 === "PHPP Method") {
-                systemLosses_d54 = energyDemand_j50 * 0.25;
-            } else {
-                systemLosses_d54 = energyDemand_j50 * 0.1;
-            }
+        if (efficiency <= 1) {
+            systemLosses_d54 = hotWaterEnergyDemand_j50 * (waterUseMethod_d49 === "PHPP Method" ? 0.25 : 0.1);
         }
-        setCalculatedValue("d_54", systemLosses_d54);
+        setCalculatedValue("d_54", systemLosses_d54, 'number-2dp-comma');
+
+        let exhaustValue = (systemType === "Gas" || systemType === "Oil") ? (finalEnergy - netDemand) : 0;
+        setCalculatedValue("k_54", exhaustValue, 'number-2dp-comma');
+
+        const standardCOP = 0.9;
+        const efficiencyPercentRaw = standardCOP !== 0 ? (efficiency / standardCOP) : 0;
+        setCalculatedValue("n_52", efficiencyPercentRaw, 'percent-0dp');
+        setCalculatedValue("n_53", recoveryPercent, 'percent-0dp');
         
-        // Update metrics for Gas and Oil (k_54 - Sticking with JS logic)
-        if (systemType === "Gas" || systemType === "Oil") {
-            const exhaustValue = finalEnergy - netDemand; // Energy lost to exhaust
-            setCalculatedValue("k_54", exhaustValue);
-        } else {
-            setCalculatedValue("k_54", 0);
-        }
-        
-        // Update performance metrics (n_52, n_53 - OK)
-        const standardCOP = 0.9; // Reference value for standard equipment
-        const efficiencyPercent = standardCOP !== 0 ? Math.round((efficiency / standardCOP) * 100) : 0;
-        setCalculatedValue("n_52", `${efficiencyPercent}%`);
-        
-        setCalculatedValue("n_53", `${Math.round(recoveryPercent * 100)}%`);
-        
-        // Return calculated values for use in other functions
-        return {
-            finalEnergy,
-            systemLosses: systemLosses_d54, // Return the newly calculated losses
-            gasVolume,
-            oilVolume
-        };
+        return { systemLosses: systemLosses_d54 };
     }
     
+    /**
+     * NEW: Calculate Exhaust Losses (j_54)
+     * Formula: =IF(D51="Gas", (J52-(J52*D52)), IF(D51="Oil", (J52-(J52*D52)), 0))
+     * Where D52 is efficiency FACTOR (0.0-1.0)
+     */
+    function calculateJ54() {
+        const systemType = getFieldValue("d_51");
+        const netDemand_j52 = getNumericValue("j_52");
+        const efficiency_d52 = getNumericValue("e_52"); // Use COP/Efficiency Factor from e_52
+        
+        let exhaustLosses = 0;
+        if (systemType === "Gas" || systemType === "Oil") {
+            // Formula is J52 * (1 - EfficiencyFactor)
+             exhaustLosses = netDemand_j52 * (1 - efficiency_d52);
+        }
+        return exhaustLosses;
+    }
+
+    /**
+     * CORRECTED: Calculate Exhaust kWh (k_54) 
+     * Formula: =IF(OR(D51="Gas",D51="Oil"),J51-J52,0)
+     */
+    function calculateK54() {
+        const systemType = getFieldValue("d_51");
+        const netThermalDemand_j51 = getNumericValue("j_51");
+        const netDemandAfterRecovery_j52 = getNumericValue("j_52");
+        
+        let exhaustKWh = 0;
+        if (systemType === "Gas" || systemType === "Oil") {
+             exhaustKWh = netThermalDemand_j51 - netDemandAfterRecovery_j52;
+        }
+        return exhaustKWh;
+    }
+
+    /**
+     * CORRECTED: Calculate Net Oil Demand Litres (l_54)
+     * Formula: =IF(D51="Oil",J52/(36.72*0.2777778),"")
+     */
+    function calculateL54() {
+        const systemType = getFieldValue("d_51");
+        const netDemandAfterRecovery_j52 = getNumericValue("j_52");
+        
+        let oilVolume = 0;
+        if (systemType === "Oil") {
+            const conversionFactor = 36.72 * 0.2777778; // kWh per liter of oil
+             oilVolume = conversionFactor !== 0 ? netDemandAfterRecovery_j52 / conversionFactor : 0;
+        }
+        // Return 0 if not Oil, formatting will handle display
+        return oilVolume; 
+    }
+
     /**
      * Calculate all values for this section
      */
     function calculateAll() {
-        // Calculate water use first
         const waterUseResults = calculateWaterUse();
+        const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
         
-        // Then calculate heating system
-        const heatingResults = calculateHeatingSystem();
-        
-        // Update global internal gains value for cross-section usage
+        // Calculate the row 54 values AFTER heating system calculations
+        const j54Value = calculateJ54();
+        setCalculatedValue("j_54", j54Value, 'number-2dp-comma');
+        const k54Value = calculateK54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
+        setCalculatedValue("k_54", k54Value, 'number-2dp-comma');
+        const l54Value = calculateL54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
+        setCalculatedValue("l_54", l54Value, 'number-2dp-comma');
+
         if (window.TEUI && window.TEUI.StateManager) {
-            // System losses become internal gains in Section 9
             window.TEUI.StateManager.setValue("h_69", heatingResults.systemLosses.toString(), "calculated");
         }
         
-        // Publish event for sections that depend on water calculations
-        const waterUseEvent = new CustomEvent('teui-wateruse-updated', {
-            detail: {
-                waterUse: waterUseResults,
-                heatingSystem: heatingResults
-            }
-        });
+        const waterUseEvent = new CustomEvent('teui-wateruse-updated', { detail: { waterUse: waterUseResults, heatingSystem: heatingResults } });
         document.dispatchEvent(waterUseEvent);
     }
     
     /**
-     * Get a numeric value from a field, ensuring proper parsing and precision
-     * @param {string} fieldId - The field ID to get the value from
-     * @returns {number} The parsed numeric value
+     * Initialize all event handlers for this section
      */
-    function getNumericValue(fieldId) {
-        const value = window.TEUI.StateManager.getValue(fieldId);
-        if (value === null || value === undefined) return 0;
-        
-        // Remove any formatting and parse as float
-        const numericValue = parseFloat(value.toString().replace(/,/g, ''));
-        return isNaN(numericValue) ? 0 : numericValue;
-    }
-    
-    /**
-     * Get a field value from StateManager
-     * @param {string} fieldId - The field ID to get the value from
-     * @returns {string} The field value
-     */
-    function getFieldValue(fieldId) {
-        return window.TEUI.StateManager.getValue(fieldId);
-    }
-    
-    /**
-     * Set a calculated value, updating both StateManager and DOM
-     * @param {string} fieldId - The field ID to set
-     * @param {number|string} value - The value to set
-     */
-    function setCalculatedValue(fieldId, value) {
-        // Store raw value in StateManager
-        window.TEUI.StateManager.setValue(
-            fieldId, 
-            value, 
-            window.TEUI.StateManager.VALUE_STATES.CALCULATED
-        );
-        
-        // Format for display and update DOM
-        const formattedValue = formatNumber(value);
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
+    function initializeEventHandlers() {
+        const sectionElement = document.getElementById('waterUse');
+        if (!sectionElement) return;
+
+        // Setup editable field handlers
+        const editableFieldIds = ['e_49', 'd_50', 'k_45', 'm_43', 'i_44', 'i_46']; 
+        editableFieldIds.forEach(fieldId => {
+            const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+            if(field && field.classList.contains('editable')) {
+                if (!field.hasEditableListeners) { 
+                    field.setAttribute('contenteditable', 'true');
+                    field.classList.add('user-input');
+                    field.addEventListener('blur', handleEditableBlur);
+                    field.addEventListener('keydown', function(e) {
+                         if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+                    });
+                    field.hasEditableListeners = true;
+                }
+            }
+        });
+
+        // Attach standard handler to dropdowns
+        const dropdowns = sectionElement.querySelectorAll('select[data-dropdown-id]');
+        dropdowns.forEach(dropdown => {
+             if (!dropdown.hasDropdownListener) {
+                 dropdown.addEventListener('change', handleGenericDropdownChange);
+                 dropdown.hasDropdownListener = true;
+             }
+        });
+
+        // Attach standard handler to sliders
+        const sliders = sectionElement.querySelectorAll('input[type="range"]');
+        sliders.forEach(slider => {
+            if (!slider.hasSliderListener) {
+                // Update display on input
+                slider.addEventListener('input', handleSliderChange);
+                // Update state & recalc on change (when slider released)
+                slider.addEventListener('change', handleSliderChange);
+                slider.hasSliderListener = true;
+            }
+        });
+
+        // StateManager listeners
+        if (window.TEUI && window.TEUI.StateManager) {
+            window.TEUI.StateManager.addListener("d_63", calculateAll); // Occupancy
         }
     }
     
     /**
-     * Format a number for display with proper precision
-     * @param {number|string} value - The value to format
-     * @returns {string} The formatted value
+     * Called when the section is rendered
      */
-    function formatNumber(value) {
-        // Convert to number if string
-        const numValue = typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value;
+    function onSectionRendered() {
+        initializeEventHandlers();
+        const initialWaterMethod = getFieldValue("d_49") || "User Defined";
+        const initialSystemType = getFieldValue("d_51") || "Heatpump";
+        updateSection7Visibility(initialWaterMethod, initialSystemType);
+        calculateAll();
+    }
+    
+    /**
+     * Updates the visibility and editability of conditional input fields (e_49, d_50)
+     * and related fields (Gas/Oil outputs) based on the selected methods.
+     */
+    function updateSection7Visibility(waterMethod, systemType) {
+        const isUserDefined = waterMethod === "User Defined";
+        setFieldGhosted('e_49', !isUserDefined);
+        const f49Cell = document.querySelector('.data-table tr[data-id="W.1.0"] td:nth-child(6)');
+        if (f49Cell) f49Cell.classList.toggle('disabled-input', !isUserDefined);
+
+        const isByEngineer = waterMethod === "By Engineer";
+        setFieldGhosted('d_50', !isByEngineer);
+        const e50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(5)');
+        const f50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(6)');
+        if (e50Cell) e50Cell.classList.toggle('disabled-input', !isByEngineer);
+        if (f50Cell) f50Cell.classList.toggle('disabled-input', !isByEngineer);
         
-        // Handle special cases
-        if (isNaN(numValue)) return '0.00';
-        if (numValue === 0) return '0.00';
+        const isGas = systemType === "Gas";
+        setFieldGhosted('e_51', !isGas);
+        const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)');
+        if (f51Cell) f51Cell.classList.toggle('disabled-input', !isGas);
+
+        const isOil = systemType === "Oil";
+        setFieldGhosted('l_54', !isOil);
+        const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
+        if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
         
-        // Format with 2 decimal places and thousands separator
-        return numValue.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        const isFossil = isGas || isOil;
+        setFieldGhosted('k_54', !isFossil);
+        const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
+        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isFossil);
     }
     
     /**
@@ -777,350 +883,93 @@ window.TEUI.SectionModules.sect07 = (function() {
     function setFieldGhosted(fieldId, shouldBeGhosted) {
         const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
         if (valueCell) {
-            valueCell.classList.toggle('disabled-input', shouldBeGhosted); // Use S07's existing class
-            
-            // Disable/enable controls within the value cell
+            valueCell.classList.toggle('disabled-input', shouldBeGhosted);
             const input = valueCell.querySelector('input, select, [contenteditable="true"]');
             if(input) {
-                if(input.hasAttribute('contenteditable')) {
-                    input.contentEditable = !shouldBeGhosted;
-                } else {
-                    input.disabled = shouldBeGhosted;
-                }
+                if(input.hasAttribute('contenteditable')) input.contentEditable = !shouldBeGhosted;
+                else input.disabled = shouldBeGhosted;
             }
             if(valueCell.hasAttribute('contenteditable')) valueCell.contentEditable = !shouldBeGhosted;
-
-            // Ghost the preceding label cell (if it exists and seems like a label)
             const labelCell = valueCell.previousElementSibling;
             if (labelCell && labelCell.tagName === 'TD' && !labelCell.hasAttribute('data-field-id')) { 
                 labelCell.classList.toggle('disabled-input', shouldBeGhosted);
             }
-        } else {
-            // console.warn(`[S07 Ghosting] Element for field ${fieldId} not found.`);
         }
     }
     
     /**
-     * Updates the visibility and editability of conditional input fields (e_49, d_50)
-     * and related fields (Gas/Oil outputs) based on the selected methods.
+     * Helper for generic dropdown changes
      */
-    function updateSection7Visibility(waterMethod, systemType) {
-        // --- Handle User Defined inputs (e_49, f_49) based on waterMethod ---
-        const isUserDefined = waterMethod === "User Defined";
-        setFieldGhosted('e_49', !isUserDefined);
-        // Also ghost the adjacent label cell F49
-        const f49Cell = document.querySelector('.data-table tr[data-id="W.1.0"] td:nth-child(6)');
-        if (f49Cell) f49Cell.classList.toggle('disabled-input', !isUserDefined);
-
-        // --- Handle By Engineer inputs (d_50, e_50, f_50) based on waterMethod ---
-        const isByEngineer = waterMethod === "By Engineer";
-        setFieldGhosted('d_50', !isByEngineer);
-        // Also ghost adjacent labels E50 and F50
-        const e50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(5)');
-        const f50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(6)');
-        if (e50Cell) e50Cell.classList.toggle('disabled-input', !isByEngineer);
-        if (f50Cell) f50Cell.classList.toggle('disabled-input', !isByEngineer);
-        
-        // --- Handle Gas specific fields (e_51, f_51) based on systemType ---
-        const isGas = systemType === "Gas";
-        setFieldGhosted('e_51', !isGas); // Ghosts value cell and attempts preceding label (D51)
-        // Also ghost label cell F51
-        const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)');
-        if (f51Cell) f51Cell.classList.toggle('disabled-input', !isGas);
-
-        // --- Handle Oil specific field (l_54) and its label based on systemType ---
-        const isOil = systemType === "Oil";
-        setFieldGhosted('l_54', !isOil); // Ghosts value cell L54 and preceding label K54
-        // Also ghost label cell L54 Label itself
-        const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
-        if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
-        
-        // --- Handle Gas/Oil specific fields (k_54, h_54) based on systemType ---
-        const isFossil = isGas || isOil;
-        setFieldGhosted('k_54', !isFossil); // Ghosts value cell K54 and preceding label J54
-        // Also ghost label cell H54
-        const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
-        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isFossil);
+    function handleGenericDropdownChange(e) {
+        const fieldId = e.target.getAttribute('data-field-id') || e.target.getAttribute('data-dropdown-id');
+        const value = e.target.value;
+        if (fieldId && window.TEUI?.StateManager?.setValue) {
+             window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+             if (fieldId === 'd_51') {
+                 handleDHWSourceChange(e); // Specific logic for DHW source
+             }
+             // Update visibility based on current dropdown values
+             const currentWaterMethod = getFieldValue("d_49");
+             const currentSystemType = getFieldValue("d_51");
+             updateSection7Visibility(currentWaterMethod, currentSystemType);
+             calculateAll(); 
+        }
     }
-    
+
     /**
-     * Initialize all event handlers for this section
+     * Helper for generic slider input/change events
      */
-    function initializeEventHandlers() {
-        // Get the waterUse section element
-        const sectionElement = document.getElementById('waterUse');
-        if (!sectionElement) {
-            return; // Exit gracefully if section element not found
-        }
-        
-        // --- ADDED: Listener for DHW Source change (d_51) ---
-        const d51Dropdown = sectionElement.querySelector('select[data-field-id="d_51"]');
-        if (d51Dropdown) {
-            d51Dropdown.addEventListener('change', handleDHWSourceChange);
-        }
-        // --- END ADDED --- 
-        
-        // Setup dropdown change handlers
-        const dropdowns = sectionElement.querySelectorAll('[data-dropdown-id]');
-        dropdowns.forEach(dropdown => {
-            dropdown.addEventListener('change', function(e) {
-                const fieldId = this.getAttribute('data-field-id');
-                const value = this.value;
+    function handleSliderChange(e) {
+         const fieldId = e.target.getAttribute('data-field-id');
+         const value = e.target.value;
+         const displaySpan = document.querySelector(`span[data-display-for="${fieldId}"]`);
+         
+         if(displaySpan) displaySpan.textContent = value + '%'; 
 
-                // Check if this is a user-initiated change (not programmatic)
-                if (e.isTrusted) {
-                    window.TEUI.sect07.userInteracted = true;
-                    
-                    // Store value in StateManager with user-modified state
-                    if (fieldId && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
-                    }
-                }
-                
-                // Update visibility for conditional inputs 
-                // Get current values of both controlling dropdowns
-                const currentWaterMethod = getFieldValue("d_49");
-                const currentSystemType = getFieldValue("d_51");
-                updateSection7Visibility(currentWaterMethod, currentSystemType);
-
-                // Recalculate all values when any dropdown changes
-                calculateAll();
-            });
-        });
-        
-        // *** ADDED: Specific listener for d_53 slider ***
-        const d53Slider = sectionElement.querySelector('input[type="range"][data-field-id="d_53"]');
-        if (d53Slider) {
-            d53Slider.addEventListener('input', function() {
-                // Update StateManager directly (FieldManager might also do this, but explicit is safe)
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue("d_53", this.value, 'user-modified');
-                }
-                // Trigger recalculation
-                calculateAll();
-            });
-        }
-        // *** END ADDED CODE ***
-
-        // *** ADDED: Specific listener for d_52 slider ***
-        const d52Slider = sectionElement.querySelector('input[type="range"][data-field-id="d_52"]');
-        if (d52Slider) {
-            d52Slider.addEventListener('input', function() {
-                // Update StateManager directly
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue("d_52", this.value, 'user-modified');
-                }
-                // Trigger recalculation
-                calculateAll();
-            });
-        } // No console.warn needed here, FieldManager handles slider creation
-        // *** END ADDED CODE ***
-
-        // Setup editable field handlers
-        const editableFields = sectionElement.querySelectorAll('.editable, [contenteditable="true"]');
-        editableFields.forEach(field => {
-            // Make editable fields actually editable
-            if (!field.getAttribute('contenteditable')) {
-                field.setAttribute('contenteditable', 'true');
-            }
-            
-            // Prevent newlines and handle Enter key
-            field.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent adding a newline
-                    this.blur(); // Remove focus to trigger the blur event
-                }
-            });
-            
-            // Handle changes to the field value
-            field.addEventListener('blur', function() {
-                const fieldId = this.getAttribute('data-field-id');
-                if (!fieldId) return;
-                
-                // Get new value and clean it
-                let newValue = this.textContent.trim().replace(/,/g, '');
-                
-                // Format the number for display
-                if (!isNaN(parseFloat(newValue)) && isFinite(newValue)) {
-                    const formattedValue = formatNumber(newValue);
-                    this.textContent = formattedValue;
-                    
-                    // Mark user interaction
-                    window.TEUI.sect07.userInteracted = true;
-                    
-                    // Update state manager if available
-                    if (window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-                    }
-                    
-                    // Recalculate all values
-                    calculateAll();
-                }
-            });
-        });
-        
-        // Listen for changes to related fields from other sections
-        if (window.TEUI.StateManager) {
-            // Listen for changes to occupancy (from Section 9)
-            window.TEUI.StateManager.addListener("d_63", function() {
-                calculateAll();
-            });
-        }
-
-        // Mark section as initialized
-        window.TEUI.sect07.initialized = true;
+         if (fieldId && window.TEUI?.StateManager?.setValue && (e.type === 'change' || e.type === 'input') ) {
+             window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+             if(e.type === 'change'){ // Only calculate fully on release
+                 calculateAll();
+             }
+         }
+         if (fieldId === 'd_52') { // Special handling for d_52 visibility
+             const currentWaterMethod = getFieldValue("d_49");
+             const currentSystemType = getFieldValue("d_51");
+             updateSection7Visibility(currentWaterMethod, currentSystemType);
+         }
     }
     
     /**
-     * Called when the section is rendered
-     */
-    function onSectionRendered() {
-        
-        // Initialize event handlers
-        initializeEventHandlers();
-        
-        // Setup default values for fields if not already initialized
-        setupValueEnforcement();
-        
-        // Set initial visibility for conditional inputs
-        const initialWaterMethod = getFieldValue("d_49");
-        const initialSystemType = getFieldValue("d_51");
-        updateSection7Visibility(initialWaterMethod, initialSystemType);
-
-        // Run initial calculations
-        calculateAll();
-        
-        // Mark section as initialized
-        window.TEUI.sect07.initialized = true;
-    }
-    
-    /**
-     * Set up one-time initialization and value enforcement
-     */
-    function setupValueEnforcement() {
-        // Skip if already initialized
-        if (window.TEUI.sect07.initialized) return;
-        
-        // Register default values with StateManager
-        if (window.TEUI.StateManager) {
-            // Register basic default values - won't override existing values
-            window.TEUI.StateManager.setValue("d_49", "User Defined", 'default');
-            window.TEUI.StateManager.setValue("e_49", "40.00", 'default');
-            window.TEUI.StateManager.setValue("d_51", "Heatpump", 'default');
-            window.TEUI.StateManager.setValue("d_52", "300", 'default'); // Default for slider
-            window.TEUI.StateManager.setValue("d_53", "0", 'default'); // Updated default for slider
-            
-            // Register cross-section dependencies
-            window.TEUI.StateManager.registerDependency("d_63", "h_49"); // Occupants affects water use
-            window.TEUI.StateManager.registerDependency("d_54", "h_69"); // System losses affect internal gains
-        }
-        
-        // Set initial dropdown values exactly once
-        function initializeDropdownValues() {
-            
-            if (window.TEUI.sect07.initialized && window.TEUI.sect07.userInteracted) {
-                return; // Skip if already initialized and interacted with
-            }
-            
-            // Set initial dropdown values            
-            // Use both direct DOM access and StateManager for redundancy
-            const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
-            if (efficiencyDropdown) {
-                efficiencyDropdown.value = "300%";
-                efficiencyDropdown.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-            
-            const dropdowns = {
-                "d_49": "User Defined",
-                "d_51": "Heatpump",
-                "d_52": "300", // Default for slider
-                "d_53": "0"  // Updated default for slider
-            };
-            
-            // Set each dropdown/slider to its initial value
-            Object.entries(dropdowns).forEach(([fieldId, defaultValue]) => {
-                const element = document.querySelector(`[data-field-id="${fieldId}"]`); // General selector
-                // Check if it's a dropdown or a slider container/input
-                const selectElement = element?.tagName === 'SELECT' ? element : element?.querySelector('input[type="range"]');
-                
-                if (selectElement && !window.TEUI.sect07.userInteracted) {
-                    selectElement.value = defaultValue;
-                    // Trigger change event without marking as user-initiated
-                    selectElement.dispatchEvent(new Event('change', { bubbles: true }));
-                    // Also trigger input for sliders to update display value
-                    if (selectElement.type === 'range') {
-                         selectElement.dispatchEvent(new Event('input', { bubbles: true }));
-                    }
-                }
-            });
-        }
-        
-        // Run initialization
-        initializeDropdownValues();
-    }
-    
-    /**
-     * NEW: Handles changes to the DHW Energy Source dropdown (d_51)
-     * Updates the efficiency field (d_52) based on the selection.
+     * Specific handler for d_51 dropdown change
      */
     function handleDHWSourceChange(event) {
         const selectedSource = event.target.value;
         const d52Slider = document.querySelector('input[type="range"][data-field-id="d_52"]');
-        // Find the display span relative to the slider
-        const d52Display = d52Slider ? d52Slider.parentElement.querySelector('.slider-value') : null; 
-        const d52Cell = document.querySelector('td[data-field-id="d_52"]');
+        const d52Display = d52Slider ? d52Slider.parentElement.querySelector('.slider-value') : null;
 
-        let newMinValue = 50;
-        let newMaxValue = 400;
-        let newStep = 2;
-        let newValue = 300; // Default for Heatpump
+        let newMinValue = 50, newMaxValue = 400, newStep = 2, newValue = 300;
         let isEditable = true; // Assume editable by default
 
         if (selectedSource === "Gas" || selectedSource === "Oil") {
-            newMinValue = 50;
-            newMaxValue = 100;
-            newStep = 1;
-            newValue = 90; // Reset value to 90%
-            isEditable = true; // Still editable, but within new range
+            newMinValue = 50; // Set min to 50
+            newMaxValue = 100; // Set max to 100
+            newStep = 1;     // Set step to 1
+            newValue = 90; // Reset value to 90% within the new range
+            isEditable = true; 
         } else if (selectedSource === "Electric") {
-            newMinValue = 50;
-            newMaxValue = 100;
-            newStep = 1;
-            newValue = 100; // Reset value to 100%
-            isEditable = true; // Still editable
-        } else { // Heatpump
-            newMinValue = 50;
-            newMaxValue = 400;
-            newStep = 2;
-            // Maybe restore last HP value? For now, reset to default.
-            newValue = 300; 
-            isEditable = true;
-        }
+            newMaxValue = 100; newStep = 1; newValue = 100;
+        } // else Heatpump uses defaults
 
-        // Update StateManager first
         if (window.TEUI.StateManager) {
-            // Store the percentage value (as string)
             window.TEUI.StateManager.setValue("d_52", newValue.toString(), 'system-update');
         }
-
-        // Update Slider Attributes & Value & Display
         if (d52Slider) {
-            d52Slider.min = newMinValue;
-            d52Slider.max = newMaxValue;
-            d52Slider.step = newStep;
-            d52Slider.value = newValue; // Update slider value to the new default/reset value
-            if (d52Display) { 
-                d52Display.textContent = `${newValue}%`; // Update display
-            }
+            d52Slider.min = newMinValue; d52Slider.max = newMaxValue; d52Slider.step = newStep;
+            d52Slider.value = newValue;
+            if (d52Display) { d52Display.textContent = `${newValue}%`; }
         }
-        // Removed direct class toggle - rely on updateSection7Visibility call below
-
-        // Update visibility based on the *new* system type
-        const currentWaterMethod = getFieldValue("d_49"); // Get the other controlling value
-        updateSection7Visibility(currentWaterMethod, selectedSource); // Call the main visibility function
-
-        // Trigger recalculations that depend on d_52
-        calculateAll(); // Recalculate section
+        // Visibility updated in handleGenericDropdownChange
+        // calculateAll is called by handleGenericDropdownChange
     }
     
     //==========================================================================
@@ -1128,24 +977,14 @@ window.TEUI.SectionModules.sect07 = (function() {
     //==========================================================================
     
     return {
-        // Field definitions and layout - REQUIRED
         getFields: getFields,
         getDropdownOptions: getDropdownOptions,
         getLayout: getLayout,
-        
-        // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
         onSectionRendered: onSectionRendered,
-        setupValueEnforcement: setupValueEnforcement,
-        
-        // Section-specific utility functions - OPTIONAL
         calculateAll: calculateAll,
         calculateWaterUse: calculateWaterUse,
-        calculateHeatingSystem: calculateHeatingSystem,
-        getNumericValue: getNumericValue,
-        getFieldValue: getFieldValue,
-        setCalculatedValue: setCalculatedValue,
-        formatNumber: formatNumber
+        calculateHeatingSystem: calculateHeatingSystem 
     };
 })();
 
@@ -1160,7 +999,7 @@ document.addEventListener('teui-section-rendered', function(event) {
 document.addEventListener('teui-rendering-complete', function() {
     setTimeout(() => {
         if (document.getElementById('waterUse')) {
-            window.TEUI.SectionModules.sect07.onSectionRendered();
+            window.TEUI.SectionModules.sect07?.onSectionRendered(); // Use optional chaining
         }
     }, 300);
 });
@@ -1168,22 +1007,18 @@ document.addEventListener('teui-rendering-complete', function() {
 // Expose critical functions to global namespace for cross-module access
 document.addEventListener('DOMContentLoaded', function() {
     const module = window.TEUI.SectionModules.sect07;
-    window.TEUI.sect07.calculateWaterUse = module.calculateWaterUse;
-    window.TEUI.sect07.calculateHeatingSystem = module.calculateHeatingSystem;
-    window.TEUI.sect07.calculateAll = module.calculateAll;
+    if (module) { // Check if module exists
+        window.TEUI.sect07.calculateWaterUse = module.calculateWaterUse;
+        window.TEUI.sect07.calculateHeatingSystem = module.calculateHeatingSystem;
+        window.TEUI.sect07.calculateAll = module.calculateAll;
+    }
 });
 
 // Create a globally accessible safe version of calculateAll
 window.calculateWaterUse = function() {
-    // Prevent infinite recursion
-    if (window.waterUseCalculationRunning) {
-        return;
-    }
-    
+    if (window.waterUseCalculationRunning) return;
     window.waterUseCalculationRunning = true;
-    
     try {
-        // Try multiple paths to find the actual implementation
         if (window.TEUI?.SectionModules?.sect07?.calculateAll) {
             window.TEUI.SectionModules.sect07.calculateAll();
         } 
@@ -1193,7 +1028,6 @@ window.calculateWaterUse = function() {
     } catch (e) {
         // console.error("Error in wrapper:", e);
     } finally {
-        // ALWAYS clear recursion flag regardless of success/failure
         window.waterUseCalculationRunning = false;
     }
 };
