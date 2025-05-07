@@ -1330,6 +1330,10 @@ window.TEUI.SectionModules.sect13 = (function() {
         const fieldId = this.getAttribute('data-field-id');
         if (!fieldId) return;
 
+        // if (fieldId === 'l_118') {
+        //     console.log(`[S13 DEBUG l_118] Blur event triggered for l_118. Current textContent: "${this.textContent}"`);
+        // }
+
         const newValue = this.textContent.trim();
         const numericValue = window.TEUI.parseNumeric(newValue, NaN); 
 
@@ -1351,11 +1355,19 @@ window.TEUI.SectionModules.sect13 = (function() {
                 //     console.log(`[S13 DEBUG] j_115 Blur: Storing "${valueToStore}" in StateManager. Formatted display: "${formattedDisplay}"`);
                 // }
                 // --- End Log ---
+                // if (fieldId === 'l_118') {
+                //     console.log(`[S13 DEBUG l_118] Attempting to set StateManager for l_118 to: "${valueToStore}". Display will be: "${formattedDisplay}"`);
+                // }
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
                 // ADDED: Explicitly trigger calculateAll after user modifies AFUE
                 if (fieldId === 'j_115') {
                     // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
                     calculateAll(); // Keep this trigger for AFUE changes
+                }
+                // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
+                if (fieldId === 'l_118') {
+                    // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
+                    calculateAll(); 
                 }
             }
         } else {
