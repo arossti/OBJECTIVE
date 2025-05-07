@@ -1004,10 +1004,13 @@ TEUI.FieldManager = (function() {
          * @param {string} fieldId - The ID of the field to update.
          * @param {string} newValue - The new value to display.
          */
-        updateFieldDisplay: function(fieldId, newValue) {
-            // console.log(`[FieldManager.updateFieldDisplay] Called for ${fieldId} with value: ${newValue}`);
+        updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) {
+            console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
+                fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue} : null
+            }); // KWW DEBUG
+
             const element = document.getElementById(fieldId);
-            const fieldDef = this.getField(fieldId);
+            const fieldDef = fieldDefFromCaller || this.getField(fieldId);
 
             if (!element) {
                 // console.warn(`[FieldManager.updateFieldDisplay] Element with ID ${fieldId} not found.`);
@@ -1015,7 +1018,9 @@ TEUI.FieldManager = (function() {
             }
 
             if (!fieldDef) {
-                // console.warn(`[FieldManager.updateFieldDisplay] Field definition for ${fieldId} not found.`);
+                if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') { // Log if critical fieldDef is missing
+                    console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Field definition for ${fieldId} is missing/null. Cannot determine type. Element:`, element);
+                }
                 // Still attempt to set value if element exists, might be a simple display span
                 if (element.tagName === 'SPAN' || element.tagName === 'DIV') {
                     element.textContent = newValue;
@@ -1060,13 +1065,33 @@ TEUI.FieldManager = (function() {
                     break;
                 case 'dropdown':
                     // Ensure we target the actual <select> element
-                    const selectElement = element.tagName === 'SELECT' ? element : element.querySelector('select[data-field-id="' + fieldId + '"]');
+                    const selectElement = element.tagName === 'SELECT' ? element : element.querySelector(`select[data-field-id='${fieldId}']`); // Template literal for querySelector
                     if (selectElement) {
+                        // selectElement.value = newValue; // Setting .value should ideally be enough, but browsers can be tricky with visual updates
+                        // console.log(`[FieldManager.updateFieldDisplay] Set SELECT value for ${fieldId} to: ${newValue}`, selectElement); // KWW DEBUG
+
+                        let optionFoundAndSelected = false;
+                        for (let i = 0; i < selectElement.options.length; i++) {
+                            if (selectElement.options[i].value === newValue) {
+                                selectElement.options[i].selected = true;
+                                optionFoundAndSelected = true;
+                            } else {
+                                selectElement.options[i].selected = false;
+                            }
+                        }
+
+                        // Fallback to setting .value directly if the option wasn't found OR as a belt-and-suspenders for visual update.
+                        // This ensures the select's internal value is correct even if no specific <option> tag matched.
                         selectElement.value = newValue;
-                        console.log(`[FieldManager.updateFieldDisplay] Set SELECT value for ${fieldId} to: ${newValue}`, selectElement); // KWW DEBUG
+                        
+                        if (optionFoundAndSelected) {
+                            console.log(`[FieldManager.updateFieldDisplay] Option for value "${newValue}" SELECTED for dropdown ${fieldId}.`);
+                        } else {
+                            console.warn(`[FieldManager.updateFieldDisplay] Value "${newValue}" for dropdown ${fieldId} not explicitly found among its <option>s. Set .value directly.`);
+                        }
+
                         // Dispatch a change event to trigger any dependent logic or UI updates
                         selectElement.dispatchEvent(new Event('change', { bubbles: true }));
-                        // console.log(`[FieldManager.updateFieldDisplay] Dispatched CHANGE for ${fieldId}`); // KWW DEBUG
                     } else {
                         console.warn(`[FieldManager.updateFieldDisplay] Could not find SELECT element for dropdown ${fieldId}`);
                     }
