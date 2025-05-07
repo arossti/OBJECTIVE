@@ -213,6 +213,15 @@
                         const fieldId = cols[fieldIdIndex];
                         const value = cols[valueIndex];
 
+                        // --- REINSTATE: Skip Section 03 Fields ---
+                        const fieldDefForSkipCheck = this.fieldManager?.getField(fieldId); // Use optional chaining
+                        if (fieldDefForSkipCheck && fieldDefForSkipCheck.sectionId === 'sect03') {
+                            // console.log(`[CSV Import] Skipping Section 03 field: ${fieldId} as per current strategy.`);
+                            skippedCount++;
+                            continue; // Move to the next row
+                        }
+                        // --- END REINSTATE ---
+
                         // Only add if fieldId is not empty (skip placeholder rows)
                         if (fieldId && value !== undefined) {
                             importedData[fieldId] = value;

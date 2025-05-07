@@ -121,12 +121,12 @@ This document now includes a plan to address this core UI reactivity issue, draw
 ## 5. Key Decisions & Considerations (Updated)
 
 -   **Import State:** Using `'imported'` state in `StateManager` is confirmed.
--   **Invalid Dropdown Values (Import):** Strategy is to **skip** invalid fields and log a console warning. This is sound.
--   **CSV Parsing:** Using a simple built-in parser. Robustness for complex CSVs might need future enhancement. Current parser correctly skips climate section fields.
--   **CSV Export Scope:** Currently exports user-interactable fields (editable, dropdown, sliders, etc.) along with layout metadata. This is the desired behavior.
--   **UI Update Post-Import:** **THIS IS THE PRIMARY AREA FOR DEVELOPMENT.** The system must ensure that after `StateManager` is updated with imported values, the corresponding HTML UI elements visually reflect these new values.
+-   **Invalid Dropdown Values (Import):** Strategy is to **skip** invalid fields and log a console warning. This is sound for most fields, but problematic for dependent dropdowns like climate city/province if not handled in sequence (see Section 7.1).
+-   **CSV Parsing:** Using a simple built-in parser. Robustness for complex CSVs might need future enhancement.
+-   **CSV Export Scope:** Currently exports user-interactable fields (editable, dropdown, sliders, etc.) along with layout metadata. Section 03 fields were briefly included and then removed from export to simplify import logic.
+-   **UI Update Post-Import:** **THIS IS THE PRIMARY AREA FOR DEVELOPMENT.** The system must ensure that after `StateManager` is updated with imported values, the corresponding HTML UI elements visually reflect these new values and that any dependent logic (like `onchange` events) is triggered.
 
-## 6. Learnings from `SANKEY3035.html` for UI Updates (NEW SECTION)
+## 6. Learnings from `SANKEY3035.html` for UI Updates (No Change from previous version of this section)
 
 The standalone `future code/SANKEY3035.html` page demonstrates effective UI updates after data import. Key techniques include:
 
@@ -142,77 +142,98 @@ The standalone `future code/SANKEY3035.html` page demonstrates effective UI upda
 *   **Re-rendering or Explicit Refresh of Complex Controls:** For more complex UI elements (like the tables of sliders in Sankey), the controls are often re-initialized or their display is explicitly refreshed *after* the underlying data has been updated. This ensures they are built using the latest state.
 *   **Centralized State Management:** While Sankey has its own `StateManager`, the principle is that UI elements derive their state from this central source, and updates flow from the state to the UI.
 
-## 7. Revised Implementation Plan: Robust UI Updates & Reference Model Integration (NEW SECTION)
+## 7. The "55555" CSV Import Study & Findings (NEW SECTION)
 
-This plan focuses on fixing the UI update issue first, then applying it broadly.
+A test CSV file (`documentation/TEUIv4011-55555.csv`) was created where most user-editable values were set to variations of "5" (e.g., 555, 55.5, 55%). This file was imported into the system to observe the behavior of the import process and UI updates.
 
-### Phase A: Robust UI Updates for CSV Import
+**Key Findings:**
 
-**Goal:** Ensure that when a CSV file is imported, all corresponding UI elements (text inputs, dropdowns, sliders) in the TEUI Calculator visually reflect the imported values.
+1.  **`StateManager` Updated, Calculations Reflect Changes:**
+    *   Logs and TEUI/TEDI calculations confirmed that `StateManager` was indeed updated with the imported "555" values. Calculations dependent on these values (e.g., Section 11 losses based on imported areas/U-values) used the new data. This indicates the data parsing and `StateManager.setValue()` parts of the import are fundamentally working.
 
-*   **A1: Enhance `FieldManager` for Explicit UI Updates**
-    *   **Action:** Create or enhance a function within `TEUI.FieldManager`, let's call it `updateFieldDisplay(fieldId, newValue)`.
-    *   This function will:
-        *   Get the HTML element for `fieldId`.
-        *   Get the `fieldDef` for `fieldId`.
-        *   Based on `fieldDef.type`:
-            *   **'editable', 'number', 'year_slider', 'percentage', 'coefficient':** Set `element.value = newValue;`.
-            *   **'dropdown':** Set `element.value = newValue;`. Then, `element.dispatchEvent(new Event('change', { bubbles: true }));`.
-            *   **Slider types (if distinct from above):** Determine how TEUI sliders are structured (e.g., an `<input type="range">` plus a display `<span>` or `<input type="number">`). Set the `.value` for all relevant parts. Consider dispatching an `input` or `change` event on the primary range input.
-    *   **Integration:** In `4011-FileHandler.js`, within `updateStateFromImportData`, after `this.stateManager.setValue(fieldId, parsedValue, 'imported');` and after confirming the value was set successfully, call `TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue);`.
-*   **Testing A1:**
-    *   Import the provided `TEUIv4011-Three_Feathers_Terrace (7).csv`.
-    *   Verify that simple text inputs (e.g., `h_14` Project Name, `h_15` Conditioned Area) update correctly.
-    *   Verify that dropdowns (e.g., `d_12` Major Occupancy, `d_13` Reference Standard) visually change to the imported values AND that any UI changes or calculations normally triggered by changing these dropdowns manually also occur.
-    *   Identify any slider fields in the CSV and verify they update visually and functionally. If direct import to sliders isn't fully mapped, note for A2.
+2.  **Inconsistent UI Visual Updates (The "Secret" Application):**
+    *   Many UI elements did **not** visually update to reflect the imported "555" values, even though `StateManager` held these values. This is the "secret" application of data—correct in the backend, incorrect in the frontend.
+    *   **Example (Failure):** Window Areas (e.g., `d_74` in Section 10). The UI in Section 10 continued to show the default area (e.g., 81.14 m²). However, calculations in Section 11 *used* the imported 555 m² for `d_74`, demonstrating the UI-State desynchronization.
+    *   **Example (Success - KWW):** Window U-Values (e.g., `g_89`, `g_90` etc. in Section 11). If a U-value was manually changed to 0.5, exported, and then re-imported, the UI input field in Section 11 correctly displayed "0.5". This is a key "Know What Works" (KWW) case. We need to understand the `fieldDef.type` and rendering for `g_89` to replicate this success.
+    *   **Dropdowns Not Updating:** Dropdown fields (e.g., `d_113` Primary Heating System, `d_51` DHW Energy Source, which were set to "Oil" in the CSV) did not visually change from their default "Heatpump" selection in the UI. This confirms the "robofinger" (programmatic event dispatch) is not yet effective for dropdowns.
 
-*   **A2: Refine and Test Sliders and Complex Fields**
-    *   **Action:** Based on A1 testing, specifically address any slider UIs or other complex field types that did not update correctly. This may involve more specific DOM manipulation within `updateFieldDisplay` for those types.
-*   **Testing A2:** Rigorously test import for all user-editable field types that have a UI representation.
+3.  **Climate Data (Section 03) Import Issues & Decision:**
+    *   The attempt to import Section 03 values (like Province `d_19` = "ON", City `h_19` = "Attawapiskat") via the "55555.csv" resulted in console warnings: `"Skipping import for field d_19: Invalid value "ON" for type dropdown."`
+    *   This was due to the CSV import validation logic in `FileHandler.js` (`updateStateFromImportData`) not correctly handling dependent dropdowns (City depends on Province).
+    *   **Decision:** Given the plan to refactor Section 03 to use JSON for weather data, and to simplify the immediate task of fixing general import UI updates, **Section 03 fields will be explicitly skipped during CSV import for now.** `ExcelLocationHandler.js` remains the dedicated mechanism for loading full climate datasets.
 
-### Phase B: Apply to Excel Import
+4.  **Conclusion from Study:**
+    *   The primary challenge is the reliable propagation of `StateManager` changes to the visual UI elements.
+    *   A universal approach to updating different types of UI elements (`input`, `contenteditable`, `select`, sliders) is needed within `FieldManager.updateFieldDisplay()`.
+    *   The successful update of U-value field `g_89` provides a positive pattern to analyze and replicate.
 
-**Goal:** Ensure robust UI updates also occur when importing data from Excel files.
+## 8. Revised Implementation Plan: Universal UI Updates (Formerly Section 7)
 
-*   **Action:** The enhancements from Phase A (primarily the call to `TEUI.FieldManager.updateFieldDisplay` from within `updateStateFromImportData`) should automatically benefit Excel imports as `processImportedExcel` also calls `updateStateFromImportData`.
-*   **Testing B:**
-    *   Prepare a test Excel file (based on `REPORT!` sheet structure from `excelReportInputMapping`).
-    *   Import the Excel file.
-    *   Verify that all corresponding UI elements (inputs, dropdowns, sliders) update visually and functionally.
-    *   **Action (If Needed):** Complete populating `excelReportInputMapping` in `4011-ExcelMapper.js` if further testing reveals missing mappings for user-editable fields.
+This plan prioritizes creating a robust and universal UI update mechanism. Sections 10 and 11 will be initial focus areas due to their mix of input types.
 
-### Phase C: Integration with Reference Model UI
+### Phase A: Mastering UI Updates (`FieldManager.updateFieldDisplay`)
 
-**Goal:** Leverage the robust UI update mechanism to fix the "stuck values" problem in Reference Mode.
+**Goal:** Ensure `TEUI.FieldManager.updateFieldDisplay(fieldId, newValue, fieldDef)` reliably updates the UI for all relevant field types.
 
-*   **Action:**
-    *   Identify the point in `4011-ReferenceToggle.js` or `StateManager` where the active reference standard changes and new reference values are loaded into `StateManager.state.referenceValuesState`.
-    *   After these reference values are determined and notionally "set" for the `targetCell` field IDs (e.g., `f_85`, `g_88`):
-        *   For each `targetCell` that should display a reference value:
-            *   Retrieve the reference value (which `StateManager.getValue(fieldId)` should now return when in Reference Mode, as per `deepstate-structure.md` Phase 2).
-            *   Call the enhanced `TEUI.FieldManager.updateFieldDisplay(targetCellFieldId, referenceValue);`.
-        *   Additionally, `FieldManager` (or `ReferenceToggle`) will need to apply/remove the `.reference-value-locked` CSS class and `contenteditable='false'` attribute as planned in `deepstate-structure.md` Phase 3. The `updateFieldDisplay` could potentially handle this styling aspect too, if passed a "mode" flag (Design vs. Reference).
-*   **Testing C:**
-    *   Enter Reference Mode. Verify Section 11 `targetCell`s display initial standard's values and are styled/locked.
-    *   Change the selected reference standard via `d_13`.
-    *   Verify Section 11 `targetCell`s update to the new standard's values, M/N columns update, and styling/locking remains correct.
-    *   Verify all other application sections continue to work as expected.
+*   **A1: Revert Section 03 CSV Import (Code Change)**
+    *   **Action:** Modify `processImportedCSV` in `4011-FileHandler.js` to reinstate skipping of Section 03 fields (e.g., those matching `_19` to `_24` pattern or by `fieldDef.sectionId === 'sect03'`). This will prevent validation errors for climate dropdowns and allow focus on general UI update mechanisms.
+    *   **Testing:** Confirm CSV imports no longer attempt to process S03 fields and no related warnings appear.
 
-### Phase D: Final Review and Documentation Update (NEW)
+*   **A2: Analyze KWW - U-Value Field `g_89` (Investigation)**
+    *   **Action:**
+        1.  Examine `getFields()` in `sections/4011-Section11.js` to find the `fieldDef` for `g_89` (and similar U-value fields like `g_88`, `g_90`-`g_93`). Note its `type` (e.g., 'editable', 'number').
+        2.  Examine `getLayout()` in `sections/4011-Section11.js` to see how `g_89` is rendered (e.g., as an `<input type="number">` or a `contenteditable` `<td>`).
+        3.  Trace how the current `FieldManager.updateFieldDisplay` successfully updates its visual display. This working path needs to be understood and generalized.
 
-*   **Action:** Review all changes, ensure code clarity, remove any temporary logging.
-*   **Action:** Update any relevant inline code comments and ensure this `FileHandlerCompletion.md` document accurately reflects the final implementation.
-*   **Testing D:** Full regression test of import (CSV & Excel) and Reference Mode functionality.
+*   **A3: Fix Input Fields (Text, Number, `contenteditable`)**
+    *   **Target:** Fields like `d_74` (Window Area in S10 UI), `f_85` (Roof RSI in S11 UI).
+    *   **Action:** Based on findings from A2:
+        *   Ensure `updateFieldDisplay` correctly targets the input element (which might be the `<td>` itself if `contenteditable`, or an `<input>` child).
+        *   If `element.value` is appropriate (for `<input>`), set it.
+        *   If `element.textContent` is appropriate (for `contenteditable`), set it. **Crucially, after setting `textContent` for a `contenteditable` field that users can type into, dispatch a `blur` event:** `element.dispatchEvent(new Event('blur', { bubbles: true }));` This helps ensure that any logic tied to the user finishing an edit is triggered.
+    *   **Goal:** All simple input fields should reliably update their visual display. Test with "55555.csv" – `d_74` in S10 UI should show "555", `f_85` in S11 UI should show "55".
 
-## 8. Original Implementation Progress & Next Steps (Formerly Section 6 - Merged & Updated)
+*   **A4: Fix Dropdown Fields (The "Robofinger")**
+    *   **Target:** `d_113` (Primary Heating), `d_51` (DHW Source), `d_12` (Major Occupancy), etc.
+    *   **Action:**
+        1.  In `updateFieldDisplay`, for `case 'dropdown'`, ensure the `element` variable correctly references the `<select>` HTML element itself. This likely means changing from `document.getElementById(fieldId)` to `document.querySelector(\`select[data-field-id='${fieldId}']\`)` or `document.querySelector(\`td[id='${fieldId}'] select\`)`. (The former is better if `<select>` has `data-field-id`).
+        2.  Confirm `element.value = newValue;` sets the selection.
+        3.  Ensure `element.dispatchEvent(new Event('change', { bubbles: true }));` effectively triggers the dropdown's `onchange` listeners and any dependent UI updates (e.g., showing/hiding HSPF vs. AFUE inputs when heating system changes).
+    *   **Goal:** Dropdowns visually change to imported values, and their dependent logic fires. Test with "55555.csv" – `d_113` and `d_51` should show "Oil".
 
-Many original "NEXT" items are addressed by the new phased plan. This section is revised for clarity.
+*   **A5: Fix Slider Fields**
+    *   **Target:** Fields like `d_118` (HRV/ERV SRE).
+    *   **Action:**
+        1.  Examine `initializeSliders` in `FieldManager.js` to understand the exact HTML structure created (e.g., an `<input type="range">` and often a separate `<span>` for numeric display).
+        2.  In `updateFieldDisplay`, for slider types, add logic to:
+            *   Find the actual `<input type="range">` element associated with `fieldId`.
+            *   Find its associated numeric display `<span>` (e.g., by a class like `slider-value` relative to the range input).
+            *   Set `rangeInput.value = newValue;`.
+            *   Update `displaySpan.textContent` (formatted appropriately, e.g., with '%').
+            *   Dispatch an `input` event on the `rangeInput`: `rangeInput.dispatchEvent(new Event('input', { bubbles: true }));` to mimic user interaction and trigger any input event listeners.
+    *   **Goal:** Sliders visually reflect imported values. Test with `d_118` from "55555.csv" (value 55).
+
+### Phase B: Comprehensive Testing & Refinement (No change from previous plan)
+
+*   Test CSV import thoroughly using "55555.csv" and other diverse test files, focusing on Sections 10 and 11 initially, then expanding to all sections.
+*   Test Excel import to ensure the UI update mechanism works there as well.
+
+### Phase C: Integration with Reference Model UI (No change from previous plan)
+(Details as previously outlined)
+
+### Phase D: Final Review and Documentation Update (No change from previous plan)
+(Details as previously outlined)
+
+## 9. Original Implementation Progress & Next Steps (Formerly Section 8 - Minor Update)
+
+Many original \"NEXT\" items are addressed by the new phased plan. This section is revised for clarity.
 
 *   **DONE:** Strategy defined.
 *   **DONE:** Syntax errors in `ExcelMapper.js` fixed.
-*   **DONE:** Core import/export functions (`handleFileSelect`, `processImportedExcel`, `processImportedCSV`, `updateStateFromImportData`, `exportToCSV`) implemented in `FileHandler.js` (though `updateStateFromImportData` needs UI trigger enhancement).
+*   **DONE:** Core import/export functions (`handleFileSelect`, `processImportedExcel`, `processImportedCSV`, `updateStateFromImportData`, `exportToCSV`) implemented in `FileHandler.js` (though `updateStateFromImportData` and `FieldManager` need UI update enhancements as per Phased Plan).
 *   **DONE:** Specific Excel mapping function (`mapExcelToReportModel`) created in `ExcelMapper.js` (mapping itself needs final review).
-*   **NEXT (Covered by Phased Plan Above):**
+*   **DONE:** Weather file import routing fixed to use `ExcelLocationHandler`.
+*   **IN PROGRESS (Covered by Phased Plan Above):**
     *   Robust UI updates for CSV/Excel import (Phase A, B).
     *   Application of UI update mechanisms to Reference Mode (Phase C).
 *   **OUTSTANDING (from original list, to be reviewed post-Phases A-C):**
