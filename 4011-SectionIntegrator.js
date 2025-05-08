@@ -491,6 +491,7 @@ TEUI.SectionIntegrator = (function() {
         window.TEUI.StateManager.registerDependency('h_12', 'l_27');
         
         // Add listener to force recalculation when province changes
+        /* --- COMMENTED OUT TO PREVENT S03 RE-RENDER --- 
         window.TEUI.StateManager.addListener('d_19', function(newValue) {
             // console.log('Province changed in StateManager to:', newValue);
             // >>> ADD DIAGNOSTIC <<<
@@ -498,6 +499,7 @@ TEUI.SectionIntegrator = (function() {
             // >>> END DIAGNOSTIC <<<
             forceEmissionsFactorUpdate();
         });
+        --- END COMMENT OUT --- */
         
         // Add listener to force recalculation when reporting year changes
         window.TEUI.StateManager.addListener('h_12', function(newValue) {
