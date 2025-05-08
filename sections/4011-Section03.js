@@ -668,65 +668,50 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
      */
     function handleProvinceChange(e) {
         const provinceValue = e?.target?.value || (typeof e === 'string' ? e : null);
-        console.log(`[S03 DEBUG] handleProvinceChange triggered. Province: ${provinceValue}`); // Log Entry
-        
-        // Make sure city dropdown is visible
-        ensureCityDropdownVisible();
-        
+        console.log(`[S03 DEBUG] handleProvinceChange triggered. Province: ${provinceValue}`);
+
         if (!provinceValue) {
-            resetClimateFields(); // Reset if province is unselected
+            resetClimateFields(); 
+            const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
+            if(cityDropdown) {
+                cityDropdown.innerHTML = '<option value="">Select City</option>';
+                cityDropdown.disabled = true;
+            }
             return;
         }
         
+        // 1. Update StateManager for the selected province
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('d_19', provinceValue, 'user-modified');
         }
         
-        // Add extensive debugging for dropdowns
-        console.log("[S03 DIAGNOSTIC] Searching for city dropdown...");
+        // 2. Get cities directly from our local map
+        const cities = provinceCityMap[provinceValue] || [];
+        console.log(`[S03 DEBUG] Cities found locally for ${provinceValue}:`, cities); 
+
+        // 3. Find the city dropdown element
         const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
         if (!cityDropdown) {
-             console.error("[S03 DEBUG] City dropdown not found!");
-             return;
+             console.error("[S03 DEBUG] City dropdown element not found! Cannot populate cities.");
+             return; // Stop if element doesn't exist
         }
         
         // IMPORTANT FIX: Keep a reference to the parent container
         const dropdownContainer = cityDropdown.parentElement;
         
-        // Instead of clearing innerHTML, we'll remove options more carefully
-        while (cityDropdown.options.length > 1) {
-            cityDropdown.remove(1);
-        }
-        
-        // Make sure the first option is "Select City"
-        if (cityDropdown.options.length === 0) {
-            const defaultOption = document.createElement('option');
-            defaultOption.value = "";
-            defaultOption.textContent = "Select City";
-            cityDropdown.appendChild(defaultOption);
-        }
-        
-        // Check if ClimateData is available, and if not, retry after a short delay
-        if (!window.TEUI?.ClimateData || Object.keys(window.TEUI.ClimateData).length === 0) {
-            console.warn("[S03 DEBUG] Climate data not yet initialized when handleProvinceChange was called. Retrying in 500ms.");
-            setTimeout(() => handleProvinceChange(provinceValue), 500);
-            return;
+        // 4. Clear existing options (more carefully)
+        while (cityDropdown.options.length > 0) { // Clear ALL options
+            cityDropdown.remove(0);
         }
 
-        const provinceData = window.TEUI.ClimateData[provinceValue];
-        if (!provinceData) {
-            console.error(`[S03 DEBUG] No data found for province: ${provinceValue}`);
-            cityDropdown.disabled = true;
-            resetClimateFields();
-            return;
-        }
+        // 5. Add placeholder option
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = "";
+        placeholderOption.textContent = "Select City";
+        cityDropdown.appendChild(placeholderOption);
         
-        // Get cities from the province data
-        const cities = Object.keys(provinceData).sort();
-        console.log(`[S03 DEBUG] Cities found for ${provinceValue}:`, cities); // Log Cities
-        
+        // 6. Populate with new cities
         if (cities.length > 0) {
-            // Add each city as an option to the dropdown
             cities.forEach(cityName => {
                 const option = document.createElement('option');
                 option.value = cityName;
@@ -734,44 +719,37 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 cityDropdown.appendChild(option);
             });
             
-            // Enable the dropdown now that we have options
             cityDropdown.disabled = false;
 
-            // Set default city to Alexandria for ON, else first city
-            const defaultCity = "Alexandria";
-            let cityToSelect = cities[0]; // Default to first alphabetical
+            // 7. Select default city (Alexandria for ON, else first)
+            const defaultCity = "Alexandria"; // Target default
+            let cityToSelect = cities[0]; // Fallback to first
             if (provinceValue === "ON" && cities.includes(defaultCity)) {
                 cityToSelect = defaultCity;
             }
-            console.log(`[S03 DEBUG] Default city selected: ${cityToSelect}`); // Log Default City
+            console.log(`[S03 DEBUG] Default city visual selection: ${cityToSelect}`);
             
-            // Set selected city in dropdown
+            // Set dropdown visual state
             cityDropdown.value = cityToSelect;
             
-            // Update state manager
-            if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue('h_19', cityToSelect, 'user-modified'); 
+            // 8. IMPORTANT: DO NOT set h_19 in StateManager here.
+            // Let handleCityChange do that when the user interacts or if we explicitly call it.
+
+            // 9. Trigger initial weather data load *only* if a default city was successfully set.
+            if (cityToSelect) {
+                 console.log("[S03 DEBUG] Triggering initial updateWeatherData after setting default city.");
+                 updateWeatherData(); // Load data for the default selection
             }
-            
-            // Ensure the city cell is visible - FIX: Preserve the container
-            if (dropdownContainer) {
-                dropdownContainer.style.display = '';
-            }
-            
-            // Make sure the dropdown is still in the DOM and visible
-            ensureCityDropdownVisible();
-            
-            // Update weather data for the selected city
-            updateWeatherData(); 
-            
-            // Final check with a small delay to ensure dropdown stays visible
-            setTimeout(ensureCityDropdownVisible, 100);
+
         } else {
-            console.warn(`[S03 DEBUG] No cities found for province: ${provinceValue}`); // Log No Cities
-            // Disable dropdown but leave it visible with the "Select City" option
+            console.warn(`[S03 DEBUG] No cities found locally for province: ${provinceValue}`);
             cityDropdown.disabled = true;
-            resetClimateFields();
+            resetClimateFields(); // Reset if no cities
         }
+
+        // 10. Final visibility check 
+        ensureCityDropdownVisible();
+        setTimeout(ensureCityDropdownVisible, 100); // And again after a short delay
     }
 
     /**
@@ -1104,11 +1082,12 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             return;
         }
         
+        // 1. NOW update StateManager for the user's selected city
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_19', cityValue, 'user-modified');
         }
         
-        // Directly trigger weather data update with the new city
+        // 2. Trigger weather data update for the selected city
         updateWeatherData();
         
         // Final check to ensure dropdown remains visible
@@ -1412,6 +1391,21 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
     function initializeDefaultClimateValues() {
         console.log("[S03 DEBUG] Initializing default climate values");
         
+        // >>> ADDED: Populate local city map <<<
+        if (window.TEUI?.ClimateData) {
+            provinceCityMap = {}; // Clear first
+            for (const provinceKey in window.TEUI.ClimateData) {
+                if (window.TEUI.ClimateData.hasOwnProperty(provinceKey)) {
+                    provinceCityMap[provinceKey] = Object.keys(window.TEUI.ClimateData[provinceKey]).sort();
+                }
+            }
+            console.log("[S03 DEBUG] Local provinceCityMap populated:", provinceCityMap);
+        } else {
+             console.error("[S03 DEBUG] Cannot populate local city map - ClimateData not found.");
+             return; // Stop initialization if data is missing
+        }
+        // >>> END ADDED <<<
+
         // Default province and city
         const defaultProvince = "ON";
         const defaultCity = "Alexandria";
