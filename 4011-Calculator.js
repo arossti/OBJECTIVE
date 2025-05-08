@@ -63,7 +63,7 @@ TEUI.Calculator = (function() {
         
         // Initialize FieldManager to generate content for all sections
         if (TEUI.FieldManager) {
-            TEUI.FieldManager.renderAllSections();
+            // TEUI.FieldManager.renderAllSections(); // REMOVE THIS - Rendering should be triggered centrally
             // console.log('Field Manager initialized and sections rendered');
         }
         
@@ -82,11 +82,11 @@ TEUI.Calculator = (function() {
             // console.log('Rendering complete event received:', event.detail.message);
             
             // Initialize weather handlers when rendering is complete
-            // initializeWeatherHandlers(); // Moved to 4011-init.js?
+            // initializeWeatherHandlers(); // Keep commented? Ensure init.js handles it
             
             // Calculate all values immediately after rendering and weather handlers are ready
             // console.log('Starting initial calculations immediately after rendering complete');
-                // TEUI.Calculator.calculateAll(); // Initial calculation likely triggered by events now
+            TEUI.Calculator.calculateAll();
         });
         
         // console.log('TEUI Calculator 4.011 initialization complete');
