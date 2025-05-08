@@ -955,6 +955,9 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 // Delegate based on the dropdown ID
                 if (dropdownId === 'dd_d_19') {
                     console.log("[S03 Delegated] Province change detected");
+                    // >>> ADD DIAGNOSTIC LOG <<<
+                    console.log("[S03 Delegated] Change listener fired for dd_d_19. Checking for city dropdown NOW...");
+                    // >>> END DIAGNOSTIC LOG <<<
                     const cityDropdownExists = !!document.querySelector('[data-dropdown-id="dd_h_19"]');
                     console.log(`[S03 Delegated] Just before calling handleProvinceChange. City dropdown exists? ${cityDropdownExists}`);
                     if (typeof window.TEUI.sect03.handleProvinceChange === 'function') {
