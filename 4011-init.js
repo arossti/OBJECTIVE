@@ -55,7 +55,8 @@ document.addEventListener('DOMContentLoaded', function() {
         'teuiSummary': 'bi-outlet',
         'sankeyDiagram': 'bi-sliders2',
         'dependencyDiagram': 'bi-link-45deg',
-        'footer': 'bi-info-square'
+        'footer': 'bi-info-square',
+        'notes': 'bi-info-square'
     };
     
     // Mapping of section IDs to short tab labels
