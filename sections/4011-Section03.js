@@ -1424,34 +1424,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
     }
 })();
 
-// Add standard application lifecycle event listeners
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'climateCalculations') {
-        console.log("[S03 DEBUG] 'teui-section-rendered' event received for climateCalculations");
-        // Use timeout to ensure DOM is ready
-        setTimeout(() => {
-            if (window.TEUI.SectionModules.sect03?.onSectionRendered) {
-                window.TEUI.SectionModules.sect03.onSectionRendered();
-            } else {
-                console.error("[S03 DEBUG] onSectionRendered not available on module");
-            }
-        }, 100);
-    }
-});
-
-document.addEventListener('teui-rendering-complete', function() {
-    console.log("[S03 DEBUG] 'teui-rendering-complete' event received");
-    setTimeout(() => {
-        if (document.getElementById('climateCalculations')) {
-            if (window.TEUI.SectionModules.sect03?.onSectionRendered) {
-                window.TEUI.SectionModules.sect03.onSectionRendered();
-            } else {
-                console.error("[S03 DEBUG] onSectionRendered not available on module");
-            }
-        }
-    }, 300);
-});
-
 /**
  * Update the weather data modal with detailed climate information
  * Useful for debugging and showing users the full climate data
