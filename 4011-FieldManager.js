@@ -410,6 +410,9 @@ TEUI.FieldManager = (function() {
             const tbody = tableElement.querySelector('tbody');
             
             // Clear existing content
+            // >>> ADD DIAGNOSTIC LOG BEFORE TBODY CLEAR <<<
+            console.log(`[FieldManager DIAGNOSTIC] About to clear tbody for section: ${sectionId}`);
+            // >>> END DIAGNOSTIC LOG <<<
             tbody.innerHTML = '';
             
             // Generate rows based on layout definition

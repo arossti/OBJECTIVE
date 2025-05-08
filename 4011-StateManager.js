@@ -259,6 +259,9 @@ TEUI.StateManager = (function() {
             markDependentsDirty(fieldId);
         }
         
+        // >>> ADD DIAGNOSTIC LOG BEFORE NOTIFY <<<
+        console.log(`[StateManager DIAGNOSTIC] Before notifying listeners for: ${fieldId} (New: ${value}, Old: ${oldValue}, State: ${state})`);
+        // >>> END DIAGNOSTIC LOG <<<
         // Notify listeners of the change
         notifyListeners(fieldId, value, oldValue, state);
         
@@ -372,6 +375,10 @@ TEUI.StateManager = (function() {
         if (!listeners.has(fieldId)) {
             return;
         }
+        
+        // >>> ADD DIAGNOSTIC LOG <<<
+        console.log(`[StateManager DIAGNOSTIC] Notifying ${listeners.get(fieldId).size} listeners for change in: ${fieldId}`);
+        // >>> END DIAGNOSTIC LOG <<<
         
         // Call each listener
         listeners.get(fieldId).forEach(callback => {
