@@ -374,7 +374,7 @@ body {
 
 .tab.active {
   background-color: var(--tab-active-bg);
-  border-bottom: 3px solid var(--tab-active-border);
+  border-bottom: 4px solid var(--tab-active-border) !important;
 }
 
 /* Layout toggle button in Key Values header */
@@ -1310,8 +1310,6 @@ table.data-table select.form-select:hover {
     margin-right: 0.5rem; /* Space before disclaimer button */
 }
 
-/* Remove specific hover/active states, let Bootstrap handle via class change */
-
 /* Reference Mode Body Class Styles */
 body.reference-mode .section {
     border-color: var(--reference-value-color) !important; /* Use #8B0000 */
@@ -1359,4 +1357,34 @@ body.reference-mode .user-input:not(.reference-locked) {
     -webkit-user-modify: read-write !important;
     -moz-user-modify: read-write !important;
     user-modify: read-write !important;
+}
+
+/* Style tab container in reference mode */
+body.reference-mode .tab-container {
+    background-color: var(--reference-value-color) !important;
+    border-color: var(--reference-value-color) !important;
+}
+
+/* Style tabs in reference mode */
+body.reference-mode .tab {
+    border-right-color: rgba(255, 255, 255, 0.3); /* Lighter border between tabs */
+}
+
+/* Style tab hover in reference mode */
+body.reference-mode .tab:hover {
+    background-color: rgba(255, 255, 255, 0.15); /* Slightly lighter transparent white */
+}
+
+/* Style active tab in reference mode */
+body.reference-mode .tab.active {
+    background-color: rgba(255, 255, 255, 0.15) !important; /* Match hover background */
+    border-bottom: 4px solid var(--tab-active-border) !important; /* Explicitly set 4px blue border */
+}
+
+/* Style Key Values table borders in reference mode */
+body.reference-mode #keyValues .key-values-table {
+    border-color: var(--reference-value-color) !important;
+}
+body.reference-mode #keyValues .key-values-table tr {
+    border-bottom-color: var(--reference-value-color) !important;
 }
