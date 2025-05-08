@@ -457,10 +457,12 @@
             if (TEUI.Calculator) {
                 TEUI.Calculator.initialize();
                 
-                // Calculate all values after initialization
-                setTimeout(function() {
-                    TEUI.Calculator.calculateAll();
+                // Calculate all values after initialization (COMMENT OUT THIS BLOCK)
+                /*
+                setTimeout(function() { 
+                    TEUI.Calculator.calculateAll(); 
                 }, 500);
+                */
             }
             
             console.log('TEUI Calculator 4.011 initialization complete');

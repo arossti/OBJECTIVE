@@ -48,8 +48,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.55,
             "Winter_Tdb_Avg": -7,
             "Winter_Windspeed_Avg": 2.8,
-            "Summer_Tdb_Avg": 21,
-            "Summer_Twb_Avg": 21,
+            "Summer_Tdb_Avg": 21, 
+            "Summer_Twb_Avg": 21, 
             "Summer_RH_1500_LST": null
         }
         // Add other BC cities later
@@ -81,7 +81,7 @@ window.TEUI.ClimateData = {
             "Precip_Annual_mm": 480,
             "Precip_Annual_mm_New": 550,
             "Driving_Rain_Wind_Pa_1/5": 80,
-            "Driving_Rain_Wind_Pa_1/5_New": null,
+            "Driving_Rain_Wind_Pa_1/5_New": null, 
             "Snow_kPa_1/50_Ss": 1.5,
             "Snow_kPa_1/50_Sr": 0.1,
             "Snow_kPa_1/1000_Ss": 2.1,
@@ -93,8 +93,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.59,
             "Winter_Tdb_Avg": -10,
             "Winter_Windspeed_Avg": 2.4,
-            "Summer_Tdb_Avg": 23,
-            "Summer_Twb_Avg": 23,
+            "Summer_Tdb_Avg": 23, 
+            "Summer_Twb_Avg": 23, 
             "Summer_RH_1500_LST": null
         }
         // Add other AB cities later
@@ -138,8 +138,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.75,
             "Winter_Tdb_Avg": -10,
             "Winter_Windspeed_Avg": 4.7,
-            "Summer_Tdb_Avg": 25,
-            "Summer_Twb_Avg": 25,
+            "Summer_Tdb_Avg": 25, 
+            "Summer_Twb_Avg": 25, 
             "Summer_RH_1500_LST": null
         }
         // Add other SK cities later
@@ -183,8 +183,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.64,
             "Winter_Tdb_Avg": -12,
             "Winter_Windspeed_Avg": 3.3,
-            "Summer_Tdb_Avg": 26,
-            "Summer_Twb_Avg": 26,
+            "Summer_Tdb_Avg": 26, 
+            "Summer_Twb_Avg": 26, 
             "Summer_RH_1500_LST": null
         }
         // Add other MB cities later
@@ -303,7 +303,7 @@ window.TEUI.ClimateData = {
             "Precip_Annual_mm": 1050,
             "Precip_Annual_mm_New": 1170,
             "Driving_Rain_Wind_Pa_1/5": 180,
-            "Driving_Rain_Wind_Pa_1/5_New": null,
+            "Driving_Rain_Wind_Pa_1/5_New": null, 
             "Snow_kPa_1/50_Ss": 2.3,
             "Snow_kPa_1/50_Sr": 0.4,
             "Snow_kPa_1/1000_Ss": 3.4,
@@ -315,8 +315,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.55,
             "Winter_Tdb_Avg": -8,
             "Winter_Windspeed_Avg": 3.5,
-            "Summer_Tdb_Avg": 26,
-            "Summer_Twb_Avg": 26,
+            "Summer_Tdb_Avg": 26, 
+            "Summer_Twb_Avg": 26, 
             "Summer_RH_1500_LST": null
         }
         // Add other QC cities later
@@ -360,8 +360,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.76,
             "Winter_Tdb_Avg": -7,
             "Winter_Windspeed_Avg": 4.5,
-            "Summer_Tdb_Avg": 23,
-            "Summer_Twb_Avg": 23,
+            "Summer_Tdb_Avg": 23, 
+            "Summer_Twb_Avg": 23, 
             "Summer_RH_1500_LST": null
         }
         // Add other NB cities later
@@ -405,8 +405,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.76,
             "Winter_Tdb_Avg": -6,
             "Winter_Windspeed_Avg": 4.3,
-            "Summer_Tdb_Avg": 24,
-            "Summer_Twb_Avg": 24,
+            "Summer_Tdb_Avg": 24, 
+            "Summer_Twb_Avg": 24, 
             "Summer_RH_1500_LST": null
         }
         // Add other NS cities later
@@ -450,8 +450,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.87,
             "Winter_Tdb_Avg": -6,
             "Winter_Windspeed_Avg": 5,
-            "Summer_Tdb_Avg": 24,
-            "Summer_Twb_Avg": 24,
+            "Summer_Tdb_Avg": 24, 
+            "Summer_Twb_Avg": 24, 
             "Summer_RH_1500_LST": null
         }
         // Add other PE cities later
@@ -495,8 +495,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 1.11,
             "Winter_Tdb_Avg": -4,
             "Winter_Windspeed_Avg": 6.5,
-            "Summer_Tdb_Avg": 22,
-            "Summer_Twb_Avg": 22,
+            "Summer_Tdb_Avg": 22, 
+            "Summer_Twb_Avg": 22, 
             "Summer_RH_1500_LST": null
         }
         // Add other NL cities later
@@ -540,8 +540,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.6,
             "Winter_Tdb_Avg": -14,
             "Winter_Windspeed_Avg": 2.2,
-            "Summer_Tdb_Avg": 19,
-            "Summer_Twb_Avg": 19,
+            "Summer_Tdb_Avg": 19, 
+            "Summer_Twb_Avg": 19, 
             "Summer_RH_1500_LST": null
         }
         // Add other YT cities later
@@ -585,8 +585,8 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.58,
             "Winter_Tdb_Avg": -17,
             "Winter_Windspeed_Avg": 2.9,
-            "Summer_Tdb_Avg": 20,
-            "Summer_Twb_Avg": 20,
+            "Summer_Tdb_Avg": 20, 
+            "Summer_Twb_Avg": 20, 
             "Summer_RH_1500_LST": null
         }
         // Add other NT cities later
@@ -609,15 +609,15 @@ window.TEUI.ClimateData = {
             "Over_30Tdb_2021_2050": null,
             "Extreme_Hot_Tdb_1991_2020": null,
             "Rain_15_min_mm": 4,
-            "Rain_15_min_mm_New": null,
+            "Rain_15_min_mm_New": null, 
             "Rain_1_day_1/50mm": 22,
             "Rain_1_day_1/50mm_New": 32,
             "Rain_Annual_mm": 30,
-            "Rain_Annual_mm_New": null,
+            "Rain_Annual_mm_New": null, 
             "Moisture_Index_New": 1,
             "Precip_Annual_mm": 0,
             "Precip_Annual_mm_New": 40,
-            "Driving_Rain_Wind_Pa_1/5": null,
+            "Driving_Rain_Wind_Pa_1/5": null, 
             "Driving_Rain_Wind_Pa_1/5_New": null,
             "Snow_kPa_1/50_Ss": 2.65,
             "Snow_kPa_1/50_Sr": 0.1,
@@ -630,7 +630,7 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 1.06,
             "Winter_Tdb_Avg": -22,
             "Winter_Windspeed_Avg": 4.3,
-            "Summer_Tdb_Avg": 12,
+            "Summer_Tdb_Avg": 12, 
             "Summer_Twb_Avg": 12,
             "Summer_RH_1500_LST": null
         }
