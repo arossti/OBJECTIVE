@@ -236,7 +236,13 @@ window.TEUI.SectionModules.sect11 = (function() {
             if (!row.cells) return;
             Object.values(row.cells).forEach(cell => {
                 if (cell.fieldId && cell.type) {
-                    fields[cell.fieldId] = { type: cell.type, defaultValue: cell.value || "" };
+                    // Copy all relevant properties from the cell definition
+                    fields[cell.fieldId] = { 
+                        ...cell, // Spread operator to copy all properties
+                        defaultValue: cell.value // Keep defaultValue mapping for consistency
+                    };
+                    // Remove original value key if necessary, as it's mapped to defaultValue
+                    // delete fields[cell.fieldId].value; 
                 }
             });
         });
