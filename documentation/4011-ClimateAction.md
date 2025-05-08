@@ -33,56 +33,70 @@
 
 **Workplan Tasks:**
 
-**Phase 1: Core Functionality & Data Integration**
+**Phase 1: Foundational Fixes & Diagnostics**
 
-1.  **Fix Dropdown Logic & Data Loading:**
-    *   **Investigate `handleProvinceChange`:**
-        *   Verify it correctly accesses `window.TEUI.ClimateData`.
-        *   Ensure it filters cities based **only** on the selected `provinceValue`.
-        *   Confirm it correctly populates the city dropdown (`dd_h_19`) with sorted city names.
-        *   Ensure it correctly sets the default city to "Alexandria" if province is "ON", otherwise selects the first alphabetical city.
-        *   Confirm it triggers `handleCityChange` or `updateWeatherData` after setting the default city.
-    *   **Investigate `handleCityChange`:**
-        *   Ensure it correctly updates `StateManager` for `h_19`.
-        *   Confirm it correctly triggers `updateWeatherData`.
-    *   **Investigate `updateWeatherData`:**
-        *   Verify it correctly reads `provinceValue` and `cityValue`.
-        *   Ensure it correctly accesses the nested city data within `window.TEUI.ClimateData`.
-        *   Confirm it uses the correct keys (matching `ClimateData`) to retrieve values (HDD, CDD, Temps, Elevation, etc.).
-        *   Verify it correctly handles the "Present" vs "Future" toggle (`h_20`) when selecting data keys.
-        *   Ensure it uses `setCalculatedValue` **correctly** for *all* derived climate fields (`d_20`, `d_21`, `l_22`, `d_23`, `e_23`, `d_24`, `e_24`, `j_19`, `d_22`, `h_22`, `i_23`, `i_24`, `m_23`, `m_24`).
-        *   Confirm `calculateAll` is triggered at the end to update dependent calculations (like GF HDD/CDD, Climate Zone).
-    *   **Fix Initial Load:**
-        *   Modify `onSectionRendered` or `initializeEventHandlers` to ensure that on page load:
-            *   Province dropdown (`dd_d_19`) defaults to "ON".
-            *   `handleProvinceChange` is triggered to populate cities and select "Alexandria".
-            *   `updateWeatherData` is triggered to load Alexandria's data.
+1.  **Update Work Plan Documentation (This Step):**
+    *   Reflect current diagnosis: The core issue is likely a DOM element conflict/re-rendering issue where the city dropdown (`dd_h_19`) becomes unavailable during the `handleProvinceChange` execution, triggered by interactions within the application's architecture (potentially `FieldManager` re-rendering).
+    *   Prioritize architecturally sound solutions focusing on event handler lifecycle, event delegation, and identifying the source of potential DOM interference.
+    *   Remove suggestions for non-architectural workarounds (e.g., MutationObserver bandaids unless absolutely necessary as a last resort).
 
-**Phase 2: Standardization & Refinement**
+2.  **Populate `4011-ClimateValues.js` (First City per Province/Territory):**
+    *   **(Completed)** Ensure the data file includes at least the first city listed for *every* province/territory from `CANDA.csv` to rule out missing data as a factor.
 
-2.  **Standardize Helper Functions:**
+3.  **Strategy 1: Ensure Correct Initialization & Event Handler Lifecycle:**
+    *   **Goal:** Verify and enforce that event listeners are attached correctly and only once, after the initial `FieldManager` render, and are not lost or duplicated by subsequent updates.
+    *   **Action (in `sections/4011-Section03.js`):**
+        *   Remove potentially redundant `DOMContentLoaded` and `teui-rendering-complete` listeners from the bottom of the file.
+        *   Confirm `onSectionRendered` is the primary initialization point and calls `initializeEventHandlers`.
+        *   Ensure `initializeEventHandlers` attaches listeners cleanly (potentially using flags to prevent duplicates).
+        *   Verify correct referencing of globally exposed handlers (`window.TEUI.sect03.handleProvinceChange`, etc.).
+    *   **Test:** Check if city dropdown populates correctly after province change without errors.
+    *   **Rollback Point:** Revert changes to `initializeEventHandlers` and bottom event listeners.
+
+**Phase 2: Implement & Test Robust Event Handling**
+
+4.  **Strategy 2: Event Delegation (If Strategy 1 Fails):**
+    *   **Goal:** Increase resilience to DOM element replacement by attaching listeners to a stable parent.
+    *   **Action (in `sections/4011-Section03.js`):**
+        *   Modify `initializeEventHandlers` to attach a single `change` listener to the section container (`#climateCalculations`).
+        *   Delegate calls to the appropriate handlers (`window.TEUI.sect03.handleProvinceChange` or `window.TEUI.sect03.handleCityChange`) based on `event.target`.
+    *   **Test:** Check if city dropdown populates correctly without errors.
+    *   **Rollback Point:** Revert `initializeEventHandlers` to its previous state.
+
+**Phase 3: Deeper Diagnostics (If Phase 2 Fails)**
+
+5.  **Strategy 3: Trace the Re-rendering Source:**
+    *   **Goal:** Identify the exact cause of the city dropdown element disappearing during the province change flow.
+    *   **Action:** Add targeted `console.log` statements in `FieldManager.js` (`renderSection`), `StateManager.js` (`setValue`, `notifyListeners`), and `sections/4011-Section03.js` (`handleProvinceChange` just before the failing `querySelector`) to trace the execution sequence and identify unexpected calls to `renderSection('climateCalculations')`.
+    *   **Analysis:** Observe logs during province change to pinpoint the interfering process.
+    *   **Fix (Targeted):** Modify the code (e.g., listener, component interaction) that triggers the unnecessary re-render.
+    *   **Rollback Point:** Remove diagnostic logs and targeted fixes.
+
+**Phase 4: Standardization & Refinement (After Dropdown Fix)**
+
+6.  **Standardize Helper Functions:**
     *   Review `getNumericValue`, `getFieldValue`, and `setCalculatedValue` within `Section03.js`.
     *   Ensure they strictly follow the standard pattern: use only the global `window.TEUI.parseNumeric` and `window.TEUI.formatNumber` utilities without local fallbacks.
     *   Verify that `setCalculatedValue` stores the raw numeric value (as string) in `StateManager` and the formatted value in the DOM.
 
-3.  **Verify Formatting:**
+7.  **Verify Formatting:**
     *   Test the display of all climate-related fields (`d_20` to `m_24`, `j_19`).
     *   Ensure correct `formatType` strings (`integer`, `number-1dp`, etc.) are used in `setCalculatedValue` calls to match the original Excel appearance.
 
-4.  **"More Weather Data" Modal:**
+8.  **"More Weather Data" Modal:**
     *   Test the "More Weather Data" button (`#showWeatherDataBtn`).
     *   Verify the `showWeatherData` function reads the correct city data from `window.TEUI.ClimateData` and displays all key-value pairs clearly in the modal (`#weatherDataModal`).
 
-**Phase 3: Full Data Population & Cleanup**
+**Phase 5: Full Data Population & Final Cleanup**
 
-5.  **Populate `4011-ClimateValues.js`:**
-    *   Write/use a script or manually parse the full `sources of truth 3037/CANDA.csv`.
+9.  **Populate `4011-ClimateValues.js` (Complete Data):**
+    *   **(Deferred until core functionality is fixed)** Write/use a script or manually parse the full `sources of truth 3037/CANDA.csv`.
     *   Populate `window.TEUI.ClimateData` with entries for *all* provinces/territories and their respective cities.
     *   Ensure data keys in the JS object exactly match the relevant column headers/JavaScript notations expected by `Section03.js`. Double-check units and values.
 
-6.  **Cleanup & Final Testing:**
+10. **Cleanup & Final Testing:**
     *   Remove all temporary `console.log` statements added during debugging.
-    *   Comment out or remove any unused functions or variables remaining from the original S03 or the refactoring process.
+    *   Comment out or remove any unused functions or variables.
     *   Perform comprehensive testing:
         *   Select various provinces and cities.
         *   Toggle "Present" / "Future" data.
@@ -96,137 +110,45 @@
 **Completion Criteria:**
 
 *   Section 03 loads default "ON" / "Alexandria" data correctly on page initialization.
-*   Province dropdown selection correctly populates the city dropdown.
+*   Province dropdown selection correctly populates the city dropdown without errors or disappearance.
 *   City dropdown selection correctly loads and displays all associated climate data fields with correct formatting.
 *   "Present" / "Future" toggle works correctly.
 *   User-editable fields (`m_19`, `l_24`) function correctly.
 *   Internal calculations (GF HDD/CDD, Climate Zone, F temps) update correctly.
 *   "More Weather Data" modal displays correct data for the selected city.
-*   Section 03 helpers are standardized.
+*   Section 03 helpers are standardized per README guidelines.
 *   No errors in the console related to Section 03 operation.
 *   Changes successfully propagate to dependent sections.
 *   All temporary code/logs removed.
-*   `4011-ClimateValues.js` contains data for all Canadian locations from the source CSV.
+*   `4011-ClimateValues.js` contains data for all Canadian locations from the source CSV (or at least the first city per province/territory initially).
 *   Branch `CANADA2` ready for merge into `main`.
 
 ---
 
-## Troubleshooting Journey: Province/City Dropdown Issues
+## Troubleshooting Journey: Province/City Dropdown Issues (Revised Diagnosis)
 
 ### Problem Statement
-The province and city dropdown relationship in Section 03 (Climate Calculations) has been persistently problematic. When changing the province value, the city dropdown would disappear entirely from the DOM instead of being populated with cities for the selected province. This issue only occurs within the architecture of the TEUI application but works correctly in standalone testing environments.
+The province (`dd_d_19`) and city (`dd_h_19`) dropdown relationship in Section 03 (Climate Calculations) fails. When changing the province value, the city dropdown element cannot be found by the `handleProvinceChange` function, resulting in an error and failure to populate cities, **even for provinces with data available** in `4011-ClimateValues.js`. This issue occurs within the main TEUI application but not in isolated demos.
 
-### Architecture Constraints & Challenges
-The TEUI application follows a specific architectural pattern:
-1. **Module Encapsulation**: Each section is defined using an IIFE (Immediately Invoked Function Expression) that creates a closure, limiting the scope of internal functions.
-2. **StateManager**: Values should be set and retrieved through `window.TEUI.StateManager` rather than direct DOM manipulation.
-3. **Event Handling**: Event handlers must be properly bound and accessible in the correct scope to maintain interactivity.
-4. **Rendering Lifecycle**: The application has a specific rendering cycle that must be respected when modifying component visibility.
+### Revised Diagnosis
+The previous focus on missing data was incorrect. The root cause is highly likely a **DOM conflict arising from the application's rendering lifecycle**. Specifically:
+1.  The `change` event on the province dropdown correctly triggers `handleProvinceChange`.
+2.  However, **before or during** the execution of `handleProvinceChange`, another process (likely `FieldManager.renderSection`, possibly triggered unnecessarily by a listener) rebuilds the HTML content of Section 03's table body (`<tbody>`).
+3.  This re-rendering **removes the original city dropdown element (`dd_h_19`)** from the DOM.
+4.  When `handleProvinceChange` subsequently attempts `document.querySelector('[data-dropdown-id="dd_h_19"]')`, the element no longer exists, causing the observed error.
 
-### Attempted Solutions
+### Architectural Challenges Implicated
+*   **DOM Instability During Events:** The application architecture currently allows the DOM structure targeted by an event handler to be destroyed while the handler is executing or queued.
+*   **Rendering Lifecycle Interference:** The `FieldManager`'s rendering mechanism appears to conflict with the event handling flow for the dropdowns in this specific section. The trigger for this potential re-render needs investigation.
+*   **Event Handling Robustness:** The current direct event listener attachment in `initializeEventHandlers` is susceptible to element replacement.
 
-#### 1. Demo File Approach
-We created standalone test files (`weather.html` and `weather-demo.html`) that correctly implemented the province/city relationship pattern:
+### Attempted Solutions (Summary)
+Previous attempts included debugging scope issues (resolved by exposing handlers globally) and DOM preservation strategies in demos (like MutationObservers, which act as workarounds rather than root cause fixes).
 
-- **Successful Pattern**: In these demos, we accomplished:
-  - Proper preservation of the city dropdown container during province changes
-  - Correct population of city options based on data from 4011-ClimateValues.js
-  - Reliable visibility of the dropdown elements at all times
-  - Proper event handler binding and scope management
+### Revised Next Steps (Sequential Strategy)
 
-- **Key Implementation Details**:
-  - Used a cache for DOM elements to avoid repeated lookups
-  - Implemented proper dropdown option management (removing/adding options rather than innerHTML replacement)
-  - Preserved parent container references to ensure elements stayed in the DOM
-  - Added verification steps to ensure dropdowns remained visible
+1.  **Strategy 1: Ensure Correct Initialization & Event Handler Lifecycle:** Verify event handlers are attached cleanly and only once after initial render. (See detailed steps above).
+2.  **Strategy 2: Event Delegation:** If Strategy 1 fails, refactor to use event delegation on the section container for more robust handling against element replacement. (See detailed steps above).
+3.  **Strategy 3: Trace the Re-rendering Source:** If Strategies 1 & 2 fail, use diagnostic logging to pinpoint the exact cause and timing of the interfering `FieldManager.renderSection` call and address its trigger. (See detailed steps above).
 
-#### 2. Function Scope Resolution
-A critical issue was function scoping - functions defined inside the IIFE weren't accessible to event handlers:
-
-- **Diagnosis**: Event handlers were losing reference to key functions:
-  - `handleProvinceChange`, `handleCityChange`, and `updateWeatherData` were defined inside the IIFE
-  - Event listeners bound to dropdowns couldn't access these functions when events fired
-  - Console logs revealed these functions were `undefined` in the event handler context
-
-- **Solution Approach**: We exported critical functions to the global namespace:
-  ```javascript
-  // Export critical functions to global namespace for event handlers
-  window.TEUI.sect03.handleProvinceChange = handleProvinceChange;
-  window.TEUI.sect03.handleCityChange = handleCityChange;
-  window.TEUI.sect03.updateWeatherData = updateWeatherData;
-  window.TEUI.sect03.ensureCityDropdownVisible = ensureCityDropdownVisible;
-  ```
-
-#### 3. DOM Preservation Strategy
-We implemented a more defensive approach to DOM manipulation:
-
-- **Dropdown Preservation**: Instead of clearing containers which would destroy the dropdown:
-  - Preserved references to parent containers
-  - Carefully managed options rather than replacing entire elements
-  - Added an explicit `ensureCityDropdownVisible()` function to verify and fix visibility
-  - Added scheduled checks to ensure dropdowns remained visible after asynchronous operations
-
-- **Verification Steps**: Added robust checking and diagnostic functions:
-  ```javascript
-  window.TEUI.sect03.debug = {
-    logScope: function() { /* Check function availability */ },
-    checkDropdowns: function() { /* Verify DOM elements exist */ },
-    ensureCityDropdownVisible: function() { /* Maintain dropdown visibility */ }
-  };
-  ```
-
-#### 4. StateManager Integration
-We aligned the implementation with the application's state management patterns:
-
-- **Proper State Updates**: Used StateManager for all value changes:
-  ```javascript
-  if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue('d_19', provinceValue, 'user-modified');
-  }
-  ```
-
-- **Initialization Sequence**: Implemented a proper initialization flow respecting the app's lifecycle:
-  ```javascript
-  function initializeDefaultClimateValues() {
-      // Set values through StateManager with correct timing
-      window.TEUI.StateManager.setValue('d_19', defaultProvince, 'initial');
-      // Then update DOM with proper delays
-      // ...
-  }
-  ```
-
-### Persistent Challenges
-
-Despite these efforts, several issues remained persistent:
-
-1. **Timing Issues**: The asynchronous nature of the application's rendering cycle causes race conditions where elements may exist at one moment and disappear the next.
-
-2. **Architectural Limitations**: The IIFE pattern creates scoping challenges that require complex workarounds to ensure functions remain accessible across contexts.
-
-3. **StateManager vs. DOM**: Finding the right balance between StateManager updates and necessary DOM manipulations proved challenging. Some DOM operations are needed for dropdown management but must be minimized to respect the architecture.
-
-4. **Event Handler Binding**: Ensuring event handlers correctly reference their functions across module boundaries required careful management of the global namespace.
-
-### Lessons Learned
-
-1. **Architecture Understanding**: A deep understanding of the application's architecture pattern is critical before attempting to modify components.
-
-2. **Function Accessibility**: When using IIFE modules, functions that need to be accessed by event handlers must be explicitly exposed to the global namespace.
-
-3. **DOM Reference Preservation**: Always maintain references to parent containers when manipulating child elements to prevent accidental element removal.
-
-4. **Defensive Programming**: Implement extensive validation and recovery mechanisms for DOM operations in complex applications.
-
-5. **Diagnostic Tools**: Create comprehensive debugging utilities early in the troubleshooting process to provide visibility into the application's state.
-
-### Next Steps
-
-The troubleshooting journey continues with the following approaches:
-
-1. Consider refactoring Section 03 to align more closely with other successfully functioning sections in the application.
-
-2. Implement a MutationObserver to monitor and restore dropdown elements that might be removed during the application's rendering cycle.
-
-3. Explore whether a more substantial architectural change might be needed to resolve the persistent issues.
-
-4. Review application logs to identify potential interference from other modules or components. 
+This revised plan focuses on identifying and fixing the architectural conflict causing the DOM instability, rather than just treating the symptoms. 
