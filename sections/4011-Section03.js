@@ -1021,22 +1021,43 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         /* REMOVE DIRECT LISTENERS - Replaced by delegation above
         // Province dropdown change
         const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-        // ... (removed listener attachment) ...
+        if (provinceDropdown) {
+            // Clean up any previous event listeners to prevent duplicates
+            provinceDropdown.removeEventListener('change', window.TEUI.sect03.handleProvinceChange);
+            // Add the event listener using the globally accessible function
+            provinceDropdown.addEventListener('change', window.TEUI.sect03.handleProvinceChange);
+            console.log("[S03 DEBUG] Province dropdown event listener attached");
+        } else {
+            console.error("[S03 DEBUG] Province dropdown not found!");
+        }
 
         // City dropdown change
         const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-        // ... (removed listener attachment) ...
+        if (cityDropdown) {
+            // Clean up any previous event listeners
+            cityDropdown.removeEventListener('change', window.TEUI.sect03.handleCityChange);
+            // Add the event listener using the globally accessible function
+            cityDropdown.addEventListener('change', window.TEUI.sect03.handleCityChange);
+            console.log("[S03 DEBUG] City dropdown event listener attached");
+        } else {
+            console.error("[S03 DEBUG] City dropdown not found!");
+        }
         
         // Future/Present toggle
         const timeframeDropdown = document.querySelector('[data-dropdown-id="dd_h_20"]');
-        // ... (removed listener attachment) ...
+        if (timeframeDropdown) {
+            timeframeDropdown.removeEventListener('change', window.TEUI.sect03.handleTimeframeChange);
+            timeframeDropdown.addEventListener('change', window.TEUI.sect03.handleTimeframeChange);
+        }
         
-        // Criticality checkbox (Assuming l_23 is the correct ID, though it seems unusual)
+        // Criticality checkbox
         const criticalCheckbox = document.querySelector('[data-field-id="l_23"]');
-        // ... (removed listener attachment) ...
-        */
+        if (criticalCheckbox) {
+            criticalCheckbox.removeEventListener('change', window.TEUI.sect03.handleCriticalChange);
+            criticalCheckbox.addEventListener('change', window.TEUI.sect03.handleCriticalChange);
+        }
         
-        // Add handlers for editable fields (m_19, l_24) - Keep these direct
+        // Add handlers for editable fields (m_19, l_24)
         const editableFields = sectionElement.querySelectorAll('.editable.user-input');
         editableFields.forEach(field => {
             if (!field.hasEditableListeners) {
@@ -1054,11 +1075,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         // StateManager Listeners (mostly unchanged, but ensure calculateAll covers dependencies)
         if (window.TEUI && window.TEUI.StateManager) {
             const sm = window.TEUI.StateManager;
-            // REMOVE existing listeners before adding new ones to prevent duplicates if this runs multiple times
-            // (Ideally it shouldn't, but this adds robustness)
-            // Note: StateManager doesn't have removeListenerAll for a key, requires tracking callbacks
-            // For simplicity, we assume the listeners added here are idempotent or managed by StateManager internally
-            // If issues persist, explicit listener removal might be needed.
             sm.addListener('d_12', calculateAll); // Occupancy affects setpoints
             sm.addListener('h_24', calculateAll); // Base Cooling Setpoint
             sm.addListener('l_24', calculateAll); // Cooling Override
@@ -1454,6 +1470,19 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         } else {
             console.error("[S03 DIAGNOSTIC] StateManager not available");
         }
+    }
+
+    // Automatically initialize when the DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        window.TEUI.SectionModules.sect03.init();
+    });
+    
+    // Allow initialization to be manually triggered if needed
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        // Page already loaded, initialize immediately
+        setTimeout(function() {
+            window.TEUI.SectionModules.sect03.init();
+        }, 300);
     }
 })();
 
