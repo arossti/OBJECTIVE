@@ -15,11 +15,11 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         this.width = 0;
         this.height = 0;
         
-        // Visualization settings (Copied from 4007, may need adjustments)
+        // Visualization settings (Improved for better visibility)
         this.settings = {
-            nodeRadius: 10, // Increased node size further
-            linkDistance: 120, // Increased link distance slightly
-            chargeStrength: -400, // Slightly stronger repulsion
+            nodeRadius: 15, // Increased node size for better visibility
+            linkDistance: 150, // Increased link distance to give nodes more space
+            chargeStrength: -600, // Stronger repulsion to prevent node overlap
             colorScheme: {
                 '1. Key Values': '#b07aa1', // Purple (Keep distinct)
                 '2. Building Information': '#4e79a7', // Blue
@@ -38,8 +38,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 '15. TEUI Summary': '#bab0ab', // Grey (Summary)
                 'Other': '#8da0cb' // Light Blue/Grey Fallback
             },
-            labelFontSize: 10,
-            tooltipDelay: 500
+            labelFontSize: 12, // Increased font size for better readability
+            tooltipDelay: 500,
+            defaultLayout: 'dagre' // Set hierarchical layout as default
         };
 
         // TODO: Consider moving colorScheme to a shared config?
@@ -99,28 +100,64 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Prioritize section info if available
         if (fieldDef?.section) {
             switch (fieldDef.section) {
-                case 'keyValues': return 'Key';
-                case 'buildingInfo': return 'Building';
-                case 'climateCalculations': return 'Location';
-                case 'actualTargetEnergy': return 'Target';
-                case 'emissions': return 'Emissions';
-                case 'onSiteEnergy': return 'Renewables';
-                case 'waterUse': return 'Water';
-                case 'indoorAirQuality': return 'Air';
-                case 'occupantInternalGains':
-                case 'envelopeRadiantGains': return 'Gains';
-                case 'envelopeTransmissionLosses': return 'Transmission';
-                case 'volumeSurfaceMetrics': return 'Metrics';
-                case 'mechanicalLoads': return 'Mechanical'; 
-                case 'tediSummary':
-                case 'teuiSummary': return 'Summary';
+                case 'keyValues': return '1. Key Values';
+                case 'buildingInfo': return '2. Building Information';
+                case 'climateCalculations': return '3. Climate Calculations';
+                case 'actualTargetEnergy': return '4. Actual vs. Target Energy';
+                case 'emissions': return '5. CO2e Emissions';
+                case 'onSiteEnergy': return '6. Renewable Energy';
+                case 'waterUse': return '7. Water Use';
+                case 'indoorAirQuality': return '8. Indoor Air Quality';
+                case 'occupantInternalGains': return '9. Occupant + Internal Gains';
+                case 'envelopeRadiantGains': return '10. Radiant Gains';
+                case 'envelopeTransmissionLosses': return '11. Transmission Losses';
+                case 'volumeSurfaceMetrics': return '12. Volume and Surface Metrics';
+                case 'mechanicalLoads': return '13. Mechanical Loads'; 
+                case 'tediSummary': return '14. TEDI & TELI';
+                case 'teuiSummary': return '15. TEUI Summary';
                 default: break; 
             }
         }
-        // Fallback to prefix
-        if (nodeId.includes('_11')) return 'Transmission';
-        if (nodeId.includes('_13')) return 'Mechanical';
+        
+        // Fallback to prefix-based section identification
+        if (nodeId.startsWith('d_11') || nodeId.startsWith('h_11') || nodeId.startsWith('i_11')) 
+            return '11. Transmission Losses';
+        if (nodeId.startsWith('d_13') || nodeId.startsWith('h_13')) 
+            return '13. Mechanical Loads';
+        if (nodeId.startsWith('g_6')) 
+            return '13. Mechanical Loads'; // Equipment loads
+        if (nodeId.startsWith('h_6')) 
+            return '13. Mechanical Loads'; // Equipment-related
+        
         return 'Other';
+    }
+
+    // Add this method to enhance node labels based on their values
+    enhanceNodeLabel(node) {
+        const stateManager = window.TEUI?.StateManager;
+        if (!stateManager) return node.id;
+        
+        // Get the current value from StateManager
+        const value = stateManager.getValue(node.id);
+        
+        // Create a more descriptive label
+        let label = node.label || node.id;
+        
+        // Handle special cases for specific nodes or patterns
+        if (node.id.startsWith('g_67') || node.id.startsWith('h_67')) {
+            // Equipment nodes
+            return `${label} (${value})`;
+        }
+        
+        if (value !== null && value !== undefined && value !== '') {
+            // For short values, append to the label
+            if (value.toString().length < 20) {
+                return `${label}: ${value}`;
+            }
+            // For longer values, just use the label
+        }
+        
+        return label;
     }
 
     /**
@@ -140,7 +177,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         const graphContainer = document.createElement('div');
         graphContainer.className = 'dependency-graph-svg-wrapper'; // More specific class
         graphContainer.style.width = '100%';
-        graphContainer.style.height = '600px'; // Increased height
+        graphContainer.style.height = '650px'; // Increased height for better visibility
         graphContainer.style.border = '1px solid #ccc';
         graphContainer.style.position = 'relative'; // Needed for absolute positioning of legend/tooltip
         container.appendChild(graphContainer);
@@ -153,7 +190,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
              console.warn('[DependencyGraph] Container has zero dimensions. Graph might not be visible.');
              // Provide a fallback size if needed, though ideally CSS should handle this.
              this.width = container.clientWidth || 800; 
-             this.height = 600;
+             this.height = 650;
         }
         
         // Create SVG
@@ -182,15 +219,15 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         this.svg.append('defs').append('marker')
             .attr('id', 'arrowhead')
             .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 20) // Increased again (10 + gap)
+            .attr('refX', 35) // Increased to place arrows further from nodes
             .attr('refY', 0)
             .attr('orient', 'auto')
-            .attr('markerWidth', 6) // Smaller arrowhead
-            .attr('markerHeight', 6)
+            .attr('markerWidth', 8) // Larger arrowhead
+            .attr('markerHeight', 8)
             .attr('xoverflow', 'visible')
             .append('svg:path')
             .attr('d', 'M 0,-5 L 10,0 L 0,5')
-            .attr('fill', '#999')
+            .attr('fill', '#666') // Darker gray for better visibility
             .style('stroke', 'none');
     }
 
@@ -256,14 +293,14 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Force directed button
         const forceButton = document.createElement('button');
         forceButton.textContent = 'Force Layout';
-        forceButton.className = 'btn btn-outline-secondary btn-sm layout-button active'; // Start with force active
+        forceButton.className = 'btn btn-outline-secondary btn-sm layout-button'; // Start with force not active
         forceButton.onclick = () => this.switchLayout('force');
         this.forceButton = forceButton; // Store ref
 
-        // Dagre (hierarchical) button
+        // Dagre (hierarchical) button - active by default
         const dagreButton = document.createElement('button');
         dagreButton.textContent = 'Hierarchical';
-        dagreButton.className = 'btn btn-outline-secondary btn-sm layout-button';
+        dagreButton.className = 'btn btn-outline-secondary btn-sm layout-button active'; // Activate by default
         dagreButton.onclick = () => this.switchLayout('dagre');
         this.dagreButton = dagreButton; // Store ref
         
@@ -281,9 +318,18 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         fullscreenButton.style.marginLeft = 'auto'; // Push to the right
         this.fullscreenButton = fullscreenButton; // Store ref
 
+        // Toggle legend button
+        const legendToggleButton = document.createElement('button');
+        legendToggleButton.textContent = 'Show Legend';
+        legendToggleButton.title = 'Show/Hide Legend';
+        legendToggleButton.className = 'btn btn-outline-secondary btn-sm';
+        legendToggleButton.onclick = () => this.toggleLegend();
+        this.legendToggleButton = legendToggleButton; // Store ref
+
         layoutContainer.appendChild(forceButton);
         layoutContainer.appendChild(dagreButton);
         layoutContainer.appendChild(resetButton);
+        layoutContainer.appendChild(legendToggleButton);
         layoutContainer.appendChild(fullscreenButton);
         controlsContainer.appendChild(layoutContainer);
         
@@ -398,23 +444,68 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         
         const { nodes, links } = this.data;
         
+        // Pre-process nodes to enhance labels and handle duplicates
+        nodes.forEach(node => {
+            node.enhancedLabel = this.enhanceNodeLabel(node);
+        });
+        
+        // Calculate node sizes only if not already assigned
+        // This ensures sizes don't get recalculated when rerendering
+        if (!nodes.some(node => node.hasOwnProperty('size'))) {
+            console.log('[DependencyGraph] Calculating node sizes...');
+            // Calculate in-degree (dependencies) and out-degree (dependents) for each node
+            const counts = {};
+            nodes.forEach(node => {
+                counts[node.id] = { dependencies: 0, dependents: 0, total: 0 };
+            });
+            
+            links.forEach(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                
+                if (counts[sourceId]) counts[sourceId].dependents += 1;
+                if (counts[targetId]) counts[targetId].dependencies += 1;
+            });
+            
+            // Calculate total connections and assign node sizes
+            nodes.forEach(node => {
+                if (counts[node.id]) {
+                    counts[node.id].total = counts[node.id].dependencies + counts[node.id].dependents;
+                    // Set a node size based on connections: base size + scaled by connections
+                    node.size = this.settings.nodeRadius * (1 + 0.2 * Math.sqrt(counts[node.id].total));
+                    
+                    // Identify high-influence nodes
+                    node.isInfluential = false;
+                    const influentialNodes = ['d_113', 'd_51', 'd_118', 'd_53', 'g_67'];
+                    if (influentialNodes.includes(node.id)) {
+                        node.isInfluential = true;
+                        // Make influential nodes even bigger
+                        node.size = Math.max(node.size, this.settings.nodeRadius * 2);
+                    }
+                } else {
+                    node.size = this.settings.nodeRadius;
+                }
+            });
+        }
+        
         // Create a force simulation
         this.simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links).id(d => d.id).distance(this.settings.linkDistance))
             .force('charge', d3.forceManyBody().strength(this.settings.chargeStrength))
             .force('center', d3.forceCenter(this.width / 2, this.height / 2))
-            .force('collision', d3.forceCollide().radius(this.settings.nodeRadius * 2))
+            .force('collision', d3.forceCollide().radius(d => d.size * 2.5)) // Use dynamic collision radius
             .on('tick', () => this.ticked());
         
-        // --- Links --- 
-        this.links = graphContent.selectAll('line.link')
+        // --- Links --- Use curved paths instead of straight lines
+        this.links = graphContent.selectAll('path.link')
             .data(links, d => `${d.source.id || d.source}-${d.target.id || d.target}`) // Key function for object constancy
             .join(
-                enter => enter.append('line')
+                enter => enter.append('path')
                     .attr('class', 'link')
                     .style('stroke', '#999')
                     .style('stroke-opacity', 0.6)
-                    .style('stroke-width', 1)
+                    .style('stroke-width', 1.5)
+                    .style('fill', 'none')
                     .attr('marker-end', 'url(#arrowhead)'),
                 update => update, // No update needed for static properties
                 exit => exit.remove()
@@ -427,20 +518,34 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 enter => {
                     const g = enter.append('g').attr('class', 'node');
                     
+                    // Add a white background circle for node labels
                     g.append('circle')
-                        .attr('r', this.settings.nodeRadius)
+                      .attr('class', 'node-background')
+                      .attr('r', d => d.size + 10) // Slightly larger than the node
+                      .style('fill', 'white')
+                      .style('opacity', 0) // Hidden by default
+                      .style('pointer-events', 'none'); // Don't interfere with clicks
+                    
+                    // Add main circle for node
+                    g.append('circle')
+                        .attr('r', d => d.size) // Use dynamic size
                         .style('stroke', '#fff')
-                        .style('stroke-width', 1.5)
+                        .style('stroke-width', 2) // Thicker stroke for better definition
                         .style('cursor', 'pointer');
                     
                     g.append('text')
-                        .attr('dx', 12)
+                        .attr('dx', d => d.size + 5) // Dynamic offset based on node size
                         .attr('dy', '.35em')
                         .style('font-size', `${this.settings.labelFontSize}px`)
+                        .style('fill', '#000') // Black text for better contrast
+                        .style('font-weight', '500') // Semi-bold text
                         .style('pointer-events', 'none') // Labels don't block clicks on circle
                         .style('display', 'none'); // Hide labels initially
                     
-                    g.append('title'); // For native browser tooltip
+                    // Add styled tooltip element
+                    g.append('title')
+                        .style('font-weight', 'bold')
+                        .style('font-size', '14px'); // Larger tooltip text
                     
                     g.call(d3.drag()
                         .on('start', (event, d) => this.dragstarted(event, d))
@@ -449,27 +554,53 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                         
                     return g;
                 },
-                update => update, // Handled below
+                update => update, // Most updates handled by ticked()
                 exit => exit.remove()
             );
 
         // --- Update Node Appearance (for enter and update selections) ---
-        this.nodeGroups.select('circle')
+        this.nodeGroups.select('circle:not(.node-background)')
+             .attr('r', d => d.size) // Update radius for existing nodes
              .style('fill', d => {
+                // Use different colors for influential nodes
+                if (d.isInfluential) {
+                    return '#ff5252'; // Bright red for influential nodes
+                }
                 const color = this.settings.colorScheme[d.group] || this.settings.colorScheme.Other;
-                // console.log(`Node: ${d.id}, Group: ${d.group}, Color: ${color}`); // DEBUG LOG
                 return color;
-             });
+             })
+             .style('filter', d => d.isInfluential ? 
+                  'drop-shadow(0px 0px 8px rgba(255,82,82,0.8))' : // Glow effect for influential nodes
+                  'drop-shadow(0px 2px 3px rgba(0,0,0,0.2))'); // Regular shadow for other nodes
+
+        // Update the background circle size to match node size
+        this.nodeGroups.select('.node-background')
+            .attr('r', d => d.size + 10);
 
         this.nodeGroups.select('text')
-            .text(d => d.label || d.id);
+            .attr('dx', d => d.size + 5) // Update text position
+            .text(d => d.enhancedLabel || d.label || d.id) // Use enhanced label
+            .style('text-shadow', '0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white'); // Add text shadow for better readability
 
         this.nodeGroups.select('title')
-             .text(d => `${d.label || d.id} (${d.id})\nGroup: ${d.group}\nType: ${d.type}`);
-
-        // Re-attach event handlers after join operation
-        // (D3's .join() handles this automatically if listeners are on the joined selection)
-        // If issues arise, explicitly re-call this.setupEvents() or re-bind listeners here.
+             .text(d => {
+                let tooltip = `${d.enhancedLabel || d.label || d.id}`;
+                tooltip += `\nID: ${d.id}`;
+                tooltip += `\nGroup: ${d.group}`;
+                tooltip += `\nType: ${d.type}`;
+                
+                // Add the value to tooltip
+                const stateManager = window.TEUI?.StateManager;
+                if (stateManager) {
+                    const value = stateManager.getValue(d.id);
+                    if (value !== null && value !== undefined && value !== '') {
+                        tooltip += `\nValue: ${value}`;
+                    }
+                }
+                
+                if (d.isInfluential) tooltip += '\n★ HIGH INFLUENCE NODE ★';
+                return tooltip;
+             });
     }
 
     // --- Other methods copied from 4007 (ticked, drag handlers, filtering, layout, info panel, highlighting) ---
@@ -477,14 +608,55 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     ticked() {
         if (!this.links || !this.nodeGroups) return;
-        this.links
-            .attr('x1', d => d.source.x)
-            .attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x)
-            .attr('y2', d => d.target.y);
         
-        this.nodeGroups
-            .attr('transform', d => `translate(${d.x}, ${d.y})`);
+        // Update links as curved paths
+        this.links.attr('d', d => {
+            const sourceX = d.source.x;
+            const sourceY = d.source.y;
+            const targetX = d.target.x;
+            const targetY = d.target.y;
+            
+            // Get node radius for arrow positioning
+            const nodeRadius = d.target.size || this.settings.nodeRadius;
+            
+            // Calculate direction vector
+            const dx = targetX - sourceX;
+            const dy = targetY - sourceY;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            
+            // If nodes are very close, draw a straight line
+            if (len < nodeRadius * 4) {
+                // Calculate endpoint to account for node radius and arrow
+                const endX = len === 0 ? targetX : targetX - (dx * nodeRadius) / len;
+                const endY = len === 0 ? targetY : targetY - (dy * nodeRadius) / len;
+                return `M${sourceX},${sourceY}L${endX},${endY}`;
+            }
+            
+            // For distant nodes, create a curved path
+            // Calculate control point for quadratic curve
+            // Offset depends on the vector between points
+            const offset = Math.min(40, len / 4);
+            const midX = (sourceX + targetX) / 2;
+            const midY = (sourceY + targetY) / 2;
+            
+            // Calculate perpendicular offset for control point
+            // This creates a curve perpendicular to the direct line
+            const perpX = -dy / len * offset;
+            const perpY = dx / len * offset;
+            
+            // Control point
+            const cpX = midX + perpX;
+            const cpY = midY + perpY;
+            
+            // Calculate endpoint to account for node radius and arrow
+            const endX = len === 0 ? targetX : targetX - (dx * nodeRadius) / len;
+            const endY = len === 0 ? targetY : targetY - (dy * nodeRadius) / len;
+            
+            // Create a quadratic Bezier curve path
+            return `M${sourceX},${sourceY}Q${cpX},${cpY},${endX},${endY}`;
+        });
+        
+        this.nodeGroups.attr('transform', d => `translate(${d.x}, ${d.y})`);
     }
     
     dragstarted(event, d) {
@@ -589,7 +761,13 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Add nodes to the graph. The first argument is the node id.
         // We link the node object from our data to the graph node.
         this.data.nodes.forEach(node => {
-            g.setNode(node.id, { label: node.id, width: 20, height: 20 }); // Give some basic dimensions
+            // Use node-specific sizes for layout calculation
+            const nodeSize = node.size || this.settings.nodeRadius;
+            g.setNode(node.id, { 
+                label: node.id, 
+                width: nodeSize * 2,
+                height: nodeSize * 2
+            });
         });
 
         // Add edges to the graph.
@@ -618,11 +796,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Update link positions after transition (or immediately)
         // Using a delay might look smoother if nodes transition
         setTimeout(() => {
-             this.links
-                 .attr('x1', d => d.source.x)
-                 .attr('y1', d => d.source.y)
-                 .attr('x2', d => d.target.x)
-                 .attr('y2', d => d.target.y);
+            // Update links with the new node positions
+            this.ticked(); // This will update our curved paths
         }, 750);
     }
 
@@ -640,43 +815,68 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     }
     
     showNodeInfo(node) {
-        if (!this.infoPanel || !node) return;
+        if (!node) return;
         
         const stateManager = window.TEUI?.StateManager;
         if (!stateManager) return;
         
         this.highlightNode(node);
+        this.selectedNode = node; // Store reference to selected node
         
-        const title = this.infoPanel.querySelector('.info-title');
-        const value = this.infoPanel.querySelector('.info-value');
-        const dependencies = this.infoPanel.querySelector('.info-dependencies');
-        const dependents = this.infoPanel.querySelector('.info-dependents');
-        
-        title.textContent = `${node.label || node.id} (${node.id})`;
-        
-        const currentValue = stateManager.getValue(node.id);
-        value.innerHTML = `<strong>Current Value:</strong> ${currentValue !== null && currentValue !== undefined ? currentValue : 'N/A'}`;
-        
-        // Use the already processed links data for connections
-        const fieldDependencies = this.data.links
-            .filter(link => (link.target.id || link.target) === node.id)
-            .map(link => link.source.id || link.source);
+        // Update regular info panel
+        if (this.infoPanel) {
+            const title = this.infoPanel.querySelector('.info-title');
+            const value = this.infoPanel.querySelector('.info-value');
+            const dependencies = this.infoPanel.querySelector('.info-dependencies');
+            const dependents = this.infoPanel.querySelector('.info-dependents');
             
-        dependencies.innerHTML = `<strong>Depends on:</strong> ${fieldDependencies.length > 0 ? fieldDependencies.join(', ') : 'None'}`;
-        
-        const fieldDependents = this.data.links
-            .filter(link => (link.source.id || link.source) === node.id)
-            .map(link => link.target.id || link.target);
+            if (title) title.textContent = node.enhancedLabel || `${node.label || node.id} (${node.id})`;
             
-        dependents.innerHTML = `<strong>Influences:</strong> ${fieldDependents.length > 0 ? fieldDependents.join(', ') : 'None'}`;
+            const currentValue = stateManager.getValue(node.id);
+            if (value) {
+                value.innerHTML = `<strong>Current Value:</strong> ${currentValue !== null && currentValue !== undefined ? currentValue : 'N/A'}`;
+                value.innerHTML += `<br><strong>ID:</strong> ${node.id}`;
+            }
+            
+            // Use the already processed links data for connections
+            const fieldDependencies = this.data.links
+                .filter(link => (link.target.id || link.target) === node.id)
+                .map(link => link.source.id || link.source);
+                
+            if (dependencies) {
+                dependencies.innerHTML = `<strong>Depends on:</strong> ${fieldDependencies.length > 0 ? fieldDependencies.join(', ') : 'None'}`;
+                dependencies.style.fontWeight = fieldDependencies.length > 0 ? '400' : 'normal';
+            }
+            
+            const fieldDependents = this.data.links
+                .filter(link => (link.source.id || link.source) === node.id)
+                .map(link => link.target.id || link.target);
+                
+            if (dependents) {
+                dependents.innerHTML = `<strong>Influences:</strong> ${fieldDependents.length > 0 ? fieldDependents.join(', ') : 'None'}`;
+                dependents.style.fontWeight = fieldDependents.length > 0 ? '400' : 'normal';
+            }
+            
+            this.infoPanel.style.display = 'block';
+        }
         
-        this.infoPanel.style.display = 'block';
+        // Also update floating info panel if in fullscreen mode
+        if (this.floatingInfoPanel) {
+            this.updateFullscreenInfoPanel(node);
+        }
     }
     
     hideNodeInfo() {
+        // Hide regular info panel
         if (this.infoPanel) {
             this.infoPanel.style.display = 'none';
         }
+        
+        // Also hide floating info panel if in fullscreen mode
+        if (this.floatingInfoPanel) {
+            this.floatingInfoPanel.style.display = 'none';
+        }
+        
         // Don't reset highlighting here, only on background click or new selection
     }
     
@@ -685,8 +885,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
         this.resetHighlighting(); // Clear previous highlights
         
-        this.nodeGroups.style('opacity', 0.1);
-        this.links.style('opacity', 0.05);
+        this.nodeGroups.style('opacity', 0.2); // More faded for better contrast
+        this.links.style('opacity', 0.1); // More faded for better contrast
         
         const connectedLinks = this.data.links.filter(l => 
             (l.source.id || l.source) === node.id || 
@@ -705,11 +905,18 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             .style('opacity', 1)
             .select('text').style('display', null); // Show labels for highlighted
             
-        // Bold stroke for the selected node
-         this.nodeGroups.filter(d => d.id === node.id)
-             .select('circle')
-             .style('stroke', '#333')
-             .style('stroke-width', 2.5);
+        // Highlight background for connected nodes
+        this.nodeGroups
+            .filter(d => connectedNodeIds.has(d.id))
+            .select('.node-background')
+            .style('opacity', 0.7); // Show background for text readability
+            
+        // Bold stroke and increased size for the selected node
+        this.nodeGroups.filter(d => d.id === node.id)
+            .select('circle:not(.node-background)')
+            .style('stroke', '#333')
+            .style('stroke-width', 3)
+            .attr('r', this.settings.nodeRadius * 1.2); // Slightly larger
 
         // Highlight connected links
         this.links
@@ -718,22 +925,26 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 (l.target.id || l.target) === node.id
             )
             .style('opacity', 0.8)
-            .style('stroke-width', 1.5)
+            .style('stroke-width', 2)
             .style('stroke', l => (l.source.id || l.source) === node.id ? '#cc0000' : '#0077cc'); // Red outgoing, Blue incoming
     }
     
     resetHighlighting() {
         if (!this.nodeGroups || !this.links) return;
         this.nodeGroups.style('opacity', 1)
-            .select('circle')
+            .select('circle:not(.node-background)')
             .style('stroke', '#fff')
-            .style('stroke-width', 1.5);
+            .style('stroke-width', 2)
+            .attr('r', this.settings.nodeRadius); // Reset to original size
+            
+        this.nodeGroups.select('.node-background')
+            .style('opacity', 0); // Hide backgrounds
             
         this.nodeGroups.select('text').style('display', 'none'); // Hide all labels
             
         this.links.style('opacity', 0.6)
             .style('stroke', '#999')
-            .style('stroke-width', 1);
+            .style('stroke-width', 1.5);
             
         this.selectedNode = null; // Clear selected node reference
     }
@@ -758,11 +969,63 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         }
     }
 
-    /** Toggle fullscreen mode for the graph container */
+    /** Toggle fullscreen mode with controls and info panel */
     toggleFullscreen() {
         // Target the SVG wrapper directly for fullscreen
         const graphWrapper = document.querySelector('#dependencyDiagram .dependency-graph-svg-wrapper');
         if (!graphWrapper) return;
+        
+        const controlsContainer = document.querySelector('#dependencyDiagram .dependency-graph-controls-wrapper');
+        const infoPanel = document.querySelector('#dependencyDiagram .dependency-graph-info-wrapper');
+        
+        // Create or get our floating controls container for fullscreen mode
+        let floatingControls = document.querySelector('.dependency-graph-floating-controls');
+        if (!floatingControls) {
+            floatingControls = document.createElement('div');
+            floatingControls.className = 'dependency-graph-floating-controls';
+            floatingControls.style.position = 'absolute';
+            floatingControls.style.top = '20px';
+            floatingControls.style.right = '20px';
+            floatingControls.style.background = 'rgba(255, 255, 255, 0.95)';
+            floatingControls.style.padding = '10px';
+            floatingControls.style.borderRadius = '5px';
+            floatingControls.style.boxShadow = '0 3px 6px rgba(0,0,0,0.2)';
+            floatingControls.style.zIndex = '9999';
+            floatingControls.style.display = 'none'; // Hidden by default
+            document.body.appendChild(floatingControls);
+        }
+        
+        // Create a visible floating info panel for fullscreen mode
+        let floatingInfoPanel = document.querySelector('.dependency-graph-floating-info');
+        if (!floatingInfoPanel) {
+            floatingInfoPanel = document.createElement('div');
+            floatingInfoPanel.className = 'dependency-graph-floating-info';
+            floatingInfoPanel.style.position = 'absolute';
+            floatingInfoPanel.style.top = '20px';
+            floatingInfoPanel.style.left = '20px';
+            floatingInfoPanel.style.background = 'rgba(255, 255, 255, 0.95)';
+            floatingInfoPanel.style.padding = '15px';
+            floatingInfoPanel.style.borderRadius = '8px';
+            floatingInfoPanel.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            floatingInfoPanel.style.zIndex = '10000'; // Ensure it's on top
+            floatingInfoPanel.style.maxWidth = '350px';
+            floatingInfoPanel.style.maxHeight = '300px';
+            floatingInfoPanel.style.overflowY = 'auto';
+            floatingInfoPanel.style.display = 'none'; // Start hidden
+            // Create an always-visible info panel structure in fullscreen
+            floatingInfoPanel.innerHTML = `
+                <div class="dependency-info-panel">
+                    <h6 class="info-title">Node Information</h6>
+                    <p class="info-value">Click on a node to see details</p>
+                    <p class="info-dependencies"></p>
+                    <p class="info-dependents"></p>
+                    <p class="info-note" style="font-style: italic; font-size: 90%; margin-top: 10px; color: #666;">
+                        <strong>Note:</strong> Red nodes with glow effect have high influence on building performance.
+                    </p>
+                </div>
+            `;
+            document.body.appendChild(floatingInfoPanel);
+        }
 
         if (!document.fullscreenElement) {
             // Enter fullscreen
@@ -775,8 +1038,91 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             } else if (graphWrapper.msRequestFullscreen) { /* IE/Edge */
                 graphWrapper.msRequestFullscreen();
             }
-            if(this.fullscreenButton) this.fullscreenButton.innerHTML = '<i class="bi bi-fullscreen-exit"></i>'; // Change icon
-
+            
+            // Change icon
+            if(this.fullscreenButton) 
+                this.fullscreenButton.innerHTML = '<i class="bi bi-fullscreen-exit"></i>';
+            
+            // Show floating controls and info in fullscreen
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    // Clone the controls into the floating panel
+                    if (controlsContainer) {
+                        floatingControls.innerHTML = ''; // Clear previous content
+                        const controlsClone = controlsContainer.cloneNode(true);
+                        
+                        // Extract just the inner controls (not the wrapper)
+                        const innerControls = controlsClone.querySelector('.dependency-graph-controls');
+                        if (innerControls) {
+                            floatingControls.appendChild(innerControls);
+                            
+                            // Re-attach event handlers to cloned controls
+                            const searchInput = floatingControls.querySelector('input[type="text"]');
+                            if (searchInput) {
+                                searchInput.addEventListener('input', () => {
+                                    this.filterGraph(searchInput.value, 
+                                        floatingControls.querySelector('select')?.value || 'all');
+                                });
+                            }
+                            
+                            const groupSelect = floatingControls.querySelector('select');
+                            if (groupSelect) {
+                                groupSelect.addEventListener('change', () => {
+                                    this.filterGraph(
+                                        floatingControls.querySelector('input[type="text"]')?.value || '', 
+                                        groupSelect.value
+                                    );
+                                });
+                            }
+                            
+                            // Re-attach layout buttons
+                            const forceButton = floatingControls.querySelector('button:nth-child(1)');
+                            if (forceButton) {
+                                forceButton.onclick = () => this.switchLayout('force');
+                            }
+                            
+                            const dagreButton = floatingControls.querySelector('button:nth-child(2)');
+                            if (dagreButton) {
+                                dagreButton.onclick = () => this.switchLayout('dagre');
+                            }
+                            
+                            const resetButton = floatingControls.querySelector('button:nth-child(3)');
+                            if (resetButton) {
+                                resetButton.onclick = () => this.resetView();
+                            }
+                            
+                            const legendButton = floatingControls.querySelector('button:nth-child(4)');
+                            if (legendButton) {
+                                legendButton.onclick = () => this.toggleLegend();
+                            }
+                            
+                            // Replace fullscreen button with exit button
+                            const fullscreenButton = floatingControls.querySelector('button:nth-child(5)');
+                            if (fullscreenButton) {
+                                fullscreenButton.innerHTML = '<i class="bi bi-fullscreen-exit"></i>';
+                                fullscreenButton.onclick = () => this.toggleFullscreen();
+                            }
+                        }
+                        
+                        floatingControls.style.display = 'block';
+                    }
+                    
+                    // Show the floating info panel in fullscreen
+                    this.floatingInfoPanel = floatingInfoPanel; // Store reference
+                    floatingInfoPanel.style.display = 'block'; // Explicitly show it
+                    
+                    // Show legend in fullscreen too
+                    if (this.legendElement) {
+                        this.legendElement.style.display = 'block';
+                    }
+                    
+                    // Copy any current selection info to the fullscreen panel
+                    if (this.selectedNode && this.infoPanel && this.infoPanel.style.display === 'block') {
+                        this.updateFullscreenInfoPanel(this.selectedNode);
+                    }
+                }
+            }, { once: true });
+            
         } else {
             // Exit fullscreen
             if (document.exitFullscreen) {
@@ -788,7 +1134,17 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             } else if (document.msExitFullscreen) { /* IE/Edge */
                 document.msExitFullscreen();
             }
-             if(this.fullscreenButton) this.fullscreenButton.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>'; // Change icon back
+            
+            // Change icon back
+            if(this.fullscreenButton) 
+                this.fullscreenButton.innerHTML = '<i class="bi bi-arrows-fullscreen"></i>';
+            
+            // Hide floating elements
+            if (floatingControls) floatingControls.style.display = 'none';
+            if (floatingInfoPanel) floatingInfoPanel.style.display = 'none';
+            if (this.legendElement) this.legendElement.style.display = 'none';
+            
+            this.floatingInfoPanel = null;
         }
     }
 
@@ -809,6 +1165,227 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             option.text = group; // Use the full section name now
             this.groupSelect.appendChild(option);
         });
+    }
+
+    /**
+     * Create color legend
+     */
+    createLegend() {
+        // Check if the SVG container exists
+        const container = document.querySelector(this.containerSelector);
+        if (!container) return;
+
+        // Create the legend container
+        const legend = document.createElement('div');
+        legend.className = 'dependency-graph-legend';
+        legend.style.display = 'none'; // Hidden by default
+        legend.style.position = 'absolute';
+        legend.style.bottom = '15px';
+        legend.style.left = '15px';
+        legend.style.background = 'rgba(255, 255, 255, 0.9)';
+        legend.style.padding = '10px';
+        legend.style.borderRadius = '5px';
+        // Remove the box shadow for frameless appearance
+        legend.style.maxWidth = '250px';
+        legend.style.zIndex = '100';
+        legend.style.fontSize = '12px';
+        legend.style.fontFamily = 'sans-serif';
+
+        // Create legend title
+        const title = document.createElement('div');
+        title.textContent = 'Section Groups';
+        title.style.fontWeight = 'bold';
+        title.style.marginBottom = '8px';
+        title.style.paddingBottom = '4px';
+        legend.appendChild(title);
+
+        // Add legend items
+        const itemsContainer = document.createElement('div');
+        itemsContainer.style.display = 'grid';
+        itemsContainer.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        itemsContainer.style.gap = '8px';
+
+        // Sort color scheme entries for consistent display
+        const entries = Object.entries(this.settings.colorScheme);
+        entries.sort((a, b) => {
+            // Try to extract numbers from the beginning of group names for sorting
+            const numA = parseInt(a[0].match(/^(\d+)\./)?.[1] || '999');
+            const numB = parseInt(b[0].match(/^(\d+)\./)?.[1] || '999');
+            return numA - numB;
+        });
+
+        // Create legend items
+        entries.forEach(([group, color]) => {
+            const item = document.createElement('div');
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            
+            const colorBox = document.createElement('span');
+            colorBox.style.display = 'inline-block';
+            colorBox.style.width = '12px';
+            colorBox.style.height = '12px';
+            colorBox.style.backgroundColor = color;
+            colorBox.style.marginRight = '6px';
+            colorBox.style.borderRadius = '3px';
+            
+            const label = document.createElement('span');
+            label.textContent = group;
+            label.style.whiteSpace = 'nowrap';
+            label.style.overflow = 'hidden';
+            label.style.textOverflow = 'ellipsis';
+            
+            item.appendChild(colorBox);
+            item.appendChild(label);
+            itemsContainer.appendChild(item);
+        });
+
+        legend.appendChild(itemsContainer);
+        
+        // Add to the graph container (which should be a relatively positioned parent)
+        const graphContainer = document.querySelector(`${this.containerSelector} .dependency-graph-svg-wrapper`);
+        if (graphContainer) {
+            graphContainer.appendChild(legend);
+            this.legendElement = legend;
+        }
+    }
+
+    toggleLegend() {
+        if (!this.legendElement) {
+            this.createLegend();
+        }
+        
+        if (this.legendElement) {
+            const isVisible = this.legendElement.style.display !== 'none';
+            this.legendElement.style.display = isVisible ? 'none' : 'block';
+            
+            // Update button text
+            if (this.legendToggleButton) {
+                this.legendToggleButton.textContent = isVisible ? 'Show Legend' : 'Hide Legend';
+            }
+        }
+    }
+
+    /**
+     * Fit the graph to fill the container
+     * Uses D3's zoom transform to scale the graph appropriately
+     */
+    fitGraphToContainer() {
+        if (!this.svg || !this.data || !this.data.nodes || this.data.nodes.length === 0) return;
+        
+        // Wait a moment for the layout to stabilize
+        setTimeout(() => {
+            try {
+                // Get the current bounds of the nodes
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                
+                this.data.nodes.forEach(node => {
+                    if (node.x < minX) minX = node.x;
+                    if (node.x > maxX) maxX = node.x;
+                    if (node.y < minY) minY = node.y;
+                    if (node.y > maxY) maxY = node.y;
+                });
+                
+                // Add some padding
+                const padding = 50;
+                minX -= padding;
+                minY -= padding;
+                maxX += padding;
+                maxY += padding;
+                
+                // Calculate the scale needed to fit the graph
+                const graphWidth = maxX - minX;
+                const graphHeight = maxY - minY;
+                const containerWidth = this.width;
+                const containerHeight = this.height;
+                
+                if (graphWidth <= 0 || graphHeight <= 0 || containerWidth <= 0 || containerHeight <= 0) {
+                    console.warn('[DependencyGraph] Invalid dimensions for fitting graph', {
+                        graph: { width: graphWidth, height: graphHeight },
+                        container: { width: containerWidth, height: containerHeight }
+                    });
+                    return;
+                }
+                
+                const scaleX = containerWidth / graphWidth;
+                const scaleY = containerHeight / graphHeight;
+                const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
+                
+                // Calculate the translation needed to center the graph
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+                
+                const translateX = containerWidth / 2 - centerX * scale;
+                const translateY = containerHeight / 2 - centerY * scale;
+                
+                // Apply the transform
+                this.svg.transition()
+                    .duration(750)
+                    .call(
+                        d3.zoom().transform,
+                        d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                    );
+                
+                console.log('[DependencyGraph] Fitted graph to container with scale', scale);
+            } catch (error) {
+                console.error('[DependencyGraph] Error fitting graph to container', error);
+            }
+        }, 500); // Give time for layout to stabilize
+    }
+
+    // Update fullscreen info panel method
+    updateFullscreenInfoPanel(node) {
+        if (!this.floatingInfoPanel || !node) return;
+        
+        const stateManager = window.TEUI?.StateManager;
+        if (!stateManager) return;
+        
+        const panel = this.floatingInfoPanel.querySelector('.dependency-info-panel');
+        if (!panel) return;
+        
+        const title = panel.querySelector('.info-title');
+        const value = panel.querySelector('.info-value');
+        const dependencies = panel.querySelector('.info-dependencies');
+        const dependents = panel.querySelector('.info-dependents');
+        
+        if (title) title.textContent = node.enhancedLabel || `${node.label || node.id} (${node.id})`;
+        
+        const currentValue = stateManager.getValue(node.id);
+        if (value) {
+            value.innerHTML = `<strong>Current Value:</strong> ${currentValue !== null && currentValue !== undefined ? currentValue : 'N/A'}`;
+            value.innerHTML += `<br><strong>ID:</strong> ${node.id}`;
+            
+            // If it's an influential node, add a note
+            if (node.isInfluential) {
+                value.innerHTML += `<br><strong style="color:#ff5252;">★ HIGH INFLUENCE NODE ★</strong>`;
+            }
+        }
+        
+        // Use the already processed links data for connections
+        const fieldDependencies = this.data.links
+            .filter(link => (link.target.id || link.target) === node.id)
+            .map(link => {
+                // Try to get enhanced labels for dependencies
+                const sourceNode = this.data.nodes.find(n => n.id === (link.source.id || link.source));
+                return sourceNode?.enhancedLabel || (link.source.id || link.source);
+            });
+            
+        if (dependencies) {
+            dependencies.innerHTML = `<strong>Depends on:</strong> ${fieldDependencies.length > 0 ? fieldDependencies.join(', ') : 'None'}`;
+        }
+        
+        const fieldDependents = this.data.links
+            .filter(link => (link.source.id || link.source) === node.id)
+            .map(link => {
+                // Try to get enhanced labels for dependents
+                const targetNode = this.data.nodes.find(n => n.id === (link.target.id || link.target));
+                return targetNode?.enhancedLabel || (link.target.id || link.target);
+            });
+            
+        if (dependents) {
+            dependents.innerHTML = `<strong>Influences:</strong> ${fieldDependents.length > 0 ? fieldDependents.join(', ') : 'None'}`;
+        }
+        
+        this.floatingInfoPanel.style.display = 'block';
     }
 }
 
@@ -864,29 +1441,45 @@ function initializeGraphInstanceAndUI() {
         teuiDependencyGraphInstance.populateGroupFilter(); // Populate dropdown NOW
         teuiDependencyGraphInstance.setupSvg(); // Setup SVG container
         if (teuiDependencyGraphInstance.svg) {
-            // Attempt Dagre layout first, then render
-            if (typeof dagre !== 'undefined') {
-                teuiDependencyGraphInstance.applyDagreLayout(); 
-                // Update button state after applying layout
-                if(teuiDependencyGraphInstance.dagreButton) teuiDependencyGraphInstance.dagreButton.classList.add('active');
-                if(teuiDependencyGraphInstance.forceButton) teuiDependencyGraphInstance.forceButton.classList.remove('active');
+            // Render the graph first (create nodes/links)
+            teuiDependencyGraphInstance.render();
+            
+            // Apply the default layout - prefer dagre (hierarchical)
+            const defaultLayout = teuiDependencyGraphInstance.settings.defaultLayout || 'dagre';
+            
+            // Force fit the graph to fill the container
+            teuiDependencyGraphInstance.fitGraphToContainer();
+            
+            if (defaultLayout === 'dagre' && typeof dagre !== 'undefined') {
+                // Apply dagre layout
+                teuiDependencyGraphInstance.applyDagreLayout();
+                // Update button states
+                if(teuiDependencyGraphInstance.dagreButton) 
+                    teuiDependencyGraphInstance.dagreButton.classList.add('active');
+                if(teuiDependencyGraphInstance.forceButton) 
+                    teuiDependencyGraphInstance.forceButton.classList.remove('active');
                 console.log('[DependencyGraph] Applied Dagre layout on init.');
-                // Rendering happens implicitly via applyDagreLayout/ticked
-                // Or explicitly call render if needed to ensure elements exist
-                teuiDependencyGraphInstance.render(); 
             } else {
-                // Fallback to force layout if Dagre not available
-                console.warn('[DependencyGraph] Dagre not found on init, using force layout.');
-                teuiDependencyGraphInstance.render(); 
+                // Fallback to force layout
+                if(teuiDependencyGraphInstance.forceButton) 
+                    teuiDependencyGraphInstance.forceButton.classList.add('active');
+                if(teuiDependencyGraphInstance.dagreButton) 
+                    teuiDependencyGraphInstance.dagreButton.classList.remove('active');
+                console.log('[DependencyGraph] Using Force layout on init.');
             }
+            
+            // Create the legend but keep it hidden
+            teuiDependencyGraphInstance.createLegend();
+            
+            // Setup event handlers
             teuiDependencyGraphInstance.setupEvents(); 
         } else {
             console.error('[DependencyGraph] SVG setup failed after data load.');
             teuiDependencyGraphInstance.showErrorMessage('Graph rendering failed (SVG setup).');
         }
     } else {
-         console.error('[DependencyGraph] Initialization failed (data loading).');
-         // Error message is shown within initialize()
+        console.error('[DependencyGraph] Initialization failed (data loading).');
+        // Error message is shown within initialize()
     }
 }
 
