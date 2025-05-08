@@ -276,6 +276,10 @@ TEUI.FieldManager = (function() {
             initializeSections();
         }
         
+        // >>> ADD DIAGNOSTIC LOG START <<<
+        console.log(`[FieldManager DIAGNOSTIC] Starting renderSection for: ${sectionId}`);
+        // >>> END DIAGNOSTIC LOG START <<<
+
         const internalSectionId = sections[sectionId];
         if (!internalSectionId) {
             console.error(`Unknown section ID: ${sectionId}`);
@@ -313,7 +317,14 @@ TEUI.FieldManager = (function() {
             return true;
         } catch (error) {
             console.error(`Error rendering section ${sectionId}:`, error);
+            // >>> ADD DIAGNOSTIC LOG ERROR <<<
+            console.log(`[FieldManager DIAGNOSTIC] Error during renderSection for: ${sectionId}`);
+            // >>> END DIAGNOSTIC LOG ERROR <<<
             return false;
+        } finally {
+             // >>> ADD DIAGNOSTIC LOG END <<<
+             console.log(`[FieldManager DIAGNOSTIC] Finished renderSection for: ${sectionId}`);
+             // >>> END DIAGNOSTIC LOG END <<<
         }
     }
     

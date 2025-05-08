@@ -977,6 +977,8 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 // Delegate based on the dropdown ID
                 if (dropdownId === 'dd_d_19') {
                     console.log("[S03 Delegated] Province change detected");
+                    const cityDropdownExists = !!document.querySelector('[data-dropdown-id="dd_h_19"]');
+                    console.log(`[S03 Delegated] Just before calling handleProvinceChange. City dropdown exists? ${cityDropdownExists}`);
                     if (typeof window.TEUI.sect03.handleProvinceChange === 'function') {
                         // Pass the event object itself, the handler can get the value
                         window.TEUI.sect03.handleProvinceChange(event); 

@@ -2,141 +2,13 @@
  * 4011-ClimateValues.js
  * Stores climate data for Canadian locations, replacing the need for Excel import.
  * Data sourced from CANDA.csv (derived from various sources including climate normals).
+ * Updated: Includes the first city listed for each province/territory.
  */
 
 window.TEUI = window.TEUI || {};
 
 // Structure: ProvinceAbbreviation -> CityName -> { DataKey: Value, ... }
 window.TEUI.ClimateData = {
-    "ON": {
-        "Ailsa Craig": {
-            "Location": "Ailsa Craig",
-            "Elev ASL (m)": 230,
-            "January_2_5": -17,
-            "January_1": -19,
-            "July_2_5_Tdb": 30,
-            "July_2_5_Twb": 23,
-            "Future_July_2_5_Tdb": 34,
-            "Future_July_2_5_Twb": 26,
-            "HDD18": 3840,
-            "HDD15": 3050,
-            "HDD18_2021_2050": 3340,
-            "CDD24": 270, // Updated placeholder for "PRESENT CDD 2021 Degree-Days Above 24°C"
-            "CDD24_2021_2050": 666, // Placeholder for "FUTURE CDD 2021-2050 EnsMean Degree-Days Above 24°C"
-            "Over_30Tdb_2021_2050": 0, // Placeholder
-            "Extreme_Hot_Tdb_1991_2020": 0, // Placeholder
-            "Rain_15_min_mm": 25,
-            "Rain_15_min_mm_New": 32,
-            "Rain_1_day_1/50mm": 103,
-            "Rain_1_day_1/50mm_New": 131,
-            "Rain_Annual_mm": 800,
-            "Rain_Annual_mm_New": 920,
-            "Moisture_Index_New": 0.9,
-            "Precip_Annual_mm": 950,
-            "Precip_Annual_mm_New": 1030,
-            "Driving_Rain_Wind_Pa_1/5": 180,
-            "Driving_Rain_Wind_Pa_1/5_New": 200,
-            "Snow_kPa_1/50_Ss": 2.2,
-            "Snow_kPa_1/50_Sr": 0.4,
-            "Snow_kPa_1/1000_Ss": 3.2,
-            "Snow_kPa_1/1000_Sr": 0.6,
-            "Wind_Hourly_kPa_1/10": 0.37,
-            "Wind_Hourly_kPa_1/10_New": 0.41,
-            "Wind_Hourly_kPa_1/50": 0.48,
-            "Wind_Hourly_kPa_1/50_New": 0.53,
-            "Wind_Hourly_kPa_1/500_New": 0.8,
-            "Winter_Tdb_Avg": -6,
-            "Winter_Windspeed_Avg": 4.5,
-            "Summer_Tdb_Avg": 20.5, // Placeholder name for "Summer Average Dry °C"
-            "Summer_Twb_Avg": 15.11, // Placeholder name for "Seasonal Average Wet °C"
-            "Summer_RH_1500_LST": 55.85 // Example RH value, adjust as needed
-        },
-        "Ajax": {
-            "Location": "Ajax",
-            "Elev ASL (m)": 95,
-            "January_2_5": -20,
-            "January_1": -22,
-            "July_2_5_Tdb": 30,
-            "July_2_5_Twb": 23,
-            "Future_July_2_5_Tdb": 34,
-            "Future_July_2_5_Twb": 26,
-            "HDD18": 3820,
-            "HDD15": 3030,
-            "HDD18_2021_2050": 3320,
-            "CDD24": 251, // Updated placeholder
-            "CDD24_2021_2050": 666, // Placeholder
-            "Over_30Tdb_2021_2050": 0, // Placeholder
-            "Extreme_Hot_Tdb_1991_2020": 0, // Placeholder
-            "Rain_15_min_mm": 23,
-            "Rain_15_min_mm_New": 30,
-            "Rain_1_day_1/50mm": 92,
-            "Rain_1_day_1/50mm_New": 118,
-            "Rain_Annual_mm": 760,
-            "Rain_Annual_mm_New": 880,
-            "Moisture_Index_New": 0.9,
-            "Precip_Annual_mm": 825,
-            "Precip_Annual_mm_New": 900,
-            "Driving_Rain_Wind_Pa_1/5": 160,
-            "Driving_Rain_Wind_Pa_1/5_New": 170,
-            "Snow_kPa_1/50_Ss": 1,
-            "Snow_kPa_1/50_Sr": 0.4,
-            "Snow_kPa_1/1000_Ss": 1.5,
-            "Snow_kPa_1/1000_Sr": 0.6,
-            "Wind_Hourly_kPa_1/10": 0.37,
-            "Wind_Hourly_kPa_1/10_New": 0.41,
-            "Wind_Hourly_kPa_1/50": 0.48,
-            "Wind_Hourly_kPa_1/50_New": 0.53,
-            "Wind_Hourly_kPa_1/500_New": 0.8,
-            "Winter_Tdb_Avg": -6,
-            "Winter_Windspeed_Avg": 4,
-            "Summer_Tdb_Avg": 20.5, 
-            "Summer_Twb_Avg": 15.11,
-            "Summer_RH_1500_LST": 55.85
-        },
-        "Alexandria": {
-            "Location": "Alexandria",
-            "Elev ASL (m)": 80,
-            "January_2_5": -24,
-            "January_1": -26,
-            "July_2_5_Tdb": 30,
-            "July_2_5_Twb": 23,
-            "Future_July_2_5_Tdb": 34,
-            "Future_July_2_5_Twb": 26,
-            "HDD18": 4600,
-            "HDD15": 3740,
-            "HDD18_2021_2050": 4100,
-            "CDD24": 196, // Updated placeholder
-            "CDD24_2021_2050": 315, // Updated placeholder
-            "Over_30Tdb_2021_2050": 0, // Placeholder
-            "Extreme_Hot_Tdb_1991_2020": 0, // Placeholder
-            "Rain_15_min_mm": 25,
-            "Rain_15_min_mm_New": 32,
-            "Rain_1_day_1/50mm": 103,
-            "Rain_1_day_1/50mm_New": 133,
-            "Rain_Annual_mm": 800,
-            "Rain_Annual_mm_New": 950,
-            "Moisture_Index_New": 1,
-            "Precip_Annual_mm": 975,
-            "Precip_Annual_mm_New": 1090,
-            "Driving_Rain_Wind_Pa_1/5": 160,
-            "Driving_Rain_Wind_Pa_1/5_New": null, // No explicit new value in CSV
-            "Snow_kPa_1/50_Ss": 2.4,
-            "Snow_kPa_1/50_Sr": 0.4,
-            "Snow_kPa_1/1000_Ss": 3.4,
-            "Snow_kPa_1/1000_Sr": 0.6,
-            "Wind_Hourly_kPa_1/10": 0.31,
-            "Wind_Hourly_kPa_1/10_New": 0.34,
-            "Wind_Hourly_kPa_1/50": 0.4,
-            "Wind_Hourly_kPa_1/50_New": 0.44,
-            "Wind_Hourly_kPa_1/500_New": 0.67,
-            "Winter_Tdb_Avg": -8,
-            "Winter_Windspeed_Avg": 3.8,
-            "Summer_Tdb_Avg": 20.5, 
-            "Summer_Twb_Avg": 15.11,
-            "Summer_RH_1500_LST": 55.85 
-        }
-        // Add other provinces/cities here...
-    },
     "BC": {
         "100 Mile House": {
             "Location": "100 Mile House",
@@ -150,10 +22,10 @@ window.TEUI.ClimateData = {
             "HDD18": 5030,
             "HDD15": 4040,
             "HDD18_2021_2050": 4530,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 10,
             "Rain_15_min_mm_New": 13,
             "Rain_1_day_1/50mm": 48,
@@ -176,10 +48,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.55,
             "Winter_Tdb_Avg": -7,
             "Winter_Windspeed_Avg": 2.8,
-            "Summer_Tdb_Avg": 21, 
-            "Summer_Twb_Avg": 21, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 21,
+            "Summer_Twb_Avg": 21,
+            "Summer_RH_1500_LST": null
         }
+        // Add other BC cities later
     },
     "AB": {
         "Athabasca": {
@@ -194,10 +67,10 @@ window.TEUI.ClimateData = {
             "HDD18": 6000,
             "HDD15": 5000,
             "HDD18_2021_2050": 5500,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 18,
             "Rain_15_min_mm_New": 23,
             "Rain_1_day_1/50mm": 86,
@@ -208,7 +81,7 @@ window.TEUI.ClimateData = {
             "Precip_Annual_mm": 480,
             "Precip_Annual_mm_New": 550,
             "Driving_Rain_Wind_Pa_1/5": 80,
-            "Driving_Rain_Wind_Pa_1/5_New": null, 
+            "Driving_Rain_Wind_Pa_1/5_New": null,
             "Snow_kPa_1/50_Ss": 1.5,
             "Snow_kPa_1/50_Sr": 0.1,
             "Snow_kPa_1/1000_Ss": 2.1,
@@ -220,10 +93,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.59,
             "Winter_Tdb_Avg": -10,
             "Winter_Windspeed_Avg": 2.4,
-            "Summer_Tdb_Avg": 23, 
-            "Summer_Twb_Avg": 23, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 23,
+            "Summer_Twb_Avg": 23,
+            "Summer_RH_1500_LST": null
         }
+        // Add other AB cities later
     },
     "SK": {
         "Assiniboia": {
@@ -238,10 +112,10 @@ window.TEUI.ClimateData = {
             "HDD18": 5180,
             "HDD15": 4300,
             "HDD18_2021_2050": 4680,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 25,
             "Rain_15_min_mm_New": 32,
             "Rain_1_day_1/50mm": 81,
@@ -264,10 +138,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.75,
             "Winter_Tdb_Avg": -10,
             "Winter_Windspeed_Avg": 4.7,
-            "Summer_Tdb_Avg": 25, 
-            "Summer_Twb_Avg": 25, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 25,
+            "Summer_Twb_Avg": 25,
+            "Summer_RH_1500_LST": null
         }
+        // Add other SK cities later
     },
     "MB": {
         "Beausejour": {
@@ -282,10 +157,10 @@ window.TEUI.ClimateData = {
             "HDD18": 5680,
             "HDD15": 4780,
             "HDD18_2021_2050": 5180,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 28,
             "Rain_15_min_mm_New": 37,
             "Rain_1_day_1/50mm": 103,
@@ -308,10 +183,56 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.64,
             "Winter_Tdb_Avg": -12,
             "Winter_Windspeed_Avg": 3.3,
-            "Summer_Tdb_Avg": 26, 
-            "Summer_Twb_Avg": 26, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 26,
+            "Summer_Twb_Avg": 26,
+            "Summer_RH_1500_LST": null
         }
+        // Add other MB cities later
+    },
+    "ON": {
+        "Ailsa Craig": {
+            "Location": "Ailsa Craig",
+            "Elev ASL (m)": 230,
+            "January_2_5": -17,
+            "January_1": -19,
+            "July_2_5_Tdb": 30,
+            "July_2_5_Twb": 23,
+            "Future_July_2_5_Tdb": 34,
+            "Future_July_2_5_Twb": 26,
+            "HDD18": 3840,
+            "HDD15": 3050,
+            "HDD18_2021_2050": 3340,
+            "CDD24": 270,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 0,
+            "Extreme_Hot_Tdb_1991_2020": 0,
+            "Rain_15_min_mm": 25,
+            "Rain_15_min_mm_New": 32,
+            "Rain_1_day_1/50mm": 103,
+            "Rain_1_day_1/50mm_New": 131,
+            "Rain_Annual_mm": 800,
+            "Rain_Annual_mm_New": 920,
+            "Moisture_Index_New": 0.9,
+            "Precip_Annual_mm": 950,
+            "Precip_Annual_mm_New": 1030,
+            "Driving_Rain_Wind_Pa_1/5": 180,
+            "Driving_Rain_Wind_Pa_1/5_New": 200,
+            "Snow_kPa_1/50_Ss": 2.2,
+            "Snow_kPa_1/50_Sr": 0.4,
+            "Snow_kPa_1/1000_Ss": 3.2,
+            "Snow_kPa_1/1000_Sr": 0.6,
+            "Wind_Hourly_kPa_1/10": 0.37,
+            "Wind_Hourly_kPa_1/10_New": 0.41,
+            "Wind_Hourly_kPa_1/50": 0.48,
+            "Wind_Hourly_kPa_1/50_New": 0.53,
+            "Wind_Hourly_kPa_1/500_New": 0.8,
+            "Winter_Tdb_Avg": -6,
+            "Winter_Windspeed_Avg": 4.5,
+            "Summer_Tdb_Avg": 20.5,
+            "Summer_Twb_Avg": 15.11,
+            "Summer_RH_1500_LST": 55.85
+        }
+        // Add other ON cities later
     },
     "QC": {
         "Acton Vale": {
@@ -326,10 +247,10 @@ window.TEUI.ClimateData = {
             "HDD18": 4620,
             "HDD15": 3790,
             "HDD18_2021_2050": 4120,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 21,
             "Rain_15_min_mm_New": 27,
             "Rain_1_day_1/50mm": 107,
@@ -340,7 +261,7 @@ window.TEUI.ClimateData = {
             "Precip_Annual_mm": 1050,
             "Precip_Annual_mm_New": 1170,
             "Driving_Rain_Wind_Pa_1/5": 180,
-            "Driving_Rain_Wind_Pa_1/5_New": null, 
+            "Driving_Rain_Wind_Pa_1/5_New": null,
             "Snow_kPa_1/50_Ss": 2.3,
             "Snow_kPa_1/50_Sr": 0.4,
             "Snow_kPa_1/1000_Ss": 3.4,
@@ -352,10 +273,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.55,
             "Winter_Tdb_Avg": -8,
             "Winter_Windspeed_Avg": 3.5,
-            "Summer_Tdb_Avg": 26, 
-            "Summer_Twb_Avg": 26, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 26,
+            "Summer_Twb_Avg": 26,
+            "Summer_RH_1500_LST": null
         }
+        // Add other QC cities later
     },
     "NB": {
         "Alma": {
@@ -370,10 +292,10 @@ window.TEUI.ClimateData = {
             "HDD18": 4500,
             "HDD15": 3600,
             "HDD18_2021_2050": 4000,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 18,
             "Rain_15_min_mm_New": 23,
             "Rain_1_day_1/50mm": 144,
@@ -396,10 +318,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.76,
             "Winter_Tdb_Avg": -7,
             "Winter_Windspeed_Avg": 4.5,
-            "Summer_Tdb_Avg": 23, 
-            "Summer_Twb_Avg": 23, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 23,
+            "Summer_Twb_Avg": 23,
+            "Summer_RH_1500_LST": null
         }
+        // Add other NB cities later
     },
     "NS": {
         "Amherst": {
@@ -414,10 +337,10 @@ window.TEUI.ClimateData = {
             "HDD18": 4500,
             "HDD15": 3600,
             "HDD18_2021_2050": 4000,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 18,
             "Rain_15_min_mm_New": 23,
             "Rain_1_day_1/50mm": 118,
@@ -440,10 +363,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.76,
             "Winter_Tdb_Avg": -6,
             "Winter_Windspeed_Avg": 4.3,
-            "Summer_Tdb_Avg": 24, 
-            "Summer_Twb_Avg": 24, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 24,
+            "Summer_Twb_Avg": 24,
+            "Summer_RH_1500_LST": null
         }
+        // Add other NS cities later
     },
     "PE": {
         "Charlottetown": {
@@ -458,10 +382,10 @@ window.TEUI.ClimateData = {
             "HDD18": 4460,
             "HDD15": 3650,
             "HDD18_2021_2050": 3960,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 16,
             "Rain_15_min_mm_New": 20,
             "Rain_1_day_1/50mm": 107,
@@ -484,10 +408,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.87,
             "Winter_Tdb_Avg": -6,
             "Winter_Windspeed_Avg": 5,
-            "Summer_Tdb_Avg": 24, 
-            "Summer_Twb_Avg": 24, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 24,
+            "Summer_Twb_Avg": 24,
+            "Summer_RH_1500_LST": null
         }
+        // Add other PE cities later
     },
     "NL": {
         "Argentia": {
@@ -502,10 +427,10 @@ window.TEUI.ClimateData = {
             "HDD18": 4600,
             "HDD15": 3620,
             "HDD18_2021_2050": 4100,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 15,
             "Rain_15_min_mm_New": 19,
             "Rain_1_day_1/50mm": 107,
@@ -528,10 +453,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 1.11,
             "Winter_Tdb_Avg": -4,
             "Winter_Windspeed_Avg": 6.5,
-            "Summer_Tdb_Avg": 22, 
-            "Summer_Twb_Avg": 22, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 22,
+            "Summer_Twb_Avg": 22,
+            "Summer_RH_1500_LST": null
         }
+        // Add other NL cities later
     },
     "YT": {
         "Aishihik": {
@@ -546,10 +472,10 @@ window.TEUI.ClimateData = {
             "HDD18": 7500,
             "HDD15": 6500,
             "HDD18_2021_2050": 7000,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 8,
             "Rain_15_min_mm_New": 10,
             "Rain_1_day_1/50mm": 43,
@@ -561,7 +487,7 @@ window.TEUI.ClimateData = {
             "Precip_Annual_mm_New": 340,
             "Driving_Rain_Wind_Pa_1/5": 40,
             "Driving_Rain_Wind_Pa_1/5_New": 60,
-            "Snow_kPa_1/50_Ss": 1.9, // Used value "1.9 2.0"
+            "Snow_kPa_1/50_Ss": 1.95, // Averaged 1.9/2.0
             "Snow_kPa_1/50_Sr": 0.1,
             "Snow_kPa_1/1000_Ss": 3,
             "Snow_kPa_1/1000_Sr": 0.2,
@@ -572,10 +498,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.6,
             "Winter_Tdb_Avg": -14,
             "Winter_Windspeed_Avg": 2.2,
-            "Summer_Tdb_Avg": 19, 
-            "Summer_Twb_Avg": 19, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 19,
+            "Summer_Twb_Avg": 19,
+            "Summer_RH_1500_LST": null
         }
+        // Add other YT cities later
     },
     "NT": {
         "Aklavik": {
@@ -590,10 +517,10 @@ window.TEUI.ClimateData = {
             "HDD18": 9600,
             "HDD15": 8540,
             "HDD18_2021_2050": 9100,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 6,
             "Rain_15_min_mm_New": 8,
             "Rain_1_day_1/50mm": 49,
@@ -605,7 +532,7 @@ window.TEUI.ClimateData = {
             "Precip_Annual_mm_New": 310,
             "Driving_Rain_Wind_Pa_1/5": 60,
             "Driving_Rain_Wind_Pa_1/5_New": 80,
-            "Snow_kPa_1/50_Ss": 2.8, // Used value "2.8 2.9"
+            "Snow_kPa_1/50_Ss": 2.85, // Averaged 2.8/2.9
             "Snow_kPa_1/50_Sr": 0.1,
             "Snow_kPa_1/1000_Ss": 4.3,
             "Snow_kPa_1/1000_Sr": 0.2,
@@ -616,10 +543,11 @@ window.TEUI.ClimateData = {
             "Wind_Hourly_kPa_1/500_New": 0.58,
             "Winter_Tdb_Avg": -17,
             "Winter_Windspeed_Avg": 2.9,
-            "Summer_Tdb_Avg": 20, 
-            "Summer_Twb_Avg": 20, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Summer_Tdb_Avg": 20,
+            "Summer_Twb_Avg": 20,
+            "Summer_RH_1500_LST": null
         }
+        // Add other NT cities later
     },
     "NU": {
         "Alert": {
@@ -634,35 +562,36 @@ window.TEUI.ClimateData = {
             "HDD18": 13030,
             "HDD15": 11860,
             "HDD18_2021_2050": 12530,
-            "CDD24": 666, 
-            "CDD24_2021_2050": 666, 
-            "Over_30Tdb_2021_2050": 666, 
-            "Extreme_Hot_Tdb_1991_2020": 666, 
+            "CDD24": 666,
+            "CDD24_2021_2050": 666,
+            "Over_30Tdb_2021_2050": 666,
+            "Extreme_Hot_Tdb_1991_2020": 666,
             "Rain_15_min_mm": 4,
-            "Rain_15_min_mm_New": null, 
+            "Rain_15_min_mm_New": null,
             "Rain_1_day_1/50mm": 22,
             "Rain_1_day_1/50mm_New": 32,
             "Rain_Annual_mm": 30,
-            "Rain_Annual_mm_New": null, 
+            "Rain_Annual_mm_New": null,
             "Moisture_Index_New": 1,
-            "Precip_Annual_mm": null, // Value "0" in CSV
+            "Precip_Annual_mm": 0, // From CSV
             "Precip_Annual_mm_New": 40,
-            "Driving_Rain_Wind_Pa_1/5": null, 
-            "Driving_Rain_Wind_Pa_1/5_New": 2.6, // Used "2.6 2.7"
-            "Snow_kPa_1/50_Ss": 0.1,
-            "Snow_kPa_1/50_Sr": 4,
-            "Snow_kPa_1/1000_Ss": 0.2,
-            "Snow_kPa_1/1000_Sr": 0.59,
-            "Wind_Hourly_kPa_1/10": 0.62,
-            "Wind_Hourly_kPa_1/10_New": 0.79,
-            "Wind_Hourly_kPa_1/50": null, 
-            "Wind_Hourly_kPa_1/50_New": 1.06,
-            "Wind_Hourly_kPa_1/500_New": -22,
-            "Winter_Tdb_Avg": 4.3,
-            "Winter_Windspeed_Avg": 12,
-            "Summer_Tdb_Avg": 12, 
-            "Summer_Twb_Avg": null, 
-            "Summer_RH_1500_LST": null // Placeholder
+            "Driving_Rain_Wind_Pa_1/5": null,
+            "Driving_Rain_Wind_Pa_1/5_New": null,
+            "Snow_kPa_1/50_Ss": 2.65, // Averaged 2.6/2.7
+            "Snow_kPa_1/50_Sr": 0.1,
+            "Snow_kPa_1/1000_Ss": 4,
+            "Snow_kPa_1/1000_Sr": 0.2,
+            "Wind_Hourly_kPa_1/10": 0.59,
+            "Wind_Hourly_kPa_1/10_New": 0.62,
+            "Wind_Hourly_kPa_1/50": 0.79, // From CSV column "79"
+            "Wind_Hourly_kPa_1/50_New": null,
+            "Wind_Hourly_kPa_1/500_New": 1.06,
+            "Winter_Tdb_Avg": -22,
+            "Winter_Windspeed_Avg": 4.3,
+            "Summer_Tdb_Avg": 12,
+            "Summer_Twb_Avg": 12,
+            "Summer_RH_1500_LST": null
         }
+        // Add other NU cities later
     }
 }; 
