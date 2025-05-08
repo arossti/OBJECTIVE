@@ -258,6 +258,121 @@ window.TEUI.SectionModules.sect03 = (function() {
     }
 
     //==========================================================================
+    // ADDED: HELPER FUNCTIONS (Standard Implementation like S04)
+    //==========================================================================
+    
+    /**
+     * Update the weather data modal with detailed climate information
+     * Useful for debugging and showing users the full climate data
+     */
+    function updateWeatherDataModal() {
+        console.log("[S03 DIAGNOSTIC] updateWeatherDataModal called");
+
+        const provinceValue = getFieldValue("d_19");
+        const cityValue = getFieldValue("h_19");
+        const modalContent = document.getElementById('weatherDataContent');
+
+        if (!modalContent) {
+            console.error("[S03 DEBUG] Weather data modal content element not found");
+            return;
+        }
+
+        // If no province or city is selected, show a message
+        if (!provinceValue || !cityValue) {
+            modalContent.textContent = "Please select a province and city to view weather data.";
+            return;
+        }
+
+        // Check if ClimateData is available
+        if (!window.TEUI?.ClimateData || !window.TEUI.ClimateData[provinceValue] || !window.TEUI.ClimateData[provinceValue][cityValue]) {
+            modalContent.textContent = `No climate data available for ${cityValue}, ${provinceValue}`;
+            return;
+        }
+
+        // Get city data
+        const cityData = window.TEUI.ClimateData[provinceValue][cityValue];
+
+        // Format as a table with keys and values
+        let formattedData = `
+<h4>${cityValue}, ${provinceValue}</h4>
+<p>Elevation: ${cityData["Elev ASL (m)"]} m ASL</p>
+
+<h5>Current Climate</h5>
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>HDD18 (°C·days)</td><td>${cityData.HDD18}</td></tr>
+        <tr><td>CDD24 (°C·days)</td><td>${cityData.CDD24}</td></tr>
+        <tr><td>January 2.5% Design Temperature</td><td>${cityData.January_2_5} °C</td></tr>
+        <tr><td>January 1% Design Temperature</td><td>${cityData.January_1} °C</td></tr>
+        <tr><td>July 2.5% Dry-bulb Temperature</td><td>${cityData.July_2_5_Tdb} °C</td></tr>
+        <tr><td>July 2.5% Wet-bulb Temperature</td><td>${cityData.July_2_5_Twb} °C</td></tr>
+    </tbody>
+</table>
+
+<h5>Future Climate (2021-2050)</h5>
+<table class="table table-sm table-striped">
+    <tbody>
+        <tr><td>HDD18 (°C·days)</td><td>${cityData.HDD18_2021_2050}</td></tr>
+        <tr><td>CDD24 (°C·days)</td><td>${cityData.CDD24_2021_2050}</td></tr>
+        <tr><td>July 2.5% Dry-bulb Temperature</td><td>${cityData.Future_July_2_5_Tdb} °C</td></tr>
+        <tr><td>July 2.5% Wet-bulb Temperature</td><td>${cityData.Future_July_2_5_Twb} °C</td></tr>
+    </tbody>
+</table>
+`;
+
+        // Add debug info about data
+        formattedData += `
+<details>
+    <summary>Debug Information</summary>
+    <pre style="font-size: 11px;">
+Province dropdown ID: dd_d_19
+City dropdown ID: dd_h_19
+Available cities for ${provinceValue}: ${Object.keys(window.TEUI.ClimateData[provinceValue]).join(", ")}
+All dropdowns: ${Array.from(document.querySelectorAll('[data-dropdown-id]')).map(d => d.getAttribute('data-dropdown-id')).join(', ')}
+City cell exists: ${!!document.querySelector('[data-field-id="h_19"]')?.parentElement}
+    </pre>
+</details>
+`;
+
+        // Set the content
+        modalContent.innerHTML = formattedData;
+    }
+
+    /**
+     * Initialize the weather data modal event handler
+     */
+    function initializeWeatherDataModal() {
+        // Get the modal element
+        const weatherModal = document.getElementById('weatherDataModal');
+        if (!weatherModal) {
+            console.error("[S03 DEBUG] Weather data modal element not found");
+            return;
+        }
+
+        // Set up the modal show event listener
+        weatherModal.addEventListener('show.bs.modal', function () {
+            updateWeatherDataModal();
+        });
+
+        // Also set up the button click handler
+        const showWeatherDataBtn = document.getElementById('showWeatherDataBtn');
+        if (showWeatherDataBtn) {
+            showWeatherDataBtn.addEventListener('click', function () {
+                // Directly show the modal using Bootstrap API
+                const modalInstance = bootstrap.Modal.getInstance(weatherModal) || new bootstrap.Modal(weatherModal);
+                modalInstance.show();
+                // updateWeatherDataModal will be called by the 'show.bs.modal' listener above
+            });
+        }
+    }
+
+    //==========================================================================
     // PART 1: CONSOLIDATED FIELD DEFINITIONS AND LAYOUT (Modified for ClimateData)
     //==========================================================================
     
@@ -1053,10 +1168,10 @@ window.TEUI.SectionModules.sect03 = (function() {
             sm.addListener('m_19', calculateAll); // Cooling Days affects GF HDD/CDD
         }
         
-        // Initialize weather data modal
+        // Initialize weather data modal (NOW CALLABLE)
         initializeWeatherDataModal();
         
-        // console.log("[S03 DEBUG] Event handlers initialized"); // Reduce noise
+        console.log("[S03 DEBUG] Event handlers initialized");
     }
 
     /**
@@ -1305,3 +1420,10 @@ window.TEUI.SectionModules.sect03 = (function() {
 
     return publicModule;
 })(); // Correct closing for the main module IIFE
+
+/**
+ * DIAGNOSTIC FUNCTION - Called when changing provinces to check city dropdown
+ */
+window.TEUI.sect03.diagnoseDropdownIssue = function () {
+    // ... (Existing logic) ...
+}; 
