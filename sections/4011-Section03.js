@@ -13,31 +13,10 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
 // --- Global Utility Functions (if needed) ---
 
-/**
- * Format a number for display with thousand separators and proper decimals
- * Made globally accessible to avoid scope issues in listeners.
- */
-window.TEUI.formatNumber = function(value) {
-    // Ensure value is a number
-    const numValue = parseFloat(value);
-    
-    // Handle invalid values
-    if (isNaN(numValue)) {
-        // Return the original value if it's not parseable as a number (e.g., "N/A")
-        return value?.toString() || "0.00";
-    }
-    
-    // Check if value is very small
-    if (Math.abs(numValue) < 0.01 && numValue !== 0) {
-        return numValue.toFixed(2);
-    }
-    
-    // Always use 2 decimal places for all numbers, including integers
-    return numValue.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-};
+// REMOVED: Redundant global formatNumber definition. Rely on the one in StateManager.js
+/*
+window.TEUI.formatNumber = function(value) { ... }; // Removed this block
+*/
 
 // Section 3: Climate Calculations Module
 window.TEUI.SectionModules.sect03 = (function() {
@@ -303,14 +282,14 @@ window.TEUI.SectionModules.sect03 = (function() {
                 d: { 
                     fieldId: "d_23", 
                     type: "derived", 
-                    value: "-26",
+                    value: "-24",
                     section: "climateCalculations",
-                    dependencies: ["d_19", "h_19"]
+                    dependencies: ["d_19", "h_19", "d_12"]
                 },
                 e: { 
                     fieldId: "e_23", 
                     type: "calculated", 
-                    value: "-22",
+                    value: "-11",
                     section: "climateCalculations",
                     dependencies: ["d_23"]
                 },
@@ -549,39 +528,57 @@ window.TEUI.SectionModules.sect03 = (function() {
     
     /**
      * Helper: Set field value in DOM and StateManager if available
+     * REFACTORED: Uses the global window.TEUI.formatNumber standard helper.
      */
     function setFieldValue(fieldId, value, state = 'calculated') {
-        // Set in state manager
-        if (TEUI.StateManager) {
-            TEUI.StateManager.setValue(fieldId, value.toString(), state);
+        const rawValue = value !== null && value !== undefined ? value.toString() : null;
+
+        // Set raw value in state manager
+        if (window.TEUI?.StateManager?.setValue) {
+            window.TEUI.StateManager.setValue(fieldId, rawValue, state);
+        } else {
+            console.error("StateManager not available to set value for", fieldId);
+            return; // Cannot proceed without StateManager
         }
         
-        // Also update DOM
+        // Also update DOM with formatting
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = value;
-            } else {
-                // Format using global formatter, detecting integers and specific degree day fields
-                let displayValue = value;
+            let formattedDisplay = rawValue; // Default to raw value if formatting fails
+            const numericValue = window.TEUI.parseNumeric(rawValue, NaN); // Use global parser
 
-                const numValue = window.TEUI.parseNumeric(value, NaN); // Use global parser
-
-                if (!isNaN(numValue)) { 
-                    // Determine format: Use integer-nocomma for degree days, otherwise integer or number-2dp
-                    let formatType = 'number-2dp'; // Default
-                    if (['d_20', 'd_21', 'd_22', 'h_22'].includes(fieldId)) {
-                        formatType = 'integer-nocomma';
-                    } else if (Number.isInteger(numValue)) {
-                        formatType = 'integer';
-                    }
-                    displayValue = window.TEUI.formatNumber(numValue, formatType);
-                } else if (typeof value === 'string') {
-                    // Keep original string if it wasn't numeric (e.g., "N/A")
-                    displayValue = value;
+            if (!isNaN(numericValue)) {
+                // Determine the correct format type based on field ID conventions
+                let formatType = 'number-2dp'; // Default
+                if (['d_20', 'd_21', 'd_22', 'h_22'].includes(fieldId)) {
+                    formatType = 'integer-nocomma';
+                } else if (['j_19', 'l_22'].includes(fieldId)) {
+                    formatType = 'number-1dp'; // Climate Zone / Elevation 
+                } else if (['d_23', 'h_23', 'd_24', 'h_24', 'l_24'].includes(fieldId)) {
+                    formatType = 'integer'; // Temperatures are whole numbers
+                } else if (['e_23', 'i_23', 'e_24', 'i_24'].includes(fieldId)) {
+                    formatType = 'integer-nocomma'; // Fahrenheit temps
+                } else if (fieldId === 'm_19') {
+                    formatType = 'integer'; // Cooling days
                 }
+                // Ensure the global formatter exists before calling
+                if (typeof window.TEUI?.formatNumber === 'function') {
+                    formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
+                } else {
+                     console.error("Global window.TEUI.formatNumber is not available.");
+                     // Fallback basic formatting if global doesn't exist
+                     formattedDisplay = numericValue.toFixed(formatType.includes('1dp') ? 1 : (formatType.includes('integer') ? 0 : 2)); 
+                }
+            } else if (typeof rawValue === 'string') {
+                // Keep original string if it wasn't numeric (e.g., "N/A", maybe future text values)
+                formattedDisplay = rawValue;
+            }
 
-                element.textContent = displayValue;
+            // Update DOM element
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                element.value = formattedDisplay; // Use formatted value for display consistency in inputs too?
+            } else {
+                element.textContent = formattedDisplay;
             }
         }
     }
@@ -642,54 +639,37 @@ window.TEUI.SectionModules.sect03 = (function() {
         
         // Get city data
         const locationData = TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-        const cityData = locationData[provinceValue]?.cities?.find(c => c.name === cityValue)?.data;
+        // Find the specific city's data object
+        const cityObject = locationData[provinceValue]?.cities?.find(c => c.name === cityValue);
+        const cityData = cityObject?.data;
         
-        if (!cityData) return;
+        if (!cityData) {
+            console.warn(`Weather data not found for ${cityValue}, ${provinceValue}. Using defaults.`);
+            // Optionally set default values here if needed
+            return; 
+        }
         
-        // Update climate data fields (REMOVING direct j_19 calculation from here)
-        /* No longer calculating j_19 here - handled by listener
-        // Climate zone
-        const climateZone = determineClimateZone(
-            isFuture ? cityData.HDD18_2021_2050 : cityData.HDD18
-        );
-        setFieldValue("j_19", climateZone, 'derived');
-        */
-        
-        // HDD value (This will trigger the j_19 listener)
+        // Update climate data fields
         const hddValue = isFuture ? cityData.HDD18_2021_2050 : cityData.HDD18;
-        console.log(`[Debug Section 3] Fetched hddValue for ${cityValue}:`, hddValue);
         setFieldValue("d_20", hddValue || '4600', 'derived');
         
         // CDD value
         const cddValue = isFuture ? cityData.CDD24_2021_2050 : cityData.CDD24;
         setFieldValue("d_21", cddValue || '196', 'derived');
         
-        // Coldest days - Check critical occupancy flag from header dataset
-        const sectionHeaderForWeather = document.querySelector('#climateCalculations .section-header');
-        const isCritical = sectionHeaderForWeather?.dataset?.isCritical === 'true';
-        
-        let coldestTempSource;
-        if (isCritical) {
-            // Use 1% data source if critical
-            coldestTempSource = isFuture ? 
-                cityData.January_1_2021_2050 : 
-                cityData.January_1;
-        } else {
-            // Use 2.5% data source otherwise (default)
-            coldestTempSource = isFuture ? 
-                cityData.January_2_5_2021_2050 : 
-                cityData.January_2_5;
-        }
-        // Use fallback if the selected source is missing
-        const coldestTemp = coldestTempSource || (isFuture ? cityData.January_1_2021_2050 : cityData.January_1) || (isFuture ? cityData.January_2_5_2021_2050 : cityData.January_2_5) || '-26';
+        // Coldest days - Use the pre-selected temp from ExcelLocationHandler
+        const coldestTemp = cityData.January_Design_Temp || '-24'; // Use the value processed during import
         setFieldValue("d_23", coldestTemp, 'derived');
         
-        // Hottest days
-        const hottestTemp = isFuture ? 
-            cityData.Extreme_Hot_Tdb_2021_2050 || cityData.July_2_5_Tdb_2021_2050 : 
-            cityData.Extreme_Hot_Tdb_1991_2020 || cityData.July_2_5_Tdb || '34';
-        setFieldValue("d_24", hottestTemp || '34', 'derived');
+        // Hottest days - Using July 2.5% Tdb.
+        let hottestTempKey = isFuture ? 'Future_July_2_5_Tdb' : 'July_2_5_Tdb';
+        const hottestTemp = cityData[hottestTempKey] || '30'; // Fallback logic
+        setFieldValue("d_24", hottestTemp, 'derived');
         
+        // Elevation
+        const elevation = cityData["Elevation_ASL"] || '80'; // Corrected key
+        setFieldValue("l_22", elevation, 'derived');
+
         // Run calculations
         calculateAll();
         
@@ -1024,12 +1004,39 @@ window.TEUI.SectionModules.sect03 = (function() {
         // --- StateManager Listeners --- 
         if (window.TEUI && window.TEUI.StateManager) {
             // Listener for d_12 (Occupancy) changes
-            window.TEUI.StateManager.addListener('d_12', function(newValue) {
+            window.TEUI.StateManager.addListener('d_12', function(newOccupancyValue) {
+                // When occupancy changes, re-evaluate the Jan Design Temp based on stored data
+                const provinceValue = window.TEUI.StateManager?.getValue("d_19");
+                const cityValue = window.TEUI.StateManager?.getValue("h_19");
+                
+                let isCritical = newOccupancyValue.includes("Care");
+                
+                // Update d_23 (January Design Temp) based on stored data
+                if (provinceValue && cityValue) {
+                    const locationData = TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
+                    const cityData = locationData[provinceValue]?.cities?.find(c => c.name === cityValue)?.data;
+                    
+                    if (cityData) {
+                        // Use the stored 1% or 2.5% value based on isCritical
+                        const janTempKey = isCritical ? 'January_1' : 'January_2_5';
+                        const correctTemp = cityData[janTempKey] || cityData['January_2_5'] || '-24'; // Fallback
+                        setFieldValue("d_23", correctTemp, 'derived'); // Update d_23 state and DOM
+                    } else {
+                         console.warn(`S03 d_12 listener: Could not find cityData for ${cityValue} to update Jan temp.`);
+                         // If city data isn't loaded, maybe just update setpoints?
+                    }
+                } else {
+                    console.warn("S03 d_12 listener: Province or City not set, cannot update Jan temp.");
+                    // Fallback: Update d_23 based on a default assumption if needed
+                    // setFieldValue("d_23", isCritical ? '-26' : '-24', 'derived');
+                }
+                
+                // Always update setpoints and critical flag when occupancy changes
                 calculateHeatingSetpoint();
                 calculateCoolingSetpoint_h24();
-                calculateTemperatures();
-                const isCritical = updateCriticalOccupancyFlag();
-                updateWeatherData();
+                calculateTemperatures(); 
+                updateCriticalOccupancyFlag();
+                // NOTE: DO NOT call updateWeatherData() here. We only recalculate based on occupancy type change.
             });
 
             // Listener for h_24 (Calculated Cooling Setpoint) changes

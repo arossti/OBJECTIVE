@@ -169,11 +169,27 @@ TEUI.ExcelLocationHandler = (function() {
     }
 
     function getWeatherDataForRow(sheet, row) {
+        // Get the current occupancy type from StateManager
+        const occupancyType = window.TEUI?.StateManager?.getValue("d_12") || "";
+        const isCritical = occupancyType.includes("Care");
+
+        // Determine which January temperature column to use
+        // Column C is January_2_5, Column D is January_1
+        const janTempColumn = isCritical ? `D${row}` : `C${row}`;
+
+        // Get the value from the correct column based on occupancy
+        const januaryDesignTemp = sheet[janTempColumn]?.v || null;
+        const jan25Temp = sheet[`C${row}`]?.v || null; // Get 2.5% as fallback
+        const jan1Temp = sheet[`D${row}`]?.v || null; // Get 1% for storage
+
         return {
             city: sheet[`A${row}`]?.v?.trim() || '',
             Elevation_ASL: sheet[`B${row}`]?.v || null,
-            January_2_5: sheet[`C${row}`]?.v || null,
-            January_1: sheet[`D${row}`]?.v || null,
+            // Store both raw values for potential re-evaluation later
+            January_2_5: jan25Temp, 
+            January_1: jan1Temp, 
+            // Use the conditionally selected temperature for the main value used by Section 3
+            January_Design_Temp: januaryDesignTemp !== null ? januaryDesignTemp : (jan25Temp !== null ? jan25Temp : '-24'), // More robust fallback
             July_2_5_Tdb: sheet[`E${row}`]?.v || null,
             July_2_5_Twb: sheet[`F${row}`]?.v || null,
             Future_July_2_5_Tdb: sheet[`G${row}`]?.v || null,

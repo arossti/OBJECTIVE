@@ -758,274 +758,90 @@ window.TEUI.SectionModules.sect04 = (function() {
     
     /**
      * Update the electricity emission factor (l_27) based on province and reporting year
+     * REFACTORED: Relies on StateManager for inputs and uses setCalculatedValue for outputs.
      */
     function updateElectricityEmissionFactor() {
-        // Get current province, default to Ontario if not available
-        let province = 'ON';
-        
-        // IMPROVED PROVINCE DETECTION:
-        // First try StateManager as the most reliable source
-        if (window.TEUI && window.TEUI.StateManager) {
-            const stateValue = window.TEUI.StateManager.getValue('d_19');
-            if (stateValue) {
-                province = getProvinceCode(stateValue);
-                // Keep main province log but make it more concise
-                // console.log('Province:', stateValue, '→', province);
+        let provinceAbbreviation = 'ON'; // Default
+        let reportingYear = 2022;    // Default
+
+        if (window.TEUI?.StateManager) {
+            const provinceStateValue = window.TEUI.StateManager.getValue('d_19'); // From S03
+            if (provinceStateValue) {
+                provinceAbbreviation = getProvinceCode(provinceStateValue); // Use helper to get 2-letter code
             }
-        }
-        
-        // If not found in StateManager, try getting province from the dropdown element
-        if (province === 'ON') {
+            
+            const yearStateValue = window.TEUI.StateManager.getValue('h_12'); // From S01
+            if (yearStateValue) {
+                const parsedYear = parseInt(yearStateValue);
+                if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
+                    reportingYear = parsedYear;
+                }
+            }
+        } else {
+            console.warn("[S04] StateManager not available for updateElectricityEmissionFactor.");
+            // Fallback to trying DOM if really needed, but ideally StateManager has the values.
             const provinceDropdown = document.querySelector('select[data-dropdown-id="dd_d_19"], select[data-field-id="d_19"]');
             if (provinceDropdown && provinceDropdown.value) {
-                province = getProvinceCode(provinceDropdown.value);
-                // Remove redundant intermediate logs
+                provinceAbbreviation = getProvinceCode(provinceDropdown.value);
             }
-        }
-        
-        // FIXED: Only get text from specific elements, not the dropdown itself
-        if (province === 'ON') {
-            // For text displays, look for spans or divs with the province value
-            const possibleElements = [
-                document.querySelector('.province-display'), // Look for custom province display elements
-                document.querySelector('[data-field-id="d_19"]:not(select)'), // Non-select element with field ID
-                document.querySelector('.selected-province') // Any custom class for selected province
-            ];
-            
-            // Use the first valid element text we find
-            for (const el of possibleElements) {
-                if (el && el.textContent && el.textContent.trim()) {
-                    // Make sure we're not getting the entire dropdown text
-                    const text = el.textContent.trim();
-                    // Simple validation - if text is too long, it's probably not just a province name
-                    if (text.length < 50) {
-                        province = getProvinceCode(text);
-                        // Remove redundant logs
-                        break;
-                    } else {
-                        // Keep this useful diagnostic log
-                        // console.log('Text too long to be province name, skipping:', text.substring(0, 30) + '...');
-                    }
-                }
-            }
-        }
-        
-        // Get reporting year from h_12 or alternative field
-        let year = 2022; // Default from CSV
-        
-        // First try StateManager for year
-        if (window.TEUI && window.TEUI.StateManager) {
-            const yearState = window.TEUI.StateManager.getValue('h_12');
-            if (yearState) {
-                const yearValue = parseInt(yearState);
-                if (!isNaN(yearValue) && yearValue >= 2015 && yearValue <= 2041) {
-                    year = yearValue;
-                    // Remove redundant year log
-                }
-            }
-        }
-        
-        // Fallback to DOM element if needed
-        if (year === 2022) {
-            // Try multiple potential field IDs for the reporting year
-            const yearFields = [
-                document.querySelector('input[data-field-id="h_12"]'), 
-                document.querySelector('[data-field-id="h_12"]'),
-                document.querySelector('[data-field-id="d_12"]')
-            ];
-            
-            // Use the first available field
-            for (const field of yearFields) {
-                if (field) {
-                    // Check both value (for inputs) and textContent
-                    const yearText = field.value || field.textContent;
-                    if (yearText) {
-                        const yearValue = parseInt(yearText.trim());
-                        if (!isNaN(yearValue) && yearValue >= 2015 && yearValue <= 2041) {
-                            year = yearValue;
-                            // Remove redundant year log
-                            break;
-                        }
-                    }
+            const yearInput = document.querySelector('[data-field-id="h_12"]');
+            if (yearInput && yearInput.value) {
+                 const parsedYear = parseInt(yearInput.value);
+                 if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
+                    reportingYear = parsedYear;
                 }
             }
         }
         
         // Get emission factor based on province and year
-        const factor = getElectricityFactor(province, year);
-        // Keep one consolidated log with all important info
+        const factor = getElectricityFactor(provinceAbbreviation, reportingYear);
         
-        // Update the l_27 field and StateManager
-        const l27El = document.querySelector('[data-field-id="l_27"]');
-        if (l27El) {
-            // Use standard helper with formatType
-            setCalculatedValue('l_27', factor, 'integer'); // Emission factors usually shown as integers
-            
-            // Also update StateManager
-            if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue('l_27', factor.toString(), 'calculated');
-            }
-            
-            // Update dependent emissions calculations for ACTUAL emissions
-            const f27El = document.querySelector('[data-field-id="f_27"]');
-            const g27El = document.querySelector('[data-field-id="g_27"]');
-            
-            if (f27El && g27El) {
-                // Use getNumericValue to read state
-                const f27Value = getNumericValue('f_27');
-                const g27Value = calculateG27(f27Value, factor);
-                // Update state and DOM using standard helper
-                setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
-            }
-            
-            // Update dependent emissions calculations for TARGET emissions
-            const j27El = document.querySelector('[data-field-id="j_27"]');
-            const k27El = document.querySelector('[data-field-id="k_27"]');
-            
-            if (j27El && k27El) {
-                // Use getNumericValue to read state
-                const j27Value = getNumericValue('j_27');
-                const k27Value = calculateK27(j27Value, factor);
-                 // Update state and DOM using standard helper
-                setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-            }
-            
-            // Update subtotals after both actual and target emissions are updated
-            updateSubtotals();
-        }
+        // Update the l_27 field using setCalculatedValue
+        setCalculatedValue('l_27', factor, 'integer'); // Emission factors are integers
+
+        // The setCalculatedValue for l_27 will trigger its own listeners if g_27/k_27 depend on it.
+        // However, it's safer to explicitly recalculate g_27 and k_27 here if they directly use l_27 AND f_27/j_27.
+        // This ensures the sequence is correct if f_27/j_27 haven't changed but l_27 did.
+        
+        const f27Value = getNumericValue('f_27');
+        const g27Value = calculateG27(f27Value, factor); // Pass factor directly
+        setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
+
+        const j27Value = getNumericValue('j_27');
+        const k27Value = calculateK27(j27Value, factor); // Pass factor directly
+        setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
+        
+        // updateSubtotals() will be called if g_27 or k_27 are dependencies for it.
+        // If not, and subtotals need immediate update after emission factor change, call it here.
+        // Based on current structure, updateSubtotals() is likely called by listeners on g_32/k_32 which depend on g_27/k_27.
+        // However, explicitly calling it can ensure timely updates if the chain is complex.
+        updateSubtotals(); 
     }
-    
-    // Helper function to convert province name to province code
-    function getProvinceCode(provinceText) {
-        if (!provinceText) return 'ON';
-        
-        // Direct match for 2-letter codes
-        if (provinceText.length === 2) {
-            const code = provinceText.toUpperCase();
-            if (['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'NT', 'YT', 'NU'].includes(code)) {
-                return code;
-            }
-        }
-        
-        // Store original provinceText for minimal logging
-        const originalText = provinceText;
-        
-        // Normalize the text - remove extra spaces and convert to lowercase
-        provinceText = provinceText.trim().toLowerCase();
-        
-        // Exact match check (more specific matches first)
-        if (provinceText === "ontario" || provinceText === "on") return 'ON';
-        if (provinceText === "quebec" || provinceText === "québec" || provinceText === "qc") return 'QC';
-        if (provinceText === "british columbia" || provinceText === "bc") return 'BC';
-        if (provinceText === "alberta" || provinceText === "ab") return 'AB';
-        if (provinceText === "saskatchewan" || provinceText === "sk") return 'SK';
-        if (provinceText === "manitoba" || provinceText === "mb") return 'MB';
-        if (provinceText === "nova scotia" || provinceText === "ns") return 'NS';
-        if (provinceText === "new brunswick" || provinceText === "nb") return 'NB';
-        if (provinceText === "newfoundland and labrador" || provinceText === "nl") return 'NL';
-        if (provinceText === "prince edward island" || provinceText === "pe") return 'PE';
-        if (provinceText === "northwest territories" || provinceText === "nt") return 'NT';
-        if (provinceText === "yukon" || provinceText === "yt") return 'YT';
-        if (provinceText === "nunavut" || provinceText === "nu") return 'NU';
-        
-        // Only use includes() if exact matches failed, and prioritize matches
-        const provinceMatches = {
-            'ON': provinceText.includes("ontario"),
-            'QC': provinceText.includes("quebec") || provinceText.includes("québec"),
-            'BC': provinceText.includes("british columbia"),
-            'AB': provinceText.includes("alberta"),
-            'SK': provinceText.includes("saskatchewan"),
-            'MB': provinceText.includes("manitoba"),
-            'NS': provinceText.includes("nova scotia"),
-            'NB': provinceText.includes("new brunswick"),
-            'NL': provinceText.includes("newfoundland"),
-            'PE': provinceText.includes("prince edward"),
-            'NT': provinceText.includes("northwest"),
-            'YT': provinceText.includes("yukon"),
-            'NU': provinceText.includes("nunavut")
-        };
-        
-        // Find all matches
-        const matches = Object.entries(provinceMatches).filter(([_, matches]) => matches);
-        
-        // If we have matches, take the first one
-        if (matches.length > 0) {
-            // Simplify log message
-            if (matches.length > 1) {
-                // console.log(`Multiple province matches for "${originalText.substring(0, 20)}..."`);
-            }
-            return matches[0][0];
-        }
-        
-        // Default to Ontario if no match found
-        // console.log(`No province match found for "${originalText.substring(0, 20)}..."`);
-        return 'ON';
-    }
-    
+
+    // Helper function to get electricity emission factor (can be moved to a central data module later)
+    const GRID_INTENSITY_FACTORS = {
+        'ON': { default: 51, 2015: 46, 2016: 40, 2017: 18, 2018: 29, 2019: 29, 2020: 36, 2021: 44, 2022: 51, 2023: 67, 2024: 71, 2025: 138, 2026: 145, 2027: 132, 2028: 133, 2029: 126, 2030: 126, 2031: 122, 2032: 122, 2033: 104, 2034: 58, 2035: 40, 2036: 34, 2037: 33, 2038: 32, 2039: 13, 2040: 8, 2041: 3, future: 3 },
+        'QC': { default: 1 }, 'BC': { default: 12 }, 'AB': { default: 650 }, 'SK': { default: 720 }, 
+        'MB': { default: 3 }, 'NS': { default: 600 }, 'NB': { default: 340 }, 'NL': { default: 30 },
+        'PE': { default: 12 }, 'NT': { default: 180 }, 'YT': { default: 2 }, 'NU': { default: 200 }
+    };
+
     // Get electricity emission factor based on CSV formula data
     function getElectricityFactor(province, year) {
-        // Remove redundant log
-        
-        // Default values from CSV Line 27 for different provinces
-        const defaultFactors = {
-            'ON': calculateOntarioFactor(year),
-            'QC': 1.0,
-            'BC': 12.0,
-            'AB': 650.0,
-            'SK': 720.0,
-            'MB': 3.0,
-            'NS': 600.0,
-            'NB': 340.0,
-            'NL': 30.0,
-            'PE': 12.0,
-            'NT': 180.0,
-            'YT': 2.0,
-            'NU': 200.0
-        };
-        
-        const factor = defaultFactors[province] || defaultFactors['ON'];
-        // Remove redundant Ontario-specific log
-        return factor;
+        const provinceFactors = GRID_INTENSITY_FACTORS[province] || GRID_INTENSITY_FACTORS['ON'];
+        if (year > 2041 && provinceFactors.future !== undefined) {
+            return provinceFactors.future;
+        }
+        return provinceFactors[year] || provinceFactors.default;
     }
     
-    // Calculate Ontario's electricity factor based on year (from CSV formula)
-    function calculateOntarioFactor(year) {
-        // Remove redundant log
-        
-        let factor;
-        if (year < 2015) factor = 46.0;
-        else if (year === 2015) factor = 46.0;
-        else if (year === 2016) factor = 40.0;
-        else if (year === 2017) factor = 18.0;
-        else if (year === 2018) factor = 29.0;
-        else if (year === 2019) factor = 29.0;
-        else if (year === 2020) factor = 36.0;
-        else if (year === 2021) factor = 44.0;
-        else if (year === 2022) factor = 51.0;
-        else if (year === 2023) factor = 67.0;
-        else if (year === 2024) factor = 71.0;
-        else if (year === 2025) factor = 138.0;
-        else if (year === 2026) factor = 145.0;
-        else if (year === 2027) factor = 132.0;
-        else if (year === 2028) factor = 133.0;
-        else if (year === 2029) factor = 126.0;
-        else if (year === 2030) factor = 126.0;
-        else if (year === 2031) factor = 122.0;
-        else if (year === 2032) factor = 122.0;
-        else if (year === 2033) factor = 104.0;
-        else if (year === 2034) factor = 58.0;
-        else if (year === 2035) factor = 40.0;
-        else if (year === 2036) factor = 34.0;
-        else if (year === 2037) factor = 33.0;
-        else if (year === 2038) factor = 32.0;
-        else if (year === 2039) factor = 13.0;
-        else if (year === 2040) factor = 8.0;
-        else if (year === 2041) factor = 3.0;
-        else if (year > 2041) factor = 3.0;
-        else factor = 51.0; // Default to 2022 value
-        
-        // Remove redundant log
-        return factor;
+    // Recalculate G27 and K27 with the factor as an argument
+    function calculateG27(f27Value, l27Factor) {
+        return (f27Value * l27Factor) / 1000;
+    }
+
+    function calculateK27(j27Value, l27Factor) {
+        return (j27Value * l27Factor) / 1000;
     }
     
     /**
