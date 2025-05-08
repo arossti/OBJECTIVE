@@ -408,7 +408,9 @@ window.TEUI.SectionModules.sect12 = (function() {
         const d93 = getNumericValue('d_93'); const d94 = getNumericValue('d_94');
         const d95 = getNumericValue('d_95');
         const d97_tbPenaltyPercent = getNumericValue('d_97'); 
-        const tbFactor = 1 + d97_tbPenaltyPercent; 
+        // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
+        // We must divide by 100 to get the decimal factor (0.2) before using in calculations
+        const tbFactor = 1 + (d97_tbPenaltyPercent / 100); // Convert percentage to decimal before adding 1
         const sumProductAir = (d85 * g85) + (d86 * g86) + (d87 * g87) + (d88 * g88) + (d89 * g89) + (d90 * g90) + (d91 * g91) + (d92 * g92) + (d93 * g93);
         const g101_uAir = (d101_areaAir > 0) ? (sumProductAir / d101_areaAir) * tbFactor : 0;
         setCalculatedValue('g_101', g101_uAir); // Uses auto ('number-3dp')
