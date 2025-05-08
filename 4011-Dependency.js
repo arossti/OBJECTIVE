@@ -146,18 +146,90 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Handle special cases for specific nodes or patterns
         if (node.id.startsWith('g_67') || node.id.startsWith('h_67')) {
             // Equipment nodes
-            return `${label} (${value})`;
+            if (value !== null && value !== undefined && value !== '') {
+                // Format using the standard global method
+                const formattedValue = this.formatNodeValue(node.id, value);
+                return `${label} (${formattedValue})`;
+            }
+            return label;
         }
         
         if (value !== null && value !== undefined && value !== '') {
             // For short values, append to the label
             if (value.toString().length < 20) {
-                return `${label}: ${value}`;
+                // Format using the standard global method
+                const formattedValue = this.formatNodeValue(node.id, value);
+                return `${label}: ${formattedValue}`;
             }
             // For longer values, just use the label
         }
         
         return label;
+    }
+
+    /**
+     * Format a node value using the standard StateManager formatNumber method
+     * @param {string} nodeId - The node ID
+     * @param {any} value - The value to format
+     * @returns {string} The formatted value
+     */
+    formatNodeValue(nodeId, value) {
+        // Determine format type based on node ID patterns
+        let formatType = 'number-2dp';
+
+        // Determine format based on nodeId conventions similar to how other sections do it
+        if (nodeId.startsWith('g_') && !nodeId.startsWith('g_6')) {
+            formatType = 'number-3dp'; // U-Values typically have 3 decimal places
+        } else if (nodeId.startsWith('f_') && !nodeId.startsWith('f_32')) {
+            formatType = 'number-2dp'; // RSI values typically have 2 decimal places
+        } else if (nodeId.startsWith('d_1') && nodeId.endsWith('7')) {
+            formatType = 'percent-2dp'; // Things like WWR are percentages
+        } else if (nodeId.startsWith('h_') && parseFloat(value) <= 1 && parseFloat(value) > 0) {
+            formatType = 'percent-1dp'; // Small values in h_ are often percentages
+        } else if (nodeId.includes('_14') || nodeId.includes('_15')) {
+            // TEDI/TELI/TEUI sections typically have specific formats
+            if (nodeId.endsWith('_144') || nodeId.endsWith('_145')) {
+                formatType = 'percent-0dp'; // Reduction percentages
+            } else if (nodeId.endsWith('_141') || nodeId.endsWith('_142')) {
+                formatType = 'currency-2dp'; // Cost metrics
+            }
+        } else if (['d_101', 'd_102', 'd_106', 'i_101', 'i_102', 'i_103', 'i_104', 'k_101', 'k_102', 'k_103', 'k_104'].includes(nodeId)) {
+            formatType = 'number-2dp-comma'; // Areas and kWh values with commas
+        }
+        
+        // Use the global formatNumber function if available
+        if (typeof window.TEUI?.formatNumber === 'function') {
+            return window.TEUI.formatNumber(value, formatType);
+        }
+        
+        // Fallback to basic formatting if the global function isn't available
+        const numValue = parseFloat(value);
+        if (isNaN(numValue)) return value;
+        
+        if (formatType.includes('percent')) {
+            // Handle percentage formatting
+            const decimals = formatType.includes('0dp') ? 0 : (formatType.includes('1dp') ? 1 : 2);
+            return (numValue * 100).toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }) + '%';
+        } else if (formatType.includes('currency')) {
+            // Handle currency formatting
+            const decimals = formatType.includes('0dp') ? 0 : (formatType.includes('3dp') ? 3 : 2);
+            return '$' + numValue.toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        } else {
+            // Handle regular number formatting
+            const decimals = formatType.includes('3dp') ? 3 : 2;
+            const useCommas = formatType.includes('comma');
+            return numValue.toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+                useGrouping: useCommas
+            });
+        }
     }
 
     /**
@@ -199,17 +271,39 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             .attr('width', '100%')
             .attr('height', '100%')
             .attr('viewBox', `0 0 ${this.width} ${this.height}`) // Use calculated dimensions
-            .attr('preserveAspectRatio', 'xMidYMid meet');
-        
-        // Add zoom behavior
-        const zoom = d3.zoom()
-            .scaleExtent([0.1, 4])
-            .on('zoom', (event) => {
-                this.svg.select('g.graph-content') // Target the correct group
-                    .attr('transform', event.transform);
-            });
-        
-        this.svg.call(zoom);
+            .attr('preserveAspectRatio', 'xMidYMid meet')
+            .style('cursor', 'pointer'); // Set pointer cursor to indicate it's clickable
+            
+        // Add a click overlay for zoom activation message
+        const activationOverlay = this.svg.append('g')
+            .attr('class', 'zoom-activation-overlay')
+            .style('pointer-events', 'all');
+            
+        activationOverlay.append('rect')
+            .attr('width', this.width)
+            .attr('height', this.height)
+            .attr('fill', 'rgba(0,0,0,0.03)') // Very subtle background
+            .attr('rx', 8) // Rounded corners
+            .attr('ry', 8); // Rounded corners
+            
+        activationOverlay.append('text')
+            .attr('x', this.width / 2)
+            .attr('y', this.height / 2)
+            .attr('text-anchor', 'middle')
+            .attr('dy', '-1em')
+            .attr('fill', '#666')
+            .style('font-size', '16px')
+            .style('font-weight', '500')
+            .text('Click to enable zoom & pan');
+            
+        activationOverlay.append('text')
+            .attr('x', this.width / 2)
+            .attr('y', this.height / 2)
+            .attr('text-anchor', 'middle')
+            .attr('dy', '1em')
+            .attr('fill', '#999')
+            .style('font-size', '14px')
+            .text('(Page scrolling will be paused within graph area)');
         
         // Create a group for the graph content (nodes and links)
         this.svg.append('g')
@@ -229,6 +323,65 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             .attr('d', 'M 0,-5 L 10,0 L 0,5')
             .attr('fill', '#666') // Darker gray for better visibility
             .style('stroke', 'none');
+            
+        // Create zoom behavior but don't apply it yet
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                this.svg.select('g.graph-content') // Target the correct group
+                    .attr('transform', event.transform);
+            });
+            
+        // Zoom activation logic - only enable after click
+        activationOverlay.on('click', () => {
+            // Remove the overlay
+            activationOverlay.transition()
+                .duration(300)
+                .style('opacity', 0)
+                .remove();
+                
+            // Apply zoom behavior to SVG
+            this.svg.call(zoom)
+                .style('cursor', 'grab') // Change cursor to indicate grab/pan is available
+                .on('mousedown.cursor', function() {
+                    d3.select(this).style('cursor', 'grabbing'); // Active grabbing cursor
+                })
+                .on('mouseup.cursor', function() {
+                    d3.select(this).style('cursor', 'grab'); // Back to grab cursor
+                });
+                
+            // Add a small message showing zoom is active
+            const zoomIndicator = this.svg.append('text')
+                .attr('class', 'zoom-indicator')
+                .attr('x', 10)
+                .attr('y', 20)
+                .attr('fill', '#666')
+                .style('font-size', '12px')
+                .style('opacity', 0)
+                .text('Zoom & pan activated');
+                
+            zoomIndicator.transition()
+                .duration(500)
+                .style('opacity', 1)
+                .transition()
+                .delay(2000)
+                .duration(1000)
+                .style('opacity', 0)
+                .remove();
+                
+            console.log('[DependencyGraph] Zoom behavior activated');
+        });
+        
+        // Listen for fullscreen changes to reapply zoom behavior
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement && 
+                document.fullscreenElement.classList.contains('dependency-graph-svg-wrapper')) {
+                // Re-enable zoom in fullscreen mode without overlay
+                this.svg.on('.zoom', null); // Remove existing zoom first
+                this.svg.call(zoom)
+                    .style('cursor', 'grab');
+            }
+        });
     }
 
     // --- Methods copied from 4007 (render, createFilterControls, etc.) --- 
@@ -472,7 +625,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 if (counts[node.id]) {
                     counts[node.id].total = counts[node.id].dependencies + counts[node.id].dependents;
                     // Set a node size based on connections: base size + scaled by connections
-                    node.size = this.settings.nodeRadius * (1 + 0.2 * Math.sqrt(counts[node.id].total));
+                    node.size = this.settings.nodeRadius * (1 + 0.4 * Math.sqrt(counts[node.id].total));
                     
                     // Identify high-influence nodes
                     node.isInfluential = false;
@@ -480,7 +633,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                     if (influentialNodes.includes(node.id)) {
                         node.isInfluential = true;
                         // Make influential nodes even bigger
-                        node.size = Math.max(node.size, this.settings.nodeRadius * 2);
+                        node.size = Math.max(node.size, this.settings.nodeRadius * 2.5);
                     }
                 } else {
                     node.size = this.settings.nodeRadius;
@@ -570,7 +723,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 return color;
              })
              .style('filter', d => d.isInfluential ? 
-                  'drop-shadow(0px 0px 8px rgba(255,82,82,0.8))' : // Glow effect for influential nodes
+                  'drop-shadow(0px 0px 12px rgba(255,82,82,0.9))' : // Enhanced glow effect for influential nodes
                   'drop-shadow(0px 2px 3px rgba(0,0,0,0.2))'); // Regular shadow for other nodes
 
         // Update the background circle size to match node size
@@ -594,7 +747,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 if (stateManager) {
                     const value = stateManager.getValue(d.id);
                     if (value !== null && value !== undefined && value !== '') {
-                        tooltip += `\nValue: ${value}`;
+                        // Format the value using our formatting helper
+                        const formattedValue = this.formatNodeValue(d.id, value);
+                        tooltip += `\nValue: ${formattedValue}`;
                     }
                 }
                 
@@ -834,7 +989,11 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             
             const currentValue = stateManager.getValue(node.id);
             if (value) {
-                value.innerHTML = `<strong>Current Value:</strong> ${currentValue !== null && currentValue !== undefined ? currentValue : 'N/A'}`;
+                // Format the value using our formatting helper
+                const formattedValue = currentValue !== null && currentValue !== undefined ? 
+                    this.formatNodeValue(node.id, currentValue) : 'N/A';
+                    
+                value.innerHTML = `<strong>Current Value:</strong> ${formattedValue}`;
                 value.innerHTML += `<br><strong>ID:</strong> ${node.id}`;
             }
             
@@ -861,7 +1020,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         }
         
         // Also update floating info panel if in fullscreen mode
-        if (this.floatingInfoPanel) {
+        // Check if we're in fullscreen mode
+        if (document.fullscreenElement && this.floatingInfoPanel) {
             this.updateFullscreenInfoPanel(node);
         }
     }
@@ -878,6 +1038,26 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         }
         
         // Don't reset highlighting here, only on background click or new selection
+    }
+    
+    resetHighlighting() {
+        if (!this.nodeGroups || !this.links) return;
+        this.nodeGroups.style('opacity', 1)
+            .select('circle:not(.node-background)')
+            .style('stroke', '#fff')
+            .style('stroke-width', 2)
+            .attr('r', d => d.size); // Use the node's stored size instead of this.settings.nodeRadius
+            
+        this.nodeGroups.select('.node-background')
+            .style('opacity', 0); // Hide backgrounds
+            
+        this.nodeGroups.select('text').style('display', 'none'); // Hide all labels
+            
+        this.links.style('opacity', 0.6)
+            .style('stroke', '#999')
+            .style('stroke-width', 1.5);
+            
+        this.selectedNode = null; // Clear selected node reference
     }
     
     highlightNode(node) {
@@ -911,12 +1091,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             .select('.node-background')
             .style('opacity', 0.7); // Show background for text readability
             
-        // Bold stroke and increased size for the selected node
+        // Bold stroke for the selected node but keep its original size
         this.nodeGroups.filter(d => d.id === node.id)
             .select('circle:not(.node-background)')
             .style('stroke', '#333')
             .style('stroke-width', 3)
-            .attr('r', this.settings.nodeRadius * 1.2); // Slightly larger
+            .attr('r', d => d.size * 1.4); // Increase from 1.2 to 1.4 for more emphasis
 
         // Highlight connected links
         this.links
@@ -927,26 +1107,6 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             .style('opacity', 0.8)
             .style('stroke-width', 2)
             .style('stroke', l => (l.source.id || l.source) === node.id ? '#cc0000' : '#0077cc'); // Red outgoing, Blue incoming
-    }
-    
-    resetHighlighting() {
-        if (!this.nodeGroups || !this.links) return;
-        this.nodeGroups.style('opacity', 1)
-            .select('circle:not(.node-background)')
-            .style('stroke', '#fff')
-            .style('stroke-width', 2)
-            .attr('r', this.settings.nodeRadius); // Reset to original size
-            
-        this.nodeGroups.select('.node-background')
-            .style('opacity', 0); // Hide backgrounds
-            
-        this.nodeGroups.select('text').style('display', 'none'); // Hide all labels
-            
-        this.links.style('opacity', 0.6)
-            .style('stroke', '#999')
-            .style('stroke-width', 1.5);
-            
-        this.selectedNode = null; // Clear selected node reference
     }
     
     getNodeById(id) {
@@ -979,7 +1139,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         const infoPanel = document.querySelector('#dependencyDiagram .dependency-graph-info-wrapper');
         
         // Create or get our floating controls container for fullscreen mode
-        let floatingControls = document.querySelector('.dependency-graph-floating-controls');
+        let floatingControls = graphWrapper.querySelector('.dependency-graph-floating-controls');
         if (!floatingControls) {
             floatingControls = document.createElement('div');
             floatingControls.className = 'dependency-graph-floating-controls';
@@ -992,18 +1152,20 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             floatingControls.style.boxShadow = '0 3px 6px rgba(0,0,0,0.2)';
             floatingControls.style.zIndex = '9999';
             floatingControls.style.display = 'none'; // Hidden by default
-            document.body.appendChild(floatingControls);
+            // Append to graphWrapper instead of document.body
+            graphWrapper.appendChild(floatingControls);
         }
         
         // Create a visible floating info panel for fullscreen mode
-        let floatingInfoPanel = document.querySelector('.dependency-graph-floating-info');
+        // IMPORTANT: Create and append to the graph wrapper, not document.body
+        let floatingInfoPanel = graphWrapper.querySelector('.dependency-graph-floating-info');
         if (!floatingInfoPanel) {
             floatingInfoPanel = document.createElement('div');
             floatingInfoPanel.className = 'dependency-graph-floating-info';
             floatingInfoPanel.style.position = 'absolute';
             floatingInfoPanel.style.top = '20px';
             floatingInfoPanel.style.left = '20px';
-            floatingInfoPanel.style.background = 'rgba(255, 255, 255, 0.95)';
+            floatingInfoPanel.style.background = 'rgba(255, 255, 255, 0.98)';
             floatingInfoPanel.style.padding = '15px';
             floatingInfoPanel.style.borderRadius = '8px';
             floatingInfoPanel.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
@@ -1011,7 +1173,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             floatingInfoPanel.style.maxWidth = '350px';
             floatingInfoPanel.style.maxHeight = '300px';
             floatingInfoPanel.style.overflowY = 'auto';
-            floatingInfoPanel.style.display = 'none'; // Start hidden
+            floatingInfoPanel.style.display = 'none'; // Start hidden initially
+            
             // Create an always-visible info panel structure in fullscreen
             floatingInfoPanel.innerHTML = `
                 <div class="dependency-info-panel">
@@ -1024,7 +1187,8 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                     </p>
                 </div>
             `;
-            document.body.appendChild(floatingInfoPanel);
+            // Important change: append to graphWrapper instead of document.body
+            graphWrapper.appendChild(floatingInfoPanel);
         }
 
         if (!document.fullscreenElement) {
@@ -1107,18 +1271,31 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                         floatingControls.style.display = 'block';
                     }
                     
-                    // Show the floating info panel in fullscreen
+                    // Show and store the floating info panel in fullscreen
                     this.floatingInfoPanel = floatingInfoPanel; // Store reference
-                    floatingInfoPanel.style.display = 'block'; // Explicitly show it
+                    this.floatingInfoPanel.style.display = 'block'; // Explicitly show it
+                    
+                    // Add stronger box shadow for visibility against any background
+                    this.floatingInfoPanel.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+                    this.floatingInfoPanel.style.border = '1px solid #ddd';
+                    
+                    // If there's a selected node already, update the info panel with its info
+                    if (this.selectedNode) {
+                        this.updateFullscreenInfoPanel(this.selectedNode);
+                    } else {
+                        // Update with default message if no node selected
+                        const panel = this.floatingInfoPanel.querySelector('.dependency-info-panel');
+                        if (panel) {
+                            const title = panel.querySelector('.info-title');
+                            const value = panel.querySelector('.info-value');
+                            if (title) title.textContent = 'Dependency Graph';
+                            if (value) value.innerHTML = '<strong>Click on a node to see details</strong>';
+                        }
+                    }
                     
                     // Show legend in fullscreen too
                     if (this.legendElement) {
                         this.legendElement.style.display = 'block';
-                    }
-                    
-                    // Copy any current selection info to the fullscreen panel
-                    if (this.selectedNode && this.infoPanel && this.infoPanel.style.display === 'block') {
-                        this.updateFullscreenInfoPanel(this.selectedNode);
                     }
                 }
             }, { once: true });
@@ -1342,6 +1519,18 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         const panel = this.floatingInfoPanel.querySelector('.dependency-info-panel');
         if (!panel) return;
         
+        // Ensure floating panel is visible
+        this.floatingInfoPanel.style.display = 'block';
+        
+        // Add animation to draw attention to the update
+        this.floatingInfoPanel.style.transition = 'box-shadow 0.3s ease-in-out';
+        this.floatingInfoPanel.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4)';
+        
+        // Reset shadow after animation
+        setTimeout(() => {
+            this.floatingInfoPanel.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+        }, 300);
+        
         const title = panel.querySelector('.info-title');
         const value = panel.querySelector('.info-value');
         const dependencies = panel.querySelector('.info-dependencies');
@@ -1351,12 +1540,16 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         
         const currentValue = stateManager.getValue(node.id);
         if (value) {
-            value.innerHTML = `<strong>Current Value:</strong> ${currentValue !== null && currentValue !== undefined ? currentValue : 'N/A'}`;
+            // Format the value using our formatting helper
+            const formattedValue = currentValue !== null && currentValue !== undefined ? 
+                this.formatNodeValue(node.id, currentValue) : 'N/A';
+                
+            value.innerHTML = `<strong>Current Value:</strong> ${formattedValue}`;
             value.innerHTML += `<br><strong>ID:</strong> ${node.id}`;
             
-            // If it's an influential node, add a note
+            // If it's an influential node, add a note with stronger styling
             if (node.isInfluential) {
-                value.innerHTML += `<br><strong style="color:#ff5252;">★ HIGH INFLUENCE NODE ★</strong>`;
+                value.innerHTML += `<br><strong style="color:#ff5252; display: inline-block; margin-top: 5px; padding: 3px 6px; border-radius: 4px; background: rgba(255,82,82,0.1);">★ HIGH INFLUENCE NODE ★</strong>`;
             }
         }
         
@@ -1370,7 +1563,15 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             });
             
         if (dependencies) {
-            dependencies.innerHTML = `<strong>Depends on:</strong> ${fieldDependencies.length > 0 ? fieldDependencies.join(', ') : 'None'}`;
+            // Format dependencies list with better styling
+            if (fieldDependencies.length > 0) {
+                const depList = fieldDependencies.map(dep => 
+                    `<span style="display: inline-block; margin: 2px; padding: 2px 6px; background: #f1f8ff; border-radius: 4px; border: 1px solid #cfe4ff;">${dep}</span>`
+                ).join(' ');
+                dependencies.innerHTML = `<strong>Depends on:</strong><div style="margin-top: 4px;">${depList}</div>`;
+            } else {
+                dependencies.innerHTML = `<strong>Depends on:</strong> None`;
+            }
         }
         
         const fieldDependents = this.data.links
@@ -1382,10 +1583,16 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             });
             
         if (dependents) {
-            dependents.innerHTML = `<strong>Influences:</strong> ${fieldDependents.length > 0 ? fieldDependents.join(', ') : 'None'}`;
+            // Format dependents list with better styling
+            if (fieldDependents.length > 0) {
+                const depList = fieldDependents.map(dep => 
+                    `<span style="display: inline-block; margin: 2px; padding: 2px 6px; background: #fff8f1; border-radius: 4px; border: 1px solid #ffe6cf;">${dep}</span>`
+                ).join(' ');
+                dependents.innerHTML = `<strong>Influences:</strong><div style="margin-top: 4px;">${depList}</div>`;
+            } else {
+                dependents.innerHTML = `<strong>Influences:</strong> None`;
+            }
         }
-        
-        this.floatingInfoPanel.style.display = 'block';
     }
 }
 
