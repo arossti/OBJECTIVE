@@ -957,45 +957,84 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             return;
         }
 
+        // Remove previous direct listeners if they somehow still exist (belt-and-suspenders)
+        const provinceDropdownOld = sectionElement.querySelector('[data-dropdown-id="dd_d_19"]');
+        if (provinceDropdownOld) provinceDropdownOld.removeEventListener('change', window.TEUI.sect03.handleProvinceChange);
+        const cityDropdownOld = sectionElement.querySelector('[data-dropdown-id="dd_h_19"]');
+        if (cityDropdownOld) cityDropdownOld.removeEventListener('change', window.TEUI.sect03.handleCityChange);
+        const timeframeDropdownOld = sectionElement.querySelector('[data-dropdown-id="dd_h_20"]');
+        if (timeframeDropdownOld) timeframeDropdownOld.removeEventListener('change', window.TEUI.sect03.handleTimeframeChange);
+        // Note: We don't have a global handleCriticalChange exposed, so we don't remove it here
+
+        // --- STRATEGY 2: EVENT DELEGATION --- 
+        // Add ONE listener to the section container
+        if (!sectionElement.hasS03DelegatedListener) { // Prevent adding multiple container listeners
+            sectionElement.addEventListener('change', function(event) {
+                const target = event.target;
+                const dropdownId = target.getAttribute('data-dropdown-id');
+                const fieldId = target.getAttribute('data-field-id');
+
+                // Delegate based on the dropdown ID
+                if (dropdownId === 'dd_d_19') {
+                    console.log("[S03 Delegated] Province change detected");
+                    if (typeof window.TEUI.sect03.handleProvinceChange === 'function') {
+                        // Pass the event object itself, the handler can get the value
+                        window.TEUI.sect03.handleProvinceChange(event); 
+                    } else {
+                        console.error("[S03 Delegated] handleProvinceChange function not found!");
+                    }
+                } else if (dropdownId === 'dd_h_19') {
+                    console.log("[S03 Delegated] City change detected");
+                     if (typeof window.TEUI.sect03.handleCityChange === 'function') {
+                        // Pass the event object itself
+                        window.TEUI.sect03.handleCityChange(event); 
+                    } else {
+                        console.error("[S03 Delegated] handleCityChange function not found!");
+                    }
+                } else if (dropdownId === 'dd_h_20') {
+                    console.log("[S03 Delegated] Timeframe change detected");
+                     if (typeof window.TEUI.sect03.handleTimeframeChange === 'function') {
+                        // Pass the event object itself
+                        window.TEUI.sect03.handleTimeframeChange(event); 
+                    } else {
+                        console.error("[S03 Delegated] handleTimeframeChange function not found!");
+                    }
+                } else if (fieldId === 'l_23') { // Checkbox field ID
+                    console.log("[S03 Delegated] Criticality change detected");
+                     if (typeof window.TEUI.sect03.handleCriticalChange === 'function') {
+                        // Pass the event object itself
+                        window.TEUI.sect03.handleCriticalChange(event); 
+                    } else {
+                        console.error("[S03 Delegated] handleCriticalChange function not found!");
+                    }
+                }
+            });
+            sectionElement.hasS03DelegatedListener = true;
+            console.log("[S03 DEBUG] Delegated change listener attached to #climateCalculations");
+        } else {
+             console.log("[S03 DEBUG] Delegated listener already attached to #climateCalculations.");
+        }
+        // --- END STRATEGY 2 ---
+
+        /* REMOVE DIRECT LISTENERS - Replaced by delegation above
         // Province dropdown change
         const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-        if (provinceDropdown) {
-            // Clean up any previous event listeners to prevent duplicates
-            provinceDropdown.removeEventListener('change', window.TEUI.sect03.handleProvinceChange);
-            // Add the event listener using the globally accessible function
-            provinceDropdown.addEventListener('change', window.TEUI.sect03.handleProvinceChange);
-            console.log("[S03 DEBUG] Province dropdown event listener attached");
-        } else {
-            console.error("[S03 DEBUG] Province dropdown not found!");
-        }
+        // ... (removed listener attachment) ...
 
         // City dropdown change
         const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-        if (cityDropdown) {
-            // Clean up any previous event listeners
-            cityDropdown.removeEventListener('change', window.TEUI.sect03.handleCityChange);
-            // Add the event listener using the globally accessible function
-            cityDropdown.addEventListener('change', window.TEUI.sect03.handleCityChange);
-            console.log("[S03 DEBUG] City dropdown event listener attached");
-        } else {
-            console.error("[S03 DEBUG] City dropdown not found!");
-        }
+        // ... (removed listener attachment) ...
         
         // Future/Present toggle
         const timeframeDropdown = document.querySelector('[data-dropdown-id="dd_h_20"]');
-        if (timeframeDropdown) {
-            timeframeDropdown.removeEventListener('change', window.TEUI.sect03.handleTimeframeChange);
-            timeframeDropdown.addEventListener('change', window.TEUI.sect03.handleTimeframeChange);
-        }
+        // ... (removed listener attachment) ...
         
-        // Criticality checkbox
+        // Criticality checkbox (Assuming l_23 is the correct ID, though it seems unusual)
         const criticalCheckbox = document.querySelector('[data-field-id="l_23"]');
-        if (criticalCheckbox) {
-            criticalCheckbox.removeEventListener('change', window.TEUI.sect03.handleCriticalChange);
-            criticalCheckbox.addEventListener('change', window.TEUI.sect03.handleCriticalChange);
-        }
+        // ... (removed listener attachment) ...
+        */
         
-        // Add handlers for editable fields (m_19, l_24)
+        // Add handlers for editable fields (m_19, l_24) - Keep these direct
         const editableFields = sectionElement.querySelectorAll('.editable.user-input');
         editableFields.forEach(field => {
             if (!field.hasEditableListeners) {
@@ -1013,6 +1052,11 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         // StateManager Listeners (mostly unchanged, but ensure calculateAll covers dependencies)
         if (window.TEUI && window.TEUI.StateManager) {
             const sm = window.TEUI.StateManager;
+            // REMOVE existing listeners before adding new ones to prevent duplicates if this runs multiple times
+            // (Ideally it shouldn't, but this adds robustness)
+            // Note: StateManager doesn't have removeListenerAll for a key, requires tracking callbacks
+            // For simplicity, we assume the listeners added here are idempotent or managed by StateManager internally
+            // If issues persist, explicit listener removal might be needed.
             sm.addListener('d_12', calculateAll); // Occupancy affects setpoints
             sm.addListener('h_24', calculateAll); // Base Cooling Setpoint
             sm.addListener('l_24', calculateAll); // Cooling Override
@@ -1408,19 +1452,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         } else {
             console.error("[S03 DIAGNOSTIC] StateManager not available");
         }
-    }
-
-    // Automatically initialize when the DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        window.TEUI.SectionModules.sect03.init();
-    });
-    
-    // Allow initialization to be manually triggered if needed
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        // Page already loaded, initialize immediately
-        setTimeout(function() {
-            window.TEUI.SectionModules.sect03.init();
-        }, 300);
     }
 })();
 
