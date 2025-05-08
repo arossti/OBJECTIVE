@@ -569,6 +569,9 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // Listener function for Electricity Emission Factor
             const updateFactorCallback = () => { 
+                 // >>> ADD DIAGNOSTIC <<<
+                 console.log('[Section04 TRACE] Listener for d_19/dd_d_19/h_12/d_12 triggered. Updating emissions factor...');
+                 // >>> END DIAGNOSTIC <<<
                  updateElectricityEmissionFactor(); 
             };
             

@@ -493,6 +493,9 @@ TEUI.SectionIntegrator = (function() {
         // Add listener to force recalculation when province changes
         window.TEUI.StateManager.addListener('d_19', function(newValue) {
             // console.log('Province changed in StateManager to:', newValue);
+            // >>> ADD DIAGNOSTIC <<<
+            console.log('[SectionIntegrator TRACE] Listener for d_19 triggered. Forcing emissions factor update...');
+            // >>> END DIAGNOSTIC <<<
             forceEmissionsFactorUpdate();
         });
         
