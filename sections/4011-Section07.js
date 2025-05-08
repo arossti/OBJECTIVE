@@ -683,7 +683,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 setCalculatedValue("l_54", oilVolume, 'number-2dp-comma');
                 break;
         }
-
+        
         let netElectricalDemand_k51 = (systemType !== "Gas" && systemType !== "Oil") ? netDemand : 0;
         setCalculatedValue("k_51", netElectricalDemand_k51, 'number-2dp-comma');
 
@@ -909,10 +909,10 @@ window.TEUI.SectionModules.sect07 = (function() {
                  handleDHWSourceChange(e); // Specific logic for DHW source
              }
              // Update visibility based on current dropdown values
-             const currentWaterMethod = getFieldValue("d_49");
-             const currentSystemType = getFieldValue("d_51");
-             updateSection7Visibility(currentWaterMethod, currentSystemType);
-             calculateAll(); 
+                const currentWaterMethod = getFieldValue("d_49");
+                const currentSystemType = getFieldValue("d_51");
+                updateSection7Visibility(currentWaterMethod, currentSystemType);
+                calculateAll();
         }
     }
 
@@ -929,7 +929,7 @@ window.TEUI.SectionModules.sect07 = (function() {
          if (fieldId && window.TEUI?.StateManager?.setValue && (e.type === 'change' || e.type === 'input') ) {
              window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
              if(e.type === 'change'){ // Only calculate fully on release
-                 calculateAll();
+        calculateAll();
              }
          }
          if (fieldId === 'd_52') { // Special handling for d_52 visibility
@@ -945,7 +945,7 @@ window.TEUI.SectionModules.sect07 = (function() {
     function handleDHWSourceChange(event) {
         const selectedSource = event.target.value;
         const d52Slider = document.querySelector('input[type="range"][data-field-id="d_52"]');
-        const d52Display = d52Slider ? d52Slider.parentElement.querySelector('.slider-value') : null;
+        const d52Display = d52Slider ? d52Slider.parentElement.querySelector('.slider-value') : null; 
 
         let newMinValue = 50, newMaxValue = 400, newStep = 2, newValue = 300;
         let isEditable = true; // Assume editable by default
@@ -955,7 +955,7 @@ window.TEUI.SectionModules.sect07 = (function() {
             newMaxValue = 100; // Set max to 100
             newStep = 1;     // Set step to 1
             newValue = 90; // Reset value to 90% within the new range
-            isEditable = true; 
+            isEditable = true;
         } else if (selectedSource === "Electric") {
             newMaxValue = 100; newStep = 1; newValue = 100;
         } // else Heatpump uses defaults
@@ -1008,9 +1008,9 @@ document.addEventListener('teui-rendering-complete', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const module = window.TEUI.SectionModules.sect07;
     if (module) { // Check if module exists
-        window.TEUI.sect07.calculateWaterUse = module.calculateWaterUse;
-        window.TEUI.sect07.calculateHeatingSystem = module.calculateHeatingSystem;
-        window.TEUI.sect07.calculateAll = module.calculateAll;
+    window.TEUI.sect07.calculateWaterUse = module.calculateWaterUse;
+    window.TEUI.sect07.calculateHeatingSystem = module.calculateHeatingSystem;
+    window.TEUI.sect07.calculateAll = module.calculateAll;
     }
 });
 

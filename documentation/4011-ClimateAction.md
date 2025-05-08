@@ -107,4 +107,126 @@
 *   Changes successfully propagate to dependent sections.
 *   All temporary code/logs removed.
 *   `4011-ClimateValues.js` contains data for all Canadian locations from the source CSV.
-*   Branch `CANADA2` ready for merge into `main`. 
+*   Branch `CANADA2` ready for merge into `main`.
+
+---
+
+## Troubleshooting Journey: Province/City Dropdown Issues
+
+### Problem Statement
+The province and city dropdown relationship in Section 03 (Climate Calculations) has been persistently problematic. When changing the province value, the city dropdown would disappear entirely from the DOM instead of being populated with cities for the selected province. This issue only occurs within the architecture of the TEUI application but works correctly in standalone testing environments.
+
+### Architecture Constraints & Challenges
+The TEUI application follows a specific architectural pattern:
+1. **Module Encapsulation**: Each section is defined using an IIFE (Immediately Invoked Function Expression) that creates a closure, limiting the scope of internal functions.
+2. **StateManager**: Values should be set and retrieved through `window.TEUI.StateManager` rather than direct DOM manipulation.
+3. **Event Handling**: Event handlers must be properly bound and accessible in the correct scope to maintain interactivity.
+4. **Rendering Lifecycle**: The application has a specific rendering cycle that must be respected when modifying component visibility.
+
+### Attempted Solutions
+
+#### 1. Demo File Approach
+We created standalone test files (`weather.html` and `weather-demo.html`) that correctly implemented the province/city relationship pattern:
+
+- **Successful Pattern**: In these demos, we accomplished:
+  - Proper preservation of the city dropdown container during province changes
+  - Correct population of city options based on data from 4011-ClimateValues.js
+  - Reliable visibility of the dropdown elements at all times
+  - Proper event handler binding and scope management
+
+- **Key Implementation Details**:
+  - Used a cache for DOM elements to avoid repeated lookups
+  - Implemented proper dropdown option management (removing/adding options rather than innerHTML replacement)
+  - Preserved parent container references to ensure elements stayed in the DOM
+  - Added verification steps to ensure dropdowns remained visible
+
+#### 2. Function Scope Resolution
+A critical issue was function scoping - functions defined inside the IIFE weren't accessible to event handlers:
+
+- **Diagnosis**: Event handlers were losing reference to key functions:
+  - `handleProvinceChange`, `handleCityChange`, and `updateWeatherData` were defined inside the IIFE
+  - Event listeners bound to dropdowns couldn't access these functions when events fired
+  - Console logs revealed these functions were `undefined` in the event handler context
+
+- **Solution Approach**: We exported critical functions to the global namespace:
+  ```javascript
+  // Export critical functions to global namespace for event handlers
+  window.TEUI.sect03.handleProvinceChange = handleProvinceChange;
+  window.TEUI.sect03.handleCityChange = handleCityChange;
+  window.TEUI.sect03.updateWeatherData = updateWeatherData;
+  window.TEUI.sect03.ensureCityDropdownVisible = ensureCityDropdownVisible;
+  ```
+
+#### 3. DOM Preservation Strategy
+We implemented a more defensive approach to DOM manipulation:
+
+- **Dropdown Preservation**: Instead of clearing containers which would destroy the dropdown:
+  - Preserved references to parent containers
+  - Carefully managed options rather than replacing entire elements
+  - Added an explicit `ensureCityDropdownVisible()` function to verify and fix visibility
+  - Added scheduled checks to ensure dropdowns remained visible after asynchronous operations
+
+- **Verification Steps**: Added robust checking and diagnostic functions:
+  ```javascript
+  window.TEUI.sect03.debug = {
+    logScope: function() { /* Check function availability */ },
+    checkDropdowns: function() { /* Verify DOM elements exist */ },
+    ensureCityDropdownVisible: function() { /* Maintain dropdown visibility */ }
+  };
+  ```
+
+#### 4. StateManager Integration
+We aligned the implementation with the application's state management patterns:
+
+- **Proper State Updates**: Used StateManager for all value changes:
+  ```javascript
+  if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue('d_19', provinceValue, 'user-modified');
+  }
+  ```
+
+- **Initialization Sequence**: Implemented a proper initialization flow respecting the app's lifecycle:
+  ```javascript
+  function initializeDefaultClimateValues() {
+      // Set values through StateManager with correct timing
+      window.TEUI.StateManager.setValue('d_19', defaultProvince, 'initial');
+      // Then update DOM with proper delays
+      // ...
+  }
+  ```
+
+### Persistent Challenges
+
+Despite these efforts, several issues remained persistent:
+
+1. **Timing Issues**: The asynchronous nature of the application's rendering cycle causes race conditions where elements may exist at one moment and disappear the next.
+
+2. **Architectural Limitations**: The IIFE pattern creates scoping challenges that require complex workarounds to ensure functions remain accessible across contexts.
+
+3. **StateManager vs. DOM**: Finding the right balance between StateManager updates and necessary DOM manipulations proved challenging. Some DOM operations are needed for dropdown management but must be minimized to respect the architecture.
+
+4. **Event Handler Binding**: Ensuring event handlers correctly reference their functions across module boundaries required careful management of the global namespace.
+
+### Lessons Learned
+
+1. **Architecture Understanding**: A deep understanding of the application's architecture pattern is critical before attempting to modify components.
+
+2. **Function Accessibility**: When using IIFE modules, functions that need to be accessed by event handlers must be explicitly exposed to the global namespace.
+
+3. **DOM Reference Preservation**: Always maintain references to parent containers when manipulating child elements to prevent accidental element removal.
+
+4. **Defensive Programming**: Implement extensive validation and recovery mechanisms for DOM operations in complex applications.
+
+5. **Diagnostic Tools**: Create comprehensive debugging utilities early in the troubleshooting process to provide visibility into the application's state.
+
+### Next Steps
+
+The troubleshooting journey continues with the following approaches:
+
+1. Consider refactoring Section 03 to align more closely with other successfully functioning sections in the application.
+
+2. Implement a MutationObserver to monitor and restore dropdown elements that might be removed during the application's rendering cycle.
+
+3. Explore whether a more substantial architectural change might be needed to resolve the persistent issues.
+
+4. Review application logs to identify potential interference from other modules or components. 

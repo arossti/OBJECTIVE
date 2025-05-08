@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Calculations Demo - Architecture Compliant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        /* Section styling */
+        .section-container {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        .section-content {
+            padding: 0;
+        }
+        .section-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .btn {
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: normal;
+            text-align: center;
+            color: #333;
+            font-size: 14px;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* Cell styling */
+        .row-id {
+            color: #666;
+            font-size: 0.9em;
+            width: 50px;
+        }
+        .row-label {
+            font-weight: 500;
+            width: 180px;
+        }
+        .label-prefix {
+            color: #666;
+            font-size: 0.9em;
+            margin-right: 5px;
+        }
+        .label-main {
+            font-weight: 500;
+        }
+        .unit-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        
+        /* Value fields */
+        .user-input {
+            font-weight: bold;
+            color: #0066cc;
+            padding: 2px 5px;
+            background-color: #e6f2ff;
+            border-radius: 3px;
+            display: inline-block;
+            min-width: 30px;
+            text-align: right;
+            cursor: text;
+        }
+        .calculated-value {
+            text-align: right;
+            min-width: 30px;
+            display: inline-block;
+        }
+        .negative-value {
+            color: red;
+        }
+        
+        /* Dropdown styling */
+        .dropdown-container {
+            position: relative;
+            width: 100%;
+            z-index: 10;
+        }
+        .dropdown-select {
+            width: 100%;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            font-size: 14px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+        
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 5px;
+            width: 70%;
+            max-width: 700px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .modal-body {
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .data-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .data-label {
+            flex: 1;
+            font-weight: 500;
+        }
+        .data-value {
+            flex: 1;
+            text-align: right;
+        }
+        
+        /* Debug section */
+        .debug-info {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="section-container">
+        <div class="section-header">
+            <h2 class="section-title">SECTION 3. Climate Calculations</h2>
+            <button id="showWeatherDataBtn" class="btn">More Weather Data</button>
+        </div>
+        
+        <div class="section-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>03-ID</th>
+                        <th>Climate Units</th>
+                        <th>°C</th>
+                        <th>°F</th>
+                        <th>F</th>
+                        <th>G</th>
+                        <th>°C</th>
+                        <th>°F</th>
+                        <th>J</th>
+                        <th>K</th>
+                        <th>L</th>
+                        <th>M</th>
+                        <th>N</th>
+                    </tr>
+                </thead>
+                <tbody id="climateCalculations">
+                    <!-- Province Row -->
+                    <tr data-id="L.1.1">
+                        <td class="row-id">L.1.1</td>
+                        <td class="row-label">Province</td>
+                        <td colspan="2">
+                            <div class="dropdown-container">
+                                <select class="dropdown-select" data-field-id="d_19" data-dropdown-id="dd_d_19">
+                                    <option value="">Select Province</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td class="label-prefix">L.1.2</td>
+                        <td class="label-main">City</td>
+                        <td>
+                            <div class="dropdown-container">
+                                <select class="dropdown-select" data-field-id="h_19" data-dropdown-id="dd_h_19" disabled>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>Climate Zone</td>
+                        <td>
+                            <span class="calculated-value" data-field-id="j_19">4.0</span>
+                        </td>
+                        <td class="label-prefix">L.3.3</td>
+                        <td class="label-main">Days Cooling</td>
+                        <td>
+                            <span class="user-input editable" data-field-id="m_19" contenteditable="true">120</span>
+                        </td>
+                    </tr>
+                    
+                    <!-- Heating Degree Days Row -->
+                    <tr data-id="L.2.1">
+                        <td class="row-id">L.2.1</td>
+                        <td class="row-label">Heating Degree Days (HDD)</td>
+                        <td>
+                            <span class="calculated-value" data-field-id="d_20">0</span>
+                        </td>
+                        <td></td>
+                        <td class="label-prefix">L.2.2</td>
+                        <td class="label-main">Current or Future Values</td>
+                        <td>
+                            <div class="dropdown-container">
+                                <select class="dropdown-select" data-field-id="h_20" data-dropdown-id="dd_h_20">
+                                    <option value="Present">Present (1991-2020)</option>
+                                    <option value="Future">Future (2021-2050)</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td></td>
+                        <td>
+                            <span class="calculated-value reference-value" data-field-id="j_20">HDD Ref Lookup</span>
+                        </td>
+                        <td>
+                            <span class="reference-label">HDD - Energy Star</span>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    
+                    <!-- More rows would be added here... -->
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Weather Data Modal -->
+    <div id="weatherDataModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="weatherDataModalTitle">Weather Data</h3>
+            <div id="weatherDataContent" class="modal-body"></div>
+        </div>
+    </div>
+    
+    <div id="debugInfo" class="debug-info"></div>
+
+    <!-- Include ClimateValues.js -->
+    <script src="4011-ClimateValues.js"></script>
+    
+    <script>
+        /**
+         * TEUI Core Architecture - Simplified Implementation
+         * This demonstrates how the core architecture components work together
+         * with specific focus on Field/State management for the province/city dropdown relationship.
+         */
+        
+        // Create TEUI namespace
+        window.TEUI = window.TEUI || {};
+        
+        // StateManager component (simplified version of the full StateManager)
+        window.TEUI.StateManager = (function() {
+            // Private state
+            const values = {};
+            const dependencies = {};
+            const listeners = {};
+            
+            /**
+             * Set a value in the state
+             * @param {string} fieldId - Field ID
+             * @param {any} value - Field value
+             * @param {string} source - Source of the change
+             * @returns {boolean} True if value changed
+             */
+            function setValue(fieldId, value, source='user-modified') {
+                console.log(`[StateManager] Setting ${fieldId} to ${value} (${source})`);
+                
+                // Get old value for comparison
+                const oldValue = values[fieldId];
+                
+                // Update value
+                values[fieldId] = value;
+                
+                // Notify listeners
+                notifyListeners(fieldId, value, oldValue, source);
+                
+                // Handle dependencies
+                if (dependencies[fieldId]) {
+                    dependencies[fieldId].forEach(dependentId => {
+                        console.log(`[StateManager] Processing dependency: ${fieldId} -> ${dependentId}`);
+                        notifyListeners(dependentId, values[dependentId], values[dependentId], 'dependency');
+                    });
+                }
+                
+                return true;
+            }
+            
+            /**
+             * Get a value from the state
+             * @param {string} fieldId - Field ID
+             * @returns {any} Field value
+             */
+            function getValue(fieldId) {
+                return values[fieldId];
+            }
+            
+            /**
+             * Register a dependency between fields
+             * @param {string} sourceId - Source field ID
+             * @param {string} targetId - Target field ID
+             */
+            function registerDependency(sourceId, targetId) {
+                console.log(`[StateManager] Registering dependency: ${sourceId} -> ${targetId}`);
+                
+                if (!dependencies[sourceId]) {
+                    dependencies[sourceId] = [];
+                }
+                
+                if (!dependencies[sourceId].includes(targetId)) {
+                    dependencies[sourceId].push(targetId);
+                }
+            }
+            
+            /**
+             * Add a listener for field changes
+             * @param {string} fieldId - Field ID
+             * @param {Function} callback - Callback function
+             */
+            function addListener(fieldId, callback) {
+                console.log(`[StateManager] Adding listener for ${fieldId}`);
+                
+                if (!listeners[fieldId]) {
+                    listeners[fieldId] = [];
+                }
+                
+                listeners[fieldId].push(callback);
+            }
+            
+            /**
+             * Notify all listeners for a field
+             * @param {string} fieldId - Field ID
+             * @param {any} newValue - New value
+             * @param {any} oldValue - Old value
+             * @param {string} source - Source of the change
+             */
+            function notifyListeners(fieldId, newValue, oldValue, source) {
+                if (!listeners[fieldId]) return;
+                
+                console.log(`[StateManager] Notifying ${listeners[fieldId].length} listeners for ${fieldId}`);
+                
+                listeners[fieldId].forEach(callback => {
+                    try {
+                        callback(newValue, oldValue, fieldId, source);
+                    } catch (e) {
+                        console.error(`[StateManager] Error in listener for ${fieldId}:`, e);
+                    }
+                });
+            }
+            
+            // Public API
+            return {
+                setValue,
+                getValue,
+                registerDependency,
+                addListener
+            };
+        })();
+        
+        // FieldManager component (simplified version of the full FieldManager)
+        window.TEUI.FieldManager = (function() {
+            // Section modules registry
+            const sectionModules = {};
+            
+            // Field definitions
+            let allFields = {};
+            
+            // Dropdown options
+            let dropdownOptions = {};
+            
+            /**
+             * Register a section module
+             * @param {string} sectionId - Section ID
+             * @param {Object} module - Section module
+             */
+            function registerSection(sectionId, module) {
+                console.log(`[FieldManager] Registering section: ${sectionId}`);
+                sectionModules[sectionId] = module;
+                
+                // Get fields from the module
+                if (module.getFields) {
+                    const fields = module.getFields();
+                    Object.assign(allFields, fields);
+                }
+                
+                // Get dropdown options from the module
+                if (module.getDropdownOptions) {
+                    const options = module.getDropdownOptions();
+                    Object.assign(dropdownOptions, options);
+                }
+            }
+            
+            /**
+             * Get dropdown options for a specific dropdown
+             * @param {string} dropdownId - Dropdown ID
+             * @param {Object} context - Context object
+             * @returns {Array} Dropdown options
+             */
+            function getDropdownOptions(dropdownId, context = {}) {
+                console.log(`[FieldManager] Getting options for dropdown: ${dropdownId}`);
+                
+                // Find field with this dropdown ID
+                const fieldId = Object.keys(allFields).find(id => 
+                    allFields[id].dropdownId === dropdownId
+                );
+                
+                // Check for direct options in the field
+                if (fieldId && allFields[fieldId].options) {
+                    return allFields[fieldId].options;
+                }
+                
+                // Check for getOptions function in the field
+                if (fieldId && allFields[fieldId].getOptions) {
+                    const parentField = allFields[fieldId].dependencies?.[0];
+                    const parentValue = parentField ? 
+                        window.TEUI.StateManager.getValue(parentField) : 
+                        context.parentValue;
+                        
+                    try {
+                        return allFields[fieldId].getOptions(parentValue);
+                    } catch (e) {
+                        console.error(`[FieldManager] Error getting options for ${fieldId}:`, e);
+                        return [];
+                    }
+                }
+                
+                // Fall back to central registry
+                const options = dropdownOptions[dropdownId];
+                
+                // Handle nested options
+                if (typeof options === 'object' && !Array.isArray(options) && context.parentValue) {
+                    return options[context.parentValue] || [];
+                }
+                
+                return options || [];
+            }
+            
+            /**
+             * Initialize dropdown from field definition
+             * @param {Element} selectElement - Select element
+             */
+            function initializeDropdown(selectElement) {
+                if (!selectElement) return;
+                
+                const fieldId = selectElement.getAttribute('data-field-id');
+                const dropdownId = selectElement.getAttribute('data-dropdown-id');
+                
+                if (!fieldId || !dropdownId) return;
+                
+                console.log(`[FieldManager] Initializing dropdown: ${dropdownId} for field ${fieldId}`);
+                
+                // Get options
+                const options = getDropdownOptions(dropdownId);
+                
+                // Save current value
+                const currentValue = selectElement.value;
+                
+                // Clear existing options except first
+                while (selectElement.options.length > 1) {
+                    selectElement.remove(1);
+                }
+                
+                // Add options
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.name;
+                    selectElement.appendChild(optionElement);
+                });
+                
+                // Restore value if possible
+                if (currentValue && Array.from(selectElement.options).some(opt => opt.value === currentValue)) {
+                    selectElement.value = currentValue;
+                }
+                
+                // Update StateManager
+                const stateValue = window.TEUI.StateManager.getValue(fieldId);
+                if (!stateValue && selectElement.value) {
+                    window.TEUI.StateManager.setValue(fieldId, selectElement.value, 'initial');
+                } else if (stateValue) {
+                    selectElement.value = stateValue;
+                }
+            }
+            
+            /**
+             * Update dependent dropdowns when a parent field changes
+             * @param {string} parentFieldId - Parent field ID
+             */
+            function updateDependentDropdowns(parentFieldId) {
+                console.log(`[FieldManager] Updating dropdowns dependent on: ${parentFieldId}`);
+                
+                // Find dependent fields
+                Object.entries(allFields).forEach(([fieldId, field]) => {
+                    if (field.dependencies && field.dependencies.includes(parentFieldId) && field.dropdownId) {
+                        const selectElement = document.querySelector(`[data-dropdown-id="${field.dropdownId}"]`);
+                        if (selectElement) {
+                            // Get parent value
+                            const parentValue = window.TEUI.StateManager.getValue(parentFieldId);
+                            
+                            // Get options with context
+                            const options = getDropdownOptions(field.dropdownId, { parentValue });
+                            
+                            // Save current value
+                            const currentValue = selectElement.value;
+                            
+                            // Clear existing options except first
+                            while (selectElement.options.length > 1) {
+                                selectElement.remove(1);
+                            }
+                            
+                            // Add new options
+                            options.forEach(option => {
+                                const optionElement = document.createElement('option');
+                                optionElement.value = option.value;
+                                optionElement.textContent = option.name;
+                                selectElement.appendChild(optionElement);
+                            });
+                            
+                            // Disable if no options, enable otherwise
+                            selectElement.disabled = options.length === 0;
+                            
+                            // Set first option or keep current if valid
+                            if (options.length > 0) {
+                                if (options.some(opt => opt.value === currentValue)) {
+                                    selectElement.value = currentValue;
+                                } else {
+                                    selectElement.value = options[0].value;
+                                    // Update state
+                                    window.TEUI.StateManager.setValue(fieldId, options[0].value, 'dependent');
+                                }
+                            } else {
+                                selectElement.value = "";
+                                // Update state
+                                window.TEUI.StateManager.setValue(fieldId, "", 'dependent');
+                            }
+                        }
+                    }
+                });
+            }
+            
+            /**
+             * Initialize all dropdowns
+             */
+            function initializeAllDropdowns() {
+                console.log('[FieldManager] Initializing all dropdowns');
+                
+                // Find all dropdowns
+                const dropdowns = document.querySelectorAll('select[data-dropdown-id]');
+                
+                // Initialize each dropdown
+                dropdowns.forEach(dropdown => {
+                    initializeDropdown(dropdown);
+                });
+            }
+            
+            /**
+             * Initialize event handlers for all dropdowns
+             */
+            function initializeDropdownEventHandlers() {
+                console.log('[FieldManager] Initializing dropdown event handlers');
+                
+                // Find all dropdowns
+                const dropdowns = document.querySelectorAll('select[data-dropdown-id]');
+                
+                // Add change event listener to each dropdown
+                dropdowns.forEach(dropdown => {
+                    const fieldId = dropdown.getAttribute('data-field-id');
+                    if (!fieldId) return;
+                    
+                    // Remove existing listeners to avoid duplicates
+                    dropdown.removeEventListener('change', handleDropdownChange);
+                    
+                    // Add new listener
+                    dropdown.addEventListener('change', handleDropdownChange);
+                });
+            }
+            
+            /**
+             * Handle dropdown change event
+             * @param {Event} event - Change event
+             */
+            function handleDropdownChange(event) {
+                const select = event.target;
+                const fieldId = select.getAttribute('data-field-id');
+                const value = select.value;
+                
+                console.log(`[FieldManager] Dropdown change: ${fieldId} = ${value}`);
+                
+                // Update state
+                window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+            }
+            
+            // Public API
+            return {
+                registerSection,
+                getDropdownOptions,
+                initializeDropdown,
+                initializeAllDropdowns,
+                initializeDropdownEventHandlers,
+                updateDependentDropdowns
+            };
+        })();
+        
+        // ClimateValues Module - Section03 implementation
+        window.TEUI.ClimateModule = (function() {
+            // Field definitions
+            const fields = {
+                'd_19': {
+                    type: 'dropdown',
+                    dropdownId: 'dd_d_19',
+                    defaultValue: 'ON',
+                    section: 'climateCalculations',
+                    // Options defined below in getDropdownOptions
+                },
+                'h_19': {
+                    type: 'dropdown',
+                    dropdownId: 'dd_h_19',
+                    defaultValue: '',
+                    section: 'climateCalculations',
+                    dependencies: ['d_19'], // City depends on province
+                    getOptions: function(provinceValue) {
+                        console.log(`[ClimateModule] Getting city options for province: ${provinceValue}`);
+                        
+                        if (!provinceValue || !window.TEUI?.ClimateData?.[provinceValue]) {
+                            return [];
+                        }
+                        
+                        // Get cities for this province
+                        const cities = Object.keys(window.TEUI.ClimateData[provinceValue]).sort();
+                        
+                        // Convert to options format
+                        return cities.map(city => ({ value: city, name: city }));
+                    }
+                },
+                'h_20': {
+                    type: 'dropdown',
+                    dropdownId: 'dd_h_20',
+                    defaultValue: 'Present',
+                    section: 'climateCalculations'
+                },
+                'd_20': {
+                    type: 'calculated',
+                    defaultValue: '0',
+                    section: 'climateCalculations',
+                    dependencies: ['d_19', 'h_19', 'h_20']
+                },
+                'd_21': {
+                    type: 'calculated',
+                    defaultValue: '0',
+                    section: 'climateCalculations',
+                    dependencies: ['d_19', 'h_19', 'h_20']
+                },
+                'j_19': {
+                    type: 'calculated',
+                    defaultValue: '4.0',
+                    section: 'climateCalculations',
+                    dependencies: ['d_20']
+                },
+                'm_19': {
+                    type: 'editable',
+                    defaultValue: '120',
+                    section: 'climateCalculations'
+                }
+            };
+            
+            // Dropdown options
+            const dropdownOptions = {
+                'dd_d_19': [
+                    { value: "", name: "Select Province" },
+                    { value: "AB", name: "Alberta" },
+                    { value: "BC", name: "British Columbia" },
+                    { value: "MB", name: "Manitoba" },
+                    { value: "NB", name: "New Brunswick" },
+                    { value: "NL", name: "Newfoundland and Labrador" },
+                    { value: "NS", name: "Nova Scotia" },
+                    { value: "NT", name: "Northwest Territories" },
+                    { value: "NU", name: "Nunavut" },
+                    { value: "ON", name: "Ontario" },
+                    { value: "PE", name: "Prince Edward Island" },
+                    { value: "QC", name: "Québec" },
+                    { value: "SK", name: "Saskatchewan" },
+                    { value: "YT", name: "Yukon" }
+                ],
+                'dd_h_20': [
+                    { value: "Present", name: "Present (1991-2020)" },
+                    { value: "Future", name: "Future (2021-2050)" }
+                ]
+            };
+            
+            /**
+             * Calculate climate zone based on HDD
+             * @param {number} hdd - Heating degree days
+             * @returns {string} Climate zone
+             */
+            function determineClimateZone(hdd) {
+                const numericHdd = parseFloat(hdd);
+                if (isNaN(numericHdd)) return '6.0'; // Default
+                if (numericHdd < 3000) return '4.0';
+                if (numericHdd < 4000) return '5.0';
+                if (numericHdd < 5000) return '6.0';
+                if (numericHdd < 6000) return '7.1';
+                if (numericHdd < 7000) return '7.2';
+                return '8.0';
+            }
+            
+            /**
+             * Register dependencies with StateManager
+             */
+            function registerDependencies() {
+                // Register dependencies from field definitions
+                Object.entries(fields).forEach(([fieldId, field]) => {
+                    if (field.dependencies) {
+                        field.dependencies.forEach(dependencyId => {
+                            window.TEUI.StateManager.registerDependency(dependencyId, fieldId);
+                        });
+                    }
+                });
+            }
+            
+            /**
+             * Update climate data for selected province/city
+             */
+            function updateClimateData() {
+                // Get values from StateManager
+                const provinceValue = window.TEUI.StateManager.getValue('d_19');
+                const cityValue = window.TEUI.StateManager.getValue('h_19');
+                const timeframeValue = window.TEUI.StateManager.getValue('h_20') || 'Present';
+                
+                console.log(`[ClimateModule] Updating climate data: Province=${provinceValue}, City=${cityValue}, Timeframe=${timeframeValue}`);
+                
+                // Check if we have valid selections
+                if (!provinceValue || !cityValue) {
+                    console.warn(`[ClimateModule] Missing province or city values`);
+                    window.TEUI.StateManager.setValue('d_20', '0', 'calculated');
+                    window.TEUI.StateManager.setValue('d_21', '0', 'calculated');
+                    return;
+                }
+                
+                // Get climate data
+                const cityData = window.TEUI?.ClimateData?.[provinceValue]?.[cityValue];
+                
+                if (!cityData) {
+                    console.warn(`[ClimateModule] No climate data found for ${cityValue}, ${provinceValue}`);
+                    window.TEUI.StateManager.setValue('d_20', '0', 'calculated');
+                    window.TEUI.StateManager.setValue('d_21', '0', 'calculated');
+                    return;
+                }
+                
+                // Get values based on timeframe
+                const hddValue = timeframeValue === 'Future' 
+                    ? (cityData.HDD18_2021_2050 || 0) 
+                    : (cityData.HDD18 || 0);
+                    
+                const cddValue = timeframeValue === 'Future' 
+                    ? (cityData.CDD24_2021_2050 || 0) 
+                    : (cityData.CDD24 || 0);
+                
+                // Update StateManager values
+                window.TEUI.StateManager.setValue('d_20', hddValue.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('d_21', cddValue.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('j_20', cityData.HDD18 || '0', 'calculated');
+                window.TEUI.StateManager.setValue('j_21', cityData.CDD24 || '0', 'calculated');
+                window.TEUI.StateManager.setValue('l_22', cityData["Elev ASL (m)"] || '0', 'calculated');
+                
+                // Calculate climate zone
+                const climateZone = determineClimateZone(hddValue);
+                window.TEUI.StateManager.setValue('j_19', climateZone, 'calculated');
+            }
+            
+            /**
+             * Initialize event handlers
+             */
+            function initializeEventHandlers() {
+                // Listen for changes to province, city, and timeframe
+                window.TEUI.StateManager.addListener('d_19', updateClimateData);
+                window.TEUI.StateManager.addListener('h_19', updateClimateData);
+                window.TEUI.StateManager.addListener('h_20', updateClimateData);
+                
+                // Set up modal
+                document.getElementById('showWeatherDataBtn').addEventListener('click', showWeatherData);
+                document.querySelector('.close-btn').addEventListener('click', closeModal);
+                
+                // Initialize editable fields
+                setupEditableFields();
+            }
+            
+            /**
+             * Show weather data modal
+             */
+            function showWeatherData() {
+                const provinceValue = window.TEUI.StateManager.getValue('d_19');
+                const cityValue = window.TEUI.StateManager.getValue('h_19');
+                
+                if (!provinceValue || !cityValue) {
+                    alert('Please select a province and city first.');
+                    return;
+                }
+                
+                // Get city data
+                const cityData = window.TEUI?.ClimateData?.[provinceValue]?.[cityValue];
+                
+                if (!cityData) {
+                    alert(`No climate data found for ${cityValue}, ${provinceValue}`);
+                    return;
+                }
+                
+                // Set modal title
+                const modalTitle = document.getElementById('weatherDataModalTitle');
+                modalTitle.textContent = `Weather Data for ${cityValue}, ${getProvinceFullName(provinceValue)}`;
+                
+                // Format data for display
+                const modalContent = document.getElementById('weatherDataContent');
+                let formattedContent = '';
+                
+                Object.entries(cityData).forEach(([key, value]) => {
+                    formattedContent += `<div class="data-row">
+                        <div class="data-label">${key}</div>
+                        <div class="data-value">${value}</div>
+                    </div>`;
+                });
+                
+                // Set modal content
+                modalContent.innerHTML = formattedContent;
+                
+                // Show modal
+                document.getElementById('weatherDataModal').style.display = 'block';
+            }
+            
+            /**
+             * Close weather data modal
+             */
+            function closeModal() {
+                document.getElementById('weatherDataModal').style.display = 'none';
+            }
+            
+            /**
+             * Set up editable fields
+             */
+            function setupEditableFields() {
+                // Find all editable fields
+                const editableFields = document.querySelectorAll('.editable');
+                
+                // Set up event handlers
+                editableFields.forEach(field => {
+                    const fieldId = field.getAttribute('data-field-id');
+                    if (!fieldId) return;
+                    
+                    // Initialize with StateManager value if available
+                    const stateValue = window.TEUI.StateManager.getValue(fieldId);
+                    if (stateValue) {
+                        field.textContent = stateValue;
+                    } else if (fields[fieldId]?.defaultValue) {
+                        // Otherwise use default value if available
+                        field.textContent = fields[fieldId].defaultValue;
+                        window.TEUI.StateManager.setValue(fieldId, fields[fieldId].defaultValue, 'initial');
+                    }
+                    
+                    // Set up blur handler
+                    field.addEventListener('blur', function() {
+                        const value = this.textContent.trim();
+                        window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+                    });
+                    
+                    // Set up Enter key handler
+                    field.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.blur();
+                        }
+                    });
+                });
+            }
+            
+            /**
+             * Get full province name from abbreviation
+             * @param {string} abbr - Province abbreviation
+             * @returns {string} Full province name
+             */
+            function getProvinceFullName(abbr) {
+                const provinceNames = {
+                    'AB': 'Alberta',
+                    'BC': 'British Columbia',
+                    'MB': 'Manitoba',
+                    'NB': 'New Brunswick',
+                    'NL': 'Newfoundland and Labrador',
+                    'NS': 'Nova Scotia',
+                    'NT': 'Northwest Territories',
+                    'NU': 'Nunavut',
+                    'ON': 'Ontario',
+                    'PE': 'Prince Edward Island',
+                    'QC': 'Québec',
+                    'SK': 'Saskatchewan',
+                    'YT': 'Yukon'
+                };
+                return provinceNames[abbr] || abbr;
+            }
+            
+            /**
+             * Log debug message
+             * @param {string} message - Debug message
+             * @param {any} obj - Optional object to log
+             */
+            function logDebug(message, obj) {
+                console.log(message, obj);
+                
+                // Update debug info panel
+                const debugElem = document.getElementById('debugInfo');
+                if (debugElem) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    let content = debugElem.innerHTML;
+                    
+                    // Format object if provided
+                    let objString = '';
+                    if (obj !== undefined) {
+                        if (typeof obj === 'object' && obj !== null) {
+                            try {
+                                objString = JSON.stringify(obj, null, 2);
+                            } catch (e) {
+                                objString = String(obj);
+                            }
+                        } else {
+                            objString = String(obj);
+                        }
+                    }
+                    
+                    // Add new log entry at top
+                    content = `[${timestamp}] ${message} ${objString}\n` + content;
+                    debugElem.innerHTML = content;
+                }
+            }
+            
+            /**
+             * Ensure climate data is available
+             * @param {Function} callback - Callback function
+             */
+            function ensureClimateDataAvailable(callback) {
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                // Check for climate data
+                function checkClimateData() {
+                    attempts++;
+                    
+                    if (window.TEUI?.ClimateData && Object.keys(window.TEUI.ClimateData).length > 0) {
+                        logDebug('ClimateData available with provinces:', Object.keys(window.TEUI.ClimateData));
+                        callback();
+                        return;
+                    }
+                    
+                    if (attempts >= maxAttempts) {
+                        logDebug('ERROR: Climate data not available after maximum attempts');
+                        return;
+                    }
+                    
+                    const delay = Math.min(100 * Math.pow(2, attempts), 2000);
+                    logDebug(`Will retry climate data check in ${delay}ms...`);
+                    setTimeout(checkClimateData, delay);
+                }
+                
+                // Start checking
+                checkClimateData();
+            }
+            
+            /**
+             * Initialize the module
+             */
+            function initialize() {
+                logDebug('Initializing ClimateModule');
+                
+                // Register with FieldManager
+                window.TEUI.FieldManager.registerSection('climateCalculations', {
+                    getFields: function() { return fields; },
+                    getDropdownOptions: function() { return dropdownOptions; }
+                });
+                
+                // Ensure climate data is available
+                ensureClimateDataAvailable(function() {
+                    // Register dependencies
+                    registerDependencies();
+                    
+                    // Initialize event handlers
+                    initializeEventHandlers();
+                    
+                    // Initialize dropdowns
+                    window.TEUI.FieldManager.initializeAllDropdowns();
+                    window.TEUI.FieldManager.initializeDropdownEventHandlers();
+                    
+                    // Set default values in StateManager
+                    window.TEUI.StateManager.setValue('d_19', 'ON', 'initial');
+                    window.TEUI.StateManager.setValue('h_20', 'Present', 'initial');
+                    
+                    // Listen for dependent dropdown updates
+                    window.TEUI.StateManager.addListener('d_19', function(value) {
+                        // Update dependent dropdowns
+                        window.TEUI.FieldManager.updateDependentDropdowns('d_19');
+                    });
+                    
+                    // Trigger updateDependentDropdowns to populate city dropdown initially
+                    window.TEUI.FieldManager.updateDependentDropdowns('d_19');
+                    
+                    // Set default city for Ontario
+                    const provinceValue = window.TEUI.StateManager.getValue('d_19');
+                    if (provinceValue === 'ON') {
+                        const cities = window.TEUI.ClimateData[provinceValue];
+                        if (cities && cities['Alexandria']) {
+                            window.TEUI.StateManager.setValue('h_19', 'Alexandria', 'initial');
+                        }
+                    }
+                    
+                    // Update climate data
+                    updateClimateData();
+                    
+                    logDebug('ClimateModule initialization complete');
+                });
+            }
+            
+            /**
+             * Listen for DOM changes to ensure dropdowns remain visible
+             */
+            function setupDropdownObserver() {
+                if (window.MutationObserver) {
+                    const sectionElement = document.getElementById('climateCalculations');
+                    if (!sectionElement) return;
+                    
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                                const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
+                                if (cityDropdown) {
+                                    if (cityDropdown.parentElement && 
+                                        (cityDropdown.parentElement.style.display === 'none' || 
+                                        cityDropdown.style.display === 'none')) {
+                                        
+                                        logDebug('City dropdown was hidden, making visible');
+                                        cityDropdown.style.display = '';
+                                        if (cityDropdown.parentElement) {
+                                            cityDropdown.parentElement.style.display = '';
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    
+                    const config = { 
+                        attributes: true, 
+                        childList: true, 
+                        subtree: true,
+                        attributeFilter: ['style', 'class'] 
+                    };
+                    
+                    observer.observe(sectionElement, config);
+                    logDebug('DOM mutation observer started for dropdown visibility');
+                }
+            }
+            
+            // Public API
+            return {
+                initialize,
+                updateClimateData,
+                setupDropdownObserver
+            };
+        })();
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Run all initialization
+            window.TEUI.ClimateModule.initialize();
+            window.TEUI.ClimateModule.setupDropdownObserver();
+            
+            // Modal window click handler
+            window.addEventListener('click', function(event) {
+                if (event.target === document.getElementById('weatherDataModal')) {
+                    document.getElementById('weatherDataModal').style.display = 'none';
+                }
+            });
+            
+            // Escape key handler for modal
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && document.getElementById('weatherDataModal').style.display === 'block') {
+                    document.getElementById('weatherDataModal').style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
