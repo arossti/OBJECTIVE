@@ -197,21 +197,19 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
         },
         "97": {
-            id: "B.12", rowId: "B.12", label: "Thermal Bridge Penalty (min. 5-70%)",
-            cells: {
-                c: { label: "Thermal Bridge Penalty (min. 5-70%)" },
+            id: "B.12", rowId: "B.12", label: "Thermal Bridge Penalty %", cells: {
+                c: { label: "Thermal Bridge Penalty (%)" }, 
                 d: { 
                     fieldId: "d_97", 
-                    type: "percentage", // Changed type to percentage for slider
-                    value: "20",       // Default percentage value
-                    min: 5,           // Min percentage
-                    max: 100,         // Max percentage
-                    step: 5,          // Step percentage
-                    title: "Enter percentage (e.g., 20 for 20%). Assume Code Minimum Construction at 50%, PassiveHouse at 5-10%",
-                    section: "transmissionLosses", // Added section for consistency
-                    classes: ["user-input", "slider-container"] // Added slider class
+                    type: "percentage", // Changed from editable to percentage
+                    value: "20", // Default value 20%
+                    min: 5,      // **** CHANGED: Set min to 5 ****
+                    max: 100,     // Max 100%
+                    step: 5,      // Step 5%
+                    section: "envelope"
                 },
-                e: { fieldId: "e_97", type: "calculated", value: "0.00" }, f: {}, g: {}, h: {}, // e_97 might display the decimal factor if needed
+                e: { fieldId: "e_97", type: "calculated", value: "0.200" }, // Placeholder for decimal equivalent
+                f: { content: "0.00", classes: ["label-prefix"] },
                 i: { fieldId: "i_97", type: "calculated", value: "0.00" }, j: { fieldId: "j_97", type: "calculated", value: "0%" },
                 k: { fieldId: "k_97", type: "calculated", value: "0.00" }, l: { fieldId: "l_97", type: "calculated", value: "0%" },
                 m: { fieldId: "m_97", type: "calculated", value: "0%" }, n: { fieldId: "n_97", type: "calculated", value: "✓" }
