@@ -344,6 +344,17 @@ TEUI.StateManager = (function() {
      * @param {Function} callback - Callback function(newValue, oldValue, fieldId, state)
      */
     function addListener(fieldId, callback) {
+        // >>> ADD DIAGNOSTIC LOGGING <<<
+        // Try to get the name of the calling function for context
+        let callerName = 'unknown';
+        try {
+            // This might not work reliably or across all browsers/modes
+            // but worth a try for debugging.
+            callerName = (new Error()).stack.split('\n')[2]?.trim().split(' ')[1] || 'anonymous';
+        } catch (e) { /* ignore */ }
+        console.log(`[StateManager DIAGNOSTIC] ADDING LISTENER for field: ${fieldId} from caller: ${callerName}`);
+        // >>> END DIAGNOSTIC LOGGING <<<
+
         if (!listeners.has(fieldId)) {
             listeners.set(fieldId, new Set());
         }
