@@ -868,33 +868,6 @@ window.TEUI.SectionModules.sect04 = (function() {
             if (window.TEUI && window.TEUI.StateManager) {
                 window.TEUI.StateManager.setValue('l_27', factor.toString(), 'calculated');
             }
-            
-            // Update dependent emissions calculations for ACTUAL emissions
-            const f27El = document.querySelector('[data-field-id="f_27"]');
-            const g27El = document.querySelector('[data-field-id="g_27"]');
-            
-            if (f27El && g27El) {
-                // Use getNumericValue to read state
-                const f27Value = getNumericValue('f_27');
-                const g27Value = calculateG27(f27Value, factor);
-                // Update state and DOM using standard helper
-                setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
-            }
-            
-            // Update dependent emissions calculations for TARGET emissions
-            const j27El = document.querySelector('[data-field-id="j_27"]');
-            const k27El = document.querySelector('[data-field-id="k_27"]');
-            
-            if (j27El && k27El) {
-                // Use getNumericValue to read state
-                const j27Value = getNumericValue('j_27');
-                const k27Value = calculateK27(j27Value, factor);
-                 // Update state and DOM using standard helper
-                setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-            }
-            
-            // Update subtotals after both actual and target emissions are updated
-            updateSubtotals();
         }
     }
     
