@@ -27,9 +27,10 @@ window.TEUI.sect03.debug = {
     logScope: function() {
         console.log("[S03 DIAGNOSTIC] Checking function scope...");
         console.log("[S03 DIAGNOSTIC] Inside IIFE functions:");
-        console.log("[S03 DIAGNOSTIC] - handleProvinceChange available: " + (typeof handleProvinceChange === 'function'));
-        console.log("[S03 DIAGNOSTIC] - updateWeatherData available: " + (typeof updateWeatherData === 'function'));
-        console.log("[S03 DIAGNOSTIC] - initializeEventHandlers available: " + (typeof initializeEventHandlers === 'function'));
+        // These will likely show false now as they are truly private to the IIFE
+        // console.log("[S03 DIAGNOSTIC] - handleProvinceChange available: " + (typeof handleProvinceChange === 'function'));
+        // console.log("[S03 DIAGNOSTIC] - updateWeatherData available: " + (typeof updateWeatherData === 'function'));
+        // console.log("[S03 DIAGNOSTIC] - initializeEventHandlers available: " + (typeof initializeEventHandlers === 'function'));
         console.log("[S03 DIAGNOSTIC] Global scope functions:");
         console.log("[S03 DIAGNOSTIC] - window.TEUI.sect03.handleProvinceChange available: " + (typeof window.TEUI.sect03.handleProvinceChange === 'function'));
         console.log("[S03 DIAGNOSTIC] - window.TEUI.sect03.updateWeatherData available: " + (typeof window.TEUI.sect03.updateWeatherData === 'function'));
@@ -55,7 +56,13 @@ window.TEUI.sect03.debug = {
     },
     // New helper to ensure city dropdown visibility
     ensureCityDropdownVisible: function() {
-        return window.TEUI.sect03.ensureCityDropdownVisible();
+        // Check if the function is actually defined globally before calling
+        if (typeof window.TEUI.sect03.ensureCityDropdownVisible === 'function') {
+             return window.TEUI.sect03.ensureCityDropdownVisible();
+        } else {
+            console.error("[S03 DEBUG] window.TEUI.sect03.ensureCityDropdownVisible is not defined globally!");
+            return false;
+        }
     }
 };
 
@@ -90,7 +97,13 @@ window.TEUI.formatNumber = window.TEUI.formatNumber || function(value) {
 };
 
 // Section 3: Climate Calculations Module (Modified Copy)
-window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
+// Main Module IIFE starts here
+window.TEUI.SectionModules.sect03 = (function() {
+
+    // >>> ADDED: Local store for city data <<<
+    let provinceCityMap = {}; 
+    // >>> END ADDED <<<
+
     //==========================================================================
     // ADDED: HELPER FUNCTIONS (Standard Implementation like S04)
     //==========================================================================
@@ -127,13 +140,18 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         
         // Fall back to DOM if StateManager didn't have the value
         try {
-            // Try dropdown first
-            const dropdownElement = document.querySelector(`[data-dropdown-id="${fieldId}"]`);
+            // Try dropdown first by data-dropdown-id
+            const dropdownElementDD = document.querySelector(`[data-dropdown-id="${fieldId}"]`);
+             if (dropdownElementDD && dropdownElementDD.value !== undefined) {
+                 return dropdownElementDD.value;
+             }
+            // Try dropdown first by data-field-id
+            const dropdownElement = document.querySelector(`select[data-field-id="${fieldId}"]`);
             if (dropdownElement && dropdownElement.value !== undefined) {
                 return dropdownElement.value;
             }
             
-            // Then try regular field
+            // Then try regular field by data-field-id
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (element) {
                 if (element.value !== undefined) {
@@ -146,7 +164,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             console.warn(`[S03 DEBUG] Error getting value from DOM for ${fieldId}:`, e);
         }
         
-        console.warn(`[S03 DEBUG] Field value not found for ${fieldId}`);
+        // console.warn(`[S03 DEBUG] Field value not found for ${fieldId}`); // Reduce noise
         return null;
     }
 
@@ -158,7 +176,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
      * @param {string} [formatType='number'] - The format type string.
      */
     function setCalculatedValue(fieldId, rawValue, formatType = 'number') {
-        console.log(`[S03 DEBUG] Setting ${fieldId} to ${rawValue} with format ${formatType}`);
+        // console.log(`[S03 DEBUG] Setting ${fieldId} to ${rawValue} with format ${formatType}`); // Reduce noise
         
         // Handle potential N/A cases first
         if (isNaN(rawValue) || rawValue === null || rawValue === undefined) {
@@ -173,13 +191,13 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         // Format the value according to format type
         let formattedValue;
         if (formatType === 'integer-nocomma') {
-            formattedValue = Math.round(rawValue).toString();
+             formattedValue = window.TEUI?.formatNumber ? window.TEUI.formatNumber(rawValue, formatType) : Math.round(rawValue).toString();
         } else if (formatType === 'number-1dp') {
-            formattedValue = parseFloat(rawValue).toFixed(1);
+            formattedValue = window.TEUI?.formatNumber ? window.TEUI.formatNumber(rawValue, formatType) : parseFloat(rawValue).toFixed(1);
         } else if (formatType === 'raw') {
             formattedValue = rawValue.toString();
         } else if (formatType === 'percent-0dp') {
-            formattedValue = Math.round(rawValue * 100) + '%';
+            formattedValue = window.TEUI?.formatNumber ? window.TEUI.formatNumber(rawValue, formatType) : Math.round(rawValue * 100) + '%';
         } else {
             // Use default TEUI formatter if available, or basic formatting
             formattedValue = window.TEUI?.formatNumber ? 
@@ -189,6 +207,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         
         // Store raw value as string in StateManager for precision
         if (window.TEUI?.StateManager?.setValue) {
+            // Store raw number converted to string
             window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
         }
         
@@ -198,7 +217,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', rawValue < 0);
         } else {
-            console.warn(`[S03 DEBUG] setCalculatedValue: Element not found for ${fieldId}`);
+            // console.warn(`[S03 DEBUG] setCalculatedValue: Element not found for ${fieldId}`); // Reduce noise
         }
     }
 
@@ -208,7 +227,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
      * @returns {boolean} True if dropdown was found and verified, false otherwise
      */
     function ensureCityDropdownVisible() {
-        console.log("[S03 DEBUG] Running dropdown visibility check");
+        // console.log("[S03 DEBUG] Running dropdown visibility check"); // Reduce noise
         
         // First find the dropdown
         const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
@@ -301,8 +320,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 m: { fieldId: "m_19", type: "editable", value: "120", section: "climateCalculations", classes: ["user-input", "editable"] }
             }
         },
-        // ... (Keep rows 20-24 definitions as they were, they depend on derived values) ...
-        // Row 20: Heating Degree Days
         "20": {
             id: "L.2.1", rowId: "L.2.1", label: "Heating Degree Days (HDD)",
             cells: {
@@ -319,7 +336,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 k: { content: "HDD - Energy Star", classes: ["reference-label"] }
             }
         },
-        // Row 21: Cooling Degree Days
         "21": {
             id: "L.2.3", rowId: "L.2.3", label: "Cooling Degree Days (CDD)",
             cells: {
@@ -337,7 +353,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 k: { content: "CDD - Energy Star", classes: ["reference-label"] }
             }
         },
-        // Row 22: Ground Facing HDD, Ground Facing CDD, Elevation
         "22": {
             id: "L.2.4", rowId: "L.2.4", label: "Ground Facing GF HDD",
             cells: {
@@ -354,7 +369,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 m: { content: "m", classes: ["unit-label"] }
             }
         },
-        // Row 23: Coldest Days, Heating Setpoint
         "23": {
             id: "L.3.1", rowId: "L.3.1", label: "Coldest Days (Location Specific)",
             cells: {
@@ -368,7 +382,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 m: { fieldId: "m_23", type: "calculated", value: "0%" }
             }
         },
-        // Row 24: Hottest Days, Cooling Setpoint & Override
         "24": {
             id: "L.3.2", rowId: "L.3.2", label: "Hottest Days (Location Specific)",
             cells: {
@@ -462,7 +475,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             }
             delete cell.getOptions; delete cell.section; delete cell.dependencies;
              // Keep 'value' only if type is 'editable' or 'calculated' for default display
-            if (cell.type !== 'editable' && cell.type !== 'calculated') {
+            if (cell.type !== 'editable' && cell.type !== 'calculated' && cell.type !== 'derived') {
                  delete cell.value; 
             }
             rowDef.cells.push(cell);
@@ -604,7 +617,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             // ADDED: Make sure city dropdown is visible before calculations
             ensureCityDropdownVisible();
             
-            console.log("[S03 DEBUG] Calculating all derived values");
+            // console.log("[S03 DEBUG] Calculating all derived values"); // Reduce noise
             
             // Original calculations
             calculateHeatingSetpoint(); 
@@ -619,41 +632,41 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             const climateZone = determineClimateZone(hdd);
             setCalculatedValue("j_19", climateZone, 'number-1dp');
             
-            // Additional calculations for climate values
-            const hdd18 = parseFloat(getFieldValue("d_20")) || 0;
-            const cdd24 = parseFloat(getFieldValue("d_21")) || 0;
+            // Additional calculations for climate values - These seem like fallback logic now, might not be needed
+            // const hdd18 = parseFloat(getFieldValue("d_20")) || 0;
+            // const cdd24 = parseFloat(getFieldValue("d_21")) || 0;
             
             // Reference lookups (if not already set by other functions)
-            if (!getFieldValue("e_23")) {
-                setCalculatedValue("e_23", hdd18 > 0 ? Math.round(hdd18 * 0.85) : 0, 'integer-nocomma');
-            }
+            // if (!getFieldValue("e_23")) {
+            //     setCalculatedValue("e_23", hdd18 > 0 ? Math.round(hdd18 * 0.85) : 0, 'integer-nocomma');
+            // }
             
-            if (!getFieldValue("e_24")) {
-                setCalculatedValue("e_24", cdd24 > 0 ? Math.round(cdd24 * 0.75) : 0, 'integer-nocomma');
-            }
+            // if (!getFieldValue("e_24")) {
+            //     setCalculatedValue("e_24", cdd24 > 0 ? Math.round(cdd24 * 0.75) : 0, 'integer-nocomma');
+            // }
             
             // Calculate additional degree days if not set
-            if (!getFieldValue("d_22")) {
-                const hdd15 = hdd18 > 0 ? Math.round(hdd18 * 0.8) : 0;
-                setCalculatedValue("d_22", hdd15, 'integer-nocomma');
-            }
+            // if (!getFieldValue("d_22")) {
+            //     const hdd15 = hdd18 > 0 ? Math.round(hdd18 * 0.8) : 0;
+            //     setCalculatedValue("d_22", hdd15, 'integer-nocomma');
+            // }
             
             // Calculate delta values if not set
-            const delta1 = parseFloat(getFieldValue("e_23")) || 0;
-            const delta2 = parseFloat(getFieldValue("e_24")) || 0;
+            // const delta1 = parseFloat(getFieldValue("e_23")) || 0;
+            // const delta2 = parseFloat(getFieldValue("e_24")) || 0;
             
-            if (!getFieldValue("i_23")) {
-                setCalculatedValue("i_23", delta1 > 0 ? hdd18 - delta1 : 0, 'integer-nocomma');
-            }
+            // if (!getFieldValue("i_23")) {
+            //     setCalculatedValue("i_23", delta1 > 0 ? hdd18 - delta1 : 0, 'integer-nocomma');
+            // }
             
-            if (!getFieldValue("i_24")) {
-                setCalculatedValue("i_24", delta2 > 0 ? cdd24 - delta2 : 0, 'integer-nocomma');
-            }
+            // if (!getFieldValue("i_24")) {
+            //     setCalculatedValue("i_24", delta2 > 0 ? cdd24 - delta2 : 0, 'integer-nocomma');
+            // }
             
             // ADDED: Final check for dropdown visibility 
             ensureCityDropdownVisible();
             
-            console.log("[S03 DEBUG] All calculations complete");
+            // console.log("[S03 DEBUG] All calculations complete"); // Reduce noise
         } catch (error) {
             console.error(`[S03 DEBUG] Error in calculateAll: ${error.message}`);
         }
@@ -664,7 +677,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
     //==========================================================================
 
     /**
-     * Handle province selection change - MODIFIED FOR ClimateData
+     * Handle province selection change - MODIFIED FOR ClimateData & Local List
      */
     function handleProvinceChange(e) {
         const provinceValue = e?.target?.value || (typeof e === 'string' ? e : null);
@@ -757,16 +770,16 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
      */
     function updateWeatherData() {
         const provinceValue = getFieldValue("d_19");
-        const cityValue = getFieldValue("h_19");
+        const cityValue = getFieldValue("h_19"); // This should now reflect the visual selection
         const isFuture = getFieldValue("h_20") === 'Future';
         
-        console.log(`[S03 DEBUG] updateWeatherData called. Province: ${provinceValue}, City: ${cityValue}, Future: ${isFuture}`);
+        // console.log(`[S03 DEBUG] updateWeatherData called. Province: ${provinceValue}, City: ${cityValue}, Future: ${isFuture}`); // Reduce noise
         
         // Always ensure our dropdown is visible
         ensureCityDropdownVisible();
         
         if (!provinceValue || !cityValue) {
-            console.warn(`[S03 DEBUG] Missing province or city values. Province: ${provinceValue}, City: ${cityValue}`);
+            // console.warn(`[S03 DEBUG] Missing province or city values. Province: ${provinceValue}, City: ${cityValue}`); // Reduce noise
             resetClimateFields(); // Reset if data not found
             return;
         }
@@ -796,46 +809,56 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         const cityData = window.TEUI.ClimateData[provinceValue][cityValue];
         
         // Check if we have all the required fields
-        const requiredFields = ["HDD18", "HDD18_2021_2050", "CDD24", "CDD24_2021_2050", "Elev ASL (m)", 
+        const requiredKeys = ["HDD18", "HDD18_2021_2050", "CDD24", "CDD24_2021_2050", "Elev ASL (m)", 
                                "January_1", "January_2_5", "July_2_5_Tdb", "Future_July_2_5_Tdb"];
         
-        for (const field of requiredFields) {
-            if (cityData[field] === undefined) {
-                console.warn(`[S03 DEBUG] Missing required field "${field}" for ${cityValue}, ${provinceValue}`);
-                // Don't return, continue with available data
+        let missingKey = false;
+        for (const key of requiredKeys) {
+            if (cityData[key] === undefined || cityData[key] === null) {
+                console.warn(`[S03 DEBUG] Missing data key "${key}" for ${cityValue}, ${provinceValue}`);
+                // Don't mark as missing if placeholder 666 is used
+                if (cityData[key] !== 666) { 
+                    missingKey = true;
+                }
             }
         }
+         if (missingKey) {
+             // Optionally reset fields or show error if critical data missing
+             // resetClimateFields(); 
+             // return;
+         }
         
-        console.log(`[S03 DEBUG] Retrieved city data for ${cityValue}, ${provinceValue}`, cityData);
+        // console.log(`[S03 DEBUG] Retrieved city data for ${cityValue}, ${provinceValue}`, cityData); // Reduce noise
         
         const isCritical = updateCriticalOccupancyFlag(); // Check criticality
 
         try {
             // Update derived climate data fields using keys from ClimateData
+            // Use getNumericValue with default 0 for safety, though keys should exist now
             setCalculatedValue("d_20", isFuture ? 
-                (cityData.HDD18_2021_2050 || 0) : (cityData.HDD18 || 0), 'integer-nocomma');
+                getNumericValue(cityData.HDD18_2021_2050, 0) : getNumericValue(cityData.HDD18, 0), 'integer-nocomma');
                 
             setCalculatedValue("d_21", isFuture ? 
-                (cityData.CDD24_2021_2050 || 0) : (cityData.CDD24 || 0), 'integer-nocomma');
+                getNumericValue(cityData.CDD24_2021_2050, 0) : getNumericValue(cityData.CDD24, 0), 'integer-nocomma');
                 
             setCalculatedValue("l_22", 
-                cityData["Elev ASL (m)"] || 0, 'integer-nocomma');
+                getNumericValue(cityData["Elev ASL (m)"], 0), 'integer-nocomma');
             
             // Select temp based on criticality
             const coldestTemp = isCritical ? 
-                (cityData.January_1 || 0) : (cityData.January_2_5 || 0);
+                 getNumericValue(cityData.January_1, 0) : getNumericValue(cityData.January_2_5, 0);
             setCalculatedValue("d_23", coldestTemp, 'integer-nocomma');
 
             // Select hottest temp (use future if selected, otherwise present)
             const hottestTemp = isFuture ? 
-                (cityData.Future_July_2_5_Tdb || 0) : (cityData.July_2_5_Tdb || 0);
+                 getNumericValue(cityData.Future_July_2_5_Tdb, 0) : getNumericValue(cityData.July_2_5_Tdb, 0);
             setCalculatedValue("d_24", hottestTemp, 'integer-nocomma');
 
-            // Reference lookups for Energy Star (placeholders for now)
-            setCalculatedValue("j_20", cityData.HDD18 || 0, 'integer-nocomma'); // Using HDD18 as ref for now
-            setCalculatedValue("j_21", cityData.CDD24 || 0, 'integer-nocomma'); // Using CDD24 as ref for now
+            // Reference lookups for Energy Star (using present data as ref)
+            setCalculatedValue("j_20", getNumericValue(cityData.HDD18, 0), 'integer-nocomma'); 
+            setCalculatedValue("j_21", getNumericValue(cityData.CDD24, 0), 'integer-nocomma'); 
 
-            console.log("[S03 DEBUG] Climate data successfully applied");
+            // console.log("[S03 DEBUG] Climate data successfully applied"); // Reduce noise
             
             // Do a final check to ensure the dropdown is still visible
             ensureCityDropdownVisible();
@@ -851,7 +874,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
      * Reset climate fields when no city is selected or data is missing
      */
     function resetClimateFields() {
-        console.log("[S03 DEBUG] Resetting climate fields");
+        // console.log("[S03 DEBUG] Resetting climate fields"); // Reduce noise
         
         const fieldsToReset = [
             "d_20", "d_21", "l_22", "d_23", "d_24", "e_23", "e_24", "j_19", 
@@ -860,25 +883,24 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         
         fieldsToReset.forEach(fieldId => {
             // Reset to 0 or appropriate default
-            setCalculatedValue(fieldId, 0, 'integer-nocomma');
+            setCalculatedValue(fieldId, 0, 'integer-nocomma'); 
         });
         
-        // Maintain any user-editable fields at their default values
-        if (!getFieldValue("l_24")) {
-            setCalculatedValue("l_24", 24, 'integer-nocomma');
-        }
-        
-        if (!getFieldValue("m_19")) {
-            setCalculatedValue("m_19", 120, 'integer-nocomma');
-        }
+        // Maintain user-editable fields unless they should be reset too
+        // Example: reset l_24 only if needed
+        // if (getFieldValue("l_24") === null) { // Check if it needs reset
+        //    setCalculatedValue("l_24", 24, 'integer-nocomma'); 
+        // }
+        // Reset m_19 if needed
+        // if (getFieldValue("m_19") === null) {
+        //     setCalculatedValue("m_19", 120, 'integer-nocomma');
+        // }
         
         // Remove critical occupancy flag if present
         const sectionHeader = document.querySelector('#climateCalculations .section-header');
         if (sectionHeader) {
             const flagSpan = sectionHeader.querySelector('.critical-occupancy-header-flag');
-            if (flagSpan) {
-                flagSpan.remove();
-            }
+            flagSpan?.remove();
             sectionHeader.dataset.isCritical = 'false';
         }
     }
@@ -910,11 +932,12 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         if (modalTitle) modalTitle.textContent = `Weather Data for ${cityValue}, ${provinceValue}`;
         if (modalContent) {
             // Format the data nicely for the modal
-            let formattedContent = '';
+            let formattedContent = '<pre>'; // Use pre for better formatting
             for (const [key, value] of Object.entries(cityData)) {
-                formattedContent += `${key}: ${value}\n`;
+                formattedContent += `${key.padEnd(40)}: ${value}\n`; // Pad keys for alignment
             }
-            modalContent.textContent = formattedContent.trim();
+            formattedContent += '</pre>';
+            modalContent.innerHTML = formattedContent; // Use innerHTML for pre tag
         }
         
         // Show modal using Bootstrap API
@@ -926,7 +949,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
     }
 
     /**
-     * Initialize event handlers for this section - MODIFIED FOR ClimateData
+     * Initialize event handlers for this section - Uses Event Delegation
      */
     function initializeEventHandlers() {
         const sectionElement = document.getElementById('climateCalculations');
@@ -944,7 +967,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         if (timeframeDropdownOld) timeframeDropdownOld.removeEventListener('change', window.TEUI.sect03.handleTimeframeChange);
         // Note: We don't have a global handleCriticalChange exposed, so we don't remove it here
 
-        // --- STRATEGY 2: EVENT DELEGATION --- 
+        // --- EVENT DELEGATION --- 
         // Add ONE listener to the section container
         if (!sectionElement.hasS03DelegatedListener) { // Prevent adding multiple container listeners
             sectionElement.addEventListener('change', function(event) {
@@ -954,12 +977,12 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
 
                 // Delegate based on the dropdown ID
                 if (dropdownId === 'dd_d_19') {
-                    console.log("[S03 Delegated] Province change detected");
-                    // >>> ADD DIAGNOSTIC LOG <<<
+                    // console.log("[S03 Delegated] Province change detected"); // Reduce noise
+                    // >>> ADDED DIAGNOSTIC LOG <<<
                     console.log("[S03 Delegated] Change listener fired for dd_d_19. Checking for city dropdown NOW...");
-                    // >>> END DIAGNOSTIC LOG <<<
+                    // >>> END DIAGNOSTIC LOG <<<                    
                     const cityDropdownExists = !!document.querySelector('[data-dropdown-id="dd_h_19"]');
-                    console.log(`[S03 Delegated] Just before calling handleProvinceChange. City dropdown exists? ${cityDropdownExists}`);
+                    // console.log(`[S03 Delegated] Just before calling handleProvinceChange. City dropdown exists? ${cityDropdownExists}`); // Reduce noise
                     if (typeof window.TEUI.sect03.handleProvinceChange === 'function') {
                         // Pass the event object itself, the handler can get the value
                         window.TEUI.sect03.handleProvinceChange(event); 
@@ -967,7 +990,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                         console.error("[S03 Delegated] handleProvinceChange function not found!");
                     }
                 } else if (dropdownId === 'dd_h_19') {
-                    console.log("[S03 Delegated] City change detected");
+                    // console.log("[S03 Delegated] City change detected"); // Reduce noise
                      if (typeof window.TEUI.sect03.handleCityChange === 'function') {
                         // Pass the event object itself
                         window.TEUI.sect03.handleCityChange(event); 
@@ -975,7 +998,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                         console.error("[S03 Delegated] handleCityChange function not found!");
                     }
                 } else if (dropdownId === 'dd_h_20') {
-                    console.log("[S03 Delegated] Timeframe change detected");
+                    // console.log("[S03 Delegated] Timeframe change detected"); // Reduce noise
                      if (typeof window.TEUI.sect03.handleTimeframeChange === 'function') {
                         // Pass the event object itself
                         window.TEUI.sect03.handleTimeframeChange(event); 
@@ -983,7 +1006,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                         console.error("[S03 Delegated] handleTimeframeChange function not found!");
                     }
                 } else if (fieldId === 'l_23') { // Checkbox field ID
-                    console.log("[S03 Delegated] Criticality change detected");
+                    // console.log("[S03 Delegated] Criticality change detected"); // Reduce noise
                      if (typeof window.TEUI.sect03.handleCriticalChange === 'function') {
                         // Pass the event object itself
                         window.TEUI.sect03.handleCriticalChange(event); 
@@ -995,50 +1018,11 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
             sectionElement.hasS03DelegatedListener = true;
             console.log("[S03 DEBUG] Delegated change listener attached to #climateCalculations");
         } else {
-             console.log("[S03 DEBUG] Delegated listener already attached to #climateCalculations.");
+             // console.log("[S03 DEBUG] Delegated listener already attached to #climateCalculations."); // Reduce noise
         }
-        // --- END STRATEGY 2 ---
-
-        /* REMOVE DIRECT LISTENERS - Replaced by delegation above
-        // Province dropdown change
-        const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-        if (provinceDropdown) {
-            // Clean up any previous event listeners to prevent duplicates
-            provinceDropdown.removeEventListener('change', window.TEUI.sect03.handleProvinceChange);
-            // Add the event listener using the globally accessible function
-            provinceDropdown.addEventListener('change', window.TEUI.sect03.handleProvinceChange);
-            console.log("[S03 DEBUG] Province dropdown event listener attached");
-        } else {
-            console.error("[S03 DEBUG] Province dropdown not found!");
-        }
-
-        // City dropdown change
-        const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-        if (cityDropdown) {
-            // Clean up any previous event listeners
-            cityDropdown.removeEventListener('change', window.TEUI.sect03.handleCityChange);
-            // Add the event listener using the globally accessible function
-            cityDropdown.addEventListener('change', window.TEUI.sect03.handleCityChange);
-            console.log("[S03 DEBUG] City dropdown event listener attached");
-        } else {
-            console.error("[S03 DEBUG] City dropdown not found!");
-        }
+        // --- END EVENT DELEGATION ---
         
-        // Future/Present toggle
-        const timeframeDropdown = document.querySelector('[data-dropdown-id="dd_h_20"]');
-        if (timeframeDropdown) {
-            timeframeDropdown.removeEventListener('change', window.TEUI.sect03.handleTimeframeChange);
-            timeframeDropdown.addEventListener('change', window.TEUI.sect03.handleTimeframeChange);
-        }
-        
-        // Criticality checkbox
-        const criticalCheckbox = document.querySelector('[data-field-id="l_23"]');
-        if (criticalCheckbox) {
-            criticalCheckbox.removeEventListener('change', window.TEUI.sect03.handleCriticalChange);
-            criticalCheckbox.addEventListener('change', window.TEUI.sect03.handleCriticalChange);
-        }
-        
-        // Add handlers for editable fields (m_19, l_24)
+        // Add handlers for editable fields (m_19, l_24) - Keep these direct
         const editableFields = sectionElement.querySelectorAll('.editable.user-input');
         editableFields.forEach(field => {
             if (!field.hasEditableListeners) {
@@ -1056,6 +1040,11 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         // StateManager Listeners (mostly unchanged, but ensure calculateAll covers dependencies)
         if (window.TEUI && window.TEUI.StateManager) {
             const sm = window.TEUI.StateManager;
+            // REMOVE existing listeners before adding new ones to prevent duplicates if this runs multiple times
+            // (Ideally it shouldn't, but this adds robustness)
+            // Note: StateManager doesn't have removeListenerAll for a key, requires tracking callbacks
+            // For simplicity, we assume the listeners added here are idempotent or managed by StateManager internally
+            // If issues persist, explicit listener removal might be needed.
             sm.addListener('d_12', calculateAll); // Occupancy affects setpoints
             sm.addListener('h_24', calculateAll); // Base Cooling Setpoint
             sm.addListener('l_24', calculateAll); // Cooling Override
@@ -1067,150 +1056,165 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         // Initialize weather data modal
         initializeWeatherDataModal();
         
-        console.log("[S03 DEBUG] Event handlers initialized");
+        // console.log("[S03 DEBUG] Event handlers initialized"); // Reduce noise
     }
 
     /**
      * Handle City dropdown change - MODIFIED FOR ClimateData
      */
-    function handleCityChange(e) {
-        const cityValue = e?.target?.value;
-        console.log(`[S03 DEBUG] handleCityChange triggered. City: ${cityValue}`);
-        
-        // Ensure the dropdown is still visible
-        ensureCityDropdownVisible();
-        
-        if (!cityValue) {
-            resetClimateFields();
-            return;
-        }
-        
-        // 1. NOW update StateManager for the user's selected city
-        if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue('h_19', cityValue, 'user-modified');
-        }
-        
-        // 2. Trigger weather data update for the selected city
-        updateWeatherData();
-        
-        // Final check to ensure dropdown remains visible
-        setTimeout(ensureCityDropdownVisible, 100);
-    }
+        function handleCityChange(e) {
+            const cityValue = e?.target?.value;
+            // console.log(`[S03 DEBUG] handleCityChange triggered. City: ${cityValue}`); // Reduce noise
 
-    /**
-     * Handle blur events on editable fields - Copied from S09, adjusted slightly
-     */
-    function handleEditableBlur(event) {
-        const fieldId = this.getAttribute('data-field-id');
-        if (!fieldId) return;
-
-        if (this.getAttribute('contenteditable') === 'true') {
-            const newValueStr = this.textContent.trim();
-            const numericValue = window.TEUI.parseNumeric(newValueStr, NaN); // Parse the NEW text
-
-            // Store the parsed value (or default 0) in StateManager
-            const valueToStore = isNaN(numericValue) ? '0' : numericValue.toString();
-            if (window.TEUI?.StateManager?.setValue) {
-                window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
-            }
-            
-            // Format the display using the NEW parsed value
-            const formatType = (fieldId === 'm_19' || fieldId === 'l_22' || fieldId === 'd_23' || fieldId === 'd_24' || fieldId === 'e_23' || fieldId === 'e_24' || fieldId === 'h_23' || fieldId === 'i_23') ? 'integer' : 'number-2dp';
-            this.textContent = window.TEUI.formatNumber(isNaN(numericValue) ? 0 : numericValue, formatType);
-            
-            // Recalculate (will use updated StateManager value)
-            calculateAll();
-        }
-    }
-
-    /**
-     * Handle timeframe (Present/Future) dropdown change
-     */
-    function handleTimeframeChange(e) {
-        console.log(`[S03 DEBUG] Timeframe changed to: ${e.target.value}`);
-        
-        // Update the weather data based on the changed timeframe
-        updateWeatherData();
-    }
-
-    /**
-     * Handle critical occupancy checkbox change
-     */
-    function handleCriticalChange(e) {
-        const isChecked = e.target.checked;
-        console.log(`[S03 DEBUG] Critical occupancy changed to: ${isChecked}`);
-        
-        // Update state manager
-        if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue('l_23', isChecked ? 'true' : 'false', 'user-modified');
-        }
-        
-        // Update values that depend on criticality
-        updateWeatherData();
-    }
-
-    /**
-     * Called when the section is rendered in the DOM
-     * This is the entry point for section initialization
-     */
-    function onSectionRendered() {
-        console.log("[S03 DEBUG] Section03 onSectionRendered called");
-        
-        // Ensure city dropdown visibility immediately
-        ensureCityDropdownVisible();
-        
-        if (!window.TEUI.sect03.initialized) {
-            console.log("[S03 DEBUG] First-time initialization");
-            
-            // Initialize event handlers
-            initializeEventHandlers();
-            
-            // Set up dropdown monitoring with MutationObserver
-            setupDropdownMonitoring();
-            
-            // Initialize province/city values
-            const storedProvince = window.TEUI?.StateManager?.getValue('d_19');
-            if (storedProvince) {
-                // Use stored value if available
-                const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-                if (provinceDropdown) {
-                    provinceDropdown.value = storedProvince;
-                    window.TEUI.sect03.handleProvinceChange(storedProvince);
-                }
-            } else {
-                // Use default (Ontario)
-                const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-                if (provinceDropdown) {
-                    provinceDropdown.value = "ON";
-                    window.TEUI.sect03.handleProvinceChange("ON");
-                } else {
-                    resetClimateFields();
-                }
-            }
-            
-            // Mark as initialized
-            window.TEUI.sect03.initialized = true;
-        } else {
-            console.log("[S03 DEBUG] Re-initialization - section already initialized");
-            
-            // Just ensure important elements are visible
+            // Ensure the dropdown is still visible
             ensureCityDropdownVisible();
-            
-            // Check if our observer is still active, if not restart it
-            if (!window.TEUI.sect03.dropdownObserver || 
-                typeof window.TEUI.sect03.dropdownObserver.disconnect !== 'function') {
-                console.log("[S03 DEBUG] Restarting dropdown monitoring");
-                setupDropdownMonitoring();
+
+            if (!cityValue) {
+                resetClimateFields();
+                return;
+            }
+
+            // 1. NOW update StateManager for the user's selected city
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('h_19', cityValue, 'user-modified');
+            }
+
+            // 2. Trigger weather data update for the selected city
+            updateWeatherData();
+
+            // Final check to ensure dropdown remains visible
+            setTimeout(ensureCityDropdownVisible, 100);
+        }
+
+        /**
+         * Handle blur events on editable fields - Copied from S09, adjusted slightly
+         */
+        function handleEditableBlur(event) {
+            const fieldId = this.getAttribute('data-field-id');
+            if (!fieldId) return;
+
+            if (this.getAttribute('contenteditable') === 'true') {
+                const newValueStr = this.textContent.trim();
+                const numericValue = window.TEUI.parseNumeric(newValueStr, NaN); // Parse the NEW text
+
+                // Store the parsed value (or default 0) in StateManager
+                const valueToStore = isNaN(numericValue) ? '0' : numericValue.toString();
+                if (window.TEUI?.StateManager?.setValue) {
+                    window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
+                }
+
+                // Format the display using the NEW parsed value
+                const formatType = (fieldId === 'm_19' || fieldId === 'l_22' || fieldId === 'd_23' || fieldId === 'd_24' || fieldId === 'e_23' || fieldId === 'e_24' || fieldId === 'h_23' || fieldId === 'i_23') ? 'integer-nocomma' : 'number-2dp';
+                this.textContent = window.TEUI.formatNumber(isNaN(numericValue) ? 0 : numericValue, formatType);
+
+                // Recalculate (will use updated StateManager value)
+                calculateAll();
             }
         }
-    }
-    
+
+        /**
+         * Handle timeframe (Present/Future) dropdown change
+         */
+        function handleTimeframeChange(e) {
+            // console.log(`[S03 DEBUG] Timeframe changed to: ${e.target.value}`); // Reduce noise
+
+            // Update the weather data based on the changed timeframe
+            updateWeatherData();
+        }
+
+        /**
+         * Handle critical occupancy checkbox change
+         */
+        function handleCriticalChange(e) {
+            const isChecked = e.target.checked;
+            // console.log(`[S03 DEBUG] Critical occupancy changed to: ${isChecked}`); // Reduce noise
+
+            // Update state manager
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('l_23', isChecked ? 'true' : 'false', 'user-modified');
+            }
+
+            // Update values that depend on criticality
+            updateWeatherData();
+        }
+
+        /**
+         * Called when the section is rendered in the DOM
+         * This is the entry point for section initialization
+         */
+        function onSectionRendered() {
+            // console.log("[S03 DEBUG] Section03 onSectionRendered called"); // Reduce noise
+
+            // Ensure city dropdown visibility immediately
+            ensureCityDropdownVisible();
+
+            if (!window.TEUI.sect03.initialized) {
+                console.log("[S03 DEBUG] First-time initialization");
+
+                // Initialize event handlers
+                initializeEventHandlers();
+
+                // Set up dropdown monitoring with MutationObserver
+                setupDropdownMonitoring();
+
+                // Populate local city map ONLY ONCE during first init
+                if (window.TEUI?.ClimateData) {
+                    provinceCityMap = {}; // Clear first
+                    for (const provinceKey in window.TEUI.ClimateData) {
+                        if (window.TEUI.ClimateData.hasOwnProperty(provinceKey)) {
+                            provinceCityMap[provinceKey] = Object.keys(window.TEUI.ClimateData[provinceKey]).sort();
+                        }
+                    }
+                    console.log("[S03 DEBUG] Local provinceCityMap populated:", Object.keys(provinceCityMap));
+                } else {
+                     console.error("[S03 DEBUG] Cannot populate local city map - ClimateData not found.");
+                }
+
+                // Initialize province/city values
+                const storedProvince = window.TEUI?.StateManager?.getValue('d_19');
+                if (storedProvince) {
+                    // Use stored value if available
+                    const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
+                    if (provinceDropdown) {
+                        provinceDropdown.value = storedProvince;
+                        // Use setTimeout to ensure DOM update before triggering handler
+                        setTimeout(() => window.TEUI.sect03.handleProvinceChange(storedProvince), 0); 
+                    }
+                } else {
+                    // Use default (Ontario)
+                    const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
+                    if (provinceDropdown) {
+                        provinceDropdown.value = "ON";
+                         // Use setTimeout to ensure DOM update before triggering handler
+                        setTimeout(() => window.TEUI.sect03.handleProvinceChange("ON"), 0);
+                    } else {
+                        resetClimateFields();
+                    }
+                }
+
+                // Mark as initialized
+                window.TEUI.sect03.initialized = true;
+            } else {
+                // console.log("[S03 DEBUG] Re-initialization - section already initialized"); // Reduce noise
+
+                // Just ensure important elements are visible
+                ensureCityDropdownVisible();
+
+                // Check if our observer is still active, if not restart it
+                if (!window.TEUI.sect03.dropdownObserver ||
+                    typeof window.TEUI.sect03.dropdownObserver.disconnect !== 'function') {
+                    console.log("[S03 DEBUG] Restarting dropdown monitoring");
+                    setupDropdownMonitoring();
+                }
+            }
+        }
+
     /**
      * Sets up a persistent monitoring solution to ensure the city dropdown remains visible
      */
     function setupDropdownMonitoring() {
-        console.log("[S03 DEBUG] Setting up dropdown monitoring");
-        
+        // console.log("[S03 DEBUG] Setting up dropdown monitoring"); // Reduce noise
+
         // Use MutationObserver to watch for DOM changes that might affect our dropdown
         if (window.MutationObserver) {
             // Target the container that wraps the climate section
@@ -1219,20 +1223,20 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                 console.error("[S03 DEBUG] Climate calculations section element not found for monitoring");
                 return;
             }
-            
+
             // Create observer instance
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
                     // If nodes were added or removed or attributes changed
                     if (mutation.type === 'childList' || mutation.type === 'attributes') {
                         // Check our dropdown
                         const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
                         if (cityDropdown) {
                             // If dropdown exists but might be hidden, make it visible
-                            if (cityDropdown.parentElement && 
-                                (cityDropdown.parentElement.style.display === 'none' || 
-                                 cityDropdown.style.display === 'none')) {
-                                
+                            if (cityDropdown.parentElement &&
+                                (cityDropdown.parentElement.style.display === 'none' ||
+                                    cityDropdown.style.display === 'none')) {
+
                                 console.log("[S03 DEBUG] DOM mutation observer detected hidden dropdown, restoring");
                                 ensureCityDropdownVisible();
                             }
@@ -1240,25 +1244,25 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
                     }
                 });
             });
-            
+
             // Observer configuration: watch for attribute changes and child changes
-            const config = { 
-                attributes: true, 
-                childList: true, 
+            const config = {
+                attributes: true,
+                childList: true,
                 subtree: true,
-                attributeFilter: ['style', 'class'] 
+                attributeFilter: ['style', 'class']
             };
-            
+
             // Start observing
             observer.observe(sectionElement, config);
-            console.log("[S03 DEBUG] DOM mutation observer started");
-            
+            // console.log("[S03 DEBUG] DOM mutation observer started"); // Reduce noise
+
             // Store the observer in the sect03 namespace so it persists
             window.TEUI.sect03.dropdownObserver = observer;
         } else {
             // Fallback for browsers without MutationObserver
             console.warn("[S03 DEBUG] MutationObserver not supported, using polling instead");
-            
+
             // Use polling as a fallback
             const intervalId = setInterval(ensureCityDropdownVisible, 1000);
             window.TEUI.sect03.dropdownMonitorInterval = intervalId;
@@ -1268,7 +1272,7 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
     //==========================================================================
     // PUBLIC API
     //==========================================================================
-    
+
     // Export module functions
     const publicModule = {
         getFields: getFields,
@@ -1283,9 +1287,11 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
         resetClimateFields: resetClimateFields,
         ensureCityDropdownVisible: ensureCityDropdownVisible,
         getFieldValue: getFieldValue,
-        setCalculatedValue: setCalculatedValue
+        setCalculatedValue: setCalculatedValue,
+        // We are letting the application lifecycle handle initialization via onSectionRendered
+        // No separate init needed here.
     };
-    
+
     // CRITICAL FIX: Expose important functions to the global TEUI.sect03 namespace
     // This makes them accessible for event handlers outside the IIFE
     window.TEUI.sect03.handleProvinceChange = handleProvinceChange;
@@ -1296,347 +1302,6 @@ window.TEUI.SectionModules.sect03 = (function() { // Changed from sect03C
     window.TEUI.sect03.showWeatherData = showWeatherData;
     window.TEUI.sect03.calculateAll = calculateAll;
     window.TEUI.sect03.ensureCityDropdownVisible = ensureCityDropdownVisible;
-    
+
     return publicModule;
-})();
-
-// Section 03 initialization - exported to global TEUI namespace
-(function() {
-    // Register section module initialization
-    window.TEUI = window.TEUI || {};
-    window.TEUI.SectionModules = window.TEUI.SectionModules || {};
-    
-    console.log("[S03 DIAGNOSTIC] Initializing with module:", typeof window.TEUI.SectionModules.sect03);
-    console.log("[S03 DIAGNOSTIC] Available methods:", 
-                Object.keys(window.TEUI.SectionModules.sect03 || {}).join(", "));
-
-    // Ensure module is available before proceeding
-    if (!window.TEUI.SectionModules.sect03) {
-        console.error("[S03 DIAGNOSTIC] Section03 module not available for initialization");
-        return;
-    }
-
-    // Add our custom init method to the already-defined module
-    // We're not redefining the module, just adding a method to it
-    const sect03Module = window.TEUI.SectionModules.sect03;
-    
-    // Only add if not already defined
-    if (!sect03Module.init) {
-        sect03Module.init = function() {
-            if (this.initialized) {
-                console.log("[S03 DEBUG] Section 03 already initialized - skipping.");
-                return;
-            }
-            
-            console.log("[S03 DEBUG] Initializing Section 03 (Climate Calculations)");
-            
-            // Initialize event handlers using the proper scope
-            // Note we're using `this` which refers to the module object
-            const module = this;
-            
-            // Custom function to ensure climate data is available
-            function checkClimateDataAvailability(callback, attempts = 0, maxAttempts = 10) {
-                if (window.TEUI?.ClimateData && Object.keys(window.TEUI.ClimateData).length > 0) {
-                    console.log(`[S03 DEBUG] ClimateData is available with ${Object.keys(window.TEUI.ClimateData).length} provinces`);
-                    callback();
-                    return;
-                }
-                
-                if (attempts >= maxAttempts) {
-                    console.error(`[S03 DEBUG] Climate data not available after ${maxAttempts} attempts.`);
-                    return;
-                }
-                
-                const delay = Math.min(100 * Math.pow(2, attempts), 2000);
-                console.log(`[S03 DEBUG] Retrying climate data check in ${delay}ms...`);
-                setTimeout(() => checkClimateDataAvailability(callback, attempts + 1, maxAttempts), delay);
-            }
-            
-            // Use our custom check function
-            checkClimateDataAvailability(() => {
-                console.log("[S03 DEBUG] Climate data confirmed available, initializing event handlers");
-                module.initializeEventHandlers();
-                
-                // After initialization, set default values
-                setTimeout(initializeDefaultClimateValues, 200);
-                
-                this.initialized = true;
-            });
-        };
-    }
-
-    // Double-check that our critical functions are exposed properly
-    setTimeout(function() {
-        // These should be available in the global namespace for event handlers
-        const criticalFunctions = [
-            'handleProvinceChange', 
-            'handleCityChange', 
-            'updateWeatherData', 
-            'ensureCityDropdownVisible'
-        ];
-        
-        console.log('[S03 DIAGNOSTIC] Checking critical global functions:');
-        criticalFunctions.forEach(fn => {
-            console.log(`- window.TEUI.sect03.${fn}: ${typeof window.TEUI.sect03[fn] === 'function' ? 'Available ✓' : 'MISSING!'}`);
-        });
-        
-        // Verify dropdown behavior
-        window.TEUI.sect03.debug.checkDropdowns();
-        
-        // Force dropdown visibility as a final safety measure
-        window.TEUI.sect03.ensureCityDropdownVisible();
-    }, 1000);
-
-    /**
-     * Initialize default climate values on page load
-     * This ensures the section is populated with default data
-     */
-    function initializeDefaultClimateValues() {
-        console.log("[S03 DEBUG] Initializing default climate values");
-        
-        // >>> ADDED: Populate local city map <<<
-        if (window.TEUI?.ClimateData) {
-            provinceCityMap = {}; // Clear first
-            for (const provinceKey in window.TEUI.ClimateData) {
-                if (window.TEUI.ClimateData.hasOwnProperty(provinceKey)) {
-                    provinceCityMap[provinceKey] = Object.keys(window.TEUI.ClimateData[provinceKey]).sort();
-                }
-            }
-            console.log("[S03 DEBUG] Local provinceCityMap populated:", provinceCityMap);
-        } else {
-             console.error("[S03 DEBUG] Cannot populate local city map - ClimateData not found.");
-             return; // Stop initialization if data is missing
-        }
-        // >>> END ADDED <<<
-
-        // Default province and city
-        const defaultProvince = "ON";
-        const defaultCity = "Alexandria";
-        
-        // Get module reference
-        const sect03Module = window.TEUI.SectionModules.sect03;
-        if (!sect03Module) {
-            console.error("[S03 DIAGNOSTIC] Section03 module not available - cannot initialize defaults");
-            return;
-        }
-        
-        console.log("[S03 DIAGNOSTIC] Module methods:", Object.keys(sect03Module).join(", "));
-        
-        // Log all dropdown IDs for debugging
-        window.TEUI.sect03.debug.checkDropdowns();
-        
-        // Set values properly using StateManager (respecting architecture)
-        if (window.TEUI?.StateManager) {
-            console.log("[S03 DIAGNOSTIC] Setting default values via StateManager");
-            window.TEUI.StateManager.setValue('d_19', defaultProvince, 'initial');
-            
-            // Update the province dropdown in the DOM to match
-            const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-            if (provinceDropdown) {
-                provinceDropdown.value = defaultProvince;
-            }
-            
-            // Ensure the city dropdown is populated for the province
-            setTimeout(() => {
-                // Use the globally exposed function to handle province change
-                if (typeof window.TEUI.sect03.handleProvinceChange === 'function') {
-                    window.TEUI.sect03.handleProvinceChange(defaultProvince);
-                    
-                    // After city dropdown is populated, set the default city
-                    setTimeout(() => {
-                        window.TEUI.StateManager.setValue('h_19', defaultCity, 'initial');
-                        
-                        // Update the city dropdown in the DOM
-                        const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-                        if (cityDropdown) {
-                            cityDropdown.value = defaultCity;
-                            
-                            // Make sure the dropdown is visible
-                            window.TEUI.sect03.ensureCityDropdownVisible();
-                            
-                            // Trigger calculations with the selected city
-                            if (typeof window.TEUI.sect03.updateWeatherData === 'function') {
-                                window.TEUI.sect03.updateWeatherData();
-                            }
-                        }
-                    }, 300);
-                } else {
-                    console.error("[S03 DIAGNOSTIC] handleProvinceChange not available globally!");
-                }
-            }, 200);
-        } else {
-            console.error("[S03 DIAGNOSTIC] StateManager not available");
-        }
-    }
-
-    // Automatically initialize when the DOM is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        window.TEUI.SectionModules.sect03.init();
-    });
-    
-    // Allow initialization to be manually triggered if needed
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        // Page already loaded, initialize immediately
-        setTimeout(function() {
-            window.TEUI.SectionModules.sect03.init();
-        }, 300);
-    }
-})();
-
-/**
- * Update the weather data modal with detailed climate information
- * Useful for debugging and showing users the full climate data
- */
-function updateWeatherDataModal() {
-    console.log("[S03 DIAGNOSTIC] updateWeatherDataModal called");
-    
-    const provinceValue = getFieldValue("d_19");
-    const cityValue = getFieldValue("h_19");
-    const modalContent = document.getElementById('weatherDataContent');
-    
-    if (!modalContent) {
-        console.error("[S03 DEBUG] Weather data modal content element not found");
-        return;
-    }
-    
-    // If no province or city is selected, show a message
-    if (!provinceValue || !cityValue) {
-        modalContent.textContent = "Please select a province and city to view weather data.";
-        return;
-    }
-    
-    // Check if ClimateData is available
-    if (!window.TEUI?.ClimateData || !window.TEUI.ClimateData[provinceValue] || !window.TEUI.ClimateData[provinceValue][cityValue]) {
-        modalContent.textContent = `No climate data available for ${cityValue}, ${provinceValue}`;
-        return;
-    }
-    
-    // Get city data
-    const cityData = window.TEUI.ClimateData[provinceValue][cityValue];
-    
-    // Format as a table with keys and values
-    let formattedData = `
-<h4>${cityValue}, ${provinceValue}</h4>
-<p>Elevation: ${cityData["Elev ASL (m)"]} m ASL</p>
-
-<h5>Current Climate</h5>
-<table class="table table-sm table-striped">
-    <thead>
-        <tr>
-            <th>Parameter</th>
-            <th>Value</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr><td>HDD18 (°C·days)</td><td>${cityData.HDD18}</td></tr>
-        <tr><td>CDD24 (°C·days)</td><td>${cityData.CDD24}</td></tr>
-        <tr><td>January 2.5% Design Temperature</td><td>${cityData.January_2_5} °C</td></tr>
-        <tr><td>January 1% Design Temperature</td><td>${cityData.January_1} °C</td></tr>
-        <tr><td>July 2.5% Dry-bulb Temperature</td><td>${cityData.July_2_5_Tdb} °C</td></tr>
-        <tr><td>July 2.5% Wet-bulb Temperature</td><td>${cityData.July_2_5_Twb} °C</td></tr>
-    </tbody>
-</table>
-
-<h5>Future Climate (2021-2050)</h5>
-<table class="table table-sm table-striped">
-    <tbody>
-        <tr><td>HDD18 (°C·days)</td><td>${cityData.HDD18_2021_2050}</td></tr>
-        <tr><td>CDD24 (°C·days)</td><td>${cityData.CDD24_2021_2050}</td></tr>
-        <tr><td>July 2.5% Dry-bulb Temperature</td><td>${cityData.Future_July_2_5_Tdb} °C</td></tr>
-        <tr><td>July 2.5% Wet-bulb Temperature</td><td>${cityData.Future_July_2_5_Twb} °C</td></tr>
-    </tbody>
-</table>
-`;
-    
-    // Add debug info about data
-    formattedData += `
-<details>
-    <summary>Debug Information</summary>
-    <pre style="font-size: 11px;">
-Province dropdown ID: dd_d_19
-City dropdown ID: dd_h_19
-Available cities for ${provinceValue}: ${Object.keys(window.TEUI.ClimateData[provinceValue]).join(", ")}
-All dropdowns: ${Array.from(document.querySelectorAll('[data-dropdown-id]')).map(d => d.getAttribute('data-dropdown-id')).join(', ')}
-City cell exists: ${!!document.querySelector('[data-field-id="h_19"]')?.parentElement}
-    </pre>
-</details>
-`;
-    
-    // Set the content
-    modalContent.innerHTML = formattedData;
-}
-
-/**
- * Initialize the weather data modal event handler
- */
-function initializeWeatherDataModal() {
-    // Get the modal element
-    const weatherModal = document.getElementById('weatherDataModal');
-    if (!weatherModal) {
-        console.error("[S03 DEBUG] Weather data modal element not found");
-        return;
-    }
-    
-    // Set up the modal show event listener
-    weatherModal.addEventListener('show.bs.modal', function() {
-        updateWeatherDataModal();
-    });
-    
-    // Also set up the button click handler
-    const showWeatherDataBtn = document.getElementById('showWeatherDataBtn');
-    if (showWeatherDataBtn) {
-        showWeatherDataBtn.addEventListener('click', function() {
-            updateWeatherDataModal();
-        });
-    }
-}
-
-/**
- * DIAGNOSTIC FUNCTION - Called when changing provinces to check city dropdown
- */
-window.TEUI.sect03.diagnoseDropdownIssue = function() {
-    console.log("==== SECTION 03 DROPDOWN DIAGNOSTIC ====");
-    
-    // 1. Check all dropdowns
-    const allDropdowns = document.querySelectorAll('[data-dropdown-id]');
-    console.log("All dropdown IDs:", Array.from(allDropdowns).map(d => d.getAttribute('data-dropdown-id')));
-    
-    // 2. Check if city dropdown exists
-    const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-    console.log("City dropdown exists:", !!cityDropdown);
-    
-    // 3. Check if city cell exists 
-    const cityCell = document.querySelector('[data-field-id="h_19"]')?.parentElement;
-    console.log("City cell exists:", !!cityCell);
-    console.log("City cell visible:", !(cityCell?.style.display === 'none'));
-    
-    // 4. Check if province dropdown exists
-    const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-    console.log("Province dropdown exists:", !!provinceDropdown);
-    console.log("Province value:", provinceDropdown?.value);
-    
-    // 5. Check module state
-    console.log("Module methods available:", Object.keys(window.TEUI.SectionModules.sect03).join(", "));
-    console.log("handleProvinceChange exists in global scope:", typeof handleProvinceChange === 'function');
-    console.log("updateWeatherData exists in global scope:", typeof updateWeatherData === 'function');
-    
-    // 6. Check climate data
-    if (window.TEUI?.ClimateData) {
-        console.log("Provinces in ClimateData:", Object.keys(window.TEUI.ClimateData).join(", "));
-        if (provinceDropdown?.value) {
-            const provinceData = window.TEUI.ClimateData[provinceDropdown.value];
-            if (provinceData) {
-                console.log("Cities for selected province:", Object.keys(provinceData).join(", "));
-            } else {
-                console.log("No data for selected province:", provinceDropdown.value);
-            }
-        }
-    } else {
-        console.log("ClimateData object not available");
-    }
-    
-    console.log("======================================");
-    
-    // Return true if city dropdown exists
-    return !!cityDropdown;
-};
+})(); // Correct closing for the main module IIFE
