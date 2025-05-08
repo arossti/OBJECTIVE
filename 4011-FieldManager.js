@@ -276,9 +276,10 @@ TEUI.FieldManager = (function() {
             initializeSections();
         }
         
-        // >>> ADD DIAGNOSTIC LOG START <<<
         console.log(`[FieldManager DIAGNOSTIC] Starting renderSection for: ${sectionId}`);
-        // >>> END DIAGNOSTIC LOG START <<<
+        // >>> ADD CALL STACK TRACE <<<
+        console.trace(`[FieldManager TRACE] Render triggered for ${sectionId}`); 
+        // >>> END CALL STACK TRACE <<<
 
         const internalSectionId = sections[sectionId];
         if (!internalSectionId) {

@@ -798,6 +798,11 @@ City cell exists: ${!!document.querySelector('[data-field-id="h_19"]')?.parentEl
         const provinceValue = e?.target?.value || (typeof e === 'string' ? e : null);
         console.log(`[S03 DEBUG] handleProvinceChange triggered. Province: ${provinceValue}`);
 
+        // >>> DIAGNOSTIC: Check city dropdown BEFORE state update <<<
+        let cityDropdownBefore = document.querySelector('[data-dropdown-id="dd_h_19"]');
+        console.log(`[S03 TRACE] BEFORE StateManager.setValue('d_19'). City dropdown exists? ${!!cityDropdownBefore}`);
+        // >>> END DIAGNOSTIC <<<
+
         if (!provinceValue) {
             resetClimateFields(); 
             const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
@@ -878,6 +883,11 @@ City cell exists: ${!!document.querySelector('[data-field-id="h_19"]')?.parentEl
         // 10. Final visibility check 
         ensureCityDropdownVisible();
         setTimeout(ensureCityDropdownVisible, 100); // And again after a short delay
+
+        // >>> DIAGNOSTIC: Check city dropdown AFTER state update <<<
+        let cityDropdownAfter = document.querySelector('[data-dropdown-id="dd_h_19"]');
+        console.log(`[S03 TRACE] AFTER StateManager.setValue('d_19'). City dropdown exists? ${!!cityDropdownAfter}`);
+        // >>> END DIAGNOSTIC <<<
     }
 
     /**
