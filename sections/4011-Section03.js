@@ -792,17 +792,13 @@ City cell exists: ${!!document.querySelector('[data-field-id="h_19"]')?.parentEl
     //==========================================================================
 
     /**
-     * Handle province selection change - MODIFIED FOR ClimateData & Local List
+     * Handle province selection change - MODIFIED FOR ClimateData & Local List & setTimeout
      */
     function handleProvinceChange(e) {
         const provinceValue = e?.target?.value || (typeof e === 'string' ? e : null);
         console.log(`[S03 DEBUG] handleProvinceChange triggered. Province: ${provinceValue}`);
 
-        // >>> DIAGNOSTIC: Check city dropdown BEFORE state update <<<
-        let cityDropdownBefore = document.querySelector('[data-dropdown-id="dd_h_19"]');
-        console.log(`[S03 TRACE] BEFORE StateManager.setValue('d_19'). City dropdown exists? ${!!cityDropdownBefore}`);
-        // >>> END DIAGNOSTIC <<<
-
+        // Check if province is empty
         if (!provinceValue) {
             resetClimateFields(); 
             const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
@@ -810,84 +806,91 @@ City cell exists: ${!!document.querySelector('[data-field-id="h_19"]')?.parentEl
                 cityDropdown.innerHTML = '<option value="">Select City</option>';
                 cityDropdown.disabled = true;
             }
+            // Update StateManager even if province is empty
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('d_19', '', 'user-modified');
+            }
             return;
         }
         
-        // 1. Update StateManager for the selected province
+        // 1. Update StateManager IMMEDIATELY
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('d_19', provinceValue, 'user-modified');
         }
         
         // 2. Get cities directly from our local map
         const cities = provinceCityMap[provinceValue] || [];
-        console.log(`[S03 DEBUG] Cities found locally for ${provinceValue}:`, cities); 
+        console.log(`[S03 DEBUG] Cities found locally for ${provinceValue}:`, cities);
 
-        // 3. Find the city dropdown element
-        const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-        if (!cityDropdown) {
-             console.error("[S03 DEBUG] City dropdown element not found! Cannot populate cities.");
-             return; // Stop if element doesn't exist
-        }
-        
-        // IMPORTANT FIX: Keep a reference to the parent container
-        const dropdownContainer = cityDropdown.parentElement;
-        
-        // 4. Clear existing options (more carefully)
-        while (cityDropdown.options.length > 0) { // Clear ALL options
-            cityDropdown.remove(0);
-        }
-
-        // 5. Add placeholder option
-        const placeholderOption = document.createElement('option');
-        placeholderOption.value = "";
-        placeholderOption.textContent = "Select City";
-        cityDropdown.appendChild(placeholderOption);
-        
-        // 6. Populate with new cities
-        if (cities.length > 0) {
-            cities.forEach(cityName => {
-                const option = document.createElement('option');
-                option.value = cityName;
-                option.textContent = cityName;
-                cityDropdown.appendChild(option);
-            });
+        // 3. SCHEDULE the DOM update using setTimeout
+        setTimeout(() => {
+            console.log(`[S03 TRACE] setTimeout callback executing for province: ${provinceValue}`);
+            const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
             
-            cityDropdown.disabled = false;
-
-            // 7. Select default city (Alexandria for ON, else first)
-            const defaultCity = "Alexandria"; // Target default
-            let cityToSelect = cities[0]; // Fallback to first
-            if (provinceValue === "ON" && cities.includes(defaultCity)) {
-                cityToSelect = defaultCity;
+            // Check AGAIN if dropdown exists after the delay
+            if (!cityDropdown) {
+                console.error("[S03 DEBUG] setTimeout: City dropdown element STILL not found! Aborting DOM update.");
+                // Consider logging more context here, maybe check if the section was re-rendered
+                // Example: console.log("[S03 DEBUG] Section outerHTML:", document.getElementById('climateCalculations')?.outerHTML);
+                return; 
             }
-            console.log(`[S03 DEBUG] Default city visual selection: ${cityToSelect}`);
             
-            // Set dropdown visual state
-            cityDropdown.value = cityToSelect;
+            // Keep reference to parent container
+            const dropdownContainer = cityDropdown.parentElement;
             
-            // 8. IMPORTANT: DO NOT set h_19 in StateManager here.
-            // Let handleCityChange do that when the user interacts or if we explicitly call it.
+            // Clear existing options
+            while (cityDropdown.options.length > 0) { cityDropdown.remove(0); }
+            
+            // Add placeholder
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = "";
+            placeholderOption.textContent = "Select City";
+            cityDropdown.appendChild(placeholderOption);
 
-            // 9. Trigger initial weather data load *only* if a default city was successfully set.
-            if (cityToSelect) {
-                 console.log("[S03 DEBUG] Triggering initial updateWeatherData after setting default city.");
-                 updateWeatherData(); // Load data for the default selection
+            // Populate with new cities
+            if (cities.length > 0) {
+                cities.forEach(cityName => {
+                    const option = document.createElement('option');
+                    option.value = cityName;
+                    option.textContent = cityName;
+                    cityDropdown.appendChild(option);
+                });
+                
+                cityDropdown.disabled = false;
+                
+                // Select default city (Alexandria for ON, else first)
+                const defaultCity = "Alexandria"; // Target default
+                let cityToSelect = cities[0]; // Fallback to first
+                if (provinceValue === "ON" && cities.includes(defaultCity)) { 
+                    cityToSelect = defaultCity; 
+                }
+                cityDropdown.value = cityToSelect;
+                console.log(`[S03 DEBUG] setTimeout: Default city selected: ${cityToSelect}`);
+
+                // Trigger weather data update only if a city was selected
+                if (cityToSelect) {
+                    // Explicitly update h_19 state before triggering weather data
+                    if (window.TEUI?.StateManager) {
+                        window.TEUI.StateManager.setValue('h_19', cityToSelect, 'calculated'); // Mark as calculated init
+                    }
+                    console.log("[S03 DEBUG] setTimeout: Triggering updateWeatherData.");
+                    updateWeatherData(); 
+                } else {
+                     resetClimateFields(); // Reset if no default city could be selected
+                }
+
+            } else {
+                console.warn(`[S03 DEBUG] setTimeout: No cities found locally for province: ${provinceValue}`);
+                cityDropdown.disabled = true;
+                resetClimateFields(); // Reset if no cities
             }
 
-        } else {
-            console.warn(`[S03 DEBUG] No cities found locally for province: ${provinceValue}`);
-            cityDropdown.disabled = true;
-            resetClimateFields(); // Reset if no cities
-        }
+            // Ensure visibility after timeout
+            ensureCityDropdownVisible(); 
 
-        // 10. Final visibility check 
-        ensureCityDropdownVisible();
-        setTimeout(ensureCityDropdownVisible, 100); // And again after a short delay
+        }, 0); // Use a 0ms delay
 
-        // >>> DIAGNOSTIC: Check city dropdown AFTER state update <<<
-        let cityDropdownAfter = document.querySelector('[data-dropdown-id="dd_h_19"]');
-        console.log(`[S03 TRACE] AFTER StateManager.setValue('d_19'). City dropdown exists? ${!!cityDropdownAfter}`);
-        // >>> END DIAGNOSTIC <<<
+        console.log(`[S03 DEBUG] handleProvinceChange finished scheduling DOM update for ${provinceValue}`);
     }
 
     /**
