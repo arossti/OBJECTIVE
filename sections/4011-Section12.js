@@ -287,6 +287,46 @@ window.TEUI.SectionModules.sect12 = (function() {
     }
 
     /**
+     * Formats a number according to the project's display rules.
+     * Handles specific formats like percentages, W/m2, etc.
+     * @param {number} value - The number to format.
+     * @param {string} [format='number'] - The type of format ('number', 'percent', 'W/m2').
+     * @returns {string} The formatted number as a string.
+     */
+    function formatNumber(value, format = 'number') {
+        // Handle null or undefined values
+        if (value === null || value === undefined || isNaN(value)) {
+            // Return appropriate default based on format
+            return format === 'percent' ? '0%' : (format === 'W/m2' ? '0.000' : '0.00');
+        }
+        
+        const num = Number(value);
+        
+        // Handle percentage format
+        if (format === 'percent') {
+            // Convert decimal to percentage with 2 decimal places
+            return (num * 100).toLocaleString(undefined, { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            }) + '%';
+        } 
+        // Handle U-Value format - 3 decimal places
+        else if (format === 'W/m2') {
+            return num.toLocaleString('en-US', { 
+                minimumFractionDigits: 3, 
+                maximumFractionDigits: 3 
+            });
+        } 
+        // Default format - 2 decimal places
+        else {
+            return num.toLocaleString('en-US', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+    }
+
+    /**
      * Helper function to set a calculated field value in StateManager and update the DOM.
      * Uses the global window.TEUI.formatNumber for formatting.
      * @param {string} fieldId - The ID of the field to update.
@@ -299,8 +339,8 @@ window.TEUI.SectionModules.sect12 = (function() {
 
         // Set raw value in state manager with 'calculated' state
         if (window.TEUI?.StateManager?.setValue) {
-            // Ensure rawValue is stored as a string for consistency, especially numbers
-            window.TEUI.StateManager.setValue(fieldId, String(numericValue), "calculated"); // Store the cleaned numeric value as string
+            // Ensure rawValue is stored as a string for consistency with FULL precision
+            window.TEUI.StateManager.setValue(fieldId, String(numericValue), "calculated"); // Store the cleaned numeric value as string with full precision
         } else {
              console.error("StateManager not available to set value for", fieldId);
              return;
@@ -311,7 +351,7 @@ window.TEUI.SectionModules.sect12 = (function() {
 
         // Determine format based on fieldId for precision matching Excel
         if (fieldId === 'g_101' || fieldId === 'g_102' || fieldId === 'd_104') {
-            determinedFormatType = 'u-value'; // Alias for number-3dp
+            determinedFormatType = 'W/m2'; // Use W/m2 format for U-values (3dp) - matches Section 11
         } else if (fieldId === 'd_110') {
             determinedFormatType = 'number-3dp'; // ELA
         } else if (fieldId === 'g_110') {
@@ -336,8 +376,14 @@ window.TEUI.SectionModules.sect12 = (function() {
              determinedFormatType = formatType;
         }
 
-        // Call the NEW GLOBAL formatter
-        const formattedValue = window.TEUI.formatNumber(numericValue, determinedFormatType);
+        // For 'W/m2' format, use local formatNumber function
+        let formattedValue;
+        if (determinedFormatType === 'W/m2') {
+            formattedValue = formatNumber(numericValue, 'W/m2');
+        } else {
+            // For other formats, use the global formatter
+            formattedValue = window.TEUI.formatNumber(numericValue, determinedFormatType);
+        }
 
         // Update the corresponding DOM element
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -368,86 +414,143 @@ window.TEUI.SectionModules.sect12 = (function() {
     //==========================================================================
 
     function calculateVolumeMetrics() {
-        const d85 = getNumericValue('d_85'); const d86 = getNumericValue('d_86');
-        const d87 = getNumericValue('d_87'); const d88 = getNumericValue('d_88');
-        const d89 = getNumericValue('d_89'); const d90 = getNumericValue('d_90');
-        const d91 = getNumericValue('d_91'); const d92 = getNumericValue('d_92');
-        const d93 = getNumericValue('d_93'); const d94 = getNumericValue('d_94');
-        const d95 = getNumericValue('d_95'); const d96 = getNumericValue('d_96');
-        const d105_vol = getNumericValue('d_105');
+        // Get all values with full precision using parseFloat
+        const d85 = parseFloat(getNumericValue('d_85')); 
+        const d86 = parseFloat(getNumericValue('d_86'));
+        const d87 = parseFloat(getNumericValue('d_87')); 
+        const d88 = parseFloat(getNumericValue('d_88'));
+        const d89 = parseFloat(getNumericValue('d_89')); 
+        const d90 = parseFloat(getNumericValue('d_90'));
+        const d91 = parseFloat(getNumericValue('d_91')); 
+        const d92 = parseFloat(getNumericValue('d_92'));
+        const d93 = parseFloat(getNumericValue('d_93')); 
+        const d94 = parseFloat(getNumericValue('d_94'));
+        const d95 = parseFloat(getNumericValue('d_95')); 
+        const d96 = parseFloat(getNumericValue('d_96'));
+        const d105_vol = parseFloat(getNumericValue('d_105'));
+        
+        // Calculate with full precision
         const d101_areaAir = d85 + d86 + d87 + d88 + d89 + d90 + d91 + d92 + d93;
         const d102_areaGround = (d94 + d95 === 0) ? 0.0000001 : d94 + d95;
         const d106_floorArea = d87 + d95 + d96;
-        setCalculatedValue('d_101', d101_areaAir); // Uses auto-determined format ('number-2dp-comma')
-        setCalculatedValue('d_102', d102_areaGround);
-        setCalculatedValue('d_106', d106_floorArea);
+        
+        // Update values with standard formatters
+        setCalculatedValue('d_101', d101_areaAir, 'number-2dp-comma');
+        setCalculatedValue('d_102', d102_areaGround, 'number-2dp-comma');
+        setCalculatedValue('d_106', d106_floorArea, 'number-2dp-comma');
+        
+        // Calculate ratios with full precision
         const g105_volAreaRatio = (d101_areaAir > 0) ? d105_vol / d101_areaAir : 0;
-        setCalculatedValue('g_105', g105_volAreaRatio, 'percent-0dp'); // Format as percentage, 0 decimal places
         const i105_areaVolRatio = (d105_vol > 0) ? d101_areaAir / d105_vol : 0;
-        setCalculatedValue('i_105', i105_areaVolRatio, 'percent-0dp'); // Format as percentage, 0 decimal places
+        
+        // Update ratio values with standard formatters
+        setCalculatedValue('g_105', g105_volAreaRatio, 'number-2dp');
+        setCalculatedValue('i_105', i105_areaVolRatio, 'number-2dp');
     }
 
     function calculateCombinedUValue() {
-        const d101_areaAir = getNumericValue('d_101');
-        const d102_areaGround = getNumericValue('d_102');
-        const g85 = getNumericValue('g_85') || (1 / (getNumericValue('f_85') || 1));
-        const g86 = getNumericValue('g_86') || (1 / (getNumericValue('f_86') || 1));
-        const g87 = getNumericValue('g_87') || (1 / (getNumericValue('f_87') || 1));
-        const g88 = getNumericValue('g_88') || (1 / (getNumericValue('f_88') || 1));
-        const g89 = getNumericValue('g_89') || (1 / (getNumericValue('f_89') || 1));
-        const g90 = getNumericValue('g_90') || (1 / (getNumericValue('f_90') || 1));
-        const g91 = getNumericValue('g_91') || (1 / (getNumericValue('f_91') || 1));
-        const g92 = getNumericValue('g_92') || (1 / (getNumericValue('f_92') || 1));
-        const g93 = getNumericValue('g_93') || (1 / (getNumericValue('f_93') || 1));
-        const g94 = getNumericValue('g_94') || (1 / (getNumericValue('f_94') || 1));
-        const g95 = getNumericValue('g_95') || (1 / (getNumericValue('f_95') || 1));
-        const d85 = getNumericValue('d_85'); const d86 = getNumericValue('d_86');
-        const d87 = getNumericValue('d_87'); const d88 = getNumericValue('d_88');
-        const d89 = getNumericValue('d_89'); const d90 = getNumericValue('d_90');
-        const d91 = getNumericValue('d_91'); const d92 = getNumericValue('d_92');
-        const d93 = getNumericValue('d_93'); const d94 = getNumericValue('d_94');
-        const d95 = getNumericValue('d_95');
-        const d97_tbPenaltyPercent = getNumericValue('d_97'); 
+        const d101_areaAir = parseFloat(getNumericValue('d_101'));
+        const d102_areaGround = parseFloat(getNumericValue('d_102'));
+        // Get u-values directly where available, otherwise calculate from RSI (1/RSI)
+        // Use parseFloat to maintain full floating point precision
+        const g85 = parseFloat(getNumericValue('g_85')) || (1 / parseFloat(getNumericValue('f_85') || 1));
+        const g86 = parseFloat(getNumericValue('g_86')) || (1 / parseFloat(getNumericValue('f_86') || 1));
+        const g87 = parseFloat(getNumericValue('g_87')) || (1 / parseFloat(getNumericValue('f_87') || 1));
+        const g88 = parseFloat(getNumericValue('g_88')) || (1 / parseFloat(getNumericValue('f_88') || 1));
+        const g89 = parseFloat(getNumericValue('g_89')) || (1 / parseFloat(getNumericValue('f_89') || 1));
+        const g90 = parseFloat(getNumericValue('g_90')) || (1 / parseFloat(getNumericValue('f_90') || 1));
+        const g91 = parseFloat(getNumericValue('g_91')) || (1 / parseFloat(getNumericValue('f_91') || 1));
+        const g92 = parseFloat(getNumericValue('g_92')) || (1 / parseFloat(getNumericValue('f_92') || 1));
+        const g93 = parseFloat(getNumericValue('g_93')) || (1 / parseFloat(getNumericValue('f_93') || 1));
+        const g94 = parseFloat(getNumericValue('g_94')) || (1 / parseFloat(getNumericValue('f_94') || 1));
+        const g95 = parseFloat(getNumericValue('g_95')) || (1 / parseFloat(getNumericValue('f_95') || 1));
+        
+        const d85 = parseFloat(getNumericValue('d_85')); 
+        const d86 = parseFloat(getNumericValue('d_86'));
+        const d87 = parseFloat(getNumericValue('d_87')); 
+        const d88 = parseFloat(getNumericValue('d_88'));
+        const d89 = parseFloat(getNumericValue('d_89')); 
+        const d90 = parseFloat(getNumericValue('d_90'));
+        const d91 = parseFloat(getNumericValue('d_91')); 
+        const d92 = parseFloat(getNumericValue('d_92'));
+        const d93 = parseFloat(getNumericValue('d_93')); 
+        const d94 = parseFloat(getNumericValue('d_94'));
+        const d95 = parseFloat(getNumericValue('d_95'));
+        
+        const d97_tbPenaltyPercent = parseFloat(getNumericValue('d_97')); 
         // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
         // We must divide by 100 to get the decimal factor (0.2) before using in calculations
         const tbFactor = 1 + (d97_tbPenaltyPercent / 100); // Convert percentage to decimal before adding 1
-        const sumProductAir = (d85 * g85) + (d86 * g86) + (d87 * g87) + (d88 * g88) + (d89 * g89) + (d90 * g90) + (d91 * g91) + (d92 * g92) + (d93 * g93);
+        
+        // Calculate with maximum precision
+        const sumProductAir = (d85 * g85) + (d86 * g86) + (d87 * g87) + (d88 * g88) + 
+                               (d89 * g89) + (d90 * g90) + (d91 * g91) + (d92 * g92) + (d93 * g93);
+        
+        // Maintain at least 6 decimal places throughout calculation
         const g101_uAir = (d101_areaAir > 0) ? (sumProductAir / d101_areaAir) * tbFactor : 0;
-        setCalculatedValue('g_101', g101_uAir); // Uses auto ('number-3dp')
+        
+        // Use 'W/m2' format for U-values (matches Section 11)
+        setCalculatedValue('g_101', g101_uAir, 'W/m2');
+        
         const sumProductGround = (d94 * g94) + (d95 * g95);
         const g102_uGround = (d102_areaGround > 0) ? (sumProductGround / d102_areaGround) * tbFactor : 0;
-        setCalculatedValue('g_102', g102_uGround); // Uses auto ('number-3dp')
-        const totalArea = d101_areaAir + d102_areaGround;
-        const d104_uCombined = (totalArea > 0) ? (g101_uAir * d101_areaAir + g102_uGround * d102_areaGround) / totalArea : 0;
-        setCalculatedValue('d_104', d104_uCombined); // Uses auto ('number-3dp')
+        
+        // Use 'W/m2' format for U-values (matches Section 11)
+        setCalculatedValue('g_102', g102_uGround, 'W/m2');
+        
+        const totalArea = parseFloat(d101_areaAir) + parseFloat(d102_areaGround);
+        const d104_uCombined = (totalArea > 0) ? 
+            ((g101_uAir * d101_areaAir) + (g102_uGround * d102_areaGround)) / totalArea : 0;
+        
+        // Use 'W/m2' format for U-values (matches Section 11)
+        setCalculatedValue('d_104', d104_uCombined, 'W/m2');
     }
 
     function calculateWWR() {
-        const d86 = getNumericValue('d_86');
-        const d88 = getNumericValue('d_88');
-        const d89 = getNumericValue('d_89'); const d90 = getNumericValue('d_90');
-        const d91 = getNumericValue('d_91'); const d92 = getNumericValue('d_92');
-        const d93 = getNumericValue('d_93');
+        // Get values with full precision 
+        const d86 = parseFloat(getNumericValue('d_86'));
+        const d88 = parseFloat(getNumericValue('d_88'));
+        const d89 = parseFloat(getNumericValue('d_89')); 
+        const d90 = parseFloat(getNumericValue('d_90'));
+        const d91 = parseFloat(getNumericValue('d_91')); 
+        const d92 = parseFloat(getNumericValue('d_92'));
+        const d93 = parseFloat(getNumericValue('d_93'));
+        
+        // Calculate with full precision
         const windowDoorArea = d88 + d89 + d90 + d91 + d92 + d93;
         const totalWallArea = d86 + windowDoorArea;
         const wwr = (totalWallArea > 0) ? windowDoorArea / totalWallArea : 0;
-        setCalculatedValue('d_107', wwr); // Uses auto ('percent-2dp')
+        
+        // Update WWR value with standard formatter
+        setCalculatedValue('d_107', wwr, 'percent-2dp');
+        
+        // Calculate ratio to reference WWR with full precision
         const refWWR = 0.4; // Placeholder for reference value T107/T108
         const l107 = (refWWR > 0) ? wwr / refWWR : 0;
-        setCalculatedValue('l_107', l107); // Uses auto ('percent-0dp')
+        
+        // Update ratio value with standard formatter
+        setCalculatedValue('l_107', l107, 'percent-0dp');
     }
 
     function calculateACH50Target() {
+        // Get method value
         const d108_method = getFieldValue("d_108");
-        const g109_measured = getNumericValue("g_109");
-        const d101_areaAir = getNumericValue("d_101");
-        const d105_vol = getNumericValue("d_105");
+        
+        // Get numeric values with full precision
+        const g109_measured = parseFloat(getNumericValue("g_109"));
+        const d101_areaAir = parseFloat(getNumericValue("d_101"));
+        const d105_vol = parseFloat(getNumericValue("d_105"));
+        
+        // Target values for different methods
         let g108_nrl50Target = 0;
         const nrlTargets = {
             "AL-1A": 0.89, "AL-2A": 0.71, "AL-3A": 0.53, "AL-4A": 0.35, "AL-5A": 0.21,
             "AL-1B": 1.17, "AL-2B": 0.98, "AL-3B": 0.78, "AL-4B": 0.59, "AL-5B": 0.39, "AL-6B": 0.23
         };
+        
+        // Convert ACH to NRL with full precision
         const achToNrl = (ach) => (d101_areaAir > 0 && d105_vol > 0) ? (ach * d105_vol) / (d101_areaAir * 3.6) : 0;
+        
         if (d108_method === "MEASURED") {
              g108_nrl50Target = achToNrl(g109_measured);
         } else if (d108_method === "PH_CLASSIC") {
@@ -459,117 +562,171 @@ window.TEUI.SectionModules.sect12 = (function() {
         } else {
             g108_nrl50Target = nrlTargets[d108_method] || 0;
         }
-        setCalculatedValue("g_108", g108_nrl50Target); // Uses auto ('number-2dp')
-        const ach50Target = (d105_vol > 0 && d101_areaAir > 0) ? g108_nrl50Target * (d101_areaAir / d105_vol) * 3.6 : 0;
-        setCalculatedValue("d_109", ach50Target); // Uses auto ('number-2dp')
-         const targetACH = getNumericValue('d_109');
-         const measuredACH = (d108_method === "MEASURED") ? g109_measured : ach50Target; 
-         const l109 = (targetACH > 0) ? measuredACH / targetACH : 0;
-         setCalculatedValue('l_109', l109); // Uses auto ('percent-0dp')
+        
+        // Update NRL50 target with standard formatter
+        setCalculatedValue("g_108", g108_nrl50Target, 'number-2dp');
+        
+        // Calculate ACH50 target with full precision
+        const ach50Target = (d105_vol > 0 && d101_areaAir > 0) ? 
+            g108_nrl50Target * (d101_areaAir / d105_vol) * 3.6 : 0;
+        
+        // Update ACH50 target with standard formatter
+        setCalculatedValue("d_109", ach50Target, 'number-2dp');
+        
+        // Calculate ratio with full precision
+        const targetACH = parseFloat(getNumericValue('d_109'));
+        const measuredACH = (d108_method === "MEASURED") ? g109_measured : ach50Target; 
+        const l109 = (targetACH > 0) ? measuredACH / targetACH : 0;
+        
+        // Update ratio with standard formatter
+        setCalculatedValue('l_109', l109, 'percent-0dp');
     }
 
     function calculateAe10() {
-        const ach50Target = getNumericValue("d_109");
-        const volume = getNumericValue("d_105");
+        // Get values with full precision
+        const ach50Target = parseFloat(getNumericValue("d_109"));
+        const volume = parseFloat(getNumericValue("d_105"));
+        
+        // Calculate with full precision
         const ae10 = (volume > 0) ? ach50Target * volume / 3600 : 0;
-        setCalculatedValue("d_110", ae10); // Uses auto ('number-3dp')
+        
+        // Update with standard formatter
+        setCalculatedValue("d_110", ae10, 'number-3dp');
+        
+        // Calculate ratio with full precision
         const refAe10 = 1.68; // Placeholder reference T110
         const l110 = (refAe10 > 0) ? ae10 / refAe10 : 0;
-        setCalculatedValue('l_110', l110); // Uses auto ('percent-0dp')
+        
+        // Update ratio with standard formatter
+        setCalculatedValue('l_110', l110, 'percent-0dp');
     }
     
-     function calculateNFactor() {
-        const climateZone = getNumericValue('j_19') || 6;
-        const stories = getNumericValue('d_103') || 1.5;
+    function calculateNFactor() {
+        // Get values with full precision
+        const climateZone = parseFloat(getNumericValue('j_19')) || 6;
+        const stories = parseFloat(getNumericValue('d_103')) || 1.5;
         const shielding = getFieldValue('g_103') || 'Normal';
+        
+        // Determine zone number
         let zoneNum = 2;
         if (climateZone <= 4) zoneNum = 1;
         else if (climateZone >= 7) zoneNum = 3;
-        setCalculatedValue('i_110', zoneNum.toString()); // Uses auto ('integer')
-        const shieldingKey = shielding === 'Shielded' ? 'Shielded' : shielding === 'Exposed' ? 'Exposed' : 'Normal';
+        
+        // Update zone number with integer formatter
+        setCalculatedValue('i_110', zoneNum.toString(), 'integer');
+        
+        // Determine shielding key
+        const shieldingKey = shielding === 'Shielded' ? 'Shielded' : 
+                            shielding === 'Exposed' ? 'Exposed' : 'Normal';
+        
+        // N-factor lookup table with precise values
         const nFactorTable = {
-            1: { "Shielded": { 1: 18.6, 1.5: 16.7, 2: 14.8, 3: 13.0 }, "Normal": { 1: 15.5, 1.5: 14.0, 2: 12.4, 3: 10.9 }, "Exposed": { 1: 14.0, 1.5: 12.6, 2: 11.2, 3: 9.8 } },
-            2: { "Shielded": { 1: 22.2, 1.5: 20.0, 2: 17.8, 3: 15.5 }, "Normal": { 1: 18.5, 1.5: 16.7, 2: 14.8, 3: 13.0 }, "Exposed": { 1: 16.7, 1.5: 15.0, 2: 13.3, 3: 11.7 } },
-            3: { "Shielded": { 1: 25.8, 1.5: 23.1, 2: 20.6, 3: 18.1 }, "Normal": { 1: 21.5, 1.5: 19.4, 2: 17.2, 3: 15.1 }, "Exposed": { 1: 19.4, 1.5: 17.4, 2: 15.5, 3: 13.5 } }
+            1: { "Shielded": { 1: 18.6, 1.5: 16.7, 2: 14.8, 3: 13.0 }, 
+                "Normal": { 1: 15.5, 1.5: 14.0, 2: 12.4, 3: 10.9 }, 
+                "Exposed": { 1: 14.0, 1.5: 12.6, 2: 11.2, 3: 9.8 } },
+            2: { "Shielded": { 1: 22.2, 1.5: 20.0, 2: 17.8, 3: 15.5 }, 
+                "Normal": { 1: 18.5, 1.5: 16.7, 2: 14.8, 3: 13.0 }, 
+                "Exposed": { 1: 16.7, 1.5: 15.0, 2: 13.3, 3: 11.7 } },
+            3: { "Shielded": { 1: 25.8, 1.5: 23.1, 2: 20.6, 3: 18.1 }, 
+                "Normal": { 1: 21.5, 1.5: 19.4, 2: 17.2, 3: 15.1 }, 
+                "Exposed": { 1: 19.4, 1.5: 17.4, 2: 15.5, 3: 13.5 } }
         };
+        
+        // Determine story key with full precision
         let storyKey = 1.5;
         if (stories <= 1) storyKey = 1;
         else if (stories > 1 && stories <= 1.75) storyKey = 1.5; 
         else if (stories > 1.75 && stories <= 2.5) storyKey = 2; 
         else storyKey = 3;
+        
+        // Get n-factor with full precision
         let nFactor = nFactorTable[2]['Normal'][1.5];
         if (nFactorTable[zoneNum]?.[shieldingKey]?.[storyKey]) {
             nFactor = nFactorTable[zoneNum][shieldingKey][storyKey];
         }
-        setCalculatedValue('g_110', nFactor); // Uses auto ('number-1dp')
+        
+        // Update n-factor with standard formatter
+        setCalculatedValue('g_110', nFactor, 'number-1dp');
     }
 
     function calculateAirLeakageHeatLoss() {
-        // Get necessary values using global parseNumeric
-        const g108_nrl50Target = getNumericValue('g_108'); // NRL50 Target (L/s*m2)
-        const g110_nFactor = getNumericValue('g_110');
-        const d20_hdd = getNumericValue('d_20');
-        const d21_cdd = getNumericValue('d_21');
-        const d101_areaAir = getNumericValue('d_101');
-        const h15_conditionedArea = getNumericValue('h_15'); // Get Conditioned Floor Area from S2
+        // Get necessary values with full precision using parseFloat
+        const g108_nrl50Target = parseFloat(getNumericValue('g_108')); // NRL50 Target (L/s*m2)
+        const g110_nFactor = parseFloat(getNumericValue('g_110'));
+        const d20_hdd = parseFloat(getNumericValue('d_20'));
+        const d21_cdd = parseFloat(getNumericValue('d_21'));
+        const d101_areaAir = parseFloat(getNumericValue('d_101'));
+        const h15_conditionedArea = parseFloat(getNumericValue('h_15')); // Get Conditioned Floor Area from S2
 
         // Constants from Excel formula structure
         const leakageFactor = 1.21; // Factor representing conversion and heat capacity (Ws/m³K?)
         const hoursPerDay = 24;
         const wattsToKw = 1000;
 
-        // Base calculation factor from Excel: (1.21 * G108 * D101 / G110)
-        // This likely represents some form of effective heat loss coefficient due to leakage (W/K)
+        // Base calculation factor with full precision
         const baseLeakageCoefficient = (g110_nFactor > 0) ? (leakageFactor * g108_nrl50Target * d101_areaAir / g110_nFactor) : 0;
 
-        // i_103 Heatloss Calc: =(1.21*G108*D20*24/1000)*D101/G110
+        // Calculate with full precision
         const i103_heatloss = (baseLeakageCoefficient * d20_hdd * hoursPerDay) / wattsToKw;
-        setCalculatedValue('i_103', i103_heatloss); // Uses auto ('number-2dp-comma')
-
-        // k_103 Heatgain Calc: =(1.21*G108*D21*24/1000)*D101/G110
         const k103_heatgain = (baseLeakageCoefficient * d21_cdd * hoursPerDay) / wattsToKw;
-        setCalculatedValue('k_103', k103_heatgain); // Uses auto ('number-2dp-comma')
+        
+        // Update values using standard formatters
+        setCalculatedValue('i_103', i103_heatloss, 'number-2dp-comma');
+        setCalculatedValue('k_103', k103_heatgain, 'number-2dp-comma');
     }
 
     function calculateEnvelopeHeatLossGain() {
-        const d101_areaAir = getNumericValue('d_101');
-        const d102_areaGround = getNumericValue('d_102');
-        const g101_uAir = getNumericValue('g_101');
-        const g102_uGround = getNumericValue('g_102');
-        const d20_hdd = getNumericValue('d_20');
-        const d21_cdd = getNumericValue('d_21');
-        const d22_gfHDD = getNumericValue('d_22');
-        const h22_gfCDD = getNumericValue('h_22');
+        // Get values with full precision using parseFloat
+        const d101_areaAir = parseFloat(getNumericValue('d_101'));
+        const d102_areaGround = parseFloat(getNumericValue('d_102'));
+        const g101_uAir = parseFloat(getNumericValue('g_101'));
+        const g102_uGround = parseFloat(getNumericValue('g_102'));
+        const d20_hdd = parseFloat(getNumericValue('d_20'));
+        const d21_cdd = parseFloat(getNumericValue('d_21'));
+        const d22_gfHDD = parseFloat(getNumericValue('d_22'));
+        const h22_gfCDD = parseFloat(getNumericValue('h_22'));
+        
+        // Constants
         const hoursPerDay = 24;
         const wattsToKw = 1000;
+        
+        // Air-facing envelope calculations (maintain full precision)
         const h101_lossRateAir = (g101_uAir * d20_hdd * hoursPerDay) / wattsToKw;
         const i101_heatlossAir = h101_lossRateAir * d101_areaAir;
         const j101_gainRateAir = (g101_uAir * d21_cdd * hoursPerDay) / wattsToKw;
         const k101_heatgainAir = j101_gainRateAir * d101_areaAir;
-        setCalculatedValue('h_101', h101_lossRateAir); // Uses auto ('number-2dp')
-        setCalculatedValue('i_101', i101_heatlossAir); // Uses auto ('number-2dp-comma')
-        setCalculatedValue('j_101', j101_gainRateAir); // Uses auto ('number-2dp')
-        setCalculatedValue('k_101', k101_heatgainAir); // Uses auto ('number-2dp-comma')
+        
+        // Update values using standard formatters
+        setCalculatedValue('h_101', h101_lossRateAir, 'number-2dp'); 
+        setCalculatedValue('i_101', i101_heatlossAir, 'number-2dp-comma');
+        setCalculatedValue('j_101', j101_gainRateAir, 'number-2dp');
+        setCalculatedValue('k_101', k101_heatgainAir, 'number-2dp-comma');
+        
+        // Ground-facing envelope calculations (maintain full precision)
         const h102_lossRateGround = (g102_uGround * d22_gfHDD * hoursPerDay) / wattsToKw;
         const i102_heatlossGround = h102_lossRateGround * d102_areaGround;
         const j102_gainRateGround = (g102_uGround * h22_gfCDD * hoursPerDay) / wattsToKw;
         const k102_heatgainGround = j102_gainRateGround * d102_areaGround;
-        setCalculatedValue('h_102', h102_lossRateGround); // Uses auto ('number-2dp')
-        setCalculatedValue('i_102', i102_heatlossGround); // Uses auto ('number-2dp-comma')
-        setCalculatedValue('j_102', j102_gainRateGround); // Uses auto ('number-2dp')
-        setCalculatedValue('k_102', k102_heatgainGround); // Uses auto ('number-2dp-comma')
+        
+        // Update values using standard formatters
+        setCalculatedValue('h_102', h102_lossRateGround, 'number-2dp');
+        setCalculatedValue('i_102', i102_heatlossGround, 'number-2dp-comma');
+        setCalculatedValue('j_102', j102_gainRateGround, 'number-2dp');
+        setCalculatedValue('k_102', k102_heatgainGround, 'number-2dp-comma');
     }
 
     function calculateEnvelopeTotals() {
-        const i101 = getNumericValue('i_101');
-        const i102 = getNumericValue('i_102');
-        const i103 = getNumericValue('i_103');
-        const k101 = getNumericValue('k_101');
-        const k102 = getNumericValue('k_102');
-        const k103 = getNumericValue('k_103'); // Air leakage gain
+        // Get values with full precision using parseFloat
+        const i101 = parseFloat(getNumericValue('i_101'));
+        const i102 = parseFloat(getNumericValue('i_102'));
+        const i103 = parseFloat(getNumericValue('i_103'));
+        const k101 = parseFloat(getNumericValue('k_101'));
+        const k102 = parseFloat(getNumericValue('k_102'));
+        const k103 = parseFloat(getNumericValue('k_103')); // Air leakage gain
         const h21_capacitanceSetting = getFieldValue('h_21'); // Get Capacitance/Static setting
-        const k98_totalEnvelopeGainS11 = getNumericValue('k_98'); // Get S11 total gain
+        const k98_totalEnvelopeGainS11 = parseFloat(getNumericValue('k_98')); // Get S11 total gain
 
+        // Calculate total loss with full precision
         const i104_totalLoss = i101 + i102 + i103;
 
         // Conditional calculation for k_104 based on Capacitance setting (h_21)
@@ -582,16 +739,21 @@ window.TEUI.SectionModules.sect12 = (function() {
             k104_totalGain = k101 + k102;
         }
 
-        setCalculatedValue('i_104', i104_totalLoss); // Uses auto ('number-2dp-comma')
-        setCalculatedValue('k_104', k104_totalGain); // Uses auto ('number-2dp-comma')
+        // Update values using standard formatters
+        setCalculatedValue('i_104', i104_totalLoss, 'number-2dp-comma');
+        setCalculatedValue('k_104', k104_totalGain, 'number-2dp-comma');
+        
+        // Calculate percentages with full precision
         const l101 = (i104_totalLoss > 0) ? i101 / i104_totalLoss : 0;
         const l102 = (i104_totalLoss > 0) ? i102 / i104_totalLoss : 0;
         const l103 = (i104_totalLoss > 0) ? i103 / i104_totalLoss : 0;
         const l104 = l101 + l102 + l103;
-        setCalculatedValue('l_101', l101); // Uses auto ('percent-2dp')
-        setCalculatedValue('l_102', l102); // Uses auto ('percent-2dp')
-        setCalculatedValue('l_103', l103); // Uses auto ('percent-2dp')
-        setCalculatedValue('l_104', l104); // Uses auto ('percent-0dp')
+        
+        // Update percentage values using standard formatters
+        setCalculatedValue('l_101', l101, 'percent-2dp');
+        setCalculatedValue('l_102', l102, 'percent-2dp');
+        setCalculatedValue('l_103', l103, 'percent-2dp');
+        setCalculatedValue('l_104', l104, 'percent-0dp');
     }
 
     function calculateAll() {
@@ -765,9 +927,12 @@ window.TEUI.SectionModules.sect12 = (function() {
         registerDependencies();
         initializeEventHandlers(); // Event handlers now only added once
         addStateManagerListeners();
-        calculateAll();
+        calculateAll(); // Ensure calculations are run immediately
         addCheckmarkStyles(); // Add section-specific styles if needed
         isInitialized = true;
+        
+        // Force recalculation to ensure U-values display with correct formatting
+        setTimeout(calculateAll, 100); // Run calculations again after a short delay
     }
 
     function registerWithStateManager() {
