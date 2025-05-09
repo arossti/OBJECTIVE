@@ -441,10 +441,10 @@ window.TEUI.SectionModules.sect16 = (function() {
         return {};
     }
 
-    function getLayout() {
-        return {
+    function getLayout() { 
+        return { 
             rows: [
-                {
+                { 
                     id: "S16-PlaceholderRow", 
                     cells: [
                         {},
@@ -455,8 +455,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                         }
                     ]
                 }
-            ]
-        };
+            ] 
+        }; 
     }
 
     function setupSection16DOM() {
@@ -539,7 +539,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             console.log("Section 16: Event handlers already initialized.");
             return;
         }
-        console.log("Section 16: Initializing event handlers AFTER DOM setup.");
+        console.log("Section 16: Initializing event handlers (deferred call). Awaiting DOM elements.");
         
         const activateBtn = document.getElementById('s16ActivateBtn');
         const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
@@ -613,8 +613,9 @@ window.TEUI.SectionModules.sect16 = (function() {
                 }
             }
         });
+
         window.TEUI.sect16.handlersInitialized = true; 
-        console.log("Section 16: Event handlers Initialized.");
+        console.log("Section 16: Event handlers Initialized (deferred call successful).");
     }
 
     function onSectionRendered() {
@@ -622,7 +623,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             console.log("Section 16: onSectionRendered - already initialized.");
             return;
         }
-        console.log("Section 16: First time onSectionRendered - setting up DOM and handlers.");
+        console.log("Section 16: First time onSectionRendered - setting up DOM and scheduling handler init.");
         
         if (!setupSection16DOM()) {
             console.error("Section 16: DOM setup failed in onSectionRendered. Aborting further S16 setup.");
@@ -637,10 +638,11 @@ window.TEUI.SectionModules.sect16 = (function() {
              return; 
         }
         
-        // Initialize event handlers AFTER DOM is created by setupSection16DOM
-        if (!window.TEUI.sect16.handlersInitialized) {
-            initializeEventHandlers();
-        }
+        setTimeout(() => {
+            if (!window.TEUI.sect16.handlersInitialized) {
+                initializeEventHandlers();
+            }
+        }, 0);
         
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
         if (loadingPlaceholder) {
@@ -671,10 +673,10 @@ window.TEUI.SectionModules.sect16 = (function() {
                 console.error("Section 16: Failed to re-setup DOM. Aborting render.");
                 return;
             }
-            if (!window.TEUI.sect16.handlersInitialized) { // Re-attach handlers if DOM was rebuilt
+            if (!window.TEUI.sect16.handlersInitialized) {
                 initializeEventHandlers();
             }
-            if (!sankeyInstance.svg) { // Re-initialize D3 Sankey if DOM was rebuilt before first activation init
+            if (!sankeyInstance.svg) {
                 const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
                  if (svgWrapper) {
                     sankeyInstance.initialize(
@@ -821,7 +823,7 @@ window.TEUI.SectionModules.sect16 = (function() {
     function calculateAll() {}
 
     // --- Public API ---
-    return {
+    return { 
         getFields: getFields,
         getDropdownOptions: getDropdownOptions,
         getLayout: getLayout,
@@ -829,13 +831,11 @@ window.TEUI.SectionModules.sect16 = (function() {
         onSectionRendered: onSectionRendered,
         calculateAll: calculateAll,
         activateAndRender: function() {
-            // Ensure DOM is built first if not already
             if (!document.getElementById('s16ControlsContainer')) {
                 if (!setupSection16DOM()) return;
-                // If DOM was just built, handlers need to be attached
-                 if (!window.TEUI.sect16.handlersInitialized) {
+                if (!window.TEUI.sect16.handlersInitialized) {
                     initializeEventHandlers();
-                 }
+                }
             }
             isActive = true;
             const activateBtn = document.getElementById('s16ActivateBtn');
@@ -850,20 +850,12 @@ window.TEUI.SectionModules.sect16 = (function() {
             fetchDataAndRenderSankey(false);
         }
     };
-})();
+})(); 
 
 document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail && event.detail.sectionId === 'section16') {
-        console.log("Section 16 received teui-section-rendered event.");
         if (window.TEUI.SectionModules.sect16 && typeof window.TEUI.SectionModules.sect16.onSectionRendered === 'function') {
-            // Call onSectionRendered, which handles its own idempotency for full setup
-            // and also calls initializeEventHandlers if needed.
             window.TEUI.SectionModules.sect16.onSectionRendered();
         }
     }
-});
-
-document.addEventListener('teui-rendering-complete', function() {
-    // This event might be useful to ensure all sections, including S16, have had their initial onSectionRendered call.
-    // However, direct activation by user is the primary trigger for S16 Sankey rendering.
 }); 
