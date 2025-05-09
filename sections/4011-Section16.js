@@ -125,18 +125,13 @@ window.TEUI.SectionModules.sect16 = (function() {
         _nodeWidthMultiplier: 1,
         _nodePadding: 15,
         _isGasHeating: false,
-        _gridIntensity: 0,
-        _gasIntensity: 1921, // Default, can be updated from TEUI state if available
-        _gasEnergyDensity: 10.36, // Default, can be updated from TEUI state if available
 
         initialize(svgId, tooltipId, initialExtent) {
             this.svg = d3.select(svgId);
             this.tooltip = d3.select(tooltipId);
             if (initialExtent) this.sankey.extent(initialExtent);
             
-            // Clear any previous elements
             this.svg.selectAll("*").remove();
-
             this.linkGroup = this.svg.append("g").attr("class", "links");
             this.nodeGroup = this.svg.append("g").attr("class", "nodes");
             this.labelGroup = this.svg.append("g").attr("class", "labels");
@@ -154,14 +149,10 @@ window.TEUI.SectionModules.sect16 = (function() {
                 this.sankey.nodePadding(this._nodePadding);
             }
             if (config.isGasHeating !== undefined) this._isGasHeating = config.isGasHeating;
-            if (config.gridIntensity !== undefined) this._gridIntensity = config.gridIntensity;
-            if (config.gasIntensity !== undefined) this._gasIntensity = config.gasIntensity;
-            if (config.gasEnergyDensity !== undefined) this._gasEnergyDensity = config.gasEnergyDensity;
         },
 
         render(sankeyData, isInitialLoad = false) {
             this._data = JSON.parse(JSON.stringify(sankeyData));
-
             if (!this._data.nodes || !this._data.links) {
                 console.error("TEUI_SankeyDiagram Error: Invalid data structure for rendering.", this._data);
                 return;
@@ -192,25 +183,22 @@ window.TEUI.SectionModules.sect16 = (function() {
                         target: visibleNodes.indexOf(l.targetOriginal),
                         value: l.value,
                         isEmissions: l.isEmissions
-                    })).filter(l => l.source !== -1 && l.target !== -1) // Ensure indices are valid for visibleNodes
+                    })).filter(l => l.source !== -1 && l.target !== -1)
                 };
                 
                 if(workingDataForD3.nodes.length === 0) {
                     console.warn("TEUI_SankeyDiagram: No visible nodes to render.");
-                    this.svg.selectAll("*").remove(); // Clear SVG if nothing to render
-                    this.linkGroup = this.svg.append("g").attr("class", "links"); // Re-append groups
+                    this.svg.selectAll("*").remove();
+                    this.linkGroup = this.svg.append("g").attr("class", "links");
                     this.nodeGroup = this.svg.append("g").attr("class", "nodes");
                     this.labelGroup = this.svg.append("g").attr("class", "labels");
                     return;
                 }
 
                 const { nodes, links } = this.sankey(workingDataForD3);
-
                 nodes.forEach(node => { node.displayColor = d3.color(node.color).darker(0.3); });
-
                 const svgWidth = parseFloat(this.svg.style("width")) || (this.sankey.extent()[1][0] - this.sankey.extent()[0][0]);
                 const maxX = d3.max(nodes, d => d.x0) || svgWidth;
-                
                 this.renderLinks(links, isInitialLoad, maxX);
                 this.renderNodes(nodes, isInitialLoad, maxX);
                 this.renderLabels(nodes, isInitialLoad, maxX, svgWidth);
@@ -299,7 +287,6 @@ window.TEUI.SectionModules.sect16 = (function() {
             let totalNodeValue = d.value;
             const incoming = d.targetLinks || [];
             const outgoing = d.sourceLinks || [];
-
             if (originalNodeName.includes("Emissions")) {
                 const totalEmissions = incoming.reduce((sum, link) => sum + link.value, 0);
                 const mtValue = (totalEmissions / 1000000);
@@ -374,20 +361,69 @@ window.TEUI.SectionModules.sect16 = (function() {
         },
 
         updateEmissionsFlows() {
-            const scope1Node = this._data.nodes.find(n => n.name === "E1 Scope 1 Emissions");
-            const scope2Node = this._data.nodes.find(n => n.name === "E2 Scope 2 Emissions");
-            if (!scope1Node || !scope2Node) { console.warn("Emission nodes not found in S16 data."); return; }
-            const scope1NodeIndex = this._data.nodes.indexOf(scope1Node);
-            const scope2NodeIndex = this._data.nodes.indexOf(scope2Node);
+            const scope1NodeIndex = this._data.nodes.findIndex(n => n.name === "E1 Scope 1 Emissions");
+            const scope2NodeIndex = this._data.nodes.findIndex(n => n.name === "E2 Scope 2 Emissions");
+
+            if (scope1NodeIndex === -1 || scope2NodeIndex === -1) {
+                console.warn("Section 16: Emission sink nodes (E1/E2) not found in Sankey data.");
+                return;
+            }
 
             this._data.links = this._data.links.filter(link => {
-                const targetIdx = typeof link.target === 'number' ? link.target : this._data.nodes.indexOf(link.target);
-                return targetIdx !== scope1NodeIndex && targetIdx !== scope2NodeIndex;
+                const targetNode = typeof link.target === 'object' ? link.target : this._data.nodes[link.target];
+                return !(targetNode && 
+                         (this._data.nodes.indexOf(targetNode) === scope1NodeIndex || 
+                          this._data.nodes.indexOf(targetNode) === scope2NodeIndex));
             });
 
-            if (this._showEmissions) {
-                this.calculateElectricalEmissions(this._gridIntensity, scope2NodeIndex);
-                this.calculateHeatingEmissions(this._gridIntensity, scope1NodeIndex, scope2NodeIndex); 
+            if (this._showEmissions && window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
+                const teuiState = window.TEUI.StateManager;
+                const primaryHeatingSystem = teuiState.getValue('d_113'); // M.1.0 Primary Heating System
+
+                const energyInputNodeIndex = this._data.nodes.findIndex(n => n.name === "M.2.1.D Energy Input");
+                if (energyInputNodeIndex === -1) {
+                    console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
+                    return;
+                }
+
+                const elecEmissionsKg = parseFloat(teuiState.getValue('k_27') || 0);
+                if (elecEmissionsKg > 0) {
+                    const elecEmissionsGrams = elecEmissionsKg * 1000;
+                    if (elecEmissionsGrams > 0.0001) {
+                        this._data.links.push({
+                            source: energyInputNodeIndex,
+                            target: scope2NodeIndex,
+                            value: elecEmissionsGrams,
+                            isEmissions: true
+                        });
+                    }
+                }
+
+                const gasEmissionsKg = parseFloat(teuiState.getValue('k_28') || 0);
+                if (gasEmissionsKg > 0) {
+                    const gasEmissionsGrams = gasEmissionsKg * 1000;
+                    if (gasEmissionsGrams > 0.0001) {
+                        this._data.links.push({
+                            source: energyInputNodeIndex,
+                            target: scope1NodeIndex,
+                            value: gasEmissionsGrams,
+                            isEmissions: true
+                        });
+                    }
+                }
+
+                const oilEmissionsKg = parseFloat(teuiState.getValue('k_30') || 0);
+                if (oilEmissionsKg > 0) {
+                    const oilEmissionsGrams = oilEmissionsKg * 1000;
+                    if (oilEmissionsGrams > 0.0001) {
+                        this._data.links.push({
+                            source: energyInputNodeIndex,
+                            target: scope1NodeIndex,
+                            value: oilEmissionsGrams,
+                            isEmissions: true
+                        });
+                    }
+                }
             }
         },
 
@@ -405,78 +441,15 @@ window.TEUI.SectionModules.sect16 = (function() {
             return link ? link.value : 0;
         },
 
-        calculateElectricalEmissions(gridIntensity, scope2NodeIndex) {
-            const g2Value = this._getLinkValueByName("G.2 Plug Light Equipment", "Building");
-            if (g2Value > 0.1) {
-                const g2Emissions = Math.round(g2Value * gridIntensity);
-                if (g2Emissions > 0.1) this._data.links.push({ source: this._data.nodes.findIndex(n => n.name === "G.2 Plug Light Equipment"), target: scope2NodeIndex, value: g2Emissions, isEmissions: true });
-            }
-            if (!this._isGasHeating) {
-                const m21dValue = this._getLinkValueByName("M.2.1.D Energy Input", "Thermal Energy Demand");
-                if (m21dValue > 0.1) {
-                    const m21dEmissions = Math.round(m21dValue * gridIntensity);
-                    if (m21dEmissions > 0.1) this._data.links.push({ source: this._data.nodes.findIndex(n => n.name === "M.2.1.D Energy Input"), target: scope2NodeIndex, value: m21dEmissions, isEmissions: true });
-                }
-                const shwValue = this._getLinkValueByName("W.5.2 SHW Net Demand", "Building");
-                if (shwValue > 0.1) {
-                    const shwEmissions = Math.round(shwValue * gridIntensity);
-                    if (shwEmissions > 0.1) this._data.links.push({ source: this._data.nodes.findIndex(n => n.name === "W.5.2 SHW Net Demand"), target: scope2NodeIndex, value: shwEmissions, isEmissions: true });
-                }
-            }
-        },
-
-        calculateHeatingEmissions(gridIntensity, scope1NodeIndex, scope2NodeIndex) {
-            if (!this._isGasHeating) return;
-            const heatingNodesToProcess = [
-                { name: "Thermal Energy Demand", energyInputLinkSource: "M.2.1.D Energy Input" }, 
-                { name: "W.5.2 SHW Net Demand", energyInputLinkSource: null } // SHW gas input needs TEUI state mapping
-            ];
-            const gasIntensity = this._gasIntensity;
-            const gasEnergyDensity = this._gasEnergyDensity;
-
-            heatingNodesToProcess.forEach(item => {
-                const nodeIndex = this._data.nodes.findIndex(n => n.name === item.name);
-                if (nodeIndex === -1) return;
-
-                let gasEnergyKwh = 0;
-                if (item.name === "Thermal Energy Demand" && item.energyInputLinkSource) {
-                    // If it's TED and gas, M21D represents gas energy input in kWh_e - needs conversion based on efficiency if M21D is primary fuel kWh
-                    // OR, if M21D is *already* the raw gas energy in kWh, this is fine.
-                    // Current SANKEY3035 assumes M21D is the energy input (electric or gas). We need clarity from TEUI data model.
-                    // For now, assume the value M21D is the gas energy equivalent needing conversion to volume.
-                    gasEnergyKwh = this._getLinkValueByName(item.energyInputLinkSource, "Thermal Energy Demand");
-                }
-                else if (item.name === "W.5.2 SHW Net Demand") {
-                     // Here, we need to get the GAS energy supplied for SHW. 
-                     // The link "W.5.2 SHW Net Demand" -> "Building" is thermal demand.
-                     // The actual gas input for SHW needs to be sourced from TEUI StateManager, similar to how heatingSystem gas input is handled.
-                     // Placeholder - This value needs to be correctly mapped from TEUI state.
-                     // For now, assuming the SHWNetDemand value itself is the gas energy if in gas mode.
-                    gasEnergyKwh = this._getLinkValueByName("W.5.2 SHW Net Demand", "Building"); 
-                }
-
-                if (gasEnergyKwh > 0.1) {
-                    const gasVolume = gasEnergyKwh / gasEnergyDensity; // m3
-                    const emissionsValue = Math.round(gasVolume * gasIntensity); // gCO2e
-                    if (emissionsValue > 0.1) {
-                        this._data.links.push({ source: nodeIndex, target: scope1NodeIndex, value: emissionsValue, isEmissions: true });
-                    }
-                }
-            });
-        },
-
         resize(newWidth, newHeight = 700) {
             if (!this.svg || !this.sankey) { console.warn("Sankey not initialized for resize"); return; }
             const margin = { left: 20, right: 20, top: 1, bottom: 1 };
-            const innerWidth = Math.max(100, newWidth - margin.left - margin.right); // Ensure positive width
-            const innerHeight = Math.max(50, newHeight - margin.top - margin.bottom); // Ensure positive height
-            
+            const innerWidth = Math.max(100, newWidth - margin.left - margin.right);
+            const innerHeight = Math.max(50, newHeight - margin.top - margin.bottom);
             this.svg.attr("width", newWidth).attr("height", newHeight)
                 .attr("viewBox", `0 0 ${newWidth} ${newHeight}`).style("overflow", "visible");
-            
             this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
             this.sankey.size([innerWidth, innerHeight]);
-            
             if (this._data.nodes && this._data.nodes.length > 0 && this._data.links) {
                  this.render(this._data, false);
             } else {
@@ -488,7 +461,6 @@ window.TEUI.SectionModules.sect16 = (function() {
     // --- Private Variables (Section16 specific) ---
     let sankeyInstance = TEUI_SankeyDiagram; // Use the adapted object
     let isActive = false;
-    // currentSankeyData will be built by fetchDataAndRenderSankey
     let showEmissions = false;
     let nodeWidthMultiplier = 1;
     let nodePadding = 15;
@@ -669,102 +641,112 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         let currentSankeyData = JSON.parse(JSON.stringify(SANKEY_STRUCTURE_TEMPLATE));
 
-        // TODO: Full data mapping implementation needed here.
-        // For now, we'll try to map a few key known values if StateManager is available.
         if (window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
             const teuiState = window.TEUI.StateManager;
             
-            // Example Mapping (illustrative - needs full implementation)
             const linkIdToTeuiField = {
-                // Gains to Building
-                "OccupantGains": "i_64",          // G.1.2 Occupant Gains -> REPORT!I64
-                "EquipmentGains": "i_70",         // G.2 Plug Light Equipment -> REPORT!I70
-                "SHWNetDemand": "j_52",           // W.5.2 SHW Net Demand -> REPORT!J52 (Net Demand AFTER DWHR)
-                "WinNorthGains": "i_74",          // G.8.1 Windows N -> REPORT!I74
-                "WinEastGains": "i_75",           // G.8.2 Windows E -> REPORT!I75
-                "WinSouthGains": "i_76",          // G.8.3 Windows S -> REPORT!I76
-                "WinWestGains": "i_77",           // G.8.4 Windows W -> REPORT!I77
-                "DoorGains": "i_73",              // G.7.0 Doors -> REPORT!I73
-                "SkylightGains": "i_78",          // G.8.5 Skylights -> REPORT!I78
+                "OccupantGains": "i_64",
+                "EquipmentGains": "i_70",
+                "SHWNetDemand": "j_52",
+                "WinNorthGains": "i_74",
+                "WinEastGains": "i_75",
+                "WinSouthGains": "i_76",
+                "WinWestGains": "i_77",
+                "DoorGains": "i_73",
+                "SkylightGains": "i_78",
                 
-                // Heat Pump / TED System
-                "HeatPumpSourceToTED": "l_113",   // M.2.1.S Sink (Air/Ground) -> REPORT!L113 (M.1.4 in DOM)
-                "HeatPumpElecToTED": "d_114",   // M.2.1.D Energy Input -> REPORT!D114
-                "TEDToBuilding": "d_127",         // Thermal Energy Demand -> REPORT!D127
+                "HeatPumpSourceToTED": "l_113",
+                "HeatPumpElecToTED": "d_114",
+                "TEDToBuilding": "d_127",
 
-                // Losses from Building
-                "BuildingToVentLoss": "m_121",       // V.2.3 Unrecovered Ventilation -> REPORT!M121
-                "BuildingToSHWWaste": "j_53",       // W.2.W SHW Wasted -> REPORT!J53
-                "BuildingToUnusableGains": "i_82",  // G.5 Unusable Gains -> REPORT!I82
-                "BuildingToTEL": "d_131",           // Total Envelope Losses -> REPORT!D131 (T.5.1)
+                "BuildingToVentLoss": "m_121",
+                "BuildingToSHWWaste": "j_53",
+                "BuildingToUnusableGains": "i_82",
+                "BuildingToTEL": "d_131",
 
-                // TEL Components (Source: Total Envelope Losses)
-                "TELToRoof": "i_85",                // B.4 Roof -> REPORT!I85
-                "TELToWallAG": "i_86",            // B.5 Walls Above Grade -> REPORT!I86
-                "TELToFloorExp": "i_87",          // B.6 Floor Exposed -> REPORT!I87
-                "TELToDoor": "i_88",                // B.7.0 Doors -> REPORT!I88
-                "TELToWinN": "i_89",                // B.8.1 Windows N -> REPORT!I89
-                "TELToWinE": "i_90",                // B.8.2 Windows E -> REPORT!I90
-                "TELToWinS": "i_91",                // B.8.3 Windows S -> REPORT!I91
-                "TELToWinW": "i_92",                // B.8.4 Windows W -> REPORT!I92
-                "TELToSkylight": "i_93",          // B.8.5 Skylights -> REPORT!I93
-                "TELToWallBG": "i_94",            // B.9 Walls Below Grade -> REPORT!I94
-                "TELToSlab": "i_95",                // B.10 Floor Slab -> REPORT!I95
-                "TELToTB": "i_97",                  // B.12 TB Penalty -> REPORT!I97
-                "TELToAirLeak": "i_103"             // B.18.3 Air Leakage -> REPORT!I103
+                "TELToRoof": "i_85",
+                "TELToWallAG": "i_86",
+                "TELToFloorExp": "i_87",
+                "TELToDoor": "i_88",
+                "TELToWinN": "i_89",
+                "TELToWinE": "i_90",
+                "TELToWinS": "i_91",
+                "TELToWinW": "i_92",
+                "TELToSkylight": "i_93",
+                "TELToWallBG": "i_94",
+                "TELToSlab": "i_95",
+                "TELToTB": "i_97",
+                "TELToAirLeak": "i_103",
+
+                "TEDToGasExhaust": "l_115",
+                "SHWToGasExhaust": "j_54"
             };
 
+            const primaryHeatingSystem = teuiState.getValue('d_113');
+            const dhwSystem = teuiState.getValue('d_51');
+            const isPrimaryGasOrOil = primaryHeatingSystem === 'Gas' || primaryHeatingSystem === 'Oil';
+            const isDhwGasOrOil = dhwSystem === 'Gas' || dhwSystem === 'Oil';
+            const isPrimaryHeatPump = primaryHeatingSystem === 'Heatpump';
+
             currentSankeyData.links.forEach(link => {
-                const teuiFieldId = linkIdToTeuiField[link.id];
-                if (teuiFieldId) {
-                    const rawValue = teuiState.getValue(teuiFieldId);
-                    if (rawValue !== null && rawValue !== undefined && rawValue !== "") {
-                        link.value = parseFloat(String(rawValue).replace(/,/g, '')) || 0.001;
+                let teuiFieldId = linkIdToTeuiField[link.id];
+                let valueToAssign = 0.0001;
+
+                if (link.id === "HeatPumpSourceToTED") {
+                    if (isPrimaryHeatPump) {
+                        const rawValue = teuiState.getValue(linkIdToTeuiField[link.id]);
+                        if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
+                            const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                            valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
+                        }
                     } else {
-                        link.value = 0.001; // Default if TEUI value is missing/null
+                        valueToAssign = 0.0001;
                     }
-                } else if (!link.id.includes("GasExhaust")) { // GasExhaust is conditional, handle separately
-                    console.warn(`Section 16: No TEUI mapping found for Sankey link ID: ${link.id}`);
+                } else if (link.id === "HeatPumpElecToTED") {
+                    if (isPrimaryGasOrOil) {
+                        teuiFieldId = 'd_115';
+                    } else {
+                        teuiFieldId = 'd_114';
+                    }
+                } else if (link.id === "BuildingToGasExhaust") {
+                    valueToAssign = 0.0001;
+                    teuiFieldId = null;
                 }
-            });
 
-            // Conditional GasExhaust flows - CONSULT ARCHITECT FOR CORRECT LOGIC
-            const isGas = teuiState.getValue('heatingSystem') === 'Gas'; // Example
-            const gasExhaustLinks = [
-                currentSankeyData.links.find(l => l.id === "BuildingToGasExhaust"),
-                currentSankeyData.links.find(l => l.id === "TEDToGasExhaust"),
-                currentSankeyData.links.find(l => l.id === "SHWToGasExhaust")
-            ].filter(Boolean);
-
-            if (isGas) {
-                // TODO: Determine correct values for these gas exhaust flows from TEUI StateManager
-                // For example, for TEDToGasExhaust, it might be: GasInputToTED - TEDToBuilding
-                // This is highly dependent on TEUI's energy balance calculations.
-                // Placeholder: keep them minimal or map if specific fields exist.
-                const tedToBuildingVal = parseFloat(teuiState.getValue(linkIdToTeuiField["TEDToBuilding"])) || 0;
-                const heatPumpElecToTEDVal = parseFloat(teuiState.getValue(linkIdToTeuiField["HeatPumpElecToTED"])) || 0;
-                const shwNetDemandVal = parseFloat(teuiState.getValue(linkIdToTeuiField["SHWNetDemand"])) || 0;
-                // This is a simplified example for gas exhaust calculation, actual logic may differ.
-                // const gasSystemEfficiency = parseFloat(teuiState.getValue('m_1_2_copHeat_or_AFUE')) || 0.9; // example hypothetical field
+                if (teuiFieldId) {
+                    if (link.id === "TEDToGasExhaust") {
+                        if (isPrimaryGasOrOil) {
+                            const rawValue = teuiState.getValue(teuiFieldId);
+                            if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
+                                const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                                valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
+                            }
+                        } else {
+                            valueToAssign = 0.0001;
+                        }
+                    } else if (link.id === "SHWToGasExhaust") {
+                        if (isDhwGasOrOil) {
+                            const rawValue = teuiState.getValue(teuiFieldId);
+                            if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
+                                const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                                valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
+                            }
+                        } else {
+                            valueToAssign = 0.0001;
+                        }
+                    } else if (link.id !== "HeatPumpSourceToTED") {
+                        const rawValue = teuiState.getValue(teuiFieldId);
+                        if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
+                            const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                            valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
+                        }
+                    }
+                }
                 
-                const tedExhaustLink = currentSankeyData.links.find(l => l.id === "TEDToGasExhaust");
-                if (tedExhaustLink) {
-                     // Example: (Total Gas Input for Heating) - (Useful Heat Delivered)
-                     // tedExhaustLink.value = (heatPumpElecToTEDVal / gasSystemEfficiency) - tedToBuildingVal;
-                     // THIS NEEDS VERIFICATION!
-                    tedExhaustLink.value = Math.max(0.001, (heatPumpElecToTEDVal * (1/0.90)) - tedToBuildingVal); // Simplified assumption
-                }
-                // Similar logic for SHWToGasExhaust
-                 console.warn("Section 16: GasExhaust flow value mapping requires architect confirmation.");
-
-            } else {
-                gasExhaustLinks.forEach(link => { link.value = 0.001; }); // Hide if not gas
-                const gasExhaustNode = currentSankeyData.nodes.find(n => n.name === "GasExhaust");
-                if (gasExhaustNode) gasExhaustNode.hidden = true;
-            }
-             const gasExhaustNode = currentSankeyData.nodes.find(n => n.name === "GasExhaust");
-             if(gasExhaustNode) gasExhaustNode.hidden = !isGas;
-
+                link.value = valueToAssign;
+            });
+            
+            currentSankeyData.nodes.find(n => n.name === "GasExhaust").hidden = !(isPrimaryGasOrOil || isDhwGasOrOil);
 
         } else {
             console.warn("Section 16: TEUI.StateManager not available for data fetching.");
@@ -774,10 +756,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             showEmissions: showEmissions,
             nodeWidthMultiplier: nodeWidthMultiplier,
             nodePadding: nodePadding,
-            isGasHeating: window.TEUI && window.TEUI.StateManager ? (window.TEUI.StateManager.getValue('heatingSystem') === 'Gas') : false,
-            gridIntensity: window.TEUI && window.TEUI.StateManager ? (parseFloat(window.TEUI.StateManager.getValue('l_27')) || 0) : 0,
-            gasIntensity: window.TEUI && window.TEUI.StateManager ? (parseFloat(window.TEUI.StateManager.getValue('gas_intensity_gCO2e_m3')) || 1921) : 1921, // Hypothetical global value
-            gasEnergyDensity: window.TEUI && window.TEUI.StateManager ? (parseFloat(window.TEUI.StateManager.getValue('gas_energy_density_ekWh_m3')) || 10.36) : 10.36 // Hypothetical global value
+            isGasHeating: isPrimaryGasOrOil
         });
 
         const wrapper = document.getElementById('sankeySection16ContainerWrapper');
