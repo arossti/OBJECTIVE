@@ -372,27 +372,52 @@ window.TEUI.SectionModules.sect16 = (function() {
             return node.name;
         },
         showTooltip(content, event) {
-            if (!this.tooltip) {
-                console.warn("S16 SANKEY LOG: showTooltip - Tooltip element not found!");
+            if (!this.tooltip || !this.svg) { // Also check for this.svg
+                console.warn("S16 SANKEY LOG: showTooltip - Tooltip element or SVG not found!");
                 return;
             }
-            console.warn("S16 SANKEY LOG: showTooltip called. Event PageX:", event.pageX, "PageY:", event.pageY, "Content:", content);
-            const padding = 10;
-            this.tooltip.style("display", "block")
-                .style("left", `${event.pageX + padding}px`).style("top", `${event.pageY + padding}px`)
-                .html(content);
             
-            // Boundary collision detection (remains the same)
+            // Use d3.pointer to get coordinates relative to the SVG container
+            const [pointerX, pointerY] = d3.pointer(event, this.svg.node());
+            console.warn("S16 SANKEY LOG: showTooltip called. d3.pointer(event, svg) X:", pointerX, "Y:", pointerY, "Content:", content);
+
+            const padding = 15; // Increased padding slightly
+            let newLeft = pointerX + padding;
+            let newTop = pointerY + padding;
+
+            this.tooltip.style("display", "block")
+                .html(content) // Set content first to get accurate dimensions for collision detection
+                .style("left", `${newLeft}px`)
+                .style("top", `${newTop}px`);
+            
+            // Boundary collision detection relative to the diagram wrapper
             const tooltipRect = this.tooltip.node().getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            if (tooltipRect.right > viewportWidth) {
-                 this.tooltip.style("left", `${event.pageX - tooltipRect.width - padding}px`);
+            const wrapper = document.getElementById('sankeySection16ContainerWrapper');
+            if (!wrapper) {
+                console.warn("S16 SANKEY LOG: Tooltip wrapper not found for boundary check.");
+                return;
             }
-            if (tooltipRect.bottom > viewportHeight) {
-                 this.tooltip.style("top", `${event.pageY - tooltipRect.height - padding}px`);
+            const wrapperRect = wrapper.getBoundingClientRect();
+
+            // Adjust if tooltip goes off the right edge of the wrapper
+            if (newLeft + tooltipRect.width > wrapperRect.width) {
+                newLeft = pointerX - tooltipRect.width - padding;
             }
-            console.warn("S16 SANKEY LOG: Tooltip displayed at", this.tooltip.style("left"), this.tooltip.style("top"));
+            // Adjust if tooltip goes off the bottom edge of the wrapper
+            if (newTop + tooltipRect.height > wrapperRect.height) {
+                newTop = pointerY - tooltipRect.height - padding;
+            }
+            // Adjust if tooltip goes off the left edge of the wrapper (e.g. if padding pushes it left)
+            if (newLeft < 0) {
+                newLeft = padding;
+            }
+            // Adjust if tooltip goes off the top edge of the wrapper
+            if (newTop < 0) {
+                newTop = padding;
+            }
+
+            this.tooltip.style("left", `${newLeft}px`).style("top", `${newTop}px`);
+            console.warn("S16 SANKEY LOG: Tooltip displayed at (adjusted for wrapper) Left:", newLeft, "Top:", newTop);
         },
         hideTooltip() { 
             console.warn("S16 SANKEY LOG: hideTooltip called.");
@@ -526,10 +551,10 @@ window.TEUI.SectionModules.sect16 = (function() {
         return {};
     }
 
-    function getLayout() { 
-        return { 
+    function getLayout() {
+        return {
             rows: [
-                { 
+                {
                     id: "S16-PlaceholderRow", 
                     cells: [
                         {},
@@ -540,8 +565,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                         }
                     ]
                 }
-            ] 
-        }; 
+            ]
+        };
     }
 
     function setupSection16DOM() {
@@ -595,24 +620,30 @@ window.TEUI.SectionModules.sect16 = (function() {
         widthToggleContainer.appendChild(widthValueText);
         controlsContainer.appendChild(widthToggleContainer);
         targetArea.appendChild(controlsContainer);
+
         const diagramWrapper = document.createElement('div');
         diagramWrapper.id = 'sankeySection16ContainerWrapper';
         diagramWrapper.style.cssText = 'width: 100%; height: 500px; background: #f9f9f9; position: relative; border: 1px solid #ccc; overflow: hidden;';
+        
         const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svgElement.id = 'sankeySection16Container';
         svgElement.style.cssText = 'width: 100%; height: 100%; display: block;'; 
         diagramWrapper.appendChild(svgElement);
+
         const tooltipElement = document.createElement('div');
         tooltipElement.id = 'sankeySection16Tooltip';
         tooltipElement.className = 'tooltip'; 
         tooltipElement.style.display = 'none';
         tooltipElement.style.position = 'absolute'; 
+        tooltipElement.style.zIndex = '1080';
         diagramWrapper.appendChild(tooltipElement);
+
         const placeholderElement = document.createElement('div');
         placeholderElement.id = 's16LoadingPlaceholder';
         placeholderElement.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-style: italic; color: #777; text-align: center;';
         placeholderElement.innerHTML = "Sankey diagram not active.<br>Click 'Activate/Refresh Sankey' to load.";
         diagramWrapper.appendChild(placeholderElement);
+
         targetArea.appendChild(diagramWrapper);
         console.log("Section 16: DOM setup complete. Diagram wrapper height set to 500px.");
         return true; 
