@@ -535,13 +535,13 @@ window.TEUI.SectionModules.sect16 = (function() {
 
     // --- Event Handling & Initialization ---
     function initializeEventHandlers() {
-        if (window.TEUI.sect16.handlersInitialized) {
-            console.log("Section 16: Event handlers already initialized.");
-            return;
-        }
-        console.log("Section 16: Initializing event handlers NOW (after DOM setup confirmed).");
+        // This function now assumes setupSection16DOM() has been called and elements exist.
+        // The idempotency is handled by onSectionRendered.
+        console.warn("S16 LOG: initializeEventHandlers CALLED.");
         
         const activateBtn = document.getElementById('s16ActivateBtn');
+        console.warn("S16 LOG: #s16ActivateBtn in initializeEventHandlers (result of getElementById):", activateBtn);
+
         const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
         const spacingBtn = document.getElementById('s16ToggleSpacingBtn');
         const widthSlider = document.getElementById('s16WidthMultiplierSlider');
@@ -550,6 +550,9 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         if (activateBtn) {
             activateBtn.addEventListener('click', function() {
+                console.warn("S16 LOG: Activate button CLICKED.");
+                console.warn("S16 LOG: In Activate click - sankeyInstance:", sankeyInstance, "sankeyInstance.svg:", sankeyInstance ? sankeyInstance.svg : 'N/A');
+
                 if (!sankeyInstance) {
                     console.error("Section 16: TEUI_SankeyDiagram object (sankeyInstance) is not available. Cannot activate.");
                     if (loadingPlaceholder) loadingPlaceholder.textContent = "Error: Sankey Diagram component failed to load.";
@@ -557,13 +560,16 @@ window.TEUI.SectionModules.sect16 = (function() {
                 }
                 if (!sankeyInstance.svg) { 
                     const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
-                    if (svgWrapper && document.getElementById('sankeySection16Container')) {
+                    const svgContainer = document.getElementById('sankeySection16Container');
+                    console.warn("S16 LOG: In Activate click, before initialize - svgWrapper:", svgWrapper, "svgContainer:", svgContainer);
+
+                    if (svgWrapper && svgContainer) {
                         sankeyInstance.initialize(
                             '#sankeySection16Container', 
                             '#sankeySection16Tooltip', 
                             [[1,1], [svgWrapper.clientWidth > 50 ? svgWrapper.clientWidth - 2 : 1098, svgWrapper.clientHeight > 50 ? svgWrapper.clientHeight -2 : 698]]
                         );
-                        console.log("Section 16: TEUI_SankeyDiagram initialized on activation.");
+                        console.warn("S16 LOG: TEUI_SankeyDiagram initialized on activation.");
                     } else {
                         console.error("Section 16: SVG wrapper or container not found during activation. Cannot initialize Sankey.");
                         if (loadingPlaceholder) loadingPlaceholder.textContent = "Error: Sankey container not found.";
@@ -575,11 +581,11 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (emissionsBtn) emissionsBtn.style.display = 'inline-flex';
                 if (spacingBtn) spacingBtn.style.display = 'inline-flex';
                 if (widthToggleContainer) widthToggleContainer.style.display = 'inline-flex';
-                console.log("Section 16: Activate button clicked.");
+                console.warn("S16 LOG: Calling fetchDataAndRenderSankey from Activate button.");
                 fetchDataAndRenderSankey(false); 
             });
         } else {
-            console.warn("Section 16: Activate button not found when trying to attach listener."); 
+            console.warn("S16 LOG: Activate button NOT FOUND when trying to attach listener in initializeEventHandlers."); 
         }
 
         if (emissionsBtn) {
@@ -614,30 +620,37 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
         });
 
-        window.TEUI.sect16.handlersInitialized = true; 
-        console.log("Section 16: Event handlers Initialized.");
+        // window.TEUI.sect16.handlersInitialized = true; // This flag is now controlled by onSectionRendered's main initialized flag
+        console.warn("S16 LOG: Event handler attachments attempted.");
     }
 
     function onSectionRendered() {
+        console.warn("S16 LOG: onSectionRendered CALLED. Initialized flag:", window.TEUI.sect16.initialized);
         if (window.TEUI.sect16.initialized) {
-            console.log("Section 16: onSectionRendered - ALREADY INITIALIZED (idempotency check).");
+            console.warn("S16 LOG: onSectionRendered - ALREADY INITIALIZED (idempotency check) - returning.");
             return;
         }
-        console.log("Section 16: onSectionRendered - FIRST RUN - Performing full setup.");
         
-        if (!setupSection16DOM()) {
+        console.warn("S16 LOG: Attempting to find #section16ContentTarget BEFORE setupSection16DOM:", document.getElementById('section16ContentTarget'));
+        if (!setupSection16DOM()) { 
             console.error("Section 16: DOM setup FAILED in onSectionRendered. Aborting S16 setup.");
-            return;
+            return; 
         }
+        console.warn("S16 LOG: setupSection16DOM returned. #section16ContentTarget now:", document.getElementById('section16ContentTarget'));
+        console.warn("S16 LOG: #s16ActivateBtn after setupSection16DOM in onSectionRendered:", document.getElementById('s16ActivateBtn'));
 
         if (!sankeyInstance && typeof TEUI_SankeyDiagram !== 'undefined') {
             sankeyInstance = TEUI_SankeyDiagram; 
-            console.log("Section 16: sankeyInstance assigned.");
+            console.warn("S16 LOG: sankeyInstance assigned.");
         } else if (!sankeyInstance) {
-             console.error("Section 16: TEUI_SankeyDiagram object is undefined. Critical error.");
+             console.error("S16 LOG: TEUI_SankeyDiagram object is undefined. Critical error.");
              return; 
         }
         
+        // Call initializeEventHandlers AFTER setupSection16DOM has created the elements.
+        // The initializeEventHandlers function itself should be idempotent if FieldManager might call it separately.
+        // For now, we ensure it's called at least once here correctly.
+        console.warn("S16 LOG: Calling initializeEventHandlers from onSectionRendered.");
         initializeEventHandlers(); 
         
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
@@ -646,8 +659,8 @@ window.TEUI.SectionModules.sect16 = (function() {
             loadingPlaceholder.textContent = "Sankey diagram not active. Click 'Activate/Refresh Sankey' to load.";
         }
         
-        window.TEUI.sect16.initialized = true;
-        console.log("Section 16: First time onSectionRendered setup complete.");
+        window.TEUI.sect16.initialized = true; // Mark this entire first-time setup as complete.
+        console.warn("S16 LOG: First time onSectionRendered setup complete.");
     }
 
     function handleStateChange(newValue) {
@@ -833,10 +846,8 @@ window.TEUI.SectionModules.sect16 = (function() {
     };
 })();
 
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail && event.detail.sectionId === 'section16') {
-        if (window.TEUI.SectionModules.sect16 && typeof window.TEUI.SectionModules.sect16.onSectionRendered === 'function') {
-            window.TEUI.SectionModules.sect16.onSectionRendered(); 
-        }
-    }
-}); 
+// Remove the custom teui-section-rendered listener for Section 16
+// document.addEventListener('teui-section-rendered', function(event) { ... });
+
+// The teui-rendering-complete listener is also likely not needed for S16 specific logic.
+// document.addEventListener('teui-rendering-complete', function() { ... }); 
