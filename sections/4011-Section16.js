@@ -688,9 +688,23 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         let currentSankeyData = JSON.parse(JSON.stringify(SANKEY_STRUCTURE_TEMPLATE));
 
+        // Declare system state variables at the top of the function scope
+        let primaryHeatingSystem = null;
+        let dhwSystem = null;
+        let isPrimaryGasOrOil = false;
+        let isDhwGasOrOil = false;
+        let isPrimaryHeatPump = false;
+        let teuiState = null; // Hold the StateManager instance
+
         if (window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
-            const teuiState = window.TEUI.StateManager;
+            teuiState = window.TEUI.StateManager; // Assign to function-scoped variable
             
+            primaryHeatingSystem = teuiState.getValue('d_113');
+            dhwSystem = teuiState.getValue('d_51');
+            isPrimaryGasOrOil = primaryHeatingSystem === 'Gas' || primaryHeatingSystem === 'Oil';
+            isDhwGasOrOil = dhwSystem === 'Gas' || dhwSystem === 'Oil';
+            isPrimaryHeatPump = primaryHeatingSystem === 'Heatpump';
+
             const linkIdToTeuiField = {
                 "OccupantGains": "i_64",
                 "EquipmentGains": "i_70",
@@ -701,16 +715,13 @@ window.TEUI.SectionModules.sect16 = (function() {
                 "WinWestGains": "i_77",
                 "DoorGains": "i_73",
                 "SkylightGains": "i_78",
-                
                 "HeatPumpSourceToTED": "l_113",
                 "HeatPumpElecToTED": "d_114",
                 "TEDToBuilding": "d_127",
-
                 "BuildingToVentLoss": "m_121",
                 "BuildingToSHWWaste": "j_53",
                 "BuildingToUnusableGains": "i_82",
                 "BuildingToTEL": "d_131",
-
                 "TELToRoof": "i_85",
                 "TELToWallAG": "i_86",
                 "TELToFloorExp": "i_87",
@@ -724,16 +735,9 @@ window.TEUI.SectionModules.sect16 = (function() {
                 "TELToSlab": "i_95",
                 "TELToTB": "i_97",
                 "TELToAirLeak": "i_103",
-
                 "TEDToGasExhaust": "l_115",
                 "SHWToGasExhaust": "j_54"
             };
-
-            const primaryHeatingSystem = teuiState.getValue('d_113');
-            const dhwSystem = teuiState.getValue('d_51');
-            const isPrimaryGasOrOil = primaryHeatingSystem === 'Gas' || primaryHeatingSystem === 'Oil';
-            const isDhwGasOrOil = dhwSystem === 'Gas' || dhwSystem === 'Oil';
-            const isPrimaryHeatPump = primaryHeatingSystem === 'Heatpump';
 
             currentSankeyData.links.forEach(link => {
                 let teuiFieldId = linkIdToTeuiField[link.id];
@@ -755,15 +759,16 @@ window.TEUI.SectionModules.sect16 = (function() {
                     } else {
                         teuiFieldId = 'd_114';
                     }
+                    // Value will be fetched by the common logic below using the updated teuiFieldId
                 } else if (link.id === "BuildingToGasExhaust") {
                     valueToAssign = 0.0001;
-                    teuiFieldId = null;
+                    teuiFieldId = null; // Mark as handled, no general fetch needed
                 }
 
-                if (teuiFieldId) {
+                if (teuiFieldId) { // This check now correctly applies after teuiFieldId might have been changed
                     if (link.id === "TEDToGasExhaust") {
                         if (isPrimaryGasOrOil) {
-                            const rawValue = teuiState.getValue(teuiFieldId);
+                            const rawValue = teuiState.getValue(teuiFieldId); 
                             if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
                                 const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
                                 valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
@@ -773,7 +778,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                         }
                     } else if (link.id === "SHWToGasExhaust") {
                         if (isDhwGasOrOil) {
-                            const rawValue = teuiState.getValue(teuiFieldId);
+                            const rawValue = teuiState.getValue(teuiFieldId); 
                             if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
                                 const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
                                 valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
@@ -781,29 +786,34 @@ window.TEUI.SectionModules.sect16 = (function() {
                         } else {
                             valueToAssign = 0.0001;
                         }
-                    } else if (link.id !== "HeatPumpSourceToTED") {
+                    } else if (link.id !== "HeatPumpSourceToTED") { // Avoid re-processing if already handled explicitly above
                         const rawValue = teuiState.getValue(teuiFieldId);
                         if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
                             const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
                             valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
                         }
                     }
-                }
-                
+                } 
                 link.value = valueToAssign;
             });
             
-            currentSankeyData.nodes.find(n => n.name === "GasExhaust").hidden = !(isPrimaryGasOrOil || isDhwGasOrOil);
+            const gasExhaustNode = currentSankeyData.nodes.find(n => n.name === "GasExhaust");
+            if (gasExhaustNode) gasExhaustNode.hidden = !(isPrimaryGasOrOil || isDhwGasOrOil);
 
         } else {
-            console.warn("Section 16: TEUI.StateManager not available for data fetching.");
+            console.warn("Section 16: TEUI.StateManager not available for data fetching. Sankey will show template defaults.");
+            // Variables like isPrimaryGasOrOil will use their default false values, so GasExhaust node should be hidden.
+            const gasExhaustNode = currentSankeyData.nodes.find(n => n.name === "GasExhaust");
+            if (gasExhaustNode) gasExhaustNode.hidden = true;
         }
 
+        // isPrimaryGasOrOil is now defined in this scope
         sankeyInstance.updateSankeyConfig({
             showEmissions: showEmissions,
             nodeWidthMultiplier: nodeWidthMultiplier,
             nodePadding: nodePadding,
-            isGasHeating: isPrimaryGasOrOil
+            isGasHeating: isPrimaryGasOrOil, // Used by SankeyDiagram's internal emission logic (if any remains)
+            // gridIntensity, gasIntensity, gasEnergyDensity are now handled by TEUI_SankeyDiagram.updateEmissionsFlows directly from StateManager
         });
 
         const wrapper = document.getElementById('sankeySection16ContainerWrapper');
@@ -817,7 +827,7 @@ window.TEUI.SectionModules.sect16 = (function() {
     function calculateAll() {}
 
     // --- Public API ---
-    return {
+    return { 
         getFields: getFields,
         getDropdownOptions: getDropdownOptions,
         getLayout: getLayout,
@@ -844,7 +854,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             fetchDataAndRenderSankey(false);
         }
     };
-})();
+})(); 
 
 // Remove the custom teui-section-rendered listener for Section 16
 // document.addEventListener('teui-section-rendered', function(event) { ... });
