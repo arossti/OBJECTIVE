@@ -120,7 +120,8 @@ window.TEUI.SectionModules.sect16 = (function() {
             .nodeWidth(20)
             .nodePadding(15)
             .extent([[1, 1], [1098, 698]]),
-        _data: { nodes: [], links: [] },
+        _cleanDataInput: null, // Store the last clean data passed to render
+        _currentD3Data: null, // Store the data structure after D3 processing (nodes, links with x0, y0 etc.)
         _showEmissions: false,
         _nodeWidthMultiplier: 1,
         _nodePadding: 15,
@@ -147,24 +148,34 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
             if (config.isGasHeating !== undefined) this._isGasHeating = config.isGasHeating;
         },
-        render(sankeyData, isInitialLoad = false) {
-            this._data = JSON.parse(JSON.stringify(sankeyData));
-            if (!this._data.nodes || !this._data.links) {
-                console.error("TEUI_SankeyDiagram Error: Invalid data structure for rendering.", this._data);
+        render(freshSankeyData, isInitialLoad = false) {
+            // Store a deep copy of the fresh input data for potential re-use (e.g., by resize)
+            // This data is pre-D3 processing.
+            this._cleanDataInput = JSON.parse(JSON.stringify(freshSankeyData)); 
+
+            if (!this._cleanDataInput.nodes || !this._cleanDataInput.links) {
+                console.error("TEUI_SankeyDiagram Error: Invalid data structure for rendering.", this._cleanDataInput);
                 return;
             }
-            this._data.nodes.forEach((node, index) => { node.index = index; });
+            // Work with a copy for D3 processing to avoid modifying _cleanDataInput directly with D3 properties
+            let dataForD3Processing = JSON.parse(JSON.stringify(this._cleanDataInput)); 
+
+            dataForD3Processing.nodes.forEach((node, index) => { node.index = index; });
+
             if (this._showEmissions) {
-                this.updateEmissionsFlows();
+                // updateEmissionsFlows should modify dataForD3Processing.links directly
+                this.updateEmissionsFlows(dataForD3Processing); 
             }
+
             try {
-                const visibleNodes = this._data.nodes.filter(n => !n.hidden);
+                const visibleNodes = dataForD3Processing.nodes.filter(n => !n.hidden);
                 const visibleNodeNameSet = new Set(visibleNodes.map(n => n.name));
-                const workingDataForD3 = {
+
+                const workingDataForD3Layout = {
                     nodes: visibleNodes,
-                    links: this._data.links.map(l => ({
-                        sourceOriginal: typeof l.source === 'object' ? l.source : this._data.nodes[l.source],
-                        targetOriginal: typeof l.target === 'object' ? l.target : this._data.nodes[l.target],
+                    links: dataForD3Processing.links.map(l => ({
+                        sourceOriginal: typeof l.source === 'object' ? l.source : dataForD3Processing.nodes[l.source],
+                        targetOriginal: typeof l.target === 'object' ? l.target : dataForD3Processing.nodes[l.target],
                         value: Math.max(0.0001, l.value),
                         isEmissions: l.isEmissions
                     })).filter(l => 
@@ -178,7 +189,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                         isEmissions: l.isEmissions
                     })).filter(l => l.source !== -1 && l.target !== -1)
                 };
-                if(workingDataForD3.nodes.length === 0) {
+                
+                if(workingDataForD3Layout.nodes.length === 0) {
                     console.warn("TEUI_SankeyDiagram: No visible nodes to render.");
                     this.svg.selectAll("*").remove();
                     this.linkGroup = this.svg.append("g").attr("class", "links");
@@ -186,15 +198,21 @@ window.TEUI.SectionModules.sect16 = (function() {
                     this.labelGroup = this.svg.append("g").attr("class", "labels");
                     return;
                 }
-                const { nodes, links } = this.sankey(workingDataForD3);
-                nodes.forEach(node => { node.displayColor = d3.color(node.color).darker(0.3); });
+
+                // Perform the D3 Sankey layout
+                this._currentD3Data = this.sankey(workingDataForD3Layout); 
+
+                this._currentD3Data.nodes.forEach(node => { node.displayColor = d3.color(node.color).darker(0.3); });
+
                 const svgWidth = parseFloat(this.svg.style("width")) || (this.sankey.extent()[1][0] - this.sankey.extent()[0][0]);
-                const maxX = d3.max(nodes, d => d.x0) || svgWidth;
-                this.renderLinks(links, isInitialLoad, maxX);
-                this.renderNodes(nodes, isInitialLoad, maxX);
-                this.renderLabels(nodes, isInitialLoad, maxX, svgWidth);
+                const maxX = d3.max(this._currentD3Data.nodes, d => d.x0) || svgWidth;
+                
+                this.renderLinks(this._currentD3Data.links, isInitialLoad, maxX);
+                this.renderNodes(this._currentD3Data.nodes, isInitialLoad, maxX);
+                this.renderLabels(this._currentD3Data.nodes, isInitialLoad, maxX, svgWidth);
+
             } catch (error) {
-                console.error("Error rendering Sankey chart:", error, "\nData for D3:", workingDataForD3, "\nOriginal data:", this._data);
+                console.error("Error rendering Sankey chart:", error, "\nData for D3 layout:", workingDataForD3Layout, "\nOriginal input data:", this._cleanDataInput);
             }
         },
         renderLinks(links, isInitialLoad, maxX) {
@@ -300,10 +318,10 @@ window.TEUI.SectionModules.sect16 = (function() {
             let html = `<div style="margin-top: 8px;"><strong>${title}:</strong></div>`;
             flows.forEach(flow => {
                 const nodeName = isIncoming ?
-                    (isD3Node ? flow.source.name : (typeof flow.source === 'number' ? this._data.nodes[flow.source].name : flow.source.name)) :
-                    (isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._data.nodes[flow.target].name : flow.target.name));
+                    (isD3Node ? flow.source.name : (typeof flow.source === 'number' ? this._cleanDataInput.nodes[flow.source].name : flow.source.name)) :
+                    (isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._cleanDataInput.nodes[flow.target].name : flow.target.name));
                 const value = flow.value;
-                const targetNodeForEmissionCheck = isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._data.nodes[flow.target].name : flow.target.name);
+                const targetNodeForEmissionCheck = isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._cleanDataInput.nodes[flow.target].name : flow.target.name);
                 const isEmissionsLink = flow.isEmissions || (targetNodeForEmissionCheck && targetNodeForEmissionCheck.includes("Emissions"));
                 const formattedValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ? window.TEUI.formatNumber(value, 'number-2dp') : value.toFixed(2);
                 const formattedKgValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ? window.TEUI.formatNumber(value / 1000, 'number-2dp') : (value / 1000).toFixed(2);
@@ -337,22 +355,26 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (d.source.name === "Building" || d.target.name === "Building") return d.source.name === "Building" ? d3.color(d.target.color).brighter(0.2) : d3.color(d.source.color);
             return d3.interpolateRgb(d.source.color, d.target.color)(0.5);
         },
-        updateEmissionsFlows() {
-            const scope1NodeIndex = this._data.nodes.findIndex(n => n.name === "E1 Scope 1 Emissions");
-            const scope2NodeIndex = this._data.nodes.findIndex(n => n.name === "E2 Scope 2 Emissions");
+        updateEmissionsFlows(dataObjectToModify) {
+            const scope1NodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "E1 Scope 1 Emissions");
+            const scope2NodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "E2 Scope 2 Emissions");
+
             if (scope1NodeIndex === -1 || scope2NodeIndex === -1) {
                 console.warn("Section 16: Emission sink nodes (E1/E2) not found in Sankey data.");
                 return;
             }
-            this._data.links = this._data.links.filter(link => {
-                const targetNode = typeof link.target === 'object' ? link.target : this._data.nodes[link.target];
-                return !(targetNode && 
-                         (this._data.nodes.indexOf(targetNode) === scope1NodeIndex || 
-                          this._data.nodes.indexOf(targetNode) === scope2NodeIndex));
+
+            dataObjectToModify.links = dataObjectToModify.links.filter(link => {
+                // Check target based on original node reference or index if already processed
+                let targetNodeToCheck = typeof link.target === 'object' ? link.target : dataObjectToModify.nodes[link.target];
+                if (!targetNodeToCheck) return true; // Should not happen if data is consistent
+                const targetIdx = dataObjectToModify.nodes.indexOf(targetNodeToCheck);
+                return !(targetIdx === scope1NodeIndex || targetIdx === scope2NodeIndex);
             });
+
             if (this._showEmissions && window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
                 const teuiState = window.TEUI.StateManager;
-                const energyInputNodeIndex = this._data.nodes.findIndex(n => n.name === "M.2.1.D Energy Input");
+                const energyInputNodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "M.2.1.D Energy Input");
                 if (energyInputNodeIndex === -1) {
                     console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
                     return;
@@ -361,8 +383,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (elecEmissionsKg > 0) {
                     const elecEmissionsGrams = elecEmissionsKg * 1000;
                     if (elecEmissionsGrams > 0.0001) {
-                        this._data.links.push({
-                            source: energyInputNodeIndex,
+                        dataObjectToModify.links.push({
+                            source: energyInputNodeIndex, 
                             target: scope2NodeIndex,
                             value: elecEmissionsGrams,
                             isEmissions: true
@@ -373,8 +395,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (gasEmissionsKg > 0) {
                     const gasEmissionsGrams = gasEmissionsKg * 1000;
                     if (gasEmissionsGrams > 0.0001) {
-                        this._data.links.push({
-                            source: energyInputNodeIndex,
+                        dataObjectToModify.links.push({
+                            source: energyInputNodeIndex, 
                             target: scope1NodeIndex,
                             value: gasEmissionsGrams,
                             isEmissions: true
@@ -385,8 +407,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (oilEmissionsKg > 0) {
                     const oilEmissionsGrams = oilEmissionsKg * 1000;
                     if (oilEmissionsGrams > 0.0001) {
-                        this._data.links.push({
-                            source: energyInputNodeIndex,
+                        dataObjectToModify.links.push({
+                            source: energyInputNodeIndex, 
                             target: scope1NodeIndex,
                             value: oilEmissionsGrams,
                             isEmissions: true
@@ -396,31 +418,44 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
         },
         _getLinkValueByName(sourceName, targetName) {
-            const sourceNode = this._data.nodes.find(n => n.name === sourceName);
-            const targetNode = this._data.nodes.find(n => n.name === targetName);
+            // This function now searches within this._cleanDataInput if it needs pre-D3 values,
+            // or it can search within the D3 processed data if appropriate for its use case.
+            // For now, assuming it's used by emissions calculation *before* D3 processing, so check dataForD3Processing if available.
+            // However, the emissions calculation was simplified to not need this for energy values.
+            // If other parts need it, they should operate on this._cleanDataInput.
+            if (!this._cleanDataInput) return 0;
+            const sourceNode = this._cleanDataInput.nodes.find(n => n.name === sourceName);
+            const targetNode = this._cleanDataInput.nodes.find(n => n.name === targetName);
             if (!sourceNode || !targetNode) return 0;
-            const sourceIdx = this._data.nodes.indexOf(sourceNode);
-            const targetIdx = this._data.nodes.indexOf(targetNode);
-            const link = this._data.links.find(l => {
-                const lSourceIdx = typeof l.source === 'number' ? l.source : this._data.nodes.indexOf(l.source);
-                const lTargetIdx = typeof l.target === 'number' ? l.target : this._data.nodes.indexOf(l.target);
+            const sourceIdx = this._cleanDataInput.nodes.indexOf(sourceNode);
+            const targetIdx = this._cleanDataInput.nodes.indexOf(targetNode);
+            const link = this._cleanDataInput.links.find(l => {
+                const lSourceIdx = typeof l.source === 'number' ? l.source : this._cleanDataInput.nodes.indexOf(l.source);
+                const lTargetIdx = typeof l.target === 'number' ? l.target : this._cleanDataInput.nodes.indexOf(l.target);
                 return lSourceIdx === sourceIdx && lTargetIdx === targetIdx && !l.isEmissions;
             });
             return link ? link.value : 0;
         },
         resize(newWidth, newHeight = 700) {
-            if (!this.svg || !this.sankey) { console.warn("Sankey not initialized for resize"); return; }
+            if (!this.svg || !this.sankey || !this._cleanDataInput) { // Check for _cleanDataInput
+                console.warn("Sankey not initialized or no data for resize"); 
+                return; 
+            }
             const margin = { left: 20, right: 20, top: 1, bottom: 1 };
             const innerWidth = Math.max(100, newWidth - margin.left - margin.right);
             const innerHeight = Math.max(50, newHeight - margin.top - margin.bottom);
+            
             this.svg.attr("width", newWidth).attr("height", newHeight)
                 .attr("viewBox", `0 0 ${newWidth} ${newHeight}`).style("overflow", "visible");
+            
             this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
             this.sankey.size([innerWidth, innerHeight]);
-            if (this._data.nodes && this._data.nodes.length > 0 && this._data.links) {
-                 this.render(this._data, false);
+            
+            // Re-render using the last clean input data. The render method will handle D3 processing.
+            if (this._cleanDataInput.nodes && this._cleanDataInput.nodes.length > 0) {
+                 this.render(this._cleanDataInput, false); // Pass the clean data
             } else {
-                console.log("Sankey resize: No data to render.");
+                console.log("Sankey resize: No clean data to render.");
             }
         }
     };
