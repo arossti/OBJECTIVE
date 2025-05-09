@@ -539,7 +539,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             console.log("Section 16: Event handlers already initialized.");
             return;
         }
-        console.log("Section 16: Initializing event handlers (deferred call). Awaiting DOM elements.");
+        console.log("Section 16: Initializing event handlers NOW (after DOM setup confirmed).");
         
         const activateBtn = document.getElementById('s16ActivateBtn');
         const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
@@ -579,7 +579,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 fetchDataAndRenderSankey(false); 
             });
         } else {
-            console.warn("Section 16: Activate button not found for event handler setup.");
+            console.warn("Section 16: Activate button not found when trying to attach listener."); 
         }
 
         if (emissionsBtn) {
@@ -615,42 +615,39 @@ window.TEUI.SectionModules.sect16 = (function() {
         });
 
         window.TEUI.sect16.handlersInitialized = true; 
-        console.log("Section 16: Event handlers Initialized (deferred call successful).");
+        console.log("Section 16: Event handlers Initialized.");
     }
 
     function onSectionRendered() {
         if (window.TEUI.sect16.initialized) {
-            console.log("Section 16: onSectionRendered - already initialized.");
+            console.log("Section 16: onSectionRendered - ALREADY INITIALIZED (idempotency check).");
             return;
         }
-        console.log("Section 16: First time onSectionRendered - setting up DOM and scheduling handler init.");
+        console.log("Section 16: onSectionRendered - FIRST RUN - Performing full setup.");
         
         if (!setupSection16DOM()) {
-            console.error("Section 16: DOM setup failed in onSectionRendered. Aborting further S16 setup.");
+            console.error("Section 16: DOM setup FAILED in onSectionRendered. Aborting S16 setup.");
             return;
         }
 
         if (!sankeyInstance && typeof TEUI_SankeyDiagram !== 'undefined') {
             sankeyInstance = TEUI_SankeyDiagram; 
-            console.log("Section 16: sankeyInstance assigned in onSectionRendered.");
+            console.log("Section 16: sankeyInstance assigned.");
         } else if (!sankeyInstance) {
-             console.error("Section 16: TEUI_SankeyDiagram object is undefined. Cannot assign to sankeyInstance. Aborting further S16 setup.");
+             console.error("Section 16: TEUI_SankeyDiagram object is undefined. Critical error.");
              return; 
         }
         
-        setTimeout(() => {
-            if (!window.TEUI.sect16.handlersInitialized) {
-                initializeEventHandlers();
-            }
-        }, 0);
+        initializeEventHandlers(); 
         
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
         if (loadingPlaceholder) {
             loadingPlaceholder.style.display = 'block'; 
             loadingPlaceholder.textContent = "Sankey diagram not active. Click 'Activate/Refresh Sankey' to load.";
         }
-        window.TEUI.sect16.initialized = true; 
-        console.log("Section 16: onSectionRendered complete for the first time.");
+        
+        window.TEUI.sect16.initialized = true;
+        console.log("Section 16: First time onSectionRendered setup complete.");
     }
 
     function handleStateChange(newValue) {
@@ -668,24 +665,8 @@ window.TEUI.SectionModules.sect16 = (function() {
             return;
         }
         if (!document.getElementById('sankeySection16Container')) {
-            console.warn("Section 16: Sankey SVG container not found. Attempting to re-setup DOM.");
-            if (!setupSection16DOM()) {
-                console.error("Section 16: Failed to re-setup DOM. Aborting render.");
-                return;
-            }
-            if (!window.TEUI.sect16.handlersInitialized) {
-                initializeEventHandlers();
-            }
-            if (!sankeyInstance.svg) {
-                const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
-                 if (svgWrapper) {
-                    sankeyInstance.initialize(
-                        '#sankeySection16Container', 
-                        '#sankeySection16Tooltip', 
-                        [[1,1], [svgWrapper.clientWidth > 50 ? svgWrapper.clientWidth - 2 : 1098, svgWrapper.clientHeight > 50 ? svgWrapper.clientHeight -2 : 698]]
-                    );
-                 }
-            }
+            console.warn("Section 16: Sankey SVG container not found. DOM might not be ready or setup failed.");
+            return;
         }
 
         console.log("Section 16: Fetching data and rendering Sankey...");
@@ -823,7 +804,7 @@ window.TEUI.SectionModules.sect16 = (function() {
     function calculateAll() {}
 
     // --- Public API ---
-    return { 
+    return {
         getFields: getFields,
         getDropdownOptions: getDropdownOptions,
         getLayout: getLayout,
@@ -850,12 +831,12 @@ window.TEUI.SectionModules.sect16 = (function() {
             fetchDataAndRenderSankey(false);
         }
     };
-})(); 
+})();
 
 document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail && event.detail.sectionId === 'section16') {
         if (window.TEUI.SectionModules.sect16 && typeof window.TEUI.SectionModules.sect16.onSectionRendered === 'function') {
-            window.TEUI.SectionModules.sect16.onSectionRendered();
+            window.TEUI.SectionModules.sect16.onSectionRendered(); 
         }
     }
 }); 
