@@ -2,37 +2,54 @@
 
 ## 0. Progress Update (End of Session - Aug [Current Date])
 
-**Significant progress has been made in integrating the Sankey diagram into Section 16. The diagram now renders its basic structure upon activation, and core data flow logic is in place.**
+**Significant progress has been made. The Sankey diagram now renders its basic structure with dynamically populated data for major flows upon activation. Tooltip event logic and content generation are functional according to console logs, though visual appearance of tooltips is pending resolution.**
 
 **Key Accomplishments:**
 *   **Standalone HTML Refactored:** `SANKEY3035.html` stripped to essential D3.js logic, CSS, and data templates.
 *   **Section 16 Scaffolding & Core Logic Integration:** `sections/4011-Section16.js` created and populated with the adapted `TEUI_SankeyDiagram` object, `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler`.
-*   **DOM Management:** 
+*   **DOM Management & Initialization:** 
     *   `index.html` updated with a static target div (`#section16ContentTarget`) for S16.
-    *   `Section16.js` now uses `setupSection16DOM()` to dynamically create controls and the SVG environment within this target.
-    *   Refined `onSectionRendered` and `initializeEventHandlers` to ensure correct sequencing, resolving initial button activation issues.
-*   **Data Sourcing & Basic Flow Mapping:** 
-    *   `fetchDataAndRenderSankey()` now sources data from `window.TEUI.StateManager`.
-    *   Primary energy gains, heating system flows (conditional for Heat Pump/Gas/Oil), and direct TEUI exhaust values (e.g., `l_115` for heating, `j_54` for DHW) are mapped.
+    *   `Section16.js` uses `setupSection16DOM()` to dynamically create controls and the SVG environment within this target.
+    *   Refined `onSectionRendered` and `initializeEventHandlers` to ensure correct sequencing, resolving initial button activation issues. The "Activate/Refresh Sankey" button now works, revealing other UI controls.
+*   **Data Sourcing & Flow Mapping:** 
+    *   `fetchDataAndRenderSankey()` sources data from `window.TEUI.StateManager`.
+    *   Primary energy gains, heating system flows (conditional for Heat Pump/Gas/Oil), and direct TEUI exhaust values (`l_115`, `j_54`) are mapped and update link values.
     *   Minimal flow values standardized to `0.0001`.
-*   **Emission Display Greatly Simplified:**
-    *   `TEUI_SankeyDiagram.updateEmissionsFlows()` now fetches pre-calculated total annual emissions (kgCO2e/yr) for Electricity (`k_27`), Gas (`k_28`), and Oil (`k_30`) from `TEUI.StateManager`.
-    *   Values are converted to grams and linked from a primary source node ("M.2.1.D Energy Input") to E1/E2 Scope nodes. Wood emissions (`k_31`) are correctly omitted.
-    *   Obsolete internal emission factors and calculation methods removed from `TEUI_SankeyDiagram`.
-*   **Rendering Achieved:** Basic Sankey structure (nodes, labels, links) renders upon clicking the "Activate/Refresh Sankey" button. UI controls (Activate, Emissions, Spacing, Width) become visible and are interactive.
-*   **Initial Bug Fixes:** Addressed `JSON.stringify` cyclic errors and made initial adjustments to canvas height (set to `500px`). Added diagnostic logging for tooltips.
-*   **Guiding Principle Reinforced:** Section 16 is firmly established as a **visualizer/reader** of pre-calculated TEUI data.
+    *   Diagnostic logging for link values (`S16 LINK LOG`) is in place to verify data flow.
+*   **Emission Display Logic:**
+    *   `TEUI_SankeyDiagram.updateEmissionsFlows()` refactored to use pre-calculated total annual emissions (kgCO2e/yr) for Electricity (`k_27`), Gas (`k_28`), and Oil (`k_30`) from `TEUI.StateManager`, converting to grams, and linking from a primary source node.
+    *   Obsolete internal emission factors removed from `TEUI_SankeyDiagram`.
+*   **Rendering & Basic Interactivity:** Basic Sankey structure (nodes, labels, links) renders. UI controls (Activate, Emissions, Spacing, Width) become visible and are interactive (their JS logic is tied to re-calling `fetchDataAndRenderSankey`).
+*   **Initial Bug Fixes & Refinements:** 
+    *   Addressed `JSON.stringify` cyclic structure error in rendering/resize.
+    *   Diagram container height constrained to `500px`.
+    *   Tooltip positioning logic refined to use `d3.pointer` and container-relative boundary checks.
+*   **Guiding Principle Reinforced:** Section 16 acts as a **visualizer/reader**.
 
 **Primary Outstanding Tasks & Refinements:**
-1.  **Tooltip Visibility:** Resolve why tooltips are not visually appearing despite event logs indicating they are firing and have content. This is the highest priority graphics issue.
-2.  **Link Width Accuracy & Verification:** 
-    *   **Current Status:** Many links may appear as very thin threads. This is likely due to the corresponding data values in `TEUI.StateManager` being zero, minimal, or not yet fully mapped for all TEL components and other losses.
-    *   **Action:** Added detailed `console.warn` logging within `fetchDataAndRenderSankey` to output the `link.id`, its mapped `teuiFieldId`, the `rawValueFromState`, and the final `assignedLinkValue`. This will help verify if thin links are due to data in `StateManager` or mapping issues.
-    *   **Next Step:** After testing with these logs, systematically review any links that should have significant flow but don't, and verify their `teuiFieldId` mapping and the data present in `TEUI.StateManager` for those fields.
-3.  **Canvas Height & Fitting:** Further refine how the diagram fits the constrained 500px height, especially during browser resizing, to prevent unwanted vertical expansion or ensure content squishes appropriately. Consider borrowing responsive techniques from Section 17.
-4.  **CSS Fidelity:** Conduct a thorough review and integration of all necessary Sankey-specific CSS from the original `SANKEY3035.html` into `4011-styles.css` (scoped to Section 16) to ensure colors, fonts, and overall visual appearance faithfully match the original design.
-5.  **Fullscreen Feature:** Plan and implement a fullscreen toggle button and functionality, similar to Section 17, for improved presentation capability.
-6.  **Comprehensive Testing:** Once the above are addressed, conduct thorough testing of all functionalities, data accuracy across various TEUI input states, UI control interactions, and responsiveness.
+1.  **Tooltip Visibility (Highest Priority Graphics Issue):**
+    *   **Status:** Logs confirm tooltip functions are called, content is generated, and positioning logic runs. However, tooltips are not visually appearing in the UI.
+    *   **Next Step:** Detailed DOM/CSS inspection is required when the tooltip *should* be active. Focus on:
+        *   Computed `display`, `opacity`, `visibility` of `#sankeySection16Tooltip`.
+        *   Final computed `left`, `top`, `width`, `height`.
+        *   Potential clipping by parent elements with `overflow: hidden` (especially `#sankeySection16ContainerWrapper`).
+        *   `z-index` stacking conflicts with other TEUI elements.
+        *   Consider using browser developer tools to force the tooltip to stay visible (e.g., break on attribute modification for its `style` attribute) to inspect it live.
+2.  **Link Width Accuracy & Full Data Verification:**
+    *   **Status:** Major links appear to have values, but some are still thin threads.
+    *   **Next Step:** Use the `S16 LINK LOG` messages. Systematically review all links in `SANKEY_STRUCTURE_TEMPLATE` against the logs. For any link that is unexpectedly thin, verify:
+        *   Its `teuiFieldId` mapping in `linkIdToTeuiField` is correct.
+        *   The corresponding field in `TEUI.StateManager` contains the expected non-minimal data. This is crucial for TEL components (`i_85`-`i_103`) and other building losses (`m_121`, `j_53`, `i_82`).
+3.  **Canvas Height & Fitting (Fine-tuning):**
+    *   **Status:** Initial height constrained to `500px`. Behavior when browser width is significantly reduced needs more testing to ensure it doesn't grow excessively tall.
+    *   **Next Step:** Test responsive behavior. If issues persist, explore techniques from Section 17 or adjust SVG viewbox/preserveAspectRatio attributes if necessary.
+4.  **CSS Fidelity (General Aesthetics):**
+    *   **Status:** Basic styles ported.
+    *   **Next Step:** Conduct a thorough review of `4011-styles.css` (Section 16 part) against the original Sankey visual design. Ensure all node/link colors, fonts, label appearances, and overall visual styling faithfully match the original, well-received design. This includes verifying CSS variable usage or direct hex codes.
+5.  **Fullscreen Feature (Enhancement):**
+    *   **Status:** Not started.
+    *   **Next Step:** Plan and implement a fullscreen toggle button and functionality, drawing inspiration from Section 17, for improved presentation capability.
+6.  **Comprehensive Testing:** After the above, conduct thorough testing of all functionalities, data accuracy with various TEUI input states, UI control interactions, and responsiveness across different browsers and scenarios.
 
 ## 1. Objective
 
