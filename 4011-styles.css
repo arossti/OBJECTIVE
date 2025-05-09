@@ -1641,17 +1641,17 @@ body.reference-mode #keyValues .key-values-table tr {
 
 /* Tooltip for Section 16 Sankey */
 #sankeySection16Tooltip {
-  position: absolute; /* Will be positioned by JS */
+  position: fixed !important; /* Override any other positioning */
   padding: 12px; /* Corresponds to --spacing-md */
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid #ddd; /* Corresponds to --border-color */
   border-radius: 4px; /* Corresponds to --border-radius */
   pointer-events: none;
   font-size: 12px; /* Corresponds to --font-size-sm */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Corresponds to --box-shadow */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Stronger shadow for better visibility */
   max-width: 300px;
   line-height: 1.4;
-  z-index: 1070; /* Ensure it's above most TEUI elements, but below modals if any */
+  z-index: 2000; /* Higher z-index to ensure it's above all other elements */
   font-family: Arial, sans-serif;
 }
 
@@ -1660,10 +1660,12 @@ body.reference-mode #keyValues .key-values-table tr {
   margin-bottom: 8px; /* Corresponds to --spacing-sm */
   padding-bottom: 8px;
   border-bottom: 1px solid #ddd;
+  color: #333;
 }
 
 #sankeySection16Tooltip .tooltip-value {
   color: #666; /* Corresponds to --text-muted */
+  margin-bottom: 8px;
 }
 
 #sankeySection16Tooltip .tooltip-flow {
@@ -1672,9 +1674,35 @@ body.reference-mode #keyValues .key-values-table tr {
   margin: 4px 0; /* Corresponds to --spacing-xs */
 }
 
-/* Controls for Section 16 - basic styling if not using .teui-button */
+/* Fullscreen mode for Section 16 */
+#s16FullscreenContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 3000;
+  display: none;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#sankeySection16FullscreenSvg {
+  width: 100%;
+  height: calc(100% - 50px);
+  display: block;
+}
+
+#s16FullscreenBtn {
+  margin-left: auto; /* Push it to the right */
+}
+
+/* Controls for Section 16 */
 #s16ControlsContainer button,
-#s16ControlsContainer .s16-width-toggle {
+#s16ControlsContainer .s16-width-toggle,
+#s16FullscreenContainer button {
   padding: 6px 12px;
   cursor: pointer;
   background-color: #f5f5f5;
@@ -1688,48 +1716,10 @@ body.reference-mode #keyValues .key-values-table tr {
   white-space: nowrap;
   margin-right: 8px;
   font-family: Arial, sans-serif;
+  transition: background-color 0.2s;
 }
 
-#s16ControlsContainer button:hover {
+#s16ControlsContainer button:hover,
+#s16FullscreenContainer button:hover {
   background-color: #e5e5e5;
-}
-
-#s16ControlsContainer .s16-width-toggle {
-  padding: 3px 12px; /* Adjusted padding */
-  height: auto; /* Allow content to define height */
-  background-color: #f8f9fa; /* Corresponds to --background-light */
-}
-
-#s16ControlsContainer .s16-width-toggle label {
-  font-size: 12px;
-  color: #333; /* Corresponds to --text-dark */
-  margin-right: 5px;
-}
-
-#s16WidthMultiplierSlider {
-  height: 20px;
-  margin: 0;
-  width: 100px; /* Slightly wider for easier use */
-  min-width: 80px;
-  accent-color: #666; /* Corresponds to --text-muted */
-  vertical-align: middle;
-}
-
-#s16WidthValueText {
-   font-size: 12px;
-   vertical-align: middle;
-   min-width: 35px; /* Ensure space for 100% */
-   display: inline-block;
-   text-align: right;
-}
-
-/* Ensuring the SVG container itself has a defined look if needed */
-#sankeySection16ContainerWrapper {
-    /* Styles already defined in getLayout (background, border, min-height) */
-    /* Add any other necessary styles here if needed */
-    overflow: hidden; /* To contain the SVG if it tries to overflow due to D3 calcs */
-}
-
-#sankeySection16Container {
-    display: block; /* Good practice for SVG */
 }

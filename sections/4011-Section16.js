@@ -372,52 +372,50 @@ window.TEUI.SectionModules.sect16 = (function() {
             return node.name;
         },
         showTooltip(content, event) {
-            if (!this.tooltip || !this.svg) { // Also check for this.svg
+            if (!this.tooltip || !this.svg) {
                 console.warn("S16 SANKEY LOG: showTooltip - Tooltip element or SVG not found!");
                 return;
             }
             
-            // Use d3.pointer to get coordinates relative to the SVG container
-            const [pointerX, pointerY] = d3.pointer(event, this.svg.node());
-            console.warn("S16 SANKEY LOG: showTooltip called. d3.pointer(event, svg) X:", pointerX, "Y:", pointerY, "Content:", content);
+            // Get viewport-relative coordinates instead of SVG-relative
+            const mouseX = event.clientX || (event.pageX - window.scrollX);
+            const mouseY = event.clientY || (event.pageY - window.scrollY);
+            console.warn("S16 SANKEY LOG: showTooltip called. Mouse viewport coords X:", mouseX, "Y:", mouseY);
 
-            const padding = 15; // Increased padding slightly
-            let newLeft = pointerX + padding;
-            let newTop = pointerY + padding;
+            const padding = 15;
+            let newLeft = mouseX + padding;
+            let newTop = mouseY + padding;
 
             this.tooltip.style("display", "block")
-                .html(content) // Set content first to get accurate dimensions for collision detection
-                .style("left", `${newLeft}px`)
+                .html(content); // Set content first to get accurate dimensions
+            
+            // Set position after content to allow tooltip dimensions to be accurate
+            this.tooltip.style("left", `${newLeft}px`)
                 .style("top", `${newTop}px`);
             
-            // Boundary collision detection relative to the diagram wrapper
+            // Boundary collision detection relative to viewport
             const tooltipRect = this.tooltip.node().getBoundingClientRect();
-            const wrapper = document.getElementById('sankeySection16ContainerWrapper');
-            if (!wrapper) {
-                console.warn("S16 SANKEY LOG: Tooltip wrapper not found for boundary check.");
-                return;
+            
+            // Adjust if tooltip goes off the right edge of viewport
+            if (newLeft + tooltipRect.width > window.innerWidth) {
+                newLeft = mouseX - tooltipRect.width - padding;
             }
-            const wrapperRect = wrapper.getBoundingClientRect();
-
-            // Adjust if tooltip goes off the right edge of the wrapper
-            if (newLeft + tooltipRect.width > wrapperRect.width) {
-                newLeft = pointerX - tooltipRect.width - padding;
+            
+            // Adjust if tooltip goes off the bottom edge of viewport
+            if (newTop + tooltipRect.height > window.innerHeight) {
+                newTop = mouseY - tooltipRect.height - padding;
             }
-            // Adjust if tooltip goes off the bottom edge of the wrapper
-            if (newTop + tooltipRect.height > wrapperRect.height) {
-                newTop = pointerY - tooltipRect.height - padding;
-            }
-            // Adjust if tooltip goes off the left edge of the wrapper (e.g. if padding pushes it left)
+            
+            // Ensure tooltip doesn't go off the left or top of the viewport
             if (newLeft < 0) {
                 newLeft = padding;
             }
-            // Adjust if tooltip goes off the top edge of the wrapper
             if (newTop < 0) {
                 newTop = padding;
             }
 
             this.tooltip.style("left", `${newLeft}px`).style("top", `${newTop}px`);
-            console.warn("S16 SANKEY LOG: Tooltip displayed at (adjusted for wrapper) Left:", newLeft, "Top:", newTop);
+            console.warn("S16 SANKEY LOG: Tooltip displayed at (viewport-relative) Left:", newLeft, "Top:", newTop);
         },
         hideTooltip() { 
             console.warn("S16 SANKEY LOG: hideTooltip called.");
@@ -619,11 +617,20 @@ window.TEUI.SectionModules.sect16 = (function() {
         widthValueText.textContent = '100%';
         widthToggleContainer.appendChild(widthValueText);
         controlsContainer.appendChild(widthToggleContainer);
+        
+        // Add fullscreen button
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.id = 's16FullscreenBtn';
+        fullscreenBtn.className = 'teui-button';
+        fullscreenBtn.textContent = 'Fullscreen';
+        fullscreenBtn.style.cssText = 'display: none; margin-left: auto;'; // Auto margin pushes it to the right
+        controlsContainer.appendChild(fullscreenBtn);
+        
         targetArea.appendChild(controlsContainer);
 
         const diagramWrapper = document.createElement('div');
         diagramWrapper.id = 'sankeySection16ContainerWrapper';
-        diagramWrapper.style.cssText = 'width: 100%; height: 500px; background: #f9f9f9; position: relative; border: 1px solid #ccc; overflow: hidden;';
+        diagramWrapper.style.cssText = 'width: 100%; height: 500px; background: #f9f9f9; position: relative; border: 1px solid #ccc;';
         
         const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svgElement.id = 'sankeySection16Container';
@@ -632,11 +639,12 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         const tooltipElement = document.createElement('div');
         tooltipElement.id = 'sankeySection16Tooltip';
-        tooltipElement.className = 'tooltip'; 
-        tooltipElement.style.display = 'none';
-        tooltipElement.style.position = 'absolute'; 
-        tooltipElement.style.zIndex = '1080';
-        diagramWrapper.appendChild(tooltipElement);
+        tooltipElement.className = 'tooltip';
+        tooltipElement.style.cssText = 'display: none; position: fixed; background: rgba(255, 255, 255, 0.98); ' +
+            'border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); ' +
+            'padding: 12px; pointer-events: none; max-width: 300px; z-index: 2000; font-size: 13px;';
+        
+        document.body.appendChild(tooltipElement);
 
         const placeholderElement = document.createElement('div');
         placeholderElement.id = 's16LoadingPlaceholder';
@@ -645,6 +653,49 @@ window.TEUI.SectionModules.sect16 = (function() {
         diagramWrapper.appendChild(placeholderElement);
 
         targetArea.appendChild(diagramWrapper);
+        
+        // Create fullscreen container (initially hidden)
+        const fullscreenContainer = document.createElement('div');
+        fullscreenContainer.id = 's16FullscreenContainer';
+        fullscreenContainer.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; ' +
+            'background: white; z-index: 3000; overflow: auto; padding: 20px; box-sizing: border-box;';
+        
+        // Add fullscreen controls
+        const fullscreenControlsDiv = document.createElement('div');
+        fullscreenControlsDiv.style.cssText = 'height: 40px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;';
+        
+        const fullscreenCloseBtn = document.createElement('button');
+        fullscreenCloseBtn.id = 's16FullscreenCloseBtn';
+        fullscreenCloseBtn.className = 'teui-button';
+        fullscreenCloseBtn.textContent = 'Close Fullscreen';
+        fullscreenControlsDiv.appendChild(fullscreenCloseBtn);
+        
+        // Clone other controls for fullscreen
+        const emissionsBtnClone = emissionsBtn.cloneNode(true);
+        emissionsBtnClone.id = 's16FullscreenEmissionsBtn';
+        emissionsBtnClone.style.display = 'inline-flex';
+        fullscreenControlsDiv.appendChild(emissionsBtnClone);
+        
+        const spacingBtnClone = spacingBtn.cloneNode(true);
+        spacingBtnClone.id = 's16FullscreenSpacingBtn';
+        spacingBtnClone.style.display = 'inline-flex';
+        fullscreenControlsDiv.appendChild(spacingBtnClone);
+        
+        const widthToggleClone = widthToggleContainer.cloneNode(true);
+        widthToggleClone.id = 's16FullscreenWidthToggle';
+        widthToggleClone.style.display = 'inline-flex';
+        fullscreenControlsDiv.appendChild(widthToggleClone);
+        
+        fullscreenContainer.appendChild(fullscreenControlsDiv);
+        
+        // Create SVG for fullscreen mode
+        const fullscreenSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        fullscreenSvg.id = 'sankeySection16FullscreenSvg';
+        fullscreenSvg.style.cssText = 'width: 100%; height: calc(100% - 50px); display: block;';
+        fullscreenContainer.appendChild(fullscreenSvg);
+        
+        document.body.appendChild(fullscreenContainer);
+        
         console.log("Section 16: DOM setup complete. Diagram wrapper height set to 500px.");
         return true; 
     }
@@ -663,6 +714,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         const widthSlider = document.getElementById('s16WidthMultiplierSlider');
         const widthToggleContainer = document.getElementById('s16WidthToggleContainer');
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
+        const fullscreenBtn = document.getElementById('s16FullscreenBtn');
 
         if (activateBtn) {
             activateBtn.addEventListener('click', function() {
@@ -697,6 +749,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (emissionsBtn) emissionsBtn.style.display = 'inline-flex';
                 if (spacingBtn) spacingBtn.style.display = 'inline-flex';
                 if (widthToggleContainer) widthToggleContainer.style.display = 'inline-flex';
+                if (fullscreenBtn) fullscreenBtn.style.display = 'inline-flex';
                 console.warn("S16 LOG: Calling fetchDataAndRenderSankey from Activate button.");
                 fetchDataAndRenderSankey(false); 
             });
@@ -727,11 +780,144 @@ window.TEUI.SectionModules.sect16 = (function() {
             });
         }
         
+        // Add fullscreen functionality
+        if (fullscreenBtn) {
+            const fullscreenContainer = document.getElementById('s16FullscreenContainer');
+            const fullscreenCloseBtn = document.getElementById('s16FullscreenCloseBtn');
+            
+            // Fullscreen Sankey instance - move declaration to wider scope
+            window.TEUI.sect16.fullscreenSankeyInstance = null;
+            
+            fullscreenBtn.addEventListener('click', function() {
+                if (!fullscreenContainer) return;
+                
+                fullscreenContainer.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling behind fullscreen
+                
+                const fullscreenSvg = document.getElementById('sankeySection16FullscreenSvg');
+                if (!fullscreenSvg) return;
+                
+                // Create a separate Sankey instance for fullscreen if needed
+                if (!window.TEUI.sect16.fullscreenSankeyInstance) {
+                    window.TEUI.sect16.fullscreenSankeyInstance = Object.create(TEUI_SankeyDiagram);
+                    window.TEUI.sect16.fullscreenSankeyInstance.initialize('#sankeySection16FullscreenSvg', '#sankeySection16Tooltip');
+                }
+                
+                // Configure fullscreen Sankey with same settings
+                window.TEUI.sect16.fullscreenSankeyInstance.updateSankeyConfig({
+                    showEmissions: showEmissions,
+                    nodeWidthMultiplier: nodeWidthMultiplier,
+                    nodePadding: nodePadding,
+                    isGasHeating: window.TEUI.StateManager.getValue('d_113') === 'Gas' || 
+                                  window.TEUI.StateManager.getValue('d_113') === 'Oil'
+                });
+                
+                // Get data and render in fullscreen
+                if (sankeyInstance && sankeyInstance._cleanDataInput) {
+                    window.TEUI.sect16.fullscreenSankeyInstance.render(JSON.parse(JSON.stringify(sankeyInstance._cleanDataInput)), true);
+                    
+                    // Resize to fit fullscreen container
+                    const fullscreenWidth = fullscreenContainer.clientWidth - 40; // Account for padding
+                    const fullscreenHeight = fullscreenContainer.clientHeight - 70; // Account for controls and padding
+                    window.TEUI.sect16.fullscreenSankeyInstance.resize(fullscreenWidth, fullscreenHeight);
+                } else {
+                    console.warn("S16 LOG: No Sankey data available for fullscreen display");
+                }
+            });
+            
+            // Fullscreen close button
+            if (fullscreenCloseBtn) {
+                fullscreenCloseBtn.addEventListener('click', function() {
+                    if (fullscreenContainer) {
+                        fullscreenContainer.style.display = 'none';
+                        document.body.style.overflow = ''; // Restore scrolling
+                    }
+                });
+            }
+            
+            // Fullscreen controls
+            const fullscreenEmissionsBtn = document.getElementById('s16FullscreenEmissionsBtn');
+            const fullscreenSpacingBtn = document.getElementById('s16FullscreenSpacingBtn');
+            const fullscreenWidthSlider = document.querySelector('#s16FullscreenWidthToggle input[type="range"]');
+            const fullscreenWidthValueText = document.querySelector('#s16FullscreenWidthToggle span');
+            
+            if (fullscreenEmissionsBtn) {
+                fullscreenEmissionsBtn.addEventListener('click', function() {
+                    showEmissions = !showEmissions;
+                    this.textContent = showEmissions ? 'Hide Emissions' : 'Show Emissions';
+                    if (emissionsBtn) emissionsBtn.textContent = this.textContent;
+                    
+                    // Update both main and fullscreen Sankeys
+                    if (isActive) {
+                        if (window.TEUI.sect16.fullscreenSankeyInstance && fullscreenContainer.style.display !== 'none') {
+                            window.TEUI.sect16.fullscreenSankeyInstance.updateSankeyConfig({ showEmissions: showEmissions });
+                            
+                            if (window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput) {
+                                window.TEUI.sect16.fullscreenSankeyInstance.render(window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput, false);
+                            }
+                        }
+                        fetchDataAndRenderSankey(false);
+                    }
+                });
+            }
+            
+            if (fullscreenSpacingBtn) {
+                fullscreenSpacingBtn.addEventListener('click', function() {
+                    nodePadding = (nodePadding === 15) ? 2 : 15;
+                    this.textContent = (nodePadding === 15) ? 'Compress Nodes' : 'Expand Nodes';
+                    if (spacingBtn) spacingBtn.textContent = this.textContent;
+                    
+                    // Update both main and fullscreen Sankeys
+                    if (isActive) {
+                        if (window.TEUI.sect16.fullscreenSankeyInstance && fullscreenContainer.style.display !== 'none') {
+                            window.TEUI.sect16.fullscreenSankeyInstance.updateSankeyConfig({ nodePadding: nodePadding });
+                            
+                            if (window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput) {
+                                window.TEUI.sect16.fullscreenSankeyInstance.render(window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput, false);
+                            }
+                        }
+                        fetchDataAndRenderSankey(false);
+                    }
+                });
+            }
+            
+            if (fullscreenWidthSlider) {
+                fullscreenWidthSlider.addEventListener('input', function() {
+                    nodeWidthMultiplier = parseInt(this.value) / 100;
+                    if (fullscreenWidthValueText) fullscreenWidthValueText.textContent = `${this.value}%`;
+                    if (widthSlider) widthSlider.value = this.value;
+                    if (widthValueText) widthValueText.textContent = `${this.value}%`;
+                    
+                    // Update both main and fullscreen Sankeys
+                    if (isActive) {
+                        if (window.TEUI.sect16.fullscreenSankeyInstance && fullscreenContainer.style.display !== 'none') {
+                            window.TEUI.sect16.fullscreenSankeyInstance.updateSankeyConfig({ nodeWidthMultiplier: nodeWidthMultiplier });
+                            
+                            if (window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput) {
+                                window.TEUI.sect16.fullscreenSankeyInstance.render(window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput, false);
+                            }
+                        }
+                        fetchDataAndRenderSankey(false);
+                    }
+                });
+            }
+        }
+        
         window.addEventListener('resize', function() {
             if (isActive && sankeyInstance && typeof sankeyInstance.resize === 'function' && sankeyInstance.svg) {
                 const wrapper = document.getElementById('sankeySection16ContainerWrapper');
                 if (wrapper) {
                     sankeyInstance.resize(wrapper.clientWidth, parseFloat(getComputedStyle(wrapper).height));
+                }
+                
+                // Also update fullscreen if active
+                const fullscreenContainer = document.getElementById('s16FullscreenContainer');
+                const fullscreenSvg = document.getElementById('sankeySection16FullscreenSvg');
+                if (fullscreenContainer && fullscreenContainer.style.display !== 'none' && 
+                    window.TEUI.sect16.fullscreenSankeyInstance && window.TEUI.sect16.fullscreenSankeyInstance.svg && fullscreenSvg) {
+                    const fullscreenWidth = fullscreenContainer.clientWidth - 40;
+                    const fullscreenHeight = fullscreenContainer.clientHeight - 70;
+                    window.TEUI.sect16.fullscreenSankeyInstance.resize(fullscreenWidth, fullscreenHeight);
                 }
             }
         });
@@ -783,6 +969,49 @@ window.TEUI.SectionModules.sect16 = (function() {
         if (isActive) {
             console.log("Section 16: Relevant state changed, refreshing Sankey.");
             fetchDataAndRenderSankey(false);
+        }
+    }
+
+    // Add this function before fetchDataAndRenderSankey
+    function debugSankeyLinkValues() {
+        console.warn("S16 DEBUG: Validating all link values...");
+        
+        if (!sankeyInstance || !sankeyInstance._cleanDataInput) {
+            console.warn("S16 DEBUG: No Sankey data available to validate.");
+            return;
+        }
+        
+        // Log all link values from the current data
+        sankeyInstance._cleanDataInput.links.forEach(link => {
+            let linkId = link.id || "Unknown";
+            let sourceNode = typeof link.source === 'object' ? 
+                link.source.name : 
+                (sankeyInstance._cleanDataInput.nodes[link.source]?.name || "Unknown");
+            let targetNode = typeof link.target === 'object' ? 
+                link.target.name : 
+                (sankeyInstance._cleanDataInput.nodes[link.target]?.name || "Unknown");
+            
+            console.warn(`S16 DEBUG: Link "${linkId}" (${sourceNode} → ${targetNode}) Value: ${link.value}`);
+        });
+        
+        // Check specific envelope losses (TEL components) directly from StateManager
+        if (window.TEUI && window.TEUI.StateManager) {
+            const teuiState = window.TEUI.StateManager;
+            console.warn("S16 DEBUG: Checking TEL component values from StateManager:");
+            
+            const telFields = ["i_85", "i_86", "i_87", "i_88", "i_89", "i_90", "i_91", "i_92", 
+                              "i_93", "i_94", "i_95", "i_97", "i_103"];
+            telFields.forEach(fieldId => {
+                const value = teuiState.getValue(fieldId);
+                console.warn(`S16 DEBUG: TEL Field: ${fieldId}, StateManager Value: ${value}`);
+            });
+            
+            // Check Energy Interface fields
+            console.warn("S16 DEBUG: Checking Energy Interface fields:");
+            ["d_114", "d_115", "d_127", "d_131", "l_113", "l_115"].forEach(fieldId => {
+                const value = teuiState.getValue(fieldId);
+                console.warn(`S16 DEBUG: Energy Interface Field: ${fieldId}, StateManager Value: ${value}`);
+            });
         }
     }
 
@@ -938,6 +1167,12 @@ window.TEUI.SectionModules.sect16 = (function() {
             sankeyInstance.resize(wrapper.clientWidth, parseFloat(getComputedStyle(wrapper).height));
         }
         sankeyInstance.render(currentSankeyData, isInitialPageLoad);
+        
+        // Run debug validation if needed
+        if (!isInitialPageLoad) {
+            debugSankeyLinkValues();
+        }
+        
         console.log("Section 16: Sankey render call complete.");
     }
 
