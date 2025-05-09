@@ -1,29 +1,35 @@
 # Workplan: Embedding Sankey Diagram into TEUI 4.0.11 - Section 16
 
-## 0. Progress Update (As of Current Session)
+## 0. Progress Update (End of Session - Aug [Current Date])
 
-*   **Standalone HTML Refactored:** `SANKEY3035.html` has been significantly stripped down, isolating its core D3.js visualization logic, essential CSS, the `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler`. Standalone application shell and data management have been removed.
-*   **Section 16 Scaffolding:** `sections/4011-Section16.js` has been created with the standard TEUI module structure.
-*   **Core Logic Integration:** The `TEUI_SankeyDiagram` object (adapted from `SANKEY3035.html`), `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler` have been successfully integrated into `sections/4011-Section16.js`.
-*   **Layout Defined:** `getLayout()` in `Section16.js` defines the HTML structure for the Sankey container, tooltip, and the simplified UI controls (Activate, Emissions, Spacing, Width).
-*   **Event Handlers Initialized:** Basic event handlers for the UI controls are in place.
-*   **Data Mapping - In Progress:**
-    *   The `fetchDataAndRenderSankey()` function has been implemented to source data from `window.TEUI.StateManager`.
-    *   Mappings for primary energy gain flows, heating system flows (including conditional logic for different fuel types like Heat Pump, Gas, Oil), and direct TEUI exhaust values (`l_115`, `j_54`) are implemented.
-    *   Minimal flow values are standardized to `0.0001`.
-*   **Emission Display - Simplified:**
-    *   The `TEUI_SankeyDiagram.updateEmissionsFlows()` method has been refactored. It no longer calculates emissions.
-    *   It now fetches pre-calculated total annual emissions (kgCO2e/yr) for Electricity (`k_27`), Gas (`k_28`), and Oil (`k_30`) from `TEUI.StateManager`.
-    *   These are converted to grams and linked from a primary source node ("M.2.1.D Energy Input") to the respective E1/E2 Scope emission nodes.
-    *   Wood emissions (`k_31`) are correctly omitted based on LULUCF accounting principles.
-    *   Internal emission calculation factors (`_gridIntensity`, `_gasIntensity`, `_gasEnergyDensity`) have been removed from `TEUI_SankeyDiagram`.
-*   **Guiding Principle Reinforced:** Section 16 acts as a **visualizer/reader** of data calculated by the core TEUI application, not as an independent calculator.
+**Significant progress has been made in integrating the Sankey diagram into Section 16. The diagram now renders its basic structure upon activation, and core data flow logic is in place.**
 
-**Outstanding Tasks:**
-*   Final verification of all data mappings in `linkIdToTeuiField` within `fetchDataAndRenderSankey()` against `3037DOM.csv` and TEUI application logic for remaining TEL components and other minor flows.
-*   Integration of Sankey-specific CSS into `4011-styles.css`, ensuring color schemes and visual fidelity are maintained.
-*   Comprehensive testing of all functionalities, data accuracy, UI controls, and responsiveness.
-*   Reviewing the source node for aggregated emission links if further refinement is desired beyond the current "M.2.1.D Energy Input" approach.
+**Key Accomplishments:**
+*   **Standalone HTML Refactored:** `SANKEY3035.html` stripped to essential D3.js logic, CSS, and data templates.
+*   **Section 16 Scaffolding & Core Logic Integration:** `sections/4011-Section16.js` created and populated with the adapted `TEUI_SankeyDiagram` object, `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler`.
+*   **DOM Management:** 
+    *   `index.html` updated with a static target div (`#section16ContentTarget`) for S16.
+    *   `Section16.js` now uses `setupSection16DOM()` to dynamically create controls and the SVG environment within this target.
+    *   Refined `onSectionRendered` and `initializeEventHandlers` to ensure correct sequencing, resolving initial button activation issues.
+*   **Data Sourcing & Basic Flow Mapping:** 
+    *   `fetchDataAndRenderSankey()` now sources data from `window.TEUI.StateManager`.
+    *   Primary energy gains, heating system flows (conditional for Heat Pump/Gas/Oil), and direct TEUI exhaust values (e.g., `l_115` for heating, `j_54` for DHW) are mapped.
+    *   Minimal flow values standardized to `0.0001`.
+*   **Emission Display Greatly Simplified:**
+    *   `TEUI_SankeyDiagram.updateEmissionsFlows()` now fetches pre-calculated total annual emissions (kgCO2e/yr) for Electricity (`k_27`), Gas (`k_28`), and Oil (`k_30`) from `TEUI.StateManager`.
+    *   Values are converted to grams and linked from a primary source node ("M.2.1.D Energy Input") to E1/E2 Scope nodes. Wood emissions (`k_31`) are correctly omitted.
+    *   Obsolete internal emission factors and calculation methods removed from `TEUI_SankeyDiagram`.
+*   **Rendering Achieved:** Basic Sankey structure (nodes, labels, links) renders upon clicking the "Activate/Refresh Sankey" button. UI controls (Activate, Emissions, Spacing, Width) become visible and are interactive.
+*   **Initial Bug Fixes:** Addressed `JSON.stringify` cyclic errors and made initial adjustments to canvas height (set to `500px`). Added diagnostic logging for tooltips.
+*   **Guiding Principle Reinforced:** Section 16 is firmly established as a **visualizer/reader** of pre-calculated TEUI data.
+
+**Primary Outstanding Tasks & Refinements:**
+1.  **Tooltip Visibility:** Resolve why tooltips are not visually appearing despite event logs indicating they are firing and have content. This is the highest priority graphics issue.
+2.  **Link Width Accuracy:** Complete and verify all data mappings in `linkIdToTeuiField` within `fetchDataAndRenderSankey()` for remaining flows (especially TEL components, e.g., `i_85` to `i_103`, and other building losses like `m_121`, `j_53`, `i_82`). This is crucial for link widths to accurately reflect data.
+3.  **Canvas Height & Fitting:** Further refine how the diagram fits the constrained 500px height, especially during browser resizing, to prevent unwanted vertical expansion or ensure content squishes appropriately. Consider borrowing responsive techniques from Section 17.
+4.  **CSS Fidelity:** Conduct a thorough review and integration of all necessary Sankey-specific CSS from the original `SANKEY3035.html` into `4011-styles.css` (scoped to Section 16) to ensure colors, fonts, and overall visual appearance faithfully match the original design.
+5.  **Fullscreen Feature:** Plan and implement a fullscreen toggle button and functionality, similar to Section 17, for improved presentation capability.
+6.  **Comprehensive Testing:** Once the above are addressed, conduct thorough testing of all functionalities, data accuracy across various TEUI input states, UI control interactions, and responsiveness.
 
 ## 1. Objective
 
