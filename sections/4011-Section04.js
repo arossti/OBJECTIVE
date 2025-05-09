@@ -767,7 +767,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         if (window.TEUI?.StateManager) {
             const provinceStateValue = window.TEUI.StateManager.getValue('d_19'); // From S03
             if (provinceStateValue) {
-                provinceAbbreviation = getProvinceCode(provinceStateValue); // Use helper to get 2-letter code
+                // Call getProvinceCode directly as it's in the same scope
+                provinceAbbreviation = getProvinceCode(provinceStateValue);
             }
             
             const yearStateValue = window.TEUI.StateManager.getValue('h_12'); // From S01
@@ -782,6 +783,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             // Fallback to trying DOM if really needed, but ideally StateManager has the values.
             const provinceDropdown = document.querySelector('select[data-dropdown-id="dd_d_19"], select[data-field-id="d_19"]');
             if (provinceDropdown && provinceDropdown.value) {
+                 // Call getProvinceCode directly
                 provinceAbbreviation = getProvinceCode(provinceDropdown.value);
             }
             const yearInput = document.querySelector('[data-field-id="h_12"]');
@@ -804,11 +806,13 @@ window.TEUI.SectionModules.sect04 = (function() {
         // This ensures the sequence is correct if f_27/j_27 haven't changed but l_27 did.
         
         const f27Value = getNumericValue('f_27');
-        const g27Value = calculateG27(f27Value, factor); // Pass factor directly
+        // Pass factor directly to the calculation function
+        const g27Value = calculateG27(f27Value, factor); 
         setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
 
         const j27Value = getNumericValue('j_27');
-        const k27Value = calculateK27(j27Value, factor); // Pass factor directly
+        // Pass factor directly to the calculation function
+        const k27Value = calculateK27(j27Value, factor); 
         setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
         
         // updateSubtotals() will be called if g_27 or k_27 are dependencies for it.
@@ -816,6 +820,50 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Based on current structure, updateSubtotals() is likely called by listeners on g_32/k_32 which depend on g_27/k_27.
         // However, explicitly calling it can ensure timely updates if the chain is complex.
         updateSubtotals(); 
+    }
+
+    // Helper function to convert province name to province code
+    // This function is defined within the IIFE and directly callable by others within the same scope (like updateElectricityEmissionFactor)
+    function getProvinceCode(provinceText) {
+        if (!provinceText) return 'ON';
+        
+        // Direct match for 2-letter codes
+        if (provinceText.length === 2) {
+            const code = provinceText.toUpperCase();
+            if (['ON', 'QC', 'BC', 'AB', 'SK', 'MB', 'NS', 'NB', 'NL', 'PE', 'NT', 'YT', 'NU'].includes(code)) {
+                return code;
+            }
+        }
+        
+        const originalText = provinceText;
+        provinceText = provinceText.trim().toLowerCase();
+        
+        if (provinceText === "ontario" || provinceText === "on") return 'ON';
+        if (provinceText === "quebec" || provinceText === "québec" || provinceText === "qc") return 'QC';
+        if (provinceText === "british columbia" || provinceText === "bc") return 'BC';
+        if (provinceText === "alberta" || provinceText === "ab") return 'AB';
+        if (provinceText === "saskatchewan" || provinceText === "sk") return 'SK';
+        if (provinceText === "manitoba" || provinceText === "mb") return 'MB';
+        if (provinceText === "nova scotia" || provinceText === "ns") return 'NS';
+        if (provinceText === "new brunswick" || provinceText === "nb") return 'NB';
+        if (provinceText === "newfoundland and labrador" || provinceText === "nl") return 'NL';
+        if (provinceText === "prince edward island" || provinceText === "pe") return 'PE';
+        if (provinceText === "northwest territories" || provinceText === "nt") return 'NT';
+        if (provinceText === "yukon" || provinceText === "yt") return 'YT';
+        if (provinceText === "nunavut" || provinceText === "nu") return 'NU';
+        
+        const provinceMatches = {
+            'ON': provinceText.includes("ontario"), 'QC': provinceText.includes("quebec") || provinceText.includes("québec"),
+            'BC': provinceText.includes("british columbia"), 'AB': provinceText.includes("alberta"),
+            'SK': provinceText.includes("saskatchewan"), 'MB': provinceText.includes("manitoba"),
+            'NS': provinceText.includes("nova scotia"), 'NB': provinceText.includes("new brunswick"),
+            'NL': provinceText.includes("newfoundland"), 'PE': provinceText.includes("prince edward"),
+            'NT': provinceText.includes("northwest"), 'YT': provinceText.includes("yukon"),
+            'NU': provinceText.includes("nunavut")
+        };
+        const matches = Object.entries(provinceMatches).filter(([_, matches]) => matches);
+        if (matches.length > 0) return matches[0][0];
+        return 'ON'; // Default
     }
 
     // Helper function to get electricity emission factor (can be moved to a central data module later)
@@ -1401,6 +1449,70 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     //==========================================================================
+    // PART 6: CALCULATION LOGIC
+    //==========================================================================
+    
+    /**
+     * Main calculation function for Section 04.
+     * Orchestrates all calculations for this section.
+     */
+    function calculateAll() {
+        // console.log("[S04] calculateAll triggered.");
+        
+        // Update electricity emission factor first, as it affects other calcs
+        updateElectricityEmissionFactor();
+
+        // Calculate all row 27-31 actuals (F and G columns)
+        // These depend on user inputs (d_27 to d_31) and l_27 to l_31 (factors)
+        setCalculatedValue('f_27', calculateF27(), 'number-2dp-comma');
+        setCalculatedValue('g_27', calculateG27(), 'number-2dp-comma');
+        
+        setCalculatedValue('f_28', calculateF28(), 'number-2dp-comma');
+        setCalculatedValue('g_28', calculateG28(), 'number-2dp-comma');
+        
+        setCalculatedValue('f_29', calculateF29(), 'number-2dp-comma');
+        setCalculatedValue('g_29', calculateG29(), 'number-2dp-comma');
+        
+        setCalculatedValue('f_30', calculateF30(), 'number-2dp-comma');
+        setCalculatedValue('g_30', calculateG30(), 'number-2dp-comma');
+        
+        setCalculatedValue('f_31', calculateF31(), 'number-2dp-comma');
+        // H31 is an input, G31 depends on H31 and L31
+        setCalculatedValue('h_31', getNumericValue('d_31'), 'number-2dp-comma'); // Target wood use = actual
+        setCalculatedValue('g_31', calculateG31(), 'number-2dp-comma');
+
+        // Calculate all row 27-31 targets (H, J, and K columns)
+        // H27 depends on d_136 (from S15)
+        // H28 depends on d_51, e_51 (S07), d_113, h_115 (S13)
+        // H30 depends on d_51 (S07), d_113, f_115 (S13), l_54 (S07)
+        // H29, H31 are based on their actuals (d_29, d_31)
+        setCalculatedValue('h_27', getNumericValue('d_136'), 'number-2dp-comma');
+        setCalculatedValue('j_27', calculateJ27(), 'number-2dp-comma');
+        setCalculatedValue('k_27', calculateK27(), 'number-2dp-comma');
+
+        setCalculatedValue('h_28', calculateH28(), 'number-2dp-comma');
+        setCalculatedValue('j_28', calculateJ28(), 'number-2dp-comma');
+        setCalculatedValue('k_28', calculateK28(), 'number-2dp-comma');
+        
+        setCalculatedValue('h_29', calculateH29(), 'number-2dp-comma');
+        setCalculatedValue('j_29', calculateJ29(), 'number-2dp-comma');
+        setCalculatedValue('k_29', calculateK29(), 'number-2dp-comma');
+
+        setCalculatedValue('h_30', calculateH30(), 'number-2dp-comma');
+        setCalculatedValue('j_30', calculateJ30(), 'number-2dp-comma');
+        setCalculatedValue('k_30', calculateK30(), 'number-2dp-comma');
+
+        // H31 is based on d_31, which is already handled for actuals
+        setCalculatedValue('j_31', calculateJ31(), 'number-2dp-comma');
+        setCalculatedValue('k_31', calculateK31(), 'number-2dp-comma');
+
+        // After individual rows are calculated, update the subtotals and dependent totals
+        updateSubtotals();
+        updateDependentTotals();
+        // console.log("[S04] All calculations complete.");
+    }
+
+    //==========================================================================
     // PART 7: PUBLIC API
     //==========================================================================
     
@@ -1418,8 +1530,15 @@ window.TEUI.SectionModules.sect04 = (function() {
             return sectionRows.metadata; 
         },
         
-        // Keep calculations exposed if needed
-        calculations: { 
+        // Expose calculation and helper functions if they need to be called externally
+        // or by listeners that might have a different 'this' context.
+        calculateAll: calculateAll, // Now correctly points to the defined function
+        updateElectricityEmissionFactor: updateElectricityEmissionFactor,
+        getProvinceCode: getProvinceCode, // Expose getProvinceCode
+        // ... any other functions that need to be public ...
+
+        // Keep calculations exposed if needed (already present)
+        calculations: {
              // ... (existing calculation functions) ...
              calculateF27: calculateF27,
              calculateG27: calculateG27,
@@ -1461,8 +1580,6 @@ window.TEUI.SectionModules.sect04 = (function() {
              calculateF35: calculateF35
         },
         
-        // Keep other exposed functions if needed
-        updateElectricityEmissionFactor: updateElectricityEmissionFactor,
         updateSubtotals: updateSubtotals,
         updateDependentTotals: updateDependentTotals
     };
