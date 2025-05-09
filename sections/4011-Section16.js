@@ -129,12 +129,42 @@ window.TEUI.SectionModules.sect16 = (function() {
         initialize(svgId, tooltipId, initialExtent) {
             this.svg = d3.select(svgId);
             this.tooltip = d3.select(tooltipId);
-            if (initialExtent) this.sankey.extent(initialExtent);
+            
+            // Define a default left margin
+            const defaultMarginLeft = 40; // Increased from 20 for more padding
+            const defaultMarginOthers = 1; // Minimal top/right/bottom for extent
+
+            let extentToUse = initialExtent;
+            if (!initialExtent && this.svg && this.svg.node()) {
+                const svgNode = this.svg.node();
+                const w = svgNode.clientWidth || svgNode.parentNode.clientWidth || 1098;
+                const h = svgNode.clientHeight || svgNode.parentNode.clientHeight || 698;
+                extentToUse = [
+                    [defaultMarginLeft, defaultMarginOthers],
+                    [w - defaultMarginOthers, h - defaultMarginOthers]
+                ];
+            } else if (initialExtent) {
+                 // If initialExtent is provided, adjust its left margin
+                 extentToUse = [
+                    [defaultMarginLeft, initialExtent[0][1]],
+                    [initialExtent[1][0], initialExtent[1][1]]
+                 ];
+            }
+
+            if (extentToUse) this.sankey.extent(extentToUse);
+            // Size also needs to account for margins
+            if (this.svg && this.svg.node()) {
+                const svgNode = this.svg.node();
+                const w = svgNode.clientWidth || svgNode.parentNode.clientWidth || 1100;
+                const h = svgNode.clientHeight || svgNode.parentNode.clientHeight || 700;
+                this.sankey.size([w - defaultMarginLeft - defaultMarginOthers, h - defaultMarginOthers*2]);
+            }
+
             this.svg.selectAll("*").remove();
             this.linkGroup = this.svg.append("g").attr("class", "links");
             this.nodeGroup = this.svg.append("g").attr("class", "nodes");
             this.labelGroup = this.svg.append("g").attr("class", "labels");
-            console.log("TEUI_SankeyDiagram initialized with SVG:", svgId);
+            console.warn("S16 SANKEY LOG: TEUI_SankeyDiagram initialized. SVG:", svgId, "Extent used:", extentToUse);
         },
         updateSankeyConfig(config) {
             if (config.showEmissions !== undefined) this._showEmissions = config.showEmissions;
@@ -274,11 +304,13 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
         },
         showNodeTooltip(event, d) {
+            console.warn("S16 SANKEY LOG: showNodeTooltip triggered for node:", d ? d.name : 'undefined', "event:", event);
             const content = this.createNodeTooltip(d);
             this.showTooltip(content, event);
             d3.select(event.target).style("fill-opacity", 0.8);
         },
         showLinkTooltip(event, d) {
+            console.warn("S16 SANKEY LOG: showLinkTooltip triggered for link:", d ? `${d.source.name} -> ${d.target.name}` : 'undefined', "event:", event);
             const content = this.createLinkTooltip(d);
             this.showTooltip(content, event);
             d3.select(event.target).style("stroke-opacity", 0.9);
@@ -340,16 +372,32 @@ window.TEUI.SectionModules.sect16 = (function() {
             return node.name;
         },
         showTooltip(content, event) {
-            if (!this.tooltip) return;
+            if (!this.tooltip) {
+                console.warn("S16 SANKEY LOG: showTooltip - Tooltip element not found!");
+                return;
+            }
+            console.warn("S16 SANKEY LOG: showTooltip called. Event PageX:", event.pageX, "PageY:", event.pageY, "Content:", content);
             const padding = 10;
             this.tooltip.style("display", "block")
                 .style("left", `${event.pageX + padding}px`).style("top", `${event.pageY + padding}px`)
                 .html(content);
+            
+            // Boundary collision detection (remains the same)
             const tooltipRect = this.tooltip.node().getBoundingClientRect();
-            if (tooltipRect.right > window.innerWidth) this.tooltip.style("left", `${event.pageX - tooltipRect.width - padding}px`);
-            if (tooltipRect.bottom > window.innerHeight) this.tooltip.style("top", `${event.pageY - tooltipRect.height - padding}px`);
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            if (tooltipRect.right > viewportWidth) {
+                 this.tooltip.style("left", `${event.pageX - tooltipRect.width - padding}px`);
+            }
+            if (tooltipRect.bottom > viewportHeight) {
+                 this.tooltip.style("top", `${event.pageY - tooltipRect.height - padding}px`);
+            }
+            console.warn("S16 SANKEY LOG: Tooltip displayed at", this.tooltip.style("left"), this.tooltip.style("top"));
         },
-        hideTooltip() { if (this.tooltip) this.tooltip.style("display", "none"); },
+        hideTooltip() { 
+            console.warn("S16 SANKEY LOG: hideTooltip called.");
+            if (this.tooltip) this.tooltip.style("display", "none"); 
+        },
         getLinkColor(d) {
             if (d.target.name === "GasExhaust") return "#BE343D";
             if (d.source.name === "Building" || d.target.name === "Building") return d.source.name === "Building" ? d3.color(d.target.color).brighter(0.2) : d3.color(d.source.color);
@@ -437,25 +485,27 @@ window.TEUI.SectionModules.sect16 = (function() {
             return link ? link.value : 0;
         },
         resize(newWidth, newHeight = 700) {
-            if (!this.svg || !this.sankey || !this._cleanDataInput) { // Check for _cleanDataInput
-                console.warn("Sankey not initialized or no data for resize"); 
+            if (!this.svg || !this.sankey || !this._cleanDataInput) {
+                console.warn("S16 SANKEY LOG: Sankey not initialized or no data for resize"); 
                 return; 
             }
-            const margin = { left: 20, right: 20, top: 1, bottom: 1 };
-            const innerWidth = Math.max(100, newWidth - margin.left - margin.right);
-            const innerHeight = Math.max(50, newHeight - margin.top - margin.bottom);
+            const defaultMarginLeft = 40; // Consistent left margin
+            const defaultMarginOthers = 1; // Minimal top/right/bottom
+
+            const innerWidth = Math.max(100, newWidth - defaultMarginLeft - defaultMarginOthers);
+            const innerHeight = Math.max(50, newHeight - defaultMarginOthers*2);
             
             this.svg.attr("width", newWidth).attr("height", newHeight)
                 .attr("viewBox", `0 0 ${newWidth} ${newHeight}`).style("overflow", "visible");
             
-            this.sankey.extent([[margin.left, margin.top], [innerWidth, innerHeight]]);
+            this.sankey.extent([[defaultMarginLeft, defaultMarginOthers], [newWidth - defaultMarginOthers, newHeight - defaultMarginOthers]]);
             this.sankey.size([innerWidth, innerHeight]);
+            console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight, "Inner W/H:", innerWidth, innerHeight);
             
-            // Re-render using the last clean input data. The render method will handle D3 processing.
             if (this._cleanDataInput.nodes && this._cleanDataInput.nodes.length > 0) {
-                 this.render(this._cleanDataInput, false); // Pass the clean data
+                 this.render(this._cleanDataInput, false);
             } else {
-                console.log("Sankey resize: No clean data to render.");
+                console.warn("S16 SANKEY LOG: Sankey resize - No clean data to render.");
             }
         }
     };
