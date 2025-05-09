@@ -198,28 +198,57 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
 
             try {
+                // Filter out hidden nodes first
                 const visibleNodes = dataForD3Processing.nodes.filter(n => !n.hidden);
                 const visibleNodeNameSet = new Set(visibleNodes.map(n => n.name));
 
+                // Create a new array for links that will be processed by D3
+                const visibleLinks = [];
+                
+                // First, create a map of node name to array index in visibleNodes
+                const nodeNameToIndexMap = {};
+                visibleNodes.forEach((node, index) => {
+                    nodeNameToIndexMap[node.name] = index;
+                });
+                
+                // Process each link to ensure it's properly formatted for D3
+                dataForD3Processing.links.forEach(link => {
+                    // Get source and target node objects
+                    const sourceNode = typeof link.source === 'object' ? 
+                        link.source : 
+                        dataForD3Processing.nodes[link.source];
+                        
+                    const targetNode = typeof link.target === 'object' ? 
+                        link.target : 
+                        dataForD3Processing.nodes[link.target];
+                    
+                    // Skip this link if either node is hidden
+                    if (!sourceNode || !targetNode || sourceNode.hidden || targetNode.hidden) {
+                        return;
+                    }
+                    
+                    // Make sure these nodes are actually in our visible nodes array
+                    if (!visibleNodeNameSet.has(sourceNode.name) || !visibleNodeNameSet.has(targetNode.name)) {
+                        return;
+                    }
+                    
+                    // Create a link with proper numeric indices that D3 Sankey expects
+                    visibleLinks.push({
+                        source: nodeNameToIndexMap[sourceNode.name],
+                        target: nodeNameToIndexMap[targetNode.name],
+                        value: Math.max(0.0001, link.value),
+                        isEmissions: link.isEmissions
+                    });
+                });
+                
+                // Create the object format that D3 Sankey will use
                 const workingDataForD3Layout = {
                     nodes: visibleNodes,
-                    links: dataForD3Processing.links.map(l => ({
-                        sourceOriginal: typeof l.source === 'object' ? l.source : dataForD3Processing.nodes[l.source],
-                        targetOriginal: typeof l.target === 'object' ? l.target : dataForD3Processing.nodes[l.target],
-                        value: Math.max(0.0001, l.value),
-                        isEmissions: l.isEmissions
-                    })).filter(l => 
-                        l.sourceOriginal && visibleNodeNameSet.has(l.sourceOriginal.name) &&
-                        l.targetOriginal && visibleNodeNameSet.has(l.targetOriginal.name) &&
-                        l.value > 0
-                    ).map(l => ({
-                        source: visibleNodes.indexOf(l.sourceOriginal),
-                        target: visibleNodes.indexOf(l.targetOriginal),
-                        value: l.value,
-                        isEmissions: l.isEmissions
-                    })).filter(l => l.source !== -1 && l.target !== -1)
+                    links: visibleLinks
                 };
                 
+                console.warn("S16 SANKEY LOG: Prepared D3 data with", visibleNodes.length, "nodes and", visibleLinks.length, "links");
+                        
                 if(workingDataForD3Layout.nodes.length === 0) {
                     console.warn("TEUI_SankeyDiagram: No visible nodes to render.");
                     this.svg.selectAll("*").remove();
@@ -232,7 +261,10 @@ window.TEUI.SectionModules.sect16 = (function() {
                 // Perform the D3 Sankey layout
                 this._currentD3Data = this.sankey(workingDataForD3Layout); 
 
-                this._currentD3Data.nodes.forEach(node => { node.displayColor = d3.color(node.color).darker(0.3); });
+                // Apply color to nodes for rendering
+                this._currentD3Data.nodes.forEach(node => { 
+                    node.displayColor = d3.color(node.color).darker(0.3); 
+                });
 
                 const svgWidth = parseFloat(this.svg.style("width")) || (this.sankey.extent()[1][0] - this.sankey.extent()[0][0]);
                 const maxX = d3.max(this._currentD3Data.nodes, d => d.x0) || svgWidth;
@@ -246,6 +278,11 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
         },
         renderLinks(links, isInitialLoad, maxX) {
+            // Call debugLinks at the start
+            if (links.length > 0) {
+                this.debugLinks(links);
+            }
+            
             const link = this.linkGroup.selectAll(".link").data(links, d => `${d.source.index}-${d.target.index}-${d.value}-${d.isEmissions}`);
             link.exit().remove();
             const linkEnter = link.enter().append("path").attr("class", "link")
@@ -386,9 +423,22 @@ window.TEUI.SectionModules.sect16 = (function() {
             let newLeft = mouseX + padding;
             let newTop = mouseY + padding;
 
+            // First, update the content
             this.tooltip.style("display", "block")
-                .html(content); // Set content first to get accurate dimensions
+                .html(content);
             
+            // Force tooltip to be fully visible for diagnosis
+            this.tooltip
+                .style("position", "fixed")
+                .style("background", "rgba(255, 255, 255, 0.98)")
+                .style("border", "1px solid #ddd")
+                .style("border-radius", "4px")
+                .style("box-shadow", "0 4px 8px rgba(0,0,0,0.3)")
+                .style("padding", "12px")
+                .style("z-index", "9999")
+                .style("max-width", "300px")
+                .style("pointer-events", "none");
+        
             // Set position after content to allow tooltip dimensions to be accurate
             this.tooltip.style("left", `${newLeft}px`)
                 .style("top", `${newTop}px`);
@@ -529,6 +579,31 @@ window.TEUI.SectionModules.sect16 = (function() {
                  this.render(this._cleanDataInput, false);
             } else {
                 console.warn("S16 SANKEY LOG: Sankey resize - No clean data to render.");
+            }
+        },
+        debugLinks(links) {
+            if (!links || links.length === 0) {
+                console.warn("S16 SANKEY DEBUG: No links to debug");
+                return;
+            }
+            
+            // Log some sample links with their values and paths
+            console.warn("S16 SANKEY DEBUG: Examining D3 link rendering...");
+            
+            // Take at most 5 links to examine
+            const samplesToExamine = Math.min(5, links.length);
+            for (let i = 0; i < samplesToExamine; i++) {
+                const link = links[i];
+                
+                console.warn(`S16 SANKEY DEBUG: Link ${i+1}/${samplesToExamine}:`, {
+                    source: link.source.name,
+                    target: link.target.name,
+                    value: link.value,
+                    width: link.width, // D3 sankey sets this during layout
+                    y0: link.y0, // Source y-position
+                    y1: link.y1, // Target y-position
+                    path: d3.sankeyLinkHorizontal()(link) // The actual SVG path 
+                });
             }
         }
     };
@@ -809,16 +884,16 @@ window.TEUI.SectionModules.sect16 = (function() {
                     nodeWidthMultiplier: nodeWidthMultiplier,
                     nodePadding: nodePadding,
                     isGasHeating: window.TEUI.StateManager.getValue('d_113') === 'Gas' || 
-                                  window.TEUI.StateManager.getValue('d_113') === 'Oil'
+                                window.TEUI.StateManager.getValue('d_113') === 'Oil'
                 });
                 
                 // Get data and render in fullscreen
                 if (sankeyInstance && sankeyInstance._cleanDataInput) {
                     window.TEUI.sect16.fullscreenSankeyInstance.render(JSON.parse(JSON.stringify(sankeyInstance._cleanDataInput)), true);
                     
-                    // Resize to fit fullscreen container
-                    const fullscreenWidth = fullscreenContainer.clientWidth - 40; // Account for padding
-                    const fullscreenHeight = fullscreenContainer.clientHeight - 70; // Account for controls and padding
+                    // Resize to fit fullscreen container - wider margins to fit better
+                    const fullscreenWidth = fullscreenContainer.clientWidth - 60; // More padding
+                    const fullscreenHeight = fullscreenContainer.clientHeight - 80; // More padding for controls
                     window.TEUI.sect16.fullscreenSankeyInstance.resize(fullscreenWidth, fullscreenHeight);
                 } else {
                     console.warn("S16 LOG: No Sankey data available for fullscreen display");
@@ -884,7 +959,13 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (fullscreenWidthSlider) {
                 fullscreenWidthSlider.addEventListener('input', function() {
                     nodeWidthMultiplier = parseInt(this.value) / 100;
-                    if (fullscreenWidthValueText) fullscreenWidthValueText.textContent = `${this.value}%`;
+                    
+                    // Use the helper for the fullscreen width value text
+                    const fullscreenWidthValueText = getFullscreenWidthValueText();
+                    if (fullscreenWidthValueText) {
+                        fullscreenWidthValueText.textContent = `${this.value}%`;
+                    }
+                    
                     if (widthSlider) widthSlider.value = this.value;
                     if (widthValueText) widthValueText.textContent = `${this.value}%`;
                     
@@ -1213,3 +1294,8 @@ window.TEUI.SectionModules.sect16 = (function() {
 
 // The teui-rendering-complete listener is also likely not needed for S16 specific logic.
 // document.addEventListener('teui-rendering-complete', function() { ... }); 
+
+// Add this helper function outside of initializeEventHandlers to fix fullscreen slider value text reference
+function getFullscreenWidthValueText() {
+    return document.querySelector('#s16FullscreenWidthToggle span');
+} 
