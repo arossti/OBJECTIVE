@@ -25,7 +25,10 @@
 
 **Primary Outstanding Tasks & Refinements:**
 1.  **Tooltip Visibility:** Resolve why tooltips are not visually appearing despite event logs indicating they are firing and have content. This is the highest priority graphics issue.
-2.  **Link Width Accuracy:** Complete and verify all data mappings in `linkIdToTeuiField` within `fetchDataAndRenderSankey()` for remaining flows (especially TEL components, e.g., `i_85` to `i_103`, and other building losses like `m_121`, `j_53`, `i_82`). This is crucial for link widths to accurately reflect data.
+2.  **Link Width Accuracy & Verification:** 
+    *   **Current Status:** Many links may appear as very thin threads. This is likely due to the corresponding data values in `TEUI.StateManager` being zero, minimal, or not yet fully mapped for all TEL components and other losses.
+    *   **Action:** Added detailed `console.warn` logging within `fetchDataAndRenderSankey` to output the `link.id`, its mapped `teuiFieldId`, the `rawValueFromState`, and the final `assignedLinkValue`. This will help verify if thin links are due to data in `StateManager` or mapping issues.
+    *   **Next Step:** After testing with these logs, systematically review any links that should have significant flow but don't, and verify their `teuiFieldId` mapping and the data present in `TEUI.StateManager` for those fields.
 3.  **Canvas Height & Fitting:** Further refine how the diagram fits the constrained 500px height, especially during browser resizing, to prevent unwanted vertical expansion or ensure content squishes appropriately. Consider borrowing responsive techniques from Section 17.
 4.  **CSS Fidelity:** Conduct a thorough review and integration of all necessary Sankey-specific CSS from the original `SANKEY3035.html` into `4011-styles.css` (scoped to Section 16) to ensure colors, fonts, and overall visual appearance faithfully match the original design.
 5.  **Fullscreen Feature:** Plan and implement a fullscreen toggle button and functionality, similar to Section 17, for improved presentation capability.

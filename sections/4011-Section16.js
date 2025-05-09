@@ -858,12 +858,13 @@ window.TEUI.SectionModules.sect16 = (function() {
             currentSankeyData.links.forEach(link => {
                 let teuiFieldId = linkIdToTeuiField[link.id];
                 let valueToAssign = 0.0001;
+                let rawValueFromState = null; // For logging
 
                 if (link.id === "HeatPumpSourceToTED") {
                     if (isPrimaryHeatPump) {
-                        const rawValue = teuiState.getValue(linkIdToTeuiField[link.id]);
-                        if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
-                            const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                        rawValueFromState = teuiState.getValue(linkIdToTeuiField[link.id]);
+                        if (rawValueFromState !== null && rawValueFromState !== undefined && String(rawValueFromState).trim() !== "") {
+                            const numericValue = parseFloat(String(rawValueFromState).replace(/,/g, ''));
                             valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
                         }
                     } else {
@@ -875,18 +876,18 @@ window.TEUI.SectionModules.sect16 = (function() {
                     } else {
                         teuiFieldId = 'd_114';
                     }
-                    // Value will be fetched by the common logic below using the updated teuiFieldId
+                    // rawValueFromState will be fetched in the common block below
                 } else if (link.id === "BuildingToGasExhaust") {
                     valueToAssign = 0.0001;
-                    teuiFieldId = null; // Mark as handled, no general fetch needed
+                    teuiFieldId = null;
                 }
 
-                if (teuiFieldId) { // This check now correctly applies after teuiFieldId might have been changed
+                if (teuiFieldId) {
                     if (link.id === "TEDToGasExhaust") {
                         if (isPrimaryGasOrOil) {
-                            const rawValue = teuiState.getValue(teuiFieldId); 
-                            if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
-                                const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                            rawValueFromState = teuiState.getValue(teuiFieldId); 
+                            if (rawValueFromState !== null && rawValueFromState !== undefined && String(rawValueFromState).trim() !== "") {
+                                const numericValue = parseFloat(String(rawValueFromState).replace(/,/g, ''));
                                 valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
                             }
                         } else {
@@ -894,23 +895,26 @@ window.TEUI.SectionModules.sect16 = (function() {
                         }
                     } else if (link.id === "SHWToGasExhaust") {
                         if (isDhwGasOrOil) {
-                            const rawValue = teuiState.getValue(teuiFieldId); 
-                            if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
-                                const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                            rawValueFromState = teuiState.getValue(teuiFieldId); 
+                            if (rawValueFromState !== null && rawValueFromState !== undefined && String(rawValueFromState).trim() !== "") {
+                                const numericValue = parseFloat(String(rawValueFromState).replace(/,/g, ''));
                                 valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
                             }
                         } else {
                             valueToAssign = 0.0001;
                         }
-                    } else if (link.id !== "HeatPumpSourceToTED") { // Avoid re-processing if already handled explicitly above
-                        const rawValue = teuiState.getValue(teuiFieldId);
-                        if (rawValue !== null && rawValue !== undefined && String(rawValue).trim() !== "") {
-                            const numericValue = parseFloat(String(rawValue).replace(/,/g, ''));
+                    } else if (link.id !== "HeatPumpSourceToTED") { // Avoid re-fetching if already handled by HeatPumpSourceToTED
+                        rawValueFromState = teuiState.getValue(teuiFieldId);
+                        if (rawValueFromState !== null && rawValueFromState !== undefined && String(rawValueFromState).trim() !== "") {
+                            const numericValue = parseFloat(String(rawValueFromState).replace(/,/g, ''));
                             valueToAssign = isNaN(numericValue) ? 0.0001 : Math.max(0.0001, numericValue);
                         }
-                    }
+                    } // Note: HeatPumpElecToTED will fall into the generic fetch if teuiFieldId was updated
                 } 
                 link.value = valueToAssign;
+                if (link.id) { // Log only for links that have an ID we are trying to map
+                    console.warn(`S16 LINK LOG: ID: ${link.id}, TEUI Field: ${teuiFieldId || 'N/A'}, Raw State Value: '${rawValueFromState}', Assigned Link Value: ${link.value}`);
+                }
             });
             
             const gasExhaustNode = currentSankeyData.nodes.find(n => n.name === "GasExhaust");
@@ -918,18 +922,15 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         } else {
             console.warn("Section 16: TEUI.StateManager not available for data fetching. Sankey will show template defaults.");
-            // Variables like isPrimaryGasOrOil will use their default false values, so GasExhaust node should be hidden.
             const gasExhaustNode = currentSankeyData.nodes.find(n => n.name === "GasExhaust");
             if (gasExhaustNode) gasExhaustNode.hidden = true;
         }
 
-        // isPrimaryGasOrOil is now defined in this scope
         sankeyInstance.updateSankeyConfig({
             showEmissions: showEmissions,
             nodeWidthMultiplier: nodeWidthMultiplier,
             nodePadding: nodePadding,
-            isGasHeating: isPrimaryGasOrOil, // Used by SankeyDiagram's internal emission logic (if any remains)
-            // gridIntensity, gasIntensity, gasEnergyDensity are now handled by TEUI_SankeyDiagram.updateEmissionsFlows directly from StateManager
+            isGasHeating: isPrimaryGasOrOil
         });
 
         const wrapper = document.getElementById('sankeySection16ContainerWrapper');

@@ -366,7 +366,7 @@ button:hover {
 }
 
 #statusMessage {
-   font-size: var(--font-size-sm);
+  font-size: var(--font-size-sm);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius);
 }
@@ -602,13 +602,13 @@ button:hover {
   <span style="margin-right: 10px;">[Show/Hide Emissions Button Placeholder]</span>
   <span style="margin-right: 10px;">[Toggle Node Spacing Button Placeholder]</span>
   <span>[Node Width Slider Placeholder]</span>
-</div>
+  </div>
 
 <div class="diagram-container-s16" style="width: 100%; overflow-x: auto; padding-top: 10px;">
   <svg id="sankeyS16" height="700" width="100%"></svg> <!-- Adjusted height, width handled by container -->
   <div id="tooltipS16" class="tooltip" style="display: none;"></div>
-</div>
-
+    </div>
+	
 <script defer>
 	// Script Block 1: Core Configuration and Initial Data Structure (Stripped Down)
 	
@@ -632,10 +632,10 @@ button:hover {
 	  },
 	  validateNodeReferences(links, nodes) {
 	    return links.every(link => {
-	      const sourceValid = typeof link.source === 'number' ?
+	      const sourceValid = typeof link.source === 'number' ? 
 	        link.source >= 0 && link.source < nodes.length :
 	        nodes.includes(link.source);
-	      const targetValid = typeof link.target === 'number' ?
+	      const targetValid = typeof link.target === 'number' ? 
 	        link.target >= 0 && link.target < nodes.length :
 	        nodes.includes(link.target);
 	      return sourceValid && targetValid;
@@ -722,10 +722,10 @@ button:hover {
 </script>
 
 <!-- Script Block 5: D3 Visualization System - KEPT -->
-<script defer>
-	const SankeyDiagram = { 
+	<script defer>
+	const SankeyDiagram = {
         // ... existing SankeyDiagram object content ... 
-    };
+	};
 </script>
 
 </body>
