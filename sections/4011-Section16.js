@@ -381,20 +381,6 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         showNodeTooltip(event, d) {
-            // Create a simple formatter function as fallback
-            const formatNumber = value => {
-                // Check if window.TEUI.formatNumber exists
-                if (window.TEUI && typeof window.TEUI.formatNumber === 'function') {
-                    return window.TEUI.formatNumber(value, 'number-2dp');
-                }
-                else {
-                    return parseFloat(value).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
-            };
-            
             // Create tooltip content
             const nodeName = d.name;
             const incoming = d.targetLinks || [];
@@ -402,13 +388,13 @@ window.TEUI.SectionModules.sect16 = (function() {
             const totalValue = d.value || incoming.reduce((sum, link) => sum + link.value, 0);
             
             let content = `<div class="tooltip-title">${nodeName}</div>`;
-            content += `<div>Total Flow: ${formatNumber(totalValue)} kWh</div>`;
+            content += `<div>Total Flow: ${window.TEUI.formatNumber(totalValue, 'number-2dp-comma')} kWh</div>`;
             
             if (incoming.length > 0) {
                 content += `<div style="margin-top:8px;"><strong>Incoming:</strong></div>`;
                 incoming.forEach(link => {
                     const sourceName = typeof link.source === 'object' ? link.source.name : 'Unknown';
-                    content += `<div>From ${sourceName}: ${formatNumber(link.value)} kWh</div>`;
+                    content += `<div>From ${sourceName}: ${window.TEUI.formatNumber(link.value, 'number-2dp-comma')} kWh</div>`;
                 });
             }
             
@@ -416,7 +402,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 content += `<div style="margin-top:8px;"><strong>Outgoing:</strong></div>`;
                 outgoing.forEach(link => {
                     const targetName = typeof link.target === 'object' ? link.target.name : 'Unknown';
-                    content += `<div>To ${targetName}: ${formatNumber(link.value)} kWh</div>`;
+                    content += `<div>To ${targetName}: ${window.TEUI.formatNumber(link.value, 'number-2dp-comma')} kWh</div>`;
                 });
             }
             
@@ -424,33 +410,13 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         showLinkTooltip(event, d) {
-            // Create a simple formatter function as fallback
-            const formatNumber = value => {
-                // Check if window.TEUI.formatNumber exists
-                if (window.TEUI && typeof window.TEUI.formatNumber === 'function') {
-                    return window.TEUI.formatNumber(value, 'number-2dp');
-                }
-                // If StateManager exists but no getNumberFormat
-                else if (window.TEUI && window.TEUI.StateManager) {
-                    return parseFloat(value).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
-                // Fallback to basic formatting
-                return parseFloat(value).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            };
-            
             // Determine source and target names
             const sourceName = typeof d.source === 'object' ? d.source.name : 'Unknown';
             const targetName = typeof d.target === 'object' ? d.target.name : 'Unknown';
             
             // Create tooltip content
             const value = d.value;
-            const formattedValue = formatNumber(value);
+            const formattedValue = window.TEUI.formatNumber(value, 'number-2dp-comma');
             
             const content = `
                 <div class="tooltip-title">${sourceName} → ${targetName}</div>
@@ -469,13 +435,11 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (originalNodeName.includes("Emissions")) {
                 const totalEmissions = incoming.reduce((sum, link) => sum + link.value, 0);
                 const mtValue = (totalEmissions / 1000000);
-                const formattedMTValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ?
-                    window.TEUI.formatNumber(mtValue, 'number-2dp') : mtValue.toFixed(2);
+                const formattedMTValue = window.TEUI.formatNumber(mtValue, 'number-2dp-comma');
                 const scope = originalNodeName.includes("1") ? "Direct emissions from gas combustion" : "Indirect emissions from electricity use";
                 html += `<div class="tooltip-value">Total: ${formattedMTValue} MT CO2e<br><small>${scope}</small></div>`;
             } else {
-                const formattedNodeValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ?
-                    window.TEUI.formatNumber(totalNodeValue, 'number-2dp') : totalNodeValue.toFixed(2);
+                const formattedNodeValue = window.TEUI.formatNumber(totalNodeValue, 'number-2dp-comma');
                 html += `<div class="tooltip-value">Total Value: ${formattedNodeValue} kWh</div>`;
             }
             if (incoming.length > 0) html += this.buildFlowSectionTooltip("Incoming", incoming, true, true);
@@ -488,8 +452,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             const targetName = d.target.name;
             const value = d.value;
             const isEmissionsLink = d.isEmissions || (targetName && targetName.includes("Emissions"));
-            const formattedValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ?
-                window.TEUI.formatNumber(value, 'number-2dp') : value.toFixed(2);
+            const formattedValue = window.TEUI.formatNumber(value, 'number-2dp-comma');
             return `<div class="tooltip-title">Flow Details</div><div class="tooltip-flow"><span>From: ${sourceName}</span></div><div class="tooltip-flow"><span>To: ${targetName}</span></div><div class="tooltip-flow"><span>Value: ${isEmissionsLink ? `${formattedValue} grams CO2e` : `${formattedValue} kWh`}</span></div>`;
         }
 
@@ -502,8 +465,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                 const value = flow.value;
                 const targetNodeForEmissionCheck = isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._cleanDataInput.nodes[flow.target].name : flow.target.name);
                 const isEmissionsLink = flow.isEmissions || (targetNodeForEmissionCheck && targetNodeForEmissionCheck.includes("Emissions"));
-                const formattedValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ? window.TEUI.formatNumber(value, 'number-2dp') : value.toFixed(2);
-                const formattedKgValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ? window.TEUI.formatNumber(value / 1000, 'number-2dp') : (value / 1000).toFixed(2);
+                const formattedValue = window.TEUI.formatNumber(value, 'number-2dp-comma');
+                const formattedKgValue = window.TEUI.formatNumber(value / 1000, 'number-2dp-comma');
                 html += `<div class="tooltip-flow"><span style="width: 160px;">${nodeName}</span><span>${isEmissionsLink ? `${formattedKgValue} kg CO2e` : `${formattedValue} kWh`}</span></div>`;
             });
             return html;
@@ -513,8 +476,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (node.name.includes("Emissions")) {
                 const totalEmissions = node.targetLinks?.reduce((sum, link) => sum + link.value, 0) || 0;
                 const mtValue = (totalEmissions / 1000000);
-                const formattedMTValue = typeof window.TEUI !== 'undefined' && window.TEUI.formatNumber ?
-                    window.TEUI.formatNumber(mtValue, 'number-2dp') : mtValue.toFixed(2);
+                const formattedMTValue = window.TEUI.formatNumber(mtValue, 'number-2dp-comma');
                 return `${node.name} (${formattedMTValue} MT)`;
             }
             return node.name;

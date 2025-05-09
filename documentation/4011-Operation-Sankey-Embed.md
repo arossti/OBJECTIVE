@@ -24,6 +24,8 @@
     *   Addressed `JSON.stringify` cyclic structure error in rendering/resize.
     *   Diagram container height constrained to `500px`.
     *   Tooltip positioning logic refined to use `d3.pointer` and container-relative boundary checks.
+    *   Resolved errors from negative SVG width/height in `resize()` by ensuring minimum dimensions.
+*   **Number Formatting:** Tooltip and node label number formatting updated to use the global `window.TEUI.formatNumber(value, 'number-2dp-comma')` for better consistency.
 *   **Guiding Principle Reinforced:** Section 16 acts as a **visualizer/reader**.
 
 **Primary Outstanding Tasks & Refinements:**
@@ -39,17 +41,26 @@
     *   **Status:** Major links appear to have values, but some are still thin threads.
     *   **Next Step:** Use the `S16 LINK LOG` messages. Systematically review all links in `SANKEY_STRUCTURE_TEMPLATE` against the logs. For any link that is unexpectedly thin, verify:
         *   Its `teuiFieldId` mapping in `linkIdToTeuiField` is correct.
-        *   The corresponding field in `TEUI.StateManager` contains the expected non-minimal data. This is crucial for TEL components (`i_85`-`i_103`) and other building losses (`m_121`, `j_53`, `i_82`).
-3.  **Canvas Height & Fitting (Fine-tuning):**
+        *   The corresponding field in `TEUI.StateManager` contains the expected non-minimal data (most current values). This is crucial for TEL components (`i_85`-`i_103`) and other building losses (`m_121`, `j_53`, `i_82`).
+3.  **Emissions Unit Display:**
+    *   **Status:** Emissions values in tooltips and node labels are formatted using `number-2dp-comma`.
+    *   **Next Step:** Review all instances where emissions are displayed (grams, kg, MT CO2e). Ensure the correct unit is displayed and that the raw value passed to `formatNumber` is appropriate for that unit (e.g., actual gram value if "grams CO2e" is shown, not a kWh value). Adjust calls to `window.TEUI.formatNumber` as needed.
+4.  **Animation Timing:**
+    *   **Status:** Links and nodes appear without the sequenced animation present in `SANKEY3035ORIGINAL.html`.
+    *   **Next Step:** Review the animation/transition logic in `SANKEY3035ORIGINAL.html` (likely involving `d3.transition().delay(...)`) and implement similar sequencing for link and node rendering in `Section16.js` for improved visual appeal.
+5.  **Canvas Height & Fitting (Fine-tuning):**
     *   **Status:** Initial height constrained to `500px`. Behavior when browser width is significantly reduced needs more testing to ensure it doesn't grow excessively tall.
     *   **Next Step:** Test responsive behavior. If issues persist, explore techniques from Section 17 or adjust SVG viewbox/preserveAspectRatio attributes if necessary.
-4.  **CSS Fidelity (General Aesthetics):**
+6.  **CSS Fidelity (General Aesthetics):**
     *   **Status:** Basic styles ported.
     *   **Next Step:** Conduct a thorough review of `4011-styles.css` (Section 16 part) against the original Sankey visual design. Ensure all node/link colors, fonts, label appearances, and overall visual styling faithfully match the original, well-received design. This includes verifying CSS variable usage or direct hex codes.
-5.  **Fullscreen Feature (Enhancement):**
+7.  **UI Control Styling (Future Edit):**
+    *   **Status:** Current buttons use default TEUI styling.
+    *   **Next Step (Future):** Update the styling of buttons in Section 16 (Activate, Emissions, Spacing, Fullscreen) to match the visual style of buttons in Section 17 for UI consistency across visualization sections.
+8.  **Fullscreen Feature (Enhancement):**
     *   **Status:** Not started.
     *   **Next Step:** Plan and implement a fullscreen toggle button and functionality, drawing inspiration from Section 17, for improved presentation capability.
-6.  **Comprehensive Testing:** After the above, conduct thorough testing of all functionalities, data accuracy with various TEUI input states, UI control interactions, and responsiveness across different browsers and scenarios.
+9.  **Comprehensive Testing:** After the above, conduct thorough testing of all functionalities, data accuracy with various TEUI input states, UI control interactions, and responsiveness across different browsers and scenarios.
 
 ## 1. Objective
 
