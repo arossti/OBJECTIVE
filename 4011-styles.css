@@ -1609,3 +1609,127 @@ body.reference-mode #keyValues .key-values-table tr {
 .dependency-graph-svg-wrapper:-ms-fullscreen .node circle[style*="drop-shadow(0px 0px"] {
     filter: drop-shadow(0px 0px 20px rgba(255,82,82,1.0)) !important; /* Even stronger glow in fullscreen */
 }
+
+/* ==========================================================================
+   SECTION 16 - SANKEY DIAGRAM STYLES
+   ========================================================================== */
+
+/* Basic Sankey Element Styles (ported and scoped/simplified) */
+#sankeySection16Container .node {
+  stroke: #000;
+  stroke-width: 1px;
+  cursor: pointer;
+}
+
+#sankeySection16Container .link {
+  fill: none;
+  stroke-opacity: 0.7;
+  cursor: pointer;
+}
+
+#sankeySection16Container .link:hover {
+  stroke-opacity: 0.9;
+}
+
+#sankeySection16Container .node-label {
+  font-size: 12px; /* Corresponds to --font-size-sm */
+  fill: black;
+  pointer-events: none;
+  font-weight: 500;
+  font-family: Arial, sans-serif; /* Ensure a common font */
+}
+
+/* Tooltip for Section 16 Sankey */
+#sankeySection16Tooltip {
+  position: absolute; /* Will be positioned by JS */
+  padding: 12px; /* Corresponds to --spacing-md */
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #ddd; /* Corresponds to --border-color */
+  border-radius: 4px; /* Corresponds to --border-radius */
+  pointer-events: none;
+  font-size: 12px; /* Corresponds to --font-size-sm */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Corresponds to --box-shadow */
+  max-width: 300px;
+  line-height: 1.4;
+  z-index: 1070; /* Ensure it's above most TEUI elements, but below modals if any */
+  font-family: Arial, sans-serif;
+}
+
+#sankeySection16Tooltip .tooltip-title {
+  font-weight: 600;
+  margin-bottom: 8px; /* Corresponds to --spacing-sm */
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+#sankeySection16Tooltip .tooltip-value {
+  color: #666; /* Corresponds to --text-muted */
+}
+
+#sankeySection16Tooltip .tooltip-flow {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0; /* Corresponds to --spacing-xs */
+}
+
+/* Controls for Section 16 - basic styling if not using .teui-button */
+#s16ControlsContainer button,
+#s16ControlsContainer .s16-width-toggle {
+  padding: 6px 12px;
+  cursor: pointer;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  margin-right: 8px;
+  font-family: Arial, sans-serif;
+}
+
+#s16ControlsContainer button:hover {
+  background-color: #e5e5e5;
+}
+
+#s16ControlsContainer .s16-width-toggle {
+  padding: 3px 12px; /* Adjusted padding */
+  height: auto; /* Allow content to define height */
+  background-color: #f8f9fa; /* Corresponds to --background-light */
+}
+
+#s16ControlsContainer .s16-width-toggle label {
+  font-size: 12px;
+  color: #333; /* Corresponds to --text-dark */
+  margin-right: 5px;
+}
+
+#s16WidthMultiplierSlider {
+  height: 20px;
+  margin: 0;
+  width: 100px; /* Slightly wider for easier use */
+  min-width: 80px;
+  accent-color: #666; /* Corresponds to --text-muted */
+  vertical-align: middle;
+}
+
+#s16WidthValueText {
+   font-size: 12px;
+   vertical-align: middle;
+   min-width: 35px; /* Ensure space for 100% */
+   display: inline-block;
+   text-align: right;
+}
+
+/* Ensuring the SVG container itself has a defined look if needed */
+#sankeySection16ContainerWrapper {
+    /* Styles already defined in getLayout (background, border, min-height) */
+    /* Add any other necessary styles here if needed */
+    overflow: hidden; /* To contain the SVG if it tries to overflow due to D3 calcs */
+}
+
+#sankeySection16Container {
+    display: block; /* Good practice for SVG */
+}

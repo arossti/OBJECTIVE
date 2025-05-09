@@ -547,13 +547,37 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         if (activateBtn) {
             activateBtn.addEventListener('click', function() {
+                if (!sankeyInstance) {
+                    console.error("Section 16: TEUI_SankeyDiagram object (sankeyInstance) is not available. Cannot activate.");
+                    if (loadingPlaceholder) loadingPlaceholder.textContent = "Error: Sankey Diagram component failed to load.";
+                    return;
+                }
+
+                // Initialize Sankey on first activation if not already done
+                if (!sankeyInstance.svg) { // Check if .initialize() has been effectively run (svg would be set)
+                    const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
+                    if (svgWrapper) {
+                        sankeyInstance.initialize(
+                            '#sankeySection16Container', 
+                            '#sankeySection16Tooltip', 
+                            [[1,1], [svgWrapper.clientWidth > 50 ? svgWrapper.clientWidth - 2 : 1098, svgWrapper.clientHeight > 50 ? svgWrapper.clientHeight -2 : 698]]
+                        );
+                        console.log("Section 16: TEUI_SankeyDiagram initialized on activation.");
+                    } else {
+                        console.error("Section 16: SVG wrapper not found during activation. Cannot initialize Sankey.");
+                        if (loadingPlaceholder) loadingPlaceholder.textContent = "Error: Sankey container not found.";
+                        return;
+                    }
+                }
+
                 isActive = true;
                 if (loadingPlaceholder) loadingPlaceholder.style.display = 'none';
                 if (emissionsBtn) emissionsBtn.style.display = 'inline-flex';
                 if (spacingBtn) spacingBtn.style.display = 'inline-flex';
                 if (widthToggleContainer) widthToggleContainer.style.display = 'inline-flex';
+                
                 console.log("Section 16: Activate button clicked.");
-                fetchDataAndRenderSankey(false);
+                fetchDataAndRenderSankey(false); 
             });
         }
 
@@ -594,31 +618,30 @@ window.TEUI.SectionModules.sect16 = (function() {
 
     function onSectionRendered() {
         console.log("Section 16: Rendered.");
+        // Assign the TEUI_SankeyDiagram object to sankeyInstance if not already assigned.
+        // This ensures sankeyInstance is ready for the activate button.
+        if (!sankeyInstance && typeof TEUI_SankeyDiagram !== 'undefined') {
+            sankeyInstance = TEUI_SankeyDiagram; // Directly use the object defined in this IIFE
+            console.log("Section 16: sankeyInstance assigned.");
+        } else if (!sankeyInstance) {
+             console.error("Section 16: TEUI_SankeyDiagram object is undefined. Cannot assign to sankeyInstance.");
+        }
         
+        // Ensure controls that depend on activation are hidden initially
         const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
         const spacingBtn = document.getElementById('s16ToggleSpacingBtn');
         const widthToggleContainer = document.getElementById('s16WidthToggleContainer');
+        const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
+
         if (emissionsBtn) emissionsBtn.style.display = 'none';
         if (spacingBtn) spacingBtn.style.display = 'none';
         if (widthToggleContainer) widthToggleContainer.style.display = 'none';
-        
-        const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
-        if (sankeyInstance && svgWrapper) {
-            sankeyInstance.initialize(
-                '#sankeySection16Container', 
-                '#sankeySection16Tooltip', 
-                [[1,1], [svgWrapper.clientWidth > 50 ? svgWrapper.clientWidth - 2 : 1098, svgWrapper.clientHeight > 50 ? svgWrapper.clientHeight -2 : 698]]
-            );
-            console.log("Section 16: TEUI_SankeyDiagram object re-initialized for section render.");
-        } else {
-            console.error("Section 16: Sankey instance or SVG wrapper not found for initialization.");
+        if (loadingPlaceholder) {
+            loadingPlaceholder.style.display = 'block'; // Ensure placeholder is visible initially
+            loadingPlaceholder.textContent = "Sankey diagram not active. Click 'Activate/Refresh Sankey' to load.";
         }
 
-        // Add StateManager listeners for dynamic updates when active.
-        // Example: if (window.TEUI && window.TEUI.StateManager) {
-        //     window.TEUI.StateManager.addListener('d_27', handleStateChange); // Electricity use
-        //     // ... add more listeners for relevant fields ...
-        // }
+        // DO NOT initialize sankeyInstance here. It will be done on activation.
     }
 
     function handleStateChange(newValue) {

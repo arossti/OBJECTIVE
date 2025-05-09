@@ -491,7 +491,7 @@ The following table provides the current implementation status of all calculator
 | 13 | Mechanical Loads | 4011-Section13.js | ✅ Complete | HVAC systems and loads |
 | 14 | TEDI Summary | 4011-Section14.js | ✅ Complete | Thermal Energy Demand Intensity summary |
 | 15 | TEUI Summary | 4011-Section15.js | ✅ Complete | Total Energy Use Intensity summary |
-| 16 | Sankey Diagram | (Pending) | 🔄 Pending | Energy flow visualization |
+| 16 | Sankey Diagram | 4011-Section16.js | 🚧 In Progress | Core D3.js Sankey visualization integrated. Fetches data from TEUI StateManager to display energy flows and (optionally) total emissions. Awaiting final data mapping verification and full CSS integration. |
 | 17 | Dependency Diagram | (Pending) | 🔄 Pending | Calculation dependencies visualization |
 | 18 | Notes | (Partial) | 🔄 Partial | User notes and documentation |
 
@@ -877,3 +877,4 @@ The modular architecture enables easier maintenance, extension, and validation w
 
 ---
 *Document maintained with assistance from Cognizant Architect Gemini ("Cosmo") - May 2025*
+*Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*

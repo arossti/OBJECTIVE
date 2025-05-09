@@ -1,4 +1,29 @@
-# Workplan: Embedding Sankey Diagram into TEUI 4.011 - Section 16
+# Workplan: Embedding Sankey Diagram into TEUI 4.0.11 - Section 16
+
+## 0. Progress Update (As of Current Session)
+
+*   **Standalone HTML Refactored:** `SANKEY3035.html` has been significantly stripped down, isolating its core D3.js visualization logic, essential CSS, the `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler`. Standalone application shell and data management have been removed.
+*   **Section 16 Scaffolding:** `sections/4011-Section16.js` has been created with the standard TEUI module structure.
+*   **Core Logic Integration:** The `TEUI_SankeyDiagram` object (adapted from `SANKEY3035.html`), `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler` have been successfully integrated into `sections/4011-Section16.js`.
+*   **Layout Defined:** `getLayout()` in `Section16.js` defines the HTML structure for the Sankey container, tooltip, and the simplified UI controls (Activate, Emissions, Spacing, Width).
+*   **Event Handlers Initialized:** Basic event handlers for the UI controls are in place.
+*   **Data Mapping - In Progress:**
+    *   The `fetchDataAndRenderSankey()` function has been implemented to source data from `window.TEUI.StateManager`.
+    *   Mappings for primary energy gain flows, heating system flows (including conditional logic for different fuel types like Heat Pump, Gas, Oil), and direct TEUI exhaust values (`l_115`, `j_54`) are implemented.
+    *   Minimal flow values are standardized to `0.0001`.
+*   **Emission Display - Simplified:**
+    *   The `TEUI_SankeyDiagram.updateEmissionsFlows()` method has been refactored. It no longer calculates emissions.
+    *   It now fetches pre-calculated total annual emissions (kgCO2e/yr) for Electricity (`k_27`), Gas (`k_28`), and Oil (`k_30`) from `TEUI.StateManager`.
+    *   These are converted to grams and linked from a primary source node ("M.2.1.D Energy Input") to the respective E1/E2 Scope emission nodes.
+    *   Wood emissions (`k_31`) are correctly omitted based on LULUCF accounting principles.
+    *   Internal emission calculation factors (`_gridIntensity`, `_gasIntensity`, `_gasEnergyDensity`) have been removed from `TEUI_SankeyDiagram`.
+*   **Guiding Principle Reinforced:** Section 16 acts as a **visualizer/reader** of data calculated by the core TEUI application, not as an independent calculator.
+
+**Outstanding Tasks:**
+*   Final verification of all data mappings in `linkIdToTeuiField` within `fetchDataAndRenderSankey()` against `3037DOM.csv` and TEUI application logic for remaining TEL components and other minor flows.
+*   Integration of Sankey-specific CSS into `4011-styles.css`, ensuring color schemes and visual fidelity are maintained.
+*   Comprehensive testing of all functionalities, data accuracy, UI controls, and responsiveness.
+*   Reviewing the source node for aggregated emission links if further refinement is desired beyond the current "M.2.1.D Energy Input" approach.
 
 ## 1. Objective
 
