@@ -327,13 +327,14 @@
                 </div>
 
                 <!-- Section 16: Sankey Diagram -->
-                <div id="sankeyDiagram" class="section">
+                <div id="sankeyDiagram" class="section" data-section-id="section16">
                     <div class="section-header">
                         <span class="section-icon"><i class="bi bi-sliders2"></i></span>
                         SECTION 16. Sankey Diagram
                     </div>
-                    <div class="section-content">
-                        <div data-render-section="sankeyDiagram"></div>
+                    <div class="section-content"> 
+                        <!-- This is the target for Section16.js to inject its dynamic content -->
+                        <div id="section16ContentTarget" style="width: 100%;"></div>
                     </div>
                 </div>
 

@@ -5,6 +5,7 @@ window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
 window.TEUI.sect16 = {}; // Section-specific namespace
+window.TEUI.sect16.initialized = false; // Flag for idempotent initialization
 
 window.TEUI.SectionModules.sect16 = (function() {
     "use strict";
@@ -62,12 +63,12 @@ window.TEUI.SectionModules.sect16 = (function() {
             { name: "B.8.2 Windows E", color: "#F9DF4B" },   // [17]
             { name: "B.8.3 Windows S", color: "#F9DF4B" },   // [18]
             { name: "B.8.4 Windows W", color: "#F9DF4B" },   // [19]
-            { name: "B.9 Walls Below Grade", color: "#8FAFA6" },// [20]
-            { name: "B.10 Floor Slab", color: "#8FAFA6" },     // [21]
+            { name: "B.9 Walls Below Grade", color: "#8FAFA6" },// [20] // i_94, for future cooling mode, value might be negative from K column
+            { name: "B.10 Floor Slab", color: "#8FAFA6" },     // [21] // i_95, for future cooling mode, value might be negative from K column
             { name: "B.12 TB Penalty", color: "#8FAFA6" },     // [22]
             { name: "B.18.3 Air Leakage", color: "#A4D3ED" },  // [23]
             { name: "V.2.3 Unrecovered Ventilation", color: "#A5D3ED" },// [24]
-            { name: "W.2.W SHW Wasted", color: "#BE343D" },    // [25] // Note: Original HTML had W.2.2 - DOM has W.2.W - check mapping
+            { name: "W.2.W SHW Wasted", color: "#BE343D" },    // [25] 
             { name: "G.5 Unusable Gains", color: "#FFA500" },  // [26]
             { name: "GasExhaust", color: "#BE343D", hidden: true }, // [27]
             { name: "Total Envelope Losses", color: "#8FAFA6" },// [28]
@@ -77,38 +78,38 @@ window.TEUI.SectionModules.sect16 = (function() {
             { name: "G.8.5 Skylights", color: "#F9DF4B" }     // [32]
         ],
         links: [
-            { source: 1, target: 0, value: 0.001, id: "OccupantGains" },
-            { source: 2, target: 0, value: 0.001, id: "EquipmentGains" },
-            { source: 3, target: 0, value: 0.001, id: "SHWNetDemand" },
-            { source: 4, target: 0, value: 0.001, id: "WinNorthGains" },
-            { source: 5, target: 0, value: 0.001, id: "WinEastGains" },
-            { source: 6, target: 0, value: 0.001, id: "WinSouthGains" },
-            { source: 7, target: 0, value: 0.001, id: "WinWestGains" },
-            { source: 8, target: 0, value: 0.001, id: "DoorGains" },
-            { source: 32, target: 0, value: 0.001, id: "SkylightGains" },
-            { source: 9, target: 11, value: 0.001, id: "HeatPumpSourceToTED" },
-            { source: 10, target: 11, value: 0.001, id: "HeatPumpElecToTED" },
-            { source: 11, target: 0, value: 0.001, id: "TEDToBuilding" },
-            { source: 28, target: 12, value: 0.001, id: "TELToRoof" },
-            { source: 28, target: 13, value: 0.001, id: "TELToWallAG" },
-            { source: 28, target: 14, value: 0.001, id: "TELToFloorExp" },
-            { source: 28, target: 15, value: 0.001, id: "TELToDoor" },
-            { source: 28, target: 16, value: 0.001, id: "TELToWinN" },
-            { source: 28, target: 17, value: 0.001, id: "TELToWinE" },
-            { source: 28, target: 18, value: 0.001, id: "TELToWinS" },
-            { source: 28, target: 19, value: 0.001, id: "TELToWinW" },
-            { source: 28, target: 31, value: 0.001, id: "TELToSkylight" },
-            { source: 28, target: 20, value: 0.001, id: "TELToWallBG" },
-            { source: 28, target: 21, value: 0.001, id: "TELToSlab" },
-            { source: 28, target: 22, value: 0.001, id: "TELToTB" },
-            { source: 28, target: 23, value: 0.001, id: "TELToAirLeak" },
-            { source: 0, target: 24, value: 0.001, id: "BuildingToVentLoss" },
-            { source: 0, target: 25, value: 0.001, id: "BuildingToSHWWaste" },
-            { source: 0, target: 26, value: 0.001, id: "BuildingToUnusableGains" },
-            { source: 0, target: 27, value: 0.001, id: "BuildingToGasExhaust" }, // Conditional
-            { source: 0, target: 28, value: 0.001, id: "BuildingToTEL" },
-            { source: 11, target: 27, value: 0.001, id: "TEDToGasExhaust" },    // Conditional
-            { source: 3, target: 27, value: 0.001, id: "SHWToGasExhaust" }       // Conditional
+            { source: 1, target: 0, value: 0.0001, id: "OccupantGains" },
+            { source: 2, target: 0, value: 0.0001, id: "EquipmentGains" },
+            { source: 3, target: 0, value: 0.0001, id: "SHWNetDemand" },
+            { source: 4, target: 0, value: 0.0001, id: "WinNorthGains" },
+            { source: 5, target: 0, value: 0.0001, id: "WinEastGains" },
+            { source: 6, target: 0, value: 0.0001, id: "WinSouthGains" },
+            { source: 7, target: 0, value: 0.0001, id: "WinWestGains" },
+            { source: 8, target: 0, value: 0.0001, id: "DoorGains" },
+            { source: 32, target: 0, value: 0.0001, id: "SkylightGains" },
+            { source: 9, target: 11, value: 0.0001, id: "HeatPumpSourceToTED" },
+            { source: 10, target: 11, value: 0.0001, id: "HeatPumpElecToTED" },
+            { source: 11, target: 0, value: 0.0001, id: "TEDToBuilding" },
+            { source: 28, target: 12, value: 0.0001, id: "TELToRoof" },
+            { source: 28, target: 13, value: 0.0001, id: "TELToWallAG" },
+            { source: 28, target: 14, value: 0.0001, id: "TELToFloorExp" },
+            { source: 28, target: 15, value: 0.0001, id: "TELToDoor" },
+            { source: 28, target: 16, value: 0.0001, id: "TELToWinN" },
+            { source: 28, target: 17, value: 0.0001, id: "TELToWinE" },
+            { source: 28, target: 18, value: 0.0001, id: "TELToWinS" },
+            { source: 28, target: 19, value: 0.0001, id: "TELToWinW" },
+            { source: 28, target: 31, value: 0.0001, id: "TELToSkylight" },
+            { source: 28, target: 20, value: 0.0001, id: "TELToWallBG" },
+            { source: 28, target: 21, value: 0.0001, id: "TELToSlab" },
+            { source: 28, target: 22, value: 0.0001, id: "TELToTB" },
+            { source: 28, target: 23, value: 0.0001, id: "TELToAirLeak" },
+            { source: 0, target: 24, value: 0.0001, id: "BuildingToVentLoss" },
+            { source: 0, target: 25, value: 0.0001, id: "BuildingToSHWWaste" },
+            { source: 0, target: 26, value: 0.0001, id: "BuildingToUnusableGains" },
+            { source: 0, target: 27, value: 0.0001, id: "BuildingToGasExhaust" }, 
+            { source: 0, target: 28, value: 0.0001, id: "BuildingToTEL" },
+            { source: 11, target: 27, value: 0.0001, id: "TEDToGasExhaust" },    
+            { source: 3, target: 27, value: 0.0001, id: "SHWToGasExhaust" }      
         ]
     };
 
@@ -119,25 +120,21 @@ window.TEUI.SectionModules.sect16 = (function() {
             .nodeWidth(20)
             .nodePadding(15)
             .extent([[1, 1], [1098, 698]]),
-
         _data: { nodes: [], links: [] },
         _showEmissions: false,
         _nodeWidthMultiplier: 1,
         _nodePadding: 15,
         _isGasHeating: false,
-
         initialize(svgId, tooltipId, initialExtent) {
             this.svg = d3.select(svgId);
             this.tooltip = d3.select(tooltipId);
             if (initialExtent) this.sankey.extent(initialExtent);
-            
             this.svg.selectAll("*").remove();
             this.linkGroup = this.svg.append("g").attr("class", "links");
             this.nodeGroup = this.svg.append("g").attr("class", "nodes");
             this.labelGroup = this.svg.append("g").attr("class", "labels");
             console.log("TEUI_SankeyDiagram initialized with SVG:", svgId);
         },
-
         updateSankeyConfig(config) {
             if (config.showEmissions !== undefined) this._showEmissions = config.showEmissions;
             if (config.nodeWidthMultiplier !== undefined) {
@@ -150,7 +147,6 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
             if (config.isGasHeating !== undefined) this._isGasHeating = config.isGasHeating;
         },
-
         render(sankeyData, isInitialLoad = false) {
             this._data = JSON.parse(JSON.stringify(sankeyData));
             if (!this._data.nodes || !this._data.links) {
@@ -158,15 +154,12 @@ window.TEUI.SectionModules.sect16 = (function() {
                 return;
             }
             this._data.nodes.forEach((node, index) => { node.index = index; });
-
             if (this._showEmissions) {
                 this.updateEmissionsFlows();
             }
-
             try {
                 const visibleNodes = this._data.nodes.filter(n => !n.hidden);
                 const visibleNodeNameSet = new Set(visibleNodes.map(n => n.name));
-
                 const workingDataForD3 = {
                     nodes: visibleNodes,
                     links: this._data.links.map(l => ({
@@ -185,7 +178,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                         isEmissions: l.isEmissions
                     })).filter(l => l.source !== -1 && l.target !== -1)
                 };
-                
                 if(workingDataForD3.nodes.length === 0) {
                     console.warn("TEUI_SankeyDiagram: No visible nodes to render.");
                     this.svg.selectAll("*").remove();
@@ -194,7 +186,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                     this.labelGroup = this.svg.append("g").attr("class", "labels");
                     return;
                 }
-
                 const { nodes, links } = this.sankey(workingDataForD3);
                 nodes.forEach(node => { node.displayColor = d3.color(node.color).darker(0.3); });
                 const svgWidth = parseFloat(this.svg.style("width")) || (this.sankey.extent()[1][0] - this.sankey.extent()[0][0]);
@@ -202,12 +193,10 @@ window.TEUI.SectionModules.sect16 = (function() {
                 this.renderLinks(links, isInitialLoad, maxX);
                 this.renderNodes(nodes, isInitialLoad, maxX);
                 this.renderLabels(nodes, isInitialLoad, maxX, svgWidth);
-
             } catch (error) {
                 console.error("Error rendering Sankey chart:", error, "\nData for D3:", workingDataForD3, "\nOriginal data:", this._data);
             }
         },
-
         renderLinks(links, isInitialLoad, maxX) {
             const link = this.linkGroup.selectAll(".link").data(links, d => `${d.source.index}-${d.target.index}-${d.value}-${d.isEmissions}`);
             link.exit().remove();
@@ -229,7 +218,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                     .attr("stroke-width", d => Math.max(1, d.width));
             }
         },
-
         renderNodes(nodes, isInitialLoad, maxX) {
             const node = this.nodeGroup.selectAll(".node").data(nodes, d => d.name);
             node.exit().transition().duration(500).attr("width", 0).remove();
@@ -252,7 +240,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                     .attr("width", d => d.x1 - d.x0);
             }
         },
-
         renderLabels(nodes, isInitialLoad, maxX, svgWidth) {
             const label = this.labelGroup.selectAll(".node-label").data(nodes, d => d.name);
             label.exit().transition().duration(500).style("opacity", 0).remove();
@@ -268,19 +255,16 @@ window.TEUI.SectionModules.sect16 = (function() {
                 labelUpdate.transition().duration(750).style("opacity", 1);
             }
         },
-
         showNodeTooltip(event, d) {
             const content = this.createNodeTooltip(d);
             this.showTooltip(content, event);
             d3.select(event.target).style("fill-opacity", 0.8);
         },
-
         showLinkTooltip(event, d) {
             const content = this.createLinkTooltip(d);
             this.showTooltip(content, event);
             d3.select(event.target).style("stroke-opacity", 0.9);
         },
-
         createNodeTooltip(d) {
             const originalNodeName = d.name;
             let html = `<div class="tooltip-title">${originalNodeName}</div>`;
@@ -303,7 +287,6 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (outgoing.length > 0) html += this.buildFlowSectionTooltip("Outgoing", outgoing, false, true);
             return html;
         },
-
         createLinkTooltip(d) {
             const sourceName = d.source.name;
             const targetName = d.target.name;
@@ -313,7 +296,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                 window.TEUI.formatNumber(value, 'number-2dp') : value.toFixed(2);
             return `<div class="tooltip-title">Flow Details</div><div class="tooltip-flow"><span>From: ${sourceName}</span></div><div class="tooltip-flow"><span>To: ${targetName}</span></div><div class="tooltip-flow"><span>Value: ${isEmissionsLink ? `${formattedValue} grams CO2e` : `${formattedValue} kWh`}</span></div>`;
         },
-
         buildFlowSectionTooltip(title, flows, isIncoming, isD3Node = false) {
             let html = `<div style="margin-top: 8px;"><strong>${title}:</strong></div>`;
             flows.forEach(flow => {
@@ -329,7 +311,6 @@ window.TEUI.SectionModules.sect16 = (function() {
             });
             return html;
         },
-
         formatNodeLabel(node) {
             if (node.name.includes("Emissions")) {
                 const totalEmissions = node.targetLinks?.reduce((sum, link) => sum + link.value, 0) || 0;
@@ -340,7 +321,6 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
             return node.name;
         },
-
         showTooltip(content, event) {
             if (!this.tooltip) return;
             const padding = 10;
@@ -351,41 +331,32 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (tooltipRect.right > window.innerWidth) this.tooltip.style("left", `${event.pageX - tooltipRect.width - padding}px`);
             if (tooltipRect.bottom > window.innerHeight) this.tooltip.style("top", `${event.pageY - tooltipRect.height - padding}px`);
         },
-
         hideTooltip() { if (this.tooltip) this.tooltip.style("display", "none"); },
-
         getLinkColor(d) {
             if (d.target.name === "GasExhaust") return "#BE343D";
             if (d.source.name === "Building" || d.target.name === "Building") return d.source.name === "Building" ? d3.color(d.target.color).brighter(0.2) : d3.color(d.source.color);
             return d3.interpolateRgb(d.source.color, d.target.color)(0.5);
         },
-
         updateEmissionsFlows() {
             const scope1NodeIndex = this._data.nodes.findIndex(n => n.name === "E1 Scope 1 Emissions");
             const scope2NodeIndex = this._data.nodes.findIndex(n => n.name === "E2 Scope 2 Emissions");
-
             if (scope1NodeIndex === -1 || scope2NodeIndex === -1) {
                 console.warn("Section 16: Emission sink nodes (E1/E2) not found in Sankey data.");
                 return;
             }
-
             this._data.links = this._data.links.filter(link => {
                 const targetNode = typeof link.target === 'object' ? link.target : this._data.nodes[link.target];
                 return !(targetNode && 
                          (this._data.nodes.indexOf(targetNode) === scope1NodeIndex || 
                           this._data.nodes.indexOf(targetNode) === scope2NodeIndex));
             });
-
             if (this._showEmissions && window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
                 const teuiState = window.TEUI.StateManager;
-                const primaryHeatingSystem = teuiState.getValue('d_113'); // M.1.0 Primary Heating System
-
                 const energyInputNodeIndex = this._data.nodes.findIndex(n => n.name === "M.2.1.D Energy Input");
                 if (energyInputNodeIndex === -1) {
                     console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
                     return;
                 }
-
                 const elecEmissionsKg = parseFloat(teuiState.getValue('k_27') || 0);
                 if (elecEmissionsKg > 0) {
                     const elecEmissionsGrams = elecEmissionsKg * 1000;
@@ -398,7 +369,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                         });
                     }
                 }
-
                 const gasEmissionsKg = parseFloat(teuiState.getValue('k_28') || 0);
                 if (gasEmissionsKg > 0) {
                     const gasEmissionsGrams = gasEmissionsKg * 1000;
@@ -411,7 +381,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                         });
                     }
                 }
-
                 const oilEmissionsKg = parseFloat(teuiState.getValue('k_30') || 0);
                 if (oilEmissionsKg > 0) {
                     const oilEmissionsGrams = oilEmissionsKg * 1000;
@@ -426,7 +395,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                 }
             }
         },
-
         _getLinkValueByName(sourceName, targetName) {
             const sourceNode = this._data.nodes.find(n => n.name === sourceName);
             const targetNode = this._data.nodes.find(n => n.name === targetName);
@@ -440,7 +408,6 @@ window.TEUI.SectionModules.sect16 = (function() {
             });
             return link ? link.value : 0;
         },
-
         resize(newWidth, newHeight = 700) {
             if (!this.svg || !this.sankey) { console.warn("Sankey not initialized for resize"); return; }
             const margin = { left: 20, right: 20, top: 1, bottom: 1 };
@@ -459,13 +426,13 @@ window.TEUI.SectionModules.sect16 = (function() {
     };
 
     // --- Private Variables (Section16 specific) ---
-    let sankeyInstance = TEUI_SankeyDiagram; // Use the adapted object
+    let sankeyInstance = TEUI_SankeyDiagram; 
     let isActive = false;
     let showEmissions = false;
     let nodeWidthMultiplier = 1;
     let nodePadding = 15;
 
-    // --- Section Structure & Layout (already defined from previous step) ---
+    // --- Section Structure & Layout ---
     function getFields() {
         return {};
     }
@@ -475,69 +442,105 @@ window.TEUI.SectionModules.sect16 = (function() {
     }
 
     function getLayout() {
-        const sectionId = "section16";
-        let layout = {
-            id: sectionId,
+        return {
             rows: [
                 {
-                    id: "S16-Header-Row",
+                    id: "S16-PlaceholderRow", 
                     cells: [
                         {},
                         {},
-                        {
-                            content: `<h3>Energy Flow Sankey Diagram (Section 16)</h3>
-                                      <p>Visualizing energy balance and flows. Activate to load and render.</p>`,
-                            colspan: 10
-                        }
-                    ]
-                },
-                {
-                    id: "S16-Controls-Row",
-                    cells: [
-                        {},
-                        {},
-                        {
-                            content: `
-                                <div id="s16ControlsContainer" style="padding: 10px 0; margin-bottom: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
-                                    <button id="s16ActivateBtn" class="teui-button">Activate/Refresh Sankey</button>
-                                    <button id="s16ToggleEmissionsBtn" class="teui-button" style="display: none;">Show Emissions</button>
-                                    <button id="s16ToggleSpacingBtn" class="teui-button" style="display: none;">Expand Nodes</button>
-                                    <div id="s16WidthToggleContainer" class="s16-width-toggle" style="display: none; align-items: center; gap: 5px;">
-                                        <label for="s16WidthMultiplierSlider">Node Width:</label>
-                                        <input type="range" id="s16WidthMultiplierSlider" min="50" max="400" value="100" step="10" style="width: 100px; vertical-align: middle;">
-                                        <span id="s16WidthValueText" style="margin-left: 5px; vertical-align: middle;">100%</span>
-                                    </div>
-                                </div>
-                            `,
-                            colspan: 10
-                        }
-                    ]
-                },
-                {
-                    id: "S16-Diagram-Row",
-                    cells: [
-                        {},
-                        {},
-                        {
-                            content: `
-                                <div id="sankeySection16ContainerWrapper" style="width: 100%; min-height: 700px; background: #f9f9f9; position: relative; border: 1px solid #ccc;">
-                                    <svg id="sankeySection16Container" style="width: 100%; height: 100%; display: block;"></svg>
-                                    <div id="sankeySection16Tooltip" class="tooltip" style="display: none; position: absolute;"></div>
-                                    <div id="s16LoadingPlaceholder" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-style: italic; color: #777; text-align: center;">Sankey diagram not active.<br>Click 'Activate/Refresh Sankey' to load.</div>
-                                </div>
-                            `,
-                            colspan: 10
+                        { 
+                            content: "<!-- Section 16 content is dynamically injected by setupSection16DOM -->",
+                            colspan: 12
                         }
                     ]
                 }
             ]
         };
-        return { rows: layout.rows };
+    }
+
+    function setupSection16DOM() {
+        const targetArea = document.getElementById('section16ContentTarget');
+        if (!targetArea) {
+            console.error("Section 16 Critical Error: The target div #section16ContentTarget was not found in index.html. Cannot setup DOM.");
+            return false;
+        }
+        targetArea.innerHTML = ''; 
+        const controlsContainer = document.createElement('div');
+        controlsContainer.id = 's16ControlsContainer';
+        controlsContainer.style.cssText = "padding: 10px 0; margin-bottom: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;";
+        const activateBtn = document.createElement('button');
+        activateBtn.id = 's16ActivateBtn';
+        activateBtn.className = 'teui-button'; 
+        activateBtn.textContent = 'Activate/Refresh Sankey';
+        controlsContainer.appendChild(activateBtn);
+        const emissionsBtn = document.createElement('button');
+        emissionsBtn.id = 's16ToggleEmissionsBtn';
+        emissionsBtn.className = 'teui-button';
+        emissionsBtn.textContent = 'Show Emissions';
+        emissionsBtn.style.display = 'none';
+        controlsContainer.appendChild(emissionsBtn);
+        const spacingBtn = document.createElement('button');
+        spacingBtn.id = 's16ToggleSpacingBtn';
+        spacingBtn.className = 'teui-button';
+        spacingBtn.textContent = 'Expand Nodes'; 
+        spacingBtn.style.display = 'none';
+        controlsContainer.appendChild(spacingBtn);
+        const widthToggleContainer = document.createElement('div');
+        widthToggleContainer.id = 's16WidthToggleContainer';
+        widthToggleContainer.className = 's16-width-toggle'; 
+        widthToggleContainer.style.cssText = 'display: none; align-items: center; gap: 5px; margin-left: 10px;';
+        const widthLabel = document.createElement('label');
+        widthLabel.htmlFor = 's16WidthMultiplierSlider';
+        widthLabel.textContent = 'Node Width:';
+        widthToggleContainer.appendChild(widthLabel);
+        const widthSlider = document.createElement('input');
+        widthSlider.type = 'range';
+        widthSlider.id = 's16WidthMultiplierSlider';
+        widthSlider.min = '50';
+        widthSlider.max = '400';
+        widthSlider.value = '100';
+        widthSlider.step = '10';
+        widthSlider.style.cssText = 'width: 100px; vertical-align: middle;';
+        widthToggleContainer.appendChild(widthSlider);
+        const widthValueText = document.createElement('span');
+        widthValueText.id = 's16WidthValueText';
+        widthValueText.style.cssText = 'margin-left: 5px; vertical-align: middle;';
+        widthValueText.textContent = '100%';
+        widthToggleContainer.appendChild(widthValueText);
+        controlsContainer.appendChild(widthToggleContainer);
+        targetArea.appendChild(controlsContainer);
+        const diagramWrapper = document.createElement('div');
+        diagramWrapper.id = 'sankeySection16ContainerWrapper';
+        diagramWrapper.style.cssText = 'width: 100%; min-height: 700px; background: #f9f9f9; position: relative; border: 1px solid #ccc;';
+        const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svgElement.id = 'sankeySection16Container';
+        svgElement.style.cssText = 'width: 100%; height: 100%; display: block;'; 
+        diagramWrapper.appendChild(svgElement);
+        const tooltipElement = document.createElement('div');
+        tooltipElement.id = 'sankeySection16Tooltip';
+        tooltipElement.className = 'tooltip'; 
+        tooltipElement.style.display = 'none';
+        tooltipElement.style.position = 'absolute'; 
+        diagramWrapper.appendChild(tooltipElement);
+        const placeholderElement = document.createElement('div');
+        placeholderElement.id = 's16LoadingPlaceholder';
+        placeholderElement.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-style: italic; color: #777; text-align: center;';
+        placeholderElement.innerHTML = "Sankey diagram not active.<br>Click 'Activate/Refresh Sankey' to load.";
+        diagramWrapper.appendChild(placeholderElement);
+        targetArea.appendChild(diagramWrapper);
+        console.log("Section 16: DOM setup complete.");
+        return true; 
     }
 
     // --- Event Handling & Initialization ---
     function initializeEventHandlers() {
-        console.log("Section 16: Initializing event handlers.");
+        if (window.TEUI.sect16.handlersInitialized) {
+            console.log("Section 16: Event handlers already initialized.");
+            return;
+        }
+        console.log("Section 16: Initializing event handlers AFTER DOM setup.");
+        
         const activateBtn = document.getElementById('s16ActivateBtn');
         const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
         const spacingBtn = document.getElementById('s16ToggleSpacingBtn');
@@ -552,11 +555,9 @@ window.TEUI.SectionModules.sect16 = (function() {
                     if (loadingPlaceholder) loadingPlaceholder.textContent = "Error: Sankey Diagram component failed to load.";
                     return;
                 }
-
-                // Initialize Sankey on first activation if not already done
-                if (!sankeyInstance.svg) { // Check if .initialize() has been effectively run (svg would be set)
+                if (!sankeyInstance.svg) { 
                     const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
-                    if (svgWrapper) {
+                    if (svgWrapper && document.getElementById('sankeySection16Container')) {
                         sankeyInstance.initialize(
                             '#sankeySection16Container', 
                             '#sankeySection16Tooltip', 
@@ -564,21 +565,21 @@ window.TEUI.SectionModules.sect16 = (function() {
                         );
                         console.log("Section 16: TEUI_SankeyDiagram initialized on activation.");
                     } else {
-                        console.error("Section 16: SVG wrapper not found during activation. Cannot initialize Sankey.");
+                        console.error("Section 16: SVG wrapper or container not found during activation. Cannot initialize Sankey.");
                         if (loadingPlaceholder) loadingPlaceholder.textContent = "Error: Sankey container not found.";
                         return;
                     }
                 }
-
                 isActive = true;
                 if (loadingPlaceholder) loadingPlaceholder.style.display = 'none';
                 if (emissionsBtn) emissionsBtn.style.display = 'inline-flex';
                 if (spacingBtn) spacingBtn.style.display = 'inline-flex';
                 if (widthToggleContainer) widthToggleContainer.style.display = 'inline-flex';
-                
                 console.log("Section 16: Activate button clicked.");
                 fetchDataAndRenderSankey(false); 
             });
+        } else {
+            console.warn("Section 16: Activate button not found for event handler setup.");
         }
 
         if (emissionsBtn) {
@@ -588,7 +589,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (isActive) fetchDataAndRenderSankey(false);
             });
         }
-
         if (spacingBtn) {
             spacingBtn.addEventListener('click', function() {
                 nodePadding = (nodePadding === 15) ? 2 : 15;
@@ -596,7 +596,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                 if (isActive) fetchDataAndRenderSankey(false);
             });
         }
-
         if (widthSlider) {
             const widthValueText = document.getElementById('s16WidthValueText');
             widthSlider.addEventListener('input', function() {
@@ -607,41 +606,49 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
         
         window.addEventListener('resize', function() {
-            if (isActive && sankeyInstance && typeof sankeyInstance.resize === 'function') {
+            if (isActive && sankeyInstance && typeof sankeyInstance.resize === 'function' && sankeyInstance.svg) {
                 const wrapper = document.getElementById('sankeySection16ContainerWrapper');
                 if (wrapper) {
                     sankeyInstance.resize(wrapper.clientWidth, parseFloat(getComputedStyle(wrapper).height));
                 }
             }
         });
+        window.TEUI.sect16.handlersInitialized = true; 
+        console.log("Section 16: Event handlers Initialized.");
     }
 
     function onSectionRendered() {
-        console.log("Section 16: Rendered.");
-        // Assign the TEUI_SankeyDiagram object to sankeyInstance if not already assigned.
-        // This ensures sankeyInstance is ready for the activate button.
+        if (window.TEUI.sect16.initialized) {
+            console.log("Section 16: onSectionRendered - already initialized.");
+            return;
+        }
+        console.log("Section 16: First time onSectionRendered - setting up DOM and handlers.");
+        
+        if (!setupSection16DOM()) {
+            console.error("Section 16: DOM setup failed in onSectionRendered. Aborting further S16 setup.");
+            return;
+        }
+
         if (!sankeyInstance && typeof TEUI_SankeyDiagram !== 'undefined') {
-            sankeyInstance = TEUI_SankeyDiagram; // Directly use the object defined in this IIFE
-            console.log("Section 16: sankeyInstance assigned.");
+            sankeyInstance = TEUI_SankeyDiagram; 
+            console.log("Section 16: sankeyInstance assigned in onSectionRendered.");
         } else if (!sankeyInstance) {
-             console.error("Section 16: TEUI_SankeyDiagram object is undefined. Cannot assign to sankeyInstance.");
+             console.error("Section 16: TEUI_SankeyDiagram object is undefined. Cannot assign to sankeyInstance. Aborting further S16 setup.");
+             return; 
         }
         
-        // Ensure controls that depend on activation are hidden initially
-        const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
-        const spacingBtn = document.getElementById('s16ToggleSpacingBtn');
-        const widthToggleContainer = document.getElementById('s16WidthToggleContainer');
+        // Initialize event handlers AFTER DOM is created by setupSection16DOM
+        if (!window.TEUI.sect16.handlersInitialized) {
+            initializeEventHandlers();
+        }
+        
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
-
-        if (emissionsBtn) emissionsBtn.style.display = 'none';
-        if (spacingBtn) spacingBtn.style.display = 'none';
-        if (widthToggleContainer) widthToggleContainer.style.display = 'none';
         if (loadingPlaceholder) {
-            loadingPlaceholder.style.display = 'block'; // Ensure placeholder is visible initially
+            loadingPlaceholder.style.display = 'block'; 
             loadingPlaceholder.textContent = "Sankey diagram not active. Click 'Activate/Refresh Sankey' to load.";
         }
-
-        // DO NOT initialize sankeyInstance here. It will be done on activation.
+        window.TEUI.sect16.initialized = true; 
+        console.log("Section 16: onSectionRendered complete for the first time.");
     }
 
     function handleStateChange(newValue) {
@@ -658,6 +665,27 @@ window.TEUI.SectionModules.sect16 = (function() {
             if (loadingPlaceholder) loadingPlaceholder.style.display = 'block';
             return;
         }
+        if (!document.getElementById('sankeySection16Container')) {
+            console.warn("Section 16: Sankey SVG container not found. Attempting to re-setup DOM.");
+            if (!setupSection16DOM()) {
+                console.error("Section 16: Failed to re-setup DOM. Aborting render.");
+                return;
+            }
+            if (!window.TEUI.sect16.handlersInitialized) { // Re-attach handlers if DOM was rebuilt
+                initializeEventHandlers();
+            }
+            if (!sankeyInstance.svg) { // Re-initialize D3 Sankey if DOM was rebuilt before first activation init
+                const svgWrapper = document.getElementById('sankeySection16ContainerWrapper');
+                 if (svgWrapper) {
+                    sankeyInstance.initialize(
+                        '#sankeySection16Container', 
+                        '#sankeySection16Tooltip', 
+                        [[1,1], [svgWrapper.clientWidth > 50 ? svgWrapper.clientWidth - 2 : 1098, svgWrapper.clientHeight > 50 ? svgWrapper.clientHeight -2 : 698]]
+                    );
+                 }
+            }
+        }
+
         console.log("Section 16: Fetching data and rendering Sankey...");
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
         if (loadingPlaceholder) loadingPlaceholder.style.display = 'none';
@@ -792,6 +820,7 @@ window.TEUI.SectionModules.sect16 = (function() {
 
     function calculateAll() {}
 
+    // --- Public API ---
     return {
         getFields: getFields,
         getDropdownOptions: getDropdownOptions,
@@ -800,6 +829,14 @@ window.TEUI.SectionModules.sect16 = (function() {
         onSectionRendered: onSectionRendered,
         calculateAll: calculateAll,
         activateAndRender: function() {
+            // Ensure DOM is built first if not already
+            if (!document.getElementById('s16ControlsContainer')) {
+                if (!setupSection16DOM()) return;
+                // If DOM was just built, handlers need to be attached
+                 if (!window.TEUI.sect16.handlersInitialized) {
+                    initializeEventHandlers();
+                 }
+            }
             isActive = true;
             const activateBtn = document.getElementById('s16ActivateBtn');
             const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
@@ -819,12 +856,14 @@ document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail && event.detail.sectionId === 'section16') {
         console.log("Section 16 received teui-section-rendered event.");
         if (window.TEUI.SectionModules.sect16 && typeof window.TEUI.SectionModules.sect16.onSectionRendered === 'function') {
+            // Call onSectionRendered, which handles its own idempotency for full setup
+            // and also calls initializeEventHandlers if needed.
             window.TEUI.SectionModules.sect16.onSectionRendered();
         }
     }
 });
 
 document.addEventListener('teui-rendering-complete', function() {
-    // This might be too early if sect16 specific DOM isn't ready.
-    // onSectionRendered is preferred for section-specific init.
+    // This event might be useful to ensure all sections, including S16, have had their initial onSectionRendered call.
+    // However, direct activation by user is the primary trigger for S16 Sankey rendering.
 }); 
