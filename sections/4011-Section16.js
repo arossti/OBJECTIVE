@@ -146,7 +146,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 // Clear any existing content
                 const containerEl = document.getElementById(this.containerId);
                 if (!containerEl) {
-                    console.error("TEUI_SankeyDiagram Error: Container element not found", this.containerId);
+                    // console.error("TEUI_SankeyDiagram Error: Container element not found", this.containerId);
                     return false;
                 }
                 
@@ -163,13 +163,9 @@ window.TEUI.SectionModules.sect16 = (function() {
                 this.tooltip = d3.select('#sankeySection16Tooltip');
                 
                 if (!this.svg) {
-                    console.error("TEUI_SankeyDiagram Error: SVG element not initialized");
+                    // console.error("TEUI_SankeyDiagram Error: SVG element not initialized");
                     return false;
                 }
-                
-                // Log for debugging
-                console.warn("S16 SANKEY LOG: SVG and tooltip initialized");
-                console.warn("S16 SANKEY LOG: SVG dimensions", this.width, this.height);
                 
                 // Define margins for the SVG
                 this.margin = {
@@ -216,22 +212,16 @@ window.TEUI.SectionModules.sect16 = (function() {
                 
                 return true;
             } catch (error) {
-                console.error("TEUI_SankeyDiagram Error: Initialization failed", error);
+                // console.error("TEUI_SankeyDiagram Error: Initialization failed", error);
                 return false;
             }
         }
 
         render(freshSankeyData, isInitialLoad = false) {
             if (!freshSankeyData || !freshSankeyData.nodes || !freshSankeyData.links) {
-                console.error("TEUI_SankeyDiagram Error: Invalid data structure for rendering", freshSankeyData);
+                // console.error("TEUI_SankeyDiagram Error: Invalid data structure for rendering", freshSankeyData);
                 return;
             }
-            
-            console.warn("S16 SANKEY LOG: Rendering with data:", {
-                nodes: freshSankeyData.nodes.length,
-                links: freshSankeyData.links.length,
-                widthMultiplier: this.widthMultiplier
-            });
             
             // Store a deep copy of the fresh input data
             this._cleanDataInput = JSON.parse(JSON.stringify(freshSankeyData));
@@ -260,22 +250,10 @@ window.TEUI.SectionModules.sect16 = (function() {
             this.renderLinks(d3Data.links, isInitialLoad);
             this.renderLabels(d3Data.nodes, isInitialLoad);
             
-            console.log("Section 16: Sankey render call complete.");
+            // console.log("Section 16: Sankey render call complete.");
         }
 
         renderLinks(links, isInitialLoad) {
-            console.warn("S16 SANKEY LOG: Rendering links, count:", links.length);
-            
-            // Debug the link data
-            if (links.length > 0) {
-                console.warn("S16 SANKEY LOG: Sample link data:", {
-                    source: links[0].source.name,
-                    target: links[0].target.name,
-                    value: links[0].value,
-                    width: links[0].width
-                });
-            }
-            
             // Generate link paths
             const linkGenerator = d3.sankeyLinkHorizontal();
             
@@ -324,19 +302,6 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         renderNodes(nodes, isInitialLoad) {
-            console.warn("S16 SANKEY LOG: Rendering nodes, count:", nodes.length);
-            
-            // Debug node data
-            if (nodes.length > 0) {
-                console.warn("S16 SANKEY LOG: Sample node data:", {
-                    name: nodes[0].name,
-                    x0: nodes[0].x0,
-                    y0: nodes[0].y0,
-                    width: nodes[0].x1 - nodes[0].x0,
-                    height: nodes[0].y1 - nodes[0].y0
-                });
-            }
-            
             // Select all existing nodes and bind data
             const node = this.nodeGroup.selectAll(".node")
                 .data(nodes, d => d.name);
@@ -380,8 +345,6 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         renderLabels(nodes, isInitialLoad) {
-            console.warn("S16 SANKEY LOG: Rendering labels, count:", nodes.length);
-            
             // Select and bind labels
             const text = this.labelGroup.selectAll(".node-label")
                 .data(nodes, d => d.name);
@@ -559,7 +522,7 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         showTooltip(content, event) {
             if (!this.tooltip || this.tooltip.empty()) {
-                console.error("TEUI_SankeyDiagram Error: Tooltip element not found");
+                // console.error("TEUI_SankeyDiagram Error: Tooltip element not found");
                 return;
             }
             
@@ -576,7 +539,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             const mouseY = event.clientY || event.pageY - window.scrollY;
             
             // Debug log
-            console.warn("S16 SANKEY LOG: Showing tooltip at", mouseX, mouseY, "with content:", content.substring(0, 50) + "...");
+            // console.warn("S16 SANKEY LOG: Showing tooltip at", mouseX, mouseY, "with content:", content.substring(0, 50) + "...");
 
             // Set tooltip content and make it visible
             this.tooltip
@@ -638,7 +601,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             const scope2NodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "E2 Scope 2 Emissions");
 
             if (scope1NodeIndex === -1 || scope2NodeIndex === -1) {
-                console.warn("Section 16: Emission sink nodes (E1/E2) not found in Sankey data.");
+                // console.warn("Section 16: Emission sink nodes (E1/E2) not found in Sankey data.");
                 return;
             }
 
@@ -654,7 +617,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 const teuiState = window.TEUI.StateManager;
                 const energyInputNodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "M.2.1.D Energy Input");
                 if (energyInputNodeIndex === -1) {
-                    console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
+                    // console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
                     return;
                 }
                 const elecEmissionsKg = parseFloat(teuiState.getValue('k_27') || 0);
@@ -717,7 +680,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         resize(newWidth, newHeight) {
-            console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight);
+            // console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight);
             
             // Update dimensions
             if (newWidth && newHeight) {
@@ -729,16 +692,16 @@ window.TEUI.SectionModules.sect16 = (function() {
             const innerWidth = this.width - this.margin.left - this.margin.right;
             const innerHeight = this.height - this.margin.top - this.margin.bottom;
             
-            console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight, "Inner W/H:", innerWidth, innerHeight);
+            // console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight, "Inner W/H:", innerWidth, innerHeight);
             
-            // Update SVG dimensions
-            this.svg.attr("width", this.width)
-                    .attr("height", this.height);
+            // Update SVG dimensions, ensuring they are at least 1px
+            this.svg.attr("width", Math.max(1, this.width))
+                    .attr("height", Math.max(1, this.height));
             
-            // Update the sankey layout extent
+            // Update the sankey layout extent, ensuring non-negative dimensions for the layout
             this.sankey.extent([
                 [0, 0],
-                [innerWidth, innerHeight]
+                [Math.max(0, innerWidth), Math.max(0, innerHeight)]
             ]);
             
             // Re-render with existing data if available
@@ -749,27 +712,27 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         debugLinks(links) {
             if (!links || links.length === 0) {
-                console.warn("S16 SANKEY DEBUG: No links to debug");
+                // console.warn("S16 SANKEY DEBUG: No links to debug");
                 return;
             }
             
             // Log some sample links with their values and paths
-            console.warn("S16 SANKEY DEBUG: Examining D3 link rendering...");
+            // console.warn("S16 SANKEY DEBUG: Examining D3 link rendering...");
             
             // Take at most 5 links to examine
             const samplesToExamine = Math.min(5, links.length);
             for (let i = 0; i < samplesToExamine; i++) {
                 const link = links[i];
                 
-                console.warn(`S16 SANKEY DEBUG: Link ${i+1}/${samplesToExamine}:`, {
-                    source: link.source.name,
-                    target: link.target.name,
-                    value: link.value,
-                    width: link.width, // D3 sankey sets this during layout
-                    y0: link.y0, // Source y-position
-                    y1: link.y1, // Target y-position
-                    path: d3.sankeyLinkHorizontal()(link) // The actual SVG path 
-                });
+                // console.warn(`S16 SANKEY DEBUG: Link ${i+1}/${samplesToExamine}:`, {
+                //    source: link.source.name,
+                //    target: link.target.name,
+                //    value: link.value,
+                //    width: link.width, // D3 sankey sets this during layout
+                //    y0: link.y0, // Source y-position
+                //    y1: link.y1, // Target y-position
+                //    path: d3.sankeyLinkHorizontal()(link) // The actual SVG path 
+                // });
             }
         }
     }
@@ -811,7 +774,7 @@ window.TEUI.SectionModules.sect16 = (function() {
     function setupSection16DOM() {
         const targetArea = document.getElementById('section16ContentTarget');
         if (!targetArea) {
-            console.error("Section 16 Critical Error: The target div #section16ContentTarget was not found in index.html. Cannot setup DOM.");
+            // console.error("Section 16 Critical Error: The target div #section16ContentTarget was not found in index.html. Cannot setup DOM.");
             return false;
         }
         
@@ -946,17 +909,17 @@ window.TEUI.SectionModules.sect16 = (function() {
             document.body.appendChild(tooltipDiv);
         }
         
-        console.log("Section 16: DOM setup complete");
+        // console.log("Section 16: DOM setup complete");
         return true;
     }
 
     function initializeEventHandlers() {
         // This function now assumes setupSection16DOM() has been called and elements exist.
         // The idempotency is handled by onSectionRendered.
-        console.warn("S16 LOG: initializeEventHandlers CALLED.");
+        // console.warn("S16 LOG: initializeEventHandlers CALLED.");
         
         const activateBtn = document.getElementById('s16ActivateBtn');
-        console.warn("S16 LOG: #s16ActivateBtn in initializeEventHandlers (result of getElementById):", activateBtn);
+        // console.warn("S16 LOG: #s16ActivateBtn in initializeEventHandlers (result of getElementById):", activateBtn);
 
         const emissionsBtn = document.getElementById('s16ToggleEmissionsBtn');
         const spacingBtn = document.getElementById('s16ToggleSpacingBtn');
@@ -967,12 +930,12 @@ window.TEUI.SectionModules.sect16 = (function() {
 
         if (activateBtn) {
             activateBtn.addEventListener('click', function() {
-                console.warn("S16 LOG: Activate button CLICKED.");
+                // console.warn("S16 LOG: Activate button CLICKED.");
                 // Simply call the activateSankey function
                 activateSankey();
             });
         } else {
-            console.warn("S16 LOG: Activate button NOT FOUND when trying to attach listener in initializeEventHandlers."); 
+            // console.warn("S16 LOG: Activate button NOT FOUND when trying to attach listener in initializeEventHandlers."); 
         }
 
         if (emissionsBtn) {
@@ -1086,7 +1049,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 // Add fullscreen width slider functionality
                 const fullscreenWidthSlider = document.getElementById('s16FullscreenWidthSlider');
                 if (fullscreenWidthSlider) {
-                    const fullscreenWidthValueText = document.querySelector('#s16FullscreenWidthToggle span');
+                    const fullscreenWidthValueText = getFullscreenWidthValueText(); // document.querySelector('#s16FullscreenWidthToggle span');
                     
                     // Set initial value
                     fullscreenWidthSlider.value = window.TEUI.sect16.nodeWidthMultiplier * 100;
@@ -1148,18 +1111,18 @@ window.TEUI.SectionModules.sect16 = (function() {
             }
         });
 
-        console.warn("S16 LOG: Event handler attachments attempted.");
+        // console.warn("S16 LOG: Event handler attachments attempted.");
     }
 
     function activateSankey() {
-        console.log("Section 16: Activating Sankey diagram");
+        // console.log("Section 16: Activating Sankey diagram");
         
         // Get DOM elements
         const diagramWrapper = document.getElementById('s16DiagramWrapper');
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
         
         if (!diagramWrapper) {
-            console.error("Section 16 Error: Diagram wrapper not found. Cannot activate Sankey.");
+            // console.error("Section 16 Error: Diagram wrapper not found. Cannot activate Sankey.");
             return;
         }
         
@@ -1189,7 +1152,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             });
             
             if (!window.TEUI.sect16.sankeyInstance.init()) {
-                console.error("Section 16 Error: Failed to initialize Sankey diagram.");
+                // console.error("Section 16 Error: Failed to initialize Sankey diagram.");
                 return;
             }
         }
@@ -1202,19 +1165,19 @@ window.TEUI.SectionModules.sect16 = (function() {
     }
 
     function onSectionRendered() {
-        console.log("Section 16: onSectionRendered called. Initialized flag:", window.TEUI.sect16.initialized);
+        // console.log("Section 16: onSectionRendered called. Initialized flag:", window.TEUI.sect16.initialized);
         
         if (window.TEUI.sect16.initialized) {
-            console.log("Section 16: Already initialized, skipping setup.");
+            // console.log("Section 16: Already initialized, skipping setup.");
             return;
         }
         
         // Setup DOM first
         if (!setupSection16DOM()) { 
-            console.error("Section 16: DOM setup failed in onSectionRendered. Aborting setup.");
+            // console.error("Section 16: DOM setup failed in onSectionRendered. Aborting setup.");
             return; 
         }
-        console.log("Section 16: DOM setup complete");
+        // console.log("Section 16: DOM setup complete");
         
         // Setup event handlers after DOM is ready
         initializeEventHandlers();
@@ -1232,17 +1195,17 @@ window.TEUI.SectionModules.sect16 = (function() {
 
     function handleStateChange(newValue) {
         if (window.TEUI.sect16.isActive) {
-            console.log("Section 16: Relevant state changed, refreshing Sankey.");
+            // console.log("Section 16: Relevant state changed, refreshing Sankey.");
             fetchDataAndRenderSankey(false);
         }
     }
 
     // Add this function before fetchDataAndRenderSankey
     function debugSankeyLinkValues() {
-        console.warn("S16 DEBUG: Validating all link values...");
+        // console.warn("S16 DEBUG: Validating all link values...");
         
         if (!sankeyInstance || !sankeyInstance._cleanDataInput) {
-            console.warn("S16 DEBUG: No Sankey data available to validate.");
+            // console.warn("S16 DEBUG: No Sankey data available to validate.");
             return;
         }
         
@@ -1256,26 +1219,26 @@ window.TEUI.SectionModules.sect16 = (function() {
                 link.target.name : 
                 (sankeyInstance._cleanDataInput.nodes[link.target]?.name || "Unknown");
             
-            console.warn(`S16 DEBUG: Link "${linkId}" (${sourceNode} → ${targetNode}) Value: ${link.value}`);
+            // console.warn(`S16 DEBUG: Link "${linkId}" (${sourceNode} → ${targetNode}) Value: ${link.value}`);
         });
         
         // Check specific envelope losses (TEL components) directly from StateManager
         if (window.TEUI && window.TEUI.StateManager) {
             const teuiState = window.TEUI.StateManager;
-            console.warn("S16 DEBUG: Checking TEL component values from StateManager:");
+            // console.warn("S16 DEBUG: Checking TEL component values from StateManager:");
             
             const telFields = ["i_85", "i_86", "i_87", "i_88", "i_89", "i_90", "i_91", "i_92", 
                               "i_93", "i_94", "i_95", "i_97", "i_103"];
             telFields.forEach(fieldId => {
                 const value = teuiState.getValue(fieldId);
-                console.warn(`S16 DEBUG: TEL Field: ${fieldId}, StateManager Value: ${value}`);
+                // console.warn(`S16 DEBUG: TEL Field: ${fieldId}, StateManager Value: ${value}`);
             });
             
             // Check Energy Interface fields
-            console.warn("S16 DEBUG: Checking Energy Interface fields:");
+            // console.warn("S16 DEBUG: Checking Energy Interface fields:");
             ["d_114", "d_115", "d_127", "d_131", "l_113", "l_115"].forEach(fieldId => {
                 const value = teuiState.getValue(fieldId);
-                console.warn(`S16 DEBUG: Energy Interface Field: ${fieldId}, StateManager Value: ${value}`);
+                // console.warn(`S16 DEBUG: Energy Interface Field: ${fieldId}, StateManager Value: ${value}`);
             });
         }
     }
@@ -1287,7 +1250,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         // Get StateManager instance
         const teuiState = window.TEUI.StateManager;
         if (!teuiState || typeof teuiState.getValue !== 'function') {
-            console.warn("Section 16: TEUI.StateManager not available for data fetching. Using template defaults.");
+            // console.warn("Section 16: TEUI.StateManager not available for data fetching. Using template defaults.");
             return sankeyData;
         }
 
@@ -1389,7 +1352,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             link.value = Math.max(0.0001, valueToAssign);
             
             // Log for debugging
-            console.warn(`S16 LINK LOG: ID: ${link.id}, TEUI Field: ${teuiFieldId || 'N/A'}, Raw State Value: '${rawValueFromState}', Assigned Link Value: ${link.value}`);
+            // console.warn(`S16 LINK LOG: ID: ${link.id}, TEUI Field: ${teuiFieldId || 'N/A'}, Raw State Value: '${rawValueFromState}', Assigned Link Value: ${link.value}`);
         });
 
         // Now ensure all nodes and links have the correct structure
@@ -1414,11 +1377,11 @@ window.TEUI.SectionModules.sect16 = (function() {
     }
 
     function fetchDataAndRenderSankey(isInitialLoad = true) {
-        console.log("Section 16: Fetching data and rendering Sankey...");
+        // console.log("Section 16: Fetching data and rendering Sankey...");
         
         // Make sure the Sankey instance exists
         if (!window.TEUI.sect16.sankeyInstance) {
-            console.error("Section 16: Sankey instance not found. Cannot render.");
+            // console.error("Section 16: Sankey instance not found. Cannot render.");
             return;
         }
         
@@ -1450,17 +1413,17 @@ window.TEUI.SectionModules.sect16 = (function() {
         // Render the Sankey diagram
         window.TEUI.sect16.sankeyInstance.render(sankeyData, isInitialLoad);
         
-        console.log("Section 16: Sankey render call complete.");
+        // console.log("Section 16: Sankey render call complete.");
     }
 
     // Debug helper for Sankey data
     function debugSankeyData(sankeyData) {
         if (!sankeyData || !sankeyData.links || !sankeyData.nodes) {
-            console.warn("S16 DEBUG: No valid Sankey data to debug");
+            // console.warn("S16 DEBUG: No valid Sankey data to debug");
             return;
         }
         
-        console.warn("S16 DEBUG: Checking link values in Sankey data");
+        // console.warn("S16 DEBUG: Checking link values in Sankey data");
         
         // Log important links for debugging
         for (let i = 0; i < Math.min(5, sankeyData.links.length); i++) {
@@ -1476,7 +1439,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             const targetName = targetNodeIdx >= 0 && targetNodeIdx < sankeyData.nodes.length ? 
                 sankeyData.nodes[targetNodeIdx].name : "Unknown";
             
-            console.warn(`S16 DEBUG: Link "${link.id}" (${sourceName} → ${targetName}) Value: ${link.value}`);
+            // console.warn(`S16 DEBUG: Link "${link.id}" (${sourceName} → ${targetName}) Value: ${link.value}`);
         }
     }
 
