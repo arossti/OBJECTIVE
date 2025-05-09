@@ -484,7 +484,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             });
             return link ? link.value : 0;
         },
-        resize(newWidth, newHeight = 700) {
+        resize(newWidth, newHeight = 500) {
             if (!this.svg || !this.sankey || !this._cleanDataInput) {
                 console.warn("S16 SANKEY LOG: Sankey not initialized or no data for resize"); 
                 return; 
@@ -535,7 +535,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                         {},
                         {},
                         { 
-                            content: "<!-- Section 16 content is dynamically injected by setupSection16DOM -->",
+                            content: "",
                             colspan: 12
                         }
                     ]
@@ -597,7 +597,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         targetArea.appendChild(controlsContainer);
         const diagramWrapper = document.createElement('div');
         diagramWrapper.id = 'sankeySection16ContainerWrapper';
-        diagramWrapper.style.cssText = 'width: 100%; min-height: 700px; background: #f9f9f9; position: relative; border: 1px solid #ccc;';
+        diagramWrapper.style.cssText = 'width: 100%; height: 500px; background: #f9f9f9; position: relative; border: 1px solid #ccc; overflow: hidden;';
         const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svgElement.id = 'sankeySection16Container';
         svgElement.style.cssText = 'width: 100%; height: 100%; display: block;'; 
@@ -614,7 +614,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         placeholderElement.innerHTML = "Sankey diagram not active.<br>Click 'Activate/Refresh Sankey' to load.";
         diagramWrapper.appendChild(placeholderElement);
         targetArea.appendChild(diagramWrapper);
-        console.log("Section 16: DOM setup complete.");
+        console.log("Section 16: DOM setup complete. Diagram wrapper height set to 500px.");
         return true; 
     }
 
