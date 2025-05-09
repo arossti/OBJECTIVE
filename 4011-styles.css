@@ -1641,108 +1641,33 @@ body.reference-mode #keyValues .key-values-table tr {
 
 /* Tooltip for Section 16 Sankey */
 #sankeySection16Tooltip {
-  position: fixed !important; /* Override any other positioning */
-  padding: 12px; /* Corresponds to --spacing-md */
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #ddd; /* Corresponds to --border-color */
-  border-radius: 4px; /* Corresponds to --border-radius */
+  display: none;
+  position: fixed !important;
+  z-index: 10000;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  max-width: 350px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
   pointer-events: none;
-  font-size: 12px; /* Corresponds to --font-size-sm */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Stronger shadow for better visibility */
-  max-width: 300px;
-  line-height: 1.4;
-  z-index: 2000; /* Higher z-index to ensure it's above all other elements */
-  font-family: Arial, sans-serif;
 }
 
 #sankeySection16Tooltip .tooltip-title {
-  font-weight: 600;
-  margin-bottom: 8px; /* Corresponds to --spacing-sm */
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ddd;
-  color: #333;
-}
-
-#sankeySection16Tooltip .tooltip-value {
-  color: #666; /* Corresponds to --text-muted */
+  font-weight: bold;
   margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
 }
 
-#sankeySection16Tooltip .tooltip-flow {
-  display: flex;
-  justify-content: space-between;
-  margin: 4px 0; /* Corresponds to --spacing-xs */
-}
-
-/* Fullscreen mode for Section 16 */
-#s16FullscreenContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
-  z-index: 3000;
-  display: none;
-  padding: 20px;
-  box-sizing: border-box;
-  overflow: auto;
-}
-
-#sankeySection16FullscreenSvg {
-  width: 100%;
-  height: calc(100% - 50px);
-  display: block;
-}
-
-#s16FullscreenBtn {
-  margin-left: auto; /* Push it to the right */
-}
-
-/* Controls for Section 16 */
-#s16ControlsContainer button,
-#s16ControlsContainer .s16-width-toggle,
-#s16FullscreenContainer button {
-  padding: 6px 12px;
-  cursor: pointer;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 12px;
-  height: 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  margin-right: 8px;
-  font-family: Arial, sans-serif;
-  transition: background-color 0.2s;
-}
-
-#s16ControlsContainer button:hover,
-#s16FullscreenContainer button:hover {
-  background-color: #e5e5e5;
-}
-
-/* Section 16 Sankey Diagram */
-.s16-sankey-node {
+#sankeySection16Svg .node,
+#sankeySection16FullscreenSvg .node {
   stroke: #000;
   stroke-width: 1px;
-  cursor: pointer;
+  fill-opacity: 1 !important;
 }
 
-.s16-sankey-link {
-  fill: none;
-  stroke-opacity: 0.7;
-  cursor: pointer;
-  transition: stroke-opacity 0.3s;
-}
-
-.s16-sankey-link:hover {
-  stroke-opacity: 0.9;
-}
-
-/* Critical fix for the links - ensure they're visible */
 #sankeySection16Svg .link,
 #sankeySection16FullscreenSvg .link {
   fill: none;
@@ -1751,39 +1676,39 @@ body.reference-mode #keyValues .key-values-table tr {
   transition: stroke-opacity 0.3s;
 }
 
-#sankeySection16Svg .link:hover,
-#sankeySection16FullscreenSvg .link:hover {
-  stroke-opacity: 0.9;
-}
-
-/* Fix for tooltip */
-#sankeySection16Tooltip {
-  position: fixed;
-  display: none;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+#sankeySection16Svg text,
+#sankeySection16FullscreenSvg text {
   font-size: 12px;
-  max-width: 300px;
-  line-height: 1.4;
-  z-index: 2000;
   pointer-events: none;
 }
 
-#sankeySection16Tooltip .tooltip-title {
-  font-weight: 600;
-  margin-bottom: 8px;
+/* Controls styling */
+#s16ControlsContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
 }
 
-#sankeySection16Tooltip .tooltip-value {
-  margin-bottom: 4px;
+#s16WidthToggleContainer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* Fullscreen container */
+/* Fullscreen styles */
 #s16FullscreenContainer {
-  background-color: white;
-  z-index: 1000;
-  overflow: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+  display: none;
 }

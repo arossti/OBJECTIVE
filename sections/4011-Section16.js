@@ -152,10 +152,18 @@ window.TEUI.SectionModules.sect16 = (function() {
                 
                 // Set up D3 elements
                 this.svg = d3.select(`#${this.containerId}`);
+                
+                // Make sure tooltip exists and is attached to body
+                let tooltipEl = document.getElementById('sankeySection16Tooltip');
+                if (!tooltipEl) {
+                    tooltipEl = document.createElement('div');
+                    tooltipEl.id = 'sankeySection16Tooltip';
+                    document.body.appendChild(tooltipEl);
+                }
                 this.tooltip = d3.select('#sankeySection16Tooltip');
                 
-                if (!this.svg || !this.tooltip) {
-                    console.error("TEUI_SankeyDiagram Error: SVG or tooltip element not initialized");
+                if (!this.svg) {
+                    console.error("TEUI_SankeyDiagram Error: SVG element not initialized");
                     return false;
                 }
                 
@@ -163,21 +171,52 @@ window.TEUI.SectionModules.sect16 = (function() {
                 console.warn("S16 SANKEY LOG: SVG and tooltip initialized");
                 console.warn("S16 SANKEY LOG: SVG dimensions", this.width, this.height);
                 
-                // Initialize the D3 sankey layout
+                // Define margins for the SVG
+                this.margin = {
+                    top: 20,
+                    right: 30,
+                    bottom: 20,
+                    left: 30
+                };
+                
+                // Set SVG dimensions
+                this.svg.attr("width", this.width)
+                    .attr("height", this.height);
+                
+                // Create main group with margin offset
+                const g = this.svg.append("g")
+                    .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
+                
+                // Create layers for different parts of the diagram
+                this.linkGroup = g.append("g").attr("class", "links");
+                this.nodeGroup = g.append("g").attr("class", "nodes");
+                this.labelGroup = g.append("g").attr("class", "labels");
+                
+                // Initialize D3 Sankey layout
                 this.sankey = d3.sankey()
                     .nodeWidth(this.nodeWidth)
                     .nodePadding(this.nodePadding)
-                    .extent([[1, 1], [this.width, this.height]]);
+                    .extent([
+                        [0, 0],
+                        [this.width - this.margin.left - this.margin.right, this.height - this.margin.top - this.margin.bottom]
+                    ]);
                 
-                // Create groups for nodes, links, and labels
-                this.svg.selectAll("*").remove(); // Clear any existing elements
-                this.linkGroup = this.svg.append("g").attr("class", "links");
-                this.nodeGroup = this.svg.append("g").attr("class", "nodes");
-                this.labelGroup = this.svg.append("g").attr("class", "labels");
+                // Define element resize observer
+                if (typeof ResizeObserver !== 'undefined') {
+                    const ro = new ResizeObserver(entries => {
+                        if (entries.length > 0 && entries[0].target === containerEl) {
+                            const { width, height } = entries[0].contentRect;
+                            if (width > 0 && height > 0) {
+                                this.resize(width, height);
+                            }
+                        }
+                    });
+                    ro.observe(containerEl);
+                }
                 
                 return true;
             } catch (error) {
-                console.error("TEUI_SankeyDiagram Error: Failed to initialize", error);
+                console.error("TEUI_SankeyDiagram Error: Initialization failed", error);
                 return false;
             }
         }
@@ -203,17 +242,18 @@ window.TEUI.SectionModules.sect16 = (function() {
                 links: JSON.parse(JSON.stringify(freshSankeyData.links))
             };
             
+            // Apply node width to the sankey layout based on multiplier
+            if (this.widthMultiplier) {
+                // Set the base node width (multiplied by slider value)
+                this.sankey.nodeWidth(this.nodeWidth * this.widthMultiplier);
+            }
+            
             // Compute the sankey diagram: assign coordinates to nodes, calculate link paths
             this.sankey(d3Data);
             
-            // Set appropriate node width if needed
-            if (this.widthMultiplier && this.widthMultiplier !== 1) {
-                d3Data.links.forEach(link => {
-                    if (link.width) {
-                        link.width = link.width * this.widthMultiplier;
-                    }
-                });
-            }
+            // Ensure we have height & width for calculations
+            const innerWidth = this.width - this.margin.left - this.margin.right;
+            const innerHeight = this.height - this.margin.top - this.margin.bottom;
             
             // Render all the elements
             this.renderNodes(d3Data.nodes, isInitialLoad);
@@ -223,14 +263,14 @@ window.TEUI.SectionModules.sect16 = (function() {
             console.log("Section 16: Sankey render call complete.");
         }
 
-        renderLinks(links, isInitialLoad, maxX) {
+        renderLinks(links, isInitialLoad) {
             console.warn("S16 SANKEY LOG: Rendering links, count:", links.length);
             
             // Debug the link data
             if (links.length > 0) {
                 console.warn("S16 SANKEY LOG: Sample link data:", {
-                    source: links[0].source,
-                    target: links[0].target,
+                    source: links[0].source.name,
+                    target: links[0].target.name,
                     value: links[0].value,
                     width: links[0].width
                 });
@@ -248,10 +288,10 @@ window.TEUI.SectionModules.sect16 = (function() {
             
             // Create new links
             const linkEnter = link.enter().append("path")
-                .attr("class", "link s16-sankey-link")
+                .attr("class", "link")
                 .attr("d", linkGenerator)
                 .style("stroke", d => this.getLinkColor(d))
-                .style("stroke-width", d => Math.max(1, d.width))
+                .style("stroke-width", d => Math.max(1, d.width || 1))
                 .style("stroke-opacity", 0)
                 .on("mouseover", (event, d) => {
                     d3.select(event.target).style("stroke-opacity", 0.9);
@@ -262,77 +302,184 @@ window.TEUI.SectionModules.sect16 = (function() {
                     this.hideTooltip();
                 });
             
-            // Update existing links
+            // Update all links (both new and existing)
             const linkUpdate = link.merge(linkEnter)
                 .attr("d", linkGenerator)
-                .style("stroke", d => this.getLinkColor(d))
-                .style("stroke-width", d => Math.max(1, d.width));
+                .style("stroke-width", d => Math.max(1, d.width || 1));
             
-            // Animate initial load
+            // Animate links on initial load
             if (isInitialLoad) {
-                linkUpdate
+                linkEnter
                     .style("stroke-opacity", 0)
                     .transition()
                     .duration(500)
-                    .delay(d => d.source.index * 20)
+                    .delay(d => (d.source.index + d.target.index) * 10)
                     .style("stroke-opacity", 0.6);
             } else {
-                linkUpdate.style("stroke-opacity", 0.6);
+                linkUpdate
+                    .style("stroke-opacity", 0.6);
             }
             
             return linkUpdate;
         }
 
-        renderNodes(nodes, isInitialLoad, maxX) {
-            const node = this.nodeGroup.selectAll(".node").data(nodes, d => d.name);
-            node.exit().transition().duration(500).attr("width", 0).remove();
-            const nodeEnter = node.enter().append("rect").attr("class", "node")
-                .style("fill", d => d.displayColor || d.color).style("fill-opacity", 1)
-                .on("mouseover", (event, d) => this.showNodeTooltip(event, d))
-                .on("mouseout", () => this.hideTooltip());
-            const nodeUpdate = node.merge(nodeEnter);
-            if (isInitialLoad) {
-                nodeUpdate.attr("x", d => d.x0).attr("y", d => d.y0)
-                    .attr("height", d => Math.max(0, d.y1 - d.y0))
-                    .attr("width", 0).style("opacity", 0);
-                nodeUpdate.transition().duration(750).delay(d => (d.x0 / maxX) * 1500)
-                    .style("opacity", 1).transition().duration(500)
-                    .attr("width", d => d.x1 - d.x0);
-            } else {
-                nodeUpdate.transition().duration(750)
-                    .attr("x", d => d.x0).attr("y", d => d.y0)
-                    .attr("height", d => Math.max(0, d.y1 - d.y0))
-                    .attr("width", d => d.x1 - d.x0);
+        renderNodes(nodes, isInitialLoad) {
+            console.warn("S16 SANKEY LOG: Rendering nodes, count:", nodes.length);
+            
+            // Debug node data
+            if (nodes.length > 0) {
+                console.warn("S16 SANKEY LOG: Sample node data:", {
+                    name: nodes[0].name,
+                    x0: nodes[0].x0,
+                    y0: nodes[0].y0,
+                    width: nodes[0].x1 - nodes[0].x0,
+                    height: nodes[0].y1 - nodes[0].y0
+                });
             }
+            
+            // Select all existing nodes and bind data
+            const node = this.nodeGroup.selectAll(".node")
+                .data(nodes, d => d.name);
+            
+            // Remove any old nodes that are no longer in the data
+            node.exit().remove();
+            
+            // Create new nodes
+            const nodeEnter = node.enter().append("rect")
+                .attr("class", "node s16-sankey-node")
+                .style("fill", d => d.color || "#999")
+                .style("stroke", d => d3.color(d.color || "#999").darker(0.5))
+                .style("fill-opacity", 1)
+                .on("mouseover", (event, d) => {
+                    d3.select(event.target).style("fill-opacity", 0.8);
+                    this.showNodeTooltip(event, d);
+                })
+                .on("mouseout", (event) => {
+                    d3.select(event.target).style("fill-opacity", 1);
+                    this.hideTooltip();
+                });
+            
+            // Update all nodes (both new and existing)
+            const nodeUpdate = node.merge(nodeEnter)
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
+                .attr("width", d => (d.x1 - d.x0) * this.widthMultiplier)
+                .attr("height", d => Math.max(1, d.y1 - d.y0));
+            
+            // Animate nodes on initial load
+            if (isInitialLoad) {
+                nodeEnter
+                    .style("opacity", 0)
+                    .transition()
+                    .duration(500)
+                    .delay(d => d.index * 20)
+                    .style("opacity", 1);
+            }
+            
+            return nodeUpdate;
         }
 
-        renderLabels(nodes, isInitialLoad, maxX, svgWidth) {
-            const label = this.labelGroup.selectAll(".node-label").data(nodes, d => d.name);
-            label.exit().transition().duration(500).style("opacity", 0).remove();
-            const labelEnter = label.enter().append("text").attr("class", "node-label").style("opacity", 0);
-            const labelUpdate = label.merge(labelEnter)
-                .attr("x", d => (d.x0 < svgWidth / 2 ? d.x1 + 5 : d.x0 - 5))
-                .attr("y", d => (d.y0 + d.y1) / 2).attr("dy", "0.35em")
-                .attr("text-anchor", d => (d.x0 < svgWidth / 2 ? "start" : "end"))
-                .text(d => this.formatNodeLabel(d));
+        renderLabels(nodes, isInitialLoad) {
+            console.warn("S16 SANKEY LOG: Rendering labels, count:", nodes.length);
+            
+            // Select and bind labels
+            const text = this.labelGroup.selectAll(".node-label")
+                .data(nodes, d => d.name);
+            
+            // Remove old labels
+            text.exit().remove();
+            
+            // Create new labels
+            const textEnter = text.enter().append("text")
+                .attr("class", "node-label")
+                .attr("text-anchor", d => d.x0 < this.width / 2 ? "start" : "end")
+                .attr("x", d => d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr("y", d => (d.y1 + d.y0) / 2)
+                .attr("dy", "0.35em")
+                .text(d => d.name);
+            
+            // Update all labels (both new and existing)
+            const textUpdate = text.merge(textEnter)
+                .attr("text-anchor", d => d.x0 < this.width / 2 ? "start" : "end")
+                .attr("x", d => d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr("y", d => (d.y1 + d.y0) / 2);
+            
+            // Animate labels on initial load
             if (isInitialLoad) {
-                labelUpdate.transition().duration(750).delay(d => (d.x0 / maxX) * 1500 + 500).style("opacity", 1);
-            } else {
-                labelUpdate.transition().duration(750).style("opacity", 1);
+                textEnter
+                    .style("opacity", 0)
+                    .transition()
+                    .duration(500)
+                    .delay(d => d.index * 20)
+                    .style("opacity", 1);
             }
+            
+            return textUpdate;
         }
 
         showNodeTooltip(event, d) {
-            console.warn("S16 SANKEY LOG: showNodeTooltip triggered for node:", d ? d.name : 'undefined', "event:", event);
-            const content = this.createNodeTooltip(d);
+            // Create a simple formatter function as fallback
+            const formatNumber = value => {
+                // Check if window.TEUI.formatNumber exists
+                if (window.TEUI && typeof window.TEUI.formatNumber === 'function') {
+                    return window.TEUI.formatNumber(value, 'number-2dp');
+                }
+                else {
+                    return parseFloat(value).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            };
+            
+            // Create tooltip content
+            const nodeName = d.name;
+            const incoming = d.targetLinks || [];
+            const outgoing = d.sourceLinks || [];
+            const totalValue = d.value || incoming.reduce((sum, link) => sum + link.value, 0);
+            
+            let content = `<div class="tooltip-title">${nodeName}</div>`;
+            content += `<div>Total Flow: ${formatNumber(totalValue)} kWh</div>`;
+            
+            if (incoming.length > 0) {
+                content += `<div style="margin-top:8px;"><strong>Incoming:</strong></div>`;
+                incoming.forEach(link => {
+                    const sourceName = typeof link.source === 'object' ? link.source.name : 'Unknown';
+                    content += `<div>From ${sourceName}: ${formatNumber(link.value)} kWh</div>`;
+                });
+            }
+            
+            if (outgoing.length > 0) {
+                content += `<div style="margin-top:8px;"><strong>Outgoing:</strong></div>`;
+                outgoing.forEach(link => {
+                    const targetName = typeof link.target === 'object' ? link.target.name : 'Unknown';
+                    content += `<div>To ${targetName}: ${formatNumber(link.value)} kWh</div>`;
+                });
+            }
+            
             this.showTooltip(content, event);
-            d3.select(event.target).style("fill-opacity", 0.8);
         }
 
         showLinkTooltip(event, d) {
-            // Format values using StateManager's number formatter
-            const formatter = window.TEUI.StateManager ? window.TEUI.StateManager.getNumberFormat() : null;
-            const formatNumber = formatter ? formatter : d => Math.round(d).toLocaleString();
+            // Create a simple formatter function as fallback
+            const formatNumber = value => {
+                // Check if window.TEUI.formatNumber exists
+                if (window.TEUI && typeof window.TEUI.formatNumber === 'function') {
+                    return window.TEUI.formatNumber(value, 'number-2dp');
+                }
+                // If StateManager exists but no getNumberFormat
+                else if (window.TEUI && window.TEUI.StateManager) {
+                    return parseFloat(value).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+                // Fallback to basic formatting
+                return parseFloat(value).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            };
             
             // Determine source and target names
             const sourceName = typeof d.source === 'object' ? d.source.name : 'Unknown';
@@ -411,31 +558,72 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         showTooltip(content, event) {
-            console.warn("S16 SANKEY LOG: showTooltip called with content:", content);
-            
             if (!this.tooltip || this.tooltip.empty()) {
                 console.error("TEUI_SankeyDiagram Error: Tooltip element not found");
                 return;
             }
             
-            // Get mouse coordinates
-            const mouseX = event.pageX;
-            const mouseY = event.pageY;
+            // First, make sure tooltip is part of document body
+            if (this.tooltip.node().parentNode !== document.body) {
+                d3.select(this.tooltip.node()).remove();
+                this.tooltip = d3.select("body")
+                    .append("div")
+                    .attr("id", "sankeySection16Tooltip");
+            }
             
-            // Set tooltip content and position
+            // Get mouse coordinates relative to viewport
+            const mouseX = event.clientX || event.pageX - window.scrollX;
+            const mouseY = event.clientY || event.pageY - window.scrollY;
+            
+            // Debug log
+            console.warn("S16 SANKEY LOG: Showing tooltip at", mouseX, mouseY, "with content:", content.substring(0, 50) + "...");
+
+            // Set tooltip content and make it visible
             this.tooltip
                 .html(content)
                 .style("display", "block")
                 .style("left", (mouseX + 15) + "px")
-                .style("top", (mouseY + 15) + "px");
+                .style("top", (mouseY + 15) + "px")
+                .style("opacity", 0)
+                .style("z-index", "10000")
+                .transition()
+                .duration(200)
+                .style("opacity", 1);
             
-            // Force the tooltip to be visible for debugging
-            console.warn("S16 SANKEY LOG: Tooltip positioned at", mouseX, mouseY);
+            // Get tooltip dimensions
+            const tooltipWidth = this.tooltip.node().offsetWidth;
+            const tooltipHeight = this.tooltip.node().offsetHeight;
+            
+            // Check if tooltip goes off screen and adjust if needed
+            const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            
+            let left = mouseX + 15;
+            let top = mouseY + 15;
+            
+            if (left + tooltipWidth > viewportWidth - 10) {
+                left = mouseX - tooltipWidth - 15;
+            }
+            
+            if (top + tooltipHeight > viewportHeight - 10) {
+                top = mouseY - tooltipHeight - 15;
+            }
+            
+            // Update position if needed
+            this.tooltip
+                .style("left", left + "px")
+                .style("top", top + "px");
         }
 
         hideTooltip() {
-            if (this.tooltip) {
-                this.tooltip.style("display", "none");
+            if (this.tooltip && !this.tooltip.empty()) {
+                this.tooltip
+                    .transition()
+                    .duration(200)
+                    .style("opacity", 0)
+                    .on("end", function() {
+                        d3.select(this).style("display", "none");
+                    });
             }
         }
 
@@ -528,28 +716,34 @@ window.TEUI.SectionModules.sect16 = (function() {
             return link ? link.value : 0;
         }
 
-        resize(newWidth, newHeight = 500) {
-            if (!this.svg || !this.sankey || !this._cleanDataInput) {
-                console.warn("S16 SANKEY LOG: Sankey not initialized or no data for resize"); 
-                return; 
+        resize(newWidth, newHeight) {
+            console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight);
+            
+            // Update dimensions
+            if (newWidth && newHeight) {
+                this.width = newWidth;
+                this.height = newHeight;
             }
-            const defaultMarginLeft = 40; // Consistent left margin
-            const defaultMarginOthers = 1; // Minimal top/right/bottom
-
-            const innerWidth = Math.max(100, newWidth - defaultMarginLeft - defaultMarginOthers);
-            const innerHeight = Math.max(50, newHeight - defaultMarginOthers*2);
             
-            this.svg.attr("width", newWidth).attr("height", newHeight)
-                .attr("viewBox", `0 0 ${newWidth} ${newHeight}`).style("overflow", "visible");
+            // Calculate inner dimensions (accounting for margins)
+            const innerWidth = this.width - this.margin.left - this.margin.right;
+            const innerHeight = this.height - this.margin.top - this.margin.bottom;
             
-            this.sankey.extent([[defaultMarginLeft, defaultMarginOthers], [newWidth - defaultMarginOthers, newHeight - defaultMarginOthers]]);
-            this.sankey.size([innerWidth, innerHeight]);
             console.warn("S16 SANKEY LOG: Resize called. New Width:", newWidth, "New Height:", newHeight, "Inner W/H:", innerWidth, innerHeight);
             
-            if (this._cleanDataInput.nodes && this._cleanDataInput.nodes.length > 0) {
-                 this.render(this._cleanDataInput, false);
-            } else {
-                console.warn("S16 SANKEY LOG: Sankey resize - No clean data to render.");
+            // Update SVG dimensions
+            this.svg.attr("width", this.width)
+                    .attr("height", this.height);
+            
+            // Update the sankey layout extent
+            this.sankey.extent([
+                [0, 0],
+                [innerWidth, innerHeight]
+            ]);
+            
+            // Re-render with existing data if available
+            if (this._cleanDataInput) {
+                this.render(this._cleanDataInput, false);
             }
         }
 
@@ -636,119 +830,121 @@ window.TEUI.SectionModules.sect16 = (function() {
         activateBtn.textContent = 'Activate Sankey';
         controlsContainer.appendChild(activateBtn);
         
-        // Create the emissions toggle button
+        // Create emissions toggle button (initially hidden)
         const emissionsBtn = document.createElement('button');
         emissionsBtn.id = 's16ToggleEmissionsBtn';
-        emissionsBtn.className = 'teui-button teui-button-secondary';
+        emissionsBtn.className = 'teui-button';
         emissionsBtn.textContent = 'Show Emissions';
         emissionsBtn.style.display = 'none';
         controlsContainer.appendChild(emissionsBtn);
         
-        // Create the spacing toggle button
+        // Create spacing toggle button (initially hidden)
         const spacingBtn = document.createElement('button');
         spacingBtn.id = 's16ToggleSpacingBtn';
-        spacingBtn.className = 'teui-button teui-button-secondary';
+        spacingBtn.className = 'teui-button';
         spacingBtn.textContent = 'Compress Nodes';
         spacingBtn.style.display = 'none';
         controlsContainer.appendChild(spacingBtn);
         
-        // Create the fullscreen button
+        // Create fullscreen button (initially hidden)
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.id = 's16FullscreenBtn';
-        fullscreenBtn.className = 'teui-button teui-button-secondary';
-        fullscreenBtn.innerHTML = '<i class="fa fa-expand"></i> Fullscreen';
+        fullscreenBtn.className = 'teui-button';
+        fullscreenBtn.textContent = 'Fullscreen';
         fullscreenBtn.style.display = 'none';
         controlsContainer.appendChild(fullscreenBtn);
         
-        // Create the width multiplier control
+        // Create width multiplier slider container (initially hidden)
         const widthToggleContainer = document.createElement('div');
         widthToggleContainer.id = 's16WidthToggleContainer';
-        widthToggleContainer.style.cssText = 'display: none; align-items: center; gap: 5px;';
-        
-        const widthLabel = document.createElement('label');
-        widthLabel.htmlFor = 's16WidthMultiplierSlider';
-        widthLabel.textContent = 'Width:';
-        widthToggleContainer.appendChild(widthLabel);
-        
-        const widthSlider = document.createElement('input');
-        widthSlider.id = 's16WidthMultiplierSlider';
-        widthSlider.type = 'range';
-        widthSlider.min = '50';
-        widthSlider.max = '200';
-        widthSlider.value = '100';
-        widthSlider.style.width = '100px';
-        widthToggleContainer.appendChild(widthSlider);
-        
-        const widthValueText = document.createElement('span');
-        widthValueText.id = 's16WidthValueText';
-        widthValueText.textContent = '100%';
-        widthValueText.style.minWidth = '40px';
-        widthToggleContainer.appendChild(widthValueText);
-        
+        widthToggleContainer.style.display = 'none';
+        widthToggleContainer.innerHTML = `
+            <label for="s16WidthMultiplierSlider">Width:</label>
+            <input type="range" id="s16WidthMultiplierSlider" min="25" max="200" value="100" step="5">
+            <span>100%</span>
+        `;
         controlsContainer.appendChild(widthToggleContainer);
         
         // Add the controls to the target area
         targetArea.appendChild(controlsContainer);
         
-        // Create the loading placeholder
-        const loadingPlaceholder = document.createElement('div');
-        loadingPlaceholder.id = 's16LoadingPlaceholder';
-        loadingPlaceholder.className = 'placeholder-text';
-        loadingPlaceholder.textContent = 'Activate the Sankey diagram to visualize building energy flows.';
-        loadingPlaceholder.style.cssText = 'padding: 20px; text-align: center; color: #666;';
-        targetArea.appendChild(loadingPlaceholder);
-        
-        // Create the diagram wrapper
+        // Create the diagram wrapper div
         const diagramWrapper = document.createElement('div');
         diagramWrapper.id = 's16DiagramWrapper';
-        diagramWrapper.style.cssText = 'display: none; width: 100%; height: 700px; position: relative; overflow: hidden;';
+        diagramWrapper.style.cssText = 'width: 100%; height: 600px; position: relative; display: none;';
         
-        // Create the SVG container for the Sankey diagram
-        const svgContainer = document.createElement('div');
-        svgContainer.id = 'sankeySection16Container';
-        svgContainer.style.cssText = 'width: 100%; height: 100%; position: relative;';
-        
-        // Create the SVG element
+        // Create the SVG element for the Sankey diagram
         const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svgElement.id = 'sankeySection16Svg';
-        svgElement.style.cssText = 'width: 100%; height: 100%;';
-        svgContainer.appendChild(svgElement);
+        svgElement.style.cssText = 'width: 100%; height: 100%; display: block;';
+        diagramWrapper.appendChild(svgElement);
         
-        diagramWrapper.appendChild(svgContainer);
+        // Create loading placeholder
+        const loadingPlaceholder = document.createElement('div');
+        loadingPlaceholder.id = 's16LoadingPlaceholder';
+        loadingPlaceholder.className = 'teui-loading-placeholder';
+        loadingPlaceholder.innerHTML = '<p>Activate the Sankey diagram to visualize energy flows.</p>';
+        loadingPlaceholder.style.cssText = 'padding: 20px; text-align: center; background: #f9f9f9; border-radius: 4px;';
+        
+        // Add diagram wrapper and loading placeholder to target area
         targetArea.appendChild(diagramWrapper);
-        
-        // Create the tooltip element
-        const tooltipDiv = document.createElement('div');
-        tooltipDiv.id = 'sankeySection16Tooltip';
-        tooltipDiv.style.cssText = 'position: fixed; display: none; padding: 10px; background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 1000; pointer-events: none;';
-        document.body.appendChild(tooltipDiv);
+        targetArea.appendChild(loadingPlaceholder);
         
         // Create the fullscreen container
         const fullscreenContainer = document.createElement('div');
         fullscreenContainer.id = 's16FullscreenContainer';
-        fullscreenContainer.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); z-index: 9999; padding: 20px; box-sizing: border-box;';
+        fullscreenContainer.style.cssText = 'display: none;';
         
-        const fullscreenControls = document.createElement('div');
-        fullscreenControls.style.cssText = 'margin-bottom: 20px; display: flex; gap: 10px; align-items: center;';
+        // Create fullscreen controls
+        const fullscreenControlsContainer = document.createElement('div');
+        fullscreenControlsContainer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;';
         
+        // Create fullscreen title
+        const fullscreenTitle = document.createElement('h2');
+        fullscreenTitle.textContent = 'Energy Flow Diagram (Sankey)';
+        fullscreenTitle.style.cssText = 'margin: 0;';
+        fullscreenControlsContainer.appendChild(fullscreenTitle);
+        
+        // Create fullscreen controls right side
+        const fullscreenControlsRight = document.createElement('div');
+        fullscreenControlsRight.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+        
+        // Create fullscreen width slider
+        const fullscreenWidthToggle = document.createElement('div');
+        fullscreenWidthToggle.id = 's16FullscreenWidthToggle';
+        fullscreenWidthToggle.style.cssText = 'display: flex; align-items: center; gap: 5px;';
+        fullscreenWidthToggle.innerHTML = `
+            <label for="s16FullscreenWidthSlider">Width:</label>
+            <input type="range" id="s16FullscreenWidthSlider" min="25" max="200" value="100" step="5">
+            <span>100%</span>
+        `;
+        fullscreenControlsRight.appendChild(fullscreenWidthToggle);
+        
+        // Create fullscreen close button
         const fullscreenCloseBtn = document.createElement('button');
         fullscreenCloseBtn.id = 's16FullscreenCloseBtn';
         fullscreenCloseBtn.className = 'teui-button';
-        fullscreenCloseBtn.innerHTML = '<i class="fa fa-times"></i> Close';
-        fullscreenControls.appendChild(fullscreenCloseBtn);
+        fullscreenCloseBtn.textContent = 'Close';
+        fullscreenControlsRight.appendChild(fullscreenCloseBtn);
         
-        fullscreenContainer.appendChild(fullscreenControls);
+        fullscreenControlsContainer.appendChild(fullscreenControlsRight);
+        fullscreenContainer.appendChild(fullscreenControlsContainer);
         
-        const fullscreenSvgContainer = document.createElement('div');
-        fullscreenSvgContainer.style.cssText = 'width: 100%; height: calc(100% - 60px); position: relative;';
-        
+        // Create the fullscreen SVG
         const fullscreenSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         fullscreenSvg.id = 'sankeySection16FullscreenSvg';
-        fullscreenSvg.style.cssText = 'width: 100%; height: 100%;';
-        fullscreenSvgContainer.appendChild(fullscreenSvg);
+        fullscreenSvg.style.cssText = 'width: 100%; height: calc(100% - 50px); display: block;';
+        fullscreenContainer.appendChild(fullscreenSvg);
         
-        fullscreenContainer.appendChild(fullscreenSvgContainer);
+        // Add the fullscreen container to the body
         document.body.appendChild(fullscreenContainer);
+        
+        // Make sure tooltip container exists
+        if (!document.getElementById('sankeySection16Tooltip')) {
+            const tooltipDiv = document.createElement('div');
+            tooltipDiv.id = 'sankeySection16Tooltip';
+            document.body.appendChild(tooltipDiv);
+        }
         
         console.log("Section 16: DOM setup complete");
         return true;
@@ -794,11 +990,29 @@ window.TEUI.SectionModules.sect16 = (function() {
             });
         }
         if (widthSlider) {
+            const widthValueText = document.querySelector('#s16WidthToggleContainer span');
+            
             widthSlider.addEventListener('input', function() {
-                window.TEUI.sect16.nodeWidthMultiplier = parseInt(this.value) / 100;
-                const widthValueText = document.getElementById('s16WidthValueText');
-                if (widthValueText) widthValueText.textContent = `${this.value}%`;
-                if (window.TEUI.sect16.isActive) fetchDataAndRenderSankey(false);
+                const value = parseFloat(this.value) / 100;
+                if (widthValueText) {
+                    widthValueText.textContent = `${Math.round(value * 100)}%`;
+                }
+                
+                // Update the node width multiplier
+                window.TEUI.sect16.nodeWidthMultiplier = value;
+                
+                // Apply to the active instance
+                if (window.TEUI.sect16.sankeyInstance) {
+                    window.TEUI.sect16.sankeyInstance.widthMultiplier = value;
+                    
+                    // Trigger re-render with the current data
+                    if (window.TEUI.sect16.sankeyInstance._cleanDataInput) {
+                        window.TEUI.sect16.sankeyInstance.render(
+                            window.TEUI.sect16.sankeyInstance._cleanDataInput, 
+                            false
+                        );
+                    }
+                }
             });
         }
         
@@ -819,35 +1033,94 @@ window.TEUI.SectionModules.sect16 = (function() {
                 const fullscreenSvg = document.getElementById('sankeySection16FullscreenSvg');
                 if (!fullscreenSvg) return;
                 
-                // Create a separate Sankey instance for fullscreen if needed
+                // Create a separate Sankey instance for fullscreen
                 if (!window.TEUI.sect16.fullscreenSankeyInstance) {
                     window.TEUI.sect16.fullscreenSankeyInstance = new TEUI_SankeyDiagram({
                         containerId: 'sankeySection16FullscreenSvg',
-                        width: fullscreenContainer.clientWidth - 40, // Account for padding
-                        height: fullscreenContainer.clientHeight - 80, // Account for controls and padding
-                        nodeWidth: 20,
-                        nodePadding: 15,
+                        width: fullscreenContainer.clientWidth - 40, // account for padding
+                        height: fullscreenContainer.clientHeight - 100, // account for controls and padding
+                        nodeWidth: window.TEUI.sect16.defaultNodeWidth,
+                        nodePadding: window.TEUI.sect16.nodePadding,
+                        showEmissions: window.TEUI.sect16.showEmissions,
                         isFullscreen: true
                     });
                     
+                    window.TEUI.sect16.fullscreenSankeyInstance.widthMultiplier = 
+                        window.TEUI.sect16.nodeWidthMultiplier;
+                        
                     window.TEUI.sect16.fullscreenSankeyInstance.init();
                 }
                 
-                // Copy the data from the main instance
-                if (window.TEUI.sect16.sankeyInstance && window.TEUI.sect16.sankeyInstance._cleanDataInput) {
+                // Get current data from main instance if available
+                if (window.TEUI.sect16.sankeyInstance && 
+                    window.TEUI.sect16.sankeyInstance._cleanDataInput) {
+                    
+                    // Render with the same data as the main view
                     window.TEUI.sect16.fullscreenSankeyInstance.render(
-                        window.TEUI.sect16.sankeyInstance._cleanDataInput,
-                        true // initial load animation
+                        window.TEUI.sect16.sankeyInstance._cleanDataInput, 
+                        true
                     );
+                } else {
+                    // Fallback to fetch new data
+                    const sankeyData = buildSankeyDataFromStateManager();
+                    window.TEUI.sect16.fullscreenSankeyInstance.render(sankeyData, true);
+                }
+                
+                // Create an update timer to handle window resize
+                let resizeTimer;
+                const handleResize = function() {
+                    if (window.TEUI.sect16.fullscreenSankeyInstance) {
+                        window.TEUI.sect16.fullscreenSankeyInstance.resize(
+                            fullscreenContainer.clientWidth - 40,
+                            fullscreenContainer.clientHeight - 100
+                        );
+                    }
+                };
+                
+                // Handle window resize events
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(handleResize, 100);
+                });
+                
+                // Add fullscreen width slider functionality
+                const fullscreenWidthSlider = document.getElementById('s16FullscreenWidthSlider');
+                if (fullscreenWidthSlider) {
+                    const fullscreenWidthValueText = document.querySelector('#s16FullscreenWidthToggle span');
+                    
+                    // Set initial value
+                    fullscreenWidthSlider.value = window.TEUI.sect16.nodeWidthMultiplier * 100;
+                    if (fullscreenWidthValueText) {
+                        fullscreenWidthValueText.textContent = `${Math.round(window.TEUI.sect16.nodeWidthMultiplier * 100)}%`;
+                    }
+                    
+                    fullscreenWidthSlider.addEventListener('input', function() {
+                        const value = parseFloat(this.value) / 100;
+                        if (fullscreenWidthValueText) {
+                            fullscreenWidthValueText.textContent = `${Math.round(value * 100)}%`;
+                        }
+                        
+                        if (window.TEUI.sect16.fullscreenSankeyInstance) {
+                            window.TEUI.sect16.fullscreenSankeyInstance.widthMultiplier = value;
+                            
+                            // Trigger re-render with current data
+                            if (window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput) {
+                                window.TEUI.sect16.fullscreenSankeyInstance.render(
+                                    window.TEUI.sect16.fullscreenSankeyInstance._cleanDataInput,
+                                    false
+                                );
+                            }
+                        }
+                    });
                 }
             });
             
-            // Fullscreen close button
+            // Add close button functionality
             if (fullscreenCloseBtn) {
                 fullscreenCloseBtn.addEventListener('click', function() {
                     if (fullscreenContainer) {
                         fullscreenContainer.style.display = 'none';
-                        document.body.style.overflow = ''; // Restore scrolling
+                        document.body.style.overflow = '';
                     }
                 });
             }
