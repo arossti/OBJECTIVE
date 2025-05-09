@@ -821,20 +821,20 @@ window.TEUI.SectionModules.sect16 = (function() {
         // Create the controls container
         const controlsContainer = document.createElement('div');
         controlsContainer.id = 's16ControlsContainer';
-        controlsContainer.style.cssText = 'padding: 10px 0; margin-bottom: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;';
+        controlsContainer.style.cssText = 'padding: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;';
         
         // Create the activate button
         const activateBtn = document.createElement('button');
         activateBtn.id = 's16ActivateBtn';
         activateBtn.className = 'teui-button';
-        activateBtn.textContent = 'Activate Sankey';
+        activateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Activate Sankey';
         controlsContainer.appendChild(activateBtn);
         
         // Create emissions toggle button (initially hidden)
         const emissionsBtn = document.createElement('button');
         emissionsBtn.id = 's16ToggleEmissionsBtn';
         emissionsBtn.className = 'teui-button';
-        emissionsBtn.textContent = 'Show Emissions';
+        emissionsBtn.innerHTML = '<i class="bi bi-cloud"></i> Show Emissions';
         emissionsBtn.style.display = 'none';
         controlsContainer.appendChild(emissionsBtn);
         
@@ -842,7 +842,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         const spacingBtn = document.createElement('button');
         spacingBtn.id = 's16ToggleSpacingBtn';
         spacingBtn.className = 'teui-button';
-        spacingBtn.textContent = 'Compress Nodes';
+        spacingBtn.innerHTML = '<i class="bi bi-arrows-angle-contract"></i> Compress Nodes';
         spacingBtn.style.display = 'none';
         controlsContainer.appendChild(spacingBtn);
         
@@ -850,7 +850,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.id = 's16FullscreenBtn';
         fullscreenBtn.className = 'teui-button';
-        fullscreenBtn.textContent = 'Fullscreen';
+        fullscreenBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i> Fullscreen';
         fullscreenBtn.style.display = 'none';
         controlsContainer.appendChild(fullscreenBtn);
         
@@ -860,7 +860,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         widthToggleContainer.style.display = 'none';
         widthToggleContainer.innerHTML = `
             <label for="s16WidthMultiplierSlider">Width:</label>
-            <input type="range" id="s16WidthMultiplierSlider" min="25" max="200" value="100" step="5">
+            <input type="range" id="s16WidthMultiplierSlider" min="25" max="400" value="100" step="5">
             <span>100%</span>
         `;
         controlsContainer.appendChild(widthToggleContainer);
@@ -915,7 +915,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         fullscreenWidthToggle.style.cssText = 'display: flex; align-items: center; gap: 5px;';
         fullscreenWidthToggle.innerHTML = `
             <label for="s16FullscreenWidthSlider">Width:</label>
-            <input type="range" id="s16FullscreenWidthSlider" min="25" max="200" value="100" step="5">
+            <input type="range" id="s16FullscreenWidthSlider" min="25" max="400" value="100" step="5">
             <span>100%</span>
         `;
         fullscreenControlsRight.appendChild(fullscreenWidthToggle);
@@ -924,7 +924,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         const fullscreenCloseBtn = document.createElement('button');
         fullscreenCloseBtn.id = 's16FullscreenCloseBtn';
         fullscreenCloseBtn.className = 'teui-button';
-        fullscreenCloseBtn.textContent = 'Close';
+        fullscreenCloseBtn.innerHTML = '<i class="bi bi-x-lg"></i> Close';
         fullscreenControlsRight.appendChild(fullscreenCloseBtn);
         
         fullscreenControlsContainer.appendChild(fullscreenControlsRight);
