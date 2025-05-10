@@ -491,20 +491,11 @@ The following table provides the current implementation status of all calculator
 | 13 | Mechanical Loads | 4011-Section13.js | ✅ Complete | HVAC systems and loads |
 | 14 | TEDI Summary | 4011-Section14.js | ✅ Complete | Thermal Energy Demand Intensity summary |
 | 15 | TEUI Summary | 4011-Section15.js | ✅ Complete | Total Energy Use Intensity summary |
-| 16 | Sankey Diagram | 4011-Section16.js | 🚧 In Progress | Core D3.js Sankey visualization integrated. Fetches data from TEUI StateManager to display energy flows and (optionally) total emissions. Awaiting final data mapping verification and full CSS integration. |
-| 17 | Dependency Diagram | (Pending) | 🔄 Pending | Calculation dependencies visualization |
+| 16 | Sankey Diagram | 4011-Section16.js | ✅ Complete | D3.js Sankey visualization integrated with energy flow and emissions visualization, featuring improved UI styling and accurate emissions data sourcing from Section 7 and 13. |
+| 17 | Dependency Diagram | 4011-Section17.js | ✅ Complete | Calculation dependencies visualization with interactive node highlighting |
 | 18 | Notes | (Partial) | 🔄 Partial | User notes and documentation |
 
-All core calculator sections (01-15) have been implemented with the declarative approach, replacing the previous imperative implementation. Each section follows the standard pattern with field definitions, layouts, and calculation methods. Dev team must verify compliance with DOM standards and correct mapping of all cells with dependencies and calculations. 
-
-### Future Work & Refactoring Opportunities
-
-- **Standardize Helpers**: Apply the helper function pattern (using only global utilities within standard helpers defined inside the IIFE) consistently across all remaining sections (e.g., Sections 01, 02, 05-15). Remove redundant local helpers and fallbacks. Section 13, in particular, requires this refactoring to resolve existing errors.
-- **Review Listeners**: Ensure all cross-section calculations triggered by calculated fields use the `StateManager.addListener` pattern correctly, triggering necessary downstream calculations within the listener's callback.
-- **Refine `registerCalculations`**: Examine the `registerCalculations` function in sections like Section 04 to ensure it aligns with the primary dependency/listener patterns and doesn't conflict with StateManager's intended flow (as noted in the README).
-- **Code Cleanup**: Remove commented-out code blocks and unnecessary console logs (excluding specific DEBUG logs) from all sections.
-
-The visualization sections (16-17) are currently pending implementation, with planned features for interactive energy flow diagrams and calculation dependency visualization - or possibly a unified graphics panel where stacked bar-graph energy-balance diagrams and cooling balance diagrams are integrated with the sankey (as they have been in the standalone sankey app).
+All core calculator sections (01-15) have been implemented with the declarative approach, replacing the previous imperative implementation. Visualization sections (16-17) are now also complete, with Sankey diagrams for energy flows/emissions and dependency visualizations.
 
 ## 3. Calculation Implementation
 
@@ -748,11 +739,10 @@ A comprehensive verification process ensures accuracy:
 
 1. **Mobile Responsiveness**: Additional work needed for small screens - sticky header needs to either collapse/minify or roll with other sections if iOS or Android detected
 2. **Performance Optimization**: Further optimization for large datasets
-3. **Advanced Visualizations**: Implementation of Sankey and dependency diagrams
-4. **Field Verification**: Continued verification of field alignments and calculations
-5. **Improved whitespace optimization through flex columns, etc.
-6. **SIMPLE or n00b MODE, where all redundant organizational descriptive text is hidden from the UI and only relevant user inputs and tooltips are rendered per each section
-7. **SMS-based file save/open and transfer system**. 🧮 Rough Estimate:
+3. **Field Verification**: Continued verification of field alignments and calculations
+4. **Improved whitespace optimization through flex columns, etc.
+5. **SIMPLE or n00b MODE, where all redundant organizational descriptive text is hidden from the UI and only relevant user inputs and tooltips are rendered per each section
+6. **SMS-based file save/open and transfer system**. 🧮 Rough Estimate:
 
 If each field has max value 999999, we need:
 
@@ -769,13 +759,13 @@ Show it as a message
 Let the user copy/send it to themselves
 Decode it later from SMS by pasting it back in
 
-8. **Number Display Formatting**: 
+7. **Number Display Formatting**: 
    - **TODO:** Implement consistent number display formatting across all sections. Ensure that:
        - Integer inputs/calculations are displayed with two decimal places (e.g., `24` becomes `24.00`).
        - Zero values are displayed as `0.00`.
        - Emptying a field (e.g., via Cut/Delete/Backspace) results in `0.00` being displayed and stored (or handle appropriately based on field requirements). Refactor `formatNumber` helpers and input field `blur` event handlers as needed.
 
-9. **Section Naming Refactor**:
+8. **Section Naming Refactor**:
    - **Current State**: Sections use verbose, natural language IDs (e.g., 'envelopeTransmissionLosses', 'mechanicalLoads')
    - **Target State**: Return to simple numeric nomenclature ('sect01', 'sect02', etc.)
    - **Rationale**:
@@ -790,14 +780,20 @@ Decode it later from SMS by pasting it back in
      - Create mapping documentation between numeric IDs and their functions
    - **Note**: Current verbose names are a temporary workaround and should not be replicated in new section implementations
 
-10. **Elevation Data Handling (Section 03)**:
+9. **Elevation Data Handling (Section 03)**:
     - **Status**: Placeholder added (`l_22` in Section 03). Dynamic fetching pending.
     - **Issue**: Cooling calculations require project elevation ASL (metres) to accurately adjust atmospheric pressure. Currently, this defaults to 80m (Alexandria, ON) in Section 13.
     - **Plan**: A placeholder field (`l_22`) has been added to the Section 03 layout. Future work involves refactoring Section 03 to dynamically populate `l_22` based on the selected city's elevation from the weather data source. Section 13's cooling calculations will then read this dynamic value.
 
-11. **Ventilation Constant Discrepancy:**
+10. **Ventilation Constant Discrepancy:**
     - **Issue:** There's a potential inconsistency in constants used for ventilation calculations. Formulas involving ventilation energy (e.g., `d_121`, `d_122`) often use a factor of `1.21` (which implicitly includes density and specific heat for L/s flow rates). However, the `coolingState` object defines `airMass` as `1.204` (kg/m³) and `specificHeatCapacity` as `1005` (J/kg·K). 
     - **Plan:** Review these constants and their application in Sections 13 and potentially other sections during future refactoring to ensure consistent physics are applied (either stick to the `1.21` convention or refactor formulas to explicitly use density and specific heat with m³/s rates).
+
+11. **Conditional Ghosting for UI Fields:**
+    - **Issue:** Attempts to implement conditional field ghosting (using the 'disabled-input' class) based on dropdown selections can interfere with core calculation logic. 
+    - **Example:** When attempting to ghost emissions fields in sections 7 and 13 based on fuel type selections (Oil/Gas vs Electric/Heatpump), the changes unexpectedly broke calculation fidelity with the Excel codebase.
+    - **Caution:** Changes to UI ghosting logic should be implemented with extreme care, thoroughly tested against the Excel reference model, and immediately reverted if calculation discrepancies are observed.
+    - **Plan:** Future UI improvements should separate presentation logic (ghosting) from calculation logic more completely to avoid these interactions.
 
 ## Domain Setup
 
