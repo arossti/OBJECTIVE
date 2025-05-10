@@ -381,28 +381,51 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         showNodeTooltip(event, d) {
-            // Create tooltip content
             const nodeName = d.name;
             const incoming = d.targetLinks || [];
             const outgoing = d.sourceLinks || [];
             const totalValue = d.value || incoming.reduce((sum, link) => sum + link.value, 0);
             
             let content = `<div class="tooltip-title">${nodeName}</div>`;
-            content += `<div>Total Flow: ${window.TEUI.formatNumber(totalValue, 'number-2dp-comma')} kWh</div>`;
+
+            if (nodeName && nodeName.toLowerCase().includes("emissions")) {
+                const kgValue = totalValue / 1000;
+                content += `<div>Total Flow: ${window.TEUI.formatNumber(kgValue, 'number-2dp-comma')} kg CO2e/yr</div>`;
+            } else {
+                content += `<div>Total Flow: ${window.TEUI.formatNumber(totalValue, 'number-2dp-comma')} kWh</div>`;
+            }
             
             if (incoming.length > 0) {
                 content += `<div style="margin-top:8px;"><strong>Incoming:</strong></div>`;
                 incoming.forEach(link => {
-                    const sourceName = typeof link.source === 'object' ? link.source.name : 'Unknown';
-                    content += `<div>From ${sourceName}: ${window.TEUI.formatNumber(link.value, 'number-2dp-comma')} kWh</div>`;
+                    const sourceNodeName = typeof link.source === 'object' ? link.source.name : '';
+                    const targetNodeName = typeof link.target === 'object' ? link.target.name : '';
+                    let linkValueStr;
+                    if (link.isEmissions || 
+                        (targetNodeName && targetNodeName.toLowerCase().includes("emissions")) || 
+                        (sourceNodeName && sourceNodeName.toLowerCase().includes("emissions"))) {
+                        linkValueStr = `${window.TEUI.formatNumber(link.value / 1000, 'number-2dp-comma')} kg CO2e/yr`;
+                    } else {
+                        linkValueStr = `${window.TEUI.formatNumber(link.value, 'number-2dp-comma')} kWh`;
+                    }
+                    content += `<div>From ${sourceNodeName}: ${linkValueStr}</div>`;
                 });
             }
             
             if (outgoing.length > 0) {
                 content += `<div style="margin-top:8px;"><strong>Outgoing:</strong></div>`;
                 outgoing.forEach(link => {
-                    const targetName = typeof link.target === 'object' ? link.target.name : 'Unknown';
-                    content += `<div>To ${targetName}: ${window.TEUI.formatNumber(link.value, 'number-2dp-comma')} kWh</div>`;
+                    const sourceNodeName = typeof link.source === 'object' ? link.source.name : '';
+                    const targetNodeName = typeof link.target === 'object' ? link.target.name : '';
+                    let linkValueStr;
+                    if (link.isEmissions || 
+                        (targetNodeName && targetNodeName.toLowerCase().includes("emissions")) || 
+                        (sourceNodeName && sourceNodeName.toLowerCase().includes("emissions"))) {
+                        linkValueStr = `${window.TEUI.formatNumber(link.value / 1000, 'number-2dp-comma')} kg CO2e/yr`;
+                    } else {
+                        linkValueStr = `${window.TEUI.formatNumber(link.value, 'number-2dp-comma')} kWh`;
+                    }
+                    content += `<div>To ${targetNodeName}: ${linkValueStr}</div>`;
                 });
             }
             
@@ -410,17 +433,27 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         showLinkTooltip(event, d) {
-            // Determine source and target names
-            const sourceName = typeof d.source === 'object' ? d.source.name : 'Unknown';
-            const targetName = typeof d.target === 'object' ? d.target.name : 'Unknown';
+            const sourceName = typeof d.source === 'object' ? d.source.name : '';
+            const targetName = typeof d.target === 'object' ? d.target.name : '';
+            const valueInGrams = d.value;
             
-            // Create tooltip content
-            const value = d.value;
-            const formattedValue = window.TEUI.formatNumber(value, 'number-2dp-comma');
+            let formattedDisplayValue;
+            let unitLabel;
+
+            if (d.isEmissions || 
+                (targetName && targetName.toLowerCase().includes("emissions")) || 
+                (sourceName && sourceName.toLowerCase().includes("emissions"))) {
+                const valueInKg = valueInGrams / 1000;
+                formattedDisplayValue = window.TEUI.formatNumber(valueInKg, 'number-2dp-comma');
+                unitLabel = "kg CO2e/yr";
+            } else {
+                formattedDisplayValue = window.TEUI.formatNumber(valueInGrams, 'number-2dp-comma');
+                unitLabel = "kWh";
+            }
             
             const content = `
                 <div class="tooltip-title">${sourceName} → ${targetName}</div>
-                <div>Energy Flow: ${formattedValue} kWh</div>
+                <div>Flow: ${formattedDisplayValue} ${unitLabel}</div>
             `;
             
             this.showTooltip(content, event);
@@ -433,11 +466,11 @@ window.TEUI.SectionModules.sect16 = (function() {
             const incoming = d.targetLinks || [];
             const outgoing = d.sourceLinks || [];
             if (originalNodeName.includes("Emissions")) {
-                const totalEmissions = incoming.reduce((sum, link) => sum + link.value, 0);
-                const mtValue = (totalEmissions / 1000000);
-                const formattedMTValue = window.TEUI.formatNumber(mtValue, 'number-2dp-comma');
+                const totalEmissionsInGrams = incoming.reduce((sum, link) => sum + link.value, 0);
+                const kgValue = totalEmissionsInGrams / 1000;
+                const formattedKgValue = window.TEUI.formatNumber(kgValue, 'number-2dp-comma');
                 const scope = originalNodeName.includes("1") ? "Direct emissions from gas combustion" : "Indirect emissions from electricity use";
-                html += `<div class="tooltip-value">Total: ${formattedMTValue} MT CO2e<br><small>${scope}</small></div>`;
+                html += `<div class="tooltip-value">Total: ${formattedKgValue} kg CO2e/yr<br><small>${scope}</small></div>`;
             } else {
                 const formattedNodeValue = window.TEUI.formatNumber(totalNodeValue, 'number-2dp-comma');
                 html += `<div class="tooltip-value">Total Value: ${formattedNodeValue} kWh</div>`;
@@ -450,10 +483,22 @@ window.TEUI.SectionModules.sect16 = (function() {
         createLinkTooltip(d) {
             const sourceName = d.source.name;
             const targetName = d.target.name;
-            const value = d.value;
+            const valueInGrams = d.value;
             const isEmissionsLink = d.isEmissions || (targetName && targetName.includes("Emissions"));
-            const formattedValue = window.TEUI.formatNumber(value, 'number-2dp-comma');
-            return `<div class="tooltip-title">Flow Details</div><div class="tooltip-flow"><span>From: ${sourceName}</span></div><div class="tooltip-flow"><span>To: ${targetName}</span></div><div class="tooltip-flow"><span>Value: ${isEmissionsLink ? `${formattedValue} grams CO2e` : `${formattedValue} kWh`}</span></div>`;
+            
+            let formattedDisplayValue;
+            let unitLabel;
+
+            if (isEmissionsLink) {
+                const valueInKg = valueInGrams / 1000;
+                formattedDisplayValue = window.TEUI.formatNumber(valueInKg, 'number-2dp-comma');
+                unitLabel = "kg CO2e/yr";
+            } else {
+                formattedDisplayValue = window.TEUI.formatNumber(valueInGrams, 'number-2dp-comma'); // Assuming non-emission links are kWh
+                unitLabel = "kWh";
+            }
+            
+            return `<div class="tooltip-title">Flow Details</div><div class="tooltip-flow"><span>From: ${sourceName}</span></div><div class="tooltip-flow"><span>To: ${targetName}</span></div><div class="tooltip-flow"><span>Value: ${formattedDisplayValue} ${unitLabel}</span></div>`;
         }
 
         buildFlowSectionTooltip(title, flows, isIncoming, isD3Node = false) {
@@ -462,22 +507,32 @@ window.TEUI.SectionModules.sect16 = (function() {
                 const nodeName = isIncoming ?
                     (isD3Node ? flow.source.name : (typeof flow.source === 'number' ? this._cleanDataInput.nodes[flow.source].name : flow.source.name)) :
                     (isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._cleanDataInput.nodes[flow.target].name : flow.target.name));
-                const value = flow.value;
+                const valueInGrams = flow.value;
                 const targetNodeForEmissionCheck = isD3Node ? flow.target.name : (typeof flow.target === 'number' ? this._cleanDataInput.nodes[flow.target].name : flow.target.name);
                 const isEmissionsLink = flow.isEmissions || (targetNodeForEmissionCheck && targetNodeForEmissionCheck.includes("Emissions"));
-                const formattedValue = window.TEUI.formatNumber(value, 'number-2dp-comma');
-                const formattedKgValue = window.TEUI.formatNumber(value / 1000, 'number-2dp-comma');
-                html += `<div class="tooltip-flow"><span style="width: 160px;">${nodeName}</span><span>${isEmissionsLink ? `${formattedKgValue} kg CO2e` : `${formattedValue} kWh`}</span></div>`;
+                
+                let formattedDisplayValue;
+                let unitLabel;
+
+                if (isEmissionsLink) {
+                    const valueInKg = valueInGrams / 1000;
+                    formattedDisplayValue = window.TEUI.formatNumber(valueInKg, 'number-2dp-comma');
+                    unitLabel = "kg CO2e/yr";
+                } else {
+                    formattedDisplayValue = window.TEUI.formatNumber(valueInGrams, 'number-2dp-comma');
+                    unitLabel = "kWh";
+                }
+                html += `<div class="tooltip-flow"><span style="width: 160px;">${nodeName}</span><span>${formattedDisplayValue} ${unitLabel}</span></div>`;
             });
             return html;
         }
 
         formatNodeLabel(node) {
-            if (node.name.includes("Emissions")) {
-                const totalEmissions = node.targetLinks?.reduce((sum, link) => sum + link.value, 0) || 0;
-                const mtValue = (totalEmissions / 1000000);
-                const formattedMTValue = window.TEUI.formatNumber(mtValue, 'number-2dp-comma');
-                return `${node.name} (${formattedMTValue} MT)`;
+            if (node.name && node.name.toLowerCase().includes("emissions")) {
+                const totalEmissionsInGrams = node.targetLinks?.reduce((sum, link) => sum + link.value, 0) || 0;
+                const kgValue = totalEmissionsInGrams / 1000;
+                const formattedKgValue = window.TEUI.formatNumber(kgValue, 'number-2dp-comma');
+                return `${node.name} (${formattedKgValue} kg CO2e/yr)`;
             }
             return node.name;
         }
