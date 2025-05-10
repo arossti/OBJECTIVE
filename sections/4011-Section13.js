@@ -475,9 +475,21 @@ window.TEUI.SectionModules.sect13 = (function() {
                     section: "mechanicalLoads",
                     dependencies: ["d_113", "d_127", "h_113"]
                 },
-                e: {},
-                f: {},
-                g: {},
+                e: { 
+                    content: "Net Emissions", 
+                    classes: ["label-prefix", "flex-cell"] 
+                },
+                f: { 
+                    fieldId: "f_114", 
+                    type: "calculated", 
+                    value: "0.00",
+                    section: "mechanicalLoads",
+                    dependencies: ["d_113", "f_115", "l_30", "h_115", "l_28"]
+                },
+                g: { 
+                    content: "kgCO2e/yr",
+                    classes: ["label", "flex-cell"]
+                },
                 h: {},
                 i: { 
                     content: "M.1.5. CEER",
@@ -1488,6 +1500,13 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Dependencies for Exhaust (l_115) based on formula = d_115 - d_114
         sm.registerDependency('d_115', 'l_115'); 
         sm.registerDependency('d_114', 'l_115'); 
+        
+        // NEW: Dependencies for Space Heating Emissions (f_114)
+        sm.registerDependency('d_113', 'f_114'); // Heating system type affects emissions
+        sm.registerDependency('f_115', 'f_114'); // Oil volume affects emissions
+        sm.registerDependency('h_115', 'f_114'); // Gas volume affects emissions
+        sm.registerDependency('l_30', 'f_114');  // Oil emissions factor
+        sm.registerDependency('l_28', 'f_114');  // Gas emissions factor
     }
     
     /**
@@ -1593,6 +1612,42 @@ window.TEUI.SectionModules.sect13 = (function() {
         setCalculatedValue('l_115', exhaust, 'number-2dp-comma');
         const m115_percent = afue > 0 ? 1 / afue : 0;
         setCalculatedValue('m_115', m115_percent, 'percent-0dp');
+        
+        // Calculate space heating emissions
+        calculateSpaceHeatingEmissions();
+    }
+    
+    /**
+     * NEW: Calculate Space Heating Emissions
+     * Formula: =IF(D113="Oil", F115*L30, IF(D113="Gas", H115*L28, 0))
+     * Where:
+     * - D113 is the Heating System type (Oil, Gas, Heatpump, Electricity)
+     * - F115 is the Oil volume (litres)
+     * - L30 is the emissions factor for oil (kgCO2e/litre)
+     * - H115 is the Gas volume (m³)
+     * - L28 is the emissions factor for gas (kgCO2e/m³)
+     */
+    function calculateSpaceHeatingEmissions() {
+        const systemType = getFieldValue('d_113');
+        const oilVolume = window.TEUI.parseNumeric(getFieldValue('f_115')) || 0;
+        const gasVolume = window.TEUI.parseNumeric(getFieldValue('h_115')) || 0;
+        
+        // Emissions factors (these would ideally come from a global constants source)
+        const oilEmissionsFactor = window.TEUI.parseNumeric(getFieldValue('l_30')) || 2.753; // Default if not available
+        const gasEmissionsFactor = window.TEUI.parseNumeric(getFieldValue('l_28')) || 2.03; // Default if not available
+        
+        let emissions = 0;
+        
+        if (systemType === 'Oil') {
+            emissions = oilVolume * oilEmissionsFactor;
+        } else if (systemType === 'Gas') {
+            emissions = gasVolume * gasEmissionsFactor;
+        }
+        // For Electric and Heatpump, we leave emissions at 0 (handled by electricity emissions elsewhere)
+        
+        setCalculatedValue('f_114', emissions, 'number-2dp-comma');
+        
+        return emissions;
     }
     
     /**

@@ -206,6 +206,15 @@ window.TEUI.SectionModules.sect07 = (function() {
                     section: "waterUse",
                     dependencies: ["h_49", "d_63"]
                 },
+                j: { content: "Net Emissions", classes: ["text-left"] },
+                k: { 
+                    fieldId: "k_49", 
+                    type: "calculated", 
+                    value: "0.00",
+                    section: "waterUse",
+                    dependencies: ["d_51", "k_54", "l_30", "e_51", "l_28"]
+                },
+                l: { content: "kgCO2e/yr", classes: ["text-left"] }, 
                 m: { content: "✓", classes: ["checkmark"] },
                 n: {
                     fieldId: "n_49",
@@ -757,6 +766,39 @@ window.TEUI.SectionModules.sect07 = (function() {
     }
 
     /**
+     * NEW: Calculate DHW/SHW Emissions
+     * Formula: =IF(D51="Oil", K54*L30, IF(D51="Gas", E51*L28, 0))
+     * Where:
+     * - D51 is the DHW energy source (Oil, Gas, Heatpump, Electric)
+     * - K54 is the Oil volume (litres)
+     * - L30 is the emissions factor for oil (kgCO2e/litre)
+     * - E51 is the Gas volume (m³)
+     * - L28 is the emissions factor for gas (kgCO2e/m³)
+     */
+    function calculateDHWEmissions() {
+        const systemType = getFieldValue("d_51");
+        const oilVolume = getNumericValue("l_54");
+        const gasVolume = getNumericValue("e_51");
+        
+        // Emissions factors (these would ideally come from a global constants source)
+        const oilEmissionsFactor = getNumericValue("l_30") || 2.753; // Default if not available
+        const gasEmissionsFactor = getNumericValue("l_28") || 2.03; // Default if not available
+        
+        let emissions = 0;
+        
+        if (systemType === "Oil") {
+            emissions = oilVolume * oilEmissionsFactor;
+        } else if (systemType === "Gas") {
+            emissions = gasVolume * gasEmissionsFactor;
+        }
+        // For Electric and Heatpump, we leave emissions at 0 (handled by electricity emissions elsewhere)
+        
+        setCalculatedValue("k_49", emissions, 'number-2dp-comma');
+        
+        return emissions;
+    }
+
+    /**
      * Calculate all values for this section
      */
     function calculateAll() {
@@ -770,6 +812,9 @@ window.TEUI.SectionModules.sect07 = (function() {
         setCalculatedValue("k_54", k54Value, 'number-2dp-comma');
         const l54Value = calculateL54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
         setCalculatedValue("l_54", l54Value, 'number-2dp-comma');
+        
+        // Calculate DHW emissions
+        calculateDHWEmissions();
 
         if (window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.setValue("h_69", heatingResults.systemLosses.toString(), "calculated");
@@ -838,6 +883,19 @@ window.TEUI.SectionModules.sect07 = (function() {
         const initialWaterMethod = getFieldValue("d_49") || "User Defined";
         const initialSystemType = getFieldValue("d_51") || "Heatpump";
         updateSection7Visibility(initialWaterMethod, initialSystemType);
+        
+        // Register dependencies with StateManager
+        if (window.TEUI && window.TEUI.StateManager) {
+            const sm = window.TEUI.StateManager;
+            
+            // Register dependencies for k_49 (DHW Emissions)
+            sm.registerDependency('d_51', 'k_49'); // Energy source affects emissions
+            sm.registerDependency('l_54', 'k_49'); // Oil volume affects emissions
+            sm.registerDependency('e_51', 'k_49'); // Gas volume affects emissions
+            sm.registerDependency('l_30', 'k_49'); // Oil emissions factor
+            sm.registerDependency('l_28', 'k_49'); // Gas emissions factor
+        }
+        
         calculateAll();
     }
     
