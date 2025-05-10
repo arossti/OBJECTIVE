@@ -882,8 +882,25 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
 
         getLinkColor(d) {
+            // Handle gas exhaust links
             if (d.target.name === "GasExhaust") return "#BE343D";
-            if (d.source.name === "Building" || d.target.name === "Building") return d.source.name === "Building" ? d3.color(d.target.color).brighter(0.2) : d3.color(d.source.color);
+            
+            // Handle emissions links - differentiate between Scope 1 and Scope 2
+            if (d.isEmissions || (d.target && d.target.name && d.target.name.includes("Emissions"))) {
+                // Scope 1 emissions (direct from gas/oil) - reddish/brown color
+                if (d.target && d.target.name && d.target.name.includes("Scope 1")) {
+                    return "#BE343D"; // Red/brown for Scope 1 (dirtier)
+                }
+                // Scope 2 emissions (indirect from electricity) - bluish color
+                else if (d.target && d.target.name && d.target.name.includes("Scope 2")) {
+                    return "#4A96BA"; // Blue for Scope 2
+                }
+            }
+            
+            // Default link color handling for non-emission links
+            if (d.source.name === "Building" || d.target.name === "Building") 
+                return d.source.name === "Building" ? d3.color(d.target.color).brighter(0.2) : d3.color(d.source.color);
+            
             return d3.interpolateRgb(d.source.color, d.target.color)(0.5);
         }
 
