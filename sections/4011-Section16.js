@@ -261,13 +261,22 @@ window.TEUI.SectionModules.sect16 = (function() {
                 // Calculate maxX for animation sequencing
                 const maxX = nodes.length > 0 ? d3.max(nodes, d => d.x0) : 0;
                 
-                // CRITICAL: Follow the exact SANKEY3035ORIGINAL render sequence
-                // First links, then nodes, then labels
-                this.renderLinks(links, isInitialLoad, maxX, nodes);
-                this.renderNodes(nodes, isInitialLoad, maxX);
-                this.renderLabels(nodes, isInitialLoad, maxX);
-                
-                // Console log for debugging removed
+                if (isInitialLoad) {
+                    // TWO-PHASE APPROACH FOR INITIAL ACTIVATION
+                    
+                    // Phase 1: Pre-render everything invisibly
+                    this._preRenderInvisible(nodes, links);
+                    
+                    // Phase 2: After a brief delay to ensure DOM updates, animate with flowing effect
+                    setTimeout(() => {
+                        this._animateFlowingEffect(nodes, links, maxX);
+                    }, 50); // Small delay to ensure DOM has updated
+                } else {
+                    // For refresh, use the same flowing animation but without the pre-render step
+                    this.renderLinks(links, true, maxX, nodes); // Pass isInitialLoad=true to get the same animation
+                    this.renderNodes(nodes, true, maxX);
+                    this.renderLabels(nodes, true, maxX);
+                }
             } catch (error) {
                 console.error("Error rendering Sankey diagram:", error);
                 // Fallback: Ensure elements are visible even if rendering fails
@@ -282,6 +291,139 @@ window.TEUI.SectionModules.sect16 = (function() {
                 this.labelGroup.selectAll(".node-label")
                     .style("opacity", 1);
             }
+        }
+
+        // New helper method to pre-render everything invisibly
+        _preRenderInvisible(nodes, links) {
+            // Clear any existing elements first
+            this.nodeGroup.selectAll(".node").remove();
+            this.linkGroup.selectAll(".link").remove();
+            this.labelGroup.selectAll(".node-label").remove();
+            
+            // Render nodes at final positions but invisible
+            this.nodeGroup.selectAll(".node")
+                .data(nodes, d => d.name)
+                .enter()
+                .append("rect")
+                .attr("class", "node s16-sankey-node")
+                .style("fill", d => d.displayColor)
+                .style("stroke", d => d3.color(d.color || "#999").darker(0.5))
+                .style("stroke-width", 2)
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
+                .attr("height", d => Math.max(1, d.y1 - d.y0))
+                .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier))
+                .style("opacity", 0) // Invisible
+                .on("mouseover", (event, d) => {
+                    d3.select(event.target).style("fill-opacity", 0.8);
+                    this.showNodeTooltip(event, d);
+                })
+                .on("mouseout", (event) => {
+                    d3.select(event.target).style("fill-opacity", 1);
+                    this.hideTooltip();
+                });
+            
+            // Render links at final positions but invisible
+            const linkSelection = this.linkGroup.selectAll(".link")
+                .data(links, d => {
+                    const source = typeof d.source === 'object' ? d.source.index : d.source;
+                    const target = typeof d.target === 'object' ? d.target.index : d.target;
+                    return `${source}-${target}`;
+                })
+                .enter()
+                .append("path")
+                .attr("class", "link")
+                .attr("d", d3.sankeyLinkHorizontal())
+                .style("stroke", d => this.getLinkColor(d))
+                .style("fill", "none")
+                .style("stroke-width", d => Math.max(1, d.width || 1))
+                .style("stroke-opacity", 0) // Invisible
+                .on("mouseover", (event, d) => {
+                    d3.select(event.target).style("stroke-opacity", 0.9);
+                    this.showLinkTooltip(event, d);
+                })
+                .on("mouseout", (event) => {
+                    d3.select(event.target).style("stroke-opacity", 0.6);
+                    this.hideTooltip();
+                });
+            
+            // CRITICAL: Calculate and store the path length for each link
+            linkSelection.each(function() {
+                // Use getTotalLength if available, or fallback to estimate
+                this._pathLength = this.getTotalLength ? this.getTotalLength() : 500;
+            });
+            
+            // Render labels at final positions but invisible
+            this.labelGroup.selectAll(".node-label")
+                .data(nodes, d => d.name)
+                .enter()
+                .append("text")
+                .attr("class", "node-label")
+                .attr("text-anchor", d => d.x0 < this.width / 2 ? "start" : "end")
+                .attr("x", d => d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr("y", d => (d.y1 + d.y0) / 2)
+                .attr("dy", "0.35em")
+                .text(d => this.formatNodeLabel(d))
+                .style("opacity", 0); // Invisible
+        }
+
+        // New helper method to animate the pre-rendered elements with flowing effect
+        _animateFlowingEffect(nodes, links, maxX) {
+            // 1. Animate nodes appearance with nice ease-in
+            this.nodeGroup.selectAll(".node")
+                .transition("appear")
+                .duration(300)
+                .delay(d => (d.x0 / maxX) * 600)
+                .ease(d3.easeCubicInOut)
+                .style("opacity", 1)
+                .transition("expand")
+                .duration(600)
+                .ease(d3.easeBackOut.overshoot(1.2)) // Spring effect
+                .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier));
+            
+            // 2. Animate links with dash array flowing effect
+            const linkSelection = this.linkGroup.selectAll(".link");
+            
+            // Setup dash array for animation and make links visible
+            linkSelection
+                .style("stroke-opacity", 0.6) // Make visible
+                .attr("stroke-dasharray", function() {
+                    return `${this._pathLength} ${this._pathLength}`;
+                })
+                .attr("stroke-dashoffset", function() {
+                    return this._pathLength;
+                });
+            
+            // Animate the dash offset for flowing effect
+            linkSelection
+                .transition()
+                .duration(1500)
+                .delay(d => 300 + (d.source.x0 / maxX) * 800)
+                .ease(d3.easeQuadInOut)
+                .attr("stroke-dashoffset", 0)
+                .on("end", function() {
+                    // Remove dash array/offset after animation completes
+                    d3.select(this)
+                        .attr("stroke-dasharray", null)
+                        .attr("stroke-dashoffset", null);
+                });
+            
+            // 3. Fade in labels last
+            this.labelGroup.selectAll(".node-label")
+                .transition("fade")
+                .duration(300)
+                .delay(d => 900 + (d.x0 / maxX) * 300)
+                .style("opacity", 1);
+            
+            // Safety measure - ensure everything is visible after all animations
+            setTimeout(() => {
+                this.nodeGroup.selectAll(".node").style("opacity", 1);
+                this.linkGroup.selectAll(".link")
+                    .style("stroke-opacity", 0.6)
+                    .attr("stroke-dasharray", null)
+                    .attr("stroke-dashoffset", null);
+                this.labelGroup.selectAll(".node-label").style("opacity", 1);
+            }, 2500);
         }
 
         renderNodes(nodes, isInitialLoad, maxX) {
@@ -421,72 +563,44 @@ window.TEUI.SectionModules.sect16 = (function() {
             const linkUpdate = link.merge(linkEnter)
                 .attr("d", linkGenerator);
             
-            if (isInitialLoad) {
-                // DASH ARRAY ANIMATION TECHNIQUE
-                // Calculate and store path length for each link
-                linkUpdate.each(function() {
-                    // Store total length for animation
-                    this._pathLength = this.getTotalLength ? this.getTotalLength() : 500;
+            // Calculate path length for all links
+            linkUpdate.each(function() {
+                this._pathLength = this.getTotalLength ? this.getTotalLength() : 500;
+            });
+            
+            // Set up dash array for animation
+            linkUpdate
+                .style("stroke-opacity", 0.6)
+                .style("stroke-width", d => Math.max(1, d.width || 1))
+                .attr("stroke-dasharray", function() {
+                    return `${this._pathLength} ${this._pathLength}`;
+                })
+                .attr("stroke-dashoffset", function() {
+                    return this._pathLength;
                 });
-                
-                // Initial state: Set up dash array equal to path length
-                linkUpdate
+            
+            // Animate the dash offset for flowing effect
+            linkUpdate
+                .transition()
+                .duration(1500)
+                .delay(d => (d.source.x0 / maxX) * 800)
+                .ease(d3.easeQuadInOut)
+                .attr("stroke-dashoffset", 0)
+                .on("end", function() {
+                    // Remove dash array/offset after animation completes
+                    d3.select(this)
+                        .attr("stroke-dasharray", null)
+                        .attr("stroke-dashoffset", null);
+                });
+            
+            // Safety measure - ensure links are visible after animation completes
+            setTimeout(() => {
+                this.linkGroup.selectAll(".link")
                     .style("stroke-opacity", 0.6)
                     .style("stroke-width", d => Math.max(1, d.width || 1))
-                    .attr("stroke-dasharray", function() {
-                        return `${this._pathLength} ${this._pathLength}`;
-                    })
-                    .attr("stroke-dashoffset", function() {
-                        return this._pathLength;
-                    });
-                
-                // Animate the dash offset to create flowing effect
-                linkUpdate
-                    .transition()
-                    .duration(1500)
-                    .delay(d => (d.source.x0 / maxX) * 800)
-                    .ease(d3.easeQuadInOut)
-                    .attr("stroke-dashoffset", 0)
-                    .on("end", function() {
-                        // Remove dasharray after animation completes for clean look
-                        d3.select(this)
-                            .attr("stroke-dasharray", null)
-                            .attr("stroke-dashoffset", null);
-                    });
-                
-                // Safety measure - ensure links are visible after animation completes
-                setTimeout(() => {
-                    this.linkGroup.selectAll(".link")
-                        .style("stroke-opacity", 0.6)
-                        .style("stroke-width", d => Math.max(1, d.width || 1))
-                        .attr("stroke-dasharray", null)
-                        .attr("stroke-dashoffset", null);
-                }, 2500);
-            } else {
-                // For refreshes (non-initial loads), use simpler transition
-                linkUpdate
-                    .style("stroke-opacity", 0.2)  // Start partially visible
-                    .transition()
-                    .duration(750)
-                    .attr("d", linkGenerator)  // Update path
-                    .style("stroke-opacity", 0.6)  // Fade to full opacity
-                    .style("stroke-width", d => Math.max(1, d.width || 1))
-                    .on("end", function() {
-                        // Verify final state
-                        d3.select(this)
-                            .style("stroke-width", d => Math.max(1, d.width || 1))
-                            .style("stroke-opacity", 0.6);
-                    });
-                
-                // Shorter backup timeout for refresh mode
-                setTimeout(() => {
-                    this.linkGroup.selectAll(".link")
-                        .style("stroke-opacity", 0.6)
-                        .style("stroke-width", d => Math.max(1, d.width || 1))
-                        .attr("stroke-dasharray", null)
-                        .attr("stroke-dashoffset", null);
-                }, 1200);
-            }
+                    .attr("stroke-dasharray", null)
+                    .attr("stroke-dashoffset", null);
+            }, 2500);
             
             // Final check - count links actually displayed
             console.log("Links after rendering:", this.linkGroup.selectAll(".link").size());
