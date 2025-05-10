@@ -422,53 +422,53 @@ window.TEUI.SectionModules.sect16 = (function() {
                 .attr("d", linkGenerator);
             
             if (isInitialLoad) {
-                // IMPROVED LEFT-TO-RIGHT FLOW ANIMATION
-                // Start with all links invisible
+                // DASH ARRAY ANIMATION TECHNIQUE
+                // Calculate and store path length for each link
+                linkUpdate.each(function() {
+                    // Store total length for animation
+                    this._pathLength = this.getTotalLength ? this.getTotalLength() : 500;
+                });
+                
+                // Initial state: Set up dash array equal to path length
                 linkUpdate
-                    .style("stroke-opacity", 0)
-                    .style("stroke-width", 0);
-                    
-                // First make each link visible with proper opacity
-                linkUpdate
-                    .transition()
-                    .duration(800)
-                    .ease(d3.easeCubicInOut)  // Add easing function
-                    .delay(d => {
-                        // Calculate delay based on source node x position
-                        // Add a small delay after nodes start appearing
-                        return (d.source.x0 / maxX) * 1200 + 300;
-                    })
                     .style("stroke-opacity", 0.6)
-                    // Then increase width in a smooth second transition
-                    .transition()
-                    .duration(500)
-                    .ease(d3.easeCubicOut)  // Add easing for width expansion
                     .style("stroke-width", d => Math.max(1, d.width || 1))
-                    .on("end", function() {
-                        // Ensure final state is correct after animation
-                        d3.select(this)
-                            .style("stroke-opacity", 0.6)
-                            .style("stroke-width", d => Math.max(1, d.width || 1));
+                    .attr("stroke-dasharray", function() {
+                        return `${this._pathLength} ${this._pathLength}`;
+                    })
+                    .attr("stroke-dashoffset", function() {
+                        return this._pathLength;
                     });
-                    
+                
+                // Animate the dash offset to create flowing effect
+                linkUpdate
+                    .transition()
+                    .duration(1500)
+                    .delay(d => (d.source.x0 / maxX) * 800)
+                    .ease(d3.easeQuadInOut)
+                    .attr("stroke-dashoffset", 0)
+                    .on("end", function() {
+                        // Remove dasharray after animation completes for clean look
+                        d3.select(this)
+                            .attr("stroke-dasharray", null)
+                            .attr("stroke-dashoffset", null);
+                    });
+                
                 // Safety measure - ensure links are visible after animation completes
-                // Reduced timeout since animations are more reliable now
                 setTimeout(() => {
                     this.linkGroup.selectAll(".link")
                         .style("stroke-opacity", 0.6)
-                        .style("stroke-width", d => Math.max(1, d.width || 1));
+                        .style("stroke-width", d => Math.max(1, d.width || 1))
+                        .attr("stroke-dasharray", null)
+                        .attr("stroke-dashoffset", null);
                 }, 2500);
             } else {
-                // Improved "refresh" mode animation with dissolve effect
+                // For refreshes (non-initial loads), use simpler transition
                 linkUpdate
                     .style("stroke-opacity", 0.2)  // Start partially visible
                     .transition()
-                    .duration(400)
-                    .ease(d3.easeCubicInOut)
-                    .attr("d", linkGenerator)  // Update path first
-                    .transition() 
-                    .duration(600)
-                    .ease(d3.easeCubicOut)
+                    .duration(750)
+                    .attr("d", linkGenerator)  // Update path
                     .style("stroke-opacity", 0.6)  // Fade to full opacity
                     .style("stroke-width", d => Math.max(1, d.width || 1))
                     .on("end", function() {
@@ -477,12 +477,14 @@ window.TEUI.SectionModules.sect16 = (function() {
                             .style("stroke-width", d => Math.max(1, d.width || 1))
                             .style("stroke-opacity", 0.6);
                     });
-                    
+                
                 // Shorter backup timeout for refresh mode
                 setTimeout(() => {
                     this.linkGroup.selectAll(".link")
                         .style("stroke-opacity", 0.6)
-                        .style("stroke-width", d => Math.max(1, d.width || 1));
+                        .style("stroke-width", d => Math.max(1, d.width || 1))
+                        .attr("stroke-dasharray", null)
+                        .attr("stroke-dashoffset", null);
                 }, 1200);
             }
             
