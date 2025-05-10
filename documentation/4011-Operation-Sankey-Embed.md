@@ -11,31 +11,33 @@
 * Proper event handling and diagram updates that work with the TEUI lifecycle
 * Resolution of most critical rendering issues, with visible nodes, links, and labels
 * **[NEW] Improved smooth animations** with proper sequencing and easing functions
+* **[NEW] Dash array animation technique** for creating a continuous, flowing effect from left to right
 
-**Recent Animation Improvements (May 10 2025):**
+**Recent Animation Improvements (May 20 2025):**
 
-We've successfully implemented more polished animations that closely match the SANKEY3035ORIGINAL.html file (but animations are still not as good as SANKEY3035ORIGINAL.html when transitioning to animation mode, or refresh with new values from the core TEUI app):
+We've successfully implemented more polished animations that closely match the SANKEY3035ORIGINAL.html file:
 
 1. **Left-to-Right Flow Animation:**
-   * Added cubic easing functions (`d3.easeCubicInOut` and `d3.easeCubicOut`) for more natural transitions
-   * Implemented precise sequencing where nodes appear first, then links with a calculated delay
-   * Carefully timed transitions with longer durations (900ms vs 750ms) for smoother appearance - but this needs more work as the link appearance can be 'sudden' or 'jarring' or 'janky' and somewhat unprofessional looking
-   * Created a two-stage transition for links (opacity first, then width) to enhance the flow effect
+   * Implemented the dash array animation technique for a truly flowing effect
+   * Each link now appears to "draw" itself from source to target
+   * Added easing functions (`d3.easeQuadInOut`) for natural-looking motion
+   * Precisely timed transitions with calculated delays for a cohesive flow
 
-2. **IMPORTANT!! * Object Reference Handling:**
+2. **Technical Implementation Highlights:**
+   * Utilized SVG's `stroke-dasharray` and `stroke-dashoffset` properties for the animation
+   * Each path's total length is measured and used for precise animation timing
+   * Links stroke width is set immediately while the path draws itself
+   * Removed dash arrays after animation completes for clean final appearance
+   
+3. **IMPORTANT!! * Object Reference Handling:**
    * Fixed critical issues with D3's handling of node references in links
    * Pre-processed all links to ensure consistent object references before rendering
    * Added safeguards in the render method to convert numeric indices to object references
 
-3. **IMPORTANT!! * SVG Property Handling:**
+4. **IMPORTANT!! * SVG Property Handling:**
    * Implemented consistent use of `style()` instead of `attr()` for SVG path properties
    * Fixed stroke-width application to prevent disappearing links
    * Ensured final state correctness with proper end-of-animation callbacks
-
-4. **Refresh Animation Improvements:**
-   * Created a gentle dissolve effect for refreshes
-   * Implemented a fade-through approach that keeps links partially visible during transitions
-   * Added fallback safety measures to ensure links never completely disappear
 
 These improvements have significantly enhanced the visual appeal and stability of the Sankey diagram, providing a much more polished and professional presentation suitable for the upcoming conference.
 
@@ -75,9 +77,9 @@ These improvements have significantly enhanced the visual appeal and stability o
 **Next Steps:**
 
 1. **Animation Refinement:**
-   * Study and implement the animation timing from SANKEY3035ORIGINAL.html
-   * Add proper sequencing with appropriately timed delays for the left-to-right flow effect
-   * Ensure animations work consistently for both initial load and refresh operations
+   * Continue refining the dash array animation technique for optimal visual effect
+   * Test in different browsers to ensure compatibility
+   * Add better timing coordination with nodes to create a truly orchestrated effect
 
 2. **Claude.ai Professional Integration:**
    * We plan to bring this project to a professional Claude.ai Sonnet 3.7 agent on the web - THIS current step!
