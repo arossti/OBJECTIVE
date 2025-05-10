@@ -13,7 +13,12 @@ window.TEUI.sect16 = {
     nodePadding: 15,
     showEmissions: false,
     initialized: false, // Flag for idempotent initialization
-    isActive: false
+    isActive: false,
+    currentMode: null, // Added for current mode tracking
+    MODES: {
+        SANKEY: 'sankey',
+        ENERGY_BALANCE: 'energy-balance'
+    }
 };
 
 window.TEUI.SectionModules.sect16 = (function() {
@@ -1064,53 +1069,71 @@ window.TEUI.SectionModules.sect16 = (function() {
             return false;
         }
         
+        // Initialize currentMode if not set
+        if (!window.TEUI.sect16.currentMode) {
+            window.TEUI.sect16.currentMode = window.TEUI.sect16.MODES.SANKEY;
+        }
+        
+        // Helper function to create consistently styled buttons
+        function createStyledButton(id, iconClass, text, initialDisplay = 'inline-flex') {
+            const button = document.createElement('button');
+            button.id = id;
+            button.className = 'sankey-control-button'; // Consistent class for all buttons
+            
+            // Apply Section 17 styling directly
+            button.style.cssText = 'display: flex; align-items: center; gap: 6px; padding: 6px 12px; background-color: #f5f5f5; border: 1px solid #dee2e6; border-radius: 4px; font-size: 0.875rem; height: 30px; cursor: pointer; white-space: nowrap;';
+            
+            // Set initial display
+            button.style.display = initialDisplay;
+            
+            // Add icon if provided
+            if (iconClass) {
+                const icon = document.createElement('i');
+                icon.className = iconClass;
+                button.appendChild(icon);
+            }
+            
+            // Add text
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            button.appendChild(textSpan);
+            
+            return button;
+        }
+        
         // Clear the target area
         targetArea.innerHTML = '';
         
         // Create the controls container
         const controlsContainer = document.createElement('div');
         controlsContainer.id = 's16ControlsContainer';
-        controlsContainer.style.cssText = 'padding: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;';
+        controlsContainer.className = 'sankey-controls-wrapper';
+        controlsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; margin-bottom: 12px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;';
         
         // Create the activate button
-        const activateBtn = document.createElement('button');
-        activateBtn.id = 's16ActivateBtn';
-        activateBtn.className = 'teui-button';
-        activateBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Activate Sankey';
+        const activateBtn = createStyledButton('s16ActivateBtn', 'bi bi-arrow-clockwise', 'Activate Sankey');
         controlsContainer.appendChild(activateBtn);
         
         // Create emissions toggle button (initially hidden)
-        const emissionsBtn = document.createElement('button');
-        emissionsBtn.id = 's16ToggleEmissionsBtn';
-        emissionsBtn.className = 'teui-button';
-        emissionsBtn.innerHTML = '<i class="bi bi-cloud"></i> Show Emissions';
-        emissionsBtn.style.display = 'none';
+        const emissionsBtn = createStyledButton('s16ToggleEmissionsBtn', 'bi bi-cloud', 'Show Emissions', 'none');
         controlsContainer.appendChild(emissionsBtn);
         
         // Create spacing toggle button (initially hidden)
-        const spacingBtn = document.createElement('button');
-        spacingBtn.id = 's16ToggleSpacingBtn';
-        spacingBtn.className = 'teui-button';
-        spacingBtn.innerHTML = '<i class="bi bi-arrows-angle-contract"></i> Energy Balance';
-        spacingBtn.style.display = 'none';
+        const spacingBtn = createStyledButton('s16ToggleSpacingBtn', 'bi bi-arrows-angle-contract', 'Energy Balance', 'none');
         controlsContainer.appendChild(spacingBtn);
         
         // Create fullscreen button (initially hidden)
-        const fullscreenBtn = document.createElement('button');
-        fullscreenBtn.id = 's16FullscreenBtn';
-        fullscreenBtn.className = 'teui-button';
-        fullscreenBtn.innerHTML = '<i class="bi bi-arrows-fullscreen"></i> Fullscreen';
-        fullscreenBtn.style.display = 'none';
+        const fullscreenBtn = createStyledButton('s16FullscreenBtn', 'bi bi-arrows-fullscreen', 'Fullscreen', 'none');
         controlsContainer.appendChild(fullscreenBtn);
         
         // Create width multiplier slider container (initially hidden)
         const widthToggleContainer = document.createElement('div');
         widthToggleContainer.id = 's16WidthToggleContainer';
-        widthToggleContainer.style.display = 'none';
+        widthToggleContainer.style.cssText = 'display: none; align-items: center; gap: 8px; padding: 3px 10px; background-color: #f5f5f5; border: 1px solid #dee2e6; border-radius: 4px; height: 30px;';
         widthToggleContainer.innerHTML = `
-            <label for="s16WidthMultiplierSlider">Width:</label>
-            <input type="range" id="s16WidthMultiplierSlider" min="25" max="300" value="100" step="5">
-            <span>100%</span>
+            <label for="s16WidthMultiplierSlider" style="font-size: 0.875rem; white-space: nowrap;">Width:</label>
+            <input type="range" id="s16WidthMultiplierSlider" min="25" max="300" value="100" step="5" style="width: 100px;">
+            <span style="font-size: 0.875rem; min-width: 40px; text-align: right;">100%</span>
         `;
         controlsContainer.appendChild(widthToggleContainer);
         
@@ -1142,16 +1165,16 @@ window.TEUI.SectionModules.sect16 = (function() {
         // Create the fullscreen container
         const fullscreenContainer = document.createElement('div');
         fullscreenContainer.id = 's16FullscreenContainer';
-        fullscreenContainer.style.cssText = 'display: none;';
+        fullscreenContainer.style.cssText = 'display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 9999; padding: 20px; overflow: hidden;';
         
         // Create fullscreen controls
         const fullscreenControlsContainer = document.createElement('div');
-        fullscreenControlsContainer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;';
+        fullscreenControlsContainer.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;';
         
         // Create fullscreen title
         const fullscreenTitle = document.createElement('h2');
         fullscreenTitle.textContent = 'Energy Flow Diagram (Sankey)';
-        fullscreenTitle.style.cssText = 'margin: 0;';
+        fullscreenTitle.style.cssText = 'margin: 0; font-size: 1.25rem;';
         fullscreenControlsContainer.appendChild(fullscreenTitle);
         
         // Create fullscreen controls right side
@@ -1161,19 +1184,16 @@ window.TEUI.SectionModules.sect16 = (function() {
         // Create fullscreen width slider
         const fullscreenWidthToggle = document.createElement('div');
         fullscreenWidthToggle.id = 's16FullscreenWidthToggle';
-        fullscreenWidthToggle.style.cssText = 'display: flex; align-items: center; gap: 5px;';
+        fullscreenWidthToggle.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 3px 10px; background-color: #f5f5f5; border: 1px solid #dee2e6; border-radius: 4px; height: 30px;';
         fullscreenWidthToggle.innerHTML = `
-            <label for="s16FullscreenWidthSlider">Width:</label>
-            <input type="range" id="s16FullscreenWidthSlider" min="25" max="300" value="100" step="5">
-            <span>100%</span>
+            <label for="s16FullscreenWidthSlider" style="font-size: 0.875rem; white-space: nowrap;">Width:</label>
+            <input type="range" id="s16FullscreenWidthSlider" min="25" max="300" value="100" step="5" style="width: 100px;">
+            <span style="font-size: 0.875rem; min-width: 40px; text-align: right;">100%</span>
         `;
         fullscreenControlsRight.appendChild(fullscreenWidthToggle);
         
         // Create fullscreen close button
-        const fullscreenCloseBtn = document.createElement('button');
-        fullscreenCloseBtn.id = 's16FullscreenCloseBtn';
-        fullscreenCloseBtn.className = 'teui-button';
-        fullscreenCloseBtn.innerHTML = '<i class="bi bi-x-lg"></i> Close';
+        const fullscreenCloseBtn = createStyledButton('s16FullscreenCloseBtn', 'bi bi-x-lg', 'Close');
         fullscreenControlsRight.appendChild(fullscreenCloseBtn);
         
         fullscreenControlsContainer.appendChild(fullscreenControlsRight);
@@ -1213,6 +1233,28 @@ window.TEUI.SectionModules.sect16 = (function() {
         const widthToggleContainer = document.getElementById('s16WidthToggleContainer');
         const loadingPlaceholder = document.getElementById('s16LoadingPlaceholder');
         const fullscreenBtn = document.getElementById('s16FullscreenBtn');
+        
+        // Add button state handlers
+        function addButtonStateHandlers() {
+            // Get all buttons
+            const buttons = document.querySelectorAll('.sankey-control-button');
+            
+            // Add hover effect
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    button.style.backgroundColor = '#e5e5e5';
+                });
+                
+                button.addEventListener('mouseleave', () => {
+                    if (!button.classList.contains('active')) {
+                        button.style.backgroundColor = '#f5f5f5';
+                    }
+                });
+            });
+        }
+        
+        // Call this function to initialize button states
+        addButtonStateHandlers();
 
         if (activateBtn) {
             activateBtn.addEventListener('click', function() {
@@ -1227,14 +1269,55 @@ window.TEUI.SectionModules.sect16 = (function() {
         if (emissionsBtn) {
             emissionsBtn.addEventListener('click', function() {
                 window.TEUI.sect16.showEmissions = !window.TEUI.sect16.showEmissions;
-                this.textContent = window.TEUI.sect16.showEmissions ? 'Hide Emissions' : 'Show Emissions';
+                
+                // Update button text and style
+                const textSpan = this.querySelector('span');
+                if (textSpan) {
+                    textSpan.textContent = window.TEUI.sect16.showEmissions ? 'Hide Emissions' : 'Show Emissions';
+                }
+                
+                // Update button styling based on state
+                if (window.TEUI.sect16.showEmissions) {
+                    this.classList.add('active');
+                    this.style.backgroundColor = '#0d6efd';
+                    this.style.color = 'white';
+                    this.style.borderColor = '#0d6efd';
+                } else {
+                    this.classList.remove('active');
+                    this.style.backgroundColor = '#f5f5f5';
+                    this.style.color = '';
+                    this.style.borderColor = '#dee2e6';
+                }
+                
                 if (window.TEUI.sect16.isActive) fetchDataAndRenderSankey(false);
             });
         }
         if (spacingBtn) {
             spacingBtn.addEventListener('click', function() {
                 window.TEUI.sect16.nodePadding = (window.TEUI.sect16.nodePadding === 15) ? 2 : 15;
-                this.textContent = (window.TEUI.sect16.nodePadding === 15) ? 'Energy Balance' : 'Sankey Diagram';
+                
+                // Update button text
+                const textSpan = this.querySelector('span');
+                if (textSpan) {
+                    textSpan.textContent = (window.TEUI.sect16.nodePadding === 15) ? 
+                        'Energy Balance' : 'Sankey Diagram';
+                }
+                
+                // Toggle active state styling
+                if (window.TEUI.sect16.nodePadding === 2) {
+                    // Energy Balance mode is active
+                    this.classList.add('active');
+                    this.style.backgroundColor = '#0d6efd';
+                    this.style.color = 'white';
+                    this.style.borderColor = '#0d6efd';
+                } else {
+                    // Sankey mode is active
+                    this.classList.remove('active');
+                    this.style.backgroundColor = '#f5f5f5';
+                    this.style.color = '';
+                    this.style.borderColor = '#dee2e6';
+                }
+                
                 if (window.TEUI.sect16.isActive) fetchDataAndRenderSankey(false);
             });
         }
@@ -1290,6 +1373,8 @@ window.TEUI.SectionModules.sect16 = (function() {
                         height: fullscreenContainer.clientHeight - 100, // account for controls and padding
                         nodeWidth: window.TEUI.sect16.defaultNodeWidth,
                         nodePadding: window.TEUI.sect16.nodePadding,
+                        linkShape: window.TEUI.sect16.currentMode.linkShape,
+                        nodeAlignment: window.TEUI.sect16.currentMode.nodeAlignment,
                         showEmissions: window.TEUI.sect16.showEmissions,
                         isFullscreen: true
                     });
