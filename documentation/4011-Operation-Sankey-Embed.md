@@ -10,6 +10,34 @@
 * Functional UI controls for activating/refreshing the diagram, toggling emissions, adjusting node spacing and width
 * Proper event handling and diagram updates that work with the TEUI lifecycle
 * Resolution of most critical rendering issues, with visible nodes, links, and labels
+* **[NEW] Improved smooth animations** with proper sequencing and easing functions
+
+**Recent Animation Improvements (November 2023):**
+
+We've successfully implemented more polished animations that closely match the SANKEY3035ORIGINAL.html file:
+
+1. **Left-to-Right Flow Animation:**
+   * Added cubic easing functions (`d3.easeCubicInOut` and `d3.easeCubicOut`) for more natural transitions
+   * Implemented precise sequencing where nodes appear first, then links with a calculated delay
+   * Carefully timed transitions with longer durations (900ms vs 750ms) for smoother appearance
+   * Created a two-stage transition for links (opacity first, then width) to enhance the flow effect
+
+2. **Object Reference Handling:**
+   * Fixed critical issues with D3's handling of node references in links
+   * Pre-processed all links to ensure consistent object references before rendering
+   * Added safeguards in the render method to convert numeric indices to object references
+
+3. **SVG Property Handling:**
+   * Implemented consistent use of `style()` instead of `attr()` for SVG path properties
+   * Fixed stroke-width application to prevent disappearing links
+   * Ensured final state correctness with proper end-of-animation callbacks
+
+4. **Refresh Animation Improvements:**
+   * Created a gentle dissolve effect for refreshes
+   * Implemented a fade-through approach that keeps links partially visible during transitions
+   * Added fallback safety measures to ensure links never completely disappear
+
+These improvements have significantly enhanced the visual appeal and stability of the Sankey diagram, providing a much more polished and professional presentation suitable for the upcoming conference.
 
 **Remaining Technical Challenges:**
 
