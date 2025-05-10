@@ -14,15 +14,27 @@
 * **[NEW] Dash array animation technique** for creating a continuous, flowing effect from left to right
 * **[NEW] Added 300% node width cap** to prevent issues when switching between modes
 * **[NEW] Standardized button labels** to "Energy Balance"/"Sankey Diagram" to match SANKEY3035ORIGINAL
+* **[NEW] Modern UI styling** with consistent button and control appearance matching Section 17
 
-**Recent UI and Stability Improvements (May 21 2025):**
+**Recent UI Improvements (May 21 2025):**
 
-1. **Node Width Cap Implementation:**
+1. **Modern Control Panel Styling:**
+   * Implemented consistent button styling with icons and text
+   * Added visual active states for toggle buttons
+   * Added hover effects for all interactive controls
+   * Created a properly styled control container with background and border
+
+2. **Improved Fullscreen Mode:**
+   * Redesigned fullscreen controls with modern styling
+   * Added consistent width slider appearance between main and fullscreen views
+   * Better visual hierarchy with improved spacing and typography
+
+3. **Node Width Cap Implementation:**
    * Added a maximum width multiplier of 300% to both the main view and fullscreen mode 
    * Prevents issues when switching between compressed and uncompressed modes
    * Improves stability when using very wide nodes which previously could cause layout problems
 
-2. **Improved Mode Toggle Naming:**
+4. **Improved Mode Toggle Naming:**
    * Updated the spacing toggle button to use the original SANKEY3035ORIGINAL naming convention
    * "Energy Balance" button transitions to compact mode with minimal padding between nodes
    * "Sankey Diagram" button returns to standard spaced mode
