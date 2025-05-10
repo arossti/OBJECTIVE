@@ -1,6 +1,6 @@
 # Workplan: Embedding Sankey Diagram into TEUI 4.0.11 - Section 16
 
-## 0. Progress Update (May 20 2025)
+## 0. Progress Update (May 21 2025)
 
 **The Sankey diagram integration is now substantially complete!** The diagram is functional and integrated within the TEUI application as Section 16, displaying energy flows sourced directly from the TEUI StateManager.
 
@@ -12,6 +12,21 @@
 * Resolution of most critical rendering issues, with visible nodes, links, and labels
 * **[NEW] Improved smooth animations** with proper sequencing and easing functions
 * **[NEW] Dash array animation technique** for creating a continuous, flowing effect from left to right
+* **[NEW] Added 300% node width cap** to prevent issues when switching between modes
+* **[NEW] Standardized button labels** to "Energy Balance"/"Sankey Diagram" to match SANKEY3035ORIGINAL
+
+**Recent UI and Stability Improvements (May 21 2025):**
+
+1. **Node Width Cap Implementation:**
+   * Added a maximum width multiplier of 300% to both the main view and fullscreen mode 
+   * Prevents issues when switching between compressed and uncompressed modes
+   * Improves stability when using very wide nodes which previously could cause layout problems
+
+2. **Improved Mode Toggle Naming:**
+   * Updated the spacing toggle button to use the original SANKEY3035ORIGINAL naming convention
+   * "Energy Balance" button transitions to compact mode with minimal padding between nodes
+   * "Sankey Diagram" button returns to standard spaced mode
+   * Button labels now reflect what will happen rather than the current state, for better UX
 
 **Recent Animation Improvements (May 20 2025):**
 
