@@ -1,6 +1,6 @@
 # Workplan: Embedding Sankey Diagram into TEUI 4.0.11 - Section 16
 
-## 0. Progress Update (November 2023)
+## 0. Progress Update (May 20 2025)
 
 **The Sankey diagram integration is now substantially complete!** The diagram is functional and integrated within the TEUI application as Section 16, displaying energy flows sourced directly from the TEUI StateManager.
 
@@ -12,22 +12,22 @@
 * Resolution of most critical rendering issues, with visible nodes, links, and labels
 * **[NEW] Improved smooth animations** with proper sequencing and easing functions
 
-**Recent Animation Improvements (November 2023):**
+**Recent Animation Improvements (May 10 2025):**
 
-We've successfully implemented more polished animations that closely match the SANKEY3035ORIGINAL.html file:
+We've successfully implemented more polished animations that closely match the SANKEY3035ORIGINAL.html file (but animations are still not as good as SANKEY3035ORIGINAL.html when transitioning to animation mode, or refresh with new values from the core TEUI app):
 
 1. **Left-to-Right Flow Animation:**
    * Added cubic easing functions (`d3.easeCubicInOut` and `d3.easeCubicOut`) for more natural transitions
    * Implemented precise sequencing where nodes appear first, then links with a calculated delay
-   * Carefully timed transitions with longer durations (900ms vs 750ms) for smoother appearance
+   * Carefully timed transitions with longer durations (900ms vs 750ms) for smoother appearance - but this needs more work as the link appearance can be 'sudden' or 'jarring' or 'janky' and somewhat unprofessional looking
    * Created a two-stage transition for links (opacity first, then width) to enhance the flow effect
 
-2. **Object Reference Handling:**
+2. **IMPORTANT!! * Object Reference Handling:**
    * Fixed critical issues with D3's handling of node references in links
    * Pre-processed all links to ensure consistent object references before rendering
    * Added safeguards in the render method to convert numeric indices to object references
 
-3. **SVG Property Handling:**
+3. **IMPORTANT!! * SVG Property Handling:**
    * Implemented consistent use of `style()` instead of `attr()` for SVG path properties
    * Fixed stroke-width application to prevent disappearing links
    * Ensured final state correctness with proper end-of-animation callbacks
@@ -68,8 +68,9 @@ These improvements have significantly enhanced the visual appeal and stability o
 
 5. **StateManager Integration:**
    * When TEUI data changes, the Sankey needs explicit manual refresh
-   * We don't currently have StateManager listeners to detect and propagate relevant changes
+   * We don't currently have StateManager listeners to detect and propagate relevant changes, example: d_118 ventilation efficiency is improved to 90%, this triggers a reduction in Thermal Energy Demand at d_114 and in turn at d_127, and while the Sankey diagram appropriately reduces the losses from the ventilation system, it does not 'see' a reduction of TED, so the TED node becomes stale/stuck, causing a mismatch between node and link sizes. The Sankey should be able to update in response to core value changes registered in StateManager, specifically to the cells it is referencing to render nodes and links in its mappings.
    * Improvements to the refresh logic would make this more seamless
+   * The goal is, once Sankey is working flawlessly, to test removal of the render throttle that is 'Activate Sankey' and 'Refresh Sankey' to see if it renders dynamically without breaking due to race conditions, which use of the StateManager was designed to avoid. 
 
 **Next Steps:**
 
@@ -79,8 +80,8 @@ These improvements have significantly enhanced the visual appeal and stability o
    * Ensure animations work consistently for both initial load and refresh operations
 
 2. **Claude.ai Professional Integration:**
-   * We plan to bring this project to a professional Claude.ai Sonnet 3.7 agent on the web
-   * Since the original file was generated there, it may be better positioned to help with:
+   * We plan to bring this project to a professional Claude.ai Sonnet 3.7 agent on the web - THIS current step!
+   * Since the original file was generated here, it may be better positioned to help with:
      * Comprehensive code reduction for improved maintainability
      * Animation refinements based on the original implementation
      * Performance optimization for faster rendering and smoother transitions
@@ -88,12 +89,12 @@ These improvements have significantly enhanced the visual appeal and stability o
 
 3. **UI Consistency:**
    * Align Section 16 button styling with the more modern approach in Section 17
-   * Add fullscreen functionality similar to Section 17
+   * Add fullscreen functionality similar to Section 17 (we include 4011-styles.css and 4011-Section17.js merely as reference material)
    * Improve overall visual consistency between visualization sections
 
 This project demonstrates successful integration of a complex D3 visualization into the TEUI framework. The remaining refinements will primarily focus on visual polish and animation quality, rather than core functionality.
 
-## 1. Objective
+## 1. Objective (COMPLETED May 9, 2025)
 
 Integrate the D3.js Sankey diagram, previously a standalone application (`SANKEY3035.html`), into `Section16` of the TEUI 4.011 Calculator application. The integrated Sankey diagram will visualize energy flows based on data sourced directly from the TEUI application's central `StateManager`.
 
@@ -212,7 +213,7 @@ Integrate the D3.js Sankey diagram, previously a standalone application (`SANKEY
         *   Identify the `source.name` and `target.name` of the link.
         *   Look up the corresponding Excel cell reference using the `SANKEY3035.html`'s `EXCEL_MAPPING` (e.g., if `source.name` is "G.1.2 Occupant Gains", the mapping might point to "REPORT!I64" which represents the *value* of this flow). Some flows are direct (source to target), others are aggregations or splits which will need careful handling based on the original Sankey logic.
         *   Extract the cell identifier (e.g., "I64").
-        *   Consult `3037DOM.csv` to find the TEUI field ID associated with this cell (e.g., `i_64`).
+        *   Consult `3037DOM.csv` to find the TEUI field ID associated with this cell (e.g., `i_64`). Ask the Architect if there is ANY ambiguity wrt cell/DOM mappings.
         *   Fetch the current value using `window.TEUI.StateManager.getValue('i_64')`.
         *   Update the `value` property of the link in the local Sankey data structure. Ensure a minimum flow value (e.g., 0.001) if the TEUI value is zero or null, to prevent D3 Sankey errors with zero-value links.
     5.  After updating all relevant link values, pass the modified nodes and links data to the D3 Sankey rendering function.
