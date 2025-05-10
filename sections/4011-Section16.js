@@ -907,27 +907,46 @@ window.TEUI.SectionModules.sect16 = (function() {
         updateEmissionsFlows(dataObjectToModify) {
             const scope1NodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "E1 Scope 1 Emissions");
             const scope2NodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "E2 Scope 2 Emissions");
+            const buildingNodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "Building");
 
-            if (scope1NodeIndex === -1 || scope2NodeIndex === -1) {
-                // console.warn("Section 16: Emission sink nodes (E1/E2) not found in Sankey data.");
+            if (scope1NodeIndex === -1 || scope2NodeIndex === -1 || buildingNodeIndex === -1) {
+                console.warn("Section 16: Emission sink nodes (E1/E2) or Building node not found in Sankey data.");
                 return;
             }
 
+            // Remove existing emission links going to emission nodes
             dataObjectToModify.links = dataObjectToModify.links.filter(link => {
                 // Check target based on original node reference or index if already processed
                 let targetNodeToCheck = typeof link.target === 'object' ? link.target : dataObjectToModify.nodes[link.target];
                 if (!targetNodeToCheck) return true; // Should not happen if data is consistent
                 const targetIdx = dataObjectToModify.nodes.indexOf(targetNodeToCheck);
+                
+                // Keep link if it's not going to an emissions node
                 return !(targetIdx === scope1NodeIndex || targetIdx === scope2NodeIndex);
             });
 
             if (this.showEmissions && window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
                 const teuiState = window.TEUI.StateManager;
+                
+                // Get information about the heating systems
+                const primaryHeatingSystem = teuiState.getValue('d_113'); // M.1.0 Primary Heating System
+                const dhwSystem = teuiState.getValue('d_51'); // DHW System
+                const isHeatingGasOrOil = primaryHeatingSystem === 'Gas' || primaryHeatingSystem === 'Oil';
+                const isDhwGasOrOil = dhwSystem === 'Gas' || dhwSystem === 'Oil';
+                
                 const energyInputNodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "M.2.1.D Energy Input");
+                const tedNodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "Thermal Energy Demand");
+                const shwNetDemandIndex = dataObjectToModify.nodes.findIndex(n => n.name === "W.5.2 SHW Net Demand");
+
                 if (energyInputNodeIndex === -1) {
-                    // console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
+                    console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
                     return;
                 }
+                
+                // Track total Scope 1 emissions for Building→Scope1 link
+                let totalScope1EmissionsGrams = 0;
+                
+                // Handle electricity emissions (Scope 2) - direct path to emissions node
                 const elecEmissionsKg = parseFloat(teuiState.getValue('k_27') || 0);
                 if (elecEmissionsKg > 0) {
                     const elecEmissionsGrams = elecEmissionsKg * 1000;
@@ -936,33 +955,89 @@ window.TEUI.SectionModules.sect16 = (function() {
                             source: energyInputNodeIndex, 
                             target: scope2NodeIndex,
                             value: elecEmissionsGrams,
-                            isEmissions: true
+                            isEmissions: true,
+                            id: "ElectricityToScope2Emissions"
                         });
                     }
                 }
+                
+                // Handle gas emissions (Scope 1)
                 const gasEmissionsKg = parseFloat(teuiState.getValue('k_28') || 0);
-                if (gasEmissionsKg > 0) {
+                if (gasEmissionsKg > 0 && isHeatingGasOrOil) {
                     const gasEmissionsGrams = gasEmissionsKg * 1000;
                     if (gasEmissionsGrams > 0.0001) {
-                        dataObjectToModify.links.push({
-                            source: energyInputNodeIndex, 
-                            target: scope1NodeIndex,
-                            value: gasEmissionsGrams,
-                            isEmissions: true
-                        });
+                        // For gas/oil heating, emissions flow through building
+                        
+                        // 1. First, TED emissions go to the building 
+                        if (tedNodeIndex !== -1) {
+                            // Add TED → Building emissions flow
+                            dataObjectToModify.links.push({
+                                source: tedNodeIndex,
+                                target: buildingNodeIndex,
+                                value: gasEmissionsGrams,
+                                isEmissions: true,
+                                id: "TEDEmissionsToBuilding"
+                            });
+                        } else {
+                            // Fallback if TED node not found: direct flow from energy input to building
+                            dataObjectToModify.links.push({
+                                source: energyInputNodeIndex,
+                                target: buildingNodeIndex,
+                                value: gasEmissionsGrams,
+                                isEmissions: true,
+                                id: "EnergyInputEmissionsToBuilding"
+                            });
+                        }
+                        
+                        // Add to total Scope 1 emissions
+                        totalScope1EmissionsGrams += gasEmissionsGrams;
                     }
                 }
+                
+                // Handle oil emissions (Scope 1)
                 const oilEmissionsKg = parseFloat(teuiState.getValue('k_30') || 0);
-                if (oilEmissionsKg > 0) {
+                if (oilEmissionsKg > 0 && isHeatingGasOrOil) {
                     const oilEmissionsGrams = oilEmissionsKg * 1000;
                     if (oilEmissionsGrams > 0.0001) {
-                        dataObjectToModify.links.push({
-                            source: energyInputNodeIndex, 
-                            target: scope1NodeIndex,
-                            value: oilEmissionsGrams,
-                            isEmissions: true
-                        });
+                        // For oil heating, add to total (actual link is added above)
+                        totalScope1EmissionsGrams += oilEmissionsGrams;
                     }
+                }
+                
+                // Handle DHW/SHW emissions based on system type
+                if (isDhwGasOrOil && shwNetDemandIndex !== -1) {
+                    // Get DHW emissions value
+                    const dhwEmissionsKg = parseFloat(teuiState.getValue('j_54') || 0);
+                    if (dhwEmissionsKg > 0) {
+                        const dhwEmissionsGrams = dhwEmissionsKg * 1000;
+                        
+                        // 1. SHW emissions to building
+                        dataObjectToModify.links.push({
+                            source: shwNetDemandIndex,
+                            target: buildingNodeIndex, 
+                            value: dhwEmissionsGrams,
+                            isEmissions: true,
+                            id: "SHWEmissionsToBuilding"
+                        });
+                        
+                        // Add to total Scope 1 emissions
+                        totalScope1EmissionsGrams += dhwEmissionsGrams;
+                    }
+                }
+                
+                // Final step: Create the link from Building to Scope 1 Emissions
+                // only if we have actual Scope 1 emissions
+                if (totalScope1EmissionsGrams > 0.0001) {
+                    dataObjectToModify.links.push({
+                        source: buildingNodeIndex,
+                        target: scope1NodeIndex,
+                        value: totalScope1EmissionsGrams,
+                        isEmissions: true,
+                        id: "BuildingToScope1Emissions"
+                    });
+                    
+                    // Debug output
+                    console.log(`Creating Building→Scope1 emissions link with value: ${totalScope1EmissionsGrams} grams`);
                 }
             }
         }
