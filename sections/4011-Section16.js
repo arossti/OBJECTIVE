@@ -1091,7 +1091,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         const spacingBtn = document.createElement('button');
         spacingBtn.id = 's16ToggleSpacingBtn';
         spacingBtn.className = 'teui-button';
-        spacingBtn.innerHTML = '<i class="bi bi-arrows-angle-contract"></i> Compress Nodes';
+        spacingBtn.innerHTML = '<i class="bi bi-arrows-angle-contract"></i> Energy Balance';
         spacingBtn.style.display = 'none';
         controlsContainer.appendChild(spacingBtn);
         
@@ -1109,7 +1109,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         widthToggleContainer.style.display = 'none';
         widthToggleContainer.innerHTML = `
             <label for="s16WidthMultiplierSlider">Width:</label>
-            <input type="range" id="s16WidthMultiplierSlider" min="25" max="400" value="100" step="5">
+            <input type="range" id="s16WidthMultiplierSlider" min="25" max="300" value="100" step="5">
             <span>100%</span>
         `;
         controlsContainer.appendChild(widthToggleContainer);
@@ -1164,7 +1164,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         fullscreenWidthToggle.style.cssText = 'display: flex; align-items: center; gap: 5px;';
         fullscreenWidthToggle.innerHTML = `
             <label for="s16FullscreenWidthSlider">Width:</label>
-            <input type="range" id="s16FullscreenWidthSlider" min="25" max="400" value="100" step="5">
+            <input type="range" id="s16FullscreenWidthSlider" min="25" max="300" value="100" step="5">
             <span>100%</span>
         `;
         fullscreenControlsRight.appendChild(fullscreenWidthToggle);
@@ -1234,7 +1234,7 @@ window.TEUI.SectionModules.sect16 = (function() {
         if (spacingBtn) {
             spacingBtn.addEventListener('click', function() {
                 window.TEUI.sect16.nodePadding = (window.TEUI.sect16.nodePadding === 15) ? 2 : 15;
-                this.textContent = (window.TEUI.sect16.nodePadding === 15) ? 'Compress Nodes' : 'Expand Nodes';
+                this.textContent = (window.TEUI.sect16.nodePadding === 15) ? 'Energy Balance' : 'Sankey Diagram';
                 if (window.TEUI.sect16.isActive) fetchDataAndRenderSankey(false);
             });
         }
@@ -1242,7 +1242,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             const widthValueText = document.querySelector('#s16WidthToggleContainer span');
             
             widthSlider.addEventListener('input', function() {
-                const value = parseFloat(this.value) / 100;
+                const value = Math.min(3.0, parseFloat(this.value) / 100);
                 if (widthValueText) {
                     widthValueText.textContent = `${Math.round(value * 100)}%`;
                 }
@@ -1344,7 +1344,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                     }
                     
                     fullscreenWidthSlider.addEventListener('input', function() {
-                        const value = parseFloat(this.value) / 100;
+                        const value = Math.min(3.0, parseFloat(this.value) / 100);
                         if (fullscreenWidthValueText) {
                             fullscreenWidthValueText.textContent = `${Math.round(value * 100)}%`;
                         }
