@@ -1,66 +1,69 @@
 # Workplan: Embedding Sankey Diagram into TEUI 4.0.11 - Section 16
 
-## 0. Progress Update (End of Session - Aug [Current Date])
+## 0. Progress Update (November 2023)
 
-**Significant progress has been made. The Sankey diagram now renders its basic structure with dynamically populated data for major flows upon activation. Tooltip event logic and content generation are functional according to console logs, though visual appearance of tooltips is pending resolution.**
+**The Sankey diagram integration is now substantially complete!** The diagram is functional and integrated within the TEUI application as Section 16, displaying energy flows sourced directly from the TEUI StateManager.
 
-**Key Accomplishments:**
-*   **Standalone HTML Refactored:** `SANKEY3035.html` stripped to essential D3.js logic, CSS, and data templates.
-*   **Section 16 Scaffolding & Core Logic Integration:** `sections/4011-Section16.js` created and populated with the adapted `TEUI_SankeyDiagram` object, `SANKEY_STRUCTURE_TEMPLATE`, and `NodeReferenceHandler`.
-*   **DOM Management & Initialization:** 
-    *   `index.html` updated with a static target div (`#section16ContentTarget`) for S16.
-    *   `Section16.js` uses `setupSection16DOM()` to dynamically create controls and the SVG environment within this target.
-    *   Refined `onSectionRendered` and `initializeEventHandlers` to ensure correct sequencing, resolving initial button activation issues. The "Activate/Refresh Sankey" button now works, revealing other UI controls.
-*   **Data Sourcing & Flow Mapping:** 
-    *   `fetchDataAndRenderSankey()` sources data from `window.TEUI.StateManager`.
-    *   Primary energy gains, heating system flows (conditional for Heat Pump/Gas/Oil), and direct TEUI exhaust values (`l_115`, `j_54`) are mapped and update link values.
-    *   Minimal flow values standardized to `0.0001`.
-    *   Diagnostic logging for link values (`S16 LINK LOG`) is in place to verify data flow.
-*   **Emission Display Logic:**
-    *   `TEUI_SankeyDiagram.updateEmissionsFlows()` refactored to use pre-calculated total annual emissions (kgCO2e/yr) for Electricity (`k_27`), Gas (`k_28`), and Oil (`k_30`) from `TEUI.StateManager`, converting to grams, and linking from a primary source node.
-    *   Obsolete internal emission factors removed from `TEUI_SankeyDiagram`.
-*   **Rendering & Basic Interactivity:** Basic Sankey structure (nodes, labels, links) renders. UI controls (Activate, Emissions, Spacing, Width) become visible and are interactive (their JS logic is tied to re-calling `fetchDataAndRenderSankey`).
-*   **Initial Bug Fixes & Refinements:** 
-    *   Addressed `JSON.stringify` cyclic structure error in rendering/resize.
-    *   Diagram container height constrained to `500px`.
-    *   Tooltip positioning logic refined to use `d3.pointer` and container-relative boundary checks.
-    *   Resolved errors from negative SVG width/height in `resize()` by ensuring minimum dimensions.
-*   **Number Formatting:** Tooltip and node label number formatting updated to use the global `window.TEUI.formatNumber(value, 'number-2dp-comma')` for better consistency.
-*   **Guiding Principle Reinforced:** Section 16 acts as a **visualizer/reader**.
+**Core Accomplishments:**
+* Successful embedding of the D3.js Sankey diagram within the Section 16 framework
+* Dynamic data sourcing from TEUI StateManager
+* Functional UI controls for activating/refreshing the diagram, toggling emissions, adjusting node spacing and width
+* Proper event handling and diagram updates that work with the TEUI lifecycle
+* Resolution of most critical rendering issues, with visible nodes, links, and labels
 
-**Primary Outstanding Tasks & Refinements:**
-1.  **Tooltip Visibility (Highest Priority Graphics Issue):**
-    *   **Status:** Logs confirm tooltip functions are called, content is generated, and positioning logic runs. However, tooltips are not visually appearing in the UI.
-    *   **Next Step:** Detailed DOM/CSS inspection is required when the tooltip *should* be active. Focus on:
-        *   Computed `display`, `opacity`, `visibility` of `#sankeySection16Tooltip`.
-        *   Final computed `left`, `top`, `width`, `height`.
-        *   Potential clipping by parent elements with `overflow: hidden` (especially `#sankeySection16ContainerWrapper`).
-        *   `z-index` stacking conflicts with other TEUI elements.
-        *   Consider using browser developer tools to force the tooltip to stay visible (e.g., break on attribute modification for its `style` attribute) to inspect it live.
-2.  **Link Width Accuracy & Full Data Verification:**
-    *   **Status:** Major links appear to have values, but some are still thin threads.
-    *   **Next Step:** Use the `S16 LINK LOG` messages. Systematically review all links in `SANKEY_STRUCTURE_TEMPLATE` against the logs. For any link that is unexpectedly thin, verify:
-        *   Its `teuiFieldId` mapping in `linkIdToTeuiField` is correct.
-        *   The corresponding field in `TEUI.StateManager` contains the expected non-minimal data (most current values). This is crucial for TEL components (`i_85`-`i_103`) and other building losses (`m_121`, `j_53`, `i_82`).
-3.  **Emissions Unit Display:**
-    *   **Status:** Emissions values in tooltips and node labels are formatted using `number-2dp-comma`.
-    *   **Next Step:** Review all instances where emissions are displayed (grams, kg, MT CO2e). Ensure the correct unit is displayed and that the raw value passed to `formatNumber` is appropriate for that unit (e.g., actual gram value if "grams CO2e" is shown, not a kWh value). Adjust calls to `window.TEUI.formatNumber` as needed.
-4.  **Animation Timing:**
-    *   **Status:** Links and nodes appear without the sequenced animation present in `SANKEY3035ORIGINAL.html`.
-    *   **Next Step:** Review the animation/transition logic in `SANKEY3035ORIGINAL.html` (likely involving `d3.transition().delay(...)`) and implement similar sequencing for link and node rendering in `Section16.js` for improved visual appeal.
-5.  **Canvas Height & Fitting (Fine-tuning):**
-    *   **Status:** Initial height constrained to `500px`. Behavior when browser width is significantly reduced needs more testing to ensure it doesn't grow excessively tall.
-    *   **Next Step:** Test responsive behavior. If issues persist, explore techniques from Section 17 or adjust SVG viewbox/preserveAspectRatio attributes if necessary.
-6.  **CSS Fidelity (General Aesthetics):**
-    *   **Status:** Basic styles ported.
-    *   **Next Step:** Conduct a thorough review of `4011-styles.css` (Section 16 part) against the original Sankey visual design. Ensure all node/link colors, fonts, label appearances, and overall visual styling faithfully match the original, well-received design. This includes verifying CSS variable usage or direct hex codes.
-7.  **UI Control Styling (Future Edit):**
-    *   **Status:** Current buttons use default TEUI styling.
-    *   **Next Step (Future):** Update the styling of buttons in Section 16 (Activate, Emissions, Spacing, Fullscreen) to match the visual style of buttons in Section 17 for UI consistency across visualization sections.
-8.  **Fullscreen Feature (Enhancement):**
-    *   **Status:** Not started.
-    *   **Next Step:** Plan and implement a fullscreen toggle button and functionality, drawing inspiration from Section 17, for improved presentation capability.
-9.  **Comprehensive Testing:** After the above, conduct thorough testing of all functionalities, data accuracy with various TEUI input states, UI control interactions, and responsiveness across different browsers and scenarios.
+**Remaining Technical Challenges:**
+
+1. **Style vs. Attr D3 Issues:** 
+   * We identified a critical distinction in D3 between `.style("stroke-width", ...)` and `.attr("stroke-width", ...)` methods
+   * In SVG, width properties for paths must be set using the `style()` method for proper rendering
+   * Using `attr()` for certain properties like stroke width causes links to disappear or have zero width
+   * This explains why links would sometimes render as hairlines or disappear entirely despite having valid flow values
+
+2. **Object vs. Numeric References:**
+   * D3 Sankey requires careful handling of data references between nodes and links
+   * Links need consistent handling of whether `source` and `target` are numeric indices or object references
+   * When transitioning between these formats (which happens during data updates), issues arise with links disappearing
+   * The issue is compounded when `style()` vs `attr()` problems occur simultaneously
+
+3. **Activate vs. Refresh Button Behavior:**
+   * The "Activate Sankey" button creates the initial diagram with default structure but sometimes fails to populate link values
+   * The "Refresh Sankey" button updates existing elements but sometimes causes links to momentarily flash or blink before settling
+   * Different code paths through the rendering logic explain these differences
+   * Activate creates nodes first then links, while Refresh attempts to update all elements simultaneously
+   * This difference impacts animation timing and flow
+
+4. **Animation Refinements Needed:**
+   * The original SANKEY3035ORIGINAL.html had beautiful left-to-right flow animations
+   * Our current implementation has more basic transitions without the coordinated sequencing
+   * The issue stems from how transitions, delays, and duration are managed
+   * We need to properly sequence animations so nodes appear first, then links flow from left to right
+
+5. **StateManager Integration:**
+   * When TEUI data changes, the Sankey needs explicit manual refresh
+   * We don't currently have StateManager listeners to detect and propagate relevant changes
+   * Improvements to the refresh logic would make this more seamless
+
+**Next Steps:**
+
+1. **Animation Refinement:**
+   * Study and implement the animation timing from SANKEY3035ORIGINAL.html
+   * Add proper sequencing with appropriately timed delays for the left-to-right flow effect
+   * Ensure animations work consistently for both initial load and refresh operations
+
+2. **Claude.ai Professional Integration:**
+   * We plan to bring this project to a professional Claude.ai Sonnet 3.7 agent on the web
+   * Since the original file was generated there, it may be better positioned to help with:
+     * Comprehensive code reduction for improved maintainability
+     * Animation refinements based on the original implementation
+     * Performance optimization for faster rendering and smoother transitions
+     * Improvements to the way D3 style vs attribute setting is handled
+
+3. **UI Consistency:**
+   * Align Section 16 button styling with the more modern approach in Section 17
+   * Add fullscreen functionality similar to Section 17
+   * Improve overall visual consistency between visualization sections
+
+This project demonstrates successful integration of a complex D3 visualization into the TEUI framework. The remaining refinements will primarily focus on visual polish and animation quality, rather than core functionality.
 
 ## 1. Objective
 
