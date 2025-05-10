@@ -910,7 +910,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             const buildingNodeIndex = dataObjectToModify.nodes.findIndex(n => n.name === "Building");
 
             if (scope1NodeIndex === -1 || scope2NodeIndex === -1 || buildingNodeIndex === -1) {
-                console.warn("Section 16: Emission sink nodes (E1/E2) or Building node not found in Sankey data.");
+                // console.warn("Section 16: Emission sink nodes (E1/E2) or Building node not found in Sankey data.");
                 return;
             }
 
@@ -939,7 +939,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                 const shwNetDemandIndex = dataObjectToModify.nodes.findIndex(n => n.name === "W.5.2 SHW Net Demand");
 
                 if (energyInputNodeIndex === -1) {
-                    console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
+                    // console.warn("S16: 'M.2.1.D Energy Input' node not found for emissions linking.");
                     return;
                 }
                 
@@ -961,11 +961,11 @@ window.TEUI.SectionModules.sect16 = (function() {
                     }
                 }
                 
-                // Handle gas emissions (Scope 1)
-                const gasEmissionsKg = parseFloat(teuiState.getValue('k_28') || 0);
-                if (gasEmissionsKg > 0 && isHeatingGasOrOil) {
-                    const gasEmissionsGrams = gasEmissionsKg * 1000;
-                    if (gasEmissionsGrams > 0.0001) {
+                // Handle Space Heating emissions (Scope 1) using dedicated field f_114
+                const spaceHeatingEmissionsKg = parseFloat(teuiState.getValue('f_114') || 0);
+                if (spaceHeatingEmissionsKg > 0 && isHeatingGasOrOil) {
+                    const spaceHeatingEmissionsGrams = spaceHeatingEmissionsKg * 1000;
+                    if (spaceHeatingEmissionsGrams > 0.0001) {
                         // For gas/oil heating, emissions flow through building
                         
                         // 1. First, TED emissions go to the building 
@@ -974,7 +974,7 @@ window.TEUI.SectionModules.sect16 = (function() {
                             dataObjectToModify.links.push({
                                 source: tedNodeIndex,
                                 target: buildingNodeIndex,
-                                value: gasEmissionsGrams,
+                                value: spaceHeatingEmissionsGrams,
                                 isEmissions: true,
                                 id: "TEDEmissionsToBuilding"
                             });
@@ -983,34 +983,22 @@ window.TEUI.SectionModules.sect16 = (function() {
                             dataObjectToModify.links.push({
                                 source: energyInputNodeIndex,
                                 target: buildingNodeIndex,
-                                value: gasEmissionsGrams,
+                                value: spaceHeatingEmissionsGrams,
                                 isEmissions: true,
                                 id: "EnergyInputEmissionsToBuilding"
                             });
                         }
                         
                         // Add to total Scope 1 emissions
-                        totalScope1EmissionsGrams += gasEmissionsGrams;
+                        totalScope1EmissionsGrams += spaceHeatingEmissionsGrams;
                     }
                 }
                 
-                // Handle oil emissions (Scope 1)
-                const oilEmissionsKg = parseFloat(teuiState.getValue('k_30') || 0);
-                if (oilEmissionsKg > 0 && isHeatingGasOrOil) {
-                    const oilEmissionsGrams = oilEmissionsKg * 1000;
-                    if (oilEmissionsGrams > 0.0001) {
-                        // For oil heating, add to total (actual link is added above)
-                        totalScope1EmissionsGrams += oilEmissionsGrams;
-                    }
-                }
-                
-                // Handle DHW/SHW emissions based on system type
-                if (isDhwGasOrOil && shwNetDemandIndex !== -1) {
-                    // Get DHW emissions value
-                    const dhwEmissionsKg = parseFloat(teuiState.getValue('j_54') || 0);
-                    if (dhwEmissionsKg > 0) {
-                        const dhwEmissionsGrams = dhwEmissionsKg * 1000;
-                        
+                // Handle DHW/SHW emissions (Scope 1) using dedicated field k_49
+                const dhwEmissionsKg = parseFloat(teuiState.getValue('k_49') || 0);
+                if (dhwEmissionsKg > 0 && isDhwGasOrOil && shwNetDemandIndex !== -1) {
+                    const dhwEmissionsGrams = dhwEmissionsKg * 1000;
+                    if (dhwEmissionsGrams > 0.0001) {
                         // 1. SHW emissions to building
                         dataObjectToModify.links.push({
                             source: shwNetDemandIndex,
@@ -1035,9 +1023,6 @@ window.TEUI.SectionModules.sect16 = (function() {
                         isEmissions: true,
                         id: "BuildingToScope1Emissions"
                     });
-                    
-                    // Debug output
-                    console.log(`Creating Building→Scope1 emissions link with value: ${totalScope1EmissionsGrams} grams`);
                 }
             }
         }
