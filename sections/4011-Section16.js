@@ -244,16 +244,19 @@ window.TEUI.SectionModules.sect16 = (function() {
             // Ensure we have height & width for calculations
             const innerWidth = this.width - this.margin.left - this.margin.right;
             const innerHeight = this.height - this.margin.top - this.margin.bottom;
+
+            // Calculate maxX for animation sequencing
+            const maxX = d3Data.nodes.length > 0 ? d3.max(d3Data.nodes, d => d.x0) : 0;
             
             // Render all the elements
-            this.renderNodes(d3Data.nodes, isInitialLoad);
-            this.renderLinks(d3Data.links, isInitialLoad);
-            this.renderLabels(d3Data.nodes, isInitialLoad);
+            this.renderNodes(d3Data.nodes, isInitialLoad, maxX);
+            this.renderLinks(d3Data.links, isInitialLoad, maxX);
+            this.renderLabels(d3Data.nodes, isInitialLoad, maxX);
             
             // console.log("Section 16: Sankey render call complete.");
         }
 
-        renderLinks(links, isInitialLoad) {
+        renderLinks(links, isInitialLoad, maxX) {
             // Generate link paths
             const linkGenerator = d3.sankeyLinkHorizontal();
             
@@ -301,13 +304,18 @@ window.TEUI.SectionModules.sect16 = (function() {
             return linkUpdate;
         }
 
-        renderNodes(nodes, isInitialLoad) {
+        renderNodes(nodes, isInitialLoad, maxX) {
             // Select all existing nodes and bind data
             const node = this.nodeGroup.selectAll(".node")
                 .data(nodes, d => d.name);
             
             // Remove any old nodes that are no longer in the data
-            node.exit().remove();
+            node.exit()
+                .transition()
+                .duration(500) // Original had no specific duration for exit, adding for consistency
+                .attr("width", 0)
+                .style("opacity", 0)
+                .remove();
             
             // Create new nodes
             const nodeEnter = node.enter().append("rect")
@@ -324,27 +332,42 @@ window.TEUI.SectionModules.sect16 = (function() {
                     this.hideTooltip();
                 });
             
-            // Update all nodes (both new and existing)
-            const nodeUpdate = node.merge(nodeEnter)
-                .attr("x", d => d.x0)
-                .attr("y", d => d.y0)
-                .attr("width", d => (d.x1 - d.x0) * this.widthMultiplier)
-                .attr("height", d => Math.max(1, d.y1 - d.y0));
-            
-            // Animate nodes on initial load
-            if (isInitialLoad) {
-                nodeEnter
-                    .style("opacity", 0)
+            const nodeUpdate = node.merge(nodeEnter);
+
+            if (isInitialLoad && maxX > 0) {
+                // Initial state for animation
+                nodeUpdate
+                    .attr("x", d => d.x0)
+                    .attr("y", d => d.y0)
+                    .attr("height", d => Math.max(1, d.y1 - d.y0)) // Ensure non-zero height
+                    .attr("width", 0)
+                    .style("opacity", 0);
+
+                // Animated entrance
+                nodeUpdate
+                    .transition()
+                    .duration(750)
+                    .delay(d => (d.x0 / maxX) * 1500) // Delay based on x position
+                    .style("opacity", 1)
                     .transition()
                     .duration(500)
-                    .delay(d => d.index * 20)
-                    .style("opacity", 1);
+                    .attr("width", d => (d.x1 - d.x0) * this.widthMultiplier);
+            } else {
+                // Regular update (or if maxX is 0, preventing division by zero)
+                nodeUpdate
+                    .transition()
+                    .duration(750)
+                    .attr("x", d => d.x0)
+                    .attr("y", d => d.y0)
+                    .attr("height", d => Math.max(1, d.y1 - d.y0))
+                    .attr("width", d => (d.x1 - d.x0) * this.widthMultiplier)
+                    .style("opacity", 1); // Ensure opacity is set for updates too
             }
             
             return nodeUpdate;
         }
 
-        renderLabels(nodes, isInitialLoad) {
+        renderLabels(nodes, isInitialLoad, maxX) {
             // Select and bind labels
             const text = this.labelGroup.selectAll(".node-label")
                 .data(nodes, d => d.name);
