@@ -238,70 +238,39 @@ window.TEUI.SectionModules.sect16 = (function() {
                 this.sankey.nodeWidth(this.nodeWidth * this.widthMultiplier);
             }
             
-            // Compute the sankey diagram: assign coordinates to nodes, calculate link paths
-            this.sankey(d3Data);
-            
-            // Ensure we have height & width for calculations
-            const innerWidth = this.width - this.margin.left - this.margin.right;
-            const innerHeight = this.height - this.margin.top - this.margin.bottom;
-
-            // Calculate maxX for animation sequencing
-            const maxX = d3Data.nodes.length > 0 ? d3.max(d3Data.nodes, d => d.x0) : 0;
-            
-            // Render all the elements
-            this.renderNodes(d3Data.nodes, isInitialLoad, maxX);
-            this.renderLinks(d3Data.links, isInitialLoad, maxX);
-            this.renderLabels(d3Data.nodes, isInitialLoad, maxX);
-            
-            // console.log("Section 16: Sankey render call complete.");
-        }
-
-        renderLinks(links, isInitialLoad, maxX) {
-            // Generate link paths
-            const linkGenerator = d3.sankeyLinkHorizontal();
-            
-            // Select and bind links
-            const link = this.linkGroup.selectAll(".link")
-                .data(links, d => `${d.source.index}-${d.target.index}`);
-            
-            // Remove old links
-            link.exit().remove();
-            
-            // Create new links
-            const linkEnter = link.enter().append("path")
-                .attr("class", "link")
-                .attr("d", linkGenerator)
-                .style("stroke", d => this.getLinkColor(d))
-                .style("stroke-width", d => Math.max(1, d.width || 1))
-                .style("stroke-opacity", 0)
-                .on("mouseover", (event, d) => {
-                    d3.select(event.target).style("stroke-opacity", 0.9);
-                    this.showLinkTooltip(event, d);
-                })
-                .on("mouseout", (event) => {
-                    d3.select(event.target).style("stroke-opacity", 0.6);
-                    this.hideTooltip();
+            try {
+                // Compute the sankey diagram: assign coordinates to nodes, calculate link paths
+                const { nodes, links } = this.sankey(d3Data);
+                
+                // Add display color property for consistency
+                nodes.forEach(node => {
+                    node.displayColor = d3.color(node.color || "#999").darker(0.3);
                 });
-            
-            // Update all links (both new and existing)
-            const linkUpdate = link.merge(linkEnter)
-                .attr("d", linkGenerator)
-                .style("stroke-width", d => Math.max(1, d.width || 1));
-            
-            // Animate links on initial load
-            if (isInitialLoad) {
-                linkEnter
-                    .style("stroke-opacity", 0)
-                    .transition()
-                    .duration(500)
-                    .delay(d => (d.source.index + d.target.index) * 10)
-                    .style("stroke-opacity", 0.6);
-            } else {
-                linkUpdate
-                    .style("stroke-opacity", 0.6);
+                
+                // Calculate maxX for animation sequencing
+                const maxX = nodes.length > 0 ? d3.max(nodes, d => d.x0) : 0;
+                
+                // CRITICAL: Follow the exact SANKEY3035ORIGINAL render sequence
+                // First links, then nodes, then labels
+                this.renderLinks(links, isInitialLoad, maxX);
+                this.renderNodes(nodes, isInitialLoad, maxX);
+                this.renderLabels(nodes, isInitialLoad, maxX);
+                
+                // Console log for debugging removed
+            } catch (error) {
+                // console.error("Error rendering Sankey diagram:", error);
+                // Fallback: Ensure elements are visible even if rendering fails
+                this.linkGroup.selectAll(".link")
+                    .style("stroke-opacity", 0.6)
+                    .style("stroke-width", d => Math.max(1, d.width || 1)); // CHANGED FROM attr TO style
+                
+                this.nodeGroup.selectAll(".node")
+                    .style("opacity", 1)
+                    .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier));
+                    
+                this.labelGroup.selectAll(".node-label")
+                    .style("opacity", 1);
             }
-            
-            return linkUpdate;
         }
 
         renderNodes(nodes, isInitialLoad, maxX) {
@@ -312,7 +281,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             // Remove any old nodes that are no longer in the data
             node.exit()
                 .transition()
-                .duration(500) // Original had no specific duration for exit, adding for consistency
+                .duration(500)
                 .attr("width", 0)
                 .style("opacity", 0)
                 .remove();
@@ -320,7 +289,7 @@ window.TEUI.SectionModules.sect16 = (function() {
             // Create new nodes
             const nodeEnter = node.enter().append("rect")
                 .attr("class", "node s16-sankey-node")
-                .style("fill", d => d.color || "#999")
+                .style("fill", d => d.displayColor || d3.color(d.color || "#999").darker(0.3))
                 .style("stroke", d => d3.color(d.color || "#999").darker(0.5))
                 .style("fill-opacity", 1)
                 .on("mouseover", (event, d) => {
@@ -332,39 +301,191 @@ window.TEUI.SectionModules.sect16 = (function() {
                     this.hideTooltip();
                 });
             
+            // Merge new and existing nodes for updates
             const nodeUpdate = node.merge(nodeEnter);
 
-            if (isInitialLoad && maxX > 0) {
-                // Initial state for animation
+            // EXACT SANKEY3035ORIGINAL ANIMATION PATTERN FOR NODES
+            if (isInitialLoad) {
+                // Initial state - invisible but positioned
                 nodeUpdate
                     .attr("x", d => d.x0)
                     .attr("y", d => d.y0)
-                    .attr("height", d => Math.max(1, d.y1 - d.y0)) // Ensure non-zero height
+                    .attr("height", d => Math.max(1, d.y1 - d.y0))
                     .attr("width", 0)
                     .style("opacity", 0);
 
-                // Animated entrance
+                // Two-stage animated entrance exactly like SANKEY3035ORIGINAL
                 nodeUpdate
                     .transition()
                     .duration(750)
-                    .delay(d => (d.x0 / maxX) * 1500) // Delay based on x position
-                    .style("opacity", 1)
+                    .delay(d => (d.x0 / maxX) * 1500) // Delay based on x position - IDENTICAL to original
+                    .style("opacity", 1) // First show node
                     .transition()
                     .duration(500)
-                    .attr("width", d => (d.x1 - d.x0) * this.widthMultiplier);
+                    .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier)); // Then expand width
             } else {
-                // Regular update (or if maxX is 0, preventing division by zero)
+                // Regular update for non-initial loads - simpler transition
                 nodeUpdate
                     .transition()
                     .duration(750)
                     .attr("x", d => d.x0)
                     .attr("y", d => d.y0)
                     .attr("height", d => Math.max(1, d.y1 - d.y0))
-                    .attr("width", d => (d.x1 - d.x0) * this.widthMultiplier)
-                    .style("opacity", 1); // Ensure opacity is set for updates too
+                    .attr("width", d => Math.max(1, (d.x1 - d.x0) * this.widthMultiplier))
+                    .style("opacity", 1);
             }
             
             return nodeUpdate;
+        }
+
+        renderLinks(links, isInitialLoad, maxX) {
+            // Generate link paths
+            const linkGenerator = d3.sankeyLinkHorizontal();
+            
+            // Debug checks
+            console.log("Rendering Sankey links, count:", links.length);
+            
+            // Check a sample link to verify data
+            if (links.length > 0) {
+                const sampleLink = links[0];
+                console.log("Sample link:", {
+                    source: typeof sampleLink.source === 'object' ? sampleLink.source.name : "index:" + sampleLink.source,
+                    target: typeof sampleLink.target === 'object' ? sampleLink.target.name : "index:" + sampleLink.target,
+                    value: sampleLink.value,
+                    width: sampleLink.width || "not set"
+                });
+            }
+            
+            // Select and bind links
+            const link = this.linkGroup.selectAll(".link")
+                .data(links, d => {
+                    const sourceIndex = typeof d.source === 'number' ? d.source : 
+                        (d.source.index !== undefined ? d.source.index : this._cleanDataInput.nodes.indexOf(d.source));
+                    const targetIndex = typeof d.target === 'number' ? d.target : 
+                        (d.target.index !== undefined ? d.target.index : this._cleanDataInput.nodes.indexOf(d.target));
+                    return `${sourceIndex}-${targetIndex}`;
+                });
+            
+            // Remove old links
+            link.exit().remove();
+            
+            // Create new links with guaranteed visibility properties
+            const linkEnter = link.enter().append("path")
+                .attr("class", "link")
+                .attr("d", linkGenerator)
+                .style("stroke", d => {
+                    const color = this.getLinkColor(d);
+                    console.log("Link color:", color);
+                    return color || "#999"; // Fallback color
+                })
+                .style("fill", "none") // Critical - must be none for paths
+                .style("stroke-opacity", 0)  
+                .style("stroke-width", 0);
+                
+            // Create event handlers
+            linkEnter
+                .on("mouseover", (event, d) => {
+                    d3.select(event.target)
+                        .style("stroke-opacity", 0.9);
+                    this.showLinkTooltip(event, d);
+                })
+                .on("mouseout", (event) => {
+                    d3.select(event.target)
+                        .style("stroke-opacity", 0.6);
+                    this.hideTooltip();
+                });
+            
+            // Merge new and existing links for updates
+            const linkUpdate = link.merge(linkEnter)
+                .attr("d", linkGenerator);
+            
+            // Force all links to have a proper path and color
+            linkUpdate.each(function(d) {
+                const linkElement = d3.select(this);
+                const path = linkElement.attr("d");
+                const color = linkElement.style("stroke");
+                
+                // Log for debugging
+                if (!path || path === "" || color === "none" || color === "") {
+                    console.warn("Link rendering issue:", {
+                        path: path,
+                        color: color,
+                        source: d.source.name,
+                        target: d.target.name
+                    });
+                    
+                    // Force valid path and color
+                    if (!path || path === "") linkElement.attr("d", linkGenerator(d));
+                    if (color === "none" || color === "") linkElement.style("stroke", "#999");
+                }
+            });
+            
+            if (isInitialLoad) {
+                // Make sure links have a visible appearance
+                linkUpdate
+                    .style("stroke-opacity", 0)
+                    .style("stroke-width", 0);
+                    
+                // Animation with safety measures
+                const t1 = linkUpdate
+                    .transition()
+                    .duration(500)
+                    .delay(d => {
+                        // Safe calculation with fallback
+                        let delay = 0;
+                        try {
+                            delay = (d.source.x0 / (maxX || 1)) * 1000;
+                        } catch (e) {
+                            delay = 0;
+                        }
+                        return delay + 300; // Add a base delay
+                    })
+                    .style("stroke-opacity", 0.6);
+                    
+                t1.transition()
+                    .duration(400)
+                    .style("stroke-width", d => Math.max(1, d.width || 1))
+                    .on("end", function() {
+                        // Ensure final width is set after transition
+                        d3.select(this)
+                            .style("stroke-width", function(d) {
+                                return Math.max(1, d.width || 1);
+                            });
+                    });
+                    
+                // Safety backup - force links to be visible after a fixed time
+                setTimeout(() => {
+                    this.linkGroup.selectAll(".link")
+                        .style("stroke-opacity", 0.6)
+                        .style("stroke-width", d => Math.max(1, d.width || 1));
+                }, 2000);
+            } else {
+                // Simpler transition for updates, but with safety measures
+                linkUpdate
+                    .transition()
+                    .duration(500)
+                    .style("stroke-opacity", 0.6)
+                    .style("stroke-width", d => Math.max(1, d.width || 1))
+                    .on("end", function() {
+                        // Verify final state
+                        d3.select(this)
+                            .style("stroke-width", function(d) {
+                                return Math.max(1, d.width || 1);
+                            });
+                    });
+                    
+                // Backup - force links to be visible
+                setTimeout(() => {
+                    this.linkGroup.selectAll(".link")
+                        .style("stroke-opacity", 0.6)
+                        .style("stroke-width", d => Math.max(1, d.width || 1));
+                }, 1000);
+            }
+            
+            // Final check - count links actually displayed
+            console.log("Links after rendering:", this.linkGroup.selectAll(".link").size());
+            
+            return linkUpdate;
         }
 
         renderLabels(nodes, isInitialLoad, maxX) {
@@ -382,21 +503,26 @@ window.TEUI.SectionModules.sect16 = (function() {
                 .attr("x", d => d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6)
                 .attr("y", d => (d.y1 + d.y0) / 2)
                 .attr("dy", "0.35em")
-                .text(d => d.name);
+                .text(d => d.name)
+                .style("opacity", 0); // Start invisible
             
-            // Update all labels (both new and existing)
+            // Merge new and existing labels for updates
             const textUpdate = text.merge(textEnter)
                 .attr("text-anchor", d => d.x0 < this.width / 2 ? "start" : "end")
                 .attr("x", d => d.x0 < this.width / 2 ? d.x1 + 6 : d.x0 - 6)
                 .attr("y", d => (d.y1 + d.y0) / 2);
             
-            // Animate labels on initial load
+            // EXACT SANKEY3035ORIGINAL ANIMATION PATTERN FOR LABELS
             if (isInitialLoad) {
-                textEnter
-                    .style("opacity", 0)
+                textUpdate
                     .transition()
                     .duration(500)
-                    .delay(d => d.index * 20)
+                    .delay(d => (d.x0 / maxX) * 1500 + 500) // Slightly after nodes appear
+                    .style("opacity", 1);
+            } else {
+                textUpdate
+                    .transition()
+                    .duration(750)
                     .style("opacity", 1);
             }
             
