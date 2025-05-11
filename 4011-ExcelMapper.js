@@ -227,6 +227,75 @@ class ExcelMapper {
                         extractedValue = "0";
                     }
                 }
+                // Normalize d_52 (DHW Eff Factor %) value from Excel
+                if (fieldId === 'd_52') {
+                    let numVal;
+                    if (typeof extractedValue === 'string') {
+                        if (extractedValue.endsWith('%')) {
+                            numVal = parseFloat(extractedValue.replace('%', ''));
+                        } else {
+                            numVal = parseFloat(extractedValue);
+                        }
+                    } else if (typeof extractedValue === 'number') {
+                        numVal = extractedValue;
+                    }
+
+                    if (!isNaN(numVal)) {
+                        // If Excel provides a factor/COP (e.g., 0.8, 2.5, 3.0), convert to percentage for the slider (50-400 range)
+                        // Heuristic: if value is small (e.g., <= 10, as COP 10 = 1000%), assume it's a factor.
+                        if (numVal <= 10) { // Assuming factors/COPs are generally <= 10 (i.e., up to 1000%)
+                            extractedValue = (numVal * 100).toString();
+                        } else {
+                            // Assume it's already a percentage (e.g., 80 for 80%, 300 for 300%)
+                            extractedValue = numVal.toString();
+                        }
+                    } else {
+                        extractedValue = "0"; // Default if parsing failed
+                    }
+                }
+                // Normalize d_118 (HRV/ERV SRE %) value from Excel
+                if (fieldId === 'd_118') {
+                    let numVal;
+                    if (typeof extractedValue === 'string') {
+                        if (extractedValue.endsWith('%')) {
+                            numVal = parseFloat(extractedValue.replace('%', ''));
+                        } else {
+                            numVal = parseFloat(extractedValue);
+                        }
+                    } else if (typeof extractedValue === 'number') {
+                        numVal = extractedValue;
+                    }
+
+                    if (!isNaN(numVal)) {
+                        // Assume d_118 from Excel is a direct percentage (e.g., 75 for 75%, not 0.75)
+                        extractedValue = numVal.toString();
+                    } else {
+                        extractedValue = "0"; // Default if parsing failed
+                    }
+                }
+                // Normalization for SHGC fields (f_73 to f_78) is removed as they will be handled as direct coefficients.
+                // The new 'coefficient_slider' type expects the decimal value directly.
+                /*
+                const shgcFields = ['f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78'];
+                if (shgcFields.includes(fieldId)) {
+                    let numVal;
+                    if (typeof extractedValue === 'string') {
+                        numVal = parseFloat(extractedValue);
+                    } else if (typeof extractedValue === 'number') {
+                        numVal = extractedValue;
+                    }
+
+                    if (!isNaN(numVal)) {
+                        if (numVal >= 0 && numVal <= 1) { 
+                            extractedValue = (numVal * 100).toString();
+                        } else {
+                            extractedValue = Math.min(Math.max(numVal, 0), 100).toString(); 
+                        }
+                    } else {
+                        extractedValue = "50"; 
+                    }
+                }
+                */
                 importedData[fieldId] = extractedValue;
                 // console.log(`Mapped ${sheetName}!${cellRef} -> ${fieldId}: ${importedData[fieldId]}`);
             } else {

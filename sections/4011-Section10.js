@@ -244,11 +244,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                 },
                 f: { 
                     fieldId: "f_73", 
-                    type: "percentage",
-                    value: "50",
-                    min: 20,
-                    max: 65,
-                    step: 5,
+                    type: "coefficient_slider",
+                    value: "0.50",
+                    min: 0.20,
+                    max: 0.60,
+                    step: 0.05,
                     section: "envelopeRadiantGains",
                     classes: ["col-small", "slider-container"]
                 },
@@ -348,11 +348,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                 },
                 f: { 
                     fieldId: "f_74", 
-                    type: "percentage",
-                    value: "50",
-                    min: 20,
-                    max: 65,
-                    step: 5,
+                    type: "coefficient_slider",
+                    value: "0.50",
+                    min: 0.20,
+                    max: 0.60,
+                    step: 0.05,
                     section: "envelopeRadiantGains",
                     classes: ["col-small", "slider-container"]
                 },
@@ -451,11 +451,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                 },
                 f: { 
                     fieldId: "f_75", 
-                    type: "percentage",
-                    value: "50",
-                    min: 20,
-                    max: 65,
-                    step: 5,
+                    type: "coefficient_slider",
+                    value: "0.50",
+                    min: 0.20,
+                    max: 0.60,
+                    step: 0.05,
                     section: "envelopeRadiantGains",
                     classes: ["col-small", "slider-container"]
                 },
@@ -552,11 +552,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                 },
                 f: { 
                     fieldId: "f_76", 
-                    type: "percentage",
-                    value: "50",
-                    min: 20,
-                    max: 65,
-                    step: 5,
+                    type: "coefficient_slider",
+                    value: "0.50",
+                    min: 0.20,
+                    max: 0.60,
+                    step: 0.05,
                     section: "envelopeRadiantGains",
                     classes: ["col-small", "slider-container"]
                 },
@@ -653,11 +653,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                 },
                 f: { 
                     fieldId: "f_77", 
-                    type: "percentage",
-                    value: "50",
-                    min: 20,
-                    max: 65,
-                    step: 5,
+                    type: "coefficient_slider",
+                    value: "0.50",
+                    min: 0.20,
+                    max: 0.60,
+                    step: 0.05,
                     section: "envelopeRadiantGains",
                     classes: ["col-small", "slider-container"]
                 },
@@ -754,11 +754,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                 },
                 f: { 
                     fieldId: "f_78", 
-                    type: "percentage",
-                    value: "50",
-                    min: 20,
-                    max: 65,
-                    step: 5,
+                    type: "coefficient_slider",
+                    value: "0.50",
+                    min: 0.20,
+                    max: 0.60,
+                    step: 0.05,
                     section: "envelopeRadiantGains",
                     classes: ["col-small", "slider-container"]
                 },
@@ -1200,33 +1200,29 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Get relevant values using getFieldValue and the global parseNumeric
             const area = window.TEUI.parseNumeric(getFieldValue(`d_${rowId}`));
             const orientation = getFieldValue(`e_${rowId}`);
-            let shgcPercentage = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`)); // Get SHGC as percentage (e.g., 50)
-            const shgc = shgcPercentage / 100; // Convert percentage to decimal (e.g., 0.50)
-            const winterShading = window.TEUI.parseNumeric(getFieldValue(`g_${rowId}`), 0) / 100; // Default 0
-            const summerShading = window.TEUI.parseNumeric(getFieldValue(`h_${rowId}`), 100) / 100; // Default 100
+            // SHGC is now a direct coefficient (e.g., 0.50, 0.60) from the coefficient_slider
+            const shgc = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`)); 
+            // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
+            const winterShadingDecimal = window.TEUI.parseNumeric(getFieldValue(`g_${rowId}`), 0) / 100; 
+            const summerShadingDecimal = window.TEUI.parseNumeric(getFieldValue(`h_${rowId}`), 100) / 100;
             
-            // Get climate zone from section 3 if available
             const climateZone = getNumericValue("j_19") || 6.0; // Default to zone 6 if not available
             
-            // Calculate gain factor based on orientation and climate zone
-            const gainFactor = calculateGainFactor(orientation, climateZone);
+            const gainFactor = calculateGainFactor(orientation, climateZone); // This is M73 (Gain Factor based on SHGC=0.5)
             
-            // Store the gain factor in column m
             setCalculatedValue(`m_${rowId}`, formatNumber(gainFactor));
             
+            // SHGC Normalization Factor: Adjusts gains based on actual SHGC relative to the baseline SHGC of 0.5 used for M73 values.
+            const shgcNormalizationFactor = shgc / 0.5; 
+
             // Calculate heating season solar gains
-            // Original formula: Area * SHGC * GainFactor * (1 - WinterShading)
-            // Corrected formula based on reference SHGC of 0.5: 
-            // Area * GainFactor * (SHGC/0.5) * (1 - WinterShading)
-            const heatingGains = area * gainFactor * (shgc / 0.5) * (1 - winterShading);
+            const heatingGains = area * gainFactor * shgcNormalizationFactor * (1 - winterShadingDecimal);
             
             // Calculate cooling season solar gains
-            // Corrected formula with reference SHGC adjustment:
-            // Area * GainFactor * (SHGC/0.5) * 0.5 * (1 - SummerShading)
-            const coolingModifier = (orientation === 'Skylight') ? 1.25 : 0.5;
-            const coolingGains = area * gainFactor * (shgc / 0.5) * 0.5 * (1 - summerShading);
+            // The coolingModifierFactor accounts for different load factors in summer (e.g. skylights more, others less)
+            const coolingModifierFactor = (orientation === 'Skylight') ? 1.25 : 0.5;
+            const coolingGains = area * gainFactor * shgcNormalizationFactor * (1 - summerShadingDecimal) * coolingModifierFactor;
             
-            // Calculate cost
             const cost = getNumericValue('l_12') * (coolingGains - heatingGains);
             
             // Update calculated fields

@@ -452,7 +452,7 @@ TEUI.FieldManager = (function() {
                                 cellElement.appendChild(selectElement);
                                 cellElement.classList.add('dropdown-cell');
                                 
-                            } else if (cellDef.type === 'year_slider' || cellDef.type === 'percentage' || cellDef.type === 'coefficient') {
+                            } else if (cellDef.type === 'year_slider' || cellDef.type === 'percentage' || cellDef.type === 'coefficient' || cellDef.type === 'coefficient_slider') {
                                 // For sliders, just create a placeholder that will be replaced by initializeSliders
                                 cellElement.classList.add('slider-cell');
                                 cellElement.textContent = cellDef.value || '0';
@@ -662,7 +662,7 @@ TEUI.FieldManager = (function() {
         const fields = getFieldsBySection(sectionId);
         
         Object.entries(fields).forEach(([fieldId, field]) => {
-            if (field.type === 'year_slider' || field.type === 'percentage' || field.type === 'coefficient') {
+            if (field.type === 'year_slider' || field.type === 'percentage' || field.type === 'coefficient' || field.type === 'coefficient_slider') {
                 const element = document.querySelector(`[data-field-id="${fieldId}"]`);
                 if (!element) return;
                 
@@ -678,10 +678,9 @@ TEUI.FieldManager = (function() {
                 rangeInput.setAttribute('data-field-id', fieldId);
                 
                 // Set range attributes
-                rangeInput.min = field.min || (field.type === 'percentage' ? 0 : 0);
-                rangeInput.max = field.max || (field.type === 'percentage' ? 100 : 100);
-                rangeInput.step = field.step || (field.type === 'percentage' ? 5 : 5);
-                // Use parseFloat to handle potential decimal default values correctly
+                rangeInput.min = field.min !== undefined ? field.min : (field.type === 'percentage' || field.type === 'coefficient_slider' ? 0 : 0);
+                rangeInput.max = field.max !== undefined ? field.max : (field.type === 'percentage' || field.type === 'coefficient_slider' ? (field.type === 'coefficient_slider' ? 1 : 100) : 100);
+                rangeInput.step = field.step !== undefined ? field.step : (field.type === 'percentage' ? 5 : (field.type === 'coefficient_slider' ? 0.01 : 5));
                 rangeInput.value = field.defaultValue !== undefined ? parseFloat(field.defaultValue) : (field.min || 0);
                 
                 // Create display element
@@ -698,7 +697,19 @@ TEUI.FieldManager = (function() {
                     let displayValue = value;
                     
                     if (field.type === 'percentage') {
-                        displayValue = value + '%';
+                        let valToFormat = parseFloat(value);
+                        // If it's a 0-1 coefficient specifically marked with displayFactor to be shown as 0-100%
+                        if (field.displayFactor === 100 && valToFormat >= (field.min || 0) && valToFormat <= (field.max || 1) && (field.max || 1) <= 1) {
+                            // valToFormat is already 0-1, formatNumber('percent-Xdp') expects this decimal
+                        } else {
+                            // For standard 0-100% sliders, convert current value (0-100) to decimal (0-1) for formatNumber
+                            valToFormat = valToFormat / 100;
+                        }
+                        displayValue = window.TEUI.formatNumber(valToFormat, 'percent-0dp');
+                    } else if (field.type === 'coefficient_slider') {
+                        displayValue = window.TEUI.formatNumber(parseFloat(value), 'number-2dp');
+                    } else if (field.type === 'year_slider') {
+                        displayValue = window.TEUI.formatNumber(parseFloat(value), 'integer');
                     }
                     
                     displaySpan.textContent = displayValue;
@@ -710,11 +721,23 @@ TEUI.FieldManager = (function() {
                 });
                 
                 // Set initial display value
-                let displayValue = rangeInput.value;
+                let initialDisplayValue = rangeInput.value;
                 if (field.type === 'percentage') {
-                    displayValue += '%';
+                    let valToFormat = parseFloat(rangeInput.value);
+                    // If it's a 0-1 coefficient specifically marked with displayFactor to be shown as 0-100%
+                    if (field.displayFactor === 100 && valToFormat >= (field.min || 0) && valToFormat <= (field.max || 1) && (field.max || 1) <= 1) {
+                        // valToFormat is already 0-1, formatNumber('percent-Xdp') expects this decimal
+                    } else {
+                        // For standard 0-100% sliders, convert initial value (0-100) to decimal (0-1) for formatNumber
+                        valToFormat = valToFormat / 100;
+                    }
+                    initialDisplayValue = window.TEUI.formatNumber(valToFormat, 'percent-0dp');
+                } else if (field.type === 'coefficient_slider') {
+                    initialDisplayValue = window.TEUI.formatNumber(parseFloat(rangeInput.value), 'number-2dp');
+                } else if (field.type === 'year_slider') {
+                    initialDisplayValue = window.TEUI.formatNumber(parseFloat(rangeInput.value), 'integer');
                 }
-                displaySpan.textContent = displayValue;
+                displaySpan.textContent = initialDisplayValue;
                 
                 // Replace original content with slider
                 sliderContainer.appendChild(rangeInput);
@@ -1067,11 +1090,8 @@ TEUI.FieldManager = (function() {
                     break;
                 case 'year_slider': 
                 case 'percentage':
-                case 'coefficient':
-                    // Slider types - the 'element' is the parent TD.
-                    // We need to find the actual <input type="range"> and the display span inside it.
                     const rangeInput = element.querySelector('input[type="range"]');
-                    const displaySpan = element.querySelector('.slider-value'); // Assumes initializeSliders adds this class
+                    const displaySpan = element.querySelector('.slider-value');
 
                     if (rangeInput) {
                         const numericValue = window.TEUI.parseNumeric(newValue, NaN);
@@ -1081,19 +1101,24 @@ TEUI.FieldManager = (function() {
                                 let formattedDisplay = numericValue.toString();
                                 if (typeof window.TEUI?.formatNumber === 'function') {
                                     if (fieldDef.type === 'percentage') {
-                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'percent-0dp'); 
-                                    } else if (fieldDef.type === 'coefficient') {
-                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'number-2dp'); 
+                                        let valueToFormat = numericValue; // This is 0-100 from StateManager for typical percentage sliders
+                                        // If it's a 0-1 coefficient that used displayFactor (potentially an old SHGC model, though SHGC is now coefficient_slider)
+                                        if (fieldDef.displayFactor === 100 && numericValue >= (fieldDef.min || 0) && numericValue <= (fieldDef.max || 1) && (fieldDef.max || 1) <=1 ) {
+                                            // valueToFormat is already 0-1, formatNumber 'percent-0dp' will handle it by multiplying by 100
+                                        } else {
+                                            // For standard 0-100% sliders, convert to decimal (0-1) for formatNumber
+                                            valueToFormat = valueToFormat / 100;
+                                        }
+                                        formattedDisplay = window.TEUI.formatNumber(valueToFormat, 'percent-0dp'); 
                                     } else { // year_slider
                                         formattedDisplay = window.TEUI.formatNumber(numericValue, 'integer');
                                     }
                                 } else {
-                                    // Fallback if global formatter isn't ready (should ideally not happen with correct load order)
                                     console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);
                                     if (fieldDef.type === 'percentage') formattedDisplay = numericValue + '%'; // Basic fallback
                                 }
                                 displaySpan.textContent = formattedDisplay;
-                                console.log(`[FieldManager.updateFieldDisplay] SLIDER UI updated for ${fieldId}: range set to ${numericValue}, display to "${formattedDisplay}"`);
+                                // console.log(`[FieldManager.updateFieldDisplay] SLIDER UI updated for ${fieldId}: range set to ${numericValue}, display to "${formattedDisplay}"`);
                             }
                             rangeInput.dispatchEvent(new Event('input', { bubbles: true }));
                             // console.log(`[FieldManager.updateFieldDisplay] Dispatched INPUT event for slider ${fieldId}`);
@@ -1104,6 +1129,27 @@ TEUI.FieldManager = (function() {
                         console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for slider ${fieldId}. Initial textContent was: "${element.textContent}". Setting textContent as fallback.`);
                         // Fallback if structure isn't as expected (e.g. if initializeSliders hasn't run or was cleared)
                         element.textContent = newValue; 
+                    }
+                    break;
+                case 'coefficient_slider': // New type for SHGC-like sliders
+                    const rangeInputCoeff = element.querySelector('input[type="range"]');
+                    const displaySpanCoeff = element.querySelector('.slider-value');
+
+                    if (rangeInputCoeff) {
+                        const numericValueCoeff = window.TEUI.parseNumeric(newValue, NaN);
+                        if (!isNaN(numericValueCoeff)) {
+                            rangeInputCoeff.value = numericValueCoeff; // e.g., sets slider to 0.6
+                            if (displaySpanCoeff) {
+                                // Directly format the decimal value, e.g., to "0.60"
+                                displaySpanCoeff.textContent = window.TEUI.formatNumber(numericValueCoeff, 'number-2dp'); 
+                            }
+                            rangeInputCoeff.dispatchEvent(new Event('input', { bubbles: true }));
+                        } else {
+                             console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for coefficient_slider ${fieldId}`);
+                        }
+                    } else {
+                        console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for coefficient_slider ${fieldId}.`);
+                        element.textContent = newValue; // Fallback
                     }
                     break;
                 case 'dropdown':
