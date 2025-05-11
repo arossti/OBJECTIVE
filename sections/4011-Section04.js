@@ -696,8 +696,9 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // --- Listeners for Actual Fuel Inputs (d_28 to d_31) ---
             const actualFuelUpdateCallback = (newValue, oldValue, sourceFieldId) => {
-                // console.log(`[S4 DEBUG] actualFuelUpdateCallback triggered by ${sourceFieldId}`);
+                // console.log(`[S04 DEBUG] actualFuelUpdateCallback triggered by ${sourceFieldId}`);
 
+                let calculateSubtotalsAfter = true;
                 // Determine which calculation pair to run based on the source
                 switch (sourceFieldId) {
                     case 'd_28': // Gas
@@ -705,36 +706,40 @@ window.TEUI.SectionModules.sect04 = (function() {
                         setCalculatedValue('f_28', f28Value, 'number-2dp-comma');
                         const g28Value = calculateG28();
                         setCalculatedValue('g_28', g28Value, 'number-2dp-comma');
-                        // console.log(`[S4 DEBUG] Updated Actual Gas: f28=${f28Value}, g28=${g28Value}`);
                         break;
                     case 'd_29': // Propane
                         const f29Value = calculateF29();
                         setCalculatedValue('f_29', f29Value, 'number-2dp-comma');
                         const g29Value = calculateG29();
                         setCalculatedValue('g_29', g29Value, 'number-2dp-comma');
-                        // console.log(`[S4 DEBUG] Updated Actual Propane: f29=${f29Value}, g29=${g29Value}`);
                         break;
                     case 'd_30': // Oil
                         const f30Value = calculateF30();
                         setCalculatedValue('f_30', f30Value, 'number-2dp-comma');
                         const g30Value = calculateG30();
                         setCalculatedValue('g_30', g30Value, 'number-2dp-comma');
-                        // console.log(`[S4 DEBUG] Updated Actual Oil: f30=${f30Value}, g30=${g30Value}`);
                         break;
                     case 'd_31': // Wood
                         const f31Value = calculateF31();
                         setCalculatedValue('f_31', f31Value, 'number-2dp-comma');
-                        // Also need h_31 for g_31 calculation
                         const h31Value = calculateH31(); 
-                        setCalculatedValue('h_31', h31Value, 'number-2dp-comma'); // Update target too
+                        setCalculatedValue('h_31', h31Value, 'number-2dp-comma');
                         const g31Value = calculateG31(); 
                         setCalculatedValue('g_31', g31Value, 'number-2dp-comma');
-                        // console.log(`[S4 DEBUG] Updated Actual Wood: f31=${f31Value}, g31=${g31Value}`);
+                        const k31Value = calculateK31(); // Calculate k_31 as it's needed by d_60
+                        setCalculatedValue('k_31', k31Value, 'number-2dp-comma');
+                        // When d_31 (wood use) changes, k_31 also changes.
+                        // S08 listens to k_31 to update d_60.
+                        // S04 listens to d_60 to update subtotals.
+                        // So, we don't call updateSubtotals() directly here for d_31 changes.
+                        calculateSubtotalsAfter = false;
                         break;
                 }
 
-                // Update subtotals after any actual fuel input change
-                updateSubtotals();
+                // Update subtotals after any actual fuel input change, unless it was d_31
+                if (calculateSubtotalsAfter) {
+                    updateSubtotals();
+                }
             };
 
             sm.addListener('d_28', actualFuelUpdateCallback);
@@ -742,6 +747,12 @@ window.TEUI.SectionModules.sect04 = (function() {
             sm.addListener('d_30', actualFuelUpdateCallback);
             sm.addListener('d_31', actualFuelUpdateCallback);
             // --- End Actual Fuel Listeners ---
+
+            // Listener for d_60 (Calculated Wood Offset from S08)
+            sm.addListener('d_60', () => {
+                // console.log('[S04 DEBUG] d_60 changed, calling updateSubtotals()');
+                updateSubtotals(); // This will recalculate g_32 and k_32 which depend on d_60
+            });
 
             // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
             document.addEventListener('input', function(e) {
