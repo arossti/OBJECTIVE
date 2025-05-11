@@ -259,16 +259,16 @@ window.TEUI.SectionModules.sect04 = (function() {
             cells: {
                 b: {}, // Empty
                 c: { label: "Annual Percapita Energy" }, // Use label
-                d: { fieldId: "d_34", type: "calculated", value: "1,055.06", dependencies: ["f_27", "f_28", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
+                d: { fieldId: "d_34", type: "calculated", value: "1,055.06", dependencies: ["f_32", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" }, // Dependency updated
                 e: { content: "kWh Actual" },
                 f: { fieldId: "f_34", type: "calculated", value: "3.80", dependencies: ["d_33", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 g: { content: "GJ Actual" },
-                h: { fieldId: "h_34", type: "calculated", value: "1,053.70", dependencies: ["j_27", "j_28", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
+                h: { fieldId: "h_34", type: "calculated", value: "1,053.70", dependencies: ["j_32", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" }, // Dependency updated
                 i: { content: "kWh Target" },
                 j: { fieldId: "j_34", type: "calculated", value: "3.79", dependencies: ["h_33", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
-                k: { content: "GJ Target" },
-                l: { fieldId: "l_34", type: "calculated", value: "53.74", dependencies: ["k_32", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
-                m: { content: "kWh/pp" }
+                k: { content: "GJ Target" }, 
+                l: { }, // Was l_34, now empty
+                m: { }  // Was unit for l_34, now empty
             }
         },
             
@@ -1006,9 +1006,6 @@ window.TEUI.SectionModules.sect04 = (function() {
         const j34Value = calculateJ34(h33Value, d63Value);
         setCalculatedValue('j_34', j34Value, 'number-2dp-comma');
 
-        const l34Value = calculateL34(k32Value, d63Value);
-        setCalculatedValue('l_34', l34Value, 'number-2dp-comma');
-
         const d35Value = calculateD35(d14Value, j27Value, h35Value, f27Value);
         setCalculatedValue('d_35', d35Value, 'number-2dp-comma');
 
@@ -1288,11 +1285,10 @@ window.TEUI.SectionModules.sect04 = (function() {
     
     // Row 34: Annual Percapita Energy
     function calculateD34() {
-        const f27 = getNumericValue('f_27'); // Use helper
-        const f28 = getNumericValue('f_28'); // Use helper
-        const d63 = getNumericValue('d_63'); // Use helper
-        // =(F27+F28)/D63 (Sum of electricity and gas divided by occupants)
-        return (f27 + f28) / (d63 || 1);
+        const f32 = getNumericValue('f_32'); // Actual Net Energy Subtotal
+        const d63 = getNumericValue('d_63'); // Occupants
+        // New formula: =F32/D63 (Actual Net Energy / Occupants)
+        return (f32) / (d63 || 1); // Ensure d63 is not zero
     }
     
     function calculateF34() {
@@ -1303,11 +1299,10 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     function calculateH34() {
-        const j27 = getNumericValue('j_27'); // Use helper
-        const j28 = getNumericValue('j_28'); // Use helper
-        const d63 = getNumericValue('d_63'); // Use helper
-        // =(J27+J28)/D63 (Target energy per person)
-        return (j27 + j28) / (d63 || 1);
+        const j32 = getNumericValue('j_32'); // Target Net Energy Subtotal
+        const d63 = getNumericValue('d_63'); // Occupants
+        // New formula: =J32/D63 (Target Net Energy / Occupants)
+        return (j32) / (d63 || 1); // Ensure d63 is not zero
     }
     
     function calculateJ34() {
@@ -1317,12 +1312,15 @@ window.TEUI.SectionModules.sect04 = (function() {
         return h33 / (d63 || 1);
     }
     
+    // Function calculateL34 will be removed or effectively disabled later by removing its call and display
+    /*
     function calculateL34() {
-        const k32 = getNumericValue('k_32'); // Use helper
-        const d63 = getNumericValue('d_63'); // Use helper
-        // =K32/D63 (Emissions per person)
-        return k32 / (d63 || 1);
+        const j32 = getNumericValue('j_32'); // CORRECTED: Target Net ekWh
+        const d63 = getNumericValue('d_63'); // Occupants
+        // New formula: =J32/D63 (Target kWh/pp)
+        return j32 / (d63 || 1);
     }
+    */
     
     // Row 35: Primary Energy
     function calculateD35() {
@@ -1575,7 +1573,6 @@ window.TEUI.SectionModules.sect04 = (function() {
              calculateF34: calculateF34,
              calculateH34: calculateH34,
              calculateJ34: calculateJ34,
-             calculateL34: calculateL34,
              calculateD35: calculateD35,
              calculateF35: calculateF35
         },

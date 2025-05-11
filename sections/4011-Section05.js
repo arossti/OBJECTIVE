@@ -199,7 +199,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 },
                 m: { content: "✓", classes: ["checkmark"] }
             }
-        }
+        },
     };
     
     //==========================================================================
@@ -567,39 +567,26 @@ window.TEUI.SectionModules.sect05 = (function() {
         const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
 
         const d_41_result = (reference_d_38_placeholder - d_38_value) * h_13_value;
-        setCalculatedValue("d_41", d_41_result, 'number-2dp-comma'); // Original S05 d_41 uses toFixed(2)
+        setCalculatedValue("d_41", d_41_result, 'number-2dp-comma');
     }
     
     /**
      * Calculate all values for this section
      */
     function calculateAll() {
-        const typology = getFieldValue("d_39"); // String value is fine for this
+        const typology = getFieldValue("d_39"); 
         if (typology) {
             const cap = calculateTypologyBasedCap(typology);
-            setCalculatedValue("i_39", cap, 'number-2dp-comma'); // Typology cap is kgCO2e/m2
+            setCalculatedValue("i_39", cap, 'number-2dp-comma'); 
         }
         
-        calculateGHGI(); // Calculates d_38, g_38, j_38
-        calculate_i_38(); // Depends on g_38 and h_13
-        calculate_i_40(); // Depends on d_16
-        calculate_d_40(); // Depends on i_41, d_106
-        calculate_d_41(); // Uses placeholder, depends on d_38, h_13
+        calculateGHGI(); 
+        calculate_i_38(); 
+        calculate_i_40(); 
+        calculate_d_40(); 
+        calculate_d_41(); 
         
-        calculatePercentages(); // Must be done after other calculations
-
-        // --- DEBUG LOGGING for i_41 --- 
-        // try {
-        //     const i41Element = document.querySelector('[data-field-id="i_41"]');
-        //     if (i41Element) {
-        //         console.log(`[S05 calculateAll] i_41 state: disabled=${i41Element.disabled}, classList=${i41Element.classList.toString()}`);
-        //     } else {
-        //         console.log("[S05 calculateAll] i_41 element not found.");
-        //     }
-        // } catch (e) {
-        //     console.error("[S05 calculateAll] Error logging i_41 state:", e);
-        // }
-        // --- END DEBUG LOGGING --- 
+        calculatePercentages(); 
     }
     
     /**
@@ -618,19 +605,6 @@ window.TEUI.SectionModules.sect05 = (function() {
                 const cap = calculateTypologyBasedCap(typology);
                 setCalculatedValue("i_39", cap, 'number-2dp-comma');
                 calculatePercentages(); // Recalculate percentages that depend on i_39
-
-                // --- DEBUG LOGGING for i_41 --- 
-                // try {
-                //     const i41Element = document.querySelector('[data-field-id="i_41"]');
-                //     if (i41Element) {
-                //         console.log(`[S05 d_39 Listener] i_41 state: disabled=${i41Element.disabled}, classList=${i41Element.classList.toString()}`);
-                //     } else {
-                //         console.log("[S05 d_39 Listener] i_41 element not found.");
-                //     }
-                // } catch (err) {
-                //     console.error("[S05 d_39 Listener] Error logging i_41 state:", err);
-                // }
-                // --- END DEBUG LOGGING --- 
             });
         }
         
@@ -641,11 +615,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                 if (currentTypology === "Modelled Value") {
                     const cap = window.TEUI.parseNumeric(newValue, 0); // Use global parse
                     setCalculatedValue("i_39", cap, 'number-2dp-comma');
-                    // calculate_d_40(); // d_40 depends on i_41, recalculate it
-                    // calculatePercentages(); // Recalculate percentages
-                    // calculateAll(); // Simpler to just call calculateAll if i_41 changes and it's used as typology cap
                 }
-                // i_41 also directly affects d_40, so ensure calculateAll or specific chain is called
                  calculateAll(); // Call calculateAll to ensure all dependent values are updated
             });
             
@@ -654,10 +624,7 @@ window.TEUI.SectionModules.sect05 = (function() {
             
             // Listen for changes to service life (h_13 affects i_38 and d_41)
             window.TEUI.StateManager.addListener("h_13", function() {
-                // calculate_i_38();
-                // calculate_d_41();
-                // calculatePercentages(); // Percentages might depend on lifetime values
-                calculateAll(); // Simpler to call calculateAll
+                calculateAll(); 
             });
             
             // Listen for changes affecting d_38 (which then affects d_41)
@@ -666,28 +633,20 @@ window.TEUI.SectionModules.sect05 = (function() {
             const ghgi_dependencies = ["d_14", "g_32", "k_32", "h_15"]; // Inputs for d_38/g_38
             ghgi_dependencies.forEach(depId => {
                 window.TEUI.StateManager.addListener(depId, function() {
-                    // calculateGHGI(); 
-                    // calculate_i_38(); 
-                    // calculate_d_41(); 
-                    // calculatePercentages(); 
-                    calculateAll(); // Simpler to call calculateAll
+                    calculateAll(); 
                 });
             });
             
             // Listen for changes to embodied carbon target (d_16 affects i_40)
             window.TEUI.StateManager.addListener("d_16", function() {
-                // calculate_i_40(); 
-                // calculatePercentages(); 
-                calculateAll(); // Simpler to call calculateAll
+                calculateAll(); 
             });
 
             // Listener for i_41 already exists above, merged dependency recalculation.
             // The existing i_41 listener above already calls calculateAll()
 
             window.TEUI.StateManager.addListener("d_106", function() {
-                // calculate_d_40();
-                // calculatePercentages(); 
-                calculateAll(); // Simpler to call calculateAll
+                calculateAll(); 
             });
         }
     }

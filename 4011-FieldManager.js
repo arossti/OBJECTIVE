@@ -709,7 +709,7 @@ TEUI.FieldManager = (function() {
                     } else if (field.type === 'coefficient_slider') {
                         displayValue = window.TEUI.formatNumber(parseFloat(value), 'number-2dp');
                     } else if (field.type === 'year_slider') {
-                        displayValue = window.TEUI.formatNumber(parseFloat(value), 'integer');
+                        displayValue = window.TEUI.formatNumber(parseFloat(value), 'integer-nocomma');
                     }
                     
                     displaySpan.textContent = displayValue;
@@ -724,18 +724,15 @@ TEUI.FieldManager = (function() {
                 let initialDisplayValue = rangeInput.value;
                 if (field.type === 'percentage') {
                     let valToFormat = parseFloat(rangeInput.value);
-                    // If it's a 0-1 coefficient specifically marked with displayFactor to be shown as 0-100%
                     if (field.displayFactor === 100 && valToFormat >= (field.min || 0) && valToFormat <= (field.max || 1) && (field.max || 1) <= 1) {
-                        // valToFormat is already 0-1, formatNumber('percent-Xdp') expects this decimal
                     } else {
-                        // For standard 0-100% sliders, convert initial value (0-100) to decimal (0-1) for formatNumber
                         valToFormat = valToFormat / 100;
                     }
                     initialDisplayValue = window.TEUI.formatNumber(valToFormat, 'percent-0dp');
                 } else if (field.type === 'coefficient_slider') {
                     initialDisplayValue = window.TEUI.formatNumber(parseFloat(rangeInput.value), 'number-2dp');
                 } else if (field.type === 'year_slider') {
-                    initialDisplayValue = window.TEUI.formatNumber(parseFloat(rangeInput.value), 'integer');
+                    initialDisplayValue = window.TEUI.formatNumber(parseFloat(rangeInput.value), 'integer-nocomma');
                 }
                 displaySpan.textContent = initialDisplayValue;
                 
@@ -1101,17 +1098,16 @@ TEUI.FieldManager = (function() {
                                 let formattedDisplay = numericValue.toString();
                                 if (typeof window.TEUI?.formatNumber === 'function') {
                                     if (fieldDef.type === 'percentage') {
-                                        let valueToFormat = numericValue; // This is 0-100 from StateManager for typical percentage sliders
-                                        // If it's a 0-1 coefficient that used displayFactor (potentially an old SHGC model, though SHGC is now coefficient_slider)
+                                        let valueToFormat = numericValue; 
                                         if (fieldDef.displayFactor === 100 && numericValue >= (fieldDef.min || 0) && numericValue <= (fieldDef.max || 1) && (fieldDef.max || 1) <=1 ) {
-                                            // valueToFormat is already 0-1, formatNumber 'percent-0dp' will handle it by multiplying by 100
                                         } else {
-                                            // For standard 0-100% sliders, convert to decimal (0-1) for formatNumber
                                             valueToFormat = valueToFormat / 100;
                                         }
                                         formattedDisplay = window.TEUI.formatNumber(valueToFormat, 'percent-0dp'); 
-                                    } else { // year_slider
-                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'integer');
+                                    } else if (fieldDef.type === 'year_slider') { 
+                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'integer-nocomma');
+                                    } else if (fieldDef.type === 'coefficient_slider') {
+                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'number-2dp'); 
                                     }
                                 } else {
                                     console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);

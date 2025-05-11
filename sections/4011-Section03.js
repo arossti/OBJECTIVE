@@ -826,14 +826,27 @@ window.TEUI.SectionModules.sect03 = (function() {
      * Calculate Heating Setpoint (h_23) based on Occupancy Type (d_12)
      */
     function calculateHeatingSetpoint() {
-        const occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Direct StateManager access
-        let heatingSetpoint = 18; // Default to 18°C
-        
-        // Set to 22°C for Residential or Care occupancies
-        if (occupancyType === "C-Residential" || occupancyType.includes("Care")) { // Check if name includes 'Care'
-            heatingSetpoint = 22;
+        const referenceStandard = window.TEUI.StateManager?.getValue("d_13") || ""; // Get from S02
+        const occupancyType = window.TEUI.StateManager?.getValue("d_12") || "";   // Get from S02
+        let heatingSetpoint;
+
+        // Check if the reference standard indicates a Passive House related standard
+        if (referenceStandard.toUpperCase().includes("PH")) { // Case-insensitive check for "PH"
+            heatingSetpoint = 18;
+        } else {
+            // Original logic if not a PH standard: 22°C for Residential or Care occupancies, else 18°C
+            // Ensuring the occupancyType strings match those defined in Section02 d_12 options
+            if (occupancyType === "C-Residential" || 
+                occupancyType === "B2-Care and Treatment" || // Exact match for B2
+                occupancyType === "B3-Detention Care & Treatment" || // Exact match for B3
+                occupancyType.includes("Care")) { // Broader check for "Care" just in case of variations
+                heatingSetpoint = 22;
+            } else {
+                heatingSetpoint = 18; // Default for other non-PH, non-Care/Residential occupancies
+            }
         }
-        setFieldValue("h_23", heatingSetpoint); // Update state and DOM
+        
+        setFieldValue("h_23", heatingSetpoint); // Update state and DOM via S03 local helper
         return heatingSetpoint; // Return value for potential chaining
     }
 

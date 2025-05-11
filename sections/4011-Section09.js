@@ -43,7 +43,7 @@ window.TEUI.SectionModules.sect09 = (function() {
         },
         "C-Residential": {
             "Regular": { "Elevators": 6.0, "No Elevators": 5.0 },
-            "Efficient": { "Elevators": 4.0, "No Elevators": 3.5 }
+            "Efficient": { "Elevators": 4.0, "No Elevators": 3.0 }
         },
         "D-Business": {
             "Regular": { "Elevators": 10.0, "No Elevators": 7.0 },

@@ -82,8 +82,7 @@ class ExcelMapper {
             'H35': 'h_35', // PER Factor (Editable Number)
 
             // Section 05: Emissions (REPORT! Sheet)
-            'D39': 'd_39', // Construction Typology (Dropdown)
-            'D60': 'd_60', // Offsets (tCO2e)
+            // 'D60': 'd_60', // Offsets (tCO2e) - REMOVED, d_60 is now calculated in S05 based on wood use
             'I41': 'i_41', // Modelled Embodied Carbon (A1-3)
 
             // Section 06: Renewable Energy (REPORT! Sheet)
@@ -267,8 +266,14 @@ class ExcelMapper {
                     }
 
                     if (!isNaN(numVal)) {
-                        // Assume d_118 from Excel is a direct percentage (e.g., 75 for 75%, not 0.75)
-                        extractedValue = numVal.toString();
+                        // If numVal is a decimal (e.g., 0.89 for 89%), convert to whole percentage.
+                        // Heuristic: if it's <= 1 (and non-negative), assume it's a decimal factor.
+                        if (numVal >= 0 && numVal <= 1) {
+                            extractedValue = Math.round(numVal * 100).toString(); // Use Math.round for safety
+                        } else {
+                            // Otherwise, assume it's already a whole percentage (e.g., 89)
+                            extractedValue = Math.round(numVal).toString(); // Round to handle potential decimals if any
+                        }
                     } else {
                         extractedValue = "0"; // Default if parsing failed
                     }
