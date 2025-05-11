@@ -1,5 +1,9 @@
 // File handler module for TEUI Calculator
 // Handles file operations like importing and exporting Excel/CSV files
+//
+// Recent changes:
+// 2024-08-15: Fixed CSV export to remove commas from numeric values (like "132,938.00" -> "132938.00") 
+//             to prevent import issues where commas in values were treated as column separators
 
 (function(window) {
     'use strict';
@@ -404,7 +408,16 @@
 
                 // Basic CSV escaping (handles commas, quotes, newlines)
                 const escapeCSV = (val) => {
-                    const strVal = String(val ?? ''); // Ensure string conversion, handle null/undefined
+                    // Ensure string conversion, handle null/undefined
+                    let strVal = String(val ?? '');
+                    
+                    // Remove thousands separators (commas) from numeric values before export
+                    // This regex matches patterns that look like numbers with commas
+                    if (/^-?[\d,]+\.?\d*$/.test(strVal)) {
+                        strVal = strVal.replace(/,/g, '');
+                    }
+                    
+                    // Apply standard CSV escaping
                     if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
                         // Escape quotes by doubling them and wrap in quotes
                         return `"${strVal.replace(/"/g, '""')}"`;
