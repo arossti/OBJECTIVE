@@ -198,19 +198,19 @@ window.TEUI.SectionModules.sect08 = (function() {
             }
         },
 
-        // Row 60: A.6 Atmospheric Offsets
+        // Row 60: A.6 Atmospheric Offsets - Now Calculated Wood Offset
         "60": {
             id: "A.6",
             rowId: "A.6",
-            label: "Atmospheric Offsets",
+            label: "Wood Emissions Offset (Calculated)", // Updated label
             cells: {
-                c: { label: "Atmospheric Offsets" },
+                c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" }, // Updated descriptive label
                 d: { 
                     fieldId: "d_60", 
-                    type: "editable", 
-                    value: "0.00", // Default raw value
+                    type: "calculated", // Changed from editable
+                    value: "0.00", 
                     section: "indoorAirQuality",
-                    classes: ["user-input"]
+                    dependencies: ["d_31", "k_31"] // Dependencies from S04
                 },
                 e: { content: "MT/yr CO2e" }
             }
@@ -422,6 +422,22 @@ window.TEUI.SectionModules.sect08 = (function() {
     }
     
     /**
+     * NEW: Calculate Wood Emissions Offset (d_60)
+     * Formula: =IF(D31 > 0, K31/1000, 0)
+     */
+    function calculateD60_WoodOffset() {
+        const d31_actualWoodUse_m3 = getNumericValue("d_31"); // From S04
+        const k31_targetWoodEmissions_kg = getNumericValue("k_31"); // From S04 ( H31*L31 )
+
+        let d60_offset_MT = 0;
+        if (d31_actualWoodUse_m3 > 0) {
+            d60_offset_MT = k31_targetWoodEmissions_kg / 1000;
+        }
+        setCalculatedValue("d_60", d60_offset_MT, 'number-2dp-comma'); 
+        return d60_offset_MT;
+    }
+    
+    /**
      * Helper function to get a field value
      */
     function getFieldValue(fieldId) {
@@ -534,7 +550,7 @@ window.TEUI.SectionModules.sect08 = (function() {
                         window.TEUI.StateManager.setValue(currentFieldId, rawTextValue, 'user-modified');
                         this.textContent = rawTextValue; // Or window.TEUI.formatNumber(0, 'number-0dp');
                     }
-                    calculatePercentagesAndStatus();
+                    calculateAllInternal();
                 });
                 }
             
@@ -561,11 +577,25 @@ window.TEUI.SectionModules.sect08 = (function() {
                                  displayElement.textContent = window.TEUI.formatNumber(window.TEUI.parseNumeric(newValue,0), 'number-0dp') + '%';
                              }
                         }
-                        calculatePercentagesAndStatus();
+                        calculateAllInternal();
                     }
                 });
             }
         });
+
+        // Listen for S04 fields that affect d_60 (Wood Offset)
+        if (window.TEUI && window.TEUI.StateManager) {
+            window.TEUI.StateManager.addListener("d_31", calculateD60_WoodOffset);
+            window.TEUI.StateManager.addListener("k_31", calculateD60_WoodOffset);
+        }
+    }
+    
+    /**
+     * Main calculation function for the section that orchestrates all calculations.
+     */
+    function calculateAllInternal() {
+        calculateD60_WoodOffset(); // Calculate wood offset first
+        calculatePercentagesAndStatus(); // Then calculate IAQ percentages and statuses
     }
     
     /**
@@ -583,7 +613,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         setCalculatedValue("f_59", "30-60", 'raw'); // This is a string range
         
         initializeEventHandlers();
-        calculatePercentagesAndStatus(); // Initial calculation based on defaults
+        calculateAllInternal(); // Call the main orchestrator
     }
     
     /**
@@ -618,7 +648,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         getLayout,
         initializeEventHandlers,
         onSectionRendered,
-        calculatePercentagesAndStatus
+        calculateAll: calculateAllInternal
     };
 })();
 
