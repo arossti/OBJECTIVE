@@ -451,21 +451,21 @@ TEUI.Calculator = (function() {
         
         // Define a logical calculation order based on major dependencies
         const calcOrder = [
-            'sect02', // Building Info (Area, Occupancy Type)
-            'sect03', // Climate (HDD, CDD, Temps - depends on S2)
-            'sect08', // IAQ (Ventilation dependencies?)
-            'sect09', // Internal Gains (Occupants, Schedules - depends on S3?)
-            'sect10', // Radiant Gains (depends on S3?)
-            'sect11', // Transmission Losses (depends on S3)
-            'sect12', // Volume Metrics (depends on S11, S3)
-            'sect14', // TEDI (depends on S9, S10, S11, S12, S13)
-            'sect07', // Water Use (depends on S9? DHW losses)
-            'sect13', // Mechanical Loads (depends on S14, S3, S9)
-            'sect05', // Emissions (depends on S13, S07, S06)
-            'sect06', // Renewable Energy
-            'sect04', // Actual/Target Energy (depends on S13, S05, S06, S07)
-            'sect15', // TEUI Summary (depends on S14, S04)
-            'sect01'  // Key Values (depends on S15, S05)
+            'sect02', // Building Info
+            'sect03', // Climate
+            'sect08', // IAQ
+            'sect09', // Internal Gains
+            'sect12', // Volume Metrics (defines areas for S10, S11)
+            'sect10', // Radiant Gains (i80 for S15)
+            'sect11', // Transmission Losses
+            'sect07', // Water Use (k51 for S15)
+            'sect13', // Mechanical Loads (d117, m121 for S15)
+            'sect06', // Renewable Energy (m43 for S15)
+            'sect14', // TEDI Summary (uses S9, S10, S11, S12, S13)
+            'sect04', // Actual/Target Energy (many inputs, but needs to calc before S05 consumes its outputs)
+            'sect05', // Emissions (consumes S04 outputs)
+            'sect15', // TEUI Summary (consumes S14, S04 and others)
+            'sect01'  // Key Values (consumes S15, S05)
         ];
 
         // console.log("Calculation Order:", calcOrder.join(' -> ')); // Remove calculation order log

@@ -546,10 +546,6 @@ window.TEUI.SectionModules.sect14 = (function() {
         sm.registerDependency('d_132', 'h_132');
         sm.registerDependency('h_15', 'h_132');
         
-        // h_130: CEDI Mitigated W/m2
-        const cediMitigatedWm2_h130 = area > 0 ? (cedMitigated_m129 / 8760 * 1000) / area : 0;
-        setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
-        
     }
     
     /**
@@ -631,10 +627,6 @@ window.TEUI.SectionModules.sect14 = (function() {
             setCalculatedValue('d_132', cegHeatgain_d132);
             const cegi_h132 = area > 0 ? cegHeatgain_d132 / area : 0;
             setCalculatedValue('h_132', cegi_h132);
-            
-            // h_130: CEDI Mitigated W/m2
-            const cediMitigatedWm2_h130 = area > 0 ? (cedMitigated_m129 / 8760 * 1000) / area : 0;
-            setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
             
         } catch (error) {
             // console.error("Error in TEDI/TELI calculations:", error);

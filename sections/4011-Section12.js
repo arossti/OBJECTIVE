@@ -1008,26 +1008,3 @@ window.TEUI.SectionModules.sect12 = (function() {
         calculateAll: calculateAll
     };
 })();
-
-// Standard Initialization listeners
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'volumeSurfaceMetrics') {
-         requestAnimationFrame(() => {
-             if (window.TEUI?.SectionModules?.sect12) {
-                 if (!window.TEUI.SectionModules.sect12.isInitialized) { 
-                      window.TEUI.SectionModules.sect12.onSectionRendered();
-                 }
-             }
-         });
-    }
-});
-
-document.addEventListener('teui-rendering-complete', function() {
-     requestAnimationFrame(() => {
-         if (document.getElementById('volumeSurfaceMetrics') && window.TEUI?.SectionModules?.sect12) {
-             if (!window.TEUI.SectionModules.sect12.isInitialized) {
-                 window.TEUI.SectionModules.sect12.onSectionRendered();
-             }
-        }
-     });
-});

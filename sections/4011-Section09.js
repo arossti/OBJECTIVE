@@ -1090,20 +1090,20 @@ window.TEUI.SectionModules.sect09 = (function() {
         const equipmentCooling = window.TEUI.parseNumeric(getFieldValue("k_67"));
         const occupantCooling = window.TEUI.parseNumeric(getFieldValue("k_64"));
         
-        // Calculate subtotals
-        const pleTotalEnergy = plugEnergy + lightingEnergy + equipmentEnergy + dhwLosses;
-        const pleHeatingTotal = plugHeating + lightingHeating + equipmentHeating + dhwHeating;
-        const pleCoolingTotal = plugCooling + lightingCooling + equipmentCooling + dhwCooling;
+        // Calculate subtotals for H70 (Plug/Light/Eqpt. Subtotals - EXCLUDING DHW losses h_69)
+        const pleTotalEnergy = plugEnergy + lightingEnergy + equipmentEnergy; // EXCLUDES dhwLosses (h_69)
+        const pleHeatingTotal = plugHeating + lightingHeating + equipmentHeating; // EXCLUDES dhwHeating (i_69)
+        const pleCoolingTotal = plugCooling + lightingCooling + equipmentCooling; // EXCLUDES dhwCooling (k_69)
         
         // Update subtotal fields using local helper
         setCalculatedValue("h_70", pleTotalEnergy, 'number');
         setCalculatedValue("i_70", pleHeatingTotal, 'number');
         setCalculatedValue("k_70", pleCoolingTotal, 'number');
         
-        // Calculate grand totals
-        const totalEnergy = pleTotalEnergy + occupantEnergy;
-        const totalHeating = pleHeatingTotal + occupantHeating;
-        const totalCooling = pleCoolingTotal + occupantCooling;
+        // Calculate grand totals (H71, I71, K71 - THESE DO include DHW system losses and occupant energy)
+        const totalEnergy = pleTotalEnergy + occupantEnergy + dhwLosses; // Add back dhwLosses for grand total
+        const totalHeating = pleHeatingTotal + occupantHeating + dhwHeating; // Add back dhwHeating for grand total
+        const totalCooling = pleCoolingTotal + occupantCooling + dhwCooling; // Add back dhwCooling for grand total
         
         // Update total fields using local helper
         setCalculatedValue("h_71", totalEnergy, 'number');

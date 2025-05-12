@@ -800,7 +800,6 @@ window.TEUI.SectionModules.sect15 = (function() {
             const m43 = getNumericValue('m_43'); // Onsite Energy Subtotals
             const k51 = getNumericValue('k_51'); // W.3.3 Net Electrical Demand (DHW)
             const h70 = getNumericValue('h_70'); // Plug/Light/Eqpt. Subtotals (Annual kWh)
-            const d117 = getNumericValue('d_117'); // Heatpump Cool Elect. Load
             const i104 = getNumericValue('i_104'); // Building Transmission Losses (Heatloss kWh/yr)
             const m121 = getNumericValue('m_121'); // Net Htg Season Ventil. Lost
             const i80 = getNumericValue('i_80');   // G.3 Net Usable Gains by Method Selected
@@ -839,34 +838,35 @@ window.TEUI.SectionModules.sect15 = (function() {
             const reportingMode_d14 = sm.getValue('d_14'); // "Utility Bills" or "Targeted Use"
             
             const targetEmissions_k32 = getNumericValue('k_32'); // Target Net Emissions kgCO2/yr
-            // TODO: Need the value for REFERENCE!K32 for d_145. Placeholder for now.
             const referenceEmissions_REF_k32 = getNumericValue('reference_k_32') || 0; // Placeholder
 
+            const coolingType_d116 = sm.getValue('d_116'); // Get cooling type for d117 logic
 
-            // --- Perform Calculations ---
+            // --- Perform Calculations --- 
+            let d117_actual_val = getNumericValue('d_117'); // Get the actual d_117 value
+            let d117_effective = d117_actual_val;
+            if (coolingType_d116 === 'No Cooling') {
+                d117_effective = 0; // Override d_117 if No Cooling selected
+            }
+            
+            console.log(`[S15 DEBUG d_135 Precedents] m43: ${m43}, k51: ${k51}, h70: ${h70}, d117_actual: ${d117_actual_val}, d117_effective: ${d117_effective}, i104: ${i104}, m121: ${m121}, i80: ${i80}`);
 
             // d_135: =M43+K51+H70+D117+I104+M121-I80 
-            // (Onsite Energy + DHW elec + InternalGains + HP Cool + Transm.Loss + Vent.Loss - Usable Gains)
-            // Note: This formula looks like TEU Target Calculation, not TEU *Targeted* Electricity (which usually excludes fossil fuels)
-            // The label "TEU Targeted Electricity" and note "Excludes ekWh of any Gas or Oil loads" conflict with the formula.
-            // Assuming the formula represents the total TARGET energy demand before system efficiencies/fuel choice.
-            let teuTargetTotal = m43 + k51 + h70 + d117 + i104 + m121 - i80;
-            // For display as "Targeted Electricity", we perhaps should use d_136 logic? Sticking to CSV formula for now.
+            let teuTargetTotal = m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
             setCalculatedValue('d_135', teuTargetTotal);
 
             // h_135: =D135/H15
             let teui_h135 = area > 0 ? teuTargetTotal / area : 0;
             setCalculatedValue('h_135', teui_h135);
 
-            // d_136: =IF(D113="Electricity",D135,IF(D113="Heatpump",(K51+D117+D114+M43+H70),IF(D113="Gas",(K51+D117+M43+H70),IF(D113="Oil",(K51+D117+M43+H70)))))
+            // d_136: Calculation using d117_effective logic
             let teuTargetedElecHPGasOil;
             if (primaryHeating === 'Electricity') {
-                teuTargetedElecHPGasOil = teuTargetTotal; // If primary is electric, use the total calculated above
+                teuTargetedElecHPGasOil = teuTargetTotal; // teuTargetTotal already uses d117_effective
             } else if (primaryHeating === 'Heatpump') {
-                 // Sum of elec loads: DHW + HP Cool + HP Heat Demand + Onsite + Internal Gains
-                teuTargetedElecHPGasOil = k51 + d117 + d114 + m43 + h70;
+                teuTargetedElecHPGasOil = k51 + d117_effective + d114 + m43 + h70;
             } else { // Gas or Oil - sum elec loads only, exclude heating demand (d114)
-                teuTargetedElecHPGasOil = k51 + d117 + m43 + h70;
+                teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
             }
             setCalculatedValue('d_136', teuTargetedElecHPGasOil);
 

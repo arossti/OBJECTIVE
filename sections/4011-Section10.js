@@ -1697,34 +1697,6 @@ window.TEUI.SectionModules.sect10 = (function() {
     };
 })();
 
-// Initialize when the section is rendered - use a safer approach with try/catch
-document.addEventListener('teui-section-rendered', function(event) {
-    try {
-        if (event.detail?.sectionId === 'envelopeRadiantGains') {
-            setTimeout(() => {
-                if (window.TEUI?.SectionModules?.sect10?.onSectionRendered) {
-                    window.TEUI.SectionModules.sect10.onSectionRendered();
-                }
-            }, 100);
-        }
-    } catch (error) {
-        // console.error('Error in Section10 teui-section-rendered handler:', error);
-    }
-});
-
-// Fallback to rendering complete event with try/catch
-document.addEventListener('teui-rendering-complete', function() {
-    try {
-        setTimeout(() => {
-            if (document.getElementById('envelopeRadiantGains') && window.TEUI?.SectionModules?.sect10?.onSectionRendered) {
-                window.TEUI.SectionModules.sect10.onSectionRendered();
-            }
-        }, 300);
-    } catch (error) {
-        // console.error('Error in Section10 teui-rendering-complete handler:', error);
-    }
-});
-
 // Export key functions to the global namespace for cross-section access
 document.addEventListener('DOMContentLoaded', function() {
     // Create section namespace
