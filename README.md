@@ -795,6 +795,10 @@ Decode it later from SMS by pasting it back in
     - **Caution:** Changes to UI ghosting logic should be implemented with extreme care, thoroughly tested against the Excel reference model, and immediately reverted if calculation discrepancies are observed.
     - **Plan:** Future UI improvements should separate presentation logic (ghosting) from calculation logic more completely to avoid these interactions.
 
+12. **Cooling Calculation Parity (d_117)**:
+    - **Issue:** The calculated value for `d_117` (Heatpump Cool Elect. Load in S13, used in S15's `d_135`) shows a discrepancy (~123 kWh in default scenario) compared to the Excel reference model.
+    - **Plan:** Perform a deep dive into the cooling calculation chain affecting `d_117` (likely originating in S13/`4011-Cooling.js`) to identify the source of the difference and improve parity with Excel.
+
 ## Domain Setup
 
 Git first.
@@ -846,8 +850,6 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
     *   **Symptom:** May contribute to the graph appearing initially "zoomed-in" or not optimally scaled until user interaction.
     *   **Action (Low Priority):** Investigate delaying graph initialization (e.g., `setTimeout`, `requestAnimationFrame`, or tying to a later event like `teui-rendering-complete`) to ensure container dimensions are available. Fix is low priority as the graph is still functional.
     *   **Future Enhancements:** Revisit CSS, add better navigation/zoom controls, potentially display related formulas or more node information on hover/click.
-
-4. **Architecture & Calculation Flow (Ongoing Refactor - Branch: `ORDERING`)**
 
 4.  **Initialization Order & Calculation Stability (Branch: `ORDERING`)**
     *   **Status:** ✅ Refactoring Complete
@@ -929,6 +931,12 @@ This section outlines planned improvements for the user experience of `contented
 
 **Priority:** Focus on stabilizing core functionality for the conference. These UX enhancements can be addressed post-conference to further polish the application.
 
+### Recent Session Progress (2024-08-16)
+
+*   Investigated and corrected formulas in Section 14 (`d_132`, `h_127`, `h_128`, `h_129`) for improved Excel parity.
+*   Investigated `d_135` discrepancy in Section 15; confirmed formula match but identified precedent (`d_117`) difference related to cooling calculations. Added TODO item.
+*   Fixed issue causing duplicate file selection dialogs for weather/location import in Section 03 by ensuring event listeners are attached idempotently in `4011-FileHandler.js`.
+*   Synced `FILEHANDLER` branch updates to `main` and remote repository.
 
 ---
 *Document co-authored by Human Architect Andy Thomson, and maintained and co-authored by Cognizant Architect Gemini ("Cosmo") - May 2025*
