@@ -1712,3 +1712,15 @@ body.reference-mode #keyValues .key-values-table tr {
   box-sizing: border-box;
   display: none;
 }
+
+/* Ensure specific buttons in the main header do not wrap text */
+#selectExcelBtn,
+#debugExcelBtn,
+#showWeatherDataBtn {
+    white-space: nowrap;
+}
+
+/* Optional: If all buttons in that controls-container need it */
+/* .controls-container .btn {
+    white-space: nowrap;
+} */

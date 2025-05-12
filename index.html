@@ -83,14 +83,20 @@
 
         <!-- Action buttons row -->
         <div class="row button-row mb-2">
-            <div class="col-md-7">
-                <p class="fs-5 mb-0">The early-stage modelling & validation tool with code-based references.</p>
-            </div>
-            <div class="col-md-5 text-end">
+            <div class="col-12 text-end">
                 <div class="col text-end controls-container d-flex align-items-center justify-content-end">
-                    <!-- Reference Model Toggle Button -->
-                    <button id="toggleReferenceBtn" class="btn btn-sm btn-danger reference-model-toggle">Show Reference</button>
-                    <!-- Existing Buttons -->
+                    <!-- Moved Location/Weather Buttons HERE -->
+                    <button type="button" class="btn btn-outline-primary btn-sm me-2" id="selectExcelBtn">
+                        <i class="bi bi-file-earmark-excel"></i> Load Locations
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm me-2" id="debugExcelBtn">
+                        <i class="bi bi-bug"></i> Debug
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm me-2" id="showWeatherDataBtn" data-bs-toggle="modal" data-bs-target="#weatherDataModal">
+                        <i class="bi bi-cloud-sun"></i> More Weather Data
+                    </button>
+                    
+                    <button id="toggleReferenceBtn" class="btn btn-sm btn-danger reference-model-toggle me-2">Show Reference</button>
                     <button id="disclaimerBtn" class="btn btn-sm btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">ⓘ Disclaimer</button>
                     <div class="btn-group">
                         <button id="downloadBtn" type="button" class="btn btn-sm btn-primary">↓ Download Report (PDF)</button>
@@ -129,19 +135,10 @@
                         SECTION 1. Key Values
                         <div class="ms-auto d-flex align-items-center">
                             <div class="section-controls me-2">
-                                <!-- Add Excel loader controls -->
+                                <!-- Buttons moved out, only feedback-area and potentially applyExcelBtn remain here -->
                                 <div class="excel-loader">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="selectExcelBtn">
-                                        <i class="bi bi-file-earmark-excel"></i> Load Locations
-                                    </button>
                                     <button type="button" class="btn btn-outline-success btn-sm d-none" id="applyExcelBtn">
                                         <i class="bi bi-check-lg"></i> Apply Data
-                                    </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" id="debugExcelBtn">
-                                        <i class="bi bi-bug"></i> Debug
-                                    </button>
-                                    <button type="button" class="btn btn-outline-info btn-sm" id="showWeatherDataBtn" data-bs-toggle="modal" data-bs-target="#weatherDataModal">
-                                        <i class="bi bi-cloud-sun"></i> More Weather Data
                                     </button>
                                     <span id="feedback-area" style="color: #0dcaf0; font-size: 0.9rem; margin-left: 10px;"></span>
                                 </div>
