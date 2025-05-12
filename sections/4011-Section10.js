@@ -1214,7 +1214,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             // SHGC Normalization Factor: Adjusts gains based on actual SHGC relative to the baseline SHGC of 0.5 used for M73 values.
             const shgcNormalizationFactor = shgc / 0.5; 
-
+            
             // Calculate heating season solar gains
             const heatingGains = area * gainFactor * shgcNormalizationFactor * (1 - winterShadingDecimal);
             

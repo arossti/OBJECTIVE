@@ -266,7 +266,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 h: { fieldId: "h_34", type: "calculated", value: "1,053.70", dependencies: ["j_32", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" }, // Dependency updated
                 i: { content: "kWh Target" },
                 j: { fieldId: "j_34", type: "calculated", value: "3.79", dependencies: ["h_33", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
-                k: { content: "GJ Target" }, 
+                k: { content: "GJ Target" },
                 l: { }, // Was l_34, now empty
                 m: { }  // Was unit for l_34, now empty
             }
@@ -738,7 +738,7 @@ window.TEUI.SectionModules.sect04 = (function() {
 
                 // Update subtotals after any actual fuel input change, unless it was d_31
                 if (calculateSubtotalsAfter) {
-                    updateSubtotals();
+                updateSubtotals();
                 }
             };
 

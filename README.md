@@ -871,11 +871,6 @@ These issues will be addressed comprehensively in the upcoming 4012 release, whi
 
 The modular architecture enables easier maintenance, extension, and validation while preserving the core calculation methodology that makes TEUI a valuable tool for building energy modeling.
 
----
-*Document maintained with assistance from Cognizant Architect Gemini ("Cosmo") - May 2025*
-*Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*
-*Assisted with Excel import refinements, calculation alignment, and UI enhancements - "Orionis" (Gemini) - August 2024*
-
 ### TODO: Numeric Input UX Enhancements (Post-Conference)
 
 This section outlines planned improvements for the user experience of `contenteditable` numeric input fields across the application. The goal is to provide clearer feedback, consistent formatting, and more intuitive interaction, while leveraging existing tools like `window.TEUI.formatNumber` and `StateManager`.
@@ -933,3 +928,9 @@ This section outlines planned improvements for the user experience of `contented
     *   Continue to use this global function. The key will be to ensure each field's `blur` handler (or a centralized one) can determine and use the correct `formatType` string specific to that field's display requirements (e.g., `'number-2dp-comma'`, `'number-2dp'`, `'integer-nocomma'`). This might involve storing `formatType` in `fieldDef` or using a lookup.
 
 **Priority:** Focus on stabilizing core functionality for the conference. These UX enhancements can be addressed post-conference to further polish the application.
+
+
+---
+*Document co-authored by Human Architect Andy Thomson, and maintained and co-authored by Cognizant Architect Gemini ("Cosmo") - May 2025*
+*Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*
+*Assisted with Excel import refinements, calculation alignment, and UI enhancements - "Orionis" (Gemini) - August 2024*

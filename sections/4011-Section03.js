@@ -840,10 +840,10 @@ window.TEUI.SectionModules.sect03 = (function() {
                 occupancyType === "B2-Care and Treatment" || // Exact match for B2
                 occupancyType === "B3-Detention Care & Treatment" || // Exact match for B3
                 occupancyType.includes("Care")) { // Broader check for "Care" just in case of variations
-                heatingSetpoint = 22;
+            heatingSetpoint = 22;
             } else {
                 heatingSetpoint = 18; // Default for other non-PH, non-Care/Residential occupancies
-            }
+        }
         }
         
         setFieldValue("h_23", heatingSetpoint); // Update state and DOM via S03 local helper

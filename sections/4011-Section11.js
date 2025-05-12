@@ -517,8 +517,8 @@ window.TEUI.SectionModules.sect11 = (function() {
 
             let penaltyHeatloss = componentHeatlossSubtotal * validatedPenalty;
             setCalculatedValue('i_97', penaltyHeatloss);
-            const penaltyHeatgain = Math.abs(componentHeatgainSubtotal) * validatedPenalty;
-            setCalculatedValue('k_97', -penaltyHeatgain);
+            const penaltyHeatgain = componentHeatgainSubtotal * validatedPenalty;
+            setCalculatedValue('k_97', penaltyHeatgain);
         } catch (error) {
             console.error("Error calculating TBP:", error);
             setCalculatedValue('i_97', 0); setCalculatedValue('k_97', 0);
