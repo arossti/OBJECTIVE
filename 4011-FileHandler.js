@@ -59,11 +59,20 @@
             const locationFileInput = document.getElementById('location-excel-input');
 
             if (selectExcelBtn && locationFileInput) {
-                selectExcelBtn.addEventListener('click', () => {
+                // Remove existing listener before adding a new one to prevent duplicates
+                const newSelectExcelBtn = selectExcelBtn.cloneNode(true);
+                selectExcelBtn.parentNode.replaceChild(newSelectExcelBtn, selectExcelBtn);
+                
+                newSelectExcelBtn.addEventListener('click', () => {
                     locationFileInput.value = null; // Reset file input
                     locationFileInput.click(); 
                 });
-                locationFileInput.addEventListener('change', async (event) => {
+                
+                // Also make the change listener idempotent (though less likely to be the issue here)
+                const newLocationFileInput = locationFileInput.cloneNode(true);
+                locationFileInput.parentNode.replaceChild(newLocationFileInput, locationFileInput);
+                
+                newLocationFileInput.addEventListener('change', async (event) => {
                     const file = event.target.files[0];
                     if (file) {
                         if (window.TEUI && window.TEUI.ExcelLocationHandler && typeof window.TEUI.ExcelLocationHandler.loadExcelFile === 'function') {
