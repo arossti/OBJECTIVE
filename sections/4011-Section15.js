@@ -849,8 +849,6 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d117_effective = 0; // Override d_117 if No Cooling selected
             }
             
-            console.log(`[S15 DEBUG d_135 Precedents] m43: ${m43}, k51: ${k51}, h70: ${h70}, d117_actual: ${d117_actual_val}, d117_effective: ${d117_effective}, i104: ${i104}, m121: ${m121}, i80: ${i80}`);
-
             // d_135: =M43+K51+H70+D117+I104+M121-I80 
             let teuTargetTotal = m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
             setCalculatedValue('d_135', teuTargetTotal);
