@@ -874,3 +874,61 @@ The modular architecture enables easier maintenance, extension, and validation w
 ---
 *Document maintained with assistance from Cognizant Architect Gemini ("Cosmo") - May 2025*
 *Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*
+
+### TODO: Numeric Input UX Enhancements (Post-Conference)
+
+This section outlines planned improvements for the user experience of `contenteditable` numeric input fields across the application. The goal is to provide clearer feedback, consistent formatting, and more intuitive interaction, while leveraging existing tools like `window.TEUI.formatNumber` and `StateManager`.
+
+**Current Input Behavior Observations & Desired Enhancements:**
+
+1.  **Consistent Re-formatting on Blur/Enter:**
+    *   **Observation:** User-entered numbers (e.g., `125` in `i_41`, `100000` in `d_27`) often remain as typed and are not immediately re-formatted to the application's standard display format (e.g., `125.00`, `100,000.00`) upon losing focus or pressing Enter.
+    *   **Goal:** Ensure that after a value is parsed and stored in `StateManager` (on `blur` or `Enter`), the field's `textContent` is updated to reflect the standardized format (e.g., correct decimal places, thousand separators where appropriate) using `window.TEUI.formatNumber` with the correct `formatType` for that field.
+
+2.  **Feedback for Identical Input:**
+    *   **Observation:** If a user types a value that, after parsing, is identical to the currently stored value (e.g., typing `125.00` when the field already represents `125.00`), no visual change occurs, leaving the user unsure if the input was processed.
+    *   **Goal:** By always re-formatting and re-setting `textContent` on blur (as per point 1), a subtle visual refresh will occur, confirming input processing. Enhance with CSS for active editing states.
+
+3.  **"Escape to Revert" Functionality:**
+    *   **Goal:** Implement a standard UX pattern where pressing the `Escape` key while editing a field reverts the field's content to its value *before* editing began for that focus instance, and then blurs the field. This change should *not* be saved to `StateManager`.
+
+4.  **"Clear on Focus" or "Select All on Focus" (Optional UX Consideration):**
+    *   **Consideration:** Explore whether clearing the field or selecting all its text on `focus` would improve editing flow. Selecting all text is generally less disruptive.
+
+**Suggested Implementation Approach (Conceptual):**
+
+*   **Centralize/Standardize `blur` Event Handling for Editable Numeric Fields:**
+    *   The `blur` event handler (and by extension, an Enter key press that triggers blur) should be the primary point for finalizing input.
+    *   **Standard Pattern for `blur` handlers:**
+        1.  Get `textContent` of the field.
+        2.  Use `window.TEUI.parseNumeric` to convert to a raw number.
+        3.  **If parsing successful:**
+            a.  Store the raw numeric value (as a string for precision) in `StateManager` (e.g., `window.TEUI.StateManager.setValue(fieldId, rawNumericValue.toString(), 'user-modified');`).
+            b.  Re-format this `rawNumericValue` using `window.TEUI.formatNumber(rawNumericValue, appropriateFormatType);` where `appropriateFormatType` (e.g., `'number-2dp-comma'`, `'number-2dp'`) is specific to the field.
+            c.  Set the field's `textContent` to this `formattedDisplayValue`.
+        4.  **If parsing fails:**
+            a.  Revert `textContent` to the last known good value from `StateManager` (retrieved *before* attempting to store the invalid input) or a formatted default (e.g., "0.00").
+            b.  Optionally, provide a temporary visual cue for invalid input (e.g., CSS class).
+    *   **Implementation:** This logic should be consistently applied, either through a refined global handler or by ensuring all section-specific `handleEditableBlur` functions (as per `README.md` Point 12) adhere to this pattern.
+
+*   **"Escape to Revert" Implementation:**
+    *   On `focus` of an editable field, store its current `textContent` in a `dataset` attribute (e.g., `this.dataset.originalValueForEscape = this.textContent;`).
+    *   Add a `keydown` listener to the field:
+        *   If `event.key === 'Escape'`, prevent default, set `this.textContent = this.dataset.originalValueForEscape;`, and call `this.blur()`. Do not update `StateManager`.
+        *   If `event.key === 'Enter'`, prevent default and call `this.blur()` to trigger the main blur processing logic.
+
+*   **CSS for Visual Feedback:**
+    *   Utilize CSS to provide visual cues when a field is focused or being actively edited (e.g., change background color, add an outline). This enhances the user's sense of interaction independently of re-formatting.
+    *   Example:
+        ```css
+        [contenteditable="true"].user-input:focus,
+        [contenteditable="true"].user-input.editing { /* .editing class can be added on focus via JS */
+            background-color: #e6f7ff; 
+            outline: 1px solid #007bff; 
+        }
+        ```
+
+*   **Leveraging `window.TEUI.formatNumber`:**
+    *   Continue to use this global function. The key will be to ensure each field's `blur` handler (or a centralized one) can determine and use the correct `formatType` string specific to that field's display requirements (e.g., `'number-2dp-comma'`, `'number-2dp'`, `'integer-nocomma'`). This might involve storing `formatType` in `fieldDef` or using a lookup.
+
+**Priority:** Focus on stabilizing core functionality for the conference. These UX enhancements can be addressed post-conference to further polish the application.

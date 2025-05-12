@@ -49,38 +49,37 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_38", 
                     type: "calculated", 
-                    value: "0.00", // Default display, raw will be calculated
-                    section: "emissions",
+                    value: "0.00", 
+                    section: "emissions"
                 },
-                e: { content: "MT CO2e/yr" }, // Units
-                f: { content: "", classes: ["label-prefix", "spacer"] },
+                e: { content: "MT CO2e/yr" }, // Unit for d_38
+                f: { content: "E.1.4", classes: ["label-prefix"] }, // Label for i_38 based on Excel G38 position
                 g: { 
-                    fieldId: "g_38", 
+                    fieldId: "g_38", // Annual kgCO2e/m2 - This value should appear in this column per app screenshot
                     type: "calculated", 
-                    value: "0.00", // Default display
-                    section: "emissions",
+                    value: "0.00", 
+                    section: "emissions"
                 },
-                h: { content: "", classes: ["spacer"] },
+                h: { content: "" }, // Unit for g_38 removed, now spacer
                 i: {
-                    fieldId: "i_38",
+                    fieldId: "i_38", // Lifetime kgCO2e/m2 (g_38 * h_13) - This value appears in Excel I38
                     type: "calculated",
-                    value: "0.00", // Default display
-                    section: "emissions",
+                    value: "0.00", 
+                    section: "emissions"
                 },
-                j: { 
-                    fieldId: "j_38", 
-                    type: "calculated", 
-                    value: "0.00", // Default display
-                    section: "emissions",
+                j: { // Changed from calculated field to static text label, matching Excel J38
+                    content: "(B6 Annual Emissions * Service Life)", 
+                    classes: ["descriptive-text", "text-center"] // Added text-center for potential better fit
                 },
-                k: { content: "(Lifetime Emissions)" },
-                l: { content: "", classes: ["spacer"] },
+                k: { content: "" }, // Previously "(Lifetime Emissions)", now covered by j_38 label
+                l: { content: "", classes: ["spacer"] }, // Keep as spacer or remove if not needed
                 m: { 
                     fieldId: "m_38", 
                     type: "calculated", 
-                    value: "N/A", // Default display
+                    value: "N/A", 
                     section: "emissions"
                 }
+                // n: {} // Column N can be omitted if empty
             }
         },
         
@@ -95,7 +94,7 @@ window.TEUI.SectionModules.sect05 = (function() {
                     fieldId: "d_39", 
                     type: "dropdown", 
                     dropdownId: "dd_d_39", 
-                    value: "Pt.3 Mass Timber", // Default selection
+                    value: "Pt.3 Mass Timber", 
                     section: "emissions",
                     options: [
                         { value: "Pt.9 Res. Stick Frame", name: "Pt.9 Res. Stick Frame" },
@@ -107,25 +106,27 @@ window.TEUI.SectionModules.sect05 = (function() {
                         { value: "Modelled Value", name: "Modelled Value" }
                     ]
                 },
-                e: { content: "", classes: ["spacer"] },
+                e: { content: "", classes: ["spacer"] }, // Spacer
                 f: { content: "E.3.2", classes: ["label-prefix"] },
                 g: { content: "Typology-Based Cap (TGS4)", classes: ["label-main"] },
-                h: { content: "", classes: ["spacer"] },
+                h: { content: "", classes: ["spacer"] }, // Spacer for alignment before value in col I
                 i: {
-                    fieldId: "i_39",
+                    fieldId: "i_39", // Value displayed in Column I
                     type: "calculated",
-                    value: "350.00", // Default display
+                    value: "350.00", 
                     section: "emissions",
+                    dependencies: ["d_39", "i_41"] // i_41 is needed if d_39 is "Modelled Value"
                 },
-                j: { content: "", classes: ["spacer"] },
-                k: { content: "", classes: ["spacer"] },
+                j: { content: "" }, // Unit for i_39 removed, now spacer
+                k: { content: "", classes: ["spacer"] }, // Spacer
                 l: { 
                     fieldId: "l_39", 
                     type: "calculated", 
-                    value: "0%", // Default display
+                    value: "0%",
                     section: "emissions",
+                    dependencies: ["i_39", "i_40", "d_40", "i_41"] // Broad dependencies for percentage
                 },
-                m: { content: "✓", classes: ["checkmark"] }
+                m: { fieldId: "n_39", type: "calculated", value: "✓", classes: ["checkmark"], section:"emissions", dependencies: ["l_39"]} // Status checkmark in M
             }
         },
         
@@ -139,28 +140,31 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_40", 
                     type: "calculated", 
-                    value: "0.00", // Default display
+                    value: "0.00", 
                     section: "emissions",
+                    dependencies: ["i_41", "d_106"]
                 },
-                e: { content: "MT CO2e/Service Life" }, // Units
+                e: { content: "MT CO2e/Service Life" }, 
                 f: { content: "S.4", classes: ["label-prefix"] },
                 g: { content: "Embodied Carbon Target", classes: ["label-main"] },
                 h: { content: "", classes: ["spacer"] },
                 i: {
-                    fieldId: "i_40",
+                    fieldId: "i_40", // Value displayed in Column I
                     type: "calculated",
-                    value: "0.00", // Default display
+                    value: "0.00", 
                     section: "emissions",
+                    dependencies: ["d_16"]
                 },
-                j: { content: "", classes: ["spacer"] },
+                j: { content: "" }, // Unit for i_40 removed, now spacer
                 k: { content: "", classes: ["spacer"] },
                 l: { 
                     fieldId: "l_40", 
                     type: "calculated", 
-                    value: "0%", // Default display
+                    value: "0%", 
                     section: "emissions",
+                    dependencies: ["i_39", "i_40", "d_40", "i_41"]
                 },
-                m: { content: "✓", classes: ["checkmark"] }
+                m: { fieldId: "n_40", type: "calculated", value: "✓", classes: ["checkmark"], section:"emissions", dependencies: ["l_40"]} 
             }
         },
         
@@ -174,30 +178,31 @@ window.TEUI.SectionModules.sect05 = (function() {
                 d: { 
                     fieldId: "d_41", 
                     type: "calculated", 
-                    value: "0.00", // Default display
+                    value: "0.00", 
                     section: "emissions",
+                    dependencies: ["ref_d_38", "d_38", "h_13"] // ref_d_38 is a placeholder concept
                 },
-                e: { content: "MT CO2e" }, // Units
+                e: { content: "MT CO2e" }, 
                 f: { content: "E.3.4", classes: ["label-prefix"] },
                 g: { content: "Modelled Value (A1-3)", classes: ["label-main"] },
-                h: { content: "", classes: ["spacer"] },
+                h: { content: "", classes: ["spacer"] }, 
                 i: {
-                    fieldId: "i_41", // User input field
-                    type: "number",  // This implies it should be an input field handled by FieldManager
-                    value: "345.82", // Default raw value
+                    fieldId: "i_41", 
+                    type: "number",  
+                    value: "345.82", 
                     section: "emissions",
-                    classes: ["user-input"],
-                    // TODO: Future - Integrate with C.Scale API to fetch/populate this value.
+                    classes: ["user-input"]
                 },
-                j: { content: "", classes: ["spacer"] },
+                j: { content: "" }, // Unit for i_41 removed, now spacer
                 k: { content: "", classes: ["spacer"] },
                 l: { 
                     fieldId: "l_41", 
                     type: "calculated", 
-                    value: "0%", // Default display
+                    value: "0%",
                     section: "emissions",
+                    dependencies: ["i_39", "i_40", "d_40", "i_41"]
                 },
-                m: { content: "✓", classes: ["checkmark"] }
+                m: { fieldId: "n_41", type: "calculated", value: "✓", classes: ["checkmark"], section:"emissions", dependencies: ["l_41"]} 
             }
         },
     };
@@ -476,13 +481,10 @@ window.TEUI.SectionModules.sect05 = (function() {
         const d_14_value = getFieldValue("d_14") || "Utility Bills"; // Determine calculation method (string)
         const g_32_value = getNumericValue("g_32");
         const k_32_value = getNumericValue("k_32");
-        const conditionedArea = getNumericValue("i_15", 1); // Avoid division by zero, default to 1 if not set
+        const conditionedArea = getNumericValue("h_15", 1); // Avoid division by zero, default to 1 if not set
         
-        const g_32_default = 6779.84;
-        const k_32_default = 6771.048;
-
-        const actual_g_32 = g_32_value === 0 && getFieldValue("g_32") === null ? g_32_default : g_32_value;
-        const actual_k_32 = k_32_value === 0 && getFieldValue("k_32") === null ? k_32_default : k_32_value;
+        const actual_g_32 = g_32_value;
+        const actual_k_32 = k_32_value;
         
         const ghgiMT = (d_14_value === "Utility Bills") ? 
             actual_g_32 / 1000 : 

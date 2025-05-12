@@ -167,7 +167,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                     fieldId: "d_14", 
                     type: "dropdown", 
                     dropdownId: "dd_d_14", 
-                    value: "Targeted Use",
+                    value: "Utility Bills",
                     section: "buildingInfo",
                     options: [
                         { value: "Targeted Use", name: "Targeted Use" },
