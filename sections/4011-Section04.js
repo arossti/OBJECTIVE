@@ -953,11 +953,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             // Force TEUI recalculation after energy update (if not zero)
             // REMOVED: setTimeout(() => { ... }, 100);
             // Section 01 should listen to f_32 or j_32 for updates.
-            if (typeof window.calculateTEUI === 'function') {
+                    if (typeof window.calculateTEUI === 'function') {
                 window.calculateTEUI(); // Call directly or let listener handle it
-            } else if (window.TEUI?.SectionModules?.sect01?.runAllCalculations) {
-                 window.TEUI.SectionModules.sect01.runAllCalculations();
-            }
+                } else if (window.TEUI?.SectionModules?.sect01?.runAllCalculations) {
+                     window.TEUI.SectionModules.sect01.runAllCalculations();
+                    }
         }
         
         // Update g_32 (Emissions subtotal)
