@@ -585,24 +585,24 @@ window.TEUI.SectionModules.sect14 = (function() {
             const tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
             setCalculatedValue('d_127', tedHeatloss_d127);
 
-            // h_127: TEDI (Heating Load Intensity W/m2)
-            const tediWm2_h127 = area > 0 ? (tedHeatloss_d127 / 8760 * 1000) / area : 0;
-            setCalculatedValue('h_127', tediWm2_h127, 'W/m2'); 
+            // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
+            const tedi_h127 = area > 0 ? tedHeatloss_d127 / area : 0;
+            setCalculatedValue('h_127', tedi_h127); // Format as default number
             
             // d_128: TED Envelope (Heating Load - Envelope Only)
             const tediEnvelope_d128 = i97 + i98 + i103 - i80;
             setCalculatedValue('d_128', tediEnvelope_d128);
 
-            // h_128: TEDI Envelope (Heating Load Intensity - Envelope Only W/m2)
-            const tediEnvelope_h128 = area > 0 ? (tediEnvelope_d128 / 8760 * 1000) / area : 0;
+            // h_128: TEDI Envelope (Heating Load Intensity - Envelope Only kWh/m²/yr)
+            const tediEnvelope_h128 = area > 0 ? tediEnvelope_d128 / area : 0;
             setCalculatedValue('h_128', tediEnvelope_h128);
 
             // Calculate d_129 value needed for h_129, m_129, d_130
             const cedCoolingUnmitigated_d129 = k71 + k79 + k98 + d122; 
             
-            // h_129: CEDI Unmitigated (W/m2) 
-            const cediUnmitigatedWm2_h129 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
-            setCalculatedValue('h_129', cediUnmitigatedWm2_h129, 'W/m2'); 
+            // h_129: CEDI Unmitigated (kWh/m²/yr) 
+            const cediUnmitigated_h129 = area > 0 ? cedCoolingUnmitigated_d129 / area : 0;
+            setCalculatedValue('h_129', cediUnmitigated_h129);
             
             // m_129: CED Mitigated (kWh/yr)
             // Calculate using the fetched values
