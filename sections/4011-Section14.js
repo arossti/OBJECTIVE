@@ -533,19 +533,25 @@ window.TEUI.SectionModules.sect14 = (function() {
         sm.registerDependency('m_129', 'h_130');
         sm.registerDependency('h_15', 'h_130');
         
-        // D131 (TEL Total Envelope Heatloss): =SUM(I97:I98)+I103
-        ['i_97', 'i_98', 'i_103'].forEach(dep => sm.registerDependency(dep, 'd_131'));
-        // H131 (TELI): =D131/H15
-        sm.registerDependency('d_131', 'h_131');
-        sm.registerDependency('h_15', 'h_131');
+        // d_131: TEL Heatloss (Total Envelope Heatloss)
+        // Excel formula: =SUM(I97:I98)+I103 which is i_97 + i_98 + i_103 in app terms
+        const telHeatloss_d131 = i97 + i98 + i103;
+        setCalculatedValue('d_131', telHeatloss_d131);
         
-        // D132 (CEG Cooling Envelope Heatgain): =SUM(K97:K98)+K103
-        ['k_97', 'k_98', 'k_103'].forEach(dep => sm.registerDependency(dep, 'd_132'));
-        // H132 (CEGI): =D132/H15
-        sm.registerDependency('d_132', 'h_132');
-        sm.registerDependency('h_15', 'h_132');
+        // h_131: TELI Heatloss Intensity W/m2
+        const teli_h131 = area > 0 ? telHeatloss_d131 / area : 0;
+        setCalculatedValue('h_131', teli_h131);
         
-        // console.log("TEDI/TELI dependencies registered");
+        // d_132 & h_132: CEG and CEGI
+        const cegHeatgain_d132 = k97 + k98;
+        setCalculatedValue('d_132', cegHeatgain_d132);
+        const cegi_h132 = area > 0 ? cegHeatgain_d132 / area : 0;
+        setCalculatedValue('h_132', cegi_h132);
+        
+        // h_130: CEDI Mitigated W/m2
+        const cediMitigatedWm2_h130 = area > 0 ? (cedMitigated_m129 / 8760 * 1000) / area : 0;
+        setCalculatedValue('h_130', cediMitigatedWm2_h130, 'W/m2'); 
+        
     }
     
     /**
@@ -611,9 +617,9 @@ window.TEUI.SectionModules.sect14 = (function() {
             const cediCoolingWm2_d130 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
             setCalculatedValue('d_130', cediCoolingWm2_d130, 'W/m2');
             
-            // d_131: TEL Heatloss (Heating + DHW)
-            const d111 = getNumericValue('d_111'); // DHW Load
-            const telHeatloss_d131 = tedHeatloss_d127 + d111;
+            // d_131: TEL Heatloss (Total Envelope Heatloss)
+            // Excel formula: =SUM(I97:I98)+I103 which is i_97 + i_98 + i_103 in app terms
+            const telHeatloss_d131 = i97 + i98 + i103;
             setCalculatedValue('d_131', telHeatloss_d131);
             
             // h_131: TELI Heatloss Intensity W/m2

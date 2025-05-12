@@ -1118,30 +1118,33 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Updates the percentage columns (J and L) based on calculated totals.
      */
     function updatePercentages(totalHeating, totalCooling) {
-        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low']; // Gain indicator classes
+        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low'];
 
-        // Helper to calculate and set percentage and indicator
         const setPercentage = (valueFieldId, percentageFieldId, total, isCooling = false) => {
             const value = window.TEUI.parseNumeric(getFieldValue(valueFieldId));
-            const percentage = total > 0 ? (value / total) * 100 : 0;
-            // Use local helper to set value and format as percent-auto
-            setCalculatedValue(percentageFieldId, percentage, 'percent-auto');
+            const percentageDecimal = total > 0 ? (value / total) : 0;
+            setCalculatedValue(percentageFieldId, percentageDecimal, 'percent-auto');
 
-            // Apply Indicator Class & Left Alignment
             let gainClass = '';
-            const absPercentage = Math.abs(percentage);
-            // Thresholds: Green >= 67, Yellow >= 33, Red < 33 (using gain classes)
-            if (absPercentage >= 67) { gainClass = 'gain-high'; }      // Green
-            else if (absPercentage >= 33) { gainClass = 'gain-medium'; } // Yellow
-            else if (absPercentage >= 0) { gainClass = 'gain-low'; }       // Red
+            const absPercentageValue = Math.abs(percentageDecimal * 100); // Work with 0-100 scale for thresholds
+
+            if (isCooling) {
+                // For Cooling: Low percentage is good (Green)
+                if (absPercentageValue <= 5) { gainClass = 'gain-high'; }      // Green (Low is good)
+                else if (absPercentageValue <= 15) { gainClass = 'gain-medium'; } // Yellow
+                else { gainClass = 'gain-low'; }       // Red (High is bad)
+            } else {
+                // For Heating: High percentage is good (Green)
+                if (absPercentageValue >= 30) { gainClass = 'gain-high'; }      // Green (High is good)
+                else if (absPercentageValue >= 10) { gainClass = 'gain-medium'; } // Yellow
+                else { gainClass = 'gain-low'; }       // Red (Low is bad)
+            }
             setIndicatorClass(percentageFieldId, gainClass, gainIndicatorClasses);
 
-            // Apply left alignment
             const element = document.querySelector(`[data-field-id="${percentageFieldId}"]`);
             if (element) element.classList.add('text-left-indicator');
         };
 
-        // Update percentages for relevant rows
         setPercentage("i_64", "j_64", totalHeating);
         setPercentage("k_64", "l_64", totalCooling, true);
         setPercentage("i_65", "j_65", totalHeating);
@@ -1153,9 +1156,8 @@ window.TEUI.SectionModules.sect09 = (function() {
         setPercentage("i_69", "j_69", totalHeating);
         setPercentage("k_69", "l_69", totalCooling, true);
 
-        // Set totals to 100% using local helper
-        setCalculatedValue("j_71", 100, 'percent-auto');
-        setCalculatedValue("l_71", 100, 'percent-auto');
+        setCalculatedValue("j_71", 1.0, 'percent-auto');
+        setCalculatedValue("l_71", 1.0, 'percent-auto');
     }
     
     /**
@@ -1191,7 +1193,13 @@ window.TEUI.SectionModules.sect09 = (function() {
      * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw').
      */
     function setCalculatedValue(fieldId, rawValue, formatType = 'number') {
-        // Set raw value in state manager with 'calculated' state
+        // If formatType is the default 'number', upgrade to 'number-2dp-comma' for kWh fields in this section
+        if (formatType === 'number' && (fieldId.startsWith('h_') || fieldId.startsWith('i_') || fieldId.startsWith('k_'))) {
+            if (fieldId !== 'i_63') { // i_63 is annual hours, should be integer
+                 formatType = 'number-2dp-comma';
+            }
+        }
+
         if (window.TEUI?.StateManager?.setValue) {
             // Ensure rawValue is stored as a string for consistency, especially numbers
             window.TEUI.StateManager.setValue(fieldId, String(rawValue), "calculated"); 
@@ -1216,15 +1224,13 @@ window.TEUI.SectionModules.sect09 = (function() {
      */
     function calculateAll() {
         // Calculate individual components
-        const activityLevel = getFieldValue("d_64"); // Get the string value directly
-        const activityWatts = calculateActivityWatts(activityLevel); // Calculate watts from the string
-        // Store raw watts, format as number (using the correct numeric value)
-        setCalculatedValue("f_64", activityWatts, 'number'); 
+        const activityLevel = getFieldValue("d_64"); 
+        const activityWatts = calculateActivityWatts(activityLevel); 
+        setCalculatedValue("f_64", activityWatts, 'number-2dp-comma'); // Use comma format
         
-        const dailyHours = getFieldValue("g_63"); // Dropdown value (string like "12")
-        const annualHours = calculateOccupiedHoursRatio(dailyHours); // Returns string "4380" etc.
-        // Store raw string, format as raw (no commas/decimals needed for display here)
-        setCalculatedValue("i_63", annualHours, 'raw');
+        const dailyHours = getFieldValue("g_63"); 
+        const annualHours = calculateOccupiedHoursRatio(dailyHours); 
+        setCalculatedValue("i_63", annualHours, 'raw'); // i_63 is raw hours, no comma/decimal
         
         // Calculate energy usage - these functions now read the updated f_64 and d_63/g_63 correctly
         calculateOccupantEnergy();

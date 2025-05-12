@@ -874,6 +874,7 @@ The modular architecture enables easier maintenance, extension, and validation w
 ---
 *Document maintained with assistance from Cognizant Architect Gemini ("Cosmo") - May 2025*
 *Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*
+*Assisted with Excel import refinements, calculation alignment, and UI enhancements - "Orionis" (Gemini) - August 2024*
 
 ### TODO: Numeric Input UX Enhancements (Post-Conference)
 

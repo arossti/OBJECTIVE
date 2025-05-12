@@ -25,10 +25,10 @@ window.TEUI.SectionModules.sect05 = (function() {
             label: "Emissions Units Header",
             cells: {
                 c: { content: "C", classes: ["section-subheader"] },
-                d: { content: "D", classes: ["section-subheader"] },
+                d: { content: "Metric Tons (MT)", classes: ["section-subheader"] },
                 e: { content: "E", classes: ["section-subheader"] },
-                f: { content: "kgCO2e/m2", classes: ["section-subheader"] },
-                g: { content: "G", classes: ["section-subheader"] },
+                f: { content: "F", classes: ["section-subheader"] },
+                g: { content: "kgCO2e/m2", classes: ["section-subheader"] },
                 h: { content: "", classes: ["section-subheader", "spacer"] },
                 i: { content: "kgCO2e/m2", classes: ["section-subheader"] },
                 j: { content: "J", classes: ["section-subheader"] },

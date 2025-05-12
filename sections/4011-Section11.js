@@ -615,7 +615,8 @@ window.TEUI.SectionModules.sect11 = (function() {
         // Grand totals include component subtotals + penalty
         // Corrected: i_98 should only be the sum of components 85-95
         const grandTotalHeatlossI = totals.loss; // Removed + penaltyHeatlossI
-        const grandTotalHeatgainK = totals.gain + penaltyHeatgainK;
+        // Corrected: k_98 should be SUM(K85:K95) and EXCLUDE k_97 (penaltyHeatgainK)
+        const grandTotalHeatgainK = totals.gain; 
 
         // Set totals for Row 98
         setCalculatedValue('d_98', totals.areaD);
