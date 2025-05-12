@@ -651,19 +651,3 @@ window.TEUI.SectionModules.sect08 = (function() {
         calculateAll: calculateAllInternal
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'indoorAirQuality') {
-        setTimeout(() => window.TEUI.SectionModules.sect08.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('indoorAirQuality')) {
-            window.TEUI.SectionModules.sect08.onSectionRendered();
-        }
-    }, 300);
-});

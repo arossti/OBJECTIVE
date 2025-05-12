@@ -1184,19 +1184,3 @@ window.TEUI.SectionModules.sect03 = (function() {
         calculateAll: calculateAll
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'climateCalculations') {
-        setTimeout(() => window.TEUI.SectionModules.sect03.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('climateCalculations')) {
-            window.TEUI.SectionModules.sect03.onSectionRendered();
-        }
-    }, 300);
-});

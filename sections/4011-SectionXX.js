@@ -670,19 +670,3 @@ window.TEUI.SectionModules.sectXX = (function() {
         // Add other public methods as needed
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'sectionName') { // Replace with actual section ID
-        setTimeout(() => window.TEUI.SectionModules.sectXX.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('sectionName')) { // Replace with actual section ID
-            window.TEUI.SectionModules.sectXX.onSectionRendered();
-        }
-    }, 300);
-});

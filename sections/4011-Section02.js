@@ -1037,22 +1037,6 @@ window.TEUI.SectionModules.sect02 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'buildingInfo') {
-        setTimeout(() => window.TEUI.SectionModules.sect02.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('buildingInfo')) {
-            window.TEUI.SectionModules.sect02.onSectionRendered();
-        }
-    }, 300);
-});
-
 function syncCostFieldDisplays() {
     const costFields = ['l_12', 'l_13', 'l_14', 'l_15', 'l_16'];
     costFields.forEach(fieldId => {

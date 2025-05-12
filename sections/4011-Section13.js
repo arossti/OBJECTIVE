@@ -1992,27 +1992,6 @@ window.TEUI.SectionModules.sect13 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'mechanicalLoads') { 
-        // Short delay to ensure DOM is fully ready after rendering event
-        setTimeout(() => window.TEUI.SectionModules.sect13.onSectionRendered(), 100);
-    }
-});
-
-// Fallback initialization if rendering event is missed
-document.addEventListener('teui-rendering-complete', function() {
-    // Longer delay for full page fallback
-    setTimeout(() => {
-        if (document.getElementById('mechanicalLoads')) { 
-            // Check if already initialized to prevent double init
-            if (!window.TEUI.sect13.initialized) {
-            window.TEUI.SectionModules.sect13.onSectionRendered();
-            }
-        }
-    }, 300);
-});
-
 // Ensure global access point for calculateAll remains
 window.TEUI.sect13.calculateAll = function() {
     if (window.TEUI.SectionModules.sect13) {

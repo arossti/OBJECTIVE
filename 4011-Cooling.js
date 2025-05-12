@@ -441,14 +441,6 @@ window.TEUI.CoolingCalculations = (function() {
     };
 })();
 
-// Initialize on page load if needed
-document.addEventListener('DOMContentLoaded', function() {
-    // Automatic initialization with default values
-    setTimeout(() => {
-        window.TEUI.CoolingCalculations.initialize();
-    }, 500); // Delay to allow other modules to load first
-});
-
 // Initialize when StateManager becomes available
 document.addEventListener('teui-statemanager-ready', function() {
     // Initialize with StateManager values

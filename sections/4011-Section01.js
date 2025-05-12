@@ -858,15 +858,6 @@ window.TEUI.SectionModules.sect01 = (function() {
              isInitialized = true;
         }
     }
-    
-    // Attempt initialization on different events as fallbacks
-    document.addEventListener('DOMContentLoaded', () => setTimeout(initializeOnce, 100));
-    document.addEventListener('teui-rendering-complete', () => setTimeout(initializeOnce, 350));
-    document.addEventListener('teui-section-rendered', (event) => {
-    if (event.detail && event.detail.sectionId === 'keyValues') {
-            setTimeout(initializeOnce, 150);
-        }
-    });
 
     // Return public API
     return {

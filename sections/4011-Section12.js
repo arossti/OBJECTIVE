@@ -930,9 +930,6 @@ window.TEUI.SectionModules.sect12 = (function() {
         calculateAll(); // Ensure calculations are run immediately
         addCheckmarkStyles(); // Add section-specific styles if needed
         isInitialized = true;
-        
-        // Force recalculation to ensure U-values display with correct formatting
-        setTimeout(calculateAll, 100); // Run calculations again after a short delay
     }
 
     function registerWithStateManager() {

@@ -689,19 +689,3 @@ window.TEUI.SectionModules.sect05 = (function() {
         calculatePercentages: calculatePercentages,
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'emissions') {
-        setTimeout(() => window.TEUI.SectionModules.sect05.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('emissions')) {
-            window.TEUI.SectionModules.sect05.onSectionRendered();
-        }
-    }, 300);
-});

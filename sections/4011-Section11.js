@@ -879,12 +879,16 @@ window.TEUI.SectionModules.sect11 = (function() {
     };
 })();
 
-// Standard initialization listeners
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'transmissionLosses') {
-        setTimeout(() => { window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 50);
-    }
-});
-document.addEventListener('teui-rendering-complete', function() { // Fallback
-    setTimeout(() => { if (document.getElementById('transmissionLosses')) window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 250);
-}); 
+// REMOVED Event Listeners
+// // Initialize when the section is rendered
+// document.addEventListener('teui-section-rendered', (event) => {
+//     if (event.detail?.sectionId === 'transmissionLosses') {
+//         // Small delay to ensure other sections are ready and StateManager has values
+//         setTimeout(() => { window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 50);
+//     }
+// });
+// 
+// // Fallback to rendering complete event (ensure it runs even if teui-section-rendered is missed)
+// document.addEventListener('teui-rendering-complete', () => {
+//     setTimeout(() => { if (document.getElementById('transmissionLosses')) window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 250);
+// }); 

@@ -539,19 +539,3 @@ window.TEUI.SectionModules.sect06 = (function() {
         calculateOffsiteRenewable: calculateOffsiteRenewable
     };
 })();
-
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'onSiteEnergy') {
-        setTimeout(() => window.TEUI.SectionModules.sect06.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('onSiteEnergy')) {
-            window.TEUI.SectionModules.sect06.onSectionRendered();
-        }
-    }, 300);
-});

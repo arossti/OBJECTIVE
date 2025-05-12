@@ -1640,6 +1640,30 @@ window.TEUI.SectionModules.sect10 = (function() {
         }
     }
     
+    /**
+     * Called when the section is rendered
+     * This is a good place to initialize values and run initial calculations
+     */
+    function onSectionRendered() {
+        // Initialize event handlers
+        initializeEventHandlers();
+        
+        // Setup default values for dropdowns
+        setupDropdownDefaults();
+        
+        // Register this section with StateManager
+        registerWithStateManager();
+        
+        // Register with SectionIntegrator if needed
+        registerWithIntegrator();
+
+        // Add StateManager listeners for this section
+        addStateManagerListeners();
+        
+        // Perform initial calculations for this section
+        calculateAll(); // Calculate directly as part of onSectionRendered
+    }
+    
     //==========================================================================
     // PUBLIC API
     //==========================================================================
@@ -1653,18 +1677,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
         
-        onSectionRendered: function() {
-            try {
-                initializeEventHandlers();
-                setupDropdownDefaults();
-                registerWithStateManager();
-                addStateManagerListeners();
-                registerWithIntegrator();
-                calculateAll();
-            } catch (error) {
-                // console.error('Error in Section10 onSectionRendered:', error);
-            }
-        },
+        onSectionRendered: onSectionRendered,
         
         calculateAll: calculateAll,
         calculateUtilizationFactors: calculateUtilizationFactors,

@@ -1046,22 +1046,6 @@ window.TEUI.SectionModules.sect07 = (function() {
     };
 })();
 
-// Initialize when the section is rendered
-document.addEventListener('teui-section-rendered', function(event) {
-    if (event.detail?.sectionId === 'waterUse') {
-        setTimeout(() => window.TEUI.SectionModules.sect07.onSectionRendered(), 100);
-    }
-});
-
-// Fallback to rendering complete event
-document.addEventListener('teui-rendering-complete', function() {
-    setTimeout(() => {
-        if (document.getElementById('waterUse')) {
-            window.TEUI.SectionModules.sect07?.onSectionRendered(); // Use optional chaining
-        }
-    }, 300);
-});
-
 // Expose critical functions to global namespace for cross-module access
 document.addEventListener('DOMContentLoaded', function() {
     const module = window.TEUI.SectionModules.sect07;
