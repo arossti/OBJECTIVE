@@ -711,6 +711,7 @@ TEUI.SectionIntegrator = (function() {
     document.addEventListener('DOMContentLoaded', initialize);
 
     // Create a globally available safe version for any section to use
+    /*
     window.setInitialDropdownValues = function() {
         // console.log("Global setInitialDropdownValues called");
         // Create a safe delayed call
@@ -729,6 +730,7 @@ TEUI.SectionIntegrator = (function() {
             }
         }, 500); // Delay to ensure functions are loaded
     };
+    */
     
     // Public API
     return {

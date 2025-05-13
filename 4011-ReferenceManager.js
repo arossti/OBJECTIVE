@@ -10,6 +10,17 @@ window.TEUI = window.TEUI || {};
 TEUI.ReferenceManager = (function() {
   let currentStandard = null;
 
+  function fetchInitialStandard() {
+    // console.log("[ReferenceManager] fetchInitialStandard called by teui-rendering-complete event.");
+    currentStandard = TEUI.StateManager?.getValue('d_13');
+    if (!currentStandard) {
+        // console.warn("ReferenceManager: Could not get initial standard from d_13 after rendering. Defaulting might occur.");
+        const d13Field = TEUI.FieldManager?.getField('d_13');
+        currentStandard = d13Field?.defaultValue || null;
+    }
+    // console.log(`ReferenceManager: Initialized with standard after rendering: ${currentStandard}`);
+  }
+
   function initialize() {
     // Ensure core dependencies are loaded
     if (!window.TEUI || !window.TEUI.StateManager || !window.TEUI.ReferenceValues) {
@@ -19,32 +30,18 @@ TEUI.ReferenceManager = (function() {
 
     // Listen for standard selection changes from Section 2 dropdown (d_13)
     TEUI.StateManager.addListener('d_13', function(newValue) {
-      // console.log(`ReferenceManager: Standard changed to: ${newValue}`); // Debug log
       currentStandard = newValue;
-      // Trigger update in reference mode if it's active
       if (window.TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
-        // Use a short delay to allow other listeners potentially related to d_13 to complete first
         setTimeout(() => {
-            if (TEUI.ReferenceToggle.isReferenceMode()) { // Double-check mode hasn't changed
-                 // console.log("ReferenceManager: Refreshing reference display due to standard change.");
-                 TEUI.ReferenceToggle.refreshReferenceDisplay();
+            if (TEUI.ReferenceToggle.isReferenceMode()) {
+                 TEUI.ReferenceToggle.refreshAllSectionsDisplay();
             }
         }, 50); 
       }
     });
 
-    // Initialize with the current standard value from StateManager
-    // Use timeout to ensure StateManager has loaded initial values
-    setTimeout(() => {
-        currentStandard = TEUI.StateManager.getValue('d_13');
-        if (!currentStandard) {
-            // console.warn("ReferenceManager: Could not get initial standard from d_13. Defaulting might occur later.");
-            // Attempt to get default from field definition if available (robustness)
-            const d13Field = TEUI.FieldManager?.getField('d_13');
-            currentStandard = d13Field?.defaultValue || null;
-        }
-        // console.log(`ReferenceManager: Initialized with standard: ${currentStandard}`); // Debug log
-    }, 200); // Delay slightly after main init
+    // Listen for teui-rendering-complete to fetch the initial standard value
+    document.addEventListener('teui-rendering-complete', fetchInitialStandard);
   }
 
   /**
@@ -296,4 +293,11 @@ TEUI.ReferenceManager = (function() {
     getCurrentStandard: function() { return currentStandard; },
     createReferenceHandler
   };
-})(); 
+})();
+
+// Call initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.TEUI && TEUI.ReferenceManager) {
+        TEUI.ReferenceManager.initialize();
+    }
+}); 
