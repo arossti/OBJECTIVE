@@ -188,13 +188,11 @@ window.TEUI.SectionModules.sect05 = (function() {
                 h: { content: "", classes: ["spacer"] }, 
                 i: {
                     fieldId: "i_41", 
-                    type: "number",  
+                    type: "editable",  // CHANGED from "number" to "editable"
                     value: "345.82", 
                     section: "emissions",
                     classes: ["user-input"]
                 },
-                j: { content: "" }, // Unit for i_41 removed, now spacer
-                k: { content: "", classes: ["spacer"] },
                 l: { 
                     fieldId: "l_41", 
                     type: "calculated", 
@@ -210,6 +208,8 @@ window.TEUI.SectionModules.sect05 = (function() {
     //==========================================================================
     // HELPER FUNCTIONS (Standardized)
     //==========================================================================
+
+    const editableFields = ['i_41']; // Removed j_41_test
 
     /**
      * Helper function to get a field value primarily from StateManager, with a DOM fallback.
@@ -280,6 +280,47 @@ window.TEUI.SectionModules.sect05 = (function() {
                 element.textContent = formattedValue;
             }
         }
+    }
+    
+    /**
+     * Handles the blur event for editable numeric fields.
+     * Parses the input, updates StateManager, re-formats the display, and recalculates.
+     */
+    function handleEditableBlur() { // Renamed from handleFieldBlur to be specific
+        const fieldElement = this; // 'this' is bound to the field element
+        const currentFieldId = fieldElement.getAttribute('data-field-id');
+        if (!currentFieldId) return;
+
+        const originalValue = fieldElement.dataset.originalValue || '';
+        let currentValueStr = fieldElement.textContent.trim();
+
+        // Only proceed if the value has actually changed
+        if (currentValueStr !== originalValue) {
+            let numValue = window.TEUI.parseNumeric(currentValueStr, NaN);
+            let rawValueToStore;
+
+            if (!isNaN(numValue)) { // Successfully parsed a number
+                rawValueToStore = numValue.toString();
+                // Update StateManager with the user-modified value
+                if (window.TEUI && window.TEUI.StateManager) {
+                    window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified');
+                }
+                // The existing StateManager listener for i_41 should handle recalculations and updates to i_39.
+                // No direct call to calculateAll() here.
+                // No direct re-formatting of fieldElement.textContent here; 
+                // if StateManager updates trigger a re-render or i_41 is read and set by a calculation,
+                // that process should handle formatting.
+            } else {
+                // If parsing fails, revert to original value to prevent saving invalid input
+                fieldElement.textContent = originalValue;
+                // console.warn(`Invalid input for ${currentFieldId}: '${currentValueStr}'. Reverted to '${originalValue}'.`);
+            }
+        } else {
+            // If the value hasn't changed, ensure it still has the standard formatting if needed.
+            // This can be added if values sometimes lose formatting without changing.
+            // For now, we only act on actual value changes to mirror S04 more closely.
+        }
+        // No calculateAll() here, rely on StateManager listeners.
     }
     
     //==========================================================================
@@ -595,6 +636,33 @@ window.TEUI.SectionModules.sect05 = (function() {
      * Initialize all event handlers for this section
      */
     function initializeEventHandlers() {
+        // Standard event handlers for editable numeric fields
+        editableFields.forEach(fieldId => {
+            const field = document.querySelector(`[data-field-id="${fieldId}"]`);
+            // Attach listeners only to fields found and marked as user-input (implies editable)
+            if (field && field.classList.contains('user-input')) { 
+                if (!field.hasEditableListeners) { // Prevent adding multiple listeners
+                    field.addEventListener('keydown', e => { 
+                        if (e.key === 'Enter') { 
+                            e.preventDefault(); 
+                            e.stopPropagation(); // Added stopPropagation
+                            field.blur(); 
+                        } 
+                    });
+                    field.addEventListener('blur', handleEditableBlur.bind(field)); // Ensure 'this' context
+                    // Optional: Add focus/focusout for styling if needed, like in Section 11
+                    field.addEventListener('focus', () => {
+                        field.classList.add('editing');
+                        field.dataset.originalValue = field.textContent.trim(); // Store original value on focus
+                    });
+                    field.addEventListener('focusout', () => field.classList.remove('editing'));
+                    field.hasEditableListeners = true; // Mark as listener attached
+                }
+            } else {
+                // console.warn(`Editable field ${fieldId} not found or not marked as 'user-input' in Section 05.`);
+            }
+        });
+
         // Typology dropdown change handler
         const typologyDropdown = document.querySelector('[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]'); // Check both potential selectors
         if (typologyDropdown) {

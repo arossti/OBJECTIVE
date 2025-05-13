@@ -240,18 +240,33 @@ When working with this codebase, previous AI assistants have encountered several
    - **Why**: Ensures consistent data handling (parsing, formatting, state updates) across all sections, reduces code duplication, and improves maintainability. Sections 04 and 03 have been refactored to follow this pattern.
 
 12. **Correct Handling of `contenteditable` Fields:** (Added 2024-07-31)
-    - **Problem**: Incorrectly implemented event handlers for `contenteditable` elements (used for editable numeric inputs) can lead to issues like the Enter key inserting newlines instead of saving the value.
-    - ❌ **Avoid**: Attaching simple `change` listeners to `contenteditable` elements (they don't fire reliably); Defining handler functions (like `handleEditableBlur`) *outside* the module's IIFE scope, making them inaccessible to listeners defined inside.
-    - ✅ **REQUIRED PATTERN (See Section 13 for example):**
-        1.  Define the standard `handleEditableBlur` function *inside* the section module's main `(function() { ... })();` scope.
-        2.  Inside the `initializeEventHandlers` function (also within the module scope):
-            *   Get the section's main container element (e.g., `document.getElementById('sectionId')`).
-            *   Use `sectionElement.querySelectorAll('.editable.user-input')` to find all editable fields within that section.
+    - **Problem**: Incorrectly implemented event handlers for `contenteditable` elements (used for editable numeric inputs) can lead to issues like the Enter key inserting newlines instead of saving the value, or fields becoming unresponsive after data import.
+    - ❌ **Avoid**: 
+        - Attaching simple `change` listeners to `contenteditable` elements (they don't fire reliably).
+        - Defining handler functions (like `handleEditableBlur`) *outside* the module's IIFE scope, making them inaccessible to listeners defined inside.
+        - **Using `type: "number"` in `sectionRows` field definitions for elements intended to be `contenteditable` and managed by the pattern below.** While `FieldManager` might render these as `contenteditable`, this `type` has been observed to cause conflicts with reliable event handling (especially Enter key behavior and editability after imports, as seen with `i_41` in Section 05 before its `type` was changed to `editable`).
+    - ✅ **REQUIRED PATTERN (See Section 11 or Section 05 for `i_41` for examples):**
+        1.  **Field Definition**: In the section module's `sectionRows`, define user-editable numeric fields with `type: "editable"` and typically include `classes: ["user-input"]`. For example:
+            ```javascript
+            // Example from Section 05 for i_41
+            i: {
+                fieldId: "i_41", 
+                type: "editable",  // USE "editable", NOT "number" for this pattern
+                value: "345.82", 
+                classes: ["user-input"],
+                section: "emissions"
+            },
+            ```
+        2.  Define the standard `handleEditableBlur` function *inside* the section module's main `(function() { ... })();` scope. This function should handle parsing, updating `StateManager` (with `'user-modified'`), and can reformat the field's `textContent` if desired (though simpler implementations may omit direct reformatting, relying on `StateManager` updates to eventually refresh display if necessary).
+        3.  Inside the `initializeEventHandlers` function (also within the module scope):
+            *   Identify the editable fields (e.g., by iterating an `editableFields` array or querying for `.user-input` elements that are `contenteditable`).
             *   Iterate through the found `editableFields`:
-                *   Attach the `blur` event listener, calling the module-scoped `handleEditableBlur` function.
-                *   Attach the `keydown` event listener, which checks `if (e.key === 'Enter')`, calls `e.preventDefault()`, `e.stopPropagation()`, and then `this.blur()`.
+                *   Ensure the element is `contenteditable="true"`.
+                *   Attach the `blur` event listener, calling the module-scoped `handleEditableBlur` function (e.g., `field.addEventListener('blur', handleEditableBlur.bind(field));`).
+                *   Attach the `keydown` event listener. This listener **must** check `if (e.key === 'Enter')`, then call `e.preventDefault()`, `e.stopPropagation()` (optional but often helpful), and critically `this.blur()` (or `field.blur()`) to trigger the blur handling.
+                *   Optionally, attach `focus` and `focusout` listeners for styling (e.g., adding/removing an `.editing` class) and to store the field's original value on focus (e.g., `field.dataset.originalValue = field.textContent.trim();`) for comparison on blur.
                 *   Use a flag (e.g., `field.hasEditableListeners = true`) to prevent attaching listeners multiple times if `initializeEventHandlers` is somehow called more than once.
-    - **Why**: This pattern ensures the `keydown` listener correctly prevents the default Enter behavior and triggers the `blur` event. The `blur` listener then calls the `handleEditableBlur` function (which is accessible because it's defined in the same scope), correctly parsing, formatting, and saving the value to `StateManager`.
+    - **Why**: This pattern ensures the `keydown` listener correctly prevents the default Enter behavior and triggers the `blur` event. The `blur` listener then calls the `handleEditableBlur` function (which is accessible because it's defined in the same scope), correctly parsing, formatting (if applicable), and saving the value to `StateManager`. Using `type: "editable"` in the field definition ensures a cleaner baseline for `contenteditable` behavior managed by these custom listeners, avoiding conflicts observed with `type: "number"`.
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 

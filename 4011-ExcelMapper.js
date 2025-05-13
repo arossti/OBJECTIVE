@@ -65,6 +65,7 @@ class ExcelMapper {
             'L16': 'l_16', // Oil Cost 
 
             // Section 03: Climate Calculations (REPORT! Sheet)
+            'H21': 'h_21', // Capacitance/Static Toggle (Dropdown) - NEWLY ADDED
             'M19': 'm_19', // Days Cooling (Editable Number)
             // Note: L22 (Elevation) & L24 (Cooling Override) are handled by weather/location import, not general user data import.
 
@@ -225,6 +226,32 @@ class ExcelMapper {
                     // Ensure it's a string for consistency, defaulting to "0" if parsing failed
                     if (isNaN(parseFloat(extractedValue))) {
                         extractedValue = "0";
+                    }
+                }
+                // Normalize d_53 (DHW Recovery Eff %) value from Excel
+                if (fieldId === 'd_53') {
+                    let numVal;
+                    if (typeof extractedValue === 'string') {
+                        if (extractedValue.endsWith('%')) {
+                            numVal = parseFloat(extractedValue.replace('%', ''));
+                        } else {
+                            numVal = parseFloat(extractedValue);
+                        }
+                    } else if (typeof extractedValue === 'number') {
+                        numVal = extractedValue;
+                    }
+
+                    if (!isNaN(numVal)) {
+                        // If numVal is a decimal (e.g., 0.50 for 50%), convert to whole percentage.
+                        // Heuristic: if it's <= 1 (and non-negative), assume it's a decimal factor.
+                        if (numVal >= 0 && numVal <= 1) {
+                            extractedValue = Math.round(numVal * 100).toString();
+                        } else {
+                            // Otherwise, assume it's already a whole percentage (e.g., 50)
+                            extractedValue = Math.round(numVal).toString();
+                        }
+                    } else {
+                        extractedValue = "0"; // Default if parsing failed
                     }
                 }
                 // Normalize d_52 (DHW Eff Factor %) value from Excel
