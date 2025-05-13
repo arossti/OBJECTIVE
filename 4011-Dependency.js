@@ -1273,14 +1273,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                     
                     // Show and store the floating info panel in fullscreen
                     this.floatingInfoPanel = floatingInfoPanel; // Store reference
-                    
-                    // === APPLY/RE-APPLY STYLES HERE ===
-                    if (this.floatingInfoPanel) {
-                        this.floatingInfoPanel.style.removeProperty('max-height'); // Ensure no max-height
-                        this.floatingInfoPanel.style.overflowY = 'visible';      // Ensure no scroll
-                        this.floatingInfoPanel.style.display = 'block';          // Show it
-                    }
-                    // === END APPLY/RE-APPLY STYLES ===
+                    this.floatingInfoPanel.style.display = 'block'; // Explicitly show it
                     
                     // Add stronger box shadow for visibility against any background
                     this.floatingInfoPanel.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
