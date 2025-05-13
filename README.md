@@ -976,3 +976,4 @@ This section outlines planned improvements for the user experience of `contented
 *Document co-authored by Human Architect Andy Thomson, and maintained and co-authored by Cognizant Architect Gemini ("Cosmo") - May 2025*
 *Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*
 *Assisted with Excel import refinements, calculation alignment, and UI enhancements - "Orionis" (Gemini) - August 2024*
+*Assisted with bug fixes, `README.md` updates, and UI/UX analysis (i_41 editability, S17 info panel, file handler insights) - "Stellaria" (Gemini 2.5 Pro) - May 13, 2025*
