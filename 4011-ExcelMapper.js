@@ -82,6 +82,7 @@ class ExcelMapper {
             'H35': 'h_35', // PER Factor (Editable Number)
 
             // Section 05: Emissions (REPORT! Sheet)
+            'D39': 'd_39', // Construction Type (Dropdown) - NEWLY ADDED
             // 'D60': 'd_60', // Offsets (tCO2e) - REMOVED, d_60 is now calculated in S05 based on wood use
             'I41': 'i_41', // Modelled Embodied Carbon (A1-3)
 
@@ -96,7 +97,7 @@ class ExcelMapper {
             // Section 07: Water Use (REPORT! Sheet)
             'D49': 'd_49', // Water Use Method (Dropdown)
             'E49': 'e_49', // User Defined Water Use l/pp/day (Only used if d_49 is User Defined)
-            'E50': 'e_50', // By Engineer DHW kWh/yr (Only used if d_49 is By Engineer)
+            'E50': 'e_50', // By Engineer DHW kWh/yr (Now correctly maps to e_50 which is the new input field)
             'D51': 'd_51', // DHW Energy Source (Dropdown)
             'D52': 'd_52', // DHW EF/COP (Editable Number)
             'D53': 'd_53', // DHW Recovery Eff % (Editable Number)
@@ -110,7 +111,7 @@ class ExcelMapper {
             // Section 09: Occupant Internal Gains (REPORT! Sheet)
             'D63': 'd_63', // Occupants
             'I63': 'i_63', // Occupied Hrs/Day
-            'J63': 'j_63', // Total Hrs/Year
+            // 'J63': 'j_63', // Total Hrs/Year - This line should be commented out or removed.
             'D64': 'd_64', // Occupant Activity (Dropdown)
             'D65': 'd_65', // Plug Loads W/m2
             'D66': 'd_66', // Lighting Loads W/m2
@@ -143,7 +144,7 @@ class ExcelMapper {
 
             // Section 12: Volume Metrics (REPORT! Sheet)
             'D103': 'd_103', // Stories
-            'F103': 'f_103', // Shielding (Dropdown)
+            'G103': 'g_103', // Shielding (Dropdown)
             'D105': 'd_105', // Total Conditioned Volume
             'D108': 'd_108', // NRL50 Target Method (Dropdown)
             'G109': 'g_109', // Measured ACH50 (Editable Number)
@@ -251,6 +252,30 @@ class ExcelMapper {
                     } else {
                         extractedValue = "0"; // Default if parsing failed
                     }
+                }
+                // Normalize d_39 (Construction Type) from Excel variations
+                if (fieldId === 'd_39' && typeof extractedValue === 'string') {
+                    const val = extractedValue.trim().toLowerCase();
+                    if (val.includes('pt.9') && val.includes('res') && val.includes('stick')) {
+                        extractedValue = 'Pt.9 Res. Stick Frame';
+                    } else if (val.includes('pt.9') && val.includes('small') && val.includes('mass timber')) {
+                        extractedValue = 'Pt.9 Small Mass Timber';
+                    } else if (val.includes('pt.3') && val.includes('mass timber')) {
+                        extractedValue = 'Pt.3 Mass Timber';
+                    } else if (val.includes('pt.3') && val.includes('concrete')) {
+                        extractedValue = 'Pt.3 Concrete';
+                    } else if (val.includes('pt.3') && val.includes('steel')) {
+                        extractedValue = 'Pt.3 Steel';
+                    } else if (val.includes('pt.3') && val.includes('office')) {
+                        extractedValue = 'Pt.3 Office';
+                    } else if (val.includes('modelled') || val.includes('modeled')) { // Allow for spelling variation
+                        extractedValue = 'Modelled Value';
+                    }
+                    // Add more specific normalizations if needed based on common Excel inputs
+                }
+                // Normalize g_67 (Equipment Spec) from "Low Energy" to "Efficient"
+                if (fieldId === 'g_67' && typeof extractedValue === 'string' && extractedValue.trim().toLowerCase() === 'low energy') {
+                    extractedValue = 'Efficient';
                 }
                 // Normalize d_118 (HRV/ERV SRE %) value from Excel
                 if (fieldId === 'd_118') {

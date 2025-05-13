@@ -319,8 +319,9 @@
                     } else if (fieldDef.type === 'dropdown') {
                          // Basic validation: Check if value exists in options (case-sensitive)
                         const options = this.fieldManager.getDropdownOptions(fieldDef.dropdownId, { parentValue: null }); // Get base options
-                        const validValues = options.map(opt => typeof opt === 'object' ? opt.value : opt);
-                        if (!validValues.includes(value)) {
+                        const validValues = options.map(opt => typeof opt === 'object' ? String(opt.value) : String(opt)); // Ensure option values are strings
+                        // Convert the incoming value to a string for comparison
+                        if (!validValues.includes(String(value))) { 
                             isValid = false;
                             // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113') {
                             //     console.log(`[FileHandler DEBUG] fieldId=${fieldId} marked isValid=false because dropdown value not in options. Options:`, validValues, `Value: ${value}`);

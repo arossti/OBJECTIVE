@@ -233,15 +233,15 @@ window.TEUI.SectionModules.sect07 = (function() {
             label: "DHW Use (40% of W.1.0)",
             cells: {
                 c: { label: "DHW Use (40% of W.1.0)" },
-                d: {
-                    fieldId: "d_50",
+                d: { content: "" },
+                e: { 
+                    fieldId: "e_50",
                     type: "editable",
                     value: "10,000.00",
                     section: "waterUse",
                     classes: ["user-input", "editable"]
                 },
-                e: { content: "kWh/yr", classes: ["text-left"] },
-                f: { content: "IF By Engineer", classes: ["text-left"] },
+                f: { content: "kWh/yr (IF By Engineer)", classes: ["text-left"] },
                 h: {
                     fieldId: "h_50",
                     type: "calculated",
@@ -261,7 +261,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                     type: "calculated",
                     value: "38,484.43",
                     section: "waterUse",
-                    dependencies: ["i_50", "d_51", "d_52"]
+                    dependencies: ["i_50", "d_51", "d_52", "d_49", "e_50"]
                 },
                 m: { content: "✓", classes: ["checkmark"] },
                 n: {
@@ -616,7 +616,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         switch(method) {
             case "User Defined": litersPerPersonDay = userDefinedValue; break;
             case "By Engineer": 
-                const engineerValue = getNumericValue("d_50");
+                const engineerValue = getNumericValue("e_50");
                 const waterHeatFactor = 0.0524;
                 litersPerPersonDay = (occupants > 0 && waterHeatFactor > 0) ? (engineerValue / 365 / waterHeatFactor / occupants) / 0.4 : 0;
                 break;
@@ -637,7 +637,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         
         let hotWaterEnergyDemand = 0;
         if (method === "By Engineer") {
-            hotWaterEnergyDemand = getNumericValue("d_50");
+            hotWaterEnergyDemand = getNumericValue("e_50");
         } else {
             hotWaterEnergyDemand = hotWaterLitersPerDay * occupants * 0.0523 * 365;
         }
@@ -832,7 +832,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (!sectionElement) return;
 
         // Setup editable field handlers
-        const editableFieldIds = ['e_49', 'd_50', 'k_45', 'm_43', 'i_44', 'i_46']; 
+        const editableFieldIds = ['e_49', 'e_50', 'k_45', 'm_43', 'i_44', 'i_46'];
         editableFieldIds.forEach(fieldId => {
             const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
             if(field && field.classList.contains('editable')) {
@@ -910,7 +910,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (f49Cell) f49Cell.classList.toggle('disabled-input', !isUserDefined);
 
         const isByEngineer = waterMethod === "By Engineer";
-        setFieldGhosted('d_50', !isByEngineer);
+        setFieldGhosted('e_50', !isByEngineer);
         const e50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(5)');
         const f50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(6)');
         if (e50Cell) e50Cell.classList.toggle('disabled-input', !isByEngineer);
