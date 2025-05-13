@@ -24,7 +24,7 @@ TEUI.ReferenceToggle = (function() {
 
   function toggleReferenceView() {
     referenceMode = !referenceMode;
-    console.log(`Toggling reference mode: ${referenceMode ? 'ON' : 'OFF'}`); // Debug log
+    // console.log(`Toggling reference mode: ${referenceMode ? 'ON' : 'OFF'}`); // Debug log
 
     // Toggle body class for styling
     document.body.classList.toggle(BODY_CLASS, referenceMode);
@@ -45,7 +45,7 @@ TEUI.ReferenceToggle = (function() {
 
   // Calls the appropriate handler in each section module
   function refreshReferenceDisplay() {
-    console.log("ReferenceToggle: Refreshing display for all sections..."); // Debug
+    // console.log("ReferenceToggle: Refreshing display for all sections..."); // Debug
     // Check if TEUI and SectionModules exist
     if (!window.TEUI || !window.TEUI.SectionModules) {
         console.error("Cannot refresh reference display: TEUI.SectionModules not found.");

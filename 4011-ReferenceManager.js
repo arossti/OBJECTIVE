@@ -19,14 +19,14 @@ TEUI.ReferenceManager = (function() {
 
     // Listen for standard selection changes from Section 2 dropdown (d_13)
     TEUI.StateManager.addListener('d_13', function(newValue) {
-      console.log(`ReferenceManager: Standard changed to: ${newValue}`); // Debug log
+      // console.log(`ReferenceManager: Standard changed to: ${newValue}`); // Debug log
       currentStandard = newValue;
       // Trigger update in reference mode if it's active
       if (window.TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
         // Use a short delay to allow other listeners potentially related to d_13 to complete first
         setTimeout(() => {
             if (TEUI.ReferenceToggle.isReferenceMode()) { // Double-check mode hasn't changed
-                 console.log("ReferenceManager: Refreshing reference display due to standard change.");
+                 // console.log("ReferenceManager: Refreshing reference display due to standard change.");
                  TEUI.ReferenceToggle.refreshReferenceDisplay();
             }
         }, 50); 
@@ -43,7 +43,7 @@ TEUI.ReferenceManager = (function() {
             const d13Field = TEUI.FieldManager?.getField('d_13');
             currentStandard = d13Field?.defaultValue || null;
         }
-        console.log(`ReferenceManager: Initialized with standard: ${currentStandard}`); // Debug log
+        // console.log(`ReferenceManager: Initialized with standard: ${currentStandard}`); // Debug log
     }, 200); // Delay slightly after main init
   }
 
@@ -191,7 +191,7 @@ TEUI.ReferenceManager = (function() {
             const standardFields = TEUI.ReferenceValues?.getStandardFields(currentStandard);
             if (!standardFields) return;
 
-            console.warn(`Ref Handler (${sectionName}): Updating display for standard: ${currentStandard}`);
+            // console.warn(`Ref Handler (${sectionName}): Updating display for standard: ${currentStandard}`);
 
             Object.entries(standardFields).forEach(([fieldId, fieldData]) => {
                 if (fieldData.section !== sectionName || !fieldData.targetCell) return;
@@ -235,7 +235,7 @@ TEUI.ReferenceManager = (function() {
                         const currentRowNumber = parseInt(fieldData.targetCell.split('_')[1]);
                         const componentConf = componentConfig.find(conf => conf.row === currentRowNumber);
                         if (componentConf) {
-                            console.warn(`  -> Calling sectionRecalculateRow for row ${currentRowNumber} (using reference value via fieldId: ${fieldId}).`);
+                            // console.warn(`  -> Calling sectionRecalculateRow for row ${currentRowNumber} (using reference value via fieldId: ${fieldId}).`);
                             sectionRecalculateRow(currentRowNumber, componentConf, fieldId); // Pass original fieldId
                         }
                     }
@@ -247,14 +247,14 @@ TEUI.ReferenceManager = (function() {
                     }
                 }
             });
-            console.warn(`Ref Handler (${sectionName}): Finished updateReferenceDisplay.`);
+            // console.warn(`Ref Handler (${sectionName}): Finished updateReferenceDisplay.`);
         },
 
         restoreDisplay: function() {
             const sectionContainer = document.getElementById(sectionId);
             if (!sectionContainer) return;
 
-            console.warn(`Ref Handler (${sectionName}): Restoring design display`);
+            // console.warn(`Ref Handler (${sectionName}): Restoring design display`);
 
             const elements = sectionContainer.querySelectorAll('[data-original-value]');
             elements.forEach(element => {
@@ -276,7 +276,7 @@ TEUI.ReferenceManager = (function() {
 
             // Recalculate the entire section using its design values
             if (typeof sectionCalculateAll === 'function') {
-                console.warn(`Ref Handler (${sectionName}): Calling sectionCalculateAll to restore design state.`);
+                // console.warn(`Ref Handler (${sectionName}): Calling sectionCalculateAll to restore design state.`);
                 sectionCalculateAll();
             } else {
                  console.error(`Ref Handler (${sectionName}): sectionCalculateAll function is not valid!`);

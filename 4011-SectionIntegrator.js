@@ -407,7 +407,7 @@ TEUI.SectionIntegrator = (function() {
             });
         });
         
-        console.log(`Added TEUI listeners to ${actualEnergyInputs.length} actual energy inputs`);
+        // console.log(`Added TEUI listeners to ${actualEnergyInputs.length} actual energy inputs`);
         
         // Also listen for the target energy inputs
         const targetEnergyInputs = section04.querySelectorAll('input[data-contributes-to="j_32"]');
@@ -419,7 +419,7 @@ TEUI.SectionIntegrator = (function() {
             });
         });
         
-        console.log(`Added TEUI listeners to ${targetEnergyInputs.length} target energy inputs`);
+        // console.log(`Added TEUI listeners to ${targetEnergyInputs.length} target energy inputs`);
     }
     
     /**
@@ -443,7 +443,7 @@ TEUI.SectionIntegrator = (function() {
                 }
             });
             
-            console.log('Added TEUI listener to Section 2 dropdown');
+            // console.log('Added TEUI listener to Section 2 dropdown');
         }
     }
     

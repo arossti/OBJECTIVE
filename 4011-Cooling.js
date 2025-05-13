@@ -342,7 +342,7 @@ window.TEUI.CoolingCalculations = (function() {
         // Already initialized - avoid duplicate initialization
         if (state.initialized) return;
         
-        console.log('Initializing Cooling Calculations module');
+        // console.log('Initializing Cooling Calculations module'); // Commenting this out
         
         // Allow overriding default values with provided parameters
         Object.keys(params).forEach(key => {

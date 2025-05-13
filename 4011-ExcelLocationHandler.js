@@ -51,24 +51,26 @@ TEUI.ExcelLocationHandler = (function() {
         });
         
         // Add a check to verify DOM elements after a short delay
-        setTimeout(checkDOMReadiness, 1000);
+        // setTimeout(checkDOMReadiness, 1000); // Assuming this is a helper for dev, can be commented.
     }
 
     function checkDOMReadiness() {
-        console.log('Checking DOM readiness for location dropdowns...');
-        
-        const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
-        const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
-        
-        console.log(`Found ${provinceDropdowns.length} province dropdowns`);
-        console.log(`Found ${cityDropdowns.length} city dropdowns`);
-        
+        // // console.log('Checking DOM readiness for location dropdowns...');
+        const provinceDropdowns = document.querySelectorAll('select[data-dropdown-id="dd_d_19"]');
+        const cityDropdowns = document.querySelectorAll('select[data-dropdown-id="dd_h_19"]');
+
+        // // console.log(`Found ${provinceDropdowns.length} province dropdowns`);
+        // // console.log(`Found ${cityDropdowns.length} city dropdowns`);
+
         if (provinceDropdowns.length === 0) {
-            console.warn('WARNING: No province dropdowns found in DOM. Check if the climate section is properly rendered.');
+            // // console.warn('WARNING: No province dropdowns found in DOM. Check if the climate section is properly rendered.');
+            // if (domCheckAttempts < MAX_DOM_CHECK_ATTEMPTS) { // domCheckAttempts and MAX_DOM_CHECK_ATTEMPTS are not defined here
+            //     domCheckAttempts++;
+            // }
         }
-        
+
         if (cityDropdowns.length === 0) {
-            console.warn('WARNING: No city dropdowns found in DOM. Check if the climate section is properly rendered.');
+            // // console.warn('WARNING: No cityDropdowns found in DOM. Check if the climate section is properly rendered.');
         }
     }
 
@@ -90,7 +92,7 @@ TEUI.ExcelLocationHandler = (function() {
 
     // Display status message using the feedback area
     function showStatus(message, type) {
-        console.log(`[ExcelLocationHandler] ${message}`);
+        // console.log(`[ExcelLocationHandler] ${message}`); // Commenting this out to reduce console noise
         
         // Get the feedback area
         const feedbackArea = document.getElementById('feedback-area');
@@ -119,7 +121,7 @@ TEUI.ExcelLocationHandler = (function() {
     }
 
     function processLocationData(workbook) {
-        console.log('Processing location data from workbook...');
+        // // console.log('Processing location data from workbook...');
         showStatus('Processing location data...', 'info');
         
         if (!validateWorkbook(workbook)) {
@@ -139,7 +141,7 @@ TEUI.ExcelLocationHandler = (function() {
             };
         });
 
-        console.log('Location data processed successfully:', Object.keys(locationData));
+        // // console.log('Location data processed successfully:', Object.keys(locationData));
         printLocationDataSummary();
         showStatus('Location data processed successfully', 'success');
         return locationData;
@@ -164,7 +166,7 @@ TEUI.ExcelLocationHandler = (function() {
                 });
             }
         }
-        console.log(`Found ${cities.length} cities in range ${range.start}-${range.end}`);
+        // // console.log(`Found ${cities.length} cities in range ${range.start}-${range.end}`);
         return cities;
     }
 
@@ -230,18 +232,24 @@ TEUI.ExcelLocationHandler = (function() {
     }
 
     function updateProvinceDropdowns() {
-        const provinceDropdowns = document.querySelectorAll('[data-dropdown-id="dd_d_19"]');
-        console.log(`Found ${provinceDropdowns.length} province dropdowns with data-dropdown-id="dd_d_19"`);
-        
+        // // console.log('Updating province dropdowns...');
+        const provinceDropdowns = document.querySelectorAll('select[data-dropdown-id="dd_d_19"]');
+        // // console.log(`Found ${provinceDropdowns.length} province dropdowns with data-dropdown-id="dd_d_19"`);
+
+        if (provinceDropdowns.length === 0) {
+            // // console.warn('WARNING: No province dropdowns found in DOM. Check if the climate section is properly rendered.');
+        }
+
         if (locationData === null) {
             console.error('Location data is null when trying to update province dropdowns');
             showStatus('Error: No location data available', 'error');
             return;
         }
         
-        console.log('Available provinces:', Object.keys(locationData));
+        // // console.log('Available provinces:', Object.keys(locationData));
         
         provinceDropdowns.forEach(dropdown => {
+            if (dropdown.options.length > 1 && dropdown.options[1].value !== '') return; // Already populated
             // Clear existing options
             dropdown.innerHTML = '<option value="">Select Province</option>';
             
@@ -258,14 +266,19 @@ TEUI.ExcelLocationHandler = (function() {
                 updateCityDropdowns(this.value);
             };
         });
-        console.log('Province dropdowns updated');
+        // // console.log('Province dropdowns updated');
         showStatus('Province dropdowns updated successfully', 'info');
     }
 
     function updateCityDropdowns(provinceCode) {
-        const cityDropdowns = document.querySelectorAll('[data-dropdown-id="dd_h_19"]');
-        console.log(`Found ${cityDropdowns.length} city dropdowns with data-dropdown-id="dd_h_19"`);
-        
+        // // console.log(`Updating city dropdowns for province: ${provinceCode}`);
+        const cityDropdowns = document.querySelectorAll('select[data-dropdown-id="dd_h_19"]');
+        // // console.log(`Found ${cityDropdowns.length} city dropdowns with data-dropdown-id="dd_h_19"`);
+
+        if (cityDropdowns.length === 0) {
+            // // console.warn('WARNING: No cityDropdowns found in DOM. Check if the climate section is properly rendered.');
+        }
+
         if (locationData === null) {
             console.error('Location data is null when trying to update city dropdowns');
             showStatus('Error: No location data available', 'error');
@@ -285,10 +298,10 @@ TEUI.ExcelLocationHandler = (function() {
         }
         
         const cities = locationData[provinceCode].cities || [];
-        console.log(`Found ${cities.length} cities for province ${provinceCode}`);
+        // // console.log(`Found ${cities.length} cities for province ${provinceCode}`);
 
         cityDropdowns.forEach(dropdown => {
-            dropdown.innerHTML = '<option value="">Select City</option>';
+            dropdown.innerHTML = '<option value="">Select City</option>'; // Clear existing options
             cities.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city.name;
@@ -296,28 +309,28 @@ TEUI.ExcelLocationHandler = (function() {
                 dropdown.appendChild(option);
             });
         });
-        console.log(`City dropdowns updated with ${cities.length} cities`);
+        // // console.log(`City dropdowns updated with ${cities.length} cities`);
         showStatus(`${cities.length} cities loaded for ${locationData[provinceCode].name}`, 'info');
     }
 
     function printLocationDataSummary() {
         if (!locationData) {
-            console.log('No location data available to summarize');
+            // // console.log('No location data available to summarize');
             return;
         }
         
-        console.log('=== Location Data Summary ===');
-        Object.keys(locationData).forEach(province => {
-            const cityCount = locationData[province].cities.length;
-            console.log(`${province} (${locationData[province].name}): ${cityCount} cities`);
-            
-            // Log first city as a sample
-            if (cityCount > 0) {
-                const firstCity = locationData[province].cities[0];
-                console.log(`  Sample: ${firstCity.name} (HDD: ${firstCity.data.HDD18}, CDD: ${firstCity.data.CDD24})`);
+        // // console.log('=== Location Data Summary ===');
+        for (const province in locationData) {
+            if (locationData.hasOwnProperty(province)) {
+                const cityCount = locationData[province].cities.length;
+                // // console.log(`${province} (${locationData[province].name}): ${cityCount} cities`);
+                if (cityCount > 0) {
+                    const firstCity = locationData[province].cities[0];
+                    // // console.log(`  Sample: ${firstCity.name} (HDD: ${firstCity.data.HDD18}, CDD: ${firstCity.data.CDD24})`);
+                }
             }
-        });
-        console.log('======================');
+        }
+        // // console.log('======================');
     }
 
     // Initialize when document is ready
