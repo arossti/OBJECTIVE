@@ -1026,7 +1026,7 @@ TEUI.FieldManager = (function() {
          * @param {object} fieldDefFromCaller - The field definition object.
          */
         updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) { 
-            // /* KWW DEBUG ENTRY */ console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
+            // /* KWW DEBUG ENTRY */ // console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
             //     fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue, sectionId: fieldDefFromCaller.sectionId} : null
             // });
 
@@ -1110,7 +1110,7 @@ TEUI.FieldManager = (function() {
                                         formattedDisplay = window.TEUI.formatNumber(numericValue, 'number-2dp'); 
                                     }
                                 } else {
-                                    console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);
+                                    // console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);
                                     if (fieldDef.type === 'percentage') formattedDisplay = numericValue + '%'; // Basic fallback
                                 }
                                 displaySpan.textContent = formattedDisplay;
@@ -1119,10 +1119,10 @@ TEUI.FieldManager = (function() {
                             rangeInput.dispatchEvent(new Event('input', { bubbles: true }));
                             // console.log(`[FieldManager.updateFieldDisplay] Dispatched INPUT event for slider ${fieldId}`);
                         } else {
-                            console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for slider ${fieldId}`);
+                            // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for slider ${fieldId}`);
                         }
                     } else {
-                        console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for slider ${fieldId}. Initial textContent was: "${element.textContent}". Setting textContent as fallback.`);
+                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for slider ${fieldId}. Initial textContent was: "${element.textContent}". Setting textContent as fallback.`);
                         // Fallback if structure isn't as expected (e.g. if initializeSliders hasn't run or was cleared)
                         element.textContent = newValue; 
                     }
@@ -1141,10 +1141,10 @@ TEUI.FieldManager = (function() {
                             }
                             rangeInputCoeff.dispatchEvent(new Event('input', { bubbles: true }));
                         } else {
-                             console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for coefficient_slider ${fieldId}`);
+                             // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for coefficient_slider ${fieldId}`);
                         }
                     } else {
-                        console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for coefficient_slider ${fieldId}.`);
+                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for coefficient_slider ${fieldId}.`);
                         element.textContent = newValue; // Fallback
                     }
                     break;
@@ -1178,7 +1178,7 @@ TEUI.FieldManager = (function() {
                         // Dispatch a change event to trigger any dependent logic or UI updates
                         selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                     } else {
-                        console.warn(`[FieldManager.updateFieldDisplay] Could not find SELECT element for dropdown ${fieldId}`);
+                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find SELECT element for dropdown ${fieldId}`);
                     }
                     break;
                 case 'calculated':
@@ -1197,7 +1197,18 @@ TEUI.FieldManager = (function() {
             }
 
             if (fieldId === 'f_113' || fieldId === 'd_118' || fieldId === 'k_120') {
-                console.log(`[FieldManager DEBUG] For ${fieldId}, about to call window.TEUI.formatNumber. Is it available?`, typeof window.TEUI.formatNumber, window.TEUI);
+                let formattedValue;
+                const globalFormatNumber = window.TEUI?.formatNumber;
+                if (typeof globalFormatNumber === 'function') {
+                    // console.log(`[FieldManager DEBUG] For ${fieldId}, about to call window.TEUI.formatNumber. Is it available? - "${typeof globalFormatNumber}"`, globalFormatNumber);
+                    try {
+                        formattedValue = globalFormatNumber(numericValue, formatType, fieldDef.subType);
+                    } catch (e) {
+                        console.error(`[FieldManager DEBUG] Error formatting value for ${fieldId}:`, e);
+                    }
+                } else {
+                    console.warn(`[FieldManager DEBUG] window.TEUI.formatNumber not available for ${fieldId}.`);
+                }
             }
         }
     };
