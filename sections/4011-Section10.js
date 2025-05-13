@@ -92,71 +92,67 @@ window.TEUI.SectionModules.sect10 = (function() {
         }
     }
 
-    // Event handler for blur on editable fields
     function handleFieldBlur(event) {
-        const element = event.target;
-        const fieldId = element.dataset.fieldId;
-        const textContent = element.textContent.trim();
-        // console.log(`[S10 handleFieldBlur DEBUG] Entered for ${fieldId}. Initial textContent: "${textContent}"`);
+        const fieldElement = this;
+        const currentFieldId = fieldElement.getAttribute('data-field-id');
+        if (!currentFieldId) return;
 
-        // --- 1. Parsing --- 
-        let numericValue;
-        if (fieldId.startsWith('h_') || fieldId.startsWith('m_')) { // Percentage fields
-            numericValue = window.TEUI.parseNumeric(textContent, NaN);
-        } else {
-            numericValue = window.TEUI.parseNumeric(textContent, NaN);
+        if (currentFieldId === 'd_74') {
+            console.log(`[S10 handleFieldBlur DEBUG] Entered for d_74. Initial textContent: "${fieldElement.textContent}"`);
         }
 
-        let valueStr = textContent.replace(/,/g, '');
+        let valueStr = fieldElement.textContent.trim().replace(/,/g, '');
         let displayValue = '0.00';
         let rawValueToStore = '0';
 
-        if (!isNaN(numericValue)) { // Successfully parsed a number
+        let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+
+        if (!isNaN(numValue)) { // Successfully parsed a number
             // Store the raw number string *first* for all valid number cases
-            rawValueToStore = numericValue.toString(); 
+            rawValueToStore = numValue.toString(); 
 
             // Apply specific formatting based on field type
-            if (fieldId === 'd_97') { // Thermal Bridge Penalty (%)
+            if (currentFieldId === 'd_97') { // Thermal Bridge Penalty (%)
                 // Convert input number to decimal (assume input "20" means 20% -> 0.2)
-                let decimalValue = numericValue / 100;
+                let decimalValue = numValue / 100;
                 // Clamp the DECIMAL value between 0 and 1 
                 decimalValue = Math.max(0, Math.min(1, decimalValue));
                 rawValueToStore = decimalValue.toString(); // Overwrite with clamped decimal value for state
                 displayValue = formatNumber(decimalValue * 100, 'number'); // Display as number 0-100, not percentage string
-            } else if (fieldId.startsWith('g_')) { // U-Value (3 decimals)
-                displayValue = formatNumber(numericValue, 'W/m2'); // Use specific format
-                // rawValueToStore is already set to numericValue.toString()
+            } else if (currentFieldId.startsWith('g_')) { // U-Value (3 decimals)
+                displayValue = formatNumber(numValue, 'W/m2'); // Use specific format
+                // rawValueToStore is already set to numValue.toString()
             } else { // Default: Area (d_), RSI (f_) - 2 decimals
-                displayValue = formatNumber(numericValue, 'number'); 
-                // rawValueToStore is already set to numericValue.toString()
+                displayValue = formatNumber(numValue, 'number'); 
+                // rawValueToStore is already set to numValue.toString()
             }
         } else {
             // Handle invalid input (set to 0 or 0%)
-            if (fieldId === 'd_97') {
+            if (currentFieldId === 'd_97') {
                 displayValue = '0%';
                 rawValueToStore = '0'; // Store 0 for invalid TBP
-            } else if (fieldId.startsWith('g_')) {
+            } else if (currentFieldId.startsWith('g_')) {
                 displayValue = formatNumber(0, 'W/m2'); 
                 rawValueToStore = '0';
             } else {
                 displayValue = formatNumber(0, 'number');
                 rawValueToStore = '0';
             }
-            // console.warn(`Invalid input "${valueStr}" for ${fieldId}. Resetting to 0.`);
+            console.warn(`Invalid input "${valueStr}" for ${currentFieldId}. Resetting to 0.`);
         }
-        element.textContent = displayValue; // Update DOM display
+        fieldElement.textContent = displayValue; // Update DOM display
 
         // Store the validated, raw numeric string for user inputs
         if (window.TEUI?.StateManager?.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, rawValueToStore, 'user-modified'); 
-            // console.log(`handleFieldBlur: StateManager set ${fieldId} to ${rawValueToStore}`); // DEBUG LOG
+            window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified'); 
+            console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
         }
 
         // Trigger recalculation using the standardized calculateAll function
         if (typeof calculateAll === 'function') {
             calculateAll();
         } else {
-            // console.error('calculateAll function not found in Section 10');
+            console.error('calculateAll function not found in Section 10');
         }
     }
 
@@ -1191,7 +1187,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         // DEBUG: Log d_74 textContent at the end of S10 calculateAll
         const d74Element = document.getElementById('d_74');
         if (d74Element) {
-            // console.log(`[S10 calculateAll DEBUG END] d_74 textContent: "${d74Element.textContent}"`);
+            console.log(`[S10 calculateAll DEBUG END] d_74 textContent: "${d74Element.textContent}"`);
         }
     }
     

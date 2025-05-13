@@ -1025,37 +1025,23 @@ TEUI.FieldManager = (function() {
          * @param {string} newValue - The new value to display.
          * @param {object} fieldDefFromCaller - The field definition object.
          */
-        updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) { 
+        updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) {
             // /* KWW DEBUG ENTRY */ // console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
             //     fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue, sectionId: fieldDefFromCaller.sectionId} : null
             // });
 
-            // Attempt to get the element more reliably, preferring data-field-id, then direct id.
-            // Many interactive elements are nested and might not have the fieldId as their direct HTML id.
             let element = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (!element) {
-                element = document.getElementById(fieldId); // Fallback to direct ID if data-field-id not found
+                element = document.getElementById(fieldId);
             }
             
-            // Prioritize fieldDef passed from caller, then try to get it internally.
             const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
 
             if (!element) {
-                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log for critical test cases
-                //     console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Element for fieldId "${fieldId}" NOT FOUND.`);
-                // }
                 return;
             }
-            // Log the found element for critical fields
-            // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
-            //      console.log(`[FieldManager.updateFieldDisplay] Found element for ${fieldId}:`, element);
-            // }
 
             if (!fieldDef) {
-                // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') { // Log if critical fieldDef is missing
-                //     console.error(`[FieldManager.updateFieldDisplay] CRITICAL: Field definition for ${fieldId} is missing/null. Cannot determine type. Element:`, element);
-                // }
-                // Attempt generic update if no fieldDef but element exists (e.g. simple span)
                 if (element.tagName === 'SPAN' || element.tagName === 'DIV') {
                     element.textContent = newValue;
                 } else if (typeof element.value !== 'undefined') {
@@ -1064,25 +1050,14 @@ TEUI.FieldManager = (function() {
                 return;
             }
             
-            // Log the confirmed fieldDef.type for critical fields
-            // if (fieldId === 'd_74' || fieldId === 'g_89' || fieldId === 'd_113' || fieldId === 'e_74' || fieldId === 'f_74') {
-            //      console.log(`[FieldManager.updateFieldDisplay] Processing ${fieldId} with fieldDef.type = ${fieldDef.type}`);
-            // }
-
-            // Handle different field types
             switch (fieldDef.type) {
                 case 'editable':
                 case 'number': 
                     if (typeof element.value !== 'undefined') {
                         element.value = newValue;
-                        // console.log(`[FieldManager.updateFieldDisplay] Set INPUT value for ${fieldId} to: ${newValue}`, element); 
                     } else {
-                        // Fallback for elements that don't have a .value property but are editable (e.g. contenteditable divs/spans)
                         element.textContent = newValue;
-                        // console.log(`[FieldManager.updateFieldDisplay] Set TEXTCONTENT for ${fieldId} (type: ${fieldDef.type}) to: ${newValue}`, element); 
-                        // For contenteditable elements, dispatching 'blur' can help trigger validation/save logic
                         element.dispatchEvent(new Event('blur', { bubbles: true }));
-                        // console.log(`[FieldManager.updateFieldDisplay] Dispatched BLUR for ${fieldId}`);
                     }
                     break;
                 case 'year_slider': 
@@ -1111,32 +1086,28 @@ TEUI.FieldManager = (function() {
                                     }
                                 } else {
                                     // console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);
-                                    if (fieldDef.type === 'percentage') formattedDisplay = numericValue + '%'; // Basic fallback
+                                    if (fieldDef.type === 'percentage') formattedDisplay = numericValue + '%';
                                 }
                                 displaySpan.textContent = formattedDisplay;
-                                // console.log(`[FieldManager.updateFieldDisplay] SLIDER UI updated for ${fieldId}: range set to ${numericValue}, display to "${formattedDisplay}"`);
                             }
                             rangeInput.dispatchEvent(new Event('input', { bubbles: true }));
-                            // console.log(`[FieldManager.updateFieldDisplay] Dispatched INPUT event for slider ${fieldId}`);
                         } else {
                             // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for slider ${fieldId}`);
                         }
                     } else {
                         // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for slider ${fieldId}. Initial textContent was: "${element.textContent}". Setting textContent as fallback.`);
-                        // Fallback if structure isn't as expected (e.g. if initializeSliders hasn't run or was cleared)
                         element.textContent = newValue; 
                     }
                     break;
-                case 'coefficient_slider': // New type for SHGC-like sliders
+                case 'coefficient_slider':
                     const rangeInputCoeff = element.querySelector('input[type="range"]');
                     const displaySpanCoeff = element.querySelector('.slider-value');
 
                     if (rangeInputCoeff) {
                         const numericValueCoeff = window.TEUI.parseNumeric(newValue, NaN);
                         if (!isNaN(numericValueCoeff)) {
-                            rangeInputCoeff.value = numericValueCoeff; // e.g., sets slider to 0.6
+                            rangeInputCoeff.value = numericValueCoeff;
                             if (displaySpanCoeff) {
-                                // Directly format the decimal value, e.g., to "0.60"
                                 displaySpanCoeff.textContent = window.TEUI.formatNumber(numericValueCoeff, 'number-2dp'); 
                             }
                             rangeInputCoeff.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1145,16 +1116,12 @@ TEUI.FieldManager = (function() {
                         }
                     } else {
                         // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for coefficient_slider ${fieldId}.`);
-                        element.textContent = newValue; // Fallback
+                        element.textContent = newValue;
                     }
                     break;
                 case 'dropdown':
-                    // Ensure we target the actual <select> element
-                    const selectElement = element.tagName === 'SELECT' ? element : element.querySelector(`select[data-field-id='${fieldId}']`); // Template literal for querySelector
+                    const selectElement = element.tagName === 'SELECT' ? element : element.querySelector(`select[data-field-id='${fieldId}']`);
                     if (selectElement) {
-                        // selectElement.value = newValue; // Setting .value should ideally be enough, but browsers can be tricky with visual updates
-                        // console.log(`[FieldManager.updateFieldDisplay] Set SELECT value for ${fieldId} to: ${newValue}`, selectElement);
-
                         let optionFoundAndSelected = false;
                         for (let i = 0; i < selectElement.options.length; i++) {
                             if (selectElement.options[i].value === newValue) {
@@ -1164,18 +1131,7 @@ TEUI.FieldManager = (function() {
                                 selectElement.options[i].selected = false;
                             }
                         }
-
-                        // Fallback to setting .value directly if the option wasn't found OR as a belt-and-suspenders for visual update.
-                        // This ensures the select's internal value is correct even if no specific <option> tag matched.
                         selectElement.value = newValue;
-                        
-                        // if (optionFoundAndSelected) { // Keep this more general log for now
-                        //     console.log(`[FieldManager.updateFieldDisplay] Option for value "${newValue}" SELECTED for dropdown ${fieldId}.`);
-                        // } else {
-                        //     console.warn(`[FieldManager.updateFieldDisplay] Value "${newValue}" for dropdown ${fieldId} not explicitly found among its <option>s. Set .value directly.`);
-                        // }
-
-                        // Dispatch a change event to trigger any dependent logic or UI updates
                         selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                     } else {
                         // console.warn(`[FieldManager.updateFieldDisplay] Could not find SELECT element for dropdown ${fieldId}`);
@@ -1183,11 +1139,9 @@ TEUI.FieldManager = (function() {
                     break;
                 case 'calculated':
                 case 'derived':
-                    element.textContent = newValue; // These are usually display-only
+                    element.textContent = newValue;
                     break;
-                // TODO: Add specific handling for 'generic_slider' if its UI update needs are different
                 default:
-                    // console.warn(`[FieldManager.updateFieldDisplay] Unhandled field type: ${fieldDef.type} for field ${fieldId}. Attempting generic value set.`);
                     if (typeof element.value !== 'undefined') {
                         element.value = newValue;
                     } else {
@@ -1196,27 +1150,26 @@ TEUI.FieldManager = (function() {
                     break;
             }
 
+            // This is the block that had the conflict. 
+            // We want the structure from the ReferenceError fix (db31c57), 
+            // and the logging lines within it should remain commented (from b1c6c89's effect).
             if (fieldId === 'f_113' || fieldId === 'd_118' || fieldId === 'k_120') {
-                let formattedValue;
+                let formattedValue; // Variable for formattedValue, not used if logs are off
                 const globalFormatNumber = window.TEUI?.formatNumber;
-                // Ensure numericValue and formatType are available for this debug log, or use newValue directly.
-                // Let's parse newValue here for the purpose of this debug log.
-                const numericValueForDebug = window.TEUI.parseNumeric(newValue, NaN); // Parse newValue for this block
-                const formatTypeForDebug = 'number-2dp'; // Assuming a default format type for this debug log
+                
+                // Ensure numericValueForDebug and formatTypeForDebug are available for this block
+                const numericValueForDebug = window.TEUI.parseNumeric(newValue, NaN); 
+                const formatTypeForDebug = 'number-2dp'; // Assuming a default
 
                 if (typeof globalFormatNumber === 'function') {
                     // console.log(`[FieldManager DEBUG] For ${fieldId}, about to call window.TEUI.formatNumber. Is it available? - "${typeof globalFormatNumber}"`, globalFormatNumber);
                     try {
-                        // Use the locally parsed value and a defined format type for this debug log
                         formattedValue = globalFormatNumber(numericValueForDebug, formatTypeForDebug, fieldDef?.subType);
                     } catch (e) {
-                        // console.error previously caused the ReferenceError because numericValue wasn't in scope
-                        // Now numericValueForDebug should be in scope. The error being caught would be from globalFormatNumber itself.
-                        console.error(`[FieldManager DEBUG] Error calling globalFormatNumber for ${fieldId} (debug block):`, e);
+                        // console.error(`[FieldManager DEBUG] Error calling globalFormatNumber for ${fieldId} (debug block):`, e);
                     }
                 } else {
-                    // console.warn previously
-                    console.warn(`[FieldManager DEBUG] window.TEUI.formatNumber not available for ${fieldId} (debug block).`);
+                    // console.warn(`[FieldManager DEBUG] window.TEUI.formatNumber not available for ${fieldId} (debug block).`);
                 }
             }
         }

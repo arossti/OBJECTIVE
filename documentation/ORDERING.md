@@ -43,23 +43,3 @@ Reliance on `setTimeout` or arbitrary delays to manage calculation order is frag
     *   Replace these with proper dependency declarations, event-driven triggers via `StateManager`, or a strictly ordered calculation flow within a central orchestrator like `TEUI.Calculator.calculateAll()`.
 
 By adhering to these principles, we can build a more predictable and reliable calculation engine, ensuring that values are accurate and reflect the true state of dependencies at all times. 
-
-## Critical: Excel Import Data Mapping and DOM Field ID Alignment (Discovered 2024-08-XX)
-
-**Issue:** Console warnings during file import like "Skipping import for unknown fieldId: f_103" or "Skipping import for field d_103: Invalid value ... for type dropdown" indicate a misalignment between the Excel data mapping (`4011-ExcelMapper.js`) and the actual DOM field IDs or field types defined in section modules.
-
-**Example:** An import attempting to map to `f_103` (expecting a simple input) when the correct field is `g_103` (a dropdown) will fail or lead to incorrect data handling.
-
-**Impact:** This can cause:
-*   Incomplete data import.
-*   Default values being used instead of imported values.
-*   Downstream calculation errors due to missing or incorrect precedent data.
-*   Apparent discrepancies between Excel and application results that are due to mapping errors, not calculation logic errors.
-
-**Action Required (High Priority):**
-1.  **Thoroughly review `4011-ExcelMapper.js`** against the field definitions in all section modules (e.g., `sections/4011-SectionXX.js`) and the `3037DOM.csv` specification.
-2.  **Correct all identified misalignments** in `4011-ExcelMapper.js` to ensure it targets the correct DOM `data-field-id` for each piece of Excel data AND respects the field's type (input, dropdown, etc.).
-3.  Pay special attention to fields that have been moved or had their type changed during development (e.g., an input becoming a dropdown).
-4.  Test imports rigorously with multiple TEUIv3036/3037/3038 Excel files after corrections to ensure all relevant data is imported correctly and warnings are eliminated or understood.
-
-Addressing these mapping issues is crucial for data integrity and reliable calculation outcomes. It should be prioritized before or alongside further `setTimeout` refactoring, as unstable data inputs will make ordering fixes difficult to verify. 
