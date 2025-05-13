@@ -1199,15 +1199,24 @@ TEUI.FieldManager = (function() {
             if (fieldId === 'f_113' || fieldId === 'd_118' || fieldId === 'k_120') {
                 let formattedValue;
                 const globalFormatNumber = window.TEUI?.formatNumber;
+                // Ensure numericValue and formatType are available for this debug log, or use newValue directly.
+                // Let's parse newValue here for the purpose of this debug log.
+                const numericValueForDebug = window.TEUI.parseNumeric(newValue, NaN); // Parse newValue for this block
+                const formatTypeForDebug = 'number-2dp'; // Assuming a default format type for this debug log
+
                 if (typeof globalFormatNumber === 'function') {
                     // console.log(`[FieldManager DEBUG] For ${fieldId}, about to call window.TEUI.formatNumber. Is it available? - "${typeof globalFormatNumber}"`, globalFormatNumber);
                     try {
-                        formattedValue = globalFormatNumber(numericValue, formatType, fieldDef.subType);
+                        // Use the locally parsed value and a defined format type for this debug log
+                        formattedValue = globalFormatNumber(numericValueForDebug, formatTypeForDebug, fieldDef?.subType);
                     } catch (e) {
-                        console.error(`[FieldManager DEBUG] Error formatting value for ${fieldId}:`, e);
+                        // console.error previously caused the ReferenceError because numericValue wasn't in scope
+                        // Now numericValueForDebug should be in scope. The error being caught would be from globalFormatNumber itself.
+                        console.error(`[FieldManager DEBUG] Error calling globalFormatNumber for ${fieldId} (debug block):`, e);
                     }
                 } else {
-                    console.warn(`[FieldManager DEBUG] window.TEUI.formatNumber not available for ${fieldId}.`);
+                    // console.warn previously
+                    console.warn(`[FieldManager DEBUG] window.TEUI.formatNumber not available for ${fieldId} (debug block).`);
                 }
             }
         }
