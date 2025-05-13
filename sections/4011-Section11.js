@@ -779,9 +779,40 @@ window.TEUI.SectionModules.sect11 = (function() {
                         window.TEUI.StateManager.setValue('d_97', valueToStore, 'user-modified');
                     }
                     
-                    // Recalculate everything after slider moves
+                    // Recalculate everything after slider moves (input event)
                     calculateAll(); 
                 });
+
+                // Add a CHANGE event listener to trigger Section 12 update when user releases slider
+                d97Slider.addEventListener('change', function() {
+                    const percentageValue = parseFloat(this.value);
+                    if (isNaN(percentageValue)) return;
+                    const valueToStore = percentageValue.toString();
+
+                    // Ensure StateManager is updated with the final value
+                    if (window.TEUI && window.TEUI.StateManager) {
+                        window.TEUI.StateManager.setValue('d_97', valueToStore, 'user-modified');
+                    }
+                    
+                    // Section 11's own calculateAll() is typically called by the 'input' event listener for live updates within S11.
+                    // If final state consistency within S11 on 'change' is critical before S12 calc, uncomment next line.
+                    // calculateAll(); 
+
+                    // PRAGMATIC FIX (Aug 2024): Directly trigger Section 12 recalculation.
+                    // The standard StateManager listener chain for d_97 -> Section 12 was proving unreliable,
+                    // potentially due to complex initialization timing or listener management issues.
+                    // This direct call ensures that Section 12 (which calculates U-values g_101, g_102, d_104 
+                    // based on d_97) updates immediately after the user finalizes the d_97 slider change.
+                    // This is crucial for UI consistency as these U-values affect downstream calculations visible elsewhere.
+                    // This is a documented exception to the rule of avoiding direct cross-section calls, prioritized for functionality.
+                    if (window.TEUI && TEUI.SectionModules && TEUI.SectionModules.sect12 && TEUI.SectionModules.sect12.calculateAll) {
+                        // console.log("[S11 CHANGE] Explicitly calling Section 12 calculateAll() for d_97 update."); // Log was here
+                        TEUI.SectionModules.sect12.calculateAll();
+                    } else {
+                        console.warn("[S11 CHANGE] Could not find Section 12 calculateAll to trigger for d_97 update."); // Keep this warn for now
+                    }
+                });
+
                 d97Slider.hasSliderListener = true; // Mark as listener attached
             }
         } else {

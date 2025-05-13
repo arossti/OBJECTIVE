@@ -972,10 +972,22 @@ window.TEUI.SectionModules.sect12 = (function() {
              'h_21'  // Capacitance Setting (for k_104)
         ]; 
         externalDependencies.forEach(depId => {
-             window.TEUI.StateManager.addListener(depId, () => {
-                 calculateAll();
+             if (depId === 'd_97') {
+                 // console.log(`[S12 DEBUG] PRE-REGISTRATION for d_97. Will add specific callback for depId: ${depId}`); // REMOVE DEBUG LOG
+             }
+             window.TEUI.StateManager.addListener(depId, (newValue, oldValue, eventFieldId, state) => {
+                 // For d_97, this specific log should appear if this callback is hit
+                 // if (depId === 'd_97' && eventFieldId === 'd_97') {  // REMOVE DEBUG LOG BLOCK
+                 //     console.log(`***** S12 LISTENER FOR D97 EXECUTED! Value: ${newValue} *****`);
+                 // }
+                 
+                 if (eventFieldId === depId) { 
+                    calculateAll(); 
+                 }
              });
         });
+        s12ListenersAdded = true;
+        // console.log("[S12 DEBUG] StateManager listeners HAVE BEEN ADDED."); // REMOVE DEBUG LOG
     }
     
      function addCheckmarkStyles() {

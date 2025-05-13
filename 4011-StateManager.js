@@ -237,7 +237,6 @@ TEUI.StateManager = (function() {
                 state: state
             });
             
-            // Notify listeners of the new field
             notifyListeners(fieldId, value, null, state);
             return true;
         }
@@ -245,21 +244,17 @@ TEUI.StateManager = (function() {
         // Update the existing field
         const field = fields.get(fieldId);
         
-        // Skip update if value hasn't changed
         if (field.value === value && field.state === state) {
             return false;
         }
         
-        // Update the field
         field.value = value;
         field.state = state;
         
-        // Mark dependent fields as dirty (if not already calculated state)
         if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
             markDependentsDirty(fieldId);
         }
         
-        // Notify listeners of the change
         notifyListeners(fieldId, value, oldValue, state);
         
         return true;
@@ -369,11 +364,10 @@ TEUI.StateManager = (function() {
      * @param {string} state - Value state
      */
     function notifyListeners(fieldId, newValue, oldValue, state) {
+        // Original loop for other fieldIds
         if (!listeners.has(fieldId)) {
             return;
         }
-        
-        // Call each listener
         listeners.get(fieldId).forEach(callback => {
             try {
                 callback(newValue, oldValue, fieldId, state);

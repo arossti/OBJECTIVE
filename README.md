@@ -877,6 +877,19 @@ The modular architecture enables easier maintenance, extension, and validation w
 
 This section outlines planned improvements for the user experience of `contenteditable` numeric input fields across the application. The goal is to provide clearer feedback, consistent formatting, and more intuitive interaction, while leveraging existing tools like `window.TEUI.formatNumber` and `StateManager`.
 
+### TODO: Fix Thermal Bridge Penalty (d_97) Update Propagation to Section 12 (Post-Conference)
+
+**Issue (RESOLVED - 2025.05.13 (1.52am!) with Pragmatic Fix):** Changes to the Thermal Bridge Penalty % slider (`d_97` in Section 11) were not consistently triggering recalculations of dependent U-values (`g_101`, `g_102`) and the combined U-value (`d_104`) in Section 12. This broke functional parity with Excel. 
+
+**Resolution Detail:**
+*   **Initial Problem:** Debugging revealed that `StateManager` listener notifications from `d_97` (Section 11) to Section 12 were unreliable, likely due to complex initialization timing or listener management issues. Section 12's listener for `d_97` was often not invoked, or not present when initial default values were set.
+*   **Pragmatic Fix Implemented:** To ensure immediate functional parity and UI consistency (especially for dependent values visible in the sticky header like TEUI), a direct cross-section call was implemented. The `change` event listener for the `d_97` slider in `sections/4011-Section11.js` now explicitly calls `TEUI.SectionModules.sect12.calculateAll()` after updating `d_97` in the `StateManager`.
+*   **Architectural Note:** This is a documented exception to the general architectural principle of avoiding direct cross-module calls. It was prioritized for immediate functionality and to ensure correct calculation propagation for this critical parameter. The `input` event on the slider still handles live updates within Section 11 via its own `calculateAll()`.
+*   **Verification:** This fix has restored correct dynamic updates to Section 12 U-values when `d_97` is changed, matching Excel behavior. TEUI in S01 dynamically updates as well as S12, resulting in better visual and mental connection between TB% penalty, transmission (U-values) and broader impacts. 
+
+**Potential Future Refinement (Low Priority if current fix is stable):**
+*   Re-investigate the `StateManager` listener mechanism for `d_97` -> Section 12 to see if a pure event-driven approach can be reliably restored, potentially by addressing initialization order or ensuring unique listener registration more robustly.
+
 **Current Input Behavior Observations & Desired Enhancements:**
 
 1.  **Consistent Re-formatting on Blur/Enter:**
