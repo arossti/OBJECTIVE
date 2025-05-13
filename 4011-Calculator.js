@@ -522,26 +522,26 @@ TEUI.Calculator = (function() {
     // Add to the initialization section
     function initializeWeatherHandlers() {
         // console.log('Initializing weather handlers...');
-
+        
         // REMOVED: setTimeout(function() { ... }, 500);
         // Logic now runs directly as this function is called after teui-rendering-complete
 
-        // Listen for city selection changes
-        attachCityChangeListener();
-
-        // Listen for province selection changes
-        attachProvinceChangeListener();
-
-        // Listen for present/future toggle
-        attachPresentFutureToggleListener();
-
-        // Show full weather data modal
-        attachWeatherDataButtonListener();
-
-        // console.log('All weather handlers initialized');
-
-        // Mark as initialized to prevent duplicate initialization
-        document.weatherHandlersInitialized = true;
+            // Listen for city selection changes
+            attachCityChangeListener();
+            
+            // Listen for province selection changes
+            attachProvinceChangeListener();
+            
+            // Listen for present/future toggle
+            attachPresentFutureToggleListener();
+            
+            // Show full weather data modal
+            attachWeatherDataButtonListener();
+            
+            // console.log('All weather handlers initialized');
+            
+            // Mark as initialized to prevent duplicate initialization
+            document.weatherHandlersInitialized = true;
     }
 
     function attachCityChangeListener() {

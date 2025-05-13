@@ -842,13 +842,13 @@ window.TEUI.SectionModules.sect15 = (function() {
 
             const coolingType_d116 = sm.getValue('d_116'); // Get cooling type for d117 logic
 
-            // --- Perform Calculations --- 
+            // --- Perform Calculations ---
             let d117_actual_val = getNumericValue('d_117'); // Get the actual d_117 value
             let d117_effective = d117_actual_val;
             if (coolingType_d116 === 'No Cooling') {
                 d117_effective = 0; // Override d_117 if No Cooling selected
             }
-            
+
             // d_135: =M43+K51+H70+D117+I104+M121-I80 
             let teuTargetTotal = m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
             setCalculatedValue('d_135', teuTargetTotal);

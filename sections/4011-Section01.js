@@ -858,7 +858,7 @@ window.TEUI.SectionModules.sect01 = (function() {
              isInitialized = true;
         }
     }
-
+    
     // Return public API
     return {
         getFields: () => fields, // Provide field definitions

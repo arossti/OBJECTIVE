@@ -59,37 +59,49 @@
             const locationFileInput = document.getElementById('location-excel-input');
 
             if (selectExcelBtn && locationFileInput) {
-                // Remove existing listener before adding a new one to prevent duplicates
-                const newSelectExcelBtn = selectExcelBtn.cloneNode(true);
-                selectExcelBtn.parentNode.replaceChild(newSelectExcelBtn, selectExcelBtn);
-                
-                newSelectExcelBtn.addEventListener('click', () => {
-                    locationFileInput.value = null; // Reset file input
+                console.log('[SAFARI DEBUG] Setting up S03 Excel import buttons. selectExcelBtn and locationFileInput FOUND.'); // New Log A
+
+                // Simplify: Remove cloning for selectExcelBtn, just ensure one listener
+                const selectBtnClickHandler = () => {
+                    console.log('[SAFARI DEBUG] selectExcelBtn CLICKED.'); // New Log B
+                    if(locationFileInput) locationFileInput.value = null; 
                     locationFileInput.click(); 
-                });
+                };
+                selectExcelBtn.removeEventListener('click', selectBtnClickHandler); // Remove if any previous (less likely needed with IIFE)
+                selectExcelBtn.addEventListener('click', selectBtnClickHandler);
                 
-                // Also make the change listener idempotent (though less likely to be the issue here)
-                const newLocationFileInput = locationFileInput.cloneNode(true);
-                locationFileInput.parentNode.replaceChild(newLocationFileInput, locationFileInput);
-                
-                newLocationFileInput.addEventListener('change', async (event) => {
+                // Simplify: Attach listener directly to the original locationFileInput, ensure it's fresh
+                const locationChangeEventHandler = async (event) => {
+                    console.log('[SAFARI DEBUG] location-excel-input change event FIRED'); // Log 1
                     const file = event.target.files[0];
+                    console.log('[SAFARI DEBUG] Selected file:', file); // Log 2
+
                     if (file) {
+                        console.log('[SAFARI DEBUG] File object is present. Name:', file.name);
                         if (window.TEUI && window.TEUI.ExcelLocationHandler && typeof window.TEUI.ExcelLocationHandler.loadExcelFile === 'function') {
+                            console.log('[SAFARI DEBUG] ExcelLocationHandler.loadExcelFile IS available. Attempting to call...'); // Log 3
                             try {
                                 await window.TEUI.ExcelLocationHandler.loadExcelFile(file);
-                                // ExcelLocationHandler.loadExcelFile now handles its own status updates and dispatches 'location-data-ready'
+                                console.log('[SAFARI DEBUG] ExcelLocationHandler.loadExcelFile call COMPLETED (awaited).'); // Log 4
                             } catch (error) {
-                                console.error('[FileHandler] Error calling ExcelLocationHandler.loadExcelFile:', error);
-                                this.showStatus(`Error loading location file: ${error.message}`, 'error');
+                                console.error('[SAFARI DEBUG][FileHandler] Error calling ExcelLocationHandler.loadExcelFile:', error); // Log 5
+                                // Access showStatus via this.showStatus if FileHandler is correctly scoped or make showStatus a static/global helper
+                                if (this && this.showStatus) this.showStatus(`Error loading location file: ${error.message}`, 'error');
+                                else console.error(`Status Update Failed: Error loading location file: ${error.message}`);
                             }
                         } else {
-                            console.error('[FileHandler] ExcelLocationHandler.loadExcelFile is not available.');
-                            this.showStatus('Location handler module is not available.', 'error');
+                            console.error('[SAFARI DEBUG][FileHandler] ExcelLocationHandler.loadExcelFile is not available.'); // Log 6
+                            if (this && this.showStatus) this.showStatus('Location handler module is not available.', 'error');
+                            else console.error('Status Update Failed: Location handler module is not available.');
                         }
+                    } else {
+                        console.warn('[SAFARI DEBUG] No file object found in event.target.files.'); // Log 7
                     }
-                    event.target.value = null; // Reset this specific file input
-                });
+                };
+                // Remove any old listener from the original element before adding
+                locationFileInput.removeEventListener('change', locationChangeEventHandler); 
+                locationFileInput.addEventListener('change', locationChangeEventHandler);
+
             } else {
                 if (!selectExcelBtn) console.warn('[FileHandler] \'selectExcelBtn\' not found.');
                 if (!locationFileInput) console.warn('[FileHandler] \'location-excel-input\' not found.');
