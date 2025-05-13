@@ -828,6 +828,8 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
 
 # TODOs and Known Issues
 
+*   **Section 05 Checkmark Logic**: The pass/fail checkmarks in Section 05 (fields `n_39`, `n_40`, `n_41` in column M) need adjustment. Currently, they might not correctly reflect a "fail" (✗) status when their corresponding percentage values (in fields `l_39`, `l_40`, `l_41` in column L) exceed 100%. The logic should be updated so that any percentage value strictly greater than 100% (i.e., numeric value > 1.0) results in a fail (✗). This needs the simplest possible fix by adjusting the comparison in the checkmark update function.
+
 ### UI/UX Improvements Needed
 
 1. **Numeric Input Field Behavior**:
