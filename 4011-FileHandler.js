@@ -207,70 +207,72 @@
         }
 
         processImportedCSV(csvString) {
-            this.showStatus('Parsing CSV data...', 'info');
+            this.showStatus('Parsing standardized CSV data...', 'info');
             const importedData = {};
-            let skippedCount = 0;
+            let message = '';
 
             try {
-                const rows = csvString.split(/\r?\n/); // Split lines
-                if (rows.length < 2) throw new Error("CSV has no data rows.");
-
-                // Robust header processing
-                const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-                const fieldIdIndex = headers.indexOf('FieldID'); // Case-sensitive match to our export
-                const valueIndex = headers.indexOf('Value');     // Case-sensitive match to our export
-
-                if (fieldIdIndex === -1) {
-                    throw new Error("CSV header missing required column: 'FieldID'");
-                }
-                if (valueIndex === -1) {
-                    throw new Error("CSV header missing required column: 'Value'");
+                const rows = csvString.split(/\r?\n/).filter(row => row.trim() !== ''); // Split lines and remove empty ones
+                
+                if (rows.length !== 2) {
+                    throw new Error(`Expected 2 data rows (headers and values), but found ${rows.length}.`);
                 }
 
-                for (let i = 1; i < rows.length; i++) {
-                    if (!rows[i].trim()) continue; // Skip empty lines
-                    // Simple split, assumes no commas within quoted values for now
-                    // TODO: Implement a more robust CSV parser if needed
-                    const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, '')); 
+                const headerRow = rows[0];
+                const valueRow = rows[1];
 
-                    // Ensure row has enough columns before trying to access indices
-                    if (cols.length > Math.max(fieldIdIndex, valueIndex)) {
-                        const fieldId = cols[fieldIdIndex];
-                        const value = cols[valueIndex];
-
-                        // --- REINSTATE: Skip Section 03 Fields ---
-                        const fieldDefForSkipCheck = this.fieldManager?.getField(fieldId); // Use optional chaining
-                        if (fieldDefForSkipCheck && fieldDefForSkipCheck.sectionId === 'sect03') {
-                            // console.log(`[CSV Import] Skipping Section 03 field: ${fieldId} as per current strategy.`);
-                            skippedCount++;
-                            continue; // Move to the next row
-                        }
-                        // --- END REINSTATE ---
-
-                        // Only add if fieldId is not empty (skip placeholder rows)
-                        if (fieldId && value !== undefined) {
-                            importedData[fieldId] = value;
+                // Basic parsing for CSV row, handles quoted fields from our escapeCSV output
+                const parseCSVRow = (rowString) => {
+                    const values = [];
+                    let currentVal = '';
+                    let inQuotes = false;
+                    for (let i = 0; i < rowString.length; i++) {
+                        const char = rowString[i];
+                        if (char === '"') {
+                            if (inQuotes && i + 1 < rowString.length && rowString[i+1] === '"') {
+                                currentVal += '"'; // Escaped quote
+                                i++; // Skip next quote
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(currentVal.trim());
+                            currentVal = '';
                         } else {
-                            // Don't count placeholders as skipped, just ignore them for import
-                            // skippedCount++; 
+                            currentVal += char;
                         }
-                    } else {
-                        // This row doesn't have enough columns, likely malformed or placeholder
-                        console.warn(`Skipping malformed CSV row ${i + 1}: Not enough columns.`);
-                        skippedCount++;
+                    }
+                    values.push(currentVal.trim()); // Add the last value
+                    return values;
+                };
+
+                const fieldIds = parseCSVRow(headerRow);
+                const values = parseCSVRow(valueRow);
+
+                if (fieldIds.length !== values.length) {
+                    throw new Error(`Header count (${fieldIds.length}) does not match value count (${values.length}). CSV may be malformed.`);
+                }
+
+                for (let i = 0; i < fieldIds.length; i++) {
+                    const fieldId = fieldIds[i];
+                    const value = values[i];
+                    if (fieldId && value !== undefined) { // Ensure fieldId is not empty
+                        importedData[fieldId] = value;
                     }
                 }
 
                 if (Object.keys(importedData).length === 0) {
-                    this.showStatus('No valid data rows found in CSV.', 'warning');
+                    this.showStatus('No valid data found in standardized CSV.', 'warning');
                     return;
                 }
                 
-                 this.updateStateFromImportData(importedData, skippedCount);
+                message = `Standardized CSV parsed successfully. ${Object.keys(importedData).length} fields found.`;
+                this.showStatus(message, 'info');
+                this.updateStateFromImportData(importedData); // No skippedCount for this format
 
             } catch (error) {
-                console.error("Error parsing CSV:", error);
-                this.showStatus(`Error parsing CSV: ${error.message}`, 'error');
+                console.error("Error parsing standardized CSV:", error);
+                this.showStatus(`Error parsing standardized CSV: ${error.message}`, 'error');
             }
         }
         
@@ -379,108 +381,66 @@
                 this.showStatus('StateManager or FieldManager not available for export.', 'error');
                 return;
              }
-             this.showStatus('Generating CSV export...', 'info');
+             this.showStatus('Generating CSV export (standardized format)...', 'info');
 
              try {
-                // 1. Build a lookup map for layout details
-                const layoutLookup = {};
-                const sections = this.fieldManager.getSections(); // Get { uiSectionId: moduleSectionId }
-                Object.keys(sections).forEach(uiSectionId => {
-                    const layout = this.fieldManager.getLayoutForSection(uiSectionId);
-                    if (layout && layout.rows) {
-                        layout.rows.forEach(rowDef => {
-                            const excelRow = rowDef.id; // Assuming rowDef.id is the Excel row number
-                            let rowId = ''; // Column B
-                            let description = ''; // Column C
-
-                            rowDef.cells.forEach((cellDef, index) => {
-                                if (index === 1) { // Column B - RowID
-                                    rowId = cellDef.content || excelRow; // Use content if exists, else excelRow
-                                } else if (index === 2) { // Column C - Description
-                                    description = cellDef.label || cellDef.content || '';
-                                } else if (cellDef.fieldId) {
-                                    // Store layout info against fieldId
-                                    layoutLookup[cellDef.fieldId] = {
-                                        excelRow: excelRow,
-                                        rowId: rowId, // Use the ID found in col B
-                                        description: description, // Use the label found in col C
-                                        units: cellDef.units || '' // Get units if defined in cellDef
-                                    };
-                                }
-                            });
-                        });
-                    }
-                });
-                
-                // 2. Generate CSV rows for editable fields
-                const header = ["ExcelRow", "RowID", "Description", "FieldID", "Value", "Units"];
-                const rows = [header];
-                const allFields = this.fieldManager.getAllFields();
-                 // Filter for fields explicitly marked as editable OR belonging to Section 03 (Climate)
-                const fieldsToExportEntries = Object.entries(allFields).filter(([id, def]) => 
-                    (
-                        def.type === 'editable' || 
-                        def.type === 'dropdown' || 
-                        def.type === 'year_slider' || 
-                        def.type === 'percentage' || 
-                        def.type === 'coefficient' ||
-                        def.type === 'number'
-                    ) || (def.sectionId === 'sect03') // Include all fields from sect03
-                );
-
                 // Basic CSV escaping (handles commas, quotes, newlines)
                 const escapeCSV = (val) => {
                     // Ensure string conversion, handle null/undefined
                     let strVal = String(val ?? '');
                     
                     // Remove thousands separators (commas) from numeric values before export
-                    // This regex matches patterns that look like numbers with commas
                     if (/^-?[\d,]+\.?\d*$/.test(strVal)) {
                         strVal = strVal.replace(/,/g, '');
                     }
                     
-                    // Apply standard CSV escaping
                     if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
-                        // Escape quotes by doubling them and wrap in quotes
                         return `"${strVal.replace(/"/g, '""')}"`;
                     }
                     return strVal;
                 };
 
-                fieldsToExportEntries.forEach(([fieldId, fieldDef]) => {
-                    const layoutInfo = layoutLookup[fieldId] || {}; // Get layout details
-                    const currentValue = this.stateManager.getValue(fieldId) ?? fieldDef.defaultValue ?? '';
+                const allFields = this.fieldManager.getAllFields();
+                const userEditableFieldIds = [];
+                const userEditableFieldValues = [];
 
-                    rows.push([
-                        escapeCSV(layoutInfo.excelRow || ''), // Excel Row from layout
-                        escapeCSV(layoutInfo.rowId || ''),     // Row ID from layout (Col B)
-                        escapeCSV(layoutInfo.description || fieldDef.label || fieldId), // Description from layout (Col C) or fallback
-                        escapeCSV(fieldId),                  // Field ID (Col D)
-                        escapeCSV(currentValue),             // Current Value (Col E)
-                        escapeCSV(layoutInfo.units || '')      // Units from layout
-                    ]);
+                // Filter for fields explicitly marked as user-editable by type
+                // Order of fields will be based on their definition order in fieldManager.getAllFields()
+                Object.entries(allFields).forEach(([id, def]) => {
+                    if (
+                        def.type === 'editable' || 
+                        def.type === 'dropdown' || 
+                        def.type === 'year_slider' || 
+                        def.type === 'percentage' || 
+                        def.type === 'coefficient' ||
+                        def.type === 'number'
+                        // Add any other custom types considered user-editable here
+                    ) {
+                        userEditableFieldIds.push(id);
+                        const currentValue = this.stateManager.getValue(id) ?? def.defaultValue ?? '';
+                        userEditableFieldValues.push(escapeCSV(currentValue));
+                    }
                 });
                 
-                // Sort rows numerically by the ExcelRow (first column)
-                // Skip header row (index 0) for sorting
-                rows.slice(1).sort((a, b) => {
-                    const rowA = parseInt(a[0].replace(/"/g, ''), 10) || 0;
-                    const rowB = parseInt(b[0].replace(/"/g, ''), 10) || 0;
-                    return rowA - rowB;
-                });
+                if (userEditableFieldIds.length === 0) {
+                    this.showStatus('No user-editable fields found to export.', 'warning');
+                    return;
+                }
 
-                // Reconstruct CSV content with sorted rows (header + sorted data)
-                const csvContent = rows.map(row => row.join(',')).join('\n');
+                // Construct CSV content: Row 1 for fieldIds, Row 2 for values
+                const headerRow = userEditableFieldIds.join(',');
+                const dataRow = userEditableFieldValues.join(',');
+                const csvContent = headerRow + "\n" + dataRow;
                 
                 // Get project name for filename
                 const projectName = this.stateManager.getValue('h_14') || 'Project';
                 // Sanitize project name for filename
                 const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, '_');
-                const filename = `TEUIv4011-${safeProjectName}.csv`; // Constructs filename
+                const filename = `TEUIv4011-Standardized-${safeProjectName}.csv`; 
  
-                console.log(`[CSV Export] Generated filename: ${filename}`); // DEBUG LOG
+                console.log(`[CSV Export] Generated filename: ${filename}`);
                 
-                // 3. Trigger Download
+                // Trigger Download
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
@@ -491,11 +451,11 @@
                 link.click();
                 document.body.removeChild(link);
 
-                this.showStatus('CSV export complete.', 'success');
+                this.showStatus('Standardized CSV export complete.', 'success');
                 
             } catch (error) {
-                 console.error("Error generating CSV export:", error);
-                 this.showStatus(`Error during CSV export: ${error.message}`, 'error');
+                 console.error("Error generating standardized CSV export:", error);
+                 this.showStatus(`Error during standardized CSV export: ${error.message}`, 'error');
             }
         }
 
