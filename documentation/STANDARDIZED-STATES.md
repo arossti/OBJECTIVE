@@ -71,20 +71,19 @@ This workplan integrates with and expands upon the phases outlined in `future co
 
 *   **C1. Refine CSV Export Logic (`4011-FileHandler.js`):**
     *   **Goal:** Export ALL **user-editable fields** (standard inputs, `contenteditable` fields, sliders, dropdowns) into a CSV format that aligns with the Unified Data Structure. Purely calculated fields are excluded.
-    *   **Format:**
-        *   Row 1: Header row of `fieldId`s (for user-editable fields only).
-        *   Row 2: Corresponding raw string values.
+    *   **Format (2 rows total):**
+        *   Row 1 (Header Row): Comma-separated `fieldId`s of user-editable fields only.
+        *   Row 2 (Value Row): Corresponding raw string values for the `fieldId`s in Row 1.
     *   **Action:**
         *   Review `FieldManager.getAllFields()` or similar to get a comprehensive list of all fields, then filter this list to include **only user-editable field types**.
         *   Ensure `collectDataForExport()` in `FileHandler.js` gathers these user-editable `fieldId`s and their current values from `StateManager`.
         *   Ensure output values are raw, unformatted strings.
 *   **C2. Refine CSV Import Logic (`4011-FileHandler.js`):**
-    *   **Goal:** Import CSVs (formatted as per C1, containing only user-editable fields) and update `StateManager` using the `StateManager.setValues()` method.
+    *   **Goal:** Import CSVs (formatted as per C1, 2 rows: headers and values) and update `StateManager` using the `StateManager.setValues()` method.
     *   **Action:**
         *   Modify `handleExcelFile()` (or CSV specific part) in `FileHandler.js`.
-        *   Parse the imported CSV into the Unified Data Structure (`{fieldId: value, ...}`). This structure should inherently only contain user-editable fields if the CSV is correctly formatted.
-        *   Call `StateManager.setValues(parsedDataObject, 'imported')`.
-        *   Trigger UI updates for all imported **user-editable fields** using `TEUI.FieldManager.updateFieldDisplay(fieldId, value, fieldDef)` for each field in `parsedDataObject`. This aligns with `deepstate-structure.md`'s emphasis on using `updateFieldDisplay` for UI consistency and event dispatching.
+        *   The import parser should expect `fieldId`s on the 1st row and their values on the 2nd row.
+        *   Parse the imported CSV (rows 1 and 2) into the Unified Data Structure (`{fieldId: value, ...}`). This structure should inherently only contain user-editable fields if the CSV is correctly formatted.
 
 ### Phase D: "Notes" Section Integration for Data Pasting
 
@@ -228,7 +227,7 @@ The proposed structure for `TEUI.ReferenceValues` (Phase A2 of this document) an
 
 **2. Proposed Aligned CSV Export Format (from Phase C1):**
 
-To align these, the CSV export format should directly mirror the flat key-value structure of the JSON object. This is already specified in **Phase C1** of this workplan:
+To align these, the CSV export format should directly mirror the flat key-value structure of the JSON object. This is specified in **Phase C1** of this workplan:
 
 *   **Row 1 (Header):** A single row containing comma-separated `fieldId`s of **all user-editable fields** included in the export.
     ```csv
@@ -242,58 +241,10 @@ To align these, the CSV export format should directly mirror the flat key-value 
 **Benefits of this Alignment:**
 
 *   **Structural Equivalence:** The CSV becomes a direct, two-row representation of the unified JSON data structure.
-*   **Focus on User-Editable Fields:** Both formats exclusively handle user-editable fields, excluding calculated values, which is a core principle of this standardization.
-*   **Simplicity & Interchangeability:** This format is simple for users to understand and edit. It allows for easy conversion between CSV and the JSON format used by `StateManager` and `ReferenceValues.js`.
-*   **Import/Export Symmetry:** A CSV exported in this manner can be directly imported back into the application to set a specific state.
-
-**3. Exemplar Revised `ReferenceValues.js` Object:**
-
-The current `4011-ReferenceValues.js` uses `RowID`s (like "B.4", "M.1.0") as keys and stores the actual `fieldId` in a `targetCell` property. To align with the unified structure, each reference standard should become a direct mapping of `fieldId: value` for its user-editable fields.
-
-Here is a conceptual example of how the entry for **`"OBC SB12 3.1.1.2.C4"`** would be revised. This requires identifying which `targetCell` in the original structure corresponds to a user-editable field type and using that `targetCell` (which is the `fieldId`) as the key:
-
-```javascript
-// In TEUI.ReferenceValues, after restructuring:
-
-// ... other standards ...
-
-"OBC SB12 3.1.1.2.C4": {
-    // User-editable fields from Building Information (Section 02)
-    // "h_13": "OBC Prescriptive Path for HP", // Example: Service Life, or a field for the standard's name if user-editable
-    // Note: The original "S.1" for h_13 might be informational; actual climate settings would be user-editable fields like d_18, h_19, etc.
-
-    // User-editable fields from Transmission Losses (Section 11 - examples)
-    "f_85": "4.87",   // Roof RSI (assuming f_85 is user-editable RSI)
-    "f_86": "4.21",   // Walls Above Grade RSI
-    // ... other user-editable envelope RSI/U-values like f_87, g_88-g_93, f_94, f_95 ...
-    "d_97": "0.25",   // Thermal Bridge Penalty % (e.g., 25% stored as decimal 0.25)
-
-    // User-editable fields from Mechanical Loads (Section 13 - examples)
-    "f_113": "7.1",   // HSPF (Primary Heating System coefficient/value)
-    "j_115": "0.9",   // AFUE (Secondary Heating System coefficient/value, if applicable and user-editable)
-    "d_118": "0.55",  // HRV/ERV SRE % (Sensible Recovery Efficiency, e.g., 55% stored as 0.55)
-    "d_119": "12.5",  // Per Person Ventilation Rate (L/s per person)
-    "k_120": "0.45"   // Unoccupied Ventilation Setback % (e.g., 45% stored as 0.45 - maps to old h_120)
-
-    // ... any OTHER fieldId that is user-editable and defined by this standard would be listed here.
-    // Entries for calculated fields (like original T.1 (h_6), T.2 (h_8), T.4.0 (h_127)) would be REMOVED
-    // as these are derived from the user-editable inputs set above.
-},
-
-// ... other standards ...
-```
-
-**Key Transformation Steps for `ReferenceValues.js`:**
-
-1.  Iterate through each existing standard in `4011-ReferenceValues.js`.
-2.  For each field (e.g., `"B.4": { value: "4.87", targetCell: "f_85" }`):
-    *   Identify the `fieldId` (from `targetCell`).
-    *   Determine if this `fieldId` corresponds to a **user-editable field type** by checking its definition in the respective `sections/4011-SectionXX.js` module (e.g., types like `editable`, `dropdown`, `year_slider`, `percentage`, `coefficient`, `number`, or custom slider types are user-editable).
-    *   If it is user-editable, add `"fieldId": "value"` to the new object for the standard.
-    *   If it is a calculated field, it is **omitted** from the new structure.
-3.  The `value` should be the raw string representation expected by the input field or `StateManager`.
-
-This alignment ensures that data exported to CSV, data used for reference standards, and data imported into the application all share a common, simplified, and robust structure focused on user-editable inputs. 
+*   **Consistency:** Exported CSVs will now have the same flat, key-value structure as the proposed `TEUI.ReferenceValues` objects and the data format expected by `StateManager.setValues()` for imports.
+*   **Interoperability:** Users can export data, potentially edit it in a spreadsheet (respecting the simple two-row structure), and then re-import it seamlessly.
+*   **Simplified Parsing:** Importing these CSVs (as per Phase C2) becomes trivial, as the first row defines all `fieldId`s and the second provides all values.
+*   **Clarity:** The export focuses purely on the state data (user-editable field values), removing application-specific metadata like `ExcelRow` or `Description` from the exchanged file, making it cleaner for external use or modification.
 
 ## Appendix C: Updating `4011-FileHandler.js` for Standardized CSV Export
 
@@ -309,39 +260,30 @@ This alignment ensures that data exported to CSV, data used for reference standa
 **Key Modifications in `4011-FileHandler.js`:**
 
 1.  **Identifying User-Editable Fields for Export:**
-    *   The current `collectDataForExport()` method iterates through fields obtained from `this.fieldManager.getAllFields()` and applies a filter based on `type` or `sectionId`. This general approach is good, but the filter needs to be strictly aligned with the definition of **user-editable fields** as per this workplan.
-    *   **Action:**
-        *   Modify the filtering logic within `collectDataForExport()` (or a similar preparatory function).
-        *   The filter should include a field if its `type` is one of the defined user-editable types: `'editable'`, `'dropdown'`, `'year_slider'`, `'percentage'`, `'coefficient'`, `'number'`, and any custom types that represent direct user inputs (e.g., specific slider types if they are not already covered by `percentage` or `coefficient`).
-        *   **Crucially, purely calculated fields must be excluded.** The `sectionId === 'sect03'` condition should be re-evaluated: if these fields are not user-editable by their type, they should be excluded unless Section 03 contains a unique category of user-editable fields not covered by the standard types.
-        *   The result of this step should be an ordered list of `fieldId` strings for all user-editable fields.
+    *   The filter should include a field if its `type` is one of the defined user-editable types: `\'editable\'`, `\'dropdown\'`, `\'year_slider\'`, `\'percentage\'`, `\'coefficient\'`, `\'number\'`, and any custom types that represent direct user inputs (e.g., specific slider types if they are not already covered by `percentage` or `coefficient`).
+    *   **Crucially, purely calculated fields must be excluded.** The `sectionId === \'sect03\'` condition should be re-evaluated: if these fields are not user-editable by their type, they should be excluded unless Section 03 contains a unique category of user-editable fields not covered by the standard types.
+    *   The result of this step should be an ordered list of `fieldId` strings for all user-editable fields.
 
 2.  **Collecting Data for Export:**
     *   **Action:**
         *   Once the list of user-editable `fieldId`s is obtained:
-            *   Iterate through this list.
-            *   For each `fieldId`, retrieve its current value using `window.TEUI.StateManager.getValue(fieldId)`. This ensures the exported value reflects the true current state of the application, respecting user modifications, imported data, or defaults.
-            *   Ensure the retrieved values are raw string representations. No locale-specific formatting (e.g., commas as thousands separators) or unit suffixes should be included in the CSV data itself.
-        *   This will result in an ordered list of raw string values, corresponding to the ordered list of `fieldId`s.
+            *   Create two corresponding ordered lists: one for `fieldId`s and one for `values`.
+            *   Iterate through the primary list of user-editable fields.
+            *   For each, populate the `fieldId` string.
+            *   Retrieve its current value using `window.TEUI.StateManager.getValue(fieldId)`.
 
 3.  **Constructing the CSV String:**
     *   The current `exportToCSV()` method constructs a multi-line string where each field is a more complex row. This needs to be changed to the two-row format.
     *   **Action:**
-        *   Take the ordered list of user-editable `fieldId`s. Join them with a comma to form the header string: `const headerRow = fieldIds.join(',');`
-        *   Take the ordered list of corresponding raw string values. Join them with a comma to form the data string: `const dataRow = values.join(',');`
-        *   The final CSV content will be: `const csvContent = headerRow + "\n" + dataRow;`
+        *   Take the ordered list of user-editable `fieldId`s. Join them with a comma: `const fieldIdHeaderRow = fieldIds.join(',');`
+        *   Take the ordered list of corresponding raw string values. Join them with a comma: `const dataRow = values.join(',');`
+        *   The final CSV content will be: `const csvContent = fieldIdHeaderRow + "\n" + dataRow;`
 
 4.  **Updating `exportToCSV()`:**
     *   The main `exportToCSV()` function will orchestrate these steps:
         1.  Call the modified `collectDataForExport()` (or equivalent) to get the two ordered lists: `fieldId`s and their `values` (both for user-editable fields only).
         2.  Construct the two-row `csvContent` string as described above.
-        3.  The existing logic for creating the `Blob`, the download link, and triggering the download can then be used with this new `csvContent`.
-        4.  The filename should remain user-configurable or follow a consistent pattern (e.g., `TEUI_Export_YYYY-MM-DD.csv`).
-
-**Comparison to Current Logic:**
-
-*   The current logic builds an array of arrays/objects, where each inner element represents a row with columns like `Excel Row`, `Row ID`, `Description`, `Field ID`, `Value`, `Units`. It then converts this to a CSV.
-*   The new logic will be significantly simpler: it prepares one list of headers (user-editable `fieldId`s) and one list of data, then joins them into two lines.
+        *   The filename should remain user-configurable or follow a consistent pattern (e.g., `TEUI_Export_YYYY-MM-DD.csv`).
 
 **Benefits of these Changes:**
 
@@ -401,3 +343,7 @@ The proposed plan in `STANDARDIZED-STATES.md` is designed to be highly consisten
         *   **Simplified `FileHandler.js`:** The logic for CSV processing (both import and export) will be significantly less verbose due to the simpler data format.
 
 In summary, the proposed standardization plan aligns well with the existing architectural goals and is expected to lead to a more robust, simpler, and less verbose codebase for managing user-editable state, with neutral to potentially positive impacts on performance. 
+
+### Potential UI/UX Enhancements
+
+*   **Dependency Graph Labeling:** Investigate updating the node labels in the Dependency Graph (Section 17). Currently, labels like "Field Name (declared): DefaultValue" show the original default. Consider modifying `StateManager.exportDependencyGraph()` to make these labels reflect the *current* value post-calculation/import, e.g., "Field Name (declared): CurrentValue", for better visual consistency, without altering Section 17's rendering logic. 

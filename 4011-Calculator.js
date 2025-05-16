@@ -465,6 +465,8 @@ TEUI.Calculator = (function() {
             'sect04', // Actual/Target Energy (many inputs, but needs to calc before S05 consumes its outputs)
             'sect05', // Emissions (consumes S04 outputs)
             'sect15', // TEUI Summary (consumes S14, S04 and others)
+            'sect16', // Sankey Diagram (visualisation, should be late)
+            'sect17', // Dependency Graph (visualisation, should be late)
             'sect01'  // Key Values (consumes S15, S05)
         ];
 

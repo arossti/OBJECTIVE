@@ -1891,7 +1891,18 @@ window.TEUI.SectionModules.sect16 = (function() {
         }
     }
 
-    function calculateAll() {}
+    function calculateAll() {
+        // console.log("[sect16] calculateAll called. Attempting to refresh Sankey Diagram.");
+        if (typeof fetchDataAndRenderSankey === 'function') {
+            try {
+                fetchDataAndRenderSankey(false); // Pass false as it's a refresh, not initial load
+            } catch (error) {
+                console.error("[sect16] Error calling fetchDataAndRenderSankey:", error);
+            }
+        } else {
+            console.warn("[sect16] fetchDataAndRenderSankey function not found. Sankey diagram may be stale.");
+        }
+    }
 
     // --- Public API ---
     return { 
