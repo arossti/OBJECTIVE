@@ -2,9 +2,9 @@
 
 ## 1. Overview
 
-The goal is to integrate Reference Model capabilities into the TEUI Calculator, allowing users to compare their Design Model against selected building code minimums or standards (e.g., OBC SB10, NECB T1). Reference values are defined in `4011-ReferenceValues.js`.
+The goal is to integrate Reference Model capabilities into the TEUI Calculator, allowing users to compare their Design Model against selected building code minimums or standards (e.g., OBC SB10, NECB T1). Reference values are defined in `4011-ReferenceValues.js`. However, the ONLY cells that should map to the Reference values 'target cells' are the cells that are effectively equivalent to the User-modifiable or editable cells. In other words, the Reference Standards can be considered the same as a 'user-modified' scenario, but where the 'user's inputs' are a set of values that draw from the ReferenceValues.js tables.
 
-**Core Challenge Addressed:** Previous attempts (documented in earlier versions of this file and explored in the `DEEPSTATE`/`DEEPSTATE2` branches) faced significant difficulties in reliably updating the UI to display reference values and ensuring calculations used these values correctly. Direct DOM manipulation proved brittle and counter-architectural.
+**Core Challenge Addressed:** Previous attempts (documented in earlier versions of this file and explored in the `DEEPSTATE`/`DEEPSTATE2` branches) faced significant difficulties in reliably updating the UI to display reference values and ensuring calculations used these values correctly. Direct DOM manipulation proved brittle and counter-architectural. See `README.md` wrt Architecture and patterns.
 
 **Solution - Leveraging FileHandler Fixes:** The successful resolution of UI update bugs during the FileHandler implementation (CSV/Excel import) revealed the correct architectural pattern. The key is using `TEUI.FieldManager.updateFieldDisplay()` which handles both the visual update *and* dispatches the necessary events (`blur`, `change`, `input`) to trigger standard section logic.
 

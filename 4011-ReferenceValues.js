@@ -20,7 +20,7 @@ window.TEUI = window.TEUI || {};
 // Create reference values container
 TEUI.ReferenceValues = (function() {
     
-    // Main reference data object - POPULATED FROM CODE-VALUES.CSV
+    // Main reference data object - POPULATED FROM CODE-VALUES.CSV - ANDY TO MANUALLY CHECK PATTERN TO ENSURE DOM COMPLIANCE
     const referenceStandards = {
         "OBC SB12 3.1.1.2.C4": {
             "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
