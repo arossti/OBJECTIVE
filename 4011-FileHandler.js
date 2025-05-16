@@ -413,6 +413,7 @@
                         def.type === 'year_slider' || 
                         def.type === 'percentage' || 
                         def.type === 'coefficient' ||
+                        def.type === 'coefficient_slider' ||
                         def.type === 'number'
                         // Add any other custom types considered user-editable here
                     ) {
