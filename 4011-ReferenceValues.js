@@ -1,572 +1,925 @@
 /**
  * 4011-ReferenceValues.js
  * 
- * A structured representation of the reference values from 3037DEEPSTATE.csv
- * This file serves as a faster lookup resource for reference standards values
- * used in the TEUI 4.011 Calculator's reference model implementation.
+ * A structured representation of the reference values.
+ * Each standard is an object where keys are application fieldIds and 
+ * values are the strings defined by that standard for those user-editable fields.
+ * This data is primarily sourced from 'sources of truth 3037/CODE-VALUES.csv'.
  * 
- * Each standard is organized as a top-level key, containing field identifiers
- * with their respective values. The structure allows for efficient lookups:
- * 
- * referenceValues["OBC SB12 3.1.1.2.C4"]["B.4"] -> Would return the Roof RSI value
- * 
- * Each entry now includes a targetCell that maps to its DOM element ID for display
- * in the reference model.
+ * Note: Values for fieldId 'j_27' (Total Electricity Use from CODE-VALUES.csv T.3.1),
+ * which were previously formula-based, have been intentionally omitted from this structure.
+ * A revised calculation method for dependent cells (e.g., M10) no longer requires
+ * these complex lookups to be resolved here.
  */
 
-// Create TEUI namespace if it doesn't exist
 window.TEUI = window.TEUI || {};
 
-// Create reference values container
-TEUI.ReferenceValues = (function() {
-    
-    // Main reference data object - POPULATED FROM CODE-VALUES.CSV - ANDY TO MANUALLY CHECK PATTERN TO ENSURE DOM COMPLIANCE
-    const referenceStandards = {
-        "OBC SB12 3.1.1.2.C4": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "OBC Prescriptive Path for HP", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "26", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "276.50", targetCell: "j_27" }, // Note: Formula in CSV, using value example
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "-", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "275.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "110.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" }, // Note: Target cell is h_52, not d_52
-            "W.5.1": { section: "Water Use", value: "0.42", targetCell: "h_53" }, // Note: Target cell is h_53, not d_53
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "4.87", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "4.21", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "5.64", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.6", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.6", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.6", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.6", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.6", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.6", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "3.72", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "1.96", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.25", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "-", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.22", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "1.5", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" }, // Target HSPF
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" }, // Target AFUE
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" }, // Target CEER/COP
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" }, // Target Cooling kWh/m2
-            "V.1.1": { section: "Mechanical Loads", value: "0.55", targetCell: "d_118" }, // Target SRE
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" }, // Target Per Person Vent
-            "V.1.6": { section: "Mechanical Loads", value: "0.45", targetCell: "h_120" }, // Target Volumetric Vent
-            "T.4.0": { section: "TEDI & TELI", value: "50", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "OBC SB12 3.1.1.2.C1": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "OBC Prescriptive Path for Elect.", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "26", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "Not Found", targetCell: "j_27" }, // From CSV
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "-", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "Use Your Own Value", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "275.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "110.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0.42", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "4.87", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "4.46", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "5.25", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.4", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.4", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.4", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.4", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.4", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.4", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "3.72", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "1.96", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.25", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "-", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.22", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "1.5", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0.81", targetCell: "d_118" },
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "0.45", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "OBC SB12 3.1.1.2.A3": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "OBC Prescriptive Path for AFUE >92%", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "26", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "276.50", targetCell: "j_27" },
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "-", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "275.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "110.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.92", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0.42", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "4.87", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "3.77", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "5.64", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.4", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.4", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.4", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.4", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.4", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.4", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "3.72", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "1.96", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.3", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "-", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.22", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "1.5", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.92", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0.81", targetCell: "d_118" },
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "0.45", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "OBC SB10 5.5-6 Z6": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "OBC Prescriptive Path Part 3", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "26", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "276.50", targetCell: "j_27" },
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "-", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "275.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "110.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "7", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "5.3", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "4.1", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "6.6", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.99", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.42", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.42", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.42", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.42", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.42", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "1.8", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "3.5", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.3", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "-", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.4", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "2", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0.81", targetCell: "d_118" },
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "3.5", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "OBC SB10 5.5-6 Z5 (2010)": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "OBC Prescriptive Path Part 3", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "26", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "276.50", targetCell: "j_27" },
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "-", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "275.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "110.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "7", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "5.3", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "4.1", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "6.6", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.99", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "2.56", targetCell: "g_89" }, // Changed U-value
-            "B.8.2": { section: "Transmission Losses", value: "2.56", targetCell: "g_90" }, // Changed U-value
-            "B.8.3": { section: "Transmission Losses", value: "2.56", targetCell: "g_91" }, // Changed U-value
-            "B.8.4": { section: "Transmission Losses", value: "2.56", targetCell: "g_92" }, // Changed U-value
-            "B.8.5": { section: "Transmission Losses", value: "2.56", targetCell: "g_93" }, // Changed U-value
-            "B.9": { section: "Transmission Losses", value: "1.8", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "3.5", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.3", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "-", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.4", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "2", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0", targetCell: "d_118" }, // Changed SRE
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "3.5", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "ADD YOUR OWN HERE": {
-             "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "User Defined", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "26", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "276.50", targetCell: "j_27" },
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "30", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "275.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "110.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0.75", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "5.3", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "4.1", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "6.6", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.99", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.42", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.42", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.42", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.42", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.42", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "1.8", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "3.5", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.3", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "-", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.4", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "2", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0.81", targetCell: "d_118" },
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "3.5", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "NBC T1": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "NBC 9.36 Prescriptive Path", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "24", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "276.50", targetCell: "j_27" },
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "60", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "220.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "88.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "6.41", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "2.97", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "5.64", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.8", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.8", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.8", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.8", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.8", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.8", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "2.98", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "1.96", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.25", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "0.5", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.22", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "3.4", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "5", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "7.1", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0.6", targetCell: "d_118" },
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "0.45", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "NBC T2": { 
-            // ... Populate based on CSV ...
-        },
-        "NBC T3": {
-             // ... Populate based on CSV ...
-        },
-        "NBC T4": {
-             // ... Populate based on CSV ...
-        },
-        "NBC T5": {
-             // ... Populate based on CSV ...
-        },
-        "CaGBC ZCB": {
-             // ... Populate based on CSV ...
-        },
-        "NECB T1 (Z6)": {
-            "T.1": { section: "Key Values", value: "0", targetCell: "h_6" },
-            "T.2": { section: "Key Values", value: "15", targetCell: "h_8" },
-            "S.1": { section: "Building Information", value: "Replacing SB10", targetCell: "h_13" },
-            "L.3.1": { section: "Climate Calculations", value: "22", targetCell: "h_23" },
-            "L.3.2": { section: "Climate Calculations", value: "24", targetCell: "h_24" },
-            "T.3.1": { section: "Energy & Carbon", value: "172.81", targetCell: "j_27" },
-            "T.3.8": { section: "Energy & Carbon", value: "0", targetCell: "j_35" },
-            "E.1.2": { section: "CO2e Emissions", value: "60", targetCell: "h_38" },
-            "E.3.1": { section: "CO2e Emissions", value: "500", targetCell: "h_40" },
-            "W.1.0": { section: "Water Use", value: "220.00", targetCell: "h_49" },
-            "W.1.2": { section: "Water Use", value: "88.00", targetCell: "h_50" },
-            "W.4": { section: "Water Use", value: "0.9", targetCell: "h_52" },
-            "W.5.1": { section: "Water Use", value: "0", targetCell: "h_53" },
-            "A.2": { section: "Indoor Air Quality", value: "150", targetCell: "h_56" },
-            "A.3": { section: "Indoor Air Quality", value: "1000", targetCell: "h_57" },
-            "A.4": { section: "Indoor Air Quality", value: "150", targetCell: "h_58" },
-            "A.5": { section: "Indoor Air Quality", value: "30-50 ideal", targetCell: "h_59" },
-            "P.1": { section: "Occupant Internal Gains", value: "7", targetCell: "h_65" },
-            "P.2": { section: "Occupant Internal Gains", value: "2", targetCell: "h_66" },
-            "P.3.1": { section: "Occupant Internal Gains", value: "5", targetCell: "h_67" },
-            "B.4": { section: "Transmission Losses", value: "7.246", targetCell: "f_85" },
-            "B.5": { section: "Transmission Losses", value: "4.166", targetCell: "f_86" },
-            "B.6": { section: "Transmission Losses", value: "6.41", targetCell: "f_87" },
-            "B.7.0": { section: "Transmission Losses", value: "1.9", targetCell: "g_88" },
-            "B.8.1": { section: "Transmission Losses", value: "1.73", targetCell: "g_89" },
-            "B.8.2": { section: "Transmission Losses", value: "1.73", targetCell: "g_90" },
-            "B.8.3": { section: "Transmission Losses", value: "1.73", targetCell: "g_91" },
-            "B.8.4": { section: "Transmission Losses", value: "1.73", targetCell: "g_92" },
-            "B.8.5": { section: "Transmission Losses", value: "1.73", targetCell: "g_93" },
-            "B.9": { section: "Transmission Losses", value: "3.52", targetCell: "f_94" },
-            "B.10": { section: "Transmission Losses", value: "1.32", targetCell: "f_95" },
-            "B.12": { section: "Transmission Losses", value: "0.3", targetCell: "d_97" },
-            "T.4": { section: "Volume and Surface Metrics", value: "0.5", targetCell: "h_104" },
-            "B.15": { section: "Volume and Surface Metrics", value: "0.4", targetCell: "h_107" },
-            "B.18.1": { section: "Volume and Surface Metrics", value: "0.538", targetCell: "h_108" },
-            "B.18.2": { section: "Volume and Surface Metrics", value: "2.5", targetCell: "h_109" },
-            "B.18.4": { section: "Volume and Surface Metrics", value: "7", targetCell: "h_110" },
-            "M.1.0": { section: "Mechanical Loads", value: "6.4", targetCell: "f_113" },
-            "M.2.5": { section: "Mechanical Loads", value: "0.9", targetCell: "j_115" },
-            "M.3.0": { section: "Mechanical Loads", value: "3.3", targetCell: "j_116" },
-            "M.3.5": { section: "Mechanical Loads", value: "50", targetCell: "f_117" },
-            "V.1.1": { section: "Mechanical Loads", value: "0.65", targetCell: "d_118" },
-            "V.1.4": { section: "Mechanical Loads", value: "12.5", targetCell: "d_119" },
-            "V.1.6": { section: "Mechanical Loads", value: "3.5", targetCell: "h_120" },
-            "T.4.0": { section: "TEDI & TELI", value: "0", targetCell: "h_127" },
-            "T.6.8": { section: "TEUI Targeted", value: "50", targetCell: "h_140" }
-        },
-        "PH Classic": { 
-            // ... Populate based on CSV ...
-        },
-        "PH Plus": {
-            // ... Populate based on CSV ...
-        },
-        "PH Premium": {
-            // ... Populate based on CSV ...
-        },
-        "EnerPHit": {
-             // ... Populate based on CSV ...
-        },
-        "PH Low Energy": {
-             // ... Populate based on CSV ...
-        }
-    };
-    
-    /**
-     * Get a reference value
-     * @param {string} standard - The reference standard (e.g., "OBC SB12 3.1.1.2.C4")
-     * @param {string} fieldId - The field ID (e.g., "B.4")
-     * @returns {string|null} The reference value or null if not found
-     */
-    function getValue(standard, fieldId) {
-        if (!referenceStandards[standard] || !referenceStandards[standard][fieldId]) {
-            return null;
-        }
-        
-        return referenceStandards[standard][fieldId].value;
-    }
-    
-    /**
-     * Get the section for a field
-     * @param {string} standard - The reference standard (e.g., "OBC SB12 3.1.1.2.C4")
-     * @param {string} fieldId - The field ID (e.g., "B.4")
-     * @returns {string|null} The section name or null if not found
-     */
-    function getSection(standard, fieldId) {
-        if (!referenceStandards[standard] || !referenceStandards[standard][fieldId]) {
-            return null;
-        }
-        
-        return referenceStandards[standard][fieldId].section;
-    }
-    
-    /**
-     * Get the target DOM cell for a field
-     * @param {string} standard - The reference standard (e.g., "OBC SB12 3.1.1.2.C4")
-     * @param {string} fieldId - The field ID (e.g., "B.4")
-     * @returns {string|null} The target DOM cell ID or null if not found
-     */
-    function getTargetCell(standard, fieldId) {
-        if (!referenceStandards[standard] || !referenceStandards[standard][fieldId]) {
-            return null;
-        }
-        
-        return referenceStandards[standard][fieldId].targetCell;
-    }
-    
-    /**
-     * Get all fields for a standard
-     * @param {string} standard - The reference standard
-     * @returns {Object|null} Object with all fields for the standard or null if not found
-     */
-    function getStandardFields(standard) {
-        return referenceStandards[standard] || null;
-    }
-    
-    /**
-     * Get all available standards
-     * @returns {Array} Array of standard names
-     */
-    function getStandards() {
-        return Object.keys(referenceStandards);
-    }
-    
-    /**
-     * Get all fields for a specific section in a standard
-     * @param {string} standard - The reference standard
-     * @param {string} section - The section name
-     * @returns {Object} Object with fields in the specified section
-     */
-    function getSectionFields(standard, section) {
-        if (!referenceStandards[standard]) {
-            return {};
-        }
-        
-        const result = {};
-        
-        Object.entries(referenceStandards[standard]).forEach(([fieldId, data]) => {
-            if (data.section === section) {
-                result[fieldId] = {
-                    value: data.value,
-                    targetCell: data.targetCell
-                };
-            }
-        });
-        
-        return result;
-    }
-    
-    /**
-     * Get fields that apply to a specific DOM target cell
-     * @param {string} standard - The reference standard
-     * @param {string} targetCell - The DOM target cell ID (e.g., "h_49")
-     * @returns {Object|null} Object with field info or null if not found
-     */
-    function getFieldByTargetCell(standard, targetCell) {
-        if (!referenceStandards[standard]) {
-            return null;
-        }
-        
-        for (const [fieldId, data] of Object.entries(referenceStandards[standard])) {
-            if (data.targetCell === targetCell) {
-                return {
-                    fieldId,
-                    section: data.section,
-                    value: data.value
-                };
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Check if a reference value exists
-     * @param {string} standard - The reference standard
-     * @param {string} fieldId - The field ID
-     * @returns {boolean} True if the value exists
-     */
-    function hasValue(standard, fieldId) {
-        return !!(referenceStandards[standard] && referenceStandards[standard][fieldId]);
-    }
-    
-    // Public API
-    return {
-        getValue,
-        getSection,
-        getTargetCell,
-        getStandardFields,
-        getStandards,
-        getSectionFields,
-        getFieldByTargetCell,
-        hasValue,
-        // Expose the raw data for debugging or direct access
-        _data: referenceStandards
-    };
-})(); 
+TEUI.ReferenceValues = {
+  "OBC SB12 3.1.1.2.C4": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "OBC Prescriptive Path for HP",
+    "h_23": "22",
+    "h_24": "26",
+    "j_35": "0",
+    "h_38": "-",
+    "h_40": "500",
+    "h_49": "275.00",
+    "h_50": "110.00",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "4.21",
+    "f_87": "5.64",
+    "g_88": "1.6",
+    "g_89": "1.6",
+    "g_90": "1.6",
+    "g_91": "1.6",
+    "g_92": "1.6",
+    "g_93": "1.6",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "-",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "1.5",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.55",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "50",
+    "h_140": "50"
+  },
+  "OBC SB12 3.1.1.2.C1": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "OBC Prescriptive Path for Elect.",
+    "h_23": "22",
+    "h_24": "26",
+    "j_35": "0",
+    "h_38": "-",
+    "h_40": "Use Your Own Value",
+    "h_49": "275.00",
+    "h_50": "110.00",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "4.46",
+    "f_87": "5.25",
+    "g_88": "1.4",
+    "g_89": "1.4",
+    "g_90": "1.4",
+    "g_91": "1.4",
+    "g_92": "1.4",
+    "g_93": "1.4",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "-",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "1.5",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.81",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "OBC SB12 3.1.1.2.A3": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "OBC Prescriptive Path for AFUE >92%",
+    "h_23": "22",
+    "h_24": "26",
+    "j_35": "0",
+    "h_38": "-",
+    "h_40": "500",
+    "h_49": "275.00",
+    "h_50": "110.00",
+    "h_52": "0.92",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "3.77",
+    "f_87": "5.64",
+    "g_88": "1.4",
+    "g_89": "1.4",
+    "g_90": "1.4",
+    "g_91": "1.4",
+    "g_92": "1.4",
+    "g_93": "1.4",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.3",
+    "h_104": "-",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "1.5",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.92",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.81",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "OBC SB10 5.5-6 Z6": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "OBC Prescriptive Path Part 3",
+    "h_23": "22",
+    "h_24": "26",
+    "j_35": "0",
+    "h_38": "-",
+    "h_40": "500",
+    "h_49": "275.00",
+    "h_50": "110.00",
+    "h_52": "0.9",
+    "h_53": "0",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "7",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "5.3",
+    "f_86": "4.1",
+    "f_87": "6.6",
+    "g_88": "1.99",
+    "g_89": "1.42",
+    "g_90": "1.42",
+    "g_91": "1.42",
+    "g_92": "1.42",
+    "g_93": "1.42",
+    "f_94": "1.8",
+    "f_95": "3.5",
+    "d_97": "0.3",
+    "h_104": "-",
+    "h_107": "0.4",
+    "h_108": "0.538",
+    "h_109": "2",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.81",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "OBC SB10 5.5-6 Z5 (2010)": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "OBC Prescriptive Path Part 3",
+    "h_23": "22",
+    "h_24": "26",
+    "j_35": "0",
+    "h_38": "-",
+    "h_40": "500",
+    "h_49": "275.00",
+    "h_50": "110.00",
+    "h_52": "0.9",
+    "h_53": "0",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "7",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "5.3",
+    "f_86": "4.1",
+    "f_87": "6.6",
+    "g_88": "1.99",
+    "g_89": "2.56",
+    "g_90": "2.56",
+    "g_91": "2.56",
+    "g_92": "2.56",
+    "g_93": "2.56",
+    "f_94": "1.8",
+    "f_95": "3.5",
+    "d_97": "0.3",
+    "h_104": "-",
+    "h_107": "0.4",
+    "h_108": "0.538",
+    "h_109": "2",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "ADD YOUR OWN HERE": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "User Defined",
+    "h_23": "22",
+    "h_24": "26",
+    "j_35": "0",
+    "h_38": "30",
+    "h_40": "500",
+    "h_49": "275.00",
+    "h_50": "110.00",
+    "h_52": "0.9",
+    "h_53": "0.75",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "5.3",
+    "f_86": "4.1",
+    "f_87": "6.6",
+    "g_88": "1.99",
+    "g_89": "1.42",
+    "g_90": "1.42",
+    "g_91": "1.42",
+    "g_92": "1.42",
+    "g_93": "1.42",
+    "f_94": "1.8",
+    "f_95": "3.5",
+    "d_97": "0.3",
+    "h_104": "-",
+    "h_107": "0.4",
+    "h_108": "0.538",
+    "h_109": "2",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.81",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "NBC T1": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "NBC 9.36 Prescriptive Path",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "6.41",
+    "f_86": "2.97",
+    "f_87": "5.64",
+    "g_88": "1.8",
+    "g_89": "1.8",
+    "g_90": "1.8",
+    "g_91": "1.8",
+    "g_92": "1.8",
+    "g_93": "1.8",
+    "f_94": "2.98",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "0.5",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "3.4",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.6",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "NBC T2": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "10% Better",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "6.41",
+    "f_86": "4.29",
+    "f_87": "5.64",
+    "g_88": "1.2",
+    "g_89": "1.2",
+    "g_90": "1.2",
+    "g_91": "1.2",
+    "g_92": "1.2",
+    "g_93": "1.2",
+    "f_94": "2.98",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "0.5",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "1.5",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.6",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "NBC T3": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "20% Better",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "6.41",
+    "f_86": "2.97",
+    "f_87": "5.64",
+    "g_88": "1.8",
+    "g_89": "1.8",
+    "g_90": "1.8",
+    "g_91": "1.8",
+    "g_92": "1.8",
+    "g_93": "1.8",
+    "f_94": "2.98",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "0.5",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "3.4",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.6",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "NBC T4": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "40% Better",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "6.41",
+    "f_86": "2.97",
+    "f_87": "5.64",
+    "g_88": "1.8",
+    "g_89": "1.8",
+    "g_90": "1.8",
+    "g_91": "1.8",
+    "g_92": "1.8",
+    "g_93": "1.8",
+    "f_94": "2.98",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "0.5",
+    "h_107": "0.22",
+    "h_108": "0.538",
+    "h_109": "3.4",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.6",
+    "d_119": "12.5",
+    "h_120": "0.45",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "NBC T5": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "70% Better",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "6.41",
+    "f_86": "2.97",
+    "f_87": "5.64",
+    "g_88": "1.8",
+    "g_89": "1.8",
+    "g_90": "1.8",
+    "g_91": "1.8",
+    "g_92": "1.8",
+    "g_93": "1.8",
+    "f_94": "2.98",
+    "f_95": "1.96",
+    "d_97": "0.25",
+    "h_104": "0.5",
+    "h_107": "0.4",
+    "h_108": "0.538",
+    "h_109": "2.5",
+    "h_110": "7",
+    "f_113": "6.4",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.65",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "CaGBC ZCB": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "Replacing SB10",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "7",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "7.246",
+    "f_86": "4.166",
+    "f_87": "6.41",
+    "g_88": "1.9",
+    "g_89": "1.73",
+    "g_90": "1.73",
+    "g_91": "1.73",
+    "g_92": "1.73",
+    "g_93": "1.73",
+    "f_94": "3.52",
+    "f_95": "1.32",
+    "d_97": "0.3",
+    "h_104": "0.3",
+    "h_107": "0.4",
+    "h_108": "0.538",
+    "h_109": "2.5",
+    "h_110": "7",
+    "f_113": "6.4",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.65",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "32",
+    "h_140": "50"
+  },
+  "NECB T1 (Z6)": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "Replacing SB10",
+    "h_23": "22",
+    "h_24": "24",
+    "j_35": "0",
+    "h_38": "60",
+    "h_40": "500",
+    "h_49": "220.00",
+    "h_50": "88.00",
+    "h_52": "0.9",
+    "h_53": "0",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "7",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "7.246",
+    "f_86": "4.166",
+    "f_87": "6.41",
+    "g_88": "1.9",
+    "g_89": "1.73",
+    "g_90": "1.73",
+    "g_91": "1.73",
+    "g_92": "1.73",
+    "g_93": "1.73",
+    "f_94": "3.52",
+    "f_95": "1.32",
+    "d_97": "0.3",
+    "h_104": "0.5",
+    "h_107": "0.4",
+    "h_108": "0.538",
+    "h_109": "2.5",
+    "h_110": "7",
+    "f_113": "6.4",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "50",
+    "d_118": "0.65",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "0",
+    "h_140": "50"
+  },
+  "PH Classic": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "90% less than NBC",
+    "h_23": "18",
+    "h_24": "26",
+    "j_35": "60",
+    "h_38": "150",
+    "h_40": "500",
+    "h_49": "62.5",
+    "h_50": "25",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "2.1",
+    "h_66": "1.1",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "4.21",
+    "f_87": "5.64",
+    "g_88": "1.6",
+    "g_89": "1.6",
+    "g_90": "1.6",
+    "g_91": "1.6",
+    "g_92": "1.6",
+    "g_93": "1.6",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.15",
+    "h_104": "0.15",
+    "h_107": "0.22",
+    "h_108": "0.17",
+    "h_109": "0.6",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "10",
+    "d_118": "0.75",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "15",
+    "h_140": "10"
+  },
+  "PH Plus": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "90% less than NBC",
+    "h_23": "18",
+    "h_24": "26",
+    "j_35": "45",
+    "h_38": "150",
+    "h_40": "500",
+    "h_49": "62.5",
+    "h_50": "25",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "2.1",
+    "h_66": "1.1",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "4.21",
+    "f_87": "5.64",
+    "g_88": "1.6",
+    "g_89": "1.6",
+    "g_90": "1.6",
+    "g_91": "1.6",
+    "g_92": "1.6",
+    "g_93": "1.6",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.15",
+    "h_104": "0.15",
+    "h_107": "0.22",
+    "h_108": "0.17",
+    "h_109": "0.6",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "10",
+    "d_118": "0.75",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "15",
+    "h_140": "10"
+  },
+  "PH Premium": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "90% less than NBC",
+    "h_23": "18",
+    "h_24": "26",
+    "j_35": "30",
+    "h_38": "150",
+    "h_40": "500",
+    "h_49": "62.5",
+    "h_50": "25",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "2.1",
+    "h_66": "1.1",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "4.21",
+    "f_87": "5.64",
+    "g_88": "1.6",
+    "g_89": "1.6",
+    "g_90": "1.6",
+    "g_91": "1.6",
+    "g_92": "1.6",
+    "g_93": "1.6",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.15",
+    "h_104": "0.15",
+    "h_107": "0.22",
+    "h_108": "0.17",
+    "h_109": "0.6",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "10",
+    "d_118": "0.75",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "15",
+    "h_140": "10"
+  },
+  "EnerPHit": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "PH Renovations",
+    "h_23": "18",
+    "h_24": "26",
+    "j_35": "60",
+    "h_38": "150",
+    "h_40": "500",
+    "h_49": "62.5",
+    "h_50": "25",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "6.67",
+    "f_86": "6.67",
+    "f_87": "6.67",
+    "g_88": "0.85",
+    "g_89": "0.85",
+    "g_90": "0.85",
+    "g_91": "0.85",
+    "g_92": "0.85",
+    "g_93": "0.85",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.15",
+    "h_104": "0.15",
+    "h_107": "0.22",
+    "h_108": "0.28",
+    "h_109": "1",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "10",
+    "d_118": "0.75",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "15",
+    "h_140": "25"
+  },
+  "PH Low Energy": {
+    "h_6": "0",
+    "h_8": "15",
+    "h_13": "80% less than NBC",
+    "h_23": "18",
+    "h_24": "26",
+    "j_35": "75",
+    "h_38": "150",
+    "h_40": "500",
+    "h_49": "62.5",
+    "h_50": "25",
+    "h_52": "0.9",
+    "h_53": "0.42",
+    "h_56": "150",
+    "h_57": "1000",
+    "h_58": "150",
+    "h_59": "30-50 ideal",
+    "h_65": "5",
+    "h_66": "2",
+    "h_67": "5",
+    "f_85": "4.87",
+    "f_86": "4.21",
+    "f_87": "5.64",
+    "g_88": "1.6",
+    "g_89": "1.6",
+    "g_90": "1.6",
+    "g_91": "1.6",
+    "g_92": "1.6",
+    "g_93": "1.6",
+    "f_94": "3.72",
+    "f_95": "1.96",
+    "d_97": "0.15",
+    "h_104": "0.15",
+    "h_107": "0.22",
+    "h_108": "0.28",
+    "h_109": "1",
+    "h_110": "5",
+    "f_113": "7.1",
+    "j_115": "0.9",
+    "j_116": "3.3",
+    "f_117": "10",
+    "d_118": "0.75",
+    "d_119": "12.5",
+    "h_120": "3.5",
+    "h_127": "15",
+    "h_140": "30"
+  }
+};
+
+// Public API (original getter functions are no longer needed with the new simple structure)
+// However, keeping a way to get all standard names or a specific standard's data
+// might be useful for populating dropdowns or for StateManager.
+
+function getStandardData(standardName) {
+  return TEUI.ReferenceValues[standardName] || null;
+}
+
+function getAllStandardNames() {
+  return Object.keys(TEUI.ReferenceValues);
+}
+
+// Expose the new simplified accessors and the raw data for TEUI.ReferenceToggle or other modules.
+// The old, more complex getter functions (getValue, getSection, getTargetCell, etc.) are
+// deprecated by this new structure because one can directly access:
+// TEUI.ReferenceValues["STANDARD_NAME"]["application_field_id"]
+// However, TEUI.ReferenceToggle might still use getStandardFields and getStandards.
+
+const _data = TEUI.ReferenceValues; // Keep direct access for modules that might need it.
+
+function getStandardFields(standardName) { // Wrapper for backward compatibility if needed
+    return _data[standardName] || null;
+}
+
+function getStandards() { // Wrapper for backward compatibility
+    return Object.keys(_data);
+}
+
+
+// Functions like getFieldByTargetCell, getSectionFields, hasValue are no longer
+// directly applicable or as useful due to the structural change.
+// StateManager will directly use the new structure.
+
+export { _data as referenceStandardsData, getStandardData, getAllStandardNames, getStandardFields, getStandards };
+
+// The following is the original IIFE structure's return object.
+// We will replace it with the export statement above for modern JS module compatibility
+// if the build system supports it. Otherwise, we would re-attach to window.TEUI.
+/*
+return {
+    getValue, // Deprecated by new structure
+    getSection, // Deprecated by new structure
+    getTargetCell, // Deprecated by new structure
+    getStandardFields, // Retained via wrapper for now
+    getStandards, // Retained via wrapper for now
+    getSectionFields, // Deprecated
+    getFieldByTargetCell, // Deprecated
+    hasValue, // Deprecated
+    _data: referenceStandards // Retained
+};
+*/
+// For now, to ensure no immediate breakage if other parts of the app use the old IIFE style:
+window.TEUI.ReferenceValues = {
+    getStandardFields: getStandardFields,
+    getStandards: getStandards,
+    _data: _data,
+    // Adding new simpler accessors:
+    getStandardData: getStandardData,
+    getAllStandardNames: getAllStandardNames
+};
