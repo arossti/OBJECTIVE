@@ -2,7 +2,8 @@
 
 ## 1. Overview
 
-The goal is to integrate Reference Model capabilities into the TEUI Calculator, allowing users to compare their Design Model against selected building code minimums or standards (e.g., OBC SB10, NECB T1). Reference values are defined in `4011-ReferenceValues.js`. However, the ONLY cells that should map to the Reference values 'target cells' are the cells that are effectively equivalent to the User-modifiable or editable cells. In other words, the Reference Standards can be considered the same as a 'user-modified' scenario, but where the 'user's inputs' are a set of values that draw from the ReferenceValues.js tables.
+The goal is to integrate Reference Model capabilities into the TEUI Calculator, allowing users to compare their Design Model against selected building code minimums or standards (e.g., OBC SB10, NECB T1).
+**Key Refinement (aligning with `STANDARDIZED-STATES.md`):** `4011-ReferenceValues.js` will be restructured. Instead of its current complex format, each standard within `TEUI.ReferenceValues` will directly provide a simple JSON object: `{ "user_editable_fieldId": "value", ... }`. This object will *only* contain `fieldId:value` pairs for fields that are user-editable in the application. This change makes a "reference standard dataset" structurally identical to a "user-modified dataset" or an "imported dataset" as defined in `STANDARDIZED-STATES.md`, streamlining how `StateManager` handles different data sources.
 
 **Core Challenge Addressed:** Previous attempts (documented in earlier versions of this file and explored in the `DEEPSTATE`/`DEEPSTATE2` branches) faced significant difficulties in reliably updating the UI to display reference values and ensuring calculations used these values correctly. Direct DOM manipulation proved brittle and counter-architectural. See `README.md` wrt Architecture and patterns.
 
@@ -12,11 +13,13 @@ The goal is to integrate Reference Model capabilities into the TEUI Calculator, 
 
 The **only viable path** aligns with the core application architecture:
 
-1.  **`StateManager` as Source of Truth:** `StateManager` will hold the active reference standard's values, likely in a separate internal state or by using a specific `state` flag for reference values.
-2.  **Mode-Aware `StateManager.getValue`:** This function will be modified to check if Reference Mode is active (`TEUI.ReferenceToggle.isReferenceMode()`). If so, it returns the corresponding reference value from its internal state. Otherwise, it follows the standard priority (user-modified, imported, default).
-3.  **Reference Data Loading:** A function (e.g., `StateManager.loadReferenceData(standardName)`) will load values from `4011-ReferenceValues.js` into the StateManager's reference state. This is triggered on app load and when the reference standard (`d_13`) changes.
-4.  **UI Updates via `FieldManager`:** When Reference Mode is activated or the standard changes, the controlling logic (likely in `ReferenceToggle.js` or triggered by the `d_13` listener) will iterate through the relevant `targetCell` IDs for the selected standard. For each, it will:
-    *   Update the `StateManager` with the reference value.
+1.  **`StateManager` as Source of Truth:** `StateManager` will hold the active reference standard's values. This will be stored as a simple `{ "user_editable_fieldId": "value", ... }` object (the Unified Data Structure from `STANDARDIZED-STATES.md`), likely in a dedicated internal property (e.g., `this.activeReferenceDataSet`).
+2.  **Mode-Aware `StateManager.getValue`:** This function will be modified to check if Reference Mode is active (`TEUI.ReferenceToggle.isReferenceMode()`). If so, and if the requested `fieldId` (which must be a user-editable type to have a reference override) exists as a key in `this.activeReferenceDataSet`, it returns the corresponding reference value. Otherwise, it follows the standard priority (user-modified, imported, default for that user-editable field).
+3.  **Reference Data Loading:** A function (e.g., `StateManager.loadReferenceData(standardName)`) will load the `{ "user_editable_fieldId": "value", ... }` object for the given `standardName` directly from the *refactored* `4011-ReferenceValues.js`. This is triggered on app load (if a default standard is set) and when the reference standard selection (`d_13`) changes.
+4.  **UI Updates via `FieldManager`:** When Reference Mode is activated or the standard changes (`d_13` listener), the controlling logic (likely in `ReferenceToggle.js`) will:
+    *   Ensure `StateManager.loadReferenceData()` has populated `this.activeReferenceDataSet`.
+    *   Iterate through the `fieldId`s (which are the keys) of the `this.activeReferenceDataSet` object.
+    *   For each `fieldId`, retrieve its `referenceValue` from `this.activeReferenceDataSet`.
     *   Call `TEUI.FieldManager.updateFieldDisplay(fieldId, referenceValue, fieldDef)`.
 5.  **Automatic Calculation & Display:** Because `FieldManager.updateFieldDisplay` dispatches the correct events, and section calculation logic uses `getNumericValue` (which wraps the mode-aware `StateManager.getValue`), the existing calculation engine and display logic will automatically use and reflect the reference values without needing separate code paths within section modules.
 6.  **UI Locking/Styling:** `ReferenceToggle.js` will toggle a body class (`reference-mode`). CSS rules targeting this class (see `future code/reference-model-styles.css`) will handle the visual distinction and locking of input fields.
@@ -35,11 +38,13 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
 **Phase 1: StateManager Structure & Data Loading**
 *   **Goal:** Implement the storage and loading of reference values within `StateManager` without affecting Design Mode.
     *   **Actions:**
-    *   Modify `StateManager` to include internal storage for reference values (e.g., `referenceValuesState`).
-    *   Implement `loadReferenceData(standard)` function in `StateManager` to populate this state from `TEUI.ReferenceValues`.
-    *   Trigger `loadReferenceData` on init and on `d_13` change.
-    *   Add logging to verify correct loading.
-*   **Testing:** Verify Design Mode remains unaffected. Confirm `referenceValuesState` populates correctly via console logs.
+    *   Modify `StateManager` to include an internal property (e.g., `this.activeReferenceDataSet`) to store the `{ "user_editable_fieldId": "value", ... }` object for the currently selected reference standard.
+    *   Implement `loadReferenceData(standardName)` function in `StateManager`. This function will:
+        *   Fetch the data object for `standardName` from the *refactored* `TEUI.ReferenceValues` (which will be in the `{ "user_editable_fieldId": "value", ... }` format).
+        *   Store this object in `this.activeReferenceDataSet`.
+    *   Trigger `loadReferenceData` on init (if `d_13` has an initial value) and on `d_13` change.
+    *   Add logging to verify correct loading into `this.activeReferenceDataSet`.
+*   **Testing:** Verify Design Mode remains unaffected. Confirm `this.activeReferenceDataSet` populates correctly (with only user-editable `fieldId`s and their values) via console logs when `d_13` changes.
 
 **Phase 2: Mode-Aware `StateManager.getValue`**
 *   **Goal:** Enable `StateManager.getValue` to return reference values when Reference Mode is active.
@@ -51,8 +56,11 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
 **Phase 3: UI Update Triggering & Styling/Locking**
 *   **Goal:** Correctly trigger UI updates via `FieldManager` and apply visual locking/styling.
     *   **Actions:**
-    *   Modify `ReferenceToggle.js`: When entering Reference Mode or when `d_13` changes *while in Reference Mode*, iterate through the `targetCell` fields for the selected standard.
-    *   For each `targetCell`: Call `TEUI.FieldManager.updateFieldDisplay(fieldId, referenceValue, fieldDef)`. *(Note: `StateManager` should already contain the value from Phase 1)*.
+    *   Modify `ReferenceToggle.js`: When entering Reference Mode or when `d_13` changes *while in Reference Mode*:
+        1.  Ensure `StateManager.loadReferenceData()` has been called and `StateManager.activeReferenceDataSet` is populated for the current `d_13` value.
+        2.  Iterate through the `fieldId`s (which are the keys) of the `StateManager.activeReferenceDataSet` object.
+        3.  For each `fieldId`, get its `referenceValue` from `StateManager.activeReferenceDataSet`.
+        4.  Call `TEUI.FieldManager.updateFieldDisplay(fieldId, referenceValue, fieldDef)`.
     *   Ensure `ReferenceToggle.js` correctly adds/removes the `reference-mode` body class.
     *   Verify CSS in `reference-model-styles.css` correctly targets `.reference-mode` and applies locking/styling (e.g., making `.user-input` elements non-editable and styled differently).
     *   **Remove Legacy Code:** Identify and remove any direct DOM manipulation related to reference values found in section modules (e.g., Section 11).
@@ -75,8 +83,9 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
 ## 4. Required Components & Data
 
 *   **`4011-ReferenceValues.js`:** Static data source.
-*   **`4011-StateManager.js`:** Core state management, reference value storage, mode-aware `getValue`.
-*   **`4011-ReferenceToggle.js`:** UI switch, triggers updates via `FieldManager`.
+    *   **Crucial Note:** This file will be refactored as per `STANDARDIZED-STATES.md` (Phase A2). Each standard will become a direct JSON object of `{ "user_editable_fieldId": "value", ... }`. The current nested structure with `section` and `targetCell` properties *within* `ReferenceValues.js` will be eliminated.
+*   **`4011-StateManager.js`:** Core state management, storage of the active reference standard's `{fieldId:value}` dataset, mode-aware `getValue`.
+*   **`4011-ReferenceToggle.js`:** UI switch, orchestrates loading of reference data via `StateManager` and triggers UI updates via `FieldManager` by iterating over the keys of the loaded reference dataset.
 *   **`4011-FieldManager.js`:** Handles UI updates and event dispatching via `updateFieldDisplay`.
 *   **`4011-styles.css` / `future code/reference-model-styles.css`:** Styling for Reference Mode.
 *   **Section Modules (`sections/4011-SectionXX.js`):** Need standardized helpers (Phase 0) and removal of legacy DOM code (Phase 3). Calculation logic remains largely unchanged.
@@ -142,3 +151,11 @@ This plan prioritizes integrating the Reference Model cleanly, leveraging the no
     *   `d_140` (GHGI Target kgCO2e/m2) -> `C.1` (Similar to TEDI target)
 
 *(Mapping updated based on review, but requires final verification against `4011-ReferenceValues.js` keys and UI element IDs)*
+
+**Note on Section 5 - "Reference Value Targets by Section":**
+The planned refactoring of `4011-ReferenceValues.js` (to use direct application `fieldId`s as keys, e.g., `"f_85": "value"`) will simplify this section significantly. The current mapping from internal standard IDs (like "B.4") to application `fieldId`s (like `f_85`) will become obsolete.
+Post-refactor, this section should be revised to:
+1.  Remove the outdated mapping columns.
+2.  List the application `fieldId`s that are typically part of reference standards.
+3.  Provide guidance on how to determine which user-editable `fieldId`s a specific standard in the refactored `TEUI.ReferenceValues` will affect (i.e., by inspecting the keys of the standard's data object).
+The concept of `targetCell` as a property *within* `TEUI.ReferenceValues` will no longer exist; the application `fieldId` *is* the target.

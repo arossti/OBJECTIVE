@@ -70,20 +70,43 @@ This workplan integrates with and expands upon the phases outlined in `future co
 ### Phase C: CSV Export/Import Standardization
 
 *   **C1. Refine CSV Export Logic (`4011-FileHandler.js`):**
-    *   **Goal:** Export ALL **user-editable fields** (standard inputs, `contenteditable` fields, sliders, dropdowns) into a CSV format that aligns with the Unified Data Structure. Purely calculated fields are excluded.
-    *   **Format (2 rows total):**
-        *   Row 1 (Header Row): Comma-separated `fieldId`s of user-editable fields only.
-        *   Row 2 (Value Row): Corresponding raw string values for the `fieldId`s in Row 1.
-    *   **Action:**
-        *   Review `FieldManager.getAllFields()` or similar to get a comprehensive list of all fields, then filter this list to include **only user-editable field types**.
-        *   Ensure `collectDataForExport()` in `FileHandler.js` gathers these user-editable `fieldId`s and their current values from `StateManager`.
-        *   Ensure output values are raw, unformatted strings.
+    *   **Initial 2-Row Format (Completed 2025-05-16):** The system now successfully exports and imports a 2-row CSV representing the current application state for all user-editable fields.
+    *   **Enhanced 3-Row Format (Planned):**
+        *   **Goal:** To export a 3-row CSV. The first row contains all user-editable `fieldId`s. The second row contains their current application state values. The third row contains the name of the active reference standard (from `d_13`) in its first cell, followed by the values that this standard defines for the corresponding `fieldId`s in the header row.
+        *   **Format (3 rows total):**
+            *   **Row 1 (Header Row - User-Editable Field IDs):** Comma-separated `fieldId`s of ALL user-editable fields defined in the application (e.g., from `FieldManager.getAllFields()` filtered by user-editable types, including `d_13`). This order must be consistent.
+                *   Example: `d_27,h_15,g_118,d_18,f_85,d_13,...`
+            *   **Row 2 (Current Application State Values):** Corresponding raw string values for the `fieldId`s in Row 1, reflecting the current application's state. The value for `d_13` will be the key of the active reference standard.
+                *   Example: `1500.75,1000,Constant,Toronto,7.5,OBC_SB10_2017_ClimateZone5,...`
+            *   **Row 3 (Active Reference Standard Values):**
+                *   Cell 1: The key/name of the active reference standard (from `d_13`).
+                *   Subsequent Cells: For each `fieldId` in Row 1 (starting from the first `fieldId`), list the corresponding value as defined by the active reference standard (sourced from the restructured `TEUI.ReferenceValues`). If a `fieldId` is not defined by the active standard, its cell in this row will be empty.
+                *   Example (if Row 1 starts `d_27,h_15,g_118,d_18,f_85,d_13` and `d_13` is `OBC_SB10_2017_ClimateZone5`):
+                    `OBC_SB10_2017_ClimateZone5,,,,Toronto,10.5,OBC_SB10_2017_CZ5_Ref_Value_for_h_13,...`
+                    *(Note: The value for `h_13` in Row 3 would be the reference value for `h_13` if the standard defines it, which might be different from the standard's key itself if `h_13` serves a different purpose within the standard's definition).*
+    *   **Action (for 3-Row Format):**
+        *   Ensure `collectDataForExport()` in `FileHandler.js` gathers all user-editable `fieldId`s for Row 1.
+        *   Row 2: Collect current values from `StateManager` for `fieldId`s in Row 1.
+        *   Row 3:
+            1.  Get the active reference standard key from `StateManager.getValue('d_13')`.
+            2.  Fetch the corresponding reference data object from the restructured `TEUI.ReferenceValues[active_standard_key]`.
+            3.  The first cell of Row 3 is the `active_standard_key`.
+            4.  For each `fieldId` in Row 1, if it exists as a key in the fetched reference data object, add its value to Row 3; otherwise, add an empty string.
+        *   Ensure output values are raw, unformatted strings (properly CSV-escaped).
 *   **C2. Refine CSV Import Logic (`4011-FileHandler.js`):**
-    *   **Goal:** Import CSVs (formatted as per C1, 2 rows: headers and values) and update `StateManager` using the `StateManager.setValues()` method.
-    *   **Action:**
+    *   **Initial 2-Row Format (Completed 2025-05-16):** The system now successfully imports a 2-row CSV, updating the current application state for user-editable fields.
+    *   **Enhanced 3-Row Format (Planned):**
+        *   **Goal:** Import CSVs (formatted as per C1, 3 rows).
+            *   Row 1 (Headers) defines the `fieldId`s.
+            *   Row 2 (Application State Values) updates `StateManager`. This includes setting `d_13`, which determines the active reference standard.
+            *   Row 3 (Reference Standard Values) is primarily for record-keeping and verification. The primary mechanism for applying reference values will be the change in `d_13` (from Row 2) triggering a load from the canonical `TEUI.ReferenceValues`.
+    *   **Action (for 3-Row Format):**
         *   Modify `handleExcelFile()` (or CSV specific part) in `FileHandler.js`.
-        *   The import parser should expect `fieldId`s on the 1st row and their values on the 2nd row.
-        *   Parse the imported CSV (rows 1 and 2) into the Unified Data Structure (`{fieldId: value, ...}`). This structure should inherently only contain user-editable fields if the CSV is correctly formatted.
+        *   The import parser should expect `fieldId`s on Row 1, current application values on Row 2, and active reference standard values on Row 3.
+        *   **Processing Row 2:** Parse into a Unified Data Structure (`{fieldId: value, ...}`) and use `StateManager.setValues(parsedApplicationStateObject, 'imported')`. This updates all user-editable fields, including `d_13`. The change to `d_13` is critical, as it should trigger the application (via `ReferenceToggle.js` and `StateManager.loadReferenceData`) to load and apply the specified standard's values from the *internal, refactored* `TEUI.ReferenceValues`.
+        *   **Processing Row 3:**
+            *   The data in Row 3 can be used for validation or logging (e.g., confirming the `active_standard_key` from Row 3 Cell 1 matches the `d_13` value set by Row 2).
+            *   The system should *not* directly apply field values from Row 3 to override the canonical values from `TEUI.ReferenceValues` upon import (unless a future, explicit "override reference from CSV" feature is introduced). The source of truth for reference values is `TEUI.ReferenceValues`.
 
 ### Phase D: "Notes" Section Integration for Data Pasting
 
@@ -201,98 +224,119 @@ The targeted analysis of these potentially problematic fields indicates that the
 
 This supports the general approach in Phase C1 of the workplan, which aims to ensure *all* user-editable fields are correctly identified and exported. While this check was not exhaustive for all 100+ fields in `excelReportInputMapping`, the higher-risk cases examined are correctly handled by the current export filters. A comprehensive review during Phase G (Testing) should confirm all user-editable fields are captured. 
 
-## Appendix B: Aligning CSV Export with `ReferenceValues.js` Structure
+## Appendix B: Aligning CSV Export with `ReferenceValues.js` Structure (3-Row Format)
 
-**Objective:** To define a CSV export format that is structurally consistent with the proposed unified data structure for `TEUI.ReferenceValues` and general application state, focusing on user-editable fields.
+**Objective:** To define a CSV export format that is structurally consistent with the proposed unified data structure for `TEUI.ReferenceValues` and general application state, focusing on user-editable fields. This appendix details the enhanced 3-row CSV format.
 
-**1. Current Discrepancy:**
+**1. Background:**
 
-The current CSV export format (as seen in `TEUIv4011-Meadow_House_CSV_TEST.csv`) is verbose:
-```csv
-ExcelRow,RowID,Description,FieldID,Value,Units
-S.3,S.3,Carbon Benchmarking Standard,h_15,151.5,
-E.1.3,E.1.3,Lifetime Avoided (B6) Emissions,i_41,120,
-...
-```
-Each field is represented by a row with multiple metadata columns.
-
-The proposed structure for `TEUI.ReferenceValues` (Phase A2 of this document) and for general state interchange (e.g., `StateManager.setValues()`) is a simple JSON object where keys are **user-editable `fieldId`s** and values are their raw string data:
+The `STANDARDIZED-STATES.md` workplan (Phase A2) restructures `TEUI.ReferenceValues` so that each defined reference standard directly returns data **only for user-editable fields** in the Unified Data Structure:
 ```json
+// Example: TEUI.ReferenceValues["OBC_SB10_2017_ClimateZone5"] might look like:
 {
-    "user_editable_fieldId1": "value1",
-    "user_editable_fieldId2": "value2",
-    // ...
+    "d_18": "Toronto",      // User-editable City/Location for Climate Data (S03)
+    "f_85": "10.5",         // User-editable Roof RSI (S11)
+    "h_13": "OBC SB10 2017 CZ5" // User-editable description field (S02)
+    // ... other relevant *user-editable* fieldIds for this standard
 }
 ```
+The CSV export needs to represent both the current application's state (which includes the key of the active reference standard, e.g., in field `d_13`) and the set of values defined by that active standard.
 
-**2. Proposed Aligned CSV Export Format (from Phase C1):**
+**2. Proposed 3-Row Aligned CSV Export/Import Format (from Phase C):**
 
-To align these, the CSV export format should directly mirror the flat key-value structure of the JSON object. This is specified in **Phase C1** of this workplan:
+To achieve this, the CSV format will consist of three rows:
 
-*   **Row 1 (Header):** A single row containing comma-separated `fieldId`s of **all user-editable fields** included in the export.
-    ```csv
-    fieldId1,fieldId2,fieldId3,...
-    ```
-*   **Row 2 (Data):** A single row containing the corresponding comma-separated raw string values for these `fieldId`s.
-    ```csv
-    value1,value2,value3,...
-    ```
+*   **Row 1 (Header Row - User-Editable Field IDs):**
+    *   A single, comma-separated string of `fieldId`s for ALL user-editable fields in the application. This list is comprehensive and ordered consistently. The `fieldId` for the reference standard selection (e.g., `d_13`) must be included.
+    *   Example: `d_27,h_15,g_118,d_18,f_85,d_13,...`
+
+*   **Row 2 (Current Application State Values):**
+    *   A single, comma-separated string of the corresponding raw string values for the `fieldId`s in Row 1. This reflects the live state of the application at the time of export. The value for `d_13` here indicates the active reference standard.
+    *   Example: `1500.75,1000,Constant,Toronto,7.5,OBC_SB10_2017_ClimateZone5,...`
+
+*   **Row 3 (Active Reference Standard Values):**
+    *   **Cell 1:** The key/name of the active reference standard (this value will match the value of `d_13` in Row 2).
+    *   **Subsequent Cells:** For each `fieldId` in Row 1 (from the *first* `fieldId`), this cell contains the value that the active reference standard (identified in Cell 1 of this row) defines for that `fieldId`. Values are sourced from the restructured `TEUI.ReferenceValues`. If the standard does not define a value for a particular `fieldId` from Row 1, the corresponding cell in Row 3 is left empty.
+    *   Example (assuming Row 1 is `d_27,h_15,g_118,d_18,f_85,d_13` and active standard `OBC_SB10_2017_ClimateZone5` from Row 2's `d_13` defines `d_18`, `f_85`, and `h_13`):
+        `OBC_SB10_2017_ClimateZone5,,,,Toronto,10.5,OBC SB10 2017 CZ5,...`
+        (Cells for `d_27`, `h_15`, `g_118` are empty if `OBC_SB10_2017_ClimateZone5` doesn't define them. The value for `d_13` in this row comes from the standard's data for `h_13` field from the reference standard, if it has such a field for descriptive purposes).
 
 **Benefits of this Alignment:**
 
-*   **Structural Equivalence:** The CSV becomes a direct, two-row representation of the unified JSON data structure.
-*   **Consistency:** Exported CSVs will now have the same flat, key-value structure as the proposed `TEUI.ReferenceValues` objects and the data format expected by `StateManager.setValues()` for imports.
-*   **Interoperability:** Users can export data, potentially edit it in a spreadsheet (respecting the simple two-row structure), and then re-import it seamlessly.
-*   **Simplified Parsing:** Importing these CSVs (as per Phase C2) becomes trivial, as the first row defines all `fieldId`s and the second provides all values.
-*   **Clarity:** The export focuses purely on the state data (user-editable field values), removing application-specific metadata like `ExcelRow` or `Description` from the exchanged file, making it cleaner for external use or modification.
+*   **Comprehensive State Snapshot:** Captures both user-modified application state and the underlying reference standard state.
+*   **Single Header Row:** Simplifies parsing and reduces redundancy.
+*   **Direct `ReferenceValues.js` Link:** Row 3 directly reflects data from the (refactored) `TEUI.ReferenceValues` structure.
+*   **Simplified Import Logic:**
+    *   Row 2 directly updates the application state. Setting `d_13` from Row 2 correctly triggers the application's internal mechanisms to load reference data.
+    *   Row 3 serves as a record/checksum of the reference values at the time of export. The import process relies on the `d_13` value from Row 2 to fetch canonical reference values from `TEUI.ReferenceValues`.
 
-## Appendix C: Updating `4011-FileHandler.js` for Standardized CSV Export
+This 3-row format balances comprehensiveness with efficiency for data interchange.
 
-**Objective:** To outline the required modifications within `4011-FileHandler.js` (primarily the `exportToCSV` function and its helpers like `collectDataForExport`) to produce CSV files in the standardized two-row format, ensuring alignment with `ReferenceValues.js` and CSV import expectations.
+## Appendix C: Updating `4011-FileHandler.js` for Standardized CSV Export (3-Row Format)
 
-**Recap of Standardized CSV Export Format:**
+**Objective:** To outline the required modifications within `4011-FileHandler.js` (primarily the `exportToCSV` function and its helpers) to produce and parse CSV files in the standardized 3-row format. This ensures alignment with the `ReferenceValues.js` refactor (Phase A2) and CSV import expectations (Phase C2).
 
-*   **Row 1 (Header Row):** A single, comma-separated string of `fieldId`s representing all **user-editable fields** that are part of the export.
-    *   Example: `d_27,h_15,g_118,d_97,...`
-*   **Row 2 (Data Row):** A single, comma-separated string of the corresponding raw (unformatted) string values for these `fieldId`s, in the same order as the header row.
-    *   Example: `1500.75,1000,Constant,0.05,...`
+**Recap of Standardized 3-Row CSV Format:**
 
-**Key Modifications in `4011-FileHandler.js`:**
+*   **Row 1 (Header Row):** Comma-separated `fieldId`s of all user-editable fields (including `d_13`).
+    *   Example: `d_27,h_15,g_118,d_18,f_85,d_13,...`
+*   **Row 2 (Current Application State Values):** Comma-separated raw string values corresponding to Row 1 `fieldId`s.
+    *   Example: `1500.75,1000,Constant,Toronto,7.5,OBC_SB10_2017_ClimateZone5,...`
+*   **Row 3 (Active Reference Standard Values):**
+    *   Cell 1: Key of the active reference standard (from `d_13` in Row 2).
+    *   Subsequent Cells: Values from the active standard for each `fieldId` in Row 1, or empty if not defined by the standard.
+    *   Example: `OBC_SB10_2017_ClimateZone5,,,,Toronto,10.5,OBC SB10 2017 CZ5,...`
 
-1.  **Identifying User-Editable Fields for Export:**
-    *   The filter should include a field if its `type` is one of the defined user-editable types: `\'editable\'`, `\'dropdown\'`, `\'year_slider\'`, `\'percentage\'`, `\'coefficient\'`, `\'number\'`, and any custom types that represent direct user inputs (e.g., specific slider types if they are not already covered by `percentage` or `coefficient`).
-    *   **Crucially, purely calculated fields must be excluded.** The `sectionId === \'sect03\'` condition should be re-evaluated: if these fields are not user-editable by their type, they should be excluded unless Section 03 contains a unique category of user-editable fields not covered by the standard types.
-    *   The result of this step should be an ordered list of `fieldId` strings for all user-editable fields.
+**Key Modifications in `4011-FileHandler.js` - `exportToCSV()`:**
 
-2.  **Collecting Data for Export:**
-    *   **Action:**
-        *   Once the list of user-editable `fieldId`s is obtained:
-            *   Create two corresponding ordered lists: one for `fieldId`s and one for `values`.
-            *   Iterate through the primary list of user-editable fields.
-            *   For each, populate the `fieldId` string.
-            *   Retrieve its current value using `window.TEUI.StateManager.getValue(fieldId)`.
+1.  **Identifying User-Editable Fields for Row 1 (Header):**
+    *   Action: Use `TEUI.FieldManager.getAllFields()` and filter by user-editable types (e.g., `\'editable\'`, `\'dropdown\'`, `\'year_slider\'`, `\'percentage\'`, `\'coefficient\'`, `\'number\'`). This list of `fieldId`s becomes Row 1. Ensure a consistent order. This list must include `d_13`.
 
-3.  **Constructing the CSV String:**
-    *   The current `exportToCSV()` method constructs a multi-line string where each field is a more complex row. This needs to be changed to the two-row format.
-    *   **Action:**
-        *   Take the ordered list of user-editable `fieldId`s. Join them with a comma: `const fieldIdHeaderRow = fieldIds.join(',');`
-        *   Take the ordered list of corresponding raw string values. Join them with a comma: `const dataRow = values.join(',');`
-        *   The final CSV content will be: `const csvContent = fieldIdHeaderRow + "\n" + dataRow;`
+2.  **Collecting Data for Row 2 (Application State):**
+    *   Action: For each `fieldId` in the ordered list from step 1, retrieve its current value using `window.TEUI.StateManager.getValue(fieldId)`. This forms Row 2.
 
-4.  **Updating `exportToCSV()`:**
-    *   The main `exportToCSV()` function will orchestrate these steps:
-        1.  Call the modified `collectDataForExport()` (or equivalent) to get the two ordered lists: `fieldId`s and their `values` (both for user-editable fields only).
-        2.  Construct the two-row `csvContent` string as described above.
-        *   The filename should remain user-configurable or follow a consistent pattern (e.g., `TEUI_Export_YYYY-MM-DD.csv`).
+3.  **Collecting Data for Row 3 (Reference Standard State):**
+    *   **Prerequisite:** This step heavily relies on `TEUI.ReferenceValues` being refactored as per Phase A2, where `TEUI.ReferenceValues[standardKey]` returns an object like `{ fieldId1: value1, fieldId2: value2, ... }` containing only user-editable fields for that standard.
+    *   Action:
+        1.  Get the `activeStandardKey` from `window.TEUI.StateManager.getValue('d_13')`. This will be the first cell of Row 3.
+        2.  If `activeStandardKey` is valid, attempt to fetch `referenceDataForStandard = TEUI.ReferenceValues[activeStandardKey]`. This will require `TEUI.ReferenceValues` to be populated and accessible.
+        3.  Initialize an array for Row 3 values, starting with `activeStandardKey`.
+        4.  Iterate through the ordered list of `fieldId`s from Row 1. For each `fieldId`:
+            *   If `referenceDataForStandard` exists and `referenceDataForStandard.hasOwnProperty(fieldId)`, append `referenceDataForStandard[fieldId]` to the Row 3 values array.
+            *   Otherwise, append an empty string.
+        5.  This array, when joined by commas, becomes the content for Row 3.
 
-**Benefits of these Changes:**
+4.  **Constructing the CSV String:**
+    *   Properly escape all values for CSV (handle commas, quotes, newlines).
+    *   `const headerRowString = fieldIdsRow1.join(',');`
+    *   `const appStateRowString = valuesRow2.join(',');`
+    *   `const refStateRowString = valuesRow3.join(',');`
+    *   `const csvContent = headerRowString + "\n" + appStateRowString + "\n" + refStateRowString;`
 
-*   **Consistency:** Exported CSVs will now have the same flat, key-value structure as the proposed `TEUI.ReferenceValues` objects and the data format expected by `StateManager.setValues()` for imports.
-*   **Interoperability:** Users can export data, potentially edit it in a spreadsheet (respecting the simple two-row structure), and then re-import it seamlessly.
-*   **Simplified Parsing:** Importing these CSVs (as per Phase C2) becomes trivial, as the first row defines all `fieldId`s and the second provides all values.
-*   **Clarity:** The export focuses purely on the state data (user-editable field values), removing application-specific metadata like `ExcelRow` or `Description` from the exchanged file, making it cleaner for external use or modification.
+5.  **Updating `exportToCSV()` Orchestration:**
+    *   The function will perform steps 1-4 and then trigger the download.
 
-By implementing these changes in `4011-FileHandler.js`, the CSV export function will align with the overarching goal of a unified data structure for all stateful, user-editable information within the TEUI 4.011 application. 
+**Key Modifications in `4011-FileHandler.js` - `processImportedCSV()` (or equivalent):**
+
+1.  **Parsing the 3 Rows:**
+    *   Split the CSV string into three rows. Validate that three rows exist.
+    *   Parse Row 1 to get the `importedFieldIds` array.
+    *   Parse Row 2 to get the `importedAppStateValues` array.
+    *   Parse Row 3 to get the `importedRefStateValues` array.
+    *   Validate that `importedAppStateValues` and (`importedRefStateValues` length -1) have the same number of columns as `importedFieldIds`.
+
+2.  **Processing Row 2 (Application State):**
+    *   Create a `dataToImport = {}` object.
+    *   Iterate from `i = 0` to `importedFieldIds.length - 1`.
+    *   `dataToImport[importedFieldIds[i]] = importedAppStateValues[i];`
+    *   Call `window.TEUI.StateManager.setValues(dataToImport, 'imported')`. This is the primary mechanism for updating the application. The crucial part is that `d_13` (reference standard selector) gets set here. This change to `d_13` should trigger `ReferenceToggle.js` to then call `StateManager.loadReferenceData(new_d13_value)`, which in turn uses the refactored `TEUI.ReferenceValues` to load the correct set of reference values for user-editable fields and update the UI via `FieldManager.updateFieldDisplay()`.
+
+3.  **Processing Row 3 (Reference Standard State):**
+    *   The first cell of `importedRefStateValues` contains the `standardKeyFromCsvRow3`.
+    *   This row is primarily for data integrity checks or logging during import. For example, one could verify that `standardKeyFromCsvRow3` matches the `d_13` value that was just set from Row 2.
+    *   **Important:** The system should *not* iterate through Row 3 and directly call `StateManager.setValue()` for each field. The application of reference values must occur through the established mechanism: changing `d_13` (via Row 2 import) which then uses the canonical `TEUI.ReferenceValues` definitions. This maintains `TEUI.ReferenceValues` as the single source of truth for reference standard data.
+
+By implementing these changes, `4011-FileHandler.js` will support the more comprehensive 3-row CSV format, tightly integrating with the planned refactoring of `TEUI.ReferenceValues`.
 
 ## Appendix D: Architectural Alignment and Expected Benefits
 
