@@ -1,8 +1,8 @@
 # Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
 
 **Date:** 2025-05-16
-**Version:** 2.0 (Integrated from `deepstate-structure.md`)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v1.0, `future code/deepstate-structure.md`
+**Version:** 2.1 (Refined Reference Mode Implementation Details)
+**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.0
 
 ## 1. Objective
 
@@ -11,7 +11,7 @@ To standardize the structure, handling, import, and export of all stateful value
 *   Managing imported data, user-modified data, and values derived from reference standards (via `d_13`) that override these user-editable fields.
 *   Creating a consistent and robust data management layer that simplifies development, enhances maintainability, and ensures data integrity.
 *   Allowing users to compare their Design Model against selected building code minimums or standards by activating a Reference Mode.
-*   Ensuring that Reference Mode correctly uses a combination of standard-defined values, application state carry-overs, and Reference Mode specific defaults/edits for its calculations.
+*   Ensuring that Reference Mode correctly uses a combination of standard-defined values, application state carry-overs, Reference Mode specific defaults/edits for its calculations, and applies appropriate UI styling/locking.
 *   **Purely calculated fields (e.g., results of formulas) are explicitly excluded from standardized state datasets; they are always derived from the current set of active input values, whether in Design or Reference mode.**
 
 ## 2. Core Principles
@@ -41,12 +41,14 @@ Integrating the Reference Model requires adherence to the application's core arc
     *   If in Reference Mode, it returns the value from `StateManager.activeReferenceDataSet`.
     *   Otherwise, it follows the standard priority for the application state (user-modified, imported, default).
 3.  **Reference Data Loading from Refactored `ReferenceValues.js`:**
-    *   `4011-ReferenceValues.js` will be refactored to provide a simple `{ "user_editable_fieldId": "value", ... }` object for each standard, containing *only* the values that standard explicitly defines for user-editable fields.
-    *   `StateManager.loadReferenceData(standardName)` will use this refactored data as one input when constructing the `activeReferenceDataSet`.
-4.  **UI Updates via `FieldManager.updateFieldDisplay()`:** This is the **only** mechanism for updating the visual display of input fields and for triggering necessary events (`blur`, `change`, `input`). When Reference Mode is activated or the standard changes, logic in `ReferenceToggle.js` (or triggered by `d_13` listener) will iterate through relevant `fieldId`s and call `TEUI.FieldManager.updateFieldDisplay()` with values from the `activeReferenceDataSet`.
-5.  **Automatic Calculation & Display Engine:** The existing calculation engine does not need separate logic paths for Reference Mode. Because all field value lookups (e.g., `getNumericValue`) rely on the mode-aware `StateManager.getValue()`, calculations will automatically use the correct set of input values (either from application state or `activeReferenceDataSet`) based on the current mode. Results will then flow to display elements, including Section 01 Column E for Reference Mode totals.
-6.  **UI Locking/Styling for Reference Mode:** `ReferenceToggle.js` will toggle a body class (e.g., `reference-mode`). CSS rules will handle visual distinction and locking/unlocking input fields as appropriate for Reference Mode.
-7.  **Avoid Direct DOM Manipulation:** All legacy direct DOM manipulation for setting/getting field values, especially related to reference model display, **must be removed** from section modules. Interactions must be mediated by `StateManager` and `FieldManager`.
+    *   `4011-ReferenceValues.js` has been refactored (Phase A2 completed) to provide a simple `{ "user_editable_fieldId": "value", ... }` object for each standard, containing *only* the values that standard explicitly defines for user-editable fields.
+    *   `StateManager.loadReferenceData(standardKey)` will use this refactored data as one input when constructing the `activeReferenceDataSet`. This function is central to building the complete state for Reference Mode.
+4.  **UI Updates via `FieldManager.updateFieldDisplay()` & Section Handlers:** This is the **only** mechanism for updating the visual display of input fields and for triggering necessary events (`blur`, `change`, `input`).
+    *   When Reference Mode is activated or the standard changes, `ReferenceToggle.js` (or `d_13` listener) will ensure `StateManager.loadReferenceData()` is called.
+    *   Then, logic (likely within `ReferenceToggle.js` iterating through section handlers or a centralized `FieldManager` function) will:
+        1.  For each relevant `fieldId`, get the Reference Mode value using the mode-aware `StateManager.getValue(fieldId)`.
+        2.  Call `TEUI.FieldManager.updateFieldDisplay()` to update the field's visual value.
+        3.  Apply appropriate styling (e.g., `.reference-locked`) and editability status (`contenteditable`, `disabled`) based on the field's defined behavior in Appendix E and the current mode.
 
 ## 3. Key Components & Data Requirements
 
@@ -54,17 +56,29 @@ Integrating the Reference Model requires adherence to the application's core arc
     *   **Crucial Note:** This file will be refactored as per Phase A2. Each standard will become a direct JSON object of `{ "user_editable_fieldId": "value", ... }` for explicitly defined user-editable fields. The current nested structure with `section` and `targetCell` properties *within* `ReferenceValues.js` will be eliminated.
 *   **`4011-StateManager.js`:** Core state management. Will handle:
     *   Storage of application state (user-modified, imported, defaults).
-    *   Storage and construction of `activeReferenceDataSet` (see Phase B1).
-    *   Mode-aware `getValue()`.
-    *   `loadReferenceData(standardName)` function.
-    *   `setValues(dataSet, stateType)` for batch updates.
-*   **`4011-ReferenceToggle.js`:** UI switch for Reference Mode. Orchestrates loading of reference data via `StateManager` and triggers UI updates via `FieldManager` by iterating over the `fieldId`s in `activeReferenceDataSet`.
+    *   Storage and construction of `this.activeReferenceDataSet` (the complete state for Reference Mode).
+    *   `loadReferenceData(standardKey)`: Builds `this.activeReferenceDataSet` by:
+        1.  Deep copying current application state for all user-editable fields.
+        2.  Applying "Reference Mode Defaults" as per Appendix E.
+        3.  Overlaying explicit values from `TEUI.ReferenceValues[standardKey]`.
+    *   Mode-aware `getValue(fieldId)`: Returns value from `this.activeReferenceDataSet` if in Reference Mode, else from application state.
+    *   (Potentially) `setValueInReferenceMode(fieldId, value)`: For fields editable while in Reference Mode.
+*   **`4011-ReferenceToggle.js`:** UI switch for Reference Mode.
+    *   Toggles `body.reference-mode` class.
+    *   Orchestrates:
+        1.  Calling `StateManager.loadReferenceData(currentStandardKey)` on mode change or `d_13` change.
+        2.  Triggering the UI refresh process which involves iterating through sections/fields to update display values (via `StateManager.getValue()`, then `FieldManager.updateFieldDisplay()`) and applying styling/locking.
 *   **`4011-FieldManager.js`:** Manages field definitions and handles UI updates via `updateFieldDisplay()`, ensuring proper event dispatch.
 *   **`4011-styles.css` / `future code/reference-model-styles.css`:** Styling for Reference Mode, including locking/unlocking input fields.
 *   **Section Modules (`sections/4011-SectionXX.js`):**
     *   Require standardized helpers (Prerequisite Phase).
     *   Must have legacy DOM manipulation for reference values removed.
     *   Existing calculation logic remains largely unchanged, relying on `StateManager.getValue()`.
+    *   Their `referenceHandler.updateReferenceDisplay()` methods (called by `ReferenceToggle` or a centralized refresh mechanism) will be responsible for:
+        1.  Getting the Reference Mode value for each relevant field via `StateManager.getValue(fieldId)`.
+        2.  Updating the field's visual display using `FieldManager.updateFieldDisplay()`.
+        3.  Querying the field's behavior category from Appendix E logic.
+        4.  Applying/removing the `.reference-locked` class and setting `contenteditable`/`disabled` status accordingly.
 
 ## 4. Phased Implementation Workplan
 
@@ -99,20 +113,23 @@ This workplan integrates tasks from previous planning documents into a unified s
 
 ### Phase B: `StateManager` Enhancements for Unified Data & Reference Model
 *   **B1. Internal State for Reference Values & Data Loading Logic:**
-    *   `StateManager` to have an internal store (e.g., `this.activeReferenceDataSet`) to hold the currently active reference standard's *complete state for all user-editable fields*.
-    *   Implement `StateManager.loadReferenceData(standardName)`:
-        1.  Initialize `this.activeReferenceDataSet` by taking a deep copy of the current application state's user-editable values (from `this.userModifiedValues`, `this.importedValues`, etc., according to current priority).
-        2.  Apply any specific "Reference Mode Defaults" to `this.activeReferenceDataSet` for fields that have them (these are defaults applied when entering reference mode, irrespective of the chosen standard, unless the standard itself overrides them). See Appendix E for field-specific behaviors.
-        3.  Fetch the explicit `{fieldId: value}` pairs for the given `standardName` from the restructured `TEUI.ReferenceValues`.
-        4.  For each `fieldId` in the fetched standard data, update the corresponding value in `this.activeReferenceDataSet`.
-    *   This function is triggered by `d_13` changes and when entering Reference Mode.
-    *   `StateManager` must also allow for user modifications to `this.activeReferenceDataSet` for fields designated as "independently user-editable in Reference Mode" (see Appendix E). These edits would occur *after* `loadReferenceData` has established the baseline reference state and will modify `this.activeReferenceDataSet`.
-    *   Add logging to verify correct construction of `this.activeReferenceDataSet`.
-*   **B2. Mode-Aware `StateManager.getValue()`:**
+    *   `StateManager` to have an internal property: `this.activeReferenceDataSet = {};` This object will hold the complete, resolved set of input values for all user-editable fields when Reference Mode is active.
+    *   Implement `StateManager.loadReferenceData(standardKey)`:
+        1.  **Initialize/Clear:** `this.activeReferenceDataSet = {};`
+        2.  **Step 1 (Deep Copy Application State):** Create a deep copy of all current user-editable application state values. Iterate through all known user-editable `fieldId`s (e.g., from `FieldManager.getAllFields()` filtered for user-editability). For each `fieldId`, get its current application state value (e.g., using a conceptual `this.getApplicationStateValue(fieldId)` or by temporarily ensuring `getValue` returns app state) and store it in `this.activeReferenceDataSet[fieldId]`.
+        3.  **Step 2 (Apply "Reference Mode Defaults"):** For each field identified in Appendix E as having a "Reference Mode Default," set `this.activeReferenceDataSet[fieldId] = defaultValueFromAppendixE;`. This happens *before* standard-specific values are applied and may override the value from Step 1.
+        4.  **Step 3 (Fetch and Apply Standard-Specific Values):**
+            *   Access `standardData = TEUI.ReferenceValues[standardKey];` (from the refactored file).
+            *   If `standardData` exists, for each `fieldId` in `standardData`, set `this.activeReferenceDataSet[fieldId] = standardData[fieldId];`. This overrides values from Step 1 or 2 for fields explicitly defined by the standard.
+        5.  **Step 4 (Ensure Completeness - Fallback):** For any user-editable `fieldId` not yet in `this.activeReferenceDataSet` after steps 1-3 (e.g., if a new field was added and not covered by app state copy or standard), consider a final fallback to its application default (e.g. `this.defaultValues[fieldId].value`). This ensures `activeReferenceDataSet` is comprehensive.
+    *   This function (`loadReferenceData`) is triggered by `ReferenceToggle.js` when `d_13` changes (via a listener on `d_13` that calls a method in `ReferenceToggle` or `StateManager`) and when Reference Mode is initially activated.
+    *   **Handling Edits in Reference Mode:** For fields designated as "Independently User-Editable in Reference Mode" (Appendix E), user interactions (e.g., `blur` event on the field) while in Reference Mode should call a new method like `StateManager.setValueInReferenceMode(fieldId, value)`. This method would directly update `this.activeReferenceDataSet[fieldId] = value;` and then trigger a UI refresh for that field and its dependents.
+    *   Add detailed `console.log` statements within `loadReferenceData` to trace the construction of `this.activeReferenceDataSet`, showing values after each step (app state copy, RefMode defaults, standard overlay).
+*   **B2. Mode-Aware `StateManager.getValue(fieldId)`:**
     *   Modify `StateManager.getValue(fieldId)`:
-        *   If `TEUI.ReferenceToggle.isReferenceMode()` is true, return the value for `fieldId` from `this.activeReferenceDataSet`.
-        *   Otherwise, follow the existing priority for application state (user-modified, imported, default for that user-editable field).
-        *   **Note:** `getValue()` for a purely calculated `fieldId` would still work by fetching its precedent input values (which might be from `this.activeReferenceDataSet` or application state) and then the calculation function is applied.
+        *   `if (TEUI.ReferenceToggle.isReferenceMode()) { return this.activeReferenceDataSet[fieldId] ?? (this.defaultValues[fieldId] ? this.defaultValues[fieldId].value : undefined); }`
+            *   The fallback `?? (this.defaultValues[fieldId] ...)` is a safety net; `activeReferenceDataSet` should ideally be comprehensive after `loadReferenceData`.
+        *   `else { // existing logic for application state }`
 *   **B3. Standardized `StateManager.setValues(dataSet, stateType)`:**
     *   **Goal:** Create a robust `StateManager` method to import a batch of values **for user-editable fields** into the *application state*.
     *   **Action:** Implement `StateManager.setValues(newValuesObject, stateType)` where `newValuesObject` is in the Unified Data Structure (containing only user-editable `fieldId`s), and `stateType` is e.g., `'user-modified'`, `'imported'`.
@@ -177,18 +194,29 @@ This workplan integrates tasks from previous planning documents into a unified s
     *   A button to serialize the current `StateManager` values **for user-editable fields in the application state** (using a method like `StateManager.getAllUserEditableValuesInUnifiedFormat()`) into CSV format (2 rows: headers and values) and populate the `<textarea>`.
 
 ### Phase E: Reference Model UI Integration & Activation
-*   **E1. UI Update Triggering for Reference Mode:**
-    *   When Reference Mode is activated/changed (via `d_13` or a toggle by `ReferenceToggle.js`):
-        1.  `ReferenceToggle.js` (or `d_13` listener) ensures `StateManager.loadReferenceData()` is called to build/update `StateManager.activeReferenceDataSet`.
-        2.  Iterate through the `fieldId`s of *all user-editable fields* (or at least those present in `activeReferenceDataSet`).
-        3.  For each such `fieldId`, get the `currentReferenceValue` from `StateManager.activeReferenceDataSet` (e.g., using `StateManager.getValue(fieldId)` which is now mode-aware).
-        4.  Call `TEUI.FieldManager.updateFieldDisplay(fieldId, currentReferenceValue, fieldDef)`. This updates the input field, and its `blur`/`change`/`input` events will trigger recalculations of any dependent calculated fields using the reference input values.
-*   **E2. UI Locking/Styling for Reference Mode:**
+*   **E1. UI Update Triggering and Field State Management for Reference Mode:**
+    *   When Reference Mode is activated/deactivated or the selected standard (`d_13`) changes:
+        1.  `ReferenceToggle.js` (or a listener on `d_13` that `ReferenceToggle` manages) must ensure `TEUI.StateManager.loadReferenceData(currentStandardKey)` is called. This populates/updates `StateManager.activeReferenceDataSet`.
+        2.  After `activeReferenceDataSet` is ready, `ReferenceToggle.js` orchestrates a UI refresh. This involves iterating through all relevant `fieldId`s (user-editable fields across all sections). For each `fieldId`:
+            a.  **Get Value:** Retrieve the correct Reference Mode value using `currentValue = TEUI.StateManager.getValue(fieldId);` (which is now mode-aware).
+            b.  **Update Visual Value:** Call `TEUI.FieldManager.updateFieldDisplay(fieldId, currentValue, fieldDefinition);`. This ensures the input element displays the correct value and that `change`/`input` events are fired, triggering recalculations of dependent (calculated) fields.
+            c.  **Determine Lock/Style State (Consult Appendix E):**
+                *   Access the field's behavior category for Reference Mode from a representation of Appendix E (e.g., a helper function `TEUI.AppendixE.getFieldBehavior(fieldId)` or a direct lookup if Appendix E is translated into a data structure).
+            d.  **Apply Styling and Editability:**
+                *   Let `domElement = document.getElementById(fieldId);` (or a more robust way to get the input element).
+                *   If the behavior is *not* "Independently User-Editable in Reference Mode":
+                    *   `domElement.classList.add('reference-locked');`
+                    *   `if (domElement.tagName === 'INPUT' || domElement.tagName === 'SELECT' || domElement.tagName === 'TEXTAREA') { domElement.disabled = true; } else { domElement.setAttribute('contenteditable', 'false'); }`
+                *   Else (if it *is* "Independently User-Editable in Reference Mode"):
+                    *   `domElement.classList.remove('reference-locked');`
+                    *   `if (domElement.tagName === 'INPUT' || domElement.tagName === 'SELECT' || domElement.tagName === 'TEXTAREA') { domElement.disabled = false; } else { domElement.setAttribute('contenteditable', 'true'); }`
+    *   When switching *out* of Reference Mode, `ReferenceToggle.js` orchestrates a similar refresh:
+        1.  Values are fetched via `StateManager.getValue(fieldId)` (which now returns application state).
+        2.  `FieldManager.updateFieldDisplay()` is called.
+        3.  All `.reference-locked` classes are removed, and fields are made editable (restoring their default application state editability).
+*   **E2. UI Locking/Styling for Reference Mode (CSS):**
     *   `ReferenceToggle.js` correctly adds/removes the `reference-mode` body class.
-    *   Verify CSS in `reference-model-styles.css` correctly locks (makes non-editable or visually distinct) and styles input fields when the `reference-mode` body class is active, according to Appendix E behavior (some fields remain editable in Ref Mode).
-*   **E3. Remove Legacy DOM Manipulation for Reference Values:**
-    *   **Action:** Systematically search all section modules (`sections/4011-SectionXX.js`) for any direct DOM manipulation related to setting/getting values for reference model display.
-    *   Replace any such anti-patterns with `StateManager` interactions and `FieldManager.updateFieldDisplay()` calls.
+    *   CSS rules in `4011-styles.css` (e.g., for `.reference-locked` and `body.reference-mode .user-input:not(.reference-locked)`) will provide the visual distinction (deep red, bold, italic for locked; standard blue for user-editable in RefMode).
 
 ### Phase F: Layout Considerations (Tables vs. Flexbox/Grid)
 *   **F1. Assessment:** The user query "If tables are harmful, how to switch now to flexbox or grid for table structure" points to a desire for more modern layout techniques.
@@ -468,7 +496,7 @@ For each field/group, the behavior will be categorized as follows:
 5.  **Matches Application State (Always):** Certain fields in `activeReferenceDataSet` will always mirror the Application State, regardless of the standard or other Reference Mode logic. These are effectively a direct carry-over.
     *   *Examples from user input: S04 utility bill inputs, S06 renewables, S08 IAQ targets.*
 
-*(This appendix will be populated based on the detailed section-by-section analysis provided by the user and further refinement. The categories above provide a framework for classifying each field's behavior.)*
+*(This appendix will be populated based on the detailed section-by-section analysis provided by the user and further refinement. The categories above provide a framework for classifying each field's behavior. **This appendix is now CRITICAL for implementing Phases B1 and E1 correctly.**)*
 
 ---
 

@@ -16,9 +16,7 @@ window.TEUI = window.TEUI || {};
 
 TEUI.ReferenceValues = {
   "OBC SB12 3.1.1.2.C4": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "OBC Prescriptive Path for HP",
+    //"h_13": "OBC Prescriptive Path for HP"
     "h_23": "22",
     "h_24": "26",
     "j_35": "0",
@@ -63,9 +61,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "OBC SB12 3.1.1.2.C1": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "OBC Prescriptive Path for Elect.",
+    //"h_13": "OBC Prescriptive Path for Elect."
     "h_23": "22",
     "h_24": "26",
     "j_35": "0",
@@ -110,9 +106,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "OBC SB12 3.1.1.2.A3": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "OBC Prescriptive Path for AFUE >92%",
+    //"h_13": "OBC Prescriptive Path for AFUE >92%"
     "h_23": "22",
     "h_24": "26",
     "j_35": "0",
@@ -157,9 +151,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "OBC SB10 5.5-6 Z6": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "OBC Prescriptive Path Part 3",
+    //"h_13": "OBC Prescriptive Path Part 3"
     "h_23": "22",
     "h_24": "26",
     "j_35": "0",
@@ -204,9 +196,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "OBC SB10 5.5-6 Z5 (2010)": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "OBC Prescriptive Path Part 3",
+    //"h_13": "OBC Prescriptive Path Part 3"
     "h_23": "22",
     "h_24": "26",
     "j_35": "0",
@@ -251,9 +241,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "ADD YOUR OWN HERE": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "User Defined",
+    //"h_13": "User Defined"
     "h_23": "22",
     "h_24": "26",
     "j_35": "0",
@@ -298,9 +286,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "NBC T1": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "NBC 9.36 Prescriptive Path",
+    //"h_13": "NBC 9.36 Prescriptive Path"
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -345,9 +331,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "NBC T2": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "10% Better",
+    //"h_13": "10% Better"
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -392,9 +376,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "NBC T3": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "20% Better",
+    //"h_13": "20% Better"
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -439,9 +421,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "NBC T4": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "40% Better",
+    //"h_13": "40% Better"  
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -486,9 +466,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "NBC T5": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "70% Better",
+    //"h_13": "70% Better"
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -533,9 +511,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "CaGBC ZCB": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "Replacing SB10",
+    //"h_13": "Replacing SB10"
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -580,9 +556,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "NECB T1 (Z6)": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "Replacing SB10",
+    //"h_13": "Replacing SB10"
     "h_23": "22",
     "h_24": "24",
     "j_35": "0",
@@ -627,9 +601,7 @@ TEUI.ReferenceValues = {
     "h_140": "50"
   },
   "PH Classic": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "90% less than NBC",
+    //"h_13": "90% less than NBC"
     "h_23": "18",
     "h_24": "26",
     "j_35": "60",
@@ -674,9 +646,7 @@ TEUI.ReferenceValues = {
     "h_140": "10"
   },
   "PH Plus": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "90% less than NBC",
+    //"h_13": "90% less than NBC"
     "h_23": "18",
     "h_24": "26",
     "j_35": "45",
@@ -721,9 +691,7 @@ TEUI.ReferenceValues = {
     "h_140": "10"
   },
   "PH Premium": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "90% less than NBC",
+    //"h_13": "90% less than NBC"
     "h_23": "18",
     "h_24": "26",
     "j_35": "30",
@@ -768,9 +736,7 @@ TEUI.ReferenceValues = {
     "h_140": "10"
   },
   "EnerPHit": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "PH Renovations",
+    //"h_13": "PH Renovations"
     "h_23": "18",
     "h_24": "26",
     "j_35": "60",
@@ -815,9 +781,7 @@ TEUI.ReferenceValues = {
     "h_140": "25"
   },
   "PH Low Energy": {
-    "h_6": "0",
-    "h_8": "15",
-    "h_13": "80% less than NBC",
+    //"h_13": "80% less than NBC"
     "h_23": "18",
     "h_24": "26",
     "j_35": "75",
