@@ -1,8 +1,8 @@
 # Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
 
 **Date:** 2025-05-16
-**Version:** 2.1 (Refined Reference Mode Implementation Details)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.0
+**Version:** 2.2 (Clarified Reference Mode state construction and CSV Row 3 behavior)
+**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.1
 
 ## 1. Objective
 
@@ -41,8 +41,8 @@ Integrating the Reference Model requires adherence to the application's core arc
     *   If in Reference Mode, it returns the value from `StateManager.activeReferenceDataSet`.
     *   Otherwise, it follows the standard priority for the application state (user-modified, imported, default).
 3.  **Reference Data Loading from Refactored `ReferenceValues.js`:**
-    *   `4011-ReferenceValues.js` has been refactored (Phase A2 completed) to provide a simple `{ "user_editable_fieldId": "value", ... }` object for each standard, containing *only* the values that standard explicitly defines for user-editable fields.
-    *   `StateManager.loadReferenceData(standardKey)` will use this refactored data as one input when constructing the `activeReferenceDataSet`. This function is central to building the complete state for Reference Mode.
+    *   `4011-ReferenceValues.js` has been refactored (Phase A2 completed) to provide a simple, sparse `{ "user_editable_fieldId": "value", ... }` object for each standard, containing *only* the values for user-editable fields that the standard explicitly dictates (i.e., overrides).
+    *   `StateManager.loadReferenceData(standardKey)` will use this refactored data. It constructs the `activeReferenceDataSet` primarily by carrying over application state, then applying specific Reference Mode defaults (if any from Appendix E), and finally overlaying the explicit overrides from `TEUI.ReferenceValues[standardKey]`.
 4.  **UI Updates via `FieldManager.updateFieldDisplay()` & Section Handlers:** This is the **only** mechanism for updating the visual display of input fields and for triggering necessary events (`blur`, `change`, `input`).
     *   When Reference Mode is activated or the standard changes, `ReferenceToggle.js` (or `d_13` listener) will ensure `StateManager.loadReferenceData()` is called.
     *   Then, logic (likely within `ReferenceToggle.js` iterating through section handlers or a centralized `FieldManager` function) will:
@@ -56,11 +56,11 @@ Integrating the Reference Model requires adherence to the application's core arc
     *   **Crucial Note:** This file will be refactored as per Phase A2. Each standard will become a direct JSON object of `{ "user_editable_fieldId": "value", ... }` for explicitly defined user-editable fields. The current nested structure with `section` and `targetCell` properties *within* `ReferenceValues.js` will be eliminated.
 *   **`4011-StateManager.js`:** Core state management. Will handle:
     *   Storage of application state (user-modified, imported, defaults).
-    *   Storage and construction of `this.activeReferenceDataSet` (the complete state for Reference Mode).
-    *   `loadReferenceData(standardKey)`: Builds `this.activeReferenceDataSet` by:
-        1.  Deep copying current application state for all user-editable fields.
-        2.  Applying "Reference Mode Defaults" as per Appendix E.
-        3.  Overlaying explicit values from `TEUI.ReferenceValues[standardKey]`.
+    *   Storage and construction of `this.activeReferenceDataSet` (the complete state for Reference Mode). This dataset is a hybrid:
+        1.  Starts with values carried over from the current application state.
+        2.  Applies any "Reference Mode Defaults" (from Appendix E).
+        3.  Explicitly defined values from `TEUI.ReferenceValues[standardKey]` (the sparse set of overrides) are then overlaid.
+    *   `loadReferenceData(standardKey)`: Builds `this.activeReferenceDataSet` using the hybrid logic above.
     *   Mode-aware `getValue(fieldId)`: Returns value from `this.activeReferenceDataSet` if in Reference Mode, else from application state.
     *   (Potentially) `setValueInReferenceMode(fieldId, value)`: For fields editable while in Reference Mode.
 *   **`4011-ReferenceToggle.js`:** UI switch for Reference Mode.
@@ -116,12 +116,12 @@ This workplan integrates tasks from previous planning documents into a unified s
     *   `StateManager` to have an internal property: `this.activeReferenceDataSet = {};` This object will hold the complete, resolved set of input values for all user-editable fields when Reference Mode is active.
     *   Implement `StateManager.loadReferenceData(standardKey)`:
         1.  **Initialize/Clear:** `this.activeReferenceDataSet = {};`
-        2.  **Step 1 (Deep Copy Application State):** Create a deep copy of all current user-editable application state values. Iterate through all known user-editable `fieldId`s (e.g., from `FieldManager.getAllFields()` filtered for user-editability). For each `fieldId`, get its current application state value (e.g., using a conceptual `this.getApplicationStateValue(fieldId)` or by temporarily ensuring `getValue` returns app state) and store it in `this.activeReferenceDataSet[fieldId]`.
-        3.  **Step 2 (Apply "Reference Mode Defaults"):** For each field identified in Appendix E as having a "Reference Mode Default," set `this.activeReferenceDataSet[fieldId] = defaultValueFromAppendixE;`. This happens *before* standard-specific values are applied and may override the value from Step 1.
-        4.  **Step 3 (Fetch and Apply Standard-Specific Values):**
-            *   Access `standardData = TEUI.ReferenceValues[standardKey];` (from the refactored file).
-            *   If `standardData` exists, for each `fieldId` in `standardData`, set `this.activeReferenceDataSet[fieldId] = standardData[fieldId];`. This overrides values from Step 1 or 2 for fields explicitly defined by the standard.
-        5.  **Step 4 (Ensure Completeness - Fallback):** For any user-editable `fieldId` not yet in `this.activeReferenceDataSet` after steps 1-3 (e.g., if a new field was added and not covered by app state copy or standard), consider a final fallback to its application default (e.g. `this.defaultValues[fieldId].value`). This ensures `activeReferenceDataSet` is comprehensive.
+        2.  **Step 1 (Carry-Over Application State - Baseline):** Create a deep copy of all current user-editable application state values. Iterate through all known user-editable `fieldId`s. For each `fieldId`, get its current application state value and store it in `this.activeReferenceDataSet[fieldId]`. This forms the baseline where Reference Mode mirrors the Application State.
+        3.  **Step 2 (Apply Specific "Reference Mode Defaults"):** For each field identified in Appendix E as having a "Reference Mode Default," set/override `this.activeReferenceDataSet[fieldId] = defaultValueFromAppendixE;`. This applies specific defaults unique to Reference Mode operation, potentially overriding values from Step 1.
+        4.  **Step 3 (Overlay Explicit Standard Overrides):**
+            *   Access `standardOverrideData = TEUI.ReferenceValues[standardKey];` (from the refactored, sparse file).
+            *   If `standardOverrideData` exists, for each `fieldId` in `standardOverrideData`, set/override `this.activeReferenceDataSet[fieldId] = standardOverrideData[fieldId];`. This applies the few values explicitly dictated by the chosen standard, overriding Step 1 or Step 2 values for those specific fields.
+        5.  **Step 4 (Ensure Completeness - Fallback if needed):** For any user-editable `fieldId` not yet in `this.activeReferenceDataSet` after steps 1-3 (e.g., a newly introduced field not yet in application state or defaults), consider a final fallback to its system default (e.g. `this.defaultValues[fieldId].value`). This ensures `activeReferenceDataSet` is comprehensive. (This step should ideally be rare if application state and defaults are well-managed).
     *   This function (`loadReferenceData`) is triggered by `ReferenceToggle.js` when `d_13` changes (via a listener on `d_13` that calls a method in `ReferenceToggle` or `StateManager`) and when Reference Mode is initially activated.
     *   **Handling Edits in Reference Mode:** For fields designated as "Independently User-Editable in Reference Mode" (Appendix E), user interactions (e.g., `blur` event on the field) while in Reference Mode should call a new method like `StateManager.setValueInReferenceMode(fieldId, value)`. This method would directly update `this.activeReferenceDataSet[fieldId] = value;` and then trigger a UI refresh for that field and its dependents.
     *   Add detailed `console.log` statements within `loadReferenceData` to trace the construction of `this.activeReferenceDataSet`, showing values after each step (app state copy, RefMode defaults, standard overlay).
@@ -151,12 +151,12 @@ This workplan integrates tasks from previous planning documents into a unified s
                 *   Example: `1500.75,app_state_d19_value,7.5,NBC 9.36 Prescriptive Path,NBC T1,...`
             *   **Row 3 (Active Reference Standard Values):**
                 *   Cell 1: The key/name of the active reference standard (from `d_13`).
-                *   Subsequent Cells: For each `fieldId` in Row 1 (starting from the first `fieldId`), list the corresponding value from `StateManager.getActiveReferenceModeValue(fieldId)` (a conceptual function that retrieves the value from the fully resolved `this.activeReferenceDataSet` for the Reference Mode).
+                *   Subsequent Cells: For each `fieldId` in Row 1 (starting from the first `fieldId`), list the corresponding value from `StateManager.getActiveReferenceModeValue(fieldId)`. This reflects the fully resolved `activeReferenceDataSet`: values are application state values *unless* explicitly overridden by a Reference Mode Default (Appendix E) or by the selected standard's definition in `TEUI.ReferenceValues`.
                 *   Example Row 1 Headers for this illustration: `h_15,d_19,f_85,h_13,f_113,d_13,...`
                 *   Example Row 2 (Application State) for this illustration: `1427.20,Ontario,8.0,60,8.5,NBC T1,...`
                 *   Example Row 3 if `d_13` in Row 2 was `NBC T1` (based on values from `4011-ReferenceValues.js` for `NBC T1` and application state carry-over):
                     `NBC T1,1427.20,Ontario,6.41,NBC 9.36 Prescriptive Path,7.1,,...`
-                    *(This means for `NBC T1` operating in Reference Mode: `h_15` (Conditioned Area) and `d_19` (Province) reflect their application state values (carried over). `f_85` (Roof RSI) is "6.41", `h_13` (Standard Name) is "NBC 9.36 Prescriptive Path", and `f_113` (Heating Eff.) is "7.1" (all from the standard's definition as processed by `StateManager`). The standard `NBC T1` itself doesn't define a value for the field `d_13` (its cell in Row 3 is empty, as `d_13`'s role is to select the standard). The `...` indicates other fields following their respective Reference Mode logic [standard-defined, carry-over, RefMode default, or independently RefMode-edited]. See Appendix E for detailed field behavior.)*
+                    *(This means for `NBC T1` operating in Reference Mode: `h_15` (Conditioned Area) and `d_19` (Province) reflect their application state values (carried over by default as `NBC T1` in `TEUI.ReferenceValues` does not define them). `f_85` (Roof RSI) is "6.41", `h_13` (Standard Name) is "NBC 9.36 Prescriptive Path", and `f_113` (Heating Eff.) is "7.1" (these are explicitly defined by `NBC T1` in `TEUI.ReferenceValues` and override any application state value for these `fieldId`s). The standard `NBC T1` itself doesn't define a value for the field `d_13` (its cell in Row 3 is empty, as `d_13`'s role is to select the standard). The `...` indicates other fields following their respective Reference Mode logic [standard-defined override, carry-over from application state, RefMode default, or independently RefMode-edited]. See Appendix E for detailed field behavior.)*
     *   **Action (for 3-Row Format):**
         *   Ensure `collectDataForExport()` in `FileHandler.js` gathers all user-editable `fieldId`s for Row 1.
         *   Row 2: Collect current values from `StateManager.getValue(fieldId)` (ensuring it reflects application state when not in reference mode, or by having a specific method like `StateManager.getApplicationStateValue(fieldId)` if `getValue` becomes strictly mode-aware). This forms Row 2.
@@ -177,7 +177,7 @@ This workplan integrates tasks from previous planning documents into a unified s
         *   **Processing Row 2:** Parse into a Unified Data Structure (`{fieldId: value, ...}`) and use `StateManager.setValues(parsedApplicationStateObject, 'imported')`. This updates all user-editable fields in the application state, including `d_13`.
         *   **Processing Row 3:**
             *   The data in Row 3 can be used for validation or logging (e.g., confirming the `active_standard_key` from Row 3 Cell 1 matches the `d_13` value set by Row 2).
-            *   The system should *not* directly apply field values from Row 3 to `StateManager.activeReferenceDataSet`. The `activeReferenceDataSet` is rebuilt by `StateManager.loadReferenceData()` based on the `d_13` value (set by Row 2) and the defined logic (carry-overs, defaults, standard values from `TEUI.ReferenceValues`).
+            *   The system should *not* directly apply field values from Row 3 to `StateManager.activeReferenceDataSet`. The `activeReferenceDataSet` is rebuilt by `StateManager.loadReferenceData()` based on the `d_13` value (set by Row 2) and the defined internal logic (carry-overs from application state, RefMode defaults, and explicit standard overrides from `TEUI.ReferenceValues`).
 
 ### Phase D: "Notes" Section Integration for Data Pasting
 *   **D1. UI Element in Section 18 (Notes):**
@@ -481,10 +481,10 @@ In summary, the integrated plan is expected to lead to a more robust, simpler, a
 
 For each field/group, the behavior will be categorized as follows:
 
-1.  **Directly Set by Standard:** The value is primarily determined by the definition in the refactored `TEUI.ReferenceValues` for the active standard. If the standard defines it, that value is used in `activeReferenceDataSet`, overriding any carry-over or RefMode default.
+1.  **Directly Set by Standard (Explicit Override):** The value is primarily determined by its definition in the refactored, sparse `TEUI.ReferenceValues` for the active standard. If the standard defines it, that value is used in `activeReferenceDataSet`, overriding any carried-over application state value or RefMode default for that specific field.
     *   *Examples from user input: RSI values (f_85, f_86), U-values (g_88-g_93), specific equipment efficiencies (f_113, j_116), S07 d_52/d_53 if standard specifies.*
 
-2.  **Carry-Over from Application State:** If not explicitly defined by the active reference standard (and not subject to a specific Reference Mode Default or independent editability), the value is taken directly from the current application (design) state and used in `activeReferenceDataSet`.
+2.  **Carry-Over from Application State (Default Behavior):** If not explicitly defined by the active reference standard in `TEUI.ReferenceValues` (and not subject to a specific Reference Mode Default or independent editability), the value is taken directly from the current application (design) state and used in `activeReferenceDataSet`. This is the default behavior for most fields.
     *   *Examples from user input: S02 fields (conditioned area, fuel costs), S03 climate data, S10 areas (Column D), S10 orientation (Column E), S10 shading % (Column G, H), S12 values.*
 
 3.  **Reference Mode Default:** The field has a specific default value when entering Reference Mode, which is applied to `activeReferenceDataSet` *before* standard values are overlaid. This default is used if not overridden by the active standard or subsequent user interaction in Reference Mode.

@@ -17,813 +17,644 @@ window.TEUI = window.TEUI || {};
 TEUI.ReferenceValues = {
   "OBC SB12 3.1.1.2.C4": {
     //"h_13": "OBC Prescriptive Path for HP"
-    "h_23": "22",
-    "h_24": "26",
-    "j_35": "0",
-    "h_38": "-",
-    "h_40": "500",
-    "h_49": "275.00",
-    "h_50": "110.00",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "4.21",
-    "f_87": "5.64",
-    "g_88": "1.6",
-    "g_89": "1.6",
-    "g_90": "1.6",
-    "g_91": "1.6",
-    "g_92": "1.6",
-    "g_93": "1.6",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "-",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "1.5",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.55",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "50",
-    "h_140": "50"
+    //"h_14": "Same as Application State B.2 Project Name Field Value" - should we show this in reference import/exports?
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "4.87", // Min. Permissible RSI
+    "f_86": "4.21", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.600", // Min. Permissible U-Value
+    "g_89": "1.600", // Min. Permissible U-Value
+    "g_90": "1.600", // Min. Permissible U-Value
+    "g_91": "1.600", // Min. Permissible U-Value
+    "g_92": "1.600", // Min. Permissible U-Value
+    "g_93": "1.600", // Min. Permissible U-Value
+    "f_94": "3.72", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.55", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "OBC SB12 3.1.1.2.C1": {
     //"h_13": "OBC Prescriptive Path for Elect."
-    "h_23": "22",
-    "h_24": "26",
-    "j_35": "0",
-    "h_38": "-",
-    "h_40": "Use Your Own Value",
-    "h_49": "275.00",
-    "h_50": "110.00",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "4.46",
-    "f_87": "5.25",
-    "g_88": "1.4",
-    "g_89": "1.4",
-    "g_90": "1.4",
-    "g_91": "1.4",
-    "g_92": "1.4",
-    "g_93": "1.4",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "-",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "1.5",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.81",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "0",
-    "h_140": "50"
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "4.87", // Min. Permissible RSI
+    "f_86": "4.46", // Min. Permissible RSI
+    "f_87": "5.25", // Min. Permissible RSI
+    "g_88": "1.400", // Min. Permissible U-Value
+    "g_89": "1.400", // Min. Permissible U-Value
+    "g_90": "1.400", // Min. Permissible U-Value
+    "g_91": "1.400", // Min. Permissible U-Value
+    "g_92": "1.400", // Min. Permissible U-Value
+    "g_93": "1.400", // Min. Permissible U-Value
+    "f_94": "3.72", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "OBC SB12 3.1.1.2.A3": {
     //"h_13": "OBC Prescriptive Path for AFUE >92%"
-    "h_23": "22",
-    "h_24": "26",
-    "j_35": "0",
-    "h_38": "-",
-    "h_40": "500",
-    "h_49": "275.00",
-    "h_50": "110.00",
-    "h_52": "0.92",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "3.77",
-    "f_87": "5.64",
-    "g_88": "1.4",
-    "g_89": "1.4",
-    "g_90": "1.4",
-    "g_91": "1.4",
-    "g_92": "1.4",
-    "g_93": "1.4",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.3",
-    "h_104": "-",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "1.5",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.92",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.81",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "0",
-    "h_140": "50"
+    "d_52": "0.92", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "4.87", // Min. Permissible RSI
+    "f_86": "3.77", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.400", // Min. Permissible U-Value
+    "g_89": "1.400", // Min. Permissible U-Value
+    "g_90": "1.400", // Min. Permissible U-Value
+    "g_91": "1.400", // Min. Permissible U-Value
+    "g_92": "1.400", // Min. Permissible U-Value
+    "g_93": "1.400", // Min. Permissible U-Value
+    "f_94": "3.72", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.92", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "OBC SB10 5.5-6 Z6": {
     //"h_13": "OBC Prescriptive Path Part 3"
-    "h_23": "22",
-    "h_24": "26",
-    "j_35": "0",
-    "h_38": "-",
-    "h_40": "500",
-    "h_49": "275.00",
-    "h_50": "110.00",
-    "h_52": "0.9",
-    "h_53": "0",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "7",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "5.3",
-    "f_86": "4.1",
-    "f_87": "6.6",
-    "g_88": "1.99",
-    "g_89": "1.42",
-    "g_90": "1.42",
-    "g_91": "1.42",
-    "g_92": "1.42",
-    "g_93": "1.42",
-    "f_94": "1.8",
-    "f_95": "3.5",
-    "d_97": "0.3",
-    "h_104": "-",
-    "h_107": "0.4",
-    "h_108": "0.538",
-    "h_109": "2",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.81",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "0",
-    "h_140": "50"
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0", // DWHR Efficiency 0 when SB10
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "5.30", // Min. Permissible RSI
+    "f_86": "4.10", // Min. Permissible RSI
+    "f_87": "6.60", // Min. Permissible RSI
+    "g_88": "1.990", // Min. Permissible U-Value
+    "g_89": "1.420", // Min. Permissible U-Value
+    "g_90": "1.420", // Min. Permissible U-Value
+    "g_91": "1.420", // Min. Permissible U-Value
+    "g_92": "1.420", // Min. Permissible U-Value
+    "g_93": "1.420", // Min. Permissible U-Value
+    "f_94": "1.80", // Min. Permissible RSI
+    "f_95": "3.50", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "OBC SB10 5.5-6 Z5 (2010)": {
     //"h_13": "OBC Prescriptive Path Part 3"
-    "h_23": "22",
-    "h_24": "26",
-    "j_35": "0",
-    "h_38": "-",
-    "h_40": "500",
-    "h_49": "275.00",
-    "h_50": "110.00",
-    "h_52": "0.9",
-    "h_53": "0",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "7",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "5.3",
-    "f_86": "4.1",
-    "f_87": "6.6",
-    "g_88": "1.99",
-    "g_89": "2.56",
-    "g_90": "2.56",
-    "g_91": "2.56",
-    "g_92": "2.56",
-    "g_93": "2.56",
-    "f_94": "1.8",
-    "f_95": "3.5",
-    "d_97": "0.3",
-    "h_104": "-",
-    "h_107": "0.4",
-    "h_108": "0.538",
-    "h_109": "2",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "0",
-    "h_140": "50"
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0", // DWHR Efficiency 0 when SB10
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "5.30", // Min. Permissible RSI
+    "f_86": "4.10", // Min. Permissible RSI
+    "f_87": "6.60", // Min. Permissible RSI
+    "g_88": "2.560", // Min. Permissible U-Value
+    "g_89": "2.560", // Min. Permissible U-Value
+    "g_90": "2.560", // Min. Permissible U-Value
+    "g_91": "2.560", // Min. Permissible U-Value
+    "g_92": "2.560", // Min. Permissible U-Value
+    "g_93": "2.560", // Min. Permissible U-Value
+    "f_94": "1.80", // Min. Permissible RSI
+    "f_95": "3.50", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "ADD YOUR OWN HERE": {
     //"h_13": "User Defined"
-    "h_23": "22",
-    "h_24": "26",
-    "j_35": "0",
-    "h_38": "30",
-    "h_40": "500",
-    "h_49": "275.00",
-    "h_50": "110.00",
-    "h_52": "0.9",
-    "h_53": "0.75",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "5.3",
-    "f_86": "4.1",
-    "f_87": "6.6",
-    "g_88": "1.99",
-    "g_89": "1.42",
-    "g_90": "1.42",
-    "g_91": "1.42",
-    "g_92": "1.42",
-    "g_93": "1.42",
-    "f_94": "1.8",
-    "f_95": "3.5",
-    "d_97": "0.3",
-    "h_104": "-",
-    "h_107": "0.4",
-    "h_108": "0.538",
-    "h_109": "2",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.81",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "0",
-    "h_140": "50"
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "4.87", // Min. Permissible RSI
+    "f_86": "4.46", // Min. Permissible RSI
+    "f_87": "5.25", // Min. Permissible RSI
+    "g_88": "1.400", // Min. Permissible U-Value
+    "g_89": "1.400", // Min. Permissible U-Value
+    "g_90": "1.400", // Min. Permissible U-Value
+    "g_91": "1.400", // Min. Permissible U-Value
+    "g_92": "1.400", // Min. Permissible U-Value
+    "g_93": "1.400", // Min. Permissible U-Value
+    "f_94": "3.72", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "NBC T1": {
-    //"h_13": "NBC 9.36 Prescriptive Path"
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "6.41",
-    "f_86": "2.97",
-    "f_87": "5.64",
-    "g_88": "1.8",
-    "g_89": "1.8",
-    "g_90": "1.8",
-    "g_91": "1.8",
-    "g_92": "1.8",
-    "g_93": "1.8",
-    "f_94": "2.98",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "0.5",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "3.4",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.6",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "0",
-    "h_140": "50"
+    //"h_13": "NBC 9.36 Prescriptive Path" with any possible measure - serves as a baseline
+    "d_52": "0.92", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "6.41", // Min. Permissible RSI
+    "f_86": "2.97", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.800", // Min. Permissible U-Value
+    "g_89": "1.800", // Min. Permissible U-Value
+    "g_90": "1.800", // Min. Permissible U-Value
+    "g_91": "1.800", // Min. Permissible U-Value
+    "g_92": "1.800", // Min. Permissible U-Value
+    "g_93": "1.800", // Min. Permissible U-Value
+    "f_94": "2.98", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.92", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "NBC T2": {
-    //"h_13": "10% Better"
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "6.41",
-    "f_86": "4.29",
-    "f_87": "5.64",
-    "g_88": "1.2",
-    "g_89": "1.2",
-    "g_90": "1.2",
-    "g_91": "1.2",
-    "g_92": "1.2",
-    "g_93": "1.2",
-    "f_94": "2.98",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "0.5",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "1.5",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.6",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "0",
-    "h_140": "50"
+    //"h_13": "10% Better" with any possible measure
+    "d_52": "0.92", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "6.41", // Min. Permissible RSI
+    "f_86": "2.97", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.800", // Min. Permissible U-Value
+    "g_89": "1.800", // Min. Permissible U-Value
+    "g_90": "1.800", // Min. Permissible U-Value
+    "g_91": "1.800", // Min. Permissible U-Value
+    "g_92": "1.800", // Min. Permissible U-Value
+    "g_93": "1.800", // Min. Permissible U-Value
+    "f_94": "2.98", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.92", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "NBC T3": {
-    //"h_13": "20% Better"
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "6.41",
-    "f_86": "2.97",
-    "f_87": "5.64",
-    "g_88": "1.8",
-    "g_89": "1.8",
-    "g_90": "1.8",
-    "g_91": "1.8",
-    "g_92": "1.8",
-    "g_93": "1.8",
-    "f_94": "2.98",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "0.5",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "3.4",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.6",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "0",
-    "h_140": "50"
+    //"h_13": "20% Better" with any possible measure
+    "d_52": "0.92", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "6.41", // Min. Permissible RSI
+    "f_86": "2.97", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.800", // Min. Permissible U-Value
+    "g_89": "1.800", // Min. Permissible U-Value
+    "g_90": "1.800", // Min. Permissible U-Value
+    "g_91": "1.800", // Min. Permissible U-Value
+    "g_92": "1.800", // Min. Permissible U-Value
+    "g_93": "1.800", // Min. Permissible U-Value
+    "f_94": "2.98", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.92", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "NBC T4": {
-    //"h_13": "40% Better"  
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "6.41",
-    "f_86": "2.97",
-    "f_87": "5.64",
-    "g_88": "1.8",
-    "g_89": "1.8",
-    "g_90": "1.8",
-    "g_91": "1.8",
-    "g_92": "1.8",
-    "g_93": "1.8",
-    "f_94": "2.98",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "0.5",
-    "h_107": "0.22",
-    "h_108": "0.538",
-    "h_109": "3.4",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.6",
-    "d_119": "12.5",
-    "h_120": "0.45",
-    "h_127": "0",
-    "h_140": "50"
+    //"h_13": "40% Better"  with any possible measure
+    "d_52": "0.92", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "6.41", // Min. Permissible RSI
+    "f_86": "2.97", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.800", // Min. Permissible U-Value
+    "g_89": "1.800", // Min. Permissible U-Value
+    "g_90": "1.800", // Min. Permissible U-Value
+    "g_91": "1.800", // Min. Permissible U-Value
+    "g_92": "1.800", // Min. Permissible U-Value
+    "g_93": "1.800", // Min. Permissible U-Value
+    "f_94": "2.98", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.92", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "NBC T5": {
-    //"h_13": "70% Better"
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "6.41",
-    "f_86": "2.97",
-    "f_87": "5.64",
-    "g_88": "1.8",
-    "g_89": "1.8",
-    "g_90": "1.8",
-    "g_91": "1.8",
-    "g_92": "1.8",
-    "g_93": "1.8",
-    "f_94": "2.98",
-    "f_95": "1.96",
-    "d_97": "0.25",
-    "h_104": "0.5",
-    "h_107": "0.4",
-    "h_108": "0.538",
-    "h_109": "2.5",
-    "h_110": "7",
-    "f_113": "6.4",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.65",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "0",
-    "h_140": "50"
-  },
-  "CaGBC ZCB": {
-    //"h_13": "Replacing SB10"
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "7",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "7.246",
-    "f_86": "4.166",
-    "f_87": "6.41",
-    "g_88": "1.9",
-    "g_89": "1.73",
-    "g_90": "1.73",
-    "g_91": "1.73",
-    "g_92": "1.73",
-    "g_93": "1.73",
-    "f_94": "3.52",
-    "f_95": "1.32",
-    "d_97": "0.3",
-    "h_104": "0.3",
-    "h_107": "0.4",
-    "h_108": "0.538",
-    "h_109": "2.5",
-    "h_110": "7",
-    "f_113": "6.4",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.65",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "32",
-    "h_140": "50"
+    //"h_13": "70% Better" with any possible measure
+    "d_52": "0.92", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency if OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "6.41", // Min. Permissible RSI
+    "f_86": "2.97", // Min. Permissible RSI
+    "f_87": "5.64", // Min. Permissible RSI
+    "g_88": "1.800", // Min. Permissible U-Value
+    "g_89": "1.800", // Min. Permissible U-Value
+    "g_90": "1.800", // Min. Permissible U-Value
+    "g_91": "1.800", // Min. Permissible U-Value
+    "g_92": "1.800", // Min. Permissible U-Value
+    "g_93": "1.800", // Min. Permissible U-Value
+    "f_94": "2.98", // Min. Permissible RSI
+    "f_95": "1.96", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.92", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "NECB T1 (Z6)": {
     //"h_13": "Replacing SB10"
-    "h_23": "22",
-    "h_24": "24",
-    "j_35": "0",
-    "h_38": "60",
-    "h_40": "500",
-    "h_49": "220.00",
-    "h_50": "88.00",
-    "h_52": "0.9",
-    "h_53": "0",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "7",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "7.246",
-    "f_86": "4.166",
-    "f_87": "6.41",
-    "g_88": "1.9",
-    "g_89": "1.73",
-    "g_90": "1.73",
-    "g_91": "1.73",
-    "g_92": "1.73",
-    "g_93": "1.73",
-    "f_94": "3.52",
-    "f_95": "1.32",
-    "d_97": "0.3",
-    "h_104": "0.5",
-    "h_107": "0.4",
-    "h_108": "0.538",
-    "h_109": "2.5",
-    "h_110": "7",
-    "f_113": "6.4",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "50",
-    "d_118": "0.65",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "0",
-    "h_140": "50"
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0", // DWHR Efficiency 0 when SB10
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "7.246", // Min. Permissible RSI
+    "f_86": "4.166", // Min. Permissible RSI
+    "f_87": "6.410", // Min. Permissible RSI
+    "g_88": "1.900", // Min. Permissible U-Value
+    "g_89": "1.730", // Min. Permissible U-Value
+    "g_90": "1.730", // Min. Permissible U-Value
+    "g_91": "1.730", // Min. Permissible U-Value
+    "g_92": "1.730", // Min. Permissible U-Value
+    "g_93": "1.730", // Min. Permissible U-Value
+    "f_94": "3.52", // Min. Permissible RSI
+    "f_95": "1.32", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "6.4", // Min. HSPF if Heatpump
+    "d_118": "0.65", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
+  },
+  "CaGBC ZCB": {
+    //"h_13": "Replacing SB10"
+    "d_52": "0.90", // DWH System Efficiency when Electric 
+    "d_53": "0", // DWHR Efficiency 0 when SB10
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "g_67": "Regular", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "NRC 40%", // NRC 50% as default n.Gains Factor
+    "f_85": "5.30", // Min. Permissible RSI
+    "f_86": "4.10", // Min. Permissible RSI
+    "f_87": "6.60", // Min. Permissible RSI
+    "g_88": "1.990", // Min. Permissible U-Value
+    "g_89": "1.420", // Min. Permissible U-Value
+    "g_90": "1.420", // Min. Permissible U-Value
+    "g_91": "1.420", // Min. Permissible U-Value
+    "g_92": "1.420", // Min. Permissible U-Value
+    "g_93": "1.420", // Min. Permissible U-Value
+    "f_94": "1.80", // Min. Permissible RSI
+    "f_95": "3.50", // Min. Permissible RSI Slab
+    "d_97": "50", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "PH Classic": {
     //"h_13": "90% less than NBC"
-    "h_23": "18",
-    "h_24": "26",
-    "j_35": "60",
-    "h_38": "150",
-    "h_40": "500",
-    "h_49": "62.5",
-    "h_50": "25",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "2.1",
-    "h_66": "1.1",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "4.21",
-    "f_87": "5.64",
-    "g_88": "1.6",
-    "g_89": "1.6",
-    "g_90": "1.6",
-    "g_91": "1.6",
-    "g_92": "1.6",
-    "g_93": "1.6",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.15",
-    "h_104": "0.15",
-    "h_107": "0.22",
-    "h_108": "0.17",
-    "h_109": "0.6",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "10",
-    "d_118": "0.75",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "15",
-    "h_140": "10"
+    "d_52": "1.00", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency 0 when OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "1.1", // Max. Permissible Lighting Load
+    "g_67": "Efficient", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "PH Method", // PH Method used for PHI models
+    "f_85": "4.87", // Min. Permissible Roof RSI by NBC/OBC
+    "f_86": "4.21", // Min. Permissible Wall RSI by NBC/OBC
+    "f_87": "5.64", // Min. Permissible Floor RSI by NBC/OBC
+    "g_88": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_89": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_90": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_91": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_92": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_93": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "f_94": "3.72", // Min. Permissible RSI by NBC/OBC
+    "f_95": "1.96", // Min. Permissible RSI Slab by NBC/OBC
+    "d_97": "5", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "d_108": "PH Classic", // Airtightness Method (check this is in correct position per DOM and not in 109)
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "PH Plus": {
     //"h_13": "90% less than NBC"
-    "h_23": "18",
-    "h_24": "26",
-    "j_35": "45",
-    "h_38": "150",
-    "h_40": "500",
-    "h_49": "62.5",
-    "h_50": "25",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "2.1",
-    "h_66": "1.1",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "4.21",
-    "f_87": "5.64",
-    "g_88": "1.6",
-    "g_89": "1.6",
-    "g_90": "1.6",
-    "g_91": "1.6",
-    "g_92": "1.6",
-    "g_93": "1.6",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.15",
-    "h_104": "0.15",
-    "h_107": "0.22",
-    "h_108": "0.17",
-    "h_109": "0.6",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "10",
-    "d_118": "0.75",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "15",
-    "h_140": "10"
+    "d_52": "1.00", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency 0 when OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "1.1", // Max. Permissible Lighting Load
+    "g_67": "Efficient", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "PH Method", // PH Method used for PHI models
+    "f_85": "4.87", // Min. Permissible Roof RSI by NBC/OBC
+    "f_86": "4.21", // Min. Permissible Wall RSI by NBC/OBC
+    "f_87": "5.64", // Min. Permissible Floor RSI by NBC/OBC
+    "g_88": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_89": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_90": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_91": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_92": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_93": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "f_94": "3.72", // Min. Permissible RSI by NBC/OBC
+    "f_95": "1.96", // Min. Permissible RSI Slab by NBC/OBC
+    "d_97": "5", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "d_108": "PH Classic", // Airtightness Method
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "PH Premium": {
     //"h_13": "90% less than NBC"
-    "h_23": "18",
-    "h_24": "26",
-    "j_35": "30",
-    "h_38": "150",
-    "h_40": "500",
-    "h_49": "62.5",
-    "h_50": "25",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "2.1",
-    "h_66": "1.1",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "4.21",
-    "f_87": "5.64",
-    "g_88": "1.6",
-    "g_89": "1.6",
-    "g_90": "1.6",
-    "g_91": "1.6",
-    "g_92": "1.6",
-    "g_93": "1.6",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.15",
-    "h_104": "0.15",
-    "h_107": "0.22",
-    "h_108": "0.17",
-    "h_109": "0.6",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "10",
-    "d_118": "0.75",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "15",
-    "h_140": "10"
+    "d_52": "1.00", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency 0 when OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "1.1", // Max. Permissible Lighting Load
+    "g_67": "Efficient", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "PH Method", // PH Method used for PHI models
+    "f_85": "4.87", // Min. Permissible Roof RSI by NBC/OBC
+    "f_86": "4.21", // Min. Permissible Wall RSI by NBC/OBC
+    "f_87": "5.64", // Min. Permissible Floor RSI by NBC/OBC
+    "g_88": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_89": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_90": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_91": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_92": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_93": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "f_94": "3.72", // Min. Permissible RSI by NBC/OBC
+    "f_95": "1.96", // Min. Permissible RSI Slab by NBC/OBC
+    "d_97": "5", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "d_108": "PH Classic", // Airtightness Method
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "EnerPHit": {
     //"h_13": "PH Renovations"
-    "h_23": "18",
-    "h_24": "26",
-    "j_35": "60",
-    "h_38": "150",
-    "h_40": "500",
-    "h_49": "62.5",
-    "h_50": "25",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "6.67",
-    "f_86": "6.67",
-    "f_87": "6.67",
-    "g_88": "0.85",
-    "g_89": "0.85",
-    "g_90": "0.85",
-    "g_91": "0.85",
-    "g_92": "0.85",
-    "g_93": "0.85",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.15",
-    "h_104": "0.15",
-    "h_107": "0.22",
-    "h_108": "0.28",
-    "h_109": "1",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "10",
-    "d_118": "0.75",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "15",
-    "h_140": "25"
+    "d_52": "1.00", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency 0 when OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Max. Permissible Lighting Load
+    "g_67": "Efficient", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "PH Method", // PH Method used for PHI models
+    "f_85": "4.87", // Min. Permissible Roof RSI by NBC/OBC
+    "f_86": "4.21", // Min. Permissible Wall RSI by NBC/OBC
+    "f_87": "5.64", // Min. Permissible Floor RSI by NBC/OBC
+    "g_88": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_89": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_90": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_91": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_92": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_93": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "f_94": "3.72", // Min. Permissible RSI by NBC/OBC
+    "f_95": "1.96", // Min. Permissible RSI Slab by NBC/OBC
+    "d_97": "5", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "d_108": "PH Low", // Airtightness Method
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   },
   "PH Low Energy": {
     //"h_13": "80% less than NBC"
-    "h_23": "18",
-    "h_24": "26",
-    "j_35": "75",
-    "h_38": "150",
-    "h_40": "500",
-    "h_49": "62.5",
-    "h_50": "25",
-    "h_52": "0.9",
-    "h_53": "0.42",
-    "h_56": "150",
-    "h_57": "1000",
-    "h_58": "150",
-    "h_59": "30-50 ideal",
-    "h_65": "5",
-    "h_66": "2",
-    "h_67": "5",
-    "f_85": "4.87",
-    "f_86": "4.21",
-    "f_87": "5.64",
-    "g_88": "1.6",
-    "g_89": "1.6",
-    "g_90": "1.6",
-    "g_91": "1.6",
-    "g_92": "1.6",
-    "g_93": "1.6",
-    "f_94": "3.72",
-    "f_95": "1.96",
-    "d_97": "0.15",
-    "h_104": "0.15",
-    "h_107": "0.22",
-    "h_108": "0.28",
-    "h_109": "1",
-    "h_110": "5",
-    "f_113": "7.1",
-    "j_115": "0.9",
-    "j_116": "3.3",
-    "f_117": "10",
-    "d_118": "0.75",
-    "d_119": "12.5",
-    "h_120": "3.5",
-    "h_127": "15",
-    "h_140": "30"
+    "d_52": "1.00", // DWH System Efficiency when Electric 
+    "d_53": "0.42", // DWHR Efficiency 0 when OBC
+    "d_56": "150",  // Max. Radon per Health Canada Bq/m3
+    "d_57": "1000", // Max. CO2 per Health Canada ppm
+    "d_58": "150",  // Max. CO2 per Health Canada ppm
+    "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Max. Permissible Lighting Load
+    "g_67": "Efficient", // Required Eppt Efficienct Spec.
+    "f_73": "0.50", // SHGC of Glazing Max. 
+    "f_74": "0.50", // SHGC of Glazing Max. 
+    "f_75": "0.50", // SHGC of Glazing Max. 
+    "f_76": "0.50", // SHGC of Glazing Max. 
+    "f_77": "0.50", // SHGC of Glazing Max.
+    "f_78": "0.50", // SHGC of Glazing Max.  
+    "d_80": "PH Method", // PH Method used for PHI models
+    "f_85": "4.87", // Min. Permissible Roof RSI by NBC/OBC
+    "f_86": "4.21", // Min. Permissible Wall RSI by NBC/OBC
+    "f_87": "5.64", // Min. Permissible Floor RSI by NBC/OBC
+    "g_88": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_89": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_90": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_91": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_92": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "g_93": "1.600", // Min. Permissible U-Value by NBC/OBC
+    "f_94": "3.72", // Min. Permissible RSI by NBC/OBC
+    "f_95": "1.96", // Min. Permissible RSI Slab by NBC/OBC
+    "d_97": "5", // Default Thermal Bridge Penatly (Not Defined in Codes)
+    "d_108": "PH Low", // Airtightness Method
+    "j_115": "0.90", // Min. AFUE if Gas or Oil
+    "j_116": "3.3", // Min. COPc if Dedicated Cooling
+    "f_113": "7.1", // Min. HSPF if Heatpump
+    "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
+    "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
+    "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
   }
 };
 

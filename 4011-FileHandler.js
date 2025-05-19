@@ -2,7 +2,7 @@
 // Handles file operations like importing and exporting Excel/CSV files
 //
 // Recent changes:
-// 2024-08-15: Fixed CSV export to remove commas from numeric values (like "132,938.00" -> "132938.00") 
+// 2025-05-10: Fixed CSV export to remove commas from numeric values (like "132,938.00" -> "132938.00") 
 //             to prevent import issues where commas in values were treated as column separators
 
 (function(window) {
