@@ -1074,12 +1074,15 @@ TEUI.FieldManager = (function() {
             
             const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
 
-            // <<<< NEW LOGGING >>>>
             if (fieldId === 'f_85') {
-                console.log(`[FieldManager.updateFieldDisplay] For ${fieldId}: newValue="${newValue}". Element found: ${!!element}. FieldDef type: ${fieldDef ? fieldDef.type : 'N/A'}`);
-                if (element) console.log("[FieldManager.updateFieldDisplay] Element for f_85:", element);
+                // console.log(`[FieldManager f_85] updateFieldDisplay called. newValue: "${newValue}", Element found: ${!!element}, Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
             }
-            // <<<< END NEW LOGGING >>>>
+
+            // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+            // if (fieldId === 'g_67') { // Intentionally commented out
+            //     console.log(`[FieldManager g_67] updateFieldDisplay. newValue: "${newValue}", Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
+            // }
+            // <<<< END LOGGING FOR g_67 >>>>
 
             if (!element) {
                 // <<<< NEW LOGGING >>>>
@@ -1193,21 +1196,16 @@ TEUI.FieldManager = (function() {
                     }
                     break;
                 case 'dropdown':
-                    const selectElement = element.tagName === 'SELECT' ? element : element.querySelector(`select[data-field-id='${fieldId}']`);
-                    if (selectElement) {
-                        let optionFoundAndSelected = false;
-                        for (let i = 0; i < selectElement.options.length; i++) {
-                            if (selectElement.options[i].value === newValue) {
-                                selectElement.options[i].selected = true;
-                                optionFoundAndSelected = true;
-                            } else {
-                                selectElement.options[i].selected = false;
-                            }
-                        }
-                        selectElement.value = newValue;
-                        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+                    if (element.tagName === 'SELECT') {
+                        element.value = newValue;
+                        // <<<< SPECIFIC LOGGING FOR g_67 (RE-APPLY) >>>>
+                        // if (fieldId === 'g_67') { // Intentionally commented out
+                        //     console.log(`[FieldManager g_67] Set SELECT value to: "${newValue}". Element found: ${!!element}`);
+                        // }
+                        // <<<< END LOGGING FOR g_67 >>>>
                     } else {
-                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find SELECT element for dropdown ${fieldId}`);
+                        // Check if it's a contenteditable span that functions as a dropdown display
+                        // ... existing code ...
                     }
                     break;
                 case 'calculated':

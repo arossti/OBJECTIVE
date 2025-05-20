@@ -93,8 +93,29 @@ TEUI.ReferenceToggle = (function() {
             const fieldDef = allUserEditableFields[fieldId];
             if (!fieldDef) continue;
 
-            const currentValue = TEUI.StateManager.getValue(fieldId);
+            let displayValue;
+            let applicationStateValue; // For comparison when exiting reference mode
+
+            if (referenceMode) {
+                displayValue = TEUI.StateManager.getValue(fieldId); // Mode-aware, gets from activeReferenceDataSet
+            } else {
+                // Exiting reference mode, get the true application state value
+                applicationStateValue = TEUI.StateManager.getValue(fieldId, TEUI.StateManager.VALUE_STATES.APPLICATION);
+                displayValue = applicationStateValue;
+            }
             
+            // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+            // if (fieldId === 'g_67') { // Intentionally commented out
+            //     console.log(`[ReferenceToggle g_67] Mode: ${referenceMode ? 'ENTERING_REF' : 'EXITING_REF'}`);
+            //     if (referenceMode) {
+            //         console.log(`[ReferenceToggle g_67] DisplayValue (from activeReferenceDataSet via SM.getValue): "${displayValue}"`);
+            //     } else {
+            //         console.log(`[ReferenceToggle g_67] AppStateValue (from SM.getValue(APP_STATE)): "${applicationStateValue}"`);
+            //         console.log(`[ReferenceToggle g_67] DisplayValue (should be AppStateValue): "${displayValue}"`);
+            //     }
+            // }
+            // <<<< END LOGGING FOR g_67 >>>>
+
             if (fieldId === 'f_85' || fieldId === 'd_66' || fieldId === 'd_13') {
                 const isRefModeActive = (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode());
                 const activeDataSet = (window.TEUI && TEUI.StateManager && TEUI.StateManager.activeReferenceDataSet) 
@@ -103,11 +124,11 @@ TEUI.ReferenceToggle = (function() {
                 const expectedValueFromDataset = activeDataSet ? activeDataSet[fieldId] : 'activeReferenceDataSet N/A';
                 
                 console.log(`[ReferenceToggle UI REFRESH] For ${fieldId} (RefMode active: ${isRefModeActive}): ` +
-                            `StateManager.getValue() returned: "${currentValue}". ` +
+                            `StateManager.getValue() returned: "${displayValue}". ` +
                             `Expected from activeReferenceDataSet: "${expectedValueFromDataset}"`);
             }
 
-            TEUI.FieldManager.updateFieldDisplay(fieldId, currentValue, fieldDef);
+            TEUI.FieldManager.updateFieldDisplay(fieldId, displayValue, fieldDef);
             
             const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
             const inputElement = (element && element.matches('input, select, textarea')) ? element : (element ? element.querySelector('input, select, textarea') : null);

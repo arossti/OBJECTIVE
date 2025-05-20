@@ -239,9 +239,21 @@ TEUI.StateManager = (function() {
     function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
         // << NEW: Check if application state updates are muted >>
         if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
-            // console.warn(`[StateManager] Application state update for ${fieldId} (state: ${state}) to "${value}" MUTED.`);
+            // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+            // if (fieldId === 'g_67') { // Intentionally commented out
+            //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to "${value}", stateType: ${state}`);
+            // }
+            // <<<< END LOGGING FOR g_67 >>>>
             return false; // Prevent update to this.fields (application state)
         }
+
+        // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+        // if (fieldId === 'g_67') { // Intentionally commented out
+        //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to "${value}", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+        // }
+        // <<<< END LOGGING FOR g_67 >>>>
+
+        const fieldDefinition = fields[fieldId];
 
         // Get the current value // This will use the mode-aware getValue, which is fine for oldValue context
         const oldValue = getValue(fieldId); 
