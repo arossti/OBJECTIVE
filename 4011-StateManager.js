@@ -225,7 +225,7 @@ TEUI.StateManager = (function() {
                    : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
         } else {
             // Existing logic for Application Mode
-        return fields.has(fieldId) ? fields.get(fieldId).value : null;
+            return fields.has(fieldId) ? fields.get(fieldId).value : null;
         }
     }
     
@@ -258,7 +258,7 @@ TEUI.StateManager = (function() {
         const fieldDefinition = fields[fieldId];
 
         // Get the current value // This will use the mode-aware getValue, which is fine for oldValue context
-        const oldValue = getValue(fieldId);
+        const oldValue = getValue(fieldId); 
         
         // If field doesn't exist, create it
         if (!fields.has(fieldId)) {
@@ -1088,7 +1088,7 @@ TEUI.StateManager = (function() {
         isApplicationStateMuted = isMuted;
         // console.log(`[StateManager] Application state updates ${isMuted ? 'MUTED' : 'UNMUTED'}.`);
     }
-    
+
     // Public API
     return {
         // Constants
