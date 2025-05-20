@@ -67,16 +67,15 @@ TEUI.ReferenceToggle = (function() {
         return;
     }
 
-    if (referenceMode) {
-        TEUI.StateManager.setMuteApplicationStateUpdates(true);
-    }
+    // Unconditionally mute application state updates for the duration of this UI refresh operation
+    TEUI.StateManager.setMuteApplicationStateUpdates(true);
 
     try {
         const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID);
 
         if (referenceMode) {
             if (!currentStandardKey) {
-                console.warn("[ReferenceToggle] No reference standard selected (d_13 is empty). Cannot load reference data.");
+                console.warn("[ReferenceToggle] No reference standard selected (d_13 is empty). Cannot load reference data for display.");
             } else {
                 TEUI.StateManager.loadReferenceData(currentStandardKey);
             }
@@ -166,7 +165,9 @@ TEUI.ReferenceToggle = (function() {
         }
         console.log("[ReferenceToggle] Full UI Refresh finished.");
     } finally {
+        // ALWAYS Unmute application state updates after the refresh attempt
         TEUI.StateManager.setMuteApplicationStateUpdates(false);
+        console.log("[ReferenceToggle] StateManager application state updates unmuted.");
     }
   }
 
