@@ -1166,6 +1166,32 @@ TEUI.FieldManager = (function() {
                         element.textContent = newValue;
                     }
                     break;
+                case 'generic_slider':
+                    // The element for a generic_slider is typically the cell (td), 
+                    // and the actual range input is a child.
+                    const genericRangeInputElement = element.querySelector('input[type="range"].area-adjust-slider');
+                    if (genericRangeInputElement) {
+                        const numericValue = window.TEUI.parseNumeric(newValue, parseFloat(genericRangeInputElement.defaultValue || "0"));
+                        if (!isNaN(numericValue)) {
+                            genericRangeInputElement.value = numericValue;
+                            // Dispatch an 'input' event so any listeners on the slider itself react (e.g., Section02 specific handlers)
+                            genericRangeInputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                            // console.log(`[FieldManager.updateFieldDisplay] Set generic_slider ${fieldId} to ${numericValue}`);
+                        } else {
+                            // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for generic_slider ${fieldId}`);
+                        }
+                    } else {
+                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for generic_slider ${fieldId}. Element was:`, element);
+                        // Fallback: if the element IS the slider (less likely based on current rendering)
+                        if (element.type === 'range') {
+                           const numericValueFallback = window.TEUI.parseNumeric(newValue, parseFloat(element.defaultValue || "0"));
+                           if (!isNaN(numericValueFallback)) element.value = numericValueFallback;
+                        } else if (typeof element.textContent !== 'undefined') {
+                           // If it's just a cell and no slider found, update text as last resort.
+                           element.textContent = newValue; 
+                        }
+                    }
+                    break;
                 case 'dropdown':
                     const selectElement = element.tagName === 'SELECT' ? element : element.querySelector(`select[data-field-id='${fieldId}']`);
                     if (selectElement) {

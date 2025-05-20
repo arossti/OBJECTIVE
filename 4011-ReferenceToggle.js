@@ -67,89 +67,107 @@ TEUI.ReferenceToggle = (function() {
         return;
     }
 
-    const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID); // This will be app state d_13
-
     if (referenceMode) {
-        if (!currentStandardKey) {
-            console.warn("[ReferenceToggle] No reference standard selected (d_13 is empty). Cannot load reference data.");
-            // Optionally, still refresh UI to lock fields or show a message
-        } else {
-            TEUI.StateManager.loadReferenceData(currentStandardKey);
+        TEUI.StateManager.setMuteApplicationStateUpdates(true);
+    }
+
+    try {
+        const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID);
+
+        if (referenceMode) {
+            if (!currentStandardKey) {
+                console.warn("[ReferenceToggle] No reference standard selected (d_13 is empty). Cannot load reference data.");
+            } else {
+                TEUI.StateManager.loadReferenceData(currentStandardKey);
+            }
         }
-    }
 
-    const allUserEditableFields = TEUI.FieldManager.getAllUserEditableFields();
-    if (!allUserEditableFields || Object.keys(allUserEditableFields).length === 0) {
-        console.warn("[ReferenceToggle] No user-editable fields found via FieldManager.");
-        return;
-    }
+        const allUserEditableFields = TEUI.FieldManager.getAllUserEditableFields();
+        if (!allUserEditableFields || Object.keys(allUserEditableFields).length === 0) {
+            console.warn("[ReferenceToggle] No user-editable fields found via FieldManager.");
+            return;
+        }
 
-    const fieldIds = Object.keys(allUserEditableFields);
+        const fieldIds = Object.keys(allUserEditableFields);
 
-    for (const fieldId of fieldIds) {
-        const fieldDef = allUserEditableFields[fieldId];
-        if (!fieldDef) continue;
+        for (const fieldId of fieldIds) {
+            const fieldDef = allUserEditableFields[fieldId];
+            if (!fieldDef) continue;
 
-        const currentValue = TEUI.StateManager.getValue(fieldId); // Mode-aware
-        
-        if (fieldId === 'f_85' || fieldId === 'd_66' || fieldId === 'd_13') { // Watch key fields
-            const isRefModeActive = (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()); // Get current mode status
-            const activeDataSet = (window.TEUI && TEUI.StateManager && TEUI.StateManager.activeReferenceDataSet) 
-                                ? TEUI.StateManager.activeReferenceDataSet 
-                                : null;
-            const expectedValueFromDataset = activeDataSet ? activeDataSet[fieldId] : 'activeReferenceDataSet N/A';
+            const currentValue = TEUI.StateManager.getValue(fieldId);
             
-            console.log(`[ReferenceToggle UI REFRESH] For ${fieldId} (RefMode active: ${isRefModeActive}): ` +
-                        `StateManager.getValue() returned: "${currentValue}". ` +
-                        `Expected from activeReferenceDataSet: "${expectedValueFromDataset}"`);
-        }
-
-        TEUI.FieldManager.updateFieldDisplay(fieldId, currentValue, fieldDef);
-        
-        const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
-        const inputElement = (element && element.matches('input, select, textarea')) ? element : (element ? element.querySelector('input, select, textarea') : null);
-        const displayElement = (element && !inputElement && element.matches('[contenteditable="true"], [data-field-id]')) ? element : null;
-
-        if (element) {
-            if (referenceMode) {
-                const behavior = TEUI.AppendixE.getFieldBehavior(fieldId, currentStandardKey);
-                let lockField = false;
-
-                if (behavior === "Independently User-Editable in Reference Mode") {
-                    lockField = false;
-                } else { // Directly Set by Standard, Carry-Over, RefMode Default, or any other non-editable case
-                    lockField = true;
-                }
+            if (fieldId === 'f_85' || fieldId === 'd_66' || fieldId === 'd_13') {
+                const isRefModeActive = (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode());
+                const activeDataSet = (window.TEUI && TEUI.StateManager && TEUI.StateManager.activeReferenceDataSet) 
+                                    ? TEUI.StateManager.activeReferenceDataSet 
+                                    : null;
+                const expectedValueFromDataset = activeDataSet ? activeDataSet[fieldId] : 'activeReferenceDataSet N/A';
                 
-                // Also lock if it's a calculated or derived type from fieldDef, regardless of AppendixE for inputs
-                if (fieldDef.type === 'calculated' || fieldDef.type === 'derived') {
-                    lockField = true;
-                }
+                console.log(`[ReferenceToggle UI REFRESH] For ${fieldId} (RefMode active: ${isRefModeActive}): ` +
+                            `StateManager.getValue() returned: "${currentValue}". ` +
+                            `Expected from activeReferenceDataSet: "${expectedValueFromDataset}"`);
+            }
 
-                if (lockField) {
-                    element.classList.add('reference-locked');
-                    if (inputElement) inputElement.disabled = true;
-                    if (displayElement) displayElement.setAttribute('contenteditable', 'false');
+            TEUI.FieldManager.updateFieldDisplay(fieldId, currentValue, fieldDef);
+            
+            const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
+            const inputElement = (element && element.matches('input, select, textarea')) ? element : (element ? element.querySelector('input, select, textarea') : null);
+            const displayElement = (element && !inputElement && element.matches('[contenteditable="true"], [data-field-id]')) ? element : null;
+
+            if (element) {
+                if (referenceMode) {
+                    const behavior = TEUI.AppendixE.getFieldBehavior(fieldId, currentStandardKey);
+                    let lockField = false;
+
+                    if (behavior === "Independently User-Editable in Reference Mode") {
+                        lockField = false;
+                    } else {
+                        lockField = true;
+                    }
+                    
+                    if (fieldDef.type === 'calculated' || fieldDef.type === 'derived') {
+                        lockField = true;
+                    }
+
+                    // Get the actual slider input if this is a generic_slider cell
+                    const actualSliderElement = fieldDef.type === 'generic_slider' 
+                                                ? element.querySelector('input[type="range"].area-adjust-slider') 
+                                                : null;
+
+                    if (lockField) {
+                        element.classList.add('reference-locked');
+                        if (inputElement) inputElement.disabled = true;
+                        if (actualSliderElement) actualSliderElement.disabled = true; // Lock the slider itself
+                        if (displayElement) displayElement.setAttribute('contenteditable', 'false');
+                    } else {
+                        element.classList.remove('reference-locked');
+                        if (inputElement) inputElement.disabled = false;
+                        if (actualSliderElement) actualSliderElement.disabled = false; // Unlock the slider itself
+                        if (displayElement) displayElement.setAttribute('contenteditable', 'true');
+                    }
                 } else {
                     element.classList.remove('reference-locked');
-                    if (inputElement) inputElement.disabled = false;
-                    if (displayElement) displayElement.setAttribute('contenteditable', 'true');
-                }
-            } else { // Back in Design Mode
-                element.classList.remove('reference-locked');
-                const isNormallyEditable = ['editable', 'number', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'coefficient_slider', 'generic_slider'].includes(fieldDef.type);
-                
-                if (isNormallyEditable) {
-                    if (inputElement) inputElement.disabled = false;
-                    if (displayElement) displayElement.setAttribute('contenteditable', 'true');
-                } else { // Was not normally editable (e.g. calculated field)
-                    if (inputElement) inputElement.disabled = true; // Should already be but ensure
-                    if (displayElement) displayElement.setAttribute('contenteditable', 'false');
+                    const isNormallyEditable = ['editable', 'number', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'coefficient_slider', 'generic_slider'].includes(fieldDef.type);
+                    const actualSliderElementForDesign = fieldDef.type === 'generic_slider' 
+                                                         ? element.querySelector('input[type="range"].area-adjust-slider') 
+                                                         : null;
+                    
+                    if (isNormallyEditable) {
+                        if (inputElement) inputElement.disabled = false;
+                        if (actualSliderElementForDesign) actualSliderElementForDesign.disabled = false; // Ensure slider is enabled
+                        if (displayElement) displayElement.setAttribute('contenteditable', 'true');
+                    } else { 
+                        if (inputElement) inputElement.disabled = true; 
+                        if (actualSliderElementForDesign) actualSliderElementForDesign.disabled = true; // Ensure non-editable slider is disabled
+                        if (displayElement) displayElement.setAttribute('contenteditable', 'false');
+                    }
                 }
             }
         }
+        console.log("[ReferenceToggle] Full UI Refresh finished.");
+    } finally {
+        TEUI.StateManager.setMuteApplicationStateUpdates(false);
     }
-    console.log("[ReferenceToggle] Full UI Refresh finished.");
   }
 
   function updateButtonAppearance() {

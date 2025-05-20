@@ -1,8 +1,8 @@
 # Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
 
-**Date:** 2025-05-16
-**Version:** 2.3 (Refined State Separation, Addressed UI Overwrite Bug, Clarified Calc Paths)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.2
+**Date:** 2025-05-17
+**Version:** 2.4 (Further refinement on state preservation and UI refresh logic)
+**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.3
 
 ## 1. Objective
 
@@ -93,48 +93,14 @@ This workplan integrates tasks from previous planning documents into a unified s
 *   **Action:** Systematically refactor all remaining section modules to use these global helpers before proceeding with core Reference Model logic.
 
 ### Phase A: Foundational Data Structure and `4011-ReferenceValues.js` Refactor
-*   **A1. Finalize Unified Data Structure (for User-Editable Fields):** Confirm the JSON key-value structure (`{fieldId: value, ...}`) for all state representations of user-editable fields.
-*   **A2. Restructure `4011-ReferenceValues.js`:**
-    *   **Goal:** Modify `TEUI.ReferenceValues` so that each defined reference standard (e.g., `OBC_SB10_2017_ClimateZone5`) directly returns data **only for user-editable fields** in the Unified Data Structure *that the standard explicitly defines*. These reference values effectively act as a set of targeted input overrides.
-    *   **Clarification:** `TEUI.ReferenceValues` will serve as the source for values explicitly mandated by a standard. It will *not* contain values that are "carried over" from the application state or have specific "Reference Mode defaults" independent of the standard's definition; that logic will reside in `StateManager`.
-    *   **Example of `ReferenceValues.js` content reflecting this:**
-        ```javascript
-        // TEUI.ReferenceValues to be restructured to:
-        TEUI.ReferenceValues = {
-            "NBC T1": { // Key is the standard name (from d_13)
-                "h_13": "NBC 9.36 Prescriptive Path", // Standard's descriptive name (S02)
-                "f_85": "6.41",                      // Roof RSI (S11)
-                "f_113": "7.1",                       // Heating System Efficiency (S13)
-                "d_118": "0.6"                        // HRV SRE @ -25C (S13) - Corresponds to V.1.1 in RefValues
-                // ... other *user-editable* fieldIds explicitly defined by NBC T1
-            }
-            // ... other standards
-        };
-        ```
-    *   **Rationale:** This makes a standard's explicit definitions structurally consistent with other data sets. `StateManager` will combine this with carry-over logic to form the complete Reference Mode state.
-    *   **Action:** Update `4011-ReferenceValues.js`.
+*   **A1. Finalize Unified Data Structure (for User-Editable Fields):** (Completed)
+*   **A2. Restructure `4011-ReferenceValues.js`:** (Completed, ongoing data validation by user)
 
 ### Phase B: `StateManager` Enhancements for Unified Data & Reference Model
-*   **B1. Internal State for Reference Values & Data Loading Logic:**
-    *   `StateManager` has `this.activeReferenceDataSet = {};`
-    *   `StateManager.loadReferenceData(standardKey)` is implemented to:
-        1.  Initialize/Clear `this.activeReferenceDataSet`.
-        2.  Step 1 (Carry-Over Application State - Baseline): Deep copy from `this.fields` (application state) to `this.activeReferenceDataSet`.
-        3.  Step 2 (Apply Specific "Reference Mode Defaults"): As per Appendix E, to `this.activeReferenceDataSet`.
-        4.  Step 3 (Overlay Explicit Standard Overrides): From `TEUI.ReferenceValues._data[standardKey]` to `this.activeReferenceDataSet`.
-        5.  Step 4 (Ensure Completeness - Fallback): To `this.activeReferenceDataSet`.
-    *   **Next Steps:** Ensure `loadReferenceData` *never* modifies `this.fields`.
-*   **B2. Mode-Aware `StateManager.getValue(fieldId)`:**
-    *   Modify `StateManager.getValue(fieldId)`:
-        *   `if (TEUI.ReferenceToggle.isReferenceMode()) { return this.activeReferenceDataSet[fieldId] ?? (this.defaultValues[fieldId] ? this.defaultValues[fieldId].value : undefined); }`
-            *   The fallback `?? (this.defaultValues[fieldId] ...)` is a safety net; `activeReferenceDataSet` should ideally be comprehensive after `loadReferenceData`.
-        *   `else { // existing logic for application state }`
-*   **B3. Standardized `StateManager.setValues(dataSet, stateType)`:**
-    *   **Goal:** Create a robust `StateManager` method to import a batch of values **for user-editable fields** into the *application state*.
-    *   **Action:** Implement `StateManager.setValues(newValuesObject, stateType)` where `newValuesObject` is in the Unified Data Structure (containing only user-editable `fieldId`s), and `stateType` is e.g., `'user-modified'`, `'imported'`.
-    *   This function will iterate `newValuesObject` and call the existing `StateManager.setValue(fieldId, value, stateType)` for each entry, applying to the application state.
-    *   This will be used by CSV import (Row 2) and "Notes" section paste.
-*   **B4. New: `StateManager.setMuteApplicationStateUpdates(isMuted)` and corresponding internal flag.** `setValue` will check this flag before updating `this.fields` if `isMuted` is true (except for 'calculated'/'derived' states).
+*   **B1. Internal State for Reference Values & Data Loading Logic:** (Implemented, `activeReferenceDataSet` populated correctly with standard overrides and carry-overs. `loadReferenceData` correctly avoids altering `this.fields`.)
+*   **B2. Mode-Aware `StateManager.getValue(fieldId)`:** (Implemented, appears to correctly fetch from `activeReferenceDataSet` when in Reference Mode).
+*   **B3. Standardized `StateManager.setValues(dataSet, stateType)`:** (Exists, interaction with muting for batch imports like CSV needs to ensure it respects mute if active).
+*   **B4. `StateManager.setMuteApplicationStateUpdates(isMuted)`:** (Implemented. Used by `ReferenceToggle`. Next step is to ensure its application covers the entire UI refresh cycle in `ReferenceToggle`).
 
 ### Phase C: CSV Export/Import Standardization
 *   **C1. Refine CSV Export Logic (`4011-FileHandler.js`):**
@@ -194,11 +160,10 @@ This workplan integrates tasks from previous planning documents into a unified s
     *   A button to serialize the current `StateManager` values **for user-editable fields in the application state** (using a method like `StateManager.getAllUserEditableValuesInUnifiedFormat()`) into CSV format (2 rows: headers and values) and populate the `<textarea>`.
 
 ### Phase E: Reference Model UI Integration & Activation
-*   **E1. UI Update Triggering and Field State Management for Reference Mode:**
-    *   `ReferenceToggle.js` calls `StateManager.loadReferenceData()` and then orchestrates UI refresh.
-    *   The UI refresh loop calls `FieldManager.updateFieldDisplay()` with values from the mode-aware `StateManager.getValue()`.
-    *   Styling/locking based on Appendix E and mode is being applied.
-    *   **Next Steps/Critical Bug Fix:** Prevent `FieldManager.updateFieldDisplay` (via its dispatched events and subsequent calls to `StateManager.setValue`) from overwriting `this.fields` (application state) when displaying Reference Mode values. Implement the "muting" strategy for `StateManager.setValue` during this refresh.
+*   **E1. UI Update Triggering and Field State Management for Reference Mode:** (Partially complete)
+    *   UI correctly displays reference input values and locks fields in Reference Mode.
+    *   **Identified Bug:** Application state for certain fields (`g_67`, `k_120`) not perfectly preserved when toggling back to Design Mode.
+    *   **Next Steps/Critical Bug Fix:** Refine `ReferenceToggle.triggerFullUIRefreshForModeChange` to ensure `StateManager.setMuteApplicationStateUpdates(true)` is active throughout the entire UI update process (for both displaying Reference and reverting to Design) and is reset in a `finally` block. This should prevent inadvertent overwrites of application state.
 *   **E2. UI Locking/Styling for Reference Mode (CSS):**
     *   `ReferenceToggle.js` correctly adds/removes the `reference-mode` body class.
     *   CSS rules in `4011-styles.css` (e.g., for `.reference-locked` and `body.reference-mode .user-input:not(.reference-locked)`) will provide the visual distinction (deep red, bold, italic for locked; standard blue for user-editable in RefMode).
@@ -211,6 +176,7 @@ This workplan integrates tasks from previous planning documents into a unified s
 
 ### Phase G: End-to-End Testing, Validation, and Documentation
 *   **G1. Comprehensive Test Cases:**
+    *   Verify `g_67` and `k_120` (and all other fields) correctly revert to their exact pre-Reference-Mode application state values when toggling back to Design Mode after the refined muting in `ReferenceToggle` is implemented.
     *   Develop test scenarios covering:
         *   CSV Export (3-Row): Verify `fieldId`s, application state values, and resolved Reference Mode state values are correct.
         *   CSV Import (3-Row): Test import. Verify `StateManager` application state update (including `d_13`) and that Reference Mode correctly reflects the imported standard via `StateManager.loadReferenceData()`.
@@ -247,8 +213,8 @@ This workplan integrates tasks from previous planning documents into a unified s
 *   **Phase D ("Notes" Section Paste):** Medium priority. Useful feature but can follow core data handling.
 *   **Phase F (Layout):** Out of scope for this specific workplan; part of a larger UI refactor.
 *   **Phase G (Testing & Documentation):** Ongoing throughout, with dedicated final testing and documentation update periods. Appendix E population is a key part of this.
-*   **Phase B4 (StateManager Muting):** Highest immediate priority to fix state overwrite bug.
-*   **Refactor S01 & Calculator for Dual Calculation Display:** High priority after B4, to correctly show Reference vs. Target in S01.
+*   **Refine `ReferenceToggle` Muting Logic:** Highest immediate priority to fix `g_67`/`k_120` state preservation bug.
+*   **Refactor S01 & Calculator for Dual Calculation Display:** High priority after state preservation is perfect, to correctly show Reference vs. Target in S01.
 
 This workplan aims to create a more robust, maintainable, and consistent approach to state management and Reference Model integration in the TEUI 4.011 calculator.
 

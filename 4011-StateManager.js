@@ -147,7 +147,8 @@ TEUI.StateManager = (function() {
     let calculatedFields = new Set(); // Set of fields that are calculated
     let dirtyFields = new Set();      // Fields needing recalculation
     let listeners = new Map();        // Field change listeners
-    let activeReferenceDataSet = {}; // << NEW: To store the complete Reference Mode state
+    let activeReferenceDataSet = {}; 
+    let isApplicationStateMuted = false; // << NEW: Flag for muting application state updates
     
     /**
      * Initialize the state manager
@@ -236,8 +237,14 @@ TEUI.StateManager = (function() {
      * @returns {boolean} True if the value changed
      */
     function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
-        // Get the current value
-        const oldValue = getValue(fieldId);
+        // << NEW: Check if application state updates are muted >>
+        if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+            // console.warn(`[StateManager] Application state update for ${fieldId} (state: ${state}) to "${value}" MUTED.`);
+            return false; // Prevent update to this.fields (application state)
+        }
+
+        // Get the current value // This will use the mode-aware getValue, which is fine for oldValue context
+        const oldValue = getValue(fieldId); 
         
         // If field doesn't exist, create it
         if (!fields.has(fieldId)) {
@@ -1044,18 +1051,28 @@ TEUI.StateManager = (function() {
             return false;
         }
 
-        const oldValue = activeReferenceDataSet[fieldId];
+        const oldValueInRef = activeReferenceDataSet[fieldId]; // Get old value specifically from ref dataset
         activeReferenceDataSet[fieldId] = value;
 
         // Notify listeners. Consider a specific state like 'reference-user-modified'
         // For now, using existing notifyListeners to ensure dependents are aware. 
         // The main calculation loop should use mode-aware getValue().
-        notifyListeners(fieldId, value, oldValue, VALUE_STATES.USER_MODIFIED); // Or a new state
+        // Using a distinct state prevents this from being caught by the mute if it also checks state.
+        notifyListeners(fieldId, value, oldValueInRef, 'reference-user-modified'); 
 
         // TODO: Consider if markDependentsDirty specifically for reference mode is needed,
         // or if the existing mechanism + mode-aware getValue is sufficient.
         console.log(`[StateManager] Value set in Reference Mode for ${fieldId}: ${value}`);
         return true;
+    }
+
+    /**
+     * NEW METHOD: Sets the mute state for application state updates.
+     * @param {boolean} isMuted - True to mute updates to application state, false to allow.
+     */
+    function setMuteApplicationStateUpdates(isMuted) {
+        isApplicationStateMuted = isMuted;
+        // console.log(`[StateManager] Application state updates ${isMuted ? 'MUTED' : 'UNMUTED'}.`);
     }
 
     // Public API
@@ -1093,8 +1110,9 @@ TEUI.StateManager = (function() {
         getAllKeys: getAllKeys,
         getDebugInfo: getDebugInfo,
         exportDependencyGraph: exportDependencyGraph,
-        loadReferenceData: loadReferenceData,           // << NEW
-        setValueInReferenceMode: setValueInReferenceMode // << NEW
+        loadReferenceData: loadReferenceData,           
+        setValueInReferenceMode: setValueInReferenceMode, 
+        setMuteApplicationStateUpdates: setMuteApplicationStateUpdates // << NEW
     };
 })();
 
