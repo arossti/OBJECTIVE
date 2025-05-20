@@ -1,8 +1,8 @@
 # Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
 
-**Date:** 2025-05-17
-**Version:** 2.5 (k_120 & g_67 UI Bugs Fixed, S01 Calculation Path Next)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.4
+**Date:** 2025-05-18
+**Version:** 2.7 (Revised Phased Approach for Section01 Key Values Display)
+**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.6
 
 ## 1. Objective
 
@@ -101,15 +101,28 @@ This workplan integrates tasks from previous planning documents into a unified s
 *   **B2. Mode-Aware `StateManager.getValue(fieldId)`:** (Implemented, appears to correctly fetch from `activeReferenceDataSet` when in Reference Mode).
 *   **B3. Standardized `StateManager.setValues(dataSet, stateType)`:** (Exists, interaction with muting for batch imports like CSV needs to ensure it respects mute if active).
 *   **B4. `StateManager.setMuteApplicationStateUpdates(isMuted)`:** (Implemented. Used by `ReferenceToggle`. Next step is to ensure its application covers the entire UI refresh cycle in `ReferenceToggle`).
-*   **B5. (NEW) Implement Dual Calculation Path & S01 Display Logic (Next):**
-    *   **Goal:** Ensure `4011-Calculator.js` (and `sections/4011-Section01.js` if needed) can populate both Application State results and Reference Mode results into the correct output cells in Section01 (e.g., Target TEUI in H6, Reference TEUI in E6).
-    *   **Strategy:**
-        *   `4011-Calculator.js`'s `calculateAll()` might need to be enhanced. It could potentially:
-            1.  Run once for the Application State (using `StateManager.getValue()` when Reference Mode is programmatically off).
-            2.  Run a second time for the Reference State (using `StateManager.getValue()` when Reference Mode is programmatically on, or by directly passing the `activeReferenceDataSet` to calculation functions).
-        *   Alternatively, individual calculation functions within sections (especially Section01) might need to become "mode-aware" or be called twice with different state contexts.
-        *   `StateManager` might need a method like `getActiveReferenceValue(fieldId)` that *only* reads from `activeReferenceDataSet`, for use by calculations that specifically need the reference input, regardless of UI mode.
-        *   Section01's `updateDisplay` or `calculateAll` will need to explicitly set values for both Target and Reference output cells using distinct `fieldId`s.
+*   **B5. Implement Dual Calculation Path & S01 Display Logic (Revised Phased Approach v2.7):**
+    *   **Recap of Previous Attempt & Issue:** A prior attempt to refactor Section01 calculation functions using a `context` parameter led to instability in the Target (H) and Actual (K) column displays, particularly concerning the `d_14` (Utility Bills/Targeted Use) mode. The E-column (Reference) also did not behave as expected.
+    *   **Goal:** Ensure `sections/4011-Section01.js` correctly calculates and displays independently:
+        *   **Reference Column (E - e.g., `e_10`):** Values based on inputs from `StateManager.activeReferenceDataSet` (fetched via `StateManager.getActiveReferenceModeValue()`).
+        *   **Target Column (H - e.g., `h_10`):** Values based on inputs from `StateManager`'s primary application state (fetched via `StateManager.getApplicationStateValue()`).
+        *   **Actual Column (K - e.g., `k_10`):** Values based on inputs from `StateManager`'s primary application state, conditional on `d_14` being "Utility Bills" (fetched via `StateManager.getApplicationStateValue()`).
+        *   These three displays must be correct and update dynamically based on their respective data sources, *regardless* of the Reference Mode UI toggle state.
+    *   **New Phased Strategy within `sections/4011-Section01.js`:**
+        1.  **Phase S01.1: Mirror H-Column Logic to E-Column (Visual Duplicate & Initial Test Bed):**
+            *   Modify `Section01.js` so that the E-column (`d_6`, `d_8`, `e_10`) initially calculates and displays values by temporarily using the same logic and **Application State inputs** (via `StateManager.getApplicationStateValue()`) as the H-column (`h_6`, `h_8`, `h_10`).
+            *   The E-column display should adopt the "Reference" styling (deep red text, specific tier display like "tier1" for `e_10` as per its static HTML, correct cost indicator style).
+            *   **Test:** Confirm E and H columns show the same numeric values and react identically to Application State input changes. The K-column (Actual) continues its existing behavior based on `d_14`.
+        2.  **Phase S01.2: Isolate E-Column for True Reference Calculations:**
+            *   Create new, separate calculation functions within `Section01.js` specifically for the E-column (e.g., `calculateReferenceTEUI_For_E_Column`, etc.).
+            *   These functions will fetch their necessary inputs *exclusively* using `StateManager.getActiveReferenceModeValue(sourceFieldId)`.
+            *   They will output results only to the E-column `fieldId`s (`e_10`, `d_8`, `d_6`).
+            *   Ensure these E-column functions are triggered by `runAllCalculations` when `d_13` (Reference Standard selector) changes or when any underlying application state value (that carries over to the reference state via `activeReferenceDataSet` construction) changes.
+        3.  **Phase S01.3: Confirm H & K Columns use Pure Application State Logic:**
+            *   Verify the existing calculation functions for H and K columns exclusively use `StateManager.getApplicationStateValue()` for their inputs.
+            *   Confirm their behavior is identical to the stable, reverted state (reacting to Application State changes and `d_14` for K-column, independent of Reference Mode UI toggle and `d_13` driven reference overrides).
+        4.  **Helper `getNumericValue()` in `Section01.js`:** This internal helper will only parse a value passed to it. The calling calculation functions will be responsible for fetching the correct state value from `StateManager` using the appropriate explicit getter (`getApplicationStateValue` or `getActiveReferenceModeValue`).
+        5.  **`runAllCalculations()` in `Section01.js`:** Will be structured to call H & K column functions, then E column functions, then shared display/update functions (percentages, tiers, costs, gauges).
 
 ### Phase C: CSV Export/Import Standardization
 *   **C1. Refine CSV Export Logic (`4011-FileHandler.js`):**
