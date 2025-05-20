@@ -10,72 +10,146 @@ TEUI.ReferenceToggle = (function() {
   let referenceMode = false;
   const BODY_CLASS = 'reference-mode';
   const BUTTON_ID = 'toggleReferenceBtn';
+  const STANDARD_SELECTOR_ID = 'd_13'; // ID of the reference standard dropdown
 
   function initialize() {
     const toggleBtn = document.getElementById(BUTTON_ID);
     if (toggleBtn) {
       toggleBtn.addEventListener('click', toggleReferenceView);
-      // Set initial button state (assuming default is Design Mode)
       updateButtonAppearance();
     } else {
-      console.warn('Reference Toggle Button not found.');
+      console.warn('[ReferenceToggle] Toggle Button not found.');
+    }
+
+    // Add listener for changes to the reference standard selector (d_13)
+    const standardSelector = document.getElementById(STANDARD_SELECTOR_ID) || document.querySelector(`[data-field-id='${STANDARD_SELECTOR_ID}']`);
+    if (standardSelector) {
+        // Ensure the listener is attached to the actual select element if d_13 is a more complex component
+        const actualSelect = standardSelector.tagName === 'SELECT' ? standardSelector : standardSelector.querySelector('select');
+        if (actualSelect) {
+            actualSelect.addEventListener('change', handleStandardChange);
+        } else {
+            console.warn(`[ReferenceToggle] SELECT element for ${STANDARD_SELECTOR_ID} not found.`);
+        }
+    } else {
+        console.warn(`[ReferenceToggle] Standard selector dropdown ${STANDARD_SELECTOR_ID} not found.`);
+    }
+  }
+
+  function handleStandardChange(event) {
+    const newStandardKey = event.target.value;
+    console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey}`);
+    if (window.TEUI && TEUI.StateManager) {
+        TEUI.StateManager.setValue(STANDARD_SELECTOR_ID, newStandardKey, TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
+        if (referenceMode) {
+            // If already in reference mode, reload data and refresh UI for the new standard
+            triggerFullUIRefreshForModeChange();
+        }
+    } else {
+        console.error("[ReferenceToggle] StateManager not available to handle standard change.");
     }
   }
 
   function toggleReferenceView() {
     referenceMode = !referenceMode;
-    // console.log(`Toggling reference mode: ${referenceMode ? 'ON' : 'OFF'}`); // Debug log
+    console.log(`[ReferenceToggle] Toggling reference mode: ${referenceMode ? 'ON' : 'OFF'}`);
 
-    // Toggle body class for styling
     document.body.classList.toggle(BODY_CLASS, referenceMode);
-
-    // Update button text and appearance
     updateButtonAppearance();
-
-    // Refresh the display based on the new mode
-    refreshReferenceDisplay(); 
-    /* // Keep placeholder logs for now until refresh is fully tested
-    if (referenceMode) {
-        console.log("Reference Mode Activated - placeholder for refreshReferenceDisplay()");
-    } else {
-        console.log("Design Mode Activated - placeholder for restoring display");
-    }
-    */
+    triggerFullUIRefreshForModeChange();
   }
 
-  // Calls the appropriate handler in each section module
-  function refreshReferenceDisplay() {
-    // console.log("ReferenceToggle: Refreshing display for all sections..."); // Debug
-    // Check if TEUI and SectionModules exist
-    if (!window.TEUI || !window.TEUI.SectionModules) {
-        console.error("Cannot refresh reference display: TEUI.SectionModules not found.");
+  function triggerFullUIRefreshForModeChange() {
+    console.log("[ReferenceToggle] Triggering Full UI Refresh for Mode Change. Reference Mode: ", referenceMode);
+
+    if (!window.TEUI || !TEUI.StateManager || !TEUI.FieldManager || !TEUI.AppendixE) {
+        console.error("[ReferenceToggle] Missing critical modules (StateManager, FieldManager, or AppendixE) for UI refresh.");
         return;
     }
-    Object.values(TEUI.SectionModules).forEach(module => {
-      // Check if module and its referenceHandler exist and are functions
-      if (module && typeof module.referenceHandler === 'object' && module.referenceHandler !== null) {
-        if (referenceMode && typeof module.referenceHandler.updateReferenceDisplay === 'function') {
-          try {
-            module.referenceHandler.updateReferenceDisplay();
-          } catch (e) {
-            console.error(`Error calling updateReferenceDisplay for module:`, module, e);
-          }
-        } else if (!referenceMode && typeof module.referenceHandler.restoreDisplay === 'function') {
-          try {
-            module.referenceHandler.restoreDisplay();
-          } catch (e) {
-            console.error(`Error calling restoreDisplay for module:`, module, e);
-          }
+
+    const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID); // This will be app state d_13
+
+    if (referenceMode) {
+        if (!currentStandardKey) {
+            console.warn("[ReferenceToggle] No reference standard selected (d_13 is empty). Cannot load reference data.");
+            // Optionally, still refresh UI to lock fields or show a message
+        } else {
+            TEUI.StateManager.loadReferenceData(currentStandardKey);
         }
-      } else {
-        // Optional: Warn if a module is missing the handler structure
-        // console.warn("Module found without a valid referenceHandler:", module);
-      }
-    });
-    // TODO: Update comparison values if in reference mode (Phase 4)
-    // if (referenceMode && TEUI.ReferenceComparison) {
-    //   TEUI.ReferenceComparison.updateAllComparisons();
-    // }
+    }
+
+    const allUserEditableFields = TEUI.FieldManager.getAllUserEditableFields();
+    if (!allUserEditableFields || Object.keys(allUserEditableFields).length === 0) {
+        console.warn("[ReferenceToggle] No user-editable fields found via FieldManager.");
+        return;
+    }
+
+    const fieldIds = Object.keys(allUserEditableFields);
+
+    for (const fieldId of fieldIds) {
+        const fieldDef = allUserEditableFields[fieldId];
+        if (!fieldDef) continue;
+
+        const currentValue = TEUI.StateManager.getValue(fieldId); // Mode-aware
+        
+        if (fieldId === 'f_85' || fieldId === 'd_66' || fieldId === 'd_13') { // Watch key fields
+            const isRefModeActive = (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()); // Get current mode status
+            const activeDataSet = (window.TEUI && TEUI.StateManager && TEUI.StateManager.activeReferenceDataSet) 
+                                ? TEUI.StateManager.activeReferenceDataSet 
+                                : null;
+            const expectedValueFromDataset = activeDataSet ? activeDataSet[fieldId] : 'activeReferenceDataSet N/A';
+            
+            console.log(`[ReferenceToggle UI REFRESH] For ${fieldId} (RefMode active: ${isRefModeActive}): ` +
+                        `StateManager.getValue() returned: "${currentValue}". ` +
+                        `Expected from activeReferenceDataSet: "${expectedValueFromDataset}"`);
+        }
+
+        TEUI.FieldManager.updateFieldDisplay(fieldId, currentValue, fieldDef);
+        
+        const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
+        const inputElement = (element && element.matches('input, select, textarea')) ? element : (element ? element.querySelector('input, select, textarea') : null);
+        const displayElement = (element && !inputElement && element.matches('[contenteditable="true"], [data-field-id]')) ? element : null;
+
+        if (element) {
+            if (referenceMode) {
+                const behavior = TEUI.AppendixE.getFieldBehavior(fieldId, currentStandardKey);
+                let lockField = false;
+
+                if (behavior === "Independently User-Editable in Reference Mode") {
+                    lockField = false;
+                } else { // Directly Set by Standard, Carry-Over, RefMode Default, or any other non-editable case
+                    lockField = true;
+                }
+                
+                // Also lock if it's a calculated or derived type from fieldDef, regardless of AppendixE for inputs
+                if (fieldDef.type === 'calculated' || fieldDef.type === 'derived') {
+                    lockField = true;
+                }
+
+                if (lockField) {
+                    element.classList.add('reference-locked');
+                    if (inputElement) inputElement.disabled = true;
+                    if (displayElement) displayElement.setAttribute('contenteditable', 'false');
+                } else {
+                    element.classList.remove('reference-locked');
+                    if (inputElement) inputElement.disabled = false;
+                    if (displayElement) displayElement.setAttribute('contenteditable', 'true');
+                }
+            } else { // Back in Design Mode
+                element.classList.remove('reference-locked');
+                const isNormallyEditable = ['editable', 'number', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'coefficient_slider', 'generic_slider'].includes(fieldDef.type);
+                
+                if (isNormallyEditable) {
+                    if (inputElement) inputElement.disabled = false;
+                    if (displayElement) displayElement.setAttribute('contenteditable', 'true');
+                } else { // Was not normally editable (e.g. calculated field)
+                    if (inputElement) inputElement.disabled = true; // Should already be but ensure
+                    if (displayElement) displayElement.setAttribute('contenteditable', 'false');
+                }
+            }
+        }
+    }
+    console.log("[ReferenceToggle] Full UI Refresh finished.");
   }
 
   function updateButtonAppearance() {
@@ -84,14 +158,12 @@ TEUI.ReferenceToggle = (function() {
       
       if (referenceMode) {
           toggleBtn.textContent = 'Show Design';
-          // Switch Bootstrap classes for appearance
           toggleBtn.classList.remove('btn-danger'); 
-          toggleBtn.classList.add('btn-primary'); // Use standard blue for active state
+          toggleBtn.classList.add('btn-primary'); 
       } else {
           toggleBtn.textContent = 'Show Reference';
-          // Switch back to default Bootstrap classes
           toggleBtn.classList.remove('btn-primary');
-          toggleBtn.classList.add('btn-danger'); // Use standard red for inactive state
+          toggleBtn.classList.add('btn-danger'); 
       }
   }
 
@@ -103,7 +175,5 @@ TEUI.ReferenceToggle = (function() {
   return {
     initialize,
     isReferenceMode
-    // toggleReferenceView, // Expose if needed for external control
-    // refreshReferenceDisplay // Expose when implemented
   };
 })(); 

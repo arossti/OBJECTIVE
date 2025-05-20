@@ -147,6 +147,7 @@ TEUI.StateManager = (function() {
     let calculatedFields = new Set(); // Set of fields that are calculated
     let dirtyFields = new Set();      // Fields needing recalculation
     let listeners = new Map();        // Field change listeners
+    let activeReferenceDataSet = {}; // << NEW: To store the complete Reference Mode state
     
     /**
      * Initialize the state manager
@@ -215,7 +216,16 @@ TEUI.StateManager = (function() {
      * @returns {any} The field value or null if not found
      */
     function getValue(fieldId) {
-        return fields.has(fieldId) ? fields.get(fieldId).value : null;
+        if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
+            // In Reference Mode, get value from activeReferenceDataSet
+            // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
+            return activeReferenceDataSet.hasOwnProperty(fieldId) 
+                   ? activeReferenceDataSet[fieldId] 
+                   : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
+        } else {
+            // Existing logic for Application Mode
+            return fields.has(fieldId) ? fields.get(fieldId).value : null;
+        }
     }
     
     /**
@@ -927,6 +937,127 @@ TEUI.StateManager = (function() {
         return 'Other'; // Default fallback
     }
     
+    /**
+     * NEW METHOD: Builds the activeReferenceDataSet for Reference Mode.
+     * @param {string} standardKey - The key of the selected reference standard.
+     */
+    function loadReferenceData(standardKey) {
+        console.log(`[StateManager] Loading reference data for standard: ${standardKey}`);
+        activeReferenceDataSet = {}; // Initialize/Clear
+
+        // Helper to get current application state value, bypassing mode-aware getValue for this step
+        const getApplicationStateValue = (id) => {
+            if (fields.has(id)) {
+                return fields.get(id).value;
+            }
+            const fieldDef = window.TEUI && TEUI.FieldManager?.getField(id);
+            return fieldDef?.defaultValue;
+        };
+
+        const allUserEditableFields = window.TEUI && TEUI.FieldManager?.getAllUserEditableFields(); 
+
+        if (allUserEditableFields) {
+            Object.keys(allUserEditableFields).forEach(fieldId => {
+                activeReferenceDataSet[fieldId] = getApplicationStateValue(fieldId);
+            });
+            console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+        } else {
+            console.warn('[StateManager] Could not get allUserEditableFields from FieldManager for Step 1.');
+            // Fallback: try to copy from current 'fields' if FieldManager helper isn't ready/available
+            fields.forEach((fieldData, fieldId) => {
+                // A basic check if it might be user-editable (e.g., not purely calculated from the start)
+                 if(fieldData.state !== VALUE_STATES.CALCULATED && fieldData.state !== VALUE_STATES.DERIVED){
+                    activeReferenceDataSet[fieldId] = fieldData.value;
+                 }
+            });
+            if(Object.keys(activeReferenceDataSet).length > 0){
+                console.log('[StateManager] Step 1 (Fallback): Copied from current fields map to activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+            }
+        }
+        
+        // Step 2: Apply Specific "Reference Mode Defaults" (from Appendix E - placeholder)
+        const referenceModeDefaults = (window.TEUI && TEUI.AppendixE?.getReferenceModeDefaults()) || {}; 
+        Object.keys(referenceModeDefaults).forEach(fieldId => {
+            // Ensure it's a known field we care about changing
+            if (activeReferenceDataSet.hasOwnProperty(fieldId) || (allUserEditableFields && allUserEditableFields[fieldId])) { 
+                activeReferenceDataSet[fieldId] = referenceModeDefaults[fieldId];
+            }
+        });
+        console.log('[StateManager] Step 2: Applied Reference Mode Defaults. Data:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+
+        // Step 3: Overlay Explicit Standard Overrides
+        console.log(`[StateManager] Attempting to access TEUI.ReferenceValues for standardKey: "${standardKey}"`);
+        // Safely stringify, handling potential circularity or large objects if TEUI.ReferenceValues is huge, though it shouldn't be.
+        let currentRefValuesSnapshot = "TEUI or TEUI.ReferenceValues undefined";
+        if (window.TEUI && window.TEUI.ReferenceValues) {
+            try {
+                currentRefValuesSnapshot = JSON.parse(JSON.stringify(window.TEUI.ReferenceValues));
+            } catch (e) {
+                currentRefValuesSnapshot = "Error stringifying TEUI.ReferenceValues";
+            }
+        }
+        console.log("[StateManager] Current TEUI.ReferenceValues object snapshot:", currentRefValuesSnapshot);
+
+        // const standardOverrideData = window.TEUI && TEUI.ReferenceValues?.[standardKey]; // OLD WAY
+        const standardOverrideData = window.TEUI && TEUI.ReferenceValues && TEUI.ReferenceValues._data ? TEUI.ReferenceValues._data[standardKey] : undefined; // CORRECTED WAY
+
+        if (standardOverrideData) {
+            Object.keys(standardOverrideData).forEach(fieldId => {
+                // Apply if the field is already in our dataset (meaning it's a recognized user-editable field)
+                if (activeReferenceDataSet.hasOwnProperty(fieldId) || (allUserEditableFields && allUserEditableFields[fieldId])) { 
+                     activeReferenceDataSet[fieldId] = standardOverrideData[fieldId];
+                } else {
+                    // This case should be rare if allUserEditableFields is comprehensive
+                    // console.warn(`[StateManager] Standard ${standardKey} defines field ${fieldId} not in known user-editable fields or current app state during loadReferenceData.`);
+                    // activeReferenceDataSet[fieldId] = standardOverrideData[fieldId]; // Or decide to ignore
+                }
+            });
+            console.log('[StateManager] Step 3: Applied standard overrides. Data:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+        } else {
+            // console.warn(`[StateManager] No override data found for standard: ${standardKey}`); // Original log
+            // console.warn(`[StateManager] No override data found for standard: ${standardKey}. TEUI.ReferenceValues[standardKey] was:`, (window.TEUI && window.TEUI.ReferenceValues ? TEUI.ReferenceValues[standardKey] : "TEUI.ReferenceValues itself is undefined or standardKey not found")); // Previous MODIFIED LOG
+            console.warn(`[StateManager] No override data found for standard: ${standardKey}. Attempted TEUI.ReferenceValues._data[standardKey]. Actual TEUI.ReferenceValues._data snapshot:`, (window.TEUI && TEUI.ReferenceValues && TEUI.ReferenceValues._data ? JSON.parse(JSON.stringify(TEUI.ReferenceValues._data)) : "TEUI.ReferenceValues._data itself is undefined")); // NEW MODIFIED LOG
+        }
+
+        // Step 4 (Ensure Completeness - Fallback if needed)
+        if (allUserEditableFields) {
+            Object.keys(allUserEditableFields).forEach(fieldId => {
+                if (!activeReferenceDataSet.hasOwnProperty(fieldId)) {
+                    const fieldDef = TEUI.FieldManager?.getField(fieldId);
+                    activeReferenceDataSet[fieldId] = fieldDef?.defaultValue; 
+                    // console.log(`[StateManager] Step 4: Field ${fieldId} fell back to system default.`);
+                }
+            });
+        }
+        console.log('[StateManager] Final activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+    }
+
+    /**
+     * NEW METHOD: Sets a value directly into the activeReferenceDataSet for edits made in Reference Mode.
+     * @param {string} fieldId - The ID of the field to set.
+     * @param {any} value - The new value for the field.
+     * @returns {boolean} True if the value was set (always true for now, could add checks).
+     */
+    function setValueInReferenceMode(fieldId, value) {
+        if (!(window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode())) {
+            console.warn("[StateManager] Attempted to setValueInReferenceMode when not in Reference Mode.");
+            return false;
+        }
+
+        const oldValue = activeReferenceDataSet[fieldId];
+        activeReferenceDataSet[fieldId] = value;
+
+        // Notify listeners. Consider a specific state like 'reference-user-modified'
+        // For now, using existing notifyListeners to ensure dependents are aware. 
+        // The main calculation loop should use mode-aware getValue().
+        notifyListeners(fieldId, value, oldValue, VALUE_STATES.USER_MODIFIED); // Or a new state
+
+        // TODO: Consider if markDependentsDirty specifically for reference mode is needed,
+        // or if the existing mechanism + mode-aware getValue is sufficient.
+        console.log(`[StateManager] Value set in Reference Mode for ${fieldId}: ${value}`);
+        return true;
+    }
+
     // Public API
     return {
         // Constants
@@ -961,7 +1092,9 @@ TEUI.StateManager = (function() {
         // Debugging
         getAllKeys: getAllKeys,
         getDebugInfo: getDebugInfo,
-        exportDependencyGraph: exportDependencyGraph
+        exportDependencyGraph: exportDependencyGraph,
+        loadReferenceData: loadReferenceData,           // << NEW
+        setValueInReferenceMode: setValueInReferenceMode // << NEW
     };
 })();
 

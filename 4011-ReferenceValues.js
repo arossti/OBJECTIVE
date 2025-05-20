@@ -15,7 +15,7 @@
 window.TEUI = window.TEUI || {};
 
 TEUI.ReferenceValues = {
-  "OBC SB12 3.1.1.2.C4": {
+        "OBC SB12 3.1.1.2.C4": {
     //"h_13": "OBC Prescriptive Path for HP"
     //"h_14": "Same as Application State B.2 Project Name Field Value" - should we show this in reference import/exports?
     "d_52": "0.90", // DWH System Efficiency when Electric 
@@ -50,8 +50,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.55", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "OBC SB12 3.1.1.2.C1": {
+        },
+        "OBC SB12 3.1.1.2.C1": {
     //"h_13": "OBC Prescriptive Path for Elect."
     "d_52": "0.90", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -85,8 +85,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "OBC SB12 3.1.1.2.A3": {
+        },
+        "OBC SB12 3.1.1.2.A3": {
     //"h_13": "OBC Prescriptive Path for AFUE >92%"
     "d_52": "0.92", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -120,8 +120,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "OBC SB10 5.5-6 Z6": {
+        },
+        "OBC SB10 5.5-6 Z6": {
     //"h_13": "OBC Prescriptive Path Part 3"
     "d_52": "0.90", // DWH System Efficiency when Electric 
     "d_53": "0", // DWHR Efficiency 0 when SB10
@@ -155,8 +155,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "OBC SB10 5.5-6 Z5 (2010)": {
+        },
+        "OBC SB10 5.5-6 Z5 (2010)": {
     //"h_13": "OBC Prescriptive Path Part 3"
     "d_52": "0.90", // DWH System Efficiency when Electric 
     "d_53": "0", // DWHR Efficiency 0 when SB10
@@ -190,8 +190,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "ADD YOUR OWN HERE": {
+        },
+        "ADD YOUR OWN HERE": {
     //"h_13": "User Defined"
     "d_52": "0.90", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -225,8 +225,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "NBC T1": {
+        },
+        "NBC T1": {
     //"h_13": "NBC 9.36 Prescriptive Path" with any possible measure - serves as a baseline
     "d_52": "0.92", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -260,8 +260,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "NBC T2": {
+        },
+        "NBC T2": { 
     //"h_13": "10% Better" with any possible measure
     "d_52": "0.92", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -295,8 +295,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "NBC T3": {
+        },
+        "NBC T3": {
     //"h_13": "20% Better" with any possible measure
     "d_52": "0.92", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -330,8 +330,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "NBC T4": {
+        },
+        "NBC T4": {
     //"h_13": "40% Better"  with any possible measure
     "d_52": "0.92", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -365,8 +365,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.60", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "NBC T5": {
+        },
+        "NBC T5": {
     //"h_13": "70% Better" with any possible measure
     "d_52": "0.92", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency if OBC
@@ -435,8 +435,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.65", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "CaGBC ZCB": {
+        },
+        "CaGBC ZCB": {
     //"h_13": "Replacing SB10"
     "d_52": "0.90", // DWH System Efficiency when Electric 
     "d_53": "0", // DWHR Efficiency 0 when SB10
@@ -470,8 +470,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.81", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "PH Classic": {
+        },
+        "PH Classic": { 
     //"h_13": "90% less than NBC"
     "d_52": "1.00", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
@@ -507,8 +507,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "PH Plus": {
+        },
+        "PH Plus": {
     //"h_13": "90% less than NBC"
     "d_52": "1.00", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
@@ -544,8 +544,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "PH Premium": {
+        },
+        "PH Premium": {
     //"h_13": "90% less than NBC"
     "d_52": "1.00", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
@@ -581,8 +581,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "EnerPHit": {
+        },
+        "EnerPHit": {
     //"h_13": "PH Renovations"
     "d_52": "1.00", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
@@ -618,8 +618,8 @@ TEUI.ReferenceValues = {
     "d_118": "0.75", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "0.45", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
-  },
-  "PH Low Energy": {
+        },
+        "PH Low Energy": {
     //"h_13": "80% less than NBC"
     "d_52": "1.00", // DWH System Efficiency when Electric 
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
@@ -691,13 +691,13 @@ function getStandards() { // Wrapper for backward compatibility
 // directly applicable or as useful due to the structural change.
 // StateManager will directly use the new structure.
 
-export { _data as referenceStandardsData, getStandardData, getAllStandardNames, getStandardFields, getStandards };
+// export { _data as referenceStandardsData, getStandardData, getAllStandardNames, getStandardFields, getStandards }; // << COMMENT OUT or REMOVE this line
 
 // The following is the original IIFE structure's return object.
 // We will replace it with the export statement above for modern JS module compatibility
 // if the build system supports it. Otherwise, we would re-attach to window.TEUI.
 /*
-return {
+                return {
     getValue, // Deprecated by new structure
     getSection, // Deprecated by new structure
     getTargetCell, // Deprecated by new structure

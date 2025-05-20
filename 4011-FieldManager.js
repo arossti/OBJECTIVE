@@ -197,6 +197,42 @@ TEUI.FieldManager = (function() {
     }
     
     /**
+     * NEW FUNCTION: Get all field definitions considered user-editable.
+     * Filters out calculated and derived fields primarily.
+     * @returns {Object} - Filtered field definitions for user-editable fields.
+     */
+    function getAllUserEditableFields() {
+        const userEditableFields = {};
+        const editableTypes = [
+            'editable', 
+            'dropdown', 
+            'year_slider', 
+            'percentage', 
+            'coefficient', 
+            'coefficient_slider',
+            'number',
+            'generic_slider' 
+            // Add other types here if they are user-settable inputs that should be part of general state operations.
+        ];
+
+        if (!allFields) {
+            console.warn("[FieldManager.getAllUserEditableFields] allFields is not initialized.");
+            return {};
+        }
+
+        for (const fieldId in allFields) {
+            if (allFields.hasOwnProperty(fieldId)) {
+                const field = allFields[fieldId];
+                // Check if field and field.type are defined, and if type is in editableTypes
+                if (field && typeof field.type === 'string' && editableTypes.includes(field.type)) {
+                    userEditableFields[fieldId] = field;
+                }
+            }
+        }
+        return userEditableFields;
+    }
+    
+    /**
      * Get layout definition for a section
      * @param {string} sectionId - Section ID (original name, e.g., "buildingInfo")
      * @returns {Object|null} - Layout definition or null if not found
@@ -1000,6 +1036,7 @@ TEUI.FieldManager = (function() {
         getFieldsBySection,
         getField,
         getDropdownOptions,
+        getAllUserEditableFields,
         
         // Section handling
         getSections: function() {
@@ -1037,7 +1074,17 @@ TEUI.FieldManager = (function() {
             
             const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
 
+            // <<<< NEW LOGGING >>>>
+            if (fieldId === 'f_85') {
+                console.log(`[FieldManager.updateFieldDisplay] For ${fieldId}: newValue="${newValue}". Element found: ${!!element}. FieldDef type: ${fieldDef ? fieldDef.type : 'N/A'}`);
+                if (element) console.log("[FieldManager.updateFieldDisplay] Element for f_85:", element);
+            }
+            // <<<< END NEW LOGGING >>>>
+
             if (!element) {
+                // <<<< NEW LOGGING >>>>
+                if (fieldId === 'f_85') console.error(`[FieldManager.updateFieldDisplay] Element for ${fieldId} NOT FOUND.`);
+                // <<<< END NEW LOGGING >>>>
                 return;
             }
 
