@@ -871,22 +871,13 @@ window.TEUI.SectionModules.sect13 = (function() {
                 j: { content: "V.1.7", classes: ["label-prefix"] }, // Label for k_120 Unoccupied Ventilation Setback 
                 k: { 
                     fieldId: "k_120", 
-                    type: "percentage", // Change to percentage
-                    dropdownId: "dd_k_120", // Add ID
-                    value: "90", // Set default to 90%
+                    type: "percentage", 
+                    value: "90", 
+                    min: 0,     // ADD min for standard slider behavior
+                    max: 100,   // ADD max
+                    step: 10,   // ADD step (e.g., 10 for 10% increments, or 1 for 1%)
                     section: "mechanicalLoads",
-                    options: [ // Add options
-                        { value: "0.1", name: "10%" },
-                        { value: "0.2", name: "20%" },
-                        { value: "0.3", name: "30%" },
-                        { value: "0.4", name: "40%" },
-                        { value: "0.5", name: "50%" },
-                        { value: "0.6", name: "60%" },
-                        { value: "0.7", name: "70%" },
-                        { value: "0.8", name: "80%" },
-                        { value: "0.9", name: "90%" }
-                    ],
-                    classes: ["col-small"] // Add class
+                    classes: ["col-small"]
                  }, 
                 l: { content: "Unoccupied Setback", classes: ["label"] }, // Unoccupied Setback label
                 m: {},
@@ -1313,19 +1304,26 @@ window.TEUI.SectionModules.sect13 = (function() {
                 const fieldId = controlElement.getAttribute('data-field-id');
                 
                 const sliderValueStr = controlElement.value; 
-                const sliderValue = parseFloat(sliderValueStr);
-                const decimalValue = sliderValue / 100; // Assuming slider is 0-100
-                const decimalValueStrForState = decimalValue.toString();
+                // const sliderValue = parseFloat(sliderValueStr);
+                // const decimalValue = sliderValue / 100; // Assuming slider is 0-100 << OLD WAY
+                // const decimalValueStrForState = decimalValue.toString(); << OLD WAY
 
-                if (!fieldId || isNaN(decimalValue)) return;
+                // << NEW WAY: Store the direct slider value (0-100) as a string >>
+                const valueToStoreInState = sliderValueStr; 
+
+                if (!fieldId ) return; // Removed isNaN check as we store string now
                 
                 const displaySpan = document.querySelector(`#mechanicalLoads span[data-display-for="${fieldId}"]`); 
                 if (displaySpan) {
-                    displaySpan.textContent = `${sliderValue.toFixed(0)}%`; 
+                    // Display span still needs to show it as a percentage
+                    const numericSliderValue = parseFloat(sliderValueStr);
+                    if (!isNaN(numericSliderValue)) {
+                        displaySpan.textContent = `${numericSliderValue.toFixed(0)}%`; 
+                    }
                 }
 
                 if (window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue(fieldId, decimalValueStrForState, 'user-modified'); 
+                    window.TEUI.StateManager.setValue(fieldId, valueToStoreInState, 'user-modified'); 
                 }
                 
                 // Trigger calculations that depend on k_120
@@ -1413,7 +1411,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         // console.log(`[S13 Init] Initial j_115 textContent: "${j115ElementInitial?.textContent}"`);
 
         if (window.TEUI?.StateManager?.setValue) {
-            window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90%
+            // window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90% << OLD BEHAVIOR
+            window.TEUI.StateManager.setValue('k_120', '90', 'default');    // CORRECTED: Default to 90 (string) for 90%
         }
         initializeEventHandlers();
         registerWithStateManager();
@@ -1883,10 +1882,16 @@ window.TEUI.SectionModules.sect13 = (function() {
             potentialLimit = calculateFreeCoolingLimit(); // Calculated Sensible Potential (kWh/yr)
 
             if (setbackValueStr) {
-                const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // Already a decimal factor
-                if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) {
-                    setbackFactor = parsedFactor;
+                // const parsedFactor = window.TEUI.parseNumeric(setbackValueStr); // OLD - assumed decimal
+                let parsedNumForFactor = window.TEUI.parseNumeric(setbackValueStr); // Now gets a value like 90
+                if (!isNaN(parsedNumForFactor) && parsedNumForFactor >= 0 && parsedNumForFactor <= 100) {
+                    setbackFactor = parsedNumForFactor / 100; // Convert to decimal 0.0 - 1.0
+                } else {
+                    setbackFactor = 1.0; // Default to no setback if value is odd
                 }
+                // if (!isNaN(parsedFactor) && parsedFactor >= 0 && parsedFactor <= 1) { // OLD check
+                //     setbackFactor = parsedFactor;
+                // }
             }
 
             // Determine the final free cooling limit based on ventilation method (Excel H124 logic)

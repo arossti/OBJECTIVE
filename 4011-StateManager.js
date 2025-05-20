@@ -239,19 +239,21 @@ TEUI.StateManager = (function() {
     function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
         // << NEW: Check if application state updates are muted >>
         if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
-            // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+            // if (fieldId === 'k_120') { // Intentionally commented out
+            //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to "${value}", stateType: ${state}`);
+            // }
             // if (fieldId === 'g_67') { // Intentionally commented out
             //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to "${value}", stateType: ${state}`);
             // }
-            // <<<< END LOGGING FOR g_67 >>>>
             return false; // Prevent update to this.fields (application state)
         }
 
-        // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+        // if (fieldId === 'k_120') { // Intentionally commented out
+        //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to "${value}", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+        // }
         // if (fieldId === 'g_67') { // Intentionally commented out
         //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to "${value}", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
         // }
-        // <<<< END LOGGING FOR g_67 >>>>
 
         const fieldDefinition = fields[fieldId];
 

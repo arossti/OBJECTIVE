@@ -104,29 +104,33 @@ TEUI.ReferenceToggle = (function() {
                 displayValue = applicationStateValue;
             }
             
-            // <<<< SPECIFIC LOGGING FOR g_67 >>>>
-            // if (fieldId === 'g_67') { // Intentionally commented out
-            //     console.log(`[ReferenceToggle g_67] Mode: ${referenceMode ? 'ENTERING_REF' : 'EXITING_REF'}`);
+            // <<<< SPECIFIC LOGGING FOR k_120 >>>>
+            // if (fieldId === 'k_120') { // Intentionally commented out
+            //     console.log(`[ReferenceToggle k_120] Mode: ${referenceMode ? 'ENTERING_REF' : 'EXITING_REF'}`);
             //     if (referenceMode) {
-            //         console.log(`[ReferenceToggle g_67] DisplayValue (from activeReferenceDataSet via SM.getValue): "${displayValue}"`);
+            //         console.log(`[ReferenceToggle k_120] DisplayValue (from activeReferenceDataSet via SM.getValue): "${displayValue}"`);
             //     } else {
-            //         console.log(`[ReferenceToggle g_67] AppStateValue (from SM.getValue(APP_STATE)): "${applicationStateValue}"`);
-            //         console.log(`[ReferenceToggle g_67] DisplayValue (should be AppStateValue): "${displayValue}"`);
+            //         console.log(`[ReferenceToggle k_120] AppStateValue (from SM.getValue(APP_STATE)): "${applicationStateValue}"`);
+            //         console.log(`[ReferenceToggle k_120] DisplayValue (should be AppStateValue): "${displayValue}"`);
             //     }
             // }
-            // <<<< END LOGGING FOR g_67 >>>>
+            // <<<< END LOGGING FOR k_120 >>>>
 
-            if (fieldId === 'f_85' || fieldId === 'd_66' || fieldId === 'd_13') {
-                const isRefModeActive = (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode());
-                const activeDataSet = (window.TEUI && TEUI.StateManager && TEUI.StateManager.activeReferenceDataSet) 
-                                    ? TEUI.StateManager.activeReferenceDataSet 
-                                    : null;
-                const expectedValueFromDataset = activeDataSet ? activeDataSet[fieldId] : 'activeReferenceDataSet N/A';
+            // if (fieldId === 'g_67') { // Intentionally commented out
+            //     console.log(`[ReferenceToggle g_67] Mode: ${referenceMode ? 'ENTERING_REF' : 'EXITING_REF'}`);
+            // }
+
+            // if (fieldId === 'f_85' || fieldId === 'd_66' || fieldId === 'd_13') { // Commenting out general verbose log
+            //     const isRefModeActive = (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode());
+            //     const activeDataSet = (window.TEUI && TEUI.StateManager && TEUI.StateManager.activeReferenceDataSet) 
+            //                         ? TEUI.StateManager.activeReferenceDataSet 
+            //                         : null;
+            //     const expectedValueFromDataset = activeDataSet ? activeDataSet[fieldId] : 'activeReferenceDataSet N/A';
                 
-                console.log(`[ReferenceToggle UI REFRESH] For ${fieldId} (RefMode active: ${isRefModeActive}): ` +
-                            `StateManager.getValue() returned: "${displayValue}". ` +
-                            `Expected from activeReferenceDataSet: "${expectedValueFromDataset}"`);
-            }
+            //     console.log(`[ReferenceToggle UI REFRESH] For ${fieldId} (RefMode active: ${isRefModeActive}): ` +
+            //                 `StateManager.getValue() returned: "${displayValue}". ` +
+            //                 `Expected from activeReferenceDataSet: "${expectedValueFromDataset}"`);
+            // }
 
             TEUI.FieldManager.updateFieldDisplay(fieldId, displayValue, fieldDef);
             

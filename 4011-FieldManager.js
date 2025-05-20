@@ -846,6 +846,14 @@ TEUI.FieldManager = (function() {
         
         Object.entries(fields).forEach(([fieldId, field]) => {
             if (field.type === 'dropdown' && field.dropdownId) {
+                // <<<< ADD LOGGING FOR k_120 RELATED DROPDOWNS >>>>
+                if (field.dropdownId === 'dd_k_120' || fieldId === 'k_120') {
+                    console.log(`[FieldManager InitDropdowns] Found field related to k_120. fieldId: ${fieldId}, dropdownId: ${field.dropdownId}, type: ${field.type}`);
+                    const tempOptions = getDropdownOptions(field.dropdownId); // Check what options it would get
+                    console.log(`[FieldManager InitDropdowns] Options for ${field.dropdownId}:`, JSON.stringify(tempOptions));
+                }
+                // <<<< END LOGGING >>>>
+
                 const selectElement = document.querySelector(`[data-dropdown-id="${field.dropdownId}"]`);
                 if (!selectElement) return;
                 
@@ -1074,15 +1082,15 @@ TEUI.FieldManager = (function() {
             
             const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
 
-            if (fieldId === 'f_85') {
-                // console.log(`[FieldManager f_85] updateFieldDisplay called. newValue: "${newValue}", Element found: ${!!element}, Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
-            }
-
-            // <<<< SPECIFIC LOGGING FOR g_67 >>>>
+            // if (fieldId === 'k_120') { // Intentionally commented out
+            //     console.log(`[FieldManager k_120] updateFieldDisplay. newValue: "${newValue}", Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
+            // }
+            // if (fieldId === 'f_85') { // Intentionally commented out
+            //     // console.log(`[FieldManager f_85] updateFieldDisplay called. newValue: "${newValue}", Element found: ${!!element}, Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
+            // }
             // if (fieldId === 'g_67') { // Intentionally commented out
             //     console.log(`[FieldManager g_67] updateFieldDisplay. newValue: "${newValue}", Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
             // }
-            // <<<< END LOGGING FOR g_67 >>>>
 
             if (!element) {
                 // <<<< NEW LOGGING >>>>
@@ -1115,10 +1123,23 @@ TEUI.FieldManager = (function() {
                     const rangeInput = element.querySelector('input[type="range"]');
                     const displaySpan = element.querySelector('.slider-value');
 
+                    // if (fieldId === 'k_120') { // Intentionally commented out
+                    //     console.log(`[FieldManager k_120] In 'percentage' case. rangeInput: ${rangeInput ? 'found' : 'NOT FOUND'}, displaySpan: ${displaySpan ? 'found' : 'NOT FOUND'}`);
+                    //     if(rangeInput) console.log(`[FieldManager k_120] Current rangeInput.value before setting: "${rangeInput.value}"`);
+                    // }
+
                     if (rangeInput) {
                         const numericValue = window.TEUI.parseNumeric(newValue, NaN);
+                        
+                        // if (fieldId === 'k_120' || fieldId === 'd_97') { // Intentionally commented out
+                        //     console.log(`[FieldManager ${fieldId}] In 'percentage' case. Received newValue: "${newValue}". Parsed numericValue for slider: ${numericValue}.`);
+                        // }
+                        
                         if (!isNaN(numericValue)) {
                             rangeInput.value = numericValue;
+                            // if (fieldId === 'k_120') { // Intentionally commented out
+                            //     console.log(`[FieldManager k_120] Set rangeInput.value to: ${numericValue}`);
+                            // }
                             if (displaySpan) {
                                 let formattedDisplay = numericValue.toString();
                                 if (typeof window.TEUI?.formatNumber === 'function') {

@@ -1,8 +1,8 @@
 # Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
 
 **Date:** 2025-05-17
-**Version:** 2.4 (Further refinement on state preservation and UI refresh logic)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.3
+**Version:** 2.5 (k_120 & g_67 UI Bugs Fixed, S01 Calculation Path Next)
+**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.4
 
 ## 1. Objective
 
@@ -101,6 +101,15 @@ This workplan integrates tasks from previous planning documents into a unified s
 *   **B2. Mode-Aware `StateManager.getValue(fieldId)`:** (Implemented, appears to correctly fetch from `activeReferenceDataSet` when in Reference Mode).
 *   **B3. Standardized `StateManager.setValues(dataSet, stateType)`:** (Exists, interaction with muting for batch imports like CSV needs to ensure it respects mute if active).
 *   **B4. `StateManager.setMuteApplicationStateUpdates(isMuted)`:** (Implemented. Used by `ReferenceToggle`. Next step is to ensure its application covers the entire UI refresh cycle in `ReferenceToggle`).
+*   **B5. (NEW) Implement Dual Calculation Path & S01 Display Logic (Next):**
+    *   **Goal:** Ensure `4011-Calculator.js` (and `sections/4011-Section01.js` if needed) can populate both Application State results and Reference Mode results into the correct output cells in Section01 (e.g., Target TEUI in H6, Reference TEUI in E6).
+    *   **Strategy:**
+        *   `4011-Calculator.js`'s `calculateAll()` might need to be enhanced. It could potentially:
+            1.  Run once for the Application State (using `StateManager.getValue()` when Reference Mode is programmatically off).
+            2.  Run a second time for the Reference State (using `StateManager.getValue()` when Reference Mode is programmatically on, or by directly passing the `activeReferenceDataSet` to calculation functions).
+        *   Alternatively, individual calculation functions within sections (especially Section01) might need to become "mode-aware" or be called twice with different state contexts.
+        *   `StateManager` might need a method like `getActiveReferenceValue(fieldId)` that *only* reads from `activeReferenceDataSet`, for use by calculations that specifically need the reference input, regardless of UI mode.
+        *   Section01's `updateDisplay` or `calculateAll` will need to explicitly set values for both Target and Reference output cells using distinct `fieldId`s.
 
 ### Phase C: CSV Export/Import Standardization
 *   **C1. Refine CSV Export Logic (`4011-FileHandler.js`):**
