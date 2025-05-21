@@ -1201,7 +1201,7 @@ TEUI.FieldManager = (function() {
                             // Dispatch an 'input' event so any listeners on the slider itself react (e.g., Section02 specific handlers)
                             genericRangeInputElement.dispatchEvent(new Event('input', { bubbles: true }));
                             // console.log(`[FieldManager.updateFieldDisplay] Set generic_slider ${fieldId} to ${numericValue}`);
-                        } else {
+                            } else {
                             // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for generic_slider ${fieldId}`);
                         }
                     } else {
@@ -1217,16 +1217,36 @@ TEUI.FieldManager = (function() {
                     }
                     break;
                 case 'dropdown':
+                    // <<<< DETAILED LOGGING FOR DROPDOWNS >>>>
+                    if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) {
+                        console.log(`[FieldManager updateFieldDisplay dropdown] Field: ${fieldId}, Received newValue: "${newValue}", Element tagName: ${element?.tagName}`);
+                    }
+                    // <<<< END LOGGING >>>>
+
                     if (element.tagName === 'SELECT') {
                         element.value = newValue;
-                        // <<<< SPECIFIC LOGGING FOR g_67 (RE-APPLY) >>>>
-                        // if (fieldId === 'g_67') { // Intentionally commented out
-                        //     console.log(`[FieldManager g_67] Set SELECT value to: "${newValue}". Element found: ${!!element}`);
-                        // }
-                        // <<<< END LOGGING FOR g_67 >>>>
+                        if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) {
+                            console.log(`[FieldManager updateFieldDisplay dropdown] Set SELECT ${fieldId} value to: "${newValue}". UI value now: "${element.value}"`);
+                        }
                     } else {
-                        // Check if it's a contenteditable span that functions as a dropdown display
-                        // ... existing code ...
+                        // This is where logic for custom dropdowns would go.
+                        // For example, if it's a TD containing a custom structure or a SPAN that needs its textContent set.
+                        // We need to inspect how these specific dropdowns are rendered if they are not simple <select>s.
+                        if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) {
+                            console.warn(`[FieldManager updateFieldDisplay dropdown] Field: ${fieldId} is a dropdown but not a SELECT. Element:`, element, `Needs custom update logic.`);
+                            // Attempt to find a nested select if it's a wrapper TD/DIV
+                            const nestedSelect = element.querySelector('select');
+                            if (nestedSelect) {
+                                console.log(`[FieldManager updateFieldDisplay dropdown] Found nested SELECT for ${fieldId}. Attempting to set its value.`);
+                                nestedSelect.value = newValue;
+                                console.log(`[FieldManager updateFieldDisplay dropdown] Set nested SELECT ${fieldId} value to: "${newValue}". UI value now: "${nestedSelect.value}"`);
+                            } else {
+                                // Fallback for simple span-based custom dropdowns (less likely for these complex ones)
+                                // This might be where the problem lies if they are custom but not handled
+                                 // element.textContent = newValue; // This might be too simple if it needs to match an option text not a value
+                                // console.log(`[FieldManager updateFieldDisplay dropdown] Attempted to set textContent for ${fieldId} to "${newValue}".`);
+                            }
+                        }
                     }
                     break;
                 case 'calculated':

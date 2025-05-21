@@ -343,6 +343,25 @@
                         if (window.TEUI && window.TEUI.FieldManager && typeof window.TEUI.FieldManager.updateFieldDisplay === 'function') {
                             try {
                                 window.TEUI.FieldManager.updateFieldDisplay(fieldId, parsedValue, fieldDef); 
+
+                                // <<<< ADD LOGGING FOR PROBLEMATIC DROPDOWNS >>>>
+                                if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) {
+                                    const smValue = this.stateManager.getValue(fieldId);
+                                    const uiElement = document.getElementById(fieldId) || document.querySelector(`[data-field-id="${fieldId}"]`);
+                                    let uiValue = 'N/A_ELEMENT_NOT_FOUND';
+                                    if (uiElement) {
+                                        if (uiElement.tagName === 'SELECT') {
+                                            uiValue = uiElement.value;
+                                        } else if (uiElement.querySelector('select')) { // For custom dropdowns wrapping a select
+                                            uiValue = uiElement.querySelector('select').value;
+                                        } else { // For non-select based custom dropdowns (e.g. span)
+                                            uiValue = uiElement.textContent || uiElement.innerText;
+                                        }
+                                    }
+                                    console.log(`[FileHandler Post-Update] Field: ${fieldId}, StateManager: "${smValue}", UI After UpdateFieldDisplay: "${uiValue}", ParsedImported: "${parsedValue}"`);
+                                }
+                                // <<<< END LOGGING >>>>
+
                             } catch (e) {
                                 console.error(`[FileHandler] Error calling FieldManager.updateFieldDisplay for ${fieldId}:`, e);
                             }
