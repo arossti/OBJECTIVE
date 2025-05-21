@@ -1,8 +1,8 @@
 # Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
 
 **Date:** 2025-05-19
-**Version:** 2.9 (Import/UI Dropdown Issue Resolved, S01 Mirroring Next)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.8
+**Version:** 2.10 (S01.1 Mirroring Implemented, Identified d_97 State Issue)
+**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.9
 
 ## 1. Objective
 
@@ -236,7 +236,8 @@ This workplan integrates tasks from previous planning documents into a unified s
 *   **Phase F (Layout):** Out of scope for this specific workplan; part of a larger UI refactor.
 *   **Phase G (Testing & Documentation):** Ongoing throughout, with dedicated final testing and documentation update periods. Appendix E population is a key part of this.
 *   **S01.1 (Re-attempt - Mirror H to E):** Highest immediate priority, building on the now-working import functionality.
-*   **S01.2 & S01.3 (Isolate S01 Columns):** High priority, following stable S01.1.
+*   **Refactor `d_97` Handling:** Highest immediate priority before proceeding with S01.2.
+*   **S01.2 & S01.3 (Isolate S01 Columns):** High priority, following stable `d_97` and S01.1.
 
 This workplan aims to create a more robust, maintainable, and consistent approach to state management and Reference Model integration in the TEUI 4.011 calculator.
 

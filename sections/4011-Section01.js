@@ -199,100 +199,75 @@ window.TEUI.SectionModules.sect01 = (function() {
         const element = document.querySelector(`[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`);
         if (!element) return;
 
-        // --- Fields to Animate --- 
-        const fieldsToAnimate = ["h_10", "k_10", "e_10"]; // Add d_6, h_6, k_6, d_8, h_8, k_8 later if desired
+        const fieldsToAnimate = ["h_10", "k_10"]; 
 
         if (fieldsToAnimate.includes(fieldId)) {
-            const startValue = getCurrentNumericValue(element); // Get current numeric value from DOM
-            const endValue = parseFloat(value); // Target numeric value
-            const duration = 500; // Animation duration in ms
+            const startValue = getCurrentNumericValue(element); 
+            const endValue = parseFloat(value); 
+            const duration = 500; 
 
-            // Only animate if values are valid numbers and different
             if (!isNaN(startValue) && !isNaN(endValue) && Math.abs(startValue - endValue) > 0.01) {
-
-                // Cancel any ongoing animation for this field
                 if (activeAnimations[fieldId]) {
                     cancelAnimationFrame(activeAnimations[fieldId]);
                 }
-
                 const startTime = performance.now();
-
                 const animateStep = (timestamp) => {
                     const elapsedTime = timestamp - startTime;
                     const progress = Math.min(1, elapsedTime / duration);
-                    const easedProgress = 1 - Math.pow(1 - progress, 2); // Quadratic ease-out
-                    const currentValue = startValue + (endValue - startValue) * easedProgress; // Eased
+                    const easedProgress = 1 - Math.pow(1 - progress, 2); 
+                    const currentValue = startValue + (endValue - startValue) * easedProgress; 
                     const formattedValue = currentValue.toFixed(1);
 
-                    // Update the DOM (handle embedded spans)
                     if (fieldId === "h_10") {
                         const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
                         const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                         element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${formattedValue}`;
-                    } else if (fieldId === "e_10") {
-                        const numericSpan = element.querySelector('.numeric-value');
-                        if (numericSpan) numericSpan.textContent = formattedValue;
-                        // Ensure tier span is present (static tier1)
-                         if (!element.querySelector('.tier-indicator')) {
-                             const tierSpan = document.createElement('span');
-                             tierSpan.className = 'tier-indicator t1-tag';
-                             tierSpan.textContent = 'tier1';
-                             element.prepend(tierSpan, ' ');
-                         }
-                    } else { // k_10 or others added later
+                    } else { 
                         element.textContent = formattedValue;
                     }
 
                     if (progress < 1) {
                         activeAnimations[fieldId] = requestAnimationFrame(animateStep);
                     } else {
-                        // Ensure final value is exact and formatted
                         const finalFormattedValue = endValue.toFixed(1);
                         if (fieldId === "h_10") {
                              const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
                             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                             element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${finalFormattedValue}`;
-                        } else if (fieldId === "e_10") {
-                             const numericSpan = element.querySelector('.numeric-value');
-                            if (numericSpan) numericSpan.textContent = finalFormattedValue;
-                             if (!element.querySelector('.tier-indicator')) {
-                                const tierSpan = document.createElement('span');
-                                tierSpan.className = 'tier-indicator t1-tag';
-                                tierSpan.textContent = 'tier1';
-                                element.prepend(tierSpan, ' ');
-                            }
                         } else {
                             element.textContent = finalFormattedValue;
                         }
-                        delete activeAnimations[fieldId]; // Clean up
+                        delete activeAnimations[fieldId]; 
                     }
                 };
-
                 activeAnimations[fieldId] = requestAnimationFrame(animateStep);
-                return; // Skip the standard update below
+                return; 
             }
         }
 
-        // --- Standard non-animated update for other fields --- 
-            if (fieldId === "h_10") {
-                const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
-                const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
-                element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
-            } else if (fieldId === "e_10") {
-                const numericSpan = element.querySelector('.numeric-value');
-                if (numericSpan) numericSpan.textContent = value;
-            // Ensure tier span is present (static tier1)
-            if (!element.querySelector('.tier-indicator')) {
+        // Standard non-animated update
+        if (fieldId === "h_10") {
+            const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+            const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
+            element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
+        } else if (fieldId === "e_10") {
+            const numericSpanE10 = element.querySelector('.numeric-value');
+            if (numericSpanE10) numericSpanE10.textContent = value;
+            if (!element.querySelector('.tier-indicator.t1-tag')) {
                 const tierSpan = document.createElement('span');
                 tierSpan.className = 'tier-indicator t1-tag';
                 tierSpan.textContent = 'tier1';
-                element.prepend(tierSpan, ' ');
+                element.prepend(tierSpan, ' '); 
             }
-            } else if (fieldId === "j_8" || fieldId === "j_10") {
-                const percentSpan = element.closest('td').querySelector('.percent-value');
-                if (percentSpan) percentSpan.textContent = value;
-            } else {
-                element.textContent = value;
+            element.classList.add('ref-value'); 
+        } else if (fieldId === "d_6" || fieldId === "d_8") {
+            element.textContent = value;
+            element.classList.add('ref-value'); 
+        } else if (fieldId === "j_8" || fieldId === "j_10") {
+            const percentSpan = element.closest('td').querySelector('.percent-value');
+            if (percentSpan) percentSpan.textContent = value;
+        } else {
+            element.textContent = value;
         }
     }
 
@@ -307,9 +282,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         let actualTEUI = 0, targetTEUI = 0;
 
         if (area > 0) {
-            // Always calculate target
             targetTEUI = Math.round((targetEnergy / area) * 10) / 10;
-            // Only calculate actual if in utility mode
             if (useType === "Utility Bills") {
                 actualTEUI = Math.round((actualEnergy / area) * 10) / 10;
             }
@@ -317,17 +290,17 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
+            window.TEUI.StateManager.setValue('e_10', targetTEUI.toFixed(1), 'calculated'); // MIRROR e_10 to h_10
             if (useType === "Utility Bills") {
                 window.TEUI.StateManager.setValue('k_10', actualTEUI.toFixed(1), 'calculated');
             }
         }
         updateDisplayValue('h_10', targetTEUI.toFixed(1));
-        // Only update display if in utility mode, otherwise updateTEUIDisplay handles N/A
+        updateDisplayValue('e_10', targetTEUI.toFixed(1)); // MIRROR e_10 display
         if (useType === "Utility Bills") {
              updateDisplayValue('k_10', actualTEUI.toFixed(1));
         }
-        
-        return true; // Indicate success
+        return true; 
     }
 
     /**
@@ -341,9 +314,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         let targetValue_h8 = 0, actualValue_k8 = 0;
 
         if (area > 0) {
-            // Always calculate target
             targetValue_h8 = Math.round((targetEmissions / area) * 10) / 10;
-             // Only calculate actual if in utility mode
             if (useType === "Utility Bills") {
                  actualValue_k8 = Math.round((actualEmissions / area) * 10) / 10;
             }
@@ -351,31 +322,27 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_8', targetValue_h8.toFixed(1), 'calculated');
+            window.TEUI.StateManager.setValue('d_8', targetValue_h8.toFixed(1), 'calculated'); // MIRROR d_8 to h_8
             if (useType === "Utility Bills") {
                 window.TEUI.StateManager.setValue('k_8', actualValue_k8.toFixed(1), 'calculated'); 
             }
         }
         updateDisplayValue('h_8', targetValue_h8.toFixed(1));
-        // Only update display if in utility mode, otherwise updateTEUIDisplay handles N/A
+        updateDisplayValue('d_8', targetValue_h8.toFixed(1)); // MIRROR d_8 display
         if (useType === "Utility Bills") {
              updateDisplayValue('k_8', actualValue_k8.toFixed(1)); 
         }
 
-        // Update explanation text for Target cell (h_8)
-        const reference_d8 = getNumericValue("d_8", 1); // Avoid division by zero
+        const reference_d8 = getNumericValue("d_8", 1); 
         if (reference_d8 !== 0) {
-            const reduction_t2 = 1 - (targetValue_h8 / reference_d8);
+            const reduction_t2 = 1 - (targetValue_h8 / reference_d8); // Will be 0% for now
             const reductionPercent_t2 = Math.round(reduction_t2 * 100);
             const explanationText_t2 = `Targeted (Design) ${reductionPercent_t2}% Reduction`;
             const targetExplanationSpan_t2 = document.querySelector('[data-field-id="h_8"] .key-explanation');
-            if (targetExplanationSpan_t2) {
-                targetExplanationSpan_t2.textContent = explanationText_t2;
-            }
+            if (targetExplanationSpan_t2) targetExplanationSpan_t2.textContent = explanationText_t2;
         }
-
-        // Trigger dependent calculations
         updateAnnualCarbonPercentage();
-        calculateLifetimeCarbon(); // Lifetime Carbon depends on Annual Carbon
+        calculateLifetimeCarbon(); 
     }
 
     /**
@@ -383,19 +350,16 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function calculateLifetimeCarbon() {
         let embodiedCarbon_i41 = getNumericValue("i_41", 0);
-        // Fallback for initial load
         if (embodiedCarbon_i41 === 0) embodiedCarbon_i41 = 345.82;
         
         const serviceLife_h13 = getNumericValue("h_13", 50);
-        const annualTarget_h8 = getNumericValue("h_8", 4.7);
-        const annualActual_k8 = getNumericValue("k_8", 4.8);
+        const annualTarget_h8 = getNumericValue("h_8", 0); 
+        const annualActual_k8 = getNumericValue("k_8", 0);
         const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
         let targetValue_h6 = 0, actualValue_k6 = 0;
 
         if (serviceLife_h13 > 0) {
-            // Always calculate target
             targetValue_h6 = Math.round((embodiedCarbon_i41 / serviceLife_h13 + annualTarget_h8) * 10) / 10;
-            // Only calculate actual if in utility mode
             if (useType === "Utility Bills") {
                 actualValue_k6 = Math.round((embodiedCarbon_i41 / serviceLife_h13 + annualActual_k8) * 10) / 10;
             }
@@ -403,29 +367,25 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_6', targetValue_h6.toFixed(1), 'calculated');
+            window.TEUI.StateManager.setValue('d_6', targetValue_h6.toFixed(1), 'calculated'); // MIRROR d_6 to h_6
             if (useType === "Utility Bills") {
                 window.TEUI.StateManager.setValue('k_6', actualValue_k6.toFixed(1), 'calculated');
             }
         }
         updateDisplayValue('h_6', targetValue_h6.toFixed(1));
-        // Only update display if in utility mode, otherwise updateTEUIDisplay handles N/A
-            if (useType === "Utility Bills") {
+        updateDisplayValue('d_6', targetValue_h6.toFixed(1)); // MIRROR d_6 display
+        if (useType === "Utility Bills") {
             updateDisplayValue('k_6', actualValue_k6.toFixed(1)); 
         }
 
-        // Update explanation text for Target cell (h_6)
-        const reference_d6 = getNumericValue("d_6", 1); // Avoid division by zero
+        const reference_d6 = getNumericValue("d_6", 1); 
         if (reference_d6 !== 0) {
-            const reduction_t1 = 1 - (targetValue_h6 / reference_d6);
+            const reduction_t1 = 1 - (targetValue_h6 / reference_d6); // Will be 0% for now
             const reductionPercent_t1 = Math.round(reduction_t1 * 100);
             const explanationText_t1 = `Targeted (Design) ${reductionPercent_t1}% Reduction`;
             const targetExplanationSpan_t1 = document.querySelector('[data-field-id="h_6"] .key-explanation');
-            if (targetExplanationSpan_t1) {
-                targetExplanationSpan_t1.textContent = explanationText_t1;
-            }
+            if (targetExplanationSpan_t1) targetExplanationSpan_t1.textContent = explanationText_t1;
         }
-
-        // Update the gauge
         updateLinearGauge("lifetime-carbon-gauge");
     }
 
