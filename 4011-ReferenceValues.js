@@ -187,7 +187,7 @@ TEUI.ReferenceValues = {
     "j_115": "0.90", // Min. AFUE if Gas or Oil
     "j_116": "3.3", // Min. COPc if Dedicated Cooling
     "f_113": "7.1", // Min. HSPF if Heatpump
-    "d_118": "81", // Min. Permissible ERV/HRV SRE Efficiency%
+    "d_118": "0", // Min. Permissible ERV/HRV SRE Efficiency%
     "l_118": "3.50", // Min. Volumetric Ventilation Rate if by Volume Method
     "d_119": "8.33" // Min. Permissible Vent. Rate Per Person in l/sec
         },

@@ -98,7 +98,7 @@ TEUI.ReferenceToggle = (function() {
 
             if (referenceMode) {
                 displayValue = TEUI.StateManager.getValue(fieldId); // Mode-aware, gets from activeReferenceDataSet
-            } else {
+      } else {
                 // Exiting reference mode, get the true application state value
                 applicationStateValue = TEUI.StateManager.getValue(fieldId, TEUI.StateManager.VALUE_STATES.APPLICATION);
                 displayValue = applicationStateValue;

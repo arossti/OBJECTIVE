@@ -65,6 +65,7 @@ class ExcelMapper {
             'L16': 'l_16', // Oil Cost 
 
             // Section 03: Climate Calculations (REPORT! Sheet)
+            'H20': 'h_20', // Present/Future Weather Toggle (Dropdown) - ADDED
             'H21': 'h_21', // Capacitance/Static Toggle (Dropdown) - NEWLY ADDED
             'M19': 'm_19', // Days Cooling (Editable Number)
             // Note: L22 (Elevation) & L24 (Cooling Override) are handled by weather/location import, not general user data import.
@@ -111,7 +112,8 @@ class ExcelMapper {
 
             // Section 09: Occupant Internal Gains (REPORT! Sheet)
             'D63': 'd_63', // Occupants
-            'I63': 'i_63', // Occupied Hrs/Day
+            'G63': 'g_63', // Occupied Hrs/Day (Dropdown) - ADDED (Was I63 -> i_63, assumed G63 for g_63)
+            // 'I63': 'i_63', // Occupied Hrs/Day (If this is different or still needed, clarify) - TO BE DELETED (derived from g_63)
             // 'J63': 'j_63', // Total Hrs/Year - This line should be commented out or removed.
             'D64': 'd_64', // Occupant Activity (Dropdown)
             'D65': 'd_65', // Plug Loads W/m2
@@ -353,6 +355,23 @@ class ExcelMapper {
                     }
                 }
                 */
+                // Normalize d_97 (Thermal Bridge Penalty %) value from Excel
+                if (fieldId === 'd_97') {
+                    if (typeof extractedValue === 'number' && extractedValue >= 0 && extractedValue <= 1) {
+                        // If Excel stores 30% as 0.3, convert to 30
+                        extractedValue = (extractedValue * 100).toString();
+                    } else if (typeof extractedValue === 'string' && extractedValue.endsWith('%')) {
+                        // If Excel stores "30%"
+                        extractedValue = parseFloat(extractedValue.replace('%', '')).toString();
+                    } else if (typeof extractedValue === 'number') {
+                        // If Excel stores just the number 30 for 30%
+                        extractedValue = extractedValue.toString();
+                    }
+                    // Ensure it's a string for consistency, defaulting to "0" if parsing failed
+                    if (isNaN(parseFloat(extractedValue))) {
+                        extractedValue = "0"; // Or a more appropriate default like "5"
+                    }
+                }
                 importedData[fieldId] = extractedValue;
                 // console.log(`Mapped ${sheetName}!${cellRef} -> ${fieldId}: ${importedData[fieldId]}`);
             } else {

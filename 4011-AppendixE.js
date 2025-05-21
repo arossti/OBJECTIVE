@@ -1,6 +1,7 @@
 // 4011-AppendixE.js
 // Placeholder for Appendix E definitions from STANDARDIZED-STATES.md
-// This will define field-specific behaviors in Reference Mode.
+// This will define field-specific behaviors in Reference Mode, 
+// such as the ability to edit sections while in Reference Mode, to 'try on' scenarios.
 
 window.TEUI = window.TEUI || {};
 
