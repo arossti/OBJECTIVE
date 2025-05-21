@@ -95,6 +95,7 @@ class ExcelMapper {
             'I45': 'i_45', // WWS Electricity kWh/yr
             'K45': 'k_45', // Green Natural Gas m3/yr
             'I46': 'i_46', // Other Removals kWh/yr
+            'M43': 'm_43', // P.5 Exterior/Site/Other Loads (kWh) - ADDED
 
             // Section 07: Water Use (REPORT! Sheet)
             'D49': 'd_49', // Water Use Method (Dropdown)
