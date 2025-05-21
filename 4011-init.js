@@ -20,6 +20,19 @@ function initializeUIHandlers() {
 
     // Add any other general UI setup here
      console.log("General UI Handlers Initialized.");
+
+    // << NEW: Event listener for Reset Imported button >>
+    const resetImportedBtn = document.getElementById('reset-imported-btn');
+    if (resetImportedBtn) {
+        resetImportedBtn.addEventListener('click', function() {
+            if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.revertToLastImportedState === 'function') {
+                window.TEUI.StateManager.revertToLastImportedState();
+            } else {
+                console.error('StateManager or revertToLastImportedState function not found.');
+                alert('Error: Reset function is not available.');
+            }
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

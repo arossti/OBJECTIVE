@@ -149,6 +149,7 @@ TEUI.StateManager = (function() {
     let listeners = new Map();        // Field change listeners
     let activeReferenceDataSet = {}; 
     let isApplicationStateMuted = false; // << NEW: Flag for muting application state updates
+    let lastImportedState = {}; // << NEW: To store the last imported state
     
     /**
      * Initialize the state manager
@@ -246,6 +247,11 @@ TEUI.StateManager = (function() {
             //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to "${value}", stateType: ${state}`);
             // }
             return false; // Prevent update to this.fields (application state)
+        }
+
+        // << NEW: Store value if it's from an import >>
+        if (state === VALUE_STATES.IMPORTED) {
+            lastImportedState[fieldId] = value;
         }
 
         // if (fieldId === 'k_120') { // Intentionally commented out
@@ -1089,6 +1095,54 @@ TEUI.StateManager = (function() {
         // console.log(`[StateManager] Application state updates ${isMuted ? 'MUTED' : 'UNMUTED'}.`);
     }
 
+    /**
+     * NEW METHOD: Reverts the application state to the last successfully imported state.
+     */
+    function revertToLastImportedState() {
+        if (Object.keys(lastImportedState).length === 0) {
+            if (window.TEUI && window.TEUI.FileHandler && typeof window.TEUI.FileHandler.showStatus === 'function') {
+                window.TEUI.FileHandler.showStatus('No data has been imported in this session to reset to.', 'warning');
+            }
+            console.warn('[StateManager] revertToLastImportedState called, but lastImportedState is empty.');
+            return;
+        }
+
+        console.log('[StateManager] Reverting to last imported state...');
+        let revertedCount = 0;
+
+        Object.entries(lastImportedState).forEach(([fieldId, importedValue]) => {
+            // Set the value in the main application state
+            const valueChanged = setValue(fieldId, importedValue, 'system_reverted_to_import'); // Use a new distinct source
+            
+            // Update the UI display for the field
+            if (window.TEUI && window.TEUI.FieldManager && typeof window.TEUI.FieldManager.updateFieldDisplay === 'function') {
+                const fieldDef = window.TEUI.FieldManager.getField(fieldId);
+                if (fieldDef) {
+                    try {
+                        window.TEUI.FieldManager.updateFieldDisplay(fieldId, importedValue, fieldDef);
+                        if (valueChanged) revertedCount++;
+                    } catch (e) {
+                        console.error(`[StateManager] Error calling FieldManager.updateFieldDisplay for ${fieldId} during revert:`, e);
+                    }
+                }
+            } else {
+                console.warn(`[StateManager] FieldManager.updateFieldDisplay not available during revert for ${fieldId}.`);
+            }
+        });
+
+        // Trigger a full recalculation of all dependent fields
+        if (window.TEUI && window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+            window.TEUI.Calculator.calculateAll();
+        } else {
+            console.warn('[StateManager] Calculator.calculateAll not available to trigger after reverting state.');
+        }
+
+        if (window.TEUI && window.TEUI.FileHandler && typeof window.TEUI.FileHandler.showStatus === 'function') {
+            window.TEUI.FileHandler.showStatus(`Application state reset to last imported values. ${revertedCount} fields updated.`, 'success');
+        }
+        console.log(`[StateManager] Reverted to last imported state. ${revertedCount} fields updated.`);
+    }
+
     // Public API
     return {
         // Constants
@@ -1126,7 +1180,8 @@ TEUI.StateManager = (function() {
         exportDependencyGraph: exportDependencyGraph,
         loadReferenceData: loadReferenceData,           
         setValueInReferenceMode: setValueInReferenceMode, 
-        setMuteApplicationStateUpdates: setMuteApplicationStateUpdates // << NEW
+        setMuteApplicationStateUpdates: setMuteApplicationStateUpdates, // << NEW
+        revertToLastImportedState: revertToLastImportedState // << NEW
     };
 })();
 
