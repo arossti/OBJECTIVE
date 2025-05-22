@@ -145,11 +145,12 @@ window.TEUI.SectionModules.sect01 = (function() {
     //==========================================================================
 
     /**
-     * Helper function to safely get numeric values from state or DOM
+     * Helper function to safely get numeric values from the APPLICATION state.
      */
-    function getNumericValue(fieldId, defaultValue = 0) {
+    function getAppNumericValue(fieldId, defaultValue = 0) {
         let value = defaultValue;
-        const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+        // Use the new explicit getter for Application State
+        const stateValue = window.TEUI?.StateManager?.getApplicationStateValue(fieldId);
         if (stateValue !== null && stateValue !== undefined) {
             if (typeof stateValue === 'string') {
                 const cleanedValue = stateValue.replace(/,/g, '');
@@ -163,7 +164,29 @@ window.TEUI.SectionModules.sect01 = (function() {
                 value = stateValue;
             }
         }
-        // DOM fallback is removed for performance/simplicity, relies on StateManager
+        return isNaN(value) ? defaultValue : value;
+    }
+
+    /**
+     * Helper function to safely get numeric values from the REFERENCE state.
+     */
+    function getRefNumericValue(fieldId, defaultValue = 0) {
+        let value = defaultValue;
+        // Use the new explicit getter for Reference State
+        const stateValue = window.TEUI?.StateManager?.getActiveReferenceModeValue(fieldId);
+        if (stateValue !== null && stateValue !== undefined) {
+            if (typeof stateValue === 'string') {
+                const cleanedValue = stateValue.replace(/,/g, '');
+                if (cleanedValue === '' || cleanedValue.toUpperCase() === 'N/A') {
+                    value = defaultValue;
+                } else {
+                    const parsed = parseFloat(cleanedValue);
+                    value = isNaN(parsed) ? defaultValue : parsed;
+                }
+            } else if (typeof stateValue === 'number' && !isNaN(stateValue)) {
+                value = stateValue;
+            }
+        }
         return isNaN(value) ? defaultValue : value;
     }
 
@@ -219,7 +242,8 @@ window.TEUI.SectionModules.sect01 = (function() {
                     const formattedValue = currentValue.toFixed(1);
 
                     if (fieldId === "h_10") {
-                        const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+                        // Tier for h_10 (Target) comes from i_10 (Application State)
+                        const tierValue = window.TEUI.StateManager?.getApplicationStateValue("i_10") || "tier3";
                         const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                         element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${formattedValue}`;
                     } else { 
@@ -231,7 +255,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     } else {
                         const finalFormattedValue = endValue.toFixed(1);
                         if (fieldId === "h_10") {
-                             const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+                             const tierValue = window.TEUI.StateManager?.getApplicationStateValue("i_10") || "tier3";
                             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                             element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${finalFormattedValue}`;
                         } else {
@@ -246,39 +270,40 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
 
         // Standard non-animated update
-        if (fieldId === "h_10") {
-            const tierValue = window.TEUI.StateManager.getValue("i_10") || "tier3";
+        if (fieldId === "h_10") { // Target TEUI
+            const tierValue = window.TEUI.StateManager?.getApplicationStateValue("i_10") || "tier3";
             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
             element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
-        } else if (fieldId === "e_10") {
+        } else if (fieldId === "e_10") { // Reference TEUI
             const numericSpanE10 = element.querySelector('.numeric-value');
             if (numericSpanE10) numericSpanE10.textContent = value;
+            // Ensure "tier1" and styling for Reference column is always present
             if (!element.querySelector('.tier-indicator.t1-tag')) {
                 const tierSpan = document.createElement('span');
                 tierSpan.className = 'tier-indicator t1-tag';
                 tierSpan.textContent = 'tier1';
-                element.prepend(tierSpan, ' '); 
+                element.prepend(tierSpan, ' ');
             }
             element.classList.add('ref-value'); 
-        } else if (fieldId === "d_6" || fieldId === "d_8") {
+        } else if (fieldId === "d_6" || fieldId === "d_8") { // Reference Carbon Values
             element.textContent = value;
             element.classList.add('ref-value'); 
-        } else if (fieldId === "j_8" || fieldId === "j_10") {
+        } else if (fieldId === "j_8" || fieldId === "j_10") { // Percentage Values
             const percentSpan = element.closest('td').querySelector('.percent-value');
             if (percentSpan) percentSpan.textContent = value;
-        } else {
+        } else { // All other Target/Actual values (h_6, k_6, h_8, k_8, k_10)
             element.textContent = value;
         }
     }
 
     /**
-     * Calculate TEUI values (T.3)
+     * Calculate TEUI values (T.3) for Target (H) and Actual (K) columns.
      */
-    function calculateTEUI() {
-        const actualEnergy = getNumericValue('f_32', 0);
-        const targetEnergy = getNumericValue('j_32', 0);
-        const area = getNumericValue('h_15', 1);
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+    function calculateTargetActualTEUI() {
+        const actualEnergy = getAppNumericValue('f_32', 0); // App State
+        const targetEnergy = getAppNumericValue('j_32', 0); // App State
+        const area = getAppNumericValue('h_15', 1);         // App State
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use"; // App State
         let actualTEUI = 0, targetTEUI = 0;
 
         if (area > 0) {
@@ -290,27 +315,47 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
-            window.TEUI.StateManager.setValue('e_10', targetTEUI.toFixed(1), 'calculated'); // MIRROR e_10 to h_10
             if (useType === "Utility Bills") {
                 window.TEUI.StateManager.setValue('k_10', actualTEUI.toFixed(1), 'calculated');
+            } else {
+                 // Ensure k_10 is cleared or set to N/A if not in utility bill mode at StateManager level
+                 window.TEUI.StateManager.setValue('k_10', 'N/A', 'calculated');
             }
         }
-        updateDisplayValue('h_10', targetTEUI.toFixed(1));
-        updateDisplayValue('e_10', targetTEUI.toFixed(1)); // MIRROR e_10 display
-        if (useType === "Utility Bills") {
-             updateDisplayValue('k_10', actualTEUI.toFixed(1));
-        }
+        // Display updates will be handled by updateTEUIDisplay
         return true; 
+    }
+    
+    /**
+     * Calculate TEUI value (T.3) for Reference (E) column.
+     */
+    function calculateReferenceTEUI() {
+        console.log("[S01 REFAC] Entered calculateReferenceTEUI");
+        // Reference TEUI typically uses "target" energy inputs from the reference dataset
+        const referenceTargetEnergy = getRefNumericValue('j_32', 0); // Ref State (carried over from app j_32 if not overridden by standard)
+        const referenceArea = getRefNumericValue('h_15', 1);         // Ref State (carried over from app h_15 if not overridden)
+        console.log(`[S01 REFAC] calculateReferenceTEUI - Inputs: refTargetEnergy = ${referenceTargetEnergy}, refArea = ${referenceArea}`);
+        let referenceTEUI = 0;
+
+        if (referenceArea > 0) {
+            referenceTEUI = Math.round((referenceTargetEnergy / referenceArea) * 10) / 10;
+        }
+
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue('e_10', referenceTEUI.toFixed(1), 'calculated');
+        }
+        // Display updates will be handled by updateTEUIDisplay
+        return true;
     }
 
     /**
-     * Calculate Annual Carbon values (T.2)
+     * Calculate Annual Carbon values (T.2) for Target (H) and Actual (K) columns.
      */
-    function calculateAnnualCarbon() {
-        const targetEmissions = getNumericValue("k_32", 0);
-        const actualEmissions = getNumericValue("g_32", 0);
-        const area = getNumericValue("h_15", 1);
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+    function calculateTargetActualAnnualCarbon() {
+        const targetEmissions = getAppNumericValue("k_32", 0); // App State
+        const actualEmissions = getAppNumericValue("g_32", 0); // App State
+        const area = getAppNumericValue("h_15", 1);         // App State
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use"; // App State
         let targetValue_h8 = 0, actualValue_k8 = 0;
 
         if (area > 0) {
@@ -322,85 +367,120 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_8', targetValue_h8.toFixed(1), 'calculated');
-            window.TEUI.StateManager.setValue('d_8', targetValue_h8.toFixed(1), 'calculated'); // MIRROR d_8 to h_8
             if (useType === "Utility Bills") {
                 window.TEUI.StateManager.setValue('k_8', actualValue_k8.toFixed(1), 'calculated'); 
+            } else {
+                window.TEUI.StateManager.setValue('k_8', 'N/A', 'calculated');
             }
         }
-        updateDisplayValue('h_8', targetValue_h8.toFixed(1));
-        updateDisplayValue('d_8', targetValue_h8.toFixed(1)); // MIRROR d_8 display
-        if (useType === "Utility Bills") {
-             updateDisplayValue('k_8', actualValue_k8.toFixed(1)); 
-        }
-
-        const reference_d8 = getNumericValue("d_8", 1); 
-        if (reference_d8 !== 0) {
-            const reduction_t2 = 1 - (targetValue_h8 / reference_d8); // Will be 0% for now
+        
+        // Update explanation text for Target Annual Carbon (h_8)
+        const reference_d8_for_h8_text = getRefNumericValue("d_8", 1); 
+        if (reference_d8_for_h8_text !== 0) {
+            const reduction_t2 = 1 - (targetValue_h8 / reference_d8_for_h8_text);
             const reductionPercent_t2 = Math.round(reduction_t2 * 100);
             const explanationText_t2 = `Targeted (Design) ${reductionPercent_t2}% Reduction`;
             const targetExplanationSpan_t2 = document.querySelector('[data-field-id="h_8"] .key-explanation');
             if (targetExplanationSpan_t2) targetExplanationSpan_t2.textContent = explanationText_t2;
         }
-        updateAnnualCarbonPercentage();
-        calculateLifetimeCarbon(); 
+        
+        calculateTargetActualLifetimeCarbon(); // Depends on h_8 and k_8
     }
 
     /**
-     * Calculate Lifetime Carbon values (T.1)
+     * Calculate Annual Carbon value (T.2) for Reference (E) column.
      */
-    function calculateLifetimeCarbon() {
-        let embodiedCarbon_i41 = getNumericValue("i_41", 0);
-        if (embodiedCarbon_i41 === 0) embodiedCarbon_i41 = 345.82;
+    function calculateReferenceAnnualCarbon() {
+        console.log("[S01 REFAC] Entered calculateReferenceAnnualCarbon");
+        const referenceTargetEmissions = getRefNumericValue("k_32", 0); // Ref State
+        const referenceArea = getRefNumericValue("h_15", 1);         // Ref State
+        console.log(`[S01 REFAC] calculateReferenceAnnualCarbon - Inputs: refTargetEmissions = ${referenceTargetEmissions}, refArea = ${referenceArea}`);
+        let referenceValue_d8 = 0;
+
+        if (referenceArea > 0) {
+            referenceValue_d8 = Math.round((referenceTargetEmissions / referenceArea) * 10) / 10;
+        }
+
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue('d_8', referenceValue_d8.toFixed(1), 'calculated');
+        }
+        calculateReferenceLifetimeCarbon(); // Depends on d_8
+    }
+
+    /**
+     * Calculate Lifetime Carbon values (T.1) for Target (H) and Actual (K) columns.
+     */
+    function calculateTargetActualLifetimeCarbon() {
+        let embodiedCarbon_i41 = getAppNumericValue("i_41", 0); // App State
+        if (embodiedCarbon_i41 === 0) embodiedCarbon_i41 = 345.82; // Default if app state is 0
         
-        const serviceLife_h13 = getNumericValue("h_13", 50);
-        const annualTarget_h8 = getNumericValue("h_8", 0); 
-        const annualActual_k8 = getNumericValue("k_8", 0);
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+        const serviceLife_h13 = getAppNumericValue("h_13", 50); // App State
+        const annualTarget_h8 = getAppNumericValue("h_8", 0);  // App State (already calculated)
+        const annualActual_k8 = getAppNumericValue("k_8", 0);  // App State (already calculated)
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use"; // App State
         let targetValue_h6 = 0, actualValue_k6 = 0;
 
         if (serviceLife_h13 > 0) {
             targetValue_h6 = Math.round((embodiedCarbon_i41 / serviceLife_h13 + annualTarget_h8) * 10) / 10;
-            if (useType === "Utility Bills") {
+            if (useType === "Utility Bills" && !isNaN(annualActual_k8)) { // Ensure k_8 is a number
                 actualValue_k6 = Math.round((embodiedCarbon_i41 / serviceLife_h13 + annualActual_k8) * 10) / 10;
             }
         }
 
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('h_6', targetValue_h6.toFixed(1), 'calculated');
-            window.TEUI.StateManager.setValue('d_6', targetValue_h6.toFixed(1), 'calculated'); // MIRROR d_6 to h_6
-            if (useType === "Utility Bills") {
+            if (useType === "Utility Bills" && !isNaN(annualActual_k8)) {
                 window.TEUI.StateManager.setValue('k_6', actualValue_k6.toFixed(1), 'calculated');
+            } else {
+                 window.TEUI.StateManager.setValue('k_6', 'N/A', 'calculated');
             }
         }
-        updateDisplayValue('h_6', targetValue_h6.toFixed(1));
-        updateDisplayValue('d_6', targetValue_h6.toFixed(1)); // MIRROR d_6 display
-        if (useType === "Utility Bills") {
-            updateDisplayValue('k_6', actualValue_k6.toFixed(1)); 
-        }
-
-        const reference_d6 = getNumericValue("d_6", 1); 
-        if (reference_d6 !== 0) {
-            const reduction_t1 = 1 - (targetValue_h6 / reference_d6); // Will be 0% for now
+        
+        // Update explanation text for Target Lifetime Carbon (h_6)
+        const reference_d6_for_h6_text = getRefNumericValue("d_6", 1); 
+        if (reference_d6_for_h6_text !== 0) {
+            const reduction_t1 = 1 - (targetValue_h6 / reference_d6_for_h6_text);
             const reductionPercent_t1 = Math.round(reduction_t1 * 100);
             const explanationText_t1 = `Targeted (Design) ${reductionPercent_t1}% Reduction`;
             const targetExplanationSpan_t1 = document.querySelector('[data-field-id="h_6"] .key-explanation');
             if (targetExplanationSpan_t1) targetExplanationSpan_t1.textContent = explanationText_t1;
         }
-        updateLinearGauge("lifetime-carbon-gauge");
     }
 
     /**
-     * Update Annual Carbon percentage (T.2 %)
+     * Calculate Lifetime Carbon value (T.1) for Reference (E) column.
+     */
+    function calculateReferenceLifetimeCarbon() {
+        console.log("[S01 REFAC] Entered calculateReferenceLifetimeCarbon");
+        let embodiedCarbon_i41_ref = getRefNumericValue("i_41", 0); // Ref State
+        if (embodiedCarbon_i41_ref === 0) embodiedCarbon_i41_ref = 345.82; // Default if ref state is 0
+        
+        const serviceLife_h13_ref = getRefNumericValue("h_13", 50);    // Ref State
+        const annualReference_d8 = getRefNumericValue("d_8", 0);     // Ref State (already calculated by calculateReferenceAnnualCarbon)
+        console.log(`[S01 REFAC] calculateReferenceLifetimeCarbon - Inputs: embodied_ref = ${embodiedCarbon_i41_ref}, serviceLife_ref = ${serviceLife_h13_ref}, annualRefCarbon_d8 = ${annualReference_d8}`);
+        let referenceValue_d6 = 0;
+
+        if (serviceLife_h13_ref > 0) {
+            referenceValue_d6 = Math.round((embodiedCarbon_i41_ref / serviceLife_h13_ref + annualReference_d8) * 10) / 10;
+        }
+
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue('d_6', referenceValue_d6.toFixed(1), 'calculated');
+        }
+    }
+
+    /**
+     * Update Annual Carbon percentage (T.2 % J8)
      */
     function updateAnnualCarbonPercentage() {
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
-        const reference = getNumericValue("d_8", 1);
-        const target = getNumericValue("h_8", 0);
-        const actual = getNumericValue("k_8", 0);
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use";
+        const reference = getRefNumericValue("d_8", 1); // Use Reference value for d_8
+        const target = getAppNumericValue("h_8", 0);    // Use Application value for h_8
+        const actual = getAppNumericValue("k_8", 0);    // Use Application value for k_8
         let percent = 0;
 
         if (reference !== 0) {
-            const valueToUse = (useType === "Utility Bills") ? actual : target;
+            const valueToUse = (useType === "Utility Bills" && !isNaN(actual)) ? actual : target;
             percent = Math.round((valueToUse / reference) * 100);
         }
         const displayValue = `${percent}%`;
@@ -408,24 +488,24 @@ window.TEUI.SectionModules.sect01 = (function() {
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue('j_8', displayValue, 'calculated');
         }
-        updateDisplayValue('j_8', displayValue);
+        // Display update will be handled by updateTEUIDisplay
 
         const checkmark = document.querySelector('[data-field-id="j_8"] .checkmark');
-        if (checkmark) checkmark.style.display = (percent <= 50) ? 'inline-block' : 'none';
+        if (checkmark) checkmark.style.display = (percent <= 50 && percent > 0) ? 'inline-block' : 'none'; // Show check if reduction is positive and significant
     }
 
     /**
-     * Update TEUI percentage (T.3 %)
+     * Update TEUI percentage (T.3 % J10)
      */
     function updateTEUIPercentage() {
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
-        const reference = getNumericValue("e_10", 1);
-        const target = getNumericValue("h_10", 0);
-        const actual = getNumericValue("k_10", 0);
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use";
+        const reference = getRefNumericValue("e_10", 1); // Use Reference value for e_10
+        const target = getAppNumericValue("h_10", 0);    // Use Application value for h_10
+        const actual = getAppNumericValue("k_10", 0);    // Use Application value for k_10
         let percent = 0;
 
         if (reference !== 0) {
-            const valueToUse = (useType === "Utility Bills") ? actual : target;
+            const valueToUse = (useType === "Utility Bills" && !isNaN(actual)) ? actual : target;
             percent = Math.round((valueToUse / reference) * 100);
         }
         const displayValue = `${percent}%`;
@@ -433,30 +513,27 @@ window.TEUI.SectionModules.sect01 = (function() {
         if (window.TEUI?.StateManager) {
             window.TEUI.StateManager.setValue("j_10", displayValue, "calculated");
         }
-        updateDisplayValue('j_10', displayValue);
+        // Display update will be handled by updateTEUIDisplay
 
         const checkmark = document.querySelector('[data-field-id="j_10"] .checkmark');
-        if (checkmark) checkmark.style.display = (percent <= 50) ? 'inline-block' : 'none';
+        if (checkmark) checkmark.style.display = (percent <= 50 && percent > 0) ? 'inline-block' : 'none'; // Show check if reduction is positive and significant
 
         checkTargetExceedsReference();
     }
 
     /**
      * Calculate the target TEUI tier (i_10) based on reduction and standard.
-     * Formula: =IF(OR(ISNUMBER(SEARCH("NBC", D13)), ISNUMBER(SEARCH("OBC", D13)), ISNUMBER(SEARCH("NECB", D13))),
-     *           IF(D144>0.7, "tier5", IF(D144>0.6, "tier4", IF(D144>0.5, "tier3", IF(D144>0.4, "tier2", "tier1")))),
-     *           IF(D144>0.6, "tier4", IF(D144>0.45, "tier3", IF(D144>0.2, "tier2", IF(D144>0.1, "tier1", "No Tier")))))
-     * Where D144 = 1 - (h_10 / e_10)
+     * This tier is for the TARGET column (H10).
      */
     function calculateTargetTier() {
         if (!window.TEUI?.StateManager) return;
 
-        const targetTEUI_h10 = getNumericValue("h_10", 0);
-        const referenceTEUI_e10 = getNumericValue("e_10", 1); // Avoid division by zero
-        const standard_d13 = window.TEUI.StateManager.getValue("d_13") || ""; // Get reference standard string
+        const targetTEUI_h10 = getAppNumericValue("h_10", 0);    // App State for H10
+        const referenceTEUI_e10 = getRefNumericValue("e_10", 1); // Ref State for E10 (Baseline)
+        const standard_d13 = window.TEUI.StateManager?.getApplicationStateValue("d_13") || ""; // App State for selected standard
         
         let reduction = 0;
-        if (referenceTEUI_e10 !== 0) {
+        if (referenceTEUI_e10 !== 0) { // Avoid division by zero
             reduction = 1 - (targetTEUI_h10 / referenceTEUI_e10);
         }
 
@@ -470,65 +547,70 @@ window.TEUI.SectionModules.sect01 = (function() {
             else if (reduction > 0.6) tier = "tier4";
             else if (reduction > 0.5) tier = "tier3";
             else if (reduction > 0.4) tier = "tier2";
-            else tier = "tier1"; // Assuming reduction cannot be negative enough to not be Tier 1
-        } else {
-            // Other standards (or self-defined)
+            else tier = "tier1"; 
+        } else { // Other standards (or self-defined)
             if (reduction > 0.6) tier = "tier4";
             else if (reduction > 0.45) tier = "tier3";
             else if (reduction > 0.2) tier = "tier2";
             else if (reduction > 0.1) tier = "tier1";
-            // Else remains "No Tier"
         }
 
-        window.TEUI.StateManager.setValue("i_10", tier, "calculated");
+        window.TEUI.StateManager.setValue("i_10", tier, "calculated"); // i_10 is the tier for Target (h_10)
         
         // Update the explanation text for the Target cell (h_10)
         const reductionPercent = Math.round(reduction * 100);
-        const explanationText = `Targeted (Design) ${reductionPercent}% Reduction`;
+        // Ensure explanation text reflects a positive reduction or notes if it's an increase
+        let explanationText;
+        if (reductionPercent >=0) {
+            explanationText = `Targeted (Design) ${reductionPercent}% Reduction`;
+        } else {
+            explanationText = `Targeted (Design) ${Math.abs(reductionPercent)}% Increase`;
+        }
         const targetExplanationSpan = document.querySelector('[data-field-id="h_10"] .key-explanation');
         if (targetExplanationSpan) {
             targetExplanationSpan.textContent = explanationText;
         }
-        
-        // We don't directly update h_10 display here.
-        // The listener for i_10 (added below) will trigger updateTEUIDisplay,
-        // which calls updateDisplayValue for h_10, picking up the new i_10 value.
     }
 
     /**
-     * Update the visual display based on the current mode (Targeted vs Utility)
+     * Update the visual display of all key values in Section 01.
+     * This function now fetches values from their correct contexts.
      */
     function updateTEUIDisplay() {
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use"; // App State
         const isUtilityMode = useType === "Utility Bills";
 
-        // Update actual values display (show N/A if not utility mode)
-        updateDisplayValue('k_6', isUtilityMode ? (window.TEUI.StateManager?.getValue("k_6") || "N/A") : 'N/A');
-        updateDisplayValue('k_8', isUtilityMode ? (window.TEUI.StateManager?.getValue("k_8") || "N/A") : 'N/A');
+        // Update Target Column (H) values - from Application State
+        updateDisplayValue('h_6', window.TEUI.StateManager?.getApplicationStateValue("h_6") || "0.0");
+        updateDisplayValue('h_8', window.TEUI.StateManager?.getApplicationStateValue("h_8") || "0.0");
+        updateDisplayValue('h_10', window.TEUI.StateManager?.getApplicationStateValue("h_10") || "0.0"); // Tier is handled by updateDisplayValue
 
-        // Special handling for TEUI Actual (k_10) - check for zero energy
+        // Update Actual Column (K) values - from Application State, conditional on useType
+        updateDisplayValue('k_6', isUtilityMode ? (window.TEUI.StateManager?.getApplicationStateValue("k_6") || "0.0") : 'N/A');
+        updateDisplayValue('k_8', isUtilityMode ? (window.TEUI.StateManager?.getApplicationStateValue("k_8") || "0.0") : 'N/A');
+        
         let actualTEUIDisplay = 'N/A';
         if (isUtilityMode) {
-            const actualTEUIValue = window.TEUI.StateManager?.getValue("k_10") || "N/A";
-            const energyValue = getNumericValue("f_32", 0);
-            actualTEUIDisplay = (energyValue === 0 || Math.abs(energyValue) < 0.01) ? "0.0" : actualTEUIValue;
+            const actualTEUIValue_k10 = window.TEUI.StateManager?.getApplicationStateValue("k_10") || "0.0";
+            const energyValue_f32 = getAppNumericValue("f_32", 0); // App State
+            actualTEUIDisplay = (energyValue_f32 === 0 || Math.abs(energyValue_f32) < 0.01) ? "0.0" : actualTEUIValue_k10;
         }
         updateDisplayValue('k_10', actualTEUIDisplay);
 
-        // Always update Target and Reference values (their calculation doesn't depend on useType)
-        updateDisplayValue('h_6', window.TEUI.StateManager?.getValue("h_6") || "11.7");
-        updateDisplayValue('h_8', window.TEUI.StateManager?.getValue("h_8") || "4.7");
-        updateDisplayValue('h_10', window.TEUI.StateManager?.getValue("h_10") || "93.0");
-        updateDisplayValue('e_10', window.TEUI.StateManager?.getValue("e_10") || "226.9");
-        updateDisplayValue('d_6', window.TEUI.StateManager?.getValue("d_6") || "40.6");
-        updateDisplayValue('d_8', window.TEUI.StateManager?.getValue("d_8") || "33.6");
+        // Update Reference Column (E/D) values - from Reference State (via StateManager calculated values)
+        // These values in StateManager (d_6, d_8, e_10) should now be correctly populated by the new reference calculation functions
+        // **Correction**: Always source these from getApplicationStateValue, as the reference calculation functions store their results there.
+        updateDisplayValue('d_6', window.TEUI.StateManager?.getApplicationStateValue("d_6") || "0.0"); 
+        updateDisplayValue('d_8', window.TEUI.StateManager?.getApplicationStateValue("d_8") || "0.0");
+        updateDisplayValue('e_10', window.TEUI.StateManager?.getApplicationStateValue("e_10") || "0.0"); 
 
-        // Update percentages
+        // Update percentages (j_8, j_10) - these functions now use correct app/ref values
         updateAnnualCarbonPercentage();
         updateTEUIPercentage();
 
-        // Update gauges
+        // Update gauges - getGaugeValues will now correctly source app/ref values
         updateAllGauges();
+        checkTargetExceedsReference(); // Check after all values are updated
     }
     
     /**
@@ -565,38 +647,40 @@ window.TEUI.SectionModules.sect01 = (function() {
      * Get gauge values based on current mode
      */
     function getGaugeValues(gaugeId) {
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use"; // App State
         const isUtilityMode = useType === "Utility Bills";
-        let actualField, targetField, refField, defaultActual, defaultTarget, defaultRef;
+        let actualFieldApp, targetFieldApp, refFieldRef; // Suffixes denote intended state source
+        let defaultActual, defaultTarget, defaultRef;
 
         if (gaugeId === "teui-gauge") {
-            refField = "e_10"; defaultRef = 226.9;
-            actualField = "k_10"; defaultActual = 93.1;
-            targetField = "h_10"; defaultTarget = 93.0;
+            refFieldRef = "e_10"; defaultRef = 226.9;       // Reference State for e_10
+            actualFieldApp = "k_10"; defaultActual = 93.1;   // App State for k_10
+            targetFieldApp = "h_10"; defaultTarget = 93.0;   // App State for h_10
         } else if (gaugeId === "annual-carbon-gauge") {
-            refField = "d_8"; defaultRef = 33.6;
-            actualField = "k_8"; defaultActual = 4.8;
-            targetField = "h_8"; defaultTarget = 4.7;
+            refFieldRef = "d_8"; defaultRef = 33.6;        // Reference State for d_8
+            actualFieldApp = "k_8"; defaultActual = 4.8;    // App State for k_8
+            targetFieldApp = "h_8"; defaultTarget = 4.7;    // App State for h_8
         } else if (gaugeId === "lifetime-carbon-gauge") {
-            refField = "d_6"; defaultRef = 40.6;
-            actualField = "k_6"; defaultActual = 11.7;
-            targetField = "h_6"; defaultTarget = 11.7;
+            refFieldRef = "d_6"; defaultRef = 40.6;        // Reference State for d_6
+            actualFieldApp = "k_6"; defaultActual = 11.7;   // App State for k_6
+            targetFieldApp = "h_6"; defaultTarget = 11.7;   // App State for h_6
         } else {
             return { actualValue: 0, referenceValue: 100 }; // Fallback
         }
 
-        const referenceValue = getNumericValue(refField, defaultRef);
-        const actualValue = getNumericValue(isUtilityMode ? actualField : targetField, isUtilityMode ? defaultActual : defaultTarget);
+        // Fetch values from their designated states
+        const referenceValue = getRefNumericValue(refFieldRef, defaultRef);
+        const appValueForGauge = getAppNumericValue(isUtilityMode ? actualFieldApp : targetFieldApp, isUtilityMode ? defaultActual : defaultTarget);
         
-        return { actualValue, referenceValue };
+        return { actualValue: appValueForGauge, referenceValue };
     }
 
     /**
      * Check if Target TEUI exceeds Reference TEUI and show warning text
      */
     function checkTargetExceedsReference() {
-        const targetValue = getNumericValue("h_10", 0);
-        const referenceValue = getNumericValue("e_10", 1);
+        const targetValue = getAppNumericValue("h_10", 0);    // App State for H10
+        const referenceValue = getRefNumericValue("e_10", 1); // Ref State for E10
         
         // More specific selector: Find the gauge, go up to the container, then find the title.
         const gaugeContainer = document.getElementById('teui-gauge')?.closest('.key-title-container');
@@ -627,30 +711,30 @@ window.TEUI.SectionModules.sect01 = (function() {
      * Uses placeholder totals until cost calcs are integrated.
      */
     function updateCostIndicators() {
-        const area = getNumericValue("h_15", 1);
-        const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+        const area = getAppNumericValue("h_15", 1);
+        const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use";
         if (area === 0) return; 
 
         // --- Get Unit Costs (Section 2 / T.6.7) ---
-        const costElec_l12 = getNumericValue("l_12", 0.13);
-        const costGas_l13 = getNumericValue("l_13", 0.507);
-        const costPropane_l14 = getNumericValue("l_14", 1.62);
-        const costWood_l15 = getNumericValue("l_15", 180.00);
-        const costOil_l16 = getNumericValue("l_16", 1.50);
+        const costElec_l12 = getAppNumericValue("l_12", 0.13);
+        const costGas_l13 = getAppNumericValue("l_13", 0.507);
+        const costPropane_l14 = getAppNumericValue("l_14", 1.62);
+        const costWood_l15 = getAppNumericValue("l_15", 180.00);
+        const costOil_l16 = getAppNumericValue("l_16", 1.50);
 
         // --- Get Target Energy Amounts (Section 4) ---
-        const targetElec_j27 = getNumericValue("j_27", 0);
-        const targetGas_h28 = getNumericValue("h_28", 0); // Gas amount is in H col
-        const targetPropane_h29 = getNumericValue("h_29", 0);
-        const targetOil_h30 = getNumericValue("h_30", 0);
-        const targetWood_h31 = getNumericValue("h_31", 0);
+        const targetElec_j27 = getAppNumericValue("j_27", 0);
+        const targetGas_h28 = getAppNumericValue("h_28", 0); // Gas amount is in H col
+        const targetPropane_h29 = getAppNumericValue("h_29", 0);
+        const targetOil_h30 = getAppNumericValue("h_30", 0);
+        const targetWood_h31 = getAppNumericValue("h_31", 0);
         
         // --- Get Actual Energy Amounts (Section 4) ---
-        const actualElec_f27 = getNumericValue("f_27", 0);
-        const actualGas_d28 = getNumericValue("d_28", 0);
-        const actualPropane_d29 = getNumericValue("d_29", 0);
-        const actualOil_d30 = getNumericValue("d_30", 0);
-        const actualWood_d31 = getNumericValue("d_31", 0);
+        const actualElec_f27 = getAppNumericValue("f_27", 0);
+        const actualGas_d28 = getAppNumericValue("d_28", 0);
+        const actualPropane_d29 = getAppNumericValue("d_29", 0);
+        const actualOil_d30 = getAppNumericValue("d_30", 0);
+        const actualWood_d31 = getAppNumericValue("d_31", 0);
 
         // --- Calculate Target Total Cost (P9 Equivalent) ---
         const targetCostTotal = 
@@ -696,11 +780,20 @@ window.TEUI.SectionModules.sect01 = (function() {
      * Run all primary calculations for Section 1 in the correct order.
      */
     function runAllCalculations() {
-        calculateAnnualCarbon(); // Calculates h_8, k_8 -> triggers T.2%, T.1 calc
-        calculateTEUI();         // Calculates h_10, k_10 -> triggers T.3 display update
-        calculateTargetTier();   // Calculate initial target tier
+        // Calculate Target (H) and Actual (K) columns first
+        calculateTargetActualAnnualCarbon(); // Calculates h_8, k_8 and then calls calculateTargetActualLifetimeCarbon (for h_6, k_6)
+        calculateTargetActualTEUI();         // Calculates h_10, k_10
+
+        // Then calculate Reference (E/D) column values
+        calculateReferenceAnnualCarbon();    // Calculates d_8 and then calls calculateReferenceLifetimeCarbon (for d_6)
+        calculateReferenceTEUI();            // Calculates e_10
+
+        // Then calculate dependent display elements like Tiers and Percentages
+        calculateTargetTier();   // Calculates i_10 (Target Tier for h_10) based on h_10 (App) and e_10 (Ref)
         updateCostIndicators();  // Update cost indicators
-        updateTEUIDisplay();     // Sync display, including percentages and gauges
+        
+        // Finally, update all displays in Section01
+        updateTEUIDisplay();     // Syncs all display values, percentages, and gauges using updated state
     }
 
     /**
@@ -736,37 +829,16 @@ window.TEUI.SectionModules.sect01 = (function() {
         fieldsToWatch.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
                 // Determine which calculation to trigger based on the changed field
-                if (['k_32', 'g_32', 'h_15', 'd_8'].includes(sourceFieldId)) {
-                    calculateAnnualCarbon(); // Recalculates T.2 and triggers T.1
-                } else if (['i_41', 'h_13'].includes(sourceFieldId)) {
-                    calculateLifetimeCarbon(); // Recalculate T.1 only
-                } else if (['f_32', 'j_32', 'h_15'].includes(sourceFieldId)) {
-                    calculateTEUI(); // Recalculate T.3 (reads f_32 and j_32)
-                } else if (sourceFieldId === 'd_14' || ['h_6','k_6','h_8','k_8','h_10','k_10','e_10','d_6','d_8'].includes(sourceFieldId)) {
-                    // If mode changes or any direct value/ref changes, update display and gauges
-                    // Also trigger tier calc if h_10 or e_10 changes
-                    if (['h_10', 'e_10'].includes(sourceFieldId)) {
-                         calculateTargetTier();
-                    }
-                    updateCostIndicators(); // Update costs on mode change too
-                    updateTEUIDisplay(); 
-                } else if (sourceFieldId === 'j_8') {
-                    updateAnnualCarbonPercentage(); // Only update T.2 percentage display
-                } else if (sourceFieldId === 'j_10') {
-                    updateTEUIPercentage(); // Only update T.3 percentage display
-                } else if (sourceFieldId === 'd_13') {
-                    // Reference standard changed, recalculate tier and update display
-                    calculateTargetTier();
-                    updateCostIndicators(); // Costs aren't dependent, but update for consistency
-                    updateTEUIDisplay();
-                } else if (sourceFieldId === 'i_10') {
-                    // Target Tier was recalculated, just update display
-                    updateTEUIDisplay();
-                }
-                // Note: f_10 changes only affect tier display (for e_10), handled by updateDisplayValue via e_10 listener
-                });
+                // This logic might need refinement to ensure only necessary re-calcs run.
+                // For now, runAllCalculations covers all updates.
+                
+                // Simplification: For any watched field change, run all S01 calculations.
+                // This ensures E, H, K columns and all derived percentages/tiers/gauges are updated.
+                // Specific optimization of listener logic can be a future step if performance issues arise.
+                runAllCalculations();
             });
-            
+        });
+        
         // Initial calculations
         runAllCalculations();
     }
@@ -833,4 +905,5 @@ window.TEUI.SectionModules.sect01 = (function() {
 // Expose key calculation functions globally for potential cross-module use or debugging
 // window.calculateTEUI = () => window.TEUI.SectionModules.sect01.runAllCalculations();
 // window.calculateAnnualCarbon = () => window.TEUI.SectionModules.sect01.calculateAnnualCarbon();
+// window.calculateLifetimeCarbon = () => window.TEUI.SectionModules.sect01.calculateLifetimeCarbon();
 // window.calculateLifetimeCarbon = () => window.TEUI.SectionModules.sect01.calculateLifetimeCarbon();
