@@ -109,16 +109,16 @@ This workplan integrates tasks from previous planning documents into a unified s
         *   **Actual Column (K - e.g., `k_10`):** Values based on inputs from `StateManager`'s primary application state, conditional on `d_14` being "Utility Bills" (fetched via `StateManager.getApplicationStateValue()`).
         *   These three displays must be correct and update dynamically based on their respective data sources, *regardless* of the Reference Mode UI toggle state.
     *   **New Phased Strategy within `sections/4011-Section01.js`:**
-        1.  **Phase S01.1: Mirror H-Column Logic to E-Column (Visual Duplicate & Initial Test Bed):**
+        1.  **Phase S01.1: Mirror H-Column Logic to E-Column (Visual Duplicate & Initial Test Bed):** (Completed)
             *   Modify `Section01.js` so that the E-column (`d_6`, `d_8`, `e_10`) initially calculates and displays values by temporarily using the same logic and **Application State inputs** (via `StateManager.getApplicationStateValue()`) as the H-column (`h_6`, `h_8`, `h_10`).
             *   The E-column display should adopt the "Reference" styling (deep red text, specific tier display like "tier1" for `e_10` as per its static HTML, correct cost indicator style).
             *   **Test:** Confirm E and H columns show the same numeric values and react identically to Application State input changes. The K-column (Actual) continues its existing behavior based on `d_14`.
-        2.  **Phase S01.2: Isolate E-Column for True Reference Calculations:**
+        2.  **Phase S01.2: Isolate E-Column for True Reference Calculations:** (Active - Final Step)
             *   Create new, separate calculation functions within `Section01.js` specifically for the E-column (e.g., `calculateReferenceTEUI_For_E_Column`, etc.).
             *   These functions will fetch their necessary inputs *exclusively* using `StateManager.getActiveReferenceModeValue(sourceFieldId)`.
             *   They will output results only to the E-column `fieldId`s (`e_10`, `d_8`, `d_6`).
             *   Ensure these E-column functions are triggered by `runAllCalculations` when `d_13` (Reference Standard selector) changes or when any underlying application state value (that carries over to the reference state via `activeReferenceDataSet` construction) changes.
-        3.  **Phase S01.3: Confirm H & K Columns use Pure Application State Logic:**
+        3.  **Phase S01.3: Confirm H & K Columns use Pure Application State Logic:** (Active - Final Step)
             *   Verify the existing calculation functions for H and K columns exclusively use `StateManager.getApplicationStateValue()` for their inputs.
             *   Confirm their behavior is identical to the stable, reverted state (reacting to Application State changes and `d_14` for K-column, independent of Reference Mode UI toggle and `d_13` driven reference overrides).
         4.  **Helper `getNumericValue()` in `Section01.js`:** This internal helper will only parse a value passed to it. The calling calculation functions will be responsible for fetching the correct state value from `StateManager` using the appropriate explicit getter (`getApplicationStateValue` or `getActiveReferenceModeValue`).
@@ -235,9 +235,9 @@ This workplan integrates tasks from previous planning documents into a unified s
 *   **Phase D ("Notes" Section Paste):** Medium priority. Useful feature but can follow core data handling.
 *   **Phase F (Layout):** Out of scope for this specific workplan; part of a larger UI refactor.
 *   **Phase G (Testing & Documentation):** Ongoing throughout, with dedicated final testing and documentation update periods. Appendix E population is a key part of this.
-*   **S01.1 (Re-attempt - Mirror H to E):** Highest immediate priority, building on the now-working import functionality.
+*   **S01.1 (Re-attempt - Mirror H to E):** Highest immediate priority, building on the now-working import functionality. (Completed)
 *   **Refactor `d_97` Handling:** Highest immediate priority before proceeding with S01.2.
-*   **S01.2 & S01.3 (Isolate S01 Columns):** High priority, following stable `d_97` and S01.1.
+*   **S01.2 & S01.3 (Isolate S01 Columns):** High priority, following stable `d_97` and S01.1. (Active - Final Steps for Section01 Refactor)
 
 This workplan aims to create a more robust, maintainable, and consistent approach to state management and Reference Model integration in the TEUI 4.011 calculator.
 
