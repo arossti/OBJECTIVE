@@ -20,16 +20,16 @@ window.TEUI.SectionModules.sect01 = (function() {
     // Field definitions primarily for StateManager tracking and reference
     const fields = {
         // T.1 Lifetime Carbon 
-        "d_6": { type: "calculated", label: "Lifetime Carbon Ref", defaultValue: "40.6", section: "keyValues" },
+        "d_6": { type: "calculated", label: "Lifetime Carbon Ref", defaultValue: "24.4", section: "keyValues" },
         "h_6": { type: "calculated", label: "Lifetime Carbon Target", defaultValue: "11.7", section: "keyValues" },
         "k_6": { type: "calculated", label: "Lifetime Carbon Actual", defaultValue: "11.7", section: "keyValues" },
         // T.2 Annual Carbon
-        "d_8": { type: "calculated", label: "Annual Carbon Ref", defaultValue: "33.6", section: "keyValues" },
+        "d_8": { type: "calculated", label: "Annual Carbon Ref", defaultValue: "17.4", section: "keyValues" },
         "h_8": { type: "calculated", label: "Annual Carbon Target", defaultValue: "4.7", section: "keyValues" },
         "k_8": { type: "calculated", label: "Annual Carbon Actual", defaultValue: "4.8", section: "keyValues" },
         "j_8": { type: "calculated", label: "Annual Carbon %", defaultValue: "14%", section: "keyValues" },
         // T.3 TEUI
-        "e_10": { type: "calculated", label: "TEUI Ref", defaultValue: "226.9", section: "keyValues" },
+        "e_10": { type: "calculated", label: "TEUI Ref", defaultValue: "341.2", section: "keyValues" },
         "f_10": { type: "calculated", label: "TEUI Ref Tier", defaultValue: "tier1", section: "keyValues" },
         "h_10": { type: "calculated", label: "TEUI Target", defaultValue: "93.0", section: "keyValues" },
         "i_10": { type: "calculated", label: "TEUI Target Tier", defaultValue: "tier3", section: "keyValues" },
@@ -124,9 +124,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             <table class="key-values-table">
                 <thead><tr><th class="key-values-label-cell key-values-header">Key Values</th><th class="key-values-ref-cell key-values-header">Reference</th><th class="key-values-target-cell key-values-header">Target</th><th class="key-values-actual-cell key-values-header">Actual</th><th class="key-values-percent-cell key-values-header">%</th></tr></thead>
                 <tbody>
-                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Lifetime Emissions Intensity kgCO2e/m²/Service Life (Yrs)</span><span class="key-title-combined"><span class="key-title-id">T.1</span>Lifetime Carbon</span><div id="lifetime-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_6"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">40.6</span></td><td class="key-values-target-cell" data-field-id="h_6"><span class="key-explanation">Targeted (Design) 71% Reduction</span><span class="key-value">11.7</span></td><td class="key-values-actual-cell" data-field-id="k_6"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">11.7</span></td><td class="key-values-percent-cell"><span class="percent-value">N/A</span></td></tr>
-                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Annual Operational Emissions Intensity kgCO2e/m²</span><span class="key-title-combined"><span class="key-title-id">T.2</span>Annual Carbon</span><div id="annual-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_8"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">33.6</span></td><td class="key-values-target-cell" data-field-id="h_8"><span class="key-explanation">Targeted (Design) 86% Reduction</span><span class="key-value">4.7</span></td><td class="key-values-actual-cell" data-field-id="k_8"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">4.8</span></td><td class="key-values-percent-cell" data-field-id="j_8"><span class="checkmark">✓</span><span class="percent-value">14%</span></td></tr>
-                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Total Annual Operational Energy Use Intensity kWh/m²/yr</span><span class="key-title-combined"><span class="key-title-id">T.3</span>TEUI</span><div id="teui-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="e_10"><span class="key-explanation ref-explanation">Reference 100% (Baseline) <span class="cost-indicator ref-cost"></span></span><span class="key-value ref-value"><span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">226.9</span></span></td><td class="key-values-target-cell" data-field-id="h_10"><span class="key-explanation">Targeted (Design) 59% Reduction <span class="cost-indicator"></span></span><span class="key-value" data-tier-field="i_10"><span class="tier-indicator t3-tag">tier3</span> 93.0</span></td><td class="key-values-actual-cell" data-field-id="k_10"><span class="key-explanation">Actual (Utility Bills) <span class="cost-indicator"></span></span><span class="key-value">93.1</span></td><td class="key-values-percent-cell" data-field-id="j_10"><span class="checkmark">✓</span><span class="percent-value">41%</span></td></tr>
+                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Lifetime Emissions Intensity kgCO2e/m²/Service Life (Yrs)</span><span class="key-title-combined"><span class="key-title-id">T.1</span>Lifetime Carbon</span><div id="lifetime-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_6"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">24.4</span></td><td class="key-values-target-cell" data-field-id="h_6"><span class="key-explanation">Targeted (Design) 71% Reduction</span><span class="key-value">11.7</span></td><td class="key-values-actual-cell" data-field-id="k_6"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">11.7</span></td><td class="key-values-percent-cell"><span class="percent-value">N/A</span></td></tr>
+                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Annual Operational Emissions Intensity kgCO2e/m²</span><span class="key-title-combined"><span class="key-title-id">T.2</span>Annual Carbon</span><div id="annual-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_8"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">17.4</span></td><td class="key-values-target-cell" data-field-id="h_8"><span class="key-explanation">Targeted (Design) 86% Reduction</span><span class="key-value">4.7</span></td><td class="key-values-actual-cell" data-field-id="k_8"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">4.8</span></td><td class="key-values-percent-cell" data-field-id="j_8"><span class="checkmark">✓</span><span class="percent-value">14%</span></td></tr>
+                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Total Annual Operational Energy Use Intensity kWh/m²/yr</span><span class="key-title-combined"><span class="key-title-id">T.3</span>TEUI</span><div id="teui-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="e_10"><span class="key-explanation ref-explanation">Reference 100% (Baseline) <span class="cost-indicator ref-cost"></span></span><span class="key-value ref-value"><span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">341.2</span></span></td><td class="key-values-target-cell" data-field-id="h_10"><span class="key-explanation">Targeted (Design) 59% Reduction <span class="cost-indicator"></span></span><span class="key-value" data-tier-field="i_10"><span class="tier-indicator t3-tag">tier3</span> 93.0</span></td><td class="key-values-actual-cell" data-field-id="k_10"><span class="key-explanation">Actual (Utility Bills) <span class="cost-indicator"></span></span><span class="key-value">93.1</span></td><td class="key-values-percent-cell" data-field-id="j_10"><span class="checkmark">✓</span><span class="percent-value">41%</span></td></tr>
                 </tbody>
             </table>
         `;
@@ -331,14 +331,19 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function calculateReferenceTEUI() {
         console.log("[S01 REFAC] Entered calculateReferenceTEUI");
-        // Reference TEUI typically uses "target" energy inputs from the reference dataset
-        const referenceTargetEnergy = getRefNumericValue('j_32', 0); // Ref State (carried over from app j_32 if not overridden by standard)
-        const referenceArea = getRefNumericValue('h_15', 1);         // Ref State (carried over from app h_15 if not overridden)
-        console.log(`[S01 REFAC] calculateReferenceTEUI - Inputs: refTargetEnergy = ${referenceTargetEnergy}, refArea = ${referenceArea}`);
+        const currentStandard = window.TEUI.StateManager?.getApplicationStateValue("d_13");
         let referenceTEUI = 0;
 
-        if (referenceArea > 0) {
-            referenceTEUI = Math.round((referenceTargetEnergy / referenceArea) * 10) / 10;
+        if (currentStandard === "OBC SB10 5.5-6 Z6") {
+            referenceTEUI = 341.2;
+            console.log(`[S01 REFAC] calculateReferenceTEUI - OBC SB10 5.5-6 Z6 detected. Using placeholder: ${referenceTEUI}`);
+        } else {
+            const referenceTargetEnergy = getRefNumericValue('j_32', 0);
+            const referenceArea = getRefNumericValue('h_15', 1);
+            console.log(`[S01 REFAC] calculateReferenceTEUI - Inputs: refTargetEnergy = ${referenceTargetEnergy}, refArea = ${referenceArea}`);
+            if (referenceArea > 0) {
+                referenceTEUI = Math.round((referenceTargetEnergy / referenceArea) * 10) / 10;
+            }
         }
 
         if (window.TEUI?.StateManager) {
@@ -375,7 +380,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
         
         // Update explanation text for Target Annual Carbon (h_8)
-        const reference_d8_for_h8_text = getRefNumericValue("d_8", 1); 
+        const reference_d8_for_h8_text = getAppNumericValue("d_8", 1); 
         if (reference_d8_for_h8_text !== 0) {
             const reduction_t2 = 1 - (targetValue_h8 / reference_d8_for_h8_text);
             const reductionPercent_t2 = Math.round(reduction_t2 * 100);
@@ -392,13 +397,19 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function calculateReferenceAnnualCarbon() {
         console.log("[S01 REFAC] Entered calculateReferenceAnnualCarbon");
-        const referenceTargetEmissions = getRefNumericValue("k_32", 0); // Ref State
-        const referenceArea = getRefNumericValue("h_15", 1);         // Ref State
-        console.log(`[S01 REFAC] calculateReferenceAnnualCarbon - Inputs: refTargetEmissions = ${referenceTargetEmissions}, refArea = ${referenceArea}`);
+        const currentStandard = window.TEUI.StateManager?.getApplicationStateValue("d_13");
         let referenceValue_d8 = 0;
 
-        if (referenceArea > 0) {
-            referenceValue_d8 = Math.round((referenceTargetEmissions / referenceArea) * 10) / 10;
+        if (currentStandard === "OBC SB10 5.5-6 Z6") {
+            referenceValue_d8 = 17.4;
+            console.log(`[S01 REFAC] calculateReferenceAnnualCarbon - OBC SB10 5.5-6 Z6 detected. Using placeholder: ${referenceValue_d8}`);
+        } else {
+            const referenceTargetEmissions = getRefNumericValue("k_32", 0);
+            const referenceArea = getRefNumericValue("h_15", 1);
+            console.log(`[S01 REFAC] calculateReferenceAnnualCarbon - Inputs: refTargetEmissions = ${referenceTargetEmissions}, refArea = ${referenceArea}`);
+            if (referenceArea > 0) {
+                referenceValue_d8 = Math.round((referenceTargetEmissions / referenceArea) * 10) / 10;
+            }
         }
 
         if (window.TEUI?.StateManager) {
@@ -437,7 +448,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
         
         // Update explanation text for Target Lifetime Carbon (h_6)
-        const reference_d6_for_h6_text = getRefNumericValue("d_6", 1); 
+        const reference_d6_for_h6_text = getAppNumericValue("d_6", 1); 
         if (reference_d6_for_h6_text !== 0) {
             const reduction_t1 = 1 - (targetValue_h6 / reference_d6_for_h6_text);
             const reductionPercent_t1 = Math.round(reduction_t1 * 100);
@@ -452,16 +463,22 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function calculateReferenceLifetimeCarbon() {
         console.log("[S01 REFAC] Entered calculateReferenceLifetimeCarbon");
-        let embodiedCarbon_i41_ref = getRefNumericValue("i_41", 0); // Ref State
-        if (embodiedCarbon_i41_ref === 0) embodiedCarbon_i41_ref = 345.82; // Default if ref state is 0
-        
-        const serviceLife_h13_ref = getRefNumericValue("h_13", 50);    // Ref State
-        const annualReference_d8 = getRefNumericValue("d_8", 0);     // Ref State (already calculated by calculateReferenceAnnualCarbon)
-        console.log(`[S01 REFAC] calculateReferenceLifetimeCarbon - Inputs: embodied_ref = ${embodiedCarbon_i41_ref}, serviceLife_ref = ${serviceLife_h13_ref}, annualRefCarbon_d8 = ${annualReference_d8}`);
+        const currentStandard = window.TEUI.StateManager?.getApplicationStateValue("d_13");
         let referenceValue_d6 = 0;
 
-        if (serviceLife_h13_ref > 0) {
-            referenceValue_d6 = Math.round((embodiedCarbon_i41_ref / serviceLife_h13_ref + annualReference_d8) * 10) / 10;
+        if (currentStandard === "OBC SB10 5.5-6 Z6") {
+            referenceValue_d6 = 24.4;
+            console.log(`[S01 REFAC] calculateReferenceLifetimeCarbon - OBC SB10 5.5-6 Z6 detected. Using placeholder: ${referenceValue_d6}`);
+        } else {
+            let embodiedCarbon_i41_ref = getRefNumericValue("i_41", 0); // Ref State
+            if (embodiedCarbon_i41_ref === 0) embodiedCarbon_i41_ref = 345.82; // Default if ref state is 0
+            
+            const serviceLife_h13_ref = getRefNumericValue("h_13", 50);    // Ref State
+            const annualReference_d8 = getRefNumericValue("d_8", 0);     // Ref State (already calculated by calculateReferenceAnnualCarbon)
+            console.log(`[S01 REFAC] calculateReferenceLifetimeCarbon - Inputs: embodied_ref = ${embodiedCarbon_i41_ref}, serviceLife_ref = ${serviceLife_h13_ref}, annualRefCarbon_d8 = ${annualReference_d8}`);
+            if (serviceLife_h13_ref > 0) {
+                referenceValue_d6 = Math.round((embodiedCarbon_i41_ref / serviceLife_h13_ref + annualReference_d8) * 10) / 10;
+            }
         }
 
         if (window.TEUI?.StateManager) {
@@ -474,7 +491,7 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function updateAnnualCarbonPercentage() {
         const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use";
-        const reference = getRefNumericValue("d_8", 1); // Use Reference value for d_8
+        const reference = getAppNumericValue("d_8", 1); // Use App value for d_8 (which has stopgap)
         const target = getAppNumericValue("h_8", 0);    // Use Application value for h_8
         const actual = getAppNumericValue("k_8", 0);    // Use Application value for k_8
         let percent = 0;
@@ -499,7 +516,7 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function updateTEUIPercentage() {
         const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use";
-        const reference = getRefNumericValue("e_10", 1); // Use Reference value for e_10
+        const reference = getAppNumericValue("e_10", 1); // Use App value for e_10 (which has stopgap)
         const target = getAppNumericValue("h_10", 0);    // Use Application value for h_10
         const actual = getAppNumericValue("k_10", 0);    // Use Application value for k_10
         let percent = 0;
@@ -529,7 +546,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         if (!window.TEUI?.StateManager) return;
 
         const targetTEUI_h10 = getAppNumericValue("h_10", 0);    // App State for H10
-        const referenceTEUI_e10 = getRefNumericValue("e_10", 1); // Ref State for E10 (Baseline)
+        const referenceTEUI_e10 = getAppNumericValue("e_10", 1); // App State for E10 (which has stopgap)
         const standard_d13 = window.TEUI.StateManager?.getApplicationStateValue("d_13") || ""; // App State for selected standard
         
         let reduction = 0;
@@ -649,19 +666,19 @@ window.TEUI.SectionModules.sect01 = (function() {
     function getGaugeValues(gaugeId) {
         const useType = window.TEUI.StateManager?.getApplicationStateValue("d_14") || "Targeted Use"; // App State
         const isUtilityMode = useType === "Utility Bills";
-        let actualFieldApp, targetFieldApp, refFieldRef; // Suffixes denote intended state source
+        let actualFieldApp, targetFieldApp, refFieldApp; // Changed refFieldRef to refFieldApp
         let defaultActual, defaultTarget, defaultRef;
 
         if (gaugeId === "teui-gauge") {
-            refFieldRef = "e_10"; defaultRef = 226.9;       // Reference State for e_10
+            refFieldApp = "e_10"; defaultRef = 341.2;       // App State (stopgap) for e_10
             actualFieldApp = "k_10"; defaultActual = 93.1;   // App State for k_10
             targetFieldApp = "h_10"; defaultTarget = 93.0;   // App State for h_10
         } else if (gaugeId === "annual-carbon-gauge") {
-            refFieldRef = "d_8"; defaultRef = 33.6;        // Reference State for d_8
+            refFieldApp = "d_8"; defaultRef = 17.4;        // App State (stopgap) for d_8
             actualFieldApp = "k_8"; defaultActual = 4.8;    // App State for k_8
             targetFieldApp = "h_8"; defaultTarget = 4.7;    // App State for h_8
         } else if (gaugeId === "lifetime-carbon-gauge") {
-            refFieldRef = "d_6"; defaultRef = 40.6;        // Reference State for d_6
+            refFieldApp = "d_6"; defaultRef = 24.4;        // App State (stopgap) for d_6
             actualFieldApp = "k_6"; defaultActual = 11.7;   // App State for k_6
             targetFieldApp = "h_6"; defaultTarget = 11.7;   // App State for h_6
         } else {
@@ -669,7 +686,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
 
         // Fetch values from their designated states
-        const referenceValue = getRefNumericValue(refFieldRef, defaultRef);
+        const referenceValue = getAppNumericValue(refFieldApp, defaultRef); // Use getAppNumericValue for ref baselines
         const appValueForGauge = getAppNumericValue(isUtilityMode ? actualFieldApp : targetFieldApp, isUtilityMode ? defaultActual : defaultTarget);
         
         return { actualValue: appValueForGauge, referenceValue };
@@ -680,7 +697,7 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function checkTargetExceedsReference() {
         const targetValue = getAppNumericValue("h_10", 0);    // App State for H10
-        const referenceValue = getRefNumericValue("e_10", 1); // Ref State for E10
+        const referenceValue = getAppNumericValue("e_10", 1); // App State for E10 (which has stopgap)
         
         // More specific selector: Find the gauge, go up to the container, then find the title.
         const gaugeContainer = document.getElementById('teui-gauge')?.closest('.key-title-container');
