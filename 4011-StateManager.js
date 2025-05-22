@@ -226,7 +226,7 @@ TEUI.StateManager = (function() {
                    : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
         } else {
             // Existing logic for Application Mode
-            return fields.has(fieldId) ? fields.get(fieldId).value : null;
+        return fields.has(fieldId) ? fields.get(fieldId).value : null;
         }
     }
     
@@ -264,7 +264,7 @@ TEUI.StateManager = (function() {
         const fieldDefinition = fields[fieldId];
 
         // Get the current value // This will use the mode-aware getValue, which is fine for oldValue context
-        const oldValue = getValue(fieldId); 
+        const oldValue = getValue(fieldId);
         
         // If field doesn't exist, create it
         if (!fields.has(fieldId)) {
@@ -973,7 +973,7 @@ TEUI.StateManager = (function() {
         activeReferenceDataSet = {}; // Initialize/Clear
 
         // Helper to get current application state value, bypassing mode-aware getValue for this step
-        const getApplicationStateValue = (id) => {
+        const getApplicationStateValueInternal = (id) => {
             if (fields.has(id)) {
                 return fields.get(id).value;
             }
@@ -985,7 +985,7 @@ TEUI.StateManager = (function() {
 
         if (allUserEditableFields) {
             Object.keys(allUserEditableFields).forEach(fieldId => {
-                activeReferenceDataSet[fieldId] = getApplicationStateValue(fieldId);
+                activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
             });
             console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
         } else {
@@ -1096,6 +1096,24 @@ TEUI.StateManager = (function() {
     }
 
     /**
+     * NEW METHOD: Gets a field value directly from the application state (this.fields).
+     * @param {string} fieldId - Field ID
+     * @returns {any} The field value from application state or null if not found.
+     */
+    function getApplicationStateValue(fieldId) {
+        return fields.has(fieldId) ? fields.get(fieldId).value : null;
+    }
+
+    /**
+     * NEW METHOD: Gets a field value directly from the activeReferenceDataSet.
+     * @param {string} fieldId - Field ID
+     * @returns {any} The field value from reference state or null if not found.
+     */
+    function getActiveReferenceModeValue(fieldId) {
+        return activeReferenceDataSet.hasOwnProperty(fieldId) ? activeReferenceDataSet[fieldId] : null;
+    }
+
+    /**
      * NEW METHOD: Reverts the application state to the last successfully imported state.
      */
     function revertToLastImportedState() {
@@ -1142,7 +1160,7 @@ TEUI.StateManager = (function() {
         }
         console.log(`[StateManager] Reverted to last imported state. ${revertedCount} fields updated.`);
     }
-
+    
     // Public API
     return {
         // Constants
@@ -1181,7 +1199,9 @@ TEUI.StateManager = (function() {
         loadReferenceData: loadReferenceData,           
         setValueInReferenceMode: setValueInReferenceMode, 
         setMuteApplicationStateUpdates: setMuteApplicationStateUpdates, // << NEW
-        revertToLastImportedState: revertToLastImportedState // << NEW
+        revertToLastImportedState: revertToLastImportedState, // << NEW
+        getApplicationStateValue: getApplicationStateValue, // << NEW
+        getActiveReferenceModeValue: getActiveReferenceModeValue // << NEW
     };
 })();
 
