@@ -691,7 +691,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             sm.addListener('d_113', targetFuelUpdateCallback); // S13 Primary Heating System (already added, listener handles multiple calls)
             sm.addListener('f_115', targetFuelUpdateCallback); // S13 Target Oil Use (Calc)
             sm.addListener('d_51', targetFuelUpdateCallback);  // S07 DHW Source (already added)
-            sm.addListener('l_54', targetFuelUpdateCallback);  // CORRECTED: Listen to Net Oil Litres (l_54)
+            sm.addListener('k_54', targetFuelUpdateCallback);  // CORRECTED: Listen to k_54 where Oil calculation is now located
             // --- End Target Fuel Listeners ---
 
             // --- Listeners for Actual Fuel Inputs (d_28 to d_31) ---
@@ -1162,16 +1162,16 @@ window.TEUI.SectionModules.sect04 = (function() {
     function calculateH30() {
         const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
         const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
-        const l54 = getNumericValue('l_54'); // CORRECT: Use Net Oil Demand Ltrs
+        const k54 = getNumericValue('k_54'); // CORRECTED: Use k_54 where Oil calculation is now located
         const f115 = getNumericValue('f_115'); // Get numeric value
         // =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
         // --- CORRECTED LOGIC ---
         if (d113 === "Oil" && d51 === "Oil") {
-            // Sum target Oil Litres from S13 heating (f_115) and S07 DHW (l_54)
-            return l54 + f115; 
+            // Sum target Oil Litres from S13 heating (f_115) and S07 DHW (k_54)
+            return k54 + f115; 
         } else if (d51 === "Oil") {
             // Only DHW uses Oil
-            return l54; 
+            return k54; 
         } else if (d113 === "Oil") {
             // Only Heating uses Oil
             return f115;
