@@ -330,17 +330,14 @@ window.TEUI.SectionModules.sect01 = (function() {
      * Calculate TEUI value (T.3) for Reference (E) column.
      */
     function calculateReferenceTEUI() {
-        console.log("[S01 REFAC] Entered calculateReferenceTEUI");
         const currentStandard = window.TEUI.StateManager?.getApplicationStateValue("d_13");
         let referenceTEUI = 0;
 
         if (currentStandard === "OBC SB10 5.5-6 Z6") {
             referenceTEUI = 341.2;
-            console.log(`[S01 REFAC] calculateReferenceTEUI - OBC SB10 5.5-6 Z6 detected. Using placeholder: ${referenceTEUI}`);
         } else {
             const referenceTargetEnergy = getRefNumericValue('j_32', 0);
             const referenceArea = getRefNumericValue('h_15', 1);
-            console.log(`[S01 REFAC] calculateReferenceTEUI - Inputs: refTargetEnergy = ${referenceTargetEnergy}, refArea = ${referenceArea}`);
             if (referenceArea > 0) {
                 referenceTEUI = Math.round((referenceTargetEnergy / referenceArea) * 10) / 10;
             }
@@ -396,17 +393,14 @@ window.TEUI.SectionModules.sect01 = (function() {
      * Calculate Annual Carbon value (T.2) for Reference (E) column.
      */
     function calculateReferenceAnnualCarbon() {
-        console.log("[S01 REFAC] Entered calculateReferenceAnnualCarbon");
         const currentStandard = window.TEUI.StateManager?.getApplicationStateValue("d_13");
         let referenceValue_d8 = 0;
 
         if (currentStandard === "OBC SB10 5.5-6 Z6") {
             referenceValue_d8 = 17.4;
-            console.log(`[S01 REFAC] calculateReferenceAnnualCarbon - OBC SB10 5.5-6 Z6 detected. Using placeholder: ${referenceValue_d8}`);
         } else {
             const referenceTargetEmissions = getRefNumericValue("k_32", 0);
             const referenceArea = getRefNumericValue("h_15", 1);
-            console.log(`[S01 REFAC] calculateReferenceAnnualCarbon - Inputs: refTargetEmissions = ${referenceTargetEmissions}, refArea = ${referenceArea}`);
             if (referenceArea > 0) {
                 referenceValue_d8 = Math.round((referenceTargetEmissions / referenceArea) * 10) / 10;
             }
@@ -462,20 +456,17 @@ window.TEUI.SectionModules.sect01 = (function() {
      * Calculate Lifetime Carbon value (T.1) for Reference (E) column.
      */
     function calculateReferenceLifetimeCarbon() {
-        console.log("[S01 REFAC] Entered calculateReferenceLifetimeCarbon");
         const currentStandard = window.TEUI.StateManager?.getApplicationStateValue("d_13");
         let referenceValue_d6 = 0;
 
         if (currentStandard === "OBC SB10 5.5-6 Z6") {
             referenceValue_d6 = 24.4;
-            console.log(`[S01 REFAC] calculateReferenceLifetimeCarbon - OBC SB10 5.5-6 Z6 detected. Using placeholder: ${referenceValue_d6}`);
         } else {
             let embodiedCarbon_i41_ref = getRefNumericValue("i_41", 0); // Ref State
             if (embodiedCarbon_i41_ref === 0) embodiedCarbon_i41_ref = 345.82; // Default if ref state is 0
             
             const serviceLife_h13_ref = getRefNumericValue("h_13", 50);    // Ref State
             const annualReference_d8 = getRefNumericValue("d_8", 0);     // Ref State (already calculated by calculateReferenceAnnualCarbon)
-            console.log(`[S01 REFAC] calculateReferenceLifetimeCarbon - Inputs: embodied_ref = ${embodiedCarbon_i41_ref}, serviceLife_ref = ${serviceLife_h13_ref}, annualRefCarbon_d8 = ${annualReference_d8}`);
             if (serviceLife_h13_ref > 0) {
                 referenceValue_d6 = Math.round((embodiedCarbon_i41_ref / serviceLife_h13_ref + annualReference_d8) * 10) / 10;
             }
@@ -822,7 +813,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         const fieldsToWatch = [
             "d_6", "h_6", "k_6", "d_8", "h_8", "k_8", "j_8", 
             "e_10", "f_10", "h_10", "i_10", "k_10", "j_10", 
-            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "d_14",
+            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "j_32", "d_51", "d_14",
             "d_13" // Added Reference Standard dependency for tier calc
         ];
 
@@ -845,14 +836,15 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         fieldsToWatch.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
-                // Determine which calculation to trigger based on the changed field
-                // This logic might need refinement to ensure only necessary re-calcs run.
-                // For now, runAllCalculations covers all updates.
-                
-                // Simplification: For any watched field change, run all S01 calculations.
-                // This ensures E, H, K columns and all derived percentages/tiers/gauges are updated.
-                // Specific optimization of listener logic can be a future step if performance issues arise.
-                runAllCalculations();
+                // For d_51 (DHW fuel type) changes, add a small delay to ensure other sections finish calculating first
+                if (fieldId === 'd_51') {
+                    setTimeout(() => {
+                        runAllCalculations();
+                    }, 50); // 50ms delay to let Section 04 finish updating j_32
+                } else {
+                    // For other field changes, run immediately
+                    runAllCalculations();
+                }
             });
         });
         
