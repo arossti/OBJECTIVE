@@ -837,6 +837,16 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
     *   The `toggleFullscreen()` method in `4011-Dependency.js` needs review, particularly how it manages the creation, styling, and visibility of the `floatingControls` and `floatingInfoPanel` elements across fullscreen enter/exit events, potentially by using a more robust `fullscreenchange` event listener that handles both states consistently.
 *   **Calculation Flow Dependency on File Load Order**: Incorrect total energy use calculations can occur if a building data file is loaded *before* a weather file. The calculation flow should be robust and based on data availability in `StateManager` and defined dependencies, not the user's file loading sequence. This may require investigating `Calculator.js` and `SectionIntegrator.js` to ensure calculations (e.g., those dependent on climate data from Section 03) are correctly deferred or re-triggered when all necessary precedent data becomes available, regardless of load order, to maintain parity with Excel methods.
 
+### Architectural Improvements for v4.012
+
+*   **Race Condition Resolution Through Calculation Sequencing**: The current implementation uses tactical `setTimeout` delays (e.g., 50ms delays in Section 01 for `d_51` changes) to resolve race conditions between section calculations. While functional, this approach is not architecturally sound for production. **For v4.012, implement a proper calculation sequencing system** that:
+    *   Eliminates all `setTimeout` delays used for cross-section coordination
+    *   Establishes deterministic calculation ordering based on dependency graph
+    *   Implements proper queuing and sequencing for cross-section updates
+    *   Ensures calculations complete in dependency order without timing-based workarounds
+    *   Provides reliable state consistency without reliance on arbitrary delays
+    *   Note: This architectural refactor was attempted on the 'ORDERING' branch but encountered complexities with Sankey (S16) and Dependency (S17) graph rendering. Future implementation should address these visualization timing requirements as part of the overall sequencing solution.
+
 ### UI/UX Improvements Needed
 
 1. **Numeric Input Field Behavior**:
