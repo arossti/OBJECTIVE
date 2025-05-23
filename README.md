@@ -430,6 +430,7 @@ The `StateManager` provides a central repository for all calculator values with 
 - **Change Notification**: Event system for propagating value changes
 - **Persistence**: Save/load functionality for user sessions
 - **Import/Export**: Data transfer with external systems
+- **T-Cells Reference System**: Invisible reference values for pass/fail comparison logic in columns M and N (detailed in `STANDARDIZED-STATES.md` Section 6)
 
 ### Field Management System
 

@@ -1,23 +1,24 @@
-# Workplan: Standardizing State Value Management & Reference Model Integration (TEUI 4.011)
+# Workplan: Standardizing State Value Management & Dual-Engine Reference Model Integration (TEUI 4.011)
 
-**Date:** 2025-05-20 10h58pm EST.
-**Version:** 2.10 (S01.1 Mirroring Implemented, Identified d_97 State Issue)
-**Inspired by:** `README.md`, Original `STANDARDIZED-STATES.md` v2.9
+**Date:** 2025-05-22 12h15pm EST.
+**Version:** 3.0 (Dual Calculation Engine Architecture)
+**Inspired by:** `README.md`, Excel dual-worksheet methodology, CSV/Excel standardization requirements
 
 ## 1. Objective
 
-To standardize the structure, handling, import, and export of all stateful values within the TEUI 4.011 application, and to robustly integrate Reference Model capabilities. This includes:
-*   Establishing a **unified data structure** for **values of user-editable fields** (inputs, dropdowns, sliders).
-*   Managing imported data, user-modified data, and values derived from reference standards (via `d_13`) that override these user-editable fields.
-*   Creating a consistent and robust data management layer that simplifies development, enhances maintainability, and ensures data integrity.
-*   Allowing users to compare their Design Model against selected building code minimums or standards by activating a Reference Mode.
-*   Ensuring that Reference Mode correctly uses a combination of standard-defined values, application state carry-overs, Reference Mode specific defaults/edits for its calculations, and applies appropriate UI styling/locking.
-*   **Purely calculated fields (e.g., results of formulas) are explicitly excluded from standardized state datasets; they are always derived from the current set of active input values, whether in Design or Reference mode.**
+To standardize the structure, handling, import, and export of all stateful values within the TEUI 4.011 application, and to implement a robust **dual-engine reference modeling system**. This includes:
+*   Establishing a **unified data structure** for **values of user-editable fields** (inputs, dropdowns, sliders) to facilitate consistent CSV/Excel import/export.
+*   Creating a **parallel calculation system** where Reference Model (Column E) and Target Model (Column H) calculations run simultaneously and continuously.
+*   Managing imported data, user-modified data, and values derived from reference standards (via `d_13`) that provide code-compliant baselines for comparison.
+*   Creating a consistent and robust data management layer that simplifies development, enhances maintainability, ensures data integrity, and supports future expansion across multiple jurisdictions and building codes.
+*   Allowing users to **inspect and optionally edit reference inputs** via a Reference Mode toggle, while maintaining continuous dual calculations.
+*   Supporting scalable addition of reference standards for different provinces, countries, territories, and building codes.
+*   **Purely calculated fields (e.g., results of formulas) are explicitly excluded from standardized state datasets; they are always derived from the current set of active input values using explicit state sources.**
 
 ## 2. Core Principles
 
 ### A. Unified Data Structure for User-Editable Fields
-The cornerstone of this workplan is to establish a **unified key-value pair structure** for representing sets of field values. This structure should be simple, easily serializable (JSON), and directly usable by `StateManager`.
+The cornerstone of this workplan is to establish a **unified key-value pair structure** for representing sets of field values. This structure enables consistent CSV/Excel import/export and standardized reference value application across all jurisdictions.
 
 *   **Proposed Unified Structure:** A simple JSON object where keys are `fieldId` strings **of user-editable fields** and values are the corresponding raw string representations of the data.
     ```json
@@ -29,217 +30,215 @@ The cornerstone of this workplan is to establish a **unified key-value pair stru
         // ... other fieldId: value pairs for user-editable fields
     }
     ```
-    This aligns well with how `StateManager` likely handles values internally and is directly compatible with CSV-like data.
+    This aligns with CSV/Excel export requirements and enables direct compatibility with import processes.
 
-### B. Architectural Principles for Reference Model Integration
-Integrating the Reference Model requires adherence to the application's core architecture to ensure stability and maintainability:
+### B. Architectural Principles for Dual-Engine Reference Model Integration
 
-1.  **`StateManager` as Single Source of Truth (with Dual State Contexts):** `StateManager` will hold state for both modes:
-    *   `this.fields`: The primary store for the current **Application State** (user-modified, imported, defaults for Design/Target mode). This is modified by `StateManager.setValue()`.
-    *   `this.activeReferenceDataSet`: A separate store for the complete set of input values for **Reference Mode**. It is constructed by `StateManager.loadReferenceData()` and is *not* directly modified by the standard `StateManager.setValue()` to prevent overwriting application state. Read by `StateManager.getValue()` when in Reference Mode. Modified by `StateManager.setValueInReferenceMode()` for fields editable in RefMode.
-2.  **Mode-Aware `StateManager.getValue()`:** This function will be the central point for retrieving field values. It will check if Reference Mode is active (`TEUI.ReferenceToggle.isReferenceMode()`):
-    *   If in Reference Mode, it returns the value from `StateManager.activeReferenceDataSet`.
-    *   Otherwise, it follows the standard priority for the application state (user-modified, imported, default).
-3.  **Reference Data Loading from Refactored `ReferenceValues.js`:**
-    *   `4011-ReferenceValues.js` has been refactored (Phase A2 completed) to provide a simple, sparse `{ "user_editable_fieldId": "value", ... }` object for each standard, containing *only* the values for user-editable fields that the standard explicitly dictates (i.e., overrides).
-    *   `StateManager.loadReferenceData(standardKey)` will use this refactored data. It constructs the `activeReferenceDataSet` primarily by carrying over application state, then applying specific Reference Mode defaults (if any from Appendix E), and finally overlaying the explicit overrides from `TEUI.ReferenceValues[standardKey]`.
-4.  **UI Updates via `FieldManager.updateFieldDisplay()` & Section Handlers:** This is the **only** mechanism for updating the visual display of input fields and for triggering necessary events (`blur`, `change`, `input`).
-    *   When Reference Mode is activated/changed, `ReferenceToggle.js` ensures `StateManager.loadReferenceData()` builds `activeReferenceDataSet`.
-    *   Then, `ReferenceToggle.js` orchestrates a UI refresh:
-        1.  For each `fieldId`, get Reference Mode value via `StateManager.getValue(fieldId)`.
-        2.  Call `TEUI.FieldManager.updateFieldDisplay()` to update the field's visual value. **Crucially, measures must be in place to prevent the events dispatched by `updateFieldDisplay` from causing `StateManager.setValue()` to overwrite the Application State (`this.fields`) with these displayed Reference Mode values.** (e.g., temporary muting of `StateManager.setValue` for application state, or mode-aware event handlers).
-        3.  Apply styling/locking based on Appendix E and mode.
-5.  **Automatic Calculation & Display Engine (Dual Path Required for S01):**
-    *   The existing calculation engine (`TEUI.Calculator.calculateAll()`) relies on `StateManager.getValue()`. When `getValue()` is mode-aware, this engine will calculate based on the inputs of the currently *displayed* UI mode.
-    *   **Clarification for S01 (Key Values):** Section 01 must *always* display Reference results in Column E and Application/Target results in Column H, regardless of the UI toggle mode. This necessitates either:
-        *   Two distinct calculation runs (e.g., `Calculator.calculateAllApplicationResults()` and `Calculator.calculateAllReferenceResults()`), with each explicitly fetching inputs from the correct state context in `StateManager` and S01 targeting its output to the correct DOM columns.
-        *   Or, a highly context-aware S01 that performs two internal calculations using differently sourced inputs.
+The Reference Model integration uses a **dual calculation engine** approach that mirrors the proven Excel methodology, where separate worksheets handle Reference and Target calculations simultaneously:
+
+1.  **`StateManager` as Dual-State Repository:** `StateManager` will maintain distinct data sources:
+    *   `this.fields`: The primary store for **Application/Target State** (user-modified, imported, defaults for design work). Modified by standard `StateManager.setValue()`.
+    *   `this.activeReferenceDataSet`: A separate store for **Reference Model State** (combination of reference standard values and carried-over application values like geometry). Constructed by `StateManager.loadReferenceData()` and modified by `StateManager.setValueInReferenceMode()` for editable reference fields.
+
+2.  **Explicit State Getters (No Mode-Aware Calculations):** Calculation functions use explicit state sources:
+    *   `StateManager.getApplicationValue(fieldId)`: Always returns Target/Design model values → drives Column H calculations
+    *   `StateManager.getReferenceValue(fieldId)`: Always returns Reference model values → drives Column E calculations  
+    *   `StateManager.getCurrentDisplayValue(fieldId)`: Mode-aware getter for UI display only (not used in calculations)
+
+3.  **Dual Calculation Engines (Always Running):** Both models calculate continuously:
+    *   **Reference Model Engine**: Uses `getReferenceValue()` exclusively → outputs to Column E fields (e_6, d_8, e_10, etc.)
+    *   **Target Model Engine**: Uses `getApplicationValue()` exclusively → outputs to Column H fields (h_6, h_8, h_10, etc.)
+    *   **Both engines triggered**: By any relevant value change in their respective data sources
+
+4.  **Reference Mode Toggle (Inspection Tool):** The "Show Reference" button serves as an **inspection and editing interface**:
+    *   **Purpose**: Display reference input values in UI fields for user inspection/editing
+    *   **Scope**: Affects UI display only - does not change which calculation engine drives which columns
+    *   **Behind the scenes**: Both calculation engines continue running using their respective data sources
+    *   **Value inheritance**: Reference model inherits user geometry/areas but uses code values for performance parameters
+
+5.  **Automatic Calculation & Display Engine (Dual Path):** 
+    *   **Section 01 Key Values**: Always displays Reference results in Column E and Target results in Column H, regardless of UI toggle state
+    *   **Other Sections**: Continue using standard calculation patterns, with Section 01 driving the dual-engine approach
+    *   **UI Updates**: Via `FieldManager.updateFieldDisplay()` with measures to prevent Reference Mode display updates from overwriting Application State
 
 ## 3. Key Components & Data Requirements
 
-*   **`4011-ReferenceValues.js`:** Static data source for standard-defined values.
-    *   **Crucial Note:** This file will be refactored as per Phase A2. Each standard will become a direct JSON object of `{ "user_editable_fieldId": "value", ... }` for explicitly defined user-editable fields. The current nested structure with `section` and `targetCell` properties *within* `ReferenceValues.js` will be eliminated.
-*   **`4011-StateManager.js`:** Core state management. Will handle:
-    *   `this.fields`: Storage of application state (user-modified, imported, defaults).
-    *   `this.activeReferenceDataSet`: Storage of the complete Reference Mode input state.
-    *   `loadReferenceData(standardKey)`: Builds `this.activeReferenceDataSet` from application state + RefModeDefaults + standard overrides, *without altering `this.fields`*.
-    *   Mode-aware `getValue(fieldId)`.
-    *   `setValue(fieldId, value, state)`: Modifies `this.fields` (application state). Needs a mechanism to be temporarily "muted" for application state changes during Reference Mode UI refresh.
-    *   `setValueInReferenceMode(fieldId, value)`: Modifies `this.activeReferenceDataSet` for fields editable in Reference Mode.
-*   **`4011-ReferenceToggle.js`:** UI switch for Reference Mode.
-    *   Toggles `body.reference-mode` class.
-    *   Orchestrates:
-        1.  Calling `StateManager.loadReferenceData(currentStandardKey)` on mode change or `d_13` change.
-        2.  Triggering the UI refresh process which involves iterating through sections/fields to update display values (via `StateManager.getValue()`, then `FieldManager.updateFieldDisplay()`) and applying styling/locking.
-*   **`4011-FieldManager.js`:** Manages field definitions and handles UI updates via `updateFieldDisplay()`, ensuring proper event dispatch.
-*   **`4011-styles.css` / `future code/reference-model-styles.css`:** Styling for Reference Mode, including locking/unlocking input fields.
+*   **`4011-ReferenceValues.js`:** Static data source for jurisdiction/code-specific values.
+    *   **Scalable Structure**: Each standard becomes a direct JSON object of `{ "user_editable_fieldId": "value", ... }` for explicitly defined fields
+    *   **Future Expansion**: Supports adding new provinces, countries, territories, and building codes
+    *   **Sparse Definition**: Only contains fields that the standard explicitly overrides
+
+*   **`4011-StateManager.js`:** Core dual-state management:
+    *   `this.fields`: Application/Target state storage
+    *   `this.activeReferenceDataSet`: Reference model state storage  
+    *   `getApplicationValue(fieldId)`: Always returns Target state → Column H calculations
+    *   `getReferenceValue(fieldId)`: Always returns Reference state → Column E calculations
+    *   `getCurrentDisplayValue(fieldId)`: Mode-aware for UI display only
+    *   `loadReferenceData(standardKey)`: Builds Reference state from standard overrides + application carry-overs
+    *   `setValueInReferenceMode(fieldId, value)` for Reference state modifications
+
+*   **`4011-ReferenceToggle.js`:** UI inspection interface:
+    *   Toggles between displaying Application vs Reference values in input fields
+    *   Does NOT affect calculation engine data sources
+    *   Orchestrates UI refresh for inspection/editing without disrupting calculations
+
+*   **`4011-FieldManager.js`:** Standardized field management and UI updates via `updateFieldDisplay()`
+
+*   **`4011-FileHandler.js`:** CSV/Excel import/export standardization:
+    *   Consistent 3-row CSV format supporting both Application and Reference state export
+    *   Standardized import process that works across all jurisdictions
+
 *   **Section Modules (`sections/4011-SectionXX.js`):**
-    *   Require standardized helpers (Prerequisite Phase).
-    *   Must have legacy DOM manipulation for reference values removed.
-    *   Existing calculation logic remains largely unchanged, relying on `StateManager.getValue()`.
-    *   Their `referenceHandler.updateReferenceDisplay()` methods (called by `ReferenceToggle` or a centralized refresh mechanism) will be responsible for:
-        1.  Getting the Reference Mode value for each relevant field via `StateManager.getValue(fieldId)`.
-        2.  Updating the field's visual display using `FieldManager.updateFieldDisplay()`.
-        3.  Querying the field's behavior category from Appendix E logic.
-        4.  Applying/removing the `.reference-locked` class and setting `contenteditable`/`disabled` status accordingly.
+    *   Use explicit state getters in calculation functions
+    *   Section 01 implements dual calculation engines for E and H columns
+    *   Other sections continue standard patterns, enhanced by dual-state foundation
 
 ## 4. Phased Implementation Workplan
 
-This workplan integrates tasks from previous planning documents into a unified sequence.
+This workplan prioritizes CSV/Excel standardization and the dual-engine reference modeling system to support scalable expansion across jurisdictions and building codes.
 
 ### Prerequisite: Standardize Helper Functions
-*   **Goal:** Ensure all section modules consistently use global `window.TEUI.parseNumeric` and `window.TEUI.formatNumber` for data parsing and display. This is essential for reliable data handling by `StateManager` and `FieldManager`.
-*   **Status (as of last `deepstate-structure.md` update):** S02, S05, S08 completed. Remaining sections (01, 03, 04, 06, 07, 09, 10, 12, 14, 15) need review and refactoring. S01 was reverted and needs to be revisited.
-*   **Action:** Systematically refactor all remaining section modules to use these global helpers before proceeding with core Reference Model logic.
+*   **Goal:** Ensure all section modules consistently use global `window.TEUI.parseNumeric` and `window.TEUI.formatNumber` for data parsing and display. This is essential for reliable CSV/Excel import/export and consistent reference value application.
+*   **Status:** S02, S05, S08, S11, S12 completed. Remaining sections need review and refactoring.
+*   **Action:** Systematically refactor remaining section modules to use these global helpers before proceeding with dual-engine implementation.
 
 ### Phase A: Foundational Data Structure and `4011-ReferenceValues.js` Refactor
 *   **A1. Finalize Unified Data Structure (for User-Editable Fields):** (Completed)
-*   **A2. Restructure `4011-ReferenceValues.js`:** (Completed, ongoing data validation by user)
+*   **A2. Restructure `4011-ReferenceValues.js` for Scalability:** (Completed, ongoing validation)
+    *   **Goal:** Simple, sparse `{ "fieldId": "value" }` objects for each jurisdiction/code
+    *   **Benefit:** Enables easy addition of new provinces, countries, territories, and building codes
+    *   **Structure:** Each standard contains only explicitly overridden fields
 
-### Phase B: `StateManager` Enhancements for Unified Data & Reference Model
-*   **B1. Internal State for Reference Values & Data Loading Logic:** (Implemented, `activeReferenceDataSet` populated correctly with standard overrides and carry-overs. `loadReferenceData` correctly avoids altering `this.fields`.)
-*   **B2. Mode-Aware `StateManager.getValue(fieldId)`:** (Implemented, appears to correctly fetch from `activeReferenceDataSet` when in Reference Mode).
-*   **B3. Standardized `StateManager.setValues(dataSet, stateType)`:** (Exists, interaction with muting for batch imports like CSV needs to ensure it respects mute if active).
-*   **B4. `StateManager.setMuteApplicationStateUpdates(isMuted)`:** (Implemented. Used by `ReferenceToggle`. Next step is to ensure its application covers the entire UI refresh cycle in `ReferenceToggle`).
-*   **B5. Implement Dual Calculation Path & S01 Display Logic (Revised Phased Approach v2.7):**
-    *   **Recap of Previous Attempt & Issue:** A prior attempt to refactor Section01 calculation functions using a `context` parameter led to instability in the Target (H) and Actual (K) column displays, particularly concerning the `d_14` (Utility Bills/Targeted Use) mode. The E-column (Reference) also did not behave as expected.
-    *   **Goal:** Ensure `sections/4011-Section01.js` correctly calculates and displays independently:
-        *   **Reference Column (E - e.g., `e_10`):** Values based on inputs from `StateManager.activeReferenceDataSet` (fetched via `StateManager.getActiveReferenceModeValue()`).
-        *   **Target Column (H - e.g., `h_10`):** Values based on inputs from `StateManager`'s primary application state (fetched via `StateManager.getApplicationStateValue()`).
-        *   **Actual Column (K - e.g., `k_10`):** Values based on inputs from `StateManager`'s primary application state, conditional on `d_14` being "Utility Bills" (fetched via `StateManager.getApplicationStateValue()`).
-        *   These three displays must be correct and update dynamically based on their respective data sources, *regardless* of the Reference Mode UI toggle state.
-    *   **New Phased Strategy within `sections/4011-Section01.js`:**
-        1.  **Phase S01.1: Mirror H-Column Logic to E-Column (Visual Duplicate & Initial Test Bed):** (Completed)
-            *   Modify `Section01.js` so that the E-column (`d_6`, `d_8`, `e_10`) initially calculates and displays values by temporarily using the same logic and **Application State inputs** (via `StateManager.getApplicationStateValue()`) as the H-column (`h_6`, `h_8`, `h_10`).
-            *   The E-column display should adopt the "Reference" styling (deep red text, specific tier display like "tier1" for `e_10` as per its static HTML, correct cost indicator style).
-            *   **Test:** Confirm E and H columns show the same numeric values and react identically to Application State input changes. The K-column (Actual) continues its existing behavior based on `d_14`.
-        2.  **Phase S01.2: Isolate E-Column for True Reference Calculations:** (Active - Final Step)
-            *   Create new, separate calculation functions within `Section01.js` specifically for the E-column (e.g., `calculateReferenceTEUI_For_E_Column`, etc.).
-            *   These functions will fetch their necessary inputs *exclusively* using `StateManager.getActiveReferenceModeValue(sourceFieldId)`.
-            *   They will output results only to the E-column `fieldId`s (`e_10`, `d_8`, `d_6`).
-            *   Ensure these E-column functions are triggered by `runAllCalculations` when `d_13` (Reference Standard selector) changes or when any underlying application state value (that carries over to the reference state via `activeReferenceDataSet` construction) changes.
-        3.  **Phase S01.3: Confirm H & K Columns use Pure Application State Logic:** (Active - Final Step)
-            *   Verify the existing calculation functions for H and K columns exclusively use `StateManager.getApplicationStateValue()` for their inputs.
-            *   Confirm their behavior is identical to the stable, reverted state (reacting to Application State changes and `d_14` for K-column, independent of Reference Mode UI toggle and `d_13` driven reference overrides).
-        4.  **Helper `getNumericValue()` in `Section01.js`:** This internal helper will only parse a value passed to it. The calling calculation functions will be responsible for fetching the correct state value from `StateManager` using the appropriate explicit getter (`getApplicationStateValue` or `getActiveReferenceModeValue`).
-        5.  **`runAllCalculations()` in `Section01.js`:** Will be structured to call H & K column functions, then E column functions, then shared display/update functions (percentages, tiers, costs, gauges).
+### Phase B: `StateManager` Enhancements for Dual-Engine Architecture
+*   **B1. Implement Explicit State Getters (Replace Mode-Aware getValue):**
+    *   **Remove:** Single `getValue(fieldId)` that switches based on mode
+    *   **Add:** `getApplicationValue(fieldId)` - Always returns Target/Design state for Column H calculations
+    *   **Add:** `getReferenceValue(fieldId)` - Always returns Reference state for Column E calculations
+    *   **Add:** `getCurrentDisplayValue(fieldId)` - Mode-aware for UI display only (not used in calculations)
+    *   **Benefit:** Eliminates mode-switching in calculations, enables true parallel execution
 
-### Phase C: CSV Export/Import Standardization
-*   **C1. Refine CSV Export Logic (`4011-FileHandler.js`):**
-    *   **Initial 2-Row Format (Completed 2025-05-16):** The system now successfully exports and imports a 2-row CSV representing the current application state for all user-editable fields.
-    *   **Enhanced 3-Row Format (Planned):**
-        *   **Goal:** To export a 3-row CSV.
-            *   Row 1: All user-editable `fieldId`s (Header).
-            *   Row 2: Current application state values for `fieldId`s in Row 1.
-            *   Row 3: Active reference standard key (from `d_13`) in Cell 1, followed by values from `StateManager.getActiveReferenceModeValue(fieldId)` for each `fieldId` in Row 1, representing the fully resolved Reference Mode state.
-        *   **Format (3 rows total):**
-            *   **Row 1 (Header Row - User-Editable Field IDs):** Comma-separated `fieldId`s of ALL user-editable fields defined in the application (e.g., from `FieldManager.getAllFields()` filtered by user-editable types, including `d_13`). This order must be consistent.
-                *   Example: `d_27,d_19,f_85,h_13,d_13,...`
-            *   **Row 2 (Current Application State Values):** Corresponding raw string values for the `fieldId`s in Row 1, reflecting the current application's state. The value for `d_13` will be the key of the active reference standard.
-                *   Example: `1500.75,app_state_d19_value,7.5,NBC 9.36 Prescriptive Path,NBC T1,...`
-            *   **Row 3 (Active Reference Standard Values):**
-                *   Cell 1: The key/name of the active reference standard (from `d_13`).
-                *   Subsequent Cells: For each `fieldId` in Row 1 (starting from the first `fieldId`), list the corresponding value from `StateManager.getActiveReferenceModeValue(fieldId)`. This reflects the fully resolved `activeReferenceDataSet`: values are application state values *unless* explicitly overridden by a Reference Mode Default (Appendix E) or by the selected standard's definition in `TEUI.ReferenceValues`.
-                *   Example Row 1 Headers for this illustration: `h_15,d_19,f_85,h_13,f_113,d_13,...`
-                *   Example Row 2 (Application State) for this illustration: `1427.20,Ontario,8.0,60,8.5,NBC T1,...`
-                *   Example Row 3 if `d_13` in Row 2 was `NBC T1` (based on values from `4011-ReferenceValues.js` for `NBC T1` and application state carry-over):
-                    `NBC T1,1427.20,Ontario,6.41,NBC 9.36 Prescriptive Path,7.1,,...`
-                    *(This means for `NBC T1` operating in Reference Mode: `h_15` (Conditioned Area) and `d_19` (Province) reflect their application state values (carried over by default as `NBC T1` in `TEUI.ReferenceValues` does not define them). `f_85` (Roof RSI) is "6.41", `h_13` (Standard Name) is "NBC 9.36 Prescriptive Path", and `f_113` (Heating Eff.) is "7.1" (these are explicitly defined by `NBC T1` in `TEUI.ReferenceValues` and override any application state value for these `fieldId`s). The standard `NBC T1` itself doesn't define a value for the field `d_13` (its cell in Row 3 is empty, as `d_13`'s role is to select the standard). The `...` indicates other fields following their respective Reference Mode logic [standard-defined override, carry-over from application state, RefMode default, or independently RefMode-edited]. See Appendix E for detailed field behavior.)*
-    *   **Action (for 3-Row Format):**
-        *   Ensure `collectDataForExport()` in `FileHandler.js` gathers all user-editable `fieldId`s for Row 1.
-        *   Row 2: Collect current values from `StateManager.getValue(fieldId)` (ensuring it reflects application state when not in reference mode, or by having a specific method like `StateManager.getApplicationStateValue(fieldId)` if `getValue` becomes strictly mode-aware). This forms Row 2.
-        *   Row 3:
-            1.  The first cell is `StateManager.getValue('d_13')` (the active standard key from application state).
-            2.  For subsequent cells (corresponding to each `fieldId` in Row 1), populate with `StateManager.getActiveReferenceModeValue(fieldId)` (conceptual function).
-        *   Ensure output values are raw, unformatted strings (properly CSV-escaped).
-*   **C2. Refine CSV Import Logic (`4011-FileHandler.js`):**
-    *   **Initial 2-Row Format (Completed 2025-05-16):** The system now successfully imports a 2-row CSV, updating the current application state for user-editable fields.
-    *   **Enhanced 3-Row Format (Planned):**
-        *   **Goal:** Import CSVs (formatted as per C1, 3 rows).
-            *   Row 1 (Headers) defines the `fieldId`s.
-            *   Row 2 (Application State Values) updates `StateManager` application state using `StateManager.setValues(parsedRow2Data, 'imported')`. This includes setting `d_13`.
-            *   Row 3 (Reference Standard Values) is primarily for record-keeping and future validation. The change to `d_13` from Row 2 is the trigger for `StateManager` to correctly build the `activeReferenceDataSet`.
-    *   **Action (for 3-Row Format):**
-        *   Modify `handleExcelFile()` (or CSV specific part) in `FileHandler.js`.
-        *   The import parser should expect `fieldId`s on Row 1, current application values on Row 2, and active reference standard values on Row 3.
-        *   **Processing Row 2:** Parse into a Unified Data Structure (`{fieldId: value, ...}`) and use `StateManager.setValues(parsedApplicationStateObject, 'imported')`. This updates all user-editable fields in the application state, including `d_13`.
-        *   **Processing Row 3:**
-            *   The data in Row 3 can be used for validation or logging (e.g., confirming the `active_standard_key` from Row 3 Cell 1 matches the `d_13` value set by Row 2).
-            *   The system should *not* directly apply field values from Row 3 to `StateManager.activeReferenceDataSet`. The `activeReferenceDataSet` is rebuilt by `StateManager.loadReferenceData()` based on the `d_13` value (set by Row 2) and the defined internal logic (carry-overs from application state, RefMode defaults, and explicit standard overrides from `TEUI.ReferenceValues`).
+*   **B2. Dual State Repository Enhancement:**
+    *   **Maintain:** `this.fields` for Application/Target state
+    *   **Enhance:** `this.activeReferenceDataSet` construction and management
+    *   **Add:** `loadReferenceData(standardKey)` builds Reference state from standard + carry-overs
+    *   **Add:** `setValueInReferenceMode(fieldId, value)` for Reference state modifications
 
-### Phase D: "Notes" Section Integration for Data Pasting
-*   **D1. UI Element in Section 18 (Notes):**
-    *   Add a `<textarea>` element within `4011-Section18.js` (or its rendering in `index.html`).
-    *   Add a "Load Data from Notes" button.
-*   **D2. Parsing and Loading Logic:**
-    *   When the button is clicked:
-        1.  Get the content of the `<textarea>`.
-        2.  Assume the content is CSV-formatted (or allow a toggle for JSON), containing data **for user-editable fields only** (expected to be 2 rows: headers and values, for application state).
-        3.  Parse this text into the Unified Data Structure.
-        4.  Call `StateManager.setValues(parsedDataObject, 'user-modified')` (or `'imported'` - to be decided), applying to application state.
-        5.  Trigger UI updates for all pasted **user-editable fields** using `TEUI.FieldManager.updateFieldDisplay()` for each field.
-*   **D3. "Copy Current Data to Notes" Feature (Optional):**
-    *   A button to serialize the current `StateManager` values **for user-editable fields in the application state** (using a method like `StateManager.getAllUserEditableValuesInUnifiedFormat()`) into CSV format (2 rows: headers and values) and populate the `<textarea>`.
+*   **B3. CSV/Excel Import/Export Integration:**
+    *   **Enhance:** `setValues(dataSet, stateType)` for batch import compatibility
+    *   **Add:** Support for 3-row CSV format (Application + Reference state export)
+    *   **Ensure:** Import process correctly populates both state repositories
 
-### Phase E: Reference Model UI Integration & Activation
-*   **E1. UI Update Triggering and Field State Management for Reference Mode:** (Partially complete)
-    *   UI correctly displays reference input values and locks fields in Reference Mode.
-    *   **Identified Bug:** Application state for certain fields (`g_67`, `k_120`) not perfectly preserved when toggling back to Design Mode.
-    *   **Next Steps/Critical Bug Fix:** Refine `ReferenceToggle.triggerFullUIRefreshForModeChange` to ensure `StateManager.setMuteApplicationStateUpdates(true)` is active throughout the entire UI update process (for both displaying Reference and reverting to Design) and is reset in a `finally` block. This should prevent inadvertent overwrites of application state.
-*   **E2. UI Locking/Styling for Reference Mode (CSS):**
-    *   `ReferenceToggle.js` correctly adds/removes the `reference-mode` body class.
-    *   CSS rules in `4011-styles.css` (e.g., for `.reference-locked` and `body.reference-mode .user-input:not(.reference-locked)`) will provide the visual distinction (deep red, bold, italic for locked; standard blue for user-editable in RefMode).
-*   **E3. Remove Legacy DOM Manipulation for Reference Values:** (Ongoing as sections are reviewed).
+### Phase C: Dual Calculation Engine Implementation (Section 01 Focus)
+*   **C1. Section 01 Dual Engine Architecture:**
+    *   **Implement:** `calculateReferenceModel()` using `getReferenceValue()` exclusively
+        *   Outputs to Column E fields: `e_6`, `d_8`, `e_10`, etc.
+        *   Triggered by Reference state changes
+    *   **Implement:** `calculateTargetModel()` using `getApplicationValue()` exclusively  
+        *   Outputs to Column H fields: `h_6`, `h_8`, `h_10`, etc.
+        *   Triggered by Application state changes
+    *   **Ensure:** Both engines run continuously and independently
+    *   **Remove:** Old single-mode calculation approach
 
-### Phase F: Layout Considerations (Tables vs. Flexbox/Grid)
-*   **F1. Assessment:** The user query "If tables are harmful, how to switch now to flexbox or grid for table structure" points to a desire for more modern layout techniques.
-*   **F2. Statement:** Transitioning from `<table>` based layouts to CSS Flexbox or Grid is a significant UI refactoring effort, largely separate from data structure standardization but benefiting from it. The `README.md` (Section 8: Known Limitations, UI/UX Improvements Needed) already indicates this is planned for a "4012 Visual Refactor".
-*   **F3. Workplan Note:** This workplan focuses on the data layer. A well-defined and consistent data layer will make future layout refactoring easier. No immediate action on layout changes within *this* workplan, but acknowledge its relevance.
+*   **C2. Cross-Engine Coordination:**
+    *   **Add:** Listeners for both Application and Reference state changes
+    *   **Implement:** Appropriate triggering logic for each calculation engine
+    *   **Ensure:** Column E always shows Reference results, Column H always shows Target results
+
+### Phase D: Reference Mode Toggle (Inspection Interface)
+*   **D1. Redefine Reference Toggle Purpose:**
+    *   **Purpose:** UI inspection/editing tool only - does NOT affect calculation data sources
+    *   **Function:** Switches between displaying Application vs Reference values in input fields
+    *   **Preserve:** Continuous dual calculations regardless of toggle state
+
+*   **D2. UI Display Management:**
+    *   **Implement:** Safe UI refresh that doesn't disrupt Application state
+    *   **Add:** Proper muting during Reference display updates
+    *   **Ensure:** Reference field editing updates Reference state only
+
+### Phase E: CSV/Excel Standardization (3-Row Format)
+*   **E1. Enhanced CSV Export Logic (`4011-FileHandler.js`):**
+    *   **Row 1:** All user-editable `fieldId`s (header)
+    *   **Row 2:** Current Application/Target state values
+    *   **Row 3:** Active Reference standard key + resolved Reference state values
+    *   **Goal:** Support export of both calculation engine states simultaneously
+
+*   **E2. Enhanced CSV Import Logic:**
+    *   **Process Row 2:** Update Application state (includes `d_13` for standard selection)
+    *   **Process Row 3:** Validate Reference state reconstruction
+    *   **Trigger:** Both calculation engines after import completion
+    *   **Ensure:** Imported Reference state matches exported Reference state
+
+### Phase F: Scalability and Expansion Support
+*   **F1. Reference Standards Database Enhancement:**
+    *   **Structure:** Standardized format for adding new jurisdictions
+    *   **Documentation:** Clear process for adding provinces, countries, territories
+    *   **Validation:** Automated checks for Reference value completeness
+
+*   **F2. Multi-Jurisdiction Support:**
+    *   **Interface:** Enhanced `d_13` dropdown for jurisdiction/code selection
+    *   **Inheritance:** Proper value carry-over logic for geometry and user inputs
+    *   **Testing:** Validation across multiple jurisdiction examples
 
 ### Phase G: End-to-End Testing, Validation, and Documentation
-*   **G1. Comprehensive Test Cases:**
-    *   Verify `g_67` and `k_120` (and all other fields) correctly revert to their exact pre-Reference-Mode application state values when toggling back to Design Mode after the refined muting in `ReferenceToggle` is implemented.
-    *   Develop test scenarios covering:
-        *   CSV Export (3-Row): Verify `fieldId`s, application state values, and resolved Reference Mode state values are correct.
-        *   CSV Import (3-Row): Test import. Verify `StateManager` application state update (including `d_13`) and that Reference Mode correctly reflects the imported standard via `StateManager.loadReferenceData()`.
-        *   **Reference Mode Functionality:**
-            *   Select various standards via `d_13`.
-            *   Verify correct values are displayed in **user-editable input fields** (reflecting `activeReferenceDataSet`).
-            *   Verify behavior of fields as per Appendix E (carry-over, standard-defined, RefMode-default, independently RefMode-editable).
-            *   Verify **calculated fields** (like `h_6`, TEUI, TEDI, Section 01 Column E values) update correctly *based on* the `activeReferenceDataSet`.
-            *   **Section 01 Display:**
-                *   In Reference Mode, ensure Section 01 Column D ("Design/Proposed") continues to display values based on the application state (and appears locked/visually distinct).
-                *   Ensure Section 01 Column E ("Reference/Target") displays calculated totals derived from the `activeReferenceDataSet`.
-        *   Notes Section Paste: Test pasting valid/invalid CSV/JSON data for application state update.
-        *   Interactions: e.g., Load CSV, then switch to Reference Mode, then switch back.
-    *   Use existing case studies (mentioned in `README.md`) to validate mappings and results.
-*   **G2. Mapping Validation:**
-    *   "Drill down on mis-mappings." Pay close attention to `fieldId` consistency for **user-editable fields** between the refactored `ReferenceValues.js`, CSVs, `StateManager` logic, and the actual DOM elements.
-    *   Validate the logic in Appendix E.
-*   **G3. Documentation:**
-    *   Update `README.md` to reflect the new standardized data structures and `StateManager` functionalities, including Reference Model.
-    *   Document the "Notes" section data pasting feature.
-    *   Finalize this integrated `STANDARDIZED-STATES.md` workplan document.
-    *   **Ensure Appendix E: Field Behavior in Reference Mode is comprehensively populated and accurate.**
-*   **G4. Final Cleanup & Review:**
-    *   Remove temporary `console.log` statements added during development.
-    *   Perform thorough regression testing in both Design and Reference modes.
+*   **G1. Dual Engine Testing:**
+    *   **Verify:** Column E always shows Reference calculations
+    *   **Verify:** Column H always shows Target calculations  
+    *   **Test:** Both engines respond correctly to their respective state changes
+    *   **Validate:** Reference Toggle affects display only, not calculations
+
+*   **G2. CSV/Excel Import/Export Validation:**
+    *   **Test:** 3-row export captures both Application and Reference states
+    *   **Test:** Import correctly reconstructs both states
+    *   **Validate:** Cross-jurisdiction import/export compatibility
+
+*   **G3. Scalability Testing:**
+    *   **Test:** Adding new reference standards
+    *   **Validate:** Proper value inheritance and override logic
+    *   **Document:** Process for future jurisdiction expansion
+
+### Phase H: T-Cells Reference Comparison System Implementation
+*   **H1. T-Cell Value Infrastructure:**
+    *   **Add:** `getTCellValue(fieldId)` method to StateManager
+    *   **Add:** `getCorrespondingTCell(fieldId)` mapping logic
+    *   **Enhance:** ReferenceValues.js with explicit T-cell values (t_XX pattern)
+    *   **Create:** Centralized comparison type mapping for all field types
+
+*   **H2. Directional Comparison Engine:**
+    *   **Implement:** `calculateComparison(current, reference, type)` with directional logic
+        *   Higher is Better: RSI, efficiency percentages, performance ratings
+        *   Lower is Better: U-values, energy intensity, emissions, penalties
+        *   Range/Threshold: Specific limits and acceptable ranges
+    *   **Add:** Consistent percentage calculation across all comparison types
+    *   **Ensure:** Pass/fail determination follows correct directional logic
+
+*   **H3. Section Module Integration:**
+    *   **Update:** All sections with L, M, N columns to use T-cell comparison system
+    *   **Standardize:** Reference display updates (M = percentage, N = checkmark)
+    *   **Map:** Multi-value rows to their specific comparison fields
+    *   **Remove:** Hard-coded baseline values in favor of T-cell system
+
+*   **H4. Cross-Section Coordination:**
+    *   **Coordinate:** Section 01 overall pass/fail status with T-cell results
+    *   **Validate:** Consistent comparison logic across all sections
+    *   **Test:** T-cell values properly sourced from d_13 selection
+    *   **Document:** Field-specific comparison type assignments
+
+### Phase I: End-to-End Testing, Validation, and Documentation
 
 ## 5. Timeline & Priority
 
-*   **Prerequisite (Standardize Helpers):** Highest immediate priority. Blocks subsequent work.
-*   **Phase A (Data Structure, `ReferenceValues.js` Refactor):** Highest priority after Prerequisite. Forms the foundation.
-*   **Phase B (`StateManager` Core for Application & Reference States):** Highest priority, concurrent with or immediately following Phase A.
-*   **Phase E (Reference Model UI Integration & Activation):** High priority, depends on A & B. Essential for `d_13` functionality and Reference Mode.
-*   **Phase C (CSV Import/Export - 3-Row):** High priority. Depends on A & B for full Reference Mode state export.
-*   **Phase D ("Notes" Section Paste):** Medium priority. Useful feature but can follow core data handling.
-*   **Phase F (Layout):** Out of scope for this specific workplan; part of a larger UI refactor.
-*   **Phase G (Testing & Documentation):** Ongoing throughout, with dedicated final testing and documentation update periods. Appendix E population is a key part of this.
-*   **S01.1 (Re-attempt - Mirror H to E):** Highest immediate priority, building on the now-working import functionality. (Completed)
-*   **Refactor `d_97` Handling:** Highest immediate priority before proceeding with S01.2.
-*   **S01.2 & S01.3 (Isolate S01 Columns):** High priority, following stable `d_97` and S01.1. (Active - Final Steps for Section01 Refactor)
+*   **Prerequisite (Standardize Helpers):** Highest immediate priority - enables reliable CSV/Excel processing
+*   **Phase A (Data Structure):** Highest priority - foundation for scalability  
+*   **Phase B (Dual State Management):** Critical priority - core architecture for dual engines
+*   **Phase C (Dual Calculation Engines):** High priority - implements parallel Reference/Target calculations
+*   **Phase D (Reference Toggle Redefinition):** Medium priority - improves user experience
+*   **Phase E (CSV/Excel Standardization):** High priority - enables data interchange and expansion
+*   **Phase F (Scalability Support):** Medium priority - prepares for future growth
+*   **Phase G (Testing & Documentation):** Ongoing throughout, with final validation phase
+*   **Phase H (T-Cells):** Medium priority - implements T-cell comparison system
+*   **Phase I (End-to-End Testing):** Ongoing throughout, with final validation phase
 
-This workplan aims to create a more robust, maintainable, and consistent approach to state management and Reference Model integration in the TEUI 4.011 calculator.
+**Primary Focus:** CSV/Excel standardization and dual-engine architecture to support scalable expansion across multiple jurisdictions and building codes, while maintaining continuous parallel calculations for Reference vs Target comparison.
 
 ## Appendix A: CSV Export Field Verification (vs. `4011-ExcelMapper.js`)
 
@@ -531,4 +530,353 @@ For each field/group, the behavior will be categorized as follows:
     *   `d_140` (GHGI Target kgCO2e/m2) -> `C.1`
 
 ---
-*(End of integrated content from `future code/deepstate-structure.md`)* 
+*(End of integrated content from `future code/deepstate-structure.md`)*
+
+## 6. T-Cells: Reference Value Comparison System
+
+### Overview
+The **T-cells concept** refers to invisible reference values that correspond to each row for pass/fail comparison logic. In Excel, these values exist in Column T (off-screen from users) but drive the visible pass/fail indicators in columns L, M, N.
+
+### Architecture
+
+#### A. T-Cell Value Sources
+1. **Direct from ReferenceValues.js**: For fields explicitly defined in the active reference standard
+2. **Calculated Reference Values**: For derived/calculated reference targets  
+3. **Static Baseline Values**: For comparison thresholds not tied to specific standards
+
+#### B. Directional Comparison Logic
+Different field types require different comparison directions:
+
+**Type 1: Higher is Better** (RSI values, efficiency percentages)
+```javascript
+referencePercent = (currentValue / referenceValue) * 100;
+isGood = referencePercent >= 100; // Pass if current >= reference
+```
+
+**Type 2: Lower is Better** (U-values, energy intensity, emissions)
+```javascript  
+referencePercent = (referenceValue / currentValue) * 100;
+isGood = currentValue <= referenceValue; // Pass if current <= reference
+```
+
+**Type 3: Range/Threshold** (penalty percentages, specific limits)
+```javascript
+isGood = currentValue <= maxThreshold; // Pass if within acceptable range
+```
+
+#### C. Multi-Value Row Mapping
+Some rows contain multiple input values but reference comparison applies to only **one specific cell**:
+
+**Examples:**
+- **Row 85 (Roof)**: Area (d_85), Rimp (e_85), **RSI (f_85)** ← T-cell applies here, U-value (g_85)
+- **Row 88 (Doors)**: Area (d_88), Rimp (e_88), RSI (f_88), **U-value (g_88)** ← T-cell applies here  
+- **Row 113 (Heating)**: System (d_113), HSPF (f_113), COP (g_113), **Efficiency (h_113)** ← T-cell applies here
+
+#### D. Column Responsibilities
+- **Column L**: Contextual reference information (sometimes)
+- **Column M**: Reference percentage comparison (actual/reference * 100%)  
+- **Column N**: Pass/fail checkmark (✓/✗) based on directional logic
+- **T-cells**: Hidden reference values for comparison (fieldId pattern: `t_XX`)
+
+### Integration with Dual-Engine Architecture
+
+#### A. Reference State Repository
+```javascript
+// StateManager.activeReferenceDataSet contains T-cell values
+{
+    "t_85": "5.30",    // Reference RSI for Roof (from OBC SB10)
+    "t_88": "1.99",    // Reference U-value for Doors  
+    "t_113": "7.1",    // Reference HSPF for Heating
+    // ... other T-cell reference values
+}
+```
+
+#### B. Comparison Engine
+```javascript
+// New method in StateManager
+getTCellValue(fieldId) {
+    // Map application fieldId to corresponding T-cell
+    const tCellId = this.getCorrespondingTCell(fieldId);
+    return this.getReferenceValue(tCellId);
+}
+
+// Section-level comparison logic
+function updateReferenceComparison(applicationFieldId) {
+    const currentValue = StateManager.getApplicationValue(applicationFieldId);
+    const referenceValue = StateManager.getTCellValue(applicationFieldId);
+    const comparisonType = getComparisonType(applicationFieldId);
+    
+    const { percentage, isGood } = calculateComparison(
+        currentValue, 
+        referenceValue, 
+        comparisonType
+    );
+    
+    // Update M and N columns
+    updateReferenceDisplay(applicationFieldId, percentage, isGood);
+}
+```
+
+#### C. Field Type Mapping
+```javascript
+const comparisonTypeMap = {
+    // Higher is Better
+    'f_85': 'rsi',     // Roof RSI
+    'f_86': 'rsi',     // Wall RSI  
+    'f_113': 'hspf',   // Heating efficiency
+    'd_118': 'percentage', // HRV efficiency
+    
+    // Lower is Better  
+    'g_88': 'uvalue',  // Door U-value
+    'g_89': 'uvalue',  // Window U-values
+    'h_127': 'energy', // TEDI target
+    'k_49': 'emissions', // DHW emissions
+    
+    // Threshold/Range
+    'd_97': 'penalty', // TB Penalty (≤ threshold)
+    'd_56': 'limit'    // Radon limit (≤ threshold)
+};
+```
+
+### Implementation Requirements
+
+#### A. T-Cell Field ID Convention
+- **Pattern**: `t_XX` where XX matches the row number
+- **Example**: `t_85` = T-cell reference value for Row 85 (Roof)
+- **Mapping**: Each application field maps to its corresponding T-cell
+
+#### B. ReferenceValues.js Enhancement
+```javascript
+"OBC SB10 5.5-6 Z6": {
+    // Current application field overrides
+    "f_85": "5.30",  // Application field value
+    
+    // NEW: Explicit T-cell reference values  
+    "t_85": "5.30",  // Reference comparison value for f_85
+    "t_88": "1.99",  // Reference comparison value for g_88
+    "t_113": "7.1",  // Reference comparison value for f_113
+}
+```
+
+#### C. Section Module Updates
+Each section needs:
+1. **Comparison type definitions** for relevant fields
+2. **T-cell mapping logic** for multi-value rows  
+3. **Reference display updates** for M and N columns
+4. **Integration with StateManager** T-cell methods
+
+#### D. Cross-Section Coordination
+- **Section 01**: May display overall pass/fail status based on T-cell comparisons
+- **All Sections**: Must use consistent comparison logic and display patterns
+- **StateManager**: Centralized T-cell value resolution and comparison engine
+
+### Future Scalability
+This T-cell architecture enables:
+- **Easy addition** of new reference standards with jurisdiction-specific T-cell values
+- **Consistent comparison logic** across all sections and field types  
+- **Proper CSV export/import** of both application and reference comparison states
+- **Visual feedback** that scales across multiple building codes and standards 
+
+## Appendix F: T-Cell Field Mapping and Comparison Types
+
+**Objective:** Define the explicit mapping between application fields and their corresponding T-cell reference values, including comparison type and directional logic for each field, based on analysis of FORMULAE-3039.csv.
+
+### Section-by-Section T-Cell Mapping
+
+#### **Section 07 (Water Use)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `d_52` | `t_52` | percentage | Higher is Better | DHW System Efficiency % |
+| `d_53` | `t_53` | percentage | Higher is Better | DWHR Efficiency % |
+| `k_49` | `t_49` | emissions | Lower is Better | DHW Net Emissions kgCO2e/yr |
+
+#### **Section 08 (Indoor Air Quality)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `d_56` | `t_56` | limit | Lower is Better | Radon Bq/m³ (≤ limit) |
+| `d_57` | `t_57` | limit | Lower is Better | CO2 ppm (≤ limit) |
+| `d_58` | `t_58` | limit | Lower is Better | TVOC ppm (≤ limit) |
+| `d_59` | `t_59` | percentage | Range | Indoor RH % (30-60% range) |
+
+#### **Section 09 (Internal Gains)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `d_65` | `t_65` | energy | Lower is Better | Plug Loads W/m² |
+| `d_66` | `t_66` | energy | Lower is Better | Lighting Loads W/m² |
+| `g_67` | `t_67` | efficiency | Higher is Better | Equipment Efficiency Spec |
+
+#### **Section 10 (Radiant Gains)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `f_73` | `t_73` | thermal | Lower is Better | SHGC Doors |
+| `f_74` | `t_74` | thermal | Lower is Better | SHGC Window N |
+| `f_75` | `t_75` | thermal | Lower is Better | SHGC Window E |
+| `f_76` | `t_76` | thermal | Lower is Better | SHGC Window S |
+| `f_77` | `t_77` | thermal | Lower is Better | SHGC Window W |
+| `f_78` | `t_78` | thermal | Lower is Better | SHGC Skylights |
+| `d_80` | `t_80` | method | Specific | Net Useable Gains Method |
+
+#### **Section 11 (Transmission Losses)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `f_85` | `t_85` | rsi | Higher is Better | Roof RSI K•m²/W |
+| `f_86` | `t_86` | rsi | Higher is Better | Wall Above Grade RSI |
+| `f_87` | `t_87` | rsi | Higher is Better | Floor Exposed RSI |
+| `g_88` | `t_88` | uvalue | Lower is Better | Door U-value W/m²•K |
+| `g_89` | `t_89` | uvalue | Lower is Better | Window N U-value |
+| `g_90` | `t_90` | uvalue | Lower is Better | Window E U-value |
+| `g_91` | `t_91` | uvalue | Lower is Better | Window S U-value |
+| `g_92` | `t_92` | uvalue | Lower is Better | Window W U-value |
+| `g_93` | `t_93` | uvalue | Lower is Better | Skylight U-value |
+| `f_94` | `t_94` | rsi | Higher is Better | Wall Below Grade RSI |
+| `f_95` | `t_95` | rsi | Higher is Better | Floor Slab RSI |
+| `d_97` | `t_97` | penalty | Lower is Better | Thermal Bridge Penalty % |
+
+#### **Section 12 (Volume & Surface Metrics)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `d_104` | `t_104` | uvalue | Lower is Better | Building U-Value Combined |
+| `d_107` | `t_107` | ratio | Lower is Better | Window:Wall Ratio |
+| `g_109` | `t_109` | leakage | Lower is Better | ACH50 Measured |
+
+#### **Section 13 (Mechanical Loads)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `f_113` | `t_113` | hspf | Higher is Better | Heating HSPF |
+| `j_115` | `t_115` | afue | Higher is Better | AFUE Gas/Oil |
+| `j_116` | `t_116` | cop | Higher is Better | Cooling COP |
+| `d_118` | `t_118` | percentage | Higher is Better | HRV/ERV SRE % |
+| `d_119` | `t_119` | ventilation | Higher is Better | Vent Rate L/s per person |
+| `l_118` | `t_118` | ventilation | Context | Volumetric Vent Rate |
+| `k_120` | `t_120` | percentage | Context | Unoccupied Setback % |
+
+#### **Section 14 (TEDI)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `h_127` | `t_127` | energy | Lower is Better | TEDI Target kWh/m² |
+
+#### **Section 15 (TEUI & GHG)**
+| Application Field | T-Cell | Comparison Type | Direction | Description |
+|------------------|---------|-----------------|-----------|-------------|
+| `h_140` | `t_140` | emissions | Lower is Better | GHGI Target kgCO2e/m² |
+
+### Comparison Type Definitions
+
+#### **Higher is Better (≥ reference)**
+```javascript
+referencePercent = (currentValue / referenceValue) * 100;
+isGood = currentValue >= referenceValue;
+```
+**Field Types:** RSI, HSPF, AFUE, COP, efficiency percentages, performance ratings
+
+#### **Lower is Better (≤ reference)** 
+```javascript
+referencePercent = (referenceValue / currentValue) * 100;
+isGood = currentValue <= referenceValue;
+```
+**Field Types:** U-values, energy intensity, emissions, air leakage, thermal bridging
+
+#### **Range/Threshold (within acceptable bounds)**
+```javascript
+isGood = (currentValue >= minThreshold && currentValue <= maxThreshold);
+referencePercent = calculateRangePercentage(currentValue, minThreshold, maxThreshold);
+```
+**Field Types:** Indoor humidity, specific operational ranges
+
+#### **Context/Method (exact match or method-specific)**
+```javascript
+isGood = (currentValue === requiredValue) || checkMethodCompatibility(currentValue, referenceValue);
+```
+**Field Types:** Calculation methods, equipment specifications, operational modes
+
+### Implementation Notes
+
+1. **T-Cell Field ID Pattern**: `t_XX` where XX matches the application field row number
+2. **Multi-Value Row Mapping**: Only one field per row has a T-cell comparison (the performance-critical field)
+3. **Reference Value Source**: T-cell values come from `StateManager.activeReferenceDataSet` 
+4. **Display Columns**: 
+   - **Column M**: Shows percentage comparison
+   - **Column N**: Shows pass/fail checkmark (✓/✗)
+5. **Null Handling**: If T-cell value is undefined, comparison shows "N/A" 
+6. **Standard Selection**: T-cell values update automatically when `d_13` changes
+
+This mapping ensures consistent comparison logic across all sections while maintaining the flexibility to add new reference standards and field types.
+
+### Concrete Implementation Example
+
+#### **Enhanced ReferenceValues.js Structure**
+```javascript
+"OBC SB10 5.5-6 Z6": {
+    // Application field overrides (for Reference Mode display)
+    "f_85": "5.30",    // Reference RSI shown when in Reference Mode
+    "g_88": "1.99",    // Reference U-value shown when in Reference Mode
+    "d_118": "81",     // Reference HRV efficiency shown when in Reference Mode
+    
+    // T-cell comparison values (for pass/fail logic)
+    "t_85": "5.30",    // Minimum acceptable RSI for Roof
+    "t_88": "1.99",    // Maximum acceptable U-value for Doors  
+    "t_118": "81",     // Minimum acceptable HRV efficiency %
+    "t_97": "50",      // Maximum acceptable TB Penalty %
+    
+    // Method/contextual T-cells
+    "t_80": "NRC 40%", // Required gains calculation method
+}
+```
+
+#### **StateManager T-Cell Integration**
+```javascript
+// New StateManager methods
+getTCellValue(applicationFieldId) {
+    // Map application field to T-cell ID
+    const tCellId = this.getCorrespondingTCell(applicationFieldId);
+    return this.getReferenceValue(tCellId);
+}
+
+getCorrespondingTCell(fieldId) {
+    // Extract row number from fieldId pattern
+    const rowMatch = fieldId.match(/[a-z]_(\d+)/);
+    if (rowMatch) {
+        return `t_${rowMatch[1]}`;
+    }
+    // Special cases for non-standard patterns
+    const specialMappings = {
+        'h_127': 't_127', // TEDI
+        'h_140': 't_140', // GHGI
+        // ... other special cases
+    };
+    return specialMappings[fieldId] || null;
+}
+```
+
+#### **Section Module Reference Display Pattern**
+```javascript
+// Standard pattern for updating M and N columns
+function updateReferenceDisplay(applicationFieldId) {
+    const currentValue = getNumericValue(applicationFieldId);
+    const referenceValue = window.TEUI.StateManager.getTCellValue(applicationFieldId);
+    const comparisonType = getComparisonType(applicationFieldId);
+    
+    if (!referenceValue) {
+        // Handle missing T-cell reference
+        setCalculatedValue(`m_${getRowNumber(applicationFieldId)}`, "N/A", 'raw');
+        setCalculatedValue(`n_${getRowNumber(applicationFieldId)}`, "?", 'raw');
+        return;
+    }
+    
+    const { percentage, isGood } = calculateReferenceComparison(
+        currentValue, 
+        referenceValue, 
+        comparisonType
+    );
+    
+    // Update Column M (percentage)
+    setCalculatedValue(`m_${getRowNumber(applicationFieldId)}`, percentage, 'percent');
+    
+    // Update Column N (checkmark)
+    const checkmark = isGood ? "✓" : "✗";
+    setCalculatedValue(`n_${getRowNumber(applicationFieldId)}`, checkmark, 'raw');
+    setElementClass(`n_${getRowNumber(applicationFieldId)}`, isGood ? "checkmark" : "warning");
+}
+```
+
+This concrete structure shows exactly how T-cells integrate with the existing dual-engine architecture while providing the pass/fail comparison logic that matches your Excel methodology.

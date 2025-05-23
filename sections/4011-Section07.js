@@ -308,7 +308,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 },
                 f: { content: "Gas m³/yr", classes: ["text-left"] },
                 g: { content: "W.3.2", classes: ["text-left"] },
-                h: { content: "Net Thermal Demand", classes: ["text-left"] },
+                h: { content: "Net Energy Demand", classes: ["text-left"] },
                 j: {
                     fieldId: "j_51",
                     type: "calculated",
