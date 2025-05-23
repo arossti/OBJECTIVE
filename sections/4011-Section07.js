@@ -679,8 +679,14 @@ window.TEUI.SectionModules.sect07 = (function() {
         let finalEnergy = 0, gasVolume = 0, oilVolume = 0;
         const netDemand = netDemandAfterRecovery;
         switch(systemType) {
-            case "Heatpump": finalEnergy = efficiency !== 0 ? netDemand / efficiency : netDemand; break;
-            case "Electric": finalEnergy = netDemand; break;
+            case "Heatpump": 
+                finalEnergy = efficiency !== 0 ? netDemand / efficiency : netDemand; 
+                setCalculatedValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
+                break;
+            case "Electric": 
+                finalEnergy = netDemand; 
+                setCalculatedValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
+                break;
             case "Gas":
                 const afue = getNumericValue("k_52", 0.9); // Use AFUE from k_52
                 const recoveryPercent = getNumericValue("d_53") / 100; // Get d_53 as decimal
@@ -695,6 +701,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 break;
             case "Oil":
                 // Oil volume calculation now handled by calculateK54() for k_54
+                setCalculatedValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
                 break;
         }
 
@@ -918,6 +925,12 @@ window.TEUI.SectionModules.sect07 = (function() {
         setFieldGhosted('e_51', !isGas);
         const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)'); 
         if (f51Cell) f51Cell.classList.toggle('disabled-input', !isGas);
+
+        // Ghost oil-related labels when not using oil
+        const g54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(7)'); 
+        if(g54Cell) g54Cell.classList.toggle('disabled-input', !isOil);
+        const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
+        if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
 
         setFieldGhosted('k_54', !isOil); 
         const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
