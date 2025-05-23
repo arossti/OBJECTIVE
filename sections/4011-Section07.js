@@ -156,7 +156,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 j: { content: "Annual kWh/yr", classes: ["section-subheader"] },
                 k: { content: "Annual ekWh/yr", classes: ["section-subheader"] },
                 l: { content: "L", classes: ["section-subheader"] },
-                m: { content: "Ref", classes: ["section-subheader"] },
+                m: { content: "Ref", classes: ["checkmark"] },
                 n: { content: "N", classes: ["section-subheader"] }
             }
         },
@@ -214,7 +214,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                     section: "waterUse",
                     dependencies: ["d_51", "k_54", "l_30", "e_51", "l_28"]
                 },
-                l: { content: "kgCO2e/yr", classes: ["text-left"] }, 
+                l: { content: "kgCO2e/yr", classes: ["text-left"] },
                 m: { content: "✓", classes: ["checkmark"] },
                 n: {
                     fieldId: "n_49",
@@ -432,6 +432,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                     dependencies: ["d_51", "d_52", "j_51", "d_49", "j_50"]
                 },
                 f: { content: "kWh/yr", classes: ["text-left"] }, // Unit for d_54
+                g: { content: "W.X", classes: ["text-right"] }, // ID for Exhaust
                 h: { content: "Exhaust (if Gas or Oil)", classes: ["text-left"] }, // Label for k_54
                 j: { 
                     fieldId: "j_54", // CORRECT Field ID for Column J - User's target formula
@@ -441,20 +442,14 @@ window.TEUI.SectionModules.sect07 = (function() {
                     dependencies: ["d_51", "j_52", "d_52"] // Depends on source, net demand, efficiency
                 },
                 k: {
-                    fieldId: "k_54", // CORRECT Field ID for Column K - Exhaust kWh/yr
+                    fieldId: "k_54", // CORRECT Field ID for Column K - Oil Demand Litres
                     type: "calculated",
                     value: "0.00",
                     section: "waterUse",
-                    dependencies: ["d_51", "j_51", "j_52", "d_52"] // Depends on source, gross/net demand, efficiency
+                    dependencies: ["d_51", "j_52", "d_53", "k_52"] // Depends on source, net demand, recovery, AFUE
                 },
-                l: { content: "W.3.4 Net Oil Demand Ltrs", classes: ["text-left"] }, // Label for l_54
-                m: { 
-                    fieldId: "l_54", // CORRECT Field ID for Column M - Net Oil Litres
-                    type: "calculated", 
-                    value: "0.00",
-                    section: "waterUse",
-                    dependencies: ["d_51", "j_52", "d_53", "d_52"]
-                }
+                l: { content: "W.3.4 Net Oil Demand Ltrs", classes: ["text-left"] }, // Label for k_54
+                m: { content: "", classes: ["text-left"] }
             }
         }
     };
@@ -687,16 +682,19 @@ window.TEUI.SectionModules.sect07 = (function() {
             case "Heatpump": finalEnergy = efficiency !== 0 ? netDemand / efficiency : netDemand; break;
             case "Electric": finalEnergy = netDemand; break;
             case "Gas":
-                const gasEff = efficiency || 0.9;
-                finalEnergy = gasEff !== 0 ? netDemand / gasEff : netDemand;
-                gasVolume = gasEff !== 0 ? finalEnergy / 10.33 : 0;
+                const afue = getNumericValue("k_52", 0.9); // Use AFUE from k_52
+                const recoveryPercent = getNumericValue("d_53") / 100; // Get d_53 as decimal
+                const netDemandAfterRecovery_j52 = getNumericValue("j_52"); // Use j_52 as confirmed
+                
+                // Apply Excel formula exactly: ((J52*(1-D53))/0.0373/277.7778/K52)
+                const conversionFactor = 0.0373 * 277.7778; // More precise than 10.33
+                const adjustedDemand = netDemandAfterRecovery_j52 * (1 - recoveryPercent);
+                gasVolume = (adjustedDemand / conversionFactor) / afue;
+                
                 setCalculatedValue("e_51", gasVolume, 'number-2dp-comma');
                 break;
             case "Oil":
-                const oilEff = efficiency || 0.82;
-                finalEnergy = oilEff !== 0 ? netDemand / oilEff : netDemand;
-                oilVolume = oilEff !== 0 ? finalEnergy / (36.72 * 0.2777778) : 0;
-                setCalculatedValue("l_54", oilVolume, 'number-2dp-comma');
+                // Oil volume calculation now handled by calculateK54() for k_54
                 break;
         }
 
@@ -711,7 +709,6 @@ window.TEUI.SectionModules.sect07 = (function() {
         setCalculatedValue("d_54", systemLosses_d54, 'number-2dp-comma');
 
         let exhaustValue = (systemType === "Gas" || systemType === "Oil") ? (finalEnergy - netDemand) : 0;
-        setCalculatedValue("k_54", exhaustValue, 'number-2dp-comma');
 
         const standardCOP = 0.9;
         const efficiencyPercentRaw = standardCOP !== 0 ? (efficiency / standardCOP) : 0;
@@ -740,36 +737,24 @@ window.TEUI.SectionModules.sect07 = (function() {
     }
 
     /**
-     * CORRECTED: Calculate Exhaust kWh (k_54) 
-     * Formula: =IF(OR(D51="Gas",D51="Oil"),J51-J52,0)
+     * CORRECTED: Calculate Oil Demand Litres (k_54) 
+     * Formula: =IF(D51="Oil", ((J52*(1-D53))/(36.72*0.2777778)/K52), 0)
      */
     function calculateK54() {
         const systemType = getFieldValue("d_51");
-        const netThermalDemand_j51 = getNumericValue("j_51");
-        const netDemandAfterRecovery_j52 = getNumericValue("j_52");
-        
-        let exhaustKWh = 0;
-        if (systemType === "Gas" || systemType === "Oil") {
-             exhaustKWh = netThermalDemand_j51 - netDemandAfterRecovery_j52;
-        }
-        return exhaustKWh;
-    }
-
-    /**
-     * CORRECTED: Calculate Net Oil Demand Litres (l_54)
-     * Formula: =IF(D51="Oil",J52/(36.72*0.2777778),"")
-     */
-    function calculateL54() {
-        const systemType = getFieldValue("d_51");
-        const netDemandAfterRecovery_j52 = getNumericValue("j_52");
         
         let oilVolume = 0;
         if (systemType === "Oil") {
+            const afue = getNumericValue("k_52", 0.9); // Use AFUE from k_52
+            const recoveryPercent = getNumericValue("d_53") / 100; // Get d_53 as decimal
+            const netDemandAfterRecovery_j52 = getNumericValue("j_52"); // Use j_52 as confirmed
+            
+            // Apply Excel formula exactly: ((J52*(1-D53))/(36.72*0.2777778)/K52)
             const conversionFactor = 36.72 * 0.2777778; // kWh per liter of oil
-             oilVolume = conversionFactor !== 0 ? netDemandAfterRecovery_j52 / conversionFactor : 0;
+            const adjustedDemand = netDemandAfterRecovery_j52 * (1 - recoveryPercent);
+            oilVolume = (adjustedDemand / conversionFactor) / afue;
         }
-        // Return 0 if not Oil, formatting will handle display
-        return oilVolume; 
+        return oilVolume;
     }
 
     /**
@@ -784,7 +769,7 @@ window.TEUI.SectionModules.sect07 = (function() {
      */
     function calculateDHWEmissions() {
         const systemType = getFieldValue("d_51");
-        const oilVolume = getNumericValue("l_54"); // Litres from m_54 (l_54 in field def)
+        const oilVolume = getNumericValue("k_54"); // Litres from k_54 (Oil demand litres)
         const gasVolume = getNumericValue("e_51"); // m³
         
         // Emission factors are in g/unit from FORMULAE-3039.csv (L28, L30)
@@ -822,8 +807,6 @@ window.TEUI.SectionModules.sect07 = (function() {
         setCalculatedValue("j_54", j54Value, 'number-2dp-comma');
         const k54Value = calculateK54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
         setCalculatedValue("k_54", k54Value, 'number-2dp-comma');
-        const l54Value = calculateL54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
-        setCalculatedValue("l_54", l54Value, 'number-2dp-comma');
         
         // Calculate DHW emissions
         calculateDHWEmissions();
@@ -902,7 +885,7 @@ window.TEUI.SectionModules.sect07 = (function() {
             
             // Register dependencies for k_49 (DHW Emissions)
             sm.registerDependency('d_51', 'k_49'); // Energy source affects emissions
-            sm.registerDependency('l_54', 'k_49'); // Oil volume affects emissions
+            sm.registerDependency('k_54', 'k_49'); // Oil volume affects emissions
             sm.registerDependency('e_51', 'k_49'); // Gas volume affects emissions
             sm.registerDependency('l_30', 'k_49'); // Oil emissions factor
             sm.registerDependency('l_28', 'k_49'); // Gas emissions factor
@@ -936,13 +919,9 @@ window.TEUI.SectionModules.sect07 = (function() {
         const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)'); 
         if (f51Cell) f51Cell.classList.toggle('disabled-input', !isGas);
 
-        setFieldGhosted('l_54', !isOil); 
-        const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
-        if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
-        
-        setFieldGhosted('k_54', !isFossilFuel); 
+        setFieldGhosted('k_54', !isOil); 
         const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
-        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isFossilFuel);
+        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isOil);
 
         setFieldGhosted('d_52', isFossilFuel);      
         setFieldGhosted('e_52', isFossilFuel);       
