@@ -104,6 +104,7 @@ class ExcelMapper {
             'D51': 'd_51', // DHW Energy Source (Dropdown)
             'D52': 'd_52', // DHW EF/COP (Editable Number)
             'D53': 'd_53', // DHW Recovery Eff % (Editable Number)
+            'K52': 'k_52', // SHW AFUE (Editable Number)
 
             // Section 08: Indoor Air Quality (REPORT! Sheet)
             'D56': 'd_56', // Radon Bq/m3
@@ -371,6 +372,33 @@ class ExcelMapper {
                     // Ensure it's a string for consistency, defaulting to "0" if parsing failed
                     if (isNaN(parseFloat(extractedValue))) {
                         extractedValue = "0"; // Or a more appropriate default like "5"
+                    }
+                }
+                // Normalize k_52 (SHW AFUE) value from Excel
+                if (fieldId === 'k_52') {
+                    let numVal;
+                    if (typeof extractedValue === 'string') {
+                        if (extractedValue.endsWith('%')) {
+                            numVal = parseFloat(extractedValue.replace('%', ''));
+                            // Convert percentage to decimal (e.g., 90% → 0.90)
+                            numVal = numVal / 100;
+                        } else {
+                            numVal = parseFloat(extractedValue);
+                        }
+                    } else if (typeof extractedValue === 'number') {
+                        numVal = extractedValue;
+                    }
+
+                    if (!isNaN(numVal)) {
+                        // If numVal is > 1, assume it's a percentage that needs conversion to decimal
+                        if (numVal > 1) {
+                            extractedValue = (numVal / 100).toFixed(2);
+                        } else {
+                            // Assume it's already a decimal factor (e.g., 0.90)
+                            extractedValue = numVal.toFixed(2);
+                        }
+                    } else {
+                        extractedValue = "0.90"; // Default AFUE if parsing failed
                     }
                 }
                 importedData[fieldId] = extractedValue;
