@@ -118,6 +118,11 @@ window.TEUI.SectionModules.sect07 = (function() {
         
         // Determine specific formatting if needed (example)
         // if (fieldId === 'some_specific_field') { formatType = 'some-format'; }
+        
+        // Special formatting for k_52 (AFUE) - use 2 decimal places without comma
+        if (fieldId === 'k_52') { 
+            formatType = 'number-2dp'; 
+        }
 
         valueToStore = numericValue.toString(); // Store raw number string
         const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
@@ -129,7 +134,7 @@ window.TEUI.SectionModules.sect07 = (function() {
              if (currentStateValue !== valueToStore) {
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
                 // Trigger dependent calculations if this field is a dependency for others
-                 calculateAll(); // Recalculate section on change
+                calculateAll(); // Recalculate section on change
             }
         }
     }
@@ -360,7 +365,8 @@ window.TEUI.SectionModules.sect07 = (function() {
                     fieldId: "k_52", 
                     type: "editable", 
                     value: "0.90", // default SHW AFUE value
-                    section: "waterUse"
+                    section: "waterUse",
+                    classes: ["user-input", "editable"]
                 },
                 l: { content: "W.4.2 AFUE", classes: ["text-left"] },
                 m: { content: "✓", classes: ["checkmark"] },
@@ -834,7 +840,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (!sectionElement) return;
 
         // Setup editable field handlers
-        const editableFieldIds = ['e_49', 'e_50', 'k_45', 'm_43', 'i_44', 'i_46'];
+        const editableFieldIds = ['e_49', 'e_50', 'k_52', 'k_45', 'm_43', 'i_44', 'i_46'];
         editableFieldIds.forEach(fieldId => {
             const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
             if(field && field.classList.contains('editable')) {
