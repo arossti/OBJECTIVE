@@ -324,7 +324,7 @@ window.TEUI.SectionModules.sect07 = (function() {
 
         // Row 52: W.4 DHW or SHW Efficiency Factor (EF) - REFACTORED TO SUPPORT AFUE SEPARATELY
         "52": {
-            id: "W.4",
+            id: "W.4.1",
             rowId: "W.4.1",
             label: "DHW or SHW Efficiency Factor (EF)",
             cells: {
@@ -774,7 +774,7 @@ window.TEUI.SectionModules.sect07 = (function() {
 
     /**
      * NEW: Calculate DHW/SHW Emissions
-     * Formula: =IF(D51="Oil", K54*L30, IF(D51="Gas", E51*L28, 0))
+     * Formula: =IF(D51="Oil", K54*L30/1000, IF(D51="Gas", E51*L28/1000, 0)) - REVISED TO CORRECT TO KG as Emissions Factors are in Grams!
      * Where:
      * - D51 is the DHW energy source (Oil, Gas, Heatpump, Electric)
      * - K54 is the Oil volume (litres)
@@ -784,25 +784,30 @@ window.TEUI.SectionModules.sect07 = (function() {
      */
     function calculateDHWEmissions() {
         const systemType = getFieldValue("d_51");
-        const oilVolume = getNumericValue("l_54");
-        const gasVolume = getNumericValue("e_51");
+        const oilVolume = getNumericValue("l_54"); // Litres from m_54 (l_54 in field def)
+        const gasVolume = getNumericValue("e_51"); // m³
         
-        // Emissions factors (these would ideally come from a global constants source)
-        const oilEmissionsFactor = getNumericValue("l_30") || 2.753; // Default if not available
-        const gasEmissionsFactor = getNumericValue("l_28") || 2.03; // Default if not available
+        // Emission factors are in g/unit from FORMULAE-3039.csv (L28, L30)
+        // StateManager fields l_28 and l_30 are expected to hold these gram values.
+        const oilEmissionsFactor_g_per_L = getNumericValue("l_30", 2753); // gCO2e/litre
+        const gasEmissionsFactor_g_per_m3 = getNumericValue("l_28", 1921); // gCO2e/m³
         
-        let emissions = 0;
+        let emissions_g = 0; // Calculate in grams first
         
         if (systemType === "Oil") {
-            emissions = oilVolume * oilEmissionsFactor;
+            emissions_g = oilVolume * oilEmissionsFactor_g_per_L;
         } else if (systemType === "Gas") {
-            emissions = gasVolume * gasEmissionsFactor;
+            emissions_g = gasVolume * gasEmissionsFactor_g_per_m3;
         }
-        // For Electric and Heatpump, we leave emissions at 0 (handled by electricity emissions elsewhere)
+        // For Electric and Heatpump, emissions are 0 here (handled by electricity grid intensity elsewhere).
         
-        setCalculatedValue("k_49", emissions, 'number-2dp-comma');
+        const emissions_kg = emissions_g / 1000; // Convert to kg
+
+        // Sankey Comment: The value k_49 is stored and displayed in kgCO2e/yr.
+        // If Sankey diagram requires different units (e.g., grams or tonnes), adjust accordingly when feeding data to Sankey.
+        setCalculatedValue("k_49", emissions_kg, 'number-2dp-comma'); 
         
-        return emissions;
+        return emissions_kg;
     }
 
     /**
@@ -924,19 +929,29 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (f50Cell) f50Cell.classList.toggle('disabled-input', !isByEngineer);
         
         const isGas = systemType === "Gas";
+        const isOil = systemType === "Oil";
+        const isFossilFuel = isGas || isOil;
+
         setFieldGhosted('e_51', !isGas);
-        const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)');
+        const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)'); 
         if (f51Cell) f51Cell.classList.toggle('disabled-input', !isGas);
 
-        const isOil = systemType === "Oil";
-        setFieldGhosted('l_54', !isOil);
+        setFieldGhosted('l_54', !isOil); 
         const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
         if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
         
-        const isFossil = isGas || isOil;
-        setFieldGhosted('k_54', !isFossil);
+        setFieldGhosted('k_54', !isFossilFuel); 
         const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
-        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isFossil);
+        if(h54Cell) h54Cell.classList.toggle('disabled-input', !isFossilFuel);
+
+        setFieldGhosted('d_52', isFossilFuel);      
+        setFieldGhosted('e_52', isFossilFuel);       
+        const f52Cell_label = document.querySelector('.data-table tr[data-id="W.4.1"] td:nth-child(6)'); 
+        if(f52Cell_label) f52Cell_label.classList.toggle('disabled-input', isFossilFuel);
+
+        setFieldGhosted('k_52', !isFossilFuel);      
+        const l52Cell_label = document.querySelector('.data-table tr[data-id="W.4.1"] td:nth-child(12)'); 
+        if(l52Cell_label) l52Cell_label.classList.toggle('disabled-input', !isFossilFuel);
     }
     
     /**
@@ -1010,31 +1025,50 @@ window.TEUI.SectionModules.sect07 = (function() {
     function handleDHWSourceChange(event) {
         const selectedSource = event.target.value;
         const d52Slider = document.querySelector('input[type="range"][data-field-id="d_52"]');
-        const d52Display = d52Slider ? d52Slider.parentElement.querySelector('.slider-value') : null;
+        // Assuming a span with data-display-for="d_52" exists for the slider value display
+        const d52Display = document.querySelector(`span[data-display-for="d_52"]`); 
 
         let newMinValue = 50, newMaxValue = 400, newStep = 2, newValue = 300;
-        let isEditable = true; // Assume editable by default
+        // isEditable flag is not strictly needed here if we only set slider params and value
 
         if (selectedSource === "Gas" || selectedSource === "Oil") {
-            newMinValue = 50; // Set min to 50
-            newMaxValue = 100; // Set max to 100
-            newStep = 1;     // Set step to 1
-            newValue = 90; // Reset value to 90% within the new range
-            isEditable = true; 
+            newMinValue = 50; 
+            newMaxValue = 98; // Max AFUE typically < 100%
+            newStep = 1;     
+            // When switching to Gas/Oil, d_52 (COP/Eff%) input field is ghosted.
+            // Its value might be reset to a typical % for AFUE range, or left as is.
+            // The actual AFUE value for calculation will come from k_52.
+            // Let's set d_52 to a common AFUE % like 90 for visual consistency if user switches back.
+            newValue = 90; 
         } else if (selectedSource === "Electric") {
-            newMaxValue = 100; newStep = 1; newValue = 100;
-        } // else Heatpump uses defaults
+            newMinValue = 90; // e.g. 90%
+            newMaxValue = 100; // e.g. 100%
+            newStep = 1;     
+            newValue = 100;
+        } else { // Heatpump (default)
+            newMinValue = 100; // Represents COP 1.0
+            newMaxValue = 450; // Represents COP 4.5
+            newStep = 10;    // Represents 0.1 COP steps
+            newValue = 300; // Default COP 3.0 (300%)
+        }
 
         if (window.TEUI.StateManager) {
+            // Update the state of d_52 to reflect its new default for the selected system type
             window.TEUI.StateManager.setValue("d_52", newValue.toString(), 'system-update');
         }
         if (d52Slider) {
-            d52Slider.min = newMinValue; d52Slider.max = newMaxValue; d52Slider.step = newStep;
-            d52Slider.value = newValue;
-            if (d52Display) { d52Display.textContent = `${newValue}%`; }
+            d52Slider.min = newMinValue;
+            d52Slider.max = newMaxValue;
+            d52Slider.step = newStep;
+            d52Slider.value = newValue; // Visually update slider position
+            if (d52Display) { 
+                // If d_52 is a percentage slider, display it as %
+                // If it conceptually represents COP for heatpumps, the label f_52_label handles "COP"
+                d52Display.textContent = `${newValue}%`; 
+            }
         }
-        // Visibility updated in handleGenericDropdownChange
-        // calculateAll is called by handleGenericDropdownChange
+        // Note: calculateAll() is called by handleGenericDropdownChange after d_51 state is set and this handler runs.
+        // updateSection7Visibility() will then apply the correct ghosting.
     }
     
     //==========================================================================
