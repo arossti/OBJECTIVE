@@ -155,9 +155,9 @@ window.TEUI.SectionModules.sect07 = (function() {
                 i: { content: "litres/yr", classes: ["section-subheader"] },
                 j: { content: "Annual kWh/yr", classes: ["section-subheader"] },
                 k: { content: "Annual ekWh/yr", classes: ["section-subheader"] },
-                l: { content: "K", classes: ["section-subheader"] },
+                l: { content: "L", classes: ["section-subheader"] },
                 m: { content: "Ref", classes: ["section-subheader"] },
-                n: { content: "M", classes: ["section-subheader"] }
+                n: { content: "N", classes: ["section-subheader"] }
             }
         },
 
@@ -322,10 +322,10 @@ window.TEUI.SectionModules.sect07 = (function() {
             }
         },
 
-        // Row 52: W.4 DHW or SHW Efficiency Factor (EF)
+        // Row 52: W.4 DHW or SHW Efficiency Factor (EF) - REFACTORED TO SUPPORT AFUE SEPARATELY
         "52": {
             id: "W.4",
-            rowId: "W.4",
+            rowId: "W.4.1",
             label: "DHW or SHW Efficiency Factor (EF)",
             cells: {
                 c: { label: "DHW or SHW Efficiency Factor (EF)" },
@@ -356,11 +356,18 @@ window.TEUI.SectionModules.sect07 = (function() {
                     section: "waterUse",
                     dependencies: ["j_51", "e_53"]
                 },
+                k: { 
+                    fieldId: "k_52", 
+                    type: "editable", 
+                    value: "0.90", // default SHW AFUE value
+                    section: "waterUse"
+                },
+                l: { content: "W.4.2 AFUE", classes: ["text-left"] },
                 m: { content: "✓", classes: ["checkmark"] },
                 n: {
                     fieldId: "n_52",
                     type: "calculated",
-                    value: "333%",
+                    value: "100%", // Will be l_52/t_52 when T-cells are implemented for Ref Standards
                     section: "waterUse"
                 }
             }
