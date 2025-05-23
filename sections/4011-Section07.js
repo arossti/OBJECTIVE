@@ -156,7 +156,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 j: { content: "Annual kWh/yr", classes: ["section-subheader"] },
                 k: { content: "Annual ekWh/yr", classes: ["section-subheader"] },
                 l: { content: "L", classes: ["section-subheader"] },
-                m: { content: "Ref", classes: ["checkmark"] },
+                m: { content: "Ref", classes: ["section-subheader"] },
                 n: { content: "N", classes: ["section-subheader"] }
             }
         },
