@@ -314,7 +314,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                     type: "calculated",
                     value: "12,828.14",
                     section: "waterUse",
-                    dependencies: ["j_50"]
+                    dependencies: ["j_50", "d_51", "d_52", "k_52"]
                 },
                 k: {
                     fieldId: "k_51",
@@ -670,7 +670,16 @@ window.TEUI.SectionModules.sect07 = (function() {
         let efficiency = !isNaN(efficiencyInput_d52) ? efficiencyInput_d52 / 100 : 1.0;
         setCalculatedValue("e_52", efficiency, 'number-2dp');
         
-        const netThermalDemand_j_51 = efficiency !== 0 ? hotWaterEnergyDemand_j50 / efficiency : 0;
+        // Calculate j_51 using Excel logic: =IF(OR(D51="Heatpump", D51="Electric"), J50/D52, J50/K52)
+        let netThermalDemand_j_51 = 0;
+        if (systemType === "Heatpump" || systemType === "Electric") {
+            // Use efficiency from d_52 (already converted to decimal)
+            netThermalDemand_j_51 = efficiency !== 0 ? hotWaterEnergyDemand_j50 / efficiency : 0;
+        } else {
+            // Use AFUE from k_52 for Gas/Oil systems
+            const afue = getNumericValue("k_52", 0.9);
+            netThermalDemand_j_51 = afue !== 0 ? hotWaterEnergyDemand_j50 / afue : 0;
+        }
         setCalculatedValue("j_51", netThermalDemand_j_51, 'number-2dp-comma');
         
         const recoveryOption_d53 = getNumericValue("d_53");
@@ -880,6 +889,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         // StateManager listeners
         if (window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.addListener("d_63", calculateAll); // Occupancy
+            window.TEUI.StateManager.addListener("k_52", calculateAll); // AFUE changes
         }
     }
     
@@ -895,6 +905,12 @@ window.TEUI.SectionModules.sect07 = (function() {
         // Register dependencies with StateManager
         if (window.TEUI && window.TEUI.StateManager) {
             const sm = window.TEUI.StateManager;
+            
+            // Register dependencies for j_51 (Net Thermal Demand)
+            sm.registerDependency('j_50', 'j_51'); // Water energy demand affects thermal demand
+            sm.registerDependency('d_51', 'j_51'); // System type affects j_51 calculation
+            sm.registerDependency('d_52', 'j_51'); // Efficiency affects j_51 for Heatpump/Electric
+            sm.registerDependency('k_52', 'j_51'); // AFUE affects j_51 for Gas/Oil
             
             // Register dependencies for k_49 (DHW Emissions)
             sm.registerDependency('d_51', 'k_49'); // Energy source affects emissions
