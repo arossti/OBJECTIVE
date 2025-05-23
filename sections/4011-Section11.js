@@ -761,6 +761,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         const d97Slider = document.querySelector('input[type="range"][data-field-id="d_97"]');
         if (d97Slider) {
             if (!d97Slider.hasSliderListener) { // Prevent adding multiple listeners
+                // LIVE FEEDBACK: Update StateManager + immediate calculations for responsive UI
                 d97Slider.addEventListener('input', function() {
                     const percentageValue = parseFloat(this.value);
                     if (isNaN(percentageValue)) return;
@@ -768,49 +769,32 @@ window.TEUI.SectionModules.sect11 = (function() {
                     // Update the display span
                     const displaySpan = this.parentElement.querySelector('.slider-value');
                     if (displaySpan) {
-                        displaySpan.textContent = percentageValue.toFixed(0) + '%'; // Show percentage
+                        displaySpan.textContent = percentageValue.toFixed(0) + '%';
                     }
                     
-                    // Store the PERCENTAGE value string in StateManager
-                    const valueToStore = percentageValue.toString();
-
-                    // Update StateManager
+                    // Update StateManager (triggers listeners, but may be too slow for live feedback)
                     if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue('d_97', valueToStore, 'user-modified');
+                        window.TEUI.StateManager.setValue('d_97', percentageValue.toString(), 'user-modified');
                     }
                     
-                    // Recalculate everything after slider moves (input event)
-                    calculateAll(); 
+                    // LIVE FEEDBACK: Direct calculation calls for immediate visual response
+                    // This ensures g_101/g_102 update in real-time during slider drag
+                    calculateAll(); // Update Section 11 calculations
+                    if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
+                        window.TEUI.SectionModules.sect12.calculateCombinedUValue(); // Update g_101, g_102 immediately
+                    }
                 });
 
-                // Add a CHANGE event listener to trigger Section 12 update when user releases slider
+                // ARCHITECTURAL COMPLIANCE: Final change event relies on StateManager dependency chain
                 d97Slider.addEventListener('change', function() {
                     const percentageValue = parseFloat(this.value);
                     if (isNaN(percentageValue)) return;
-                    const valueToStore = percentageValue.toString();
-
-                    // Ensure StateManager is updated with the final value
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue('d_97', valueToStore, 'user-modified');
-                    }
                     
-                    // Section 11's own calculateAll() is typically called by the 'input' event listener for live updates within S11.
-                    // If final state consistency within S11 on 'change' is critical before S12 calc, uncomment next line.
-                    // calculateAll(); 
-
-                    // PRAGMATIC FIX (Aug 2024): Directly trigger Section 12 recalculation.
-                    // The standard StateManager listener chain for d_97 -> Section 12 was proving unreliable,
-                    // potentially due to complex initialization timing or listener management issues.
-                    // This direct call ensures that Section 12 (which calculates U-values g_101, g_102, d_104 
-                    // based on d_97) updates immediately after the user finalizes the d_97 slider change.
-                    // This is crucial for UI consistency as these U-values affect downstream calculations visible elsewhere.
-                    // This is a documented exception to the rule of avoiding direct cross-section calls, prioritized for functionality.
-                    if (window.TEUI && TEUI.SectionModules && TEUI.SectionModules.sect12 && TEUI.SectionModules.sect12.calculateAll) {
-                        // console.log("[S11 CHANGE] Explicitly calling Section 12 calculateAll() for d_97 update."); // Log was here
-                        TEUI.SectionModules.sect12.calculateAll();
-                    } else {
-                        console.warn("[S11 CHANGE] Could not find Section 12 calculateAll to trigger for d_97 update."); // Keep this warn for now
+                    // Final value goes through StateManager - let dependency chain handle everything
+                    if (window.TEUI && window.TEUI.StateManager) {
+                        window.TEUI.StateManager.setValue('d_97', percentageValue.toString(), 'user-modified');
                     }
+                    // Note: StateManager listeners will handle full recalculation cascade
                 });
 
                 d97Slider.hasSliderListener = true; // Mark as listener attached
@@ -827,6 +811,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             window.TEUI.StateManager.addListener('h_22', calculateAll); // GF CDD (affects ground gain)
             window.TEUI.StateManager.addListener('d_22', calculateAll); // GF HDD (affects ground loss)
             window.TEUI.StateManager.addListener('i_21', calculateAll); // Capacitance Factor (affects ground gain)
+            window.TEUI.StateManager.addListener('d_97', calculateAll); // TB Penalty (affects all calculations)
             // console.log("Section 11 listeners for climate data added.");
         } else {
             // console.warn("Section 11: StateManager not available to add climate listeners.");

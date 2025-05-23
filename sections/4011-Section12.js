@@ -9,6 +9,7 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 window.TEUI.SectionModules.sect12 = (function() {
     
     let isInitialized = false;
+    let s12ListenersAdded = false; // Track if StateManager listeners have been added
     
     //==========================================================================
     // FIELD DEFINITIONS AND LAYOUT
@@ -1017,6 +1018,7 @@ window.TEUI.SectionModules.sect12 = (function() {
         getLayout: getLayout,
         initializeEventHandlers: initializeEventHandlers,
         onSectionRendered: onSectionRendered,
-        calculateAll: calculateAll
+        calculateAll: calculateAll,
+        calculateCombinedUValue: calculateCombinedUValue
     };
 })();
