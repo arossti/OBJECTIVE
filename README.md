@@ -990,6 +990,7 @@ This section outlines planned improvements for the user experience of `contented
 *Assisted with Section 16 Sankey Diagram integration, data mapping, and emissions handling logic - "Helios" (Gemini 2.5 Pro) - August 2024*
 *Assisted with Excel import refinements, calculation alignment, and UI enhancements - "Orionis" (Gemini) - August 2024*
 *Assisted with bug fixes, `README.md` updates, and UI/UX analysis (i_41 editability, S17 info panel, file handler insights) - "Stellaria" (Gemini 2.5 Pro) - May 13, 2025*
+*Assisted with AFUE integration, Excel parity calculations, cross-section coordination, and architectural debugging - "Andromeda" (Claude 3.5 Sonnet) - May 23 2025*
 
 ---
 
