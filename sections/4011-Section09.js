@@ -1219,10 +1219,92 @@ window.TEUI.SectionModules.sect09 = (function() {
         }
     }
     
+    //==========================================================================
+    // DUAL-ENGINE ARCHITECTURE
+    //==========================================================================
+
     /**
-     * Calculate all values for this section
+     * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
+     * Stores results with ref_ prefix to keep separate from Target values
      */
-    function calculateAll() {
+    function calculateReferenceModel() {
+        // console.log('[Section09] Running Reference Model calculations...');
+        
+        // Get reference values for inputs
+        const refActivityLevel = window.TEUI?.StateManager?.getReferenceValue("d_64") || getFieldValue("d_64");
+        const refDailyHours = window.TEUI?.StateManager?.getReferenceValue("g_63") || getFieldValue("g_63");
+        const refEfficiency = window.TEUI?.StateManager?.getReferenceValue("g_67") || getFieldValue("g_67");
+        const refElevators = window.TEUI?.StateManager?.getReferenceValue("d_68") || getFieldValue("d_68");
+        const refArea = window.TEUI?.StateManager?.getReferenceValue("h_15") || getFieldValue("h_15");
+        const refCoolingDays = window.TEUI?.StateManager?.getReferenceValue("m_19") || getFieldValue("m_19");
+        
+        // Calculate activity watts using reference values
+        const refActivityWatts = calculateActivityWatts(refActivityLevel);
+        const refAnnualHours = calculateOccupiedHoursRatio(refDailyHours);
+        
+        // Calculate occupant energy (Reference)
+        const refOccupants = window.TEUI?.StateManager?.getReferenceValue("d_63") || getFieldValue("d_63");
+        const refOccupantEnergy = (window.TEUI.parseNumeric(refOccupants) || 0) * 
+                                 (window.TEUI.parseNumeric(refActivityWatts) || 0) * 
+                                 (window.TEUI.parseNumeric(refAnnualHours) || 0) / 1000;
+        
+        // Calculate plug loads (Reference)
+        const refPlugDensity = window.TEUI?.StateManager?.getReferenceValue("d_65") || getFieldValue("d_65");
+        const refPlugLoads = (window.TEUI.parseNumeric(refPlugDensity) || 0) * 
+                            (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
+        
+        // Calculate lighting loads (Reference)
+        const refLightingDensity = window.TEUI?.StateManager?.getReferenceValue("d_66") || getFieldValue("d_66");
+        const refLightingLoads = (window.TEUI.parseNumeric(refLightingDensity) || 0) * 
+                                (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
+        
+        // Calculate equipment loads (Reference) - simplified version
+        const refEquipmentDensity = window.TEUI?.StateManager?.getReferenceValue("d_67") || getFieldValue("d_67");
+        const refEquipmentLoads = (window.TEUI.parseNumeric(refEquipmentDensity) || 0) * 
+                                 (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
+        
+        // Calculate DHW system losses (Reference)
+        const refDHWLosses = window.TEUI?.StateManager?.getReferenceValue("d_54") || 
+                            window.TEUI?.StateManager?.getReferenceValue("h_69") || 0;
+        
+        // Calculate totals
+        const refSubtotal = refPlugLoads + refLightingLoads + refEquipmentLoads;
+        const refTotal = refOccupantEnergy + refSubtotal + (window.TEUI.parseNumeric(refDHWLosses) || 0);
+        
+        // Calculate heating/cooling split
+        const coolingDaysNum = window.TEUI.parseNumeric(refCoolingDays) || 120;
+        const heatingDays = 365 - coolingDaysNum;
+        const refHeatingFraction = heatingDays / 365;
+        const refCoolingFraction = coolingDaysNum / 365;
+        
+        // Store Reference Model results with ref_ prefix
+        if (window.TEUI?.StateManager) {
+            // Individual components
+            window.TEUI.StateManager.setValue('ref_h_64', refOccupantEnergy.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_h_65', refPlugLoads.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_h_66', refLightingLoads.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_h_67', refEquipmentLoads.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_h_69', refDHWLosses.toString(), 'calculated');
+            
+            // Subtotal and total
+            window.TEUI.StateManager.setValue('ref_h_70', refSubtotal.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_h_71', refTotal.toString(), 'calculated');
+            
+            // Heating/cooling splits
+            window.TEUI.StateManager.setValue('ref_i_71', (refTotal * refHeatingFraction).toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_71', (refTotal * refCoolingFraction).toString(), 'calculated');
+        }
+        
+        // console.log('[Section09] Reference Model values stored');
+    }
+
+    /**
+     * TARGET MODEL ENGINE: Calculate all Column H values using Application state
+     * This is the existing calculateAll logic, refactored
+     */
+    function calculateTargetModel() {
+        // console.log('[Section09] Running Target Model calculations...');
+        
         // Calculate individual components
         const activityLevel = getFieldValue("d_64"); 
         const activityWatts = calculateActivityWatts(activityLevel); 
@@ -1240,6 +1322,16 @@ window.TEUI.SectionModules.sect09 = (function() {
         
         // Calculate subtotals and totals
         calculateTotals();
+    }
+
+    /**
+     * DUAL-ENGINE ORCHESTRATION
+     * Replaces the original calculateAll function
+     */
+    function calculateAll() {
+        // Run both engines independently
+        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+        calculateTargetModel();     // Calculates Target values (existing logic)
     }
     
     /**
