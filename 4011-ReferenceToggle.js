@@ -220,7 +220,7 @@ TEUI.ReferenceToggle = (function() {
                 } else {
                     // In Design Mode - restore normal editability
                     element.classList.remove('reference-locked');
-                    const isNormallyEditable = ['editable', 'number', 'dropdown', 'year_slider', 'percentage', 'coefficient'].includes(fieldDef.type);
+                    const isNormallyEditable = ['editable', 'number', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'coefficient_slider'].includes(fieldDef.type);
                     
                     const inputElement = element.querySelector('input, select, textarea') || 
                                        (element.matches('input, select, textarea') ? element : null);
