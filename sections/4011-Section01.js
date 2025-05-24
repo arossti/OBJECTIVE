@@ -198,12 +198,14 @@ window.TEUI.SectionModules.sect01 = (function() {
     function calculateReferenceModel() {
         console.log('[Section01] Running Reference Model calculations...');
         
-        // All inputs from Reference state
-        const refTargetEnergy = getRefNumericValue('j_32', 0);
-        const refTargetEmissions = getRefNumericValue('k_32', 0);
-        const refArea = getRefNumericValue('h_15', 1);
-        const refServiceLife = getRefNumericValue('h_13', 50);
-        const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82);
+        // CALCULATED VALUES come from Application state (results of other sections' reference calculations)
+        const refTargetEnergy = getAppNumericValue('j_32', 0);         // From Section04 calculations
+        const refTargetEmissions = getAppNumericValue('k_32', 0);     // From Section04 calculations
+        
+        // INPUT VALUES come from Reference state (or appropriate source)
+        const refArea = getAppNumericValue('h_15', 1);                // Building area (typically same in both modes)
+        const refServiceLife = getAppNumericValue('h_13', 50);        // Service life (typically same in both modes)  
+        const refEmbodiedCarbon = getAppNumericValue('i_41', 345.82); // Embodied carbon (typically same in both modes)
 
         // Calculate Reference TEUI (e_10)
         let referenceTEUI = 0;
@@ -231,6 +233,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
 
         console.log(`[Section01] Reference Model results: TEUI=${referenceTEUI}, Annual=${referenceAnnualCarbon}, Lifetime=${referenceLifetimeCarbon}`);
+        console.log(`[Section01] Reference inputs: j_32=${refTargetEnergy}, k_32=${refTargetEmissions}, h_15=${refArea}`);
     }
 
     //==========================================================================
