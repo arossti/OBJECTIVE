@@ -391,6 +391,58 @@ S10 (Solar Gains) → S14 (TEDI)
 
 This approach ensures that when S01 needs accurate results from S04, both the Reference and Target calculation chains are complete and accurate.
 
+## 7. Common Pitfalls & Troubleshooting
+
+### 7.1 Section 11 (Transmission Losses) - Function Call Errors
+
+**Issue**: After dual-engine refactor, Section 11 calculations can fail showing all zeros for heat loss/gain calculations.
+
+**Root Cause**: Invalid function calls that prevent the entire calculation chain from running. Example:
+```javascript
+// INCORRECT - This function doesn't exist:
+const refValue = window.TEUI.ReferenceManager.getValue(fieldId);
+
+// CORRECT - Use StateManager for reference values:
+const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+```
+
+**Symptoms**:
+- All heat loss/gain values show 0.00
+- Console error: "TEUI.ReferenceValues.getValue is not a function" or similar
+- Total building TEUI drops significantly (e.g., from 93.6 to 74.9 kWh/m²·yr)
+
+**Solution**:
+1. Check console for function errors in Section 11 calculations
+2. Ensure all reference value retrievals use `StateManager.getReferenceValue()`
+3. Never invent new getter functions - use existing StateManager API
+4. After fixing, refresh browser to test calculations
+
+**Prevention**:
+- When implementing dual-engine support, use consistent StateManager API calls
+- Don't assume ReferenceManager has value getter methods
+- Test calculations immediately after refactoring
+
+### 7.2 Timing Issues - Initial Load Shows Zeros
+
+**Issue**: Tables briefly show zeros before settling to correct values after a few seconds.
+
+**Root Cause**: Calculation timing during initialization sequence.
+
+**Current Status**: Known issue, acceptable for now. Will be addressed in future optimization.
+
+### 7.3 Similar Risk Sections
+
+Sections with similar architecture that may face the same issues:
+- **Section 10 (Radiant Gains)**: Uses climate data and area calculations similar to Section 11
+- **Section 12 (Volume & Surface)**: Complex calculations dependent on multiple inputs
+- **Section 13 (Mechanical Loads)**: Multiple calculation paths that could fail silently
+
+**Best Practice**: When implementing dual-engine support in these sections:
+1. Verify all function calls are valid before committing
+2. Check console for errors after implementation
+3. Test with actual calculations, not just UI changes
+4. Use existing StateManager API consistently
+
 ## Appendix A: CSV Export Field Verification (vs. `4011-ExcelMapper.js`)
 
 **Date of Analysis:** 2025-05-16
