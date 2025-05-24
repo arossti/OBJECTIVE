@@ -778,6 +778,16 @@ window.TEUI.SectionModules.sect02 = (function() {
         // Initialize event handlers
         initializeEventHandlers();
         
+        // Ensure default reference standard is set
+        if (window.TEUI?.StateManager) {
+            const currentStandard = window.TEUI.StateManager.getValue('d_13');
+            if (!currentStandard) {
+                // Set the default reference standard
+                window.TEUI.StateManager.setValue('d_13', 'OBC SB10 5.5-6 Z6', 'default');
+                console.log('[Section02] Set default reference standard: OBC SB10 5.5-6 Z6');
+            }
+        }
+        
         // Run initial calculations
         calculateAll();
     }
