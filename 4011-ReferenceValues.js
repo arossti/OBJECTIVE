@@ -570,11 +570,11 @@ function getStandards() { // Wrapper for backward compatibility
 };
 */
 // For now, to ensure no immediate breakage if other parts of the app use the old IIFE style:
-window.TEUI.ReferenceValues = {
-    getStandardFields: getStandardFields,
-    getStandards: getStandards,
-    _data: _data,
-    // Adding new simpler accessors:
-    getStandardData: getStandardData,
-    getAllStandardNames: getAllStandardNames
-};
+const referenceStandardsData = TEUI.ReferenceValues; // Save the actual data
+
+// Add helper functions to the existing object without overwriting it
+TEUI.ReferenceValues.getStandardFields = getStandardFields;
+TEUI.ReferenceValues.getStandards = getStandards;
+TEUI.ReferenceValues._data = referenceStandardsData; // Backup reference to data
+TEUI.ReferenceValues.getStandardData = getStandardData;
+TEUI.ReferenceValues.getAllStandardNames = getAllStandardNames;

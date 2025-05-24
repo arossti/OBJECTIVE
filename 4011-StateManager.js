@@ -987,7 +987,7 @@ TEUI.StateManager = (function() {
             Object.keys(allUserEditableFields).forEach(fieldId => {
                 activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
             });
-            console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+            console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet. d_53 value:', activeReferenceDataSet['d_53']);
         } else {
             console.warn('[StateManager] Could not get allUserEditableFields from FieldManager for Step 1.');
             // Fallback: try to copy from current 'fields' if FieldManager helper isn't ready/available
@@ -998,7 +998,7 @@ TEUI.StateManager = (function() {
                  }
             });
             if(Object.keys(activeReferenceDataSet).length > 0){
-                console.log('[StateManager] Step 1 (Fallback): Copied from current fields map to activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+                console.log('[StateManager] Step 1 (Fallback): Copied from current fields map to activeReferenceDataSet. d_53 value:', activeReferenceDataSet['d_53']);
             }
         }
         
@@ -1010,36 +1010,45 @@ TEUI.StateManager = (function() {
                 activeReferenceDataSet[fieldId] = referenceModeDefaults[fieldId];
             }
         });
-        console.log('[StateManager] Step 2: Applied Reference Mode Defaults. Data:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+        console.log('[StateManager] Step 2: Applied Reference Mode Defaults. d_53 value:', activeReferenceDataSet['d_53']);
 
         // Step 3: Overlay Explicit Standard Overrides
         console.log(`[StateManager] Attempting to access TEUI.ReferenceValues for standardKey: "${standardKey}"`);
-        // Safely stringify, handling potential circularity or large objects if TEUI.ReferenceValues is huge, though it shouldn't be.
-        let currentRefValuesSnapshot = "TEUI or TEUI.ReferenceValues undefined";
+        
+        // DEBUG: Check if TEUI.ReferenceValues exists
+        console.log('[StateManager] TEUI.ReferenceValues exists?', !!(window.TEUI && window.TEUI.ReferenceValues));
         if (window.TEUI && window.TEUI.ReferenceValues) {
-            try {
-                currentRefValuesSnapshot = JSON.parse(JSON.stringify(window.TEUI.ReferenceValues));
-            } catch (e) {
-                currentRefValuesSnapshot = "Error stringifying TEUI.ReferenceValues";
+            console.log('[StateManager] Available standards:', Object.keys(window.TEUI.ReferenceValues));
+            console.log('[StateManager] Exact standardKey being requested:', JSON.stringify(standardKey));
+            
+            // Check if the exact standard exists
+            const exactMatch = window.TEUI.ReferenceValues[standardKey];
+            console.log('[StateManager] Exact match found?', !!exactMatch);
+            if (exactMatch) {
+                console.log('[StateManager] Standard data:', exactMatch);
+                console.log('[StateManager] d_53 in standard?', exactMatch.hasOwnProperty('d_53'));
+                if (exactMatch.hasOwnProperty('d_53')) {
+                    console.log('[StateManager] d_53 value in standard:', exactMatch['d_53']);
+                }
             }
         }
-        console.log("[StateManager] Current TEUI.ReferenceValues object snapshot:", currentRefValuesSnapshot);
 
         // FIXED: Access the reference data directly from TEUI.ReferenceValues[standardKey]
         const standardOverrideData = window.TEUI && TEUI.ReferenceValues && TEUI.ReferenceValues[standardKey] ? TEUI.ReferenceValues[standardKey] : undefined;
 
         if (standardOverrideData) {
+            console.log('[StateManager] Found standard override data, applying...');
             Object.keys(standardOverrideData).forEach(fieldId => {
+                console.log(`[StateManager] Checking field: ${fieldId}, value: ${standardOverrideData[fieldId]}`);
                 // Apply if the field is already in our dataset (meaning it's a recognized user-editable field)
                 if (activeReferenceDataSet.hasOwnProperty(fieldId) || (allUserEditableFields && allUserEditableFields[fieldId])) { 
+                     console.log(`[StateManager] Applying ${fieldId} = ${standardOverrideData[fieldId]}`);
                      activeReferenceDataSet[fieldId] = standardOverrideData[fieldId];
                 } else {
-                    // This case should be rare if allUserEditableFields is comprehensive
-                    // console.warn(`[StateManager] Standard ${standardKey} defines field ${fieldId} not in known user-editable fields or current app state during loadReferenceData.`);
-                    // activeReferenceDataSet[fieldId] = standardOverrideData[fieldId]; // Or decide to ignore
+                    console.warn(`[StateManager] Standard ${standardKey} defines field ${fieldId} not in known user-editable fields`);
                 }
             });
-            console.log('[StateManager] Step 3: Applied standard overrides. Data:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+            console.log('[StateManager] Step 3: Applied standard overrides. d_53 value:', activeReferenceDataSet['d_53']);
         } else {
             console.warn(`[StateManager] No override data found for standard: ${standardKey}. Available standards:`, Object.keys(window.TEUI?.ReferenceValues || {}));
         }
@@ -1054,7 +1063,8 @@ TEUI.StateManager = (function() {
                 }
             });
         }
-        console.log('[StateManager] Final activeReferenceDataSet:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
+        console.log('[StateManager] FINAL d_53 value in activeReferenceDataSet:', activeReferenceDataSet['d_53']);
+        console.log('[StateManager] Final activeReferenceDataSet keys:', Object.keys(activeReferenceDataSet).length);
     }
 
     /**
