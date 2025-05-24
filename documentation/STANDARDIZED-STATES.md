@@ -1214,7 +1214,7 @@ const formatTypeMap = {
 
 **Implementation Note:** This pattern eliminates the sporadic behavior where Reference Mode toggle requires "calculation bumps" to work consistently. The key is proper event handling setup during field initialization and consistent StateManager integration patterns.
 
-## 5.1 Current Implementation Status (May 2025)
+## 5.1 Current Implementation Status (November 2024)
 
 ### ✅ Completed Components:
 - **Phase A1**: Unified data structure for user-editable fields
@@ -1223,33 +1223,67 @@ const formatTypeMap = {
 - **Basic StateManager dual-state infrastructure**: Has both `fields` and `activeReferenceDataSet`
 - **Reference Mode Toggle**: Basic functionality exists (though not properly decoupled from calculations)
 
-### 🔄 Partially Implemented (~60% Complete):
-- **Phase B**: StateManager has some dual-state methods but needs:
-  - ❌ Explicit `getApplicationValue()` and `getReferenceValue()` methods
-  - ❌ Proper `loadReferenceData()` implementation
-  - ✅ Basic Reference Mode toggle exists but needs decoupling from calculations
-  
-- **Phase C**: Dual-engine calculations in sections:
-  - ✅ Section 07 (Water): Has dual engines BUT `calculateAll()` doesn't call both
-  - ✅ Section 01 (Key Values): Has dual engines BUT depends on S04 which likely doesn't
-  - ❓ Other sections: Need assessment and implementation
+### 🔧 Partially Implemented:
+- **Section 07 (Water Use)**: Has dual-engine calculations (`calculateReferenceModel` and `calculateTargetModel`)
+  - Successfully calculates different values for Reference vs Target
+  - Stores Reference values with `ref_` prefix (e.g., `ref_j_50`, `ref_k_51`)
+  - BUT: Only visible when UI is in Reference Mode
 
-### ❌ Not Yet Implemented:
-- **Phase C (Complete)**: Most sections lack dual-engine support
-- **Phase E**: 3-row CSV export (currently only 2-row export exists)
-- **Phase H**: T-cell comparison system
-- **Critical Fix**: `calculateAll()` functions don't trigger both engines continuously
+### ❌ Critical Gap Identified:
+**Column E/H Display Issue**: The fundamental requirement that Column E ALWAYS shows Reference values and Column H ALWAYS shows Target values (regardless of UI mode) is not working because:
 
-### 🎯 Immediate Next Steps:
-1. **Fix Section 07**: Modify `calculateAll()` to always run both engines
-2. **Verify StateManager methods**: Ensure `getApplicationValue()` and `getReferenceValue()` exist
-3. **Test Column E behavior**: Confirm Reference calculations display in Column E
-4. **Propagate pattern**: Apply the fix to other sections in dependency order
+1. **Incomplete Dependency Chain**: Section 01 depends on Section 04 for energy totals (j_32, k_32)
+2. **Section 04 lacks dual-engine support**: Only calculates using Application state values
+3. **Without ref_j_32 and ref_k_32**: Section 01's Reference calculations use the same inputs as Target calculations
+4. **Result**: Both columns show identical values in Target mode
 
-### ⚠️ Critical Issue:
-**The dual engines exist but are not running continuously.** They only trigger when entering Reference Mode because:
-- `calculateAll()` functions use single-engine calculations
-- Reference calculations only trigger on `d_13` changes or Reference Mode toggle
-- This prevents Column E from showing Reference results in normal operation
+### 📋 Immediate Implementation Plan:
+
+#### Step 1: Implement Dual-Engine in Section 04
+- Add `calculateReferenceModel()` and `calculateTargetModel()` functions
+- Calculate `ref_j_32` and `ref_k_32` using Reference values from upstream sections
+- Store Reference results with `ref_` prefix pattern
+
+#### Step 2: Update Section 01 Display Logic  
+- Modify `updateTEUIDisplay()` to always use `ref_` prefixed values for Column E
+- Ensure Column H continues using Application state values
+- Remove dependency on UI mode for value selection
+
+#### Step 3: Propagate Pattern Through Dependency Chain
+Following the dependency flow:
+1. **S11 (Envelope)** → S12 (U-values) → S14 (TEDI)
+2. **S13 (Mechanical)** → S14 (TEDI)  
+3. **S09 (Internal Gains)** → S14 (TEDI)
+4. **S10 (Solar Gains)** → S14 (TEDI)
+5. **S14 (TEDI)** → S15 (TEUI)
+6. **S15 (TEUI)** → S04 (Energy) → S01 (Dashboard)
+
+### 🎯 Success Criteria:
+
+1. **Visual Test**: 
+   - In Target Mode: Column E shows Reference values (e.g., 180+ for TEUI with OBC SB10)
+   - In Target Mode: Column H shows Target values (e.g., 94 for TEUI)
+   - Values remain constant when toggling between modes
+
+2. **Data Test**:
+   - `StateManager.getApplicationValue('ref_e_10')` returns Reference TEUI
+   - `StateManager.getApplicationValue('h_10')` returns Target TEUI
+   - `ref_` values exist for all calculated fields in dual-engine sections
+
+3. **Calculation Test**:
+   - Changing reference standard (d_13) updates Column E values
+   - Changing design inputs updates Column H values
+   - No recursion or calculation loops
+
+4. **Export Test**:
+   - CSV Row 2 contains Target/Application values
+   - CSV Row 3 contains Reference values
+   - Import correctly restores both states
+
+### 🚫 Current State Summary:
+- **~10% Complete** on dual-engine implementation across all sections
+- **Section 07** is the only section with working dual-engine calculations
+- **Critical path blocked** at Section 04, preventing proper display in Section 01
+- **Reference values only visible** when entering Reference Mode UI
 
 ## 6. Dependency Chain Analysis & Implementation Strategy
