@@ -995,6 +995,11 @@ window.TEUI.SectionModules.sect10 = (function() {
     // Define configuration for orientation rows (similar to Section 11)
     const orientationConfig = [73, 74, 75, 76, 77, 78];
     
+    // T-cell comparison configuration for Section 10
+    const baselineValues = {
+        80: { type: 'method', value: 'NRC 40%' }  // Net Useable Gains Method - only this needs reference comparison
+    };
+    
     //==========================================================================
     // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
     //==========================================================================
@@ -1162,46 +1167,166 @@ window.TEUI.SectionModules.sect10 = (function() {
     //==========================================================================
     // EVENT HANDLING AND CALCULATIONS
     //==========================================================================
+    
+    /**
+     * Update reference indicators for all rows
+     */
+    function updateAllReferenceIndicators() {
+        try {
+            // Only update reference indicator for method row (80)
+            // Rows 73-78 don't need reference comparison - they show gain factors in Column M
+            updateReferenceIndicators(80);
+        } catch (error) {
+            console.error('Error updating reference indicators:', error);
+        }
+    }
+    
+    /**
+     * Update reference indicators (M and N columns) for a specific row
+     * @param {number} rowId - The row number to update
+     */
+    function updateReferenceIndicators(rowId) {
+        const baseline = baselineValues[rowId];
+        if (!baseline) return;
+        
+        const mFieldId = `m_${rowId}`;
+        const nFieldId = `n_${rowId}`;
+        let isGood = true;
+        
+        try {
+            if (baseline.type === 'method') {
+                // For method comparison (exact match)
+                const currentMethod = getFieldValue(`d_${rowId}`);
+                isGood = (currentMethod === baseline.value);
+                
+                // For method, show the reference method in Column M
+                const mElement = document.querySelector(`[data-field-id="${mFieldId}"]`);
+                if (mElement) mElement.textContent = baseline.value;
+            }
+            
+            // Update Column N (Pass/Fail)
+            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElement) {
+                nElement.textContent = isGood ? "✓" : "✗";
+                setElementClass(nFieldId, isGood ? 'checkmark' : 'warning');
+            }
+        } catch (error) {
+            console.error(`Error updating reference indicators for row ${rowId}:`, error);
+        }
+    }
 
     /**
      * Calculate all values for this section
      * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
      */
     function calculateAll() {
-        // console.log("Calculating Section 10");
+        console.log("[Section10] Running dual-engine calculations...");
+        
+        // Run both engines independently
+        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+        calculateTargetModel();     // Calculates Target values (existing logic)
+        
+        console.log("[Section10] Dual-engine calculations complete");
+    }
+    
+    /**
+     * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+     * Stores results with ref_ prefix to keep separate from Target values
+     */
+    function calculateReferenceModel() {
+        console.log("[Section10] Running Reference Model calculations...");
+        
+        try {
+            // Calculate individual orientation rows using reference values
+            const orientationResults = {};
+            orientationConfig.forEach(rowId => {
+                orientationResults[rowId] = calculateOrientationGains(rowId.toString(), true); // true = isReferenceCalculation
+            });
+            
+            // Calculate subtotals using reference results
+            const subtotalResults = calculateSubtotals(true); // true = isReferenceCalculation
+            
+            // Calculate utilization factors using reference values
+            calculateUtilizationFactors(true); // true = isReferenceCalculation
+            
+            // Store reference results with ref_ prefix
+            if (window.TEUI?.StateManager) {
+                // Store individual row reference values
+                orientationConfig.forEach(rowId => {
+                    const rowStr = rowId.toString();
+                    const results = orientationResults[rowId] || { heatingGains: 0, coolingGains: 0 };
+                    window.TEUI.StateManager.setValue(`ref_i_${rowStr}`, results.heatingGains.toString(), 'calculated');
+                    window.TEUI.StateManager.setValue(`ref_k_${rowStr}`, results.coolingGains.toString(), 'calculated');
+                });
+                
+                // Store subtotal reference values
+                window.TEUI.StateManager.setValue('ref_i_79', subtotalResults.heatingGains.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_79', subtotalResults.coolingGains.toString(), 'calculated');
+                
+                // Note: Utilization factors are stored within calculateUtilizationFactors
+            }
+            
+            console.log("[Section10] Reference Model values stored");
+        } catch (error) {
+            console.error('[Section10] Error in Reference Model calculations:', error);
+        }
+    }
+    
+    /**
+     * TARGET MODEL ENGINE: Calculate all values using Application state
+     * This is the existing calculation logic, refactored
+     */
+    function calculateTargetModel() {
+        console.log("[Section10] Running Target Model calculations...");
+        
         try {
             // Calculate individual orientation rows
             orientationConfig.forEach(rowId => {
-                calculateOrientationGains(rowId.toString());
+                calculateOrientationGains(rowId.toString(), false); // false = Target calculation
             });
             
             // Calculate subtotals
-            calculateSubtotals();
+            calculateSubtotals(false); // false = Target calculation
             
             // Calculate utilization factors
-            calculateUtilizationFactors();
+            calculateUtilizationFactors(false); // false = Target calculation
+            
+            // Update reference indicators for all rows
+            updateAllReferenceIndicators();
         } catch (error) {
-            // console.error('Error calculating all values:', error);
+            console.error('[Section10] Error in Target Model calculations:', error);
         }
 
-        // DEBUG: Log d_74 textContent at the end of S10 calculateAll
+        // DEBUG: Log d_74 textContent at the end of Target Model
         const d74Element = document.getElementById('d_74');
         if (d74Element) {
-            console.log(`[S10 calculateAll DEBUG END] d_74 textContent: "${d74Element.textContent}"`);
+            console.log(`[S10 calculateTargetModel DEBUG END] d_74 textContent: "${d74Element.textContent}"`);
         }
     }
     
     /**
      * Calculate solar gains for a specific orientation
      * @param {string} rowId - Row ID for the element (e.g., "73" for doors)
+     * @param {boolean} isReferenceCalculation - Whether to use reference values
      */
-    function calculateOrientationGains(rowId) {
+    function calculateOrientationGains(rowId, isReferenceCalculation = false) {
         try {
             // Get relevant values using getFieldValue and the global parseNumeric
             const area = window.TEUI.parseNumeric(getFieldValue(`d_${rowId}`));
             const orientation = getFieldValue(`e_${rowId}`);
-            // SHGC is now a direct coefficient (e.g., 0.50, 0.60) from the coefficient_slider
-            const shgc = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`)); 
+            
+            // Get SHGC value based on calculation type
+            let shgc;
+            if (isReferenceCalculation) {
+                // For Reference calculations, try to get reference SHGC value
+                const refFieldId = `f_${rowId}`;
+                shgc = window.TEUI?.StateManager?.getReferenceValue(refFieldId) || 
+                       window.TEUI.parseNumeric(getFieldValue(refFieldId));
+            } else {
+                // For Target calculations, use application value
+                shgc = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`));
+            }
+            
             // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
             const winterShadingDecimal = window.TEUI.parseNumeric(getFieldValue(`g_${rowId}`), 0) / 100; 
             const summerShadingDecimal = window.TEUI.parseNumeric(getFieldValue(`h_${rowId}`), 100) / 100;
@@ -1210,7 +1335,10 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             const gainFactor = calculateGainFactor(orientation, climateZone); // This is M73 (Gain Factor based on SHGC=0.5)
             
-            setCalculatedValue(`m_${rowId}`, formatNumber(gainFactor));
+            // Only update display for Target calculations
+            if (!isReferenceCalculation) {
+                setCalculatedValue(`m_${rowId}`, gainFactor); // Pass raw value, not formatted string
+            }
             
             // SHGC Normalization Factor: Adjusts gains based on actual SHGC relative to the baseline SHGC of 0.5 used for M73 values.
             const shgcNormalizationFactor = shgc / 0.5; 
@@ -1225,7 +1353,16 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             const cost = getNumericValue('l_12') * (coolingGains - heatingGains);
             
-            // Update calculated fields
+            // For Reference calculations, return the calculated values
+            if (isReferenceCalculation) {
+                return {
+                    heatingGains,
+                    coolingGains,
+                    gainFactor
+                };
+            }
+            
+            // For Target calculations, update the DOM
             setCalculatedValue(`i_${rowId}`, heatingGains);
             setCalculatedValue(`k_${rowId}`, coolingGains);
             setCalculatedValue(`p_${rowId}`, cost, 'currency');
@@ -1236,37 +1373,69 @@ window.TEUI.SectionModules.sect10 = (function() {
                 gainFactor
             };
         } catch (error) {
-            // console.error(`Error calculating orientation gains for row ${rowId}:`, error);
+            console.error(`Error calculating orientation gains for row ${rowId}:`, error);
             return { heatingGains: 0, coolingGains: 0, gainFactor: 0 };
         }
     }
     
     /**
      * Calculate subtotals for solar gains
+     * @param {boolean} isReferenceCalculation - Whether to use reference values
      */
-    function calculateSubtotals() {
+    function calculateSubtotals(isReferenceCalculation = false) {
         try {
             // Calculate total heating gains
-            const heatingGains = [
-                getNumericValue("i_73"), // Doors
-                getNumericValue("i_74"), // North
-                getNumericValue("i_75"), // East
-                getNumericValue("i_76"), // South
-                getNumericValue("i_77"), // West
-                getNumericValue("i_78")  // Skylights
-            ].reduce((sum, val) => sum + val, 0);
+            let heatingGains, coolingGains;
             
-            // Calculate total cooling gains
-            const coolingGains = [
-                getNumericValue("k_73"), // Doors
-                getNumericValue("k_74"), // North
-                getNumericValue("k_75"), // East
-                getNumericValue("k_76"), // South
-                getNumericValue("k_77"), // West
-                getNumericValue("k_78")  // Skylights
-            ].reduce((sum, val) => sum + val, 0);
+            if (isReferenceCalculation) {
+                // For Reference calculations, use ref_ prefixed values
+                heatingGains = [
+                    window.TEUI?.StateManager?.getValue("ref_i_73") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_i_74") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_i_75") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_i_76") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_i_77") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_i_78") || 0
+                ].reduce((sum, val) => sum + parseFloat(val || 0), 0);
+                
+                coolingGains = [
+                    window.TEUI?.StateManager?.getValue("ref_k_73") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_k_74") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_k_75") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_k_76") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_k_77") || 0,
+                    window.TEUI?.StateManager?.getValue("ref_k_78") || 0
+                ].reduce((sum, val) => sum + parseFloat(val || 0), 0);
+            } else {
+                // For Target calculations, use regular values
+                heatingGains = [
+                    getNumericValue("i_73"), // Doors
+                    getNumericValue("i_74"), // North
+                    getNumericValue("i_75"), // East
+                    getNumericValue("i_76"), // South
+                    getNumericValue("i_77"), // West
+                    getNumericValue("i_78")  // Skylights
+                ].reduce((sum, val) => sum + val, 0);
+                
+                coolingGains = [
+                    getNumericValue("k_73"), // Doors
+                    getNumericValue("k_74"), // North
+                    getNumericValue("k_75"), // East
+                    getNumericValue("k_76"), // South
+                    getNumericValue("k_77"), // West
+                    getNumericValue("k_78")  // Skylights
+                ].reduce((sum, val) => sum + val, 0);
+            }
             
-            // Update subtotal fields
+            // For Reference calculations, just return the values
+            if (isReferenceCalculation) {
+                return {
+                    heatingGains,
+                    coolingGains
+                };
+            }
+            
+            // For Target calculations, update the DOM
             setCalculatedValue('i_79', heatingGains, 'number');
             setCalculatedValue('k_79', coolingGains, 'number');
             setCalculatedValue('j_79', heatingGains > 0 ? 1 : 0, 'percent');
@@ -1316,35 +1485,55 @@ window.TEUI.SectionModules.sect10 = (function() {
                 coolingGains
             };
         } catch (error) {
-            // console.error('Error calculating subtotals:', error);
+            console.error('Error calculating subtotals:', error);
             return { heatingGains: 0, coolingGains: 0 };
         }
     }
     
     /**
      * Calculate utilization factors
+     * @param {boolean} isReferenceCalculation - Whether to use reference values
      */
-    function calculateUtilizationFactors() {
+    function calculateUtilizationFactors(isReferenceCalculation = false) {
         try {
             // Get total solar gains
-            const solarGains = getNumericValue("i_79");
+            let solarGains;
+            if (isReferenceCalculation) {
+                solarGains = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_79") || 0);
+            } else {
+                solarGains = getNumericValue("i_79");
+            }
             
             // Get internal gains from Section 9 if available
-            const internalGains = getNumericValue("i_71") || 0; // Default to 0 if not available
+            let internalGains;
+            if (isReferenceCalculation) {
+                internalGains = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_71") || 0);
+            } else {
+                internalGains = getNumericValue("i_71") || 0;
+            }
             
             // Calculate total gains (solar + internal)
             const totalGains = solarGains + internalGains;
-            setCalculatedValue("e_80", totalGains, 'number');
             
-            // Set the same value for PH Method reference in row 81
-            setCalculatedValue("e_81", totalGains, 'number');
+            // For Reference calculations, don't update DOM for e_80/e_81
+            if (!isReferenceCalculation) {
+                setCalculatedValue("e_80", totalGains, 'number');
+                setCalculatedValue("e_81", totalGains, 'number');
+            }
             
             //=====================================================================
             // PART 1: Calculate utilization factor based on selected method in row 80
             //=====================================================================
             
-            // Get utilization method and factor
-            const utilizationMethod = getFieldValue("d_80") || "NRC 40%"; // Default to NRC 40%
+            // Get utilization method
+            let utilizationMethod;
+            if (isReferenceCalculation) {
+                // For Reference calculations, check if standard specifies a method
+                utilizationMethod = window.TEUI?.StateManager?.getReferenceValue("d_80") || "NRC 40%";
+            } else {
+                utilizationMethod = getFieldValue("d_80") || "NRC 40%";
+            }
+            
             let utilizationFactor = 0.4; // Default to 40%
             
             // Implementation of the G80 formula based on dropdown selection
@@ -1361,13 +1550,21 @@ window.TEUI.SectionModules.sect10 = (function() {
                 // Formula: =(1-((i_79+i_71)/(i_97+i_103+m_121+i_98))^5)/(1-((i_79+i_71)/(i_97+i_103+m_121+i_98))^6)
                 
                 // Get loss values from other sections (with fallbacks)
-                const i97 = getNumericValue("i_97") || 0; // TBP Heatloss
-                const i103 = getNumericValue("i_103") || 0; // Air Leakage Heatloss
-                const m121 = getNumericValue("m_121") || 0; // Net Vent Heatloss
-                const i98 = getNumericValue("i_98") || 0; // Total Env Heatloss
+                let i97, i103, m121, i98;
+                if (isReferenceCalculation) {
+                    i97 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97") || 0);
+                    i103 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_103") || 0);
+                    m121 = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_121") || 0);
+                    i98 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_98") || 0);
+                } else {
+                    i97 = getNumericValue("i_97") || 0;
+                    i103 = getNumericValue("i_103") || 0;
+                    m121 = getNumericValue("m_121") || 0;
+                    i98 = getNumericValue("i_98") || 0;
+                }
                 
                 const numerator = totalGains; // i_79 + i_71
-                const denominator = i97 + i103 + m121 + i98; // Total Losses? Check if i98 includes others already
+                const denominator = i97 + i103 + m121 + i98; // Total Losses
                 
                 if (denominator > 0) {
                     const gamma = numerator / denominator;
@@ -1385,11 +1582,21 @@ window.TEUI.SectionModules.sect10 = (function() {
                 }
             }
             
-            // Update utilization percentage for selected method (g_80)
-            setCalculatedValue("g_80", utilizationFactor, 'percent');
-            
             // Calculate usable gains based on selected method (i_80)
             const usableGains = totalGains * utilizationFactor;
+            
+            // For Reference calculations, store values with ref_ prefix
+            if (isReferenceCalculation) {
+                if (window.TEUI?.StateManager) {
+                    window.TEUI.StateManager.setValue("ref_e_80", totalGains.toString(), 'calculated');
+                    window.TEUI.StateManager.setValue("ref_g_80", utilizationFactor.toString(), 'calculated');
+                    window.TEUI.StateManager.setValue("ref_i_80", usableGains.toString(), 'calculated');
+                }
+                return;
+            }
+            
+            // For Target calculations, update the DOM
+            setCalculatedValue("g_80", utilizationFactor, 'percent');
             setCalculatedValue("i_80", usableGains, 'number');
             
             //=====================================================================
@@ -1436,9 +1643,11 @@ window.TEUI.SectionModules.sect10 = (function() {
         } catch (error) {
             console.error('Error calculating utilization factors:', error);
             // Set error values or defaults
-            setCalculatedValue("e_80", 0); setCalculatedValue("g_80", 0, 'percent'); setCalculatedValue("i_80", 0);
-            setCalculatedValue("e_81", 0); setCalculatedValue("g_81", 0, 'percent'); setCalculatedValue("i_81", 0);
-            setCalculatedValue("i_82", 0);
+            if (!isReferenceCalculation) {
+                setCalculatedValue("e_80", 0); setCalculatedValue("g_80", 0, 'percent'); setCalculatedValue("i_80", 0);
+                setCalculatedValue("e_81", 0); setCalculatedValue("g_81", 0, 'percent'); setCalculatedValue("i_81", 0);
+                setCalculatedValue("i_82", 0);
+            }
         }
     }
     
