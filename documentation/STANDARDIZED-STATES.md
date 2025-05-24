@@ -69,6 +69,58 @@ The Reference Model integration uses a **dual calculation engine** approach that
     *   **Section 01 Key Values**: Always displays Reference results in Column E and Target results in Column H, regardless of UI toggle state
     *   **UI Updates**: Via `FieldManager.updateFieldDisplay()` with measures to prevent Reference Mode display updates from overwriting Application State
 
+### B.1 CRITICAL CLARIFICATION: Column E and Column H Display Behavior
+
+**This is the most important functional requirement of the dual-engine architecture:**
+
+1. **Column E (Reference Results) - ALWAYS Shows Reference Calculations:**
+   - **Data Source**: ALWAYS uses Reference state inputs via `getReferenceValue()`
+   - **Calculation Engine**: ALWAYS uses Reference calculation engine
+   - **Display Behavior**: ALWAYS shows Reference-calculated results
+   - **UI Mode Independence**: Shows Reference results regardless of whether UI is in "Target" or "Reference" mode
+   - **Example**: In Section 01, `e_10` (Reference TEUI) always shows the TEUI calculated from Reference state values
+
+2. **Column H (Target/Application Results) - ALWAYS Shows Application Calculations:**
+   - **Data Source**: ALWAYS uses Application state inputs via `getApplicationValue()`
+   - **Calculation Engine**: ALWAYS uses Target/Application calculation engine
+   - **Display Behavior**: ALWAYS shows Application-calculated results
+   - **UI Mode Independence**: Shows Application results regardless of whether UI is in "Target" or "Reference" mode
+   - **Example**: In Section 01, `h_10` (Target TEUI) always shows the TEUI calculated from Application state values
+
+3. **The "Show Reference" Toggle - UI Inspection Tool Only:**
+   - **Purpose**: Allows users to inspect and edit Reference INPUT values in the UI fields
+   - **Does NOT**: Change which calculation engine drives Column E vs Column H
+   - **Does NOT**: Affect the display of calculated results in Columns E and H
+   - **Does**: Switch editable field displays between Application and Reference input values
+   - **Behind the scenes**: Both calculation engines continue running regardless of toggle state
+
+4. **Continuous Dual Calculation Requirement:**
+   - **Every `calculateAll()` call**: Must trigger BOTH `calculateReferenceModel()` AND `calculateTargetModel()`
+   - **Every value change**: Must propagate through BOTH calculation engines
+   - **Cross-section dependencies**: Must maintain separate Reference and Target calculation chains
+   - **No mode checking**: Calculation functions should never check UI mode to decide whether to run
+
+5. **Implementation Pattern for Section Modules:**
+   ```javascript
+   // CORRECT: Always run both engines
+   function calculateAll() {
+       // Calculate both models every time
+       calculateReferenceModel(); // Updates Column E values
+       calculateTargetModel();    // Updates Column H values
+   }
+   
+   // INCORRECT: Mode-dependent calculations
+   function calculateAll() {
+       if (isInReferenceMode()) {
+           calculateReferenceModel();
+       } else {
+           calculateTargetModel();
+       }
+   }
+   ```
+
+This architecture ensures users can always see the comparison between Reference (baseline/code) calculations in Column E and their Target (design) calculations in Column H, providing immediate feedback on performance relative to code requirements.
+
 ### C. Calculation Dependency Chain Mapping
 
 **CRITICAL IMPLEMENTATION INSIGHT**: The dual-engine architecture must be implemented in **dependency chain order** to ensure accurate cross-section value propagation.
@@ -1161,3 +1213,43 @@ const formatTypeMap = {
 - **Format Consistency:** Display formatting should match field type requirements
 
 **Implementation Note:** This pattern eliminates the sporadic behavior where Reference Mode toggle requires "calculation bumps" to work consistently. The key is proper event handling setup during field initialization and consistent StateManager integration patterns.
+
+## 5.1 Current Implementation Status (May 2025)
+
+### ✅ Completed Components:
+- **Phase A1**: Unified data structure for user-editable fields
+- **Phase A2**: ReferenceValues.js restructured for scalability (ongoing validation)
+- **Prerequisites**: Global helper functions (`parseNumeric`, `formatNumber`) in many sections
+- **Basic StateManager dual-state infrastructure**: Has both `fields` and `activeReferenceDataSet`
+- **Reference Mode Toggle**: Basic functionality exists (though not properly decoupled from calculations)
+
+### 🔄 Partially Implemented (~60% Complete):
+- **Phase B**: StateManager has some dual-state methods but needs:
+  - ❌ Explicit `getApplicationValue()` and `getReferenceValue()` methods
+  - ❌ Proper `loadReferenceData()` implementation
+  - ✅ Basic Reference Mode toggle exists but needs decoupling from calculations
+  
+- **Phase C**: Dual-engine calculations in sections:
+  - ✅ Section 07 (Water): Has dual engines BUT `calculateAll()` doesn't call both
+  - ✅ Section 01 (Key Values): Has dual engines BUT depends on S04 which likely doesn't
+  - ❓ Other sections: Need assessment and implementation
+
+### ❌ Not Yet Implemented:
+- **Phase C (Complete)**: Most sections lack dual-engine support
+- **Phase E**: 3-row CSV export (currently only 2-row export exists)
+- **Phase H**: T-cell comparison system
+- **Critical Fix**: `calculateAll()` functions don't trigger both engines continuously
+
+### 🎯 Immediate Next Steps:
+1. **Fix Section 07**: Modify `calculateAll()` to always run both engines
+2. **Verify StateManager methods**: Ensure `getApplicationValue()` and `getReferenceValue()` exist
+3. **Test Column E behavior**: Confirm Reference calculations display in Column E
+4. **Propagate pattern**: Apply the fix to other sections in dependency order
+
+### ⚠️ Critical Issue:
+**The dual engines exist but are not running continuously.** They only trigger when entering Reference Mode because:
+- `calculateAll()` functions use single-engine calculations
+- Reference calculations only trigger on `d_13` changes or Reference Mode toggle
+- This prevents Column E from showing Reference results in normal operation
+
+## 6. Dependency Chain Analysis & Implementation Strategy
