@@ -207,17 +207,12 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
         
         referenceCalculationInProgress = true;
-        // console.log('[DUAL-DISPLAY] Section01 - Starting Reference Model calculations...');
         
         try {
             // CALCULATED VALUES come from Application state (results of other sections' reference calculations)
             // CRITICAL: Look for ref_ prefixed values first, then fall back to Application state
             const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
-            
-            // DEBUG: Log what Section 01 is reading from Section 04
-            console.log(`[DEBUG-S01] Reading ref_j_32 from S04: ${refJ32FromS04}`);
-            console.log(`[DEBUG-S01] Reading ref_k_32 from S04: ${refK32FromS04}`);
             
             // Use ref_ values if available, otherwise use regular values
             const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
@@ -227,9 +222,6 @@ window.TEUI.SectionModules.sect01 = (function() {
                                      parseFloat(refK32FromS04) : 
                                      getAppNumericValue('k_32', 0);
             
-            console.log(`[DEBUG-S01] Using refTargetEnergy: ${refTargetEnergy} (from ${refJ32FromS04 !== null ? 'ref_j_32' : 'j_32'})`);
-            console.log(`[DEBUG-S01] Using refTargetEmissions: ${refTargetEmissions} (from ${refK32FromS04 !== null ? 'ref_k_32' : 'k_32'})`);
-            
             // INPUT VALUES come from Reference state if available
             const refArea = getRefNumericValue('h_15', 1);               // Usually carries over from application
             const refServiceLife = getRefNumericValue('h_13', 50);        // May be overridden by standard
@@ -237,25 +229,12 @@ window.TEUI.SectionModules.sect01 = (function() {
             
             // Get the reference standard to check for specific values
             const referenceStandard = window.TEUI?.StateManager?.getApplicationValue('d_13');
-            // console.log('[DUAL-DISPLAY] Section01 - Reference Standard:', referenceStandard);
             
             // Get values from reference standard if available
             const refValues = window.TEUI?.ReferenceValues?.[referenceStandard] || {};
             
-            // Log inputs for debugging
-            // console.log('[DUAL-DISPLAY] Section01 - Reference Model inputs:', {
-            //     j_32: refTargetEnergy,
-            //     k_32: refTargetEmissions,
-            //     h_15: refArea,
-            //     h_13: refServiceLife,
-            //     i_41: refEmbodiedCarbon
-            // });
-            
-            // console.log('[DUAL-DISPLAY] Section01 - Checking for Reference overrides...');
-            
             // CHECK if we have reference values from standard
             if (referenceStandard && refValues) {
-                // console.log('[DUAL-DISPLAY] Section01 - Found reference data for standard:', referenceStandard);
                 // Apply any overrides from the reference standard
                 // For now, we'll just use the calculated values
             }
@@ -277,34 +256,13 @@ window.TEUI.SectionModules.sect01 = (function() {
             if (refServiceLife > 0) {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
             }
-            
-            // DEBUG: Log final Reference calculations for Column E
-            console.log(`[DEBUG-S01] Calculated Reference values for Column E:`);
-            console.log(`[DEBUG-S01]   TEUI (e_10): ${referenceTEUI} = ${refTargetEnergy} / ${refArea}`);
-            console.log(`[DEBUG-S01]   Annual Carbon (d_8): ${referenceAnnualCarbon} = ${refTargetEmissions} / ${refArea}`);
-            console.log(`[DEBUG-S01]   Lifetime Carbon (d_6): ${referenceLifetimeCarbon} = ${refEmbodiedCarbon} / ${refServiceLife} + ${referenceAnnualCarbon}`);
 
             // Output to Column E fields (Reference Results)
             if (window.TEUI?.StateManager) {
-                // console.log('[DUAL-DISPLAY] Section01 - About to store Reference values...');
                 // CRITICAL FIX: Store Reference values with ref_ prefix to keep them separate from Target values
                 window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
-                
-                console.log(`[DEBUG-S01] STORED Reference values: ref_e_10=${referenceTEUI.toFixed(1)}, ref_d_8=${referenceAnnualCarbon.toFixed(1)}, ref_d_6=${referenceLifetimeCarbon.toFixed(1)}`);
-                
-                // REMOVED: Do NOT store in regular fields - this overwrites Target values!
-                // window.TEUI.StateManager.setValue('e_10', referenceTEUI.toFixed(1), 'calculated');
-                // window.TEUI.StateManager.setValue('d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
-                // window.TEUI.StateManager.setValue('d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
-                // console.log('[DUAL-DISPLAY] Section01 - Reference values stored in StateManager');
-                
-                // TEST: Can we retrieve what we just stored?
-                // console.log('[DUAL-DISPLAY] TEST - Retrieving stored values:');
-                // console.log('[DUAL-DISPLAY]   ref_e_10 via getApplicationValue:', window.TEUI.StateManager.getApplicationValue('ref_e_10'));
-                // console.log('[DUAL-DISPLAY]   e_10 via getApplicationValue:', window.TEUI.StateManager.getApplicationValue('e_10'));
-                // console.log('[DUAL-DISPLAY]   e_10 via getReferenceValue:', window.TEUI.StateManager.getReferenceValue('e_10'));
             }
         } finally {
             referenceCalculationInProgress = false;
@@ -325,7 +283,6 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
         
         targetCalculationInProgress = true;
-        // console.log('[Section01] Running Target Model calculations...');
         
         try {
             // All inputs from Application state
@@ -443,8 +400,6 @@ window.TEUI.SectionModules.sect01 = (function() {
         updateExplanationText('h_6', targetLifetimeCarbon, referenceLifetimeCarbon);
         updateExplanationText('h_8', targetAnnualCarbon, referenceAnnualCarbon);
         updateExplanationText('h_10', targetTEUI, referenceTEUI);
-
-        // console.log(`[Section01] Percentages calculated: Annual=${annualCarbonPercent}%, TEUI=${teuiPercent}%`);
     }
 
     function updateExplanationText(fieldId, targetValue, referenceValue) {
@@ -600,8 +555,6 @@ window.TEUI.SectionModules.sect01 = (function() {
         const d8RefValue = window.TEUI.StateManager?.getApplicationValue("ref_d_8") || "17.4";
         const e10RefValue = window.TEUI.StateManager?.getApplicationValue("ref_e_10") || "341.2";
         
-        console.log(`[DEBUG-S01] RETRIEVED for Column E display: ref_d_6=${d6RefValue}, ref_d_8=${d8RefValue}, ref_e_10=${e10RefValue}`);
-        
         updateDisplayValue('d_6', d6RefValue);
         updateDisplayValue('d_8', d8RefValue);
         updateDisplayValue('e_10', e10RefValue);
@@ -719,12 +672,10 @@ window.TEUI.SectionModules.sect01 = (function() {
     function runAllCalculations() {
         // Add recursion protection
         if (calculationInProgress) {
-            // console.log('[DUAL-DISPLAY] Section01 - Calculation already in progress, skipping');
             return;
         }
         
         calculationInProgress = true;
-        // console.log('[DUAL-DISPLAY] Section01 - Running dual-engine calculations...');
         
         try {
             // Run both engines independently
@@ -734,8 +685,6 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Calculate tiers and display updates
             calculateTargetTier();      // Calculate i_10 (Target Tier for h_10)
             updateTEUIDisplay();        // Update all visual displays
-            
-            // console.log('[DUAL-DISPLAY] Section01 - Dual-engine calculations complete');
         } finally {
             calculationInProgress = false;
         }

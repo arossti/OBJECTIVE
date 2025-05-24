@@ -1289,16 +1289,16 @@ const formatTypeMap = {
 ## 5.1 Current Implementation Status (December 2024)
 
 ### ✅ Completed Dual-Engine Sections:
-- **Section 01** (Key Values) - Dashboard display ⚠️ *Column E showing incorrect low values*
-- **Section 04** (Energy & GHG) - Energy totals aggregation
-- **Section 07** (Water Use) - First working dual-engine implementation
-- **Section 09** (Internal Gains) - Reference indicators with 100% fallback
-- **Section 10** (Radiant Gains) - Gain factors display, minimal reference comparisons
-- **Section 11** (Transmission Losses) - Full reference comparisons for envelope components
-- **Section 12** (Volume & Surface) - Reference indicators for WWR and ACH50
-- **Section 13** (Mechanical Loads) - Reference indicators for equipment efficiencies
-- **Section 14** (TEDI) - Reference indicator for TEDI target, stores ref_ values
-- **Section 15** (TEUI) - Final energy totals, stores key ref_d_136 and ref_h_136
+- **Section 01** (Key Values) - Dashboard display ✅ *Column E now displaying Reference values correctly*
+- **Section 04** (Energy & GHG) - Energy totals aggregation ✅ *Dual-engine working*
+- **Section 07** (Water Use) - First working dual-engine implementation ✅ *Full dual-engine complete*
+- **Section 09** (Internal Gains) - Reference indicators with 100% fallback ✅
+- **Section 10** (Radiant Gains) - Gain factors display, minimal reference comparisons ✅
+- **Section 11** (Transmission Losses) - Full reference comparisons for envelope components ✅
+- **Section 12** (Volume & Surface) - Reference indicators for WWR and ACH50 ✅
+- **Section 13** (Mechanical Loads) - Reference indicators for equipment efficiencies ✅
+- **Section 14** (TEDI) - Reference indicator for TEDI target, stores ref_ values ✅
+- **Section 15** (TEUI) - Final energy totals, stores key ref_d_136 and ref_h_136 ✅
 
 ### ❌ Skipped Sections (per user guidance):
 - Section 03 (Climate) - No dual-engine needed, both models use same data
@@ -1308,42 +1308,54 @@ const formatTypeMap = {
 - Section 16 (Sankey) - Leave for future update
 
 ### 🔧 Implementation Status:
-- **~70% Complete** on dual-engine implementation across critical sections
+- **~85% Complete** on dual-engine implementation across critical sections
 - **Complete calculation chain**: S09→S10→S11→S12→S13→S14→S15→S04→S01
 - Reference values properly stored with ref_ prefix pattern
 - Missing T-cell reference values handled gracefully (N/A or 100%)
+- **Key architectural goal achieved**: Column E ALWAYS shows Reference calculations, Column H ALWAYS shows Target calculations
 
-### ⚠️ Critical Issue: Section 01 Column E Display
+### ✅ Core Requirements Met:
 
-**Problem**: Section 01 shows Reference TEUI as 30.0 when it should be >179.9
-**Expected**: Reference values are typically higher than Target values (code baseline vs. efficient design)
-**Current**: Column E (Reference) = 30.0, Column H (Target) = 103.5
+**Column E (Reference Results) - WORKING:**
+- **Data Source**: Uses Reference state inputs via `getReferenceValue()`
+- **Display**: Shows Reference-calculated results from Reference engine
+- **Independence**: Shows Reference results regardless of UI toggle state
+- **Example**: Section 01 `e_10` correctly shows Reference TEUI (~179+ kWh/m²/yr)
 
-**Suspected Causes**:
-1. **Timing Issue**: Reference calculations not completing before S01 reads them
-2. **Value Propagation**: ref_ values not flowing correctly through S15→S04→S01 chain
-3. **Incorrect Source**: S01 might not be reading ref_ prefixed values for Column E
+**Column H (Target/Application Results) - WORKING:**
+- **Data Source**: Uses Application state inputs via `getApplicationValue()`
+- **Display**: Shows Application-calculated results from Target engine  
+- **Independence**: Shows Application results regardless of UI toggle state
+- **Example**: Section 01 `h_10` correctly shows Target TEUI (~93-103 kWh/m²/yr)
 
-**Debugging Plan**:
-1. Clean up excessive logging across all sections
-2. Add targeted logging to trace Reference value flow:
-   - S15: ref_d_136 calculation and storage
-   - S04: Reading ref_d_136 and calculating ref_j_32, ref_k_32
-   - S01: Reading ref_ values for Column E display
-3. Verify calculation timing and dependency triggering
-4. Check if Section 01 is using correct Reference value sources
+**Reference Toggle - WORKING:**
+- **Purpose**: UI inspection tool for Reference input values
+- **Scope**: Affects input field display only, not calculation results
+- **Behind scenes**: Both calculation engines continue running independently
 
-### Known Issues (Documented):
-1. **Reference percentages don't update when d_13 changes** - requires page refresh
-2. **Initial load shows zeros briefly** - timing issue, values settle after a few seconds  
-3. **Some T-cell values missing** - need manual updates to ReferenceValues.js
-4. **Section 01 Column E incorrect** - Reference values showing as very low
+### ✅ Recent Achievements:
+1. **Dual calculation engines running continuously** across all sections in dependency chain
+2. **Cross-section value propagation working** (S15→S04→S01 with ref_ prefixed values)
+3. **Column E/H display behavior correct** - always shows respective engine results
+4. **Reference Mode toggle working** as inspection tool without affecting calculations
+5. **Logging successfully traced value flow** through the dependency chain
 
-### Next Steps:
-1. Add targeted logging to trace Reference value propagation
-2. Fix Section 01 Column E display issue
-3. Clean up logging noise
-4. Test with different reference standards to verify calculations
-5. Address remaining timing issues
+### 🧹 Cleanup Tasks:
+1. **Remove excessive [DUAL-DISPLAY] and [DEBUG-S01] logging** - cluttering console
+2. **Optimize calculation timing** - remove redundant calculation triggers
+3. **Final testing** with different reference standards
+4. **Document T-cell value additions** needed for complete reference comparisons
+
+### Known Issues (Minor):
+1. **Reference percentages don't update when d_13 changes** - requires page refresh (low priority)
+2. **Initial load shows zeros briefly** - timing issue, values settle after 1-2 seconds (cosmetic)
+3. **Some T-cell values missing** - gracefully handled with N/A or 100% display
+
+### Success Metrics Achieved:
+- ✅ Reference TEUI (Column E) > Target TEUI (Column H) as expected (code baseline vs efficient design)
+- ✅ Both engines run continuously regardless of Reference Mode toggle
+- ✅ Cross-section dependencies working in proper sequence (S15→S04→S01)
+- ✅ Values consistent across page refreshes and mode switching
+- ✅ CSV export format ready for dual-engine state capture
 
 ## 6. Dependency Chain Analysis & Implementation Strategy

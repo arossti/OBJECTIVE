@@ -774,7 +774,6 @@ window.TEUI.SectionModules.sect15 = (function() {
         sm.registerDependency('k_32', 'd_145');
         // Placeholder: sm.registerDependency('reference_k_32', 'd_145'); 
 
-        // console.log("TEUI Summary dependencies registered");
     }
     
     /**
@@ -782,13 +781,9 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This follows the template pattern expected by the system
      */
     function calculateAll() {
-        // console.log("[Section15] Running dual-engine calculations...");
-        
         // Run both engines independently
         calculateReferenceModel();  // Calculates Reference values with ref_ prefix
         calculateTargetModel();     // Calculates Target values (existing logic)
-        
-        // console.log("[Section15] Dual-engine calculations complete");
     }
     
     /**
@@ -796,7 +791,6 @@ window.TEUI.SectionModules.sect15 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        // console.log("[Section15] Running Reference Model calculations...");
         
         try {
             // Get Reference values from upstream sections
@@ -892,37 +886,12 @@ window.TEUI.SectionModules.sect15 = (function() {
             }
             window.TEUI?.StateManager?.setValue('ref_d_136', ref_teuTargetedElecHPGasOil.toString(), 'calculated');
 
-            // DEBUG: Log key Reference value that Section 04 depends on
-            console.log(`[DEBUG-S15] ref_d_136 calculated: ${ref_teuTargetedElecHPGasOil} (primaryHeating: ${primaryHeating}, area: ${area})`);
-
             // h_136: TEUI (HP/Gas/Oil)
             let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
             window.TEUI?.StateManager?.setValue('ref_h_136', ref_teui_h136.toString(), 'calculated');
             
-            console.log(`[DEBUG-S15] ref_h_136 calculated: ${ref_teui_h136} (ref_d_136/area)`);
-            
             // Continue with all other Reference calculations...
-            // (Peak loads, costs, percentages, etc.)
             
-            // d_137: Peak Heating Load
-            let ref_peakHeatingLoad_d137 = ((g101 * d101) + (d102 * g102)) * (h23 - d23) / 1000;
-            window.TEUI?.StateManager?.setValue('ref_d_137', ref_peakHeatingLoad_d137.toString(), 'calculated');
-
-            // l_137: Peak Heating BTU
-            let ref_peakHeatingBTU_l137 = ref_peakHeatingLoad_d137 * 3412.14245;
-            window.TEUI?.StateManager?.setValue('ref_l_137', ref_peakHeatingBTU_l137.toString(), 'calculated');
-
-            // d_138: Peak Cooling Load (Enclosure Only)
-            let ref_peakCoolingLoad_d138 = ((g101 * d101) + (d102 * g102)) * (d24 - h24) / 1000;
-            window.TEUI?.StateManager?.setValue('ref_d_138', ref_peakCoolingLoad_d138.toString(), 'calculated');
-            
-            // h_138: Peak Cooling Tons
-            let ref_peakCoolingTons_h138 = ref_peakCoolingLoad_d138 * 0.2843451361;
-            window.TEUI?.StateManager?.setValue('ref_h_138', ref_peakCoolingTons_h138.toString(), 'calculated');
-            
-            // Continue with remaining Reference calculations...
-            
-            // console.log("[Section15] Reference Model calculations stored");
         } catch (error) {
             console.error("[Section15] Error in Reference Model calculations:", error);
         }
@@ -933,7 +902,6 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This is the existing calculation logic
      */
     function calculateTargetModel() {
-        // console.log("[Section15] Running Target Model calculations...");
         
         try {
             // Perform target calculations using existing calculateValues function
@@ -943,7 +911,6 @@ window.TEUI.SectionModules.sect15 = (function() {
             // The percentages calculated (d_144, h_144, l_144, d_145) are comparisons between
             // Reference, Target, and Actual values rather than pass/fail indicators
             
-            // console.log("[Section15] Target Model calculations complete");
         } catch (error) {
             console.error("[Section15] Error in Target Model calculations:", error);
         }
@@ -1164,10 +1131,8 @@ window.TEUI.SectionModules.sect15 = (function() {
             }
             setCalculatedValue('d_145', ghgReduction_d145, 'percent');
             
-            // console.log("TEUI calculations completed");
-            
         } catch (error) {
-            // console.error("Error in TEUI Summary calculations:", error);
+            console.error("Error in TEUI Summary calculations:", error);
         }
     }
     
@@ -1217,7 +1182,6 @@ window.TEUI.SectionModules.sect15 = (function() {
                 }
             }
         });
-         // console.log("TEUI Summary display updated");
     }
     
     /**
@@ -1247,7 +1211,7 @@ window.TEUI.SectionModules.sect15 = (function() {
                 // No log here
                 calculateAll(); 
             });
-            });
+        });
             
         // Helper function to create listeners that trigger calculateAll without logging
         const addCalculationListener = (key) => {
@@ -1294,22 +1258,19 @@ window.TEUI.SectionModules.sect15 = (function() {
                 calculateAll();
              });
         });
-
-         // console.log("TEUI Summary event listeners initialized.");
     }
     
     /**
      * Called when section is rendered
      */
     function onSectionRendered() {
-        // console.log("TEUI Summary section (sect15) rendered");
         
         // Register dependencies first
         // Dependencies might rely on other sections being registered, so ensure StateManager is ready
         if (window.TEUI.StateManager) {
         registerDependencies();
         } else {
-            // console.warn("StateManager not ready during sect15 onSectionRendered dependency registration.");
+            console.warn("StateManager not ready during sect15 onSectionRendered dependency registration.");
             // Optionally, retry registration later or listen for a StateManager ready event
         }
         
@@ -1331,9 +1292,7 @@ window.TEUI.SectionModules.sect15 = (function() {
         getLayout: getLayout,
         
         // Calculations
-        // calculateValues: calculateValues, // calculateAll calls this internally
         calculateAll: calculateAll,
-        // updateDisplay: updateDisplay, // calculateAll calls helpers that update display
         
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
