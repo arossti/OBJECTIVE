@@ -1161,6 +1161,89 @@ TEUI.StateManager = (function() {
         console.log(`[StateManager] Reverted to last imported state. ${revertedCount} fields updated.`);
     }
     
+    /**
+     * DUAL-ENGINE EXPLICIT STATE GETTERS
+     * These methods provide direct access to specific state repositories
+     * for use in calculation engines, independent of current UI mode.
+     */
+    
+    /**
+     * Get a field value from Application/Target state (for Column H calculations)
+     * @param {string} fieldId - Field ID
+     * @returns {any} The field value from application state or null if not found
+     */
+    function getApplicationValue(fieldId) {
+        return fields.has(fieldId) ? fields.get(fieldId).value : null;
+    }
+    
+    /**
+     * Get a field value from Reference state (for Column E calculations)
+     * @param {string} fieldId - Field ID
+     * @returns {any} The field value from reference state or null if not found
+     */
+    function getReferenceValue(fieldId) {
+        return activeReferenceDataSet.hasOwnProperty(fieldId) ? activeReferenceDataSet[fieldId] : null;
+    }
+    
+    /**
+     * Get a field value for UI display purposes (mode-aware)
+     * This is the existing getValue() logic, renamed for clarity
+     * @param {string} fieldId - Field ID
+     * @returns {any} The field value based on current UI mode
+     */
+    function getCurrentDisplayValue(fieldId) {
+        if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
+            // In Reference Mode, get value from activeReferenceDataSet
+            // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
+            return activeReferenceDataSet.hasOwnProperty(fieldId) 
+                   ? activeReferenceDataSet[fieldId] 
+                   : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
+        } else {
+            // Existing logic for Application Mode
+            return fields.has(fieldId) ? fields.get(fieldId).value : null;
+        }
+    }
+    
+    /**
+     * T-CELLS REFERENCE COMPARISON SYSTEM
+     * Support for pass/fail comparison logic using T-cell reference values
+     */
+    
+    /**
+     * Get the corresponding T-cell field ID for an application field
+     * @param {string} fieldId - Application field ID (e.g., 'f_85')
+     * @returns {string|null} The corresponding T-cell ID (e.g., 't_85') or null if no mapping
+     */
+    function getCorrespondingTCell(fieldId) {
+        // Extract row number from fieldId pattern (e.g., 'f_85' -> '85')
+        const rowMatch = fieldId.match(/[a-z]_(\d+)/);
+        if (rowMatch) {
+            return `t_${rowMatch[1]}`;
+        }
+        
+        // Special cases for non-standard patterns
+        const specialMappings = {
+            'h_127': 't_127', // TEDI
+            'h_140': 't_140', // GHGI
+            'd_104': 't_104', // Combined U-Value
+            // Add other special cases as needed
+        };
+        
+        return specialMappings[fieldId] || null;
+    }
+    
+    /**
+     * Get the T-cell reference value for comparison with an application field
+     * @param {string} applicationFieldId - Application field ID
+     * @returns {any} The T-cell reference value or null if not found
+     */
+    function getTCellValue(applicationFieldId) {
+        const tCellId = getCorrespondingTCell(applicationFieldId);
+        if (!tCellId) return null;
+        
+        return getReferenceValue(tCellId);
+    }
+    
     // Public API
     return {
         // Constants
@@ -1201,7 +1284,12 @@ TEUI.StateManager = (function() {
         setMuteApplicationStateUpdates: setMuteApplicationStateUpdates, // << NEW
         revertToLastImportedState: revertToLastImportedState, // << NEW
         getApplicationStateValue: getApplicationStateValue, // << NEW
-        getActiveReferenceModeValue: getActiveReferenceModeValue // << NEW
+        getActiveReferenceModeValue: getActiveReferenceModeValue, // << NEW
+        getApplicationValue: getApplicationValue,
+        getReferenceValue: getReferenceValue,
+        getCurrentDisplayValue: getCurrentDisplayValue,
+        getCorrespondingTCell: getCorrespondingTCell,
+        getTCellValue: getTCellValue
     };
 })();
 
