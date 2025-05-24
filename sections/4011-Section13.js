@@ -348,6 +348,86 @@ window.TEUI.SectionModules.sect13 = (function() {
     // --- End of Integrated Cooling Logic ---
 
     //==========================================================================
+    // REFERENCE INDICATOR CONFIGURATION
+    //==========================================================================
+    
+    // T-cell comparison configuration for Section 13
+    const referenceComparisons = {
+        'f_113': { type: 'higher-is-better', tCell: 't_113', description: 'Heating HSPF' },
+        'j_115': { type: 'higher-is-better', tCell: 't_115', description: 'AFUE Gas/Oil' },
+        'j_116': { type: 'higher-is-better', tCell: 't_116', description: 'Cooling COP' },
+        'd_118': { type: 'higher-is-better', tCell: 't_118', description: 'HRV/ERV SRE %' },
+        'd_119': { type: 'higher-is-better', tCell: 't_119', description: 'Vent Rate L/s per person' }
+    };
+    
+    /**
+     * Update reference indicators for all configured fields
+     */
+    function updateAllReferenceIndicators() {
+        try {
+            Object.keys(referenceComparisons).forEach(fieldId => {
+                updateReferenceIndicator(fieldId);
+            });
+        } catch (error) {
+            console.error('Error updating reference indicators:', error);
+        }
+    }
+    
+    /**
+     * Update reference indicator (M and N columns) for a specific field
+     * @param {string} fieldId - The application field ID to update
+     */
+    function updateReferenceIndicator(fieldId) {
+        const config = referenceComparisons[fieldId];
+        if (!config) return;
+        
+        // Get current and reference values
+        const currentValue = getNumericValue(fieldId);
+        const referenceValue = window.TEUI?.StateManager?.getTCellValue?.(fieldId) || 
+                              window.TEUI?.StateManager?.getReferenceValue?.(config.tCell);
+        
+        if (!referenceValue || isNaN(parseFloat(referenceValue))) {
+            console.warn(`No reference value found for ${fieldId}`);
+            return;
+        }
+        
+        const refValueNum = parseFloat(referenceValue);
+        const rowId = fieldId.match(/\d+$/)?.[0]; // Extract row number from field ID
+        if (!rowId) return;
+        
+        const mFieldId = `m_${rowId}`;
+        const nFieldId = `n_${rowId}`;
+        
+        try {
+            let referencePercent = 1;
+            let isGood = true;
+            
+            if (config.type === 'higher-is-better') {
+                // For values where higher is better (e.g., HSPF, COP, efficiency)
+                referencePercent = refValueNum > 0 ? currentValue / refValueNum : 0;
+                isGood = currentValue >= refValueNum;
+            } else if (config.type === 'lower-is-better') {
+                // For values where lower is better (not used in S13 but keeping for consistency)
+                referencePercent = currentValue > 0 ? refValueNum / currentValue : 0;
+                isGood = currentValue <= refValueNum;
+            }
+            
+            // Update Column M (Reference %)
+            setCalculatedValue(mFieldId, referencePercent, 'percent-0dp');
+            
+            // Update Column N (Pass/Fail checkmark)
+            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElement) {
+                nElement.textContent = isGood ? "✓" : "✗";
+                nElement.classList.remove('checkmark', 'warning');
+                nElement.classList.add(isGood ? 'checkmark' : 'warning');
+            }
+        } catch (error) {
+            console.error(`Error updating reference indicators for ${fieldId}:`, error);
+        }
+    }
+
+    //==========================================================================
     // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -1781,7 +1861,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         setCalculatedValue('h_120', ventilationRateM3h_h120, 'number-2dp-comma'); // m3/hr
 
         const sre_d118 = window.TEUI.parseNumeric(getFieldValue('d_118')) || 0;
-        setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp'); 
+        // Commented out - m_118 is now handled by reference indicator system
+        // setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp'); 
 
         setCalculatedValue('d_120', ventRateLs, 'number-2dp-comma');
     }
@@ -1934,19 +2015,84 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate all values for this section
      */
     function calculateAll() {
-        // Run cooling physics *first* to update coolingState centrally
-        runIntegratedCoolingCalculations(); 
+        console.log("[Section13] Running dual-engine calculations...");
+        
+        // Run both engines independently
+        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+        calculateTargetModel();     // Calculates Target values (existing logic)
+        
+        console.log("[Section13] Dual-engine calculations complete");
+    }
+    
+    /**
+     * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+     * Stores results with ref_ prefix to keep separate from Target values
+     */
+    function calculateReferenceModel() {
+        console.log("[Section13] Running Reference Model calculations...");
+        
+        try {
+            // For Reference calculations, we need to use reference values from StateManager
+            // Since cooling physics are complex, we'll run them separately for Reference
+            // Note: This is a simplified version - full implementation would duplicate all cooling state logic
+            
+            // Calculate heating system values using reference inputs
+            const heatingSystem = getFieldValue('d_113'); // System type doesn't change
+            const hspf_ref = window.TEUI?.StateManager?.getReferenceValue('f_113') || 12.5;
+            const afue_ref = window.TEUI?.StateManager?.getReferenceValue('j_115') || 0.9;
+            
+            // Calculate reference COP values
+            const copheat_ref = hspf_ref / 3.412;
+            const copcool_ref = copheat_ref * 0.737; // Same ratio as Target calculations
+            
+            // Get reference ventilation values
+            const sre_ref = window.TEUI?.StateManager?.getReferenceValue('d_118') || 81;
+            const ventRate_ref = window.TEUI?.StateManager?.getReferenceValue('d_119') || 8;
+            
+            // Store key reference results
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('ref_h_113', copheat_ref.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_j_113', copcool_ref.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_f_119', (ventRate_ref * 2.11888).toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_h_119', (ventRate_ref * 3.6).toString(), 'calculated');
+                
+                // Note: Full implementation would calculate all dependent values
+                // For now, storing key reference values that might be needed by other sections
+            }
+            
+            console.log("[Section13] Reference Model values stored");
+        } catch (error) {
+            console.error('[Section13] Error in Reference Model calculations:', error);
+        }
+    }
+    
+    /**
+     * TARGET MODEL ENGINE: Calculate all values using Application state
+     * This is the existing calculation logic, refactored
+     */
+    function calculateTargetModel() {
+        console.log("[Section13] Running Target Model calculations...");
+        
+        try {
+            // Run cooling physics *first* to update coolingState centrally
+            runIntegratedCoolingCalculations(); 
 
-        // Run calculations in a logical dependency order (now using the prepared coolingState)
-        calculateCOPValues();           
-        calculateHeatingSystem(); // Calls fuel/cooling
-        calculateVentilationRates();    
-        calculateVentilationEnergy();   
-        // Cooling calculations now rely on results from above & internal cooling state updates
-        calculateCoolingVentilation();  // No longer calls runIntegratedCoolingCalculations
-        calculateFreeCooling();         // No longer calls runIntegratedCoolingCalculations; Sets h_124
-        calculateCoolingSystem();       // Depends on m_129 which depends on h_124
-        calculateMitigatedCED(); // Recalculate m_129 based on potentially updated h_124/d_123
+            // Run calculations in a logical dependency order (now using the prepared coolingState)
+            calculateCOPValues();           
+            calculateHeatingSystem(); // Calls fuel/cooling
+            calculateVentilationRates();    
+            calculateVentilationEnergy();   
+            // Cooling calculations now rely on results from above & internal cooling state updates
+            calculateCoolingVentilation();  // No longer calls runIntegratedCoolingCalculations
+            calculateFreeCooling();         // No longer calls runIntegratedCoolingCalculations; Sets h_124
+            calculateCoolingSystem();       // Depends on m_129 which depends on h_124
+            calculateMitigatedCED(); // Recalculate m_129 based on potentially updated h_124/d_123
+            
+            // Update reference indicators after calculations
+            updateAllReferenceIndicators();
+        } catch (error) {
+            console.error('[Section13] Error in Target Model calculations:', error);
+        }
     }
     
     /**
