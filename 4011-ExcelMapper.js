@@ -401,6 +401,33 @@ class ExcelMapper {
                         extractedValue = "0.90"; // Default AFUE if parsing failed
                     }
                 }
+                // Normalize k_120 (Unoccupied Setback %) value from Excel
+                if (fieldId === 'k_120') {
+                    let numVal;
+                    if (typeof extractedValue === 'string') {
+                        if (extractedValue.endsWith('%')) {
+                            numVal = parseFloat(extractedValue.replace('%', ''));
+                        } else {
+                            numVal = parseFloat(extractedValue);
+                        }
+                    } else if (typeof extractedValue === 'number') {
+                        numVal = extractedValue;
+                    }
+
+                    if (!isNaN(numVal)) {
+                        // If numVal is a decimal (e.g., 0.10 for 10%), convert to whole percentage.
+                        // Heuristic: if it's <= 1 (and non-negative), assume it's a decimal factor.
+                        if (numVal >= 0 && numVal <= 1) {
+                            extractedValue = Math.round(numVal * 100).toString();
+                        } else {
+                            // Otherwise, assume it's already a whole percentage (e.g., 10 for 10%)
+                            // Ensure it's within the slider's typical 0-100 range if it's a percentage
+                            extractedValue = Math.min(Math.max(Math.round(numVal), 0), 100).toString();
+                        }
+                    } else {
+                        extractedValue = "0"; // Default if parsing failed (slider min is 0)
+                    }
+                }
                 importedData[fieldId] = extractedValue;
                 // console.log(`Mapped ${sheetName}!${cellRef} -> ${fieldId}: ${importedData[fieldId]}`);
             } else {
