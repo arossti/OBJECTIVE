@@ -408,63 +408,60 @@ window.TEUI.SectionModules.sect11 = (function() {
     // CALCULATION FUNCTIONS
     //==========================================================================
 
-    function calculateComponentRow(rowNumber, config, referenceFieldId = null) {
+    function calculateComponentRow(rowNumber, config, isReferenceCalculation = false) {
         const { type, input } = config;
         const rowStr = rowNumber.toString();
         const areaFieldId = `d_${rowStr}`, rsiFieldId = `f_${rowStr}`, uValueFieldId = `g_${rowStr}`, 
               rimpFieldId = `e_${rowStr}`, heatlossFieldId = `i_${rowStr}`, heatgainFieldId = `k_${rowStr}`;
 
-        const isRefMode = TEUI.ReferenceToggle?.isReferenceMode() || false;
-        // console.warn(` S11 Calc Row: START calculateComponentRow(${rowNumber}, refId=${referenceFieldId || 'N/A'}) | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
-
         try {
-            // Area always comes from Design Model (via StateManager -> getNumericValue)
+            // Area always comes from Application state
             let area = 0;
             const sourceAreaFieldId = areaSourceMap[rowNumber];
             area = sourceAreaFieldId ? (getNumericValue(sourceAreaFieldId) || 0) : (getNumericValue(areaFieldId) || 0);
-            if (sourceAreaFieldId && !isRefMode) { // Only update linked area display in Design mode
-                 setCalculatedValue(areaFieldId, area);
+            if (sourceAreaFieldId && !isReferenceCalculation) {
+                setCalculatedValue(areaFieldId, area);
             }
             
             let rsiValue, uValue, inputValue;
             
-            // Determine the primary input value based on mode
-            if (isRefMode && referenceFieldId) {
-                // --- REFERENCE MODE --- 
-                // Get the reference value directly using the original field ID (e.g., "B.4")
-                const refValueStr = TEUI.ReferenceManager?.getValue(referenceFieldId);
-                inputValue = window.TEUI.parseNumeric(refValueStr, NaN); // Use global parser
-                // console.warn(`  S11 Calc Row ${rowNumber}: Using REFERENCE value for ${referenceFieldId} = ${inputValue}`);
-                
-                // Assign to rsiValue or uValue based on config.input
-                 if (input === 'rsi') {
+            // Get input values based on which engine is calling
+            if (isReferenceCalculation) {
+                // For Reference calculations, use reference values
+                if (input === 'rsi') {
+                    // Try to get reference RSI value
+                    const refFieldId = `f_${rowStr}`;
+                    inputValue = window.TEUI?.StateManager?.getReferenceValue(refFieldId) || 
+                                baselineValues[rowNumber]?.value || 
+                                getNumericValue(rsiFieldId);
                     rsiValue = inputValue;
                     if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
                 } else { // input === 'uvalue'
+                    // Try to get reference U-value
+                    const refFieldId = `g_${rowStr}`;
+                    inputValue = window.TEUI?.StateManager?.getReferenceValue(refFieldId) || 
+                                baselineValues[rowNumber]?.value || 
+                                getNumericValue(uValueFieldId);
                     uValue = inputValue;
                     if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
                 }
             } else {
-                // --- DESIGN MODE (or if referenceFieldId missing) ---
+                // For Target calculations, use application values
                 if (input === 'rsi') {
-                    inputValue = getNumericValue(rsiFieldId); // Read from state/DOM
-                    // console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN RSI (f_${rowStr}) = ${inputValue}`);
+                    inputValue = getNumericValue(rsiFieldId);
                     rsiValue = inputValue;
                     if (rsiValue <= 0) { uValue = Infinity; } else uValue = 1 / rsiValue;
                 } else { // input === 'uvalue'
-                    inputValue = getNumericValue(uValueFieldId); // Read from state/DOM
-                    // console.warn(`  S11 Calc Row ${rowNumber}: Read DESIGN U-Value (g_${rowStr}) = ${inputValue}`);
+                    inputValue = getNumericValue(uValueFieldId);
                     uValue = inputValue;
                     if (uValue <= 0) { rsiValue = Infinity; } else rsiValue = 1 / uValue;
                 }
             }
             
-            // Update complementary value display (unless in ref mode and it IS the ref value)
-            if (!isRefMode || (isRefMode && input !== 'uvalue')) { // Don't overwrite ref U-Value
-                setCalculatedValue(uValueFieldId, (uValue === Infinity ? 'N/A' : uValue), 'W/m2'); // Use N/A for Infinity
-            }
-            if (!isRefMode || (isRefMode && input !== 'rsi')) { // Don't overwrite ref RSI
-                setCalculatedValue(rsiFieldId, (rsiValue === Infinity ? 'N/A' : rsiValue), 'number'); // Use N/A for Infinity
+            // Update complementary value display only for Target calculations
+            if (!isReferenceCalculation) {
+                setCalculatedValue(uValueFieldId, (uValue === Infinity ? 'N/A' : uValue), 'W/m2');
+                setCalculatedValue(rsiFieldId, (rsiValue === Infinity ? 'N/A' : rsiValue), 'number');
             }
 
             let hdd, heatgainMultiplier;
@@ -531,9 +528,6 @@ window.TEUI.SectionModules.sect11 = (function() {
         const mFieldId = `m_${rowId}`, nFieldId = `n_${rowId}`;
         let referencePercent = 100, isGood = true;
         let currentValue = NaN; // Initialize currentValue
-        const isRefMode = TEUI.ReferenceToggle?.isReferenceMode() || false;
-
-        // console.warn(`S11 Ref Indicators: Updating row ${rowId} | Mode: ${isRefMode ? 'Reference' : 'Design'}`);
 
         try {
             let valueSourceElementId = null;
@@ -546,20 +540,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
 
             if (valueSourceElementId) {
-                if (isRefMode) {
-                    // In Reference Mode, read directly from the DOM element that SHOULD display the reference value
-                    const element = document.querySelector(`[data-field-id="${valueSourceElementId}"]`);
-                    const domValue = element ? (element.value !== undefined ? element.value : element.textContent) : null;
-                    currentValue = window.TEUI.parseNumeric(domValue, NaN); // Parse the DOM value
-                    // console.warn(`  -> Ref Mode: Reading value directly from DOM element ${valueSourceElementId}: ${domValue} -> Parsed: ${currentValue}`);
-                } else {
-                    // In Design Mode, read normally (prioritizes StateManager)
-                    currentValue = getNumericValue(valueSourceElementId);
-                     // console.warn(`  -> Design Mode: Reading value via getNumericValue(${valueSourceElementId}) = ${currentValue}`);
-                }
+                // Always read from application state for comparison
+                currentValue = getNumericValue(valueSourceElementId);
             } else {
-                 // console.warn(`  -> Could not determine source element ID for comparison.`);
-                 currentValue = NaN;
+                currentValue = NaN;
             }
 
             // Perform comparison based on the currentValue read above
@@ -608,16 +592,8 @@ window.TEUI.SectionModules.sect11 = (function() {
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
-            // For Reference Model, we need to get reference values for RSI/U-values
-            const referenceFieldId = baselineValues[config.row]?.referenceId || null;
-            
-            // Calculate using reference values if available
-            if (referenceFieldId && window.TEUI?.ReferenceManager) {
-                calculateComponentRow(config.row, config, referenceFieldId);
-            } else {
-                // Fallback to regular calculation if no reference mapping
-                calculateComponentRow(config.row, config);
-            }
+            // Calculate using reference values
+            calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
             
             const area = getNumericValue(`d_${config.row}`) || 0;
             const heatloss = getNumericValue(`i_${config.row}`) || 0;
@@ -674,7 +650,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
-            calculateComponentRow(config.row, config);
+            calculateComponentRow(config.row, config, false); // false = Target calculation
             const area = getNumericValue(`d_${config.row}`) || 0;
             totals.loss += getNumericValue(`i_${config.row}`) || 0;
             totals.gain += getNumericValue(`k_${config.row}`) || 0;
