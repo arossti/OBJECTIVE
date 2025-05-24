@@ -1728,11 +1728,11 @@ window.TEUI.SectionModules.sect13 = (function() {
         const gasEmissionsFactor = window.TEUI.parseNumeric(getFieldValue('l_28')) || 2.03; // Default if not available
         
         let emissions = 0;
-        
+
         if (systemType === 'Oil') {
-            emissions = oilVolume * oilEmissionsFactor;
+            emissions = oilVolume * oilEmissionsFactor / 1000; // Need to divide by 1000 to get kgCO2e/yr
         } else if (systemType === 'Gas') {
-            emissions = gasVolume * gasEmissionsFactor;
+            emissions = gasVolume * gasEmissionsFactor / 1000; // Need to divide by 1000 to get kgCO2e/yr
         }
         // For Electric and Heatpump, we leave emissions at 0 (handled by electricity emissions elsewhere)
         
