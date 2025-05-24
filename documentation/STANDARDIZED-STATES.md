@@ -1286,4 +1286,66 @@ Following the dependency flow:
 - **Critical path blocked** at Section 04, preventing proper display in Section 01
 - **Reference values only visible** when entering Reference Mode UI
 
+### 5.1 Dual-Engine Calculation Implementation
+
+**Implementation Status**: ~20% Complete  
+**Current State**: Partial implementation with display issues
+
+#### Sections with Dual-Engine Support:
+- **Section 01** (Key Values) - Implemented but display issue persists
+- **Section 04** (Energy & GHG) - Implemented and working
+- **Section 07** (Cooling/TEDI) - Already had dual-engine support
+
+#### Key Findings:
+
+1. **Storage Pattern**: Reference values must be stored with `ref_` prefix to keep them separate from Target values
+   - Example: `ref_j_32`, `ref_k_32`, `ref_e_10`, `ref_d_8`, `ref_d_6`
+
+2. **StateManager Mode-Awareness Issue**: 
+   - `getValue()` is mode-aware and returns different values based on Reference/Target mode
+   - Solution: Use `getApplicationValue()` for Target calculations
+   - Use `getReferenceValue()` or retrieve `ref_` prefixed values for Reference calculations
+
+3. **ReferenceToggle Integration**:
+   - Successfully configured to skip Section 01 calculated fields
+   - Prevents UI refresh from overwriting dual-engine calculated values
+
+4. **Display Issue (Unresolved)**:
+   - Reference values calculate correctly but don't display in Column E as intended
+   - Values appear to show Target calculations in both columns
+   - Root cause: Possible timing issue or additional UI refresh overwriting display
+
+5. **Dependency Chain Requirements**:
+   - Section 01 depends on Section 04's Reference calculations
+   - Full dual-engine support needed across dependency chain for accurate Reference values
+   - Without complete chain, Reference values may equal Target values
+
+#### Next Steps:
+1. Continue implementing dual-engine support section by section
+2. Focus on sections in the dependency chain (S15, S11, etc.)
+3. Return to Column E display issue after more sections are converted
+4. Test with different reference standards to verify calculations
+
+#### Implementation Pattern for New Sections:
+```javascript
+// 1. Add dual-engine architecture
+function calculateReferenceModel() {
+    // Use Reference state values for inputs
+    // Store results with ref_ prefix
+}
+
+function calculateTargetModel() {
+    // Use Application state values for inputs
+    // Store results in regular fields
+}
+
+function calculateAll() {
+    calculateReferenceModel();
+    calculateTargetModel();
+}
+
+// 2. Update display functions to check for ref_ values
+// 3. Ensure ReferenceToggle skips calculated fields
+```
+
 ## 6. Dependency Chain Analysis & Implementation Strategy

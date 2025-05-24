@@ -398,17 +398,17 @@ window.TEUI.SectionModules.sect01 = (function() {
         const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
         
         // Get calculated values from both engines
-        // CRITICAL FIX: Get Reference values from ref_ prefixed fields
-        const referenceAnnualCarbon = getAppNumericValue("ref_d_8", getAppNumericValue("d_8", 1));
-        const referenceLifetimeCarbon = getAppNumericValue("ref_d_6", getAppNumericValue("d_6", 1));
-        const referenceTEUI = getAppNumericValue("ref_e_10", getAppNumericValue("e_10", 1));
+        // SIMPLIFIED: Always use ref_ prefixed fields for Reference values
+        const referenceAnnualCarbon = getAppNumericValue("ref_d_8", 17.4);
+        const referenceLifetimeCarbon = getAppNumericValue("ref_d_6", 24.4);
+        const referenceTEUI = getAppNumericValue("ref_e_10", 341.2);
         
-        const targetAnnualCarbon = getAppNumericValue("h_8", 0);
-        const targetLifetimeCarbon = getAppNumericValue("h_6", 0);
-        const targetTEUI = getAppNumericValue("h_10", 0);
+        const targetAnnualCarbon = getAppNumericValue("h_8", 4.7);
+        const targetLifetimeCarbon = getAppNumericValue("h_6", 11.7);
+        const targetTEUI = getAppNumericValue("h_10", 93.0);
         
-        const actualAnnualCarbon = getAppNumericValue("k_8", 0);
-        const actualTEUI = getAppNumericValue("k_10", 0);
+        const actualAnnualCarbon = getAppNumericValue("k_8", 4.8);
+        const actualTEUI = getAppNumericValue("k_10", 93.1);
 
         // Calculate T.2 Annual Carbon Percentage (j_8)
         let annualCarbonPercent = 0;
@@ -550,9 +550,9 @@ window.TEUI.SectionModules.sect01 = (function() {
     function calculateTargetTier() {
         if (!window.TEUI?.StateManager) return;
 
-        const targetTEUI_h10 = getAppNumericValue("h_10", 0);
-        // CRITICAL FIX: Get Reference value from ref_ prefixed field first
-        const referenceTEUI_e10 = getAppNumericValue("ref_e_10", getAppNumericValue("e_10", 1));
+        const targetTEUI_h10 = getAppNumericValue("h_10", 93.0);
+        // SIMPLIFIED: Always use ref_ prefixed field for Reference value
+        const referenceTEUI_e10 = getAppNumericValue("ref_e_10", 341.2);
         const standard_d13 = window.TEUI.StateManager?.getApplicationValue("d_13") || "";
         
         let reduction = 0;
@@ -585,57 +585,36 @@ window.TEUI.SectionModules.sect01 = (function() {
         const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
         const isUtilityMode = useType === "Utility Bills";
 
-        // console.log('[DUAL-DISPLAY] Starting updateTEUIDisplay...');
+        // SIMPLIFIED APPROACH: Always display ref_ prefixed values in Column E
+        // These are the Reference Model calculations stored by calculateReferenceModel()
+        const d6RefValue = window.TEUI.StateManager?.getApplicationValue("ref_d_6") || "24.4";
+        const d8RefValue = window.TEUI.StateManager?.getApplicationValue("ref_d_8") || "17.4";
+        const e10RefValue = window.TEUI.StateManager?.getApplicationValue("ref_e_10") || "341.2";
+        
+        updateDisplayValue('d_6', d6RefValue);
+        updateDisplayValue('d_8', d8RefValue);
+        updateDisplayValue('e_10', e10RefValue);
 
         // ALWAYS display Target/Application values in Column H
-        const h6Val = window.TEUI.StateManager?.getApplicationValue("h_6") || "0.0";
-        const h8Val = window.TEUI.StateManager?.getApplicationValue("h_8") || "0.0";
-        const h10Val = window.TEUI.StateManager?.getApplicationValue("h_10") || "0.0";
-        
-        // console.log('[DUAL-DISPLAY] Column H (Target) values:', { h_6: h6Val, h_8: h8Val, h_10: h10Val });
+        const h6Val = window.TEUI.StateManager?.getApplicationValue("h_6") || "11.7";
+        const h8Val = window.TEUI.StateManager?.getApplicationValue("h_8") || "4.7";
+        const h10Val = window.TEUI.StateManager?.getApplicationValue("h_10") || "93.0";
         
         updateDisplayValue('h_6', h6Val);
         updateDisplayValue('h_8', h8Val);
         updateDisplayValue('h_10', h10Val);
 
         // Update Actual Column (K) values - conditional on Utility Bills mode
-        updateDisplayValue('k_6', isUtilityMode ? (window.TEUI.StateManager?.getApplicationValue("k_6") || "0.0") : 'N/A');
-        updateDisplayValue('k_8', isUtilityMode ? (window.TEUI.StateManager?.getApplicationValue("k_8") || "0.0") : 'N/A');
+        updateDisplayValue('k_6', isUtilityMode ? (window.TEUI.StateManager?.getApplicationValue("k_6") || "11.7") : 'N/A');
+        updateDisplayValue('k_8', isUtilityMode ? (window.TEUI.StateManager?.getApplicationValue("k_8") || "4.8") : 'N/A');
         
         let actualTEUIDisplay = 'N/A';
         if (isUtilityMode) {
-            const actualTEUIValue_k10 = window.TEUI.StateManager?.getApplicationValue("k_10") || "0.0";
+            const actualTEUIValue_k10 = window.TEUI.StateManager?.getApplicationValue("k_10") || "93.1";
             const energyValue_f32 = getAppNumericValue("f_32", 0);
             actualTEUIDisplay = (energyValue_f32 === 0 || Math.abs(energyValue_f32) < 0.01) ? "0.0" : actualTEUIValue_k10;
         }
         updateDisplayValue('k_10', actualTEUIDisplay);
-
-        // ALWAYS display Reference values in Column E (d_6, d_8, e_10)
-        // These should come from the Reference calculation engine, not Application state
-        const d6RefVal = window.TEUI.StateManager?.getReferenceValue("d_6");
-        const d6AppVal = window.TEUI.StateManager?.getApplicationValue("d_6");
-        const d6RefPrefixed = window.TEUI.StateManager?.getApplicationValue("ref_d_6");
-        const d6Final = d6RefVal || d6RefPrefixed || d6AppVal || "0.0";
-        
-        const d8RefVal = window.TEUI.StateManager?.getReferenceValue("d_8");
-        const d8AppVal = window.TEUI.StateManager?.getApplicationValue("d_8");
-        const d8RefPrefixed = window.TEUI.StateManager?.getApplicationValue("ref_d_8");
-        const d8Final = d8RefVal || d8RefPrefixed || d8AppVal || "0.0";
-        
-        const e10RefVal = window.TEUI.StateManager?.getReferenceValue("e_10");
-        const e10AppVal = window.TEUI.StateManager?.getApplicationValue("e_10");
-        const e10RefPrefixed = window.TEUI.StateManager?.getApplicationValue("ref_e_10");
-        const e10Final = e10RefVal || e10RefPrefixed || e10AppVal || "0.0";
-        
-        // console.log('[DUAL-DISPLAY] Column E (Reference) values:');
-        // console.log('[DUAL-DISPLAY]   d_6: RefVal=', d6RefVal, ', RefPrefixed=', d6RefPrefixed, ', AppVal=', d6AppVal, ', Using=', d6Final);
-        // console.log('[DUAL-DISPLAY]   d_8: RefVal=', d8RefVal, ', RefPrefixed=', d8RefPrefixed, ', AppVal=', d8AppVal, ', Using=', d8Final);
-        // console.log('[DUAL-DISPLAY]   e_10: RefVal=', e10RefVal, ', RefPrefixed=', e10RefPrefixed, ', AppVal=', e10AppVal, ', Using=', e10Final);
-        
-        // Use the final values which should prioritize ref_ prefixed values
-        updateDisplayValue('d_6', d6Final); 
-        updateDisplayValue('d_8', d8Final);
-        updateDisplayValue('e_10', e10Final);
 
         // Update gauges
         updateAllGauges();
@@ -669,36 +648,36 @@ window.TEUI.SectionModules.sect01 = (function() {
     function getGaugeValues(gaugeId) {
         const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
         const isUtilityMode = useType === "Utility Bills";
-        let actualFieldApp, targetFieldApp, refFieldApp, refFieldPrefixed;
+        let actualFieldApp, targetFieldApp, refFieldPrefixed;
         let defaultActual, defaultTarget, defaultRef;
 
         if (gaugeId === "teui-gauge") {
-            refFieldApp = "e_10"; refFieldPrefixed = "ref_e_10"; defaultRef = 341.2;
+            refFieldPrefixed = "ref_e_10"; defaultRef = 341.2;
             actualFieldApp = "k_10"; defaultActual = 93.1;
             targetFieldApp = "h_10"; defaultTarget = 93.0;
         } else if (gaugeId === "annual-carbon-gauge") {
-            refFieldApp = "d_8"; refFieldPrefixed = "ref_d_8"; defaultRef = 17.4;
+            refFieldPrefixed = "ref_d_8"; defaultRef = 17.4;
             actualFieldApp = "k_8"; defaultActual = 4.8;
             targetFieldApp = "h_8"; defaultTarget = 4.7;
         } else if (gaugeId === "lifetime-carbon-gauge") {
-            refFieldApp = "d_6"; refFieldPrefixed = "ref_d_6"; defaultRef = 24.4;
+            refFieldPrefixed = "ref_d_6"; defaultRef = 24.4;
             actualFieldApp = "k_6"; defaultActual = 11.7;
             targetFieldApp = "h_6"; defaultTarget = 11.7;
         } else {
             return { actualValue: 0, referenceValue: 100 };
         }
 
-        // CRITICAL FIX: Check for ref_ prefixed value first, then fall back to regular field
-        const referenceValue = getAppNumericValue(refFieldPrefixed, getAppNumericValue(refFieldApp, defaultRef));
+        // SIMPLIFIED: Always use ref_ prefixed value for Reference
+        const referenceValue = getAppNumericValue(refFieldPrefixed, defaultRef);
         const appValueForGauge = getAppNumericValue(isUtilityMode ? actualFieldApp : targetFieldApp, isUtilityMode ? defaultActual : defaultTarget);
         
         return { actualValue: appValueForGauge, referenceValue };
     }
 
     function checkTargetExceedsReference() {
-        const targetValue = getAppNumericValue("h_10", 0);
-        // CRITICAL FIX: Get Reference value from ref_ prefixed field first
-        const referenceValue = getAppNumericValue("ref_e_10", getAppNumericValue("e_10", 1));
+        const targetValue = getAppNumericValue("h_10", 93.0);
+        // SIMPLIFIED: Always use ref_ prefixed field for Reference value
+        const referenceValue = getAppNumericValue("ref_e_10", 341.2);
         
         const gaugeContainer = document.getElementById('teui-gauge')?.closest('.key-title-container');
         const teuiTitleEl = gaugeContainer?.querySelector('.key-title-combined');

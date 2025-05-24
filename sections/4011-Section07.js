@@ -882,6 +882,14 @@ window.TEUI.SectionModules.sect07 = (function() {
      * Calculate all values for this section
      */
     function calculateAll() {
+        // DUAL-ENGINE ARCHITECTURE: Always run both engines
+        // Reference Model calculations (for Column E values)
+        calculateReferenceModel();
+        
+        // Target Model calculations (for Column H values)
+        calculateTargetModel();
+        
+        // Legacy code for backward compatibility - uses Target calculations
         const waterUseResults = calculateWaterUse();
         const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
         
