@@ -1462,17 +1462,167 @@ window.TEUI.SectionModules.sect04 = (function() {
     //==========================================================================
     
     /**
-     * Main calculation function for Section 04.
-     * Orchestrates all calculations for this section.
+     * DUAL-ENGINE ARCHITECTURE: Helper functions to get values based on calculation mode
      */
-    function calculateAll() {
-        // console.log("[S04] calculateAll triggered.");
+    
+    /**
+     * Get numeric value from Application state (for Target calculations)
+     */
+    function getAppNumericValue(fieldId, defaultValue = 0) {
+        const value = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
+                     window.TEUI?.StateManager?.getValue?.(fieldId);
+        return parseFloat(value) || defaultValue;
+    }
+    
+    /**
+     * Get numeric value for Reference calculations
+     * First checks for ref_ prefixed values, then falls back to application state
+     */
+    function getRefNumericValue(fieldId, defaultValue = 0) {
+        // First try to get ref_ prefixed value (from upstream Reference calculations)
+        const refFieldId = `ref_${fieldId}`;
+        let value = window.TEUI?.StateManager?.getApplicationValue?.(refFieldId);
         
-        // Update electricity emission factor first, as it affects other calcs
+        // If no ref_ value, fall back to application state
+        if (value === null || value === undefined) {
+            value = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
+                   window.TEUI?.StateManager?.getValue?.(fieldId);
+        }
+        
+        return parseFloat(value) || defaultValue;
+    }
+    
+    /**
+     * REFERENCE MODEL ENGINE: Calculate all Reference values
+     */
+    function calculateReferenceModel() {
+        console.log('[Section04] Running Reference Model calculations...');
+        
+        // Get Reference values from upstream sections
+        const ref_d136 = getRefNumericValue('d_136', 0); // From S15
+        const ref_d51 = window.TEUI?.StateManager?.getApplicationValue?.('ref_d_51') || 
+                       window.TEUI?.StateManager?.getValue?.('d_51');
+        const ref_e51 = getRefNumericValue('e_51', 0);
+        const ref_k54 = getRefNumericValue('k_54', 0);
+        const ref_d113 = window.TEUI?.StateManager?.getApplicationValue?.('ref_d_113') || 
+                        window.TEUI?.StateManager?.getValue?.('d_113');
+        const ref_h115 = getRefNumericValue('h_115', 0);
+        const ref_f115 = getRefNumericValue('f_115', 0);
+        
+        // Get user inputs (these typically carry over from application state)
+        const d27 = getAppNumericValue('d_27', 0); // Electricity
+        const d28 = getAppNumericValue('d_28', 0); // Gas
+        const d29 = getAppNumericValue('d_29', 0); // Propane
+        const d30 = getAppNumericValue('d_30', 0); // Oil
+        const d31 = getAppNumericValue('d_31', 0); // Wood
+        const d60 = getAppNumericValue('d_60', 0); // Offsets
+        
+        // Get emission factors
+        const l27 = getAppNumericValue('l_27', 0);
+        const l28 = getAppNumericValue('l_28', 0);
+        const l29 = getAppNumericValue('l_29', 0);
+        const l30 = getAppNumericValue('l_30', 0);
+        const l31 = getAppNumericValue('l_31', 0);
+        
+        // Calculate Reference H values (Target consumption)
+        // H27: Electricity target from S15
+        const ref_h27 = ref_d136;
+        
+        // H28: Gas target (depends on heating and DHW systems)
+        let ref_h28 = 0;
+        if (ref_d113 === "Gas" && ref_d51 === "Gas") {
+            ref_h28 = ref_e51 + ref_h115;
+        } else if (ref_d51 === "Gas") {
+            ref_h28 = ref_e51;
+        } else if (ref_d113 === "Gas") {
+            ref_h28 = ref_h115;
+        }
+        
+        // H29: Propane = actual
+        const ref_h29 = d29;
+        
+        // H30: Oil target (depends on heating and DHW systems)
+        let ref_h30 = 0;
+        if (ref_d113 === "Oil" && ref_d51 === "Oil") {
+            ref_h30 = ref_k54 + ref_f115;
+        } else if (ref_d51 === "Oil") {
+            ref_h30 = ref_k54;
+        } else if (ref_d113 === "Oil") {
+            ref_h30 = ref_f115;
+        }
+        
+        // H31: Wood = actual
+        const ref_h31 = d31;
+        
+        // Calculate Reference J values (Energy)
+        const ref_j27 = ref_h27; // Electricity kWh
+        const ref_j28 = ref_h28 * 0.0373 * 277.7778; // Gas conversion
+        const ref_j29 = ref_h29 * 14.019; // Propane conversion
+        const ref_j30 = ref_h30 * 36.72 * 0.2777778; // Oil conversion
+        const ref_j31 = ref_h31 * 1000; // Wood conversion
+        
+        // Calculate Reference K values (Emissions)
+        const ref_k27 = (ref_j27 * l27) / 1000;
+        const ref_k28 = (ref_h28 * l28) / 1000;
+        const ref_k29 = (ref_h29 * l29) / 1000;
+        const ref_k30 = (ref_h30 * l30) / 1000;
+        const ref_k31 = ref_h31 * l31;
+        
+        // Calculate Reference subtotals
+        const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
+        const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
+        
+        // Store Reference values with ref_ prefix
+        if (window.TEUI?.StateManager) {
+            // Row 27
+            window.TEUI.StateManager.setValue('ref_h_27', ref_h27.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_j_27', ref_j27.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_27', ref_k27.toFixed(2), 'calculated');
+            
+            // Row 28
+            window.TEUI.StateManager.setValue('ref_h_28', ref_h28.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_j_28', ref_j28.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_28', ref_k28.toFixed(2), 'calculated');
+            
+            // Row 29
+            window.TEUI.StateManager.setValue('ref_h_29', ref_h29.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_j_29', ref_j29.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_29', ref_k29.toFixed(2), 'calculated');
+            
+            // Row 30
+            window.TEUI.StateManager.setValue('ref_h_30', ref_h30.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_j_30', ref_j30.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_30', ref_k30.toFixed(2), 'calculated');
+            
+            // Row 31
+            window.TEUI.StateManager.setValue('ref_h_31', ref_h31.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_j_31', ref_j31.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_31', ref_k31.toFixed(2), 'calculated');
+            
+            // Subtotals - CRITICAL for Section 01
+            window.TEUI.StateManager.setValue('ref_j_32', ref_j32.toFixed(2), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_32', ref_k32.toFixed(2), 'calculated');
+            
+            console.log('[Section04] Reference Model values stored:', {
+                ref_j_32: ref_j32.toFixed(2),
+                ref_k_32: ref_k32.toFixed(2)
+            });
+        }
+    }
+    
+    /**
+     * TARGET MODEL ENGINE: Calculate all Target/Application values
+     */
+    function calculateTargetModel() {
+        console.log('[Section04] Running Target Model calculations...');
+        
+        // This is essentially the existing calculateAll logic
+        // but reorganized to be explicit about being the Target model
+        
+        // Update electricity emission factor first
         updateElectricityEmissionFactor();
 
         // Calculate all row 27-31 actuals (F and G columns)
-        // These depend on user inputs (d_27 to d_31) and l_27 to l_31 (factors)
         setCalculatedValue('f_27', calculateF27(), 'number-2dp-comma');
         setCalculatedValue('g_27', calculateG27(), 'number-2dp-comma');
         
@@ -1486,15 +1636,10 @@ window.TEUI.SectionModules.sect04 = (function() {
         setCalculatedValue('g_30', calculateG30(), 'number-2dp-comma');
         
         setCalculatedValue('f_31', calculateF31(), 'number-2dp-comma');
-        // H31 is an input, G31 depends on H31 and L31
-        setCalculatedValue('h_31', getNumericValue('d_31'), 'number-2dp-comma'); // Target wood use = actual
+        setCalculatedValue('h_31', getNumericValue('d_31'), 'number-2dp-comma');
         setCalculatedValue('g_31', calculateG31(), 'number-2dp-comma');
 
         // Calculate all row 27-31 targets (H, J, and K columns)
-        // H27 depends on d_136 (from S15)
-        // H28 depends on d_51, e_51 (S07), d_113, h_115 (S13)
-        // H30 depends on d_51 (S07), d_113, f_115 (S13), l_54 (S07)
-        // H29, H31 are based on their actuals (d_29, d_31)
         setCalculatedValue('h_27', getNumericValue('d_136'), 'number-2dp-comma');
         setCalculatedValue('j_27', calculateJ27(), 'number-2dp-comma');
         setCalculatedValue('k_27', calculateK27(), 'number-2dp-comma');
@@ -1511,14 +1656,26 @@ window.TEUI.SectionModules.sect04 = (function() {
         setCalculatedValue('j_30', calculateJ30(), 'number-2dp-comma');
         setCalculatedValue('k_30', calculateK30(), 'number-2dp-comma');
 
-        // H31 is based on d_31, which is already handled for actuals
         setCalculatedValue('j_31', calculateJ31(), 'number-2dp-comma');
         setCalculatedValue('k_31', calculateK31(), 'number-2dp-comma');
 
-        // After individual rows are calculated, update the subtotals and dependent totals
+        // Update subtotals and dependent totals
         updateSubtotals();
         updateDependentTotals();
-        // console.log("[S04] All calculations complete.");
+    }
+    
+    /**
+     * Main calculation function for Section 04.
+     * Now runs BOTH calculation engines.
+     */
+    function calculateAll() {
+        console.log("[S04] calculateAll triggered - running dual engines.");
+        
+        // DUAL-ENGINE ARCHITECTURE: Always run both engines
+        calculateReferenceModel();  // Calculates Reference values using ref_ inputs
+        calculateTargetModel();     // Calculates Target values using application state
+        
+        console.log("[S04] Dual-engine calculations complete.");
     }
 
     //==========================================================================
@@ -1542,6 +1699,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Expose calculation and helper functions if they need to be called externally
         // or by listeners that might have a different 'this' context.
         calculateAll: calculateAll, // Now correctly points to the defined function
+        calculateReferenceModel: calculateReferenceModel, // NEW: Reference engine
+        calculateTargetModel: calculateTargetModel, // NEW: Target engine
         updateElectricityEmissionFactor: updateElectricityEmissionFactor,
         getProvinceCode: getProvinceCode, // Expose getProvinceCode
         // ... any other functions that need to be public ...
