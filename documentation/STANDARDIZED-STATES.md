@@ -979,3 +979,185 @@ function updateReferenceDisplay(applicationFieldId) {
 ```
 
 This concrete structure shows exactly how T-cells integrate with the existing dual-engine architecture while providing the pass/fail comparison logic that matches your Excel methodology.
+
+## Appendix G: Reference Mode Field Event Handling Patterns (Session Discoveries 2025-05-23)
+
+**Context:** During implementation of Section07 k_52 AFUE field to match Section13 j_115 behavior, critical patterns were discovered for proper Reference Mode field event handling that prevent sporadic behavior requiring "calculation bumps" to work consistently.
+
+### Key Discovery: Proper Event Handler Pattern for Reference Mode Fields
+
+**Problem Identified:** Reference Mode toggle works sporadically, requiring "bumps" (recalculating other values) before applying consistently. Some fields like k_52 (S07 AFUE) don't work like their counterparts in other sections (j_115 in S13).
+
+**Root Cause:** Inconsistent event handling patterns across sections for editable fields, particularly those that need to work in Reference Mode.
+
+### Correct Implementation Pattern
+
+#### **A. Standard Editable Field Blur Handler**
+```javascript
+/**
+ * Standard blur handler for editable fields.
+ * Parses input, updates state, formats display.
+ */
+function handleEditableBlur(event) {
+    const fieldElement = this; // `this` is the element that triggered the blur
+    const fieldId = fieldElement.getAttribute('data-field-id');
+    if (!fieldId) return;
+
+    let rawTextValue = fieldElement.textContent.trim();
+    let numericValue = window.TEUI.parseNumeric(rawTextValue, NaN);
+
+    if (isNaN(numericValue)) {
+        // Revert to previous value from StateManager
+        const previousValue = getFieldValue(fieldId);
+        numericValue = window.TEUI.parseNumeric(previousValue, 0);
+    }
+    
+    // Field-specific formatting rules
+    let formatType = 'number-2dp-comma'; // Default format
+    
+    // Special formatting for k_52 (AFUE) - use 2 decimal places without comma
+    if (fieldId === 'k_52') { 
+        formatType = 'number-2dp'; 
+    }
+
+    const valueToStore = numericValue.toString();
+    const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
+    fieldElement.textContent = formattedDisplay;
+
+    // Update StateManager only if the stored value differs
+    if (window.TEUI?.StateManager) {
+        const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
+        if (currentStateValue !== valueToStore) {
+            window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
+            calculateAll(); // Trigger dependent calculations
+        }
+    }
+}
+```
+
+#### **B. Field Initialization in Event Handler Setup**
+```javascript
+function initializeEventHandlers() {
+    const editableFieldIds = ['e_49', 'e_50', 'k_52', /* other editable fields */];
+    
+    editableFieldIds.forEach(fieldId => {
+        const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        if(field && field.classList.contains('editable')) {
+            if (!field.hasEditableListeners) { 
+                field.setAttribute('contenteditable', 'true');
+                field.classList.add('user-input');
+                
+                // Critical: Proper event binding
+                field.addEventListener('blur', handleEditableBlur);
+                
+                // Prevent Enter key from creating newlines
+                field.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { 
+                        e.preventDefault(); 
+                        this.blur(); 
+                    }
+                });
+                
+                field.hasEditableListeners = true; // Prevent duplicate listeners
+            }
+        }
+    });
+}
+```
+
+#### **C. StateManager Listener Registration Pattern**
+```javascript
+// Register dependencies with StateManager for proper triggering
+if (window.TEUI && window.TEUI.StateManager) {
+    const sm = window.TEUI.StateManager;
+    
+    // Register field listeners that trigger recalculation
+    sm.addListener("k_52", calculateAll); // AFUE changes
+    sm.addListener("d_51", calculateAll); // Energy source changes
+    sm.addListener("d_52", calculateAll); // Efficiency changes
+    sm.addListener("d_53", calculateAll); // DWHR changes
+}
+```
+
+### Critical Pattern Elements
+
+#### **1. Consistent Field Definition Structure**
+```javascript
+// In sectionRows definition:
+k: { 
+    fieldId: "k_52", 
+    type: "editable", 
+    value: "0.90", // default AFUE value
+    section: "waterUse",
+    classes: ["user-input", "editable"]
+}
+```
+
+#### **2. Proper Format Type Mapping**
+```javascript
+// Field-specific formatting prevents display inconsistencies
+const formatTypeMap = {
+    'k_52': 'number-2dp',        // AFUE: 0.90 (no comma)
+    'd_52': 'percentage',        // COP: 300% (percentage slider)
+    'e_49': 'number-2dp-comma',  // Default: 40.00 (with comma for thousands)
+    // ... other field mappings
+};
+```
+
+#### **3. StateManager Integration Requirements**
+- **Consistent Value Storage:** Always store as string representation of numeric value
+- **State Change Detection:** Only trigger recalculation when value actually changes
+- **Proper Event Priority:** Use 'user-modified' state type for manual edits
+- **Cross-Section Triggers:** Register listeners for fields that affect other sections
+
+### Section13 j_115 Reference Pattern
+
+**Working Implementation in Section13:**
+```javascript
+// j_115 (AFUE) field works correctly because:
+// 1. Proper contenteditable setup
+// 2. Blur event handling with parseNumeric
+// 3. Enter key preventDefault
+// 4. StateManager setValue with state change detection
+// 5. Consistent formatNumber usage
+```
+
+### Reference Mode Toggle Robustness Requirements
+
+#### **A. UI State Isolation**
+```javascript
+// Reference Mode toggle should NOT affect calculation data sources
+// Toggle affects DISPLAY only, calculations use explicit state getters:
+// - getApplicationValue(fieldId) → Target calculations
+// - getReferenceValue(fieldId) → Reference calculations
+```
+
+#### **B. Muting During Reference Display Updates**
+```javascript
+// Prevent Reference Mode display updates from triggering Application state changes
+// Use proper muting mechanisms during toggle operations
+```
+
+#### **C. Calculation Engine Independence**
+```javascript
+// Both engines continue running regardless of toggle state
+// Reference Engine: Uses getReferenceValue() exclusively
+// Target Engine: Uses getApplicationValue() exclusively
+```
+
+### Implementation Priority for Remaining Sections
+
+1. **Standardize Event Handlers:** Apply the handleEditableBlur pattern across all sections
+2. **Field Format Mapping:** Define formatType rules for each field type
+3. **StateManager Integration:** Ensure consistent setValue/getValue patterns
+4. **Enter Key Handling:** Prevent newlines in all editable fields
+5. **Listener Registration:** Proper dependency chain triggering
+
+### Testing Requirements
+
+- **Consistency Check:** All editable fields should behave like Section13's j_115
+- **Reference Mode Robustness:** Toggle should work immediately without "bumps"
+- **Cross-Section Propagation:** Value changes should trigger downstream calculations reliably
+- **Format Consistency:** Display formatting should match field type requirements
+
+**Implementation Note:** This pattern eliminates the sporadic behavior where Reference Mode toggle requires "calculation bumps" to work consistently. The key is proper event handling setup during field initialization and consistent StateManager integration patterns.
