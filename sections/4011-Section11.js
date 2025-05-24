@@ -618,8 +618,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         });
 
         // Calculate thermal bridge penalty using reference percentage
-        const penaltyPercent = window.TEUI?.ReferenceManager?.getValue('d_97') || 
-                               window.TEUI?.StateManager?.getReferenceValue('d_97') || 
+        const penaltyPercent = window.TEUI?.StateManager?.getReferenceValue('d_97') || 
                                getNumericValue('d_97');
         const penaltyDecimal = penaltyPercent / 100;
         const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal));
