@@ -1023,6 +1023,98 @@ TEUI.FieldManager = (function() {
         }
     }
     
+    /**
+     * NEW FUNCTION: Updates the display of a specific field in the DOM.
+     * This function is intended to be called by StateManager listeners or ReferenceToggle.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {string} displayValue - The value to display (should be pre-formatted).
+     * @param {Object} fieldDef - The field definition object (from getAllFields).
+     */
+    function updateFieldDisplay(fieldId, displayValue, fieldDef) {
+        if (!fieldDef) {
+            // console.warn(`[FieldManager.updateFieldDisplay] No field definition for ${fieldId}`);
+            return;
+        }
+
+        const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
+        if (!element) {
+            // console.warn(`[FieldManager.updateFieldDisplay] Element not found for ${fieldId}`);
+            return;
+        }
+
+        // Handle different field types
+        switch (fieldDef.type) {
+            case 'dropdown':
+                if (element.tagName === 'SELECT') {
+                    element.value = displayValue;
+                } else {
+                    // Handle cases where dropdown is wrapped (e.g. in a div)
+                    const selectElement = element.querySelector('select');
+                    if (selectElement) selectElement.value = displayValue;
+                }
+                break;
+            case 'editable':
+            case 'number': // Assuming 'number' type fields are also contenteditable or simple inputs
+                if (element.hasAttribute('contenteditable')) {
+                    // To minimize risk of triggering blur, check if value actually changed
+                    if (element.textContent !== displayValue) {
+                        element.textContent = displayValue;
+                    }
+                } else if (element.tagName === 'INPUT') {
+                    if (element.value !== displayValue) {
+                        element.value = displayValue;
+                    }
+                } else { // Fallback for other simple display elements
+                     if (element.textContent !== displayValue) {
+                        element.textContent = displayValue;
+                    }
+                }
+                break;
+            case 'year_slider':
+            case 'percentage':
+            case 'coefficient_slider':
+            case 'generic_slider':
+                // For sliders, the main element might be a container.
+                // The actual input (type=range) and display span are often sub-elements.
+                const sliderInput = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
+                const displaySpan = element.parentNode.querySelector(`span[data-field-id='${fieldId}-value']`) || element.querySelector(`span`);
+
+                if (sliderInput) {
+                    // Note: displayValue for a slider should be the raw numeric value.
+                    // The slider's own event handler usually formats it for the displaySpan.
+                    if (sliderInput.value !== displayValue) {
+                         sliderInput.value = displayValue;
+                    }
+                }
+                if (displaySpan) {
+                    // Attempt to format if a global formatter is available, otherwise set directly
+                    let formattedSliderValue = displayValue;
+                    if (window.TEUI && window.TEUI.formatNumber) {
+                        if (fieldDef.type === 'percentage') {
+                             // Assuming displayValue is '20' for 20% for the input, but formatNumber expects 0.20 for 'percent'
+                             // This part might need adjustment based on how slider values are stored/passed.
+                             // For now, let's assume displayValue is ready for direct display or needs simple formatting.
+                             formattedSliderValue = window.TEUI.formatNumber(parseFloat(displayValue) / 100, 'percent-0dp'); // Example: 20 -> 20%
+                        } else {
+                             formattedSliderValue = window.TEUI.formatNumber(parseFloat(displayValue), 'number-2dp'); // Default for others
+                        }
+                    }
+                     if (displaySpan.textContent !== formattedSliderValue) {
+                        displaySpan.textContent = formattedSliderValue;
+                    }
+                }
+                break;
+            case 'calculated':
+            case 'derived':
+            default: // Includes simple text display fields not covered above
+                if (element.textContent !== displayValue) {
+                    element.textContent = displayValue;
+                }
+                break;
+        }
+        // console.log(`[FieldManager.updateFieldDisplay] Updated ${fieldId} to "${displayValue}" (Type: ${fieldDef.type})`);
+    }
+    
     // Public API
     return {
         // Initialization
@@ -1063,223 +1155,7 @@ TEUI.FieldManager = (function() {
         initializeDropdown,
         updateDependentDropdowns,
         initializeSectionEventHandlers,
-
-        /**
-         * NEW FUNCTION: Updates the visual display of a single field element.
-         * @param {string} fieldId - The ID of the field to update.
-         * @param {string} newValue - The new value to display.
-         * @param {object} fieldDefFromCaller - The field definition object.
-         */
-        updateFieldDisplay: function(fieldId, newValue, fieldDefFromCaller) {
-            // /* KWW DEBUG ENTRY */ // console.log(`[FieldManager.updateFieldDisplay ENTRY] Called for fieldId: ${fieldId} with newValue: ${newValue}`, {
-            //     fieldDefFromCaller: fieldDefFromCaller ? {type: fieldDefFromCaller.type, label: fieldDefFromCaller.label, defaultValue: fieldDefFromCaller.defaultValue, sectionId: fieldDefFromCaller.sectionId} : null
-            // });
-
-            let element = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (!element) {
-                element = document.getElementById(fieldId);
-            }
-            
-            const fieldDef = fieldDefFromCaller || this.getField(fieldId); 
-
-            // if (fieldId === 'k_120') { // Intentionally commented out
-            //     console.log(`[FieldManager k_120] updateFieldDisplay. newValue: "${newValue}", Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
-            // }
-            // if (fieldId === 'f_85') { // Intentionally commented out
-            //     // console.log(`[FieldManager f_85] updateFieldDisplay called. newValue: "${newValue}", Element found: ${!!element}, Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
-            // }
-            // if (fieldId === 'g_67') { // Intentionally commented out
-            //     console.log(`[FieldManager g_67] updateFieldDisplay. newValue: "${newValue}", Type: ${fieldDef ? fieldDef.type : 'N/A'}`);
-            // }
-
-            if (!element) {
-                // <<<< NEW LOGGING >>>>
-                if (fieldId === 'f_85') console.error(`[FieldManager.updateFieldDisplay] Element for ${fieldId} NOT FOUND.`);
-                // <<<< END NEW LOGGING >>>>
-                return;
-            }
-
-            if (!fieldDef) {
-                if (element.tagName === 'SPAN' || element.tagName === 'DIV') {
-                    element.textContent = newValue;
-                } else if (typeof element.value !== 'undefined') {
-                    element.value = newValue;
-                }
-                return;
-            }
-            
-            switch (fieldDef.type) {
-                case 'editable':
-                case 'number': 
-                    if (typeof element.value !== 'undefined') {
-                        element.value = newValue;
-                    } else {
-                        element.textContent = newValue;
-                        element.dispatchEvent(new Event('blur', { bubbles: true }));
-                    }
-                    break;
-                case 'year_slider': 
-                case 'percentage':
-                    const rangeInput = element.querySelector('input[type="range"]');
-                    const displaySpan = element.querySelector('.slider-value');
-
-                    // if (fieldId === 'k_120') { // Intentionally commented out
-                    //     console.log(`[FieldManager k_120] In 'percentage' case. rangeInput: ${rangeInput ? 'found' : 'NOT FOUND'}, displaySpan: ${displaySpan ? 'found' : 'NOT FOUND'}`);
-                    //     if(rangeInput) console.log(`[FieldManager k_120] Current rangeInput.value before setting: "${rangeInput.value}"`);
-                    // }
-
-                    if (rangeInput) {
-                        const numericValue = window.TEUI.parseNumeric(newValue, NaN);
-                        
-                        // if (fieldId === 'k_120' || fieldId === 'd_97') { // Intentionally commented out
-                        //     console.log(`[FieldManager ${fieldId}] In 'percentage' case. Received newValue: "${newValue}". Parsed numericValue for slider: ${numericValue}.`);
-                        // }
-                        
-                        if (!isNaN(numericValue)) {
-                            rangeInput.value = numericValue;
-                            // if (fieldId === 'k_120') { // Intentionally commented out
-                            //     console.log(`[FieldManager k_120] Set rangeInput.value to: ${numericValue}`);
-                            // }
-                            if (displaySpan) {
-                                let formattedDisplay = numericValue.toString();
-                                if (typeof window.TEUI?.formatNumber === 'function') {
-                                    if (fieldDef.type === 'percentage') {
-                                        let valueToFormat = numericValue; 
-                                        if (fieldDef.displayFactor === 100 && numericValue >= (fieldDef.min || 0) && numericValue <= (fieldDef.max || 1) && (fieldDef.max || 1) <=1 ) {
-                                        } else {
-                                            valueToFormat = valueToFormat / 100;
-                                        }
-                                        formattedDisplay = window.TEUI.formatNumber(valueToFormat, 'percent-0dp'); 
-                                    } else if (fieldDef.type === 'year_slider') { 
-                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'integer-nocomma');
-                                    } else if (fieldDef.type === 'coefficient_slider') {
-                                        formattedDisplay = window.TEUI.formatNumber(numericValue, 'number-2dp'); 
-                                    }
-                                } else {
-                                    // console.warn(`[FieldManager.updateFieldDisplay] window.TEUI.formatNumber not available for ${fieldId}. Using basic toString().`);
-                                    if (fieldDef.type === 'percentage') formattedDisplay = numericValue + '%';
-                                }
-                                displaySpan.textContent = formattedDisplay;
-                            }
-                            rangeInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        } else {
-                            // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for slider ${fieldId}`);
-                        }
-                    } else {
-                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for slider ${fieldId}. Initial textContent was: "${element.textContent}". Setting textContent as fallback.`);
-                        element.textContent = newValue; 
-                    }
-                    break;
-                case 'coefficient_slider':
-                    const rangeInputCoeff = element.querySelector('input[type="range"]');
-                    const displaySpanCoeff = element.querySelector('.slider-value');
-
-                    if (rangeInputCoeff) {
-                        const numericValueCoeff = window.TEUI.parseNumeric(newValue, NaN);
-                        if (!isNaN(numericValueCoeff)) {
-                            rangeInputCoeff.value = numericValueCoeff;
-                            if (displaySpanCoeff) {
-                                displaySpanCoeff.textContent = window.TEUI.formatNumber(numericValueCoeff, 'number-2dp'); 
-                            }
-                            rangeInputCoeff.dispatchEvent(new Event('input', { bubbles: true }));
-                        } else {
-                             // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for coefficient_slider ${fieldId}`);
-                        }
-                    } else {
-                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for coefficient_slider ${fieldId}.`);
-                        element.textContent = newValue;
-                    }
-                    break;
-                case 'generic_slider':
-                    // The element for a generic_slider is typically the cell (td), 
-                    // and the actual range input is a child.
-                    const genericRangeInputElement = element.querySelector('input[type="range"].area-adjust-slider');
-                    if (genericRangeInputElement) {
-                        const numericValue = window.TEUI.parseNumeric(newValue, parseFloat(genericRangeInputElement.defaultValue || "0"));
-                        if (!isNaN(numericValue)) {
-                            genericRangeInputElement.value = numericValue;
-                            // Dispatch an 'input' event so any listeners on the slider itself react (e.g., Section02 specific handlers)
-                            genericRangeInputElement.dispatchEvent(new Event('input', { bubbles: true }));
-                            // console.log(`[FieldManager.updateFieldDisplay] Set generic_slider ${fieldId} to ${numericValue}`);
-                            } else {
-                            // console.warn(`[FieldManager.updateFieldDisplay] Invalid numeric value "${newValue}" for generic_slider ${fieldId}`);
-                        }
-                    } else {
-                        // console.warn(`[FieldManager.updateFieldDisplay] Could not find range input for generic_slider ${fieldId}. Element was:`, element);
-                        // Fallback: if the element IS the slider (less likely based on current rendering)
-                        if (element.type === 'range') {
-                           const numericValueFallback = window.TEUI.parseNumeric(newValue, parseFloat(element.defaultValue || "0"));
-                           if (!isNaN(numericValueFallback)) element.value = numericValueFallback;
-                        } else if (typeof element.textContent !== 'undefined') {
-                           // If it's just a cell and no slider found, update text as last resort.
-                           element.textContent = newValue; 
-                        }
-                    }
-                    break;
-                case 'dropdown':
-                    // <<<< DETAILED LOGGING FOR DROPDOWNS >>>>
-                    // if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) { // Intentionally Commented Out
-                    //    console.log(`[FieldManager updateFieldDisplay dropdown] Field: ${fieldId}, Received newValue: "${newValue}", Element tagName: ${element?.tagName}`);
-                    // }
-                    // <<<< END LOGGING >>>>
-
-                    if (element.tagName === 'SELECT') {
-                        element.value = newValue;
-                        // if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) { // Intentionally Commented Out
-                        //    console.log(`[FieldManager updateFieldDisplay dropdown] Set SELECT ${fieldId} value to: "${newValue}". UI value now: "${element.value}"`);
-                        // }
-                    } else {
-                        // if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) { // Intentionally Commented Out
-                        //    console.warn(`[FieldManager updateFieldDisplay dropdown] Field: ${fieldId} is a dropdown but not a SELECT. Element:`, element, `Needs custom update logic.`);
-                        // }
-                        const nestedSelect = element.querySelector('select');
-                        if (nestedSelect) {
-                            // if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) { // Intentionally Commented Out
-                            //    console.log(`[FieldManager updateFieldDisplay dropdown] Found nested SELECT for ${fieldId}. Attempting to set its value.`);
-                            // }
-                            nestedSelect.value = newValue;
-                            // if (['d_39', 'd_49', 'd_51', 'd_80', 'd_108', 'd_113', 'd_116', 'g_118', 'd_12', 'd_13'].includes(fieldId)) { // Intentionally Commented Out
-                            //    console.log(`[FieldManager updateFieldDisplay dropdown] Set nested SELECT ${fieldId} value to: "${newValue}". UI value now: "${nestedSelect.value}"`);
-                            // }
-                        }
-                    }
-                    break;
-                case 'calculated':
-                case 'derived':
-                    element.textContent = newValue;
-                    break;
-                default:
-                    if (typeof element.value !== 'undefined') {
-                        element.value = newValue;
-                    } else {
-                        element.textContent = newValue;
-                    }
-                    break;
-            }
-
-            // This is the block that had the conflict. 
-            // We want the structure from the ReferenceError fix (db31c57), 
-            // and the logging lines within it should remain commented (from b1c6c89's effect).
-            if (fieldId === 'f_113' || fieldId === 'd_118' || fieldId === 'k_120') {
-                let formattedValue; // Variable for formattedValue, not used if logs are off
-                const globalFormatNumber = window.TEUI?.formatNumber;
-                
-                // Ensure numericValueForDebug and formatTypeForDebug are available for this block
-                const numericValueForDebug = window.TEUI.parseNumeric(newValue, NaN); 
-                const formatTypeForDebug = 'number-2dp'; // Assuming a default
-
-                if (typeof globalFormatNumber === 'function') {
-                    // console.log(`[FieldManager DEBUG] For ${fieldId}, about to call window.TEUI.formatNumber. Is it available? - "${typeof globalFormatNumber}"`, globalFormatNumber);
-                    try {
-                        formattedValue = globalFormatNumber(numericValueForDebug, formatTypeForDebug, fieldDef?.subType);
-                    } catch (e) {
-                        // console.error(`[FieldManager DEBUG] Error calling globalFormatNumber for ${fieldId} (debug block):`, e);
-                    }
-                } else {
-                    // console.warn(`[FieldManager DEBUG] window.TEUI.formatNumber not available for ${fieldId} (debug block).`);
-                }
-            }
-        }
+        updateFieldDisplay
     };
 })();
 
