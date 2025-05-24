@@ -1322,6 +1322,9 @@ window.TEUI.SectionModules.sect09 = (function() {
         
         // Calculate subtotals and totals
         calculateTotals();
+        
+        // Update reference indicators
+        updateAllReferenceIndicators();
     }
 
     /**
@@ -1329,9 +1332,13 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Replaces the original calculateAll function
      */
     function calculateAll() {
+        console.log("[Section09] Running dual-engine calculations...");
+        
         // Run both engines independently
         calculateReferenceModel();  // Calculates Reference values with ref_ prefix
         calculateTargetModel();     // Calculates Target values (existing logic)
+        
+        console.log("[Section09] Dual-engine calculations complete");
     }
     
     /**
@@ -1716,6 +1723,110 @@ window.TEUI.SectionModules.sect09 = (function() {
             } else {
                  element.classList.remove(baseClass);
             }
+        }
+    }
+    
+    //==========================================================================
+    // REFERENCE INDICATOR CONFIGURATION
+    //==========================================================================
+    
+    // T-cell comparison configuration for Section 09
+    const referenceComparisons = {
+        'd_65': { type: 'lower-is-better', tCell: 't_65', description: 'Plug Loads W/m²' },
+        'd_66': { type: 'lower-is-better', tCell: 't_66', description: 'Lighting Loads W/m²' },
+        'g_67': { type: 'higher-is-better', tCell: 't_67', description: 'Equipment Efficiency Spec' }
+    };
+    
+    /**
+     * Update reference indicators for all configured fields
+     */
+    function updateAllReferenceIndicators() {
+        try {
+            Object.keys(referenceComparisons).forEach(fieldId => {
+                updateReferenceIndicator(fieldId);
+            });
+        } catch (error) {
+            console.error('Error updating reference indicators:', error);
+        }
+    }
+    
+    /**
+     * Update reference indicator (M and N columns) for a specific field
+     * @param {string} fieldId - The application field ID to update
+     */
+    function updateReferenceIndicator(fieldId) {
+        const config = referenceComparisons[fieldId];
+        if (!config) return;
+        
+        // Get current value
+        let currentValue;
+        if (fieldId === 'g_67') {
+            // For equipment efficiency, it's a text value not numeric
+            currentValue = getFieldValue(fieldId);
+        } else {
+            // For numeric fields
+            currentValue = window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
+        }
+        
+        // Get reference value
+        const referenceValue = window.TEUI?.StateManager?.getTCellValue?.(fieldId) || 
+                              window.TEUI?.StateManager?.getReferenceValue?.(config.tCell);
+        
+        const rowId = fieldId.match(/\d+$/)?.[0]; // Extract row number from field ID
+        if (!rowId) return;
+        
+        const mFieldId = `m_${rowId}`;
+        const nFieldId = `n_${rowId}`;
+        
+        // For Section 09, show 100% when reference value is missing
+        if (!referenceValue) {
+            console.warn(`No reference value found for ${fieldId} - showing 100%`);
+            setCalculatedValue(mFieldId, 100, 'percent-0dp');
+            
+            // Always show checkmark for 100%
+            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElement) {
+                nElement.textContent = "✓";
+                setElementClass(nFieldId, 'checkmark');
+            }
+            return;
+        }
+        
+        try {
+            let referencePercent = 1;
+            let isGood = true;
+            
+            if (fieldId === 'g_67') {
+                // For equipment efficiency spec (text comparison)
+                isGood = (currentValue === referenceValue);
+                referencePercent = isGood ? 1 : 0;
+            } else {
+                // For numeric comparisons
+                const refValueNum = parseFloat(referenceValue);
+                const currentValueNum = parseFloat(currentValue);
+                
+                if (config.type === 'lower-is-better') {
+                    // For values where lower is better (e.g., plug loads, lighting loads)
+                    referencePercent = currentValueNum > 0 ? refValueNum / currentValueNum : 0;
+                    isGood = currentValueNum <= refValueNum;
+                } else if (config.type === 'higher-is-better') {
+                    // For values where higher is better
+                    referencePercent = refValueNum > 0 ? currentValueNum / refValueNum : 0;
+                    isGood = currentValueNum >= refValueNum;
+                }
+            }
+            
+            // Update Column M (Reference %)
+            setCalculatedValue(mFieldId, referencePercent, 'percent-0dp');
+            
+            // Update Column N (Pass/Fail checkmark)
+            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElement) {
+                nElement.textContent = isGood ? "✓" : "✗";
+                setElementClass(nFieldId, isGood ? 'checkmark' : 'warning');
+            }
+        } catch (error) {
+            console.error(`Error updating reference indicators for ${fieldId}:`, error);
         }
     }
     

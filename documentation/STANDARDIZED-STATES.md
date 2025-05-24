@@ -1257,6 +1257,34 @@ const formatTypeMap = {
 4. **Enter Key Handling:** Prevent newlines in all editable fields
 5. **Listener Registration:** Proper dependency chain triggering
 
+### Missing Reference Value Mappings (Manual Update Required)
+
+**Issue Identified:** Some sections have reference comparisons configured but lack T-cell values in ReferenceValues.js. These show warnings in console:
+- `No reference value found for d_65` (Section 09 - Plug Loads)
+- `No reference value found for d_66` (Section 09 - Lighting Loads)  
+- `No reference value found for g_67` (Section 09 - Equipment Spec)
+- `No reference value found for f_113` (Section 13 - HSPF)
+- `No reference value found for j_115` (Section 13 - AFUE)
+- `No reference value found for j_116` (Section 13 - COP)
+- `No reference value found for d_118` (Section 13 - HRV/ERV SRE%)
+- `No reference value found for d_119` (Section 13 - Vent Rate)
+
+**Temporary Solution:** 
+- Section 09: Shows 100% for missing values (since these fields are already building code conformant)
+- Section 13: Shows "N/A" for missing values
+
+**Manual Corrections Needed:**
+1. **Section 09**: 
+   - Lighting loads (d_66) baseline should be 1.5 W/m² for most codes
+   - Plug loads and equipment are already set to code-conformant values
+
+2. **Section 13 Mappings**:
+   - HSPF (f_113) maps to COPh values (h_113) when heat pump is primary fuel
+   - COPc (j_116) is correct for dedicated cooling
+   - Other values need proper T-cell definitions in ReferenceValues.js
+
+**Note:** Focus on dual-engine implementation first. Reference comparison visual feedback is secondary to getting calculations correct in both Reference and Target modes.
+
 ### Testing Requirements
 
 - **Consistency Check:** All editable fields should behave like Section13's j_115

@@ -381,35 +381,48 @@ window.TEUI.SectionModules.sect13 = (function() {
         const config = referenceComparisons[fieldId];
         if (!config) return;
         
-        // Get current and reference values
-        const currentValue = getNumericValue(fieldId);
+        // Get current value
+        const currentValue = window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
+        
+        // Get reference value
         const referenceValue = window.TEUI?.StateManager?.getTCellValue?.(fieldId) || 
                               window.TEUI?.StateManager?.getReferenceValue?.(config.tCell);
         
-        if (!referenceValue || isNaN(parseFloat(referenceValue))) {
-            console.warn(`No reference value found for ${fieldId}`);
-            return;
-        }
-        
-        const refValueNum = parseFloat(referenceValue);
         const rowId = fieldId.match(/\d+$/)?.[0]; // Extract row number from field ID
         if (!rowId) return;
         
         const mFieldId = `m_${rowId}`;
         const nFieldId = `n_${rowId}`;
         
+        // Show N/A when reference value is missing
+        if (!referenceValue) {
+            console.warn(`No reference value found for ${fieldId} - showing N/A`);
+            setCalculatedValue(mFieldId, "N/A", 'raw');
+            
+            // Show question mark for N/A
+            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElement) {
+                nElement.textContent = "–";
+                setElementClass(nFieldId, ''); // No special class
+            }
+            return;
+        }
+        
         try {
             let referencePercent = 1;
             let isGood = true;
             
-            if (config.type === 'higher-is-better') {
-                // For values where higher is better (e.g., HSPF, COP, efficiency)
-                referencePercent = refValueNum > 0 ? currentValue / refValueNum : 0;
-                isGood = currentValue >= refValueNum;
-            } else if (config.type === 'lower-is-better') {
-                // For values where lower is better (not used in S13 but keeping for consistency)
-                referencePercent = currentValue > 0 ? refValueNum / currentValue : 0;
-                isGood = currentValue <= refValueNum;
+            const refValueNum = parseFloat(referenceValue);
+            const currentValueNum = parseFloat(currentValue);
+            
+            if (config.type === 'lower-is-better') {
+                // For values where lower is better
+                referencePercent = currentValueNum > 0 ? refValueNum / currentValueNum : 0;
+                isGood = currentValueNum <= refValueNum;
+            } else if (config.type === 'higher-is-better') {
+                // For values where higher is better (e.g., HSPF, AFUE, COP)
+                referencePercent = refValueNum > 0 ? currentValueNum / refValueNum : 0;
+                isGood = currentValueNum >= refValueNum;
             }
             
             // Update Column M (Reference %)
@@ -419,8 +432,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
             if (nElement) {
                 nElement.textContent = isGood ? "✓" : "✗";
-                nElement.classList.remove('checkmark', 'warning');
-                nElement.classList.add(isGood ? 'checkmark' : 'warning');
+                setElementClass(nFieldId, isGood ? 'checkmark' : 'warning');
             }
         } catch (error) {
             console.error(`Error updating reference indicators for ${fieldId}:`, error);
