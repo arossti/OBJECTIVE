@@ -241,10 +241,10 @@ TEUI.StateManager = (function() {
         // << NEW: Check if application state updates are muted >>
         if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
             // if (fieldId === 'k_120') { // Intentionally commented out
-            //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to "${value}", stateType: ${state}`);
+            //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
             // }
             // if (fieldId === 'g_67') { // Intentionally commented out
-            //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to "${value}", stateType: ${state}`);
+            //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
             // }
             return false; // Prevent update to this.fields (application state)
         }
@@ -255,16 +255,15 @@ TEUI.StateManager = (function() {
         }
 
         // if (fieldId === 'k_120') { // Intentionally commented out
-        //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to "${value}", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+        //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
         // }
         // if (fieldId === 'g_67') { // Intentionally commented out
-        //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to "${value}", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+        //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
         // }
 
-        const fieldDefinition = fields[fieldId];
+        const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
 
-        // Get the current value // This will use the mode-aware getValue, which is fine for oldValue context
-        const oldValue = getValue(fieldId);
+        const oldValue = getValue(fieldId); // Use mode-aware getValue for oldValue as original did.
         
         // If field doesn't exist, create it
         if (!fields.has(fieldId)) {

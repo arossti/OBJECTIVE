@@ -847,6 +847,10 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
     *   Ensures calculations complete in dependency order without timing-based workarounds
     *   Provides reliable state consistency without reliance on arbitrary delays
     *   Note: This architectural refactor was attempted on the 'ORDERING' branch but encountered complexities with Sankey (S16) and Dependency (S17) graph rendering. Future implementation should address these visualization timing requirements as part of the overall sequencing solution.
+*   **Event-Driven Calculation Chain (Traffic Cop Model)**: To further enhance calculation stability and address issues like initial display errors from data import race conditions (where values might be read before they are fully calculated and propagated through the dual-engine system), v4.012 should explore a more explicitly event-driven calculation chain. This would involve:
+    *   Sections emitting events like `referenceModelCalculationComplete` or `targetModelValueAvailable(fieldId)`.
+    *   Dependent sections (or a central calculation orchestrator) listening for these events from their specific data sources before triggering their own calculations.
+    *   This approach would make the calculation flow more reactive and less reliant on a monolithic, perfectly ordered synchronous pass, ensuring data is only consumed once its precedent calculations are verifiably complete. This is particularly important for the dual-engine reference model where the `activeReferenceDataSet` and subsequent `ref_` prefixed values must be fully established before being used by downstream sections like S04 and S01.
 
 ### UI/UX Improvements Needed
 
