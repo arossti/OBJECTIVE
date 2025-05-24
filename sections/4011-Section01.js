@@ -215,6 +215,10 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
             
+            // DEBUG: Log what Section 01 is reading from Section 04
+            console.log(`[DEBUG-S01] Reading ref_j_32 from S04: ${refJ32FromS04}`);
+            console.log(`[DEBUG-S01] Reading ref_k_32 from S04: ${refK32FromS04}`);
+            
             // Use ref_ values if available, otherwise use regular values
             const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
                                   parseFloat(refJ32FromS04) : 
@@ -222,6 +226,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refTargetEmissions = refK32FromS04 !== null && refK32FromS04 !== undefined ? 
                                      parseFloat(refK32FromS04) : 
                                      getAppNumericValue('k_32', 0);
+            
+            console.log(`[DEBUG-S01] Using refTargetEnergy: ${refTargetEnergy} (from ${refJ32FromS04 !== null ? 'ref_j_32' : 'j_32'})`);
+            console.log(`[DEBUG-S01] Using refTargetEmissions: ${refTargetEmissions} (from ${refK32FromS04 !== null ? 'ref_k_32' : 'k_32'})`);
             
             // INPUT VALUES come from Reference state if available
             const refArea = getRefNumericValue('h_15', 1);               // Usually carries over from application
@@ -271,11 +278,11 @@ window.TEUI.SectionModules.sect01 = (function() {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
             }
             
-            // console.log('[DUAL-DISPLAY] Section01 - Reference Model calculated values:', {
-            //     e_10: referenceTEUI,
-            //     d_8: referenceAnnualCarbon,
-            //     d_6: referenceLifetimeCarbon
-            // });
+            // DEBUG: Log final Reference calculations for Column E
+            console.log(`[DEBUG-S01] Calculated Reference values for Column E:`);
+            console.log(`[DEBUG-S01]   TEUI (e_10): ${referenceTEUI} = ${refTargetEnergy} / ${refArea}`);
+            console.log(`[DEBUG-S01]   Annual Carbon (d_8): ${referenceAnnualCarbon} = ${refTargetEmissions} / ${refArea}`);
+            console.log(`[DEBUG-S01]   Lifetime Carbon (d_6): ${referenceLifetimeCarbon} = ${refEmbodiedCarbon} / ${refServiceLife} + ${referenceAnnualCarbon}`);
 
             // Output to Column E fields (Reference Results)
             if (window.TEUI?.StateManager) {

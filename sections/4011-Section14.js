@@ -553,13 +553,13 @@ window.TEUI.SectionModules.sect14 = (function() {
      * This follows the template pattern expected by the system
      */
     function calculateAll() {
-        console.log("[Section14] Running dual-engine calculations...");
+        // console.log("[Section14] Running dual-engine calculations...");
         
         // Run both engines independently
         calculateReferenceModel();  // Calculates Reference values with ref_ prefix
         calculateTargetModel();     // Calculates Target values (existing logic)
         
-        console.log("[Section14] Dual-engine calculations complete");
+        // console.log("[Section14] Dual-engine calculations complete");
     }
     
     /**
@@ -567,7 +567,7 @@ window.TEUI.SectionModules.sect14 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        console.log("[Section14] Running Reference Model calculations...");
+        // console.log("[Section14] Running Reference Model calculations...");
         
         try {
             // Get Reference values from upstream sections
@@ -647,7 +647,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             const ref_cegi_h132 = area > 0 ? ref_cegHeatgain_d132 / area : 0;
             window.TEUI?.StateManager?.setValue('ref_h_132', ref_cegi_h132.toString(), 'calculated');
             
-            console.log("[Section14] Reference Model calculations stored");
+            // console.log("[Section14] Reference Model calculations stored");
         } catch (error) {
             console.error("[Section14] Error in Reference Model calculations:", error);
         }
@@ -658,7 +658,7 @@ window.TEUI.SectionModules.sect14 = (function() {
      * This is the existing calculation logic
      */
     function calculateTargetModel() {
-        console.log("[Section14] Running Target Model calculations...");
+        // console.log("[Section14] Running Target Model calculations...");
         
         try {
             // Perform target calculations using existing calculateValues function
@@ -667,7 +667,7 @@ window.TEUI.SectionModules.sect14 = (function() {
             // Update reference indicator for h_127
             updateReferenceIndicator();
             
-            console.log("[Section14] Target Model calculations complete");
+            // console.log("[Section14] Target Model calculations complete");
         } catch (error) {
             console.error("[Section14] Error in Target Model calculations:", error);
         }

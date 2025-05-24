@@ -1286,140 +1286,64 @@ const formatTypeMap = {
 
 // ... existing code ...
 
-## 5.1 Current Implementation Status (November 2024)
+## 5.1 Current Implementation Status (December 2024)
 
-### ✅ Completed Components:
-- **Phase A1**: Unified data structure for user-editable fields
-- **Phase A2**: ReferenceValues.js restructured for scalability (ongoing validation)
-- **Prerequisites**: Global helper functions (`parseNumeric`, `formatNumber`) in many sections
-- **Basic StateManager dual-state infrastructure**: Has both `fields` and `activeReferenceDataSet`
-- **Reference Mode Toggle**: Basic functionality exists (though not properly decoupled from calculations)
+### ✅ Completed Dual-Engine Sections:
+- **Section 01** (Key Values) - Dashboard display ⚠️ *Column E showing incorrect low values*
+- **Section 04** (Energy & GHG) - Energy totals aggregation
+- **Section 07** (Water Use) - First working dual-engine implementation
+- **Section 09** (Internal Gains) - Reference indicators with 100% fallback
+- **Section 10** (Radiant Gains) - Gain factors display, minimal reference comparisons
+- **Section 11** (Transmission Losses) - Full reference comparisons for envelope components
+- **Section 12** (Volume & Surface) - Reference indicators for WWR and ACH50
+- **Section 13** (Mechanical Loads) - Reference indicators for equipment efficiencies
+- **Section 14** (TEDI) - Reference indicator for TEDI target, stores ref_ values
+- **Section 15** (TEUI) - Final energy totals, stores key ref_d_136 and ref_h_136
 
-### 🔧 Partially Implemented:
-- **Section 07 (Water Use)**: Has dual-engine calculations (`calculateReferenceModel` and `calculateTargetModel`)
-  - Successfully calculates different values for Reference vs Target
-  - Stores Reference values with `ref_` prefix (e.g., `ref_j_50`, `ref_k_51`)
-  - BUT: Only visible when UI is in Reference Mode
+### ❌ Skipped Sections (per user guidance):
+- Section 03 (Climate) - No dual-engine needed, both models use same data
+- Section 05 (Embodied Carbon) - Internal references only
+- Section 06 (Renewables) - No code requirements yet
+- Section 08 (IAQ) - Internal references only
+- Section 16 (Sankey) - Leave for future update
 
-### ❌ Critical Gap Identified:
-**Column E/H Display Issue**: The fundamental requirement that Column E ALWAYS shows Reference values and Column H ALWAYS shows Target values (regardless of UI mode) is not working because:
+### 🔧 Implementation Status:
+- **~70% Complete** on dual-engine implementation across critical sections
+- **Complete calculation chain**: S09→S10→S11→S12→S13→S14→S15→S04→S01
+- Reference values properly stored with ref_ prefix pattern
+- Missing T-cell reference values handled gracefully (N/A or 100%)
 
-1. **Incomplete Dependency Chain**: Section 01 depends on Section 04 for energy totals (j_32, k_32)
-2. **Section 04 lacks dual-engine support**: Only calculates using Application state values
-3. **Without ref_j_32 and ref_k_32**: Section 01's Reference calculations use the same inputs as Target calculations
-4. **Result**: Both columns show identical values in Target mode
+### ⚠️ Critical Issue: Section 01 Column E Display
 
-### 📋 Immediate Implementation Plan:
+**Problem**: Section 01 shows Reference TEUI as 30.0 when it should be >179.9
+**Expected**: Reference values are typically higher than Target values (code baseline vs. efficient design)
+**Current**: Column E (Reference) = 30.0, Column H (Target) = 103.5
 
-#### Step 1: Implement Dual-Engine in Section 04
-- Add `calculateReferenceModel()` and `calculateTargetModel()` functions
-- Calculate `ref_j_32` and `ref_k_32` using Reference values from upstream sections
-- Store Reference results with `ref_` prefix pattern
+**Suspected Causes**:
+1. **Timing Issue**: Reference calculations not completing before S01 reads them
+2. **Value Propagation**: ref_ values not flowing correctly through S15→S04→S01 chain
+3. **Incorrect Source**: S01 might not be reading ref_ prefixed values for Column E
 
-#### Step 2: Update Section 01 Display Logic  
-- Modify `updateTEUIDisplay()` to always use `ref_` prefixed values for Column E
-- Ensure Column H continues using Application state values
-- Remove dependency on UI mode for value selection
+**Debugging Plan**:
+1. Clean up excessive logging across all sections
+2. Add targeted logging to trace Reference value flow:
+   - S15: ref_d_136 calculation and storage
+   - S04: Reading ref_d_136 and calculating ref_j_32, ref_k_32
+   - S01: Reading ref_ values for Column E display
+3. Verify calculation timing and dependency triggering
+4. Check if Section 01 is using correct Reference value sources
 
-#### Step 3: Propagate Pattern Through Dependency Chain
-Following the dependency flow:
-1. **S11 (Envelope)** → S12 (U-values) → S14 (TEDI)
-2. **S13 (Mechanical)** → S14 (TEDI)  
-3. **S09 (Internal Gains)** → S14 (TEDI)
-4. **S10 (Solar Gains)** → S14 (TEDI)
-5. **S14 (TEDI)** → S15 (TEUI)
-6. **S15 (TEUI)** → S04 (Energy) → S01 (Dashboard)
+### Known Issues (Documented):
+1. **Reference percentages don't update when d_13 changes** - requires page refresh
+2. **Initial load shows zeros briefly** - timing issue, values settle after a few seconds  
+3. **Some T-cell values missing** - need manual updates to ReferenceValues.js
+4. **Section 01 Column E incorrect** - Reference values showing as very low
 
-### 🎯 Success Criteria:
-
-1. **Visual Test**: 
-   - In Target Mode: Column E shows Reference values (e.g., 180+ for TEUI with OBC SB10)
-   - In Target Mode: Column H shows Target values (e.g., 94 for TEUI)
-   - Values remain constant when toggling between modes
-
-2. **Data Test**:
-   - `StateManager.getApplicationValue('ref_e_10')` returns Reference TEUI
-   - `StateManager.getApplicationValue('h_10')` returns Target TEUI
-   - `ref_` values exist for all calculated fields in dual-engine sections
-
-3. **Calculation Test**:
-   - Changing reference standard (d_13) updates Column E values
-   - Changing design inputs updates Column H values
-   - No recursion or calculation loops
-
-4. **Export Test**:
-   - CSV Row 2 contains Target/Application values
-   - CSV Row 3 contains Reference values
-   - Import correctly restores both states
-
-### 🚫 Current State Summary:
-- **~10% Complete** on dual-engine implementation across all sections
-- **Section 07** is the only section with working dual-engine calculations
-- **Critical path blocked** at Section 04, preventing proper display in Section 01
-- **Reference values only visible** when entering Reference Mode UI
-
-### 5.1 Dual-Engine Calculation Implementation
-
-**Implementation Status**: ~30% Complete  
-**Current State**: Partial implementation with display issues
-
-#### Sections with Dual-Engine Support:
-- **Section 01** (Key Values) - Implemented but display issue persists
-- **Section 04** (Energy & GHG) - Implemented and working
-- **Section 07** (Cooling/TEDI) - Already had dual-engine support
-- **Section 09** (Plug/Light/Equipment) - Implemented, stores ref_ prefixed values
-- **Section 11** (Heat Loss/Gain) - Implemented, stores ref_ prefixed values
-
-#### Key Findings:
-
-1. **Storage Pattern**: Reference values must be stored with `ref_` prefix to keep them separate from Target values
-   - Example: `ref_j_32`, `ref_k_32`, `ref_e_10`, `ref_d_8`, `ref_d_6`
-
-2. **StateManager Mode-Awareness Issue**: 
-   - `getValue()` is mode-aware and returns different values based on Reference/Target mode
-   - Solution: Use `getApplicationValue()` for Target calculations
-   - Use `getReferenceValue()` or retrieve `ref_` prefixed values for Reference calculations
-
-3. **ReferenceToggle Integration**:
-   - Successfully configured to skip Section 01 calculated fields
-   - Prevents UI refresh from overwriting dual-engine calculated values
-
-4. **Display Issue (Unresolved)**:
-   - Reference values calculate correctly but don't display in Column E as intended
-   - Values appear to show Target calculations in both columns
-   - Root cause: Possible timing issue or additional UI refresh overwriting display
-
-5. **Dependency Chain Requirements**:
-   - Section 01 depends on Section 04's Reference calculations
-   - Full dual-engine support needed across dependency chain for accurate Reference values
-   - Without complete chain, Reference values may equal Target values
-
-#### Next Steps:
-1. Continue implementing dual-engine support section by section
-2. Focus on sections in the dependency chain (S15, S11, etc.)
-3. Return to Column E display issue after more sections are converted
+### Next Steps:
+1. Add targeted logging to trace Reference value propagation
+2. Fix Section 01 Column E display issue
+3. Clean up logging noise
 4. Test with different reference standards to verify calculations
-
-#### Implementation Pattern for New Sections:
-```javascript
-// 1. Add dual-engine architecture
-function calculateReferenceModel() {
-    // Use Reference state values for inputs
-    // Store results with ref_ prefix
-}
-
-function calculateTargetModel() {
-    // Use Application state values for inputs
-    // Store results in regular fields
-}
-
-function calculateAll() {
-    calculateReferenceModel();
-    calculateTargetModel();
-}
-
-// 2. Update display functions to check for ref_ values
-// 3. Ensure ReferenceToggle skips calculated fields
-```
+5. Address remaining timing issues
 
 ## 6. Dependency Chain Analysis & Implementation Strategy

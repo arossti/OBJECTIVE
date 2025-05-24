@@ -782,13 +782,13 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This follows the template pattern expected by the system
      */
     function calculateAll() {
-        console.log("[Section15] Running dual-engine calculations...");
+        // console.log("[Section15] Running dual-engine calculations...");
         
         // Run both engines independently
         calculateReferenceModel();  // Calculates Reference values with ref_ prefix
         calculateTargetModel();     // Calculates Target values (existing logic)
         
-        console.log("[Section15] Dual-engine calculations complete");
+        // console.log("[Section15] Dual-engine calculations complete");
     }
     
     /**
@@ -796,7 +796,7 @@ window.TEUI.SectionModules.sect15 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        console.log("[Section15] Running Reference Model calculations...");
+        // console.log("[Section15] Running Reference Model calculations...");
         
         try {
             // Get Reference values from upstream sections
@@ -886,9 +886,14 @@ window.TEUI.SectionModules.sect15 = (function() {
             }
             window.TEUI?.StateManager?.setValue('ref_d_136', ref_teuTargetedElecHPGasOil.toString(), 'calculated');
 
+            // DEBUG: Log key Reference value that Section 04 depends on
+            console.log(`[DEBUG-S15] ref_d_136 calculated: ${ref_teuTargetedElecHPGasOil} (primaryHeating: ${primaryHeating}, area: ${area})`);
+
             // h_136: TEUI (HP/Gas/Oil)
             let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
             window.TEUI?.StateManager?.setValue('ref_h_136', ref_teui_h136.toString(), 'calculated');
+            
+            console.log(`[DEBUG-S15] ref_h_136 calculated: ${ref_teui_h136} (ref_d_136/area)`);
             
             // Continue with all other Reference calculations...
             // (Peak loads, costs, percentages, etc.)
@@ -911,7 +916,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             
             // Continue with remaining Reference calculations...
             
-            console.log("[Section15] Reference Model calculations stored");
+            // console.log("[Section15] Reference Model calculations stored");
         } catch (error) {
             console.error("[Section15] Error in Reference Model calculations:", error);
         }
@@ -922,7 +927,7 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This is the existing calculation logic
      */
     function calculateTargetModel() {
-        console.log("[Section15] Running Target Model calculations...");
+        // console.log("[Section15] Running Target Model calculations...");
         
         try {
             // Perform target calculations using existing calculateValues function
@@ -932,7 +937,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             // The percentages calculated (d_144, h_144, l_144, d_145) are comparisons between
             // Reference, Target, and Actual values rather than pass/fail indicators
             
-            console.log("[Section15] Target Model calculations complete");
+            // console.log("[Section15] Target Model calculations complete");
         } catch (error) {
             console.error("[Section15] Error in Target Model calculations:", error);
         }

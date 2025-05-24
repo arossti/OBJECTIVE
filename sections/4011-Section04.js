@@ -1496,10 +1496,14 @@ window.TEUI.SectionModules.sect04 = (function() {
      * REFERENCE MODEL ENGINE: Calculate all Reference values
      */
     function calculateReferenceModel() {
-        console.log('[Section04] Running Reference Model calculations...');
+        // console.log('[Section04] Running Reference Model calculations...');
         
         // Get Reference values from upstream sections
         const ref_d136 = getRefNumericValue('d_136', 0); // From S15
+        
+        // DEBUG: Log the key value that flows from S15
+        console.log(`[DEBUG-S04] Reading ref_d_136 from S15: ${ref_d136}`);
+        
         const ref_d51 = window.TEUI?.StateManager?.getApplicationValue?.('ref_d_51') || 
                        window.TEUI?.StateManager?.getValue?.('d_51');
         const ref_e51 = getRefNumericValue('e_51', 0);
@@ -1572,6 +1576,10 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
         const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
         
+        // DEBUG: Log the critical values that Section 01 needs
+        console.log(`[DEBUG-S04] Calculated ref_j_32: ${ref_j32.toFixed(2)} (energy total)`);
+        console.log(`[DEBUG-S04] Calculated ref_k_32: ${ref_k32.toFixed(2)} (emissions total)`);
+        
         // Store Reference values with ref_ prefix
         if (window.TEUI?.StateManager) {
             // Row 27
@@ -1603,10 +1611,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             window.TEUI.StateManager.setValue('ref_j_32', ref_j32.toFixed(2), 'calculated');
             window.TEUI.StateManager.setValue('ref_k_32', ref_k32.toFixed(2), 'calculated');
             
-            console.log('[Section04] Reference Model values stored:', {
-                ref_j_32: ref_j32.toFixed(2),
-                ref_k_32: ref_k32.toFixed(2)
-            });
+            console.log(`[DEBUG-S04] Stored ref_j_32: ${ref_j32.toFixed(2)}, ref_k_32: ${ref_k32.toFixed(2)} in StateManager`);
         }
     }
     
