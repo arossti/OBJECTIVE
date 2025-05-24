@@ -1025,8 +1025,8 @@ TEUI.StateManager = (function() {
         }
         console.log("[StateManager] Current TEUI.ReferenceValues object snapshot:", currentRefValuesSnapshot);
 
-        // const standardOverrideData = window.TEUI && TEUI.ReferenceValues?.[standardKey]; // OLD WAY
-        const standardOverrideData = window.TEUI && TEUI.ReferenceValues && TEUI.ReferenceValues._data ? TEUI.ReferenceValues._data[standardKey] : undefined; // CORRECTED WAY
+        // FIXED: Access the reference data directly from TEUI.ReferenceValues[standardKey]
+        const standardOverrideData = window.TEUI && TEUI.ReferenceValues && TEUI.ReferenceValues[standardKey] ? TEUI.ReferenceValues[standardKey] : undefined;
 
         if (standardOverrideData) {
             Object.keys(standardOverrideData).forEach(fieldId => {
@@ -1041,9 +1041,7 @@ TEUI.StateManager = (function() {
             });
             console.log('[StateManager] Step 3: Applied standard overrides. Data:', JSON.parse(JSON.stringify(activeReferenceDataSet)));
         } else {
-            // console.warn(`[StateManager] No override data found for standard: ${standardKey}`); // Original log
-            // console.warn(`[StateManager] No override data found for standard: ${standardKey}. TEUI.ReferenceValues[standardKey] was:`, (window.TEUI && window.TEUI.ReferenceValues ? TEUI.ReferenceValues[standardKey] : "TEUI.ReferenceValues itself is undefined or standardKey not found")); // Previous MODIFIED LOG
-            console.warn(`[StateManager] No override data found for standard: ${standardKey}. Attempted TEUI.ReferenceValues._data[standardKey]. Actual TEUI.ReferenceValues._data snapshot:`, (window.TEUI && TEUI.ReferenceValues && TEUI.ReferenceValues._data ? JSON.parse(JSON.stringify(TEUI.ReferenceValues._data)) : "TEUI.ReferenceValues._data itself is undefined")); // NEW MODIFIED LOG
+            console.warn(`[StateManager] No override data found for standard: ${standardKey}. Available standards:`, Object.keys(window.TEUI?.ReferenceValues || {}));
         }
 
         // Step 4 (Ensure Completeness - Fallback if needed)
