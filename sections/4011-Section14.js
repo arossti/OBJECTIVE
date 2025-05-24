@@ -549,6 +549,131 @@ window.TEUI.SectionModules.sect14 = (function() {
     }
     
     /**
+     * Calculate all values for this section and connected sections
+     * This follows the template pattern expected by the system
+     */
+    function calculateAll() {
+        console.log("[Section14] Running dual-engine calculations...");
+        
+        // Run both engines independently
+        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+        calculateTargetModel();     // Calculates Target values (existing logic)
+        
+        console.log("[Section14] Dual-engine calculations complete");
+    }
+    
+    /**
+     * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+     * Stores results with ref_ prefix to keep separate from Target values
+     */
+    function calculateReferenceModel() {
+        console.log("[Section14] Running Reference Model calculations...");
+        
+        try {
+            // Get Reference values from upstream sections
+            const getRefValue = (fieldId) => {
+                const refFieldId = `ref_${fieldId}`;
+                return window.TEUI?.StateManager?.getValue(refFieldId) || 
+                       window.TEUI?.StateManager?.getReferenceValue(fieldId) || 
+                       getNumericValue(fieldId);
+            };
+            
+            // Fetch all Reference dependencies
+            const area = getRefValue('h_15');
+            const i97 = getRefValue('i_97');   // Thermal Bridge Penalty Heatloss
+            const i98 = getRefValue('i_98');   // Envelope Totals Heatloss
+            const i103 = getRefValue('i_103'); // Natural Air Leakage Heatloss
+            const m121 = getRefValue('m_121'); // Net Htg Season Ventil. Lost
+            const i80 = getRefValue('i_80');   // Internal heat gains - Occupants
+            const k71 = getRefValue('k_71');   // Internal gains people
+            const k79 = getRefValue('k_79');   // Internal gains equip/light
+            const k97 = getRefValue('k_97');   // Solar 
+            const k98 = getRefValue('k_98');   // Transmission
+            const d122 = getRefValue('d_122'); // Incoming Cooling Vent Energy from S13
+            const h124 = getRefValue('h_124'); // Free Cooling Limit from S13
+            const d123 = getRefValue('d_123'); // Recovered Cooling Vent Energy from S13
+            const k103 = getRefValue('k_103'); // Natural Air Leakage Heatgain
+            
+            // Calculate Reference values
+            
+            // d_127: TED (Heating Load)
+            const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
+            window.TEUI?.StateManager?.setValue('ref_d_127', ref_tedHeatloss_d127.toString(), 'calculated');
+            
+            // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
+            const ref_tedi_h127 = area > 0 ? ref_tedHeatloss_d127 / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_h_127', ref_tedi_h127.toString(), 'calculated');
+            
+            // d_128: TED Envelope (Heating Load - Envelope Only)
+            const ref_tediEnvelope_d128 = i97 + i98 + i103 - i80;
+            window.TEUI?.StateManager?.setValue('ref_d_128', ref_tediEnvelope_d128.toString(), 'calculated');
+            
+            // h_128: TEDI Envelope (Heating Load Intensity - Envelope Only kWh/m²/yr)
+            const ref_tediEnvelope_h128 = area > 0 ? ref_tediEnvelope_d128 / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_h_128', ref_tediEnvelope_h128.toString(), 'calculated');
+            
+            // d_129 and related cooling calculations
+            const ref_cedCoolingUnmitigated_d129 = k71 + k79 + k98 + d122;
+            window.TEUI?.StateManager?.setValue('ref_d_129', ref_cedCoolingUnmitigated_d129.toString(), 'calculated');
+            
+            // h_129: CEDI Unmitigated (kWh/m²/yr)
+            const ref_cediUnmitigated_h129 = area > 0 ? ref_cedCoolingUnmitigated_d129 / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_h_129', ref_cediUnmitigated_h129.toString(), 'calculated');
+            
+            // m_129: CED Mitigated (kWh/yr)
+            const ref_cedMitigated_m129 = ref_cedCoolingUnmitigated_d129 - h124 - d123;
+            window.TEUI?.StateManager?.setValue('ref_m_129', ref_cedMitigated_m129.toString(), 'calculated');
+            
+            // d_130: CEDI Cooling Load W/m2 Unmitigated
+            const ref_cediCoolingWm2_d130 = area > 0 ? (ref_cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_d_130', ref_cediCoolingWm2_d130.toString(), 'calculated');
+            
+            // h_130: CEDI Mitigated W/m2
+            const ref_cediMitigated_h130 = area > 0 ? (ref_cedMitigated_m129 / 8760 * 1000) / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_h_130', ref_cediMitigated_h130.toString(), 'calculated');
+            
+            // d_131: TEL Heatloss
+            const ref_telHeatloss_d131 = i97 + i98 + i103;
+            window.TEUI?.StateManager?.setValue('ref_d_131', ref_telHeatloss_d131.toString(), 'calculated');
+            
+            // h_131: TELI Heatloss Intensity
+            const ref_teli_h131 = area > 0 ? ref_telHeatloss_d131 / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_h_131', ref_teli_h131.toString(), 'calculated');
+            
+            // d_132 & h_132: CEG and CEGI
+            const ref_cegHeatgain_d132 = k97 + k98 + k103;
+            window.TEUI?.StateManager?.setValue('ref_d_132', ref_cegHeatgain_d132.toString(), 'calculated');
+            
+            const ref_cegi_h132 = area > 0 ? ref_cegHeatgain_d132 / area : 0;
+            window.TEUI?.StateManager?.setValue('ref_h_132', ref_cegi_h132.toString(), 'calculated');
+            
+            console.log("[Section14] Reference Model calculations stored");
+        } catch (error) {
+            console.error("[Section14] Error in Reference Model calculations:", error);
+        }
+    }
+    
+    /**
+     * TARGET MODEL ENGINE: Calculate all values using Application state
+     * This is the existing calculation logic
+     */
+    function calculateTargetModel() {
+        console.log("[Section14] Running Target Model calculations...");
+        
+        try {
+            // Perform target calculations using existing calculateValues function
+            calculateValues();
+            
+            // Update reference indicator for h_127
+            updateReferenceIndicator();
+            
+            console.log("[Section14] Target Model calculations complete");
+        } catch (error) {
+            console.error("[Section14] Error in Target Model calculations:", error);
+        }
+    }
+    
+    /**
      * Calculate all values for this section based on FORMULAE-3037.csv
      * This is triggered when dependencies change or on initial load
      */
@@ -612,6 +737,10 @@ window.TEUI.SectionModules.sect14 = (function() {
             const cediCoolingWm2_d130 = area > 0 ? (cedCoolingUnmitigated_d129 / 8760 * 1000) / area : 0;
             setCalculatedValue('d_130', cediCoolingWm2_d130, 'W/m2');
             
+            // h_130: CEDI Mitigated W/m2
+            const cediMitigated_h130 = area > 0 ? (cedMitigated_m129 / 8760 * 1000) / area : 0;
+            setCalculatedValue('h_130', cediMitigated_h130, 'W/m2');
+            
             // d_131: TEL Heatloss (Total Envelope Heatloss)
             // Excel formula: =SUM(I97:I98)+I103 which is i_97 + i_98 + i_103 in app terms
             const telHeatloss_d131 = i97 + i98 + i103;
@@ -633,25 +762,80 @@ window.TEUI.SectionModules.sect14 = (function() {
         }
     }
     
+    //==========================================================================
+    // REFERENCE INDICATOR CONFIGURATION
+    //==========================================================================
+    
+    // T-cell comparison configuration for Section 14
+    const referenceComparisons = {
+        'h_127': { type: 'lower-is-better', tCell: 't_127', description: 'TEDI Target kWh/m²' }
+    };
+    
     /**
-     * Calculate all values for this section and connected sections
-     * This follows the template pattern expected by the system
+     * Update reference indicator (M and N columns) for h_127
      */
-    function calculateAll() {
-        try {
-            // console.log("TEDI/TELI calculateAll function called");
-            
-            // First perform internal calculations for this section
-            calculateValues(); // Also updates display via setCalculatedValue
-            
-            // Then signal any dependent sections via the SectionIntegrator
-            // Section 15 listens for changes in h_126 and h_130 from this section.
-            // The setCalculatedValue calls in calculateValues handle triggering those listeners.
-            
-            // console.log("TEDI/TELI full calculation cycle completed");
-        } catch (error) {
-            // console.error("Error in TEDI/TELI calculateAll:", error);
+    function updateReferenceIndicator() {
+        const fieldId = 'h_127';
+        const config = referenceComparisons[fieldId];
+        if (!config) return;
+        
+        // Get current value
+        const currentValue = window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
+        
+        // Get reference value
+        const referenceValue = window.TEUI?.StateManager?.getTCellValue?.(fieldId) || 
+                              window.TEUI?.StateManager?.getReferenceValue?.(config.tCell);
+        
+        const rowId = '127'; // h_127 is on row 127
+        const mFieldId = `m_${rowId}`;
+        const nFieldId = `n_${rowId}`;
+        
+        // If no reference value found, show N/A
+        if (!referenceValue || referenceValue === 0) {
+            const mElement = document.querySelector(`[data-field-id="${mFieldId}"]`);
+            if (mElement) mElement.textContent = 'N/A';
+            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+            if (nElement) {
+                nElement.textContent = '';
+                nElement.classList.remove('checkmark', 'warning');
+            }
+            return;
         }
+        
+        // Calculate percentage based on comparison type (lower-is-better)
+        const percentage = (referenceValue / currentValue) * 100;
+        const isGood = currentValue <= referenceValue;
+        
+        // Cap percentage at reasonable bounds
+        const cappedPercentage = Math.min(Math.max(percentage, 0), 999);
+        
+        // Update M column with percentage
+        const mElement = document.querySelector(`[data-field-id="${mFieldId}"]`);
+        if (mElement) {
+            mElement.textContent = formatNumber(cappedPercentage / 100, 'percent');
+        }
+        
+        // Update N column with checkmark/warning
+        const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+        if (nElement) {
+            nElement.textContent = isGood ? '✓' : '✗';
+            nElement.classList.remove('checkmark', 'warning');
+            nElement.classList.add(isGood ? 'checkmark' : 'warning');
+        }
+    }
+    
+    function getFieldValue(fieldId) {
+        if (window.TEUI?.StateManager?.getValue) {
+            const stateValue = window.TEUI.StateManager.getValue(fieldId);
+            if (stateValue !== null && stateValue !== undefined) {
+                return stateValue;
+            }
+        }
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            return element.textContent.trim();
+        }
+        return null;
     }
     
     //==========================================================================
