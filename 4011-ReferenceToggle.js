@@ -126,6 +126,13 @@ TEUI.ReferenceToggle = (function() {
             const fieldDef = allUserEditableFields[fieldId];
             if (!fieldDef) continue;
 
+            // CRITICAL: Skip Section 01 calculated fields that should always display dual-engine values
+            const section01CalculatedFields = ['d_6', 'd_8', 'e_10', 'h_6', 'h_8', 'h_10', 'k_6', 'k_8', 'k_10', 'j_8', 'j_10', 'i_10'];
+            if (section01CalculatedFields.includes(fieldId)) {
+                console.log(`[ReferenceToggle] Skipping ${fieldId} - Section 01 dual-engine field`);
+                continue;
+            }
+
             let displayValue;
 
             if (referenceMode) {

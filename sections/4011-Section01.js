@@ -149,7 +149,8 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function getAppNumericValue(fieldId, defaultValue = 0) {
         let value = defaultValue;
-        const stateValue = window.TEUI?.StateManager?.getApplicationValue(fieldId);
+        const stateValue = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
+                          window.TEUI?.StateManager?.getValue?.(fieldId); // Fallback for compatibility
         if (stateValue !== null && stateValue !== undefined) {
             if (typeof stateValue === 'string') {
                 const cleanedValue = stateValue.replace(/,/g, '');
@@ -210,8 +211,17 @@ window.TEUI.SectionModules.sect01 = (function() {
         
         try {
             // CALCULATED VALUES come from Application state (results of other sections' reference calculations)
-            const refTargetEnergy = getAppNumericValue('j_32', 0);         // From Section04 calculations
-            const refTargetEmissions = getAppNumericValue('k_32', 0);     // From Section04 calculations
+            // CRITICAL: Look for ref_ prefixed values first, then fall back to Application state
+            const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
+            const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
+            
+            // Use ref_ values if available, otherwise use regular values
+            const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
+                                  parseFloat(refJ32FromS04) : 
+                                  getAppNumericValue('j_32', 0);
+            const refTargetEmissions = refK32FromS04 !== null && refK32FromS04 !== undefined ? 
+                                     parseFloat(refK32FromS04) : 
+                                     getAppNumericValue('k_32', 0);
             
             // INPUT VALUES come from Reference state if available
             const refArea = getRefNumericValue('h_15', 1);               // Usually carries over from application
@@ -236,35 +246,6 @@ window.TEUI.SectionModules.sect01 = (function() {
             
             // console.log('[DUAL-DISPLAY] Section01 - Checking for Reference overrides...');
             
-            // Try to get reference-specific values if available
-            let refJ32 = refTargetEnergy;
-            let refK32 = refTargetEmissions;
-            
-            // DEPENDENCY ISSUE: Section 01 depends on Section 04's Reference calculations
-            // but Section 04 doesn't have dual-engine support yet.
-            // For now, check if we have ref_ prefixed values from Section 04
-            const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
-            const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
-            
-            if (refJ32FromS04 !== null && refJ32FromS04 !== undefined) {
-                refJ32 = parseFloat(refJ32FromS04);
-                // console.log('[DUAL-DISPLAY] Section01 - Found ref_j_32:', refJ32);
-            } else {
-                // console.log('[DUAL-DISPLAY] Section01 - WARNING: No ref_j_32 found. Section 04 needs dual-engine support!');
-            }
-            
-            if (refK32FromS04 !== null && refK32FromS04 !== undefined) {
-                refK32 = parseFloat(refK32FromS04);
-                // console.log('[DUAL-DISPLAY] Section01 - Found ref_k_32:', refK32);
-            } else {
-                // console.log('[DUAL-DISPLAY] Section01 - WARNING: No ref_k_32 found. Section 04 needs dual-engine support!');
-            }
-            
-            // console.log('[DUAL-DISPLAY] Section01 - Using Reference values:', {
-            //     j_32: refJ32,
-            //     k_32: refK32
-            // });
-            
             // CHECK if we have reference values from standard
             if (referenceStandard && refValues) {
                 // console.log('[DUAL-DISPLAY] Section01 - Found reference data for standard:', referenceStandard);
@@ -275,13 +256,13 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Calculate Reference TEUI (e_10)
             let referenceTEUI = 0;
             if (refArea > 0) {
-                referenceTEUI = Math.round((refJ32 / refArea) * 10) / 10;
+                referenceTEUI = Math.round((refTargetEnergy / refArea) * 10) / 10;
             }
             
             // Calculate Reference Annual Carbon (d_8)
             let referenceAnnualCarbon = 0;
             if (refArea > 0) {
-                referenceAnnualCarbon = Math.round((refK32 / refArea) * 10) / 10;
+                referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
             }
             
             // Calculate Reference Lifetime Carbon (d_6)
