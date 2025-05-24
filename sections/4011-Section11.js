@@ -488,16 +488,23 @@ window.TEUI.SectionModules.sect11 = (function() {
                 calcHeatgain = (area * heatgainMultiplier) / denominator;
             }
             
-            // console.warn(`  S11 Calc Row ${rowNumber}: Calculated -> Rimp=${calcRimp.toFixed(2)}, Loss=${calcHeatloss.toFixed(2)}, Gain=${calcHeatgain.toFixed(2)}`); // Log calculated derived values
+            // For Reference calculations, return the calculated values
+            if (isReferenceCalculation) {
+                return { heatloss: calcHeatloss, heatgain: calcHeatgain };
+            }
             
+            // For Target calculations, update the DOM
             setCalculatedValue(rimpFieldId, calcRimp);
             setCalculatedValue(heatlossFieldId, calcHeatloss);
             setCalculatedValue(heatgainFieldId, calcHeatgain);
             
-            // console.warn(` S11 Calc Row: END calculateComponentRow(${rowNumber})`);
         } catch (error) {
             console.error(`Error calculating row ${rowNumber}:`, error);
-            [rimpFieldId, rsiFieldId, uValueFieldId, heatlossFieldId, heatgainFieldId].forEach(id => setCalculatedValue(id, 0));
+            if (isReferenceCalculation) {
+                return { heatloss: 0, heatgain: 0 };
+            } else {
+                [rimpFieldId, rsiFieldId, uValueFieldId, heatlossFieldId, heatgainFieldId].forEach(id => setCalculatedValue(id, 0));
+            }
         }
     }
 
@@ -590,14 +597,18 @@ window.TEUI.SectionModules.sect11 = (function() {
         // console.log('[Section11] Running Reference Model calculations...');
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
+        const componentResults = {};
 
         componentConfig.forEach(config => {
             // Calculate using reference values
-            calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
+            const result = calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
             
             const area = getNumericValue(`d_${config.row}`) || 0;
-            const heatloss = getNumericValue(`i_${config.row}`) || 0;
-            const heatgain = getNumericValue(`k_${config.row}`) || 0;
+            const heatloss = result ? result.heatloss : 0;
+            const heatgain = result ? result.heatgain : 0;
+            
+            // Store for later use
+            componentResults[config.row] = { heatloss, heatgain };
             
             totals.loss += heatloss;
             totals.gain += heatgain;
@@ -628,12 +639,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             window.TEUI.StateManager.setValue('ref_k_97', penaltyHeatgainK.toString(), 'calculated');
             
             // Store individual component reference values
-            componentConfig.forEach(config => {
-                const rowStr = config.row.toString();
-                const heatloss = getNumericValue(`i_${rowStr}`) || 0;
-                const heatgain = getNumericValue(`k_${rowStr}`) || 0;
-                window.TEUI.StateManager.setValue(`ref_i_${rowStr}`, heatloss.toString(), 'calculated');
-                window.TEUI.StateManager.setValue(`ref_k_${rowStr}`, heatgain.toString(), 'calculated');
+            Object.entries(componentResults).forEach(([row, results]) => {
+                const rowStr = row.toString();
+                window.TEUI.StateManager.setValue(`ref_i_${rowStr}`, results.heatloss.toString(), 'calculated');
+                window.TEUI.StateManager.setValue(`ref_k_${rowStr}`, results.heatgain.toString(), 'calculated');
             });
         }
         
