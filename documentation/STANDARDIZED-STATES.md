@@ -1,18 +1,19 @@
 # Workplan: Standardizing State Value Management & Dual-Engine Reference Model Integration (TEUI 4.011)
 
 **Date:** 2025-05-22 12h15pm EST.
-**Version:** 3.0 (Dual Calculation Engine Architecture)
+**Version:** 4.0 (Dependency Chain Mapping & Sequenced Dual-Engine Implementation)
 **Inspired by:** `README.md`, Excel dual-worksheet methodology, CSV/Excel standardization requirements
 
 ## 1. Objective
 
 To standardize the structure, handling, import, and export of all stateful values within the TEUI 4.011 application, and to implement a robust **dual-engine reference modeling system**. This includes:
 *   Establishing a **unified data structure** for **values of user-editable fields** (inputs, dropdowns, sliders) to facilitate consistent CSV/Excel import/export.
-*   Creating a **parallel calculation system** where Reference Model (Column E) and Target Model (Column H) calculations run simultaneously and continuously.
+*   Creating a **parallel calculation system** where Reference Model (Column E) and Target Model (Column H) calculations run simultaneously and continuously **across all sections in the dependency chain**.
 *   Managing imported data, user-modified data, and values derived from reference standards (via `d_13`) that provide code-compliant baselines for comparison.
 *   Creating a consistent and robust data management layer that simplifies development, enhances maintainability, ensures data integrity, and supports future expansion across multiple jurisdictions and building codes.
 *   Allowing users to **inspect and optionally edit reference inputs** via a Reference Mode toggle, while maintaining continuous dual calculations.
 *   Supporting scalable addition of reference standards for different provinces, countries, territories, and building codes.
+*   **Implementing dual-engine architecture in proper dependency chain sequence** to ensure accurate cross-section value propagation.
 *   **Purely calculated fields (e.g., results of formulas) are explicitly excluded from standardized state datasets; they are always derived from the current set of active input values using explicit state sources.**
 
 ## 2. Core Principles
@@ -50,16 +51,51 @@ The Reference Model integration uses a **dual calculation engine** approach that
     *   **Target Model Engine**: Uses `getApplicationValue()` exclusively → outputs to Column H fields (h_6, h_8, h_10, etc.)
     *   **Both engines triggered**: By any relevant value change in their respective data sources
 
-4.  **Reference Mode Toggle (Inspection Tool):** The "Show Reference" button serves as an **inspection and editing interface**:
+4.  **Cross-Section Value Propagation**: **CRITICAL ARCHITECTURAL INSIGHT**
+    *   **Calculated values from one section that feed other sections must exist in BOTH engines**
+    *   Example: S15 calculates `d_136` which feeds S04's `h_27` calculation
+    *   **Reference Engine**: S15 Reference Engine calculates `e_136` (Reference result) → feeds S04 Reference Engine
+    *   **Target Engine**: S15 Target Engine calculates `h_136` (Target result) → feeds S04 Target Engine
+    *   **Dependency Chain Requirement**: All sections in the calculation dependency chain need dual-engine treatment
+
+5.  **Reference Mode Toggle (Inspection Tool):** The "Show Reference" button serves as an **inspection and editing interface**:
     *   **Purpose**: Display reference input values in UI fields for user inspection/editing
     *   **Scope**: Affects UI display only - does not change which calculation engine drives which columns
     *   **Behind the scenes**: Both calculation engines continue running using their respective data sources
     *   **Value inheritance**: Reference model inherits user geometry/areas but uses code values for performance parameters
 
-5.  **Automatic Calculation & Display Engine (Dual Path):** 
+6.  **Automatic Calculation & Display Engine (Dual Path):** 
+    *   **All Sections in Dependency Chain**: Must run dual calculations to provide both Reference and Target calculated values
     *   **Section 01 Key Values**: Always displays Reference results in Column E and Target results in Column H, regardless of UI toggle state
-    *   **Other Sections**: Continue using standard calculation patterns, with Section 01 driving the dual-engine approach
     *   **UI Updates**: Via `FieldManager.updateFieldDisplay()` with measures to prevent Reference Mode display updates from overwriting Application State
+
+### C. Calculation Dependency Chain Mapping
+
+**CRITICAL IMPLEMENTATION INSIGHT**: The dual-engine architecture must be implemented in **dependency chain order** to ensure accurate cross-section value propagation.
+
+#### Primary Calculation Flow (Identified Dependencies)
+```
+S15 (TEUI) → S04 (Energy Totals) → S01 (Key Values Dashboard)
+     ↓              ↓                    ↓
+  d_136 → H27   j_32, k_32 → e_6,e_8,e_10 (Reference)
+  (Target)      (Reference)    h_6,h_8,h_10 (Target)
+```
+
+#### Supporting Section Dependencies
+```
+S07 (Water) → S04 (via DHW energy calculations)
+S11 (Envelope) → S12 (U-values) → S14 (TEDI) → S15 (TEUI)
+S13 (Mechanical) → S14 (TEDI) → S15 (TEUI)
+S09 (Internal Gains) → S14 (TEDI) → S15 (TEUI)
+S10 (Solar Gains) → S14 (TEDI) → S15 (TEUI)
+```
+
+#### Implementation Sequence Priority
+1. **Leaf Sections First**: S07, S09, S10, S11, S13 (sections that produce calculated values for others)
+2. **Intermediate Sections**: S12, S14 (sections that consume from leaf sections and feed upstream)
+3. **Primary Chain**: S15 → S04 → S01 (main calculation flow)
+
+**Key Principle**: Each section in the dependency chain must provide **both Reference and Target calculated outputs** for consumption by upstream sections.
 
 ## 3. Key Components & Data Requirements
 
@@ -90,12 +126,13 @@ The Reference Model integration uses a **dual calculation engine** approach that
 
 *   **Section Modules (`sections/4011-SectionXX.js`):**
     *   Use explicit state getters in calculation functions
-    *   Section 01 implements dual calculation engines for E and H columns
-    *   Other sections continue standard patterns, enhanced by dual-state foundation
+    *   **All sections in dependency chain implement dual calculation engines**
+    *   Section 01 serves as the final dashboard displaying results from both engines
+    *   Sections must provide both Reference and Target calculated outputs
 
 ## 4. Phased Implementation Workplan
 
-This workplan prioritizes CSV/Excel standardization and the dual-engine reference modeling system to support scalable expansion across jurisdictions and building codes.
+This workplan prioritizes CSV/Excel standardization and the dual-engine reference modeling system to support scalable expansion across jurisdictions and building codes. **UPDATED with dependency chain sequencing**.
 
 ### Prerequisite: Standardize Helper Functions
 *   **Goal:** Ensure all section modules consistently use global `window.TEUI.parseNumeric` and `window.TEUI.formatNumber` for data parsing and display. This is essential for reliable CSV/Excel import/export and consistent reference value application.
@@ -123,26 +160,48 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
     *   **Add:** `loadReferenceData(standardKey)` builds Reference state from standard + carry-overs
     *   **Add:** `setValueInReferenceMode(fieldId, value)` for Reference state modifications
 
-*   **B3. CSV/Excel Import/Export Integration:**
+*   **B3. Cross-Section Value Management:**
+    *   **Add:** Methods for managing calculated values that cross section boundaries
+    *   **Ensure:** Both Reference and Target calculated values are available for downstream sections
+    *   **Implement:** Proper triggering of downstream calculations when upstream values change
+
+*   **B4. CSV/Excel Import/Export Integration:**
     *   **Enhance:** `setValues(dataSet, stateType)` for batch import compatibility
     *   **Add:** Support for 3-row CSV format (Application + Reference state export)
     *   **Ensure:** Import process correctly populates both state repositories
 
-### Phase C: Dual Calculation Engine Implementation (Section 01 Focus)
-*   **C1. Section 01 Dual Engine Architecture:**
-    *   **Implement:** `calculateReferenceModel()` using `getReferenceValue()` exclusively
-        *   Outputs to Column E fields: `e_6`, `d_8`, `e_10`, etc.
-        *   Triggered by Reference state changes
-    *   **Implement:** `calculateTargetModel()` using `getApplicationValue()` exclusively  
-        *   Outputs to Column H fields: `h_6`, `h_8`, `h_10`, etc.
-        *   Triggered by Application state changes
-    *   **Ensure:** Both engines run continuously and independently
-    *   **Remove:** Old single-mode calculation approach
+### Phase C: Dual Calculation Engine Implementation (Dependency Chain Sequence)
 
-*   **C2. Cross-Engine Coordination:**
-    *   **Add:** Listeners for both Application and Reference state changes
-    *   **Implement:** Appropriate triggering logic for each calculation engine
-    *   **Ensure:** Column E always shows Reference results, Column H always shows Target results
+#### **C1. Leaf Section Implementation (S07, S09, S10, S11, S13)**
+*   **Priority:** Sections that primarily consume inputs and produce calculated outputs for other sections
+*   **Implementation Pattern:**
+    *   **Reference Engine**: Uses `getReferenceValue()` for inputs → calculates Reference results
+    *   **Target Engine**: Uses `getApplicationValue()` for inputs → calculates Target results  
+    *   **Dual Output**: Provides both Reference and Target calculated values for upstream consumption
+    *   **Cross-Section Values**: Register calculated outputs in StateManager for downstream access
+
+*   **Section 07 (Water Use) - Immediate Priority:**
+    *   **Reference Engine**: `calculateReferenceWaterUse()` → produces Reference DHW energy values
+    *   **Target Engine**: `calculateTargetWaterUse()` → produces Target DHW energy values
+    *   **Outputs**: Both engines provide energy values for S04 consumption
+
+#### **C2. Intermediate Section Implementation (S12, S14)**
+*   **Section 12 (Volume/Surface)**: Already largely dual-compatible
+*   **Section 14 (TEDI)**: Consumes from S11, S13, S09, S10 → feeds S15
+    *   **Dual Implementation**: Both Reference and Target TEDI calculations
+
+#### **C3. Primary Chain Implementation (S15 → S04 → S01)**
+*   **Section 15 (TEUI)**: 
+    *   **Consumes**: Reference and Target values from S14, other sections
+    *   **Produces**: Reference `e_136` and Target `d_136` for S04
+    
+*   **Section 04 (Energy Totals)**:
+    *   **Consumes**: Reference `e_136` and Target `d_136` from S15
+    *   **Produces**: Reference `e_32`, `f_32` and Target `j_32`, `k_32` for S01
+    
+*   **Section 01 (Key Values Dashboard)**:
+    *   **Consumes**: Reference and Target values from S04
+    *   **Displays**: Column E (Reference results) and Column H (Target results)
 
 ### Phase D: Reference Mode Toggle (Inspection Interface)
 *   **D1. Redefine Reference Toggle Purpose:**
@@ -181,10 +240,11 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
 
 ### Phase G: End-to-End Testing, Validation, and Documentation
 *   **G1. Dual Engine Testing:**
-    *   **Verify:** Column E always shows Reference calculations
-    *   **Verify:** Column H always shows Target calculations  
+    *   **Verify:** Column E always shows Reference calculations across all sections
+    *   **Verify:** Column H always shows Target calculations across all sections
     *   **Test:** Both engines respond correctly to their respective state changes
     *   **Validate:** Reference Toggle affects display only, not calculations
+    *   **Test:** Cross-section value propagation works correctly in dependency chain
 
 *   **G2. CSV/Excel Import/Export Validation:**
     *   **Test:** 3-row export captures both Application and Reference states
@@ -230,7 +290,9 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
 *   **Prerequisite (Standardize Helpers):** Highest immediate priority - enables reliable CSV/Excel processing
 *   **Phase A (Data Structure):** Highest priority - foundation for scalability  
 *   **Phase B (Dual State Management):** Critical priority - core architecture for dual engines
-*   **Phase C (Dual Calculation Engines):** High priority - implements parallel Reference/Target calculations
+*   **Phase C1 (Leaf Section Dual Engines):** **IMMEDIATE PRIORITY** - S07 first, then S09, S10, S11, S13
+*   **Phase C2 (Intermediate Sections):** High priority - S12, S14 dual implementations
+*   **Phase C3 (Primary Chain):** High priority - S15 → S04 → S01 sequence
 *   **Phase D (Reference Toggle Redefinition):** Medium priority - improves user experience
 *   **Phase E (CSV/Excel Standardization):** High priority - enables data interchange and expansion
 *   **Phase F (Scalability Support):** Medium priority - prepares for future growth
@@ -238,7 +300,44 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
 *   **Phase H (T-Cells):** Medium priority - implements T-cell comparison system
 *   **Phase I (End-to-End Testing):** Ongoing throughout, with final validation phase
 
-**Primary Focus:** CSV/Excel standardization and dual-engine architecture to support scalable expansion across multiple jurisdictions and building codes, while maintaining continuous parallel calculations for Reference vs Target comparison.
+**Primary Focus**: Implement dual-engine architecture in **dependency chain sequence** starting with S07 (Water Use), then build up through the calculation flow to ensure accurate cross-section value propagation for both Reference and Target models.
+
+## 6. Dependency Chain Analysis & Implementation Strategy
+
+### Current Dependency Chain Understanding
+
+**Primary Flow:**
+```
+S07 (Water) → S04 (Energy) → S01 (Dashboard)
+S15 (TEUI) → S04 (Energy) → S01 (Dashboard)
+S14 (TEDI) → S15 (TEUI) → S04 → S01
+```
+
+**Supporting Flows:**
+```
+S11 (Envelope) → S12 (U-values) → S14 (TEDI)
+S13 (Mechanical) → S14 (TEDI)
+S09 (Internal Gains) → S14 (TEDI)
+S10 (Solar Gains) → S14 (TEDI)
+```
+
+### Implementation Strategy
+
+1. **Start with S07 (Water Use)**: Already has good architecture, clear inputs/outputs
+2. **Build S09, S10, S11, S13**: Provide calculated values to S14
+3. **Implement S14 (TEDI)**: Consolidates energy demand calculations
+4. **Implement S15 (TEUI)**: Provides final energy totals
+5. **Implement S04**: Processes energy totals for dashboard
+6. **Complete S01**: Final dashboard display
+
+### Critical Success Factors
+
+1. **Dual Output Pattern**: Each section must provide BOTH Reference and Target calculated values
+2. **State Management**: Calculated values must be stored in StateManager for cross-section access
+3. **Triggering Logic**: Changes in upstream sections must properly trigger downstream recalculations
+4. **Value Mapping**: Clear mapping of which calculated values feed which sections
+
+This approach ensures that when S01 needs accurate results from S04, both the Reference and Target calculation chains are complete and accurate.
 
 ## Appendix A: CSV Export Field Verification (vs. `4011-ExcelMapper.js`)
 
