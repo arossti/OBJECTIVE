@@ -629,7 +629,7 @@ For each field/group, the behavior will be categorized as follows:
     *   `d_140` (GHGI Target kgCO2e/m2) -> `C.1`
 
 ---
-*(End of integrated content from `future code/deepstate-structure.md`)*
+*(End of integrated content from `future code/deepstate-structure.md`)* 
 
 ## 6. T-Cells: Reference Value Comparison System
 

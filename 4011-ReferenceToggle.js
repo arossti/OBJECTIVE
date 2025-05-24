@@ -38,12 +38,20 @@ TEUI.ReferenceToggle = (function() {
 
   function handleStandardChange(event) {
     const newStandardKey = event.target.value;
-    console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey}`);
+    console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey} (Reference Mode: ${referenceMode})`);
+    
     if (window.TEUI && TEUI.StateManager) {
+        // Update Application state (this will trigger ReferenceManager to reload reference data)
         TEUI.StateManager.setValue(STANDARD_SELECTOR_ID, newStandardKey, TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
+        
         if (referenceMode) {
-            // If already in reference mode, reload data and refresh UI for the new standard
-            triggerFullUIRefreshForModeChange();
+            // If already in reference mode, ensure reference data is loaded and refresh UI
+            console.log(`[ReferenceToggle] In Reference Mode - reloading data for ${newStandardKey}`);
+            
+            // Give the ReferenceManager a moment to process the d_13 change
+            setTimeout(() => {
+                triggerFullUIRefreshForModeChange();
+            }, 100); 
         }
     } else {
         console.error("[ReferenceToggle] StateManager not available to handle standard change.");
@@ -83,6 +91,12 @@ TEUI.ReferenceToggle = (function() {
             'g_89': { type: 'editable' },
             'd_13': { type: 'dropdown' }
         };
+    }
+
+    // CRITICAL: Ensure d_13 is always included as it's required for Reference Mode to work
+    if (!allUserEditableFields[STANDARD_SELECTOR_ID]) {
+        allUserEditableFields[STANDARD_SELECTOR_ID] = { type: 'dropdown' };
+        console.log(`[ReferenceToggle] Added ${STANDARD_SELECTOR_ID} to user-editable fields list`);
     }
 
     // Unconditionally mute application state updates for the duration of this UI refresh operation
@@ -152,17 +166,22 @@ TEUI.ReferenceToggle = (function() {
                     // In Reference Mode - check if field should be editable
                     let lockField = true; // Default: lock fields in Reference Mode
                     
-                    // Check AppendixE if available, otherwise use simple fallback logic
-                    if (TEUI.AppendixE && typeof TEUI.AppendixE.getFieldBehavior === 'function') {
-                        const behavior = TEUI.AppendixE.getFieldBehavior(fieldId, currentStandardKey);
-                        lockField = behavior !== "Independently User-Editable in Reference Mode";
+                    // SPECIAL CASE: d_13 (reference standard selector) must ALWAYS be editable in Reference Mode
+                    if (fieldId === 'd_13') {
+                        lockField = false;
+                        console.log(`[ReferenceToggle] ${fieldId} (standard selector) - keeping editable in Reference Mode`);
                     } else {
-                        // Simple fallback: only d_13 (standard selector) should be editable in Reference Mode
-                        lockField = fieldId !== 'd_13';
-                    }
-                    
-                    if (fieldDef.type === 'calculated' || fieldDef.type === 'derived') {
-                        lockField = true;
+                        // Check AppendixE if available, otherwise lock other fields
+                        if (TEUI.AppendixE && typeof TEUI.AppendixE.getFieldBehavior === 'function') {
+                            const behavior = TEUI.AppendixE.getFieldBehavior(fieldId, currentStandardKey);
+                            lockField = behavior !== "Independently User-Editable in Reference Mode";
+                        } else {
+                            lockField = true; // Lock all other fields by default
+                        }
+                        
+                        if (fieldDef.type === 'calculated' || fieldDef.type === 'derived') {
+                            lockField = true;
+                        }
                     }
 
                     // Apply locking
@@ -170,14 +189,26 @@ TEUI.ReferenceToggle = (function() {
                         element.classList.add('reference-locked');
                         const inputElement = element.querySelector('input, select, textarea') || 
                                            (element.matches('input, select, textarea') ? element : null);
-                        if (inputElement) inputElement.disabled = true;
-                        if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'false');
+                        if (inputElement) {
+                            inputElement.disabled = true;
+                            console.log(`[ReferenceToggle] ${fieldId} - disabled input element`);
+                        }
+                        if (element.hasAttribute('contenteditable')) {
+                            element.setAttribute('contenteditable', 'false');
+                            console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=false`);
+                        }
                     } else {
                         element.classList.remove('reference-locked');
                         const inputElement = element.querySelector('input, select, textarea') || 
                                            (element.matches('input, select, textarea') ? element : null);
-                        if (inputElement) inputElement.disabled = false;
-                        if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'true');
+                        if (inputElement) {
+                            inputElement.disabled = false;
+                            console.log(`[ReferenceToggle] ${fieldId} - enabled input element`);
+                        }
+                        if (element.hasAttribute('contenteditable')) {
+                            element.setAttribute('contenteditable', 'true');
+                            console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=true`);
+                        }
                     }
                 } else {
                     // In Design Mode - restore normal editability
@@ -224,9 +255,17 @@ TEUI.ReferenceToggle = (function() {
     return referenceMode;
   }
 
+  function refreshAllSectionsDisplay() {
+    if (referenceMode) {
+      console.log('[ReferenceToggle] Refreshing all sections display for Reference Mode');
+      triggerFullUIRefreshForModeChange();
+    }
+  }
+
   // Public API
   return {
     initialize,
-    isReferenceMode
+    isReferenceMode,
+    refreshAllSectionsDisplay
   };
 })(); 

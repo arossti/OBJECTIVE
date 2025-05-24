@@ -195,7 +195,7 @@ window.TEUI.SectionModules.sect07 = (function() {
              if (currentStateValue !== valueToStore) {
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
                 // Trigger dependent calculations if this field is a dependency for others
-                calculateAll(); // Recalculate section on change
+                 calculateAll(); // Recalculate section on change
             }
         }
     }
@@ -280,7 +280,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                     section: "waterUse",
                     dependencies: ["d_51", "k_54", "l_30", "e_51", "l_28"]
                 },
-                l: { content: "kgCO2e/yr", classes: ["text-left"] },
+                l: { content: "kgCO2e/yr", classes: ["text-left"] }, 
                 m: { content: "✓", classes: ["checkmark"] },
                 n: {
                     fieldId: "n_49",
@@ -837,7 +837,7 @@ window.TEUI.SectionModules.sect07 = (function() {
             const adjustedDemand = netDemandAfterRecovery_j52 * (1 - recoveryPercent);
             oilVolume = (adjustedDemand / conversionFactor) / afue;
         }
-        return oilVolume;
+        return oilVolume; 
     }
 
     /**
@@ -1039,7 +1039,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         if(g54Cell) g54Cell.classList.toggle('disabled-input', !isOil);
         const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
         if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
-
+        
         setFieldGhosted('k_54', !isOil); 
         const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
         if(h54Cell) h54Cell.classList.toggle('disabled-input', !isOil);

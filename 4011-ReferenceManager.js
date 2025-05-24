@@ -31,6 +31,14 @@ TEUI.ReferenceManager = (function() {
     // Listen for standard selection changes from Section 2 dropdown (d_13)
     TEUI.StateManager.addListener('d_13', function(newValue) {
       currentStandard = newValue;
+      console.log(`[ReferenceManager] d_13 changed to: ${newValue}, immediately loading reference data`);
+      
+      // ALWAYS load reference data when standard changes, regardless of current mode
+      if (newValue && newValue.trim() !== '') {
+        TEUI.StateManager.loadReferenceData(newValue);
+      }
+      
+      // If currently in Reference Mode, also refresh the UI display
       if (window.TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
         setTimeout(() => {
             if (TEUI.ReferenceToggle.isReferenceMode()) {

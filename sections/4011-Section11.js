@@ -789,7 +789,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 d97Slider.addEventListener('change', function() {
                     const percentageValue = parseFloat(this.value);
                     if (isNaN(percentageValue)) return;
-                    
+
                     // Final value goes through StateManager - let dependency chain handle everything
                     if (window.TEUI && window.TEUI.StateManager) {
                         window.TEUI.StateManager.setValue('d_97', percentageValue.toString(), 'user-modified');

@@ -627,11 +627,11 @@ window.TEUI.SectionModules.sect01 = (function() {
                 warningEl.textContent = ' TARGET>REFERENCE!';
                 teuiTitleEl.appendChild(warningEl);
             }
-        } else {
+                } else {
             warningEl?.remove();
         }
     }
-
+    
     //==========================================================================
     // DUAL-ENGINE ORCHESTRATION
     //==========================================================================
@@ -684,7 +684,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                         runAllCalculations();
                     }, 50);
                 } else {
-                    runAllCalculations();
+                runAllCalculations();
                 }
             });
         });
@@ -736,4 +736,4 @@ window.TEUI.SectionModules.sect01 = (function() {
         onSectionRendered: onSectionRendered,
         runAllCalculations: runAllCalculations
     };
-})(); 
+})();
