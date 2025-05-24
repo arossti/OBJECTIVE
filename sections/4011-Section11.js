@@ -594,8 +594,83 @@ window.TEUI.SectionModules.sect11 = (function() {
         }
     }
 
-    function calculateAll() {
-        // console.warn("S11: calculateAll called."); // Add log
+    //==========================================================================
+    // DUAL-ENGINE ARCHITECTURE
+    //==========================================================================
+
+    /**
+     * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
+     * Stores results with ref_ prefix to keep separate from Target values
+     */
+    function calculateReferenceModel() {
+        // console.log('[Section11] Running Reference Model calculations...');
+        
+        let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
+
+        componentConfig.forEach(config => {
+            // For Reference Model, we need to get reference values for RSI/U-values
+            const referenceFieldId = baselineValues[config.row]?.referenceId || null;
+            
+            // Calculate using reference values if available
+            if (referenceFieldId && window.TEUI?.ReferenceManager) {
+                calculateComponentRow(config.row, config, referenceFieldId);
+            } else {
+                // Fallback to regular calculation if no reference mapping
+                calculateComponentRow(config.row, config);
+            }
+            
+            const area = getNumericValue(`d_${config.row}`) || 0;
+            const heatloss = getNumericValue(`i_${config.row}`) || 0;
+            const heatgain = getNumericValue(`k_${config.row}`) || 0;
+            
+            totals.loss += heatloss;
+            totals.gain += heatgain;
+            if (config.row >= 85 && config.row <= 95) totals.areaD += area;
+            if (config.type === 'air') totals.airAreaD += area;
+            else if (config.type === 'ground') totals.groundAreaD += area;
+        });
+
+        // Calculate thermal bridge penalty using reference percentage
+        const penaltyPercent = window.TEUI?.ReferenceManager?.getValue('d_97') || 
+                               window.TEUI?.StateManager?.getReferenceValue('d_97') || 
+                               getNumericValue('d_97');
+        const penaltyDecimal = penaltyPercent / 100;
+        const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal));
+        
+        const penaltyHeatlossI = totals.loss * validatedPenalty;
+        const penaltyHeatgainK = totals.gain * validatedPenalty;
+
+        // Store Reference Model results with ref_ prefix
+        if (window.TEUI?.StateManager) {
+            // Component totals
+            window.TEUI.StateManager.setValue('ref_d_98', totals.areaD.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_i_98', totals.loss.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_98', totals.gain.toString(), 'calculated');
+            
+            // Penalty values
+            window.TEUI.StateManager.setValue('ref_i_97', penaltyHeatlossI.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_97', penaltyHeatgainK.toString(), 'calculated');
+            
+            // Store individual component reference values
+            componentConfig.forEach(config => {
+                const rowStr = config.row.toString();
+                const heatloss = getNumericValue(`i_${rowStr}`) || 0;
+                const heatgain = getNumericValue(`k_${rowStr}`) || 0;
+                window.TEUI.StateManager.setValue(`ref_i_${rowStr}`, heatloss.toString(), 'calculated');
+                window.TEUI.StateManager.setValue(`ref_k_${rowStr}`, heatgain.toString(), 'calculated');
+            });
+        }
+        
+        // console.log('[Section11] Reference Model values stored');
+    }
+
+    /**
+     * TARGET MODEL ENGINE: Calculate all Column H values using Application state
+     * This is the existing calculateAll logic, refactored
+     */
+    function calculateTargetModel() {
+        // console.log('[Section11] Running Target Model calculations...');
+        
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
@@ -689,6 +764,20 @@ window.TEUI.SectionModules.sect11 = (function() {
             // Update reference indicators for all rows
             updateReferenceIndicators(config.row);
         });
+    }
+
+    /**
+     * DUAL-ENGINE ORCHESTRATION
+     * Replaces the original calculateAll function
+     */
+    function calculateAll() {
+        // console.warn("S11: calculateAll called - running dual engines");
+        
+        // Run both engines independently
+        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+        calculateTargetModel();     // Calculates Target values (existing logic)
+        
+        // console.warn("S11: Dual-engine calculations complete");
     }
 
     //==========================================================================

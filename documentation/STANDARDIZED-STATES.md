@@ -1288,13 +1288,14 @@ Following the dependency flow:
 
 ### 5.1 Dual-Engine Calculation Implementation
 
-**Implementation Status**: ~20% Complete  
+**Implementation Status**: ~25% Complete  
 **Current State**: Partial implementation with display issues
 
 #### Sections with Dual-Engine Support:
 - **Section 01** (Key Values) - Implemented but display issue persists
 - **Section 04** (Energy & GHG) - Implemented and working
 - **Section 07** (Cooling/TEDI) - Already had dual-engine support
+- **Section 11** (Heat Loss/Gain) - Implemented, stores ref_ prefixed values
 
 #### Key Findings:
 
