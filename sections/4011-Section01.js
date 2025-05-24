@@ -292,6 +292,8 @@ window.TEUI.SectionModules.sect01 = (function() {
                 window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
                 
+                console.log(`[DEBUG-S01] STORED Reference values: ref_e_10=${referenceTEUI.toFixed(1)}, ref_d_8=${referenceAnnualCarbon.toFixed(1)}, ref_d_6=${referenceLifetimeCarbon.toFixed(1)}`);
+                
                 // REMOVED: Do NOT store in regular fields - this overwrites Target values!
                 // window.TEUI.StateManager.setValue('e_10', referenceTEUI.toFixed(1), 'calculated');
                 // window.TEUI.StateManager.setValue('d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
@@ -597,6 +599,8 @@ window.TEUI.SectionModules.sect01 = (function() {
         const d6RefValue = window.TEUI.StateManager?.getApplicationValue("ref_d_6") || "24.4";
         const d8RefValue = window.TEUI.StateManager?.getApplicationValue("ref_d_8") || "17.4";
         const e10RefValue = window.TEUI.StateManager?.getApplicationValue("ref_e_10") || "341.2";
+        
+        console.log(`[DEBUG-S01] RETRIEVED for Column E display: ref_d_6=${d6RefValue}, ref_d_8=${d8RefValue}, ref_e_10=${e10RefValue}`);
         
         updateDisplayValue('d_6', d6RefValue);
         updateDisplayValue('d_8', d8RefValue);

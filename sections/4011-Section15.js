@@ -802,9 +802,15 @@ window.TEUI.SectionModules.sect15 = (function() {
             // Get Reference values from upstream sections
             const getRefValue = (fieldId) => {
                 const refFieldId = `ref_${fieldId}`;
-                return window.TEUI?.StateManager?.getValue(refFieldId) || 
-                       window.TEUI?.StateManager?.getReferenceValue(fieldId) || 
-                       getNumericValue(fieldId);
+                let value = window.TEUI?.StateManager?.getValue(refFieldId) || 
+                           window.TEUI?.StateManager?.getReferenceValue(fieldId) || 
+                           getNumericValue(fieldId);
+                
+                // CRITICAL FIX: Ensure numeric conversion to prevent string concatenation
+                if (typeof value === 'string') {
+                    value = parseFloat(value.replace(/,/g, '')) || 0;
+                }
+                return typeof value === 'number' ? value : 0;
             };
             
             // Get all Reference dependencies
