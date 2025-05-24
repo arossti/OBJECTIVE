@@ -1262,37 +1262,29 @@ const formatTypeMap = {
 **Issue Identified:** Some sections have reference comparisons configured but lack T-cell values in ReferenceValues.js. These show warnings in console:
 - `No reference value found for d_65` (Section 09 - Plug Loads)
 - `No reference value found for d_66` (Section 09 - Lighting Loads)  
-- `No reference value found for g_67` (Section 09 - Equipment Spec)
-- `No reference value found for f_113` (Section 13 - HSPF)
-- `No reference value found for j_115` (Section 13 - AFUE)
-- `No reference value found for j_116` (Section 13 - COP)
+- `No reference value found for f_113` (Section 13 - HSPF value)
+- `No reference value found for j_115` (Section 13 - AFUE value)
+- `No reference value found for j_116` (Section 13 - Cooling COP)
 - `No reference value found for d_118` (Section 13 - HRV/ERV SRE%)
 - `No reference value found for d_119` (Section 13 - Vent Rate)
 
-**Temporary Solution:** 
-- Section 09: Shows 100% for missing values (since these fields are already building code conformant)
-- Section 13: Shows "N/A" for missing values
+**Manual Fix:** Instead of adding reference values we're unsure about, the code now handles missing values gracefully:
+- Section 09: Shows 100% (code conformant baseline)
+- Section 13: Shows N/A
 
-**Manual Corrections Needed:**
-1. **Section 09**: 
-   - Lighting loads (d_66) baseline should be 1.5 W/m² for most codes
-   - Plug loads and equipment are already set to code-conformant values
+### Known Issue: Reference Percentages Don't Update on Standard Change
 
-2. **Section 13 Mappings**:
-   - HSPF (f_113) maps to COPh values (h_113) when heat pump is primary fuel
-   - COPc (j_116) is correct for dedicated cooling
-   - Other values need proper T-cell definitions in ReferenceValues.js
+**Issue:** When changing the reference standard (d_13), reference percentage comparisons in Column M don't immediately update to reflect the new standard's values. All values show 100% until the page is refreshed.
 
-**Note:** Focus on dual-engine implementation first. Reference comparison visual feedback is secondary to getting calculations correct in both Reference and Target modes.
+**Root Cause:** The reference comparison calculations are using cached reference values that aren't being recalculated when the standard changes.
 
-### Testing Requirements
+**Workaround:** Refresh the page after changing the reference standard to see correct percentage comparisons.
 
-- **Consistency Check:** All editable fields should behave like Section13's j_115
-- **Reference Mode Robustness:** Toggle should work immediately without "bumps"
-- **Cross-Section Propagation:** Value changes should trigger downstream calculations reliably
-- **Format Consistency:** Display formatting should match field type requirements
+**TODO:** Add listener to recalculate reference comparisons when d_13 changes.
 
-**Implementation Note:** This pattern eliminates the sporadic behavior where Reference Mode toggle requires "calculation bumps" to work consistently. The key is proper event handling setup during field initialization and consistent StateManager integration patterns.
+## 8. Testing Strategy
+
+// ... existing code ...
 
 ## 5.1 Current Implementation Status (November 2024)
 
