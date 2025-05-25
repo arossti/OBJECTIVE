@@ -31,21 +31,20 @@ TEUI.ReferenceManager = (function() {
     // Listen for standard selection changes from Section 2 dropdown (d_13)
     TEUI.StateManager.addListener('d_13', function(newValue) {
       currentStandard = newValue;
-      console.log(`[ReferenceManager] d_13 changed to: ${newValue}, immediately loading reference data`);
+      console.log(`[ReferenceManager] d_13 changed to: ${newValue}. activeReferenceDataSet will be updated by StateManager or ReferenceToggle.`);
       
-      if (newValue && newValue.trim() !== '') {
-        if (window.TEUI && TEUI.StateManager && typeof TEUI.StateManager.loadReferenceData === 'function') {
-            TEUI.StateManager.loadReferenceData(newValue);
-        } else {
-            console.error("[ReferenceManager] StateManager or loadReferenceData not found when called by RefManager!");
-        }
-      }
+      // DO NOT call StateManager.loadReferenceData here directly anymore.
+      // Let StateManager (if d_13 is set by system) or ReferenceToggle (on mode switch) handle it.
+      // Or FileHandler (on import).
       
-      // If currently in Reference Mode, also refresh the UI display
+      // If currently in Reference Mode, the UI display needs to be refreshed based on the new standard.
+      // ReferenceToggle's handleStandardChange will manage this if it also listens to d_13, 
+      // or an explicit refresh call can be made if ReferenceManager is the sole d_13 state updater for Reference Mode.
       if (window.TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
-        setTimeout(() => {
-            if (TEUI.ReferenceToggle.isReferenceMode()) {
-                 TEUI.ReferenceToggle.refreshAllSectionsDisplay();
+        console.log("[ReferenceManager] In Reference Mode, d_13 changed. Triggering UI refresh via ReferenceToggle.");
+        setTimeout(() => { // Keep timeout to allow other d_13 listeners to complete if any
+            if (TEUI.ReferenceToggle.isReferenceMode()) { // Double check mode before refresh
+                 TEUI.ReferenceToggle.refreshAllSectionsDisplay(); // This will call loadReferenceData
             }
         }, 50); 
       }

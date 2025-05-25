@@ -335,7 +335,19 @@
                 }
             });
 
-            // Trigger recalculation after all updates
+            // AFTER all imported values have been set into StateManager.fields:
+            if (this.stateManager && typeof this.stateManager.loadReferenceData === 'function' && typeof this.stateManager.getApplicationValue === 'function') {
+                const finalD13 = this.stateManager.getApplicationValue('d_13');
+                if (finalD13) {
+                    console.log(`[FileHandler] All imported values set. Explicitly calling loadReferenceData for standard: ${finalD13}`);
+                    this.stateManager.loadReferenceData(finalD13);
+                    console.log(`[FileHandler] loadReferenceData finished after import.`);
+                } else {
+                    console.warn("[FileHandler] d_13 not found in imported data or state after import; cannot explicitly load reference data.");
+                }
+            }
+
+            // Trigger recalculation after all updates AND after reference data is loaded
             if (this.calculator && typeof this.calculator.calculateAll === 'function') {
                 this.calculator.calculateAll();
                 this.showStatus(`Import complete. ${updatedCount} fields updated. ${csvSkippedCount + skippedValidationCount} rows/fields skipped.`, 'success');
