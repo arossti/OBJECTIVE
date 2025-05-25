@@ -133,10 +133,12 @@ TEUI.ReferenceToggle = (function() {
 
             if (referenceMode) {
                 displayValue = TEUI.StateManager.getValue(fieldId); // Mode-aware, gets from activeReferenceDataSet
+                // console.log(`[ReferenceToggle] ${fieldId} Reference Mode value: "${displayValue}"`); // Ensure this is commented
             } else {
                 displayValue = TEUI.StateManager.getApplicationValue ? 
                               TEUI.StateManager.getApplicationValue(fieldId) : 
                               TEUI.StateManager.getValue(fieldId);
+                // console.log(`[ReferenceToggle] ${fieldId} Design Mode value: "${displayValue}"`); // Ensure this is commented
             }
 
             // Update the field display
@@ -191,11 +193,11 @@ TEUI.ReferenceToggle = (function() {
                                            (element.matches('input, select, textarea') ? element : null);
                         if (inputElement) {
                             inputElement.disabled = true;
-                            console.log(`[ReferenceToggle] ${fieldId} - disabled input element`);
+                            // console.log(`[ReferenceToggle] ${fieldId} - disabled input element`); // Ensure this is commented
                         }
                         if (element.hasAttribute('contenteditable')) {
                             element.setAttribute('contenteditable', 'false');
-                            console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=false`);
+                            // console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=false`); // Ensure this is commented
                         }
                     } else {
                         element.classList.remove('reference-locked');
@@ -203,11 +205,11 @@ TEUI.ReferenceToggle = (function() {
                                            (element.matches('input, select, textarea') ? element : null);
                         if (inputElement) {
                             inputElement.disabled = false;
-                            console.log(`[ReferenceToggle] ${fieldId} - enabled input element`);
+                            // console.log(`[ReferenceToggle] ${fieldId} - enabled input element`); // Ensure this is commented
                         }
                         if (element.hasAttribute('contenteditable')) {
                             element.setAttribute('contenteditable', 'true');
-                            console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=true`);
+                            // console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=true`); // Ensure this is commented
                         }
                     }
                 } else {
