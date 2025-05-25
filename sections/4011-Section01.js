@@ -209,12 +209,9 @@ window.TEUI.SectionModules.sect01 = (function() {
         referenceCalculationInProgress = true;
         
         try {
-            // CALCULATED VALUES come from Application state (results of other sections' reference calculations)
-            // CRITICAL: Look for ref_ prefixed values first, then fall back to Application state
             const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
             
-            // Use ref_ values if available, otherwise use regular values
             const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
                                   parseFloat(refJ32FromS04) : 
                                   getAppNumericValue('j_32', 0);
@@ -222,44 +219,40 @@ window.TEUI.SectionModules.sect01 = (function() {
                                      parseFloat(refK32FromS04) : 
                                      getAppNumericValue('k_32', 0);
             
-            // INPUT VALUES come from Reference state if available
-            const refArea = getRefNumericValue('h_15', 1);               // Usually carries over from application
-            const refServiceLife = getRefNumericValue('h_13', 50);        // May be overridden by standard
-            const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82); // Usually carries over
+            console.log("[S01 DBG] Reading h_15 for refArea. App value:", window.TEUI.StateManager.getApplicationValue('h_15'), "Ref value from activeDataSet:", window.TEUI.StateManager.getReferenceValue('h_15'));
+            const refArea = getRefNumericValue('h_15', 1); 
+            const refServiceLife = getRefNumericValue('h_13', 50); 
+            const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82); 
+
+            console.log(`[S01 DBG] CalcRefModel - Inputs for e_10: refTargetEnergy (from ref_j_32 or j_32)=${refTargetEnergy}, refArea (from h_15)=${refArea}`);
             
-            // Get the reference standard to check for specific values
             const referenceStandard = window.TEUI?.StateManager?.getApplicationValue('d_13');
             
-            // Get values from reference standard if available
             const refValues = window.TEUI?.ReferenceValues?.[referenceStandard] || {};
             
-            // CHECK if we have reference values from standard
             if (referenceStandard && refValues) {
                 // Apply any overrides from the reference standard
                 // For now, we'll just use the calculated values
             }
             
-            // Calculate Reference TEUI (e_10)
             let referenceTEUI = 0;
             if (refArea > 0) {
                 referenceTEUI = Math.round((refTargetEnergy / refArea) * 10) / 10;
             }
             
-            // Calculate Reference Annual Carbon (d_8)
+            console.log(`[S01 DBG] CalcRefModel - Calculated referenceTEUI for ref_e_10: ${referenceTEUI}`);
+
             let referenceAnnualCarbon = 0;
             if (refArea > 0) {
                 referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
             }
             
-            // Calculate Reference Lifetime Carbon (d_6)
             let referenceLifetimeCarbon = 0;
             if (refServiceLife > 0) {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
             }
 
-            // Output to Column E fields (Reference Results)
             if (window.TEUI?.StateManager) {
-                // CRITICAL FIX: Store Reference values with ref_ prefix to keep them separate from Target values
                 window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
