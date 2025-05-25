@@ -1233,7 +1233,7 @@ window.TEUI.SectionModules.sect10 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        console.log("[Section10] Running Reference Model calculations...");
+        // console.log("[Section10] Running Reference Model calculations...");
         
         try {
             // Calculate individual orientation rows using reference values
@@ -1276,7 +1276,7 @@ window.TEUI.SectionModules.sect10 = (function() {
      * This is the existing calculation logic, refactored
      */
     function calculateTargetModel() {
-        console.log("[Section10] Running Target Model calculations...");
+        // console.log("[Section10] Running Target Model calculations...");
         
         try {
             // Calculate individual orientation rows

@@ -2066,8 +2066,8 @@ window.TEUI.SectionModules.sect13 = (function() {
                 // For now, storing key reference values that might be needed by other sections
             }
             
-            // console.log("[Section13] Reference Model values stored"); // Comment out
-            console.log("[Section13] Reference Model values stored");
+                    // console.log("[Section13] Reference Model values stored"); // Comment out
+        // console.log("[Section13] Reference Model values stored");
         } catch (error) {
             console.error('[Section13] Error in Reference Model calculations:', error);
         }

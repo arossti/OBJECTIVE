@@ -45,9 +45,27 @@ TEUI.ReferenceToggle = (function() {
         
         if (referenceMode) {
             console.log(`[ReferenceToggle] In Reference Mode - reloading data for ${newStandardKey}`);
+            console.log(`[ReferenceToggle] BEFORE reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
+            
+            // Reload reference data immediately
+            TEUI.StateManager.loadReferenceData(newStandardKey);
+            console.log(`[ReferenceToggle] AFTER reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
+            
+            // Trigger UI refresh and calculations
             setTimeout(() => {
+                console.log(`[ReferenceToggle] Triggering UI refresh and calculations for ${newStandardKey}`);
                 triggerFullUIRefreshForModeChange();
+                
+                // Also trigger a calculation pass to ensure reference calculations update
+                if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+                    console.log(`[ReferenceToggle] Triggering Calculator.calculateAll after d_13 change in Reference Mode`);
+                    setTimeout(() => {
+                        window.TEUI.Calculator.calculateAll();
+                    }, 150);
+                }
             }, 100); 
+        } else {
+            console.log(`[ReferenceToggle] Not in Reference Mode - d_13 change will take effect on next Reference Mode entry`);
         }
     } else {
         console.error("[ReferenceToggle] StateManager not available to handle standard change.");

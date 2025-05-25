@@ -209,8 +209,10 @@ window.TEUI.SectionModules.sect01 = (function() {
         referenceCalculationInProgress = true;
         
         try {
+            console.log('[S01-REF-ENGINE] Starting Reference Model calculation...');
             const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
+            console.log('[S01-REF-ENGINE] Reference energy values from S04:', { ref_j_32: refJ32FromS04, ref_k_32: refK32FromS04 });
             
             const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
                                   parseFloat(refJ32FromS04) : 
@@ -224,7 +226,6 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82); 
             
             const referenceStandard = window.TEUI?.StateManager?.getApplicationValue('d_13');
-            
             const refValues = window.TEUI?.ReferenceValues?.[referenceStandard] || {};
             
             if (referenceStandard && refValues) {
@@ -247,11 +248,29 @@ window.TEUI.SectionModules.sect01 = (function() {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
             }
 
+            // Only update StateManager if values have changed
             if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
+                const currentRefTEUI = window.TEUI.StateManager.getApplicationValue('ref_e_10');
+                const currentRefAnnual = window.TEUI.StateManager.getApplicationValue('ref_d_8');
+                const currentRefLifetime = window.TEUI.StateManager.getApplicationValue('ref_d_6');
+                
+                if (currentRefTEUI !== referenceTEUI.toFixed(1)) {
+                    window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
+                }
+                if (currentRefAnnual !== referenceAnnualCarbon.toFixed(1)) {
+                    window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
+                }
+                if (currentRefLifetime !== referenceLifetimeCarbon.toFixed(1)) {
+                    window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
+                }
+                
+                console.log('[S01-REF-ENGINE] Stored Reference results:', { 
+                    ref_d_6: referenceLifetimeCarbon.toFixed(1), 
+                    ref_d_8: referenceAnnualCarbon.toFixed(1), 
+                    ref_e_10: referenceTEUI.toFixed(1) 
+                });
             }
+            console.log('[S01-REF-ENGINE] Reference Model calculation complete');
         } finally {
             referenceCalculationInProgress = false;
         }
@@ -319,21 +338,39 @@ window.TEUI.SectionModules.sect01 = (function() {
                 actualLifetimeCarbon = Math.round((appEmbodiedCarbon / appServiceLife + actualAnnualCarbon) * 10) / 10;
             }
 
-            // Output to Column H fields (Target Results)
+            // Only update StateManager if values have changed
             if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
-                window.TEUI.StateManager.setValue('h_8', targetAnnualCarbon.toFixed(1), 'calculated');
-                window.TEUI.StateManager.setValue('h_6', targetLifetimeCarbon.toFixed(1), 'calculated');
+                const currentH10 = window.TEUI.StateManager.getApplicationValue('h_10');
+                const currentH8 = window.TEUI.StateManager.getApplicationValue('h_8');
+                const currentH6 = window.TEUI.StateManager.getApplicationValue('h_6');
+                const currentK10 = window.TEUI.StateManager.getApplicationValue('k_10');
+                const currentK8 = window.TEUI.StateManager.getApplicationValue('k_8');
+                const currentK6 = window.TEUI.StateManager.getApplicationValue('k_6');
+                
+                // Output to Column H fields (Target Results) - only if changed
+                if (currentH10 !== targetTEUI.toFixed(1)) {
+                    window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
+                }
+                if (currentH8 !== targetAnnualCarbon.toFixed(1)) {
+                    window.TEUI.StateManager.setValue('h_8', targetAnnualCarbon.toFixed(1), 'calculated');
+                }
+                if (currentH6 !== targetLifetimeCarbon.toFixed(1)) {
+                    window.TEUI.StateManager.setValue('h_6', targetLifetimeCarbon.toFixed(1), 'calculated');
+                }
 
-                // Output to Column K fields (Actual Results) - conditional
-                if (useType === "Utility Bills") {
-                    window.TEUI.StateManager.setValue('k_10', actualTEUI.toFixed(1), 'calculated');
-                    window.TEUI.StateManager.setValue('k_8', actualAnnualCarbon.toFixed(1), 'calculated');
-                    window.TEUI.StateManager.setValue('k_6', actualLifetimeCarbon.toFixed(1), 'calculated');
-                } else {
-                    window.TEUI.StateManager.setValue('k_10', 'N/A', 'calculated');
-                    window.TEUI.StateManager.setValue('k_8', 'N/A', 'calculated');
-                    window.TEUI.StateManager.setValue('k_6', 'N/A', 'calculated');
+                // Output to Column K fields (Actual Results) - conditional and only if changed
+                const newK10 = useType === "Utility Bills" ? actualTEUI.toFixed(1) : 'N/A';
+                const newK8 = useType === "Utility Bills" ? actualAnnualCarbon.toFixed(1) : 'N/A';
+                const newK6 = useType === "Utility Bills" ? actualLifetimeCarbon.toFixed(1) : 'N/A';
+                
+                if (currentK10 !== newK10) {
+                    window.TEUI.StateManager.setValue('k_10', newK10, 'calculated');
+                }
+                if (currentK8 !== newK8) {
+                    window.TEUI.StateManager.setValue('k_8', newK8, 'calculated');
+                }
+                if (currentK6 !== newK6) {
+                    window.TEUI.StateManager.setValue('k_6', newK6, 'calculated');
                 }
             }
 
@@ -378,10 +415,19 @@ window.TEUI.SectionModules.sect01 = (function() {
             teuiPercent = Math.round((valueToUse / referenceTEUI) * 100);
         }
 
-        // Update StateManager
+        // Only update StateManager if values have changed
         if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue('j_8', `${annualCarbonPercent}%`, 'calculated');
-            window.TEUI.StateManager.setValue('j_10', `${teuiPercent}%`, 'calculated');
+            const currentJ8 = window.TEUI.StateManager.getApplicationValue('j_8');
+            const currentJ10 = window.TEUI.StateManager.getApplicationValue('j_10');
+            const newJ8 = `${annualCarbonPercent}%`;
+            const newJ10 = `${teuiPercent}%`;
+            
+            if (currentJ8 !== newJ8) {
+                window.TEUI.StateManager.setValue('j_8', newJ8, 'calculated');
+            }
+            if (currentJ10 !== newJ10) {
+                window.TEUI.StateManager.setValue('j_10', newJ10, 'calculated');
+            }
         }
 
         // Update explanation text for Target columns
@@ -660,19 +706,29 @@ window.TEUI.SectionModules.sect01 = (function() {
     function runAllCalculations() {
         // Add recursion protection
         if (calculationInProgress) {
+            console.log('[S01-ORCHESTRATOR] Skipping - calculation already in progress');
             return;
         }
         
         calculationInProgress = true;
+        console.log('[S01-ORCHESTRATOR] Starting runAllCalculations...');
         
         try {
             // Run both engines independently
+            console.log('[S01-ORCHESTRATOR] Calling calculateReferenceModel...');
             calculateReferenceModel();  // Calculates Column E values using Reference state
+            
+            console.log('[S01-ORCHESTRATOR] Calling calculateTargetModel...');
             calculateTargetModel();     // Calculates Column H values using Application state
             
             // Calculate tiers and display updates
+            console.log('[S01-ORCHESTRATOR] Calling calculateTargetTier...');
             calculateTargetTier();      // Calculate i_10 (Target Tier for h_10)
+            
+            console.log('[S01-ORCHESTRATOR] Calling updateTEUIDisplay...');
             updateTEUIDisplay();        // Update all visual displays
+            
+            console.log('[S01-ORCHESTRATOR] runAllCalculations complete');
         } finally {
             calculationInProgress = false;
         }
@@ -685,20 +741,21 @@ window.TEUI.SectionModules.sect01 = (function() {
     function initializeEventHandlers() {
         if (!window.TEUI || !window.TEUI.StateManager) return;
 
-        const fieldsToWatch = [
-            "d_6", "h_6", "k_6", "d_8", "h_8", "k_8", "j_8", 
-            "e_10", "f_10", "h_10", "i_10", "k_10", "j_10", 
-            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "j_32", "d_51", "d_14", "d_13"
+        // Only listen to INPUT fields that affect calculations, not calculated outputs
+        const inputFieldsToWatch = [
+            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "j_32", "d_51", "d_14", "d_13",
+            "ref_j_32", "ref_k_32"  // Reference values from S04
         ];
 
-        fieldsToWatch.forEach(fieldId => {
+        inputFieldsToWatch.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
+                // Debounce for d_51 which can trigger rapid changes
                 if (fieldId === 'd_51') {
                     setTimeout(() => {
                         runAllCalculations();
                     }, 50);
                 } else {
-                runAllCalculations();
+                    runAllCalculations();
                 }
             });
         });

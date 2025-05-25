@@ -1350,7 +1350,7 @@ window.TEUI.SectionModules.sect07 = (function() {
      * REFERENCE MODEL ENGINE: Calculate all Reference Model calculations
      */
     function calculateReferenceModel() {
-        console.log('[Section07] Running Reference Model calculations...');
+        // console.log('[Section07] Running Reference Model calculations...');
         
         const waterUseResults = calculateReferenceWaterUse();
         const heatingResults = calculateReferenceHeatingSystem(waterUseResults.hotWaterEnergyDemand);
@@ -1370,7 +1370,7 @@ window.TEUI.SectionModules.sect07 = (function() {
      * TARGET MODEL ENGINE: Calculate all Target Model calculations
      */
     function calculateTargetModel() {
-        console.log('[Section07] Running Target Model calculations...');
+        // console.log('[Section07] Running Target Model calculations...');
         
         const waterUseResults = calculateTargetWaterUse();
         const heatingResults = calculateTargetHeatingSystem(waterUseResults.hotWaterEnergyDemand);

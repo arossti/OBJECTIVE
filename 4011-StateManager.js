@@ -1121,14 +1121,39 @@ TEUI.StateManager = (function() {
     }
 
     /**
-     * NEW METHOD: Reverts the application state to the last successfully imported state.
+     * NEW METHOD: Reverts the application state to the last successfully imported state,
+     * or performs a system refresh if no imported data exists.
      */
     function revertToLastImportedState() {
         if (Object.keys(lastImportedState).length === 0) {
-            if (window.TEUI && window.TEUI.FileHandler && typeof window.TEUI.FileHandler.showStatus === 'function') {
-                window.TEUI.FileHandler.showStatus('No data has been imported in this session to reset to.', 'warning');
+            // No imported data - perform a system refresh instead
+            console.log('[StateManager] No imported data found. Performing system refresh...');
+            
+            // Trigger a full recalculation to refresh the system
+            if (window.TEUI && window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+                window.TEUI.Calculator.calculateAll();
+            } else {
+                console.warn('[StateManager] Calculator.calculateAll not available for system refresh.');
             }
-            console.warn('[StateManager] revertToLastImportedState called, but lastImportedState is empty.');
+            
+            // Also trigger reference model recalculation if in reference mode
+            if (window.TEUI && window.TEUI.ReferenceToggle && window.TEUI.ReferenceToggle.isReferenceMode()) {
+                // Reload reference data to ensure consistency
+                const currentStandard = getValue('d_13') || 'OBC SB10 5.5-6 Z6';
+                loadReferenceData(currentStandard);
+                
+                // Trigger another calculation pass for reference values
+                setTimeout(() => {
+                    if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+                        window.TEUI.Calculator.calculateAll();
+                    }
+                }, 100);
+            }
+            
+            if (window.TEUI && window.TEUI.FileHandler && typeof window.TEUI.FileHandler.showStatus === 'function') {
+                window.TEUI.FileHandler.showStatus('System defaults restored (no imported states yet)', 'info');
+            }
+            console.log('[StateManager] System refresh completed.');
             return;
         }
 

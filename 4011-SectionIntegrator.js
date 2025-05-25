@@ -680,31 +680,43 @@ TEUI.SectionIntegrator = (function() {
         // console.log('Volume Metrics listeners registered');
     }
     
+    // Add debouncing for Volume Metrics updates
+    let volumeMetricsUpdateTimeout = null;
+    
     /**
      * Force update of Volume Metrics calculations across all affected sections
      */
     function forceVolumeMetricsUpdate() {
-        // console.log('🔄 [SectionIntegrator] Forcing Volume Metrics recalculation');
+        // Clear any pending update
+        if (volumeMetricsUpdateTimeout) {
+            clearTimeout(volumeMetricsUpdateTimeout);
+        }
         
-        // First try using Section 12's calculation function
-        if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect12) {
-            if (typeof window.TEUI.SectionModules.sect12.calculateAll === 'function') {
-                // console.log('Using sect12.calculateAll to update Volume Metrics');
-                window.TEUI.SectionModules.sect12.calculateAll();
+        // Debounce the update to prevent excessive calls
+        volumeMetricsUpdateTimeout = setTimeout(() => {
+            // console.log('🔄 [SectionIntegrator] Forcing Volume Metrics recalculation');
+            
+            // First try using Section 12's calculation function
+            if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect12) {
+                if (typeof window.TEUI.SectionModules.sect12.calculateAll === 'function') {
+                    // console.log('Using sect12.calculateAll to update Volume Metrics');
+                    window.TEUI.SectionModules.sect12.calculateAll();
+                }
             }
-        }
-        // Fallback to global function
-        else if (window.TEUI.forceSurfaceMetricsUpdate) {
-            window.TEUI.forceSurfaceMetricsUpdate('section-integrator');
-        }
-        
-        // Update TEDI/TELI if available since it depends on volume metrics
-        if (window.TEUI.updateTEDITELIValues) {
-            // console.log('Updating TEDI/TELI values based on new Volume Metrics');
-            window.TEUI.updateTEDITELIValues();
-        }
-        
-        // console.log('🔄 [SectionIntegrator] Volume Metrics update complete');
+            // Fallback to global function
+            else if (window.TEUI.forceSurfaceMetricsUpdate) {
+                window.TEUI.forceSurfaceMetricsUpdate('section-integrator');
+            }
+            
+            // Update TEDI/TELI if available since it depends on volume metrics
+            if (window.TEUI.updateTEDITELIValues) {
+                // console.log('Updating TEDI/TELI values based on new Volume Metrics');
+                window.TEUI.updateTEDITELIValues();
+            }
+            
+            // console.log('🔄 [SectionIntegrator] Volume Metrics update complete');
+            volumeMetricsUpdateTimeout = null;
+        }, 100); // 100ms debounce
     }
     
     // Initialize on load

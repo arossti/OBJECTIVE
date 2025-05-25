@@ -454,10 +454,18 @@ window.TEUI.SectionModules.sect12 = (function() {
         const mFieldId = `m_${rowId}`;
         const nFieldId = `n_${rowId}`;
         
+        // Check if M and N column elements exist before trying to update them
+        const mElement = document.querySelector(`[data-field-id="${mFieldId}"]`);
+        const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+        
+        if (!mElement || !nElement) {
+            // Skip reference indicators for rows that don't have M/N columns
+            return;
+        }
+        
         // If no reference value found, show N/A
         if (!referenceValue || referenceValue === 0) {
             setCalculatedValue(mFieldId, 'N/A', 'raw');
-            const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
             if (nElement) {
                 nElement.textContent = '';
                 nElement.classList.remove('checkmark', 'warning');
@@ -486,8 +494,7 @@ window.TEUI.SectionModules.sect12 = (function() {
         // Update M column with percentage
         setCalculatedValue(mFieldId, percentage / 100, 'percent');
         
-        // Update N column with checkmark/warning
-        const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+        // Update N column with checkmark/warning (nElement already declared above)
         if (nElement) {
             nElement.textContent = isGood ? '✓' : '✗';
             setElementClass(nFieldId, isGood ? 'checkmark' : 'warning', ['checkmark', 'warning']);

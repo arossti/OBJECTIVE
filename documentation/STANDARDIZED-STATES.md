@@ -1272,6 +1272,82 @@ const formatTypeMap = {
 - Section 09: Shows 100% (code conformant baseline)
 - Section 13: Shows N/A
 
+### Recent Session Progress (2024-12-XX) - Dual-Engine Timing & State Synchronization
+
+#### ✅ **Issues Resolved:**
+
+1. **"Reset Imported" Button Enhanced to "Reset" Button**
+   - **Problem**: Users needed a convenient way to refresh the system when encountering initial load calculation issues
+   - **Solution**: Modified button text from "Reset Imported" to "Reset" and enhanced `revertToLastImportedState()` function
+   - **Behavior**: 
+     - When imported data exists: Reverts to last imported state (original behavior)
+     - When no imported data exists: Performs comprehensive system refresh including:
+       - Full calculation pass via `Calculator.calculateAll()`
+       - Reference model refresh if in Reference Mode
+       - Reference data reload with proper sequencing
+   - **User Message**: Shows "System defaults restored (no imported states yet)" instead of warning
+   - **Files Modified**: `index.html`, `4011-StateManager.js`
+
+2. **Enhanced Diagnostic Logging for Timing Issues**
+   - **Problem**: Difficult to trace calculation flow and timing issues in dual-engine architecture
+   - **Solution**: Added comprehensive logging to trace:
+     - Reference data loading before/after state changes
+     - Section 01 dual-engine calculation sequence
+     - d_13 standard changes within Reference Mode
+     - Calculation orchestration flow
+   - **Files Modified**: `4011-ReferenceToggle.js`, `sections/4011-Section01.js`
+
+3. **Improved d_13 Change Handling in Reference Mode**
+   - **Problem**: When d_13 changes within Reference Mode, reference values didn't update properly
+   - **Solution**: Enhanced `handleStandardChange()` to:
+     - Immediately reload reference data when d_13 changes in Reference Mode
+     - Trigger additional calculation pass with proper timing
+     - Add diagnostic logging to trace the update flow
+   - **Result**: d_13 changes now properly trigger reference data reload and calculations
+   - **Files Modified**: `4011-ReferenceToggle.js`
+
+#### 🔄 **Issues Partially Resolved:**
+
+1. **d_13 Changes Outside Reference Mode**
+   - **Status**: ✅ **IMPROVED** - Reference values now load properly on next Reference Mode entry
+   - **Previous Issue**: Required manual workarounds to see reference values
+   - **Current State**: Works correctly when d_13 is changed in Design Mode, then entering Reference Mode
+
+#### ❌ **Issues Still Under Investigation:**
+
+1. **Initial Load "First Paint" High Values**
+   - **Problem**: On page refresh, Section 01 shows incorrect high values initially
+   - **Symptoms**: Requires "Reset" button click or Reference Mode toggle to display correct values
+   - **Root Cause**: Likely timing issue in initial calculation sequence or reference data loading
+   - **Investigation Tools**: Enhanced logging now in place to trace initial load sequence
+   - **Workaround**: Click "Reset" button after initial load
+
+2. **Reference Values Display in Reference Mode**
+   - **Problem**: When d_13 changes within Reference Mode, S01 calculations update but reference input values may not visually refresh in other sections
+   - **Symptoms**: Reference calculations appear correct but input fields may show stale values
+   - **Investigation**: Timing between reference data reload and UI refresh
+
+#### 🧪 **Testing Framework Established:**
+
+**Enhanced Diagnostic Logging Now Traces:**
+- `[ReferenceToggle] BEFORE/AFTER reload - activeReferenceDataSet d_53:` - Reference data loading
+- `[S01-REF-ENGINE] Starting Reference Model calculation...` - Reference engine execution
+- `[S01-REF-ENGINE] Stored Reference results:` - Reference calculation outputs
+- `[S01-ORCHESTRATOR] Starting runAllCalculations...` - Calculation sequence timing
+- `[ReferenceToggle] Triggering Calculator.calculateAll after d_13 change` - Additional calculation triggers
+
+**Test Scenarios:**
+1. **d_13 Change Within Reference Mode**: Change standard while in Reference Mode, observe console logs
+2. **Initial Load Issue**: Refresh page, watch calculation sequence, test Reset button
+3. **d_13 Change Outside Reference Mode**: Change standard in Design Mode, enter Reference Mode
+
+#### 🎯 **Next Steps for Complete Resolution:**
+
+1. **Root Cause Analysis**: Use enhanced logging to identify exact timing issues in initial load sequence
+2. **Reference Data Synchronization**: Ensure reference data loading and UI refresh are properly synchronized
+3. **Calculation Sequencing**: Investigate if calculation order needs adjustment for initial load
+4. **State Consistency**: Verify that reference state and application state remain properly isolated
+
 ### Known Issue: Reference Percentages Don't Update on Standard Change
 
 **Issue:** When changing the reference standard (d_13), reference percentage comparisons in Column M don't immediately update to reflect the new standard's values. All values show 100% until the page is refreshed.
