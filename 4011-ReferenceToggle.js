@@ -125,7 +125,7 @@ TEUI.ReferenceToggle = (function() {
             // CRITICAL: Skip Section 01 calculated fields that should always display dual-engine values
             const section01CalculatedFields = ['d_6', 'd_8', 'e_10', 'h_6', 'h_8', 'h_10', 'k_6', 'k_8', 'k_10', 'j_8', 'j_10', 'i_10'];
             if (section01CalculatedFields.includes(fieldId)) {
-                console.log(`[ReferenceToggle] Skipping ${fieldId} - Section 01 dual-engine field`);
+                // console.log(`[ReferenceToggle] Skipping ${fieldId} - Section 01 dual-engine field`); // Keep this useful skip log if desired, but commented for now
                 continue;
             }
 
@@ -133,12 +133,10 @@ TEUI.ReferenceToggle = (function() {
 
             if (referenceMode) {
                 displayValue = TEUI.StateManager.getValue(fieldId); // Mode-aware, gets from activeReferenceDataSet
-                console.log(`[ReferenceToggle] ${fieldId} Reference Mode value: "${displayValue}"`);
             } else {
                 displayValue = TEUI.StateManager.getApplicationValue ? 
                               TEUI.StateManager.getApplicationValue(fieldId) : 
                               TEUI.StateManager.getValue(fieldId);
-                console.log(`[ReferenceToggle] ${fieldId} Design Mode value: "${displayValue}"`);
             }
 
             // Update the field display
