@@ -1484,9 +1484,190 @@ const formatTypeMap = {
 
 **TODO:** Add listener to recalculate reference comparisons when d_13 changes.
 
-## 8. Testing Strategy
+## 8. Sequential Implementation Workplan (Current Session)
 
-// ... existing code ...
+Based on the current state of dual-engine implementation and identified issues, we will proceed with a systematic section-by-section validation approach using both default data and imported test cases.
+
+### **Phase A: Section-by-Section Reference State Validation**
+
+**Objective:** Systematically validate Reference Mode functionality across all sections using both default data and imported test cases.
+
+**Test Cases:**
+1. **Default Data State**: Fresh page load with default building parameters
+2. **Sherwood Community Centre**: Imported file (Sherwood CC in Milton, Ontario) representing real-world building data
+
+**Implementation Sequence:**
+
+#### **A1. Reference Standard (d_13) Interaction Testing**
+- **Scope**: Test d_13 dropdown behavior across all available standards
+- **Standards to Test**:
+  - OBC SB10 5.5-6 Z6 (current default)
+  - NBC 9.36 Prescriptive Path
+  - Other available standards in dropdown
+- **Validation Points**:
+  - Reference data loads correctly on standard change
+  - UI fields update to show reference values in Reference Mode
+  - Calculated reference results appear in Column E
+  - No infinite loops or timing issues
+  - Reference percentages update in Column M
+
+#### **A2. Section-by-Section Reference Mode Validation**
+**Order of Implementation** (following dependency chain):
+
+1. **Section 07 (Water Use)** ✅ *Already implemented*
+   - Validate reference DHW efficiency and DWHR values
+   - Test reference emissions calculations
+   - Verify Column E displays reference results
+
+2. **Section 09 (Internal Gains)**
+   - Validate reference plug loads and lighting values
+   - Test reference equipment efficiency specifications
+   - Verify reference percentage comparisons (Column M)
+
+3. **Section 10 (Radiant Gains)**
+   - Validate reference SHGC values for windows/doors
+   - Test reference gains calculation method
+   - Verify minimal reference comparisons work correctly
+
+4. **Section 11 (Transmission Losses)**
+   - Validate reference RSI and U-values for all envelope components
+   - Test reference thermal bridge penalty values
+   - Verify comprehensive reference comparisons across all envelope elements
+
+5. **Section 12 (Volume & Surface)**
+   - Validate reference WWR and ACH50 targets
+   - Test reference building metrics
+   - Verify reference indicators for air tightness
+
+6. **Section 13 (Mechanical Loads)**
+   - Validate reference equipment efficiencies (HSPF, AFUE, COP, HRV SRE)
+   - Test reference ventilation rates
+   - Verify reference comparisons for all mechanical systems
+
+7. **Section 14 (TEDI)**
+   - Validate reference TEDI target values
+   - Test reference energy demand calculations
+   - Verify ref_d_127 and ref_h_127 storage for downstream sections
+
+8. **Section 15 (TEUI)**
+   - Validate reference TEUI calculations
+   - Test ref_d_136 and ref_h_136 storage for Section 04
+   - Verify reference energy totals
+
+9. **Section 04 (Energy Totals)**
+   - Validate reference energy aggregation from S15
+   - Test ref_j_32 and ref_k_32 calculations
+   - Verify reference energy summary values
+
+10. **Section 01 (Key Values Dashboard)**
+    - Validate final reference TEUI display (e_10)
+    - Test reference carbon calculations (e_6, e_8)
+    - Verify dual-engine display works correctly
+
+#### **A3. Per-Section Validation Checklist**
+For each section, validate:
+
+**Reference Mode UI Behavior:**
+- [ ] Reference Mode toggle shows reference input values in editable fields
+- [ ] Reference-locked fields are properly disabled/enabled per AppendixE rules
+- [ ] d_13 changes trigger reference data reload and UI refresh
+- [ ] Reference Mode displays reference values, Design Mode shows application values
+
+**Reference Calculation Engine:**
+- [ ] Reference calculations run continuously regardless of UI mode
+- [ ] Reference results always appear in Column E
+- [ ] Reference engine uses `getReferenceValue()` exclusively
+- [ ] Reference calculations store results with `ref_` prefix for cross-section use
+
+**Reference Comparison System (T-Cells):**
+- [ ] Reference percentages display correctly in Column M
+- [ ] Pass/fail indicators work correctly in Column N
+- [ ] Missing T-cell values handled gracefully (N/A or 100%)
+- [ ] Reference comparisons update when d_13 changes
+
+**Cross-Section Dependencies:**
+- [ ] Section provides reference values to downstream sections
+- [ ] Section consumes reference values from upstream sections correctly
+- [ ] Reference calculation chain works in proper dependency order
+
+### **Phase B: Reference Data Completeness and T-Cell Implementation**
+
+**Objective:** Address missing reference values and complete T-cell comparison system.
+
+#### **B1. Reference Value Gap Analysis**
+- **Identify Missing Values**: Document which fields show "No reference value found" warnings
+- **Prioritize by Impact**: Focus on values that affect key calculations (TEUI, TEDI, major equipment)
+- **Research Standards**: Determine appropriate reference values from building codes
+
+#### **B2. T-Cell Value Implementation**
+Based on current gaps identified:
+- **Section 09**: Add t_65 (Plug Loads), t_66 (Lighting Loads), t_67 (Equipment Efficiency)
+- **Section 13**: Add t_113 (HSPF), t_115 (AFUE), t_116 (Cooling COP), t_118 (HRV SRE), t_119 (Vent Rate)
+- **Other Sections**: Complete T-cell mappings per Appendix F
+
+#### **B3. Reference Standard Expansion**
+- **Validate Current Standards**: Ensure OBC SB10 and NBC 9.36 have complete value sets
+- **Add Missing Standards**: Implement additional standards as needed
+- **Test Standard Switching**: Verify all standards work correctly with all sections
+
+### **Phase C: System Integration and Performance Optimization**
+
+**Objective:** Resolve remaining timing issues and optimize overall system performance.
+
+#### **C1. Initial Load Timing Resolution**
+- **Root Cause Analysis**: Investigate Section 01 initial display issues
+- **Calculation Sequencing**: Implement proper dependency-based calculation ordering
+- **Eliminate setTimeout Delays**: Replace tactical delays with deterministic sequencing
+
+#### **C2. Reference Mode Toggle Robustness**
+- **Consistency Testing**: Ensure Reference Mode works reliably on first toggle
+- **State Synchronization**: Verify reference data loading and UI refresh coordination
+- **Error Recovery**: Implement graceful handling of reference data loading failures
+
+#### **C3. Performance Optimization**
+- **Calculation Efficiency**: Optimize dual-engine calculation performance
+- **Memory Management**: Ensure proper cleanup of reference state data
+- **UI Responsiveness**: Minimize UI blocking during reference data operations
+
+### **Testing Protocol for Each Phase**
+
+#### **Test Environment Setup**
+1. **Fresh Browser Session**: Clear cache, start with clean state
+2. **Default Data Test**: Load page, test functionality with default values
+3. **Import Test**: Load Sherwood CC file, test functionality with real data
+4. **Standard Switching Test**: Change d_13 to different standards, verify behavior
+
+#### **Success Criteria**
+- **Functional**: All reference calculations work correctly
+- **UI Consistency**: Reference Mode toggle works reliably
+- **Performance**: No infinite loops or significant delays
+- **Data Integrity**: Reference and application states remain properly isolated
+- **Cross-Section**: Dependency chain works correctly for both engines
+
+#### **Documentation Requirements**
+- **Issue Tracking**: Document any problems found during testing
+- **Solution Recording**: Record fixes and their effectiveness
+- **Regression Prevention**: Note any changes that might affect other sections
+
+### **Current Status and Next Steps**
+
+**Completed:**
+- ✅ Dual-engine architecture implemented across all critical sections
+- ✅ Reference Mode toggle basic functionality working
+- ✅ Section 07 fully validated as reference implementation
+- ✅ Cross-section dependency chain established (S15→S04→S01)
+
+**Immediate Next Step:**
+Begin Phase A2 with **Section 09 (Internal Gains)** validation using both default data and Sherwood CC imported data.
+
+**Expected Timeline:**
+- **Phase A**: 2-3 sections per session, complete in 3-4 sessions
+- **Phase B**: 1-2 sessions for T-cell completion
+- **Phase C**: 1 session for final optimization and testing
+
+This systematic approach ensures we validate the dual-engine architecture comprehensively while addressing both functional requirements and real-world usage scenarios.
+
+## 9. Testing Strategy
 
 ## 5.1 Current Implementation Status (December 2024)
 
