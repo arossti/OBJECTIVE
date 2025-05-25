@@ -1502,14 +1502,30 @@ Based on the current state of dual-engine implementation and identified issues, 
 - **Scope**: Test d_13 dropdown behavior across all available standards
 - **Standards to Test**:
   - OBC SB10 5.5-6 Z6 (current default)
-  - NBC 9.36 Prescriptive Path
+  - NBC T1 (simplified from NBC T1-T5)
   - Other available standards in dropdown
+- **Status**: ✅ **COMPLETED** - Simplified dropdown options, removed NBC T2-T5 tiers, improved timing
 - **Validation Points**:
-  - Reference data loads correctly on standard change
-  - UI fields update to show reference values in Reference Mode
-  - Calculated reference results appear in Column E
-  - No infinite loops or timing issues
-  - Reference percentages update in Column M
+  - [x] Reference data loads correctly on standard change
+  - [x] UI fields update to show reference values in Reference Mode
+  - [x] Calculated reference results appear in Column E
+  - [x] No infinite loops or timing issues
+  - [ ] Reference percentages update in Column M
+
+#### **A1b. Independent Reference Mode Reporting Year (h_12)**
+- **Scope**: Test independent reporting year functionality for Reference vs Design calculations
+- **Status**: ✅ **COMPLETED** - Dual-engine grid intensity calculations implemented
+- **Implementation**: 
+  - Reference Mode h_12 can be set independently from Design Mode h_12
+  - Separate grid intensity calculations for Reference (`ref_l_27`) vs Application (`l_27`)
+  - Reference emissions (e_6, e_8) update based on Reference reporting year
+  - Design emissions (h_6, h_8) remain tied to Design reporting year
+- **Validation Points**:
+  - [ ] h_12 slider is editable in Reference Mode
+  - [ ] Reference grid intensity updates when Reference h_12 changes
+  - [ ] Reference emissions calculations use Reference grid intensity
+  - [ ] Design emissions remain independent of Reference reporting year changes
+  - [ ] No value bleed-through between Reference and Design states
 
 #### **A2. Section-by-Section Reference Mode Validation**
 **Order of Implementation** (following dependency chain):
