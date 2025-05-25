@@ -447,7 +447,7 @@ TEUI.Calculator = (function() {
      * Recalculate all values
      */
     function calculateAll() {
-        // console.log('Central calculateAll triggered...'); // Keep this one for now? Or remove? Let's remove for less noise.
+        // console.log('Central calculateAll triggered...'); // Restored original comment state
         
         // Define a logical calculation order based on major dependencies
         const calcOrder = [
@@ -487,7 +487,7 @@ TEUI.Calculator = (function() {
             }
         });
         
-        // console.log('Central calculateAll finished.'); // Remove finished log
+        // console.log('Central calculateAll finished.'); // Restored original comment state
     }
     
     /**

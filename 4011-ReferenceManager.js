@@ -33,9 +33,12 @@ TEUI.ReferenceManager = (function() {
       currentStandard = newValue;
       console.log(`[ReferenceManager] d_13 changed to: ${newValue}, immediately loading reference data`);
       
-      // ALWAYS load reference data when standard changes, regardless of current mode
       if (newValue && newValue.trim() !== '') {
+        if (window.TEUI && TEUI.StateManager && typeof TEUI.StateManager.loadReferenceData === 'function') {
         TEUI.StateManager.loadReferenceData(newValue);
+        } else {
+            console.error("[ReferenceManager] StateManager or loadReferenceData not found when called by RefManager!");
+        }
       }
       
       // If currently in Reference Mode, also refresh the UI display

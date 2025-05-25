@@ -802,6 +802,8 @@ window.TEUI.SectionModules.sect11 = (function() {
     * TODO: Optimize initial calculation flow.
     * The current sequence involves rendering with defaults (often "0.00"), 
     * then running calculateAll which updates the values, causing a visual "flash".
+    * This flash was previously resolved in the ORDERING refactor branch but was 
+    * re-introduced with the dual-engine reference system. It is a minor glitch but a known one.
     * Future improvements could involve:
     * - Calculating values *before* initial render.
     * - Using placeholders ("---") instead of "0.00" as defaults.

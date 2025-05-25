@@ -219,13 +219,10 @@ window.TEUI.SectionModules.sect01 = (function() {
                                      parseFloat(refK32FromS04) : 
                                      getAppNumericValue('k_32', 0);
             
-            console.log("[S01 DBG] Reading h_15 for refArea. App value:", window.TEUI.StateManager.getApplicationValue('h_15'), "Ref value from activeDataSet:", window.TEUI.StateManager.getReferenceValue('h_15'));
             const refArea = getRefNumericValue('h_15', 1); 
             const refServiceLife = getRefNumericValue('h_13', 50); 
             const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82); 
 
-            console.log(`[S01 DBG] CalcRefModel - Inputs for e_10: refTargetEnergy (from ref_j_32 or j_32)=${refTargetEnergy}, refArea (from h_15)=${refArea}`);
-            
             const referenceStandard = window.TEUI?.StateManager?.getApplicationValue('d_13');
             
             const refValues = window.TEUI?.ReferenceValues?.[referenceStandard] || {};
@@ -240,8 +237,6 @@ window.TEUI.SectionModules.sect01 = (function() {
                 referenceTEUI = Math.round((refTargetEnergy / refArea) * 10) / 10;
             }
             
-            console.log(`[S01 DBG] CalcRefModel - Calculated referenceTEUI for ref_e_10: ${referenceTEUI}`);
-
             let referenceAnnualCarbon = 0;
             if (refArea > 0) {
                 referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
