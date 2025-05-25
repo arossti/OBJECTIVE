@@ -20,6 +20,36 @@ window.TEUI.sect09.userInteracted = false;
 // Section 9: Occupant + Internal Gains Module
 window.TEUI.SectionModules.sect09 = (function() {
     //==========================================================================
+    // ADDED: STANDARD HELPER FUNCTIONS (Restored)
+    //==========================================================================
+    function getFieldValue(fieldId) {
+        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.getValue === 'function') {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return String(value); // Ensure it's a string
+            }
+        }
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                return element.value;
+            } else {
+                return element.textContent.trim();
+            }
+        }
+        return null;
+    }
+
+    function getNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = getFieldValue(fieldId);
+        if (window.TEUI && typeof window.TEUI.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(rawValue, defaultValue);
+        }
+        // Fallback parsing if global is not available (should not happen in normal operation)
+        const parsed = parseFloat(String(rawValue).replace(/[$,%]/g, ''));
+        return isNaN(parsed) ? defaultValue : parsed;
+    }
+    //==========================================================================
     // EQUIPMENT LOADS LOOKUP TABLE
     //==========================================================================
     
@@ -1757,7 +1787,7 @@ window.TEUI.SectionModules.sect09 = (function() {
         const config = referenceComparisons[fieldId];
         if (!config) return;
         
-        const currentValue = getNumericValue(getFieldValue(fieldId));
+        const currentValue = getNumericValue(fieldId);
         const referenceValue = TEUI.StateManager.getTCellValue(fieldId) || TEUI.StateManager.getReferenceValue(config.tCell);
         const rowId = fieldId.match(/\d+$/)?.[0];
         if (!rowId) return;
