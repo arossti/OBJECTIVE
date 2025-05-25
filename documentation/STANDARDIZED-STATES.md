@@ -79,6 +79,7 @@ The Reference Model integration uses a **dual calculation engine** approach that
    - **Display Behavior**: ALWAYS shows Reference-calculated results
    - **UI Mode Independence**: Shows Reference results regardless of whether UI is in "Target" or "Reference" mode
    - **Example**: In Section 01, `e_10` (Reference TEUI) always shows the TEUI calculated from Reference state values
+   - **CRITICAL**: Reference calculations must use reference standard override values (e.g., RSI values from building codes) AND independently editable Reference fields (e.g., separate reporting year)
 
 2. **Column H (Target/Application Results) - ALWAYS Shows Application Calculations:**
    - **Data Source**: ALWAYS uses Application state inputs via `getApplicationValue()`
@@ -224,6 +225,8 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
 
 ### Phase C: Dual Calculation Engine Implementation (Dependency Chain Sequence)
 
+**BREAKTHROUGH INSIGHT (2025-01-XX)**: The reporting year separation implementation revealed that we need comprehensive dual-engine architecture across ALL sections, not just independently editable fields. Each section must calculate BOTH Reference and Target results using their respective data sources to ensure accurate Reference vs Target comparisons.
+
 #### **C1. Leaf Section Implementation (S07, S09, S10, S11, S13)**
 *   **Priority:** Sections that primarily consume inputs and produce calculated outputs for other sections
 *   **Implementation Pattern:**
@@ -231,11 +234,17 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
     *   **Target Engine**: Uses `getApplicationValue()` for inputs → calculates Target results  
     *   **Dual Output**: Provides both Reference and Target calculated values for upstream consumption
     *   **Cross-Section Values**: Register calculated outputs in StateManager for downstream access
+    *   **CRITICAL INSIGHT**: Each section needs comprehensive dual-engine implementation, not just independently editable fields
 
 *   **Section 07 (Water Use) - Immediate Priority:**
     *   **Reference Engine**: `calculateReferenceWaterUse()` → produces Reference DHW energy values
     *   **Target Engine**: `calculateTargetWaterUse()` → produces Target DHW energy values
     *   **Outputs**: Both engines provide energy values for S04 consumption
+
+*   **Section 11 (Transmission Losses) - Critical Example:**
+    *   **Reference Engine**: Must use reference standard RSI/U-values from building codes → calculates Reference heat losses
+    *   **Target Engine**: Uses application RSI/U-values → calculates Target heat losses
+    *   **Key Requirement**: Reference calculations must reflect code-compliant envelope performance, not user design values
 
 #### **C2. Intermediate Section Implementation (S12, S14)**
 *   **Section 12 (Volume/Surface)**: Already largely dual-compatible
@@ -1488,9 +1497,109 @@ const formatTypeMap = {
 
 Based on the current state of dual-engine implementation and identified issues, we will proceed with a systematic section-by-section validation approach using both default data and imported test cases.
 
+**CRITICAL ARCHITECTURAL DISCOVERY**: The h_12 reporting year separation implementation has revealed that our dual-engine architecture needs to be much more comprehensive. We need full dual-engine implementation across all sections to ensure Reference calculations use reference standard values (not just independently editable fields) while Target calculations use application values.
+
+### **8.1 Comprehensive Dual-Engine Architecture Requirements**
+
+**The Problem Identified**: 
+- Initially, we focused on "independently editable fields" (like h_12 reporting year) that users could modify in Reference Mode
+- However, the real requirement is that ALL Reference calculations must use reference standard override values
+- Example: Section 11 envelope calculations must use code-compliant RSI values for Reference calculations, regardless of user's design values
+
+**The Solution Required**:
+1. **Every Section Needs Dual Engines**: Not just sections with independently editable fields
+2. **Reference Engine Data Sources**:
+   - Reference standard override values (e.g., RSI values from building codes)
+   - Independently editable Reference fields (e.g., separate reporting year)
+   - Carried-over application values (e.g., building geometry)
+3. **Target Engine Data Sources**:
+   - User design values (application state)
+   - User inputs and modifications
+
+**Implementation Pattern for Each Section**:
+```javascript
+// REQUIRED: Every section needs both engines
+function calculateReferenceModel() {
+    // Use getReferenceValue() for ALL inputs
+    // Calculate using reference standard values
+    // Store results with ref_ prefix
+}
+
+function calculateTargetModel() {
+    // Use getApplicationValue() for ALL inputs  
+    // Calculate using user design values
+    // Store results normally
+}
+
+function calculateAll() {
+    // ALWAYS run both engines
+    calculateReferenceModel();
+    calculateTargetModel();
+}
+
+// CRITICAL: UI Updates for Reference Mode Dynamic Display
+function updateFieldForMode(mode, fieldId, calculatedValue) {
+    if (mode === 'reference') {
+        // Store Reference value with ref_ prefix
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, calculatedValue.toString(), 'calculated');
+        
+        // UPDATE UI IN REFERENCE MODE: Show Reference values when user is in Reference Mode
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = window.TEUI.formatNumber(calculatedValue, 'appropriate-format');
+            }
+        }
+    } else {
+        // Standard Target/Application mode update
+        setCalculatedValue(fieldId, calculatedValue, 'appropriate-format');
+    }
+}
+```
+
+**Critical Sections Requiring Full Dual-Engine Implementation**:
+- **Section 04**: ✅ **COMPLETED** - Reference grid intensity with dynamic UI updates
+- **Section 11**: Reference RSI/U-values vs user design values
+- **Section 13**: Reference equipment efficiencies vs user selections
+- **Section 09**: Reference internal gains vs user assumptions
+- **Section 07**: Reference DHW efficiency vs user systems
+- **All others**: Any section with reference standard override values
+
+**BREAKTHROUGH SUCCESS PATTERN (Section 04 Implementation)**:
+- ✅ **Separate State Storage**: Reference values stored with `ref_` prefix
+- ✅ **Independent Calculations**: Reference and Target engines use explicit state getters
+- ✅ **Dynamic UI Updates**: Reference Mode shows Reference values updating in real-time
+- ✅ **Clean State Separation**: Reference h_12 (2017) and Design h_12 (2025) work independently
+- ✅ **Visible Calculation Chain**: Users can see l_27 → g_27 → k_27 → S01 totals updating
+- ✅ **True Dual-Engine Architecture**: Both engines run continuously, UI shows appropriate values
+
+### **8.2 Gold Standard Implementation: Section 04 Pattern**
+
+**ACHIEVEMENT**: Section 04 now demonstrates the complete dual-engine architecture with perfect state separation and dynamic UI updates. This implementation serves as the template for all other sections.
+
+**What Works Perfectly**:
+1. **Independent Reporting Years**: Reference Mode can use 2017, Design Mode can use 2025
+2. **Dynamic Grid Intensity**: l_27 updates immediately when h_12 changes in either mode
+3. **Cascading Calculations**: l_27 → g_27 → k_27 → S01 totals all update in real-time
+4. **Clean Mode Switching**: Toggle between modes shows completely different calculation chains
+5. **Visible Reference Logic**: Users can see exactly how Reference calculations work
+
+**Key Implementation Elements**:
+- `updateGridIntensityForMode('reference')` and `updateGridIntensityForMode('application')`
+- Reference values stored with `ref_` prefix for cross-section use
+- UI updates only when `isReferenceMode()` is true
+- Explicit state getters: `getReferenceValue()` vs `getApplicationValue()`
+- Both calculation engines run continuously regardless of UI mode
+
+**User Experience Achievement**:
+- **Transparency**: Users can see intermediate Reference calculations, not just final totals
+- **Confidence**: Clear visibility that Reference calculations are working correctly
+- **Flexibility**: Independent control over Reference vs Design assumptions
+- **Validation**: Easy comparison between code-compliant and design performance
+
 ### **Phase A: Section-by-Section Reference State Validation**
 
-**Objective:** Systematically validate Reference Mode functionality across all sections using both default data and imported test cases.
+**Objective:** Systematically validate Reference Mode functionality across all sections using both default data and imported test cases, following the Section 04 gold standard pattern.
 
 **Test Cases:**
 1. **Default Data State**: Fresh page load with default building parameters

@@ -852,6 +852,32 @@ window.TEUI.SectionModules.sect04 = (function() {
             if (window.TEUI?.StateManager) {
                 window.TEUI.StateManager.setValue('ref_l_27', factor.toString(), 'calculated');
             }
+            
+            // UPDATE UI IN REFERENCE MODE: If user is currently in Reference Mode, update the visible l_27 field
+            if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+                // Update l_27 display with Reference value
+                const l27Element = document.querySelector('[data-field-id="l_27"]');
+                if (l27Element) {
+                    l27Element.textContent = window.TEUI.formatNumber(factor, 'integer');
+                }
+                
+                // Recalculate and update dependent Reference values in UI
+                const ref_j27 = getRefNumericValue('j_27', 0);
+                const ref_g27 = (ref_j27 * factor) / 1000;
+                const g27Element = document.querySelector('[data-field-id="g_27"]');
+                if (g27Element) {
+                    g27Element.textContent = window.TEUI.formatNumber(ref_g27, 'number-2dp-comma');
+                }
+                
+                const ref_k27 = ref_g27; // Same calculation for k_27 in Reference Mode
+                const k27Element = document.querySelector('[data-field-id="k_27"]');
+                if (k27Element) {
+                    k27Element.textContent = window.TEUI.formatNumber(ref_k27, 'number-2dp-comma');
+                }
+                
+                console.log(`[S04] Reference Mode UI updated: l_27=${factor}, g_27=${ref_g27.toFixed(2)}, k_27=${ref_k27.toFixed(2)}`);
+            }
+            
             console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
         } else {
             // Update the application l_27 field
