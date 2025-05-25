@@ -742,9 +742,9 @@ window.TEUI.SectionModules.sect01 = (function() {
         if (!window.TEUI || !window.TEUI.StateManager) return;
 
         // Only listen to INPUT fields that affect calculations, not calculated outputs
+        // CRITICAL: Do NOT listen to calculated fields like ref_j_32, ref_k_32 as they create infinite loops
         const inputFieldsToWatch = [
-            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "j_32", "d_51", "d_14", "d_13",
-            "ref_j_32", "ref_k_32"  // Reference values from S04
+            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "j_32", "d_51", "d_14", "d_13"
         ];
 
         inputFieldsToWatch.forEach(fieldId => {

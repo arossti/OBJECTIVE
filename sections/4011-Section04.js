@@ -753,6 +753,13 @@ window.TEUI.SectionModules.sect04 = (function() {
                 // console.log('[S04 DEBUG] d_60 changed, calling updateSubtotals()');
                 updateSubtotals(); // This will recalculate g_32 and k_32 which depend on d_60
             });
+            
+            // CRITICAL: Listener for d_13 (Reference Standard) changes - triggers dual-engine calculations
+            sm.addListener('d_13', () => {
+                // When reference standard changes, trigger both engines
+                calculateReferenceModel();  // Calculate Reference values using new standard
+                calculateTargetModel();     // Recalculate Target values (may have dependencies)
+            });
 
             // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
             document.addEventListener('input', function(e) {
@@ -1446,8 +1453,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Moved the timeout wrapper here to ensure factors are updated after potential defaults are set
         setTimeout(() => {
         updateElectricityEmissionFactor();
-        // Update subtotals immediately to ensure correct initial values
-        updateSubtotals();
+        // CRITICAL: Run dual-engine calculations on initial load
+        calculateAll();
         
             // Trigger initial calculations after factors and subtotals are set
         if (window.TEUI && window.TEUI.Calculator) {
