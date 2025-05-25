@@ -1519,10 +1519,64 @@ Based on the current state of dual-engine implementation and identified issues, 
    - Test reference emissions calculations
    - Verify Column E displays reference results
 
-2. **Section 09 (Internal Gains)**
-   - Validate reference plug loads and lighting values
-   - Test reference equipment efficiency specifications
-   - Verify reference percentage comparisons (Column M)
+2. **Section 09 (Internal Gains)** ✅ **READY FOR TESTING** - Reference values added, d_13 listeners implemented
+   
+   **Reference Values Added:**
+   - ✅ `t_65`: Reference Occupant Load (5.0 W/m²)
+   - ✅ `t_66`: Reference Lighting Load (varies by standard: 6.0 W/m² for OBC, 1.1-2.0 W/m² for PH standards)
+   - ✅ `t_67`: Reference Equipment Load (5.0 W/m²)
+   - ✅ `d_66`: Max Permissible Lighting Load (available for PH standards)
+   - ✅ `g_67`: Equipment Efficiency Specification (Regular/Efficient)
+
+   **Testing Checklist:**
+
+   **Default Data State Testing:**
+   - [ ] Load fresh page with default building parameters
+   - [ ] Verify Section 09 displays correctly in Application Mode
+   - [ ] Switch to Reference Mode and verify:
+     - [ ] T-cells (t_65, t_66, t_67) populate with reference values
+     - [ ] Reference indicators show appropriate comparison symbols
+     - [ ] Column E calculations reflect reference state
+   - [ ] Test d_13 dropdown changes:
+     - [ ] OBC SB10 5.5-6 Z6 (default) → verify t_66 = 6.0 W/m²
+     - [ ] PH Classic → verify t_66 = 1.1 W/m², d_66 = 1.1 W/m²
+     - [ ] EnerPHit → verify t_66 = 2.0 W/m², d_66 = 2.0 W/m²
+     - [ ] NBC T1 → verify t_66 = 6.0 W/m²
+   - [ ] Verify reference indicators update immediately after d_13 changes
+
+   **Sherwood CC Import Testing:**
+   - [ ] Import Sherwood Community Centre file
+   - [ ] Verify Section 09 displays correctly with imported data
+   - [ ] Switch to Reference Mode and verify:
+     - [ ] T-cells populate correctly
+     - [ ] Reference comparisons work with imported values
+     - [ ] Column E calculations are independent of imported H-column values
+   - [ ] Test d_13 changes with imported data:
+     - [ ] Verify reference values change appropriately
+     - [ ] Confirm imported application values (H-column) remain unchanged
+     - [ ] Verify reference indicators update correctly
+
+   **Dual-Engine Validation:**
+   - [ ] Confirm Reference Engine (Column E) uses `getReferenceValue()`
+   - [ ] Confirm Target Engine (Column H) uses `getApplicationValue()`
+   - [ ] Verify both engines run simultaneously regardless of UI toggle state
+   - [ ] Test field interactions:
+     - [ ] Change h_65 (occupant load) → verify only H-column updates
+     - [ ] Change h_66 (lighting load) → verify only H-column updates  
+     - [ ] Change h_67 (equipment load) → verify only H-column updates
+     - [ ] Change d_13 → verify only E-column (reference) updates
+
+   **Cross-Section Dependencies:**
+   - [ ] Verify Section 09 receives h_15 (conditioned area) from Section 01
+   - [ ] Test area changes propagate correctly to internal gains calculations
+   - [ ] Verify totals in Section 09 feed correctly to Section 04 energy calculations
+
+   **Issues to Watch For:**
+   - [ ] Reference indicators not updating on d_13 changes
+   - [ ] T-cell values not populating in Reference Mode
+   - [ ] Cross-contamination between Reference and Target calculations
+   - [ ] Missing reference values for specific standards
+   - [ ] Calculation timing issues on initial load
 
 3. **Section 10 (Radiant Gains)**
    - Validate reference SHGC values for windows/doors
