@@ -41,31 +41,34 @@ TEUI.ReferenceToggle = (function() {
     console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey} (Reference Mode: ${referenceMode})`);
     
     if (window.TEUI && TEUI.StateManager) {
+        // Always update StateManager first
         TEUI.StateManager.setValue(STANDARD_SELECTOR_ID, newStandardKey, TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
         
         if (referenceMode) {
-            console.log(`[ReferenceToggle] In Reference Mode - reloading data for ${newStandardKey}`);
-            console.log(`[ReferenceToggle] BEFORE reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
+            console.log(`[ReferenceToggle] In Reference Mode - processing d_13 change for ${newStandardKey}`);
             
-            // Reload reference data immediately
+            // Step 1: Reload reference data immediately (synchronous)
+            console.log(`[ReferenceToggle] BEFORE reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
             TEUI.StateManager.loadReferenceData(newStandardKey);
             console.log(`[ReferenceToggle] AFTER reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
             
-            // Trigger UI refresh and calculations
+            // Step 2: Trigger UI refresh (synchronous)
+            console.log(`[ReferenceToggle] Triggering UI refresh for ${newStandardKey}`);
+            triggerFullUIRefreshForModeChange();
+            
+            // Step 3: Trigger calculations (single timeout for DOM stability)
             setTimeout(() => {
-                console.log(`[ReferenceToggle] Triggering UI refresh and calculations for ${newStandardKey}`);
-                triggerFullUIRefreshForModeChange();
-                
-                // Also trigger a calculation pass to ensure reference calculations update
+                console.log(`[ReferenceToggle] Triggering calculations after d_13 change to ${newStandardKey}`);
                 if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
-                    console.log(`[ReferenceToggle] Triggering Calculator.calculateAll after d_13 change in Reference Mode`);
-                    setTimeout(() => {
-                        window.TEUI.Calculator.calculateAll();
-                    }, 150);
+                    window.TEUI.Calculator.calculateAll();
+                } else {
+                    console.warn('[ReferenceToggle] Calculator.calculateAll not available');
                 }
-            }, 100); 
+            }, 50); // Single 50ms delay for DOM stability
         } else {
             console.log(`[ReferenceToggle] Not in Reference Mode - d_13 change will take effect on next Reference Mode entry`);
+            // In Design Mode, just reload reference data for when user enters Reference Mode later
+            TEUI.StateManager.loadReferenceData(newStandardKey);
         }
     } else {
         console.error("[ReferenceToggle] StateManager not available to handle standard change.");

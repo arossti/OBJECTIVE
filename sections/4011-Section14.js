@@ -911,6 +911,12 @@ window.TEUI.SectionModules.sect14 = (function() {
             sm.addListener('d_21', calculateAll); // CDD
             sm.addListener('h_22', calculateAll); // GF CDD 
             sm.addListener('d_22', calculateAll); // GF HDD
+            
+            // CRITICAL: Listen for d_13 changes to update reference indicators
+            sm.addListener('d_13', () => {
+                console.log('[Section14] d_13 changed - updating reference indicators');
+                updateReferenceIndicator();
+            });
         } else {
             // console.warn("Section 14: StateManager not available to add climate listeners.");
         }

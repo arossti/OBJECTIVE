@@ -1594,6 +1594,12 @@ window.TEUI.SectionModules.sect13 = (function() {
         sm.registerDependency('h_115', 'f_114'); // Gas volume affects emissions
         sm.registerDependency('l_30', 'f_114');  // Oil emissions factor
         sm.registerDependency('l_28', 'f_114');  // Gas emissions factor
+        
+        // CRITICAL: Listen for d_13 changes to update reference indicators
+        sm.addListener('d_13', () => {
+            console.log('[Section13] d_13 changed - updating reference indicators');
+            updateAllReferenceIndicators();
+        });
     }
     
     /**

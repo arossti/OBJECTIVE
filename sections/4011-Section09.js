@@ -1479,6 +1479,9 @@ window.TEUI.SectionModules.sect09 = (function() {
             { source: "d_13", handler: function() {
                 calculatePlugLoads();
                 calculateTotals();
+                // CRITICAL: Also update reference indicators when d_13 changes
+                console.log('[Section09] d_13 changed - updating reference indicators');
+                updateAllReferenceIndicators();
             }, description: "Update when reference standard changes" },
             { source: "m_19", handler: function() {
                 // Recalculate all loads when cooling days change
