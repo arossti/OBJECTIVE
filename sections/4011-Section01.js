@@ -209,10 +209,8 @@ window.TEUI.SectionModules.sect01 = (function() {
         referenceCalculationInProgress = true;
         
         try {
-            console.log('[S01-REF-ENGINE] Starting Reference Model calculation...');
             const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
-            console.log('[S01-REF-ENGINE] Reference energy values from S04:', { ref_j_32: refJ32FromS04, ref_k_32: refK32FromS04 });
             
             const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
                                   parseFloat(refJ32FromS04) : 
@@ -263,14 +261,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                 if (currentRefLifetime !== referenceLifetimeCarbon.toFixed(1)) {
                     window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
                 }
-                
-                console.log('[S01-REF-ENGINE] Stored Reference results:', { 
-                    ref_d_6: referenceLifetimeCarbon.toFixed(1), 
-                    ref_d_8: referenceAnnualCarbon.toFixed(1), 
-                    ref_e_10: referenceTEUI.toFixed(1) 
-                });
             }
-            console.log('[S01-REF-ENGINE] Reference Model calculation complete');
         } finally {
             referenceCalculationInProgress = false;
         }
@@ -576,7 +567,11 @@ window.TEUI.SectionModules.sect01 = (function() {
             else if (reduction > 0.1) tier = "tier1";
         }
 
-        window.TEUI.StateManager.setValue("i_10", tier, "calculated");
+        // Only update StateManager if value has changed
+        const currentTier = window.TEUI.StateManager.getApplicationValue("i_10");
+        if (currentTier !== tier) {
+            window.TEUI.StateManager.setValue("i_10", tier, "calculated");
+        }
     }
 
     function updateTEUIDisplay() {
@@ -706,29 +701,19 @@ window.TEUI.SectionModules.sect01 = (function() {
     function runAllCalculations() {
         // Add recursion protection
         if (calculationInProgress) {
-            console.log('[S01-ORCHESTRATOR] Skipping - calculation already in progress');
             return;
         }
         
         calculationInProgress = true;
-        console.log('[S01-ORCHESTRATOR] Starting runAllCalculations...');
         
         try {
             // Run both engines independently
-            console.log('[S01-ORCHESTRATOR] Calling calculateReferenceModel...');
             calculateReferenceModel();  // Calculates Column E values using Reference state
-            
-            console.log('[S01-ORCHESTRATOR] Calling calculateTargetModel...');
             calculateTargetModel();     // Calculates Column H values using Application state
             
             // Calculate tiers and display updates
-            console.log('[S01-ORCHESTRATOR] Calling calculateTargetTier...');
             calculateTargetTier();      // Calculate i_10 (Target Tier for h_10)
-            
-            console.log('[S01-ORCHESTRATOR] Calling updateTEUIDisplay...');
             updateTEUIDisplay();        // Update all visual displays
-            
-            console.log('[S01-ORCHESTRATOR] runAllCalculations complete');
         } finally {
             calculationInProgress = false;
         }
@@ -741,12 +726,19 @@ window.TEUI.SectionModules.sect01 = (function() {
     function initializeEventHandlers() {
         if (!window.TEUI || !window.TEUI.StateManager) return;
 
-        // Only listen to INPUT fields that affect calculations, not calculated outputs
-        // CRITICAL: Do NOT listen to calculated fields like ref_j_32, ref_k_32 as they create infinite loops
+        // Only listen to TRUE INPUT fields that affect calculations, not calculated outputs
+        // CRITICAL: Do NOT listen to calculated fields like j_32, k_32 as they create infinite loops
         const inputFieldsToWatch = [
-            "i_41", "h_13", "k_32", "g_32", "h_15", "f_32", "j_32", "d_51", "d_14", "d_13"
+            "i_41",  // Embodied carbon (user input)
+            "h_13",  // Service life (user input)
+            "h_15",  // Conditioned area (user input)
+            "d_51",  // Energy source (user dropdown)
+            "d_14",  // Use type (user dropdown)
+            "d_13"   // Reference standard (user dropdown)
+            // REMOVED: j_32, k_32, f_32, g_32 - these are calculated by other sections
         ];
 
+        // Listen to user input fields
         inputFieldsToWatch.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
                 // Debounce for d_51 which can trigger rapid changes
@@ -755,6 +747,25 @@ window.TEUI.SectionModules.sect01 = (function() {
                         runAllCalculations();
                     }, 50);
                 } else {
+                    runAllCalculations();
+                }
+            });
+        });
+
+        // Listen to calculated fields from other sections that Section 01 depends on
+        const calculatedFieldsToWatch = [
+            "j_32",     // Target energy total (from Section 04)
+            "k_32",     // Target emissions total (from Section 04)
+            "f_32",     // Actual energy total (from Section 04)
+            "g_32",     // Actual emissions total (from Section 04)
+            "ref_j_32", // Reference energy total (from Section 04)
+            "ref_k_32"  // Reference emissions total (from Section 04)
+        ];
+
+        calculatedFieldsToWatch.forEach(fieldId => {
+            window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
+                // Only recalculate if the value actually changed
+                if (newValue !== oldValue) {
                     runAllCalculations();
                 }
             });
