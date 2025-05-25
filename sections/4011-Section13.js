@@ -381,25 +381,21 @@ window.TEUI.SectionModules.sect13 = (function() {
         const config = referenceComparisons[fieldId];
         if (!config) return;
         
-        // Get current value
         const currentValue = window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
         
-        // Get reference value
         const referenceValue = window.TEUI?.StateManager?.getTCellValue?.(fieldId) || 
                               window.TEUI?.StateManager?.getReferenceValue?.(config.tCell);
         
-        const rowId = fieldId.match(/\d+$/)?.[0]; // Extract row number from field ID
+        const rowId = fieldId.match(/\d+$/)?.[0]; 
         if (!rowId) return;
         
         const mFieldId = `m_${rowId}`;
         const nFieldId = `n_${rowId}`;
         
-        // Show N/A when reference value is missing
-        if (!referenceValue) {
-            console.warn(`No reference value found for ${fieldId} - showing N/A`);
+        if (!referenceValue && referenceValue !== 0) { 
+            // console.warn(`No reference value found for ${fieldId} - showing N/A`); // Ensure this is commented
             setCalculatedValue(mFieldId, "N/A", 'raw');
             
-            // Show question mark for N/A
             const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
             if (nElement) {
                 nElement.textContent = "–";
@@ -2027,22 +2023,20 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate all values for this section
      */
     function calculateAll() {
-        console.log("[Section13] Running dual-engine calculations...");
+        // console.log("[Section13] Running dual-engine calculations..."); // Ensure this is commented
         
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
+        calculateReferenceModel();
+        calculateTargetModel();
         
-        console.log("[Section13] Dual-engine calculations complete");
+        // console.log("[Section13] Dual-engine calculations complete"); // Ensure this is commented
     }
     
     /**
-     * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+     * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        console.log("[Section13] Running Reference Model calculations...");
-        
+        // console.log("[Section13] Running Reference Model calculations..."); // Ensure this is commented
         try {
             // For Reference calculations, we need to use reference values from StateManager
             // Since cooling physics are complex, we'll run them separately for Reference
@@ -2072,6 +2066,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                 // For now, storing key reference values that might be needed by other sections
             }
             
+            // console.log("[Section13] Reference Model values stored"); // Comment out
             console.log("[Section13] Reference Model values stored");
         } catch (error) {
             console.error('[Section13] Error in Reference Model calculations:', error);
@@ -2079,12 +2074,11 @@ window.TEUI.SectionModules.sect13 = (function() {
     }
     
     /**
-     * TARGET MODEL ENGINE: Calculate all values using Application state
-     * This is the existing calculation logic, refactored
+     * TARGET MODEL ENGINE: Calculate all Column H values using Application state
+     * This is the existing calculateAll logic, refactored
      */
     function calculateTargetModel() {
-        console.log("[Section13] Running Target Model calculations...");
-        
+        // console.log("[Section13] Running Target Model calculations..."); // Ensure this is commented
         try {
             // Run cooling physics *first* to update coolingState centrally
             runIntegratedCoolingCalculations(); 
@@ -2105,6 +2099,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         } catch (error) {
             console.error('[Section13] Error in Target Model calculations:', error);
         }
+        // console.log("[Section13] Target Model calculations complete"); // Comment out
     }
     
     /**

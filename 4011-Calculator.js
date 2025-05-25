@@ -447,7 +447,7 @@ TEUI.Calculator = (function() {
      * Recalculate all values
      */
     function calculateAll() {
-        // console.log('Central calculateAll triggered...'); 
+        // console.log('Central calculateAll triggered...');
         
         // Define a logical calculation order based on major dependencies
         const calcOrder = [
@@ -487,7 +487,7 @@ TEUI.Calculator = (function() {
             }
         });
         
-        // console.log('Central calculateAll finished.'); 
+        // console.log('Central calculateAll finished.');
     }
     
     /**

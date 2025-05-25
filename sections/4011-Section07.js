@@ -882,6 +882,8 @@ window.TEUI.SectionModules.sect07 = (function() {
      * Calculate all values for this section
      */
     function calculateAll() {
+        // console.warn("S07: calculateAll called - running dual engines"); // Ensure this is commented
+        
         // DUAL-ENGINE ARCHITECTURE: Always run both engines
         // Reference Model calculations (for Column E values)
         calculateReferenceModel();
@@ -896,10 +898,9 @@ window.TEUI.SectionModules.sect07 = (function() {
         // Calculate the row 54 values AFTER heating system calculations
         const j54Value = calculateJ54();
         setCalculatedValue("j_54", j54Value, 'number-2dp-comma');
-        const k54Value = calculateK54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
+        const k54Value = calculateK54(); 
         setCalculatedValue("k_54", k54Value, 'number-2dp-comma');
         
-        // Calculate DHW emissions
         calculateDHWEmissions();
 
         if (window.TEUI && window.TEUI.StateManager) {
@@ -908,6 +909,8 @@ window.TEUI.SectionModules.sect07 = (function() {
         
         const waterUseEvent = new CustomEvent('teui-wateruse-updated', { detail: { waterUse: waterUseResults, heatingSystem: heatingResults } });
         document.dispatchEvent(waterUseEvent);
+        
+        // console.warn("S07: Dual-engine calculations complete"); // Ensure this is commented
     }
     
     /**

@@ -842,13 +842,12 @@ window.TEUI.SectionModules.sect12 = (function() {
     }
 
     function calculateAll() {
-        console.log("[Section12] Running dual-engine calculations...");
-        
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
-        
-        console.log("[Section12] Dual-engine calculations complete");
+        // console.log("[Section12] Running dual-engine calculations..."); // Comment out
+
+        calculateReferenceModel();
+        calculateTargetModel();
+
+        // console.log("[Section12] Dual-engine calculations complete"); // Comment out
     }
     
     /**
@@ -856,7 +855,7 @@ window.TEUI.SectionModules.sect12 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        console.log("[Section12] Running Reference Model calculations...");
+        // console.log("[Section12] Running Reference Model calculations..."); // Comment out
         
         // For Reference calculations, we need to pull reference values from upstream sections
         // Section 12 is primarily a summary section that depends on Section 11 values
@@ -877,7 +876,7 @@ window.TEUI.SectionModules.sect12 = (function() {
         // reference values stored. It's mostly a summary/display section.
         // The key is ensuring it reads from reference values when in Reference Mode.
         
-        console.log("[Section12] Reference Model calculations stored");
+        // console.log("[Section12] Reference Model calculations stored"); // Comment out
     }
 
     /**
@@ -885,7 +884,7 @@ window.TEUI.SectionModules.sect12 = (function() {
      * This is the existing calculation logic
      */
     function calculateTargetModel() {
-        console.log("[Section12] Running Target Model calculations...");
+        // console.log("[Section12] Running Target Model calculations..."); // Comment out
         
         try {
             calculateVolumeMetrics();
@@ -904,7 +903,7 @@ window.TEUI.SectionModules.sect12 = (function() {
             console.error("Error during Section 12 calculateTargetModel:", error);
         }
         
-        console.log("[Section12] Target Model calculations complete");
+        // console.log("[Section12] Target Model calculations complete"); // Comment out
     }
     
     //==========================================================================

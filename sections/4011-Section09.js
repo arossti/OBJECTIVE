@@ -1332,13 +1332,12 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Replaces the original calculateAll function
      */
     function calculateAll() {
-        console.log("[Section09] Running dual-engine calculations...");
+        // console.log('[Section09] Running dual-engine calculations...'); // Comment out
         
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
+        calculateReferenceModel();
+        calculateTargetModel(); 
         
-        console.log("[Section09] Dual-engine calculations complete");
+        // console.log('[Section09] Dual-engine calculations complete'); // Comment out
     }
     
     /**
@@ -1758,32 +1757,17 @@ window.TEUI.SectionModules.sect09 = (function() {
         const config = referenceComparisons[fieldId];
         if (!config) return;
         
-        // Get current value
-        let currentValue;
-        if (fieldId === 'g_67') {
-            // For equipment efficiency, it's a text value not numeric
-            currentValue = getFieldValue(fieldId);
-        } else {
-            // For numeric fields
-            currentValue = window.TEUI?.parseNumeric?.(getFieldValue(fieldId)) || 0;
-        }
-        
-        // Get reference value
-        const referenceValue = window.TEUI?.StateManager?.getTCellValue?.(fieldId) || 
-                              window.TEUI?.StateManager?.getReferenceValue?.(config.tCell);
-        
-        const rowId = fieldId.match(/\d+$/)?.[0]; // Extract row number from field ID
+        const currentValue = getNumericValue(getFieldValue(fieldId));
+        const referenceValue = TEUI.StateManager.getTCellValue(fieldId) || TEUI.StateManager.getReferenceValue(config.tCell);
+        const rowId = fieldId.match(/\d+$/)?.[0];
         if (!rowId) return;
-        
+
         const mFieldId = `m_${rowId}`;
         const nFieldId = `n_${rowId}`;
-        
-        // For Section 09, show 100% when reference value is missing
-        if (!referenceValue) {
-            console.warn(`No reference value found for ${fieldId} - showing 100%`);
-            setCalculatedValue(mFieldId, 100, 'percent-0dp');
-            
-            // Always show checkmark for 100%
+
+        if (!referenceValue && referenceValue !== 0) { // Allow 0 as a valid reference
+            // console.warn(`No reference value found for ${fieldId} - showing 100%`); // Comment out this specific warning
+            setCalculatedValue(mFieldId, 1, 'percent-0dp'); 
             const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
             if (nElement) {
                 nElement.textContent = "✓";

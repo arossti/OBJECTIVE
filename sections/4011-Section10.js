@@ -1220,13 +1220,12 @@ window.TEUI.SectionModules.sect10 = (function() {
      * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
      */
     function calculateAll() {
-        console.log("[Section10] Running dual-engine calculations...");
+        // console.log('[Section10] Running dual-engine calculations...'); // Comment out
         
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
+        calculateReferenceModel();
+        calculateTargetModel();
         
-        console.log("[Section10] Dual-engine calculations complete");
+        // console.log('[Section10] Dual-engine calculations complete'); // Comment out
     }
     
     /**

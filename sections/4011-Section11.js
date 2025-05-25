@@ -553,56 +553,46 @@ window.TEUI.SectionModules.sect11 = (function() {
             }
 
             if (valueSourceElementId) {
-                // Always read from application state for current value
                 currentValue = getNumericValue(valueSourceElementId);
-                
-                // Get reference value from StateManager's reference data
                 if (referenceFieldId && window.TEUI?.StateManager?.getReferenceValue) {
                     referenceValue = window.TEUI.parseNumeric(
                         window.TEUI.StateManager.getReferenceValue(referenceFieldId)
-                    ) || baseline.value; // Fallback to baseline if not found
+                    ) || baseline.value; 
                 } else {
-                    referenceValue = baseline.value; // Fallback to baseline
+                    referenceValue = baseline.value; 
                 }
             } else {
                 currentValue = NaN;
                 referenceValue = baseline.value;
             }
 
-            // Perform comparison based on the values
             if (baseline.type === 'rsi') {
-                // For RSI, higher is better - we want current >= reference
                 if (referenceValue > 0 && !isNaN(currentValue)) {
                     referencePercent = (currentValue / referenceValue) * 100;
                 }
                 isGood = currentValue >= referenceValue;
-                console.log(`[S11] Row ${rowId} RSI comparison: Current=${currentValue}, Reference=${referenceValue}, Percent=${referencePercent.toFixed(0)}%`);
+                // console.log(`[S11] Row ${rowId} RSI comparison: Current=${currentValue}, Reference=${referenceValue}, Percent=${referencePercent.toFixed(0)}%`); // REMOVE/COMMENT
             } else if (baseline.type === 'uvalue') {
-                // For U-Value, lower is better - we want current <= reference
                 if (currentValue > 0 && !isNaN(currentValue)) {
                     referencePercent = (referenceValue / currentValue) * 100;
                 }
                 isGood = currentValue <= referenceValue;
-                console.log(`[S11] Row ${rowId} U-value comparison: Current=${currentValue}, Reference=${referenceValue}, Percent=${referencePercent.toFixed(0)}%`);
+                // console.log(`[S11] Row ${rowId} U-value comparison: Current=${currentValue}, Reference=${referenceValue}, Percent=${referencePercent.toFixed(0)}%`); // REMOVE/COMMENT
             } else if (baseline.type === 'penalty') {
-                // For penalty, check against reference value (convert percentage to decimal)
-                const refPenalty = referenceValue / 100; // Convert from percentage to decimal
-                const currentPenalty = currentValue / 100; // Current is already in percentage
+                const refPenalty = referenceValue / 100; 
+                const currentPenalty = currentValue / 100; 
                 isGood = currentPenalty <= refPenalty;
                 if (refPenalty > 0) {
                     referencePercent = (refPenalty / currentPenalty) * 100;
                 }
-                // Update display
                 setCalculatedValue(mFieldId, referencePercent / 100, 'percent');
                 const nElementCheck = document.querySelector(`[data-field-id="${nFieldId}"]`);
                 if (nElementCheck) nElementCheck.textContent = isGood ? "✓" : "✗";
                 setElementClass(nFieldId, isGood);
-                return; // Exit after handling penalty row
+                return; 
             }
             
-            // Set Column M (Reference %)
             setCalculatedValue(mFieldId, referencePercent / 100, 'percent');
-            // Set Column N (Pass/Fail Checkmark)
             const nElementCheck = document.querySelector(`[data-field-id="${nFieldId}"]`);
             if (nElementCheck) nElementCheck.textContent = isGood ? "✓" : "✗";
             setElementClass(nFieldId, isGood);
@@ -624,7 +614,7 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        // console.log('[Section11] Running Reference Model calculations...');
+        // console.log('[Section11] Running Reference Model calculations...'); // Comment out
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
         const componentResults = {};
@@ -675,7 +665,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             });
         }
         
-        // console.log('[Section11] Reference Model values stored');
+        // console.log('[Section11] Reference Model values stored'); // Comment out
     }
 
     /**
@@ -683,7 +673,7 @@ window.TEUI.SectionModules.sect11 = (function() {
      * This is the existing calculateAll logic, refactored
      */
     function calculateTargetModel() {
-        // console.log('[Section11] Running Target Model calculations...');
+        // console.log('[Section11] Running Target Model calculations...'); // Comment out
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
@@ -785,13 +775,12 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Replaces the original calculateAll function
      */
     function calculateAll() {
-        // console.warn("S11: calculateAll called - running dual engines");
+        // console.warn("S11: calculateAll called - running dual engines"); // This was already commented
         
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
+        calculateReferenceModel();  
+        calculateTargetModel();     
         
-        // console.warn("S11: Dual-engine calculations complete");
+        // console.warn("S11: Dual-engine calculations complete"); // This was already commented
     }
 
     //==========================================================================
