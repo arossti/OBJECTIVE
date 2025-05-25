@@ -1315,17 +1315,50 @@ const formatTypeMap = {
 
 #### ❌ **Issues Still Under Investigation:**
 
-1. **Initial Load "First Paint" High Values**
-   - **Problem**: On page refresh, Section 01 shows incorrect high values initially
-   - **Symptoms**: Requires "Reset" button click or Reference Mode toggle to display correct values
-   - **Root Cause**: Likely timing issue in initial calculation sequence or reference data loading
-   - **Investigation Tools**: Enhanced logging now in place to trace initial load sequence
-   - **Workaround**: Click "Reset" button after initial load
+1. **Initial Load "First Paint" High Values & Infinite Calculation Loop**
+   - **Problem**: On page refresh, Section 01 shows incorrect high values initially AND continues infinite calculation loop
+   - **Symptoms**: 
+     - Requires "Reset" button click or Reference Mode toggle to display correct values
+     - Console shows continuous `[S01-ORCHESTRATOR] Starting runAllCalculations...` loops
+     - Values eventually settle to correct range (e.g., `e_10: '287799.6'` = ~287.8 kWh/m²/yr) but keep recalculating
+   - **Root Cause Analysis Needed**: 
+     - Section 04 initially provides `{ref_j_32: null, ref_k_32: null}` for extended period
+     - Something continues triggering Section 01 calculations even after values stabilize
+     - Calculation chain S15→S04→S01 not stabilizing properly
+   - **Investigation Tools**: Enhanced logging shows calculation flow but need to trace exact triggers
+   - **Planned Afternoon Work**: 
+     - Investigate why Section 04 doesn't provide stable ref values initially
+     - Find remaining trigger causing infinite Section 01 loop
+     - Add targeted logging to trace exact trigger sequence
 
-2. **Reference Values Display in Reference Mode**
-   - **Problem**: When d_13 changes within Reference Mode, S01 calculations update but reference input values may not visually refresh in other sections
-   - **Symptoms**: Reference calculations appear correct but input fields may show stale values
-   - **Investigation**: Timing between reference data reload and UI refresh
+2. **Reference Mode "Show Your Math" Issue**
+   - **Problem**: Reference Mode displays reference input values but doesn't show calculated results from Reference engine
+   - **Symptoms**: 
+     - Users see reference input values (from ReferenceValues.js) in input fields
+     - But calculated results in Column E appear to use carryover from Application state
+     - Reference calculations happen (logs show Reference engine running) but results don't display properly
+   - **Expected Behavior**: Reference Mode should show both reference inputs AND reference calculated results
+   - **Investigation Needed**: UI display logic for calculated fields in Reference Mode
+   - **Planned Afternoon Work**: 
+     - Trace how calculated fields update their display in Reference Mode
+     - Ensure Reference engine results properly populate Column E displays
+     - Verify Reference Mode toggle affects both input AND calculated field displays
+
+3. **Inconsistent d_13 Standard Change Behavior**
+   - **Problem**: Changing reference standard (d_13) shows inconsistent UI updates requiring multiple round trips
+   - **Symptoms**: 
+     - Sometimes works immediately, sometimes requires toggle to Design→Reference→Design
+     - Behavior differs between changing d_13 in Design Mode vs Reference Mode
+     - Reference values may not update on first attempt, requiring multiple interactions
+   - **Root Cause**: Timing issues between reference data reload, calculation triggers, and UI refresh
+   - **Investigation Needed**: 
+     - Sequence of events when d_13 changes in different modes
+     - Whether reference data loading completes before UI refresh attempts
+     - Race conditions between StateManager updates and UI display updates
+   - **Planned Afternoon Work**: 
+     - Add detailed logging to d_13 change sequence
+     - Investigate reference data loading timing vs UI refresh timing
+     - Ensure consistent behavior regardless of current mode when d_13 changes
 
 #### 🧪 **Testing Framework Established:**
 
@@ -1340,6 +1373,99 @@ const formatTypeMap = {
 1. **d_13 Change Within Reference Mode**: Change standard while in Reference Mode, observe console logs
 2. **Initial Load Issue**: Refresh page, watch calculation sequence, test Reset button
 3. **d_13 Change Outside Reference Mode**: Change standard in Design Mode, enter Reference Mode
+
+#### 🎯 **Afternoon Investigation Plan (Current Session):**
+
+**Priority 1: Initial Load Infinite Loop Resolution**
+1. **Trace Section 04 Reference Value Initialization**:
+   - Why does Section 04 provide `{ref_j_32: null, ref_k_32: null}` initially?
+   - When should Section 04's dual-engine calculations populate these values?
+   - Is Section 04's `calculateReferenceModel()` being called during initial load?
+
+2. **Identify Infinite Loop Trigger**:
+   - What continues triggering Section 01 `runAllCalculations()` after values stabilize?
+   - Add logging to trace exact field changes that trigger recalculations
+   - Check if Section 01's own calculations are creating feedback loops
+
+3. **Stabilize Calculation Chain**:
+   - Ensure S15→S04→S01 dependency chain completes cleanly
+   - Verify that calculated values don't retrigger their own dependencies
+   - Test if "Reset" button success indicates a specific initialization sequence
+
+**Priority 2: Reference Mode Display Investigation**
+1. **Column E Display Logic**:
+   - Trace how Column E fields get their display values in Reference Mode
+   - Verify Reference engine results are stored with correct `ref_` prefixes
+   - Check if UI display logic properly reads `ref_` values for Column E
+
+2. **Reference vs Application Display Separation**:
+   - Ensure Reference Mode shows reference calculations, not carryover application values
+   - Verify that `updateTEUIDisplay()` in Section 01 uses correct data sources
+   - Test if Reference engine results are being overwritten by Application engine
+
+**Priority 3: d_13 Change Consistency**
+1. **Event Sequence Logging**:
+   - Add detailed logging to `handleStandardChange()` in ReferenceToggle
+   - Trace reference data reload timing vs UI refresh timing
+   - Log the complete sequence: d_13 change → data reload → calculation trigger → UI update
+
+2. **Mode-Specific Behavior Analysis**:
+   - Compare d_13 change behavior in Design Mode vs Reference Mode
+   - Identify why multiple round trips are sometimes needed
+   - Test if race conditions exist between data loading and display updates
+
+**Success Criteria for This Session:**
+- ✅ Initial load shows correct values without infinite loop
+- ✅ Reference Mode displays both reference inputs AND reference calculated results  
+- ✅ d_13 changes work consistently on first attempt in both modes
+- ✅ No more "Reset" button workarounds needed for normal operation
+
+## Expected Reference Values (Excel REFERENCE Worksheet Validation)
+
+**Based on Excel TEUIv3039-REFERENCE.pdf with OBC SB10 5.5-6 Z6 standard and default building data:**
+
+### **Section 1 - Key Values (Reference Column E):**
+- **e_6 (T.1 Lifetime Carbon)**: **18.7** kgCO2e/m²
+- **e_8 (T.2 Annual Carbon)**: **11.7** kgCO2e/m²  
+- **e_10 (T.3 TEUI)**: **229.5** kWh/m²/yr
+
+### **Section 4 - Energy Totals (Reference Column):**
+- **Total Electricity Use**: **132,938.00** kWh/yr
+- **Total Net Energy**: **475.58** GJ/yr
+- **Annual Percapita Energy**: **1,058.56** kWh Actual
+- **Primary Energy**: **327,518.97** kWh/yr
+
+### **Section 7 - Water (Reference Column):**
+- **DHW Use**: **16.00** L/person/day
+- **DHW Efficiency Factor**: **90%**
+- **System Losses**: **3,548.44** kWh/yr
+
+### **Section 9 - Internal Gains (Reference Column):**
+- **Occupants Per Building**: **12** people
+- **Lighting Loads**: **7.00** W/m²
+- **Internal Gains Total**: **164,714.20** kWh/yr
+
+### **Section 10 - Radiant Gains (Reference Column):**
+- **Net Useable Heating Season Gains**: **124,907.37** kWh/yr
+- **Net Useable Htg Gains**: **62,994.14** kWh/yr
+
+### **Section 11 - Transmission Losses (Reference Column):**
+- **Roof**: **29,402.23** kWh/yr (24.69%)
+- **Walls Above Grade**: **19,168.02** kWh/yr (16.12%)
+- **Envelope Totals**: **119,064.57** kWh/yr
+
+### **Section 13 - Mechanical Loads (Reference Column):**
+- **Heating System Demand**: **161,752.14** kWh/yr
+- **Cooling System**: **22,888.17** kWh/yr
+- **Primary Heating System**: Heatpump with calculated loads
+
+### **Section 15 - TEUI (Reference Column):**
+- **TEUI Targeted Electricity**: **502,355.39** kWh/yr
+- **TEUI Targeted Electricity /FHP/Gas/Oil Bldg**: **327,518.97** kWh/yr
+- **Peak Heating Load**: **79.31** kW
+- **Peak Cooling Load**: **11.33** kW
+
+**Note**: Section 13 cooling calculations will require dual-engine integration with cooling.js using reference data. All other sections should be achievable with current dual-engine architecture.
 
 #### 🎯 **Next Steps for Complete Resolution:**
 
