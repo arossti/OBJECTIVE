@@ -112,21 +112,18 @@ window.TEUI.SectionModules.sect02 = (function() {
                     options: [
                         { value: "OBC SB12 3.1.1.2.C4", name: "OBC SB12 3.1.1.2.C4" },
                         { value: "OBC SB12 3.1.1.2.C1", name: "OBC SB12 3.1.1.2.C1" },
+                        { value: "OBC SB12 3.1.1.2.A3", name: "OBC SB12 3.1.1.2.A3" },
                         { value: "OBC SB10 5.5-6 Z6", name: "OBC SB10 5.5-6 Z6" },
                         { value: "OBC SB10 5.5-6 Z5 (2010)", name: "OBC SB10 5.5-6 Z5 (2010)" },
-                        { value: "ADD YOUR OWN HERE", name: "ADD YOUR OWN HERE" },
                         { value: "NBC T1", name: "NBC T1" },
-                        { value: "NBC T2", name: "NBC T2" },
-                        { value: "NBC T3", name: "NBC T3" },
-                        { value: "NBC T4", name: "NBC T4" },
-                        { value: "NBC T5", name: "NBC T5" },
-                        { value: "CaGBC ZCB", name: "CaGBC ZCB" },
                         { value: "NECB T1 (Z6)", name: "NECB T1 (Z6)" },
+                        { value: "CaGBC ZCB", name: "CaGBC ZCB" },
                         { value: "PH Classic", name: "PH Classic" },
                         { value: "PH Plus", name: "PH Plus" },
                         { value: "PH Premium", name: "PH Premium" },
                         { value: "EnerPHit", name: "EnerPHit" },
-                        { value: "PH Low Energy", name: "PH Low Energy" }
+                        { value: "PH Low Energy", name: "PH Low Energy" },
+                        { value: "ADD YOUR OWN HERE", name: "ADD YOUR OWN HERE" }
                     ]
                 },
                 e: { content: "" }, // Empty but needed for alignment

@@ -760,6 +760,15 @@ window.TEUI.SectionModules.sect04 = (function() {
                 calculateReferenceModel();  // Calculate Reference values using new standard
                 calculateTargetModel();     // Recalculate Target values (may have dependencies)
             });
+            
+            // CRITICAL: Listener for h_12 changes in Reference Mode
+            // This ensures Reference grid intensity updates when Reference reporting year changes
+            sm.addListener('h_12', () => {
+                // Update both Application and Reference grid intensities
+                updateElectricityEmissionFactor();
+                // Trigger Reference Model recalculation to use new Reference grid intensity
+                calculateReferenceModel();
+            });
 
             // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
             document.addEventListener('input', function(e) {
@@ -776,20 +785,41 @@ window.TEUI.SectionModules.sect04 = (function() {
     
     /**
      * Update the electricity emission factor (l_27) based on province and reporting year
-     * REFACTORED: Relies on StateManager for inputs and uses setCalculatedValue for outputs.
+     * DUAL-ENGINE: Now supports separate Reference and Target grid intensity calculations
      */
     function updateElectricityEmissionFactor() {
+        // Calculate Target/Application grid intensity
+        updateGridIntensityForMode('application');
+        
+        // Calculate Reference grid intensity (may use different reporting year)
+        updateGridIntensityForMode('reference');
+    }
+    
+    /**
+     * Update grid intensity for a specific calculation mode
+     * @param {string} mode - 'application' or 'reference'
+     */
+    function updateGridIntensityForMode(mode) {
         let provinceAbbreviation = 'ON'; // Default
         let reportingYear = 2022;    // Default
 
         if (window.TEUI?.StateManager) {
-            const provinceStateValue = window.TEUI.StateManager.getValue('d_19'); // From S03
+            // Province is always from application state (same for both modes)
+            const provinceStateValue = window.TEUI.StateManager.getApplicationValue('d_19'); // From S03
             if (provinceStateValue) {
-                // Call getProvinceCode directly as it's in the same scope
                 provinceAbbreviation = getProvinceCode(provinceStateValue);
             }
             
-            const yearStateValue = window.TEUI.StateManager.getValue('h_12'); // From S01
+            // Reporting year depends on mode
+            let yearStateValue;
+            if (mode === 'reference') {
+                // In Reference Mode, use Reference state for h_12 (may be different from application)
+                yearStateValue = window.TEUI.StateManager.getReferenceValue('h_12');
+            } else {
+                // In Application Mode, use Application state for h_12
+                yearStateValue = window.TEUI.StateManager.getApplicationValue('h_12');
+            }
+            
             if (yearStateValue) {
                 const parsedYear = parseInt(yearStateValue);
                 if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
@@ -798,16 +828,15 @@ window.TEUI.SectionModules.sect04 = (function() {
             }
         } else {
             console.warn("[S04] StateManager not available for updateElectricityEmissionFactor.");
-            // Fallback to trying DOM if really needed, but ideally StateManager has the values.
+            // Fallback to DOM (application state only)
             const provinceDropdown = document.querySelector('select[data-dropdown-id="dd_d_19"], select[data-field-id="d_19"]');
             if (provinceDropdown && provinceDropdown.value) {
-                 // Call getProvinceCode directly
                 provinceAbbreviation = getProvinceCode(provinceDropdown.value);
             }
             const yearInput = document.querySelector('[data-field-id="h_12"]');
             if (yearInput && yearInput.value) {
-                 const parsedYear = parseInt(yearInput.value);
-                 if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
+                const parsedYear = parseInt(yearInput.value);
+                if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
                     reportingYear = parsedYear;
                 }
             }
@@ -816,28 +845,28 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Get emission factor based on province and year
         const factor = getElectricityFactor(provinceAbbreviation, reportingYear);
         
-        // Update the l_27 field using setCalculatedValue
-        setCalculatedValue('l_27', factor, 'integer'); // Emission factors are integers
+        if (mode === 'reference') {
+            // Store Reference grid intensity with ref_ prefix
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('ref_l_27', factor.toString(), 'calculated');
+            }
+            console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+        } else {
+            // Update the application l_27 field
+            setCalculatedValue('l_27', factor, 'integer');
+            
+            // Recalculate dependent values for application state
+            const f27Value = getNumericValue('f_27');
+            const g27Value = calculateG27(f27Value, factor); 
+            setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
 
-        // The setCalculatedValue for l_27 will trigger its own listeners if g_27/k_27 depend on it.
-        // However, it's safer to explicitly recalculate g_27 and k_27 here if they directly use l_27 AND f_27/j_27.
-        // This ensures the sequence is correct if f_27/j_27 haven't changed but l_27 did.
-        
-        const f27Value = getNumericValue('f_27');
-        // Pass factor directly to the calculation function
-        const g27Value = calculateG27(f27Value, factor); 
-        setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
-
-        const j27Value = getNumericValue('j_27');
-        // Pass factor directly to the calculation function
-        const k27Value = calculateK27(j27Value, factor); 
-        setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-        
-        // updateSubtotals() will be called if g_27 or k_27 are dependencies for it.
-        // If not, and subtotals need immediate update after emission factor change, call it here.
-        // Based on current structure, updateSubtotals() is likely called by listeners on g_32/k_32 which depend on g_27/k_27.
-        // However, explicitly calling it can ensure timely updates if the chain is complex.
-        updateSubtotals(); 
+            const j27Value = getNumericValue('j_27');
+            const k27Value = calculateK27(j27Value, factor); 
+            setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
+            
+            updateSubtotals();
+            console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+        }
     }
 
     // Helper function to convert province name to province code
@@ -1524,8 +1553,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         const d31 = getAppNumericValue('d_31', 0); // Wood
         const d60 = getAppNumericValue('d_60', 0); // Offsets
         
-        // Get emission factors
-        const l27 = getAppNumericValue('l_27', 0);
+        // Get emission factors (Reference grid intensity may be different from application)
+        const ref_l27 = getRefNumericValue('l_27', 0); // Use Reference grid intensity
         const l28 = getAppNumericValue('l_28', 0);
         const l29 = getAppNumericValue('l_29', 0);
         const l30 = getAppNumericValue('l_30', 0);
@@ -1569,7 +1598,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_j31 = ref_h31 * 1000; // Wood conversion
         
         // Calculate Reference K values (Emissions)
-        const ref_k27 = (ref_j27 * l27) / 1000;
+        const ref_k27 = (ref_j27 * ref_l27) / 1000;
         const ref_k28 = (ref_h28 * l28) / 1000;
         const ref_k29 = (ref_h29 * l29) / 1000;
         const ref_k30 = (ref_h30 * l30) / 1000;
