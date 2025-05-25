@@ -168,28 +168,25 @@ window.TEUI.SectionModules.sect01 = (function() {
     }
 
     /**
-     * Helper function to safely get numeric values for the REFERENCE model.
-     * It prioritizes values from the activeReferenceDataSet (which includes standard overrides and app carry-overs).
-     * If a value is not found there (e.g., an essential app value like area that wasn't copied yet or isn't strictly part of the ref standard fields),
-     * it falls back to the live application state.
-     * Finally, it uses a provided default if all else fails.
+     * Helper function to safely get numeric values from the REFERENCE state.
      */
-    function getRefNumericValue(fieldId, defaultValueIfAllElseFails = 0) {
-        let rawValue = window.TEUI?.StateManager?.getReferenceValue(fieldId);
-        let source = "activeReferenceDataSet";
-
-        if (rawValue === null || rawValue === undefined) {
-            // If not in activeReferenceDataSet, it must be an application value that should carry over.
-            // This is especially true for h_15 (area) or other geometry/context inputs.
-            rawValue = window.TEUI?.StateManager?.getApplicationValue(fieldId);
-            source = "applicationStateDirect";
+    function getRefNumericValue(fieldId, defaultValue = 0) {
+        let value = defaultValue;
+        const stateValue = window.TEUI?.StateManager?.getReferenceValue(fieldId);
+        if (stateValue !== null && stateValue !== undefined) {
+            if (typeof stateValue === 'string') {
+                const cleanedValue = stateValue.replace(/,/g, '');
+                if (cleanedValue === '' || cleanedValue.toUpperCase() === 'N/A') {
+                    value = defaultValue;
+                } else {
+                    const parsed = parseFloat(cleanedValue);
+                    value = isNaN(parsed) ? defaultValue : parsed;
+                }
+            } else if (typeof stateValue === 'number' && !isNaN(stateValue)) {
+                value = stateValue;
+            }
         }
-        
-        // if (fieldId === 'h_15') {
-        //    console.log(`[S01 getRefNumericValue for ${fieldId}] Using source: ${source}. Raw value: ${rawValue}. Default to use: ${defaultValueIfAllElseFails}`);
-        // }
-
-        return window.TEUI.parseNumeric(rawValue, defaultValueIfAllElseFails);
+        return isNaN(value) ? defaultValue : value;
     }
 
     //==========================================================================
@@ -225,7 +222,7 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refArea = getRefNumericValue('h_15', 1); 
             const refServiceLife = getRefNumericValue('h_13', 50); 
             const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82); 
-
+            
             const referenceStandard = window.TEUI?.StateManager?.getApplicationValue('d_13');
             
             const refValues = window.TEUI?.ReferenceValues?.[referenceStandard] || {};

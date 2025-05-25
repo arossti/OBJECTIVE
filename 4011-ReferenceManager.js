@@ -35,7 +35,7 @@ TEUI.ReferenceManager = (function() {
       
       if (newValue && newValue.trim() !== '') {
         if (window.TEUI && TEUI.StateManager && typeof TEUI.StateManager.loadReferenceData === 'function') {
-        TEUI.StateManager.loadReferenceData(newValue);
+            TEUI.StateManager.loadReferenceData(newValue);
         } else {
             console.error("[ReferenceManager] StateManager or loadReferenceData not found when called by RefManager!");
         }

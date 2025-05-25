@@ -38,19 +38,19 @@ TEUI.ReferenceToggle = (function() {
 
   function handleStandardChange(event) {
     const newStandardKey = event.target.value;
-    console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey} (Reference Mode: ${referenceMode})`); // Restored original log
+    console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey} (Reference Mode: ${referenceMode})`);
     
     if (window.TEUI && TEUI.StateManager) {
         TEUI.StateManager.setValue(STANDARD_SELECTOR_ID, newStandardKey, TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
         
         if (referenceMode) {
-            console.log(`[ReferenceToggle] In Reference Mode - reloading data for ${newStandardKey}`); // Restored original log
+            console.log(`[ReferenceToggle] In Reference Mode - reloading data for ${newStandardKey}`);
             setTimeout(() => {
                 triggerFullUIRefreshForModeChange();
             }, 100); 
         }
     } else {
-        console.error("[ReferenceToggle] StateManager not available to handle standard change."); // Restored original log
+        console.error("[ReferenceToggle] StateManager not available to handle standard change.");
     }
   }
 
@@ -64,7 +64,7 @@ TEUI.ReferenceToggle = (function() {
   }
 
   function triggerFullUIRefreshForModeChange() {
-    console.log("[ReferenceToggle] Triggering Full UI Refresh for Mode Change. Reference Mode: ", referenceMode); // Restored original log
+    console.log("[ReferenceToggle] Triggering Full UI Refresh for Mode Change. Reference Mode: ", referenceMode);
 
     if (!window.TEUI || !TEUI.StateManager) {
         console.error("[ReferenceToggle] Missing StateManager for UI refresh.");
@@ -133,12 +133,12 @@ TEUI.ReferenceToggle = (function() {
 
             if (referenceMode) {
                 displayValue = TEUI.StateManager.getValue(fieldId); // Mode-aware, gets from activeReferenceDataSet
-                console.log(`[ReferenceToggle] ${fieldId} Reference Mode value: "${displayValue}"`); // Restored original log
+                console.log(`[ReferenceToggle] ${fieldId} Reference Mode value: "${displayValue}"`);
             } else {
                 displayValue = TEUI.StateManager.getApplicationValue ? 
                               TEUI.StateManager.getApplicationValue(fieldId) : 
                               TEUI.StateManager.getValue(fieldId);
-                console.log(`[ReferenceToggle] ${fieldId} Design Mode value: "${displayValue}"`); // Restored original log
+                console.log(`[ReferenceToggle] ${fieldId} Design Mode value: "${displayValue}"`);
             }
 
             // Update the field display
