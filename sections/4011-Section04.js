@@ -810,14 +810,16 @@ window.TEUI.SectionModules.sect04 = (function() {
                 provinceAbbreviation = getProvinceCode(provinceStateValue);
             }
             
-            // Reporting year depends on mode
+            // Reporting year depends on mode - CRITICAL: Use explicit state getters
             let yearStateValue;
             if (mode === 'reference') {
                 // In Reference Mode, use Reference state for h_12 (may be different from application)
                 yearStateValue = window.TEUI.StateManager.getReferenceValue('h_12');
+                console.log(`[S04] Reference Mode: Using Reference h_12 value: ${yearStateValue}`);
             } else {
                 // In Application Mode, use Application state for h_12
                 yearStateValue = window.TEUI.StateManager.getApplicationValue('h_12');
+                console.log(`[S04] Application Mode: Using Application h_12 value: ${yearStateValue}`);
             }
             
             if (yearStateValue) {

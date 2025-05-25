@@ -148,6 +148,7 @@ TEUI.StateManager = (function() {
     let dirtyFields = new Set();      // Fields needing recalculation
     let listeners = new Map();        // Field change listeners
     let activeReferenceDataSet = {}; 
+    let independentReferenceState = {}; // << NEW: For independently editable Reference fields (like h_12)
     let isApplicationStateMuted = false; // << NEW: Flag for muting application state updates
     let lastImportedState = {}; // << NEW: To store the last imported state
     
@@ -219,7 +220,12 @@ TEUI.StateManager = (function() {
      */
     function getValue(fieldId) {
         if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
-            // In Reference Mode, get value from activeReferenceDataSet
+            // In Reference Mode, check independently editable fields first
+            if (independentReferenceState.hasOwnProperty(fieldId)) {
+                return independentReferenceState[fieldId];
+            }
+            
+            // Then check activeReferenceDataSet
             // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
             return activeReferenceDataSet.hasOwnProperty(fieldId) 
                    ? activeReferenceDataSet[fieldId] 
@@ -238,6 +244,27 @@ TEUI.StateManager = (function() {
      * @returns {boolean} True if the value changed
      */
     function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
+        // Check if we're in Reference Mode and this is an independently editable field
+        if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode() && 
+            state === VALUE_STATES.USER_MODIFIED) {
+            
+            // Check if this field is independently editable in Reference Mode
+            if (window.TEUI?.AppendixE?.getFieldBehavior) {
+                const currentStandard = getValue('d_13') || 'OBC SB10 5.5-6 Z6';
+                const behavior = window.TEUI.AppendixE.getFieldBehavior(fieldId, currentStandard);
+                if (behavior === "Independently User-Editable in Reference Mode") {
+                    // Store in separate reference state and update activeReferenceDataSet
+                    const oldValue = independentReferenceState[fieldId] || null;
+                    independentReferenceState[fieldId] = value;
+                    activeReferenceDataSet[fieldId] = value; // Keep in sync
+                    
+                    console.log(`[StateManager] Set independent Reference value for ${fieldId}: ${value}`);
+                    notifyListeners(fieldId, value, oldValue, 'reference-user-modified');
+                    return true;
+                }
+            }
+        }
+        
         // << NEW: Check if application state updates are muted >>
         if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
             // if (fieldId === 'k_120') { // Intentionally commented out
@@ -984,9 +1011,16 @@ TEUI.StateManager = (function() {
 
         if (allUserEditableFields) {
             Object.keys(allUserEditableFields).forEach(fieldId => {
-                activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
+                // Check if this field has an independent Reference value
+                if (independentReferenceState.hasOwnProperty(fieldId)) {
+                    // Use the independent Reference value
+                    activeReferenceDataSet[fieldId] = independentReferenceState[fieldId];
+                } else {
+                    // Use application state value
+                    activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
+                }
             });
-            console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet. d_53 value:', activeReferenceDataSet['d_53']);
+            console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet (preserving independent Reference values). d_53 value:', activeReferenceDataSet['d_53']);
         } else {
             console.warn('[StateManager] Could not get allUserEditableFields from FieldManager for Step 1.');
             // Fallback: try to copy from current 'fields' if FieldManager helper isn't ready/available
@@ -1080,6 +1114,20 @@ TEUI.StateManager = (function() {
 
         const oldValueInRef = activeReferenceDataSet[fieldId]; // Get old value specifically from ref dataset
         activeReferenceDataSet[fieldId] = value;
+
+        // For independently editable fields, also store in a separate reference state
+        if (window.TEUI?.AppendixE?.getFieldBehavior) {
+            const currentStandard = getValue('d_13') || 'OBC SB10 5.5-6 Z6';
+            const behavior = window.TEUI.AppendixE.getFieldBehavior(fieldId, currentStandard);
+            if (behavior === "Independently User-Editable in Reference Mode") {
+                // Store in separate reference state storage
+                if (!independentReferenceState) {
+                    independentReferenceState = {};
+                }
+                independentReferenceState[fieldId] = value;
+                console.log(`[StateManager] Stored independent Reference value for ${fieldId}: ${value}`);
+            }
+        }
 
         // Notify listeners. Consider a specific state like 'reference-user-modified'
         // For now, using existing notifyListeners to ensure dependents are aware. 
@@ -1214,6 +1262,12 @@ TEUI.StateManager = (function() {
      * @returns {any} The field value from reference state or null if not found
      */
     function getReferenceValue(fieldId) {
+        // First check if this is an independently editable field with a separate Reference value
+        if (independentReferenceState.hasOwnProperty(fieldId)) {
+            return independentReferenceState[fieldId];
+        }
+        
+        // Otherwise use the standard activeReferenceDataSet
         return activeReferenceDataSet.hasOwnProperty(fieldId) ? activeReferenceDataSet[fieldId] : null;
     }
     
@@ -1225,7 +1279,12 @@ TEUI.StateManager = (function() {
      */
     function getCurrentDisplayValue(fieldId) {
         if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
-            // In Reference Mode, get value from activeReferenceDataSet
+            // In Reference Mode, check independently editable fields first
+            if (independentReferenceState.hasOwnProperty(fieldId)) {
+                return independentReferenceState[fieldId];
+            }
+            
+            // Then check activeReferenceDataSet
             // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
             return activeReferenceDataSet.hasOwnProperty(fieldId) 
                    ? activeReferenceDataSet[fieldId] 
