@@ -37,7 +37,7 @@ TEUI.AppendixE = {
         const independentlyEditableInRefMode = [
             "h_12", // Reporting Year - allows different reporting years for Reference vs Design
             "d_13", // Reference Standard - must always be editable in Reference Mode
-            // "d_39", // Example: Building Typology (S05)
+            "d_39", // Building Typology (S05) - allows different typology for Reference vs Design
             // "d_68", // Example: Elevators (S09)
             // "g_67"  // Example: Equipment Efficiency level (S09)
         ];

@@ -38,35 +38,25 @@ TEUI.ReferenceToggle = (function() {
 
   function handleStandardChange(event) {
     const newStandardKey = event.target.value;
-    console.log(`[ReferenceToggle] Standard changed to: ${newStandardKey} (Reference Mode: ${referenceMode})`);
     
     if (window.TEUI && TEUI.StateManager) {
         // Always update StateManager first
         TEUI.StateManager.setValue(STANDARD_SELECTOR_ID, newStandardKey, TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
         
         if (referenceMode) {
-            console.log(`[ReferenceToggle] In Reference Mode - processing d_13 change for ${newStandardKey}`);
-            
             // Step 1: Reload reference data immediately (synchronous)
-            console.log(`[ReferenceToggle] BEFORE reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
             TEUI.StateManager.loadReferenceData(newStandardKey);
-            console.log(`[ReferenceToggle] AFTER reload - activeReferenceDataSet d_53:`, TEUI.StateManager.getReferenceValue('d_53'));
             
             // Step 2: Trigger UI refresh (synchronous)
-            console.log(`[ReferenceToggle] Triggering UI refresh for ${newStandardKey}`);
             triggerFullUIRefreshForModeChange();
             
             // Step 3: Trigger calculations (single timeout for DOM stability)
             setTimeout(() => {
-                console.log(`[ReferenceToggle] Triggering calculations after d_13 change to ${newStandardKey}`);
                 if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
                     window.TEUI.Calculator.calculateAll();
-                } else {
-                    console.warn('[ReferenceToggle] Calculator.calculateAll not available');
                 }
             }, 50); // Single 50ms delay for DOM stability
         } else {
-            console.log(`[ReferenceToggle] Not in Reference Mode - d_13 change will take effect on next Reference Mode entry`);
             // In Design Mode, just reload reference data for when user enters Reference Mode later
             TEUI.StateManager.loadReferenceData(newStandardKey);
         }
@@ -77,7 +67,6 @@ TEUI.ReferenceToggle = (function() {
 
   function toggleReferenceView() {
     referenceMode = !referenceMode;
-    console.log(`[ReferenceToggle] Toggling reference mode: ${referenceMode ? 'ON' : 'OFF'}`);
 
     document.body.classList.toggle(BODY_CLASS, referenceMode);
     updateButtonAppearance();
@@ -85,8 +74,6 @@ TEUI.ReferenceToggle = (function() {
   }
 
   function triggerFullUIRefreshForModeChange() {
-    console.log("[ReferenceToggle] Triggering Full UI Refresh for Mode Change. Reference Mode: ", referenceMode);
-
     if (!window.TEUI || !TEUI.StateManager) {
         console.error("[ReferenceToggle] Missing StateManager for UI refresh.");
         return;
@@ -97,7 +84,6 @@ TEUI.ReferenceToggle = (function() {
     if (TEUI.FieldManager && typeof TEUI.FieldManager.getAllUserEditableFields === 'function') {
         allUserEditableFields = TEUI.FieldManager.getAllUserEditableFields();
     } else {
-        console.warn("[ReferenceToggle] FieldManager not available, using basic fallback for common fields");
         // Basic fallback - target the key fields we know should work
         allUserEditableFields = {
             'd_53': { type: 'percentage' },
@@ -113,7 +99,6 @@ TEUI.ReferenceToggle = (function() {
     // CRITICAL: Ensure d_13 is always included as it's required for Reference Mode to work
     if (!allUserEditableFields[STANDARD_SELECTOR_ID]) {
         allUserEditableFields[STANDARD_SELECTOR_ID] = { type: 'dropdown' };
-        console.log(`[ReferenceToggle] Added ${STANDARD_SELECTOR_ID} to user-editable fields list`);
     }
 
     // Unconditionally mute application state updates for the duration of this UI refresh operation
@@ -137,7 +122,6 @@ TEUI.ReferenceToggle = (function() {
         }
 
         const fieldIds = Object.keys(allUserEditableFields);
-        console.log(`[ReferenceToggle] Updating ${fieldIds.length} fields for mode: ${referenceMode ? 'Reference' : 'Design'}`);
 
         for (const fieldId of fieldIds) {
             const fieldDef = allUserEditableFields[fieldId];
@@ -173,11 +157,10 @@ TEUI.ReferenceToggle = (function() {
                         element.value = displayValue;
                     } else if (element.hasAttribute('contenteditable')) {
                         element.textContent = displayValue;
-                    } else {
-                        element.textContent = displayValue;
-                    }
-                    console.log(`[ReferenceToggle] Updated ${fieldId} DOM directly to: "${displayValue}"`);
+                                    } else {
+                    element.textContent = displayValue;
                 }
+            }
             }
             
             const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
@@ -190,7 +173,6 @@ TEUI.ReferenceToggle = (function() {
                     // SPECIAL CASE: d_13 (reference standard selector) must ALWAYS be editable in Reference Mode
                     if (fieldId === 'd_13') {
                         lockField = false;
-                        console.log(`[ReferenceToggle] ${fieldId} (standard selector) - keeping editable in Reference Mode`);
                     } else {
                         // Check AppendixE if available, otherwise lock other fields
                         if (TEUI.AppendixE && typeof TEUI.AppendixE.getFieldBehavior === 'function') {
@@ -212,11 +194,9 @@ TEUI.ReferenceToggle = (function() {
                                            (element.matches('input, select, textarea') ? element : null);
                         if (inputElement) {
                             inputElement.disabled = true;
-                            console.log(`[ReferenceToggle] ${fieldId} - disabled input element`);
                         }
                         if (element.hasAttribute('contenteditable')) {
                             element.setAttribute('contenteditable', 'false');
-                            console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=false`);
                         }
                     } else {
                         element.classList.remove('reference-locked');
@@ -224,11 +204,9 @@ TEUI.ReferenceToggle = (function() {
                                            (element.matches('input, select, textarea') ? element : null);
                         if (inputElement) {
                             inputElement.disabled = false;
-                            console.log(`[ReferenceToggle] ${fieldId} - enabled input element`);
                         }
                         if (element.hasAttribute('contenteditable')) {
                             element.setAttribute('contenteditable', 'true');
-                            console.log(`[ReferenceToggle] ${fieldId} - set contenteditable=true`);
                         }
                     }
                 } else {
@@ -249,11 +227,13 @@ TEUI.ReferenceToggle = (function() {
                 }
             }
         }
-        console.log("[ReferenceToggle] Full UI Refresh finished.");
+        // Call section-specific display updates
+        if (TEUI.SectionModules && TEUI.SectionModules.sect05 && typeof TEUI.SectionModules.sect05.updateI39Display === 'function') {
+            TEUI.SectionModules.sect05.updateI39Display();
+        }
     } finally {
         // ALWAYS Unmute application state updates after the refresh attempt
         TEUI.StateManager.setMuteApplicationStateUpdates(false);
-        console.log("[ReferenceToggle] StateManager application state updates unmuted.");
     }
   }
 

@@ -221,7 +221,8 @@ window.TEUI.SectionModules.sect01 = (function() {
             
             const refArea = getRefNumericValue('h_15', 1); 
             const refServiceLife = getRefNumericValue('h_13', 50); 
-            const refEmbodiedCarbon = getRefNumericValue('i_41', 345.82); 
+            // Use Reference i_39 (from Section 05 Reference calculation) instead of i_41
+            const refEmbodiedCarbon = getAppNumericValue('ref_i_39', 350.0); 
             
             const referenceStandard = window.TEUI?.StateManager?.getApplicationValue('d_13');
             const refValues = window.TEUI?.ReferenceValues?.[referenceStandard] || {};
@@ -759,7 +760,8 @@ window.TEUI.SectionModules.sect01 = (function() {
             "f_32",     // Actual energy total (from Section 04)
             "g_32",     // Actual emissions total (from Section 04)
             "ref_j_32", // Reference energy total (from Section 04)
-            "ref_k_32"  // Reference emissions total (from Section 04)
+            "ref_k_32", // Reference emissions total (from Section 04)
+            "ref_i_39"  // Reference embodied carbon (from Section 05)
         ];
 
         calculatedFieldsToWatch.forEach(fieldId => {

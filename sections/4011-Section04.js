@@ -815,11 +815,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             if (mode === 'reference') {
                 // In Reference Mode, use Reference state for h_12 (may be different from application)
                 yearStateValue = window.TEUI.StateManager.getReferenceValue('h_12');
-                console.log(`[S04] Reference Mode: Using Reference h_12 value: ${yearStateValue}`);
+                // console.log(`[S04] Reference Mode: Using Reference h_12 value: ${yearStateValue}`);
             } else {
                 // In Application Mode, use Application state for h_12
                 yearStateValue = window.TEUI.StateManager.getApplicationValue('h_12');
-                console.log(`[S04] Application Mode: Using Application h_12 value: ${yearStateValue}`);
+                // console.log(`[S04] Application Mode: Using Application h_12 value: ${yearStateValue}`);
             }
             
             if (yearStateValue) {
@@ -875,10 +875,10 @@ window.TEUI.SectionModules.sect04 = (function() {
                     k27Element.textContent = window.TEUI.formatNumber(ref_k27, 'number-2dp-comma');
                 }
                 
-                console.log(`[S04] Reference Mode UI updated: l_27=${factor}, g_27=${ref_g27.toFixed(2)}, k_27=${ref_k27.toFixed(2)}`);
+                // console.log(`[S04] Reference Mode UI updated: l_27=${factor}, g_27=${ref_g27.toFixed(2)}, k_27=${ref_k27.toFixed(2)}`);
             }
             
-            console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+            // console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
         } else {
             // Update the application l_27 field
             setCalculatedValue('l_27', factor, 'integer');
@@ -893,7 +893,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
             
             updateSubtotals();
-            console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+            // console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
         }
     }
 

@@ -581,6 +581,8 @@ window.TEUI.SectionModules.sect05 = (function() {
     
     /**
      * Calculate Target kgCO2e/m2 (i_40 = d_16)
+     * This maintains Excel parity where i_40 comes from Section 2's d_16
+     * Note: d_16 and i_39 should be functionally equivalent to prevent circular references
      */
     function calculate_i_40() {
         const d_16_value_raw = getFieldValue("d_16"); // Get raw to check "N/A"
@@ -654,12 +656,60 @@ window.TEUI.SectionModules.sect05 = (function() {
     }
 
     /**
+     * Update i_39 for a specific mode (like S04's updateGridIntensityForMode)
+     * @param {string} mode - 'application' or 'reference'
+     */
+    function updateI39ForMode(mode) {
+        let typology;
+        
+        if (mode === 'reference') {
+            // Get Reference state typology
+            typology = window.TEUI?.StateManager?.getReferenceValue("d_39") || getFieldValue("d_39");
+        } else {
+            // Get Application state typology
+            typology = window.TEUI?.StateManager?.getApplicationValue("d_39") || getFieldValue("d_39");
+        }
+        
+        const cap = calculateTypologyBasedCap(typology);
+        
+        if (mode === 'reference') {
+            // Store Reference i_39 with ref_ prefix
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue("ref_i_39", cap.toString(), 'calculated');
+            }
+            
+            // UPDATE UI IN REFERENCE MODE: If user is currently in Reference Mode, update the visible i_39 field
+            if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+                const i39Element = document.querySelector('[data-field-id="i_39"]');
+                if (i39Element) {
+                    i39Element.textContent = window.TEUI.formatNumber(cap, 'number-2dp-comma');
+                }
+            }
+        } else {
+            // Update the application i_39 field
+            setCalculatedValue("i_39", cap, 'number-2dp-comma');
+        }
+    }
+
+    /**
+     * Update i_39 display based on current mode (wrapper function)
+     * Shows Reference value in Reference Mode, Application value in Design Mode
+     */
+    function updateI39Display() {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        updateI39ForMode(isReferenceMode ? 'reference' : 'application');
+    }
+
+    /**
      * Calculate all values for this section
      */
     function calculateAll() {
         // Run both engines
         calculateReferenceModel();  // Calculate Reference i_39 using Reference d_39
         calculateTargetModel();     // Calculate Target i_39 using Application d_39
+        
+        // Update i_39 display based on current mode
+        updateI39Display();
         
         // Continue with other calculations that use Application state
         calculateGHGI(); 
@@ -702,8 +752,8 @@ window.TEUI.SectionModules.sect05 = (function() {
             }
         });
 
-        // Typology dropdown change handler - with dual-state support
-        const typologyDropdown = document.querySelector('[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]'); // Check both potential selectors
+        // Typology dropdown change handler - simplified like S04 pattern
+        const typologyDropdown = document.querySelector('[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]');
         if (typologyDropdown) {
             typologyDropdown.addEventListener('change', function(e) {
                 const typology = e.target.value;
@@ -715,24 +765,6 @@ window.TEUI.SectionModules.sect05 = (function() {
                     // In Reference Mode: Update Reference state only
                     if (window.TEUI?.StateManager?.setValueInReferenceMode) {
                         window.TEUI.StateManager.setValueInReferenceMode("d_39", typology);
-                    } else {
-                        // Fallback: Update activeReferenceDataSet directly
-                        if (window.TEUI?.StateManager?.activeReferenceDataSet) {
-                            window.TEUI.StateManager.activeReferenceDataSet["d_39"] = typology;
-                        }
-                    }
-                    
-                    // UPDATE UI IN REFERENCE MODE: Calculate and display Reference i_39 immediately
-                    const refCap = calculateTypologyBasedCap(typology);
-                    const i39Element = document.querySelector('[data-field-id="i_39"]');
-                    if (i39Element) {
-                        i39Element.textContent = window.TEUI.formatNumber(refCap, 'number-2dp-comma');
-                        console.log(`[S05] Reference Mode UI updated: i_39=${refCap} (typology: ${typology})`);
-                    }
-                    
-                    // Store Reference i_39 for Section 01 to use
-                    if (window.TEUI?.StateManager) {
-                        window.TEUI.StateManager.setValue("ref_i_39", refCap.toString(), 'calculated');
                     }
                 } else {
                     // In Design Mode: Update Application state
@@ -741,10 +773,8 @@ window.TEUI.SectionModules.sect05 = (function() {
                     }
                 }
                 
-                // Run both engines to update both Reference and Target i_39
-                calculateReferenceModel();
-                calculateTargetModel();
-                calculatePercentages(); // Recalculate percentages that depend on i_39
+                // Update i_39 for current mode (like S04's updateElectricityEmissionFactor)
+                updateI39ForMode(isReferenceMode ? 'reference' : 'application');
             });
         }
         
@@ -789,29 +819,15 @@ window.TEUI.SectionModules.sect05 = (function() {
                 calculateAll(); 
             });
             
-            // CRITICAL: Listener for d_39 changes in Reference Mode
-            // This ensures Reference i_39 updates when Reference typology changes
-            window.TEUI.StateManager.addListener('d_39', (newValue, oldValue, sourceFieldId) => {
-                // Check if we're in Reference Mode and need to update UI
-                const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+            // CRITICAL: Listener for d_39 changes (like S04's h_12 listener)
+            // This ensures i_39 updates when typology changes
+            window.TEUI.StateManager.addListener('d_39', () => {
+                // Update both Application and Reference i_39 values
+                updateI39ForMode('application');
+                updateI39ForMode('reference');
                 
-                if (isReferenceMode && newValue !== oldValue) {
-                    // UPDATE UI IN REFERENCE MODE: Calculate and display Reference i_39
-                    const refCap = calculateTypologyBasedCap(newValue);
-                    const i39Element = document.querySelector('[data-field-id="i_39"]');
-                    if (i39Element) {
-                        i39Element.textContent = window.TEUI.formatNumber(refCap, 'number-2dp-comma');
-                        console.log(`[S05] Reference Mode listener UI updated: i_39=${refCap} (typology: ${newValue})`);
-                    }
-                    
-                    // Also update any dependent percentage displays if needed
-                    calculatePercentages();
-                }
-                
-                // Run both engines to update both Reference and Target i_39
-                calculateReferenceModel();
-                calculateTargetModel();
-                calculatePercentages(); // Recalculate percentages that depend on i_39
+                // Recalculate percentages that depend on i_39
+                calculatePercentages();
             });
         }
     }
@@ -846,6 +862,8 @@ window.TEUI.SectionModules.sect05 = (function() {
         calculateAll: calculateAll,
         calculateReferenceModel: calculateReferenceModel,
         calculateTargetModel: calculateTargetModel,
+        updateI39Display: updateI39Display,
+        updateI39ForMode: updateI39ForMode,
         calculateGHGI: calculateGHGI,
         calculate_i_38: calculate_i_38,
         calculate_i_40: calculate_i_40,

@@ -1603,95 +1603,171 @@ function handleUserInputInReferenceMode(fieldId, newValue) {
 
 **CRITICAL DISCOVERY**: Users must see immediate visual feedback when they change independently editable fields in Reference Mode. Without this feedback, users cannot tell if their changes are taking effect, leading to confusion and loss of confidence in the dual-engine architecture.
 
+**BREAKTHROUGH SUCCESS PATTERN**: Sections 04 and 05 now demonstrate the complete dual-engine architecture with perfect state separation and dynamic UI updates. The key was implementing the `updateFieldForMode(mode)` pattern that provides immediate UI feedback.
+
 **Examples of Required UI Updates**:
 - **Section 04**: When h_12 (reporting year) changes in Reference Mode → l_27 (grid intensity) updates immediately → g_27, k_27 cascade
 - **Section 05**: When d_39 (building typology) changes in Reference Mode → i_39 (embodied carbon) updates immediately
 - **Section 11**: When RSI values change in Reference Mode → heat loss calculations update immediately
 - **Section 13**: When equipment efficiencies change in Reference Mode → energy calculations update immediately
 
-**Implementation Requirements for ALL Independently Editable Fields**:
+**GOLD STANDARD IMPLEMENTATION PATTERN**:
 
-1. **Direct Event Handler UI Updates**:
-   ```javascript
-   // In the field's change event handler
-   if (isReferenceMode) {
-       // Update Reference state
-       window.TEUI.StateManager.setValueInReferenceMode(fieldId, newValue);
-       
-       // CRITICAL: Calculate and display dependent values immediately
-       const calculatedValue = calculateDependentValue(newValue);
-       const dependentElement = document.querySelector('[data-field-id="dependent_field"]');
-       if (dependentElement) {
-           dependentElement.textContent = window.TEUI.formatNumber(calculatedValue, 'format');
-           console.log(`[Section] Reference Mode UI updated: dependent_field=${calculatedValue}`);
-       }
-   }
-   ```
+#### **1. Mode-Specific Update Function (CRITICAL)**
+```javascript
+/**
+ * Update field for a specific mode (like S04's updateGridIntensityForMode)
+ * This is the KEY pattern that makes dual-engine UI updates work reliably
+ * @param {string} mode - 'application' or 'reference'
+ */
+function updateFieldForMode(mode) {
+    let inputValue;
+    
+    if (mode === 'reference') {
+        // Get Reference state input value
+        inputValue = window.TEUI?.StateManager?.getReferenceValue("input_field") || getFieldValue("input_field");
+    } else {
+        // Get Application state input value
+        inputValue = window.TEUI?.StateManager?.getApplicationValue("input_field") || getFieldValue("input_field");
+    }
+    
+    const calculatedValue = performCalculation(inputValue);
+    
+    if (mode === 'reference') {
+        // Store Reference calculated value with ref_ prefix
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue("ref_calculated_field", calculatedValue.toString(), 'calculated');
+        }
+        
+        // CRITICAL: UPDATE UI IN REFERENCE MODE
+        // If user is currently in Reference Mode, update the visible calculated field
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            const calculatedElement = document.querySelector('[data-field-id="calculated_field"]');
+            if (calculatedElement) {
+                calculatedElement.textContent = window.TEUI.formatNumber(calculatedValue, 'appropriate-format');
+            }
+            
+            // Update any dependent fields that cascade from this calculation
+            const dependentValue = calculateDependentValue(calculatedValue);
+            const dependentElement = document.querySelector('[data-field-id="dependent_field"]');
+            if (dependentElement) {
+                dependentElement.textContent = window.TEUI.formatNumber(dependentValue, 'appropriate-format');
+            }
+        }
+    } else {
+        // Update the application calculated field using standard helper
+        setCalculatedValue("calculated_field", calculatedValue, 'appropriate-format');
+        
+        // Update dependent fields normally
+        const dependentValue = calculateDependentValue(calculatedValue);
+        setCalculatedValue("dependent_field", dependentValue, 'appropriate-format');
+    }
+}
+```
 
-2. **StateManager Listener UI Updates**:
-   ```javascript
-   // Enhanced listener for field changes
-   window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue) => {
-       const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
-       
-       if (isReferenceMode && newValue !== oldValue) {
-           // Update UI immediately when in Reference Mode
-           const calculatedValue = calculateDependentValue(newValue);
-           const element = document.querySelector('[data-field-id="dependent_field"]');
-           if (element) {
-               element.textContent = window.TEUI.formatNumber(calculatedValue, 'format');
-           }
-       }
-   });
-   ```
+#### **2. Dropdown/Input Event Handler Pattern**
+```javascript
+// Simplified dropdown change handler - like S04 and S05 pattern
+const inputDropdown = document.querySelector('[data-field-id="input_field"], [data-dropdown-id="dd_input_field"]');
+if (inputDropdown) {
+    inputDropdown.addEventListener('change', function(e) {
+        const newValue = e.target.value;
+        
+        // Check if we're in Reference Mode
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // In Reference Mode: Update Reference state only
+            if (window.TEUI?.StateManager?.setValueInReferenceMode) {
+                window.TEUI.StateManager.setValueInReferenceMode("input_field", newValue);
+            }
+        } else {
+            // In Design Mode: Update Application state
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue("input_field", newValue, "user-modified");
+            }
+        }
+        
+        // CRITICAL: Update calculated field for current mode (provides immediate UI feedback)
+        updateFieldForMode(isReferenceMode ? 'reference' : 'application');
+    });
+}
+```
 
-3. **Cross-Section Value Storage**:
-   ```javascript
-   // Store Reference values with ref_ prefix for other sections to use
-   if (window.TEUI?.StateManager) {
-       window.TEUI.StateManager.setValue("ref_dependent_field", calculatedValue.toString(), 'calculated');
-   }
-   ```
+#### **3. StateManager Listener Pattern**
+```javascript
+// CRITICAL: Listener for input field changes (like S04's h_12 listener, S05's d_39 listener)
+// This ensures calculated fields update when input changes via any mechanism
+window.TEUI.StateManager.addListener('input_field', () => {
+    // Update both Application and Reference calculated values
+    updateFieldForMode('application');
+    updateFieldForMode('reference');
+    
+    // Recalculate any dependent values
+    calculateDependentValues();
+});
+```
 
-**Why This is Essential**:
-- **User Confidence**: Visual confirmation that changes are taking effect
-- **Transparency**: Users can see how Reference calculations work step-by-step
-- **Debugging**: Developers can verify that dual-engine architecture is working correctly
-- **User Experience**: Matches the responsiveness users expect from modern applications
+#### **4. Dual-Engine Architecture Integration**
+```javascript
+/**
+ * REFERENCE MODEL ENGINE: Calculate using Reference state inputs
+ */
+function calculateReferenceModel() {
+    // Get Reference state input
+    const refInput = window.TEUI?.StateManager?.getReferenceValue("input_field") || getFieldValue("input_field");
+    
+    if (refInput) {
+        const refCalculated = performCalculation(refInput);
+        // Store Reference calculated value with ref_ prefix for Section 01 to use
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue("ref_calculated_field", refCalculated.toString(), 'calculated');
+        }
+    }
+}
 
-**Testing Validation**:
-- Change independently editable field in Reference Mode
-- Verify dependent calculated fields update immediately and visibly
-- Confirm values are different from Design Mode
-- Check that Section 01 reflects the Reference calculations in Column E
+/**
+ * TARGET MODEL ENGINE: Calculate using Application state inputs
+ */
+function calculateTargetModel() {
+    // Get Application state input
+    const appInput = window.TEUI?.StateManager?.getApplicationValue("input_field") || getFieldValue("input_field");
+    
+    if (appInput) {
+        const appCalculated = performCalculation(appInput);
+        // Store Application calculated value normally
+        setCalculatedValue("calculated_field", appCalculated, 'appropriate-format');
+    }
+}
 
-**Documentation Note**: This UI feedback requirement is now part of the gold standard implementation pattern and must be included in any section with independently editable fields in Reference Mode.
+/**
+ * Main calculation function - ALWAYS runs both engines
+ */
+function calculateAll() {
+    // DUAL-ENGINE ARCHITECTURE: Always run both engines
+    calculateReferenceModel();  // Calculate Reference values using Reference inputs
+    calculateTargetModel();     // Calculate Target values using Application inputs
+    
+    // Update display based on current mode
+    const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+    updateFieldForMode(isReferenceMode ? 'reference' : 'application');
+}
+```
 
-**BREAKTHROUGH SUCCESS PATTERN (Section 04 Implementation)**:
-- ✅ **Separate State Storage**: Reference values stored with `ref_` prefix
-- ✅ **Independent Calculations**: Reference and Target engines use explicit state getters
-- ✅ **Dynamic UI Updates**: Reference Mode shows Reference values updating in real-time
-- ✅ **Clean State Separation**: Reference h_12 (2017) and Design h_12 (2025) work independently
-- ✅ **Visible Calculation Chain**: Users can see l_27 → g_27 → k_27 → S01 totals updating
-- ✅ **True Dual-Engine Architecture**: Both engines run continuously, UI shows appropriate values
+**Why This Pattern Works**:
 
-### **8.2 Gold Standard Implementation: Section 04 Pattern**
+1. **Immediate Visual Feedback**: The `updateFieldForMode()` function provides instant UI updates when users change values in Reference Mode
+2. **Clean State Separation**: Reference and Application calculations use explicit state getters
+3. **Mode-Aware UI Updates**: UI shows Reference values in Reference Mode, Application values in Design Mode
+4. **Continuous Dual Calculations**: Both engines run regardless of UI mode
+5. **Cross-Section Compatibility**: Reference values stored with `ref_` prefix for downstream sections
 
-**ACHIEVEMENT**: Section 04 now demonstrates the complete dual-engine architecture with perfect state separation and dynamic UI updates. This implementation serves as the template for all other sections.
-
-**What Works Perfectly**:
-1. **Independent Reporting Years**: Reference Mode can use 2017, Design Mode can use 2025
-2. **Dynamic Grid Intensity**: l_27 updates immediately when h_12 changes in either mode
-3. **Cascading Calculations**: l_27 → g_27 → k_27 → S01 totals all update in real-time
-4. **Clean Mode Switching**: Toggle between modes shows completely different calculation chains
-5. **Visible Reference Logic**: Users can see exactly how Reference calculations work
-
-**Key Implementation Elements**:
-- `updateGridIntensityForMode('reference')` and `updateGridIntensityForMode('application')`
-- Reference values stored with `ref_` prefix for cross-section use
-- **CRITICAL: Immediate UI updates when `isReferenceMode()` is true**
-- Explicit state getters: `getReferenceValue()` vs `getApplicationValue()`
-- Both calculation engines run continuously regardless of UI mode
+**Critical Success Factors**:
+- ✅ **Direct DOM Updates in Reference Mode**: When `isReferenceMode()` is true, directly update visible elements
+- ✅ **Explicit State Getters**: Use `getReferenceValue()` vs `getApplicationValue()` consistently
+- ✅ **Mode-Specific Functions**: Create `updateFieldForMode(mode)` functions for each independently editable field
+- ✅ **StateManager Listeners**: Listen for field changes and update both modes
+- ✅ **Immediate Feedback**: Users see changes take effect instantly, building confidence in the system
 
 **User Experience Achievement**:
 - **Transparency**: Users can see intermediate Reference calculations, not just final totals
