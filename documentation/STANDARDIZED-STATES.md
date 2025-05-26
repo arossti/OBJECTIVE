@@ -1555,15 +1555,117 @@ function updateFieldForMode(mode, fieldId, calculatedValue) {
         setCalculatedValue(fieldId, calculatedValue, 'appropriate-format');
     }
 }
+
+// GOLD STANDARD REQUIREMENT: Immediate UI Feedback for User Input Changes in Reference Mode
+function handleUserInputInReferenceMode(fieldId, newValue) {
+    // Check if we're in Reference Mode
+    const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+    
+    if (isReferenceMode) {
+        // Update Reference state
+        if (window.TEUI?.StateManager?.setValueInReferenceMode) {
+            window.TEUI.StateManager.setValueInReferenceMode(fieldId, newValue);
+        }
+        
+        // CRITICAL: Calculate and display dependent values immediately
+        const dependentValue = calculateDependentValue(newValue);
+        const dependentElement = document.querySelector('[data-field-id="dependent_field"]');
+        if (dependentElement) {
+            dependentElement.textContent = window.TEUI.formatNumber(dependentValue, 'appropriate-format');
+            console.log(`[Section] Reference Mode UI updated: dependent_field=${dependentValue} (${fieldId}: ${newValue})`);
+        }
+        
+        // Store Reference calculated value for cross-section use
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue("ref_dependent_field", dependentValue.toString(), 'calculated');
+        }
+    } else {
+        // Standard Design Mode handling
+        window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
+    }
+    
+    // Always run both engines to maintain dual calculations
+    calculateReferenceModel();
+    calculateTargetModel();
+}
 ```
 
 **Critical Sections Requiring Full Dual-Engine Implementation**:
 - **Section 04**: ✅ **COMPLETED** - Reference grid intensity with dynamic UI updates
+- **Section 05**: ✅ **COMPLETED** - Building typology with immediate UI feedback
 - **Section 11**: Reference RSI/U-values vs user design values
 - **Section 13**: Reference equipment efficiencies vs user selections
 - **Section 09**: Reference internal gains vs user assumptions
 - **Section 07**: Reference DHW efficiency vs user systems
 - **All others**: Any section with reference standard override values
+
+### **8.1.1 GOLD STANDARD REQUIREMENT: Immediate UI Feedback in Reference Mode**
+
+**CRITICAL DISCOVERY**: Users must see immediate visual feedback when they change independently editable fields in Reference Mode. Without this feedback, users cannot tell if their changes are taking effect, leading to confusion and loss of confidence in the dual-engine architecture.
+
+**Examples of Required UI Updates**:
+- **Section 04**: When h_12 (reporting year) changes in Reference Mode → l_27 (grid intensity) updates immediately → g_27, k_27 cascade
+- **Section 05**: When d_39 (building typology) changes in Reference Mode → i_39 (embodied carbon) updates immediately
+- **Section 11**: When RSI values change in Reference Mode → heat loss calculations update immediately
+- **Section 13**: When equipment efficiencies change in Reference Mode → energy calculations update immediately
+
+**Implementation Requirements for ALL Independently Editable Fields**:
+
+1. **Direct Event Handler UI Updates**:
+   ```javascript
+   // In the field's change event handler
+   if (isReferenceMode) {
+       // Update Reference state
+       window.TEUI.StateManager.setValueInReferenceMode(fieldId, newValue);
+       
+       // CRITICAL: Calculate and display dependent values immediately
+       const calculatedValue = calculateDependentValue(newValue);
+       const dependentElement = document.querySelector('[data-field-id="dependent_field"]');
+       if (dependentElement) {
+           dependentElement.textContent = window.TEUI.formatNumber(calculatedValue, 'format');
+           console.log(`[Section] Reference Mode UI updated: dependent_field=${calculatedValue}`);
+       }
+   }
+   ```
+
+2. **StateManager Listener UI Updates**:
+   ```javascript
+   // Enhanced listener for field changes
+   window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue) => {
+       const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+       
+       if (isReferenceMode && newValue !== oldValue) {
+           // Update UI immediately when in Reference Mode
+           const calculatedValue = calculateDependentValue(newValue);
+           const element = document.querySelector('[data-field-id="dependent_field"]');
+           if (element) {
+               element.textContent = window.TEUI.formatNumber(calculatedValue, 'format');
+           }
+       }
+   });
+   ```
+
+3. **Cross-Section Value Storage**:
+   ```javascript
+   // Store Reference values with ref_ prefix for other sections to use
+   if (window.TEUI?.StateManager) {
+       window.TEUI.StateManager.setValue("ref_dependent_field", calculatedValue.toString(), 'calculated');
+   }
+   ```
+
+**Why This is Essential**:
+- **User Confidence**: Visual confirmation that changes are taking effect
+- **Transparency**: Users can see how Reference calculations work step-by-step
+- **Debugging**: Developers can verify that dual-engine architecture is working correctly
+- **User Experience**: Matches the responsiveness users expect from modern applications
+
+**Testing Validation**:
+- Change independently editable field in Reference Mode
+- Verify dependent calculated fields update immediately and visibly
+- Confirm values are different from Design Mode
+- Check that Section 01 reflects the Reference calculations in Column E
+
+**Documentation Note**: This UI feedback requirement is now part of the gold standard implementation pattern and must be included in any section with independently editable fields in Reference Mode.
 
 **BREAKTHROUGH SUCCESS PATTERN (Section 04 Implementation)**:
 - ✅ **Separate State Storage**: Reference values stored with `ref_` prefix
@@ -1587,7 +1689,7 @@ function updateFieldForMode(mode, fieldId, calculatedValue) {
 **Key Implementation Elements**:
 - `updateGridIntensityForMode('reference')` and `updateGridIntensityForMode('application')`
 - Reference values stored with `ref_` prefix for cross-section use
-- UI updates only when `isReferenceMode()` is true
+- **CRITICAL: Immediate UI updates when `isReferenceMode()` is true**
 - Explicit state getters: `getReferenceValue()` vs `getApplicationValue()`
 - Both calculation engines run continuously regardless of UI mode
 
@@ -1596,6 +1698,7 @@ function updateFieldForMode(mode, fieldId, calculatedValue) {
 - **Confidence**: Clear visibility that Reference calculations are working correctly
 - **Flexibility**: Independent control over Reference vs Design assumptions
 - **Validation**: Easy comparison between code-compliant and design performance
+- **Immediate Feedback**: Visual confirmation that Reference Mode changes are taking effect
 
 ### **Phase A: Section-by-Section Reference State Validation**
 

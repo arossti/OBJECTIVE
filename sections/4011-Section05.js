@@ -192,6 +192,12 @@ window.TEUI.SectionModules.sect05 = (function() {
                     value: "345.82", 
                     section: "emissions",
                     classes: ["user-input"]
+                    // FUTURE ENHANCEMENT: Consider implementing independent Reference Mode editing
+                    // for i_41 (Modelled Value A1-3). Currently this field carries over from 
+                    // Application state to Reference state. Future implementation could allow
+                    // separate Reference vs Design modelled values for embodied carbon.
+                    // See STANDARDIZED-STATES.md Section 8.1.1 for full dual-engine implementation
+                    // patterns including immediate UI feedback requirements.
                 },
                 l: { 
                     fieldId: "l_41", 
@@ -613,16 +619,49 @@ window.TEUI.SectionModules.sect05 = (function() {
         setCalculatedValue("d_41", d_41_result, 'number-2dp-comma');
     }
     
+    //==========================================================================
+    // DUAL-ENGINE ARCHITECTURE
+    //==========================================================================
+
+    /**
+     * REFERENCE MODEL ENGINE: Calculate i_39 using Reference state d_39
+     */
+    function calculateReferenceModel() {
+        // Get Reference state building typology
+        const refTypology = window.TEUI?.StateManager?.getReferenceValue("d_39") || getFieldValue("d_39");
+        
+        if (refTypology) {
+            const refCap = calculateTypologyBasedCap(refTypology);
+            // Store Reference i_39 with ref_ prefix for Section 01 to use
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue("ref_i_39", refCap.toString(), 'calculated');
+            }
+        }
+    }
+
+    /**
+     * TARGET MODEL ENGINE: Calculate i_39 using Application state d_39
+     */
+    function calculateTargetModel() {
+        // Get Application state building typology
+        const appTypology = window.TEUI?.StateManager?.getApplicationValue("d_39") || getFieldValue("d_39");
+        
+        if (appTypology) {
+            const appCap = calculateTypologyBasedCap(appTypology);
+            // Store Application i_39 normally
+            setCalculatedValue("i_39", appCap, 'number-2dp-comma');
+        }
+    }
+
     /**
      * Calculate all values for this section
      */
     function calculateAll() {
-        const typology = getFieldValue("d_39"); 
-        if (typology) {
-            const cap = calculateTypologyBasedCap(typology);
-            setCalculatedValue("i_39", cap, 'number-2dp-comma'); 
-        }
+        // Run both engines
+        calculateReferenceModel();  // Calculate Reference i_39 using Reference d_39
+        calculateTargetModel();     // Calculate Target i_39 using Application d_39
         
+        // Continue with other calculations that use Application state
         calculateGHGI(); 
         calculate_i_38(); 
         calculate_i_40(); 
@@ -663,17 +702,48 @@ window.TEUI.SectionModules.sect05 = (function() {
             }
         });
 
-        // Typology dropdown change handler
+        // Typology dropdown change handler - with dual-state support
         const typologyDropdown = document.querySelector('[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]'); // Check both potential selectors
         if (typologyDropdown) {
             typologyDropdown.addEventListener('change', function(e) {
                 const typology = e.target.value;
-                // Update StateManager for d_39 directly as it's a user-modified field
-                if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue("d_39", typology, "user-modified");
+                
+                // Check if we're in Reference Mode
+                const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+                
+                if (isReferenceMode) {
+                    // In Reference Mode: Update Reference state only
+                    if (window.TEUI?.StateManager?.setValueInReferenceMode) {
+                        window.TEUI.StateManager.setValueInReferenceMode("d_39", typology);
+                    } else {
+                        // Fallback: Update activeReferenceDataSet directly
+                        if (window.TEUI?.StateManager?.activeReferenceDataSet) {
+                            window.TEUI.StateManager.activeReferenceDataSet["d_39"] = typology;
+                        }
+                    }
+                    
+                    // UPDATE UI IN REFERENCE MODE: Calculate and display Reference i_39 immediately
+                    const refCap = calculateTypologyBasedCap(typology);
+                    const i39Element = document.querySelector('[data-field-id="i_39"]');
+                    if (i39Element) {
+                        i39Element.textContent = window.TEUI.formatNumber(refCap, 'number-2dp-comma');
+                        console.log(`[S05] Reference Mode UI updated: i_39=${refCap} (typology: ${typology})`);
+                    }
+                    
+                    // Store Reference i_39 for Section 01 to use
+                    if (window.TEUI?.StateManager) {
+                        window.TEUI.StateManager.setValue("ref_i_39", refCap.toString(), 'calculated');
+                    }
+                } else {
+                    // In Design Mode: Update Application state
+                    if (window.TEUI?.StateManager) {
+                        window.TEUI.StateManager.setValue("d_39", typology, "user-modified");
+                    }
                 }
-                const cap = calculateTypologyBasedCap(typology);
-                setCalculatedValue("i_39", cap, 'number-2dp-comma');
+                
+                // Run both engines to update both Reference and Target i_39
+                calculateReferenceModel();
+                calculateTargetModel();
                 calculatePercentages(); // Recalculate percentages that depend on i_39
             });
         }
@@ -718,6 +788,31 @@ window.TEUI.SectionModules.sect05 = (function() {
             window.TEUI.StateManager.addListener("d_106", function() {
                 calculateAll(); 
             });
+            
+            // CRITICAL: Listener for d_39 changes in Reference Mode
+            // This ensures Reference i_39 updates when Reference typology changes
+            window.TEUI.StateManager.addListener('d_39', (newValue, oldValue, sourceFieldId) => {
+                // Check if we're in Reference Mode and need to update UI
+                const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+                
+                if (isReferenceMode && newValue !== oldValue) {
+                    // UPDATE UI IN REFERENCE MODE: Calculate and display Reference i_39
+                    const refCap = calculateTypologyBasedCap(newValue);
+                    const i39Element = document.querySelector('[data-field-id="i_39"]');
+                    if (i39Element) {
+                        i39Element.textContent = window.TEUI.formatNumber(refCap, 'number-2dp-comma');
+                        console.log(`[S05] Reference Mode listener UI updated: i_39=${refCap} (typology: ${newValue})`);
+                    }
+                    
+                    // Also update any dependent percentage displays if needed
+                    calculatePercentages();
+                }
+                
+                // Run both engines to update both Reference and Target i_39
+                calculateReferenceModel();
+                calculateTargetModel();
+                calculatePercentages(); // Recalculate percentages that depend on i_39
+            });
         }
     }
     
@@ -749,6 +844,8 @@ window.TEUI.SectionModules.sect05 = (function() {
         
         // Section-specific utility functions - OPTIONAL
         calculateAll: calculateAll,
+        calculateReferenceModel: calculateReferenceModel,
+        calculateTargetModel: calculateTargetModel,
         calculateGHGI: calculateGHGI,
         calculate_i_38: calculate_i_38,
         calculate_i_40: calculate_i_40,
