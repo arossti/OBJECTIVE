@@ -879,6 +879,99 @@ window.TEUI.SectionModules.sect07 = (function() {
     }
 
     /**
+     * Update water use for a specific mode (EXACT Section 05 pattern)
+     * @param {string} mode - 'application' or 'reference'
+     */
+    function updateWaterUseForMode(mode) {
+        let method, userDefinedValue, occupants;
+        
+        if (mode === 'reference') {
+            // Get Reference state inputs
+            method = window.TEUI?.StateManager?.getReferenceValue("d_49") || getFieldValue("d_49");
+            userDefinedValue = window.TEUI?.StateManager?.getReferenceValue("e_49") || getFieldValue("e_49");
+            occupants = window.TEUI?.StateManager?.getReferenceValue("d_63") || getFieldValue("d_63");
+        } else {
+            // Get Application state inputs
+            method = window.TEUI?.StateManager?.getApplicationValue("d_49") || getFieldValue("d_49");
+            userDefinedValue = window.TEUI?.StateManager?.getApplicationValue("e_49") || getFieldValue("e_49");
+            occupants = window.TEUI?.StateManager?.getApplicationValue("d_63") || getFieldValue("d_63");
+        }
+        
+        // Calculate water use based on method
+        let litersPerPersonDay = 0;
+        const userValue = parseFloat(userDefinedValue) || 0;
+        const occupantCount = parseFloat(occupants) || 1;
+        
+        switch(method) {
+            case "User Defined": litersPerPersonDay = userValue; break;
+            case "By Engineer": 
+                // For engineer method, we'd need e_50 value - simplified for now
+                litersPerPersonDay = 40; // Default
+                break;
+            case "PHPP Method": litersPerPersonDay = 62.5; break;
+            case "NBC Method": litersPerPersonDay = 220; break;
+            case "OBC Method": litersPerPersonDay = 275; break;
+            case "Luxury": litersPerPersonDay = 400; break;
+            default: litersPerPersonDay = 40;
+        }
+        
+        // Calculate dependent values
+        const annualWaterUse = litersPerPersonDay * occupantCount * 365;
+        const hotWaterLitersPerDay = litersPerPersonDay * 0.4;
+        const hotWaterAnnualLiters = hotWaterLitersPerDay * occupantCount * 365;
+        const hotWaterEnergyDemand = hotWaterLitersPerDay * occupantCount * 0.0523 * 365;
+        
+        if (mode === 'reference') {
+            // Store Reference values with ref_ prefix for downstream sections (Section 01) to use
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue("ref_h_49", litersPerPersonDay.toString(), 'calculated');
+                window.TEUI.StateManager.setValue("ref_i_49", annualWaterUse.toString(), 'calculated');
+                window.TEUI.StateManager.setValue("ref_h_50", hotWaterLitersPerDay.toString(), 'calculated');
+                window.TEUI.StateManager.setValue("ref_i_50", hotWaterAnnualLiters.toString(), 'calculated');
+                window.TEUI.StateManager.setValue("ref_j_50", hotWaterEnergyDemand.toString(), 'calculated');
+            }
+            
+            // UPDATE UI IN REFERENCE MODE: If user is currently in Reference Mode, update the visible fields
+            // This follows the exact Section 05 pattern for immediate visual feedback
+            if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+                const h49Element = document.querySelector('[data-field-id="h_49"]');
+                if (h49Element) {
+                    h49Element.textContent = window.TEUI.formatNumber(litersPerPersonDay, 'number-2dp');
+                }
+                
+                const i49Element = document.querySelector('[data-field-id="i_49"]');
+                if (i49Element) {
+                    i49Element.textContent = window.TEUI.formatNumber(annualWaterUse, 'integer-comma');
+                }
+                
+                const h50Element = document.querySelector('[data-field-id="h_50"]');
+                if (h50Element) {
+                    h50Element.textContent = window.TEUI.formatNumber(hotWaterLitersPerDay, 'number-2dp');
+                }
+                
+                const i50Element = document.querySelector('[data-field-id="i_50"]');
+                if (i50Element) {
+                    i50Element.textContent = window.TEUI.formatNumber(hotWaterAnnualLiters, 'integer-comma');
+                }
+                
+                const j50Element = document.querySelector('[data-field-id="j_50"]');
+                if (j50Element) {
+                    j50Element.textContent = window.TEUI.formatNumber(hotWaterEnergyDemand, 'number-2dp-comma');
+                }
+                
+                console.log(`[Section07] Reference Mode UI updated: h_49=${litersPerPersonDay.toFixed(2)}, method=${method}`);
+            }
+        } else {
+            // Update the Application values using standard helpers (this updates Application state)
+            setCalculatedValue("h_49", litersPerPersonDay, 'number-2dp');
+            setCalculatedValue("i_49", annualWaterUse, 'integer-comma');
+            setCalculatedValue("h_50", hotWaterLitersPerDay, 'number-2dp');
+            setCalculatedValue("i_50", hotWaterAnnualLiters, 'integer-comma');
+            setCalculatedValue("j_50", hotWaterEnergyDemand, 'number-2dp-comma');
+        }
+    }
+
+    /**
      * Calculate all values for this section
      */
     function calculateAll() {
@@ -937,13 +1030,46 @@ window.TEUI.SectionModules.sect07 = (function() {
             }
         });
 
-        // Attach standard handler to dropdowns
+        // SECTION 05 PATTERN: Specific dropdown handler for d_49 (water use method)
+        const waterMethodDropdown = document.querySelector('[data-field-id="d_49"], [data-dropdown-id="dd_d_49"]');
+        if (waterMethodDropdown) {
+            waterMethodDropdown.addEventListener('change', function(e) {
+                const method = e.target.value;
+                
+                // Check if we're in Reference Mode
+                const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+                
+                if (isReferenceMode) {
+                    // In Reference Mode: Update Reference state only
+                    if (window.TEUI?.StateManager?.setValueInReferenceMode) {
+                        window.TEUI.StateManager.setValueInReferenceMode("d_49", method);
+                    }
+                } else {
+                    // In Design Mode: Update Application state
+                    if (window.TEUI?.StateManager) {
+                        window.TEUI.StateManager.setValue("d_49", method, "user-modified");
+                    }
+                }
+                
+                // Update water use calculations for current mode (like S05's updateI39ForMode)
+                updateWaterUseForMode(isReferenceMode ? 'reference' : 'application');
+                
+                // Update visibility
+                const currentSystemType = getFieldValue("d_51");
+                updateSection7Visibility(method, currentSystemType);
+            });
+        }
+
+        // Attach standard handler to remaining dropdowns (excluding d_49)
         const dropdowns = sectionElement.querySelectorAll('select[data-dropdown-id]');
         dropdowns.forEach(dropdown => {
-             if (!dropdown.hasDropdownListener) {
-                 dropdown.addEventListener('change', handleGenericDropdownChange);
-                 dropdown.hasDropdownListener = true;
-             }
+            // Skip d_49 since we handle it specifically above
+            if (dropdown.getAttribute('data-dropdown-id') === 'dd_d_49') return;
+            
+            if (!dropdown.hasDropdownListener) {
+                dropdown.addEventListener('change', handleGenericDropdownChange);
+                dropdown.hasDropdownListener = true;
+            }
         });
 
         // Attach standard handler to sliders
@@ -962,6 +1088,22 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.addListener("d_63", calculateAll); // Occupancy
             window.TEUI.StateManager.addListener("k_52", calculateAll); // AFUE changes
+            
+            // CRITICAL: Listener for d_49 changes (like S05's d_39 listener)
+            window.TEUI.StateManager.addListener('d_49', () => {
+                // Update both Application and Reference water use values
+                updateWaterUseForMode('application');
+                updateWaterUseForMode('reference');
+            });
+            
+            // Listener for e_49 changes (user defined water use)
+            window.TEUI.StateManager.addListener('e_49', () => {
+                const currentMethod = getFieldValue("d_49");
+                if (currentMethod === "User Defined") {
+                    updateWaterUseForMode('application');
+                    updateWaterUseForMode('reference');
+                }
+            });
         }
     }
     
@@ -1408,6 +1550,9 @@ window.TEUI.SectionModules.sect07 = (function() {
         initializeEventHandlers: initializeEventHandlers,
         onSectionRendered: onSectionRendered,
         calculateAll: calculateAll,
+        
+        // Section 05 Pattern Functions
+        updateWaterUseForMode: updateWaterUseForMode,
         
         // Dual Engine Functions
         calculateReferenceModel: calculateReferenceModel,

@@ -157,10 +157,10 @@ TEUI.ReferenceToggle = (function() {
                         element.value = displayValue;
                     } else if (element.hasAttribute('contenteditable')) {
                         element.textContent = displayValue;
-                                    } else {
-                    element.textContent = displayValue;
+                    } else {
+                        element.textContent = displayValue;
+                    }
                 }
-            }
             }
             
             const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);

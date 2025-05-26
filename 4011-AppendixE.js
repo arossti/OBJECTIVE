@@ -38,6 +38,9 @@ TEUI.AppendixE = {
             "h_12", // Reporting Year - allows different reporting years for Reference vs Design
             "d_13", // Reference Standard - must always be editable in Reference Mode
             "d_39", // Building Typology (S05) - allows different typology for Reference vs Design
+            "d_49", // Water Use Method (S07) - allows different water method for Reference vs Design
+            "e_49", // User Defined Water Use (S07) - editable when d_49 = "User Defined" in Reference Mode
+            "d_53", // DWHR Efficiency (S07) - independently selectable in Reference Mode
             // "d_68", // Example: Elevators (S09)
             // "g_67"  // Example: Equipment Efficiency level (S09)
         ];

@@ -254,13 +254,13 @@ window.TEUI.SectionModules.sect01 = (function() {
                 const currentRefLifetime = window.TEUI.StateManager.getApplicationValue('ref_d_6');
                 
                 if (currentRefTEUI !== referenceTEUI.toFixed(1)) {
-                    window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
                 }
                 if (currentRefAnnual !== referenceAnnualCarbon.toFixed(1)) {
-                    window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
                 }
                 if (currentRefLifetime !== referenceLifetimeCarbon.toFixed(1)) {
-                    window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
                 }
             }
         } finally {
@@ -341,13 +341,13 @@ window.TEUI.SectionModules.sect01 = (function() {
                 
                 // Output to Column H fields (Target Results) - only if changed
                 if (currentH10 !== targetTEUI.toFixed(1)) {
-                    window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
                 }
                 if (currentH8 !== targetAnnualCarbon.toFixed(1)) {
-                    window.TEUI.StateManager.setValue('h_8', targetAnnualCarbon.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('h_8', targetAnnualCarbon.toFixed(1), 'calculated');
                 }
                 if (currentH6 !== targetLifetimeCarbon.toFixed(1)) {
-                    window.TEUI.StateManager.setValue('h_6', targetLifetimeCarbon.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('h_6', targetLifetimeCarbon.toFixed(1), 'calculated');
                 }
 
                 // Output to Column K fields (Actual Results) - conditional and only if changed
@@ -571,7 +571,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         // Only update StateManager if value has changed
         const currentTier = window.TEUI.StateManager.getApplicationValue("i_10");
         if (currentTier !== tier) {
-            window.TEUI.StateManager.setValue("i_10", tier, "calculated");
+        window.TEUI.StateManager.setValue("i_10", tier, "calculated");
         }
     }
 
@@ -748,7 +748,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                         runAllCalculations();
                     }, 50);
                 } else {
-                    runAllCalculations();
+                runAllCalculations();
                 }
             });
         });

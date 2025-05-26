@@ -753,7 +753,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 // console.log('[S04 DEBUG] d_60 changed, calling updateSubtotals()');
                 updateSubtotals(); // This will recalculate g_32 and k_32 which depend on d_60
             });
-            
+
             // CRITICAL: Listener for d_13 (Reference Standard) changes - triggers dual-engine calculations
             sm.addListener('d_13', () => {
                 // When reference standard changes, trigger both engines
@@ -837,8 +837,8 @@ window.TEUI.SectionModules.sect04 = (function() {
             }
             const yearInput = document.querySelector('[data-field-id="h_12"]');
             if (yearInput && yearInput.value) {
-                const parsedYear = parseInt(yearInput.value);
-                if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
+                 const parsedYear = parseInt(yearInput.value);
+                 if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
                     reportingYear = parsedYear;
                 }
             }
@@ -884,15 +884,15 @@ window.TEUI.SectionModules.sect04 = (function() {
             setCalculatedValue('l_27', factor, 'integer');
             
             // Recalculate dependent values for application state
-            const f27Value = getNumericValue('f_27');
-            const g27Value = calculateG27(f27Value, factor); 
-            setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
+        const f27Value = getNumericValue('f_27');
+        const g27Value = calculateG27(f27Value, factor); 
+        setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
 
-            const j27Value = getNumericValue('j_27');
-            const k27Value = calculateK27(j27Value, factor); 
-            setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-            
-            updateSubtotals();
+        const j27Value = getNumericValue('j_27');
+        const k27Value = calculateK27(j27Value, factor); 
+        setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
+        
+        updateSubtotals(); 
             // console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
         }
     }

@@ -2033,6 +2033,169 @@ This systematic approach ensures we validate the dual-engine architecture compre
 - **Section 01** (Key Values) - Dashboard display ✅ *Column E now displaying Reference values correctly*
 - **Section 04** (Energy & GHG) - Energy totals aggregation ✅ *Dual-engine working*
 - **Section 07** (Water Use) - First working dual-engine implementation ✅ *Full dual-engine complete*
+
+### Section 07 (Water Use) - Dual-Engine Implementation Details
+
+**Implementation Date:** 2025-01-XX  
+**Status:** ✅ **COMPLETE** - Gold Standard dual-engine architecture with specialized field behaviors
+
+#### **Key Requirements Implemented:**
+
+1. **Independent State Management for Reference and Target Modes**
+   - **d_49 (Water Use Method)**: Independently selectable in Reference Mode (PHPP, NBC, OBC, etc.)
+   - **e_49, e_50**: User-defined values independently editable in Reference Mode
+   - **d_53 (DWHR Efficiency)**: Independently selectable in Reference Mode
+
+2. **System Type Carry-Over (d_51)**
+   - **CRITICAL REQUIREMENT**: d_51 (DHW Energy Source) carries over from Target to Reference for system-to-system comparison
+   - **Implementation**: Reference calculations use `getAppFieldValue("d_51")` instead of `getRefFieldValue("d_51")`
+   - **Rationale**: Gas system in Design must be compared to Gas system in Reference, etc.
+
+3. **Reference Values Drive Efficiency Parameters**
+   - **Electric/Heatpump Systems**: Reference efficiency (d_52/e_52) comes from ReferenceValues.js (typically 90%)
+   - **Gas/Oil Systems**: Reference AFUE (k_52) comes from ReferenceValues.js (typically 92%)
+   - **Implementation**: `calculateReferenceHeatingSystem()` reads efficiency values from current reference standard
+
+4. **Dual Calculation Engines**
+   - **Reference Engine**: `calculateReferenceModel()` → uses Reference state + carried-over d_51
+   - **Target Engine**: `calculateTargetModel()` → uses Application state exclusively
+   - **Both engines run continuously** regardless of UI toggle state
+
+#### **Technical Implementation:**
+
+**AppendixE Field Behavior Configuration:**
+```javascript
+// Section 07 specific behaviors in 4011-AppendixE.js
+const section07IndependentFields = [
+    "d_49", // Water Use Method - independently selectable in Reference Mode
+    "e_49", // User Defined Water Use - editable when d_49 = "User Defined"
+    "e_50", // Engineer Water Use - editable when d_49 = "By Engineer"
+    "d_53", // DWHR Efficiency - independently selectable in Reference Mode
+    // Note: d_51 (DHW Energy Source) intentionally NOT in this list - it carries over
+    // Note: d_52/e_52/k_52 efficiency values driven by Reference Values, not user input
+];
+```
+
+**Reference Heating System Calculation:**
+```javascript
+function calculateReferenceHeatingSystem(hotWaterEnergyDemand_j50) {
+    // CRITICAL: d_51 carries over from Application State for system-to-system comparison
+    const systemType = getAppFieldValue("d_51"); // Use Application value, not Reference
+    
+    // Get efficiency values from Reference Values based on current standard
+    const currentStandard = getRefFieldValue("d_13");
+    const standardValues = window.TEUI.ReferenceValues[currentStandard];
+    
+    let efficiency = 0.9; // Default 90% for Electric/Heatpump
+    let afue = 0.9; // Default AFUE for Gas/Oil
+    
+    if (standardValues) {
+        if (standardValues.d_52) efficiency = parseFloat(standardValues.d_52) / 100;
+        if (standardValues.k_52) afue = parseFloat(standardValues.k_52);
+    }
+    
+    // Calculate using appropriate efficiency based on system type
+    let netThermalDemand_j_51 = 0;
+    if (systemType === "Heatpump" || systemType === "Electric") {
+        netThermalDemand_j_51 = efficiency !== 0 ? hotWaterEnergyDemand_j50 / efficiency : 0;
+    } else {
+        netThermalDemand_j_51 = afue !== 0 ? hotWaterEnergyDemand_j50 / afue : 0;
+    }
+    
+    // ... rest of calculation logic
+}
+```
+
+**StateManager Listener Configuration:**
+```javascript
+// SPECIAL: d_51 triggers BOTH engines since it carries over
+sm.addListener("d_51", () => {
+    calculateTargetModel(); // Update Target calculations
+    calculateReferenceModel(); // Update Reference calculations (efficiency values change)
+});
+
+// Reference State Listeners (trigger Reference Model Engine)
+sm.addListener("d_49", () => calculateReferenceModel(), "reference"); // Water use method in Reference
+sm.addListener("e_49", () => calculateReferenceModel(), "reference"); // User defined water use in Reference
+sm.addListener("e_50", () => calculateReferenceModel(), "reference"); // Engineer water use in Reference
+sm.addListener("d_53", () => calculateReferenceModel(), "reference"); // DWHR efficiency in Reference
+```
+
+**Change Detection for Infinite Loop Prevention:**
+```javascript
+function calculateTargetModel() {
+    const waterUseResults = calculateTargetWaterUse();
+    const heatingResults = calculateTargetHeatingSystem(waterUseResults.hotWaterEnergyDemand);
+    
+    // Add change detection to prevent infinite loops
+    const currentH49 = getAppNumericValue("h_49");
+    if (Math.abs(currentH49 - waterUseResults.litersPerPersonDay) > 0.01) {
+        setCalculatedValue("h_49", waterUseResults.litersPerPersonDay, 'number-2dp'); 
+    }
+    // ... similar change detection for other calculated values
+}
+```
+
+#### **Reference Values Integration:**
+
+**ReferenceValues.js Entries Added:**
+```javascript
+// Example for OBC SB12 3.1.1.2.C1 standard
+"OBC SB12 3.1.1.2.C1": {
+    "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas (ADDED for S07 support)
+    "d_53": "42", // DWHR Efficiency if OBC
+    // ... other standard values
+}
+```
+
+**Key Addition**: Added `k_52` AFUE values to most standards in ReferenceValues.js to support Gas/Oil systems in Reference Mode.
+
+#### **Cross-Section Value Propagation:**
+
+**Reference Model Outputs:**
+```javascript
+// Store Reference calculated values for downstream sections
+window.TEUI.StateManager.setValue("ref_j_50", waterUseResults.hotWaterEnergyDemand.toString(), "calculated");
+window.TEUI.StateManager.setValue("ref_k_51", heatingResults.netDemandAfterRecovery.toString(), "calculated");
+window.TEUI.StateManager.setValue("ref_k_49", referenceEmissions.toString(), "calculated");
+
+// Store Reference efficiency values for display in Reference Mode
+if (systemType === "Heatpump" || systemType === "Electric") {
+    window.TEUI.StateManager.setReferenceValue("d_52", refEfficiencyPercent.toString());
+    window.TEUI.StateManager.setReferenceValue("e_52", heatingResults.efficiency.toString());
+} else if (systemType === "Gas" || systemType === "Oil") {
+    window.TEUI.StateManager.setReferenceValue("k_52", heatingResults.afue.toString());
+}
+```
+
+#### **Testing Results:**
+
+**Test File Created:** `test-s07-dual-engine.html`
+- **Mock StateManager**: Simulates dual-state architecture
+- **Interactive Testing**: Buttons to change system type, water method, toggle Reference Mode
+- **Validation Logic**: Checks that Reference efficiency values update when system type changes
+- **Success Criteria**: Reference AFUE updates for Gas/Oil, Reference efficiency updates for Electric/Heatpump
+
+#### **Architectural Significance:**
+
+Section 07 serves as the **Gold Standard implementation** for dual-engine architecture because it demonstrates:
+
+1. **Complex Field Behavior Rules**: Mix of carry-over (d_51), independent (d_49, d_53), and Reference Values-driven (d_52, k_52) fields
+2. **System-to-System Comparison Logic**: Ensures fair comparison between Reference and Target models using same system type
+3. **Reference Values Integration**: Shows how building code efficiency values override user inputs in Reference Mode
+4. **Cross-Section Dependencies**: Provides both Reference and Target DHW energy values for Section 04 consumption
+5. **Change Detection**: Prevents infinite calculation loops while maintaining responsive dual-engine calculations
+
+#### **Lessons Learned:**
+
+1. **Carry-Over Fields Critical**: Some fields (like d_51) must carry over for meaningful comparisons
+2. **Reference Values Override User Input**: In Reference Mode, code-based efficiency values take precedence
+3. **Change Detection Essential**: Prevents infinite loops when calculated values trigger StateManager listeners
+4. **Explicit State Getters Required**: `getAppFieldValue()` vs `getRefFieldValue()` must be used consistently
+5. **Both Engines Always Run**: UI toggle affects display only, not which calculations execute
+
+This implementation pattern is now being replicated across other sections in the dependency chain, with Section 07 serving as the proven reference architecture.
 - **Section 09** (Internal Gains) - Reference indicators with 100% fallback ✅
 - **Section 10** (Radiant Gains) - Gain factors display, minimal reference comparisons ✅
 - **Section 11** (Transmission Losses) - Full reference comparisons for envelope components ✅

@@ -19,6 +19,7 @@ TEUI.ReferenceValues = {
     //"h_13": "OBC Prescriptive Path for HP"
     //"h_14": "Same as Application State B.2 Project Name Field Value" - should we show this in reference import/exports?
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "42", // DWHR Efficiency if OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -57,6 +58,7 @@ TEUI.ReferenceValues = {
         "OBC SB12 3.1.1.2.C1": {
     //"h_13": "OBC Prescriptive Path for Elect."
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "42", // DWHR Efficiency if OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -92,6 +94,7 @@ TEUI.ReferenceValues = {
         "OBC SB12 3.1.1.2.A3": {
     //"h_13": "OBC Prescriptive Path for AFUE >92%"
     "d_52": "92", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "42", // DWHR Efficiency if OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -127,6 +130,7 @@ TEUI.ReferenceValues = {
         "OBC SB10 5.5-6 Z6": {
     //"h_13": "OBC Prescriptive Path Part 3"
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "0", // DWHR Efficiency 0 when SB10
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -162,6 +166,7 @@ TEUI.ReferenceValues = {
         "OBC SB10 5.5-6 Z5 (2010)": {
     //"h_13": "OBC Prescriptive Path Part 3"
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "0", // DWHR Efficiency 0 when SB10
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -197,6 +202,7 @@ TEUI.ReferenceValues = {
         "ADD YOUR OWN HERE": {
     //"h_13": "User Defined"
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency if OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -232,6 +238,7 @@ TEUI.ReferenceValues = {
         "NBC T1": {
     //"h_13": "NBC 9.36 Prescriptive Path" with any possible measure - serves as a baseline
     "d_52": "92", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency if OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -267,6 +274,7 @@ TEUI.ReferenceValues = {
   "NECB T1 (Z6)": {
     //"h_13": "Replacing SB10"
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "0", // DWHR Efficiency 0 when SB10
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -302,6 +310,7 @@ TEUI.ReferenceValues = {
         "CaGBC ZCB": {
     //"h_13": "Replacing SB10"
     "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "90", // DWH AFUE when Gas or Oil
     "d_53": "0", // DWHR Efficiency 0 when SB10
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -337,6 +346,7 @@ TEUI.ReferenceValues = {
         "PH Classic": { 
     //"h_13": "90% less than NBC"
     "d_52": "100", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -377,6 +387,7 @@ TEUI.ReferenceValues = {
         "PH Plus": {
     //"h_13": "90% less than NBC"
     "d_52": "100", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -417,6 +428,7 @@ TEUI.ReferenceValues = {
         "PH Premium": {
     //"h_13": "90% less than NBC"
     "d_52": "100", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -457,6 +469,7 @@ TEUI.ReferenceValues = {
         "EnerPHit": {
     //"h_13": "PH Renovations"
     "d_52": "100", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
@@ -497,6 +510,7 @@ TEUI.ReferenceValues = {
         "PH Low Energy": {
     //"h_13": "80% less than NBC"
     "d_52": "100", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas or Oil
     "d_53": "0.42", // DWHR Efficiency 0 when OBC
     "d_56": "150",  // Max. Radon per Health Canada Bq/m3
     "d_57": "1000", // Max. CO2 per Health Canada ppm
