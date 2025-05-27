@@ -367,7 +367,7 @@ window.TEUI.SectionModules.sect06 = (function() {
     function calculateWWSElectricity() {
         // For now, this is just user input - in the future we might calculate it
         // from other input fields like solar PV area, wind capacity, etc.
-        const wws = parseFloat(getFieldValue("i_44")) || 0;
+        const wws = window.TEUI?.parseNumeric?.(getFieldValue("i_44"), 0) ?? 0;
         return wws;
     }
     

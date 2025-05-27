@@ -251,9 +251,15 @@ window.TEUI.SectionModules.sect07 = (function() {
         
         // Get values from appropriate state
         const method = isRefMode ? getRefFieldValue("d_49") : getAppFieldValue("d_49");
-        const userDefinedValue = isRefMode ? parseFloat(getRefFieldValue("e_49")) || 40 : parseFloat(getAppFieldValue("e_49")) || 40;
-        const engineerValue = isRefMode ? parseFloat(getRefFieldValue("e_50")) || 10000 : parseFloat(getAppFieldValue("e_50")) || 10000;
         const occupants = getNumericValue("d_63"); // Always from current state
+        
+        // Get user-defined and engineer values based on mode
+        const userDefinedValue = isRefMode ? 
+            window.TEUI?.parseNumeric?.(getRefFieldValue("e_49"), 40) ?? 40 : 
+            window.TEUI?.parseNumeric?.(getAppFieldValue("e_49"), 40) ?? 40;
+        const engineerValue = isRefMode ? 
+            window.TEUI?.parseNumeric?.(getRefFieldValue("e_50"), 10000) ?? 10000 : 
+            window.TEUI?.parseNumeric?.(getAppFieldValue("e_50"), 10000) ?? 10000;
         
         let litersPerPersonDay = 0;
         let hotWaterEnergyDemand = 0;
@@ -306,8 +312,9 @@ window.TEUI.SectionModules.sect07 = (function() {
         const dhwUseReference = 110;
         const dhwUsePercentRaw = dhwUseReference !== 0 ? (hotWaterLitersPerDay / dhwUseReference) : 0;
         
-        setDualEngineValue("n_49", (waterUsePercentRaw * 100).toFixed(0) + '%', (waterUsePercentRaw * 100).toFixed(0) + '%', mode);
-        setDualEngineValue("n_50", (dhwUsePercentRaw * 100).toFixed(0) + '%', (dhwUsePercentRaw * 100).toFixed(0) + '%', mode);
+        // Store percentage values using global formatter
+        setDualEngineValue("n_49", window.TEUI?.formatNumber?.(waterUsePercentRaw, 'percent-0dp') ?? '0%', window.TEUI?.formatNumber?.(waterUsePercentRaw, 'percent-0dp') ?? '0%', mode);
+        setDualEngineValue("n_50", window.TEUI?.formatNumber?.(dhwUsePercentRaw, 'percent-0dp') ?? '0%', window.TEUI?.formatNumber?.(dhwUsePercentRaw, 'percent-0dp') ?? '0%', mode);
         
         return { hotWaterEnergyDemand, litersPerPersonDay, hotWaterLitersPerDay };
     }
@@ -824,12 +831,15 @@ window.TEUI.SectionModules.sect07 = (function() {
         }
         setDualEngineValue("j_50", hotWaterEnergyDemand, hotWaterEnergyDemand, 'current');
         
+        // Calculate compliance percentages
         const waterUseReference = 275;
         const waterUsePercentRaw = waterUseReference !== 0 ? (litersPerPersonDay / waterUseReference) : 0;
-        setDualEngineValue("n_49", (waterUsePercentRaw * 100).toFixed(0) + '%', (waterUsePercentRaw * 100).toFixed(0) + '%', 'current');
         const dhwUseReference = 110;
         const dhwUsePercentRaw = dhwUseReference !== 0 ? (hotWaterLitersPerDay / dhwUseReference) : 0;
-        setDualEngineValue("n_50", (dhwUsePercentRaw * 100).toFixed(0) + '%', (dhwUsePercentRaw * 100).toFixed(0) + '%', 'current');
+        
+        // Store percentage values using global formatter
+        setDualEngineValue("n_49", window.TEUI?.formatNumber?.(waterUsePercentRaw, 'percent-0dp') ?? '0%', window.TEUI?.formatNumber?.(waterUsePercentRaw, 'percent-0dp') ?? '0%', 'current');
+        setDualEngineValue("n_50", window.TEUI?.formatNumber?.(dhwUsePercentRaw, 'percent-0dp') ?? '0%', window.TEUI?.formatNumber?.(dhwUsePercentRaw, 'percent-0dp') ?? '0%', 'current');
         
         return { hotWaterEnergyDemand }; // Return only what's needed by next calc
     }
@@ -925,10 +935,10 @@ window.TEUI.SectionModules.sect07 = (function() {
         // Get values from appropriate state based on mode
         const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
         const netDemand_j52 = isReferenceMode ? 
-            parseFloat(getRefFieldValue("j_52")) || 0 : 
+            window.TEUI?.parseNumeric?.(getRefFieldValue("j_52"), 0) ?? 0 : 
             getNumericValue("j_52");
         const efficiency_d52 = isReferenceMode ? 
-            parseFloat(getRefFieldValue("e_52")) || 0 : 
+            window.TEUI?.parseNumeric?.(getRefFieldValue("e_52"), 0) ?? 0 : 
             getNumericValue("e_52");
         
         let exhaustLosses = 0;
@@ -954,13 +964,13 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (systemType === "Oil") {
             // Get values from appropriate state
             const afue = isReferenceMode ? 
-                parseFloat(getRefFieldValue("k_52")) || 0.9 : 
+                window.TEUI?.parseNumeric?.(getRefFieldValue("k_52"), 0) || 0.9 : 
                 getNumericValue("k_52", 0.9);
             const recoveryPercent = isReferenceMode ? 
-                (parseFloat(getRefFieldValue("d_53")) || 0) / 100 : 
+                (window.TEUI?.parseNumeric?.(getRefFieldValue("d_53"), 0) || 0) / 100 : 
                 getNumericValue("d_53") / 100;
             const netDemandAfterRecovery_j52 = isReferenceMode ? 
-                parseFloat(getRefFieldValue("j_52")) || 0 : 
+                window.TEUI?.parseNumeric?.(getRefFieldValue("j_52"), 0) || 0 : 
                 getNumericValue("j_52");
             
             // Apply Excel formula exactly: ((J52*(1-D53))/(36.72*0.2777778)/K52)
@@ -971,7 +981,7 @@ window.TEUI.SectionModules.sect07 = (function() {
             if (isReferenceMode) {
                 console.log('[S07-REF-K54] Oil volume calculation:', {
                     systemType, afue, recoveryPercent, netDemandAfterRecovery_j52, 
-                    adjustedDemand, oilVolume: oilVolume.toFixed(2)
+                    adjustedDemand, oilVolume: oilVolume
                 });
             }
         }
@@ -995,10 +1005,10 @@ window.TEUI.SectionModules.sect07 = (function() {
         // Get values from appropriate state based on mode
         const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
         const oilVolume = isReferenceMode ? 
-            parseFloat(getRefFieldValue("k_54")) || 0 : 
+            window.TEUI?.parseNumeric?.(getRefFieldValue("k_54"), 0) || 0 : 
             getNumericValue("k_54");
         const gasVolume = isReferenceMode ? 
-            parseFloat(getRefFieldValue("e_51")) || 0 : 
+            window.TEUI?.parseNumeric?.(getRefFieldValue("e_51"), 0) || 0 : 
             getNumericValue("e_51");
         
         // Emission factors are in g/unit from FORMULAE-3039.csv (L28, L30)
