@@ -769,6 +769,24 @@ window.TEUI.SectionModules.sect04 = (function() {
                 // Trigger Reference Model recalculation to use new Reference grid intensity
                 calculateReferenceModel();
             });
+            
+            // CRITICAL: Listeners for Section 07 Reference values
+            // These trigger Reference Model recalculation when S07 Reference values change
+            sm.addListener('ref_e_51', () => {
+                console.log('[S04] ref_e_51 changed, triggering Reference Model recalculation');
+                calculateReferenceModel();
+            });
+            
+            sm.addListener('ref_k_54', () => {
+                console.log('[S04] ref_k_54 changed, triggering Reference Model recalculation');
+                calculateReferenceModel();
+            });
+            
+            // CRITICAL: Listener for Section 15 Reference values
+            sm.addListener('ref_d_136', () => {
+                console.log('[S04] ref_d_136 changed, triggering Reference Model recalculation');
+                calculateReferenceModel();
+            });
 
             // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
             document.addEventListener('input', function(e) {
@@ -1545,7 +1563,7 @@ window.TEUI.SectionModules.sect04 = (function() {
     function getRefNumericValue(fieldId, defaultValue = 0) {
         // First try to get ref_ prefixed value (from upstream Reference calculations)
         const refFieldId = `ref_${fieldId}`;
-        let value = window.TEUI?.StateManager?.getApplicationValue?.(refFieldId);
+        let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
         
         // If no ref_ value, fall back to application state
         if (value === null || value === undefined) {
@@ -1564,14 +1582,24 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Get Reference values from upstream sections
         const ref_d136 = getRefNumericValue('d_136', 0); // From S15
         
-        const ref_d51 = window.TEUI?.StateManager?.getApplicationValue?.('ref_d_51') || 
-                       window.TEUI?.StateManager?.getValue?.('d_51');
-        const ref_e51 = getRefNumericValue('e_51', 0);
-        const ref_k54 = getRefNumericValue('k_54', 0);
-        const ref_d113 = window.TEUI?.StateManager?.getApplicationValue?.('ref_d_113') || 
-                        window.TEUI?.StateManager?.getValue?.('d_113');
-        const ref_h115 = getRefNumericValue('h_115', 0);
-        const ref_f115 = getRefNumericValue('f_115', 0);
+        // Get system types - these carry over from Application state (Section 07 pattern)
+        const ref_d51 = window.TEUI?.StateManager?.getValue?.('d_51'); // DHW Energy Source (carries over)
+        const ref_d113 = window.TEUI?.StateManager?.getValue?.('d_113'); // Heating Energy Source (carries over)
+        
+        // Get Reference fuel volumes from Section 07 dual-engine calculations
+        const ref_e51 = getRefNumericValue('e_51', 0); // Reference Gas volume from S07
+        const ref_k54 = getRefNumericValue('k_54', 0); // Reference Oil volume from S07
+        
+        // Get Reference fuel volumes from Section 13 (heating systems)
+        const ref_h115 = getRefNumericValue('h_115', 0); // Reference Gas volume from S13 heating
+        const ref_f115 = getRefNumericValue('f_115', 0); // Reference Oil volume from S13 heating
+        
+        // Debug logging to track Reference values from S07 (reduced frequency)
+        if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
+            console.log('[S04-REF-ENGINE] Reference values from S07:', {
+                ref_d51, ref_d113, ref_e51, ref_k54, ref_h115, ref_f115
+            });
+        }
         
         // Get user inputs (these typically carry over from application state)
         const d27 = getAppNumericValue('d_27', 0); // Electricity
@@ -1592,27 +1620,37 @@ window.TEUI.SectionModules.sect04 = (function() {
         // H27: Electricity target from S15
         const ref_h27 = ref_d136;
         
-        // H28: Gas target (depends on heating and DHW systems)
+        // H28: Gas target (Excel formula: =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0))))
         let ref_h28 = 0;
         if (ref_d113 === "Gas" && ref_d51 === "Gas") {
-            ref_h28 = ref_e51 + ref_h115;
+            ref_h28 = ref_e51 + ref_h115; // Both heating and DHW use gas
         } else if (ref_d51 === "Gas") {
-            ref_h28 = ref_e51;
+            ref_h28 = ref_e51; // Only DHW uses gas
         } else if (ref_d113 === "Gas") {
-            ref_h28 = ref_h115;
+            ref_h28 = ref_h115; // Only heating uses gas
         }
         
         // H29: Propane = actual
         const ref_h29 = d29;
         
-        // H30: Oil target (depends on heating and DHW systems)
+        // H30: Oil target (Excel formula: =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0))))
         let ref_h30 = 0;
         if (ref_d113 === "Oil" && ref_d51 === "Oil") {
-            ref_h30 = ref_k54 + ref_f115;
+            ref_h30 = ref_k54 + ref_f115; // Both heating and DHW use oil
         } else if (ref_d51 === "Oil") {
-            ref_h30 = ref_k54;
+            ref_h30 = ref_k54; // Only DHW uses oil
         } else if (ref_d113 === "Oil") {
-            ref_h30 = ref_f115;
+            ref_h30 = ref_f115; // Only heating uses oil
+        }
+        
+        // Debug logging to show calculated Reference fuel targets (reduced frequency)
+        if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
+            console.log('[S04-REF-ENGINE] Calculated Reference fuel targets:', {
+                ref_h28: `${ref_h28.toFixed(2)} m³/yr (Gas)`,
+                ref_h30: `${ref_h30.toFixed(2)} litres/yr (Oil)`,
+                formula_h28: `IF(${ref_d113}="Gas" AND ${ref_d51}="Gas", ${ref_e51}+${ref_h115}, IF(${ref_d51}="Gas", ${ref_e51}, IF(${ref_d113}="Gas", ${ref_h115}, 0)))`,
+                formula_h30: `IF(${ref_d113}="Oil" AND ${ref_d51}="Oil", ${ref_k54}+${ref_f115}, IF(${ref_d51}="Oil", ${ref_k54}, IF(${ref_d113}="Oil", ${ref_f115}, 0)))`
+            });
         }
         
         // H31: Wood = actual
@@ -1636,36 +1674,56 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
         const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
         
-        // Store Reference values with ref_ prefix
+        // Debug logging removed - now only logs when values actually change (see below)
+        
+        // Store Reference values with ref_ prefix - WITH CHANGE DETECTION
         if (window.TEUI?.StateManager) {
-            // Row 27
-            window.TEUI.StateManager.setValue('ref_h_27', ref_h27.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_j_27', ref_j27.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_27', ref_k27.toFixed(2), 'calculated');
+            // Helper function to set value only if changed
+            const setValueIfChanged = (fieldId, newValue) => {
+                const currentValue = window.TEUI.StateManager.getValue(fieldId);
+                if (currentValue !== newValue) {
+                    window.TEUI.StateManager.setValue(fieldId, newValue, 'calculated');
+                    return true;
+                }
+                return false;
+            };
+            
+            // Row 27 - only set if values changed
+            setValueIfChanged('ref_h_27', ref_h27.toFixed(2));
+            setValueIfChanged('ref_j_27', ref_j27.toFixed(2));
+            setValueIfChanged('ref_k_27', ref_k27.toFixed(2));
             
             // Row 28
-            window.TEUI.StateManager.setValue('ref_h_28', ref_h28.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_j_28', ref_j28.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_28', ref_k28.toFixed(2), 'calculated');
+            setValueIfChanged('ref_h_28', ref_h28.toFixed(2));
+            setValueIfChanged('ref_j_28', ref_j28.toFixed(2));
+            setValueIfChanged('ref_k_28', ref_k28.toFixed(2));
             
             // Row 29
-            window.TEUI.StateManager.setValue('ref_h_29', ref_h29.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_j_29', ref_j29.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_29', ref_k29.toFixed(2), 'calculated');
+            setValueIfChanged('ref_h_29', ref_h29.toFixed(2));
+            setValueIfChanged('ref_j_29', ref_j29.toFixed(2));
+            setValueIfChanged('ref_k_29', ref_k29.toFixed(2));
             
             // Row 30
-            window.TEUI.StateManager.setValue('ref_h_30', ref_h30.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_j_30', ref_j30.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_30', ref_k30.toFixed(2), 'calculated');
+            setValueIfChanged('ref_h_30', ref_h30.toFixed(2));
+            setValueIfChanged('ref_j_30', ref_j30.toFixed(2));
+            setValueIfChanged('ref_k_30', ref_k30.toFixed(2));
             
             // Row 31
-            window.TEUI.StateManager.setValue('ref_h_31', ref_h31.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_j_31', ref_j31.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_31', ref_k31.toFixed(2), 'calculated');
+            setValueIfChanged('ref_h_31', ref_h31.toFixed(2));
+            setValueIfChanged('ref_j_31', ref_j31.toFixed(2));
+            setValueIfChanged('ref_k_31', ref_k31.toFixed(2));
             
-            // Subtotals - CRITICAL for Section 01
-            window.TEUI.StateManager.setValue('ref_j_32', ref_j32.toFixed(2), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_32', ref_k32.toFixed(2), 'calculated');
+            // Subtotals - CRITICAL for Section 01 (only set if changed)
+            const j32Changed = setValueIfChanged('ref_j_32', ref_j32.toFixed(2));
+            const k32Changed = setValueIfChanged('ref_k_32', ref_k32.toFixed(2));
+            
+            // Only log if subtotals actually changed
+            if (j32Changed || k32Changed) {
+                console.log('[S04-REF-ENGINE] Reference subtotals updated for S01:', {
+                    ref_j32: `${ref_j32.toFixed(2)} kWh/yr`,
+                    ref_k32: `${ref_k32.toFixed(2)} kgCO2e/yr`
+                });
+            }
         }
     }
     
