@@ -294,11 +294,11 @@ window.TEUI.SectionModules.sect01 = (function() {
                 }
             }
 
-            // Store all Reference values with ref_ prefix
+            // Store all Reference values with ref_ prefix - FIXED: Use properly formatted values
             if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toString(), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toString(), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
             }
             
         } finally {
