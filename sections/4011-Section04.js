@@ -1594,12 +1594,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_h115 = getRefNumericValue('h_115', 0); // Reference Gas volume from S13 heating
         const ref_f115 = getRefNumericValue('f_115', 0); // Reference Oil volume from S13 heating
         
-        // Debug logging to track Reference values from S07 (reduced frequency)
-        if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
-            console.log('[S04-REF-ENGINE] Reference values from S07:', {
-                ref_d51, ref_d113, ref_e51, ref_k54, ref_h115, ref_f115
-            });
-        }
+
         
         // Get user inputs (these typically carry over from application state)
         const d27 = getAppNumericValue('d_27', 0); // Electricity
@@ -1643,15 +1638,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             ref_h30 = ref_f115; // Only heating uses oil
         }
         
-        // Debug logging to show calculated Reference fuel targets (reduced frequency)
-        if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
-            console.log('[S04-REF-ENGINE] Calculated Reference fuel targets:', {
-                ref_h28: `${ref_h28.toFixed(2)} m³/yr (Gas)`,
-                ref_h30: `${ref_h30.toFixed(2)} litres/yr (Oil)`,
-                formula_h28: `IF(${ref_d113}="Gas" AND ${ref_d51}="Gas", ${ref_e51}+${ref_h115}, IF(${ref_d51}="Gas", ${ref_e51}, IF(${ref_d113}="Gas", ${ref_h115}, 0)))`,
-                formula_h30: `IF(${ref_d113}="Oil" AND ${ref_d51}="Oil", ${ref_k54}+${ref_f115}, IF(${ref_d51}="Oil", ${ref_k54}, IF(${ref_d113}="Oil", ${ref_f115}, 0)))`
-            });
-        }
+
         
         // H31: Wood = actual
         const ref_h31 = d31;
@@ -1670,19 +1657,22 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_k30 = (ref_h30 * l30) / 1000;
         const ref_k31 = ref_h31 * l31;
         
+
+        
         // Calculate Reference subtotals
         const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
         const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
         
-        // Debug logging removed - now only logs when values actually change (see below)
+
         
         // Store Reference values with ref_ prefix - WITH CHANGE DETECTION
         if (window.TEUI?.StateManager) {
             // Helper function to set value only if changed
             const setValueIfChanged = (fieldId, newValue) => {
                 const currentValue = window.TEUI.StateManager.getValue(fieldId);
-                if (currentValue !== newValue) {
-                    window.TEUI.StateManager.setValue(fieldId, newValue, 'calculated');
+                const newValueStr = newValue.toString();
+                if (currentValue !== newValueStr) {
+                    window.TEUI.StateManager.setValue(fieldId, newValueStr, 'calculated');
                     return true;
                 }
                 return false;
@@ -1717,13 +1707,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             const j32Changed = setValueIfChanged('ref_j_32', ref_j32.toFixed(2));
             const k32Changed = setValueIfChanged('ref_k_32', ref_k32.toFixed(2));
             
-            // Only log if subtotals actually changed
-            if (j32Changed || k32Changed) {
-                console.log('[S04-REF-ENGINE] Reference subtotals updated for S01:', {
-                    ref_j32: `${ref_j32.toFixed(2)} kWh/yr`,
-                    ref_k32: `${ref_k32.toFixed(2)} kgCO2e/yr`
-                });
-            }
+
         }
     }
     

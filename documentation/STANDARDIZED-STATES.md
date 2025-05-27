@@ -3081,3 +3081,672 @@ This implementation pattern is now being replicated across other sections in the
 - ✅ CSV export format ready for dual-engine state capture
 
 ## 6. Dependency Chain Analysis & Implementation Strategy
+
+### Current Dependency Chain Understanding
+
+**Primary Flow:**
+```
+S07 (Water) → S04 (Energy) → S01 (Dashboard)
+S15 (TEUI) → S04 (Energy) → S01 (Dashboard)
+S14 (TEDI) → S15 (TEUI) → S04 → S01
+```
+
+**Supporting Flows:**
+```
+S11 (Envelope) → S12 (U-values) → S14 (TEDI)
+S13 (Mechanical) → S14 (TEDI)
+S09 (Internal Gains) → S14 (TEDI)
+S10 (Solar Gains) → S14 (TEDI)
+```
+
+### Implementation Strategy
+
+1. **Start with S07 (Water Use)**: Already has good architecture, clear inputs/outputs
+2. **Build S09, S10, S11, S13**: Provide calculated values to S14
+3. **Implement S14 (TEDI)**: Consolidates energy demand calculations
+4. **Implement S15 (TEUI)**: Provides final energy totals
+5. **Implement S04**: Processes energy totals for dashboard
+6. **Complete S01**: Final dashboard display
+
+### Critical Success Factors
+
+1. **Dual Output Pattern**: Each section must provide BOTH Reference and Target calculated values
+2. **State Management**: Calculated values must be stored in StateManager for cross-section access
+3. **Triggering Logic**: Changes in upstream sections must properly trigger downstream recalculations
+4. **Value Mapping**: Clear mapping of which calculated values feed which sections
+
+This approach ensures that when S01 needs accurate results from S04, both the Reference and Target calculation chains are complete and accurate.
+
+## 7. Common Pitfalls & Troubleshooting
+
+### 7.1 Section 11 (Transmission Losses) - Function Call Errors
+
+**Issue**: After dual-engine refactor, Section 11 calculations can fail showing all zeros for heat loss/gain calculations.
+
+**Root Cause**: Invalid function calls that prevent the entire calculation chain from running. Example:
+```javascript
+// INCORRECT - This function doesn't exist:
+const refValue = window.TEUI.ReferenceManager.getValue(fieldId);
+
+// CORRECT - Use StateManager for reference values:
+const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+```
+
+**Symptoms**:
+- All heat loss/gain values show 0.00
+- Console error: "TEUI.ReferenceValues.getValue is not a function" or similar
+- Total building TEUI drops significantly (e.g., from 93.6 to 74.9 kWh/m²·yr)
+
+**Solution**:
+1. Check console for function errors in Section 11 calculations
+2. Ensure all reference value retrievals use `StateManager.getReferenceValue()`
+3. Never invent new getter functions - use existing StateManager API
+4. After fixing, refresh browser to test calculations
+
+**Prevention**:
+- When implementing dual-engine support, use consistent StateManager API calls
+- Don't assume ReferenceManager has value getter methods
+- Test calculations immediately after refactoring
+
+### 7.2 Timing Issues - Initial Load Shows Zeros
+
+**Issue**: Tables briefly show zeros before settling to correct values after a few seconds.
+
+**Root Cause**: Calculation timing during initialization sequence.
+
+**Current Status**: Known issue, acceptable for now. Will be addressed in future optimization.
+
+### 7.3 Similar Risk Sections
+
+Sections with similar architecture that may face the same issues:
+- **Section 10 (Radiant Gains)**: Uses climate data and area calculations similar to Section 11
+- **Section 12 (Volume & Surface)**: Complex calculations dependent on multiple inputs
+- **Section 13 (Mechanical Loads)**: Multiple calculation paths that could fail silently
+
+**Best Practice**: When implementing dual-engine support in these sections:
+1. Verify all function calls are valid before committing
+2. Check console for errors after implementation
+3. Test with actual calculations, not just UI changes
+4. Use existing StateManager API consistently
+
+## Appendix A: CSV Export Field Verification (vs. `4011-ExcelMapper.js`)
+
+**Date of Analysis:** 2025-05-16
+
+**Objective:** To verify if user-editable fields listed in `4011-ExcelMapper.js` (specifically in `this.excelReportInputMapping`), particularly those with slider-like behavior or percentage types, are correctly included in the CSV export functionality of `4011-FileHandler.js`.
+This initial analysis was performed against the 2-row CSV export format. The findings remain relevant for the header row (Row 1) of the 3-row format.
+
+**Methodology:**
+Fields from `excelReportInputMapping` that appeared to be complex (e.g., described as sliders or percentages) were identified. Their definitions (specifically `type` and `sectionId`) were located within their respective `sections/4011-SectionXX.js` modules. This information was then checked against the export conditions in `4011-FileHandler.js`:
+
+*   A field is exported if its `type` is one of: `'editable'`, `'dropdown'`, `'year_slider'`, `'percentage'`, `'coefficient'`, `'number'`.
+*   OR if its `sectionId` is `'sect03'`.
+
+**Key Fields Investigated & Findings:**
+
+1.  **`h_12`** (Section 02: Reporting Period - "Slider -> Number")
+    *   Definition: `type: "year_slider"`, `sectionId: "sect02"`
+    *   Status: **EXPORTED** (due to `type: "year_slider"`)
+
+2.  **`h_13`** (Section 02: Service Life - "Slider -> Number")
+    *   Definition: `type: "year_slider"`, `sectionId: "sect02"`
+    *   Status: **EXPORTED** (due to `type: "year_slider"`)
+
+3.  **`d_97`** (Section 11: Thermal Bridge Penalty % - "Percentage")
+    *   Definition: `type: "percentage"`, `sectionId: "sect11"`
+    *   Status: **EXPORTED** (due to `type: "percentage"`)
+
+4.  **`f_113`** (Section 13: HSPF - "Slider/Coefficient -> Number")
+    *   Definition: `type: "coefficient"`, `sectionId: "sect13"`
+    *   Status: **EXPORTED** (due to `type: "coefficient"`)
+
+5.  **`d_118`** (Section 13: HRV/ERV SRE % - "Percentage Slider -> Number")
+    *   Definition: `type: "percentage"`, `sectionId: "sect13"`
+    *   Status: **EXPORTED** (due to `type: "percentage"`)
+
+6.  **`k_120`** (Section 13: Unoccupied Setback % - "Percentage Dropdown/Slider")
+    *   Definition: `type: "percentage"`, `sectionId: "sect13"`
+    *   Status: **EXPORTED** (due to `type: "percentage"`)
+
+**Conclusion:**
+The targeted analysis of these potentially problematic fields indicates that their current definitions use `type` values (e.g., `year_slider`, `percentage`, `coefficient`) that are explicitly included in the export logic of `4011-FileHandler.js`. Therefore, for these specific fields, there appear to be no omissions from the CSV export based on their `type`.
+
+This supports the general approach in Phase C1 of the workplan, which aims to ensure *all* user-editable fields are correctly identified and exported. While this check was not exhaustive for all 100+ fields in `excelReportInputMapping`, the higher-risk cases examined are correctly handled by the current export filters. A comprehensive review during Phase G (Testing) should confirm all user-editable fields are captured.
+
+## Appendix B: Aligning CSV Export with `ReferenceValues.js` Structure (3-Row Format)
+
+**Objective:** To define a CSV export format that is structurally consistent with the proposed unified data structure for `TEUI.ReferenceValues` and general application state, focusing on user-editable fields. This appendix details the enhanced 3-row CSV format.
+
+**1. Background:**
+
+The workplan (Phase A2) restructures `TEUI.ReferenceValues` so that each defined reference standard directly returns data **only for user-editable fields** in the Unified Data Structure *that the standard explicitly defines*:
+```json
+// Example: TEUI.ReferenceValues["OBC_SB10_2017_ClimateZone5"] might look like:
+{
+    "d_18": "Toronto",      // User-editable City/Location for Climate Data (S03)
+    "f_85": "10.5",         // User-editable Roof RSI (S11)
+    "h_13": "OBC SB10 2017 CZ5" // User-editable description field (S02)
+    // ... other relevant *user-editable* fieldIds explicitly defined by this standard
+}
+```
+The CSV export needs to represent:
+1.  The list of all user-editable `fieldId`s (Header).
+2.  The current application's state values for these `fieldId`s.
+3.  The fully resolved Reference Mode state values for these `fieldId`s, which is a composite of application state carry-overs, Reference Mode defaults, explicit standard values (from the refactored `TEUI.ReferenceValues`), and any user edits made while in Reference Mode.
+
+**2. Proposed 3-Row Aligned CSV Export/Import Format (from Phase C):**
+
+*   **Row 1 (Header Row - User-Editable Field IDs):**
+    *   A single, comma-separated string of `fieldId`s for ALL user-editable fields in the application. This list is comprehensive and ordered consistently. The `fieldId` for the reference standard selection (e.g., `d_13`) must be included.
+    *   Example: `d_27,d_19,f_85,h_13,d_13,...`
+
+*   **Row 2 (Current Application State Values):**
+    *   A single, comma-separated string of the corresponding raw string values for the `fieldId`s in Row 1. This reflects the live state of the application at the time of export. The value for `d_13` here indicates the active reference standard for the application state.
+    *   Example: `1500.75,app_state_d19_value,7.5,NBC 9.36 Prescriptive Path,NBC T1,...`
+
+*   **Row 3 (Active Reference Standard Values):**
+    *   **Cell 1:** The key/name of the active reference standard (this value will match the value of `d_13` in Row 2).
+    *   **Subsequent Cells:** For each `fieldId` in Row 1 (from the *first* `fieldId`), this cell contains the value for that `fieldId` as it exists in the fully resolved Reference Mode state, managed by `StateManager` (e.g., via a conceptual `StateManager.getActiveReferenceModeValue(fieldId)`). This state is a result of:
+        1.  Values carried over from the application state.
+        2.  Specific Reference Mode defaults.
+        3.  Explicit values from the selected reference standard (sourced from the refactored `TEUI.ReferenceValues`).
+        4.  Any user modifications made to fields that are independently editable while in Reference Mode.
+        (See Appendix E for detailed field-level behavior).
+    *   Example (assuming Row 1 is `d_27,d_19,f_85,h_13,d_13` and active standard `NBC T1` from Row 2's `d_13` defines `f_85` and `h_13`, while `d_27` and `d_19` carry over from application state values `app_d27` and `app_d19` respectively):
+        `NBC T1,app_d27,app_d19,6.41,NBC 9.36 Prescriptive Path,,...`
+        (The cell for `d_13` in Row 3 is empty as the standard doesn't define a value for `d_13` itself).
+
+**Benefits of this Alignment:**
+
+*   **Comprehensive State Snapshot:** Captures all user-editable `fieldId`s, their application state values, and their fully resolved Reference Mode state values.
+*   **Single Header Row:** Simplifies parsing and reduces redundancy.
+*   **Clear State Separation:** Row 2 is pure application state; Row 3 is pure (resolved) Reference Mode state.
+*   **Simplified Import Logic:**
+    *   Row 2 directly updates the application state. Setting `d_13` from Row 2 correctly triggers `StateManager` to build the Reference Mode state internally.
+    *   Row 3 serves as a record/checksum of the Reference Mode state at export. The import process relies on the `d_13` value from Row 2 to trigger the reconstruction of the Reference Mode state using `StateManager` logic and `TEUI.ReferenceValues`.
+
+This 3-row format balances comprehensiveness with efficiency for data interchange.
+
+## Appendix C: Updating `4011-FileHandler.js` for Standardized CSV Export (3-Row Format)
+
+**Objective:** To outline the required modifications within `4011-FileHandler.js` (primarily the `exportToCSV` function and its helpers) to produce and parse CSV files in the standardized 3-row format. This ensures alignment with the `ReferenceValues.js` refactor (Phase A2), `StateManager` enhancements (Phase B), and CSV import expectations (Phase C2).
+
+**Recap of Standardized 3-Row CSV Format:**
+
+*   **Row 1 (Header Row):** Comma-separated `fieldId`s of all user-editable fields (including `d_13`).
+    *   Example: `d_27,d_19,f_85,h_13,d_13,...`
+*   **Row 2 (Current Application State Values):** Comma-separated raw string values corresponding to Row 1 `fieldId`s (application state).
+    *   Example: `1500.75,app_state_d19_value,7.5,NBC 9.36 Prescriptive Path,NBC T1,...`
+*   **Row 3 (Active Reference Standard Values):**
+    *   Cell 1: Key of the active reference standard (from `d_13` in Row 2).
+    *   Subsequent Cells: Values from `StateManager.getActiveReferenceModeValue(fieldId)` for each `fieldId` in Row 1, representing the fully resolved Reference Mode state.
+    *   Example: `NBC T1,app_d27,app_d19,6.41,NBC 9.36 Prescriptive Path,,...`
+
+**Key Modifications in `4011-FileHandler.js` - `exportToCSV()`:**
+
+1.  **Identifying User-Editable Fields for Row 1 (Header):**
+    *   Action: Use `TEUI.FieldManager.getAllFields()` and filter by user-editable types. This list of `fieldId`s becomes Row 1. Ensure a consistent order and inclusion of `d_13`.
+
+2.  **Collecting Data for Row 2 (Application State):**
+    *   Action: For each `fieldId` in Row 1, retrieve its current value using `window.TEUI.StateManager.getValue(fieldId)` (ensuring this call correctly reflects application state when not in reference mode, or by having a specific method like `StateManager.getApplicationStateValue(fieldId)` if `getValue` becomes strictly mode-aware). This forms Row 2.
+
+3.  **Collecting Data for Row 3 (Reference Mode State):**
+    *   **Prerequisite:** `StateManager` must have a method (e.g., `getActiveReferenceModeValue(fieldId)` or rely on `getValue(fieldId)` being correctly mode-aware when Reference Mode is active) that can return the value for any user-editable field as it currently exists in the active Reference Mode state (`activeReferenceDataSet`).
+    *   Action:
+        1.  Get the `activeStandardKey` from `window.TEUI.StateManager.getValue('d_13')` (from application state). This will be the first cell of Row 3.
+        2.  Initialize an array for Row 3 values, starting with `activeStandardKey`.
+        3.  Iterate through the ordered list of `fieldId`s from Row 1. For each `fieldId`:
+            *   Append `window.TEUI.StateManager.getActiveReferenceModeValue(fieldId)` (or equivalent) to the Row 3 values array.
+        4.  This array, when joined by commas, becomes the content for Row 3.
+
+4.  **Constructing the CSV String:**
+    *   Properly escape all values for CSV.
+    *   `const headerRowString = fieldIdsRow1.join(',');`
+    *   `const appStateRowString = valuesRow2.join(',');`
+    *   `const refStateRowString = valuesRow3.join(',');`
+    *   `const csvContent = headerRowString + "\n" + appStateRowString + "\n" + refStateRowString;`
+
+5.  **Updating `exportToCSV()` Orchestration:**
+    *   The function will perform steps 1-4 and then trigger the download.
+
+**Key Modifications in `4011-FileHandler.js` - `processImportedCSV()` (or equivalent):**
+
+1.  **Parsing the 3 Rows:**
+    *   Split the CSV string into three rows. Validate that three rows exist.
+    *   Parse Row 1 to get the `importedFieldIds` array.
+    *   Parse Row 2 to get the `importedAppStateValues` array.
+    *   Parse Row 3 to get the `importedRefStateValues` array.
+    *   Validate column counts.
+
+2.  **Processing Row 2 (Application State):**
+    *   Create a `dataToImport = {}` object.
+    *   Iterate `importedFieldIds` and `importedAppStateValues` to populate `dataToImport`.
+    *   Call `window.TEUI.StateManager.setValues(dataToImport, 'imported')`. This updates the application state, including `d_13`. This change to `d_13` is the primary trigger for `StateManager` to correctly build the `activeReferenceDataSet`.
+
+3.  **Processing Row 3 (Reference Standard State):**
+    *   The first cell of `importedRefStateValues` contains the `standardKeyFromCsvRow3`.
+    *   This row is primarily for data integrity checks or logging. For example, verify `standardKeyFromCsvRow3` matches the `d_13` value set from Row 2.
+    *   **Important:** The system should *not* iterate through Row 3 and directly apply values to `StateManager.activeReferenceDataSet`. The `activeReferenceDataSet` is rebuilt by `StateManager.loadReferenceData()` based on the `d_13` value from Row 2 and the defined internal logic (carry-overs, defaults, standard values from `TEUI.ReferenceValues`).
+
+By implementing these changes, `4011-FileHandler.js` will support the comprehensive 3-row CSV format, integrating with `StateManager`'s handling of both application and Reference Mode states.
+
+## Appendix D: Architectural Alignment and Expected Benefits
+
+**Objective:** To assess the proposed standardization plan's consistency with the existing architecture defined in `README.md` and to evaluate its potential impact on code performance, robustness, simplicity, and verbosity, especially concerning the integrated Reference Model.
+
+**1. Consistency with `README.md` Architecture:**
+
+The integrated plan in this document is designed to be highly consistent with and supportive of the core architectural principles:
+
+*   **`StateManager` as Single Source of Truth:** Reinforced. `StateManager` manages both application state and the construction/storage of the `activeReferenceDataSet`.
+*   **Modular Design (`SectionXX.js` files):** Respected. Section modules use `StateManager.getValue()` (which is mode-aware) and `FieldManager.updateFieldDisplay()`.
+*   **Event-Driven Calculations:** Leveraged. `FieldManager.updateFieldDisplay()` dispatches events, triggering calculations that use mode-appropriate values from `StateManager`.
+*   **Decoupling Data from Display:** Strengthened. The Unified Data Structure and `FieldManager` standardizes UI updates for both modes. Refactoring `TEUI.ReferenceValues` further decouples raw standard data.
+*   **Avoiding Direct DOM Manipulation for State:** Explicitly planned for removal, crucial for Reference Mode stability.
+*   **`FieldManager` Role:** Critical for UI consistency and event dispatch in both modes.
+*   **Data-Centric Approach:** Prioritized for user inputs and reference data.
+
+**2. Expected Benefits:**
+
+*   **Performance:**
+    *   **Overall Neutral to Potentially Positive:** Streamlined data handling in `StateManager` for both modes. Reduction in direct DOM manipulations. Efficient CSV processing. Core calculation speed largely unchanged but state management operations improved.
+
+*   **Robustness:**
+    *   **Significant Improvement:**
+        *   Unified structure for user-editable state minimizes errors.
+        *   Clear separation of application state, `TEUI.ReferenceValues` (explicit standard definitions), and the composite `activeReferenceDataSet` enhances data integrity.
+        *   Reliable data interchange (3-row CSV).
+        *   Fewer bugs due to centralized state updates via `StateManager` and UI updates via `FieldManager`.
+        *   Predictable and robust Reference Model behavior due to clear logic for constructing `activeReferenceDataSet`.
+
+*   **Simplicity (Code and Developer Understanding):**
+    *   **Significant Improvement:**
+        *   Unified `{fieldId: value}` model is simple.
+        *   Refactored `TEUI.ReferenceValues` becomes cleaner.
+        *   Streamlined 3-row CSV handling.
+        *   Clearer `StateManager` API and role in managing both application and Reference Mode states.
+        *   Consistent patterns for state management reduce cognitive load.
+
+*   **Verbosity (Code):**
+    *   **Reduced:**
+        *   Less transformation code for different data formats.
+        *   More concise refactored `TEUI.ReferenceValues`.
+        *   Reduced DOM manipulation in section modules.
+        *   Simplified `FileHandler.js` logic for CSV.
+
+In summary, the integrated plan is expected to lead to a more robust, simpler, and less verbose codebase for managing both application state and the Reference Model, with neutral to potentially positive impacts on performance.
+
+### Potential UI/UX Enhancements
+
+*   **Dependency Graph Labeling:** Investigate updating the node labels in the Dependency Graph (Section 17). Currently, labels like "Field Name (declared): DefaultValue" show the original default. Consider modifying `StateManager.exportDependencyGraph()` to make these labels reflect the *current* value post-calculation/import, e.g., "Field Name (declared): CurrentValue", for better visual consistency, without altering Section 17's rendering logic.
+
+## Appendix E: Field Behavior in Reference Mode
+
+**Objective:** This appendix will provide a detailed specification for each relevant user-editable `fieldId` (or groups of fields by section), outlining its behavior when the application is in Reference Mode. This specification is crucial for the correct implementation of `StateManager` logic for constructing the `activeReferenceDataSet` (Phase B1) and for accurate CSV export of the Reference Mode state (Row 3).
+
+For each field/group, the behavior will be categorized as follows:
+
+1.  **Directly Set by Standard (Explicit Override):** The value is primarily determined by its definition in the refactored, sparse `TEUI.ReferenceValues` for the active standard. If the standard defines it, that value is used in `activeReferenceDataSet`, overriding any carried-over application state value or RefMode default for that specific field.
+    *   *Examples from user input: RSI values (f_85, f_86), U-values (g_88-g_93), specific equipment efficiencies (f_113, j_116), S07 d_52/d_53 if standard specifies.*
+
+2.  **Carry-Over from Application State (Default Behavior):** If not explicitly defined by the active reference standard in `TEUI.ReferenceValues` (and not subject to a specific Reference Mode Default or independent editability), the value is taken directly from the current application (design) state and used in `activeReferenceDataSet`. This is the default behavior for most fields.
+    *   *Examples from user input: S02 fields (conditioned area, fuel costs), S03 climate data, S10 areas (Column D), S10 orientation (Column E), S10 shading % (Column G, H), S12 values.*
+
+3.  **Reference Mode Default:** The field has a specific default value when entering Reference Mode, which is applied to `activeReferenceDataSet` *before* standard values are overlaid. This default is used if not overridden by the active standard or subsequent user interaction in Reference Mode.
+    *   *Examples from user input: S10 D80 toggle (Net Useable Gains Method) defaults to 'NRC 50%'; S11 d_97 (Thermal Bridge Penalty %) defaults to 0.05 (5%) in Reference Mode, unless standard specifies otherwise or user edits it if allowed.*
+
+4.  **Independently User-Editable in Reference Mode:** The user can modify this field's value *while in Reference Mode*. This modification directly updates `activeReferenceDataSet`. The initial value in `activeReferenceDataSet` (before user edit) would have come from carry-over, RefMode default, or standard definition.
+    *   *Examples from user input: S05 d_39 (Building Typology), S07 (independent selection of d_49, d_51, while d_52/d_53 come from standard), S09 d_68/g_67, S11 d_97 (slider), S13 d_119/g_118/l_118/k_120.*
+
+5.  **Matches Application State (Always):** Certain fields in `activeReferenceDataSet` will always mirror the Application State, regardless of the standard or other Reference Mode logic. These are effectively a direct carry-over.
+    *   *Examples from user input: S04 utility bill inputs, S06 renewables, S08 IAQ targets.*
+
+*(This appendix will be populated based on the detailed section-by-section analysis provided by the user and further refinement. The categories above provide a framework for classifying each field's behavior. **This appendix is now CRITICAL for implementing Phases B1 and E1 correctly.**)*
+
+---
+
+**Initial Content for Appendix E (from `future code/deepstate-structure.md` Section 5 - Requires Refactoring)**
+
+**Crucial Disclaimer:** *The following list is taken from an older planning document (`future code/deepstate-structure.md`) and reflects a previous understanding of how `4011-ReferenceValues.js` was structured, using internal reference IDs (e.g., "T.1", "B.4") and direct `targetCell` mappings. This old structure and mapping system **will be obsolete** after `4011-ReferenceValues.js` is refactored (Phase A2) to a simple `{ "application_fieldId": "value", ... }` format for each standard.*
+
+*This list is included **temporarily** as a starting point for identifying relevant application `fieldId`s that are affected by reference standards. It needs to be **completely refactored** to align with the new `ReferenceValues.js` structure and the behavioral categories (Directly Set by Standard, Carry-Over, Reference Mode Default, Independently User-Editable, Matches Application State Always) described above. The `targetCell` concept previously within `ReferenceValues.js` will no longer exist; the application `fieldId` will be the direct key.*
+
+*   **Section 01 (Key Values):**
+    *   `h_6` (Heating Degree Days - HDD) -> `T.1`
+    *   `h_8` (Cooling Degree Days - CDD) -> `T.2`
+*   **Section 02 (Building Information):**
+    *   `h_13` (Code Standard for Report) -> `S.1`
+*   **Section 03 (Climate Calculations):**
+    *   `h_23` (Heating Setpoint T°C) -> `L.3.1`
+    *   `h_24` (Cooling Setpoint T°C) -> `L.3.2`
+*   **Section 07 (Water):**
+    *   `h_49` (Total Water Use L/person/day - Target) -> `W.1`
+    *   `h_50` (DHW Use L/person/day - Target) -> `W.2`
+    *   `h_52` (DHW Efficiency % or UEF) -> `W.3`
+    *   `h_53` (DWHR Efficiency %) -> `W.4`
+*   **Section 08 (IAQ - Primarily informational or pass/fail, not direct energy inputs):**
+    *   `h_56` (Radon Mitigation - Target) -> `Q.1`
+    *   `h_57` (CO2 Control - Target) -> `Q.2`
+    *   `h_58` (TVOC Control - Target) -> `Q.3`
+    *   `h_59` (Indoor RH % - Target) -> `Q.4`
+*   **Section 09 (Internal Gains):**
+    *   `h_65` (Plug Load W/m2 - Target) -> `G.1`
+    *   `h_66` (Lighting Load W/m2 - Target) -> `G.2`
+*   **Section 11 (Transmission Losses):**
+    *   `f_85` (Roof RSI) -> `B.4`
+    *   `f_86` (Wall RSI) -> `B.5`
+    *   `f_87` (Floor RSI) -> `B.6`
+    *   `g_88` (Door U-value) -> `B.7.0`
+    *   `g_89` (Window N U-value) -> `B.8.1`
+    *   `g_90` (Window E U-value) -> `B.8.2`
+    *   `g_91` (Window S U-value) -> `B.8.3`
+    *   `g_92` (Window W U-value) -> `B.8.4`
+    *   `g_93` (Skylight U-value) -> `B.8.5`
+    *   `f_94` (Slab RSI) -> `B.9`
+    *   `f_95` (Fdn Wall RSI) -> `B.10`
+    *   `d_97` (Thermal Bridge Penalty %) -> `B.12`
+*   **Section 12 (Air Leakage & HRV):**
+    *   `g_104` (ACH50 Target) -> `V.1`
+    *   `d_107` (HRV SRE @ 0°C) -> `V.2`
+*   **Section 13 (Mechanical Loads & Vent):**
+    *   `f_113` (Heating Eff. % or COP) -> `M.1`
+    *   `j_116` (Cooling Eff. SEER or COP) -> `M.2`
+    *   `l_118` (Ventilation Rate ACH) -> `M.3`
+    *   `d_119` (Ventilation Rate L/s per person if applicable) -> `M.4`
+*   **Section 14 (TEDI):**
+    *   `h_127` (TEDI Target kWh/m2) -> `E.1`
+*   **Section 15 (TEUI & GHG):**
+    *   `d_140` (GHGI Target kgCO2e/m2) -> `C.1`
+
+---
+*(End of integrated content from `future code/deepstate-structure.md`)* 
+
+## 6. Vision of Reference Mode
+
+### 6.1 True Dynamic Reference Mode Experience
+
+**Goal:** Reference Mode should provide the same dynamic, real-time feedback as Design Mode, where changes in one section immediately ripple through all dependent sections with visible UI updates.
+
+#### **Current State (December 2024)**
+- ✅ **Background calculations working** - Reference values flow correctly through the calculation chain
+- ✅ **Section 01 displays Reference values** - Key Values show Reference TEUI, carbon, etc.
+- ❌ **Section UIs show Application values** - Individual sections don't display Reference calculations
+- ❌ **No visual feedback during Reference changes** - Users can't see intermediate calculation updates
+
+#### **Target Vision**
+When a user changes water methods in Section 07 Reference Mode:
+
+1. **Section 07** - Shows Reference water use calculations in real-time
+2. **Section 04** - Displays Reference energy totals updating
+3. **Section 15** - Shows Reference TEUI calculations updating  
+4. **Section 01** - Final Reference TEUI updates (already working)
+
+#### **Implementation Strategy**
+Each section needs enhanced display logic:
+
+```javascript
+// Example pattern for section display updates
+function updateSectionDisplay() {
+    const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.();
+    
+    if (isReferenceMode) {
+        // Display Reference values (ref_ prefixed)
+        displayValue('field_id', getReferenceValue('field_id'));
+    } else {
+        // Display Application values (normal)
+        displayValue('field_id', getApplicationValue('field_id'));
+    }
+}
+```
+
+#### **Benefits of True Dynamic Reference Mode**
+- **Immediate feedback** - Users see how Reference changes affect all calculations
+- **Better understanding** - Clear visualization of Reference vs Design differences
+- **Debugging capability** - Easy to spot where Reference calculations diverge
+- **Professional UX** - Matches user expectations from Design Mode experience
+
+#### **Pre-Production Refactor Priority**
+This enhancement should be implemented section-by-section before production:
+1. **Section 07** (Water Use) - Show Reference water calculations
+2. **Section 04** (Energy Totals) - Show Reference energy/emissions totals
+3. **Section 15** (TEUI Summary) - Show Reference TEUI calculations
+4. **Remaining sections** - As dual-engine architecture expands
+
+## 7. Testing and Validation
+
+## 5.1 Current Implementation Status (December 2024)
+
+### ✅ Completed Dual-Engine Sections:
+- **Section 01** (Key Values) - Dashboard display ✅ *Column E now displaying Reference values correctly*
+- **Section 04** (Energy & GHG) - Energy totals aggregation ✅ *Dual-engine working*
+- **Section 07** (Water Use) - First working dual-engine implementation ✅ *Full dual-engine complete*
+
+### Section 07 (Water Use) - Dual-Engine Implementation Details
+
+**Implementation Date:** 2025-01-XX  
+**Status:** ✅ **COMPLETE** - Gold Standard dual-engine architecture with specialized field behaviors
+
+#### **Key Requirements Implemented:**
+
+1. **Independent State Management for Reference and Target Modes**
+   - **d_49 (Water Use Method)**: Independently selectable in Reference Mode (PHPP, NBC, OBC, etc.)
+   - **e_49, e_50**: User-defined values independently editable in Reference Mode
+   - **d_53 (DWHR Efficiency)**: Independently selectable in Reference Mode
+
+2. **System Type Carry-Over (d_51)**
+   - **CRITICAL REQUIREMENT**: d_51 (DHW Energy Source) carries over from Target to Reference for system-to-system comparison
+   - **Implementation**: Reference calculations use `getAppFieldValue("d_51")` instead of `getRefFieldValue("d_51")`
+   - **Rationale**: Gas system in Design must be compared to Gas system in Reference, etc.
+
+3. **Reference Values Drive Efficiency Parameters**
+   - **Electric/Heatpump Systems**: Reference efficiency (d_52/e_52) comes from ReferenceValues.js (typically 90%)
+   - **Gas/Oil Systems**: Reference AFUE (k_52) comes from ReferenceValues.js (typically 92%)
+   - **Implementation**: `calculateReferenceHeatingSystem()` reads efficiency values from current reference standard
+
+4. **Dual Calculation Engines**
+   - **Reference Engine**: `calculateReferenceModel()` → uses Reference state + carried-over d_51
+   - **Target Engine**: `calculateTargetModel()` → uses Application state exclusively
+   - **Both engines run continuously** regardless of UI toggle state
+
+#### **Technical Implementation:**
+
+**AppendixE Field Behavior Configuration:**
+```javascript
+// Section 07 specific behaviors in 4011-AppendixE.js
+const section07IndependentFields = [
+    "d_49", // Water Use Method - independently selectable in Reference Mode
+    "e_49", // User Defined Water Use - editable when d_49 = "User Defined"
+    "e_50", // Engineer Water Use - editable when d_49 = "By Engineer"
+    "d_53", // DWHR Efficiency - independently selectable in Reference Mode
+    // Note: d_51 (DHW Energy Source) intentionally NOT in this list - it carries over
+    // Note: d_52/e_52/k_52 efficiency values driven by Reference Values, not user input
+];
+```
+
+**Reference Heating System Calculation:**
+```javascript
+function calculateReferenceHeatingSystem(hotWaterEnergyDemand_j50) {
+    // CRITICAL: d_51 carries over from Application State for system-to-system comparison
+    const systemType = getAppFieldValue("d_51"); // Use Application value, not Reference
+    
+    // Get efficiency values from Reference Values based on current standard
+    const currentStandard = getRefFieldValue("d_13");
+    const standardValues = window.TEUI.ReferenceValues[currentStandard];
+    
+    let efficiency = 0.9; // Default 90% for Electric/Heatpump
+    let afue = 0.9; // Default AFUE for Gas/Oil
+    
+    if (standardValues) {
+        if (standardValues.d_52) efficiency = parseFloat(standardValues.d_52) / 100;
+        if (standardValues.k_52) afue = parseFloat(standardValues.k_52);
+    }
+    
+    // Calculate using appropriate efficiency based on system type
+    let netThermalDemand_j_51 = 0;
+    if (systemType === "Heatpump" || systemType === "Electric") {
+        netThermalDemand_j_51 = efficiency !== 0 ? hotWaterEnergyDemand_j50 / efficiency : 0;
+    } else {
+        netThermalDemand_j_51 = afue !== 0 ? hotWaterEnergyDemand_j50 / afue : 0;
+    }
+    
+    // ... rest of calculation logic
+}
+```
+
+**StateManager Listener Configuration:**
+```javascript
+// SPECIAL: d_51 triggers BOTH engines since it carries over
+sm.addListener("d_51", () => {
+    calculateTargetModel(); // Update Target calculations
+    calculateReferenceModel(); // Update Reference calculations (efficiency values change)
+});
+
+// Reference State Listeners (trigger Reference Model Engine)
+sm.addListener("d_49", () => calculateReferenceModel(), "reference"); // Water use method in Reference
+sm.addListener("e_49", () => calculateReferenceModel(), "reference"); // User defined water use in Reference
+sm.addListener("e_50", () => calculateReferenceModel(), "reference"); // Engineer water use in Reference
+sm.addListener("d_53", () => calculateReferenceModel(), "reference"); // DWHR efficiency in Reference
+```
+
+**Change Detection for Infinite Loop Prevention:**
+```javascript
+function calculateTargetModel() {
+    const waterUseResults = calculateTargetWaterUse();
+    const heatingResults = calculateTargetHeatingSystem(waterUseResults.hotWaterEnergyDemand);
+    
+    // Add change detection to prevent infinite loops
+    const currentH49 = getAppNumericValue("h_49");
+    if (Math.abs(currentH49 - waterUseResults.litersPerPersonDay) > 0.01) {
+        setCalculatedValue("h_49", waterUseResults.litersPerPersonDay, 'number-2dp'); 
+    }
+    // ... similar change detection for other calculated values
+}
+```
+
+#### **Reference Values Integration:**
+
+**ReferenceValues.js Entries Added:**
+```javascript
+// Example for OBC SB12 3.1.1.2.C1 standard
+"OBC SB12 3.1.1.2.C1": {
+    "d_52": "90", // DWH System Efficiency when Electric 
+    "k_52": "92", // DWH AFUE when Gas (ADDED for S07 support)
+    "d_53": "42", // DWHR Efficiency if OBC
+    // ... other standard values
+}
+```
+
+**Key Addition**: Added `k_52` AFUE values to most standards in ReferenceValues.js to support Gas/Oil systems in Reference Mode.
+
+#### **Cross-Section Value Propagation:**
+
+**Reference Model Outputs:**
+```javascript
+// Store Reference calculated values for downstream sections
+window.TEUI.StateManager.setValue("ref_j_50", waterUseResults.hotWaterEnergyDemand.toString(), "calculated");
+window.TEUI.StateManager.setValue("ref_k_51", heatingResults.netDemandAfterRecovery.toString(), "calculated");
+window.TEUI.StateManager.setValue("ref_k_49", referenceEmissions.toString(), "calculated");
+
+// Store Reference efficiency values for display in Reference Mode
+if (systemType === "Heatpump" || systemType === "Electric") {
+    window.TEUI.StateManager.setReferenceValue("d_52", refEfficiencyPercent.toString());
+    window.TEUI.StateManager.setReferenceValue("e_52", heatingResults.efficiency.toString());
+} else if (systemType === "Gas" || systemType === "Oil") {
+    window.TEUI.StateManager.setReferenceValue("k_52", heatingResults.afue.toString());
+}
+```
+
+#### **Testing Results:**
+
+**Test File Created:** `test-s07-dual-engine.html`
+- **Mock StateManager**: Simulates dual-state architecture
+- **Interactive Testing**: Buttons to change system type, water method, toggle Reference Mode
+- **Validation Logic**: Checks that Reference efficiency values update when system type changes
+- **Success Criteria**: Reference AFUE updates for Gas/Oil, Reference efficiency updates for Electric/Heatpump
+
+#### **Architectural Significance:**
+
+Section 07 serves as the **Gold Standard implementation** for dual-engine architecture because it demonstrates:
+
+1. **Complex Field Behavior Rules**: Mix of carry-over (d_51), independent (d_49, d_53), and Reference Values-driven (d_52, k_52) fields
+2. **System-to-System Comparison Logic**: Ensures fair comparison between Reference and Target models using same system type
+3. **Reference Values Integration**: Shows how building code efficiency values override user inputs in Reference Mode
+4. **Cross-Section Dependencies**: Provides both Reference and Target DHW energy values for Section 04 consumption
+5. **Change Detection**: Prevents infinite calculation loops while maintaining responsive dual-engine calculations
+
+#### **Lessons Learned:**
+
+1. **Carry-Over Fields Critical**: Some fields (like d_51) must carry over for meaningful comparisons
+2. **Reference Values Override User Input**: In Reference Mode, code-based efficiency values take precedence
+3. **Change Detection Essential**: Prevents infinite loops when calculated values trigger StateManager listeners
+4. **Explicit State Getters Required**: `getAppFieldValue()` vs `getRefFieldValue()` must be used consistently
+5. **Both Engines Always Run**: UI toggle affects display only, not which calculations execute
+
+This implementation pattern is now being replicated across other sections in the dependency chain, with Section 07 serving as the proven reference architecture.
+- **Section 09** (Internal Gains) - Reference indicators with 100% fallback ✅
+- **Section 10** (Radiant Gains) - Gain factors display, minimal reference comparisons ✅
+- **Section 11** (Transmission Losses) - Full reference comparisons for envelope components ✅
+- **Section 12** (Volume & Surface) - Reference indicators for WWR and ACH50 ✅
+- **Section 13** (Mechanical Loads) - Reference indicators for equipment efficiencies ✅
+- **Section 14** (TEDI) - Reference indicator for TEDI target, stores ref_ values ✅
+- **Section 15** (TEUI) - Final energy totals, stores key ref_d_136 and ref_h_136 ✅
+
+### ❌ Skipped Sections (per user guidance):
+- Section 03 (Climate) - No dual-engine needed, both models use same data
+- Section 05 (Embodied Carbon) - Internal references only
+- Section 06 (Renewables) - No code requirements yet
+- Section 08 (IAQ) - Internal references only
+- Section 16 (Sankey) - Leave for future update
+
+### 🔧 Implementation Status:
+- **~85% Complete** on dual-engine implementation across critical sections
+- **Complete calculation chain**: S09→S10→S11→S12→S13→S14→S15→S04→S01
+- Reference values properly stored with ref_ prefix pattern
+- Missing T-cell reference values handled gracefully (N/A or 100%)
+- **Key architectural goal achieved**: Column E ALWAYS shows Reference calculations, Column H ALWAYS shows Target calculations
+
+### ✅ Core Requirements Met:
+
+**Column E (Reference Results) - WORKING:**
+- **Data Source**: Uses Reference state inputs via `getReferenceValue()`
+- **Display**: Shows Reference-calculated results from Reference engine
+- **Independence**: Shows Reference results regardless of UI toggle state
+- **Example**: Section 01 `e_10` correctly shows Reference TEUI (~179+ kWh/m²/yr)
+
+**Column H (Target/Application Results) - WORKING:**
+- **Data Source**: Uses Application state inputs via `getApplicationValue()`
+- **Display**: Shows Application-calculated results from Target engine  
+- **Independence**: Shows Application results regardless of UI toggle state
+- **Example**: Section 01 `h_10` correctly shows Target TEUI (~93-103 kWh/m²/yr)
+
+**Reference Toggle - WORKING:**
+- **Purpose**: UI inspection tool for Reference input values
+- **Scope**: Affects input field display only, not calculation results
+- **Behind scenes**: Both calculation engines continue running independently
+
+### ✅ Recent Achievements:
+1. **Dual calculation engines running continuously** across all sections in dependency chain
+2. **Cross-section value propagation working** (S15→S04→S01 with ref_ prefixed values)
+3. **Column E/H display behavior correct** - always shows respective engine results
+4. **Reference Mode toggle working** as inspection tool without affecting calculations
+5. **Logging successfully traced value flow** through the dependency chain
+
+### 🧹 Cleanup Tasks:
+1. **Remove excessive [DUAL-DISPLAY] and [DEBUG-S01] logging** - cluttering console
+2. **Optimize calculation timing** - remove redundant calculation triggers
+3. **Final testing** with different reference standards
+4. **Document T-cell value additions** needed for complete reference comparisons
+
+### Known Issues (Minor):
+1. **Reference percentages don't update when d_13 changes** - requires page refresh (low priority)
+2. **Initial load shows zeros briefly** - timing issue, values settle after 1-2 seconds (cosmetic)
+3. **Some T-cell values missing** - gracefully handled with N/A or 100% display
+
+### Success Metrics Achieved:
+- ✅ Reference TEUI (Column E) > Target TEUI (Column H) as expected (code baseline vs efficient design)
+- ✅ Both engines run continuously regardless of Reference Mode toggle
+- ✅ Cross-section dependencies working in proper sequence (S15→S04→S01)
+- ✅ Values consistent across page refreshes and mode switching
+- ✅ CSV export format ready for dual-engine state capture
+
+## 6. Dependency Chain Analysis & Implementation Strategy

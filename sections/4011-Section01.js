@@ -211,15 +211,22 @@ window.TEUI.SectionModules.sect01 = (function() {
         
         try {
             // CRITICAL: Get Reference TEUI from Section 15 (final Reference calculation)
-            const refTEUIFromS15 = window.TEUI.StateManager?.getApplicationValue('ref_h_136');
-            const refJ32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_j_32');
-            const refK32FromS04 = window.TEUI.StateManager?.getApplicationValue('ref_k_32');
+            const refTEUIFromS15 = window.TEUI.StateManager?.getValue('ref_h_136');
+            const refJ32FromS04 = window.TEUI.StateManager?.getValue('ref_j_32');
+            const refK32FromS04 = window.TEUI.StateManager?.getValue('ref_k_32');
+            
+            // Debug logging (reduced frequency)
+            if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
+                console.log('[S01-REF-ENGINE] Reference calculation data flow:');
+                console.log(`  refTEUIFromS15: ${refTEUIFromS15}`);
+                console.log(`  refJ32FromS04: ${refJ32FromS04}`);
+                console.log(`  refK32FromS04: ${refK32FromS04}`);
+            }
             
             // Use Section 15's Reference TEUI if available, otherwise calculate from Section 04 values
             let referenceTEUI = 0;
             if (refTEUIFromS15 !== null && refTEUIFromS15 !== undefined) {
                 referenceTEUI = parseFloat(refTEUIFromS15);
-                console.log('[S01-REF-ENGINE] Using Reference TEUI from S15:', referenceTEUI.toFixed(2));
             } else {
                 // Fallback: Calculate from Section 04 Reference values
                 const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
@@ -230,7 +237,6 @@ window.TEUI.SectionModules.sect01 = (function() {
                 if (refArea > 0) {
                     referenceTEUI = Math.round((refTargetEnergy / refArea) * 10) / 10;
                 }
-                console.log('[S01-REF-ENGINE] Calculated Reference TEUI from S04 values:', referenceTEUI.toFixed(2));
             }
             
             // Calculate Reference Annual Carbon from Section 04 Reference emissions
@@ -266,15 +272,12 @@ window.TEUI.SectionModules.sect01 = (function() {
                 
                 if (currentRefTEUI !== newRefTEUI) {
                     window.TEUI.StateManager.setValue('ref_e_10', newRefTEUI, 'calculated');
-                    console.log('[S01-REF-ENGINE] Updated ref_e_10:', newRefTEUI);
                 }
                 if (currentRefAnnual !== newRefAnnual) {
                     window.TEUI.StateManager.setValue('ref_d_8', newRefAnnual, 'calculated');
-                    console.log('[S01-REF-ENGINE] Updated ref_d_8:', newRefAnnual);
                 }
                 if (currentRefLifetime !== newRefLifetime) {
                     window.TEUI.StateManager.setValue('ref_d_6', newRefLifetime, 'calculated');
-                    console.log('[S01-REF-ENGINE] Updated ref_d_6:', newRefLifetime);
                 }
                 
                 // CRITICAL: Store the final Reference values in display fields (d_6, d_8, e_10)
@@ -285,17 +288,31 @@ window.TEUI.SectionModules.sect01 = (function() {
                 
                 if (currentE10 !== newRefTEUI) {
                     window.TEUI.StateManager.setValue('e_10', newRefTEUI, 'calculated');
-                    console.log('[S01-REF-ENGINE] Updated e_10 (display value):', newRefTEUI);
                 }
                 if (currentD8 !== newRefAnnual) {
                     window.TEUI.StateManager.setValue('d_8', newRefAnnual, 'calculated');
-                    console.log('[S01-REF-ENGINE] Updated d_8 (display value):', newRefAnnual);
                 }
                 if (currentD6 !== newRefLifetime) {
                     window.TEUI.StateManager.setValue('d_6', newRefLifetime, 'calculated');
-                    console.log('[S01-REF-ENGINE] Updated d_6 (display value):', newRefLifetime);
                 }
             }
+
+            // Store all Reference values with ref_ prefix
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toString(), 'calculated');
+            }
+            
+            // Debug logging (reduced frequency)
+            if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
+                console.log('[S01-REF-ENGINE] Final Reference values stored:', {
+                    ref_e_10: `${referenceTEUI} kWh/m²/yr`,
+                    ref_d_8: `${referenceAnnualCarbon} kgCO2e/m²/yr`,
+                    ref_d_6: `${referenceLifetimeCarbon} kgCO2e/m²/Service Life`
+                });
+            }
+            
         } finally {
             referenceCalculationInProgress = false;
         }
@@ -498,7 +515,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         const element = document.querySelector(`[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`);
         if (!element) return;
 
-        const fieldsToAnimate = ["h_10", "k_10"]; 
+        const fieldsToAnimate = ["h_10", "k_10", "e_10"]; 
 
         if (fieldsToAnimate.includes(fieldId)) {
             const startValue = getCurrentNumericValue(element); 
@@ -521,6 +538,15 @@ window.TEUI.SectionModules.sect01 = (function() {
                         const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
                         const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                         element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${formattedValue}`;
+                    } else if (fieldId === "e_10") {
+                        // Reference TEUI with tier1 indicator
+                        const numericSpan = element.querySelector('.numeric-value');
+                        if (numericSpan) {
+                            numericSpan.textContent = formattedValue;
+                        } else {
+                            element.innerHTML = `<span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">${formattedValue}</span>`;
+                        }
+                        element.classList.add('ref-value');
                     } else { 
                         element.textContent = formattedValue;
                     }
@@ -533,6 +559,15 @@ window.TEUI.SectionModules.sect01 = (function() {
                              const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
                             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                             element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${finalFormattedValue}`;
+                        } else if (fieldId === "e_10") {
+                            // Final Reference TEUI with tier1 indicator
+                            const numericSpan = element.querySelector('.numeric-value');
+                            if (numericSpan) {
+                                numericSpan.textContent = finalFormattedValue;
+                            } else {
+                                element.innerHTML = `<span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">${finalFormattedValue}</span>`;
+                            }
+                            element.classList.add('ref-value');
                         } else {
                             element.textContent = finalFormattedValue;
                         }
@@ -616,11 +651,11 @@ window.TEUI.SectionModules.sect01 = (function() {
         const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
         const isUtilityMode = useType === "Utility Bills";
 
-        // SIMPLIFIED APPROACH: Always display direct field values in Column E
-        // These are the Reference Model calculations stored by calculateReferenceModel()
-        const d6RefValue = window.TEUI.StateManager?.getApplicationValue("d_6") || "24.4";
-        const d8RefValue = window.TEUI.StateManager?.getApplicationValue("d_8") || "17.4";
-        const e10RefValue = window.TEUI.StateManager?.getApplicationValue("e_10") || "341.2";
+        // MIRROR TARGET/APPLICATION PATTERN: Use Reference values for Column E display
+        // Get the actual Reference values calculated by calculateReferenceModel()
+        const d6RefValue = window.TEUI.StateManager?.getValue("ref_d_6") || "24.4";
+        const d8RefValue = window.TEUI.StateManager?.getValue("ref_d_8") || "17.4";
+        const e10RefValue = window.TEUI.StateManager?.getValue("ref_e_10") || "341.2";
         
         updateDisplayValue('d_6', d6RefValue);
         updateDisplayValue('d_8', d8RefValue);

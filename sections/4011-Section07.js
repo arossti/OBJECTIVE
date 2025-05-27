@@ -885,11 +885,19 @@ window.TEUI.SectionModules.sect07 = (function() {
      * NEW: Calculate Exhaust Losses (j_54)
      * Formula: =IF(D51="Gas", (J52-(J52*D52)), IF(D51="Oil", (J52-(J52*D52)), 0))
      * Where D52 is efficiency FACTOR (0.0-1.0)
+     * MODE-AWARE: Uses Reference state values when in Reference Mode
      */
     function calculateJ54() {
-        const systemType = getFieldValue("d_51");
-        const netDemand_j52 = getNumericValue("j_52");
-        const efficiency_d52 = getNumericValue("e_52"); // Use COP/Efficiency Factor from e_52
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        // Get values from appropriate state based on current mode
+        const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
+        const netDemand_j52 = isReferenceMode ? 
+            parseFloat(getRefFieldValue("j_52")) || 0 : 
+            getNumericValue("j_52");
+        const efficiency_d52 = isReferenceMode ? 
+            parseFloat(getRefFieldValue("e_52")) || 0 : 
+            getNumericValue("e_52");
         
         let exhaustLosses = 0;
         if (systemType === "Gas" || systemType === "Oil") {
@@ -902,20 +910,38 @@ window.TEUI.SectionModules.sect07 = (function() {
     /**
      * CORRECTED: Calculate Oil Demand Litres (k_54) 
      * Formula: =IF(D51="Oil", ((J52*(1-D53))/(36.72*0.2777778)/K52), 0)
+     * MODE-AWARE: Uses Reference state values when in Reference Mode
      */
     function calculateK54() {
-        const systemType = getFieldValue("d_51");
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        // Get values from appropriate state based on current mode
+        const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
         
         let oilVolume = 0;
         if (systemType === "Oil") {
-            const afue = getNumericValue("k_52", 0.9); // Use AFUE from k_52
-            const recoveryPercent = getNumericValue("d_53") / 100; // Get d_53 as decimal
-            const netDemandAfterRecovery_j52 = getNumericValue("j_52"); // Use j_52 as confirmed
+            // Get values from appropriate state
+            const afue = isReferenceMode ? 
+                parseFloat(getRefFieldValue("k_52")) || 0.9 : 
+                getNumericValue("k_52", 0.9);
+            const recoveryPercent = isReferenceMode ? 
+                (parseFloat(getRefFieldValue("d_53")) || 0) / 100 : 
+                getNumericValue("d_53") / 100;
+            const netDemandAfterRecovery_j52 = isReferenceMode ? 
+                parseFloat(getRefFieldValue("j_52")) || 0 : 
+                getNumericValue("j_52");
             
             // Apply Excel formula exactly: ((J52*(1-D53))/(36.72*0.2777778)/K52)
             const conversionFactor = 36.72 * 0.2777778; // kWh per liter of oil
             const adjustedDemand = netDemandAfterRecovery_j52 * (1 - recoveryPercent);
             oilVolume = (adjustedDemand / conversionFactor) / afue;
+            
+            if (isReferenceMode) {
+                console.log('[S07-REF-K54] Oil volume calculation:', {
+                    systemType, afue, recoveryPercent, netDemandAfterRecovery_j52, 
+                    adjustedDemand, oilVolume: oilVolume.toFixed(2)
+                });
+            }
         }
         return oilVolume;
     }
@@ -991,7 +1017,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 console.error('[S07-REF-ENGINE] Reference Mode calculation failed:', error);
             }
         } else {
-            // In Design Mode - calculate application state (normal operation)
+            // In Application Mode - calculate Application values only
             const waterUseResults = calculateWaterUse();
             const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
             
@@ -1063,6 +1089,13 @@ window.TEUI.SectionModules.sect07 = (function() {
             window.TEUI.StateManager.addListener("d_63", calculateAll); // Occupancy
             window.TEUI.StateManager.addListener("k_52", calculateAll); // AFUE changes
             window.TEUI.StateManager.addListener("d_13", handleReferenceStandardChange); // Reference standard changes
+            
+            // CRITICAL: Listen for d_51 (system type) changes
+            // This ensures Reference Mode efficiency values update when system type changes
+            window.TEUI.StateManager.addListener("d_51", () => {
+                console.log('[S07] System type (d_51) changed, triggering recalculation');
+                calculateAll(); // This will update both Application and Reference calculations
+            });
         }
     }
     
