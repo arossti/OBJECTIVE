@@ -789,11 +789,12 @@ window.TEUI.SectionModules.sect15 = (function() {
     /**
      * REFERENCE MODEL ENGINE: Calculate all values using Reference state
      * Stores results with ref_ prefix to keep separate from Target values
+     * ENHANCED: Now properly receives Reference values from Section 04
      */
     function calculateReferenceModel() {
         
         try {
-            // Get Reference values from upstream sections
+            // Helper function to get Reference values with proper fallback
             const getRefValue = (fieldId) => {
                 const refFieldId = `ref_${fieldId}`;
                 let value = window.TEUI?.StateManager?.getValue(refFieldId) || 
@@ -807,7 +808,18 @@ window.TEUI.SectionModules.sect15 = (function() {
                 return typeof value === 'number' ? value : 0;
             };
             
-            // Get all Reference dependencies
+            // Helper function to set Reference values only if changed (Section 07 Gold Standard)
+            const setRefValueIfChanged = (fieldId, newValue) => {
+                const currentValue = window.TEUI?.StateManager?.getValue(fieldId);
+                const newValueStr = newValue.toString();
+                if (currentValue !== newValueStr) {
+                    window.TEUI.StateManager.setValue(fieldId, newValueStr, 'calculated');
+                    return true;
+                }
+                return false;
+            };
+            
+            // Get Reference values from upstream sections
             const area = getRefValue('h_15');
             const elecPrice = getRefValue('l_12');
             const gasPrice = getRefValue('l_13');
@@ -815,6 +827,11 @@ window.TEUI.SectionModules.sect15 = (function() {
             const oilPrice = getRefValue('l_16');
             const woodPrice = getRefValue('l_15');
 
+            // CRITICAL: Get Reference values from Section 04 (j_32, k_32)
+            const ref_j32 = getRefValue('j_32'); // Reference Total Energy from S04
+            const ref_k32 = getRefValue('k_32'); // Reference Total Emissions from S04
+            
+            // Get other Reference dependencies
             const m43 = getRefValue('m_43');
             const k51 = getRefValue('k_51');
             const h70 = getRefValue('h_70');
@@ -855,9 +872,6 @@ window.TEUI.SectionModules.sect15 = (function() {
             const actualTEUI_k10 = getRefValue('k_10');
             const reportingMode_d14 = window.TEUI?.StateManager?.getReferenceValue('d_14') || 'Targeted Use';
             
-            const targetEmissions_k32 = getRefValue('k_32');
-            const referenceEmissions_REF_k32 = getRefValue('reference_k_32') || 0;
-
             const coolingType_d116 = window.TEUI?.StateManager?.getReferenceValue('d_116') || 'Heatpump';
 
             // Calculate Reference values
@@ -867,15 +881,15 @@ window.TEUI.SectionModules.sect15 = (function() {
                 d117_effective = 0;
             }
 
-            // d_135: TEU Targeted Electricity
+            // d_135: TEU Targeted Electricity (Reference)
             let ref_teuTargetTotal = m43 + k51 + h70 + d117_effective + i104 + m121 - i80;
-            window.TEUI?.StateManager?.setValue('ref_d_135', ref_teuTargetTotal.toString(), 'calculated');
+            setRefValueIfChanged('ref_d_135', ref_teuTargetTotal);
 
-            // h_135: TEUI
+            // h_135: TEUI (Reference)
             let ref_teui_h135 = area > 0 ? ref_teuTargetTotal / area : 0;
-            window.TEUI?.StateManager?.setValue('ref_h_135', ref_teui_h135.toString(), 'calculated');
+            setRefValueIfChanged('ref_h_135', ref_teui_h135);
 
-            // d_136: TEU Targeted Electricity if HP/Gas/Oil Bldg
+            // d_136: TEU Targeted Electricity if HP/Gas/Oil Bldg (Reference)
             let ref_teuTargetedElecHPGasOil;
             if (primaryHeating === 'Electricity') {
                 ref_teuTargetedElecHPGasOil = ref_teuTargetTotal;
@@ -884,13 +898,104 @@ window.TEUI.SectionModules.sect15 = (function() {
             } else {
                 ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
             }
-            window.TEUI?.StateManager?.setValue('ref_d_136', ref_teuTargetedElecHPGasOil.toString(), 'calculated');
+            setRefValueIfChanged('ref_d_136', ref_teuTargetedElecHPGasOil);
 
-            // h_136: TEUI (HP/Gas/Oil)
+            // h_136: TEUI (HP/Gas/Oil) (Reference)
             let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
-            window.TEUI?.StateManager?.setValue('ref_h_136', ref_teui_h136.toString(), 'calculated');
+            setRefValueIfChanged('ref_h_136', ref_teui_h136);
             
-            // Continue with all other Reference calculations...
+            // Calculate all other Reference values using the same pattern...
+            
+            // d_137: Peak Heating Load (Reference)
+            let ref_peakHeatingLoad_d137 = ((g101 * d101) + (d102 * g102)) * (h23 - d23) / 1000;
+            setRefValueIfChanged('ref_d_137', ref_peakHeatingLoad_d137);
+
+            // l_137: Peak Heating BTU (Reference)
+            let ref_peakHeatingBTU_l137 = ref_peakHeatingLoad_d137 * 3412.14245;
+            setRefValueIfChanged('ref_l_137', ref_peakHeatingBTU_l137);
+
+            // d_138: Peak Cooling Load (Reference)
+            let ref_peakCoolingLoad_d138 = ((g101 * d101) + (d102 * g102)) * (d24 - h24) / 1000;
+            setRefValueIfChanged('ref_d_138', ref_peakCoolingLoad_d138);
+            
+            // h_138: Peak Cooling Tons (Reference)
+            let ref_peakCoolingTons_h138 = ref_peakCoolingLoad_d138 * 0.2843451361;
+            setRefValueIfChanged('ref_h_138', ref_peakCoolingTons_h138);
+            
+            // l_138: Peak Cooling BTU (Reference)
+            let ref_peakCoolingBTU_l138 = ref_peakCoolingLoad_d138 * 3412.14245;
+            setRefValueIfChanged('ref_l_138', ref_peakCoolingBTU_l138);
+
+            // d_139: Peak Cooling Load with Gains (Reference)
+            let ref_enclosureCoolLoad = ((g101 * d101) + (d102 * g102)) * (d24 - h24);
+            let ref_internalGainsW = (d65 + d66 + d67) * area;
+            let ref_solarVentOccGains = k79 + d122 + k64 - h124;
+            let ref_peakCoolingLoadGains_d139 = (ref_enclosureCoolLoad + ref_internalGainsW) / 1000;
+            if (m19_days > 0) {
+                ref_peakCoolingLoadGains_d139 += (ref_solarVentOccGains / (m19_days * 24));
+            }
+            setRefValueIfChanged('ref_d_139', ref_peakCoolingLoadGains_d139);
+            
+            // h_139: Peak Cooling Tons with Gains (Reference)
+            let ref_peakCoolingTonsGains_h139 = ref_peakCoolingLoadGains_d139 * 0.2843451361;
+            setRefValueIfChanged('ref_h_139', ref_peakCoolingTonsGains_h139);
+            
+            // l_139: Peak Cooling BTU with Gains (Reference)
+            let ref_peakCoolingBTUGains_l139 = ref_peakCoolingLoadGains_d139 * 3412.14245;
+            setRefValueIfChanged('ref_l_139', ref_peakCoolingBTUGains_l139);
+            
+            // d_140: Max Heating Intensity (Reference)
+            let ref_maxHeatingIntensity_d140 = area > 0 ? (ref_peakHeatingLoad_d137 * 1000 / area) : 0;
+            setRefValueIfChanged('ref_d_140', ref_maxHeatingIntensity_d140);
+            
+            // h_140: Max Cooling Intensity (Reference)
+            let ref_maxCoolingIntensity_h140 = area > 0 ? (ref_peakCoolingLoad_d138 * 1000 / area) : 0;
+            setRefValueIfChanged('ref_h_140', ref_maxCoolingIntensity_h140);
+            
+            // d_141: Annual Cost of Electricity (Reference)
+            let ref_annualCostElecPre_d141 = ref_teuTargetTotal * elecPrice;
+            setRefValueIfChanged('ref_d_141', ref_annualCostElecPre_d141);
+            
+            // h_141: Annual Cost of Electricity Post HP (Reference)
+            let ref_annualCostElecPost_h141 = ref_teuTargetedElecHPGasOil * elecPrice;
+            setRefValueIfChanged('ref_h_141', ref_annualCostElecPost_h141);
+            
+            // l_141: Other Energy Cost (Reference)
+            let ref_otherEnergyCost_l141 = (gasPrice * d28) + (propanePrice * d29) + (woodPrice * d31) + (oilPrice * d30_litres);
+            setRefValueIfChanged('ref_l_141', ref_otherEnergyCost_l141);
+            
+            // h_142: ROI (Reference)
+            let ref_roi_h142 = 0;
+            let ref_costSavings = ref_annualCostElecPre_d141 - ref_annualCostElecPost_h141;
+            if (primaryHeating === 'Heatpump' && ref_costSavings > 0) {
+                ref_roi_h142 = hpCostPremium / ref_costSavings;
+            }
+            setRefValueIfChanged('ref_h_142', ref_roi_h142);
+            
+            // CRITICAL: Store Reference TEUI values for Section 01 consumption
+            // These are the final Reference values that Section 01 needs for e_10 calculation
+            setRefValueIfChanged('ref_d_143', refTEUI_e10); // Reference TEUI
+            setRefValueIfChanged('ref_h_143', targetTEUI_h10); // Target TEUI
+            
+            // Calculate Reference percentage reductions
+            let ref_teuiReduction_d144 = (refTEUI_e10 > 0) ? (1 - (targetTEUI_h10 / refTEUI_e10)) : 0;
+            setRefValueIfChanged('ref_d_144', ref_teuiReduction_d144);
+            
+            // GHG Reduction using Reference emissions from Section 04
+            let ref_ghgReduction_d145 = (ref_k32 > 0) ? (1 - (ref_k32 / ref_k32)) : 0; // This will be 0 for Reference vs Reference
+            setRefValueIfChanged('ref_d_145', ref_ghgReduction_d145);
+            
+            // Debug logging (reduced frequency)
+            if (Math.random() < 0.1) {
+                console.log('[S15-REF-ENGINE] Reference calculations completed:', {
+                    ref_d_135: ref_teuTargetTotal.toFixed(2),
+                    ref_h_135: ref_teui_h135.toFixed(2),
+                    ref_d_136: ref_teuTargetedElecHPGasOil.toFixed(2),
+                    ref_h_136: ref_teui_h136.toFixed(2),
+                    ref_j32_from_S04: ref_j32.toFixed(2),
+                    ref_k32_from_S04: ref_k32.toFixed(2)
+                });
+            }
             
         } catch (error) {
             console.error("[Section15] Error in Reference Model calculations:", error);
@@ -1200,6 +1305,18 @@ window.TEUI.SectionModules.sect15 = (function() {
             'l_13', 'd_28', 'd_29', 'l_14', 'l_15', 'd_31', 'l_16', 'd_30', 'd_142', 'e_10', 
             'h_10', 'k_10', 'd_14', 'k_32', 'reference_k_32' // Include placeholder reference
         ];
+        
+        // CRITICAL: Add listeners for Section 04 Reference values
+        // These trigger Section 15 Reference Model recalculation when S04 Reference values change
+        sm.addListener('ref_j_32', () => {
+            console.log('[S15] ref_j_32 changed, triggering Reference Model recalculation');
+            calculateReferenceModel();
+        });
+        
+        sm.addListener('ref_k_32', () => {
+            console.log('[S15] ref_k_32 changed, triggering Reference Model recalculation');
+            calculateReferenceModel();
+        });
         
         // Remove duplicates
         const uniqueDependencies = [...new Set(dependencies)];

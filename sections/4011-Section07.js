@@ -174,6 +174,7 @@ window.TEUI.SectionModules.sect07 = (function() {
          if (isReferenceMode) {
              // In Reference Mode - ONLY store with ref_ prefix, NEVER update main fields
              if (window.TEUI?.StateManager?.setValue) {
+                 console.log(`[S07-REF-STORE] Storing ref_${fieldId}:`, rawValue.toString());
                  window.TEUI.StateManager.setValue(`ref_${fieldId}`, rawValue.toString(), "calculated");
              }
              // DO NOT update the main fieldId - this prevents contamination of Application State
@@ -965,17 +966,29 @@ window.TEUI.SectionModules.sect07 = (function() {
         const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
         
         if (isReferenceMode) {
-            // In Reference Mode - only calculate reference values with ref_ prefix
-            if (typeof calculateWaterUseForMode === 'function') {
-                try {
-                    const refWaterResults = calculateWaterUseForMode('reference');
-                    // Note: calculateWaterUseForMode handles storing values with ref_ prefix
-                    console.log('[Section07] Reference Mode calculation completed');
-                } catch (error) {
-                    console.warn('Reference Mode calculation failed:', error);
-                }
-            } else {
-                console.warn('[Section07] Reference Mode calculation not available');
+            // In Reference Mode - calculate complete reference values with ref_ prefix
+            console.log('[S07-REF-ENGINE] Starting Reference Mode calculations');
+            try {
+                const refWaterResults = calculateWaterUseForMode('reference');
+                console.log('[S07-REF-ENGINE] Water use calculated:', refWaterResults);
+                
+                // CRITICAL: Also calculate heating system in Reference Mode
+                const refHeatingResults = calculateHeatingSystem(refWaterResults.hotWaterEnergyDemand);
+                console.log('[S07-REF-ENGINE] Heating system calculated:', refHeatingResults);
+                
+                // Calculate the row 54 values AFTER heating system calculations
+                const j54Value = calculateJ54();
+                setDualEngineValue("j_54", j54Value, 'number-2dp-comma');
+                const k54Value = calculateK54();
+                setDualEngineValue("k_54", k54Value, 'number-2dp-comma');
+                console.log('[S07-REF-ENGINE] Row 54 values - j_54:', j54Value, 'k_54:', k54Value);
+                
+                // Calculate DHW emissions
+                calculateDHWEmissions();
+                
+                console.log('[S07-REF-ENGINE] Reference Mode calculation completed');
+            } catch (error) {
+                console.error('[S07-REF-ENGINE] Reference Mode calculation failed:', error);
             }
         } else {
             // In Design Mode - calculate application state (normal operation)
