@@ -764,9 +764,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             // CRITICAL: Listener for h_12 changes in Reference Mode
             // This ensures Reference grid intensity updates when Reference reporting year changes
             sm.addListener('h_12', () => {
+                console.log('[S04-H12-LISTENER] h_12 changed, updating grid intensity and Reference Model');
                 // Update both Application and Reference grid intensities
                 updateElectricityEmissionFactor();
                 // Trigger Reference Model recalculation to use new Reference grid intensity
+                console.log('[S04-H12-LISTENER] Triggering Reference Model recalculation after grid intensity update');
                 calculateReferenceModel();
             });
             
@@ -896,7 +898,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 // console.log(`[S04] Reference Mode UI updated: l_27=${factor}, g_27=${ref_g27.toFixed(2)}, k_27=${ref_k27.toFixed(2)}`);
             }
             
-            // console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+            console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
         } else {
             // Update the application l_27 field
             setCalculatedValue('l_27', factor, 'integer');
@@ -911,7 +913,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
         
         updateSubtotals(); 
-            // console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+            console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
         }
     }
 
@@ -1664,6 +1666,16 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_k30 = (ref_h30 * l30) / 1000;
         const ref_k31 = ref_h31 * l31;
         
+        // CRITICAL DEBUG: Log Reference emissions calculation
+        console.log('[S04-REF-EMISSIONS] Reference emissions calculation:');
+        console.log(`  ref_l27 (Reference grid intensity): ${ref_l27} gCO2e/kWh`);
+        console.log(`  ref_j27 (Reference electricity): ${ref_j27} kWh/yr`);
+        console.log(`  ref_k27 (Reference electricity emissions): ${ref_k27} kgCO2e/yr`);
+        console.log(`  ref_k28 (Gas emissions): ${ref_k28} kgCO2e/yr`);
+        console.log(`  ref_k29 (Propane emissions): ${ref_k29} kgCO2e/yr`);
+        console.log(`  ref_k30 (Oil emissions): ${ref_k30} kgCO2e/yr`);
+        console.log(`  ref_k31 (Wood emissions): ${ref_k31} kgCO2e/yr`);
+        
 
         
 
@@ -1671,6 +1683,12 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Calculate Reference subtotals
         const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
         const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
+        
+        // CRITICAL DEBUG: Log Reference subtotals
+        console.log('[S04-REF-SUBTOTALS] Reference subtotals calculation:');
+        console.log(`  ref_j32 (Reference energy total): ${ref_j32} kWh/yr`);
+        console.log(`  ref_k32 (Reference emissions total): ${ref_k32} kgCO2e/yr`);
+        console.log(`  d60 (Offsets): ${d60} tCO2e/yr`);
         
 
         
@@ -1728,8 +1746,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         // This is essentially the existing calculateAll logic
         // but reorganized to be explicit about being the Target model
         
-        // Update electricity emission factor first
-        updateElectricityEmissionFactor();
+        // NOTE: updateElectricityEmissionFactor() is called separately by h_12 listener
+        // Don't call it here to avoid overwriting Reference grid intensity
 
         // Calculate all row 27-31 actuals (F and G columns)
         setCalculatedValue('f_27', calculateF27(), 'number-2dp-comma');

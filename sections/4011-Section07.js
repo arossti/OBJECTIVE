@@ -134,7 +134,7 @@ window.TEUI.SectionModules.sect07 = (function() {
              if (currentStateValue !== valueToStore) {
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
                 // Trigger dependent calculations if this field is a dependency for others
-                calculateAll(); // Recalculate section on change
+                 calculateAll(); // Recalculate section on change
             }
         }
     }
@@ -379,7 +379,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                     section: "waterUse",
                     dependencies: ["d_51", "k_54", "l_30", "e_51", "l_28"]
                 },
-                l: { content: "kgCO2e/yr", classes: ["text-left"] },
+                l: { content: "kgCO2e/yr", classes: ["text-left"] }, 
                 m: { content: "✓", classes: ["checkmark"] },
                 n: {
                     fieldId: "n_49",
@@ -962,7 +962,7 @@ window.TEUI.SectionModules.sect07 = (function() {
                 });
             }
         }
-        return oilVolume;
+        return oilVolume; 
     }
 
     /**
@@ -981,8 +981,12 @@ window.TEUI.SectionModules.sect07 = (function() {
         
         // Get values from appropriate state based on mode
         const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
-        const oilVolume = isReferenceMode ? getRefNumericValue("k_54") : getNumericValue("k_54");
-        const gasVolume = isReferenceMode ? getRefNumericValue("e_51") : getNumericValue("e_51");
+        const oilVolume = isReferenceMode ? 
+            parseFloat(getRefFieldValue("k_54")) || 0 : 
+            getNumericValue("k_54");
+        const gasVolume = isReferenceMode ? 
+            parseFloat(getRefFieldValue("e_51")) || 0 : 
+            getNumericValue("e_51");
         
         // Emission factors are in g/unit from FORMULAE-3039.csv (L28, L30)
         // StateManager fields l_28 and l_30 are expected to hold these gram values.
@@ -1182,7 +1186,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         if(g54Cell) g54Cell.classList.toggle('disabled-input', !isOil);
         const l54LabelCell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(12)'); 
         if(l54LabelCell) l54LabelCell.classList.toggle('disabled-input', !isOil);
-
+        
         setFieldGhosted('k_54', !isOil); 
         const h54Cell = document.querySelector('.data-table tr[data-id="W.6.1"] td:nth-child(8)'); 
         if(h54Cell) h54Cell.classList.toggle('disabled-input', !isOil);
@@ -1328,8 +1332,8 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (!standardData) {
             console.warn(`[Section07] No data found for standard: ${newStandardKey}`);
             return;
-        }
-        
+    }
+
         // Update reference defaults (clear the deck as requested)
         const section07Fields = ['d_52', 'k_52', 'd_53'];
         section07Fields.forEach(fieldId => {
