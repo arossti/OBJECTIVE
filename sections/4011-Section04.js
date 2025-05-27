@@ -22,10 +22,10 @@ window.TEUI.SectionModules.sect04 = (function() {
      * @param {string} fieldId - The ID of the field to retrieve the value for.
      * @returns {number} The parsed numeric value, or 0 if parsing fails.
      */
-    function getNumericValue(fieldId) {
+    function getNumericValue(fieldId, defaultValue = 0) {
         const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
         // Use the global parseNumeric if available
-        return window.TEUI?.parseNumeric?.(rawValue) || 0;
+        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) || defaultValue;
     }
     
     /**
@@ -1553,7 +1553,9 @@ window.TEUI.SectionModules.sect04 = (function() {
     function getAppNumericValue(fieldId, defaultValue = 0) {
         const value = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
                      window.TEUI?.StateManager?.getValue?.(fieldId);
-        return parseFloat(value) || defaultValue;
+        
+        // Use the global parseNumeric function to handle comma-formatted values
+        return window.TEUI?.parseNumeric?.(value, defaultValue) || defaultValue;
     }
     
     /**
@@ -1571,7 +1573,8 @@ window.TEUI.SectionModules.sect04 = (function() {
                    window.TEUI?.StateManager?.getValue?.(fieldId);
         }
         
-        return parseFloat(value) || defaultValue;
+        // Use the global parseNumeric function to handle comma-formatted values
+        return window.TEUI?.parseNumeric?.(value, defaultValue) || defaultValue;
     }
     
     /**
@@ -1590,6 +1593,16 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_e51 = getRefNumericValue('e_51', 0); // Reference Gas volume from S07
         const ref_k54 = getRefNumericValue('k_54', 0); // Reference Oil volume from S07
         
+        // CRITICAL DEBUG: Log Reference oil values from S07
+        if (ref_k54 > 0) {
+            console.log('[S04-REF-TRACE] Reference oil values from S07:');
+            console.log(`  ref_k54 (Oil volume): ${ref_k54} litres/yr`);
+            const ref_k49 = getRefNumericValue('k_49', 0); // Reference Oil emissions from S07
+            console.log(`  ref_k49 (Oil emissions): ${ref_k49} kgCO2e/yr`);
+        }
+        
+
+        
         // Get Reference fuel volumes from Section 13 (heating systems)
         const ref_h115 = getRefNumericValue('h_115', 0); // Reference Gas volume from S13 heating
         const ref_f115 = getRefNumericValue('f_115', 0); // Reference Oil volume from S13 heating
@@ -1606,10 +1619,10 @@ window.TEUI.SectionModules.sect04 = (function() {
         
         // Get emission factors (Reference grid intensity may be different from application)
         const ref_l27 = getRefNumericValue('l_27', 0); // Use Reference grid intensity
-        const l28 = getAppNumericValue('l_28', 0);
-        const l29 = getAppNumericValue('l_29', 0);
-        const l30 = getAppNumericValue('l_30', 0);
-        const l31 = getAppNumericValue('l_31', 0);
+        const l28 = getAppNumericValue('l_28', 1921); // Default gas emissions factor
+        const l29 = getAppNumericValue('l_29', 2970); // Default propane emissions factor
+        const l30 = getAppNumericValue('l_30', 2753); // Default oil emissions factor
+        const l31 = getAppNumericValue('l_31', 150); // Default wood emissions factor
         
         // Calculate Reference H values (Target consumption)
         // H27: Electricity target from S15
