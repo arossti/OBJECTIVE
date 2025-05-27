@@ -319,8 +319,9 @@ This workplan prioritizes CSV/Excel standardization and the dual-engine referenc
 
 ### Prerequisite: Standardize Helper Functions
 *   **Goal:** Ensure all section modules consistently use global `window.TEUI.parseNumeric` and `window.TEUI.formatNumber` for data parsing and display. This is essential for reliable CSV/Excel import/export and consistent reference value application.
-*   **Status:** S02, S04, S05, S08, S11, S12 completed. Remaining sections need review and refactoring.
+*   **Status:** S02, S04, S05, S07, S08, S11, S12 completed. Remaining sections need review and refactoring.
 *   **Action:** Systematically refactor remaining section modules to use these global helpers before proceeding with dual-engine implementation.
+*   **✅ DUAL-ENGINE ARCHITECTURE PATTERN**: Sections with dual-engine architecture (like S07) must calculate BOTH Application and Reference values in every `calculateAll()` call, regardless of UI mode. Use mode-aware calculation functions that accept a `mode` parameter to access appropriate state values.
 *   **⚠️ CRITICAL BUG PATTERN - parseFloat() vs Comma-Formatted Values**: 
      - **The Issue**: Section helper functions like `getAppNumericValue()` and `getRefNumericValue()` that use `parseFloat()` directly on StateManager values will fail when those values are comma-formatted strings (e.g., "2,753.00"). `parseFloat("2,753.00")` returns `2` instead of `2753`, causing calculation errors.
      - **The Fix**: Always use `window.TEUI.parseNumeric(value, defaultValue)` instead of `parseFloat(value)` in helper functions. This function properly handles comma removal before parsing.

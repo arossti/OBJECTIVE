@@ -1593,13 +1593,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_e51 = getRefNumericValue('e_51', 0); // Reference Gas volume from S07
         const ref_k54 = getRefNumericValue('k_54', 0); // Reference Oil volume from S07
         
-        // CRITICAL DEBUG: Log Reference oil values from S07
-        if (ref_k54 > 0) {
-            console.log('[S04-REF-TRACE] Reference oil values from S07:');
-            console.log(`  ref_k54 (Oil volume): ${ref_k54} litres/yr`);
-            const ref_k49 = getRefNumericValue('k_49', 0); // Reference Oil emissions from S07
-            console.log(`  ref_k49 (Oil emissions): ${ref_k49} kgCO2e/yr`);
-        }
+
         
 
         
@@ -1670,14 +1664,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_k30 = (ref_h30 * l30) / 1000;
         const ref_k31 = ref_h31 * l31;
         
-        // CRITICAL DEBUG: Log Reference oil emissions calculation
-        if (ref_h30 > 0) {
-            console.log('[S04-REF-EMISSIONS] Reference oil emissions calculation:');
-            console.log(`  ref_h30 (Oil volume): ${ref_h30} litres/yr`);
-            console.log(`  l30 (Oil emissions factor): ${l30} gCO2e/litre`);
-            console.log(`  CALCULATED ref_k30: (${ref_h30} * ${l30}) / 1000 = ${ref_k30} kgCO2e/yr`);
-            console.log(`  System types: DHW=${ref_d51}, Heating=${ref_d113}`);
-        }
+
         
 
         
@@ -1777,18 +1764,9 @@ window.TEUI.SectionModules.sect04 = (function() {
         setCalculatedValue('h_30', calculateH30(), 'number-2dp-comma');
         setCalculatedValue('j_30', calculateJ30(), 'number-2dp-comma');
         
-        // CRITICAL DEBUG: Log Target oil emissions calculation
-        const h30_target = calculateH30();
-        const k30_target = calculateK30();
-        if (h30_target > 0) {
-            const l30_target = getAppNumericValue('l_30', 2753);
-            console.log('[S04-TARGET-EMISSIONS] Target oil emissions calculation:');
-            console.log(`  h30 (Oil volume): ${h30_target} litres/yr`);
-            console.log(`  l30 (Oil emissions factor): ${l30_target} gCO2e/litre`);
-            console.log(`  CALCULATED k30: ${k30_target} kgCO2e/yr`);
-        }
-        
-        setCalculatedValue('k_30', k30_target, 'number-2dp-comma');
+        setCalculatedValue('h_30', calculateH30(), 'number-2dp-comma');
+        setCalculatedValue('j_30', calculateJ30(), 'number-2dp-comma');
+        setCalculatedValue('k_30', calculateK30(), 'number-2dp-comma');
 
         setCalculatedValue('j_31', calculateJ31(), 'number-2dp-comma');
         setCalculatedValue('k_31', calculateK31(), 'number-2dp-comma');

@@ -171,27 +171,14 @@ window.TEUI.SectionModules.sect07 = (function() {
      function setDualEngineValue(fieldId, targetValue, referenceValue, mode) {
          if (!window.TEUI?.StateManager) return;
          
-         // CRITICAL DEBUG: Log Reference oil values being stored
-         if (fieldId === 'k_54' || fieldId === 'k_49') {
-             console.log(`[S07-REF-TRACE] Setting ${fieldId}:`);
-             console.log(`  Mode: ${mode}`);
-             console.log(`  Target Value: ${targetValue}`);
-             console.log(`  Reference Value: ${referenceValue}`);
-         }
+
          
          if (mode === 'reference') {
              // Store Reference value with ref_ prefix
              const refFieldId = `ref_${fieldId}`;
              window.TEUI.StateManager.setValue(refFieldId, referenceValue.toString(), 'calculated');
              
-             // CRITICAL DEBUG: Verify Reference oil values were stored
-             if (fieldId === 'k_54' || fieldId === 'k_49') {
-                 const storedValue = window.TEUI.StateManager.getValue(refFieldId);
-                 console.log(`  STORED ${refFieldId}: ${storedValue}`);
-                 if (storedValue !== referenceValue.toString()) {
-                     console.error(`❌ STORAGE MISMATCH: Expected ${referenceValue}, got ${storedValue}`);
-                 }
-             }
+
              
              // UPDATE UI IN REFERENCE MODE: If user is currently in Reference Mode, update the visible field
              if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {

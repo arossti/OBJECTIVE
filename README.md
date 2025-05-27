@@ -230,6 +230,7 @@ When working with this codebase, previous AI assistants have encountered several
      - **The Fix**: Always use `window.TEUI.parseNumeric(value, defaultValue)` instead of `parseFloat(value)` in helper functions. This function properly handles comma removal before parsing.
      - **Example Bug**: Section 04 Reference Mode oil emissions were 1000x too low (9.32 vs 12,823.48 kgCO2e/yr) because `parseFloat("2,753.00")` returned `2` instead of `2753` for the emissions factor.
      - **Prevention**: When refactoring sections, ensure ALL numeric parsing uses the global `parseNumeric` function, especially in helper functions that retrieve values from StateManager.
+     - **⚠️ DUAL-ENGINE ARCHITECTURE CONSIDERATIONS**: In dual-engine sections (like Section 07), ensure that BOTH Application and Reference calculations run regardless of UI mode. The `calculateAll()` function should always calculate both engines to prevent state contamination and ensure proper cross-section data flow. Reference calculations must use mode-aware functions that accept a `mode` parameter ('current' vs 'reference') to access the correct state values.
 
 10. **Standardize Calculation Updates**:
    - ✅ **ALWAYS** use a standardized helper function (e.g., `window.TEUI.setCalculatedValue(fieldId, rawValue, format)`) for updating calculated fields within a section's `calculateAll` or listener callbacks.
