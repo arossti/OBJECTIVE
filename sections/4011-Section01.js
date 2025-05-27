@@ -150,21 +150,20 @@ window.TEUI.SectionModules.sect01 = (function() {
     function getAppNumericValue(fieldId, defaultValue = 0) {
         let value = defaultValue;
         const stateValue = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
-                          window.TEUI?.StateManager?.getValue?.(fieldId); // Fallback for compatibility
-        if (stateValue !== null && stateValue !== undefined) {
+                          window.TEUI?.StateManager?.getValue?.(fieldId);
+        
+        if (stateValue !== undefined && stateValue !== null && stateValue !== '') {
             if (typeof stateValue === 'string') {
-                const cleanedValue = stateValue.replace(/,/g, '');
-                if (cleanedValue === '' || cleanedValue.toUpperCase() === 'N/A') {
-                    value = defaultValue;
-                } else {
-                    const parsed = parseFloat(cleanedValue);
-                    value = isNaN(parsed) ? defaultValue : parsed;
+                const cleanedValue = stateValue.replace(/[^\d.-]/g, '');
+                const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
+                if (!isNaN(parsed)) {
+                    value = parsed;
                 }
-            } else if (typeof stateValue === 'number' && !isNaN(stateValue)) {
+            } else if (typeof stateValue === 'number') {
                 value = stateValue;
             }
         }
-        return isNaN(value) ? defaultValue : value;
+        return value;
     }
 
     /**
@@ -172,21 +171,20 @@ window.TEUI.SectionModules.sect01 = (function() {
      */
     function getRefNumericValue(fieldId, defaultValue = 0) {
         let value = defaultValue;
-        const stateValue = window.TEUI?.StateManager?.getReferenceValue(fieldId);
-        if (stateValue !== null && stateValue !== undefined) {
+        const stateValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+        
+        if (stateValue !== undefined && stateValue !== null && stateValue !== '') {
             if (typeof stateValue === 'string') {
-                const cleanedValue = stateValue.replace(/,/g, '');
-                if (cleanedValue === '' || cleanedValue.toUpperCase() === 'N/A') {
-                    value = defaultValue;
-                } else {
-                    const parsed = parseFloat(cleanedValue);
-                    value = isNaN(parsed) ? defaultValue : parsed;
+                const cleanedValue = stateValue.replace(/[^\d.-]/g, '');
+                const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
+                if (!isNaN(parsed)) {
+                    value = parsed;
                 }
-            } else if (typeof stateValue === 'number' && !isNaN(stateValue)) {
+            } else if (typeof stateValue === 'number') {
                 value = stateValue;
             }
         }
-        return isNaN(value) ? defaultValue : value;
+        return value;
     }
 
     /**
@@ -242,43 +240,30 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refJ32FromS04 = window.TEUI.StateManager?.getValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getValue('ref_k_32');
             
-            // Use Section 15's Reference TEUI if available, otherwise calculate from Section 04 values
-            let referenceTEUI = 0;
-            if (refTEUIFromS15 !== null && refTEUIFromS15 !== undefined) {
-                referenceTEUI = parseFloat(refTEUIFromS15);
-            } else {
-                // Fallback: Calculate from Section 04 Reference values
-                const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
-                                      parseFloat(refJ32FromS04) : 
-                                      getAppNumericValue('j_32', 0);
-                const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2)); 
-                
-                if (refArea > 0) {
-                    referenceTEUI = Math.round((refTargetEnergy / refArea) * 10) / 10;
-                }
+            // Calculate Reference TEUI (e_10) using Section 15's final Reference calculation
+            let referenceTEUI = 341.2; // Default fallback
+            if (refTEUIFromS15) {
+                referenceTEUI = window.TEUI?.parseNumeric?.(refTEUIFromS15, 341.2) ?? 341.2;
             }
             
-            // Calculate Reference Annual Carbon from Section 04 Reference emissions
+            // Calculate Reference Annual Carbon (d_8) using Section 04's Reference total
+            const refTargetEmissions = window.TEUI?.parseNumeric?.(refK32FromS04, 14740.8) ?? 14740.8;
+            
+            // CRITICAL FIX: Use Application area as fallback, not default of 1
+            // This prevents timing issues where Reference calculations run before Reference standard loads
+            const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2));
+            
             let referenceAnnualCarbon = 0;
-            if (refK32FromS04 !== null && refK32FromS04 !== undefined) {
-                const refTargetEmissions = parseFloat(refK32FromS04);
-                // CRITICAL FIX: Use Application area as fallback, not default of 1
-                // This prevents timing issues where Reference calculations run before Reference standard loads
-                const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2));
-                
-                if (refArea > 0) {
-                    referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
-                } else {
-                    console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
-                }
+            if (refArea > 0) {
+                referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
+            } else {
+                console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
             }
             
             // Calculate Reference Lifetime Carbon
+            const refEmbodiedCarbon = getRefNumericValue('ref_i_39', getAppNumericValue('i_41', 0));
+            const refServiceLife = getRefNumericValue('h_13', getAppNumericValue('h_13', 60));
             let referenceLifetimeCarbon = 0;
-            // CRITICAL FIX: Use Application service life as fallback, not default of 50
-            const refServiceLife = getRefNumericValue('h_13', getAppNumericValue('h_13', 50)); 
-            // Use Reference i_39 (from Section 05 Reference calculation) instead of i_41
-            const refEmbodiedCarbon = getAppNumericValue('ref_i_39', 350.0);
             
             if (refServiceLife > 0) {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
@@ -471,7 +456,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         }
 
         const cleanedText = textContent.replace(/[^\d.-]/g, '').trim();
-        return parseFloat(cleanedText);
+        return window.TEUI?.parseNumeric?.(cleanedText, NaN) ?? NaN;
     }
 
     function updateDisplayValue(fieldId, value) {
@@ -482,8 +467,8 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         if (fieldsToAnimate.includes(fieldId)) {
             const startValue = getCurrentNumericValue(element); 
-            const endValue = parseFloat(value); 
-            const duration = 500; 
+            const endValue = window.TEUI?.parseNumeric?.(value, 0) ?? 0; 
+            const duration = 500;
 
             if (!isNaN(startValue) && !isNaN(endValue) && Math.abs(startValue - endValue) > 0.01) {
                 if (activeAnimations[fieldId]) {
@@ -495,7 +480,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     const progress = Math.min(1, elapsedTime / duration);
                     const easedProgress = 1 - Math.pow(1 - progress, 2); 
                     const currentValue = startValue + (endValue - startValue) * easedProgress; 
-                    const formattedValue = window.TEUI?.formatNumber?.(currentValue, 'number-1dp') ?? currentValue.toFixed(1);
+                    const formattedValue = window.TEUI?.formatNumber?.(currentValue, 'number-1dp') ?? currentValue.toString();
 
                     if (fieldId === "h_10") {
                         const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
@@ -517,7 +502,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     if (progress < 1) {
                         activeAnimations[fieldId] = requestAnimationFrame(animateStep);
                     } else {
-                        const finalFormattedValue = window.TEUI?.formatNumber?.(endValue, 'number-1dp') ?? endValue.toFixed(1);
+                        const finalFormattedValue = window.TEUI?.formatNumber?.(endValue, 'number-1dp') ?? endValue.toString();
                         if (fieldId === "h_10") {
                              const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
                             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';

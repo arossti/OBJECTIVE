@@ -547,7 +547,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                     // Just for visual consistency, if needed
                     if (pastedContent.includes(',')) {
                         // Keep the formatted display but ensure consistent formatting
-                        const cleanValue = parseFloat(pastedContent.replace(/,/g, ''));
+                        const cleanValue = window.TEUI?.parseNumeric?.(pastedContent, 0) ?? 0;
                         if (!isNaN(cleanValue)) {
                             this.textContent = window.TEUI.formatNumber(cleanValue, 'number-2dp-comma');
                         }
@@ -894,6 +894,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                     k27Element.textContent = window.TEUI.formatNumber(ref_k27, 'number-2dp-comma');
                 }
                 
+                // Reference Mode UI updated successfully
                 // console.log(`[S04] Reference Mode UI updated: l_27=${factor}, g_27=${ref_g27.toFixed(2)}, k_27=${ref_k27.toFixed(2)}`);
             }
             
@@ -1132,7 +1133,7 @@ window.TEUI.SectionModules.sect04 = (function() {
     function calculateH27(d136) {
         // =D$136 (Target value comes from another section)
         // Use parseNumeric here too
-        return parseNumeric(d136);
+        return window.TEUI?.parseNumeric?.(d136, 0) ?? 0;
     }
     
     function calculateJ27() {
@@ -1683,33 +1684,33 @@ window.TEUI.SectionModules.sect04 = (function() {
             };
             
             // Row 27 - only set if values changed
-            setValueIfChanged('ref_h_27', ref_h27.toFixed(2));
-            setValueIfChanged('ref_j_27', ref_j27.toFixed(2));
-            setValueIfChanged('ref_k_27', ref_k27.toFixed(2));
+            setValueIfChanged('ref_h_27', ref_h27.toString());
+            setValueIfChanged('ref_j_27', ref_j27.toString());
+            setValueIfChanged('ref_k_27', ref_k27.toString());
             
             // Row 28
-            setValueIfChanged('ref_h_28', ref_h28.toFixed(2));
-            setValueIfChanged('ref_j_28', ref_j28.toFixed(2));
-            setValueIfChanged('ref_k_28', ref_k28.toFixed(2));
+            setValueIfChanged('ref_h_28', ref_h28.toString());
+            setValueIfChanged('ref_j_28', ref_j28.toString());
+            setValueIfChanged('ref_k_28', ref_k28.toString());
             
             // Row 29
-            setValueIfChanged('ref_h_29', ref_h29.toFixed(2));
-            setValueIfChanged('ref_j_29', ref_j29.toFixed(2));
-            setValueIfChanged('ref_k_29', ref_k29.toFixed(2));
+            setValueIfChanged('ref_h_29', ref_h29.toString());
+            setValueIfChanged('ref_j_29', ref_j29.toString());
+            setValueIfChanged('ref_k_29', ref_k29.toString());
             
             // Row 30
-            setValueIfChanged('ref_h_30', ref_h30.toFixed(2));
-            setValueIfChanged('ref_j_30', ref_j30.toFixed(2));
-            setValueIfChanged('ref_k_30', ref_k30.toFixed(2));
+            setValueIfChanged('ref_h_30', ref_h30.toString());
+            setValueIfChanged('ref_j_30', ref_j30.toString());
+            setValueIfChanged('ref_k_30', ref_k30.toString());
             
             // Row 31
-            setValueIfChanged('ref_h_31', ref_h31.toFixed(2));
-            setValueIfChanged('ref_j_31', ref_j31.toFixed(2));
-            setValueIfChanged('ref_k_31', ref_k31.toFixed(2));
+            setValueIfChanged('ref_h_31', ref_h31.toString());
+            setValueIfChanged('ref_j_31', ref_j31.toString());
+            setValueIfChanged('ref_k_31', ref_k31.toString());
             
             // Subtotals - CRITICAL for Section 01 (only set if changed)
-            const j32Changed = setValueIfChanged('ref_j_32', ref_j32.toFixed(2));
-            const k32Changed = setValueIfChanged('ref_k_32', ref_k32.toFixed(2));
+            const j32Changed = setValueIfChanged('ref_j_32', ref_j32.toString());
+            const k32Changed = setValueIfChanged('ref_k_32', ref_k32.toString());
             
 
         }
