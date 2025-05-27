@@ -1296,11 +1296,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             console.error('[Section10] Error in Target Model calculations:', error);
         }
 
-        // DEBUG: Log d_74 textContent at the end of Target Model
-        const d74Element = document.getElementById('d_74');
-        if (d74Element) {
-            console.log(`[S10 calculateTargetModel DEBUG END] d_74 textContent: "${d74Element.textContent}"`);
-        }
+        // Target Model calculations completed
     }
     
     /**

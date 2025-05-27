@@ -1052,28 +1052,23 @@ window.TEUI.SectionModules.sect07 = (function() {
         document.dispatchEvent(waterUseEvent);
         
         // 2. Calculate Reference values (reference mode)
-        console.log('[S07-REF-ENGINE] Starting Reference Mode calculations');
         try {
             const refWaterResults = calculateWaterUseForMode('reference');
-            console.log('[S07-REF-ENGINE] Water use calculated:', refWaterResults);
             
             // CRITICAL: Also calculate heating system in Reference Mode
             const refHeatingResults = calculateHeatingSystem(refWaterResults.hotWaterEnergyDemand);
-            console.log('[S07-REF-ENGINE] Heating system calculated:', refHeatingResults);
             
             // Calculate the row 54 values AFTER heating system calculations
             const j54RefValue = calculateJ54('reference');
             setDualEngineValue("j_54", j54RefValue, j54RefValue, 'reference');
             const k54RefValue = calculateK54('reference');
             setDualEngineValue("k_54", k54RefValue, k54RefValue, 'reference');
-            console.log('[S07-REF-ENGINE] Row 54 values - j_54:', j54RefValue, 'k_54:', k54RefValue);
             
             // Calculate DHW emissions in Reference Mode
             calculateDHWEmissions('reference');
             
-            console.log('[S07-REF-ENGINE] Reference Mode calculation completed');
         } catch (error) {
-            console.error('[S07-REF-ENGINE] Reference Mode calculation failed:', error);
+            console.error('[S07] Reference Mode calculation failed:', error);
         }
     }
     
@@ -1131,7 +1126,6 @@ window.TEUI.SectionModules.sect07 = (function() {
             // CRITICAL: Listen for d_51 (system type) changes
             // This ensures Reference Mode efficiency values update when system type changes
             window.TEUI.StateManager.addListener("d_51", () => {
-                console.log('[S07] System type (d_51) changed, triggering recalculation');
                 calculateAll(); // This will update both Application and Reference calculations
             });
         }

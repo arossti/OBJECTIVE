@@ -986,16 +986,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             setRefValueIfChanged('ref_d_145', ref_ghgReduction_d145);
             
             // Debug logging (reduced frequency)
-            if (Math.random() < 0.1) {
-                console.log('[S15-REF-ENGINE] Reference calculations completed:', {
-                    ref_d_135: ref_teuTargetTotal.toFixed(2),
-                    ref_h_135: ref_teui_h135.toFixed(2),
-                    ref_d_136: ref_teuTargetedElecHPGasOil.toFixed(2),
-                    ref_h_136: ref_teui_h136.toFixed(2),
-                    ref_j32_from_S04: ref_j32.toFixed(2),
-                    ref_k32_from_S04: ref_k32.toFixed(2)
-                });
-            }
+            // Reference calculations completed successfully
             
         } catch (error) {
             console.error("[Section15] Error in Reference Model calculations:", error);
@@ -1309,12 +1300,10 @@ window.TEUI.SectionModules.sect15 = (function() {
         // CRITICAL: Add listeners for Section 04 Reference values
         // These trigger Section 15 Reference Model recalculation when S04 Reference values change
         sm.addListener('ref_j_32', () => {
-            console.log('[S15] ref_j_32 changed, triggering Reference Model recalculation');
             calculateReferenceModel();
         });
         
         sm.addListener('ref_k_32', () => {
-            console.log('[S15] ref_k_32 changed, triggering Reference Model recalculation');
             calculateReferenceModel();
         });
         
