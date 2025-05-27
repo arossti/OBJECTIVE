@@ -753,6 +753,9 @@ window.TEUI.SectionModules.sect02 = (function() {
         
         // Run initial calculations
         calculateAll();
+        
+        // Sync cost field displays with proper CAD formatting
+        syncCostFieldDisplays();
     }
     
     /**
@@ -922,7 +925,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             let newArea = Math.max(10, originalArea + adjustment);
             
             // Update the text field display ONLY (formatted using global helper)
-            areaField.textContent = window.TEUI?.formatNumber?.(newArea, 'number-2dp-comma') ?? newArea.toFixed(2);
+            areaField.textContent = window.TEUI?.formatNumber?.(newArea, 'number-2dp-comma') ?? newArea.toString();
 
             // Store the original value if it's not already stored for the 'change' event
             if (!slider.dataset.originalArea) {
@@ -961,7 +964,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             let newArea = Math.max(10, currentArea + adjustment);
             
             // Update the text field display using global helper
-            areaField.textContent = window.TEUI?.formatNumber?.(newArea, 'number-2dp-comma') ?? newArea.toFixed(2);
+            areaField.textContent = window.TEUI?.formatNumber?.(newArea, 'number-2dp-comma') ?? newArea.toString();
 
             // Mark this as a user interaction
             window.TEUI.sect02.userInteracted = true;
@@ -981,6 +984,49 @@ window.TEUI.SectionModules.sect02 = (function() {
         }
     }
     
+    /**
+     * Sync cost field displays with proper CAD formatting
+     * Uses global window.TEUI.formatNumber with correct CAD format types
+     * Only formats fields that have been modified or have valid numeric values
+     */
+    function syncCostFieldDisplays() {
+        const costFields = ['l_12', 'l_13', 'l_14', 'l_15', 'l_16'];
+        costFields.forEach(fieldId => {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                // Get the current displayed value
+                const currentDisplayValue = element.textContent.trim();
+                
+                // Only reformat if the field has been modified by user or has a non-default value
+                const stateManagerValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+                
+                // Skip formatting if:
+                // 1. No value in StateManager (field hasn't been initialized)
+                // 2. Current display already looks like a properly formatted currency
+                if (!stateManagerValue || currentDisplayValue.startsWith('$')) {
+                    // Check if we need to ensure the field is properly set in StateManager
+                    if (!stateManagerValue && currentDisplayValue.startsWith('$')) {
+                        // Extract numeric value from the displayed currency and store it
+                        const numericValue = window.TEUI?.parseNumeric?.(currentDisplayValue, 0);
+                        if (numericValue > 0 && window.TEUI?.StateManager) {
+                            window.TEUI.StateManager.setValue(fieldId, numericValue.toString(), 'default');
+                        }
+                    }
+                    return; // Skip reformatting
+                }
+                
+                // Only format if we have a valid numeric value from StateManager
+                const rawValue = window.TEUI?.parseNumeric?.(stateManagerValue, 0);
+                if (rawValue > 0) {
+                    // Apply specific CAD formatting based on field ID
+                    const formatType = (fieldId === 'l_15') ? 'cad-2dp' : 'cad-4dp'; // Wood uses 2dp, others use 4dp
+                    const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue.toString();
+                    element.textContent = formattedValue;
+                }
+            }
+        });
+    }
+    
     //==========================================================================
     // PUBLIC API
     //==========================================================================
@@ -996,20 +1042,9 @@ window.TEUI.SectionModules.sect02 = (function() {
         onSectionRendered: onSectionRendered,
         
         // Public API for carbon target calculation
-        calculateEmbodiedCarbonTarget: calculateEmbodiedCarbonTarget
+        calculateEmbodiedCarbonTarget: calculateEmbodiedCarbonTarget,
+        
+        // Public API for cost field formatting
+        syncCostFieldDisplays: syncCostFieldDisplays
     };
 })();
-
-function syncCostFieldDisplays() {
-    const costFields = ['l_12', 'l_13', 'l_14', 'l_15', 'l_16'];
-    costFields.forEach(fieldId => {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            const rawValue = getNumericValue(fieldId);
-            // Apply specific formatting based on field ID
-            const formatType = (fieldId === 'l_15') ? 'cad-2dp' : 'cad-4dp'; // Use new format type
-            const formattedValue = window.TEUI.formatNumber(rawValue, formatType);
-            element.textContent = formattedValue;
-        }
-    });
-}
