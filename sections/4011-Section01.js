@@ -189,6 +189,33 @@ window.TEUI.SectionModules.sect01 = (function() {
         return isNaN(value) ? defaultValue : value;
     }
 
+    /**
+     * Standardized helper function to set calculated values with proper formatting.
+     * CRITICAL: Preserves Section 01's custom styling and HTML structure
+     * @param {string} fieldId - The field ID to update
+     * @param {number} rawValue - The raw numeric value to store
+     * @param {string} formatType - The format type for display (e.g., 'number-1dp', 'number-2dp-comma')
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        // Store raw value as string in StateManager for precision
+        if (window.TEUI?.StateManager?.setValue) {
+            const valueToStore = isFinite(rawValue) ? rawValue.toString() : 'N/A';
+            window.TEUI.StateManager.setValue(fieldId, valueToStore, 'calculated');
+        }
+        
+        // CRITICAL: Use updateDisplayValue to preserve custom styling instead of direct DOM manipulation
+        // This maintains tier indicators, styling classes, and visual design
+        let formattedValue;
+        if (rawValue === "N/A" || !isFinite(rawValue)) {
+            formattedValue = "N/A";
+        } else {
+            formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue.toString();
+        }
+        
+        // Use the specialized updateDisplayValue function that preserves Section 01's styling
+        updateDisplayValue(fieldId, formattedValue);
+    }
+
     //==========================================================================
     // DUAL-ENGINE ARCHITECTURE: REFERENCE MODEL (Column E)
     //==========================================================================
@@ -257,48 +284,16 @@ window.TEUI.SectionModules.sect01 = (function() {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
             }
 
-            // Apply Section 07 Gold Standard: Only update StateManager if values have changed
-            if (window.TEUI?.StateManager) {
-                const currentRefTEUI = window.TEUI.StateManager.getApplicationValue('ref_e_10');
-                const currentRefAnnual = window.TEUI.StateManager.getApplicationValue('ref_d_8');
-                const currentRefLifetime = window.TEUI.StateManager.getApplicationValue('ref_d_6');
-                
-                const newRefTEUI = referenceTEUI.toFixed(1);
-                const newRefAnnual = referenceAnnualCarbon.toFixed(1);
-                const newRefLifetime = referenceLifetimeCarbon.toFixed(1);
-                
-                if (currentRefTEUI !== newRefTEUI) {
-                    window.TEUI.StateManager.setValue('ref_e_10', newRefTEUI, 'calculated');
-                }
-                if (currentRefAnnual !== newRefAnnual) {
-                    window.TEUI.StateManager.setValue('ref_d_8', newRefAnnual, 'calculated');
-                }
-                if (currentRefLifetime !== newRefLifetime) {
-                    window.TEUI.StateManager.setValue('ref_d_6', newRefLifetime, 'calculated');
-                }
-                
-                // CRITICAL: Store the final Reference values in display fields (d_6, d_8, e_10)
-                // These are the values that appear in the Reference column of the UI
-                const currentE10 = window.TEUI.StateManager.getApplicationValue('e_10');
-                const currentD8 = window.TEUI.StateManager.getApplicationValue('d_8');
-                const currentD6 = window.TEUI.StateManager.getApplicationValue('d_6');
-                
-                if (currentE10 !== newRefTEUI) {
-                    window.TEUI.StateManager.setValue('e_10', newRefTEUI, 'calculated');
-                }
-                if (currentD8 !== newRefAnnual) {
-                    window.TEUI.StateManager.setValue('d_8', newRefAnnual, 'calculated');
-                }
-                if (currentD6 !== newRefLifetime) {
-                    window.TEUI.StateManager.setValue('d_6', newRefLifetime, 'calculated');
-                }
-            }
+            // Use standardized helper with proper 1dp formatting for key values
+            setCalculatedValue('e_10', referenceTEUI, 'number-1dp');
+            setCalculatedValue('d_8', referenceAnnualCarbon, 'number-1dp');
+            setCalculatedValue('d_6', referenceLifetimeCarbon, 'number-1dp');
 
-            // Store all Reference values with ref_ prefix - FIXED: Use properly formatted values
+            // Store Reference values with ref_ prefix for cross-section use
             if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toFixed(1), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toFixed(1), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toFixed(1), 'calculated');
+                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toString(), 'calculated');
             }
             
         } finally {
@@ -368,40 +363,20 @@ window.TEUI.SectionModules.sect01 = (function() {
                 actualLifetimeCarbon = Math.round((appEmbodiedCarbon / appServiceLife + actualAnnualCarbon) * 10) / 10;
             }
 
-            // Only update StateManager if values have changed
-            if (window.TEUI?.StateManager) {
-                const currentH10 = window.TEUI.StateManager.getApplicationValue('h_10');
-                const currentH8 = window.TEUI.StateManager.getApplicationValue('h_8');
-                const currentH6 = window.TEUI.StateManager.getApplicationValue('h_6');
-                const currentK10 = window.TEUI.StateManager.getApplicationValue('k_10');
-                const currentK8 = window.TEUI.StateManager.getApplicationValue('k_8');
-                const currentK6 = window.TEUI.StateManager.getApplicationValue('k_6');
-                
-                // Output to Column H fields (Target Results) - only if changed
-                if (currentH10 !== targetTEUI.toFixed(1)) {
-                window.TEUI.StateManager.setValue('h_10', targetTEUI.toFixed(1), 'calculated');
-                }
-                if (currentH8 !== targetAnnualCarbon.toFixed(1)) {
-                window.TEUI.StateManager.setValue('h_8', targetAnnualCarbon.toFixed(1), 'calculated');
-                }
-                if (currentH6 !== targetLifetimeCarbon.toFixed(1)) {
-                window.TEUI.StateManager.setValue('h_6', targetLifetimeCarbon.toFixed(1), 'calculated');
-                }
+            // Use standardized helper with proper 1dp formatting for key values
+            setCalculatedValue('h_10', targetTEUI, 'number-1dp');
+            setCalculatedValue('h_8', targetAnnualCarbon, 'number-1dp');
+            setCalculatedValue('h_6', targetLifetimeCarbon, 'number-1dp');
 
-                // Output to Column K fields (Actual Results) - conditional and only if changed
-                const newK10 = useType === "Utility Bills" ? actualTEUI.toFixed(1) : 'N/A';
-                const newK8 = useType === "Utility Bills" ? actualAnnualCarbon.toFixed(1) : 'N/A';
-                const newK6 = useType === "Utility Bills" ? actualLifetimeCarbon.toFixed(1) : 'N/A';
-                
-                if (currentK10 !== newK10) {
-                    window.TEUI.StateManager.setValue('k_10', newK10, 'calculated');
-                }
-                if (currentK8 !== newK8) {
-                    window.TEUI.StateManager.setValue('k_8', newK8, 'calculated');
-                }
-                if (currentK6 !== newK6) {
-                    window.TEUI.StateManager.setValue('k_6', newK6, 'calculated');
-                }
+            // Handle Actual values (K column) - conditional based on use type
+            if (useType === "Utility Bills") {
+                setCalculatedValue('k_10', actualTEUI, 'number-1dp');
+                setCalculatedValue('k_8', actualAnnualCarbon, 'number-1dp');
+                setCalculatedValue('k_6', actualLifetimeCarbon, 'number-1dp');
+            } else {
+                setCalculatedValue('k_10', 'N/A', 'raw');
+                setCalculatedValue('k_8', 'N/A', 'raw');
+                setCalculatedValue('k_6', 'N/A', 'raw');
             }
 
             // Calculate percentages and explanations
@@ -520,7 +495,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     const progress = Math.min(1, elapsedTime / duration);
                     const easedProgress = 1 - Math.pow(1 - progress, 2); 
                     const currentValue = startValue + (endValue - startValue) * easedProgress; 
-                    const formattedValue = currentValue.toFixed(1);
+                    const formattedValue = window.TEUI?.formatNumber?.(currentValue, 'number-1dp') ?? currentValue.toFixed(1);
 
                     if (fieldId === "h_10") {
                         const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
@@ -542,7 +517,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     if (progress < 1) {
                         activeAnimations[fieldId] = requestAnimationFrame(animateStep);
                     } else {
-                        const finalFormattedValue = endValue.toFixed(1);
+                        const finalFormattedValue = window.TEUI?.formatNumber?.(endValue, 'number-1dp') ?? endValue.toFixed(1);
                         if (fieldId === "h_10") {
                              const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
                             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
