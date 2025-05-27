@@ -919,10 +919,10 @@ window.TEUI.SectionModules.sect07 = (function() {
      * Where D52 is efficiency FACTOR (0.0-1.0)
      * MODE-AWARE: Uses Reference state values when in Reference Mode
      */
-    function calculateJ54() {
-        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+    function calculateJ54(mode = 'current') {
+        const isReferenceMode = mode === 'reference';
         
-        // Get values from appropriate state based on current mode
+        // Get values from appropriate state based on mode
         const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
         const netDemand_j52 = isReferenceMode ? 
             parseFloat(getRefFieldValue("j_52")) || 0 : 
@@ -944,10 +944,10 @@ window.TEUI.SectionModules.sect07 = (function() {
      * Formula: =IF(D51="Oil", ((J52*(1-D53))/(36.72*0.2777778)/K52), 0)
      * MODE-AWARE: Uses Reference state values when in Reference Mode
      */
-    function calculateK54() {
-        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+    function calculateK54(mode = 'current') {
+        const isReferenceMode = mode === 'reference';
         
-        // Get values from appropriate state based on current mode
+        // Get values from appropriate state based on mode
         const systemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
         
         let oilVolume = 0;
@@ -1022,56 +1022,54 @@ window.TEUI.SectionModules.sect07 = (function() {
 
     /**
      * Calculate all values for this section - supports dual-engine architecture
-     * CRITICAL: Only calculates for current mode to prevent state contamination
+     * CRITICAL: Always calculates BOTH Application and Reference values
      */
     function calculateAll() {
-        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        // DUAL-ENGINE ARCHITECTURE: Always run both engines
         
-        if (isReferenceMode) {
-            // In Reference Mode - calculate complete reference values with ref_ prefix
-            console.log('[S07-REF-ENGINE] Starting Reference Mode calculations');
-            try {
-                const refWaterResults = calculateWaterUseForMode('reference');
-                console.log('[S07-REF-ENGINE] Water use calculated:', refWaterResults);
-                
-                // CRITICAL: Also calculate heating system in Reference Mode
-                const refHeatingResults = calculateHeatingSystem(refWaterResults.hotWaterEnergyDemand);
-                console.log('[S07-REF-ENGINE] Heating system calculated:', refHeatingResults);
-                
-                // Calculate the row 54 values AFTER heating system calculations
-                const j54Value = calculateJ54();
-                setDualEngineValue("j_54", j54Value, j54Value, 'reference');
-                const k54Value = calculateK54();
-                setDualEngineValue("k_54", k54Value, k54Value, 'reference');
-                console.log('[S07-REF-ENGINE] Row 54 values - j_54:', j54Value, 'k_54:', k54Value);
-                
-                // Calculate DHW emissions in Reference Mode
-                calculateDHWEmissions('reference');
-                
-                console.log('[S07-REF-ENGINE] Reference Mode calculation completed');
-            } catch (error) {
-                console.error('[S07-REF-ENGINE] Reference Mode calculation failed:', error);
-            }
-        } else {
-            // In Application Mode - calculate Application values only
-            const waterUseResults = calculateWaterUse();
-            const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
+        // 1. Calculate Application values (current mode)
+        const waterUseResults = calculateWaterUse();
+        const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
+        
+        // Calculate the row 54 values AFTER heating system calculations
+        const j54Value = calculateJ54('current');
+        setDualEngineValue("j_54", j54Value, j54Value, 'current');
+        const k54Value = calculateK54('current');
+        setDualEngineValue("k_54", k54Value, k54Value, 'current');
+        
+        // Calculate DHW emissions in Application Mode
+        calculateDHWEmissions('current');
+
+        if (window.TEUI && window.TEUI.StateManager) {
+            window.TEUI.StateManager.setValue("h_69", heatingResults.systemLosses.toString(), "calculated");
+        }
+        
+        const waterUseEvent = new CustomEvent('teui-wateruse-updated', { detail: { waterUse: waterUseResults, heatingSystem: heatingResults } });
+        document.dispatchEvent(waterUseEvent);
+        
+        // 2. Calculate Reference values (reference mode)
+        console.log('[S07-REF-ENGINE] Starting Reference Mode calculations');
+        try {
+            const refWaterResults = calculateWaterUseForMode('reference');
+            console.log('[S07-REF-ENGINE] Water use calculated:', refWaterResults);
+            
+            // CRITICAL: Also calculate heating system in Reference Mode
+            const refHeatingResults = calculateHeatingSystem(refWaterResults.hotWaterEnergyDemand);
+            console.log('[S07-REF-ENGINE] Heating system calculated:', refHeatingResults);
             
             // Calculate the row 54 values AFTER heating system calculations
-            const j54Value = calculateJ54();
-            setDualEngineValue("j_54", j54Value, j54Value, 'current');
-            const k54Value = calculateK54();
-            setDualEngineValue("k_54", k54Value, k54Value, 'current');
+            const j54RefValue = calculateJ54('reference');
+            setDualEngineValue("j_54", j54RefValue, j54RefValue, 'reference');
+            const k54RefValue = calculateK54('reference');
+            setDualEngineValue("k_54", k54RefValue, k54RefValue, 'reference');
+            console.log('[S07-REF-ENGINE] Row 54 values - j_54:', j54RefValue, 'k_54:', k54RefValue);
             
-            // Calculate DHW emissions in Application Mode
-            calculateDHWEmissions('current');
-
-            if (window.TEUI && window.TEUI.StateManager) {
-                window.TEUI.StateManager.setValue("h_69", heatingResults.systemLosses.toString(), "calculated");
-            }
+            // Calculate DHW emissions in Reference Mode
+            calculateDHWEmissions('reference');
             
-            const waterUseEvent = new CustomEvent('teui-wateruse-updated', { detail: { waterUse: waterUseResults, heatingSystem: heatingResults } });
-            document.dispatchEvent(waterUseEvent);
+            console.log('[S07-REF-ENGINE] Reference Mode calculation completed');
+        } catch (error) {
+            console.error('[S07-REF-ENGINE] Reference Mode calculation failed:', error);
         }
     }
     
