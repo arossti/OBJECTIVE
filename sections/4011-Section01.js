@@ -215,14 +215,6 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refJ32FromS04 = window.TEUI.StateManager?.getValue('ref_j_32');
             const refK32FromS04 = window.TEUI.StateManager?.getValue('ref_k_32');
             
-            // Debug logging (reduced frequency)
-            if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
-                console.log('[S01-REF-ENGINE] Reference calculation data flow:');
-                console.log(`  refTEUIFromS15: ${refTEUIFromS15}`);
-                console.log(`  refJ32FromS04: ${refJ32FromS04}`);
-                console.log(`  refK32FromS04: ${refK32FromS04}`);
-            }
-            
             // Use Section 15's Reference TEUI if available, otherwise calculate from Section 04 values
             let referenceTEUI = 0;
             if (refTEUIFromS15 !== null && refTEUIFromS15 !== undefined) {
@@ -232,7 +224,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                 const refTargetEnergy = refJ32FromS04 !== null && refJ32FromS04 !== undefined ? 
                                       parseFloat(refJ32FromS04) : 
                                       getAppNumericValue('j_32', 0);
-                const refArea = getRefNumericValue('h_15', 1); 
+                const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2)); 
                 
                 if (refArea > 0) {
                     referenceTEUI = Math.round((refTargetEnergy / refArea) * 10) / 10;
@@ -243,18 +235,23 @@ window.TEUI.SectionModules.sect01 = (function() {
             let referenceAnnualCarbon = 0;
             if (refK32FromS04 !== null && refK32FromS04 !== undefined) {
                 const refTargetEmissions = parseFloat(refK32FromS04);
-                const refArea = getRefNumericValue('h_15', 1);
+                // CRITICAL FIX: Use Application area as fallback, not default of 1
+                // This prevents timing issues where Reference calculations run before Reference standard loads
+                const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2));
                 
                 if (refArea > 0) {
                     referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
+                } else {
+                    console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
                 }
             }
             
             // Calculate Reference Lifetime Carbon
             let referenceLifetimeCarbon = 0;
-            const refServiceLife = getRefNumericValue('h_13', 50); 
+            // CRITICAL FIX: Use Application service life as fallback, not default of 50
+            const refServiceLife = getRefNumericValue('h_13', getAppNumericValue('h_13', 50)); 
             // Use Reference i_39 (from Section 05 Reference calculation) instead of i_41
-            const refEmbodiedCarbon = getAppNumericValue('ref_i_39', 350.0); 
+            const refEmbodiedCarbon = getAppNumericValue('ref_i_39', 350.0);
             
             if (refServiceLife > 0) {
                 referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
@@ -302,15 +299,6 @@ window.TEUI.SectionModules.sect01 = (function() {
                 window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toString(), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toString(), 'calculated');
                 window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toString(), 'calculated');
-            }
-            
-            // Debug logging (reduced frequency)
-            if (Math.random() < 0.1) { // Only log 10% of the time to reduce noise
-                console.log('[S01-REF-ENGINE] Final Reference values stored:', {
-                    ref_e_10: `${referenceTEUI} kWh/m²/yr`,
-                    ref_d_8: `${referenceAnnualCarbon} kgCO2e/m²/yr`,
-                    ref_d_6: `${referenceLifetimeCarbon} kgCO2e/m²/Service Life`
-                });
             }
             
         } finally {
