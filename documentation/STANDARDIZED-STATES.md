@@ -39,6 +39,67 @@ To standardize the structure, handling, import, and export of all stateful value
 - **Handled field behavior inline** instead of external mapping systems
 - **Required minimal external changes** (just added missing k_52 AFUE values)
 
+### **🚨 CRITICAL: Always Follow README.md Number Formatting Guidelines**
+
+**LESSON LEARNED FROM S07 BUG**: During dual-engine refactors, agents MUST strictly follow the global number formatting patterns established in README.md. Failure to do so leads to:
+
+- **Messy code** with inconsistent formatting functions
+- **Sloppy calculations** with precision loss and parsing errors  
+- **Inaccurate presentation** with display inconsistencies
+- **parseFloat() bugs** that fail on comma-formatted values (e.g., parseFloat("2,753.00") returns 2 instead of 2753)
+
+#### **✅ REQUIRED PATTERN: Always Use Global Helpers**
+```javascript
+// ✅ CORRECT: Use global helpers consistently
+function getNumericValue(fieldId, defaultValue = 0) {
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI?.parseNumeric?.(rawValue, defaultValue) || defaultValue;
+}
+
+function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+    const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+    // Store raw value, display formatted value
+    window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
+    element.textContent = formattedValue;
+}
+```
+
+#### **❌ ANTIPATTERNS TO AVOID:**
+```javascript
+// ❌ WRONG: Local formatting functions
+function formatNumber(value) { return value.toFixed(2); }
+
+// ❌ WRONG: Direct parseFloat() on StateManager values
+const value = parseFloat(window.TEUI.StateManager.getValue(fieldId)); // FAILS on "2,753.00"
+
+// ❌ WRONG: Inconsistent precision handling
+element.textContent = value.toFixed(2); // Should use global formatter
+
+// ❌ WRONG: Custom parsing logic
+const cleanValue = value.replace(/,/g, ''); // Use global parseNumeric instead
+```
+
+#### **✅ VERIFICATION CHECKLIST:**
+Before completing any dual-engine implementation:
+- [ ] All numeric parsing uses `window.TEUI.parseNumeric`
+- [ ] All display formatting uses `window.TEUI.formatNumber`
+- [ ] No local `formatNumber` or `parseFloat` functions
+- [ ] No custom comma removal or precision handling
+- [ ] Values display consistently with proper thousands separators
+- [ ] Calculations maintain precision through the entire chain
+
+**This adherence to global formatting standards is NON-NEGOTIABLE and prevents the calculation errors and display inconsistencies that plagued earlier dual-engine attempts.**
+
+### **📋 DOCUMENTATION CLEANUP COMPLETED**
+
+**All code examples in this document have been updated to follow the correct global helper patterns. Any remaining parseFloat(), toFixed(), or custom formatting examples in this documentation are intentionally marked as ❌ WRONG antipatterns for educational purposes only.**
+
+**Future agents must:**
+1. **Always use the ✅ CORRECT examples** as implementation templates
+2. **Never copy the ❌ WRONG examples** - they are warnings, not instructions
+3. **Verify all numeric operations** use global helpers before completing any dual-engine work
+4. **Test calculations thoroughly** to ensure no precision loss or parsing errors
+
 ### **The "Just Enough" Architecture Pattern:**
 
 ```javascript
@@ -1339,7 +1400,7 @@ function calculateWaterUseForMode(mode = 'current') {
     
     // Get values from appropriate state
     const method = isRefMode ? getRefFieldValue("d_49") : getAppFieldValue("d_49");
-    const userDefinedValue = isRefMode ? parseFloat(getRefFieldValue("e_49")) || 40 : parseFloat(getAppFieldValue("e_49")) || 40;
+    const userDefinedValue = isRefMode ? getRefNumericValue("e_49", 40) : getAppNumericValue("e_49", 40);
     const occupants = getNumericValue("d_63"); // Always from current state
     
     // Perform calculations...
@@ -1591,8 +1652,8 @@ function calculateWithErrorHandling(mode = 'current') {
         }
         
         // Perform calculation with input validation
-        const area = parseFloat(isRefMode ? getRefFieldValue("d_85") : getAppFieldValue("d_85"));
-        const rsi = parseFloat(isRefMode ? getRefFieldValue("f_85") : getAppFieldValue("f_85"));
+        const area = isRefMode ? getRefNumericValue("d_85", 0) : getAppNumericValue("d_85", 0);
+        const rsi = isRefMode ? getRefNumericValue("f_85", 0) : getAppNumericValue("f_85", 0);
         
         if (isNaN(area) || isNaN(rsi) || area <= 0 || rsi <= 0) {
             console.warn(`[Section] Invalid numeric inputs for ${mode} calculation`);
@@ -1732,7 +1793,7 @@ function getEfficiencyForMode(mode) {
     if (mode === 'reference') {
         // Reference Mode: Use building code efficiency, ignore user slider
         const standardValue = getCurrentStandardValue("d_52");
-        return standardValue ? parseFloat(standardValue) / 100 : 0.9;
+        return standardValue ? window.TEUI.parseNumeric(standardValue, 90) / 100 : 0.9;
     } else {
         // Design Mode: Use user slider value
         return getNumericValue("d_52") / 100;
@@ -2915,8 +2976,8 @@ function calculateReferenceHeatingSystem(hotWaterEnergyDemand_j50) {
     let afue = 0.9; // Default AFUE for Gas/Oil
     
     if (standardValues) {
-        if (standardValues.d_52) efficiency = parseFloat(standardValues.d_52) / 100;
-        if (standardValues.k_52) afue = parseFloat(standardValues.k_52);
+        if (standardValues.d_52) efficiency = window.TEUI.parseNumeric(standardValues.d_52, 90) / 100;
+        if (standardValues.k_52) afue = window.TEUI.parseNumeric(standardValues.k_52, 0.9);
     }
     
     // Calculate using appropriate efficiency based on system type
@@ -3584,8 +3645,8 @@ function calculateReferenceHeatingSystem(hotWaterEnergyDemand_j50) {
     let afue = 0.9; // Default AFUE for Gas/Oil
     
     if (standardValues) {
-        if (standardValues.d_52) efficiency = parseFloat(standardValues.d_52) / 100;
-        if (standardValues.k_52) afue = parseFloat(standardValues.k_52);
+        if (standardValues.d_52) efficiency = window.TEUI.parseNumeric(standardValues.d_52, 90) / 100;
+        if (standardValues.k_52) afue = window.TEUI.parseNumeric(standardValues.k_52, 0.9);
     }
     
     // Calculate using appropriate efficiency based on system type

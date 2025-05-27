@@ -533,9 +533,9 @@ Calculations follow these key principles:
 ```javascript
 // Example TEUI calculation (Total Energy Use Intensity)
 function calculateTEUI(sourceField) {
-    // Get required input values
-    const area = parseFloat(getValue('h_15')); // Conditioned area
-    const energy = parseFloat(getValue('j_32')); // Total energy
+    // Get required input values using global helper
+    const area = window.TEUI.parseNumeric(getValue('h_15'), 0); // Conditioned area
+    const energy = window.TEUI.parseNumeric(getValue('j_32'), 0); // Total energy
 
     // Perform calculation
     let teui = 0;
@@ -543,8 +543,8 @@ function calculateTEUI(sourceField) {
         teui = energy / area;
     }
 
-    // Update result fields
-    setValue('h_10', teui.toFixed(1), VALUE_STATES.CALCULATED);
+    // Update result fields using global formatter
+    setValue('h_10', window.TEUI.formatNumber(teui, 'number-1dp'), VALUE_STATES.CALCULATED);
 }
 ```
 
@@ -602,7 +602,7 @@ To prevent excessive recalculations and optimize performance, the system impleme
    function updateKeyValues(newValue, oldValue, fieldId) {
        // For TEUI updates, check if change is significant
        if (fieldId === 'h_10' || fieldId === 'k_10') {
-           const delta = Math.abs(parseFloat(newValue) - parseFloat(oldValue));
+           const delta = Math.abs(window.TEUI.parseNumeric(newValue, 0) - window.TEUI.parseNumeric(oldValue, 0));
            
            // Only update UI if change is ≥ 1.0 unit
            if (delta >= 1.0) {
