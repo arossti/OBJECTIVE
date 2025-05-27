@@ -140,6 +140,146 @@ window.TEUI.SectionModules.sect07 = (function() {
     }
 
     //==========================================================================
+    // DUAL-ENGINE ARCHITECTURE SUPPORT
+    //==========================================================================
+    
+    /**
+     * Get field value with mode awareness - checks if we're in Reference Mode
+     * and returns appropriate value from Reference or Application state
+     */
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            // In Reference Mode - get from reference state
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            // In Design Mode - get from application state
+            return getFieldValue(fieldId);
+        }
+    }
+    
+    /**
+     * Get application field value (always from Design state, regardless of current mode)
+     */
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+    
+         /**
+      * Set calculated value with mode awareness and reference state storage
+      * CRITICAL: Reference Mode values NEVER update main StateManager fields
+      */
+     function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+         const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+         
+         if (isReferenceMode) {
+             // In Reference Mode - ONLY store with ref_ prefix, NEVER update main fields
+             if (window.TEUI?.StateManager?.setValue) {
+                 window.TEUI.StateManager.setValue(`ref_${fieldId}`, rawValue.toString(), "calculated");
+             }
+             // DO NOT update the main fieldId - this prevents contamination of Application State
+         } else {
+             // In Design Mode - store in application state (main fields)
+             if (window.TEUI?.StateManager?.setValue) {
+                 window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+             }
+         }
+         
+         // Update DOM display (always update visible field)
+         const isNumb = typeof rawValue === 'number' && isFinite(rawValue);
+         const valueToStore = rawValue === "N/A" ? "N/A" : (isNumb ? rawValue.toString() : String(rawValue));
+         
+         let formattedValue;
+         if (rawValue === "N/A") {
+             formattedValue = "N/A";
+         } else if (formatType === 'raw') {
+             formattedValue = String(rawValue);
+         } else {
+             formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? valueToStore;
+         }
+         
+         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+         if (element) {
+             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
+                 element.value = formattedValue;
+             } else {
+                 element.textContent = formattedValue;
+             }
+             if (isNumb) {
+                 element.classList.toggle('negative-value', rawValue < 0);
+             }
+         }
+     }
+    
+    /**
+     * Calculate water use for specific mode (Reference or Application)
+     */
+    function calculateWaterUseForMode(mode = 'current') {
+        const isRefMode = mode === 'reference' || (mode === 'current' && window.TEUI?.ReferenceToggle?.isReferenceMode?.());
+        
+        // Get values from appropriate state
+        const method = isRefMode ? getRefFieldValue("d_49") : getAppFieldValue("d_49");
+        const userDefinedValue = isRefMode ? parseFloat(getRefFieldValue("e_49")) || 40 : parseFloat(getAppFieldValue("e_49")) || 40;
+        const engineerValue = isRefMode ? parseFloat(getRefFieldValue("e_50")) || 10000 : parseFloat(getAppFieldValue("e_50")) || 10000;
+        const occupants = getNumericValue("d_63"); // Always from current state
+        
+        let litersPerPersonDay = 0;
+        let hotWaterEnergyDemand = 0;
+        
+        switch(method) {
+            case "User Defined": 
+                litersPerPersonDay = userDefinedValue; 
+                hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+                break;
+            case "By Engineer": 
+                hotWaterEnergyDemand = engineerValue;
+                const waterHeatFactor = 0.0524;
+                litersPerPersonDay = (occupants > 0 && waterHeatFactor > 0) ? (engineerValue / 365 / waterHeatFactor / occupants) / 0.4 : 0;
+                break;
+            case "PHPP Method": 
+                litersPerPersonDay = 62.5; 
+                hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+                break;
+            case "NBC Method": 
+                litersPerPersonDay = 220; 
+                hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+                break;
+            case "OBC Method": 
+                litersPerPersonDay = 275; 
+                hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+                break;
+            case "Luxury": 
+                litersPerPersonDay = 400; 
+                hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+                break;
+            default: 
+                litersPerPersonDay = 40;
+                hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+        }
+        
+        const annualWaterUse = litersPerPersonDay * occupants * 365;
+        const hotWaterLitersPerDay = litersPerPersonDay * 0.4;
+        const hotWaterAnnualLiters = hotWaterLitersPerDay * occupants * 365;
+        
+        // Store calculated values using dual-engine approach
+        setDualEngineValue("h_49", litersPerPersonDay, 'number-2dp');
+        setDualEngineValue("i_49", annualWaterUse, 'integer-comma');
+        setDualEngineValue("h_50", hotWaterLitersPerDay, 'number-2dp');
+        setDualEngineValue("i_50", hotWaterAnnualLiters, 'integer-comma');
+        setDualEngineValue("j_50", hotWaterEnergyDemand, 'number-2dp-comma');
+        
+        // Calculate compliance percentages
+        const waterUseReference = 275;
+        const waterUsePercentRaw = waterUseReference !== 0 ? (litersPerPersonDay / waterUseReference) : 0;
+        const dhwUseReference = 110;
+        const dhwUsePercentRaw = dhwUseReference !== 0 ? (hotWaterLitersPerDay / dhwUseReference) : 0;
+        
+        setDualEngineValue("n_49", (waterUsePercentRaw * 100).toFixed(0) + '%', 'raw');
+        setDualEngineValue("n_50", (dhwUsePercentRaw * 100).toFixed(0) + '%', 'raw');
+        
+        return { hotWaterEnergyDemand, litersPerPersonDay, hotWaterLitersPerDay };
+    }
+
+    //==========================================================================
     // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -635,13 +775,13 @@ window.TEUI.SectionModules.sect07 = (function() {
             default: litersPerPersonDay = 40;
         }
         
-        setCalculatedValue("h_49", litersPerPersonDay, 'number-2dp'); 
+        setDualEngineValue("h_49", litersPerPersonDay, 'number-2dp'); 
         const annualWaterUse = litersPerPersonDay * occupants * 365;
-        setCalculatedValue("i_49", annualWaterUse, 'integer-comma');
+        setDualEngineValue("i_49", annualWaterUse, 'integer-comma');
         const hotWaterLitersPerDay = litersPerPersonDay * 0.4;
-        setCalculatedValue("h_50", hotWaterLitersPerDay, 'number-2dp');
+        setDualEngineValue("h_50", hotWaterLitersPerDay, 'number-2dp');
         const hotWaterAnnualLiters = hotWaterLitersPerDay * occupants * 365;
-        setCalculatedValue("i_50", hotWaterAnnualLiters, 'integer-comma'); 
+        setDualEngineValue("i_50", hotWaterAnnualLiters, 'integer-comma'); 
         
         let hotWaterEnergyDemand = 0;
         if (method === "By Engineer") {
@@ -649,14 +789,14 @@ window.TEUI.SectionModules.sect07 = (function() {
         } else {
             hotWaterEnergyDemand = hotWaterLitersPerDay * occupants * 0.0523 * 365;
         }
-        setCalculatedValue("j_50", hotWaterEnergyDemand, 'number-2dp-comma');
+        setDualEngineValue("j_50", hotWaterEnergyDemand, 'number-2dp-comma');
         
         const waterUseReference = 275;
         const waterUsePercentRaw = waterUseReference !== 0 ? (litersPerPersonDay / waterUseReference) : 0;
-        setCalculatedValue("n_49", waterUsePercentRaw, 'percent-0dp');
+        setDualEngineValue("n_49", waterUsePercentRaw, 'percent-0dp');
         const dhwUseReference = 110;
         const dhwUsePercentRaw = dhwUseReference !== 0 ? (hotWaterLitersPerDay / dhwUseReference) : 0;
-        setCalculatedValue("n_50", dhwUsePercentRaw, 'percent-0dp');
+        setDualEngineValue("n_50", dhwUsePercentRaw, 'percent-0dp');
         
         return { hotWaterEnergyDemand }; // Return only what's needed by next calc
     }
@@ -668,7 +808,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         const systemType = getFieldValue("d_51");
         const efficiencyInput_d52 = getNumericValue("d_52");
         let efficiency = !isNaN(efficiencyInput_d52) ? efficiencyInput_d52 / 100 : 1.0;
-        setCalculatedValue("e_52", efficiency, 'number-2dp');
+        setDualEngineValue("e_52", efficiency, 'number-2dp');
         
         // Calculate j_51 using Excel logic: =IF(OR(D51="Heatpump", D51="Electric"), J50/D52, J50/K52)
         let netThermalDemand_j_51 = 0;
@@ -680,27 +820,27 @@ window.TEUI.SectionModules.sect07 = (function() {
             const afue = getNumericValue("k_52", 0.9);
             netThermalDemand_j_51 = afue !== 0 ? hotWaterEnergyDemand_j50 / afue : 0;
         }
-        setCalculatedValue("j_51", netThermalDemand_j_51, 'number-2dp-comma');
+        setDualEngineValue("j_51", netThermalDemand_j_51, 'number-2dp-comma');
         
         const recoveryOption_d53 = getNumericValue("d_53");
         let recoveryPercent = !isNaN(recoveryOption_d53) ? recoveryOption_d53 / 100 : 0;
         const energyRecovered_e53 = netThermalDemand_j_51 * recoveryPercent;
-        setCalculatedValue("e_53", energyRecovered_e53, 'number-2dp-comma');
+        setDualEngineValue("e_53", energyRecovered_e53, 'number-2dp-comma');
         
         const netDemandAfterRecovery = netThermalDemand_j_51 - energyRecovered_e53;
-        setCalculatedValue("j_52", netDemandAfterRecovery, 'number-2dp-comma');
-        setCalculatedValue("j_53", netDemandAfterRecovery, 'number-2dp-comma');
+        setDualEngineValue("j_52", netDemandAfterRecovery, 'number-2dp-comma');
+        setDualEngineValue("j_53", netDemandAfterRecovery, 'number-2dp-comma');
         
         let finalEnergy = 0, gasVolume = 0, oilVolume = 0;
         const netDemand = netDemandAfterRecovery;
         switch(systemType) {
             case "Heatpump": 
                 finalEnergy = efficiency !== 0 ? netDemand / efficiency : netDemand; 
-                setCalculatedValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
+                setDualEngineValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
                 break;
             case "Electric": 
                 finalEnergy = netDemand; 
-                setCalculatedValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
+                setDualEngineValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
                 break;
             case "Gas":
                 const afue = getNumericValue("k_52", 0.9); // Use AFUE from k_52
@@ -712,30 +852,30 @@ window.TEUI.SectionModules.sect07 = (function() {
                 const adjustedDemand = netDemandAfterRecovery_j52 * (1 - recoveryPercent);
                 gasVolume = (adjustedDemand / conversionFactor) / afue;
                 
-                setCalculatedValue("e_51", gasVolume, 'number-2dp-comma');
+                setDualEngineValue("e_51", gasVolume, 'number-2dp-comma');
                 break;
             case "Oil":
                 // Oil volume calculation now handled by calculateK54() for k_54
-                setCalculatedValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
+                setDualEngineValue("e_51", 0, 'number-2dp-comma'); // Set gas to 0 for non-gas systems
                 break;
         }
 
         let netElectricalDemand_k51 = (systemType !== "Gas" && systemType !== "Oil") ? netDemand : 0;
-        setCalculatedValue("k_51", netElectricalDemand_k51, 'number-2dp-comma');
+        setDualEngineValue("k_51", netElectricalDemand_k51, 'number-2dp-comma');
 
         let systemLosses_d54 = 0;
         const waterUseMethod_d49 = getFieldValue("d_49");
         if (efficiency <= 1) {
             systemLosses_d54 = hotWaterEnergyDemand_j50 * (waterUseMethod_d49 === "PHPP Method" ? 0.25 : 0.1);
         }
-        setCalculatedValue("d_54", systemLosses_d54, 'number-2dp-comma');
+        setDualEngineValue("d_54", systemLosses_d54, 'number-2dp-comma');
 
         let exhaustValue = (systemType === "Gas" || systemType === "Oil") ? (finalEnergy - netDemand) : 0;
 
         const standardCOP = 0.9;
         const efficiencyPercentRaw = standardCOP !== 0 ? (efficiency / standardCOP) : 0;
-        setCalculatedValue("n_52", efficiencyPercentRaw, 'percent-0dp');
-        setCalculatedValue("n_53", recoveryPercent, 'percent-0dp');
+        setDualEngineValue("n_52", efficiencyPercentRaw, 'percent-0dp');
+        setDualEngineValue("n_53", recoveryPercent, 'percent-0dp');
         
         return { systemLosses: systemLosses_d54 };
     }
@@ -812,33 +952,52 @@ window.TEUI.SectionModules.sect07 = (function() {
 
         // Sankey Comment: The value k_49 is stored and displayed in kgCO2e/yr.
         // If Sankey diagram requires different units (e.g., grams or tonnes), adjust accordingly when feeding data to Sankey.
-        setCalculatedValue("k_49", emissions_kg, 'number-2dp-comma'); 
+        setDualEngineValue("k_49", emissions_kg, 'number-2dp-comma'); 
         
         return emissions_kg;
     }
 
     /**
-     * Calculate all values for this section
+     * Calculate all values for this section - supports dual-engine architecture
+     * CRITICAL: Only calculates for current mode to prevent state contamination
      */
     function calculateAll() {
-        const waterUseResults = calculateWaterUse();
-        const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
         
-        // Calculate the row 54 values AFTER heating system calculations
-        const j54Value = calculateJ54();
-        setCalculatedValue("j_54", j54Value, 'number-2dp-comma');
-        const k54Value = calculateK54(); // This was calculated within calculateHeatingSystem previously, recalculate for clarity
-        setCalculatedValue("k_54", k54Value, 'number-2dp-comma');
-        
-        // Calculate DHW emissions
-        calculateDHWEmissions();
+        if (isReferenceMode) {
+            // In Reference Mode - only calculate reference values with ref_ prefix
+            if (typeof calculateWaterUseForMode === 'function') {
+                try {
+                    const refWaterResults = calculateWaterUseForMode('reference');
+                    // Note: calculateWaterUseForMode handles storing values with ref_ prefix
+                    console.log('[Section07] Reference Mode calculation completed');
+                } catch (error) {
+                    console.warn('Reference Mode calculation failed:', error);
+                }
+            } else {
+                console.warn('[Section07] Reference Mode calculation not available');
+            }
+        } else {
+            // In Design Mode - calculate application state (normal operation)
+            const waterUseResults = calculateWaterUse();
+            const heatingResults = calculateHeatingSystem(waterUseResults.hotWaterEnergyDemand);
+            
+            // Calculate the row 54 values AFTER heating system calculations
+            const j54Value = calculateJ54();
+            setDualEngineValue("j_54", j54Value, 'number-2dp-comma');
+            const k54Value = calculateK54();
+            setDualEngineValue("k_54", k54Value, 'number-2dp-comma');
+            
+            // Calculate DHW emissions
+            calculateDHWEmissions();
 
-        if (window.TEUI && window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue("h_69", heatingResults.systemLosses.toString(), "calculated");
+            if (window.TEUI && window.TEUI.StateManager) {
+                window.TEUI.StateManager.setValue("h_69", heatingResults.systemLosses.toString(), "calculated");
+            }
+            
+            const waterUseEvent = new CustomEvent('teui-wateruse-updated', { detail: { waterUse: waterUseResults, heatingSystem: heatingResults } });
+            document.dispatchEvent(waterUseEvent);
         }
-        
-        const waterUseEvent = new CustomEvent('teui-wateruse-updated', { detail: { waterUse: waterUseResults, heatingSystem: heatingResults } });
-        document.dispatchEvent(waterUseEvent);
     }
     
     /**
@@ -890,6 +1049,7 @@ window.TEUI.SectionModules.sect07 = (function() {
         if (window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.addListener("d_63", calculateAll); // Occupancy
             window.TEUI.StateManager.addListener("k_52", calculateAll); // AFUE changes
+            window.TEUI.StateManager.addListener("d_13", handleReferenceStandardChange); // Reference standard changes
         }
     }
     
@@ -898,8 +1058,10 @@ window.TEUI.SectionModules.sect07 = (function() {
      */
     function onSectionRendered() {
         initializeEventHandlers();
-        const initialWaterMethod = getFieldValue("d_49") || "User Defined";
-        const initialSystemType = getFieldValue("d_51") || "Heatpump";
+        // Get initial values based on current mode
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        const initialWaterMethod = (isReferenceMode ? getRefFieldValue("d_49") : getFieldValue("d_49")) || "User Defined";
+        const initialSystemType = (isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51")) || "Heatpump";
         updateSection7Visibility(initialWaterMethod, initialSystemType);
         
         // Register dependencies with StateManager
@@ -1002,9 +1164,10 @@ window.TEUI.SectionModules.sect07 = (function() {
              if (fieldId === 'd_51') {
                  handleDHWSourceChange(e); // Specific logic for DHW source
              }
-             // Update visibility based on current dropdown values
-             const currentWaterMethod = getFieldValue("d_49");
-             const currentSystemType = getFieldValue("d_51");
+             // Update visibility based on current dropdown values (mode-aware)
+             const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+             const currentWaterMethod = isReferenceMode ? getRefFieldValue("d_49") : getFieldValue("d_49");
+             const currentSystemType = isReferenceMode ? getRefFieldValue("d_51") : getFieldValue("d_51");
              updateSection7Visibility(currentWaterMethod, currentSystemType);
              calculateAll(); 
         }
@@ -1083,6 +1246,39 @@ window.TEUI.SectionModules.sect07 = (function() {
         }
         // Note: calculateAll() is called by handleGenericDropdownChange after d_51 state is set and this handler runs.
         // updateSection7Visibility() will then apply the correct ghosting.
+    }
+    
+    /**
+     * Handle reference standard changes (d_13) - update reference defaults
+     */
+    function handleReferenceStandardChange(newStandardKey) {
+        if (!newStandardKey || !window.TEUI?.ReferenceValues) return;
+        
+        console.log(`[Section07] Reference standard changed to: ${newStandardKey}`);
+        
+        // Get reference values for the new standard
+        const standardData = window.TEUI.ReferenceValues.getStandardData?.(newStandardKey);
+        if (!standardData) {
+            console.warn(`[Section07] No data found for standard: ${newStandardKey}`);
+            return;
+        }
+        
+        // Update reference defaults (clear the deck as requested)
+        const section07Fields = ['d_52', 'k_52', 'd_53'];
+        section07Fields.forEach(fieldId => {
+            if (standardData[fieldId] !== undefined) {
+                // Update reference state if StateManager supports it
+                if (window.TEUI?.StateManager?.setReferenceValue) {
+                    window.TEUI.StateManager.setReferenceValue(fieldId, standardData[fieldId], 'standard-update');
+                }
+                console.log(`[Section07] Updated reference ${fieldId} to ${standardData[fieldId]} for ${newStandardKey}`);
+            }
+        });
+        
+        // Recalculate if we're in Reference Mode
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            calculateAll();
+        }
     }
     
     //==========================================================================

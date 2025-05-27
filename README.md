@@ -498,6 +498,15 @@ The following table provides the current implementation status of all calculator
 | 04 | Actual vs. Target Energy | 4011-Section04.js | ✅ Complete | Energy comparison calculations. Refactored helpers & d136 listener (May 2025). |
 | 05 | CO2e Emissions | 4011-Section05.js | ✅ Complete | Emission calculations |
 | 06 | Renewable Energy | 4011-Section06.js | ✅ Complete | On-site energy generation |
+
+## Co-Authors & Contributors
+
+**Primary Author:** Andrew Thomson  
+**Date:** 2022-2025  
+**License:** Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)
+
+**AI Agent Co-Authors:**
+- **Cosmos Dahlia** (May 26, 2025) - Dual-engine architecture implementation, Section 07 gold standard pattern, state isolation breakthrough, and comprehensive documentation of the "Just Enough" architecture pattern that enabled elegant, minimal dual-engine functionality across all sections.
 | 07 | Water Use | 4011-Section07.js | ✅ Complete | Water consumption metrics |
 | 08 | Indoor Air Quality | 4011-Section08.js | ✅ Complete | Ventilation and air quality |
 | 09 | Occupant Internal Gains | 4011-Section09.js | ✅ Complete | Internal heat load calculations |
