@@ -1593,6 +1593,9 @@ function handleUserInputInReferenceMode(fieldId, newValue) {
 **Critical Sections Requiring Full Dual-Engine Implementation**:
 - **Section 04**: ✅ **COMPLETED** - Reference grid intensity with dynamic UI updates
 - **Section 05**: ✅ **COMPLETED** - Building typology with immediate UI feedback
+- **Section 14**: While S14, S15 do not receive ReferenceValues directly, they DO reveive results of both Reference and Application State Values from StateManager (SM) and so need to be refactored after S05, so that when S07 is refactored, results will correctly pass to SM and in turn S01, etc. Otherwise users and Devs will not see tally of values in S01 to know that dual-engine calculations are working
+- **Section 07**: Reference DHW efficiency vs user systems, some pass thru (carry-over from Application State (AS)), and some ReferenceState(RS) values received here
+- **Section 15**: Similar to S14 above
 - **Section 11**: Reference RSI/U-values vs user design values
 - **Section 13**: Reference equipment efficiencies vs user selections
 - **Section 09**: Reference internal gains vs user assumptions
@@ -1763,7 +1766,7 @@ function calculateAll() {
 5. **Cross-Section Compatibility**: Reference values stored with `ref_` prefix for downstream sections
 
 **Critical Success Factors**:
-- ✅ **Direct DOM Updates in Reference Mode**: When `isReferenceMode()` is true, directly update visible elements
+- ✅ **Direct DOM Updates in Reference Mode**: When `isReferenceMode()` is true, directly update visible elements - still respects README.md Architecture with SM as single source of truth because tallied section-based results still pass to SM.
 - ✅ **Explicit State Getters**: Use `getReferenceValue()` vs `getApplicationValue()` consistently
 - ✅ **Mode-Specific Functions**: Create `updateFieldForMode(mode)` functions for each independently editable field
 - ✅ **StateManager Listeners**: Listen for field changes and update both modes
