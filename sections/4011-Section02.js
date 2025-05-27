@@ -500,17 +500,26 @@ window.TEUI.SectionModules.sect02 = (function() {
     }
     
     /**
-     * Helper function to set a calculated field value
-     * Follows the standard pattern from SectionXX template for consistency
+     * Helper function to safely get numeric values with proper comma handling
+     * Uses global window.TEUI.parseNumeric for consistency
+     */
+    function getNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = getFieldValue(fieldId);
+        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
+    }
+
+    /**
+     * Set calculated value with proper formatting using global helpers
+     * Uses global window.TEUI.formatNumber for consistency
      */
     function setCalculatedValue(fieldId, value) {
-        // Store raw value in state manager
-        if (window.TEUI?.StateManager && window.TEUI.StateManager.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, value, "calculated");
+        // Store raw value in StateManager
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue(fieldId, value.toString(), 'calculated');
         }
         
         // Special handling for 'N/A' values - don't try to format them
-        const formattedValue = value === "N/A" ? "N/A" : formatNumber(value);
+        const formattedValue = value === "N/A" ? "N/A" : window.TEUI?.formatNumber?.(value, 'number-2dp-comma') ?? value.toString();
         
         // Update DOM with formatted value
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -524,46 +533,12 @@ window.TEUI.SectionModules.sect02 = (function() {
     }
     
     /**
-     * Format a number for display with thousand separators and proper decimals
-     * Follows the standard pattern across sections
-     */
-    function formatNumber(value) {
-        // Ensure value is a number
-        let numValue;
-        if (typeof value === 'string') {
-            // Original local parser didn't remove '$'
-            const cleanedValue = value.replace(/,/g, '').trim(); 
-            numValue = parseFloat(cleanedValue); 
-        } else {
-            numValue = parseFloat(value);
-        }
-        
-        // Handle invalid values
-        if (isNaN(numValue)) {
-            return "0.00";
-        }
-        
-        // Check if value is very small
-        if (Math.abs(numValue) < 0.01 && numValue !== 0) {
-            const smallFormatted = numValue.toFixed(2);
-            return smallFormatted;
-        }
-        
-        // Always use 2 decimal places for all numbers, including integers
-        const formatted = numValue.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        return formatted;
-    }
-    
-    /**
      * Calculate Embodied Carbon Target (d_16) based on selected Carbon Standard (d_15)
      * Standard calculation function pattern from SectionXX template
      */
     function calculateEmbodiedCarbonTarget() {
         const carbonStandard = getFieldValue("d_15") || "Self Reported";
-        const modelledValueI41 = parseFloat(getFieldValue("i_41")) || 345.82;
+        const modelledValueI41 = getNumericValue("i_41", 345.82);
         
         // Special case: 'Not Reported' should return 'N/A'
         if (carbonStandard === "Not Reported") {
@@ -572,10 +547,8 @@ window.TEUI.SectionModules.sect02 = (function() {
 
         // Handle TGS4 standard specifically by using the typology-based cap from Section 5
         if (carbonStandard === "TGS4") {
-            const i39Value = getFieldValue("i_39"); // Get raw value first
-            const tgs4Value = parseFloat(i39Value) || 0; // Get value from i_39 (Sect 5)
-            const result = tgs4Value.toFixed(2);
-            return result; 
+            const tgs4Value = getNumericValue("i_39", 0); // Get value from i_39 (Sect 5)
+            return tgs4Value; // Return raw number, formatting handled by setCalculatedValue
         }
         
         // Values from S3-Carbon-Standards sheet (corrected values)
@@ -608,14 +581,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                 targetValue = modelledValueI41; // Default to modelled/Self Reported value
         }
         
-        // Format numeric values to 2 decimal places consistently
-        let formattedResult;
-        if (typeof targetValue === 'number') {
-            formattedResult = targetValue.toFixed(2);
-        } else {
-            formattedResult = targetValue; 
-        }
-        return formattedResult;
+        return targetValue; // Return raw number, formatting handled by setCalculatedValue
     }
     
     /**
@@ -914,9 +880,9 @@ window.TEUI.SectionModules.sect02 = (function() {
         const areaField = document.querySelector('[data-field-id="h_15"]');
         if (!areaField) return;
         
-        // Get the current displayed value
+        // Get the current displayed value using global helper
         const displayedArea = areaField.textContent.trim();
-        const areaValue = parseFloat(displayedArea.replace(/,/g, ''));
+        const areaValue = window.TEUI?.parseNumeric?.(displayedArea, 0) ?? 0;
         
         if (!isNaN(areaValue) && areaValue > 0 && window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.setValue("h_15", areaValue.toString(), "user-modified");
@@ -946,8 +912,7 @@ window.TEUI.SectionModules.sect02 = (function() {
                                    areaField.dataset.originalValue || 
                                    areaField.textContent.trim();
             
-            let originalArea = parseFloat(String(originalAreaStr).replace(/,/g, ''));
-            if (isNaN(originalArea)) originalArea = 0; 
+            let originalArea = window.TEUI?.parseNumeric?.(originalAreaStr, 0) ?? 0;
 
             // Get adjustment value from slider's current position
             const adjustment = parseFloat(slider.value);
@@ -955,13 +920,9 @@ window.TEUI.SectionModules.sect02 = (function() {
 
             // Calculate potential new area
             let newArea = Math.max(10, originalArea + adjustment);
-            newArea = parseFloat(newArea.toFixed(2));
             
-            // Update the text field display ONLY (formatted)
-            areaField.textContent = newArea.toLocaleString(undefined, { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
+            // Update the text field display ONLY (formatted using global helper)
+            areaField.textContent = window.TEUI?.formatNumber?.(newArea, 'number-2dp-comma') ?? newArea.toFixed(2);
 
             // Store the original value if it's not already stored for the 'change' event
             if (!slider.dataset.originalArea) {
@@ -982,15 +943,14 @@ window.TEUI.SectionModules.sect02 = (function() {
         if (!areaField || !slider) return;
 
         try {
-            // Get current area value (remove commas, parse as float)
+            // Get current area value using global helper
             const currentAreaText = areaField.textContent.trim();
-            let currentArea = parseFloat(currentAreaText.replace(/,/g, ''));
+            let currentArea = window.TEUI?.parseNumeric?.(currentAreaText, 0) ?? 0;
             
-            if (isNaN(currentArea)) {
+            if (currentArea === 0) {
                 // Try getting from StateManager as a fallback
                 const stateArea = window.TEUI.StateManager.getValue("h_15");
-                currentArea = parseFloat(String(stateArea).replace(/,/g, ''));
-                if(isNaN(currentArea)) currentArea = 0; // Final fallback
+                currentArea = window.TEUI?.parseNumeric?.(stateArea, 0) ?? 0;
             }
             
             // Get adjustment value from slider's FINAL position
@@ -999,13 +959,9 @@ window.TEUI.SectionModules.sect02 = (function() {
 
             // Calculate new area, ensuring it doesn't go below a minimum (e.g., 10)
             let newArea = Math.max(10, currentArea + adjustment);
-            newArea = parseFloat(newArea.toFixed(2)); // Ensure 2 decimal places
             
-            // Update the text field display
-            areaField.textContent = newArea.toLocaleString(undefined, { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
+            // Update the text field display using global helper
+            areaField.textContent = window.TEUI?.formatNumber?.(newArea, 'number-2dp-comma') ?? newArea.toFixed(2);
 
             // Mark this as a user interaction
             window.TEUI.sect02.userInteracted = true;
