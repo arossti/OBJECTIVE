@@ -164,6 +164,19 @@ window.TEUI.SectionModules.sect07 = (function() {
         return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
     
+    /**
+     * Get numeric value from Reference state with proper parsing
+     */
+    function getRefNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = getRefFieldValue(fieldId);
+        if (window.TEUI && typeof window.TEUI.parseNumeric === 'function') {
+            return window.TEUI.parseNumeric(rawValue, defaultValue);
+        }
+        // Fallback parsing
+        const parsed = parseFloat(String(rawValue).replace(/[$,%]/g, ''));
+        return isNaN(parsed) ? defaultValue : parsed;
+    }
+    
          /**
       * Set calculated value with mode awareness and reference state storage
       * CRITICAL: Reference Mode values NEVER update main StateManager fields
