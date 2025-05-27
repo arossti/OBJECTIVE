@@ -601,34 +601,60 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         // MIRROR TARGET/APPLICATION PATTERN: Use Reference values for Column E display
         // Get the actual Reference values calculated by calculateReferenceModel()
-        const d6RefValue = window.TEUI.StateManager?.getValue("ref_d_6") || "24.4";
-        const d8RefValue = window.TEUI.StateManager?.getValue("ref_d_8") || "17.4";
-        const e10RefValue = window.TEUI.StateManager?.getValue("ref_e_10") || "341.2";
+        const d6RefRaw = window.TEUI.StateManager?.getValue("ref_d_6") || "24.4";
+        const d8RefRaw = window.TEUI.StateManager?.getValue("ref_d_8") || "17.4";
+        const e10RefRaw = window.TEUI.StateManager?.getValue("ref_e_10") || "341.2";
         
-        updateDisplayValue('d_6', d6RefValue);
-        updateDisplayValue('d_8', d8RefValue);
-        updateDisplayValue('e_10', e10RefValue);
+        // CRITICAL FIX: Format values before passing to updateDisplayValue to prevent decimal burp
+        const d6RefFormatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(d6RefRaw, 24.4), 'number-1dp') ?? d6RefRaw;
+        const d8RefFormatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(d8RefRaw, 17.4), 'number-1dp') ?? d8RefRaw;
+        const e10RefFormatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(e10RefRaw, 341.2), 'number-1dp') ?? e10RefRaw;
+        
+        updateDisplayValue('d_6', d6RefFormatted);
+        updateDisplayValue('d_8', d8RefFormatted);
+        updateDisplayValue('e_10', e10RefFormatted);
 
         // ALWAYS display Target/Application values in Column H
-        const h6Val = window.TEUI.StateManager?.getApplicationValue("h_6") || "11.7";
-        const h8Val = window.TEUI.StateManager?.getApplicationValue("h_8") || "4.7";
-        const h10Val = window.TEUI.StateManager?.getApplicationValue("h_10") || "93.0";
+        const h6Raw = window.TEUI.StateManager?.getApplicationValue("h_6") || "11.7";
+        const h8Raw = window.TEUI.StateManager?.getApplicationValue("h_8") || "4.7";
+        const h10Raw = window.TEUI.StateManager?.getApplicationValue("h_10") || "93.0";
         
-        updateDisplayValue('h_6', h6Val);
-        updateDisplayValue('h_8', h8Val);
-        updateDisplayValue('h_10', h10Val);
+        // CRITICAL FIX: Format values before passing to updateDisplayValue to prevent decimal burp
+        const h6Formatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(h6Raw, 11.7), 'number-1dp') ?? h6Raw;
+        const h8Formatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(h8Raw, 4.7), 'number-1dp') ?? h8Raw;
+        const h10Formatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(h10Raw, 93.0), 'number-1dp') ?? h10Raw;
+        
+        updateDisplayValue('h_6', h6Formatted);
+        updateDisplayValue('h_8', h8Formatted);
+        updateDisplayValue('h_10', h10Formatted);
 
         // Update Actual Column (K) values - conditional on Utility Bills mode
-        updateDisplayValue('k_6', isUtilityMode ? (window.TEUI.StateManager?.getApplicationValue("k_6") || "11.7") : 'N/A');
-        updateDisplayValue('k_8', isUtilityMode ? (window.TEUI.StateManager?.getApplicationValue("k_8") || "4.8") : 'N/A');
-        
-        let actualTEUIDisplay = 'N/A';
         if (isUtilityMode) {
-            const actualTEUIValue_k10 = window.TEUI.StateManager?.getApplicationValue("k_10") || "93.1";
+            const k6Raw = window.TEUI.StateManager?.getApplicationValue("k_6") || "11.7";
+            const k8Raw = window.TEUI.StateManager?.getApplicationValue("k_8") || "4.8";
+            const k10Raw = window.TEUI.StateManager?.getApplicationValue("k_10") || "93.1";
+            
+            // CRITICAL FIX: Format values before passing to updateDisplayValue to prevent decimal burp
+            const k6Formatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(k6Raw, 11.7), 'number-1dp') ?? k6Raw;
+            const k8Formatted = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(k8Raw, 4.8), 'number-1dp') ?? k8Raw;
+            
+            updateDisplayValue('k_6', k6Formatted);
+            updateDisplayValue('k_8', k8Formatted);
+            
+            // Special handling for k_10 (Actual TEUI)
             const energyValue_f32 = getAppNumericValue("f_32", 0);
-            actualTEUIDisplay = (energyValue_f32 === 0 || Math.abs(energyValue_f32) < 0.01) ? "0.0" : actualTEUIValue_k10;
+            let actualTEUIDisplay = 'N/A';
+            if (energyValue_f32 === 0 || Math.abs(energyValue_f32) < 0.01) {
+                actualTEUIDisplay = "0.0";
+            } else {
+                actualTEUIDisplay = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(k10Raw, 93.1), 'number-1dp') ?? k10Raw;
+            }
+            updateDisplayValue('k_10', actualTEUIDisplay);
+        } else {
+            updateDisplayValue('k_6', 'N/A');
+            updateDisplayValue('k_8', 'N/A');
+            updateDisplayValue('k_10', 'N/A');
         }
-        updateDisplayValue('k_10', actualTEUIDisplay);
 
         // Update gauges
         updateAllGauges();
