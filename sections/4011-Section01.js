@@ -459,7 +459,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         return window.TEUI?.parseNumeric?.(cleanedText, NaN) ?? NaN;
     }
 
-    function updateDisplayValue(fieldId, value) {
+    function updateDisplayValue(fieldId, value, tierOverride = null) {
         const element = document.querySelector(`[data-field-id="${fieldId}"] .key-value, [data-field-id="${fieldId}"] .percent-value`);
         if (!element) return;
 
@@ -483,7 +483,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     const formattedValue = window.TEUI?.formatNumber?.(currentValue, 'number-1dp') ?? currentValue.toString();
 
                     if (fieldId === "h_10") {
-                        const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
+                        const tierValue = tierOverride || window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
                         const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                         element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${formattedValue}`;
                     } else if (fieldId === "e_10") {
@@ -504,7 +504,7 @@ window.TEUI.SectionModules.sect01 = (function() {
                     } else {
                         const finalFormattedValue = window.TEUI?.formatNumber?.(endValue, 'number-1dp') ?? endValue.toString();
                         if (fieldId === "h_10") {
-                             const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
+                             const tierValue = tierOverride || window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
                             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
                             element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${finalFormattedValue}`;
                         } else if (fieldId === "e_10") {
@@ -529,7 +529,7 @@ window.TEUI.SectionModules.sect01 = (function() {
 
         // Standard non-animated update
         if (fieldId === "h_10") {
-            const tierValue = window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
+            const tierValue = tierOverride || window.TEUI.StateManager?.getApplicationValue("i_10") || "tier3";
             const tierClass = tierValue.toLowerCase().replace(' ', '-') + '-tag';
             element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
         } else if (fieldId === "e_10") {
@@ -548,7 +548,7 @@ window.TEUI.SectionModules.sect01 = (function() {
             element.classList.add('ref-value'); 
         } else if (fieldId === "d_6" || fieldId === "d_8") {
             element.textContent = value;
-            element.classList.add('ref-value'); 
+            element.classList.add('ref-value');
         } else if (fieldId === "j_8" || fieldId === "j_10") {
             const percentSpan = element.closest('td').querySelector('.percent-value');
             if (percentSpan) percentSpan.textContent = value;
@@ -565,10 +565,10 @@ window.TEUI.SectionModules.sect01 = (function() {
         const referenceTEUI_e10 = getAppNumericValue("ref_e_10", 341.2);
         const standard_d13 = window.TEUI.StateManager?.getApplicationValue("d_13") || "";
         
-        // Calculate the ratio (D144 in Excel formula) - this is target/reference
-        let ratio = 0;
+        // Calculate the reduction percentage (D144 in Excel formula) - this is 1-(target/reference)
+        let reduction = 0;
         if (referenceTEUI_e10 !== 0) {
-            ratio = targetTEUI_h10 / referenceTEUI_e10;
+            reduction = 1 - (targetTEUI_h10 / referenceTEUI_e10);
         }
 
         const standardLower = standard_d13.toLowerCase();
@@ -579,21 +579,22 @@ window.TEUI.SectionModules.sect01 = (function() {
         // Excel formula logic: IF(OR(ISNUMBER(SEARCH("NBC", D13)), ISNUMBER(SEARCH("OBC", D13)), ISNUMBER(SEARCH("NECB", D13))),
         //   IF(D144>0.7, "tier5", IF(D144>0.6, "tier4", IF(D144>0.5, "tier3", IF(D144>0.4, "tier2", "tier1")))),
         //   IF(D144>0.6, "tier4", IF(D144>0.45, "tier3", IF(D144>0.2, "tier2", IF(D144>0.1, "tier1", "No Tier")))))
+        // Where D144 = 1-(target/reference) = reduction percentage
 
         if (isCodeStandard) {
-            // For code standards (NBC/OBC/NECB): tier1 is the BEST performance
-            if (ratio > 0.7) tier = "tier5";
-            else if (ratio > 0.6) tier = "tier4";
-            else if (ratio > 0.5) tier = "tier3";
-            else if (ratio > 0.4) tier = "tier2";
-            else tier = "tier1"; // Best performance - target is 40% or less of reference
+            // For code standards (NBC/OBC/NECB): tier5 is the BEST performance (>70% reduction)
+            if (reduction > 0.7) tier = "tier5";      // Best: >70% reduction
+            else if (reduction > 0.6) tier = "tier4"; // Very good: >60% reduction
+            else if (reduction > 0.5) tier = "tier3"; // Good: >50% reduction
+            else if (reduction > 0.4) tier = "tier2"; // Fair: >40% reduction
+            else tier = "tier1";                      // Baseline: ≤40% reduction
         } else {
-            // For other standards: tier1 is still the best performance
-            if (ratio > 0.6) tier = "tier4";
-            else if (ratio > 0.45) tier = "tier3";
-            else if (ratio > 0.2) tier = "tier2";
-            else if (ratio > 0.1) tier = "tier1"; // Best performance - target is 10% or less of reference
-            else tier = "No Tier"; // Extremely high performance (less than 10% of reference)
+            // For other standards: tier4 is the best available (>60% reduction)
+            if (reduction > 0.6) tier = "tier4";      // Best: >60% reduction
+            else if (reduction > 0.45) tier = "tier3"; // Good: >45% reduction
+            else if (reduction > 0.2) tier = "tier2";  // Fair: >20% reduction
+            else if (reduction > 0.1) tier = "tier1";  // Baseline: >10% reduction
+            else tier = "No Tier";                     // Below baseline: ≤10% reduction
         }
 
         // Only update StateManager if value has changed
@@ -634,7 +635,37 @@ window.TEUI.SectionModules.sect01 = (function() {
         
         updateDisplayValue('h_6', h6Formatted);
         updateDisplayValue('h_8', h8Formatted);
-        updateDisplayValue('h_10', h10Formatted);
+        
+        // Calculate tier for h_10 to pass atomically
+        const targetTEUI_h10 = getAppNumericValue("h_10", 93.0);
+        const referenceTEUI_e10 = getAppNumericValue("ref_e_10", 341.2);
+        const standard_d13 = window.TEUI.StateManager?.getApplicationValue("d_13") || "";
+        
+        let reduction = 0;
+        if (referenceTEUI_e10 !== 0) {
+            reduction = 1 - (targetTEUI_h10 / referenceTEUI_e10);
+        }
+
+        const standardLower = standard_d13.toLowerCase();
+        const isCodeStandard = standardLower.includes("nbc") || standardLower.includes("obc") || standardLower.includes("necb");
+        
+        let calculatedTier = "No Tier";
+        if (isCodeStandard) {
+            if (reduction > 0.7) calculatedTier = "tier5";
+            else if (reduction > 0.6) calculatedTier = "tier4";
+            else if (reduction > 0.5) calculatedTier = "tier3";
+            else if (reduction > 0.4) calculatedTier = "tier2";
+            else calculatedTier = "tier1";
+        } else {
+            if (reduction > 0.6) calculatedTier = "tier4";
+            else if (reduction > 0.45) calculatedTier = "tier3";
+            else if (reduction > 0.2) calculatedTier = "tier2";
+            else if (reduction > 0.1) calculatedTier = "tier1";
+            else calculatedTier = "No Tier";
+        }
+        
+        // Update h_10 with calculated tier atomically
+        updateDisplayValue('h_10', h10Formatted, calculatedTier);
 
         // Update Actual Column (K) values - conditional on Utility Bills mode
         if (isUtilityMode) {
