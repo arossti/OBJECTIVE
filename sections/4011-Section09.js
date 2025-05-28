@@ -1362,26 +1362,12 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Replaces the original calculateAll function
      */
     function calculateAll() {
-        // Calculate individual components
-        const activityLevel = getFieldValue("d_64"); 
-        const activityWatts = calculateActivityWatts(activityLevel); 
-        setCalculatedValue("f_64", activityWatts, 'number-2dp-comma'); // Use comma format
+        // console.log('[Section09] Running dual-engine calculations...'); // Comment out
         
-        const dailyHours = getFieldValue("g_63"); 
-        const annualHours = calculateOccupiedHoursRatio(dailyHours); 
-        setCalculatedValue("i_63", annualHours, 'raw'); // i_63 is raw hours, no comma/decimal
+        calculateReferenceModel();
+        calculateTargetModel(); 
         
-        // Calculate energy usage - these functions now read the updated f_64 and d_63/g_63 correctly
-        calculateOccupantEnergy();
-        calculatePlugLoads();
-        calculateLightingLoads();
-        calculateEquipmentLoads();
-        
-        // Calculate subtotals and totals
-        calculateTotals();
-        
-        // Update reference indicators
-        updateAllReferenceIndicators();
+        // console.log('[Section09] Dual-engine calculations complete'); // Comment out
     }
     
     /**

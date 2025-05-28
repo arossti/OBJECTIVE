@@ -395,9 +395,9 @@ The TEUI 4.011 Calculator has been successfully transformed into a modular, main
 
 - **Modularized Architecture**: Core functionality divided into 15+ code modules
 - **Section-Based Organization**: Each section implements its own layout, data structures, and calculations
-- **State Management System**: Central registry handling multiple value states (Default, User-Modified, Saved, Imported)
+- **State Management System**: Central registry handling multiple value states (Default, User-Modified, Saved, Imported and Reference)
 - **Field Management**: Consolidated system for defining, rendering, and updating UI elements
-- **DOM-Based Field Identification**: Consistent ID system mapping directly to Excel cell references
+- **DOM-Based Field Identification**: Consistent ID system mapping directly to Excel cell references for both legacy support as well as import and export
 - **Component Bridge**: Integration system for connecting sections and calculations
 
 ## 1. Core Architectural Components

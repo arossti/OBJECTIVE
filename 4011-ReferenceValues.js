@@ -25,6 +25,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "t_65": "5.0", // Reference Occupant Load (W/m²)
     "t_66": "6.0", // Reference Lighting Load (W/m²) - OBC baseline
@@ -64,6 +65,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -100,6 +102,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -136,6 +139,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -172,6 +176,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -208,6 +213,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -244,6 +250,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -280,6 +287,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -316,6 +324,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
+    "d_66": "2.0", // Lighting Load per unit Area (W/m²)
     "g_67": "Regular", // Required Eppt Efficienct Spec.
     "f_73": "0.50", // SHGC of Glazing Max. 
     "f_74": "0.50", // SHGC of Glazing Max. 
@@ -352,7 +361,7 @@ TEUI.ReferenceValues = {
     "d_57": "1000", // Max. CO2 per Health Canada ppm
     "d_58": "150",  // Max. CO2 per Health Canada ppm
     "d_59": "45", // Ideal RH% averaged annually
-    "d_66": "1.1", // Max. Permissible Lighting Load
+    "d_66": "1.1", // Lighting Load per unit Area (W/m²)
     "g_67": "Efficient", // Required Eppt Efficienct Spec.
     "t_65": "5.0", // Reference Occupant Load (W/m²)
     "t_66": "1.1", // Reference Lighting Load (W/m²) 
