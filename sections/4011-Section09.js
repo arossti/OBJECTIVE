@@ -1034,58 +1034,6 @@ window.TEUI.SectionModules.sect09 = (function() {
         } catch (error) {
             // Error handling could be added here if needed
         }
-        
-        // Helper function to format building type
-        function formatBuildingTypeForLookup(rawType) {
-            // If it's already in the right format, return it
-            if (typeof equipmentLoadsTable !== 'undefined' && Object.keys(equipmentLoadsTable).includes(rawType)) {
-                return rawType;
-            }
-            
-            try {
-                // Extract the category (e.g., "A - Assembly" -> "A")
-                const categoryMatch = rawType.match(/^([A-F][0-9]?)\s*[-–]\s*/);
-                if (categoryMatch) {
-                    const category = categoryMatch[1].trim();
-                    
-                    // Map category to lookup key
-                    if (category === 'A') return 'A-Assembly';
-                    if (category === 'B1') return 'B1-Detention';
-                    if (category === 'B2') return 'B2-Care';
-                    if (category === 'B3') return 'B3-DetentionCare';
-                    if (category === 'C') return 'C-Residential';
-                    if (category === 'D') return 'D-Business';
-                    if (category === 'E') return 'E-Mercantile';
-                    if (category === 'F') return 'F-Industrial';
-                } 
-                
-                // Try extracting just the first character as fallback
-                if (rawType.length > 0) {
-                    const firstChar = rawType.charAt(0);
-                    if (firstChar === 'A') return 'A-Assembly';
-                    if (firstChar === 'C') return 'C-Residential';
-                    if (firstChar === 'D') return 'D-Business';
-                    if (firstChar === 'E') return 'E-Mercantile';
-                    if (firstChar === 'F') return 'F-Industrial';
-                    
-                    // Special case for B categories
-                    if (firstChar === 'B') {
-                        if (rawType.includes('1') || rawType.includes('Detention')) {
-                            return 'B1-Detention';
-                        } else if (rawType.includes('2') || (rawType.includes('Care') && !rawType.includes('Detention'))) {
-                            return 'B2-Care';
-                        } else if (rawType.includes('3') || (rawType.includes('Care') && rawType.includes('Detention'))) {
-                            return 'B3-DetentionCare';
-                        }
-                        return 'B3-DetentionCare'; // Default B case
-                    }
-                }
-            } catch (e) {
-                // Error handling could be added here if needed
-            }
-            
-            return 'A-Assembly'; // Default fallback
-        }
     }
     
     /**
@@ -1254,6 +1202,101 @@ window.TEUI.SectionModules.sect09 = (function() {
     //==========================================================================
 
     /**
+     * Helper function to calculate equipment density for Reference Model
+     * Uses the same lookup logic as calculateEquipmentLoads but with reference values
+     */
+    function calculateEquipmentDensityForReference(buildingType, efficiencyType, elevatorStatus) {
+        try {
+            // Format building type to match lookup table
+            const formattedBuildingType = formatBuildingTypeForLookup(buildingType || "A-Assembly");
+            
+            // Lookup the equipment density value with fallbacks
+            let densityValue = 5.0; // Default
+            
+            if (equipmentLoadsTable[formattedBuildingType]) {
+                if (equipmentLoadsTable[formattedBuildingType][efficiencyType]) {
+                    if (equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus] !== undefined) {
+                        densityValue = equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus];
+                    } else {
+                        const firstElevatorStatus = Object.keys(equipmentLoadsTable[formattedBuildingType][efficiencyType])[0];
+                        densityValue = equipmentLoadsTable[formattedBuildingType][efficiencyType][firstElevatorStatus];
+                    }
+                } else {
+                    const firstEfficiencyType = Object.keys(equipmentLoadsTable[formattedBuildingType])[0];
+                    if (equipmentLoadsTable[formattedBuildingType][firstEfficiencyType][elevatorStatus] !== undefined) {
+                        densityValue = equipmentLoadsTable[formattedBuildingType][firstEfficiencyType][elevatorStatus];
+                    } else {
+                        const firstElevatorStatus = Object.keys(equipmentLoadsTable[formattedBuildingType][firstEfficiencyType])[0];
+                        densityValue = equipmentLoadsTable[formattedBuildingType][firstEfficiencyType][firstElevatorStatus];
+                    }
+                }
+            } else if (equipmentLoadsTable.default && equipmentLoadsTable.default[efficiencyType] && 
+                       equipmentLoadsTable.default[efficiencyType][elevatorStatus] !== undefined) {
+                densityValue = equipmentLoadsTable.default[efficiencyType][elevatorStatus];
+            }
+            
+            return densityValue;
+        } catch (error) {
+            return 5.0; // Default fallback
+        }
+    }
+
+    /**
+     * Helper function to format building type for lookup table
+     * Extracted from calculateEquipmentLoads for reuse
+     */
+    function formatBuildingTypeForLookup(rawType) {
+        // If it's already in the right format, return it
+        if (typeof equipmentLoadsTable !== 'undefined' && Object.keys(equipmentLoadsTable).includes(rawType)) {
+            return rawType;
+        }
+        
+        try {
+            // Extract the category (e.g., "A - Assembly" -> "A")
+            const categoryMatch = rawType.match(/^([A-F][0-9]?)\s*[-–]\s*/);
+            if (categoryMatch) {
+                const category = categoryMatch[1].trim();
+                
+                // Map category to lookup key
+                if (category === 'A') return 'A-Assembly';
+                if (category === 'B1') return 'B1-Detention';
+                if (category === 'B2') return 'B2-Care';
+                if (category === 'B3') return 'B3-DetentionCare';
+                if (category === 'C') return 'C-Residential';
+                if (category === 'D') return 'D-Business';
+                if (category === 'E') return 'E-Mercantile';
+                if (category === 'F') return 'F-Industrial';
+            } 
+            
+            // Try extracting just the first character as fallback
+            if (rawType.length > 0) {
+                const firstChar = rawType.charAt(0);
+                if (firstChar === 'A') return 'A-Assembly';
+                if (firstChar === 'C') return 'C-Residential';
+                if (firstChar === 'D') return 'D-Business';
+                if (firstChar === 'E') return 'E-Mercantile';
+                if (firstChar === 'F') return 'F-Industrial';
+                
+                // Special case for B categories
+                if (firstChar === 'B') {
+                    if (rawType.includes('1') || rawType.includes('Detention')) {
+                        return 'B1-Detention';
+                    } else if (rawType.includes('2') || (rawType.includes('Care') && !rawType.includes('Detention'))) {
+                        return 'B2-Care';
+                    } else if (rawType.includes('3') || (rawType.includes('Care') && rawType.includes('Detention'))) {
+                        return 'B3-DetentionCare';
+                    }
+                    return 'B3-DetentionCare'; // Default B case
+                }
+            }
+        } catch (e) {
+            // Error handling could be added here if needed
+        }
+        
+        return 'A-Assembly'; // Default fallback
+    }
+
+    /**
      * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
      * Stores results with ref_ prefix to keep separate from Target values
      */
@@ -1288,10 +1331,12 @@ window.TEUI.SectionModules.sect09 = (function() {
         const refLightingLoads = (window.TEUI.parseNumeric(refLightingDensity) || 0) * 
                                 (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
         
-        // Calculate equipment loads (Reference) - simplified version
-        const refEquipmentDensity = window.TEUI?.StateManager?.getReferenceValue("d_67") || getFieldValue("d_67");
-        const refEquipmentLoads = (window.TEUI.parseNumeric(refEquipmentDensity) || 0) * 
-                                 (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
+        // Calculate equipment loads (Reference) - use proper lookup like Target Model
+        const refBuildingType = window.TEUI?.StateManager?.getReferenceValue("d_12") || getFieldValue("d_12");
+        const refEquipmentDensity = calculateEquipmentDensityForReference(refBuildingType, refEfficiency, refElevators);
+        const refEquipmentLoads = (refEquipmentDensity || 0) * 
+                                 (window.TEUI.parseNumeric(refArea) || 0) * 
+                                 (window.TEUI.parseNumeric(refAnnualHours) || 0) / 1000;
         
         // Calculate DHW system losses (Reference)
         const refDHWLosses = window.TEUI?.StateManager?.getReferenceValue("d_54") || 
