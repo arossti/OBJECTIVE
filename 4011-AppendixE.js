@@ -36,6 +36,7 @@ TEUI.AppendixE = {
         // Example: Define a few fields as independently editable in Reference Mode
         const independentlyEditableInRefMode = [
             "h_12", // Reporting Year - allows different reporting years for Reference vs Design
+            "d_12", // Major Occupancy (S02) - allows testing different occupancy types in Reference Mode for S09 load profiles
             "d_13", // Reference Standard - must always be editable in Reference Mode
             "d_39", // Building Typology (S05) - allows different typology for Reference vs Design
             "d_49", // Water Use Method (S07) - allows different water method for Reference vs Design
