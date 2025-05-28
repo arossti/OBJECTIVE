@@ -249,15 +249,15 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Calculate Reference Annual Carbon (d_8) using Section 04's Reference total
             const refTargetEmissions = window.TEUI?.parseNumeric?.(refK32FromS04, 14740.8) ?? 14740.8;
             
-            // CRITICAL FIX: Use Application area as fallback, not default of 1
-            // This prevents timing issues where Reference calculations run before Reference standard loads
-            const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2));
-            
+                // CRITICAL FIX: Use Application area as fallback, not default of 1
+                // This prevents timing issues where Reference calculations run before Reference standard loads
+                const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2));
+                
             let referenceAnnualCarbon = 0;
-            if (refArea > 0) {
-                referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
-            } else {
-                console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
+                if (refArea > 0) {
+                    referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
+                } else {
+                    console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
             }
             
             // Calculate Reference Lifetime Carbon
@@ -468,7 +468,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         if (fieldsToAnimate.includes(fieldId)) {
             const startValue = getCurrentNumericValue(element); 
             const endValue = window.TEUI?.parseNumeric?.(value, 0) ?? 0; 
-            const duration = 500;
+            const duration = 500; 
 
             if (!isNaN(startValue) && !isNaN(endValue) && Math.abs(startValue - endValue) > 0.01) {
                 if (activeAnimations[fieldId]) {
@@ -565,9 +565,10 @@ window.TEUI.SectionModules.sect01 = (function() {
         const referenceTEUI_e10 = getAppNumericValue("ref_e_10", 341.2);
         const standard_d13 = window.TEUI.StateManager?.getApplicationValue("d_13") || "";
         
-        let reduction = 0;
+        // Calculate the ratio (D144 in Excel formula) - this is target/reference
+        let ratio = 0;
         if (referenceTEUI_e10 !== 0) {
-            reduction = 1 - (targetTEUI_h10 / referenceTEUI_e10);
+            ratio = targetTEUI_h10 / referenceTEUI_e10;
         }
 
         const standardLower = standard_d13.toLowerCase();
@@ -575,23 +576,30 @@ window.TEUI.SectionModules.sect01 = (function() {
         
         let tier = "No Tier";
 
+        // Excel formula logic: IF(OR(ISNUMBER(SEARCH("NBC", D13)), ISNUMBER(SEARCH("OBC", D13)), ISNUMBER(SEARCH("NECB", D13))),
+        //   IF(D144>0.7, "tier5", IF(D144>0.6, "tier4", IF(D144>0.5, "tier3", IF(D144>0.4, "tier2", "tier1")))),
+        //   IF(D144>0.6, "tier4", IF(D144>0.45, "tier3", IF(D144>0.2, "tier2", IF(D144>0.1, "tier1", "No Tier")))))
+
         if (isCodeStandard) {
-            if (reduction > 0.7) tier = "tier5";
-            else if (reduction > 0.6) tier = "tier4";
-            else if (reduction > 0.5) tier = "tier3";
-            else if (reduction > 0.4) tier = "tier2";
-            else tier = "tier1"; 
+            // For code standards (NBC/OBC/NECB): tier1 is the BEST performance
+            if (ratio > 0.7) tier = "tier5";
+            else if (ratio > 0.6) tier = "tier4";
+            else if (ratio > 0.5) tier = "tier3";
+            else if (ratio > 0.4) tier = "tier2";
+            else tier = "tier1"; // Best performance - target is 40% or less of reference
         } else {
-            if (reduction > 0.6) tier = "tier4";
-            else if (reduction > 0.45) tier = "tier3";
-            else if (reduction > 0.2) tier = "tier2";
-            else if (reduction > 0.1) tier = "tier1";
+            // For other standards: tier1 is still the best performance
+            if (ratio > 0.6) tier = "tier4";
+            else if (ratio > 0.45) tier = "tier3";
+            else if (ratio > 0.2) tier = "tier2";
+            else if (ratio > 0.1) tier = "tier1"; // Best performance - target is 10% or less of reference
+            else tier = "No Tier"; // Extremely high performance (less than 10% of reference)
         }
 
         // Only update StateManager if value has changed
         const currentTier = window.TEUI.StateManager.getApplicationValue("i_10");
         if (currentTier !== tier) {
-        window.TEUI.StateManager.setValue("i_10", tier, "calculated");
+            window.TEUI.StateManager.setValue("i_10", tier, "calculated");
         }
     }
 
@@ -648,8 +656,8 @@ window.TEUI.SectionModules.sect01 = (function() {
                 actualTEUIDisplay = "0.0";
             } else {
                 actualTEUIDisplay = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(k10Raw, 93.1), 'number-1dp') ?? k10Raw;
-            }
-            updateDisplayValue('k_10', actualTEUIDisplay);
+        }
+        updateDisplayValue('k_10', actualTEUIDisplay);
         } else {
             updateDisplayValue('k_6', 'N/A');
             updateDisplayValue('k_8', 'N/A');
