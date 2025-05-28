@@ -924,116 +924,115 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Calculate Annual kWh/yr for equipment loads
      */
     function calculateEquipmentLoads() {
+        // Call the new mode-aware function for Application mode
+        return calculateEquipmentLoadsForMode('application');
+    }
+    
+    /**
+     * Calculate equipment loads for specific mode (Reference or Application)
+     * GOLD STANDARD: Mode-aware calculation like Section 07
+     */
+    function calculateEquipmentLoadsForMode(mode = 'current') {
+        const isRefMode = mode === 'reference' || (mode === 'current' && window.TEUI?.ReferenceToggle?.isReferenceMode?.());
+        
         try {
-            // Get values from dropdowns
-            let buildingType = "A-Assembly"; // Default
-            let efficiencyType = "Efficient"; // Default to Efficient (was "Regular")
-            let elevatorStatus = "No Elevators"; // Default
+            // Get values from appropriate state
+            let buildingType, efficiencyType, elevatorStatus, floorArea, occupiedHours;
             
-            // Get building type from dropdown
-            const buildingTypeDropdown = document.querySelector('select[data-field-id="d_12"]');
-            if (buildingTypeDropdown && buildingTypeDropdown.tagName === 'SELECT') {
-                buildingType = buildingTypeDropdown.options[buildingTypeDropdown.selectedIndex].value;
+            if (isRefMode) {
+                // Reference Mode - get from Reference state
+                buildingType = window.TEUI?.StateManager?.getReferenceValue("d_12") || getFieldValue("d_12");
+                efficiencyType = window.TEUI?.StateManager?.getReferenceValue("g_67") || "Regular"; // Default to Regular for Reference
+                elevatorStatus = window.TEUI?.StateManager?.getReferenceValue("d_68") || getFieldValue("d_68");
+                floorArea = window.TEUI?.StateManager?.getReferenceValue("h_15") || getFieldValue("h_15");
+                occupiedHours = window.TEUI?.StateManager?.getReferenceValue("i_63") || getFieldValue("i_63");
             } else {
-                const buildingTypeCell = document.querySelector('[data-field-id="d_12"]');
-                if (buildingTypeCell) {
-                    buildingType = buildingTypeCell.textContent.trim();
-                }
-            }
-            
-            // Get efficiency setting - now in column G in the CSV
-            const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
-            if (efficiencyDropdown && efficiencyDropdown.tagName === 'SELECT') {
-                efficiencyType = efficiencyDropdown.options[efficiencyDropdown.selectedIndex].value;
-            } else {
-                const efficiencyElement = document.querySelector('[data-field-id="g_67"]');
-                if (efficiencyElement) {
-                    efficiencyType = efficiencyElement.textContent.trim();
-                }
-            }
-            
-            // Get elevator setting
-            const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
-            if (elevatorDropdown && elevatorDropdown.tagName === 'SELECT') {
-                elevatorStatus = elevatorDropdown.options[elevatorDropdown.selectedIndex].value;
-            } else {
-                const elevatorElement = document.querySelector('[data-field-id="d_68"]');
-                if (elevatorElement) {
-                    elevatorStatus = elevatorElement.textContent.trim();
-                }
+                // Design Mode - get from Application state
+                buildingType = window.TEUI?.StateManager?.getApplicationValue("d_12") || getFieldValue("d_12");
+                efficiencyType = window.TEUI?.StateManager?.getApplicationValue("g_67") || getFieldValue("g_67");
+                elevatorStatus = window.TEUI?.StateManager?.getApplicationValue("d_68") || getFieldValue("d_68");
+                floorArea = window.TEUI?.StateManager?.getApplicationValue("h_15") || getFieldValue("h_15");
+                occupiedHours = window.TEUI?.StateManager?.getApplicationValue("i_63") || getFieldValue("i_63");
             }
             
             // Format building type to match lookup table
-            buildingType = formatBuildingTypeForLookup(buildingType);
+            buildingType = formatBuildingTypeForLookup(buildingType || "A-Assembly");
             
-            // Lookup the equipment density value with fallbacks
-            let densityValue = 5.0; // Default
+            // Calculate equipment density using lookup table
+            const densityValue = calculateEquipmentDensityForReference(buildingType, efficiencyType, elevatorStatus);
             
-            if (equipmentLoadsTable[buildingType]) {
-                if (equipmentLoadsTable[buildingType][efficiencyType]) {
-                    if (equipmentLoadsTable[buildingType][efficiencyType][elevatorStatus] !== undefined) {
-                        densityValue = equipmentLoadsTable[buildingType][efficiencyType][elevatorStatus];
-                    } else {
-                        const firstElevatorStatus = Object.keys(equipmentLoadsTable[buildingType][efficiencyType])[0];
-                        densityValue = equipmentLoadsTable[buildingType][efficiencyType][firstElevatorStatus];
-                    }
-                } else {
-                    const firstEfficiencyType = Object.keys(equipmentLoadsTable[buildingType])[0];
-                    if (equipmentLoadsTable[buildingType][firstEfficiencyType][elevatorStatus] !== undefined) {
-                        densityValue = equipmentLoadsTable[buildingType][firstEfficiencyType][elevatorStatus];
-                    } else {
-                        const firstElevatorStatus = Object.keys(equipmentLoadsTable[buildingType][firstEfficiencyType])[0];
-                        densityValue = equipmentLoadsTable[buildingType][firstEfficiencyType][firstElevatorStatus];
-                    }
-                }
-            } else if (equipmentLoadsTable.default && equipmentLoadsTable.default[efficiencyType] && 
-                       equipmentLoadsTable.default[efficiencyType][elevatorStatus] !== undefined) {
-                densityValue = equipmentLoadsTable.default[efficiencyType][elevatorStatus];
-            }
+            // Calculate annual energy
+            const floorAreaNum = window.TEUI.parseNumeric(floorArea) || 0;
+            const occupiedHoursNum = window.TEUI.parseNumeric(occupiedHours) || 0;
+            const annualEnergy = (densityValue * floorAreaNum * occupiedHoursNum / 1000) || 0;
             
-            // Update the equipment density field
-            const densityField = document.querySelector('[data-field-id="d_67"]');
-            if (densityField) {
-                // Format using global helper before setting textContent
-                 densityField.textContent = window.TEUI.formatNumber(densityValue, 'number');
-            }
-            
-            // Update StateManager and DOM using local helper
-            setCalculatedValue("d_67", densityValue, 'number'); 
-            
-            // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-            // Use window.TEUI.parseNumeric to safely get the floor area and occupied hours
-            const floorArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
-            const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
-            
-            const annualEnergy = (densityValue * floorArea * occupiedHours / 1000) || 0; // W/m² to kWh/yr using occupied hours
-            
-            // Get heating/cooling split - Use DYNAMIC ratio for Equipment Loads
+            // Get heating/cooling split
             const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+            const heatingPortion = annualEnergy * heatingRatio;
+            const coolingPortion = annualEnergy * coolingRatio;
             
-            const heatingPortion = annualEnergy * heatingRatio; // Use dynamic heating ratio
-            const coolingPortion = annualEnergy * coolingRatio; // Use dynamic cooling ratio
+            // Store calculated values using dual-engine approach
+            setDualEngineValue("d_67", densityValue, densityValue, mode);
+            setDualEngineValue("h_67", annualEnergy, annualEnergy, mode);
+            setDualEngineValue("i_67", heatingPortion, heatingPortion, mode);
+            setDualEngineValue("k_67", coolingPortion, coolingPortion, mode);
             
-            // Update fields using local helper
-            setCalculatedValue("h_67", annualEnergy, 'number');
-            setCalculatedValue("i_67", heatingPortion, 'number');
-            setCalculatedValue("k_67", coolingPortion, 'number');
-            
-            // Calculate percentage against reference value
-            // Reference is 100% - equipment loads are already based on lookup tables with occupancy-specific values
-            // Use local helper, store 100, format as percent-auto
-            setCalculatedValue("m_67", 100, 'percent-auto');
-            
-            // Set checkmark for equipment loads
-            // Use local helper, store raw checkmark, format as raw
-            setCalculatedValue("n_67", "✓", 'raw');
-            setElementClass("n_67", "checkmark");
-            
-            // Update percentages and totals
-            calculateTotals();
+            return { densityValue, annualEnergy, heatingPortion, coolingPortion };
         } catch (error) {
-            // Error handling could be added here if needed
+            console.warn(`[Section09] Equipment loads calculation failed for ${mode} mode:`, error);
+            return { densityValue: 5.0, annualEnergy: 0, heatingPortion: 0, coolingPortion: 0 };
         }
+    }
+
+    /**
+     * Set calculated value with mode awareness and reference state storage
+     * CRITICAL: Reference Mode values NEVER update main StateManager fields
+     * GOLD STANDARD: Provides immediate UI feedback in Reference Mode
+     */
+    function setDualEngineValue(fieldId, targetValue, referenceValue, mode) {
+        if (!window.TEUI?.StateManager) return;
+        
+        if (mode === 'reference') {
+            // Store Reference value with ref_ prefix
+            const refFieldId = `ref_${fieldId}`;
+            window.TEUI.StateManager.setValue(refFieldId, referenceValue.toString(), 'calculated');
+            
+            // GOLD STANDARD: UPDATE UI IN REFERENCE MODE
+            // If user is currently in Reference Mode, update the visible field immediately
+            if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+                const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+                if (element) {
+                    element.textContent = window.TEUI.formatNumber(referenceValue, getFieldFormat(fieldId));
+                }
+            }
+        } else {
+            // Store Application value normally
+            window.TEUI.StateManager.setValue(fieldId, targetValue.toString(), 'calculated');
+            
+            // Update UI with Application value (when not in Reference Mode)
+            if (!window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+                const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+                if (element) {
+                    element.textContent = window.TEUI.formatNumber(targetValue, getFieldFormat(fieldId));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get appropriate format for a field
+     */
+    function getFieldFormat(fieldId) {
+        // Define format mappings for different fields
+        const formatMap = {
+            'd_67': 'number-2dp',         // Equipment density W/m²
+            'h_67': 'number-2dp-comma',   // Annual energy kWh/yr
+            'i_67': 'number-2dp-comma',   // Heating portion kWh/yr
+            'k_67': 'number-2dp-comma',   // Cooling portion kWh/yr
+            // Add other field formats as needed
+        };
+        
+        return formatMap[fieldId] || 'number-2dp-comma';
     }
     
     /**
@@ -1306,8 +1305,6 @@ window.TEUI.SectionModules.sect09 = (function() {
         // Get reference values for inputs
         const refActivityLevel = window.TEUI?.StateManager?.getReferenceValue("d_64") || getFieldValue("d_64");
         const refDailyHours = window.TEUI?.StateManager?.getReferenceValue("g_63") || getFieldValue("g_63");
-        const refEfficiency = window.TEUI?.StateManager?.getReferenceValue("g_67") || getFieldValue("g_67");
-        const refElevators = window.TEUI?.StateManager?.getReferenceValue("d_68") || getFieldValue("d_68");
         const refArea = window.TEUI?.StateManager?.getReferenceValue("h_15") || getFieldValue("h_15");
         const refCoolingDays = window.TEUI?.StateManager?.getReferenceValue("m_19") || getFieldValue("m_19");
         
@@ -1331,12 +1328,9 @@ window.TEUI.SectionModules.sect09 = (function() {
         const refLightingLoads = (window.TEUI.parseNumeric(refLightingDensity) || 0) * 
                                 (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
         
-        // Calculate equipment loads (Reference) - use proper lookup like Target Model
-        const refBuildingType = window.TEUI?.StateManager?.getReferenceValue("d_12") || getFieldValue("d_12");
-        const refEquipmentDensity = calculateEquipmentDensityForReference(refBuildingType, refEfficiency, refElevators);
-        const refEquipmentLoads = (refEquipmentDensity || 0) * 
-                                 (window.TEUI.parseNumeric(refArea) || 0) * 
-                                 (window.TEUI.parseNumeric(refAnnualHours) || 0) / 1000;
+        // Calculate equipment loads (Reference) - use new mode-aware function
+        const refEquipmentResults = calculateEquipmentLoadsForMode('reference');
+        const refEquipmentLoads = refEquipmentResults.annualEnergy;
         
         // Calculate DHW system losses (Reference)
         const refDHWLosses = window.TEUI?.StateManager?.getReferenceValue("d_54") || 
@@ -1358,7 +1352,7 @@ window.TEUI.SectionModules.sect09 = (function() {
             window.TEUI.StateManager.setValue('ref_h_64', refOccupantEnergy.toString(), 'calculated');
             window.TEUI.StateManager.setValue('ref_h_65', refPlugLoads.toString(), 'calculated');
             window.TEUI.StateManager.setValue('ref_h_66', refLightingLoads.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_h_67', refEquipmentLoads.toString(), 'calculated');
+            // ref_h_67 already stored by calculateEquipmentLoadsForMode('reference')
             window.TEUI.StateManager.setValue('ref_h_69', refDHWLosses.toString(), 'calculated');
             
             // Subtotal and total
@@ -1393,7 +1387,14 @@ window.TEUI.SectionModules.sect09 = (function() {
         calculateOccupantEnergy();
         calculatePlugLoads();
         calculateLightingLoads();
-        calculateEquipmentLoads();
+        
+        // Calculate equipment loads using new mode-aware function
+        const equipmentResults = calculateEquipmentLoadsForMode('application');
+        
+        // Calculate percentage against reference value and set checkmark
+        setCalculatedValue("m_67", 100, 'percent-auto');
+        setCalculatedValue("n_67", "✓", 'raw');
+        setElementClass("n_67", "checkmark");
         
         // Calculate subtotals and totals
         calculateTotals();
@@ -1739,8 +1740,25 @@ window.TEUI.SectionModules.sect09 = (function() {
                     window.TEUI.StateManager.setValue(field.fieldId, this.value, state);
                 }
                 
-                // Trigger calculation - Ensure dependent calculations run
+                // GOLD STANDARD: Trigger dual-engine calculations
+                // This ensures both Reference and Application calculations run
                 calculateAll(); 
+                
+                // GOLD STANDARD: Immediate UI feedback for g_67 changes
+                if (field.fieldId === "g_67") {
+                    // Force immediate recalculation of equipment loads for both modes
+                    const currentMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'reference' : 'application';
+                    
+                    // Calculate for current mode
+                    calculateEquipmentLoadsForMode(currentMode);
+                    
+                    // Also calculate for the other mode to keep both states current
+                    const otherMode = currentMode === 'reference' ? 'application' : 'reference';
+                    calculateEquipmentLoadsForMode(otherMode);
+                    
+                    // Update totals
+                    calculateTotals();
+                }
             });
         });
     }
