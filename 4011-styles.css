@@ -1414,6 +1414,24 @@ body.reference-mode .reference-locked {
     user-modify: read-only !important;
 }
 
+/* Style locked dropdowns in reference mode */
+body.reference-mode .reference-locked select.form-select,
+body.reference-mode .reference-locked .form-select,
+body.reference-mode select.form-select.reference-locked {
+    color: var(--reference-value-color) !important; /* Red text #8B0000 */
+    font-weight: bold !important; 
+    font-style: italic !important; 
+    background-color: transparent !important; 
+    border: none !important;
+    cursor: default !important; 
+    pointer-events: none !important;
+    /* Remove dropdown arrow for locked dropdowns */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: none !important;
+}
+
 /* Ensure user-input fields retain their blue color ONLY IF NOT locked */
 body.reference-mode .user-input:not(.reference-locked) { 
     color: var(--user-input-color) !important; 
@@ -1424,6 +1442,22 @@ body.reference-mode .user-input:not(.reference-locked) {
     -webkit-user-modify: read-write !important;
     -moz-user-modify: read-write !important;
     user-modify: read-write !important;
+}
+
+/* Ensure editable dropdowns in reference mode retain normal styling */
+body.reference-mode select.form-select:not(.reference-locked),
+body.reference-mode .form-select:not(.reference-locked) {
+    color: var(--user-input-color) !important; /* Blue text for editable dropdowns */
+    font-weight: 500 !important; 
+    font-style: normal !important; 
+    cursor: pointer !important; 
+    pointer-events: auto !important;
+    background-color: #fff !important;
+    border: 1px solid #ced4da !important;
+    /* Restore dropdown arrow for editable dropdowns */
+    -webkit-appearance: auto !important;
+    -moz-appearance: auto !important;
+    appearance: auto !important;
 }
 
 /* Style tab container in reference mode */

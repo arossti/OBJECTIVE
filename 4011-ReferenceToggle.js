@@ -194,6 +194,8 @@ TEUI.ReferenceToggle = (function() {
                                            (element.matches('input, select, textarea') ? element : null);
                         if (inputElement) {
                             inputElement.disabled = true;
+                            // Also add reference-locked class to the actual input/select element for styling
+                            inputElement.classList.add('reference-locked');
                         }
                         if (element.hasAttribute('contenteditable')) {
                             element.setAttribute('contenteditable', 'false');
@@ -204,6 +206,8 @@ TEUI.ReferenceToggle = (function() {
                                            (element.matches('input, select, textarea') ? element : null);
                         if (inputElement) {
                             inputElement.disabled = false;
+                            // Remove reference-locked class from the actual input/select element
+                            inputElement.classList.remove('reference-locked');
                         }
                         if (element.hasAttribute('contenteditable')) {
                             element.setAttribute('contenteditable', 'true');
@@ -218,10 +222,18 @@ TEUI.ReferenceToggle = (function() {
                                        (element.matches('input, select, textarea') ? element : null);
                     
                     if (isNormallyEditable) {
-                        if (inputElement) inputElement.disabled = false;
+                        if (inputElement) {
+                            inputElement.disabled = false;
+                            // Remove reference-locked class from the actual input/select element
+                            inputElement.classList.remove('reference-locked');
+                        }
                         if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'true');
                     } else { 
-                        if (inputElement) inputElement.disabled = true; 
+                        if (inputElement) {
+                            inputElement.disabled = true; 
+                            // Remove reference-locked class even for non-editable elements
+                            inputElement.classList.remove('reference-locked');
+                        }
                         if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'false');
                     }
                 }
