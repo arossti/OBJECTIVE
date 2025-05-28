@@ -3,6 +3,7 @@
  * Indoor Air Quality (Section 8) module for TEUI Calculator 4.011
  * 
  * Simple section with minimal calculations - streamlined implementation
+ * Updated to support heating/cooling season RH sliders per Excel layout changes
  */
 
 // Ensure namespace exists
@@ -20,18 +21,17 @@ window.TEUI.SectionModules.sect08 = (function() {
             label: "Indoor Air Quality Units",
             cells: {
                 c: { content: "C", classes: ["section-subheader"] },
-                d: { content: "Reported Values", classes: ["section-subheader"] }, // Changed from "Targeted" to "Reported Values"
+                d: { content: "Targeted", classes: ["section-subheader"] },
                 e: { content: "E", classes: ["section-subheader"] },
-                f: { content: "Guidance Limits", classes: ["section-subheader"] },
+                f: { content: "F", classes: ["section-subheader"] },
                 g: { content: "G", classes: ["section-subheader"] },
                 h: { content: "H", classes: ["section-subheader"] },
                 i: { content: "I", classes: ["section-subheader"] },
                 j: { content: "J", classes: ["section-subheader"] },
-                k: { content: "K", classes: ["section-subheader"] },
+                k: { content: "Guidance Limits", classes: ["section-subheader"] }, // Moved from F
                 l: { content: "L", classes: ["section-subheader"] },
                 m: { content: "% per Health Canada/NBC", classes: ["section-subheader"] },
-                n: { content: "Status", classes: ["section-subheader"] }, // Changed to Status column
-                o: { content: "O", classes: ["section-subheader"] }
+                n: { content: "Status", classes: ["section-subheader"] }
             }
         },
 
@@ -50,19 +50,19 @@ window.TEUI.SectionModules.sect08 = (function() {
                     classes: ["user-input"]
                 },
                 e: { content: "Bq/m³" },
-                f: { 
-                    fieldId: "f_56", 
+                k: { 
+                    fieldId: "k_56", 
                     type: "calculated",
                     value: "150", // Default raw value for the limit
                     section: "indoorAirQuality"
                 },
-                g: { content: "Bq/m³" },
+                l: { content: "Bq/m³" },
                 m: { 
                     fieldId: "m_56", 
                     type: "calculated", 
                     value: "0%", // Default display
                     section: "indoorAirQuality",
-                    dependencies: ["d_56", "f_56"]
+                    dependencies: ["d_56", "k_56"]
                 },
                 n: {
                     fieldId: "n_56",
@@ -70,7 +70,7 @@ window.TEUI.SectionModules.sect08 = (function() {
                     value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
-                    dependencies: ["d_56", "f_56"]
+                    dependencies: ["d_56", "k_56"]
                 }
             }
         },
@@ -90,19 +90,19 @@ window.TEUI.SectionModules.sect08 = (function() {
                     classes: ["user-input"]
                 },
                 e: { content: "ppm" },
-                f: { 
-                    fieldId: "f_57", 
+                k: { 
+                    fieldId: "k_57", 
                     type: "calculated", 
                     value: "1000", // Default raw value for the limit
                     section: "indoorAirQuality"
                 },
-                g: { content: "ppm" },
+                l: { content: "ppm" },
                 m: { 
                     fieldId: "m_57", 
                     type: "calculated", 
                     value: "0%", // Default display
                     section: "indoorAirQuality",
-                    dependencies: ["d_57", "f_57"]
+                    dependencies: ["d_57", "k_57"]
                 },
                 n: {
                     fieldId: "n_57",
@@ -110,7 +110,7 @@ window.TEUI.SectionModules.sect08 = (function() {
                     value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
-                    dependencies: ["d_57", "f_57"]
+                    dependencies: ["d_57", "k_57"]
                 }
             }
         },
@@ -130,19 +130,19 @@ window.TEUI.SectionModules.sect08 = (function() {
                     classes: ["user-input"]
                 },
                 e: { content: "ppm" },
-                f: { 
-                    fieldId: "f_58", 
+                k: { 
+                    fieldId: "k_58", 
                     type: "calculated",
                     value: "400", // Default raw value for the limit
                     section: "indoorAirQuality"
                 },
-                g: { content: "ppm" },
+                l: { content: "ppm" },
                 m: { 
                     fieldId: "m_58", 
                     type: "calculated", 
                     value: "0%", // Default display
                     section: "indoorAirQuality",
-                    dependencies: ["d_58", "f_58"]
+                    dependencies: ["d_58", "k_58"]
                 },
                 n: {
                     fieldId: "n_58",
@@ -150,18 +150,18 @@ window.TEUI.SectionModules.sect08 = (function() {
                     value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
-                    dependencies: ["d_58", "f_58"]
+                    dependencies: ["d_58", "k_58"]
                 }
             }
         },
 
-        // Row 59: A.5 Rel. Indoor Humidity (annual avg.)
+        // Row 59: A.5.1 Rel. Indoor Humidity Heating Season Avg.
         "59": {
-            id: "A.5",
-            rowId: "A.5",
-            label: "Rel. Indoor Humidity (annual avg.)",
+            id: "A.5.1",
+            rowId: "A.5.1",
+            label: "Rel. Indoor Humidity Heating Season Avg.",
             cells: {
-                c: { label: "Rel. Indoor Humidity (annual avg.)" },
+                c: { label: "Rel. Indoor Humidity Heating Season Avg." },
                 d: { 
                     fieldId: "d_59", 
                     type: "percentage", 
@@ -173,19 +173,33 @@ window.TEUI.SectionModules.sect08 = (function() {
                     classes: ["user-input"] // FieldManager will create slider
                 },
                 e: { content: "% RH" },
-                f: { 
-                    fieldId: "f_59", 
+                f: { content: "A.5.2" }, // ID for cooling season
+                g: { label: "" },
+                h: { content: "Rel. Indoor Humidity Cooling Season Avg." }, // Empty for now
+                i: { 
+                    fieldId: "i_59", 
+                    type: "percentage", 
+                    value: "45", // Default raw value (slider 0-100) - same as heating for now
+                    min: 0,
+                    max: 100,
+                    step: 1,
+                    section: "indoorAirQuality",
+                    classes: ["user-input"] // FieldManager will create slider
+                },
+                j: { content: "% RH" },
+                k: { 
+                    fieldId: "k_59", 
                     type: "calculated",
                     value: "30-60", // String range, handle as raw
                     section: "indoorAirQuality"
                 },
-                g: { content: "%" },
+                l: { content: "%" },
                 m: { 
                     fieldId: "m_59", 
                     type: "calculated", 
                     value: "0%", // Default display
                     section: "indoorAirQuality",
-                    dependencies: ["d_59", "f_59"]
+                    dependencies: ["d_59", "i_59", "k_59"]
                 },
                 n: {
                     fieldId: "n_59",
@@ -193,7 +207,7 @@ window.TEUI.SectionModules.sect08 = (function() {
                     value: "✓", // Default display
                     classes: ["checkmark"],
                     section: "indoorAirQuality",
-                    dependencies: ["d_59", "f_59"]
+                    dependencies: ["d_59", "i_59", "k_59"]
                 }
             }
         },
@@ -289,8 +303,8 @@ window.TEUI.SectionModules.sect08 = (function() {
             ]
         };
         
-        // Add cells C through N
-        const columns = ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'];
+        // Add cells C through O (extended for new layout)
+        const columns = ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o'];
         
         columns.forEach(col => {
             if (row.cells && row.cells[col]) {
@@ -328,7 +342,7 @@ window.TEUI.SectionModules.sect08 = (function() {
     function calculatePercentagesAndStatus() {
         // Calculate Radon percentage and status
         const radonValue = getNumericValue("d_56", 0);
-        const radonLimit = getNumericValue("f_56", 150);
+        const radonLimit = getNumericValue("k_56", 150);
         let radonPercentRaw = 0;
         if (radonLimit > 0) {
             radonPercentRaw = radonValue / radonLimit;
@@ -349,7 +363,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         
         // Calculate CO2 percentage and status
         const co2Value = getNumericValue("d_57", 0);
-        const co2Limit = getNumericValue("f_57", 1000);
+        const co2Limit = getNumericValue("k_57", 1000);
         let co2PercentRaw = 0;
         if (co2Limit > 0) {
             co2PercentRaw = co2Value / co2Limit;
@@ -370,7 +384,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         
         // Calculate TVOC percentage and status
         const tvocValue = getNumericValue("d_58", 0);
-        const tvocLimit = getNumericValue("f_58", 400);
+        const tvocLimit = getNumericValue("k_58", 400);
         let tvocPercentRaw = 0;
         if (tvocLimit > 0) {
             tvocPercentRaw = tvocValue / tvocLimit;
@@ -389,9 +403,10 @@ window.TEUI.SectionModules.sect08 = (function() {
             setElementClass("n_58", null);
         }
         
-        // Calculate Humidity percentage and status
-        const humidityValue = getNumericValue("d_59", 0); // d_59 is a percentage 0-100 from slider
-        const humidityLimitRaw = getFieldValue("f_59") || "30-60"; // String "30-60"
+        // Calculate Humidity percentage and status (now considers both heating and cooling season)
+        const heatingHumidityValue = getNumericValue("d_59", 0); // d_59 is heating season percentage 0-100 from slider
+        const coolingHumidityValue = getNumericValue("i_59", 0); // i_59 is cooling season percentage 0-100 from slider
+        const humidityLimitRaw = getFieldValue("k_59") || "30-60"; // String "30-60"
         
         let minHumidity = 30;
         let maxHumidity = 60;
@@ -403,16 +418,21 @@ window.TEUI.SectionModules.sect08 = (function() {
             }
         }
         
+        // Use average of heating and cooling season for overall assessment
+        const averageHumidity = (heatingHumidityValue + coolingHumidityValue) / 2;
         const middleOfRange = (minHumidity + maxHumidity) / 2;
         let humidityPercentRaw = 0;
         if (middleOfRange > 0) {
-            // d_59 is already a percentage (e.g. 45 means 45%). 
-            // To show how it relates to the middle of the range (e.g. 45 / ((30+60)/2) = 45 / 45 = 100%)
-            humidityPercentRaw = humidityValue / middleOfRange;
+            // Average humidity compared to middle of acceptable range
+            humidityPercentRaw = averageHumidity / middleOfRange;
         }
         setCalculatedValue("m_59", humidityPercentRaw, 'percent-0dp');
         
-        if (humidityValue >= minHumidity && humidityValue <= maxHumidity) {
+        // Pass if both heating and cooling season values are within range
+        const heatingInRange = heatingHumidityValue >= minHumidity && heatingHumidityValue <= maxHumidity;
+        const coolingInRange = coolingHumidityValue >= minHumidity && coolingHumidityValue <= maxHumidity;
+        
+        if (heatingInRange && coolingInRange) {
             setCalculatedValue("n_59", "✓", 'raw');
             setElementClass("n_59", "checkmark");
         } else {
@@ -566,12 +586,12 @@ window.TEUI.SectionModules.sect08 = (function() {
 
             // Add listener for StateManager changes for all user inputs to re-trigger calculations if needed
             // This is more for sliders/dropdowns handled by FieldManager or if state changes externally
-            if (window.TEUI && window.TEUI.StateManager && fieldId.startsWith('d_')) { // Assuming d_ are inputs
+            if (window.TEUI && window.TEUI.StateManager && (fieldId.startsWith('d_') || fieldId.startsWith('i_'))) { // Include both d_ and i_ inputs
                  window.TEUI.StateManager.addListener(fieldId, function(newValue, oldValue) {
                     if (newValue !== oldValue) { // Only if value actually changed
                         // For editable fields, the blur handler already calls calculatePercentagesAndStatus.
-                        // For sliders/dropdowns (d_59), this ensures calculation runs.
-                        if (fieldId === 'd_59') { // Specifically for the humidity slider
+                        // For sliders/dropdowns (d_59, i_59), this ensures calculation runs.
+                        if (fieldId === 'd_59' || fieldId === 'i_59') { // Specifically for the humidity sliders
                              const displayElement = sectionElement.querySelector(`[data-display-for="${fieldId}"]`);
                              if (displayElement) { // Update slider display value if one exists
                                  displayElement.textContent = window.TEUI.formatNumber(window.TEUI.parseNumeric(newValue,0), 'number-0dp') + '%';
@@ -605,12 +625,12 @@ window.TEUI.SectionModules.sect08 = (function() {
         // Add CSS for status indicators
         addStatusStyles();
         
-        // Set initial values for calculated limits (f_56, f_57, f_58, f_59)
+        // Set initial values for calculated limits (k_56, k_57, k_58, k_59)
         // These are static but should be in StateManager and formatted in DOM
-        setCalculatedValue("f_56", 150, 'number-0dp');
-        setCalculatedValue("f_57", 1000, 'number-0dp');
-        setCalculatedValue("f_58", 400, 'number-0dp');
-        setCalculatedValue("f_59", "30-60", 'raw'); // This is a string range
+        setCalculatedValue("k_56", 150, 'number-0dp');
+        setCalculatedValue("k_57", 1000, 'number-0dp');
+        setCalculatedValue("k_58", 400, 'number-0dp');
+        setCalculatedValue("k_59", "30-60", 'raw'); // This is a string range
         
         initializeEventHandlers();
         calculateAllInternal(); // Call the main orchestrator
