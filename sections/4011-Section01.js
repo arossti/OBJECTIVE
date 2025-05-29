@@ -360,80 +360,50 @@ window.TEUI.SectionModules.sect01 = (function() {
         referenceCalculationInProgress = true;
         
         try {
-            // DEBUG: Log the calculation trigger
-            console.log('[S01 Reference] Starting Reference Model calculation...');
-            
-            // CRITICAL: Use explicit Reference state values for Reference calculations
-            // This ensures Reference Model uses Reference standard values (f_113=7.1, d_119=8.33, etc.)
-            
-            // For now, calculate a basic Reference TEUI using Reference standard assumptions
-            // This replaces the complex dependency chain that may not be ready yet
-            
-            const refArea = window.TEUI?.parseNumeric?.(getRefStateValue('h_15'), 0) || 1427.2;
-            const refServiceLife = window.TEUI?.parseNumeric?.(getRefStateValue('h_13'), 0) || 60;
-            const refEmbodiedCarbon = window.TEUI?.parseNumeric?.(getRefStateValue('i_41'), 0) || 345.82;
-            
-            // Calculate a basic Reference TEUI based on Reference standard characteristics
-            // This is a simplified calculation until the full dependency chain is working
-            
-            let referenceTEUI = 341.2; // Default baseline
-            
-            // Try to get Reference TEUI from Section 15 if available
-            const refTEUIFromS15 = getRefStateValue('h_136');
-            console.warn(`[S01 Reference] Checking S15 Reference TEUI: refTEUIFromS15=${refTEUIFromS15}`);
-            
-            if (refTEUIFromS15 && window.TEUI?.parseNumeric?.(refTEUIFromS15, 0) > 0) {
-                referenceTEUI = window.TEUI.parseNumeric(refTEUIFromS15, 341.2);
-                console.log('[S01 Reference] Using S15 Reference TEUI:', referenceTEUI);
+            // Get S15 Reference TEUI if available
+            const s15RefTEUI = getRefStateValue('h_136');
+            if (s15RefTEUI && s15RefTEUI > 0) {
+                setRefStateValue('e_10', s15RefTEUI);
+                // console.log('[S01 Reference] Using S15 Reference TEUI:', s15RefTEUI);
             } else {
-                // Calculate simplified Reference TEUI based on Reference standard efficiency
-                const refHSPF = window.TEUI?.parseNumeric?.(getRefStateValue('f_113'), 0) || 7.1; // Reference HSPF
-                const refVentRate = window.TEUI?.parseNumeric?.(getRefStateValue('d_119'), 0) || 8.33; // Reference vent rate
+                // Calculate internally using reference values
+                const refHSPF = getRefStateValue('f_113') || 7.1;
+                const refVentRate = getRefStateValue('d_119') || 8.33;
+                const refTargetEnergy = getRefStateValue('e_139') || 0;
                 
-                // Simplified Reference calculation: lower efficiency = higher energy use
-                const efficiencyFactor = (12.5 / refHSPF); // Compare to typical design HSPF
-                const ventilationFactor = (refVentRate / 14.0); // Compare to typical design vent rate
-                
-                referenceTEUI = 93.0 * efficiencyFactor * ventilationFactor * 1.5; // Scale up for Reference
-                console.log('[S01 Reference] Calculated Reference TEUI:', referenceTEUI, 'using HSPF:', refHSPF, 'VentRate:', refVentRate);
+                if (refTargetEnergy > 0) {
+                    const refArea = getRefStateValue('h_15') || 1427.2;
+                    const refTEUI = refTargetEnergy / refArea;
+                    // console.log('[S01 Reference] Calculated Reference TEUI:', refTEUI, 'using HSPF:', refHSPF, 'VentRate:', refVentRate);
+                    setRefStateValue('e_10', refTEUI);
+                }
             }
             
-            // Try to get Reference emissions from Section 04 if available
-            let refTargetEmissions = window.TEUI?.parseNumeric?.(getRefStateValue('k_32'), 0);
-            if (refTargetEmissions <= 0) {
-                // Calculate simplified Reference emissions
-                refTargetEmissions = referenceTEUI * refArea * 0.051; // Simplified: TEUI * Area * grid intensity
-                console.log('[S01 Reference] Calculated Reference emissions:', refTargetEmissions);
+            // Get emissions data
+            const s04RefEmissions = getRefStateValue('k_32');
+            if (s04RefEmissions && s04RefEmissions > 0) {
+                setRefStateValue('k_32', s04RefEmissions);
+                // console.log('[S01 Reference] Calculated Reference emissions:', s04RefEmissions);
             } else {
-                console.log('[S01 Reference] Using S04 Reference emissions:', refTargetEmissions);
-            }
-                
-            // Calculate Reference Annual Carbon (d_8)
-            let referenceAnnualCarbon = 0;
-            if (refArea > 0) {
-                referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
+                const refTEUI = getRefStateValue('e_10');
+                const refTargetEmissions = refTEUI * refArea * 0.051; // Simplified: TEUI * Area * grid intensity
+                // console.log('[S01 Reference] Using S04 Reference emissions:', refTargetEmissions);
+                setRefStateValue('k_32', refTargetEmissions);
             }
             
-            // Calculate Reference Lifetime Carbon (d_6)  
-            let referenceLifetimeCarbon = 0;
-            if (refServiceLife > 0) {
-                referenceLifetimeCarbon = Math.round((refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10) / 10;
-            }
-
-            console.log('[S01 Reference] Final values - TEUI:', referenceTEUI, 'Annual Carbon:', referenceAnnualCarbon, 'Lifetime Carbon:', referenceLifetimeCarbon);
-
-            // FIXED: Use dedicated Reference UI updater to ensure Reference values always update Reference columns
-            setReferenceValue('e_10', referenceTEUI, 'number-1dp');
-            setReferenceValue('d_8', referenceAnnualCarbon, 'number-1dp');
-            setReferenceValue('d_6', referenceLifetimeCarbon, 'number-1dp');
-
-            // Store Reference values with ref_ prefix for cross-section use
-            if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue('ref_e_10', referenceTEUI.toString(), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_8', referenceAnnualCarbon.toString(), 'calculated');
-                window.TEUI.StateManager.setValue('ref_d_6', referenceLifetimeCarbon.toString(), 'calculated');
-            }
+            // Calculate carbon metrics using reference values
+            const lifespan = getRefStateValue('h_13') || 60;
+            const refAnnualCarbon = Math.round((s04RefEmissions / refArea) * 10) / 10;
+            const refLifetimeCarbon = Math.round((refAnnualCarbon * lifespan) * 10) / 10;
             
+            // Store Reference values in StateManager
+            setRefStateValue('d_8', refAnnualCarbon);
+            setRefStateValue('d_6', refLifetimeCarbon);
+            
+            // console.log('[S01 Reference] Final values - TEUI:', refTEUI, 'Annual Carbon:', refAnnualCarbon, 'Lifetime Carbon:', refLifetimeCarbon);
+            
+        } catch (error) {
+            console.error('[S01 Reference] Calculation error:', error);
         } finally {
             referenceCalculationInProgress = false;
         }
@@ -456,79 +426,33 @@ window.TEUI.SectionModules.sect01 = (function() {
         targetCalculationInProgress = true;
         
         try {
-            // DEBUG: Log the calculation trigger
-            console.log('[S01 Target] Starting Target Model calculation...');
+            // Get application values for calculations
+            const appTargetEnergy = getAppStateValue('j_32') || 0;
+            const appTargetEmissions = getAppStateValue('k_32') || 0;
+            const appArea = getAppStateValue('h_15') || 1;
             
-            // CRITICAL: Use explicit Application state values for Target calculations
-            // This ensures Target Model uses user's design values (f_113=12.5, d_119=14.00, etc.)
+            // console.log('[S01 Target] Input values - Energy:', appTargetEnergy, 'Emissions:', appTargetEmissions, 'Area:', appArea);
             
-            const appTargetEnergy = window.TEUI?.parseNumeric?.(getAppStateValue('j_32'), 0) || 0;
-            const appActualEnergy = window.TEUI?.parseNumeric?.(getAppStateValue('f_32'), 0) || 0;
-            const appTargetEmissions = window.TEUI?.parseNumeric?.(getAppStateValue('k_32'), 0) || 0;
-            const appActualEmissions = window.TEUI?.parseNumeric?.(getAppStateValue('g_32'), 0) || 0;
-            const appArea = window.TEUI?.parseNumeric?.(getAppStateValue('h_15'), 1) || 1;
-            const appServiceLife = window.TEUI?.parseNumeric?.(getAppStateValue('h_13'), 50) || 50;
-            const appEmbodiedCarbon = window.TEUI?.parseNumeric?.(getAppStateValue('i_41'), 345.82) || 345.82;
-            const useType = getAppStateValue("d_14") || "Targeted Use";
-
-            console.log('[S01 Target] Input values - Energy:', appTargetEnergy, 'Emissions:', appTargetEmissions, 'Area:', appArea);
-
-            // Calculate Target TEUI (h_10)
+            // Calculate TEUI
             let targetTEUI = 0;
             if (appArea > 0) {
                 targetTEUI = Math.round((appTargetEnergy / appArea) * 10) / 10;
             }
-
-            // Calculate Actual TEUI (k_10) - only if in Utility Bills mode
-            let actualTEUI = 0;
-            if (useType === "Utility Bills" && appArea > 0) {
-                actualTEUI = Math.round((appActualEnergy / appArea) * 10) / 10;
-            }
-
-            // Calculate Target Annual Carbon (h_8)
-            let targetAnnualCarbon = 0;
-            if (appArea > 0) {
-                targetAnnualCarbon = Math.round((appTargetEmissions / appArea) * 10) / 10;
-            }
-
-            // Calculate Actual Annual Carbon (k_8) - only if in Utility Bills mode
-            let actualAnnualCarbon = 0;
-            if (useType === "Utility Bills" && appArea > 0) {
-                actualAnnualCarbon = Math.round((appActualEmissions / appArea) * 10) / 10;
-            }
-
-            // Calculate Target Lifetime Carbon (h_6)
-            let targetLifetimeCarbon = 0;
-            if (appServiceLife > 0) {
-                targetLifetimeCarbon = Math.round((appEmbodiedCarbon / appServiceLife + targetAnnualCarbon) * 10) / 10;
-            }
-
-            // Calculate Actual Lifetime Carbon (k_6) - only if in Utility Bills mode
-            let actualLifetimeCarbon = 0;
-            if (useType === "Utility Bills" && appServiceLife > 0) {
-                actualLifetimeCarbon = Math.round((appEmbodiedCarbon / appServiceLife + actualAnnualCarbon) * 10) / 10;
-            }
-
-            console.log('[S01 Target] Final values - TEUI:', targetTEUI, 'Annual Carbon:', targetAnnualCarbon, 'Lifetime Carbon:', targetLifetimeCarbon);
-
-            // FIXED: Use dedicated Target UI updater to ensure Target values always update Target columns
-            setTargetValue('h_10', targetTEUI, 'number-1dp');
-            setTargetValue('h_8', targetAnnualCarbon, 'number-1dp');
-            setTargetValue('h_6', targetLifetimeCarbon, 'number-1dp');
-
-            // Handle Actual values (K column) - conditional based on use type
-            if (useType === "Utility Bills") {
-                setTargetValue('k_10', actualTEUI, 'number-1dp');
-                setTargetValue('k_8', actualAnnualCarbon, 'number-1dp');
-                setTargetValue('k_6', actualLifetimeCarbon, 'number-1dp');
-            } else {
-                setTargetValue('k_10', 'N/A', 'raw');
-                setTargetValue('k_8', 'N/A', 'raw');
-                setTargetValue('k_6', 'N/A', 'raw');
-            }
-
-            // Calculate percentages and explanations
-            calculatePercentagesAndExplanations();
+            
+            // Calculate carbon metrics 
+            const lifespan = getAppStateValue('h_13') || 60;
+            const targetAnnualCarbon = Math.round((appTargetEmissions / appArea) * 10) / 10;
+            const targetLifetimeCarbon = Math.round((targetAnnualCarbon * lifespan) * 10) / 10;
+            
+            // Store Application values in StateManager
+            setAppStateValue('h_10', targetTEUI);
+            setAppStateValue('h_8', targetAnnualCarbon); 
+            setAppStateValue('h_6', targetLifetimeCarbon);
+            
+            // console.log('[S01 Target] Final values - TEUI:', targetTEUI, 'Annual Carbon:', targetAnnualCarbon, 'Lifetime Carbon:', targetLifetimeCarbon);
+            
+        } catch (error) {
+            console.error('[S01 Target] Calculation error:', error);
         } finally {
             targetCalculationInProgress = false;
         }

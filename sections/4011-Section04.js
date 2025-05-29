@@ -62,7 +62,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 element.textContent = 'N/A';
                 element.classList.remove('negative-value');
             }
-            if (window.TEUI?.StateManager?.setValue) {
+        if (window.TEUI?.StateManager?.setValue) {
                 window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
             }
             return;

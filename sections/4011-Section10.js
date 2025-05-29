@@ -90,7 +90,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         if (!currentFieldId) return;
 
         if (currentFieldId === 'd_74') {
-            console.log(`[S10 handleFieldBlur DEBUG] Entered for d_74. Initial textContent: "${fieldElement.textContent}"`);
+            // console.log(`[S10 handleFieldBlur DEBUG] Entered for d_74. Initial textContent: "${fieldElement.textContent}"`);
         }
 
         let valueStr = fieldElement.textContent.trim().replace(/,/g, '');
@@ -137,7 +137,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         // Store the validated, raw numeric string for user inputs
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified'); 
-            console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
+            // console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
         }
 
         // Trigger recalculation using the standardized calculateAll function
@@ -1322,7 +1322,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             setDualEngineValue('i_79', subtotalResults.heatingGains, 'number-2dp-comma');
             setDualEngineValue('k_79', subtotalResults.coolingGains, 'number-2dp-comma');
             
-            console.log("[Section10] Reference Model values stored");
+            // console.log("[Section10] Reference Model values stored");
         } catch (error) {
             console.error('[Section10] Error in Reference Model calculations:', error);
         }
