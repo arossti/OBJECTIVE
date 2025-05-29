@@ -57,27 +57,28 @@ window.TEUI.SectionModules.sect13 = (function() {
 
     /**
      * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      * @param {string} fieldId - The ID of the field to update.
      * @param {number} rawValue - The raw calculated numeric value.
      * @param {string} [formatType='number-2dp-comma'] - The format type string (e.g., 'number-2dp-comma', 'percent-1dp', 'integer').
      */
     function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
-        // Use global formatter - ensuring window.TEUI and formatNumber exist
-        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
-        
-        // Store raw value as string in StateManager for precision
-        if (window.TEUI?.StateManager?.setValue) {
-             let stateValue = isFinite(rawValue) ? rawValue.toString() : null; 
-            window.TEUI.StateManager.setValue(fieldId, stateValue, 'calculated');
+        // Handle special cases (N/A, "✓", "✗", etc.)
+        if (rawValue === "N/A" || rawValue === "✓" || rawValue === "✗" || typeof rawValue === 'string') {
+            // For non-numeric special values, set directly without dual-engine processing
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = rawValue;
+            }
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, rawValue, 'calculated');
+            }
+            return;
         }
         
-        // Update DOM
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
-            element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
-        } else {
-            // console.warn(`setCalculatedValue (S13): Element not found for fieldId ${fieldId}`);
+        // For numeric values, use V2 dual-engine setter
+        if (typeof rawValue === 'number' && isFinite(rawValue)) {
+            setDualEngineValue(fieldId, rawValue, formatType);
         }
     }
 
@@ -2299,4 +2300,47 @@ function handleHeatingSystemChangeForGhosting(newValue) {
     } else {
         // console.warn("[S13 Ghosting] Could not find row TR element for M.2.2");
     } 
+}
+
+//==========================================================================
+// V2 DUAL-ENGINE HELPER FUNCTIONS
+//==========================================================================
+
+// 1. Mode-aware value getter
+function getRefFieldValue(fieldId) {
+    if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+        return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+    } else {
+        return getFieldValue(fieldId);
+    }
+}
+
+// 2. Application value getter
+function getAppFieldValue(fieldId) {
+    return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+}
+
+// 3. Dual-engine value setter
+function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+    const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+    
+    if (isReferenceMode) {
+        // Reference Mode - store with ref_ prefix using new V2 API
+        if (window.TEUI?.StateManager?.setReferenceValue) {
+            window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+        }
+    } else {
+        // Application Mode - store in main state using new V2 API
+        if (window.TEUI?.StateManager?.setApplicationValue) {
+            window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+        }
+    }
+    
+    // Update DOM with proper formatting using global formatNumber
+    const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+        element.textContent = formattedValue;
+        element.classList.toggle('negative-value', rawValue < 0);
+    }
 }
