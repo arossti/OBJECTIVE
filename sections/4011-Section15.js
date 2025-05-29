@@ -901,11 +901,11 @@ window.TEUI.SectionModules.sect15 = (function() {
             const oilPrice = getRefValue('l_16');
             const woodPrice = getRefValue('l_15');
 
-            // CRITICAL: Get Reference values from Section 04 (j_32, k_32)
-            const ref_j32 = getRefValue('j_32'); // Reference Total Energy from S04
-            const ref_k32 = getRefValue('k_32'); // Reference Total Emissions from S04
+            // Use upstream calculation values if available
+            const ref_j32 = window.TEUI?.StateManager?.getValue("ref_j_32") || getNumericValue('j_32');
+            const ref_k32 = window.TEUI?.StateManager?.getValue("ref_k_32") || getNumericValue('k_32');
             
-            console.warn(`[S15 Reference] Using upstream values - j_32: ${ref_j32}, k_32: ${ref_k32}`);
+            // console.warn(`[S15 Reference] Using upstream values - j_32: ${ref_j32}, k_32: ${ref_k32}`);
             
             // Get other Reference dependencies
             const m43 = getRefValue('m_43');
@@ -980,7 +980,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
             setRefValueIfChanged('h_136', ref_teui_h136);
             
-            console.warn(`[S15 Reference] Calculated Reference TEUI values - h_135: ${ref_teui_h135}, h_136: ${ref_teui_h136}`);
+            // console.warn(`[S15 Reference] Calculated Reference TEUI values - h_135: ${ref_teui_h135}, h_136: ${ref_teui_h136}`);
             
             // Calculate all other Reference values using the same pattern...
             

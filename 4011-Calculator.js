@@ -977,23 +977,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Listen for value changes that should trigger recalculation
         const stateManager = window.TEUI.StateManager;
         
-        // Restore wildcard listener - it is part of the original architecture.
-        // This listener is crucial for dynamic updates based on any field change,
-        // triggering recalculation of dirty fields to maintain data consistency.
-        // It was temporarily commented out during debugging of d_97 propagation (Aug 2024).
-        stateManager.addListener('*', function(newValue, oldValue, fieldId) {
-            // console.log(`Wildcard listener: Field ${fieldId} changed from ${oldValue} to ${newValue}`); // Keep this commented for less noise
-            // Skip calculated values to avoid circular recalculation if setValue with 'calculated' already handles deps
-            // However, if a calculated value IS a direct precedent for another, this might still be needed.
-            // The primary guard against infinite loops should be StateManager not auto-triggering from 'calculated' state for registerDependency.
-            if (fieldId.startsWith('cf_') || fieldId.startsWith('dv_')) {
-                 // Potentially too broad - consider if some cf_/dv_ fields ARE direct inputs to others not via registerDependency
-                 // For now, matches original intent of this listener.
-                return;
-            }
-            
-            TEUI.Calculator.recalculateDirtyFields();
-        });
+        // DISABLED: This wildcard listener was causing infinite recursion loops
+        // It violates the V2 "traffic cop" pattern by having every field change
+        // trigger a global recalculation instead of targeted dependency updates
+        // The StateManager's dependency system and section-specific listeners 
+        // should handle recalculation coordination instead
+        
+        // stateManager.addListener('*', function(newValue, oldValue, fieldId) {
+        //     // Skip calculated values to avoid circular recalculation
+        //     if (fieldId.startsWith('cf_') || fieldId.startsWith('dv_')) {
+        //         return;
+        //     }
+        //     
+        //     TEUI.Calculator.recalculateDirtyFields();
+        // });
     }
     
     // initializeWeatherDataHandlers(); // REMOVED: Called from teui-rendering-complete listener instead

@@ -948,8 +948,9 @@ window.TEUI.SectionModules.sect14 = (function() {
             
             // CRITICAL: Listen for d_13 changes to update reference indicators
             sm.addListener('d_13', () => {
-                console.log('[Section14] d_13 changed - updating reference indicators');
-                updateReferenceIndicator();
+                // CRITICAL: Also update reference indicators when d_13 changes
+                // console.log('[Section14] d_13 changed - updating reference indicators');
+                updateAllReferenceIndicators();
             });
         } else {
             // console.warn("Section 14: StateManager not available to add climate listeners.");

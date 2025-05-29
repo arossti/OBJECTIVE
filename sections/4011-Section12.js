@@ -1129,7 +1129,8 @@ window.TEUI.SectionModules.sect12 = (function() {
         
         // CRITICAL: Listen for d_13 changes to update reference indicators
         window.TEUI.StateManager.addListener('d_13', () => {
-            console.log('[Section12] d_13 changed - updating reference indicators');
+            // CRITICAL: Also update reference indicators when d_13 changes
+            // console.log('[Section12] d_13 changed - updating reference indicators');
             updateAllReferenceIndicators();
         });
         
