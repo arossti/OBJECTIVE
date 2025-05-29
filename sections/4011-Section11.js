@@ -804,12 +804,20 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Always runs both engines regardless of UI mode
      */
     function calculateAll() {
-        // console.warn("S11: calculateAll called - running dual engines"); // This was already commented
+        // Add recursion protection for Section 11
+        if (window.sectionCalculationInProgress) {
+            return;
+        }
         
-        calculateApplicationModel();
-        calculateReferenceModel();  
+        window.sectionCalculationInProgress = true;
         
-        // console.warn("S11: Dual-engine calculations complete"); // This was already commented
+        try {
+            // Run both engines independently
+            calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+            calculateApplicationModel(); // Calculates Target values (existing logic)
+        } finally {
+            window.sectionCalculationInProgress = false;
+        }
     }
 
     //==========================================================================
@@ -862,6 +870,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified');
         }
         // Recalculation will be triggered by StateManager listeners
+        // RESTORE: Direct calculation trigger for immediate reactivity
+        if (!window.sectionCalculationInProgress) {
+            calculateAll();
+        }
     }
 
     function initializeEventHandlers() {
@@ -979,6 +991,10 @@ window.TEUI.SectionModules.sect11 = (function() {
                         const numericValue = getNumericValue(sourceFieldId) || 0;
                         targetElement.textContent = formatNumber(numericValue, 2);
                         // Recalculation will be triggered by StateManager listeners
+                        // RESTORE: Direct calculation trigger for immediate reactivity
+                        if (!window.sectionCalculationInProgress) {
+                            calculateAll();
+                        }
                     }
                 });
             }

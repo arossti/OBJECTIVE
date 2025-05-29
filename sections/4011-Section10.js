@@ -1284,12 +1284,20 @@ window.TEUI.SectionModules.sect10 = (function() {
      * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
      */
     function calculateAll() {
-        // console.log('[Section10] Running dual-engine calculations...'); // Comment out
+        // Add recursion protection for Section 10
+        if (window.sectionCalculationInProgress) {
+            return;
+        }
         
-        calculateApplicationModel();
-        calculateReferenceModel();
+        window.sectionCalculationInProgress = true;
         
-        // console.log('[Section10] Dual-engine calculations complete'); // Comment out
+        try {
+            // Run both engines independently
+            calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+            calculateApplicationModel(); // Calculates Target values (existing logic)
+        } finally {
+            window.sectionCalculationInProgress = false;
+        }
     }
     
     /**
@@ -1778,6 +1786,10 @@ window.TEUI.SectionModules.sect10 = (function() {
                 }
                 
                 // Recalculation will be triggered by StateManager listeners
+                // RESTORE: Direct calculation trigger for immediate reactivity
+                if (!window.sectionCalculationInProgress) {
+                    calculateAll();
+                }
             });
         });
         

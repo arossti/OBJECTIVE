@@ -1409,12 +1409,20 @@ window.TEUI.SectionModules.sect09 = (function() {
      * Always runs both engines regardless of UI mode
      */
     function calculateAll() {
-        // console.log('[Section09] Running dual-engine calculations...'); // Comment out
+        // Add recursion protection for Section 09
+        if (window.sectionCalculationInProgress) {
+            return;
+        }
         
-        calculateApplicationModel();
-        calculateReferenceModel();
+        window.sectionCalculationInProgress = true;
         
-        // console.log('[Section09] Dual-engine calculations complete'); // Comment out
+        try {
+            // Run both engines independently
+            calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+            calculateApplicationModel(); // Calculates Target values (existing logic)
+        } finally {
+            window.sectionCalculationInProgress = false;
+        }
     }
     
     /**
@@ -1465,6 +1473,10 @@ window.TEUI.SectionModules.sect09 = (function() {
                     }
                     
                     // Recalculation will be triggered by StateManager listeners
+                    // RESTORE: Direct calculation trigger for immediate reactivity
+                    if (!window.sectionCalculationInProgress) {
+                        calculateAll();
+                    }
                 }
             });
             
