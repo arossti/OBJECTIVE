@@ -77,25 +77,78 @@ window.TEUI.SectionModules.sect15 = (function() {
 
     /**
      * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      * @param {string} fieldId - The ID of the field to update.
      * @param {number} rawValue - The raw calculated numeric value.
      * @param {string} [format='number'] - The format type for display.
      */
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        // Handle N/A or invalid values
+        if (rawValue === "N/A" || rawValue === null || rawValue === undefined || (typeof rawValue === 'number' && !isFinite(rawValue))) {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = "N/A";
+            }
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
+            }
+            return;
+        }
+        
+        // For valid numeric values, use V2 dual-engine setter
+        const numericValue = typeof rawValue === 'number' ? rawValue : window.TEUI?.parseNumeric?.(rawValue, 0) || 0;
+        setDualEngineValue(fieldId, numericValue, format);
+    }
+    
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, format = 'number') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM with proper formatting using local formatNumber (Section 15 has custom formatting)
         const formattedValue = formatNumber(rawValue, format);
-        
-        // Store raw value as string in StateManager for precision (as per README Point 5)
-        window.TEUI.StateManager?.setValue(fieldId, rawValue.toString(), 'calculated');
-        
-        // Update DOM with formatted value
-        const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             element.textContent = formattedValue;
-            // Add/remove classes based on value if needed (e.g., for negatives)
             element.classList.toggle('negative-value', rawValue < 0);
-        } else {
-            // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
         }
+    }
+
+    // Basic field value getter for V2 compatibility
+    function getFieldValue(fieldId) {
+        const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+        if (stateValue != null) return stateValue;
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        return element ? (element.value ?? element.textContent?.trim()) : null;
     }
     
     //==========================================================================
