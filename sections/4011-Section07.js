@@ -144,17 +144,19 @@ window.TEUI.SectionModules.sect07 = (function() {
     //==========================================================================
     
     /**
-     * Get field value with mode awareness - checks if we're in Reference Mode
-     * and returns appropriate value from Reference or Application state
+     * Get field value with mode awareness - FIXED for proper dual-state calculation
+     * CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
      */
     function getRefFieldValue(fieldId) {
-        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-            // In Reference Mode - get from reference state
-            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
-        } else {
-            // In Design Mode - get from application state
-            return getFieldValue(fieldId);
+        // CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
+        // This allows proper dual-state calculation where Reference and Target are calculated simultaneously
+        const refValue = window.TEUI.StateManager?.getReferenceValue?.(fieldId);
+        if (refValue !== null && refValue !== undefined) {
+            return refValue;
         }
+        
+        // Fallback to application value if no reference value exists
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
     
     /**
@@ -162,6 +164,36 @@ window.TEUI.SectionModules.sect07 = (function() {
      */
     function getAppFieldValue(fieldId) {
         return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+    
+    /**
+     * EXPLICIT Reference state getter for Reference Model calculations
+     */
+    function getRefStateValue(fieldId) {
+        // First try ref_ prefixed value (from upstream Reference calculations)
+        const refFieldId = `ref_${fieldId}`;
+        let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
+        
+        // If no ref_ value exists, check if we're looking for a field that should use Reference standard values
+        if ((value === null || value === undefined) && window.TEUI?.StateManager?.getValue) {
+            // For Reference calculations, use the Reference standard values when available
+            const activeDataSet = window.TEUI.StateManager.activeReferenceDataSet || {};
+            if (activeDataSet[fieldId] !== undefined) {
+                value = activeDataSet[fieldId];
+            } else {
+                // Final fallback to main state
+                value = window.TEUI.StateManager.getValue(fieldId);
+            }
+        }
+        
+        return value;
+    }
+
+    /**
+     * EXPLICIT Application state getter for Target Model calculations  
+     */
+    function getAppStateValue(fieldId) {
+        return window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
     
     /**

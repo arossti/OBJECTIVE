@@ -276,6 +276,66 @@ When working with this codebase, previous AI assistants have encountered several
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 
+### CRITICAL: Cross-State Contamination Fix (V2 Post-Refactoring)
+
+**Issue**: After implementing V2 dual-engine architecture, some sections experienced "cross-state contamination" where Reference and Target values mirrored each other instead of calculating independently.
+
+**Root Cause**: The `getRefFieldValue()` helper function was mode-dependent, preventing proper dual-state calculation where Reference and Target engines should run simultaneously with separate data sources.
+
+**✅ REQUIRED FIX PATTERN** (Apply to sections with dual-engine architecture):
+
+1. **Fixed Reference Value Getter**:
+   ```javascript
+   // BEFORE (Mode-dependent - WRONG)
+   function getRefFieldValue(fieldId) {
+       if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+           return window.TEUI.StateManager?.getValue?.(fieldId);
+       }
+       return getFieldValue(fieldId);
+   }
+
+   // AFTER (Always tries reference first - CORRECT)
+   function getRefFieldValue(fieldId) {
+       // CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
+       const refValue = window.TEUI.StateManager?.getReferenceValue?.(fieldId);
+       if (refValue !== null && refValue !== undefined) {
+           return refValue;
+       }
+       // Fallback to application value if no reference value exists
+       return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+   }
+   ```
+
+2. **Added Explicit State Helpers**:
+   ```javascript
+   // EXPLICIT Reference state getter for Reference Model calculations
+   function getRefStateValue(fieldId) {
+       const refFieldId = `ref_${fieldId}`;
+       let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
+       
+       if ((value === null || value === undefined) && window.TEUI?.StateManager?.getValue) {
+           const activeDataSet = window.TEUI.StateManager.activeReferenceDataSet || {};
+           if (activeDataSet[fieldId] !== undefined) {
+               value = activeDataSet[fieldId];
+           } else {
+               value = window.TEUI.StateManager.getValue(fieldId);
+           }
+       }
+       return value;
+   }
+
+   // EXPLICIT Application state getter for Target Model calculations  
+   function getAppStateValue(fieldId) {
+       return window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+   }
+   ```
+
+**Applied To**: S01, S04, S05, S13, S15 (confirmed working)
+
+**⚠️ TODO**: Review and apply this fix to additional sections that implement dual-engine architecture (S07, S09, S10, S11, S12, S14) if cross-state contamination is observed.
+
+**Why This Matters**: Proper state separation ensures Reference calculations use Reference standard values (e.g., HSPF=7.1, ventilation=8.33 ACH) while Target calculations use user's design values (e.g., HSPF=12.5, ventilation=14.00 ACH), preventing the "mirroring" issue where both columns show identical values.
+
 ### REQUIRED: StateManager Implementation Pattern for Cross-Section Functions
 
 One critical architectural pattern is how we handle functions that need to operate across multiple sections, such as temperature setpoints based on occupancy type, or how a calculated value in one section (e.g., Section 5's `i_39`) affects a field in another section (e.g., Section 2's `d_16`). This approach enables consistent behavior while maintaining the single responsibility principle and respecting `StateManager`'s role.

@@ -281,13 +281,17 @@ window.TEUI.SectionModules.sect11 = (function() {
     // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
     //==========================================================================
     
-    // 1. Mode-aware value getter
+    // 1. Mode-aware value getter - FIXED for proper dual-state calculation
     function getRefFieldValue(fieldId) {
-        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
-        } else {
-            return getFieldValue(fieldId);
+        // CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
+        // This allows proper dual-state calculation where Reference and Target are calculated simultaneously
+        const refValue = window.TEUI.StateManager?.getReferenceValue?.(fieldId);
+        if (refValue !== null && refValue !== undefined) {
+            return refValue;
         }
+        
+        // Fallback to application value if no reference value exists
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
 
     // 2. Application value getter
@@ -295,7 +299,33 @@ window.TEUI.SectionModules.sect11 = (function() {
         return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
 
-    // 3. Dual-engine value setter
+    // 3. EXPLICIT Reference state getter for Reference Model calculations
+    function getRefStateValue(fieldId) {
+        // First try ref_ prefixed value (from upstream Reference calculations)
+        const refFieldId = `ref_${fieldId}`;
+        let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
+        
+        // If no ref_ value exists, check if we're looking for a field that should use Reference standard values
+        if ((value === null || value === undefined) && window.TEUI?.StateManager?.getValue) {
+            // For Reference calculations, use the Reference standard values when available
+            const activeDataSet = window.TEUI.StateManager.activeReferenceDataSet || {};
+            if (activeDataSet[fieldId] !== undefined) {
+                value = activeDataSet[fieldId];
+            } else {
+                // Final fallback to main state
+                value = window.TEUI.StateManager.getValue(fieldId);
+            }
+        }
+        
+        return value;
+    }
+
+    // 4. EXPLICIT Application state getter for Target Model calculations  
+    function getAppStateValue(fieldId) {
+        return window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 5. Dual-engine value setter
     function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
         const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
         
