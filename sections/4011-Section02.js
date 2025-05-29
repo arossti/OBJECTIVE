@@ -710,16 +710,7 @@ window.TEUI.SectionModules.sect02 = (function() {
 
         // Add listener for changes in i_39 (from Section 5)
         if (window.TEUI && window.TEUI.StateManager) {
-            window.TEUI.StateManager.addListener('i_39', function(newValue, oldValue, fieldId, state) {
-                // Check if the current Carbon Standard (d_15) is TGS4
-                const carbonStandard = getFieldValue("d_15");
-                if (carbonStandard === "TGS4") {
-                    // If d_15 is TGS4, recalculate d_16 using the new i_39 value
-                    const targetValue = calculateEmbodiedCarbonTarget(); 
-                    // Update the value in StateManager and DOM for d_16
-                    setCalculatedValue("d_16", targetValue);
-                }
-            });
+            window.TEUI.StateManager.addListener('i_39', calculateAll, "buildingInfo");
         }
 
         // Add listener for changes in i_41 (from Section 5)
@@ -1078,6 +1069,40 @@ window.TEUI.SectionModules.sect02 = (function() {
      * @param {number} defaultValue - Default value if field not found
      * @returns {number} The numeric value
      */
+    
+    /**
+     * Set up event handlers for year sliders (h_12, h_13)
+     */
+    function setupYearSliderHandlers(fieldId) {
+        const slider = document.querySelector(`[data-field-id="${fieldId}_slider"]`);
+        if (slider) {
+            slider.addEventListener('input', function() {
+                // Update the associated text field during drag
+                const textField = document.querySelector(`[data-field-id="${fieldId}"]`);
+                if (textField) {
+                    textField.textContent = this.value;
+                    // Update StateManager
+                    if (window.TEUI?.StateManager?.setValue) {
+                        window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
+                    }
+                }
+            });
+            
+            slider.addEventListener('change', function() {
+                // Final update when slider is released
+                const textField = document.querySelector(`[data-field-id="${fieldId}"]`);
+                if (textField) {
+                    textField.textContent = this.value;
+                    // Update StateManager and trigger recalculation
+                    if (window.TEUI?.StateManager?.setValue) {
+                        window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
+                    }
+                    // Trigger recalculation
+                    calculateAll();
+                }
+            });
+        }
+    }
     
     //==========================================================================
     // PUBLIC API

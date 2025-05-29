@@ -362,6 +362,10 @@ window.TEUI.SectionModules.sect01 = (function() {
         try {
             // Get S15 Reference TEUI if available
             const s15RefTEUI = getRefStateValue('h_136');
+            
+            // Declare refArea at function scope to avoid scoping issues
+            const refArea = getRefStateValue('h_15') || 1427.2;
+            
             if (s15RefTEUI && s15RefTEUI > 0) {
                 setReferenceValue('e_10', s15RefTEUI);
                 // console.log('[S01 Reference] Using S15 Reference TEUI:', s15RefTEUI);
@@ -372,7 +376,6 @@ window.TEUI.SectionModules.sect01 = (function() {
                 const refTargetEnergy = getRefStateValue('e_139') || 0;
                 
                 if (refTargetEnergy > 0) {
-                    const refArea = getRefStateValue('h_15') || 1427.2;
                     const refTEUI = refTargetEnergy / refArea;
                     // console.log('[S01 Reference] Calculated Reference TEUI:', refTEUI, 'using HSPF:', refHSPF, 'VentRate:', refVentRate);
                     setReferenceValue('e_10', refTEUI);
