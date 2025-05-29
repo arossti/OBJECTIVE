@@ -76,13 +76,17 @@ window.TEUI.SectionModules.sect04 = (function() {
     // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
     //==========================================================================
     
-    // 1. Mode-aware value getter
+    // 1. Mode-aware value getter - FIXED for proper dual-state calculation
     function getRefFieldValue(fieldId) {
-        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
-        } else {
-            return getFieldValue(fieldId);
+        // CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
+        // This allows proper dual-state calculation where Reference and Target are calculated simultaneously
+        const refValue = window.TEUI.StateManager?.getReferenceValue?.(fieldId);
+        if (refValue !== null && refValue !== undefined) {
+            return refValue;
         }
+        
+        // Fallback to application value if no reference value exists
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
 
     // 2. Application value getter
