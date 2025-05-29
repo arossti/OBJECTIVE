@@ -660,9 +660,23 @@ window.TEUI.SectionModules.sect11 = (function() {
             // Calculate using reference values
             const result = calculateComponentRow(config.row, config, true); // true = isReferenceCalculation
             
+            // CRITICAL FIX: After calculateComponentRow stores Reference values with setDualEngineValue,
+            // we need to read them from the correct state location
             const area = getNumericValue(`d_${config.row}`) || 0;
-            const heatloss = result ? result.heatloss : 0;
-            const heatgain = result ? result.heatgain : 0;
+            
+            // FIX: Read Reference heatloss/heatgain from ref_ prefixed fields or direct result
+            let heatloss, heatgain;
+            if (result && result.heatloss !== undefined && result.heatgain !== undefined) {
+                // Use direct calculation result if available
+                heatloss = result.heatloss;
+                heatgain = result.heatgain;
+            } else {
+                // Fallback: Try to read from ref_ prefixed state
+                const refHeatloss = window.TEUI?.StateManager?.getValue(`ref_i_${config.row}`);
+                const refHeatgain = window.TEUI?.StateManager?.getValue(`ref_k_${config.row}`);
+                heatloss = refHeatloss ? window.TEUI.parseNumeric(refHeatloss, 0) : 0;
+                heatgain = refHeatgain ? window.TEUI.parseNumeric(refHeatgain, 0) : 0;
+            }
             
             // Store for later use
             componentResults[config.row] = { heatloss, heatgain };
