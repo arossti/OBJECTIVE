@@ -843,16 +843,9 @@ window.TEUI.SectionModules.sect15 = (function() {
             return;
         }
         
-        // Check current UI mode and only run appropriate engine
-        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
-        
-        if (isReferenceMode) {
-            // Reference Mode - only calculate Reference values
-            calculateReferenceModel();
-        } else {
-            // Target Mode - only calculate Target values  
-            calculateTargetModel();
-        }
+        // Run both engines independently
+        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+        calculateTargetModel();     // Calculates Target values (existing logic)
     }
     
     // Add recursion protection flags  
