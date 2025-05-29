@@ -485,33 +485,73 @@ window.TEUI.SectionModules.sect08 = (function() {
     
     /**
      * Helper function to set a calculated field value
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      */
     function setCalculatedValue(fieldId, rawValue, formatType = 'number-0dp') { // Default to 0dp for this section unless specified
-        const isNumb = typeof rawValue === 'number' && isFinite(rawValue);
-        // For StateManager: store numbers as strings, "N/A" as "N/A", other direct strings (like "✓") as is.
-        const valueToStore = rawValue === "N/A" ? "N/A" : (isNumb ? rawValue.toString() : String(rawValue));
-
-        if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.setValue === 'function') {
-            window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+        // Handle special cases for raw strings like checkmarks
+        if (formatType === 'raw' || rawValue === "N/A" || typeof rawValue === 'string') {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = String(rawValue);
+            }
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, String(rawValue), 'calculated');
+            }
+            return;
         }
         
-        let formattedValue;
-        if (rawValue === "N/A") {
-            formattedValue = "N/A";
-        } else if (formatType === 'raw') {
-            formattedValue = String(rawValue); // Used for symbols like "✓" or "✗"
-        } else if (formatType.startsWith('percent')) {
-             // Global formatter expects a fraction for percent types (e.g. 0.5 for 50%)
-            const numericValForPercent = typeof rawValue === 'number' ? rawValue : getNumericValue(fieldId, 0); 
-            formattedValue = window.TEUI.formatNumber(numericValForPercent, formatType);
+        // For numeric values, use V2 dual-engine setter
+        const numericValue = typeof rawValue === 'number' ? rawValue : window.TEUI?.parseNumeric?.(rawValue, 0) || 0;
+        setDualEngineValue(fieldId, numericValue, formatType);
+    }
+    
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
         } else {
-            formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-0dp') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM with proper formatting
+        let formattedValue;
+        if (formatType.startsWith('percent')) {
+            // Global formatter expects a fraction for percent types
+            formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        } else {
+            formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
         }
         
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = formattedValue; 
+                element.value = formattedValue;
             } else {
                 element.textContent = formattedValue;
             }
