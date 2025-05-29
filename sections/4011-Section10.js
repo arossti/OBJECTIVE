@@ -130,7 +130,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                 displayValue = formatNumber(0, 'number');
                 rawValueToStore = '0';
             }
-            console.warn(`Invalid input "${valueStr}" for ${currentFieldId}. Resetting to 0.`);
+            // console.warn(`Invalid input "${valueStr}" for ${currentFieldId}. Resetting to 0.`);
         }
         fieldElement.textContent = displayValue; // Update DOM display
 

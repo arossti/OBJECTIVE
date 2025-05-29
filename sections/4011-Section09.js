@@ -1538,7 +1538,7 @@ window.TEUI.SectionModules.sect09 = (function() {
                 calculatePlugLoads();
                 calculateTotals();
                 // CRITICAL: Also update reference indicators when d_13 changes
-                console.log('[Section09] d_13 changed - updating reference indicators');
+                // console.log('[Section09] d_13 changed - updating reference indicators');
                 updateAllReferenceIndicators();
             }, description: "Update when reference standard changes" },
             { source: "m_19", handler: function() {

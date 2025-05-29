@@ -447,47 +447,49 @@ TEUI.Calculator = (function() {
      * Recalculate all values
      */
     function calculateAll() {
-        // console.log('Central calculateAll triggered...');
+        // Use the same global flag as sections to prevent cross-system recursion
+        if (window.sectionCalculationInProgress) {
+            return;
+        }
         
-        // Define a logical calculation order based on major dependencies
-        const calcOrder = [
-            'sect02', // Building Info
-            'sect03', // Climate
-            'sect08', // IAQ
-            'sect09', // Internal Gains
-            'sect12', // Volume Metrics (defines areas for S10, S11)
-            'sect10', // Radiant Gains (i80 for S15)
-            'sect11', // Transmission Losses
-            'sect07', // Water Use (k51 for S15)
-            'sect13', // Mechanical Loads (d117, m121 for S15)
-            'sect06', // Renewable Energy (m43 for S15)
-            'sect14', // TEDI Summary (uses S9, S10, S11, S12, S13)
-            'sect04', // Actual/Target Energy (many inputs, but needs to calc before S05 consumes its outputs)
-            'sect05', // Emissions (consumes S04 outputs)
-            'sect15', // TEUI Summary (consumes S14, S04 and others)
-            'sect16', // Sankey Diagram (visualisation, should be late)
-            'sect17', // Dependency Graph (visualisation, should be late)
-            'sect01'  // Key Values (consumes S15, S05)
-        ];
+        window.sectionCalculationInProgress = true;
+        
+        try {
+            // console.log('Central calculateAll starting...'); // Commented out for clean console
+            
+            // Define calculation order based on dependencies
+            const calcOrder = [
+                'sect02', // Building Info (foundation data)
+                'sect03', // Climate Data (weather dependencies)
+                'sect05', // CO2e Emissions (affects targets)
+                'sect06', // Renewable Energy (affects net energy)
+                'sect07', // Water Use (independent)
+                'sect08', // Indoor Air Quality (independent)
+                'sect09', // Internal Gains (affects heating/cooling)
+                'sect10', // Radiant Gains (affects heating/cooling)
+                'sect11', // Transmission Losses (envelope performance)
+                'sect12', // Volume Metrics (affects energy calcs)
+                'sect13', // Mechanical Loads (depends on envelope+gains)
+                'sect14', // TEDI/TELI (depends on mechanical)
+                'sect15', // TEUI (depends on all energy calcs)
+                'sect04', // Actual vs Target (depends on S15)
+                'sect01'  // Key Values (consumes S15, S05)
+            ];
 
-        // console.log("Calculation Order:", calcOrder.join(' -> ')); // Remove calculation order log
-
-        // Explicitly call each section's calculateAll if it exists
-        calcOrder.forEach(sectionKey => {
-            const sectionModule = window.TEUI.SectionModules?.[sectionKey];
-            if (sectionModule && typeof sectionModule.calculateAll === 'function') {
-                try {
-                    // console.log(`Calculating Section: ${sectionKey}`); // Remove per-section log
-                    sectionModule.calculateAll();
-                } catch (error) {
-                    console.error(`Error calculating section ${sectionKey}:`, error);
+            // Explicitly call each section's calculateAll if it exists
+            calcOrder.forEach(sectionKey => {
+                const sectionModule = window.TEUI.SectionModules?.[sectionKey];
+                if (sectionModule && typeof sectionModule.calculateAll === 'function') {
+                    try {
+                        sectionModule.calculateAll();
+                    } catch (error) {
+                        console.error(`Error calculating section ${sectionKey}:`, error);
+                    }
                 }
-            } else {
-                // console.warn(`Section ${sectionKey} or its calculateAll method not found.`); // Keep warnings? Or remove? Let's remove.
-            }
-        });
-        
-        // console.log('Central calculateAll finished.');
+            });
+        } finally {
+            window.sectionCalculationInProgress = false;
+        }
     }
     
     /**
@@ -495,42 +497,44 @@ TEUI.Calculator = (function() {
      * Run calculations for specific model type or both
      */
     function runAllCalculations(modelType = 'both') {
-        // Add recursion protection
-        if (window.calculationInProgress) {
+        // Use the same unified global flag to prevent recursion
+        if (window.sectionCalculationInProgress) {
             return;
         }
-        window.calculationInProgress = true;
+        window.sectionCalculationInProgress = true;
         
-        // Define section processing order (dependency chain)
-        const sections = ['07', '09', '10', '11', '12', '13', '14', '15', '04', '01'];
-        
-        if (modelType === 'application' || modelType === 'both') {
-            sections.forEach(sectionId => {
-                const section = window.TEUI.SectionModules?.[`sect${sectionId}`];
-                if (section?.calculateApplicationModel) {
-                    try {
-                        section.calculateApplicationModel();
-                    } catch (error) {
-                        console.error(`Error in calculateApplicationModel for section ${sectionId}:`, error);
+        try {
+            // Define section processing order (dependency chain)
+            const sections = ['07', '09', '10', '11', '12', '13', '14', '15', '04', '01'];
+            
+            if (modelType === 'application' || modelType === 'both') {
+                sections.forEach(sectionId => {
+                    const section = window.TEUI.SectionModules?.[`sect${sectionId}`];
+                    if (section?.calculateApplicationModel) {
+                        try {
+                            section.calculateApplicationModel();
+                        } catch (error) {
+                            console.error(`Error in calculateApplicationModel for section ${sectionId}:`, error);
+                        }
                     }
-                }
-            });
-        }
-        
-        if (modelType === 'reference' || modelType === 'both') {
-            sections.forEach(sectionId => {
-                const section = window.TEUI.SectionModules?.[`sect${sectionId}`];
-                if (section?.calculateReferenceModel) {
-                    try {
-                        section.calculateReferenceModel();
-                    } catch (error) {
-                        console.error(`Error in calculateReferenceModel for section ${sectionId}:`, error);
+                });
+            }
+            
+            if (modelType === 'reference' || modelType === 'both') {
+                sections.forEach(sectionId => {
+                    const section = window.TEUI.SectionModules?.[`sect${sectionId}`];
+                    if (section?.calculateReferenceModel) {
+                        try {
+                            section.calculateReferenceModel();
+                        } catch (error) {
+                            console.error(`Error in calculateReferenceModel for section ${sectionId}:`, error);
+                        }
                     }
-                }
-            });
+                });
+            }
+        } finally {
+            window.sectionCalculationInProgress = false;
         }
-        
-        window.calculationInProgress = false;
     }
     
     /**

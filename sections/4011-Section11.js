@@ -935,7 +935,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                 d97Slider.hasSliderListener = true; // Mark as listener attached
             }
         } else {
-            console.warn("Slider for d_97 not found during initialization.");
+            // console.warn("Slider for d_97 not found during initialization.");
         }
         // *** END ADDED ***
 
