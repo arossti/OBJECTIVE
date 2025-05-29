@@ -57,6 +57,48 @@ window.TEUI.SectionModules.sect03 = (function() {
     }
 
     //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-1dp') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM with proper formatting using global formatNumber
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+        }
+    }
+
+    //==========================================================================
     // PART 1: CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
     //==========================================================================
     
@@ -527,58 +569,50 @@ window.TEUI.SectionModules.sect03 = (function() {
     }
     
     /**
-     * Helper: Set field value in DOM and StateManager if available
+     * Set a field value with proper formatting and StateManager updates.
      * REFACTORED: Uses the global window.TEUI.formatNumber standard helper.
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      */
     function setFieldValue(fieldId, value, state = 'calculated') {
-        const rawValue = value !== null && value !== undefined ? value.toString() : null;
-
-        // Set raw value in state manager
-        if (window.TEUI?.StateManager?.setValue) {
-            window.TEUI.StateManager.setValue(fieldId, rawValue, state);
-        } else {
-            console.error("StateManager not available to set value for", fieldId);
-            return; // Cannot proceed without StateManager
+        // Handle N/A or null cases
+        if (value === null || value === undefined || value === "N/A") {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = "N/A";
+            }
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, 'N/A', state);
+            }
+            return;
         }
-        
-        // Also update DOM with formatting
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            let formattedDisplay = rawValue; // Default to raw value if formatting fails
-            const numericValue = window.TEUI.parseNumeric(rawValue, NaN); // Use global parser
 
-            if (!isNaN(numericValue)) {
-                // Determine the correct format type based on field ID conventions
-                let formatType = 'number-2dp'; // Default
-                if (['d_20', 'd_21', 'd_22', 'h_22'].includes(fieldId)) {
-                    formatType = 'integer-nocomma';
-                } else if (['j_19', 'l_22'].includes(fieldId)) {
-                    formatType = 'number-1dp'; // Climate Zone / Elevation 
-                } else if (['d_23', 'h_23', 'd_24', 'h_24', 'l_24'].includes(fieldId)) {
-                    formatType = 'integer'; // Temperatures are whole numbers
-                } else if (['e_23', 'i_23', 'e_24', 'i_24'].includes(fieldId)) {
-                    formatType = 'integer-nocomma'; // Fahrenheit temps
-                } else if (fieldId === 'm_19') {
-                    formatType = 'integer'; // Cooling days
-                }
-                // Ensure the global formatter exists before calling
-                if (typeof window.TEUI?.formatNumber === 'function') {
-                    formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
-                } else {
-                     console.error("Global window.TEUI.formatNumber is not available.");
-                     // Fallback basic formatting if global doesn't exist
-                     formattedDisplay = numericValue.toFixed(formatType.includes('1dp') ? 1 : (formatType.includes('integer') ? 0 : 2)); 
-                }
-            } else if (typeof rawValue === 'string') {
-                // Keep original string if it wasn't numeric (e.g., "N/A", maybe future text values)
-                formattedDisplay = rawValue;
+        // Determine if it's a numeric field requiring formatting
+        const numericValue = window.TEUI?.parseNumeric?.(value);
+        const isNumeric = numericValue !== null && isFinite(numericValue);
+
+        if (isNumeric) {
+            // Determine format type based on field ID patterns for climate calculations
+            let formatType = 'number-1dp'; // Default for most climate fields
+            
+            if (fieldId.includes('_22') || fieldId.includes('_23') || fieldId.includes('_24')) {
+                formatType = 'integer-nocomma'; // Temperature fields
+            } else if (fieldId.includes('_20') || fieldId.includes('_21')) {
+                formatType = 'integer-comma'; // Degree days
+            } else if (fieldId.endsWith('_19')) {
+                formatType = 'integer-nocomma'; // Days cooling
             }
 
-            // Update DOM element
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = formattedDisplay; // Use formatted value for display consistency in inputs too?
-            } else {
-                element.textContent = formattedDisplay;
+            // Use V2 dual-engine setter for numeric values
+            setDualEngineValue(fieldId, numericValue, formatType);
+        } else {
+            // Non-numeric values (text, dropdowns, etc.)
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, value.toString(), state);
+            }
+            
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = value.toString();
             }
         }
     }
