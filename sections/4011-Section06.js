@@ -402,35 +402,22 @@ window.TEUI.SectionModules.sect06 = (function() {
     /**
      * Helper function to set a calculated value using the global pattern.
      * (Replaces the old local setCalculatedValue)
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      */
     function setCalculatedValueHelper(fieldId, rawValue, formatType = 'number-2dp-comma') {
         const numericValue = Number(rawValue);
         if (isNaN(numericValue)) { 
-             if (window.TEUI?.StateManager) {
-                 window.TEUI.StateManager.setValue(fieldId, '0', 'calculated');
-             }
-             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-             if(element) element.textContent = window.TEUI.formatNumber(0, formatType);
-             return; 
-        }
-
-        const formattedValue = window.TEUI.formatNumber(numericValue, formatType);
-        const valueToStore = numericValue.toString();
-
-        if (window.TEUI?.StateManager) {
-            const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
-            if (currentStateValue !== valueToStore) {
-                window.TEUI.StateManager.setValue(fieldId, valueToStore, 'calculated');
-        }
-        }
-        
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.textContent !== formattedValue) {
-                element.textContent = formattedValue;
+            // Handle invalid values
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) element.textContent = window.TEUI?.formatNumber?.(0, formatType) ?? '0';
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue(fieldId, '0', 'calculated');
             }
-             element.classList.toggle('negative-value', numericValue < 0);
+            return; 
         }
+
+        // Use V2 dual-engine setter for valid numeric values
+        setDualEngineValue(fieldId, numericValue, formatType);
     }
     
     /**
@@ -516,6 +503,49 @@ window.TEUI.SectionModules.sect06 = (function() {
     function onSectionRendered() {
         initializeEventHandlers();
         calculateAll();
+    }
+    
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM with proper formatting
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', rawValue < 0);
+        }
     }
     
     //==========================================================================
