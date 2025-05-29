@@ -580,12 +580,12 @@ window.TEUI.SectionModules.sect03 = (function() {
             if (element) {
                 element.textContent = "N/A";
             }
-            if (window.TEUI?.StateManager?.setValue) {
+        if (window.TEUI?.StateManager?.setValue) {
                 window.TEUI.StateManager.setValue(fieldId, 'N/A', state);
             }
             return;
         }
-
+        
         // Determine if it's a numeric field requiring formatting
         const numericValue = window.TEUI?.parseNumeric?.(value);
         const isNumeric = numericValue !== null && isFinite(numericValue);
@@ -604,12 +604,12 @@ window.TEUI.SectionModules.sect03 = (function() {
 
             // Use V2 dual-engine setter for numeric values
             setDualEngineValue(fieldId, numericValue, formatType);
-        } else {
+                } else {
             // Non-numeric values (text, dropdowns, etc.)
             if (window.TEUI?.StateManager?.setValue) {
                 window.TEUI.StateManager.setValue(fieldId, value.toString(), state);
             }
-            
+
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (element) {
                 element.textContent = value.toString();

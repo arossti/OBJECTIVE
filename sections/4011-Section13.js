@@ -70,7 +70,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             if (element) {
                 element.textContent = rawValue;
             }
-            if (window.TEUI?.StateManager?.setValue) {
+        if (window.TEUI?.StateManager?.setValue) {
                 window.TEUI.StateManager.setValue(fieldId, rawValue, 'calculated');
             }
             return;
@@ -2346,5 +2346,5 @@ function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') 
     if (element) {
         element.textContent = formattedValue;
         element.classList.toggle('negative-value', rawValue < 0);
-    }
+    } 
 }

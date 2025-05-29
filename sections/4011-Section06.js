@@ -410,10 +410,10 @@ window.TEUI.SectionModules.sect06 = (function() {
             // Handle invalid values
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (element) element.textContent = window.TEUI?.formatNumber?.(0, formatType) ?? '0';
-            if (window.TEUI?.StateManager) {
-                window.TEUI.StateManager.setValue(fieldId, '0', 'calculated');
-            }
-            return; 
+             if (window.TEUI?.StateManager) {
+                 window.TEUI.StateManager.setValue(fieldId, '0', 'calculated');
+             }
+             return; 
         }
 
         // Use V2 dual-engine setter for valid numeric values

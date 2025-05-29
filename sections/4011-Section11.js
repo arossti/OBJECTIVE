@@ -688,12 +688,12 @@ window.TEUI.SectionModules.sect11 = (function() {
         setDualEngineValue('k_98', totals.gain, 'number-2dp-comma');
         setDualEngineValue('i_97', penaltyHeatlossI, 'number-2dp-comma');
         setDualEngineValue('k_97', penaltyHeatgainK, 'number-2dp-comma');
-        
-        // Store individual component reference values
-        Object.entries(componentResults).forEach(([row, results]) => {
+            
+            // Store individual component reference values
+            Object.entries(componentResults).forEach(([row, results]) => {
             setDualEngineValue(`i_${row}`, results.heatloss, 'number-2dp-comma');
             setDualEngineValue(`k_${row}`, results.heatgain, 'number-2dp-comma');
-        });
+            });
         
         // console.log('[Section11] Reference Model values stored'); // Comment out
     }

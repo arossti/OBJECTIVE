@@ -19,7 +19,7 @@ window.TEUI.SectionModules.sect14 = (function() {
     //==========================================================================
     // HELPER FUNCTIONS
     //==========================================================================
-    
+
     /**
      * Helper function to get a numeric value from StateManager
      * @param {string} fieldId - The field ID

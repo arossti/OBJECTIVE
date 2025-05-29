@@ -1334,7 +1334,7 @@ TEUI.StateManager = (function() {
         
         return getReferenceValue(tCellId);
     }
-
+    
     /**
      * V2 DUAL-STATE ARCHITECTURE ADDITIONS
      * Additional methods to complete the V2 streamlined implementation

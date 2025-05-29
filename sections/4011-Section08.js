@@ -536,7 +536,7 @@ window.TEUI.SectionModules.sect08 = (function() {
             // Application Mode - store in main state using new V2 API
             if (window.TEUI?.StateManager?.setApplicationValue) {
                 window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
-            }
+        }
         }
         
         // Update DOM with proper formatting
@@ -551,7 +551,7 @@ window.TEUI.SectionModules.sect08 = (function() {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = formattedValue;
+                element.value = formattedValue; 
             } else {
                 element.textContent = formattedValue;
             }

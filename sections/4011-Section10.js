@@ -79,7 +79,7 @@ window.TEUI.SectionModules.sect10 = (function() {
         } else if (format === 'currency') {
             formatType = 'currency-2dp';
         }
-
+        
         // Use the V2 dual-engine setter
         setDualEngineValue(fieldId, rawValue, formatType);
     }
@@ -1312,13 +1312,13 @@ window.TEUI.SectionModules.sect10 = (function() {
             calculateUtilizationFactors(true); // true = isReferenceCalculation
             
             // Store reference results using V2 dual-engine setter
-            orientationConfig.forEach(rowId => {
-                const results = orientationResults[rowId] || { heatingGains: 0, coolingGains: 0 };
+                orientationConfig.forEach(rowId => {
+                    const results = orientationResults[rowId] || { heatingGains: 0, coolingGains: 0 };
                 setDualEngineValue(`i_${rowId}`, results.heatingGains, 'number-2dp-comma');
                 setDualEngineValue(`k_${rowId}`, results.coolingGains, 'number-2dp-comma');
-            });
-            
-            // Store subtotal reference values
+                });
+                
+                // Store subtotal reference values
             setDualEngineValue('i_79', subtotalResults.heatingGains, 'number-2dp-comma');
             setDualEngineValue('k_79', subtotalResults.coolingGains, 'number-2dp-comma');
             

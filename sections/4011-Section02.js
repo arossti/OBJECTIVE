@@ -517,13 +517,13 @@ window.TEUI.SectionModules.sect02 = (function() {
         // Handle N/A cases
         if (value === "N/A" || value === null || value === undefined || !isFinite(value)) {
             // For N/A values, update display directly and store as 'N/A'
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (element) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
                 element.textContent = "N/A";
             }
             if (window.TEUI?.StateManager?.setValue) {
                 window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
-            }
+        }
             return;
         }
         
