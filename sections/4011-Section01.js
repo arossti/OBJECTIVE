@@ -285,6 +285,60 @@ window.TEUI.SectionModules.sect01 = (function() {
     }
 
     //==========================================================================
+    // FIXED: DEDICATED UI UPDATE FUNCTIONS FOR DUAL-ENGINE ARCHITECTURE
+    //==========================================================================
+    
+    /**
+     * Updates Reference values (Column D, E) - ALWAYS updates Reference UI regardless of viewing mode
+     */
+    function setReferenceValue(fieldId, rawValue, formatType = 'number-1dp') {
+        // Handle N/A or non-numeric values
+        if (rawValue === 'N/A' || rawValue === null || rawValue === undefined || !isFinite(rawValue)) {
+            // Store as string
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue(`ref_${fieldId}`, 'N/A', 'calculated');
+            }
+            // Update UI with N/A
+            updateDisplayValue(fieldId, 'N/A');
+            return;
+        }
+        
+        // Always store with ref_ prefix for cross-section access
+        if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, rawValue.toString(), 'calculated');
+        }
+        
+        // ALWAYS update Reference column UI (d_, e_ fields)
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        updateDisplayValue(fieldId, formattedValue);
+    }
+    
+    /**
+     * Updates Target values (Column H, K) - ALWAYS updates Target UI regardless of viewing mode
+     */
+    function setTargetValue(fieldId, rawValue, formatType = 'number-1dp') {
+        // Handle N/A or non-numeric values
+        if (rawValue === 'N/A' || rawValue === null || rawValue === undefined || !isFinite(rawValue)) {
+            // Store as string
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, 'N/A', 'calculated');
+            }
+            // Update UI with N/A
+            updateDisplayValue(fieldId, 'N/A');
+            return;
+        }
+        
+        // Always store in Application state for cross-section access
+        if (window.TEUI?.StateManager?.setApplicationValue) {
+            window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+        }
+        
+        // ALWAYS update Target column UI (h_, k_ fields)
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        updateDisplayValue(fieldId, formattedValue);
+    }
+
+    //==========================================================================
     // DUAL-ENGINE ARCHITECTURE: REFERENCE MODEL (Column E)
     //==========================================================================
 
@@ -366,10 +420,10 @@ window.TEUI.SectionModules.sect01 = (function() {
 
             console.log('[S01 Reference] Final values - TEUI:', referenceTEUI, 'Annual Carbon:', referenceAnnualCarbon, 'Lifetime Carbon:', referenceLifetimeCarbon);
 
-            // Use standardized helper with proper 1dp formatting for key values
-            setCalculatedValue('e_10', referenceTEUI, 'number-1dp');
-            setCalculatedValue('d_8', referenceAnnualCarbon, 'number-1dp');
-            setCalculatedValue('d_6', referenceLifetimeCarbon, 'number-1dp');
+            // FIXED: Use dedicated Reference UI updater to ensure Reference values always update Reference columns
+            setReferenceValue('e_10', referenceTEUI, 'number-1dp');
+            setReferenceValue('d_8', referenceAnnualCarbon, 'number-1dp');
+            setReferenceValue('d_6', referenceLifetimeCarbon, 'number-1dp');
 
             // Store Reference values with ref_ prefix for cross-section use
             if (window.TEUI?.StateManager) {
@@ -455,20 +509,20 @@ window.TEUI.SectionModules.sect01 = (function() {
 
             console.log('[S01 Target] Final values - TEUI:', targetTEUI, 'Annual Carbon:', targetAnnualCarbon, 'Lifetime Carbon:', targetLifetimeCarbon);
 
-            // Use standardized helper with proper 1dp formatting for key values
-            setCalculatedValue('h_10', targetTEUI, 'number-1dp');
-            setCalculatedValue('h_8', targetAnnualCarbon, 'number-1dp');
-            setCalculatedValue('h_6', targetLifetimeCarbon, 'number-1dp');
+            // FIXED: Use dedicated Target UI updater to ensure Target values always update Target columns
+            setTargetValue('h_10', targetTEUI, 'number-1dp');
+            setTargetValue('h_8', targetAnnualCarbon, 'number-1dp');
+            setTargetValue('h_6', targetLifetimeCarbon, 'number-1dp');
 
             // Handle Actual values (K column) - conditional based on use type
             if (useType === "Utility Bills") {
-                setCalculatedValue('k_10', actualTEUI, 'number-1dp');
-                setCalculatedValue('k_8', actualAnnualCarbon, 'number-1dp');
-                setCalculatedValue('k_6', actualLifetimeCarbon, 'number-1dp');
+                setTargetValue('k_10', actualTEUI, 'number-1dp');
+                setTargetValue('k_8', actualAnnualCarbon, 'number-1dp');
+                setTargetValue('k_6', actualLifetimeCarbon, 'number-1dp');
             } else {
-                setCalculatedValue('k_10', 'N/A', 'raw');
-                setCalculatedValue('k_8', 'N/A', 'raw');
-                setCalculatedValue('k_6', 'N/A', 'raw');
+                setTargetValue('k_10', 'N/A', 'raw');
+                setTargetValue('k_8', 'N/A', 'raw');
+                setTargetValue('k_6', 'N/A', 'raw');
             }
 
             // Calculate percentages and explanations

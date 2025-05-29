@@ -1162,16 +1162,16 @@ window.TEUI.SectionModules.sect04 = (function() {
     // Row 27: Electricity calculations
     function calculateF27() {
         // =D27-D43-I43 (Total Electricity Use - Onsite Energy - Offsite REC Subtotal)
-        const d27 = getNumericValue('d_27'); // Use helper
-        const d43 = getNumericValue('d_43'); // Use helper
-        const i43 = getNumericValue('i_43'); // Use helper
+        const d27 = getAppNumericValue('d_27'); // FIXED: Use Application values for Target calculations
+        const d43 = getAppNumericValue('d_43'); 
+        const i43 = getAppNumericValue('i_43'); 
         return d27 - d43 - i43;
     }
     
     function calculateG27() {
         // =F27*L27/1000 (Actual Net * Emission factor / 1000)
-        const f27 = getNumericValue('f_27'); // Use helper
-        const l27 = getNumericValue('l_27'); // Use helper
+        const f27 = getAppNumericValue('f_27'); // FIXED: Use Application values for Target calculations
+        const l27 = getAppNumericValue('l_27'); 
         // Dividing by 1000 converts from gCO2e to kgCO2e
         return (f27 * l27) / 1000;
     }
@@ -1184,39 +1184,39 @@ window.TEUI.SectionModules.sect04 = (function() {
     
     function calculateJ27() {
         // =H27-D43-I43 (Target Energy - Onsite Energy - Offsite REC Subtotal)
-        const h27 = getNumericValue('h_27'); // Use helper
-        const d43 = getNumericValue('d_43'); // Use helper
-        const i43 = getNumericValue('i_43'); // Use helper
+        const h27 = getAppNumericValue('h_27'); // FIXED: Use Application values for Target calculations
+        const d43 = getAppNumericValue('d_43'); 
+        const i43 = getAppNumericValue('i_43'); 
         return h27 - d43 - i43;
     }
     
     function calculateK27() {
         // =J27*L27/1000 (Target Net * Emission factor / 1000)
-        const j27 = getNumericValue('j_27'); // Use helper
-        const l27 = getNumericValue('l_27'); // Use helper
+        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
+        const l27 = getAppNumericValue('l_27'); 
         // Dividing by 1000 converts from gCO2e to kgCO2e
         return (j27 * l27) / 1000;
     }
     
     // Row 28: Gas calculations
     function calculateF28() {
-        const d28 = getNumericValue('d_28'); // Use helper
+        const d28 = getAppNumericValue('d_28'); // FIXED: Use Application values for Target calculations
         // =D28*0.0373*277.7778 (Gas volume to energy conversion)
         return d28 * 0.0373 * 277.7778;
     }
     
     function calculateG28() {
-        const d28 = getNumericValue('d_28'); // Use helper
-        const l28 = getNumericValue('l_28'); // Use helper
+        const d28 = getAppNumericValue('d_28'); // FIXED: Use Application values for Target calculations
+        const l28 = getAppNumericValue('l_28'); 
         // =(D28)*L28/1000 (Gas volume * Emission factor / 1000)
         return (d28 * l28) / 1000;
     }
     
     function calculateH28() {
         const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
-        const e51 = getNumericValue('e_51'); // Get numeric value
+        const e51 = getAppNumericValue('e_51'); // FIXED: Use Application values for Target calculations
         const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
-        const h115 = getNumericValue('h_115'); // Get numeric value
+        const h115 = getAppNumericValue('h_115'); // FIXED: Use Application values for Target calculations
         // =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
         if (d113 === "Gas" && d51 === "Gas") {
             return e51 + h115;
@@ -1230,61 +1230,61 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     function calculateJ28() {
-        const h28 = getNumericValue('h_28'); // Use helper
+        const h28 = getAppNumericValue('h_28'); // FIXED: Use Application values for Target calculations
         // =H28*0.0373*277.7778 (Gas volume to energy conversion)
         return h28 * 0.0373 * 277.7778;
     }
     
     function calculateK28() {
-        const h28 = getNumericValue('h_28'); // Use helper
-        const l28 = getNumericValue('l_28'); // Use helper
+        const h28 = getAppNumericValue('h_28'); // FIXED: Use Application values for Target calculations
+        const l28 = getAppNumericValue('l_28'); 
         // =H28*L28/1000 (Gas volume * Emission factor / 1000)
         return (h28 * l28) / 1000;
     }
     
     // Row 29: Propane calculations
     function calculateF29() {
-        const d29 = getNumericValue('d_29'); // Use helper
+        const d29 = getAppNumericValue('d_29'); // FIXED: Use Application values for Target calculations
         // =D29*14.019 (Propane to energy conversion)
         return d29 * 14.019;
     }
     
     function calculateG29() {
-        const d29 = getNumericValue('d_29'); // Use helper
-        const l29 = getNumericValue('l_29'); // Use helper
+        const d29 = getAppNumericValue('d_29'); // FIXED: Use Application values for Target calculations
+        const l29 = getAppNumericValue('l_29'); 
         // =D29*L29/1000 (Propane * Emission factor / 1000)
         return (d29 * l29) / 1000;
     }
     
     function calculateH29() {
-        const d29 = getNumericValue('d_29'); // Use helper
+        const d29 = getAppNumericValue('d_29'); // FIXED: Use Application values for Target calculations
         // =D29 (Target is same as actual for this case)
         return d29;
     }
     
     function calculateJ29() {
-        const h29 = getNumericValue('h_29'); // Use helper
+        const h29 = getAppNumericValue('h_29'); // FIXED: Use Application values for Target calculations
         // =H29*14.019 (Propane to energy conversion)
         return h29 * 14.019;
     }
     
     function calculateK29() {
-        const h29 = getNumericValue('h_29'); // Use helper
-        const l29 = getNumericValue('l_29'); // Use helper
+        const h29 = getAppNumericValue('h_29'); // FIXED: Use Application values for Target calculations
+        const l29 = getAppNumericValue('l_29'); 
         // =H29*L29/1000 (Propane * Emission factor / 1000)
         return (h29 * l29) / 1000;
     }
     
     // Row 30: Oil calculations
     function calculateF30() {
-        const d30 = getNumericValue('d_30'); // Use helper
+        const d30 = getAppNumericValue('d_30'); // FIXED: Use Application values for Target calculations
         // =D30*36.72*0.2777778 (Oil to energy conversion)
         return d30 * 36.72 * 0.2777778;
     }
     
     function calculateG30() {
-        const d30 = getNumericValue('d_30'); // Use helper
-        const l30 = getNumericValue('l_30'); // Use helper
+        const d30 = getAppNumericValue('d_30'); // FIXED: Use Application values for Target calculations
+        const l30 = getAppNumericValue('l_30'); 
         // =D30*L30/1000 (Oil * Emission factor / 1000)
         return (d30 * l30) / 1000;
     }
@@ -1292,10 +1292,9 @@ window.TEUI.SectionModules.sect04 = (function() {
     function calculateH30() {
         const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
         const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
-        const k54 = getNumericValue('k_54'); // CORRECTED: Use k_54 where Oil calculation is now located
-        const f115 = getNumericValue('f_115'); // Get numeric value
+        const k54 = getAppNumericValue('k_54'); // FIXED: Use Application values for Target calculations
+        const f115 = getAppNumericValue('f_115'); // FIXED: Use Application values for Target calculations
         // =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
-        // --- CORRECTED LOGIC ---
         if (d113 === "Oil" && d51 === "Oil") {
             // Sum target Oil Litres from S13 heating (f_115) and S07 DHW (k_54)
             return k54 + f115; 
@@ -1311,164 +1310,154 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     function calculateJ30() {
-        const h30 = getNumericValue('h_30'); // Use helper
+        const h30 = getAppNumericValue('h_30'); // FIXED: Use Application values for Target calculations
         // =H30*36.72*0.2777778 (Oil to energy conversion)
         return h30 * 36.72 * 0.2777778;
     }
     
     function calculateK30() {
-        const h30 = getNumericValue('h_30'); // Use helper
-        const l30 = getNumericValue('l_30'); // Use helper
+        const h30 = getAppNumericValue('h_30'); // FIXED: Use Application values for Target calculations
+        const l30 = getAppNumericValue('l_30'); 
         // =H30*L30/1000 (Oil * Emission factor / 1000)
         return (h30 * l30) / 1000;
     }
     
     // Row 31: Wood calculations
     function calculateF31() {
-        const d31 = getNumericValue('d_31'); // Use helper
+        const d31 = getAppNumericValue('d_31'); // FIXED: Use Application values for Target calculations
         // =D31*1000 (Wood to energy conversion)
         return d31 * 1000;
     }
     
     function calculateG31() {
-        const h31 = getNumericValue('h_31'); // Use helper
-        const l31 = getNumericValue('l_31'); // Use helper
+        const h31 = getAppNumericValue('h_31'); // FIXED: Use Application values for Target calculations
+        const l31 = getAppNumericValue('l_31'); 
         // =H31*L31 (Wood * Emission factor)
         return h31 * l31;
     }
     
     function calculateH31() {
-        const d31 = getNumericValue('d_31'); // Use helper
+        const d31 = getAppNumericValue('d_31'); // FIXED: Use Application values for Target calculations
         // =D31 (Target is same as actual for this case)
         return d31;
     }
     
     function calculateJ31() {
-        const h31 = getNumericValue('h_31'); // Use helper
+        const h31 = getAppNumericValue('h_31'); // FIXED: Use Application values for Target calculations
         // =H31*1000 (Wood to energy conversion)
         return h31 * 1000;
     }
     
     function calculateK31() {
-        const h31 = getNumericValue('h_31'); // Use helper
-        const l31 = getNumericValue('l_31'); // Use helper
+        const h31 = getAppNumericValue('h_31'); // FIXED: Use Application values for Target calculations
+        const l31 = getAppNumericValue('l_31'); 
         // =H31*L31 (Wood * Emission factor)
         return h31 * l31;
     }
     
     // Row 32: Subtotals
     function calculateF32() {
-        const f27 = getNumericValue('f_27'); // Use helper
-        const f28 = getNumericValue('f_28'); // Use helper
-        const f29 = getNumericValue('f_29'); // Use helper
-        const f30 = getNumericValue('f_30'); // Use helper
-        const f31 = getNumericValue('f_31'); // Use helper
+        const f27 = getAppNumericValue('f_27'); // FIXED: Use Application values for Target calculations
+        const f28 = getAppNumericValue('f_28'); 
+        const f29 = getAppNumericValue('f_29'); 
+        const f30 = getAppNumericValue('f_30'); 
+        const f31 = getAppNumericValue('f_31'); 
         // =SUM(F27:F31) (Sum of all energy sources)
         return f27 + f28 + f29 + f30 + f31;
     }
     
     function calculateG32() {
-        const g27 = getNumericValue('g_27'); // Use helper
-        const g28 = getNumericValue('g_28'); // Use helper
-        const g29 = getNumericValue('g_29'); // Use helper
-        const g30 = getNumericValue('g_30'); // Use helper
-        const g31 = getNumericValue('g_31'); // Use helper
-        const d60 = getNumericValue('d_60'); // Use helper (Offsets in tCO2e)
+        const g27 = getAppNumericValue('g_27'); // FIXED: Use Application values for Target calculations
+        const g28 = getAppNumericValue('g_28'); 
+        const g29 = getAppNumericValue('g_29'); 
+        const g30 = getAppNumericValue('g_30'); 
+        const g31 = getAppNumericValue('g_31'); 
+        const d60 = getAppNumericValue('d_60'); // (Offsets in tCO2e)
         // =SUM(G27:G31)-(D60*1000) (Sum of emissions minus offsets)
         return g27 + g28 + g29 + g30 + g31 - (d60 * 1000);
     }
     
     function calculateJ32() {
-        const j27 = getNumericValue('j_27'); // Use helper
-        const j28 = getNumericValue('j_28'); // Use helper
-        const j29 = getNumericValue('j_29'); // Use helper
-        const j30 = getNumericValue('j_30'); // Use helper
-        const j31 = getNumericValue('j_31'); // Use helper
+        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
+        const j28 = getAppNumericValue('j_28'); 
+        const j29 = getAppNumericValue('j_29'); 
+        const j30 = getAppNumericValue('j_30'); 
+        const j31 = getAppNumericValue('j_31'); 
         // =SUM(J27:J31) (Sum of all energy sources)
         return j27 + j28 + j29 + j30 + j31;
     }
     
     function calculateK32() {
-        const k27 = getNumericValue('k_27'); // Use helper
-        const k28 = getNumericValue('k_28'); // Use helper
-        const k29 = getNumericValue('k_29'); // Use helper
-        const k30 = getNumericValue('k_30'); // Use helper
-        const k31 = getNumericValue('k_31'); // Use helper
-        const d60 = getNumericValue('d_60'); // Use helper (Offsets in tCO2e)
+        const k27 = getAppNumericValue('k_27'); // FIXED: Use Application values for Target calculations
+        const k28 = getAppNumericValue('k_28'); 
+        const k29 = getAppNumericValue('k_29'); 
+        const k30 = getAppNumericValue('k_30'); 
+        const k31 = getAppNumericValue('k_31'); 
+        const d60 = getAppNumericValue('d_60'); // (Offsets in tCO2e)
         // =SUM(K27:K31)-(D60*1000) (Sum of emissions minus offsets)
         return k27 + k28 + k29 + k30 + k31 - (d60 * 1000);
     }
     
     // Row 33: Total Net Energy
     function calculateD33() {
-        const f27 = getNumericValue('f_27'); // Use helper
-        const f28 = getNumericValue('f_28'); // Use helper
-        const f29 = getNumericValue('f_29'); // Use helper
-        const f30 = getNumericValue('f_30'); // Use helper
-        const f31 = getNumericValue('f_31'); // Use helper
-        const d43 = getNumericValue('d_43'); // Use helper
-        const i43 = getNumericValue('i_43'); // Use helper
+        const f27 = getAppNumericValue('f_27'); // FIXED: Use Application values for Target calculations
+        const f28 = getAppNumericValue('f_28'); 
+        const f29 = getAppNumericValue('f_29'); 
+        const f30 = getAppNumericValue('f_30'); 
+        const f31 = getAppNumericValue('f_31'); 
+        const d43 = getAppNumericValue('d_43'); 
+        const i43 = getAppNumericValue('i_43'); 
         // =SUM(F$27+F$28+F$29+F$30+F$31-D43-I43)/277.7777
         return (f27 + f28 + f29 + f30 + f31 - d43 - i43) / 277.7777;
     }
     
     function calculateH33() {
-        const j27 = getNumericValue('j_27'); // Use helper
-        const j28 = getNumericValue('j_28'); // Use helper
-        const j29 = getNumericValue('j_29'); // Use helper
-        const j30 = getNumericValue('j_30'); // Use helper
-        const j31 = getNumericValue('j_31'); // Use helper
-        const i43 = getNumericValue('i_43'); // Use helper
-        const d43 = getNumericValue('d_43'); // Use helper
+        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
+        const j28 = getAppNumericValue('j_28'); 
+        const j29 = getAppNumericValue('j_29'); 
+        const j30 = getAppNumericValue('j_30'); 
+        const j31 = getAppNumericValue('j_31'); 
+        const i43 = getAppNumericValue('i_43'); 
+        const d43 = getAppNumericValue('d_43'); 
         // =SUM(J$27+J$28+J$29+J$30+J$31-I43-D43)/277.7777 
         return (j27 + j28 + j29 + j30 + j31 - i43 - d43) / 277.7777;
     }
     
     // Row 34: Annual Percapita Energy
     function calculateD34() {
-        const f32 = getNumericValue('f_32'); // Actual Net Energy Subtotal
-        const d63 = getNumericValue('d_63'); // Occupants
+        const f32 = getAppNumericValue('f_32'); // FIXED: Use Application values for Target calculations
+        const d63 = getAppNumericValue('d_63'); // Occupants
         // New formula: =F32/D63 (Actual Net Energy / Occupants)
         return (f32) / (d63 || 1); // Ensure d63 is not zero
     }
     
     function calculateF34() {
-        const d33 = getNumericValue('d_33'); // Use helper
-        const d63 = getNumericValue('d_63'); // Use helper
+        const d33 = getAppNumericValue('d_33'); // FIXED: Use Application values for Target calculations
+        const d63 = getAppNumericValue('d_63'); 
         // =D33/D63 (Total energy per person)
         return d33 / (d63 || 1);
     }
     
     function calculateH34() {
-        const j32 = getNumericValue('j_32'); // Target Net Energy Subtotal
-        const d63 = getNumericValue('d_63'); // Occupants
+        const j32 = getAppNumericValue('j_32'); // FIXED: Use Application values for Target calculations
+        const d63 = getAppNumericValue('d_63'); // Occupants
         // New formula: =J32/D63 (Target Net Energy / Occupants)
         return (j32) / (d63 || 1); // Ensure d63 is not zero
     }
     
     function calculateJ34() {
-        const h33 = getNumericValue('h_33'); // Use helper
-        const d63 = getNumericValue('d_63'); // Use helper
+        const h33 = getAppNumericValue('h_33'); // FIXED: Use Application values for Target calculations
+        const d63 = getAppNumericValue('d_63'); 
         // =H33/D63 (Target GJ per person)
         return h33 / (d63 || 1);
     }
     
-    // Function calculateL34 will be removed or effectively disabled later by removing its call and display
-    /*
-    function calculateL34() {
-        const j32 = getNumericValue('j_32'); // CORRECTED: Target Net ekWh
-        const d63 = getNumericValue('d_63'); // Occupants
-        // New formula: =J32/D63 (Target kWh/pp)
-        return j32 / (d63 || 1);
-    }
-    */
-    
     // Row 35: Primary Energy
     function calculateD35() {
         const d14 = window.TEUI.StateManager?.getValue('d_14'); // Get raw string value
-        const j27 = getNumericValue('j_27'); // Use helper
-        const h35 = getNumericValue('h_35'); // Use helper
-        const f27 = getNumericValue('f_27'); // Use helper
+        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
+        const h35 = getAppNumericValue('h_35'); 
+        const f27 = getAppNumericValue('f_27'); 
         // =IF(D14="Targeted Use", J27*H35, F27*H35)
         if (d14 === "Targeted Use") {
             return j27 * h35;
@@ -1478,8 +1467,8 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     function calculateF35() {
-        const d35 = getNumericValue('d_35'); // Use helper
-        const h15 = getNumericValue('h_15'); // Use helper
+        const d35 = getAppNumericValue('d_35'); // FIXED: Use Application values for Target calculations
+        const h15 = getAppNumericValue('h_15'); 
         // =D35/H15 (Energy per floor area)
         return d35 / (h15 || 1);
     }

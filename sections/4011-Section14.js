@@ -17,14 +17,13 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 window.TEUI.SectionModules.sect14 = (function() {
     
     //==========================================================================
-    // HELPER FUNCTIONS (Copied from Section 15 Refactor)
+    // HELPER FUNCTIONS
     //==========================================================================
-
+    
     /**
-     * Safely parses a numeric value from StateManager or DOM, handling potential strings with commas.
-     * Uses the global parseNumeric if available, otherwise provides a fallback.
-     * @param {string} fieldId - The ID of the field to retrieve the value for.
-     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     * Helper function to get a numeric value from StateManager
+     * @param {string} fieldId - The field ID
+     * @returns {number} - The numeric value or 0 if not found/invalid
      */
     function getNumericValue(fieldId) {
         if (typeof window.TEUI?.parseNumeric === 'function') {
@@ -46,61 +45,66 @@ window.TEUI.SectionModules.sect14 = (function() {
     }
 
     /**
-     * Formats a number according to the project's display rules (2 decimal places, commas).
-     * Handles specific formats like percentages and currency.
-     * @param {number} value - The number to format.
-     * @param {string} [format='number'] - The type of format ('number', 'currency', 'percent', 'W/m2').
-     * @returns {string} The formatted number as a string.
+     * Helper function to set a calculated field value
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      */
-    function formatNumber(value, format = 'number') {
-        if (value === null || value === undefined || isNaN(value)) {
-            return '0.00'; // Default numeric format for errors/NaN
+    function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        // Handle N/A or invalid values
+        if (rawValue === "N/A" || rawValue === null || rawValue === undefined || (typeof rawValue === 'number' && !isFinite(rawValue))) {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = "N/A";
+            }
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
+            }
+            return;
         }
-
-        const num = Number(value);
-
-        if (format === 'currency') {
-            return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else if (format === 'percent') {
-            return (num * 100).toFixed(0) + '%';
-        } else if (format === 'btu') {
-            return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
-        } else if (format === 'tons') {
-            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        } else if (format === 'integer') {
-             return num.toLocaleString('en-US', { maximumFractionDigits: 0 });
-        } else { // Default number format (kWh, kWh/m2, W/m2)
-            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        // For valid numeric values, use V2 dual-engine setter
+        const numericValue = typeof rawValue === 'number' ? rawValue : window.TEUI?.parseNumeric?.(rawValue, 0) || 0;
+        setDualEngineValue(fieldId, numericValue, format);
+    }
+    
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
         }
     }
 
-    /**
-     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
-     * @param {string} fieldId - The ID of the field to update.
-     * @param {number} rawValue - The raw calculated numeric value.
-     * @param {string} [format='number'] - The format type for display.
-     */
-    function setCalculatedValue(fieldId, rawValue, format = 'number') {
-        // Handle potential N/A cases first
-        if (isNaN(rawValue) || rawValue === null || rawValue === undefined) {
-             window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
-             const elementNA = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
-             if (elementNA) elementNA.textContent = 'N/A';
-             return; // Stop processing if value is not a valid number
-        }
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
 
-        const formattedValue = formatNumber(rawValue, format);
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, format = 'number') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
         
-        // Store raw value as string in StateManager for precision
-        window.TEUI.StateManager?.setValue(fieldId, rawValue.toString(), 'calculated');
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
         
-        // Update DOM with formatted value
-        const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+        // Update DOM with proper formatting using global formatNumber
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, format) ?? rawValue?.toString() ?? 'N/A';
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
             element.textContent = formattedValue;
-            element.classList.toggle('negative-value', rawValue < 0);
-        } else {
-            // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
         }
     }
 
@@ -812,7 +816,7 @@ window.TEUI.SectionModules.sect14 = (function() {
         // Update M column with percentage
         const mElement = document.querySelector(`[data-field-id="${mFieldId}"]`);
         if (mElement) {
-            mElement.textContent = formatNumber(cappedPercentage / 100, 'percent');
+            mElement.textContent = window.TEUI?.formatNumber?.(cappedPercentage / 100, 'percent') ?? 'N/A';
         }
         
         // Update N column with checkmark/warning
@@ -870,7 +874,7 @@ window.TEUI.SectionModules.sect14 = (function() {
                          rawValue = getNumericValue(fieldId);
                     }
                     
-                    element.textContent = formatNumber(rawValue, format);
+                    element.textContent = window.TEUI?.formatNumber?.(rawValue, format) ?? rawValue?.toString() ?? 'N/A';
                     element.classList.toggle('negative-value', rawValue < 0);
                 }
             }
