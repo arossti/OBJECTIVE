@@ -277,6 +277,48 @@ window.TEUI.SectionModules.sect11 = (function() {
     // HELPER FUNCTIONS (Standardized)
     //==========================================================================
     
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM display
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+            element.textContent = formattedValue;
+        }
+    }
+    
     function getNumericValue(fieldId) {
         // Use global parser if available
         if (window.TEUI?.parseNumeric) return window.TEUI.parseNumeric(getFieldValue(fieldId));
@@ -303,7 +345,7 @@ window.TEUI.SectionModules.sect11 = (function() {
 
     /**
      * Sets a calculated value in the StateManager and updates the corresponding DOM element.
-     * Uses the standardized formatNumber helper.
+     * Updated for V2 dual-engine architecture - now an alias for setDualEngineValue
      * @param {string} fieldId - The ID of the field to update.
      * @param {number} rawValue - The raw calculated numeric value.
      * @param {string} [format='number'] - The format type for display.
@@ -311,59 +353,25 @@ window.TEUI.SectionModules.sect11 = (function() {
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
         // Handle potential N/A cases first
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
-             window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
-             const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-             if (elementNA) elementNA.textContent = 'N/A';
+             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+             if (element) element.textContent = 'N/A';
              return; // Stop processing if value is not a valid number
         }
         
-        // Determine format if not explicitly passed (needed for percentages in this section)
+        // Convert legacy format types to V2 format types
+        let formatType = format;
         if (format === 'number') {
-             if (fieldId.startsWith('g_')) { format = 'W/m2'; } // U-Values are 3 decimals
-             else if (/[hjl]_[\\d]{2,}/.test(fieldId) || fieldId === 'h_98' || fieldId === 'j_98' || fieldId === 'l_98') { format = 'percent'; }
-             // Default remains 'number' for others (i_, k_, e_)
+             if (fieldId.startsWith('g_')) { formatType = 'u-value'; } // U-Values
+             else if (/[hjl]_[\\d]{2,}/.test(fieldId) || fieldId === 'h_98' || fieldId === 'j_98' || fieldId === 'l_98') { formatType = 'percent-2dp'; }
+             else formatType = 'number-2dp-comma';
+        } else if (format === 'W/m2') {
+            formatType = 'u-value';
+        } else if (format === 'percent') {
+            formatType = 'percent-2dp';
         }
         
-        const formattedValue = formatNumber(rawValue, format);
-
-            if (window.TEUI?.StateManager?.setValue) {
-            // Store raw value as string in StateManager for precision
-            window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
-            }
-        
-        // Update DOM with formatted value
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
-            element.classList.toggle('negative-value', rawValue < 0);
-        } else {
-             // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
-        }
-    }
-
-    /**
-     * Formats a number according to the project's display rules.
-     * Handles specific formats like percentages, currency, W/m2.
-     * @param {number} value - The number to format.
-     * @param {string} [format='number'] - The type of format.
-     * @returns {string} The formatted number as a string.
-     */
-    function formatNumber(value, format = 'number') {
-        if (value === null || value === undefined || isNaN(value)) {
-            // Return 0 or 0% based on expected format
-            return format === 'percent' ? '0%' : (format === 'W/m2' ? '0.000' : '0.00');
-        }
-        
-        const num = Number(value);
-        
-        if (format === 'percent') {
-            // Multiply decimal by 100, then format to 2 decimal places and add %
-            return (num * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
-        } else if (format === 'W/m2') { // U-Values (3 decimals)
-            return num.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-        } else { // Default: kWh, RSI, Rimp, Area etc. (2 decimals)
-            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        // Use the V2 dual-engine setter
+        setDualEngineValue(fieldId, rawValue, formatType);
     }
 
     function setElementClass(fieldId, isGood) {
@@ -611,7 +619,6 @@ window.TEUI.SectionModules.sect11 = (function() {
 
     /**
      * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
-     * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
         // console.log('[Section11] Running Reference Model calculations...'); // Comment out
@@ -638,47 +645,39 @@ window.TEUI.SectionModules.sect11 = (function() {
         });
 
         // Calculate thermal bridge penalty using reference percentage
-        const penaltyPercent = window.TEUI?.StateManager?.getReferenceValue('d_97') || 
-                               getNumericValue('d_97');
+        const penaltyPercent = getRefFieldValue('d_97');
         const penaltyDecimal = penaltyPercent / 100;
         const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal));
         
         const penaltyHeatlossI = totals.loss * validatedPenalty;
         const penaltyHeatgainK = totals.gain * validatedPenalty;
 
-        // Store Reference Model results with ref_ prefix
-        if (window.TEUI?.StateManager) {
-            // Component totals
-            window.TEUI.StateManager.setValue('ref_d_98', totals.areaD.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_i_98', totals.loss.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_98', totals.gain.toString(), 'calculated');
-            
-            // Penalty values
-            window.TEUI.StateManager.setValue('ref_i_97', penaltyHeatlossI.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_97', penaltyHeatgainK.toString(), 'calculated');
-            
-            // Store individual component reference values
-            Object.entries(componentResults).forEach(([row, results]) => {
-                const rowStr = row.toString();
-                window.TEUI.StateManager.setValue(`ref_i_${rowStr}`, results.heatloss.toString(), 'calculated');
-                window.TEUI.StateManager.setValue(`ref_k_${rowStr}`, results.heatgain.toString(), 'calculated');
-            });
-        }
+        // Store Reference Model results using V2 dual-engine setter
+        setDualEngineValue('d_98', totals.areaD, 'number-2dp-comma');
+        setDualEngineValue('i_98', totals.loss, 'number-2dp-comma');
+        setDualEngineValue('k_98', totals.gain, 'number-2dp-comma');
+        setDualEngineValue('i_97', penaltyHeatlossI, 'number-2dp-comma');
+        setDualEngineValue('k_97', penaltyHeatgainK, 'number-2dp-comma');
+        
+        // Store individual component reference values
+        Object.entries(componentResults).forEach(([row, results]) => {
+            setDualEngineValue(`i_${row}`, results.heatloss, 'number-2dp-comma');
+            setDualEngineValue(`k_${row}`, results.heatgain, 'number-2dp-comma');
+        });
         
         // console.log('[Section11] Reference Model values stored'); // Comment out
     }
 
     /**
-     * TARGET MODEL ENGINE: Calculate all Column H values using Application state
-     * This is the existing calculateAll logic, refactored
+     * APPLICATION MODEL ENGINE: Calculate all Column H values using Application state
      */
-    function calculateTargetModel() {
-        // console.log('[Section11] Running Target Model calculations...'); // Comment out
+    function calculateApplicationModel() {
+        // console.log('[Section11] Running Application Model calculations...'); // Comment out
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
-            calculateComponentRow(config.row, config, false); // false = Target calculation
+            calculateComponentRow(config.row, config, false); // false = Application calculation
             const area = getNumericValue(`d_${config.row}`) || 0;
             totals.loss += getNumericValue(`i_${config.row}`) || 0;
             totals.gain += getNumericValue(`k_${config.row}`) || 0;
@@ -771,14 +770,14 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     /**
-     * DUAL-ENGINE ORCHESTRATION
-     * Replaces the original calculateAll function
+     * DUAL-ENGINE ORCHESTRATION (V2 Pattern)
+     * Always runs both engines regardless of UI mode
      */
     function calculateAll() {
         // console.warn("S11: calculateAll called - running dual engines"); // This was already commented
         
+        calculateApplicationModel();
         calculateReferenceModel();  
-        calculateTargetModel();     
         
         // console.warn("S11: Dual-engine calculations complete"); // This was already commented
     }
