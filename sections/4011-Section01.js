@@ -144,6 +144,54 @@ window.TEUI.SectionModules.sect01 = (function() {
     // PART 4: DUAL-ENGINE HELPER FUNCTIONS
     //==========================================================================
 
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-1dp') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // CRITICAL: Use Section 01's custom updateDisplayValue to preserve styling
+        // This maintains tier indicators, animations, gauges, and visual design
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        updateDisplayValue(fieldId, formattedValue);
+    }
+
+    // Basic field value getter for V2 compatibility
+    function getFieldValue(fieldId) {
+        const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+        if (stateValue != null) return stateValue;
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        return element ? (element.value ?? element.textContent?.trim()) : null;
+    }
+
     /**
      * Helper function to safely get numeric values from the APPLICATION state.
      */
@@ -190,28 +238,24 @@ window.TEUI.SectionModules.sect01 = (function() {
     /**
      * Standardized helper function to set calculated values with proper formatting.
      * CRITICAL: Preserves Section 01's custom styling and HTML structure
+     * Updated for V2 dual-engine architecture - now uses setDualEngineValue
      * @param {string} fieldId - The field ID to update
      * @param {number} rawValue - The raw numeric value to store
      * @param {string} formatType - The format type for display (e.g., 'number-1dp', 'number-2dp-comma')
      */
-    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
-        // Store raw value as string in StateManager for precision
-        if (window.TEUI?.StateManager?.setValue) {
-            const valueToStore = isFinite(rawValue) ? rawValue.toString() : 'N/A';
-            window.TEUI.StateManager.setValue(fieldId, valueToStore, 'calculated');
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-1dp') {
+        // Handle N/A cases first
+        if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
+            // For N/A values, update display directly and store as 'N/A'
+            updateDisplayValue(fieldId, 'N/A');
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
+            }
+            return;
         }
         
-        // CRITICAL: Use updateDisplayValue to preserve custom styling instead of direct DOM manipulation
-        // This maintains tier indicators, styling classes, and visual design
-        let formattedValue;
-        if (rawValue === "N/A" || !isFinite(rawValue)) {
-            formattedValue = "N/A";
-        } else {
-            formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue.toString();
-        }
-        
-        // Use the specialized updateDisplayValue function that preserves Section 01's styling
-        updateDisplayValue(fieldId, formattedValue);
+        // Use the V2 dual-engine setter which handles state management and custom styling
+        setDualEngineValue(fieldId, rawValue, formatType);
     }
 
     //==========================================================================
@@ -225,6 +269,7 @@ window.TEUI.SectionModules.sect01 = (function() {
     /**
      * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state exclusively
      * ENHANCED: Now properly receives Reference TEUI from Section 15 (ref_h_136)
+     * Updated for V2 dual-engine architecture using getRefFieldValue
      */
     function calculateReferenceModel() {
         // Add recursion protection
@@ -235,10 +280,10 @@ window.TEUI.SectionModules.sect01 = (function() {
         referenceCalculationInProgress = true;
         
         try {
-            // CRITICAL: Get Reference TEUI from Section 15 (final Reference calculation)
-            const refTEUIFromS15 = window.TEUI.StateManager?.getValue('ref_h_136');
-            const refJ32FromS04 = window.TEUI.StateManager?.getValue('ref_j_32');
-            const refK32FromS04 = window.TEUI.StateManager?.getValue('ref_k_32');
+            // CRITICAL: Get Reference TEUI from Section 15 (final Reference calculation) using V2 helper
+            const refTEUIFromS15 = getRefFieldValue('h_136');
+            const refJ32FromS04 = getRefFieldValue('j_32');
+            const refK32FromS04 = getRefFieldValue('k_32');
             
             // Calculate Reference TEUI (e_10) using Section 15's final Reference calculation
             let referenceTEUI = 341.2; // Default fallback
@@ -249,20 +294,20 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Calculate Reference Annual Carbon (d_8) using Section 04's Reference total
             const refTargetEmissions = window.TEUI?.parseNumeric?.(refK32FromS04, 14740.8) ?? 14740.8;
             
-                // CRITICAL FIX: Use Application area as fallback, not default of 1
-                // This prevents timing issues where Reference calculations run before Reference standard loads
-                const refArea = getRefNumericValue('h_15', getAppNumericValue('h_15', 1427.2));
+            // CRITICAL FIX: Use Reference area with Application area as fallback using V2 helper
+            // This prevents timing issues where Reference calculations run before Reference standard loads
+            const refArea = window.TEUI?.parseNumeric?.(getRefFieldValue('h_15'), 0) || window.TEUI?.parseNumeric?.(getAppFieldValue('h_15'), 1427.2) || 1427.2;
                 
             let referenceAnnualCarbon = 0;
-                if (refArea > 0) {
-                    referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
-                } else {
-                    console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
+            if (refArea > 0) {
+                referenceAnnualCarbon = Math.round((refTargetEmissions / refArea) * 10) / 10;
+            } else {
+                console.error('❌ ERROR: refArea is 0 or invalid for Reference d_8 calculation');
             }
             
-            // Calculate Reference Lifetime Carbon
-            const refEmbodiedCarbon = getRefNumericValue('ref_i_39', getAppNumericValue('i_41', 0));
-            const refServiceLife = getRefNumericValue('h_13', getAppNumericValue('h_13', 60));
+            // Calculate Reference Lifetime Carbon using V2 helpers
+            const refEmbodiedCarbon = window.TEUI?.parseNumeric?.(getRefFieldValue('i_39'), 0) || window.TEUI?.parseNumeric?.(getAppFieldValue('i_41'), 0) || 0;
+            const refServiceLife = window.TEUI?.parseNumeric?.(getRefFieldValue('h_13'), 0) || window.TEUI?.parseNumeric?.(getAppFieldValue('h_13'), 60) || 60;
             let referenceLifetimeCarbon = 0;
             
             if (refServiceLife > 0) {
@@ -292,6 +337,7 @@ window.TEUI.SectionModules.sect01 = (function() {
 
     /**
      * TARGET MODEL ENGINE: Calculate all Column H values using Application state exclusively
+     * Updated for V2 dual-engine architecture using getAppFieldValue
      */
     function calculateTargetModel() {
         // Add recursion protection
@@ -302,15 +348,15 @@ window.TEUI.SectionModules.sect01 = (function() {
         targetCalculationInProgress = true;
         
         try {
-            // All inputs from Application state
-            const appTargetEnergy = getAppNumericValue('j_32', 0);
-            const appActualEnergy = getAppNumericValue('f_32', 0);
-            const appTargetEmissions = getAppNumericValue('k_32', 0);
-            const appActualEmissions = getAppNumericValue('g_32', 0);
-            const appArea = getAppNumericValue('h_15', 1);
-            const appServiceLife = getAppNumericValue('h_13', 50);
-            const appEmbodiedCarbon = getAppNumericValue('i_41', 345.82);
-            const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
+            // All inputs from Application state using V2 helper
+            const appTargetEnergy = window.TEUI?.parseNumeric?.(getAppFieldValue('j_32'), 0) || 0;
+            const appActualEnergy = window.TEUI?.parseNumeric?.(getAppFieldValue('f_32'), 0) || 0;
+            const appTargetEmissions = window.TEUI?.parseNumeric?.(getAppFieldValue('k_32'), 0) || 0;
+            const appActualEmissions = window.TEUI?.parseNumeric?.(getAppFieldValue('g_32'), 0) || 0;
+            const appArea = window.TEUI?.parseNumeric?.(getAppFieldValue('h_15'), 1) || 1;
+            const appServiceLife = window.TEUI?.parseNumeric?.(getAppFieldValue('h_13'), 50) || 50;
+            const appEmbodiedCarbon = window.TEUI?.parseNumeric?.(getAppFieldValue('i_41'), 345.82) || 345.82;
+            const useType = getAppFieldValue("d_14") || "Targeted Use";
 
             // Calculate Target TEUI (h_10)
             let targetTEUI = 0;
