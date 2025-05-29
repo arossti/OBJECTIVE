@@ -1,7 +1,62 @@
 # V2 Debugging Investigation Plan
 ## Post-Refactor Calculation Regression Analysis
 
-### **PROBLEM STATEMENT**
+---
+
+## **INVESTIGATION COMPLETED - December 2024** ✅
+
+### **Key Discovery: Main Branch Already Has Dual-Engine Architecture**
+
+**Surprising Finding**: Main branch ALREADY implements dual-engine architecture in Section 15:
+- ✅ Has `calculateReferenceModel()` and `calculateTargetModel()` functions
+- ✅ `calculateAll()` runs BOTH engines simultaneously  
+- ✅ Uses `ref_` prefix for Reference values
+- ✅ Has `setRefValueIfChanged` helper for Reference calculations
+
+### **Architecture Understanding Corrected**
+
+**Previous Assumption (WRONG)**: Main = single engine, SSv2 = dual engine  
+**Reality**: Both main and SSv2 have dual engines, but SSv2 has calculation errors
+
+### **Root Cause Identified: Data Source Isolation**
+
+The calculation engines are **mixing data sources** instead of maintaining isolation:
+
+**Should Be**:
+- **Reference Engine**: Gets ALL values from Reference sources (standards + overrides)
+- **Target Engine**: Gets ALL values from Target sources (user design inputs)
+
+**Currently in SSv2**: Engines are cross-contaminating data between Reference and Target sources
+
+### **Critical Dual-Engine Concepts Validated**
+
+User's clarification: *"I think of this like two completely separate apps"*
+
+1. **Reference Model**: Uses Reference standard values (from d_13 code selection), applies Reference efficiency ratings (f_113 = 7.1 HSPF), always calculates and reports to S01 for performance dashboard
+
+2. **Target Model**: Uses Target/Design values (user inputs), uses user-specified equipment efficiency, calculates actual design performance
+
+### **UI Mode Behavior (Corrected Understanding)**
+
+**Reference Mode**: Shows Reference calculations in UI reflecting Reference standard values (NOT just overrides, but actual Reference calculations displayed)
+
+**Target Mode**: Shows ONLY Target calculations (Exception: S01 shows both as performance dashboard)
+
+### **Next Phase Focus**
+
+1. Compare `getNumericValue()` methods between main and SSv2
+2. Trace data flows to find contamination points  
+3. Ensure **perfect data source isolation** where each engine operates as completely separate application
+
+**Architecture Principles Validated**:
+- ✅ Both engines always run (correct behavior)
+- ✅ S01 shows both columns (performance dashboard concept)  
+- ✅ UI mode controls user interaction (not calculation scope)
+- ❌ Data source isolation (this is where SSv2 is failing)
+
+---
+
+## **PROBLEM STATEMENT**
 After V2 refactor implementation, web app calculations no longer match Excel baseline. 
 - **Pre-V2**: Web app TEUI ~93.6 (close to Excel parity)
 - **Post-V2**: Significant deviation from Excel values
