@@ -265,6 +265,48 @@ window.TEUI.SectionModules.sect12 = (function() {
     // HELPER FUNCTIONS
     //==========================================================================
     
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM display
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+            element.textContent = formattedValue;
+        }
+    }
+    
     function getNumericValue(fieldId) {
         // Use global parseNumeric, retrieving value via getFieldValue
         return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
@@ -288,48 +330,8 @@ window.TEUI.SectionModules.sect12 = (function() {
     }
 
     /**
-     * Formats a number according to the project's display rules.
-     * Handles specific formats like percentages, W/m2, etc.
-     * @param {number} value - The number to format.
-     * @param {string} [format='number'] - The type of format ('number', 'percent', 'W/m2').
-     * @returns {string} The formatted number as a string.
-     */
-    function formatNumber(value, format = 'number') {
-        // Handle null or undefined values
-        if (value === null || value === undefined || isNaN(value)) {
-            // Return appropriate default based on format
-            return format === 'percent' ? '0%' : (format === 'W/m2' ? '0.000' : '0.00');
-        }
-        
-        const num = Number(value);
-        
-        // Handle percentage format
-        if (format === 'percent') {
-            // Convert decimal to percentage with 2 decimal places
-            return (num * 100).toLocaleString(undefined, { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            }) + '%';
-        } 
-        // Handle U-Value format - 3 decimal places
-        else if (format === 'W/m2') {
-            return num.toLocaleString('en-US', { 
-                minimumFractionDigits: 3, 
-                maximumFractionDigits: 3 
-            });
-        } 
-        // Default format - 2 decimal places
-        else {
-            return num.toLocaleString('en-US', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
-        }
-    }
-
-    /**
      * Helper function to set a calculated field value in StateManager and update the DOM.
-     * Uses the global window.TEUI.formatNumber for formatting.
+     * Updated for V2 dual-engine architecture - now an alias for setDualEngineValue
      * @param {string} fieldId - The ID of the field to update.
      * @param {*} rawValue - The raw, unformatted value to store in StateManager.
      * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw', 'number-3dp').
@@ -338,21 +340,10 @@ window.TEUI.SectionModules.sect12 = (function() {
         // Ensure rawValue is numeric for calculations where appropriate
         const numericValue = typeof rawValue === 'string' ? window.TEUI.parseNumeric(rawValue) : rawValue;
 
-        // Set raw value in state manager with 'calculated' state
-        if (window.TEUI?.StateManager?.setValue) {
-            // Ensure rawValue is stored as a string for consistency with FULL precision
-            window.TEUI.StateManager.setValue(fieldId, String(numericValue), "calculated"); // Store the cleaned numeric value as string with full precision
-        } else {
-             console.error("StateManager not available to set value for", fieldId);
-             return;
-        }
-
-        // Determine the correct format type based on field ID conventions
+        // Convert legacy format types to V2 format types
         let determinedFormatType;
-
-        // Determine format based on fieldId for precision matching Excel
         if (fieldId === 'g_101' || fieldId === 'g_102' || fieldId === 'd_104') {
-            determinedFormatType = 'W/m2'; // Use W/m2 format for U-values (3dp) - matches Section 11
+            determinedFormatType = 'u-value'; // Use u-value format for U-values (3dp)
         } else if (fieldId === 'd_110') {
             determinedFormatType = 'number-3dp'; // ELA
         } else if (fieldId === 'g_110') {
@@ -377,31 +368,10 @@ window.TEUI.SectionModules.sect12 = (function() {
              determinedFormatType = formatType;
         }
 
-        // For 'W/m2' format, use local formatNumber function
-        let formattedValue;
-        if (determinedFormatType === 'W/m2') {
-            formattedValue = formatNumber(numericValue, 'W/m2');
-        } else {
-            // For other formats, use the global formatter
-            formattedValue = window.TEUI.formatNumber(numericValue, determinedFormatType);
-        }
-
-        // Update the corresponding DOM element
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = formattedValue; // Update input/select value
-            } else {
-                element.textContent = formattedValue; // Update other element text content
-            }
-            element.classList.add('calculated-value');
-            element.classList.remove('user-input', 'editable', 'PendingValue');
-            element.removeAttribute('contenteditable');
-        } else {
-             console.warn("DOM element not found for calculated field:", fieldId);
-        }
+        // Use the V2 dual-engine setter
+        setDualEngineValue(fieldId, numericValue, determinedFormatType);
     }
-    
+
     function setElementClass(fieldId, className, removeClasses = []) {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
@@ -848,18 +818,8 @@ window.TEUI.SectionModules.sect12 = (function() {
         setCalculatedValue('l_104', l104, 'percent-0dp');
     }
 
-    function calculateAll() {
-        // console.log("[Section12] Running dual-engine calculations..."); // Comment out
-
-        calculateReferenceModel();
-        calculateTargetModel();
-
-        // console.log("[Section12] Dual-engine calculations complete"); // Comment out
-    }
-    
     /**
      * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-     * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
         // console.log("[Section12] Running Reference Model calculations..."); // Comment out
@@ -867,15 +827,12 @@ window.TEUI.SectionModules.sect12 = (function() {
         // For Reference calculations, we need to pull reference values from upstream sections
         // Section 12 is primarily a summary section that depends on Section 11 values
         
-        // Get Reference values from Section 11 and other sections
+        // Get Reference values from Section 11 and other sections using V2 helper
         const getRefValue = (fieldId) => {
-            const refFieldId = `ref_${fieldId}`;
-            return window.TEUI?.StateManager?.getValue(refFieldId) || 
-                   window.TEUI?.StateManager?.getReferenceValue(fieldId) || 
-                   getNumericValue(fieldId);
+            return getRefFieldValue(fieldId);
         };
         
-        // Store key reference calculations
+        // Store key reference calculations using V2 dual-engine setter
         // Most of Section 12's calculations depend on Section 11, so we primarily
         // need to ensure we're using reference values where appropriate
         
@@ -887,11 +844,10 @@ window.TEUI.SectionModules.sect12 = (function() {
     }
 
     /**
-     * TARGET MODEL ENGINE: Calculate all values using Application state
-     * This is the existing calculation logic
+     * APPLICATION MODEL ENGINE: Calculate all values using Application state
      */
-    function calculateTargetModel() {
-        // console.log("[Section12] Running Target Model calculations..."); // Comment out
+    function calculateApplicationModel() {
+        // console.log("[Section12] Running Application Model calculations..."); // Comment out
         
         try {
             calculateVolumeMetrics();
@@ -907,10 +863,23 @@ window.TEUI.SectionModules.sect12 = (function() {
             // Update reference indicators after all calculations
             updateAllReferenceIndicators();
         } catch (error) {
-            console.error("Error during Section 12 calculateTargetModel:", error);
+            console.error("Error during Section 12 calculateApplicationModel:", error);
         }
         
-        // console.log("[Section12] Target Model calculations complete"); // Comment out
+        // console.log("[Section12] Application Model calculations complete"); // Comment out
+    }
+
+    /**
+     * DUAL-ENGINE ORCHESTRATION (V2 Pattern)
+     * Always runs both engines regardless of UI mode
+     */
+    function calculateAll() {
+        // console.log("[Section12] Running dual-engine calculations..."); // Comment out
+
+        calculateApplicationModel();
+        calculateReferenceModel();
+
+        // console.log("[Section12] Dual-engine calculations complete"); // Comment out
     }
     
     //==========================================================================
