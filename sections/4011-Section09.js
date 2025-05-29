@@ -49,6 +49,48 @@ window.TEUI.SectionModules.sect09 = (function() {
         const parsed = parseFloat(String(rawValue).replace(/[$,%]/g, ''));
         return isNaN(parsed) ? defaultValue : parsed;
     }
+
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM display
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+            element.textContent = formattedValue;
+        }
+    }
     //==========================================================================
     // EQUIPMENT LOADS LOOKUP TABLE
     //==========================================================================
@@ -1217,7 +1259,7 @@ window.TEUI.SectionModules.sect09 = (function() {
     
     /**
      * Helper function to set a calculated field value in StateManager and update the DOM.
-     * Uses the global window.TEUI.formatNumber for formatting.
+     * Updated for V2 dual-engine architecture - now an alias for setDualEngineValue
      * @param {string} fieldId - The ID of the field to update.
      * @param {*} rawValue - The raw, unformatted value to store in StateManager.
      * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw').
@@ -1230,23 +1272,8 @@ window.TEUI.SectionModules.sect09 = (function() {
             }
         }
 
-        if (window.TEUI?.StateManager?.setValue) {
-            // Ensure rawValue is stored as a string for consistency, especially numbers
-            window.TEUI.StateManager.setValue(fieldId, String(rawValue), "calculated"); 
-        }
-        
-        // Format the value for display using the global formatter
-        const formattedValue = window.TEUI.formatNumber(rawValue, formatType);
-
-        // Update the corresponding DOM element
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = formattedValue; // Update input/select value
-            } else {
-                element.textContent = formattedValue; // Update other element text content
-            }
-        }
+        // Use the V2 dual-engine setter instead of direct StateManager calls
+        setDualEngineValue(fieldId, rawValue, formatType);
     }
     
     //==========================================================================
@@ -1255,47 +1282,45 @@ window.TEUI.SectionModules.sect09 = (function() {
 
     /**
      * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
-     * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
         // console.log('[Section09] Running Reference Model calculations...');
         
-        // Get reference values for inputs
-        const refActivityLevel = window.TEUI?.StateManager?.getReferenceValue("d_64") || getFieldValue("d_64");
-        const refDailyHours = window.TEUI?.StateManager?.getReferenceValue("g_63") || getFieldValue("g_63");
-        const refEfficiency = window.TEUI?.StateManager?.getReferenceValue("g_67") || getFieldValue("g_67");
-        const refElevators = window.TEUI?.StateManager?.getReferenceValue("d_68") || getFieldValue("d_68");
-        const refArea = window.TEUI?.StateManager?.getReferenceValue("h_15") || getFieldValue("h_15");
-        const refCoolingDays = window.TEUI?.StateManager?.getReferenceValue("m_19") || getFieldValue("m_19");
+        // Get reference values for inputs using V2 helper
+        const refActivityLevel = getRefFieldValue("d_64");
+        const refDailyHours = getRefFieldValue("g_63");
+        const refEfficiency = getRefFieldValue("g_67");
+        const refElevators = getRefFieldValue("d_68");
+        const refArea = getRefFieldValue("h_15");
+        const refCoolingDays = getRefFieldValue("m_19");
         
         // Calculate activity watts using reference values
         const refActivityWatts = calculateActivityWatts(refActivityLevel);
         const refAnnualHours = calculateOccupiedHoursRatio(refDailyHours);
         
         // Calculate occupant energy (Reference)
-        const refOccupants = window.TEUI?.StateManager?.getReferenceValue("d_63") || getFieldValue("d_63");
+        const refOccupants = getRefFieldValue("d_63");
         const refOccupantEnergy = (window.TEUI.parseNumeric(refOccupants) || 0) * 
                                  (window.TEUI.parseNumeric(refActivityWatts) || 0) * 
                                  (window.TEUI.parseNumeric(refAnnualHours) || 0) / 1000;
         
         // Calculate plug loads (Reference)
-        const refPlugDensity = window.TEUI?.StateManager?.getReferenceValue("d_65") || getFieldValue("d_65");
+        const refPlugDensity = getRefFieldValue("d_65");
         const refPlugLoads = (window.TEUI.parseNumeric(refPlugDensity) || 0) * 
                             (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
         
         // Calculate lighting loads (Reference)
-        const refLightingDensity = window.TEUI?.StateManager?.getReferenceValue("d_66") || getFieldValue("d_66");
+        const refLightingDensity = getRefFieldValue("d_66");
         const refLightingLoads = (window.TEUI.parseNumeric(refLightingDensity) || 0) * 
                                 (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
         
         // Calculate equipment loads (Reference) - simplified version
-        const refEquipmentDensity = window.TEUI?.StateManager?.getReferenceValue("d_67") || getFieldValue("d_67");
+        const refEquipmentDensity = getRefFieldValue("d_67");
         const refEquipmentLoads = (window.TEUI.parseNumeric(refEquipmentDensity) || 0) * 
                                  (window.TEUI.parseNumeric(refArea) || 0) * 8760 / 1000;
         
         // Calculate DHW system losses (Reference)
-        const refDHWLosses = window.TEUI?.StateManager?.getReferenceValue("d_54") || 
-                            window.TEUI?.StateManager?.getReferenceValue("h_69") || 0;
+        const refDHWLosses = getRefFieldValue("d_54") || getRefFieldValue("h_69") || 0;
         
         // Calculate totals
         const refSubtotal = refPlugLoads + refLightingLoads + refEquipmentLoads;
@@ -1307,42 +1332,34 @@ window.TEUI.SectionModules.sect09 = (function() {
         const refHeatingFraction = heatingDays / 365;
         const refCoolingFraction = coolingDaysNum / 365;
         
-        // Store Reference Model results with ref_ prefix
-        if (window.TEUI?.StateManager) {
-            // Individual components
-            window.TEUI.StateManager.setValue('ref_h_64', refOccupantEnergy.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_h_65', refPlugLoads.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_h_66', refLightingLoads.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_h_67', refEquipmentLoads.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_h_69', refDHWLosses.toString(), 'calculated');
-            
-            // Subtotal and total
-            window.TEUI.StateManager.setValue('ref_h_70', refSubtotal.toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_h_71', refTotal.toString(), 'calculated');
-            
-            // Heating/cooling splits
-            window.TEUI.StateManager.setValue('ref_i_71', (refTotal * refHeatingFraction).toString(), 'calculated');
-            window.TEUI.StateManager.setValue('ref_k_71', (refTotal * refCoolingFraction).toString(), 'calculated');
-        }
+        // Store Reference Model results using V2 dual-engine setter
+        setDualEngineValue('h_64', refOccupantEnergy, 'number-2dp-comma');
+        setDualEngineValue('h_65', refPlugLoads, 'number-2dp-comma');
+        setDualEngineValue('h_66', refLightingLoads, 'number-2dp-comma');
+        setDualEngineValue('h_67', refEquipmentLoads, 'number-2dp-comma');
+        setDualEngineValue('h_69', refDHWLosses, 'number-2dp-comma');
+        setDualEngineValue('h_70', refSubtotal, 'number-2dp-comma');
+        setDualEngineValue('h_71', refTotal, 'number-2dp-comma');
+        setDualEngineValue('i_71', refTotal * refHeatingFraction, 'number-2dp-comma');
+        setDualEngineValue('k_71', refTotal * refCoolingFraction, 'number-2dp-comma');
         
         // console.log('[Section09] Reference Model values stored');
     }
 
     /**
-     * TARGET MODEL ENGINE: Calculate all Column H values using Application state
-     * This is the existing calculateAll logic, refactored
+     * APPLICATION MODEL ENGINE: Calculate all Column H values using Application state
      */
-    function calculateTargetModel() {
-        // console.log('[Section09] Running Target Model calculations...');
+    function calculateApplicationModel() {
+        // console.log('[Section09] Running Application Model calculations...');
         
-        // Calculate individual components
-        const activityLevel = getFieldValue("d_64"); 
+        // Calculate individual components using application state
+        const activityLevel = getAppFieldValue("d_64"); 
         const activityWatts = calculateActivityWatts(activityLevel); 
-        setCalculatedValue("f_64", activityWatts, 'number-2dp-comma'); // Use comma format
+        setDualEngineValue("f_64", activityWatts, 'number-2dp-comma');
         
-        const dailyHours = getFieldValue("g_63"); 
+        const dailyHours = getAppFieldValue("g_63"); 
         const annualHours = calculateOccupiedHoursRatio(dailyHours); 
-        setCalculatedValue("i_63", annualHours, 'raw'); // i_63 is raw hours, no comma/decimal
+        setDualEngineValue("i_63", annualHours, 'raw');
         
         // Calculate energy usage - these functions now read the updated f_64 and d_63/g_63 correctly
         calculateOccupantEnergy();
@@ -1358,14 +1375,14 @@ window.TEUI.SectionModules.sect09 = (function() {
     }
 
     /**
-     * DUAL-ENGINE ORCHESTRATION
-     * Replaces the original calculateAll function
+     * DUAL-ENGINE ORCHESTRATION (V2 Pattern)
+     * Always runs both engines regardless of UI mode
      */
     function calculateAll() {
         // console.log('[Section09] Running dual-engine calculations...'); // Comment out
         
+        calculateApplicationModel();
         calculateReferenceModel();
-        calculateTargetModel(); 
         
         // console.log('[Section09] Dual-engine calculations complete'); // Comment out
     }
