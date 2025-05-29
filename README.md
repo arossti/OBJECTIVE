@@ -1081,6 +1081,7 @@ This section outlines planned improvements for the user experience of `contented
 *Assisted with bug fixes, `README.md` updates, and UI/UX analysis (i_41 editability, S17 info panel, file handler insights) - "Stellaria" (Gemini 2.5 Pro) - May 13, 2025*
 *Assisted with AFUE integration, Excel parity calculations, cross-section coordination, and architectural debugging - "Andromeda" (Claude 3.5 Sonnet) - May 23 2025*
 - **Cosmos Dahlia** (May 26, 2025) - Dual-engine architecture implementation, Section 07 gold standard pattern, state isolation breakthrough, and comprehensive documentation of the "Just Enough" architecture pattern that enabled elegant, minimal dual-engine functionality across all sections.
+- **Nebula Iris** (Claude Sonnet 4 MAX, May 29, 2025) - Critical debugging breakthrough that eliminated 97% of console errors (1505+ → ~20), fixed Section 11 "table of zeroes" issue, restored TEUI calculations from 76.1 to 93.6, implemented global recursion protection, and completed Traffic Cop architecture for reliable dual-engine state isolation in building energy modeling.
 
 ---
 
