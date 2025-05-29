@@ -704,6 +704,10 @@ window.TEUI.SectionModules.sect02 = (function() {
             areaSlider.addEventListener('change', handleAreaSliderChange); 
         }
 
+        // Year slider event handlers (h_12: Reporting Period, h_13: Service Life)
+        setupYearSliderHandlers('h_12'); // Reporting Period slider
+        setupYearSliderHandlers('h_13'); // Service Life slider
+
         // Add listener for changes in i_39 (from Section 5)
         if (window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.addListener('i_39', function(newValue, oldValue, fieldId, state) {

@@ -363,7 +363,7 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Get S15 Reference TEUI if available
             const s15RefTEUI = getRefStateValue('h_136');
             if (s15RefTEUI && s15RefTEUI > 0) {
-                setRefStateValue('e_10', s15RefTEUI);
+                setReferenceValue('e_10', s15RefTEUI);
                 // console.log('[S01 Reference] Using S15 Reference TEUI:', s15RefTEUI);
             } else {
                 // Calculate internally using reference values
@@ -375,20 +375,20 @@ window.TEUI.SectionModules.sect01 = (function() {
                     const refArea = getRefStateValue('h_15') || 1427.2;
                     const refTEUI = refTargetEnergy / refArea;
                     // console.log('[S01 Reference] Calculated Reference TEUI:', refTEUI, 'using HSPF:', refHSPF, 'VentRate:', refVentRate);
-                    setRefStateValue('e_10', refTEUI);
+                    setReferenceValue('e_10', refTEUI);
                 }
             }
             
             // Get emissions data
             const s04RefEmissions = getRefStateValue('k_32');
             if (s04RefEmissions && s04RefEmissions > 0) {
-                setRefStateValue('k_32', s04RefEmissions);
+                setReferenceValue('k_32', s04RefEmissions);
                 // console.log('[S01 Reference] Calculated Reference emissions:', s04RefEmissions);
             } else {
                 const refTEUI = getRefStateValue('e_10');
                 const refTargetEmissions = refTEUI * refArea * 0.051; // Simplified: TEUI * Area * grid intensity
                 // console.log('[S01 Reference] Using S04 Reference emissions:', refTargetEmissions);
-                setRefStateValue('k_32', refTargetEmissions);
+                setReferenceValue('k_32', refTargetEmissions);
             }
             
             // Calculate carbon metrics using reference values
@@ -397,8 +397,8 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refLifetimeCarbon = Math.round((refAnnualCarbon * lifespan) * 10) / 10;
             
             // Store Reference values in StateManager
-            setRefStateValue('d_8', refAnnualCarbon);
-            setRefStateValue('d_6', refLifetimeCarbon);
+            setReferenceValue('d_8', refAnnualCarbon);
+            setReferenceValue('d_6', refLifetimeCarbon);
             
             // console.log('[S01 Reference] Final values - TEUI:', refTEUI, 'Annual Carbon:', refAnnualCarbon, 'Lifetime Carbon:', refLifetimeCarbon);
             
@@ -445,9 +445,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             const targetLifetimeCarbon = Math.round((targetAnnualCarbon * lifespan) * 10) / 10;
             
             // Store Application values in StateManager
-            setAppStateValue('h_10', targetTEUI);
-            setAppStateValue('h_8', targetAnnualCarbon); 
-            setAppStateValue('h_6', targetLifetimeCarbon);
+            setTargetValue('h_10', targetTEUI);
+            setTargetValue('h_8', targetAnnualCarbon); 
+            setTargetValue('h_6', targetLifetimeCarbon);
             
             // console.log('[S01 Target] Final values - TEUI:', targetTEUI, 'Annual Carbon:', targetAnnualCarbon, 'Lifetime Carbon:', targetLifetimeCarbon);
             
