@@ -861,7 +861,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified');
         }
-        calculateAll();
+        // Recalculation will be triggered by StateManager listeners
     }
 
     function initializeEventHandlers() {
@@ -902,7 +902,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                     
                     // LIVE FEEDBACK: Direct calculation calls for immediate visual response
                     // This ensures g_101/g_102 update in real-time during slider drag
-                    calculateAll(); // Update Section 11 calculations
+                    // Recalculation will be triggered by StateManager listeners
                     if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
                         window.TEUI.SectionModules.sect12.calculateCombinedUValue(); // Update g_101, g_102 immediately
                     }
@@ -978,7 +978,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                     if (targetElement) {
                         const numericValue = getNumericValue(sourceFieldId) || 0;
                         targetElement.textContent = formatNumber(numericValue, 2);
-                        calculateAll(); // Recalc on linked area change
+                        // Recalculation will be triggered by StateManager listeners
                     }
                 });
             }

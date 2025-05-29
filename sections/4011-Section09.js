@@ -1464,8 +1464,7 @@ window.TEUI.SectionModules.sect09 = (function() {
                          }
                     }
                     
-                    // Recalculate
-                    calculateAll();
+                    // Recalculation will be triggered by StateManager listeners
                 }
             });
             

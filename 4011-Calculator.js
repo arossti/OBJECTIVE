@@ -495,6 +495,12 @@ TEUI.Calculator = (function() {
      * Run calculations for specific model type or both
      */
     function runAllCalculations(modelType = 'both') {
+        // Add recursion protection
+        if (window.calculationInProgress) {
+            return;
+        }
+        window.calculationInProgress = true;
+        
         // Define section processing order (dependency chain)
         const sections = ['07', '09', '10', '11', '12', '13', '14', '15', '04', '01'];
         
@@ -523,6 +529,8 @@ TEUI.Calculator = (function() {
                 }
             });
         }
+        
+        window.calculationInProgress = false;
     }
     
     /**

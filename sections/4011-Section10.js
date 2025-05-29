@@ -1777,8 +1777,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                     window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
                 }
                 
-                // Recalculate
-                calculateAll();
+                // Recalculation will be triggered by StateManager listeners
             });
         });
         
