@@ -1334,6 +1334,70 @@ TEUI.StateManager = (function() {
         
         return getReferenceValue(tCellId);
     }
+
+    /**
+     * V2 DUAL-STATE ARCHITECTURE ADDITIONS
+     * Additional methods to complete the V2 streamlined implementation
+     */
+
+    /**
+     * Set a field value in Application/Target state (for Column H calculations)
+     * @param {string} fieldId - Field ID
+     * @param {any} value - New value
+     * @param {string} source - Value source (e.g., 'user-input', 'calculated', 'imported')
+     * @returns {boolean} True if the value changed
+     */
+    function setApplicationValue(fieldId, value, source) {
+        // Directly update the main fields map (application state)
+        const result = setValue(fieldId, value, source);
+        if (result) {
+            emitFieldChanged('application', fieldId, value);
+        }
+        return result;
+    }
+
+    /**
+     * Set a field value in Reference state (for Column E calculations)
+     * @param {string} fieldId - Field ID
+     * @param {any} value - New value
+     * @param {string} source - Value source (e.g., 'standard-override', 'carry-over', 'user-modified-reference', 'calculated-reference')
+     * @returns {boolean} True if the value changed
+     */
+    function setReferenceValue(fieldId, value, source) {
+        const oldValue = activeReferenceDataSet[fieldId] || null;
+        activeReferenceDataSet[fieldId] = value;
+        
+        // For independently editable fields, also store in separate reference state
+        if (source === 'user-modified-reference' || independentReferenceState.hasOwnProperty(fieldId)) {
+            independentReferenceState[fieldId] = value;
+        }
+        
+        const valueChanged = oldValue !== value;
+        if (valueChanged) {
+            emitFieldChanged('reference', fieldId, value);
+        }
+        return valueChanged;
+    }
+
+    /**
+     * Build/rebuild the reference state from standard + carry-overs (V2 alias for loadReferenceData)
+     * @param {string} standardKey - The key of the selected reference standard
+     */
+    function buildReferenceState(standardKey) {
+        loadReferenceData(standardKey);
+    }
+
+    /**
+     * Emit field change events for the V2 event system
+     * @param {string} modelType - Either 'application' or 'reference'
+     * @param {string} fieldId - Field ID that changed
+     * @param {any} newValue - New value
+     */
+    function emitFieldChanged(modelType, fieldId, newValue) {
+        document.dispatchEvent(new CustomEvent('FieldValueChanged', {
+            detail: { modelType, fieldId, newValue }
+        }));
+    }
     
     // Public API
     return {
@@ -1380,7 +1444,11 @@ TEUI.StateManager = (function() {
         getReferenceValue: getReferenceValue,
         getCurrentDisplayValue: getCurrentDisplayValue,
         getCorrespondingTCell: getCorrespondingTCell,
-        getTCellValue: getTCellValue
+        getTCellValue: getTCellValue,
+        setApplicationValue: setApplicationValue,
+        setReferenceValue: setReferenceValue,
+        buildReferenceState: buildReferenceState,
+        emitFieldChanged: emitFieldChanged
     };
 })();
 

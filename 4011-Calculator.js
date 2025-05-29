@@ -491,6 +491,41 @@ TEUI.Calculator = (function() {
     }
     
     /**
+     * V2 DUAL-ENGINE ORCHESTRATION
+     * Run calculations for specific model type or both
+     */
+    function runAllCalculations(modelType = 'both') {
+        // Define section processing order (dependency chain)
+        const sections = ['07', '09', '10', '11', '12', '13', '14', '15', '04', '01'];
+        
+        if (modelType === 'application' || modelType === 'both') {
+            sections.forEach(sectionId => {
+                const section = window.TEUI.SectionModules?.[`sect${sectionId}`];
+                if (section?.calculateApplicationModel) {
+                    try {
+                        section.calculateApplicationModel();
+                    } catch (error) {
+                        console.error(`Error in calculateApplicationModel for section ${sectionId}:`, error);
+                    }
+                }
+            });
+        }
+        
+        if (modelType === 'reference' || modelType === 'both') {
+            sections.forEach(sectionId => {
+                const section = window.TEUI.SectionModules?.[`sect${sectionId}`];
+                if (section?.calculateReferenceModel) {
+                    try {
+                        section.calculateReferenceModel();
+                    } catch (error) {
+                        console.error(`Error in calculateReferenceModel for section ${sectionId}:`, error);
+                    }
+                }
+            });
+        }
+    }
+    
+    /**
      * Import a formula set from CSV
      * @param {string} csv - CSV string with formulas
      */
@@ -920,7 +955,8 @@ TEUI.Calculator = (function() {
         updateResults: function() {
             // Recalculate all dirty fields
             recalculateDirtyFields();
-        }
+        },
+        runAllCalculations: runAllCalculations
     };
 })();
 

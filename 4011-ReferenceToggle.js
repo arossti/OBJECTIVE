@@ -70,6 +70,23 @@ TEUI.ReferenceToggle = (function() {
 
     document.body.classList.toggle(BODY_CLASS, referenceMode);
     updateButtonAppearance();
+    
+    // V2 DUAL-STATE ARCHITECTURE: Enhanced mode switching
+    if (referenceMode) {
+        // Entering Reference Mode - build reference state and run calculations
+        const currentStandard = window.TEUI.StateManager.getValue('d_13');
+        if (currentStandard) {
+            window.TEUI.StateManager.buildReferenceState(currentStandard);
+            
+            // Use V2 Calculator orchestration if available
+            if (window.TEUI.Calculator && typeof window.TEUI.Calculator.runAllCalculations === 'function') {
+                window.TEUI.Calculator.runAllCalculations('reference');
+            } else if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+                window.TEUI.Calculator.calculateAll();
+            }
+        }
+    }
+    
     triggerFullUIRefreshForModeChange();
   }
 
