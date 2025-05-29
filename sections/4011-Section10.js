@@ -55,6 +55,7 @@ window.TEUI.SectionModules.sect10 = (function() {
 
     /**
      * Sets calculated value in StateManager and updates DOM using standard formatNumber.
+     * Updated for V2 dual-engine architecture - now an alias for setDualEngineValue
      * @param {string} fieldId
      * @param {number} rawValue
      * @param {string} [format='number']
@@ -62,34 +63,25 @@ window.TEUI.SectionModules.sect10 = (function() {
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
         // Handle N/A for non-finite numbers
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) { 
-            window.TEUI.StateManager?.setValue(fieldId, 'N/A', 'calculated');
-            const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (elementNA) elementNA.textContent = 'N/A';
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) element.textContent = 'N/A';
             return; 
         }
 
-        // Determine format if not specified
+        // Convert legacy format types to V2 format types
+        let formatType = format;
         if (format === 'number') {
-            if (/[jl]_[\\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) { format = 'percent'; }
-            else if (fieldId.startsWith('p_')) { format = 'currency'; }
-            // default is 'number' (2 decimals)
+            if (/[jl]_[\\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) { formatType = 'percent-2dp'; }
+            else if (fieldId.startsWith('p_')) { formatType = 'currency-2dp'; }
+            else formatType = 'number-2dp-comma';
+        } else if (format === 'percent') {
+            formatType = 'percent-2dp';
+        } else if (format === 'currency') {
+            formatType = 'currency-2dp';
         }
 
-        const formattedValue = formatNumber(rawValue, format);
-        
-        if (window.TEUI?.StateManager?.setValue) {
-            // Store raw value as string for precision
-            window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
-        }
-        
-        // Update DOM
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
-            element.classList.toggle('negative-value', rawValue < 0);
-        } else {
-             // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`); // Commented out to reduce noise
-        }
+        // Use the V2 dual-engine setter
+        setDualEngineValue(fieldId, rawValue, formatType);
     }
 
     function handleFieldBlur(event) {
@@ -1222,15 +1214,14 @@ window.TEUI.SectionModules.sect10 = (function() {
     function calculateAll() {
         // console.log('[Section10] Running dual-engine calculations...'); // Comment out
         
+        calculateApplicationModel();
         calculateReferenceModel();
-        calculateTargetModel();
         
         // console.log('[Section10] Dual-engine calculations complete'); // Comment out
     }
     
     /**
      * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-     * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
         // console.log("[Section10] Running Reference Model calculations...");
@@ -1248,22 +1239,16 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Calculate utilization factors using reference values
             calculateUtilizationFactors(true); // true = isReferenceCalculation
             
-            // Store reference results with ref_ prefix
-            if (window.TEUI?.StateManager) {
-                // Store individual row reference values
-                orientationConfig.forEach(rowId => {
-                    const rowStr = rowId.toString();
-                    const results = orientationResults[rowId] || { heatingGains: 0, coolingGains: 0 };
-                    window.TEUI.StateManager.setValue(`ref_i_${rowStr}`, results.heatingGains.toString(), 'calculated');
-                    window.TEUI.StateManager.setValue(`ref_k_${rowStr}`, results.coolingGains.toString(), 'calculated');
-                });
-                
-                // Store subtotal reference values
-                window.TEUI.StateManager.setValue('ref_i_79', subtotalResults.heatingGains.toString(), 'calculated');
-                window.TEUI.StateManager.setValue('ref_k_79', subtotalResults.coolingGains.toString(), 'calculated');
-                
-                // Note: Utilization factors are stored within calculateUtilizationFactors
-            }
+            // Store reference results using V2 dual-engine setter
+            orientationConfig.forEach(rowId => {
+                const results = orientationResults[rowId] || { heatingGains: 0, coolingGains: 0 };
+                setDualEngineValue(`i_${rowId}`, results.heatingGains, 'number-2dp-comma');
+                setDualEngineValue(`k_${rowId}`, results.coolingGains, 'number-2dp-comma');
+            });
+            
+            // Store subtotal reference values
+            setDualEngineValue('i_79', subtotalResults.heatingGains, 'number-2dp-comma');
+            setDualEngineValue('k_79', subtotalResults.coolingGains, 'number-2dp-comma');
             
             console.log("[Section10] Reference Model values stored");
         } catch (error) {
@@ -1272,31 +1257,30 @@ window.TEUI.SectionModules.sect10 = (function() {
     }
     
     /**
-     * TARGET MODEL ENGINE: Calculate all values using Application state
-     * This is the existing calculation logic, refactored
+     * APPLICATION MODEL ENGINE: Calculate all values using Application state
      */
-    function calculateTargetModel() {
-        // console.log("[Section10] Running Target Model calculations...");
+    function calculateApplicationModel() {
+        // console.log("[Section10] Running Application Model calculations...");
         
         try {
             // Calculate individual orientation rows
             orientationConfig.forEach(rowId => {
-                calculateOrientationGains(rowId.toString(), false); // false = Target calculation
+                calculateOrientationGains(rowId.toString(), false); // false = Application calculation
             });
             
             // Calculate subtotals
-            calculateSubtotals(false); // false = Target calculation
+            calculateSubtotals(false); // false = Application calculation
             
             // Calculate utilization factors
-            calculateUtilizationFactors(false); // false = Target calculation
+            calculateUtilizationFactors(false); // false = Application calculation
             
             // Update reference indicators for all rows
             updateAllReferenceIndicators();
         } catch (error) {
-            console.error('[Section10] Error in Target Model calculations:', error);
+            console.error('[Section10] Error in Application Model calculations:', error);
         }
 
-        // Target Model calculations completed
+        // Application Model calculations completed
     }
     
     /**
@@ -1306,31 +1290,31 @@ window.TEUI.SectionModules.sect10 = (function() {
      */
     function calculateOrientationGains(rowId, isReferenceCalculation = false) {
         try {
-            // Get relevant values using getFieldValue and the global parseNumeric
+            // Get area value (always from application state for UI purposes)
             const area = window.TEUI.parseNumeric(getFieldValue(`d_${rowId}`));
-            const orientation = getFieldValue(`e_${rowId}`);
             
-            // Get SHGC value based on calculation type
-            let shgc;
+            // Get input values based on calculation type using V2 helper functions
+            let orientation, shgc, winterShadingDecimal, summerShadingDecimal;
+            
             if (isReferenceCalculation) {
-                // For Reference calculations, try to get reference SHGC value
-                const refFieldId = `f_${rowId}`;
-                shgc = window.TEUI?.StateManager?.getReferenceValue(refFieldId) || 
-                       window.TEUI.parseNumeric(getFieldValue(refFieldId));
+                // For Reference calculations, use reference values
+                orientation = getRefFieldValue(`e_${rowId}`);
+                shgc = window.TEUI.parseNumeric(getRefFieldValue(`f_${rowId}`));
+                winterShadingDecimal = window.TEUI.parseNumeric(getRefFieldValue(`g_${rowId}`), 0) / 100;
+                summerShadingDecimal = window.TEUI.parseNumeric(getRefFieldValue(`h_${rowId}`), 100) / 100;
             } else {
-                // For Target calculations, use application value
-                shgc = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`));
+                // For Application calculations, use application values
+                orientation = getAppFieldValue(`e_${rowId}`);
+                shgc = window.TEUI.parseNumeric(getAppFieldValue(`f_${rowId}`));
+                winterShadingDecimal = window.TEUI.parseNumeric(getAppFieldValue(`g_${rowId}`), 0) / 100;
+                summerShadingDecimal = window.TEUI.parseNumeric(getAppFieldValue(`h_${rowId}`), 100) / 100;
             }
-            
-            // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
-            const winterShadingDecimal = window.TEUI.parseNumeric(getFieldValue(`g_${rowId}`), 0) / 100; 
-            const summerShadingDecimal = window.TEUI.parseNumeric(getFieldValue(`h_${rowId}`), 100) / 100;
             
             const climateZone = getNumericValue("j_19") || 6.0; // Default to zone 6 if not available
             
             const gainFactor = calculateGainFactor(orientation, climateZone); // This is M73 (Gain Factor based on SHGC=0.5)
             
-            // Only update display for Target calculations
+            // Only update display for Application calculations
             if (!isReferenceCalculation) {
                 setCalculatedValue(`m_${rowId}`, gainFactor); // Pass raw value, not formatted string
             }
@@ -1357,7 +1341,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                 };
             }
             
-            // For Target calculations, update the DOM
+            // For Application calculations, update the DOM
             setCalculatedValue(`i_${rowId}`, heatingGains);
             setCalculatedValue(`k_${rowId}`, coolingGains);
             setCalculatedValue(`p_${rowId}`, cost, 'currency');
