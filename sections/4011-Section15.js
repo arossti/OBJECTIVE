@@ -838,17 +838,33 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This follows the template pattern expected by the system
      */
     function calculateAll() {
+        // Add recursion protection
+        if (referenceCalculationInProgress || targetCalculationInProgress) {
+            return;
+        }
+        
         // Run both engines independently
         calculateReferenceModel();  // Calculates Reference values with ref_ prefix
         calculateTargetModel();     // Calculates Target values (existing logic)
     }
     
+    // Add recursion protection flags  
+    let referenceCalculationInProgress = false;
+    let targetCalculationInProgress = false;
+
     /**
-     * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+     * REFERENCE MODEL ENGINE: Calculate all Reference values using Reference state
      * Stores results with ref_ prefix to keep separate from Target values
      * ENHANCED: Now properly receives Reference values from Section 04
      */
     function calculateReferenceModel() {
+        
+        // Add recursion protection
+        if (referenceCalculationInProgress) {
+            return;
+        }
+        
+        referenceCalculationInProgress = true;
         
         try {
             // Helper function to get Reference values with proper fallback
@@ -867,10 +883,11 @@ window.TEUI.SectionModules.sect15 = (function() {
             
             // Helper function to set Reference values only if changed (Section 07 Gold Standard)
             const setRefValueIfChanged = (fieldId, newValue) => {
-                const currentValue = window.TEUI?.StateManager?.getValue(fieldId);
+                const refFieldId = `ref_${fieldId}`;
+                const currentValue = window.TEUI?.StateManager?.getValue(refFieldId);
                 const newValueStr = newValue.toString();
                 if (currentValue !== newValueStr) {
-                    window.TEUI.StateManager.setValue(fieldId, newValueStr, 'calculated');
+                    window.TEUI.StateManager.setValue(refFieldId, newValueStr, 'calculated');
                     return true;
                 }
                 return false;
@@ -887,6 +904,8 @@ window.TEUI.SectionModules.sect15 = (function() {
             // CRITICAL: Get Reference values from Section 04 (j_32, k_32)
             const ref_j32 = getRefValue('j_32'); // Reference Total Energy from S04
             const ref_k32 = getRefValue('k_32'); // Reference Total Emissions from S04
+            
+            console.warn(`[S15 Reference] Using upstream values - j_32: ${ref_j32}, k_32: ${ref_k32}`);
             
             // Get other Reference dependencies
             const m43 = getRefValue('m_43');
@@ -944,7 +963,7 @@ window.TEUI.SectionModules.sect15 = (function() {
 
             // h_135: TEUI (Reference)
             let ref_teui_h135 = area > 0 ? ref_teuTargetTotal / area : 0;
-            setRefValueIfChanged('ref_h_135', ref_teui_h135);
+            setRefValueIfChanged('h_135', ref_teui_h135);
 
             // d_136: TEU Targeted Electricity if HP/Gas/Oil Bldg (Reference)
             let ref_teuTargetedElecHPGasOil;
@@ -955,33 +974,35 @@ window.TEUI.SectionModules.sect15 = (function() {
             } else {
                 ref_teuTargetedElecHPGasOil = k51 + d117_effective + m43 + h70;
             }
-            setRefValueIfChanged('ref_d_136', ref_teuTargetedElecHPGasOil);
+            setRefValueIfChanged('d_136', ref_teuTargetedElecHPGasOil);
 
             // h_136: TEUI (HP/Gas/Oil) (Reference)
             let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
-            setRefValueIfChanged('ref_h_136', ref_teui_h136);
+            setRefValueIfChanged('h_136', ref_teui_h136);
+            
+            console.warn(`[S15 Reference] Calculated Reference TEUI values - h_135: ${ref_teui_h135}, h_136: ${ref_teui_h136}`);
             
             // Calculate all other Reference values using the same pattern...
             
             // d_137: Peak Heating Load (Reference)
             let ref_peakHeatingLoad_d137 = ((g101 * d101) + (d102 * g102)) * (h23 - d23) / 1000;
-            setRefValueIfChanged('ref_d_137', ref_peakHeatingLoad_d137);
+            setRefValueIfChanged('d_137', ref_peakHeatingLoad_d137);
 
             // l_137: Peak Heating BTU (Reference)
             let ref_peakHeatingBTU_l137 = ref_peakHeatingLoad_d137 * 3412.14245;
-            setRefValueIfChanged('ref_l_137', ref_peakHeatingBTU_l137);
+            setRefValueIfChanged('l_137', ref_peakHeatingBTU_l137);
 
             // d_138: Peak Cooling Load (Reference)
             let ref_peakCoolingLoad_d138 = ((g101 * d101) + (d102 * g102)) * (d24 - h24) / 1000;
-            setRefValueIfChanged('ref_d_138', ref_peakCoolingLoad_d138);
+            setRefValueIfChanged('d_138', ref_peakCoolingLoad_d138);
             
             // h_138: Peak Cooling Tons (Reference)
             let ref_peakCoolingTons_h138 = ref_peakCoolingLoad_d138 * 0.2843451361;
-            setRefValueIfChanged('ref_h_138', ref_peakCoolingTons_h138);
+            setRefValueIfChanged('h_138', ref_peakCoolingTons_h138);
             
             // l_138: Peak Cooling BTU (Reference)
             let ref_peakCoolingBTU_l138 = ref_peakCoolingLoad_d138 * 3412.14245;
-            setRefValueIfChanged('ref_l_138', ref_peakCoolingBTU_l138);
+            setRefValueIfChanged('l_138', ref_peakCoolingBTU_l138);
 
             // d_139: Peak Cooling Load with Gains (Reference)
             let ref_enclosureCoolLoad = ((g101 * d101) + (d102 * g102)) * (d24 - h24);
@@ -991,35 +1012,35 @@ window.TEUI.SectionModules.sect15 = (function() {
             if (m19_days > 0) {
                 ref_peakCoolingLoadGains_d139 += (ref_solarVentOccGains / (m19_days * 24));
             }
-            setRefValueIfChanged('ref_d_139', ref_peakCoolingLoadGains_d139);
+            setRefValueIfChanged('d_139', ref_peakCoolingLoadGains_d139);
             
             // h_139: Peak Cooling Tons with Gains (Reference)
             let ref_peakCoolingTonsGains_h139 = ref_peakCoolingLoadGains_d139 * 0.2843451361;
-            setRefValueIfChanged('ref_h_139', ref_peakCoolingTonsGains_h139);
+            setRefValueIfChanged('h_139', ref_peakCoolingTonsGains_h139);
             
             // l_139: Peak Cooling BTU with Gains (Reference)
             let ref_peakCoolingBTUGains_l139 = ref_peakCoolingLoadGains_d139 * 3412.14245;
-            setRefValueIfChanged('ref_l_139', ref_peakCoolingBTUGains_l139);
+            setRefValueIfChanged('l_139', ref_peakCoolingBTUGains_l139);
             
             // d_140: Max Heating Intensity (Reference)
             let ref_maxHeatingIntensity_d140 = area > 0 ? (ref_peakHeatingLoad_d137 * 1000 / area) : 0;
-            setRefValueIfChanged('ref_d_140', ref_maxHeatingIntensity_d140);
+            setRefValueIfChanged('d_140', ref_maxHeatingIntensity_d140);
             
             // h_140: Max Cooling Intensity (Reference)
             let ref_maxCoolingIntensity_h140 = area > 0 ? (ref_peakCoolingLoad_d138 * 1000 / area) : 0;
-            setRefValueIfChanged('ref_h_140', ref_maxCoolingIntensity_h140);
+            setRefValueIfChanged('h_140', ref_maxCoolingIntensity_h140);
             
             // d_141: Annual Cost of Electricity (Reference)
             let ref_annualCostElecPre_d141 = ref_teuTargetTotal * elecPrice;
-            setRefValueIfChanged('ref_d_141', ref_annualCostElecPre_d141);
+            setRefValueIfChanged('d_141', ref_annualCostElecPre_d141);
             
             // h_141: Annual Cost of Electricity Post HP (Reference)
             let ref_annualCostElecPost_h141 = ref_teuTargetedElecHPGasOil * elecPrice;
-            setRefValueIfChanged('ref_h_141', ref_annualCostElecPost_h141);
+            setRefValueIfChanged('h_141', ref_annualCostElecPost_h141);
             
             // l_141: Other Energy Cost (Reference)
             let ref_otherEnergyCost_l141 = (gasPrice * d28) + (propanePrice * d29) + (woodPrice * d31) + (oilPrice * d30_litres);
-            setRefValueIfChanged('ref_l_141', ref_otherEnergyCost_l141);
+            setRefValueIfChanged('l_141', ref_otherEnergyCost_l141);
             
             // h_142: ROI (Reference)
             let ref_roi_h142 = 0;
@@ -1027,26 +1048,28 @@ window.TEUI.SectionModules.sect15 = (function() {
             if (primaryHeating === 'Heatpump' && ref_costSavings > 0) {
                 ref_roi_h142 = hpCostPremium / ref_costSavings;
             }
-            setRefValueIfChanged('ref_h_142', ref_roi_h142);
+            setRefValueIfChanged('h_142', ref_roi_h142);
             
             // CRITICAL: Store Reference TEUI values for Section 01 consumption
             // These are the final Reference values that Section 01 needs for e_10 calculation
-            setRefValueIfChanged('ref_d_143', refTEUI_e10); // Reference TEUI
-            setRefValueIfChanged('ref_h_143', targetTEUI_h10); // Target TEUI
+            setRefValueIfChanged('d_143', refTEUI_e10); // Reference TEUI
+            setRefValueIfChanged('h_143', targetTEUI_h10); // Target TEUI
             
             // Calculate Reference percentage reductions
             let ref_teuiReduction_d144 = (refTEUI_e10 > 0) ? (1 - (targetTEUI_h10 / refTEUI_e10)) : 0;
-            setRefValueIfChanged('ref_d_144', ref_teuiReduction_d144);
+            setRefValueIfChanged('d_144', ref_teuiReduction_d144);
             
             // GHG Reduction using Reference emissions from Section 04
             let ref_ghgReduction_d145 = (ref_k32 > 0) ? (1 - (ref_k32 / ref_k32)) : 0; // This will be 0 for Reference vs Reference
-            setRefValueIfChanged('ref_d_145', ref_ghgReduction_d145);
+            setRefValueIfChanged('d_145', ref_ghgReduction_d145);
             
             // Debug logging (reduced frequency)
             // Reference calculations completed successfully
             
         } catch (error) {
             console.error("[Section15] Error in Reference Model calculations:", error);
+        } finally {
+            referenceCalculationInProgress = false;
         }
     }
     
@@ -1055,6 +1078,13 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This is the existing calculation logic
      */
     function calculateTargetModel() {
+        
+        // Add recursion protection
+        if (targetCalculationInProgress) {
+            return;
+        }
+        
+        targetCalculationInProgress = true;
         
         try {
             // Perform target calculations using existing calculateValues function
@@ -1066,6 +1096,8 @@ window.TEUI.SectionModules.sect15 = (function() {
             
         } catch (error) {
             console.error("[Section15] Error in Target Model calculations:", error);
+        } finally {
+            targetCalculationInProgress = false;
         }
     }
     

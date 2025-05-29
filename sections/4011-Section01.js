@@ -380,6 +380,8 @@ window.TEUI.SectionModules.sect01 = (function() {
             
             // Try to get Reference TEUI from Section 15 if available
             const refTEUIFromS15 = getRefStateValue('h_136');
+            console.warn(`[S01 Reference] Checking S15 Reference TEUI: refTEUIFromS15=${refTEUIFromS15}`);
+            
             if (refTEUIFromS15 && window.TEUI?.parseNumeric?.(refTEUIFromS15, 0) > 0) {
                 referenceTEUI = window.TEUI.parseNumeric(refTEUIFromS15, 341.2);
                 console.log('[S01 Reference] Using S15 Reference TEUI:', referenceTEUI);
