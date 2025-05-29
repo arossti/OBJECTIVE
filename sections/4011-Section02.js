@@ -509,27 +509,26 @@ window.TEUI.SectionModules.sect02 = (function() {
     }
 
     /**
-     * Set calculated value with proper formatting using global helpers
+     * Update a calculated field with proper state management and DOM updates
      * Uses global window.TEUI.formatNumber for consistency
+     * Updated for V2 dual-engine architecture using setDualEngineValue
      */
     function setCalculatedValue(fieldId, value) {
-        // Store raw value in StateManager
-        if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue(fieldId, value.toString(), 'calculated');
-        }
-        
-        // Special handling for 'N/A' values - don't try to format them
-        const formattedValue = value === "N/A" ? "N/A" : window.TEUI?.formatNumber?.(value, 'number-2dp-comma') ?? value.toString();
-        
-        // Update DOM with formatted value
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                element.value = value;
-            } else {
-                element.textContent = formattedValue;
+        // Handle N/A cases
+        if (value === "N/A" || value === null || value === undefined || !isFinite(value)) {
+            // For N/A values, update display directly and store as 'N/A'
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = "N/A";
             }
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
+            }
+            return;
         }
+        
+        // Use V2 dual-engine setter for numeric values
+        setDualEngineValue(fieldId, value, 'number-2dp-comma');
     }
     
     /**
@@ -1026,6 +1025,55 @@ window.TEUI.SectionModules.sect02 = (function() {
             }
         });
     }
+    
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
+    //==========================================================================
+    
+    // 1. Mode-aware value getter
+    function getRefFieldValue(fieldId) {
+        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
+        } else {
+            return getFieldValue(fieldId);
+        }
+    }
+
+    // 2. Application value getter
+    function getAppFieldValue(fieldId) {
+        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+    }
+
+    // 3. Dual-engine value setter
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Reference Mode - store with ref_ prefix using new V2 API
+            if (window.TEUI?.StateManager?.setReferenceValue) {
+                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            }
+        } else {
+            // Application Mode - store in main state using new V2 API
+            if (window.TEUI?.StateManager?.setApplicationValue) {
+                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            }
+        }
+        
+        // Update DOM with proper formatting using global formatNumber
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+        }
+    }
+
+    /**
+     * Enhanced numeric value getter with proper V2 dual-state support
+     * @param {string} fieldId - The field ID to retrieve
+     * @param {number} defaultValue - Default value if field not found
+     * @returns {number} The numeric value
+     */
     
     //==========================================================================
     // PUBLIC API
