@@ -1461,8 +1461,9 @@ TEUI.StateManager = (function() {
      * @returns {Array} Array of field IDs that were recalculated
      */
     function calculateDependencyChain(changedFieldId) {
-        if (calculationInProgress) {
-            console.warn(`[StateManager] Calculation already in progress, skipping dependency chain for ${changedFieldId}`);
+        // Check for existing calculation systems in progress
+        if (calculationInProgress || window.sectionCalculationInProgress) {
+            console.warn(`[StateManager] Calculation already in progress (orchestration: ${calculationInProgress}, section: ${window.sectionCalculationInProgress}), skipping dependency chain for ${changedFieldId}`);
             return [];
         }
         

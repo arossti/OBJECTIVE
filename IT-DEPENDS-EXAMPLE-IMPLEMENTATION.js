@@ -163,11 +163,12 @@ function demonstrateManualDependencyCalculation() {
 function setupCalculationMonitoring() {
     const stateManager = window.TEUI.StateManager;
     
+    // DISABLED: This global listener was causing recursion and spam
     // Add a global listener to monitor all calculation activity
-    document.addEventListener('FieldValueChanged', function(event) {
-        const { modelType, fieldId, newValue } = event.detail;
-        console.log(`[Monitor] Field changed: ${fieldId} = ${newValue} (${modelType} model)`);
-    });
+    // document.addEventListener('FieldValueChanged', function(event) {
+    //     const { modelType, fieldId, newValue } = event.detail;
+    //     console.log(`[Monitor] Field changed: ${fieldId} = ${newValue} (${modelType} model)`);
+    // });
     
     // Monitor StateManager performance
     window.monitorStateManager = function() {
@@ -176,6 +177,9 @@ function setupCalculationMonitoring() {
         
         console.log('[Monitor] Registered calculations:', 
             Array.from(stateManager.fieldCalculations?.keys?.() || []));
+            
+        console.log('[Monitor] Current dirty fields:', stateManager.getDirtyFields());
+        console.log('[Monitor] Total dependencies registered:', debugInfo.dependencyCount);
     };
 }
 
@@ -186,18 +190,23 @@ function initializeCalculationOrchestration() {
     // Set up all the example calculations
     setupTEUICalculations();
     setupGroundFacingCalculations();
-    setupSmartListeners();
+    
+    // DISABLED: Smart listeners auto-setup to prevent conflicts with existing traffic cop systems
+    // setupSmartListeners();
+    
     setupCalculationMonitoring();
     
     console.log('[IT-DEPENDS] Calculation orchestration setup complete!');
-    console.log('[IT-DEPENDS] Try these demo functions:');
+    console.log('[IT-DEPENDS] Available demo functions:');
     console.log('- demonstrateBatchCalculation()');
     console.log('- demonstrateManualDependencyCalculation()');
     console.log('- monitorStateManager()');
+    console.log('- setupSmartListeners() // Manual setup when ready to replace existing listeners');
     
     // Make demo functions globally available
     window.demonstrateBatchCalculation = demonstrateBatchCalculation;
     window.demonstrateManualDependencyCalculation = demonstrateManualDependencyCalculation;
+    window.setupSmartListeners = setupSmartListeners; // Available for manual testing
 }
 
 // Auto-initialize when document is ready
