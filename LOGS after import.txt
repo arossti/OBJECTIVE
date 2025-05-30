@@ -9,15 +9,56 @@
 
 ---
 
+## S11 DOM TIMING DIAGNOSTIC TOOLS
+
+**Added diagnostic logging to Section 11 to investigate DOM timing regression:**
+
+### Browser Console Commands:
+```javascript
+// 1. Check current S11 table state anytime:
+window.TEUI.SectionModules.sect11.diagnoseDOMState()
+
+// 2. Trigger manual calculation and see timing logs:
+window.TEUI.SectionModules.sect11.calculateAll()
+
+// 3. Check if h_10 TEUI value is working (proves calculations work):
+document.querySelector('[data-field-id="h_10"]')?.textContent
+```
+
+### What to Test:
+1. **Load SSv2 page** → Check console for S11 timing logs during initialization
+2. **Run `diagnoseDOMState()`** → See if DOM shows zeros but State has real values
+3. **Change any S11 input** → Watch timing logs to see if DOM updates immediately
+4. **Compare with setTimeout timing** → Test if adding setTimeout fixes the issue
+
+### Expected Log Pattern (Working):
+```
+[S11 TIMING] calculateAll() STARTED
+[S11 TIMING] Running Reference Model...
+[S11 DOM] setDualEngineValue(i_85, 16666.5) STARTED
+[S11 DOM] i_85 - DOM UPDATED: "0.00" → "16,666.50"
+[S11 TIMING] Application Model COMPLETE
+```
+
+### Problem Pattern (Broken):
+```
+[S11 TIMING] calculateAll() STARTED
+[S11 DOM] i_85 - DOM ELEMENT NOT FOUND! Update failed.
+OR
+[S11 DOM] i_85 - DOM UPDATED: "0.00" → "0.00" (value not changing)
+```
+
+---
+
 ## CURRENT LOGS
 
 **Session**: [DATE/TIME]
 **Branch**: SSv2
-**Context**: [Describe what action triggered these logs]
-**Issue**: [Brief description of problem being investigated]
+**Context**: Testing S11 DOM timing issue - calculations work (h_10=93.6) but S11 table shows zeros
+**Issue**: DOM rendering timing regression after setTimeout removal
 
-**Expected Behavior**: [What should happen]
-**Actual Behavior**: [What actually happens]
+**Expected Behavior**: S11 table shows real calculated values (16,666.50, etc.)
+**Actual Behavior**: S11 table shows zeros across all calculated fields
 
 ### Log Output:
 ```
