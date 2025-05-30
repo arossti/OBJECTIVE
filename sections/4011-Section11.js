@@ -284,9 +284,9 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Queue a DOM update to be executed later
      */
     function queueDOMUpdate(fieldId, rawValue, formatType, isReferenceMode) {
-        console.log(`[S11 DOM QUEUE] 📝 Queuing ${fieldId} = ${rawValue} (mode: ${isReferenceMode ? 'REF' : 'APP'})`);
+        // console.log(`[S11 DOM QUEUE] 📝 Queuing ${fieldId} = ${rawValue} (mode: ${isReferenceMode ? 'REF' : 'APP'})`);
         domUpdateQueue.push({ fieldId, rawValue, formatType, isReferenceMode });
-        console.log(`[S11 DOM QUEUE] Queue now has ${domUpdateQueue.length} items`);
+        // console.log(`[S11 DOM QUEUE] Queue now has ${domUpdateQueue.length} items`);
     }
     
     /**
@@ -294,11 +294,11 @@ window.TEUI.SectionModules.sect11 = (function() {
      */
     function flushDOMUpdates() {
         if (domUpdateQueue.length === 0) {
-            console.log(`[S11 DOM FLUSH] 🌊 No DOM updates to flush`);
+            // console.log(`[S11 DOM FLUSH] 🌊 No DOM updates to flush`);
             return;
         }
         
-        console.log(`[S11 DOM FLUSH] 🌊 Flushing ${domUpdateQueue.length} DOM updates`);
+        // console.log(`[S11 DOM FLUSH] 🌊 Flushing ${domUpdateQueue.length} DOM updates`);
         
         domUpdateQueue.forEach(({ fieldId, rawValue, formatType, isReferenceMode }, index) => {
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -314,7 +314,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                     element.classList.remove('reference-mode-value');
                 }
                 
-                console.log(`[S11 DOM FLUSH] ${index + 1}/${domUpdateQueue.length} Updated ${fieldId}: "${oldValue}" → "${formattedValue}" (${isReferenceMode ? 'REF' : 'APP'} mode)`);
+                // console.log(`[S11 DOM FLUSH] ${index + 1}/${domUpdateQueue.length} Updated ${fieldId}: "${oldValue}" → "${formattedValue}" (${isReferenceMode ? 'REF' : 'APP'} mode)`);
             } else {
                 console.warn(`[S11 DOM FLUSH] ❌ Element not found: ${fieldId}`);
             }
@@ -387,12 +387,12 @@ window.TEUI.SectionModules.sect11 = (function() {
         const storageMode = storeAsReference ? 'REF' : 'APP';
         const displayMode = isReferenceMode ? 'REF' : 'APP';
         
-        console.log(`[S11 DUAL SET] 🔧 STORAGE: ${storageMode} | DISPLAY: ${displayMode} | Setting ${fieldId} = ${rawValue} (format: ${formatType})`);
+        // console.log(`[S11 DUAL SET] 🔧 STORAGE: ${storageMode} | DISPLAY: ${displayMode} | Setting ${fieldId} = ${rawValue} (format: ${formatType})`);
         
         if (storeAsReference) {
             // Store to Reference state (ref_ prefix)
             if (window.TEUI?.StateManager?.setReferenceValue) {
-                console.log(`[S11 DUAL SET] 🔵 Storing to ref_${fieldId} in StateManager`);
+                // console.log(`[S11 DUAL SET] 🔵 Storing to ref_${fieldId} in StateManager`);
                 window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
             } else {
                 console.warn(`[S11 DUAL SET] ❌ setReferenceValue not available!`);
@@ -400,7 +400,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         } else {
             // Store to Application state (main state) - FIXED: Use setValue instead of setApplicationValue
             if (window.TEUI?.StateManager?.setValue) {
-                console.log(`[S11 DUAL SET] 🟢 Storing to ${fieldId} in StateManager`);
+                // console.log(`[S11 DUAL SET] 🟢 Storing to ${fieldId} in StateManager`);
                 window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
             } else {
                 console.warn(`[S11 DUAL SET] ❌ setValue not available!`);
@@ -408,7 +408,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         }
         
         // TRAFFIC COP FIX: Queue DOM update based on display mode
-        console.log(`[S11 DUAL SET] 📋 Queueing DOM update for ${fieldId} (display mode: ${displayMode})`);
+        // console.log(`[S11 DUAL SET] 📋 Queueing DOM update for ${fieldId} (display mode: ${displayMode})`);
         queueDOMUpdate(fieldId, rawValue, formatType, isReferenceMode);
     }
     
@@ -444,7 +444,7 @@ window.TEUI.SectionModules.sect11 = (function() {
      * @param {string} [format='number'] - The format type for display.
      */
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
-        console.log(`[S11 CALC SET] 🛠️ setCalculatedValue called: ${fieldId} = ${rawValue} (format: ${format})`);
+        // console.log(`[S11 CALC SET] 🛠️ setCalculatedValue called: ${fieldId} = ${rawValue} (format: ${format})`);
         
         // Handle potential N/A cases first
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
@@ -468,7 +468,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             formatType = 'percent-2dp';
         }
         
-        console.log(`[S11 CALC SET] 🔄 Converting format '${format}' → '${formatType}', delegating to setDualEngineValue`);
+        // console.log(`[S11 CALC SET] 🔄 Converting format '${format}' → '${formatType}', delegating to setDualEngineValue`);
         
         // Use the V2 dual-engine setter
         setDualEngineValue(fieldId, rawValue, formatType);
@@ -721,7 +721,7 @@ window.TEUI.SectionModules.sect11 = (function() {
      * REFERENCE MODEL ENGINE: Calculate all Column I and K values using Reference state
      */
     function calculateReferenceModel() {
-        console.log('[S11 REF ENGINE] 🔵 Starting Reference Model calculations...');
+        // console.log('[S11 REF ENGINE] 🔵 Starting Reference Model calculations...');
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
         const componentResults = {};
@@ -740,14 +740,14 @@ window.TEUI.SectionModules.sect11 = (function() {
                 // Use direct calculation result if available
                 heatloss = result.heatloss;
                 heatgain = result.heatgain;
-                console.log(`[S11 REF ENGINE] Row ${config.row}: Using direct result - loss=${heatloss}, gain=${heatgain}`);
+                // console.log(`[S11 REF ENGINE] Row ${config.row}: Using direct result - loss=${heatloss}, gain=${heatgain}`);
             } else {
                 // Fallback: Try to read from ref_ prefixed state
                 const refHeatloss = window.TEUI?.StateManager?.getValue(`ref_i_${config.row}`);
                 const refHeatgain = window.TEUI?.StateManager?.getValue(`ref_k_${config.row}`);
                 heatloss = refHeatloss ? window.TEUI.parseNumeric(refHeatloss, 0) : 0;
                 heatgain = refHeatgain ? window.TEUI.parseNumeric(refHeatgain, 0) : 0;
-                console.log(`[S11 REF ENGINE] Row ${config.row}: Using ref_ state - loss=${heatloss}, gain=${heatgain}`);
+                // console.log(`[S11 REF ENGINE] Row ${config.row}: Using ref_ state - loss=${heatloss}, gain=${heatgain}`);
             }
             
             // Store for later use
@@ -760,86 +760,92 @@ window.TEUI.SectionModules.sect11 = (function() {
             else if (config.type === 'ground') totals.groundAreaD += area;
         });
 
-        console.log(`[S11 REF ENGINE] Calculated totals: loss=${totals.loss}, gain=${totals.gain}, areaD=${totals.areaD}`);
+        // console.log(`[S11 REF ENGINE] Calculated totals: loss=${totals.loss}, gain=${totals.gain}, areaD=${totals.areaD}`);
 
         // Calculate thermal bridge penalty using reference percentage
         const penaltyPercent = getRefFieldValue('d_97');
         const penaltyDecimal = penaltyPercent / 100;
         const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal));
         
-        const penaltyHeatlossI = totals.loss * validatedPenalty;
-        const penaltyHeatgainK = totals.gain * validatedPenalty;
-
-        console.log(`[S11 REF ENGINE] 🎯 SETTING ROW 98 REFERENCE VALUES:`);
-        console.log(`[S11 REF ENGINE]   d_98 (area): ${totals.areaD}`);
-        console.log(`[S11 REF ENGINE]   i_98 (loss): ${totals.loss}`);
-        console.log(`[S11 REF ENGINE]   k_98 (gain): ${totals.gain}`);
-
-        // Store Reference Model results using V2 dual-engine setter WITH REFERENCE STORAGE
-        setDualEngineValue('d_98', totals.areaD, 'number-2dp-comma', true);
-        setDualEngineValue('i_98', totals.loss, 'number-2dp-comma', true);
-        setDualEngineValue('k_98', totals.gain, 'number-2dp-comma', true);
-        setDualEngineValue('i_97', penaltyHeatlossI, 'number-2dp-comma', true);
-        setDualEngineValue('k_97', penaltyHeatgainK, 'number-2dp-comma', true);
-            
-            // Store individual component reference values WITH REFERENCE STORAGE
-            Object.entries(componentResults).forEach(([row, results]) => {
-            setDualEngineValue(`i_${row}`, results.heatloss, 'number-2dp-comma', true);
-            setDualEngineValue(`k_${row}`, results.heatgain, 'number-2dp-comma', true);
-            });
+        // Apply penalty to Reference totals
+        const penaltyHeatloss = totals.loss * validatedPenalty;
+        const penaltyHeatgain = totals.gain * validatedPenalty;
         
-        console.log('[S11 REF ENGINE] 🔵 Reference Model values stored');
+        // Store Reference thermal bridge penalty calculations (with ref_ prefix)
+        if (window.TEUI?.StateManager?.setReferenceValue) {
+            window.TEUI.StateManager.setReferenceValue('ref_e_97', validatedPenalty.toString(), 'calculated-reference');
+            window.TEUI.StateManager.setReferenceValue('ref_i_97', penaltyHeatloss.toString(), 'calculated-reference');
+            window.TEUI.StateManager.setReferenceValue('ref_k_97', penaltyHeatgain.toString(), 'calculated-reference');
+        }
+        
+        // Calculate Reference totals (row 98) 
+        const finalRefLoss = totals.loss + penaltyHeatloss;
+        const finalRefGain = totals.gain + penaltyHeatgain;
+        
+        // Store Reference total calculations (with ref_ prefix)
+        if (window.TEUI?.StateManager?.setReferenceValue) {
+            window.TEUI.StateManager.setReferenceValue('ref_d_98', totals.areaD.toString(), 'calculated-reference');
+            window.TEUI.StateManager.setReferenceValue('ref_i_98', finalRefLoss.toString(), 'calculated-reference');
+            window.TEUI.StateManager.setReferenceValue('ref_k_98', finalRefGain.toString(), 'calculated-reference');
+        }
+        
+        // console.log('[S11 REF ENGINE] ✅ Reference Model calculations complete');
+        return totals;
     }
 
     /**
-     * APPLICATION MODEL ENGINE: Calculate all Column H values using Application state
+     * APPLICATION MODEL ENGINE: Calculate all Column I and K values using Application state
      */
     function calculateApplicationModel() {
-        console.log('[S11 APP ENGINE] 🟢 Starting Application Model calculations...');
+        // console.log('[S11 APP ENGINE] 🟢 Starting Application Model calculations...');
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
-            calculateComponentRow(config.row, config, false); // false = Application calculation
-            const area = getNumericValue(`d_${config.row}`) || 0;
-            const loss = getNumericValue(`i_${config.row}`) || 0;
-            const gain = getNumericValue(`k_${config.row}`) || 0;
+            calculateComponentRow(config.row, config, false); // false = isApplicationCalculation
             
-            totals.loss += loss;
-            totals.gain += gain;
+            const heatloss = getNumericValue(`i_${config.row}`) || 0;
+            const heatgain = getNumericValue(`k_${config.row}`) || 0;
+            const area = getNumericValue(`d_${config.row}`) || 0;
+
+            totals.loss += heatloss;
+            totals.gain += heatgain;
             if (config.row >= 85 && config.row <= 95) totals.areaD += area;
             if (config.type === 'air') totals.airAreaD += area;
             else if (config.type === 'ground') totals.groundAreaD += area;
         });
 
-        console.log(`[S11 APP ENGINE] Calculated totals: loss=${totals.loss}, gain=${totals.gain}, areaD=${totals.areaD}`);
+        // console.log(`[S11 APP ENGINE] Calculated totals: loss=${totals.loss}, gain=${totals.gain}, areaD=${totals.areaD}`);
 
         calculateThermalBridgePenalty(totals.loss, totals.gain);
-        const penaltyHeatlossI = getNumericValue('i_97') || 0;
-        const penaltyHeatgainK = getNumericValue('k_97') || 0;
-
-        // Grand totals include component subtotals + penalty
-        // Corrected: i_98 should only be the sum of components 85-95
-        const grandTotalHeatlossI = totals.loss; // Removed + penaltyHeatlossI
-        // Corrected: k_98 should be SUM(K85:K95) and EXCLUDE k_97 (penaltyHeatgainK)
-        const grandTotalHeatgainK = totals.gain; 
-
-        console.log(`[S11 APP ENGINE] 🎯 SETTING ROW 98 APPLICATION VALUES:`);
-        console.log(`[S11 APP ENGINE]   d_98 (area): ${totals.areaD}`);
-        console.log(`[S11 APP ENGINE]   i_98 (loss): ${grandTotalHeatlossI}`);
-        console.log(`[S11 APP ENGINE]   k_98 (gain): ${grandTotalHeatgainK}`);
-
-        // Set totals for Row 98
+        const penaltyHeatloss = getNumericValue('i_97') || 0;
+        const penaltyHeatgain = getNumericValue('k_97') || 0;
+        
+        // console.log(`[S11 APP ENGINE] 🎯 SETTING ROW 98 APPLICATION VALUES:`);
+        // console.log(`[S11 APP ENGINE]   d_98 (area): ${totals.areaD}`);
+        // console.log(`[S11 APP ENGINE]   i_98 (loss): ${totals.loss + penaltyHeatloss}`);
+        // console.log(`[S11 APP ENGINE]   k_98 (gain): ${totals.gain + penaltyHeatgain}`);
+        
         setCalculatedValue('d_98', totals.areaD);
-        setCalculatedValue('i_98', grandTotalHeatlossI);
-        setCalculatedValue('k_98', grandTotalHeatgainK);
+        setCalculatedValue('i_98', totals.loss + penaltyHeatloss);
+        setCalculatedValue('k_98', totals.gain + penaltyHeatgain);
+        
+        updatePercentageIndicators(totals);
+        
+        // console.log('[S11 APP ENGINE] ✅ Application Model calculations complete');
+        return totals;
+    }
 
+    /**
+     * Update percentage indicators and color coding for columns H, J, L
+     */
+    function updatePercentageIndicators(totals) {
         // Calculate Percentages and Update Reference Indicators
         const totalAreaAe = totals.airAreaD > 0 ? totals.airAreaD : 1;
         const totalAreaAg = totals.groundAreaD > 0 ? totals.groundAreaD : 1;
         const rowsToProcess = [...componentConfig, { row: 97 }];
         const lossIndicatorClasses = ['loss-high', 'loss-medium', 'loss-low'];
-        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low']; // Define gain classes
+        const gainIndicatorClasses = ['gain-high', 'gain-medium', 'gain-low'];
 
         rowsToProcess.forEach(config => {
             const rowStr = config.row.toString();
@@ -847,55 +853,53 @@ window.TEUI.SectionModules.sect11 = (function() {
             const jCellFieldId = `j_${rowStr}`; // Field ID for Column J
 
             if (config.row !== 97) { // Area % only for components
-                 const area = getNumericValue(`d_${rowStr}`) || 0;
-                 const hValue = config.type === 'air' ? (area / totalAreaAe) * 100 :
-                               (config.type === 'ground' ? (area / totalAreaAg) * 100 : 0);
-                 setCalculatedValue(hCellFieldId, hValue / 100, 'percent');
+                const area = getNumericValue(`d_${rowStr}`) || 0;
+                const hValue = config.type === 'air' ? (area / totalAreaAe) * 100 :
+                              (config.type === 'ground' ? (area / totalAreaAg) * 100 : 0);
+                setCalculatedValue(hCellFieldId, hValue / 100, 'percent');
 
-                 // Apply text color class to Column H based on type
-                 const hElement = document.querySelector(`[data-field-id="${hCellFieldId}"]`);
-                 if (hElement) {
-                     hElement.classList.remove('text-air-facing', 'text-ground-facing');
-                     if (config.type === 'air') {
-                         hElement.classList.add('text-air-facing');
-                     } else if (config.type === 'ground') {
-                         hElement.classList.add('text-ground-facing');
-                     }
-                 }
+                // Apply text color class to Column H based on type
+                const hElement = document.querySelector(`[data-field-id="${hCellFieldId}"]`);
+                if (hElement) {
+                    hElement.classList.remove('text-air-facing', 'text-ground-facing');
+                    if (config.type === 'air') {
+                        hElement.classList.add('text-air-facing');
+                    } else if (config.type === 'ground') {
+                        hElement.classList.add('text-ground-facing');
+                    }
+                }
             }
             const heatloss = getNumericValue(`i_${rowStr}`) || 0;
-            const heatingPercentDecimal = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) : 0; // Pass raw fraction
+            const grandTotalHeatlossI = totals.loss + (getNumericValue('i_97') || 0);
+            const heatingPercentDecimal = grandTotalHeatlossI > 0 ? (heatloss / grandTotalHeatlossI) : 0;
             setCalculatedValue(jCellFieldId, heatingPercentDecimal, 'percent');
 
             // Apply Loss Indicator Class to Column J
             let htgGainClass = '';
             const absHtgPercent = Math.abs(heatingPercentDecimal * 100);
-            // Thresholds for loss contribution: Red >= 15%, Yellow >= 5%, Green < 5%
-            if (absHtgPercent >= 15) { htgGainClass = 'loss-high'; }      // Red for high heat loss contribution
-            else if (absHtgPercent >= 5) { htgGainClass = 'loss-medium'; } // Yellow
-            else if (absHtgPercent >= 0) { htgGainClass = 'loss-low'; }       // Green
+            if (absHtgPercent >= 15) { htgGainClass = 'loss-high'; }
+            else if (absHtgPercent >= 5) { htgGainClass = 'loss-medium'; }
+            else if (absHtgPercent >= 0) { htgGainClass = 'loss-low'; }
             setIndicatorClass(jCellFieldId, htgGainClass, gainIndicatorClasses);
 
             const heatgain = getNumericValue(`k_${rowStr}`) || 0;
-            const coolingPercentDecimal = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) : 0; // Pass raw fraction
-            const lCellFieldId = `l_${rowStr}`; // Field ID for Column L
+            const coolingPercentDecimal = Math.abs(totals.gain) > 1e-6 ? (-heatgain / totals.gain) : 0;
+            const lCellFieldId = `l_${rowStr}`;
             setCalculatedValue(lCellFieldId, coolingPercentDecimal, 'percent');
 
             // Apply Gain Indicator Class to Column L
             let coolGainClass = '';
-            // Thresholds for gain contribution: Red >= 15% (bad), Yellow >= 5%, Green < 5% (good)
             const absCoolPercent = Math.abs(coolingPercentDecimal * 100);
-            if (absCoolPercent >= 15) { coolGainClass = 'gain-high'; }      // Red for high heat gain contribution
-            else if (absCoolPercent >= 5) { coolGainClass = 'gain-medium'; } // Yellow
-            else if (absCoolPercent >= 0) { coolGainClass = 'gain-low'; }       // Green
+            if (absCoolPercent >= 15) { coolGainClass = 'gain-high'; }
+            else if (absCoolPercent >= 5) { coolGainClass = 'gain-medium'; }
+            else if (absCoolPercent >= 0) { coolGainClass = 'gain-low'; }
             setIndicatorClass(lCellFieldId, coolGainClass, gainIndicatorClasses);
 
-            // --- Apply Left Alignment to J & L Columns --- 
+            // Apply Left Alignment to J & L Columns
             const jElement = document.querySelector(`[data-field-id="${jCellFieldId}"]`);
             if (jElement) jElement.classList.add('text-left-indicator');
             const lElement = document.querySelector(`[data-field-id="${lCellFieldId}"]`);
             if (lElement) lElement.classList.add('text-left-indicator');
-            // --- End Left Alignment --- 
 
             // Update reference indicators for all rows
             updateReferenceIndicators(config.row);
@@ -916,21 +920,21 @@ window.TEUI.SectionModules.sect11 = (function() {
         window.sectionCalculationInProgress = true;
         
         try {
-            console.log('[S11 TRAFFIC COP] 🚀 Starting dual-engine calculations...');
+            // console.log('[S11 TRAFFIC COP] 🚀 Starting dual-engine calculations...');
             const currentMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
-            console.log('[S11 TRAFFIC COP] Current UI Mode:', currentMode);
+            // console.log('[S11 TRAFFIC COP] Current UI Mode:', currentMode);
             
             calculateReferenceModel();  // Calculates Reference values with ref_ prefix
             calculateApplicationModel(); // Calculates Target values (existing logic)
             
-            console.log('[S11 TRAFFIC COP] ✅ Both engines complete, flushing DOM updates...');
+            // console.log('[S11 TRAFFIC COP] ✅ Both engines complete, flushing DOM updates...');
             
             // TRAFFIC COP FIX: Execute all queued DOM updates after calculations complete
             flushDOMUpdates();
             
         } finally {
             window.sectionCalculationInProgress = false;
-            console.log('[S11 TRAFFIC COP] 🏁 calculateAll() complete');
+            // console.log('[S11 TRAFFIC COP] 🏁 calculateAll() complete');
         }
     }
 
