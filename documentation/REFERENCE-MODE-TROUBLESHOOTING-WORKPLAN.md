@@ -67,53 +67,87 @@ setDualEngineValue('d_98', totals.areaD, 'number-2dp-comma', true);  // true = R
 - Application Mode: Shows Application values in both columns for design work
 - **Perfect dual-engine calculations with row 98 working correctly**
 
-## 🎯 **Current Outstanding Task: Automation**
+## ⚠️ **THE AUTOMATION DISASTER: Lessons in Technical Debt**
 
-### Issue: Manual testTrafficCop() Required
-**Current Behavior**: 
-- Initial load shows "table full of zeros" in S11
-- Running `window.TEUI.SectionModules.sect11.testTrafficCop()` completes calculations
-- h_10 updates correctly to 93.6
-- All state separation maintained perfectly
+### 🚨 **Critical Learning: Incremental Fixes Can Destroy Architecture**
 
-**Goal**: Automate testTrafficCop() execution after values settle
+After achieving perfect dual-engine state separation at **[SSv2 a75a788]**, we attempted to automate the `testTrafficCop()` function and fix styling issues. This seemingly simple enhancement led to architectural collapse.
 
-### Proposed Solutions
+### **What We Attempted (Post-Success)**
 
-#### Option A: Initialization Sequencing
-```javascript
-// Add to Section 11 initialization
-setTimeout(() => {
-    if (window.TEUI?.SectionModules?.sect11?.testTrafficCop) {
-        window.TEUI.SectionModules.sect11.testTrafficCop();
-    }
-}, 2000); // Allow other sections to complete first
-```
+#### Automation Implementations
+1. **Auto-trigger system** with dependency detection
+2. **Reference/Design toggle integration** 
+3. **Timeout-based initialization** triggers
+4. **StateManager listener automation**
 
-#### Option B: StateManager Ready Event
-```javascript
-// Trigger when key dependencies are available
-window.TEUI.StateManager.addListener('initialization_complete', () => {
-    window.TEUI.SectionModules.sect11.testTrafficCop();
-});
-```
+#### Styling "Improvements"  
+1. **Red text removal** from Reference mode
+2. **Complex DOM queue system** for display updates
+3. **Mode-aware styling** with CSS injection
+4. **Enhanced visual indicators**
 
-#### Option C: Dependency Detection
-```javascript
-// Auto-trigger when required values are present
-function checkAndTriggerCalculations() {
-    const requiredFields = ['f_85', 'f_86', 'h_15'];
-    const allPresent = requiredFields.every(field => 
-        window.TEUI?.StateManager?.getValue(field) !== null
-    );
-    
-    if (allPresent) {
-        window.TEUI.SectionModules.sect11.testTrafficCop();
-    }
-}
-```
+### **💥 What Broke (The Cascade of Failures)**
 
-## 📊 **Success Metrics Achieved**
+#### Immediate Symptoms
+- **1505+ console errors** (recursion loops)
+- **Section 11 table full of zeros** on load
+- **Lost dynamic recalculation** on user input
+- **Cross-state contamination** returning
+- **Unstable TEUI values** (76.1 instead of 93.6)
+- **Reference mode showing wrong values**
+
+#### Root Cause Analysis
+1. **Multiple Calculation Triggers**: Both StateManager listeners AND direct `calculateAll()` calls
+2. **Recursion Loop Cascade**: Fixed one recursion, created others
+3. **Timing Dependencies**: Auto-triggers interfering with natural calculation flow  
+4. **DOM Update Conflicts**: Complex queuing system causing display inconsistencies
+5. **State Bleed-Through**: Automation breaking the clean hemisphere separation
+
+### **🔄 The Forced Revert Decision**
+
+**User Quote**: *"I still see far too many problems with the code... There is a reason I asked for a reversion to [SSv2 a75a788]. Please do a hard git revert to that state please... what we see now is actually a clusterfuck of interventions that has taken us far, far down a path towards wrongness."*
+
+**Revert Command**: `git reset --hard a75a788`
+
+### **🎯 Critical Architectural Lessons**
+
+#### ❌ **What Went Wrong**
+1. **Incremental Complexity**: Each "small fix" added interdependent complexity
+2. **Fighting Symptoms**: Fixed UI issues instead of architectural problems  
+3. **Lost Architectural Discipline**: Abandoned clean separation for convenience
+4. **Automation Without Architecture**: Tried to automate before fixing root timing issues
+
+#### ✅ **What We Should Have Done**
+1. **Preserve Working Architecture**: Keep the clean dual-engine separation
+2. **Address Root Cause**: Fix dependency-ordered calculations first
+3. **Architectural Refactoring**: Use existing `4011-Dependency.js` infrastructure
+4. **Single Responsibility**: Fix one architectural layer at a time
+
+## 🎯 **Current State After Revert: [SSv2 a75a788] + Row 98 Fix**
+
+### ✅ **What Works**
+- **Perfect dual-engine state separation** maintained
+- **Manual `testTrafficCop()` works flawlessly**
+- **Clean console output** (no recursion)
+- **Row 98 calculations** fixed with proper StateManager methods
+- **Reference/Application modes** show correct values
+
+### ⚠️ **What Needs Work** 
+- **Manual trigger required**: Need to run `window.TEUI.SectionModules.sect11.testTrafficCop()` 
+- **Some UI dynamic functions broken**: Timing issues from previous setTimeout removals
+- **Partial responsiveness**: Not all field changes trigger proper recalculation
+
+### 🚀 **The Right Path Forward: Dependency Architecture**
+
+Instead of incremental automation fixes, the solution is **architectural refactoring**:
+
+1. **Leverage existing `4011-Dependency.js`**: 921+ dependencies already mapped
+2. **Implement dependency-ordered calculations**: Replace `calculateAll()` with smart triggering
+3. **Use StateManager orchestration**: `calculateDependencyChain()` instead of manual triggers
+4. **Field-specific calculation registration**: Not section-wide recalculation
+
+## 📊 **Success Metrics Achieved** 
 
 ### ✅ **Perfect State Separation**
 - Reference values stay in Reference hemisphere
@@ -149,30 +183,42 @@ function checkAndTriggerCalculations() {
 - StateManager listeners only for user inputs and final section results
 - Traffic Cop pattern for orchestrating dual calculations
 
-## 🎯 **Next Steps**
+### **🚨 Critical Anti-Patterns to Avoid**
+1. **Incremental Automation**: Adding automation before fixing timing architecture
+2. **Multiple Calculation Triggers**: Both manual and automatic triggers competing
+3. **Complex DOM Queuing**: Over-engineering display updates
+4. **Fighting Symptoms**: Fixing UI issues instead of architectural problems
 
-1. **Implement testTrafficCop() Automation** (Priority: Medium)
-   - Choose automation approach (A, B, or C above)
-   - Ensure timing doesn't break existing functionality
-   - Test across different initialization scenarios
+## 🎯 **Next Steps: Architectural Approach**
 
-2. **Code Cleanup** (Priority: Low)
-   - Remove diagnostic logging once automation is stable
-   - Document the dual-engine pattern for future sections
-   - Create regression tests
+### **Phase 1: Dependency-Ordered Calculations**
+- Leverage existing `4011-Dependency.js` infrastructure
+- Implement `StateManager.calculateDependencyChain()`
+- Replace section `calculateAll()` with field-specific calculations
+- **Priority: HIGH** - This fixes root timing issues
 
-3. **Feature Enhancement** (Priority: Future)
-   - Apply dual-engine pattern to other sections needing Reference Mode
-   - Enhance UI indicators for current calculation mode
-   - Add user-facing Reference Mode documentation
+### **Phase 2: Automation (After Architecture)**  
+- Once dependency ordering works, automation becomes trivial
+- `testTrafficCop()` pattern becomes standard calculation flow
+- No special triggers needed - just proper dependency management
 
-## 🏆 **CONCLUSION: MISSION ACCOMPLISHED**
+### **Phase 3: Feature Enhancement**
+- Clean up UI based on solid architectural foundation
+- Add visual indicators for calculation state
+- User-facing Reference Mode documentation
 
-The dual-engine architecture is now working perfectly with clean state separation. The "knife-like" separation between Reference and Application hemispheres has been achieved, allowing both calculation engines to operate independently while sharing information only when explicitly intended.
+## 🏆 **CONCLUSION: Success Through Discipline**
 
-**Key Achievement**: Section 01 now correctly displays Reference values in Reference column and Application values in Target column, regardless of current UI mode, proving the state hemispheres are completely separate and functioning correctly.
+The dual-engine architecture works perfectly when we maintain architectural discipline. The automation attempt taught us that **incremental fixes to architectural problems create technical debt**. 
+
+**Key Achievement**: We successfully created clean state hemisphere separation. The failure taught us that **automation must be built on solid architectural foundations**, not layered on top of timing workarounds.
+
+**Current Status**: ✅ STABLE at [SSv2 a75a788] + Row 98 fix  
+**Next Action**: Implement dependency-ordered calculations using existing infrastructure  
+**Lesson Learned**: Preserve working architecture; fix root causes, not symptoms
 
 ---
 
-**Final Status**: ✅ RESOLVED - Dual-engine state separation working perfectly
-**Next Action**: Implement testTrafficCop() automation for seamless user experience
+**Final Status**: ✅ RESOLVED - Dual-engine state separation working perfectly  
+**Failed Automation**: ❌ Incremental automation approach abandoned  
+**Correct Path**: 🎯 Dependency-ordered calculation architecture using existing `4011-Dependency.js`
