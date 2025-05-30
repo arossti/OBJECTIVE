@@ -456,9 +456,9 @@ TEUI.Calculator = (function() {
         
         try {
             // console.log('Central calculateAll starting...'); // Commented out for clean console
-            
+        
             // Define calculation order based on dependencies
-            const calcOrder = [
+        const calcOrder = [
                 'sect02', // Building Info (foundation data)
                 'sect03', // Climate Data (weather dependencies)
                 'sect05', // CO2e Emissions (affects targets)
@@ -473,18 +473,18 @@ TEUI.Calculator = (function() {
                 'sect14', // TEDI/TELI (depends on mechanical)
                 'sect15', // TEUI (depends on all energy calcs)
                 'sect04', // Actual vs Target (depends on S15)
-                'sect01'  // Key Values (consumes S15, S05)
-            ];
+            'sect01'  // Key Values (consumes S15, S05)
+        ];
 
-            // Explicitly call each section's calculateAll if it exists
-            calcOrder.forEach(sectionKey => {
-                const sectionModule = window.TEUI.SectionModules?.[sectionKey];
-                if (sectionModule && typeof sectionModule.calculateAll === 'function') {
-                    try {
-                        sectionModule.calculateAll();
-                    } catch (error) {
-                        console.error(`Error calculating section ${sectionKey}:`, error);
-                    }
+        // Explicitly call each section's calculateAll if it exists
+        calcOrder.forEach(sectionKey => {
+            const sectionModule = window.TEUI.SectionModules?.[sectionKey];
+            if (sectionModule && typeof sectionModule.calculateAll === 'function') {
+                try {
+                    sectionModule.calculateAll();
+                } catch (error) {
+                    console.error(`Error calculating section ${sectionKey}:`, error);
+                }
                 }
             });
         } finally {
@@ -516,8 +516,8 @@ TEUI.Calculator = (function() {
                         } catch (error) {
                             console.error(`Error in calculateApplicationModel for section ${sectionId}:`, error);
                         }
-                    }
-                });
+            }
+        });
             }
             
             if (modelType === 'reference' || modelType === 'both') {

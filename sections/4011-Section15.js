@@ -851,7 +851,7 @@ window.TEUI.SectionModules.sect15 = (function() {
     // Add recursion protection flags  
     let referenceCalculationInProgress = false;
     let targetCalculationInProgress = false;
-
+    
     /**
      * REFERENCE MODEL ENGINE: Calculate all Reference values using Reference state
      * Stores results with ref_ prefix to keep separate from Target values

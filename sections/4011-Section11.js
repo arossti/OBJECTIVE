@@ -274,6 +274,52 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     //==========================================================================
+    // TRAFFIC COP ARCHITECTURE - QUEUED DOM UPDATES
+    //==========================================================================
+    
+    // Queue for DOM updates to be executed after calculations complete
+    let domUpdateQueue = [];
+    
+    /**
+     * Queue a DOM update to be executed later
+     */
+    function queueDOMUpdate(fieldId, rawValue, formatType, isReferenceMode) {
+        domUpdateQueue.push({ fieldId, rawValue, formatType, isReferenceMode });
+    }
+    
+    /**
+     * Execute all queued DOM updates
+     */
+    function flushDOMUpdates() {
+        if (domUpdateQueue.length === 0) return;
+        
+        console.log(`[S11 TRAFFIC COP] Flushing ${domUpdateQueue.length} DOM updates`);
+        
+        domUpdateQueue.forEach(({ fieldId, rawValue, formatType, isReferenceMode }) => {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+                element.textContent = formattedValue;
+                
+                // Apply Reference Mode styling
+                if (isReferenceMode) {
+                    element.classList.add('reference-mode-value');
+                } else {
+                    element.classList.remove('reference-mode-value');
+                }
+                
+                console.log(`[S11 TRAFFIC COP] Updated ${fieldId}: "${formattedValue}"`);
+            } else {
+                console.warn(`[S11 TRAFFIC COP] Element not found: ${fieldId}`);
+            }
+        });
+        
+        // Clear the queue
+        domUpdateQueue = [];
+        console.log(`[S11 TRAFFIC COP] DOM updates complete`);
+    }
+
+    //==========================================================================
     // HELPER FUNCTIONS (Standardized)
     //==========================================================================
     
@@ -327,41 +373,22 @@ window.TEUI.SectionModules.sect11 = (function() {
 
     // 5. Dual-engine value setter
     function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
-        console.log(`[S11 DOM] setDualEngineValue(${fieldId}, ${rawValue}, ${formatType}) STARTED`);
-        
         const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
-        console.log(`[S11 DOM] ${fieldId} - Reference Mode: ${isReferenceMode}`);
         
         if (isReferenceMode) {
             // Reference Mode - store with ref_ prefix using new V2 API
             if (window.TEUI?.StateManager?.setReferenceValue) {
                 window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
-                console.log(`[S11 DOM] ${fieldId} - Stored as ref_${fieldId} = ${rawValue} (Reference Mode)`);
-            } else {
-                console.log(`[S11 DOM] ${fieldId} - StateManager.setReferenceValue NOT AVAILABLE`);
             }
         } else {
             // Application Mode - store in main state using new V2 API
             if (window.TEUI?.StateManager?.setApplicationValue) {
                 window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
-                console.log(`[S11 DOM] ${fieldId} - Stored as ${fieldId} = ${rawValue} (Application Mode)`);
-            } else {
-                console.log(`[S11 DOM] ${fieldId} - StateManager.setApplicationValue NOT AVAILABLE`);
             }
         }
         
-        // Update DOM display
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
-            const beforeUpdate = element.textContent;
-            element.textContent = formattedValue;
-            console.log(`[S11 DOM] ${fieldId} - DOM UPDATED: "${beforeUpdate}" → "${formattedValue}"`);
-        } else {
-            console.log(`[S11 DOM] ${fieldId} - DOM ELEMENT NOT FOUND! Update failed.`);
-        }
-        
-        console.log(`[S11 DOM] setDualEngineValue(${fieldId}) COMPLETED`);
+        // TRAFFIC COP FIX: Queue DOM update instead of immediate execution
+        queueDOMUpdate(fieldId, rawValue, formatType, isReferenceMode);
     }
     
     function getNumericValue(fieldId) {
@@ -396,16 +423,11 @@ window.TEUI.SectionModules.sect11 = (function() {
      * @param {string} [format='number'] - The format type for display.
      */
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
-        console.log(`[S11 DOM] setCalculatedValue(${fieldId}, ${rawValue}, ${format}) CALLED`);
-        
         // Handle potential N/A cases first
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
              const element = document.querySelector(`[data-field-id="${fieldId}"]`);
              if (element) {
                  element.textContent = 'N/A';
-                 console.log(`[S11 DOM] ${fieldId} set to N/A (invalid value)`);
-             } else {
-                 console.log(`[S11 DOM] ${fieldId} element NOT FOUND for N/A update`);
              }
              return; // Stop processing if value is not a valid number
         }
@@ -423,7 +445,6 @@ window.TEUI.SectionModules.sect11 = (function() {
         }
         
         // Use the V2 dual-engine setter
-        console.log(`[S11 DOM] calling setDualEngineValue(${fieldId}, ${rawValue}, ${formatType})`);
         setDualEngineValue(fieldId, rawValue, formatType);
     }
 
@@ -841,37 +862,27 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Always runs both engines regardless of UI mode
      */
     function calculateAll() {
-        console.log('[S11 TIMING] calculateAll() STARTED at', new Date().toISOString());
-        
         // Add recursion protection for Section 11
         if (window.sectionCalculationInProgress) {
-            console.log('[S11 TIMING] calculateAll() BLOCKED - recursion protection active');
             return;
         }
         
         window.sectionCalculationInProgress = true;
         
         try {
-            console.log('[S11 TIMING] Running Reference Model...');
+            console.log('[S11 TRAFFIC COP] Starting calculations...');
+            
             calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-            console.log('[S11 TIMING] Reference Model COMPLETE');
-            
-            console.log('[S11 TIMING] Running Application Model...');
             calculateApplicationModel(); // Calculates Target values (existing logic)
-            console.log('[S11 TIMING] Application Model COMPLETE');
             
-            // Check DOM state after calculations
-            console.log('[S11 TIMING] Checking DOM state after calculations:');
-            const testFields = ['i_85', 'i_86', 'i_95', 'i_98'];
-            testFields.forEach(fieldId => {
-                const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-                const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
-                console.log(`[S11 TIMING] ${fieldId}: DOM="${element?.textContent || 'NOT FOUND'}" State="${stateValue || 'UNDEFINED'}"`);
-            });
+            console.log('[S11 TRAFFIC COP] Calculations complete, flushing DOM updates...');
+            
+            // TRAFFIC COP FIX: Execute all queued DOM updates after calculations complete
+            flushDOMUpdates();
             
         } finally {
             window.sectionCalculationInProgress = false;
-            console.log('[S11 TIMING] calculateAll() COMPLETED at', new Date().toISOString());
+            console.log('[S11 TRAFFIC COP] calculateAll() complete');
         }
     }
 
@@ -1080,6 +1091,20 @@ window.TEUI.SectionModules.sect11 = (function() {
     //==========================================================================
     
     /**
+     * Simple check to verify Section 11 module is loaded
+     * Call from console: window.TEUI.SectionModules.sect11.checkModule()
+     */
+    function checkModule() {
+        console.log('=== S11 MODULE CHECK ===');
+        console.log('Section 11 module loaded:', !!window.TEUI?.SectionModules?.sect11);
+        console.log('Functions available:', Object.keys(window.TEUI?.SectionModules?.sect11 || {}));
+        console.log('StateManager available:', !!window.TEUI?.StateManager);
+        console.log('ReferenceToggle available:', !!window.TEUI?.ReferenceToggle);
+        console.log('=== END MODULE CHECK ===');
+        return true;
+    }
+
+    /**
      * Diagnostic function to check current state of S11 table
      * Call from console: window.TEUI.SectionModules.sect11.diagnoseDOMState()
      */
@@ -1104,6 +1129,51 @@ window.TEUI.SectionModules.sect11 = (function() {
         console.log('=== END DIAGNOSTIC ===');
     }
 
+    /**
+     * Test function to manually update DOM with current state values
+     * Call from console: window.TEUI.SectionModules.sect11.testDOMUpdate()
+     */
+    function testDOMUpdate() {
+        console.log('=== TESTING DOM UPDATE ===');
+        
+        const testFields = ['i_85', 'i_86', 'i_95', 'i_98'];
+        testFields.forEach(fieldId => {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+            
+            if (element && stateValue) {
+                const beforeUpdate = element.textContent;
+                const formattedValue = window.TEUI?.formatNumber?.(parseFloat(stateValue), 'number-2dp-comma') || stateValue;
+                element.textContent = formattedValue;
+                console.log(`[TEST] ${fieldId}: "${beforeUpdate}" → "${formattedValue}"`);
+            } else {
+                console.log(`[TEST] ${fieldId}: Element=${!!element}, State=${stateValue}`);
+            }
+        });
+        
+        console.log('=== END TEST ===');
+    }
+
+    /**
+     * Test the Traffic Cop fix by triggering calculations and DOM updates
+     * Call from console: window.TEUI.SectionModules.sect11.testTrafficCop()
+     */
+    function testTrafficCop() {
+        console.log('=== TESTING TRAFFIC COP FIX ===');
+        
+        // Clear any existing queue
+        domUpdateQueue = [];
+        
+        // Trigger calculations (which should queue DOM updates)
+        calculateAll();
+        
+        // Check if it worked
+        setTimeout(() => {
+            diagnoseDOMState();
+            console.log('=== END TRAFFIC COP TEST ===');
+        }, 100);
+    }
+
     //==========================================================================
     // PUBLIC API
     //==========================================================================
@@ -1115,20 +1185,11 @@ window.TEUI.SectionModules.sect11 = (function() {
         onSectionRendered, 
         calculateAll,
         referenceHandler, // Expose the generated handler
-        diagnoseDOMState // Expose the diagnostic function
+        diagnoseDOMState, // Expose the diagnostic function
+        testDOMUpdate, // Expose the test function
+        checkModule, // Expose the check module function
+        queueDOMUpdate, // Expose the queueDOMUpdate function
+        flushDOMUpdates, // Expose the flushDOMUpdates function
+        testTrafficCop // Expose the testTrafficCop function
     };
 })();
-
-// REMOVED Event Listeners
-// // Initialize when the section is rendered
-// document.addEventListener('teui-section-rendered', (event) => {
-//     if (event.detail?.sectionId === 'transmissionLosses') {
-//         // Small delay to ensure other sections are ready and StateManager has values
-//         setTimeout(() => { window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 50);
-//     }
-// });
-// 
-// // Fallback to rendering complete event (ensure it runs even if teui-section-rendered is missed)
-// document.addEventListener('teui-rendering-complete', () => {
-//     setTimeout(() => { if (document.getElementById('transmissionLosses')) window.TEUI.SectionModules.sect11?.onSectionRendered(); }, 250);
-// }); 
