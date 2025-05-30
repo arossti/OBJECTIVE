@@ -1942,12 +1942,10 @@ window.TEUI.SectionModules.sect09 = (function() {
 // Initialize when the section is rendered - THIS IS THE PRIMARY INITIALIZATION POINT
 document.addEventListener('teui-section-rendered', function(event) {
     if (event.detail?.sectionId === 'occupantInternalGains') {
-        // Use a small delay to ensure other elements might be ready
-    setTimeout(() => {
-             if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
+        // Call directly without setTimeout to fix performance violations
+        if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
             window.TEUI.SectionModules.sect09.onSectionRendered();
         }
-        }, 100); 
     }
 });
 

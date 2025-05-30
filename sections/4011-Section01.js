@@ -915,14 +915,8 @@ window.TEUI.SectionModules.sect01 = (function() {
         // Listen to user input fields
         inputFieldsToWatch.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
-                // Debounce for d_51 which can trigger rapid changes
-                if (fieldId === 'd_51') {
-                    setTimeout(() => {
-                        runAllCalculations();
-                    }, 50);
-                } else {
+                // Call directly without setTimeout to fix performance violations
                 runAllCalculations();
-                }
             });
         });
 
@@ -976,44 +970,40 @@ window.TEUI.SectionModules.sect01 = (function() {
         removeToggleIcon();
         initializeEventHandlers();
         
-        // INITIALIZATION FIX: Add a delayed global initialization trigger
-        // This ensures all sections have time to initialize before we finalize calculations
-        setTimeout(() => {
-            // Force calculation cascade in dependency order
-            const initializationSequence = [
-                { name: 'Section 03 (Climate)', module: 'sect03', method: 'calculateAll' },
-                { name: 'Section 07 (DHW)', module: 'sect07', method: 'calculateAll' },
-                { name: 'Section 11 (Envelope)', module: 'sect11', method: 'calculateAll' },
-                { name: 'Section 13 (Heating)', module: 'sect13', method: 'calculateAll' },
-                { name: 'Section 15 (Summary)', module: 'sect15', method: 'calculateValues' },
-                { name: 'Section 04 (Energy)', module: 'sect04', method: 'updateSubtotals' }
-            ];
-            
-            let sequenceIndex = 0;
-            
-            function runNextInSequence() {
-                if (sequenceIndex >= initializationSequence.length) {
-                    runAllCalculations();
-                    return;
-                }
-                
-                const current = initializationSequence[sequenceIndex];
-                
-                // Try to trigger the calculation for this section
-                const section = window.TEUI?.SectionModules?.[current.module];
-                if (section && typeof section[current.method] === 'function') {
-                    section[current.method]();
-                }
-                
-                sequenceIndex++;
-                
-                // Wait a bit for calculations to propagate, then continue
-                setTimeout(runNextInSequence, 50);
+        // INITIALIZATION FIX: Trigger global initialization immediately to fix performance violations
+        // Force calculation cascade in dependency order
+        const initializationSequence = [
+            { name: 'Section 03 (Climate)', module: 'sect03', method: 'calculateAll' },
+            { name: 'Section 07 (DHW)', module: 'sect07', method: 'calculateAll' },
+            { name: 'Section 11 (Envelope)', module: 'sect11', method: 'calculateAll' },
+            { name: 'Section 13 (Heating)', module: 'sect13', method: 'calculateAll' },
+            { name: 'Section 15 (Summary)', module: 'sect15', method: 'calculateValues' },
+            { name: 'Section 04 (Energy)', module: 'sect04', method: 'updateSubtotals' }
+        ];
+        
+        let sequenceIndex = 0;
+        
+        function runNextInSequence() {
+            if (sequenceIndex >= initializationSequence.length) {
+                runAllCalculations();
+                return;
             }
             
-            runNextInSequence();
+            const current = initializationSequence[sequenceIndex];
             
-        }, 500); // Give sections time to fully initialize
+            // Try to trigger the calculation for this section
+            const section = window.TEUI?.SectionModules?.[current.module];
+            if (section && typeof section[current.method] === 'function') {
+                section[current.method]();
+            }
+            
+            sequenceIndex++;
+            
+            // Continue immediately to fix performance violations
+            runNextInSequence();
+        }
+        
+        runNextInSequence();
     }
     
     let isInitialized = false;

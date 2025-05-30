@@ -1449,64 +1449,62 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     fitGraphToContainer() {
         if (!this.svg || !this.data || !this.data.nodes || this.data.nodes.length === 0) return;
         
-        // Wait a moment for the layout to stabilize
-        setTimeout(() => {
-            try {
-                // Get the current bounds of the nodes
-                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-                
-                this.data.nodes.forEach(node => {
-                    if (node.x < minX) minX = node.x;
-                    if (node.x > maxX) maxX = node.x;
-                    if (node.y < minY) minY = node.y;
-                    if (node.y > maxY) maxY = node.y;
+        // Execute immediately to fix performance violations
+        try {
+            // Get the current bounds of the nodes
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            
+            this.data.nodes.forEach(node => {
+                if (node.x < minX) minX = node.x;
+                if (node.x > maxX) maxX = node.x;
+                if (node.y < minY) minY = node.y;
+                if (node.y > maxY) maxY = node.y;
+            });
+            
+            // Add some padding
+            const padding = 50;
+            minX -= padding;
+            minY -= padding;
+            maxX += padding;
+            maxY += padding;
+            
+            // Calculate the scale needed to fit the graph
+            const graphWidth = maxX - minX;
+            const graphHeight = maxY - minY;
+            const containerWidth = this.width;
+            const containerHeight = this.height;
+            
+            if (graphWidth <= 0 || graphHeight <= 0 || containerWidth <= 0 || containerHeight <= 0) {
+                console.warn('[DependencyGraph] Invalid dimensions for fitting graph', {
+                    graph: { width: graphWidth, height: graphHeight },
+                    container: { width: containerWidth, height: containerHeight }
                 });
-                
-                // Add some padding
-                const padding = 50;
-                minX -= padding;
-                minY -= padding;
-                maxX += padding;
-                maxY += padding;
-                
-                // Calculate the scale needed to fit the graph
-                const graphWidth = maxX - minX;
-                const graphHeight = maxY - minY;
-                const containerWidth = this.width;
-                const containerHeight = this.height;
-                
-                if (graphWidth <= 0 || graphHeight <= 0 || containerWidth <= 0 || containerHeight <= 0) {
-                    console.warn('[DependencyGraph] Invalid dimensions for fitting graph', {
-                        graph: { width: graphWidth, height: graphHeight },
-                        container: { width: containerWidth, height: containerHeight }
-                    });
-                    return;
-                }
-                
-                const scaleX = containerWidth / graphWidth;
-                const scaleY = containerHeight / graphHeight;
-                const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
-                
-                // Calculate the translation needed to center the graph
-                const centerX = (minX + maxX) / 2;
-                const centerY = (minY + maxY) / 2;
-                
-                const translateX = containerWidth / 2 - centerX * scale;
-                const translateY = containerHeight / 2 - centerY * scale;
-                
-                // Apply the transform
-                this.svg.transition()
-                    .duration(750)
-                    .call(
-                        d3.zoom().transform,
-                        d3.zoomIdentity.translate(translateX, translateY).scale(scale)
-                    );
-                
-                console.log('[DependencyGraph] Fitted graph to container with scale', scale);
-            } catch (error) {
-                console.error('[DependencyGraph] Error fitting graph to container', error);
+                return;
             }
-        }, 500); // Give time for layout to stabilize
+            
+            const scaleX = containerWidth / graphWidth;
+            const scaleY = containerHeight / graphHeight;
+            const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
+            
+            // Calculate the translation needed to center the graph
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+            
+            const translateX = containerWidth / 2 - centerX * scale;
+            const translateY = containerHeight / 2 - centerY * scale;
+            
+            // Apply the transform
+            this.svg.transition()
+                .duration(750)
+                .call(
+                    d3.zoom().transform,
+                    d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                );
+            
+            console.log('[DependencyGraph] Fitted graph to container with scale', scale);
+        } catch (error) {
+            console.error('[DependencyGraph] Error fitting graph to container', error);
+        }
     }
 
     // Update fullscreen info panel method
@@ -1694,14 +1692,12 @@ function initializeGraphInstanceAndUI() {
 
 // Attempt initialization when the DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Use a small delay to ensure other modules might have initialized
-    setTimeout(() => {
-         console.log('[DependencyGraph] DOMContentLoaded, attempting initialization...');
-         // Check if the specific container exists, which implies the tab might be visible
-         if (document.querySelector('#dependencyDiagram .section-content')) {
-              initializeDependencyGraph();
-         }
-    }, 500); 
+    // Initialize immediately to fix performance violations
+    console.log('[DependencyGraph] DOMContentLoaded, attempting initialization...');
+    // Check if the specific container exists, which implies the tab might be visible
+    if (document.querySelector('#dependencyDiagram .section-content')) {
+         initializeDependencyGraph();
+    }
 });
 
 // Also listen for tab visibility changes (assuming Bootstrap tabs)
