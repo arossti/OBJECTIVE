@@ -284,21 +284,27 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Queue a DOM update to be executed later
      */
     function queueDOMUpdate(fieldId, rawValue, formatType, isReferenceMode) {
+        console.log(`[S11 DOM QUEUE] 📝 Queuing ${fieldId} = ${rawValue} (mode: ${isReferenceMode ? 'REF' : 'APP'})`);
         domUpdateQueue.push({ fieldId, rawValue, formatType, isReferenceMode });
+        console.log(`[S11 DOM QUEUE] Queue now has ${domUpdateQueue.length} items`);
     }
     
     /**
      * Execute all queued DOM updates
      */
     function flushDOMUpdates() {
-        if (domUpdateQueue.length === 0) return;
+        if (domUpdateQueue.length === 0) {
+            console.log(`[S11 DOM FLUSH] 🌊 No DOM updates to flush`);
+            return;
+        }
         
-        console.log(`[S11 TRAFFIC COP] Flushing ${domUpdateQueue.length} DOM updates`);
+        console.log(`[S11 DOM FLUSH] 🌊 Flushing ${domUpdateQueue.length} DOM updates`);
         
-        domUpdateQueue.forEach(({ fieldId, rawValue, formatType, isReferenceMode }) => {
+        domUpdateQueue.forEach(({ fieldId, rawValue, formatType, isReferenceMode }, index) => {
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (element) {
                 const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+                const oldValue = element.textContent;
                 element.textContent = formattedValue;
                 
                 // Apply Reference Mode styling
@@ -308,15 +314,16 @@ window.TEUI.SectionModules.sect11 = (function() {
                     element.classList.remove('reference-mode-value');
                 }
                 
-                console.log(`[S11 TRAFFIC COP] Updated ${fieldId}: "${formattedValue}"`);
+                console.log(`[S11 DOM FLUSH] ${index + 1}/${domUpdateQueue.length} Updated ${fieldId}: "${oldValue}" → "${formattedValue}" (${isReferenceMode ? 'REF' : 'APP'} mode)`);
             } else {
-                console.warn(`[S11 TRAFFIC COP] Element not found: ${fieldId}`);
+                console.warn(`[S11 DOM FLUSH] ❌ Element not found: ${fieldId}`);
             }
         });
         
         // Clear the queue
+        const flushedCount = domUpdateQueue.length;
         domUpdateQueue = [];
-        console.log(`[S11 TRAFFIC COP] DOM updates complete`);
+        console.log(`[S11 DOM FLUSH] ✅ ${flushedCount} DOM updates complete, queue cleared`);
     }
 
     //==========================================================================
@@ -372,22 +379,36 @@ window.TEUI.SectionModules.sect11 = (function() {
     }
 
     // 5. Dual-engine value setter
-    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma', forceReferenceStorage = false) {
         const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
         
-        if (isReferenceMode) {
-            // Reference Mode - store with ref_ prefix using new V2 API
+        // CRITICAL FIX: Determine storage location based on calling context, not UI mode
+        const storeAsReference = forceReferenceStorage; // Engine explicitly requests Reference storage
+        const storageMode = storeAsReference ? 'REF' : 'APP';
+        const displayMode = isReferenceMode ? 'REF' : 'APP';
+        
+        console.log(`[S11 DUAL SET] 🔧 STORAGE: ${storageMode} | DISPLAY: ${displayMode} | Setting ${fieldId} = ${rawValue} (format: ${formatType})`);
+        
+        if (storeAsReference) {
+            // Store to Reference state (ref_ prefix)
             if (window.TEUI?.StateManager?.setReferenceValue) {
+                console.log(`[S11 DUAL SET] 🔵 Storing to ref_${fieldId} in StateManager`);
                 window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+            } else {
+                console.warn(`[S11 DUAL SET] ❌ setReferenceValue not available!`);
             }
         } else {
-            // Application Mode - store in main state using new V2 API
+            // Store to Application state (main state)
             if (window.TEUI?.StateManager?.setApplicationValue) {
+                console.log(`[S11 DUAL SET] 🟢 Storing to ${fieldId} in StateManager`);
                 window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+            } else {
+                console.warn(`[S11 DUAL SET] ❌ setApplicationValue not available!`);
             }
         }
         
-        // TRAFFIC COP FIX: Queue DOM update instead of immediate execution
+        // TRAFFIC COP FIX: Queue DOM update based on display mode
+        console.log(`[S11 DUAL SET] 📋 Queueing DOM update for ${fieldId} (display mode: ${displayMode})`);
         queueDOMUpdate(fieldId, rawValue, formatType, isReferenceMode);
     }
     
@@ -423,8 +444,11 @@ window.TEUI.SectionModules.sect11 = (function() {
      * @param {string} [format='number'] - The format type for display.
      */
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
+        console.log(`[S11 CALC SET] 🛠️ setCalculatedValue called: ${fieldId} = ${rawValue} (format: ${format})`);
+        
         // Handle potential N/A cases first
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
+             console.log(`[S11 CALC SET] ⚠️ Invalid value for ${fieldId}, setting to N/A`);
              const element = document.querySelector(`[data-field-id="${fieldId}"]`);
              if (element) {
                  element.textContent = 'N/A';
@@ -443,6 +467,8 @@ window.TEUI.SectionModules.sect11 = (function() {
         } else if (format === 'percent') {
             formatType = 'percent-2dp';
         }
+        
+        console.log(`[S11 CALC SET] 🔄 Converting format '${format}' → '${formatType}', delegating to setDualEngineValue`);
         
         // Use the V2 dual-engine setter
         setDualEngineValue(fieldId, rawValue, formatType);
@@ -692,10 +718,10 @@ window.TEUI.SectionModules.sect11 = (function() {
     //==========================================================================
 
     /**
-     * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
+     * REFERENCE MODEL ENGINE: Calculate all Column I and K values using Reference state
      */
     function calculateReferenceModel() {
-        // console.log('[Section11] Running Reference Model calculations...'); // Comment out
+        console.log('[S11 REF ENGINE] 🔵 Starting Reference Model calculations...');
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
         const componentResults = {};
@@ -714,12 +740,14 @@ window.TEUI.SectionModules.sect11 = (function() {
                 // Use direct calculation result if available
                 heatloss = result.heatloss;
                 heatgain = result.heatgain;
+                console.log(`[S11 REF ENGINE] Row ${config.row}: Using direct result - loss=${heatloss}, gain=${heatgain}`);
             } else {
                 // Fallback: Try to read from ref_ prefixed state
                 const refHeatloss = window.TEUI?.StateManager?.getValue(`ref_i_${config.row}`);
                 const refHeatgain = window.TEUI?.StateManager?.getValue(`ref_k_${config.row}`);
                 heatloss = refHeatloss ? window.TEUI.parseNumeric(refHeatloss, 0) : 0;
                 heatgain = refHeatgain ? window.TEUI.parseNumeric(refHeatgain, 0) : 0;
+                console.log(`[S11 REF ENGINE] Row ${config.row}: Using ref_ state - loss=${heatloss}, gain=${heatgain}`);
             }
             
             // Store for later use
@@ -732,6 +760,8 @@ window.TEUI.SectionModules.sect11 = (function() {
             else if (config.type === 'ground') totals.groundAreaD += area;
         });
 
+        console.log(`[S11 REF ENGINE] Calculated totals: loss=${totals.loss}, gain=${totals.gain}, areaD=${totals.areaD}`);
+
         // Calculate thermal bridge penalty using reference percentage
         const penaltyPercent = getRefFieldValue('d_97');
         const penaltyDecimal = penaltyPercent / 100;
@@ -740,39 +770,49 @@ window.TEUI.SectionModules.sect11 = (function() {
         const penaltyHeatlossI = totals.loss * validatedPenalty;
         const penaltyHeatgainK = totals.gain * validatedPenalty;
 
-        // Store Reference Model results using V2 dual-engine setter
-        setDualEngineValue('d_98', totals.areaD, 'number-2dp-comma');
-        setDualEngineValue('i_98', totals.loss, 'number-2dp-comma');
-        setDualEngineValue('k_98', totals.gain, 'number-2dp-comma');
-        setDualEngineValue('i_97', penaltyHeatlossI, 'number-2dp-comma');
-        setDualEngineValue('k_97', penaltyHeatgainK, 'number-2dp-comma');
+        console.log(`[S11 REF ENGINE] 🎯 SETTING ROW 98 REFERENCE VALUES:`);
+        console.log(`[S11 REF ENGINE]   d_98 (area): ${totals.areaD}`);
+        console.log(`[S11 REF ENGINE]   i_98 (loss): ${totals.loss}`);
+        console.log(`[S11 REF ENGINE]   k_98 (gain): ${totals.gain}`);
+
+        // Store Reference Model results using V2 dual-engine setter WITH REFERENCE STORAGE
+        setDualEngineValue('d_98', totals.areaD, 'number-2dp-comma', true);
+        setDualEngineValue('i_98', totals.loss, 'number-2dp-comma', true);
+        setDualEngineValue('k_98', totals.gain, 'number-2dp-comma', true);
+        setDualEngineValue('i_97', penaltyHeatlossI, 'number-2dp-comma', true);
+        setDualEngineValue('k_97', penaltyHeatgainK, 'number-2dp-comma', true);
             
-            // Store individual component reference values
+            // Store individual component reference values WITH REFERENCE STORAGE
             Object.entries(componentResults).forEach(([row, results]) => {
-            setDualEngineValue(`i_${row}`, results.heatloss, 'number-2dp-comma');
-            setDualEngineValue(`k_${row}`, results.heatgain, 'number-2dp-comma');
+            setDualEngineValue(`i_${row}`, results.heatloss, 'number-2dp-comma', true);
+            setDualEngineValue(`k_${row}`, results.heatgain, 'number-2dp-comma', true);
             });
         
-        // console.log('[Section11] Reference Model values stored'); // Comment out
+        console.log('[S11 REF ENGINE] 🔵 Reference Model values stored');
     }
 
     /**
      * APPLICATION MODEL ENGINE: Calculate all Column H values using Application state
      */
     function calculateApplicationModel() {
-        // console.log('[Section11] Running Application Model calculations...'); // Comment out
+        console.log('[S11 APP ENGINE] 🟢 Starting Application Model calculations...');
         
         let totals = { loss: 0, gain: 0, areaD: 0, airAreaD: 0, groundAreaD: 0 };
 
         componentConfig.forEach(config => {
             calculateComponentRow(config.row, config, false); // false = Application calculation
             const area = getNumericValue(`d_${config.row}`) || 0;
-            totals.loss += getNumericValue(`i_${config.row}`) || 0;
-            totals.gain += getNumericValue(`k_${config.row}`) || 0;
+            const loss = getNumericValue(`i_${config.row}`) || 0;
+            const gain = getNumericValue(`k_${config.row}`) || 0;
+            
+            totals.loss += loss;
+            totals.gain += gain;
             if (config.row >= 85 && config.row <= 95) totals.areaD += area;
             if (config.type === 'air') totals.airAreaD += area;
             else if (config.type === 'ground') totals.groundAreaD += area;
         });
+
+        console.log(`[S11 APP ENGINE] Calculated totals: loss=${totals.loss}, gain=${totals.gain}, areaD=${totals.areaD}`);
 
         calculateThermalBridgePenalty(totals.loss, totals.gain);
         const penaltyHeatlossI = getNumericValue('i_97') || 0;
@@ -783,6 +823,11 @@ window.TEUI.SectionModules.sect11 = (function() {
         const grandTotalHeatlossI = totals.loss; // Removed + penaltyHeatlossI
         // Corrected: k_98 should be SUM(K85:K95) and EXCLUDE k_97 (penaltyHeatgainK)
         const grandTotalHeatgainK = totals.gain; 
+
+        console.log(`[S11 APP ENGINE] 🎯 SETTING ROW 98 APPLICATION VALUES:`);
+        console.log(`[S11 APP ENGINE]   d_98 (area): ${totals.areaD}`);
+        console.log(`[S11 APP ENGINE]   i_98 (loss): ${grandTotalHeatlossI}`);
+        console.log(`[S11 APP ENGINE]   k_98 (gain): ${grandTotalHeatgainK}`);
 
         // Set totals for Row 98
         setCalculatedValue('d_98', totals.areaD);
@@ -864,25 +909,28 @@ window.TEUI.SectionModules.sect11 = (function() {
     function calculateAll() {
         // Add recursion protection for Section 11
         if (window.sectionCalculationInProgress) {
+            console.log('[S11 TRAFFIC COP] ⏸️ Calculation already in progress, skipping...');
             return;
         }
         
         window.sectionCalculationInProgress = true;
         
         try {
-            console.log('[S11 TRAFFIC COP] Starting calculations...');
+            console.log('[S11 TRAFFIC COP] 🚀 Starting dual-engine calculations...');
+            const currentMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
+            console.log('[S11 TRAFFIC COP] Current UI Mode:', currentMode);
             
             calculateReferenceModel();  // Calculates Reference values with ref_ prefix
             calculateApplicationModel(); // Calculates Target values (existing logic)
             
-            console.log('[S11 TRAFFIC COP] Calculations complete, flushing DOM updates...');
+            console.log('[S11 TRAFFIC COP] ✅ Both engines complete, flushing DOM updates...');
             
             // TRAFFIC COP FIX: Execute all queued DOM updates after calculations complete
             flushDOMUpdates();
             
         } finally {
             window.sectionCalculationInProgress = false;
-            console.log('[S11 TRAFFIC COP] calculateAll() complete');
+            console.log('[S11 TRAFFIC COP] 🏁 calculateAll() complete');
         }
     }
 
@@ -1159,19 +1207,129 @@ window.TEUI.SectionModules.sect11 = (function() {
      * Call from console: window.TEUI.SectionModules.sect11.testTrafficCop()
      */
     function testTrafficCop() {
-        console.log('=== TESTING TRAFFIC COP FIX ===');
+        console.log('=== 🚥 TESTING TRAFFIC COP FIX ===');
+        console.log('Timestamp:', new Date().toISOString());
+        
+        // Check current UI mode
+        const isRefMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        const currentMode = isRefMode ? 'REFERENCE' : 'APPLICATION';
+        console.log(`Current UI Mode: ${currentMode}`);
+        
+        // Check for state contamination BEFORE calculations
+        console.log('\n🔍 STATE CONTAMINATION CHECK - BEFORE:');
+        checkStateContamination();
         
         // Clear any existing queue
         domUpdateQueue = [];
+        console.log('\n📋 DOM Update Queue cleared');
         
         // Trigger calculations (which should queue DOM updates)
+        console.log('\n🚀 Triggering calculateAll()...');
         calculateAll();
+        
+        // Check for state contamination AFTER calculations
+        console.log('\n🔍 STATE CONTAMINATION CHECK - AFTER:');
+        checkStateContamination();
+        
+        // Check DOM update queue status
+        console.log(`\n📋 DOM Update Queue has ${domUpdateQueue.length} pending updates`);
+        if (domUpdateQueue.length > 0) {
+            console.log('Queue contents:', domUpdateQueue.map(item => `${item.fieldId}=${item.rawValue}`));
+        }
         
         // Check if it worked
         setTimeout(() => {
+            console.log('\n🔬 FINAL DIAGNOSTIC (after 100ms):');
             diagnoseDOMState();
-            console.log('=== END TRAFFIC COP TEST ===');
+            console.log('=== 🏁 END TRAFFIC COP TEST ===');
         }, 100);
+    }
+
+    /**
+     * Check for state contamination between Reference and Application modes
+     */
+    function checkStateContamination() {
+        const testFields = ['d_98', 'i_98', 'k_98', 'i_97', 'k_97'];
+        
+        console.log('🧠 DUAL-ENGINE STATE HEMISPHERE CHECK:');
+        testFields.forEach(fieldId => {
+            const appValue = window.TEUI?.StateManager?.getValue(fieldId);
+            const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+            
+            console.log(`${fieldId}:`);
+            console.log(`  🟢 App Hemisphere: ${appValue || 'UNDEFINED'}`);
+            console.log(`  🔵 Ref Hemisphere: ${refValue || 'UNDEFINED'}`);
+            
+            // Check for proper separation
+            if (appValue && refValue) {
+                if (appValue === refValue) {
+                    console.warn(`  ⚠️ POTENTIAL CONTAMINATION: Values are identical!`);
+                } else {
+                    console.log(`  ✅ PROPER SEPARATION: Different values as expected`);
+                }
+            } else if (!refValue) {
+                console.warn(`  ❌ MISSING REF HEMISPHERE: Reference state not created`);
+            } else if (!appValue) {
+                console.warn(`  ❌ MISSING APP HEMISPHERE: Application state not created`);
+            }
+        });
+        
+        // Check Section 01 contamination indicators
+        const s01Fields = ['d_6', 'd_8', 'e_10'];
+        console.log('\n📊 Section 01 Contamination Check:');
+        s01Fields.forEach(fieldId => {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            const domValue = element?.textContent?.trim();
+            const appValue = window.TEUI?.StateManager?.getValue(fieldId);
+            const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
+            
+            console.log(`${fieldId}:`);
+            console.log(`  🖥️  DOM Display: "${domValue || 'NOT FOUND'}"`);
+            console.log(`  🟢 App State: ${appValue || 'UNDEFINED'}`);
+            console.log(`  🔵 Ref State: ${refValue || 'UNDEFINED'}`);
+        });
+    }
+
+    /**
+     * Track mode switches to understand when contamination occurs
+     * Call from console: window.TEUI.SectionModules.sect11.trackModeSwitch()
+     */
+    function trackModeSwitch() {
+        console.log('=== 🔄 MODE SWITCH TRACKER ===');
+        
+        const originalToggle = window.TEUI?.ReferenceToggle?.toggle;
+        if (!originalToggle) {
+            console.error('❌ ReferenceToggle.toggle not found!');
+            return;
+        }
+        
+        // Override the toggle function with tracking
+        window.TEUI.ReferenceToggle.toggle = function() {
+            const beforeMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
+            console.log(`\n🚥 MODE SWITCH DETECTED - FROM: ${beforeMode}`);
+            
+            // Check state before switch
+            console.log('📊 State before switch:');
+            checkStateContamination();
+            
+            // Call original toggle function
+            const result = originalToggle.apply(this, arguments);
+            
+            // Check state after switch
+            const afterMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
+            console.log(`\n🚥 MODE SWITCH COMPLETE - TO: ${afterMode}`);
+            
+            setTimeout(() => {
+                console.log('📊 State after switch (delayed):');
+                checkStateContamination();
+                console.log('=== 🔄 END MODE SWITCH TRACKING ===\n');
+            }, 50);
+            
+            return result;
+        };
+        
+        console.log('✅ Mode switch tracking is now active');
+        console.log('Toggle between Reference/Application modes to see contamination tracking');
     }
 
     //==========================================================================
@@ -1190,6 +1348,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         checkModule, // Expose the check module function
         queueDOMUpdate, // Expose the queueDOMUpdate function
         flushDOMUpdates, // Expose the flushDOMUpdates function
-        testTrafficCop // Expose the testTrafficCop function
+        testTrafficCop, // Expose the testTrafficCop function
+        trackModeSwitch // Expose the trackModeSwitch function
     };
 })();
