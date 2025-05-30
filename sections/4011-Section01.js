@@ -354,43 +354,50 @@ window.TEUI.SectionModules.sect01 = (function() {
     function calculateReferenceModel() {
         // Add recursion protection
         if (referenceCalculationInProgress) {
+            console.log('[S01 Reference] Calculation already in progress, skipping');
             return;
         }
         
         referenceCalculationInProgress = true;
+        console.log('[S01 Reference] ==== STARTING REFERENCE MODEL CALCULATION ====');
         
         try {
             // Get S15 Reference TEUI if available
             const s15RefTEUI = getRefStateValue('h_136');
+            console.log('[S01 Reference] S15 Reference TEUI:', s15RefTEUI);
             
             // Declare refArea at function scope to avoid scoping issues
             const refArea = getRefStateValue('h_15') || 1427.2;
+            console.log('[S01 Reference] Reference Area:', refArea);
             
             if (s15RefTEUI && s15RefTEUI > 0) {
                 setReferenceValue('e_10', s15RefTEUI);
-                // console.log('[S01 Reference] Using S15 Reference TEUI:', s15RefTEUI);
+                console.log('[S01 Reference] Using S15 Reference TEUI:', s15RefTEUI);
             } else {
                 // Calculate internally using reference values
                 const refHSPF = getRefStateValue('f_113') || 7.1;
                 const refVentRate = getRefStateValue('d_119') || 8.33;
                 const refTargetEnergy = getRefStateValue('e_139') || 0;
+                console.log('[S01 Reference] Internal calc - HSPF:', refHSPF, 'VentRate:', refVentRate, 'TargetEnergy:', refTargetEnergy);
                 
                 if (refTargetEnergy > 0) {
                     const refTEUI = refTargetEnergy / refArea;
-                    // console.log('[S01 Reference] Calculated Reference TEUI:', refTEUI, 'using HSPF:', refHSPF, 'VentRate:', refVentRate);
+                    console.log('[S01 Reference] Calculated Reference TEUI:', refTEUI);
                     setReferenceValue('e_10', refTEUI);
                 }
             }
             
             // Get emissions data
             const s04RefEmissions = getRefStateValue('k_32');
+            console.log('[S01 Reference] S04 Reference emissions:', s04RefEmissions);
+            
             if (s04RefEmissions && s04RefEmissions > 0) {
                 setReferenceValue('k_32', s04RefEmissions);
-                // console.log('[S01 Reference] Calculated Reference emissions:', s04RefEmissions);
+                console.log('[S01 Reference] Using S04 Reference emissions:', s04RefEmissions);
             } else {
                 const refTEUI = getRefStateValue('e_10');
                 const refTargetEmissions = refTEUI * refArea * 0.051; // Simplified: TEUI * Area * grid intensity
-                // console.log('[S01 Reference] Using S04 Reference emissions:', refTargetEmissions);
+                console.log('[S01 Reference] Calculated Reference emissions:', refTargetEmissions);
                 setReferenceValue('k_32', refTargetEmissions);
             }
             
@@ -399,11 +406,13 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refAnnualCarbon = Math.round((s04RefEmissions / refArea) * 10) / 10;
             const refLifetimeCarbon = Math.round((refAnnualCarbon * lifespan) * 10) / 10;
             
+            console.log('[S01 Reference] Final metrics - Lifespan:', lifespan, 'Annual Carbon:', refAnnualCarbon, 'Lifetime Carbon:', refLifetimeCarbon);
+            
             // Store Reference values in StateManager
             setReferenceValue('d_8', refAnnualCarbon);
             setReferenceValue('d_6', refLifetimeCarbon);
             
-            // console.log('[S01 Reference] Final values - TEUI:', refTEUI, 'Annual Carbon:', refAnnualCarbon, 'Lifetime Carbon:', refLifetimeCarbon);
+            console.log('[S01 Reference] ==== REFERENCE MODEL CALCULATION COMPLETE ====');
             
         } catch (error) {
             console.error('[S01 Reference] Calculation error:', error);
@@ -423,10 +432,12 @@ window.TEUI.SectionModules.sect01 = (function() {
     function calculateTargetModel() {
         // Add recursion protection
         if (targetCalculationInProgress) {
+            console.log('[S01 Target] Calculation already in progress, skipping');
             return;
         }
         
         targetCalculationInProgress = true;
+        console.log('[S01 Target] ==== STARTING TARGET MODEL CALCULATION ====');
         
         try {
             // Get application values for calculations
@@ -434,7 +445,7 @@ window.TEUI.SectionModules.sect01 = (function() {
             const appTargetEmissions = getAppStateValue('k_32') || 0;
             const appArea = getAppStateValue('h_15') || 1;
             
-            // console.log('[S01 Target] Input values - Energy:', appTargetEnergy, 'Emissions:', appTargetEmissions, 'Area:', appArea);
+            console.log('[S01 Target] Input values - Energy:', appTargetEnergy, 'Emissions:', appTargetEmissions, 'Area:', appArea);
             
             // Calculate TEUI
             let targetTEUI = 0;
@@ -447,12 +458,14 @@ window.TEUI.SectionModules.sect01 = (function() {
             const targetAnnualCarbon = Math.round((appTargetEmissions / appArea) * 10) / 10;
             const targetLifetimeCarbon = Math.round((targetAnnualCarbon * lifespan) * 10) / 10;
             
+            console.log('[S01 Target] Calculated values - TEUI:', targetTEUI, 'Annual Carbon:', targetAnnualCarbon, 'Lifetime Carbon:', targetLifetimeCarbon);
+            
             // Store Application values in StateManager
             setTargetValue('h_10', targetTEUI);
             setTargetValue('h_8', targetAnnualCarbon); 
             setTargetValue('h_6', targetLifetimeCarbon);
             
-            // console.log('[S01 Target] Final values - TEUI:', targetTEUI, 'Annual Carbon:', targetAnnualCarbon, 'Lifetime Carbon:', targetLifetimeCarbon);
+            console.log('[S01 Target] ==== TARGET MODEL CALCULATION COMPLETE ====');
             
         } catch (error) {
             console.error('[S01 Target] Calculation error:', error);
@@ -877,10 +890,13 @@ window.TEUI.SectionModules.sect01 = (function() {
     function runAllCalculations() {
         // Add recursion protection
         if (calculationInProgress) {
+            console.log('[S01 Orchestration] Calculation already in progress, skipping');
             return;
         }
         
         calculationInProgress = true;
+        console.log('[S01 Orchestration] ========== RUNNING ALL CALCULATIONS ==========');
+        console.log('[S01 Orchestration] Triggered by state change or initialization');
         
         try {
             // Run both engines independently
@@ -890,6 +906,53 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Calculate tiers and display updates
             calculateTargetTier();      // Calculate i_10 (Target Tier for h_10)
             updateTEUIDisplay();        // Update all visual displays
+            
+            console.log('[S01 Orchestration] ========== ALL CALCULATIONS COMPLETE ==========');
+            
+            // DIAGNOSTIC: Check if we got reasonable TEUI values
+            const targetTEUI = getAppNumericValue('h_10', 0);
+            const targetEnergy = getAppNumericValue('j_32', 0);
+            const area = getAppNumericValue('h_15', 1);
+            
+            console.log(`[S01 Diagnostic] Final values - Target TEUI: ${targetTEUI}, Target Energy: ${targetEnergy}, Area: ${area}`);
+            
+            // If we have zero or very low TEUI but should have energy, trigger dependency recalculation
+            if (targetTEUI < 10 && area > 100) {
+                console.log('[S01 Diagnostic] DETECTED LOW TEUI - May indicate incomplete initialization');
+                console.log('[S01 Diagnostic] Checking dependency states:');
+                
+                // Check if critical upstream calculations have run
+                const hasS15Energy = getAppNumericValue('d_136', 0) > 0;
+                const hasS04Totals = getAppNumericValue('j_32', 0) > 0;
+                const hasS13Heating = getAppNumericValue('j_115', 0) > 0;
+                const hasS07DHW = getAppNumericValue('j_51', 0) > 0;
+                
+                console.log(`[S01 Diagnostic] S15 Energy: ${hasS15Energy}, S04 Totals: ${hasS04Totals}, S13 Heating: ${hasS13Heating}, S07 DHW: ${hasS07DHW}`);
+                
+                // If missing critical calculations, trigger them manually
+                if (!hasS15Energy || !hasS04Totals) {
+                    console.log('[S01 Diagnostic] FORCING DEPENDENCY RECALCULATION...');
+                    
+                    // Trigger Section 15 calculation (should cascade to Section 04)
+                    if (window.TEUI?.SectionModules?.sect15?.calculateValues) {
+                        console.log('[S01 Diagnostic] Forcing Section 15 calculation...');
+                        window.TEUI.SectionModules.sect15.calculateValues();
+                    }
+                    
+                    // Trigger Section 04 calculation 
+                    if (window.TEUI?.SectionModules?.sect04?.updateSubtotals) {
+                        console.log('[S01 Diagnostic] Forcing Section 04 subtotals...');
+                        window.TEUI.SectionModules.sect04.updateSubtotals();
+                    }
+                    
+                    // Re-run our calculations after dependency updates
+                    setTimeout(() => {
+                        console.log('[S01 Diagnostic] Re-running calculations after dependency fixes...');
+                        runAllCalculations();
+                    }, 100);
+                }
+            }
+            
         } finally {
             calculationInProgress = false;
         }
@@ -901,6 +964,13 @@ window.TEUI.SectionModules.sect01 = (function() {
 
     function initializeEventHandlers() {
         if (!window.TEUI || !window.TEUI.StateManager) return;
+
+        console.log('[S01 Init] Starting event handler initialization');
+        console.log('[S01 Init] Current state snapshot at initialization:');
+        console.log('  j_32 (Target Energy):', window.TEUI.StateManager.getValue('j_32'));
+        console.log('  k_32 (Target Emissions):', window.TEUI.StateManager.getValue('k_32'));
+        console.log('  h_15 (Area):', window.TEUI.StateManager.getValue('h_15'));
+        console.log('  i_21 (Capacitance Slider):', window.TEUI.StateManager.getValue('i_21'));
 
         // Only listen to TRUE INPUT fields that affect calculations, not calculated outputs
         // CRITICAL: Do NOT listen to calculated fields like j_32, k_32 as they create infinite loops
@@ -917,6 +987,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         // Listen to user input fields
         inputFieldsToWatch.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
+                console.log(`[S01 Input Change] ${fieldId} changed from ${oldValue} to ${newValue}`);
                 // Debounce for d_51 which can trigger rapid changes
                 if (fieldId === 'd_51') {
                     setTimeout(() => {
@@ -944,11 +1015,36 @@ window.TEUI.SectionModules.sect01 = (function() {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
                 // Only recalculate if the value actually changed
                 if (newValue !== oldValue) {
+                    console.log(`[S01 Field Change] Field ${fieldId} changed from ${oldValue} to ${newValue}`);
                     runAllCalculations();
                 }
             });
         });
         
+        // DEBUGGING: Special listener for capacitance slider to track the issue
+        window.TEUI.StateManager.addListener('i_21', (newValue, oldValue, sourceFieldId) => {
+            console.log(`[S01 CAPACITANCE DEBUG] i_21 changed from ${oldValue} to ${newValue}`);
+            console.log('[S01 CAPACITANCE DEBUG] Current state snapshot:');
+            console.log('  j_32 (Target Energy):', window.TEUI.StateManager.getValue('j_32'));
+            console.log('  k_32 (Target Emissions):', window.TEUI.StateManager.getValue('k_32'));
+            console.log('  h_15 (Area):', window.TEUI.StateManager.getValue('h_15'));
+            console.log('  h_10 (Current Target TEUI):', window.TEUI.StateManager.getValue('h_10'));
+            console.log('  ref_h_136 (Reference TEUI from S15):', window.TEUI.StateManager.getValue('ref_h_136'));
+            console.log('  ref_e_10 (Reference TEUI stored):', window.TEUI.StateManager.getValue('ref_e_10'));
+            
+            // Track which sections have calculated energy values
+            console.log('[S01 CAPACITANCE DEBUG] Checking section energy calculations:');
+            console.log('  S07 e_51 (DHW Gas):', window.TEUI.StateManager.getValue('e_51'));
+            console.log('  S07 j_51 (DHW Energy Demand):', window.TEUI.StateManager.getValue('j_51'));
+            console.log('  S13 d_115 (Heating Energy):', window.TEUI.StateManager.getValue('d_115'));
+            console.log('  S13 j_115 (Target Heating Energy):', window.TEUI.StateManager.getValue('j_115'));
+            console.log('  S04 h_27 (Target Electricity):', window.TEUI.StateManager.getValue('h_27'));
+            console.log('  S15 d_136 (Total Target Energy):', window.TEUI.StateManager.getValue('d_136'));
+            
+            runAllCalculations();
+        });
+        
+        console.log('[S01 Init] Running initial calculations...');
         runAllCalculations();
     }
 
@@ -972,6 +1068,52 @@ window.TEUI.SectionModules.sect01 = (function() {
         renderKeyValuesSection();
         removeToggleIcon();
         initializeEventHandlers();
+        
+        // INITIALIZATION FIX: Add a delayed global initialization trigger
+        // This ensures all sections have time to initialize before we finalize calculations
+        setTimeout(() => {
+            console.log('[S01 Init] Starting delayed global initialization check...');
+            
+            // Force calculation cascade in dependency order
+            const initializationSequence = [
+                { name: 'Section 03 (Climate)', module: 'sect03', method: 'calculateAll' },
+                { name: 'Section 07 (DHW)', module: 'sect07', method: 'calculateAll' },
+                { name: 'Section 11 (Envelope)', module: 'sect11', method: 'calculateAll' },
+                { name: 'Section 13 (Heating)', module: 'sect13', method: 'calculateAll' },
+                { name: 'Section 15 (Summary)', module: 'sect15', method: 'calculateValues' },
+                { name: 'Section 04 (Energy)', module: 'sect04', method: 'updateSubtotals' }
+            ];
+            
+            let sequenceIndex = 0;
+            
+            function runNextInSequence() {
+                if (sequenceIndex >= initializationSequence.length) {
+                    console.log('[S01 Init] Global initialization sequence complete, running final S01 calculations...');
+                    runAllCalculations();
+                    return;
+                }
+                
+                const current = initializationSequence[sequenceIndex];
+                console.log(`[S01 Init] Triggering ${current.name}...`);
+                
+                // Try to trigger the calculation for this section
+                const section = window.TEUI?.SectionModules?.[current.module];
+                if (section && typeof section[current.method] === 'function') {
+                    section[current.method]();
+                    console.log(`[S01 Init] ${current.name} calculation triggered`);
+                } else {
+                    console.log(`[S01 Init] ${current.name} not available or method missing`);
+                }
+                
+                sequenceIndex++;
+                
+                // Wait a bit for calculations to propagate, then continue
+                setTimeout(runNextInSequence, 50);
+            }
+            
+            runNextInSequence();
+            
+        }, 500); // Give sections time to fully initialize
     }
     
     let isInitialized = false;
