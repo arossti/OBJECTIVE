@@ -200,7 +200,7 @@ function initializeCalculationOrchestration() {
     console.log('[IT-DEPENDS] Available demo functions:');
     console.log('- demonstrateBatchCalculation()');
     console.log('- demonstrateManualDependencyCalculation()');
-    console.log('- monitorStateManager()');
+    console.log('- monitorStateManager() - Monitor system status and metrics');
     console.log('- setupSmartListeners() // Manual setup when ready to replace existing listeners');
     
     // Make demo functions globally available
@@ -209,22 +209,34 @@ function initializeCalculationOrchestration() {
     window.setupSmartListeners = setupSmartListeners; // Available for manual testing
 }
 
-// Auto-initialize when document is ready
+// =============================================================================
+// AUTO-INITIALIZATION
+// =============================================================================
+
+// Automatically initialize when the script loads (after a short delay to ensure dependencies)
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for StateManager to be ready
-    if (window.TEUI?.StateManager) {
-        initializeCalculationOrchestration();
-    } else {
-        // Try again after a short delay
-        setTimeout(() => {
-            if (window.TEUI?.StateManager) {
-                initializeCalculationOrchestration();
-            } else {
-                console.warn('[IT-DEPENDS] StateManager not available for calculation orchestration setup');
-            }
-        }, 1000);
-    }
+    setTimeout(() => {
+        if (window.TEUI && window.TEUI.StateManager) {
+            console.log('[IT-DEPENDS] Auto-initializing calculation orchestration...');
+            initializeCalculationOrchestration();
+        } else {
+            console.warn('[IT-DEPENDS] StateManager not available for auto-initialization');
+        }
+    }, 1000); // 1 second delay to ensure StateManager is ready
 });
+
+// Also try immediate initialization if DOM is already loaded
+if (document.readyState === 'loading') {
+    // DOM still loading, listener above will handle it
+} else {
+    // DOM already loaded, try immediate initialization
+    setTimeout(() => {
+        if (window.TEUI && window.TEUI.StateManager && typeof initializeCalculationOrchestration === 'function') {
+            console.log('[IT-DEPENDS] Immediate initialization attempt...');
+            initializeCalculationOrchestration();
+        }
+    }, 500);
+}
 
 // Export for use in other modules
 window.TEUI = window.TEUI || {};
