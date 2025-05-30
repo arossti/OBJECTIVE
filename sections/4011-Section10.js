@@ -1785,8 +1785,7 @@ window.TEUI.SectionModules.sect10 = (function() {
                     window.TEUI.StateManager.setValue(fieldId, this.value, 'user-modified');
                 }
                 
-                // Recalculation will be triggered by StateManager listeners
-                // RESTORE: Direct calculation trigger for immediate reactivity
+                // Recalculate immediately (fixed setTimeout performance violation)
                 if (!window.sectionCalculationInProgress) {
                     calculateAll();
                 }
@@ -1811,8 +1810,10 @@ window.TEUI.SectionModules.sect10 = (function() {
                     displayElement.textContent = `${this.value}%`;
                 }
                 
-                // Recalculate with a slight delay to improve performance
-                setTimeout(calculateAll, 100);
+                // Recalculate immediately (fixed setTimeout performance violation)
+                if (!window.sectionCalculationInProgress) {
+                    calculateAll();
+                }
             });
         });
     }
