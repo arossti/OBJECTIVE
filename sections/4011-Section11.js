@@ -398,12 +398,12 @@ window.TEUI.SectionModules.sect11 = (function() {
                 console.warn(`[S11 DUAL SET] ❌ setReferenceValue not available!`);
             }
         } else {
-            // Store to Application state (main state)
-            if (window.TEUI?.StateManager?.setApplicationValue) {
+            // Store to Application state (main state) - FIXED: Use setValue instead of setApplicationValue
+            if (window.TEUI?.StateManager?.setValue) {
                 console.log(`[S11 DUAL SET] 🟢 Storing to ${fieldId} in StateManager`);
-                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
+                window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
             } else {
-                console.warn(`[S11 DUAL SET] ❌ setApplicationValue not available!`);
+                console.warn(`[S11 DUAL SET] ❌ setValue not available!`);
             }
         }
         
