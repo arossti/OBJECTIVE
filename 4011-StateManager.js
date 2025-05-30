@@ -152,6 +152,11 @@ TEUI.StateManager = (function() {
     let isApplicationStateMuted = false; // << NEW: Flag for muting application state updates
     let lastImportedState = {}; // << NEW: To store the last imported state
     
+    // NEW: Calculation orchestration properties
+    let fieldCalculations = new Map();  // Map of field-specific calculation functions
+    let calculationOrder = [];          // Cached topological sort order
+    let calculationInProgress = false;  // Flag to prevent recursive calculations
+    
     /**
      * Initialize the state manager
      */
@@ -522,10 +527,10 @@ TEUI.StateManager = (function() {
     }
     
     /**
-     * Get calculation order for dirty fields
+     * Get calculation order for dirty fields (ORIGINAL SIMPLE VERSION)
      * @returns {Array} Field IDs in calculation order
      */
-    function getCalculationOrder() {
+    function getSimpleCalculationOrder() {
         const visited = new Set();
         const temp = new Set();
         const order = [];
@@ -1399,6 +1404,242 @@ TEUI.StateManager = (function() {
         }));
     }
     
+    /**
+     * CALCULATION ORCHESTRATION: Register a calculation function for a specific field
+     * This replaces the need for manual calculateAll() calls by registering
+     * field-specific calculation functions that can be triggered on-demand
+     * @param {string} fieldId - Field ID that this calculation produces
+     * @param {Function} calculationFn - Function that calculates the field value
+     * @param {string} description - Optional description of what this calculation does
+     */
+    function registerCalculation(fieldId, calculationFn, description = '') {
+        fieldCalculations.set(fieldId, {
+            fn: calculationFn,
+            description: description,
+            fieldId: fieldId
+        });
+        
+        // Mark this field as calculated
+        calculatedFields.add(fieldId);
+        
+        // Invalidate cached calculation order since we added a new calculation
+        calculationOrder = [];
+        
+        console.log(`[StateManager] Registered calculation for ${fieldId}: ${description}`);
+    }
+    
+    /**
+     * CALCULATION ORCHESTRATION: Execute calculation for a specific field
+     * @param {string} fieldId - Field ID to calculate
+     * @returns {any} The calculated value, or null if calculation failed
+     */
+    function triggerFieldCalculation(fieldId) {
+        const calculation = fieldCalculations.get(fieldId);
+        if (!calculation) {
+            console.warn(`[StateManager] No calculation registered for field ${fieldId}`);
+            return null;
+        }
+        
+        try {
+            const result = calculation.fn();
+            if (result !== null && result !== undefined) {
+                setValue(fieldId, result, VALUE_STATES.CALCULATED);
+                return result;
+            }
+        } catch (error) {
+            console.error(`[StateManager] Error calculating field ${fieldId}:`, error);
+        }
+        
+        return null;
+    }
+    
+    /**
+     * CALCULATION ORCHESTRATION: Calculate all fields in a dependency chain
+     * This is the core method that replaces manual calculateAll() calls.
+     * It only calculates fields that are actually affected by the change.
+     * @param {string} changedFieldId - The field that changed and triggered this calculation
+     * @returns {Array} Array of field IDs that were recalculated
+     */
+    function calculateDependencyChain(changedFieldId) {
+        if (calculationInProgress) {
+            console.warn(`[StateManager] Calculation already in progress, skipping dependency chain for ${changedFieldId}`);
+            return [];
+        }
+        
+        calculationInProgress = true;
+        const calculatedFields = [];
+        
+        try {
+            console.log(`[StateManager] Starting dependency chain calculation for ${changedFieldId}`);
+            
+            // 1. Get all downstream dependents that are dirty
+            const affectedFields = getDirtyFields();
+            
+            if (affectedFields.length === 0) {
+                console.log(`[StateManager] No dirty fields to calculate`);
+                return calculatedFields;
+            }
+            
+            // 2. Get calculation order (topological sort)
+            const orderedFields = getCalculationOrder(affectedFields);
+            
+            console.log(`[StateManager] Calculating ${orderedFields.length} fields in dependency order:`, orderedFields);
+            
+            // 3. Calculate each field in the correct order
+            orderedFields.forEach(fieldId => {
+                const result = triggerFieldCalculation(fieldId);
+                if (result !== null) {
+                    calculatedFields.push(fieldId);
+                    console.log(`[StateManager] ✓ Calculated ${fieldId} = ${result}`);
+                } else {
+                    console.log(`[StateManager] ⚠ Skipped ${fieldId} (no calculation registered or calculation failed)`);
+                }
+            });
+            
+            // 4. Clear dirty status for calculated fields
+            clearDirtyStatus(calculatedFields);
+            
+            console.log(`[StateManager] Dependency chain calculation complete. Calculated ${calculatedFields.length} fields.`);
+            
+        } catch (error) {
+            console.error(`[StateManager] Error in dependency chain calculation:`, error);
+        } finally {
+            calculationInProgress = false;
+        }
+        
+        return calculatedFields;
+    }
+    
+    /**
+     * CALCULATION ORCHESTRATION: Smart listener wrapper that triggers dependency chain
+     * This replaces manual calculateAll() calls with targeted dependency calculations
+     * @param {string} fieldId - Field ID to listen to
+     * @param {Function} additionalCallback - Optional additional callback to run
+     */
+    function addSmartListener(fieldId, additionalCallback = null) {
+        addListener(fieldId, (newValue, oldValue, changedFieldId, state) => {
+            // Run additional callback first if provided
+            if (additionalCallback) {
+                try {
+                    additionalCallback(newValue, oldValue, changedFieldId, state);
+                } catch (error) {
+                    console.error(`[StateManager] Error in additional callback for ${fieldId}:`, error);
+                }
+            }
+            
+            // Then trigger smart dependency calculation instead of manual calculateAll()
+            if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+                calculateDependencyChain(changedFieldId);
+            }
+        });
+    }
+    
+    /**
+     * CALCULATION ORCHESTRATION: Batch calculation for multiple field changes
+     * Useful when importing data or making multiple related changes
+     * @param {Array} changedFieldIds - Array of field IDs that changed
+     * @returns {Array} Array of field IDs that were recalculated
+     */
+    function calculateBatchDependencies(changedFieldIds) {
+        if (calculationInProgress) {
+            console.warn(`[StateManager] Calculation already in progress, skipping batch calculation`);
+            return [];
+        }
+        
+        calculationInProgress = true;
+        const allCalculatedFields = [];
+        
+        try {
+            console.log(`[StateManager] Starting batch dependency calculation for:`, changedFieldIds);
+            
+            // Mark all dependents dirty for all changed fields
+            changedFieldIds.forEach(fieldId => markDependentsDirty(fieldId));
+            
+            // Get all affected fields and calculate in optimal order
+            const affectedFields = getDirtyFields();
+            const orderedFields = getCalculationOrder(affectedFields);
+            
+            // Calculate each field once in the correct order
+            orderedFields.forEach(fieldId => {
+                const result = triggerFieldCalculation(fieldId);
+                if (result !== null) {
+                    allCalculatedFields.push(fieldId);
+                }
+            });
+            
+            // Clear dirty status
+            clearDirtyStatus(allCalculatedFields);
+            
+            console.log(`[StateManager] Batch calculation complete. Calculated ${allCalculatedFields.length} fields.`);
+            
+        } catch (error) {
+            console.error(`[StateManager] Error in batch dependency calculation:`, error);
+        } finally {
+            calculationInProgress = false;
+        }
+        
+        return allCalculatedFields;
+    }
+    
+    /**
+     * CALCULATION ORCHESTRATION: Get calculation order using topological sort
+     * This ensures fields are calculated in the right order based on dependencies
+     * @param {Array} targetFields - Specific fields to order (optional, uses all dirty fields if not provided)
+     * @returns {Array} Field IDs in calculation order
+     */
+    function getCalculationOrder(targetFields = null) {
+        // Use cached order if available and no specific fields requested
+        if (!targetFields && calculationOrder.length > 0) {
+            return calculationOrder.slice(); // Return copy of cached order
+        }
+        
+        const fieldsToOrder = targetFields || [...calculatedFields];
+        const visited = new Set();
+        const temp = new Set();
+        const order = [];
+        
+        // Helper function for depth-first topological sort
+        const visit = (fieldId) => {
+            if (temp.has(fieldId)) {
+                console.warn(`[StateManager] Circular dependency detected with field ${fieldId}`);
+                return; // Skip circular dependencies
+            }
+            
+            if (!visited.has(fieldId)) {
+                temp.add(fieldId);
+                
+                // Visit all dependents first (fields that depend on this field)
+                if (dependencies.has(fieldId)) {
+                    dependencies.get(fieldId).forEach(dependentId => {
+                        // Only visit if it's in our target set
+                        if (fieldsToOrder.includes(dependentId)) {
+                            visit(dependentId);
+                        }
+                    });
+                }
+                
+                temp.delete(fieldId);
+                visited.add(fieldId);
+                order.push(fieldId);
+            }
+        };
+        
+        // Start with fields that have calculations registered
+        fieldsToOrder.forEach(fieldId => {
+            if (fieldCalculations.has(fieldId)) {
+                visit(fieldId);
+            }
+        });
+        
+        // Cache the order if we calculated for all fields
+        if (!targetFields) {
+            calculationOrder = order.slice();
+        }
+        
+        console.log(`[StateManager] Calculated topological order for ${order.length} fields:`, order);
+        return order;
+    }
+    
     // Public API
     return {
         // Constants
@@ -1448,7 +1689,12 @@ TEUI.StateManager = (function() {
         setApplicationValue: setApplicationValue,
         setReferenceValue: setReferenceValue,
         buildReferenceState: buildReferenceState,
-        emitFieldChanged: emitFieldChanged
+        emitFieldChanged: emitFieldChanged,
+        registerCalculation: registerCalculation,
+        triggerFieldCalculation: triggerFieldCalculation,
+        calculateDependencyChain: calculateDependencyChain,
+        addSmartListener: addSmartListener,
+        calculateBatchDependencies: calculateBatchDependencies
     };
 })();
 
