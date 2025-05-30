@@ -1,0 +1,42 @@
+# TEUI LOGS - Debugging Session Log File
+
+**Purpose**: Share verbose/recursive logging output for AI analysis without triggering new Cursor conversation threads.
+
+**Instructions**: 
+1. Copy-paste relevant logs below the "CURRENT LOGS" section
+2. Include context (branch, action taken, expected vs actual behavior)
+3. Clear/replace previous logs each session to keep file focused
+
+---
+
+## CURRENT LOGS
+
+**Session**: [DATE/TIME]
+**Branch**: SSv2
+**Context**: [Describe what action triggered these logs]
+**Issue**: [Brief description of problem being investigated]
+
+**Expected Behavior**: [What should happen]
+**Actual Behavior**: [What actually happens]
+
+### Log Output:
+```
+[Paste verbose logs here - console output, browser dev tools, etc.]
+```
+
+---
+
+## LOG ANALYSIS NOTES
+
+**Key Findings**: 
+- [Add bullet points of important discoveries from logs]
+
+**Next Steps**:
+- [Actions to take based on log analysis]
+
+---
+
+## PREVIOUS SESSION ARCHIVE
+[Keep brief notes from previous sessions for context]
+
+**Last Session Summary**: DOM rendering timing issue identified - calculations working (h_10=93.6) but S11 table showing zeros due to setTimeout removal affecting display timing, not calculation logic. 

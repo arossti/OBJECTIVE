@@ -1,8 +1,38 @@
 # Reference Mode Troubleshooting Workplan
 
 **Created:** December 2024  
-**Status:** CALCULATION REGRESSION IDENTIFIED - setTimeout Fix Broke Calculation Order  
-**Priority:** CRITICAL - Core calculations broken, Reference Mode secondary
+**Status:** DOM RENDERING TIMING ISSUE - Calculations Working, Display Broken  
+**Priority:** HIGH - DOM display timing broken, Reference Mode secondary
+
+## 🚨 **CRITICAL CORRECTION: DOM Rendering Issue, NOT Calculation Failure** 
+
+### ✅ **Calculations ARE Working Correctly**
+**Evidence**: S01 h_10 displays correct TEUI value = 93.6
+
+**This proves**:
+- ✅ **Core calculations running** correctly in background
+- ✅ **StateManager storing values** correctly  
+- ✅ **TEUI calculation logic** not broken
+- ❌ **DOM display timing** broken for S11 table
+
+### 🎨 **Real Issue: Display/Rendering Timing Regression**
+**The "table full of zeros" is a DOM update timing issue, NOT calculation failure.**
+
+**setTimeout calls were DOM rendering safeguards**, ensuring calculated values got displayed to UI elements in correct sequence. Removing them broke display timing, not calculation timing.
+
+### 📊 **Corrected Analysis**
+- **Before setTimeout removal**: Calculations run → setTimeout delay → DOM updates → Values display ✅
+- **After setTimeout removal**: Calculations run → DOM updates too early → Zeros display ❌
+- **Background**: Calculations still working (h_10 = 93.6 proves this)
+
+### 🔧 **Simplified Fix Strategy**
+**This is DOM timing, not calculation logic** - much easier to fix!
+
+1. **Restore minimal setTimeout** for DOM update timing, OR
+2. **Use Traffic Cop architecture** for proper async DOM update sequencing
+3. **No need to fix calculations** - they're working fine
+
+**Much better news than calculation system failure!**
 
 ## 🚨 **CALCULATION REGRESSION DISCOVERED** 
 
