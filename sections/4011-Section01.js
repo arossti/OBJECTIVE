@@ -888,40 +888,6 @@ window.TEUI.SectionModules.sect01 = (function() {
             calculateTargetTier();      // Calculate i_10 (Target Tier for h_10)
             updateTEUIDisplay();        // Update all visual displays
             
-            // DIAGNOSTIC: Check if we got reasonable TEUI values and auto-fix if needed
-            const targetTEUI = getAppNumericValue('h_10', 0);
-            const targetEnergy = getAppNumericValue('j_32', 0);
-            const area = getAppNumericValue('h_15', 1);
-            
-            // If we have zero or very low TEUI but should have energy, trigger dependency recalculation
-            if (targetTEUI < 10 && area > 100) {
-                console.log('[S01 Diagnostic] Low TEUI detected, checking dependencies...');
-                
-                // Check if critical upstream calculations have run
-                const hasS15Energy = getAppNumericValue('d_136', 0) > 0;
-                const hasS04Totals = getAppNumericValue('j_32', 0) > 0;
-                
-                // If missing critical calculations, trigger them manually
-                if (!hasS15Energy || !hasS04Totals) {
-                    console.log('[S01 Diagnostic] Forcing dependency recalculation...');
-                    
-                    // Trigger Section 15 calculation (should cascade to Section 04)
-                    if (window.TEUI?.SectionModules?.sect15?.calculateValues) {
-                        window.TEUI.SectionModules.sect15.calculateValues();
-                    }
-                    
-                    // Trigger Section 04 calculation 
-                    if (window.TEUI?.SectionModules?.sect04?.updateSubtotals) {
-                        window.TEUI.SectionModules.sect04.updateSubtotals();
-                    }
-                    
-                    // Re-run our calculations after dependency updates
-                    setTimeout(() => {
-                        runAllCalculations();
-                    }, 100);
-                }
-            }
-            
         } finally {
             calculationInProgress = false;
         }
