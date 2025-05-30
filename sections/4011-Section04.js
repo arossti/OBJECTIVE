@@ -1705,8 +1705,6 @@ window.TEUI.SectionModules.sect04 = (function() {
         const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
         const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
         
-        console.warn(`[S04 Reference] Calculated totals - Energy j_32: ${ref_j32}, Emissions k_32: ${ref_k32}`);
-        
         // Store Reference values with ref_ prefix - WITH CHANGE DETECTION
         if (window.TEUI?.StateManager) {
             // Helper function to set value only if changed
@@ -1750,7 +1748,6 @@ window.TEUI.SectionModules.sect04 = (function() {
             const k32Changed = setValueIfChanged('ref_k_32', ref_k32.toString());
             
             if (j32Changed || k32Changed) {
-                console.warn(`[S04 Reference] Stored Reference subtotals - ref_j_32: ${ref_j32}, ref_k_32: ${ref_k32}`);
             }
         }
     }

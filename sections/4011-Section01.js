@@ -393,8 +393,11 @@ window.TEUI.SectionModules.sect01 = (function() {
             
             // Calculate carbon metrics using reference values
             const lifespan = getRefStateValue('h_13') || 60;
+            const embodiedCarbon = getRefStateValue('i_41') || 0;
             const refAnnualCarbon = Math.round((s04RefEmissions / refArea) * 10) / 10;
-            const refLifetimeCarbon = Math.round((refAnnualCarbon * lifespan) * 10) / 10;
+            
+            // Excel formula: =I41/H13+D8 (Embodied Carbon / Service Life + Annual Carbon)
+            const refLifetimeCarbon = Math.round(((embodiedCarbon / lifespan) + refAnnualCarbon) * 10) / 10;
             
             // Store Reference values in StateManager
             setReferenceValue('d_8', refAnnualCarbon);
@@ -437,8 +440,11 @@ window.TEUI.SectionModules.sect01 = (function() {
             
             // Calculate carbon metrics 
             const lifespan = getAppStateValue('h_13') || 60;
+            const embodiedCarbon = getAppStateValue('i_41') || 0;
             const targetAnnualCarbon = Math.round((appTargetEmissions / appArea) * 10) / 10;
-            const targetLifetimeCarbon = Math.round((targetAnnualCarbon * lifespan) * 10) / 10;
+            
+            // Excel formula: =I41/H13+H8 (Embodied Carbon / Service Life + Annual Carbon)
+            const targetLifetimeCarbon = Math.round(((embodiedCarbon / lifespan) + targetAnnualCarbon) * 10) / 10;
             
             // Store Application values in StateManager
             setTargetValue('h_10', targetTEUI);
