@@ -1,8 +1,148 @@
 # Reference Mode Troubleshooting Workplan
 
 **Created:** December 2024  
-**Status:** Investigation Phase  
-**Priority:** High - Critical UI functionality regression
+**Status:** CALCULATION REGRESSION IDENTIFIED - setTimeout Fix Broke Calculation Order  
+**Priority:** CRITICAL - Core calculations broken, Reference Mode secondary
+
+## 🚨 **CALCULATION REGRESSION DISCOVERED** 
+
+### 🔍 **Root Cause Identified: setTimeout "Performance Fix" Broke Calculations**
+**The setTimeout calls were NOT performance violations - they were calculation sequencing safeguards!**
+
+- ❌ **SSv2 after setTimeout removal**: S11 table shows zeros (broken calculations)
+- ✅ **STANDARDIZED-STATES**: Working calculations + Reference Mode works on Reset
+- ✅ **Original production**: Working calculations (but old architecture)
+
+### 📊 **Evidence**
+**Sequence of Events:**
+1. SSv2 had working calculations with setTimeout calls
+2. Removed setTimeout from Sections 01, 09, 10, Dependency.js for "performance violations"  
+3. **IMMEDIATELY**: S11 table shows zeros instead of real calculations
+4. Performance violations were actually **calculation timing safeguards**
+
+### 🎯 **Updated Problem Definition**
+**Primary Issue**: Core calculation system broken due to removed setTimeout sequencing
+**Secondary Issue**: Reference Mode toggle (investigate after calculations work)
+
+## 📋 **New Priority Order**
+
+### 1. **URGENT: Fix S11 Table Calculations (Target Mode)**
+**Objective**: Get basic TEUI calculations working again in Application/Target mode
+
+**Options**:
+- **Option A**: Temporarily restore setTimeout calls until proper dependency ordering  
+- **Option B**: Fix calculation sequencing without setTimeout (proper dependency-based ordering)
+
+### 2. **SECONDARY: Reference Mode Toggle**  
+**Objective**: After calculations work, investigate why toggle doesn't trigger same recalculation as Reset button
+
+## 🎯 **BREAKTHROUGH DISCOVERY FROM STANDARDIZED-STATES** 
+
+### 🔍 **Reset Button Works Perfectly in Reference Mode!**
+**Discovered in STANDARDIZED-STATES branch investigation:**
+
+- ✅ **Reference Mode toggle**: Input fields change correctly with red styling
+- ❌ **Reference Mode toggle**: Calculated results don't update
+- ✅ **Reset Button**: BOTH input fields AND calculated results update correctly to Reference values!
+
+### 🔑 **Root Cause for Reference Mode**
+**Reference calculation logic works perfectly** - the issue is Reference Mode toggle doesn't trigger the same recalculation process as Reset button.
+
+### 📊 **Evidence from STANDARDIZED-STATES Branch Logs**
+```
+[StateManager] No imported data found. Performing system refresh...
+[StateManager] System refresh completed.
+```
+
+**Key Finding**: Reset button calls `systemRefresh()` method that Reference Mode toggle doesn't call.
+
+## 🔧 **Methodical Fix Strategy**
+
+### Phase 1: Restore Basic Calculations ⚡ URGENT
+**Target**: S11 table shows real values, not zeros
+
+#### Step 1: Identify Broken Calculation Flow
+- Map which setTimeout calls were removed
+- Identify calculation dependencies that are now broken
+- Determine minimum setTimeout restoration needed
+
+#### Step 2: Quick Fix Options
+**Option A - Temporary setTimeout Restoration:**
+```javascript
+// In critical sections, temporarily restore:
+setTimeout(() => calculateAll(), 50); // Minimal delay for sequencing
+```
+
+**Option B - Proper Dependency Fix:**
+- Use existing Traffic Cop architecture for proper calculation ordering
+- Leverage StateManager dependency graph for sequencing
+- Implement proper async calculation chain
+
+#### Step 3: Verification
+- [ ] S11 table shows real calculated values (not zeros)
+- [ ] All TEUI calculations work in Application/Target mode
+- [ ] Performance acceptable (temporary setTimeout OK for now)
+
+### Phase 2: Reference Mode Toggle Fix
+**Target**: Toggle works same as Reset button
+
+#### Step 1: Reset vs Toggle Investigation  
+- Find what `systemRefresh()` does that toggle doesn't call
+- Map complete Reset button execution flow vs toggle flow
+- Identify missing method call in toggle handler
+
+#### Step 2: Implementation
+**Expected Fix:**
+```javascript
+// In ReferenceToggle.js, likely ADD:
+window.TEUI.StateManager.systemRefresh(); // Or equivalent method
+```
+
+#### Step 3: Verification  
+- [ ] Toggle to Reference Mode → Calculated values update ✅
+- [ ] Toggle to Application Mode → Values revert ✅  
+- [ ] Reset button → Still works ✅
+- [ ] S01 comparative analysis → Still works ✅
+
+## 🏁 **Current SSv2 Architecture Benefits to Preserve**
+
+### ✅ **Keep These SSv2 Improvements**
+- **Traffic Cop event management system** - Major architectural improvement
+- **V2 dual-engine architecture** - Core energy modeling enhancement  
+- **Proper recursion protection** - Prevents calculation loops
+- **StateManager enhancements** - Better state management
+- **Other bug fixes and corrections** - Accumulated improvements
+
+### ⚡ **Fix These SSv2 Issues**
+- **Calculation sequencing** - Broken by setTimeout removal
+- **Reference Mode toggle** - Missing systemRefresh() call
+- **Performance** - Use proper dependency ordering instead of setTimeout
+
+## 📈 **Success Criteria**
+
+### Phase 1 Success (URGENT)
+- S11 table displays real calculated values 
+- All TEUI calculations work correctly
+- Application/Target mode fully functional
+- Performance acceptable (setTimeout temporary OK)
+
+### Phase 2 Success  
+- Reference Mode toggle works like Reset button
+- Both input fields AND calculated results update in Reference Mode
+- S01 comparative analysis preserved (e_10 vs h_10)
+- No regression in Phase 1 functionality
+
+## 🚨 **Critical Notes**
+
+1. **setTimeout calls were calculation safeguards, NOT performance issues**
+2. **Temporarily restore setTimeout until proper dependency ordering implemented**
+3. **SSv2 architectural improvements are valuable - preserve them**
+4. **Fix calculations first, Reference Mode second**
+5. **Use Traffic Cop architecture for eventual proper dependency ordering**
+
+---
+
+**Next Action**: Identify which setTimeout removals broke S11 calculations and implement quick fix
 
 ## 📋 Problem Statement
 
