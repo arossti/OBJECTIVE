@@ -390,15 +390,15 @@ window.TEUI.SectionModules.sect11 = (function() {
         // console.log(`[S11 DUAL SET] 🔧 STORAGE: ${storageMode} | DISPLAY: ${displayMode} | Setting ${fieldId} = ${rawValue} (format: ${formatType})`);
         
         if (storeAsReference) {
-            // Store to Reference state (ref_ prefix)
-            if (window.TEUI?.StateManager?.setReferenceValue) {
+            // Store to Reference state (ref_ prefix) - FIXED: Use setValue with ref_ prefix
+            if (window.TEUI?.StateManager?.setValue) {
                 // console.log(`[S11 DUAL SET] 🔵 Storing to ref_${fieldId} in StateManager`);
-                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
+                window.TEUI.StateManager.setValue(`ref_${fieldId}`, rawValue.toString(), 'calculated');
             } else {
-                console.warn(`[S11 DUAL SET] ❌ setReferenceValue not available!`);
+                console.warn(`[S11 DUAL SET] ❌ setValue not available!`);
             }
         } else {
-            // Store to Application state (main state) - FIXED: Use setValue instead of setApplicationValue
+            // Store to Application state (main state) - FIXED: Use setValue directly
             if (window.TEUI?.StateManager?.setValue) {
                 // console.log(`[S11 DUAL SET] 🟢 Storing to ${fieldId} in StateManager`);
                 window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), 'calculated');
@@ -772,10 +772,10 @@ window.TEUI.SectionModules.sect11 = (function() {
         const penaltyHeatgain = totals.gain * validatedPenalty;
         
         // Store Reference thermal bridge penalty calculations (with ref_ prefix)
-        if (window.TEUI?.StateManager?.setReferenceValue) {
-            window.TEUI.StateManager.setReferenceValue('ref_e_97', validatedPenalty.toString(), 'calculated-reference');
-            window.TEUI.StateManager.setReferenceValue('ref_i_97', penaltyHeatloss.toString(), 'calculated-reference');
-            window.TEUI.StateManager.setReferenceValue('ref_k_97', penaltyHeatgain.toString(), 'calculated-reference');
+        if (window.TEUI?.StateManager?.setValue) {
+            window.TEUI.StateManager.setValue('ref_e_97', validatedPenalty.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_i_97', penaltyHeatloss.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_97', penaltyHeatgain.toString(), 'calculated');
         }
         
         // Calculate Reference totals (row 98) 
@@ -783,10 +783,10 @@ window.TEUI.SectionModules.sect11 = (function() {
         const finalRefGain = totals.gain + penaltyHeatgain;
         
         // Store Reference total calculations (with ref_ prefix)
-        if (window.TEUI?.StateManager?.setReferenceValue) {
-            window.TEUI.StateManager.setReferenceValue('ref_d_98', totals.areaD.toString(), 'calculated-reference');
-            window.TEUI.StateManager.setReferenceValue('ref_i_98', finalRefLoss.toString(), 'calculated-reference');
-            window.TEUI.StateManager.setReferenceValue('ref_k_98', finalRefGain.toString(), 'calculated-reference');
+        if (window.TEUI?.StateManager?.setValue) {
+            window.TEUI.StateManager.setValue('ref_d_98', totals.areaD.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_i_98', finalRefLoss.toString(), 'calculated');
+            window.TEUI.StateManager.setValue('ref_k_98', finalRefGain.toString(), 'calculated');
         }
         
         // console.log('[S11 REF ENGINE] ✅ Reference Model calculations complete');
@@ -1301,14 +1301,17 @@ window.TEUI.SectionModules.sect11 = (function() {
     function trackModeSwitch() {
         console.log('=== 🔄 MODE SWITCH TRACKER ===');
         
-        const originalToggle = window.TEUI?.ReferenceToggle?.toggle;
-        if (!originalToggle) {
-            console.error('❌ ReferenceToggle.toggle not found!');
+        const toggleButton = document.getElementById('toggleReferenceBtn');
+        if (!toggleButton) {
+            console.error('❌ Reference toggle button not found!');
             return;
         }
         
-        // Override the toggle function with tracking
-        window.TEUI.ReferenceToggle.toggle = function() {
+        // Store original click handler
+        const originalHandler = toggleButton.onclick;
+        
+        // Override the button click handler with tracking
+        toggleButton.onclick = function(event) {
             const beforeMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
             console.log(`\n🚥 MODE SWITCH DETECTED - FROM: ${beforeMode}`);
             
@@ -1316,20 +1319,25 @@ window.TEUI.SectionModules.sect11 = (function() {
             console.log('📊 State before switch:');
             checkStateContamination();
             
-            // Call original toggle function
-            const result = originalToggle.apply(this, arguments);
+            // Call original handler if it exists
+            if (originalHandler) {
+                originalHandler.call(this, event);
+            } else {
+                // Fallback: trigger the mode switch manually
+                if (window.TEUI?.ReferenceToggle?.toggleReferenceView) {
+                    window.TEUI.ReferenceToggle.toggleReferenceView();
+                }
+            }
             
-            // Check state after switch
-            const afterMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
-            console.log(`\n🚥 MODE SWITCH COMPLETE - TO: ${afterMode}`);
-            
+            // Check state after switch (with small delay for processing)
             setTimeout(() => {
+                const afterMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
+                console.log(`\n🚥 MODE SWITCH COMPLETE - TO: ${afterMode}`);
+                
                 console.log('📊 State after switch (delayed):');
                 checkStateContamination();
                 console.log('=== 🔄 END MODE SWITCH TRACKING ===\n');
-            }, 50);
-            
-            return result;
+            }, 100);
         };
         
         console.log('✅ Mode switch tracking is now active');
