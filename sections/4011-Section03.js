@@ -1202,7 +1202,7 @@ window.TEUI.SectionModules.sect03 = (function() {
         // =============================================================================
         
         if (window.TEUI?.StateManager?.registerCalculation) {
-            console.log('[S03 IT-DEPENDS] Registering calculation functions...');
+            // console.log('[S03 IT-DEPENDS] Registering calculation functions...');
             
             try {
                 // CLIMATE ZONE CALCULATION (depends on HDD)
@@ -1265,7 +1265,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     return Math.round((hottestC * 9/5) + 32);
                 }, 'Hottest day Fahrenheit conversion');
 
-                console.log('[S03 IT-DEPENDS] ✅ Successfully registered 8 calculation functions');
+                // console.log('[S03 IT-DEPENDS] ✅ Successfully registered 8 calculation functions');
                 
                 // Register smart listeners to replace some manual calculateAll() calls
                 if (window.TEUI.StateManager.addSmartListener) {
@@ -1275,7 +1275,7 @@ window.TEUI.SectionModules.sect03 = (function() {
                     window.TEUI.StateManager.addSmartListener('l_24'); // Cooling override changes
                     window.TEUI.StateManager.addSmartListener('m_19'); // Cooling days changes
                     
-                    console.log('[S03 IT-DEPENDS] ✅ Added smart listeners for 5 key dependency fields');
+                    // console.log('[S03 IT-DEPENDS] ✅ Added smart listeners for 5 key dependency fields');
                 }
 
             } catch (error) {

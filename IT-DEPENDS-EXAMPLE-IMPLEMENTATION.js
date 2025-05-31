@@ -185,7 +185,7 @@ function setupCalculationMonitoring() {
 
 // Main initialization function
 function initializeCalculationOrchestration() {
-    console.log('[IT-DEPENDS] Initializing calculation orchestration...');
+    // console.log('[IT-DEPENDS] Initializing calculation orchestration...');
     
     // Set up all the example calculations
     setupTEUICalculations();
@@ -196,12 +196,12 @@ function initializeCalculationOrchestration() {
     
     setupCalculationMonitoring();
     
-    console.log('[IT-DEPENDS] Calculation orchestration setup complete!');
-    console.log('[IT-DEPENDS] Available demo functions:');
-    console.log('- demonstrateBatchCalculation()');
-    console.log('- demonstrateManualDependencyCalculation()');
-    console.log('- monitorStateManager() - Monitor system status and metrics');
-    console.log('- setupSmartListeners() // Manual setup when ready to replace existing listeners');
+    // console.log('[IT-DEPENDS] Calculation orchestration setup complete!');
+    // console.log('[IT-DEPENDS] Available demo functions:');
+    // console.log('- demonstrateBatchCalculation()');
+    // console.log('- demonstrateManualDependencyCalculation()');
+    // console.log('- monitorStateManager() - Monitor system status and metrics');
+    // console.log('- setupSmartListeners() // Manual setup when ready to replace existing listeners');
     
     // Make demo functions globally available
     window.demonstrateBatchCalculation = demonstrateBatchCalculation;
@@ -217,25 +217,25 @@ function initializeCalculationOrchestration() {
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         if (window.TEUI && window.TEUI.StateManager) {
-            console.log('[IT-DEPENDS] Auto-initializing calculation orchestration...');
+            // console.log('[IT-DEPENDS] Auto-initializing calculation orchestration...');
             initializeCalculationOrchestration();
         } else {
             console.warn('[IT-DEPENDS] StateManager not available for auto-initialization');
         }
-    }, 1000); // 1 second delay to ensure StateManager is ready
+    }, 100);
 });
 
-// Also try immediate initialization if DOM is already loaded
+// Fallback: Try immediate initialization if DOMContentLoaded already fired
 if (document.readyState === 'loading') {
-    // DOM still loading, listener above will handle it
+    // DOMContentLoaded will fire, use that
 } else {
-    // DOM already loaded, try immediate initialization
+    // DOMContentLoaded already fired, initialize immediately
     setTimeout(() => {
-        if (window.TEUI && window.TEUI.StateManager && typeof initializeCalculationOrchestration === 'function') {
-            console.log('[IT-DEPENDS] Immediate initialization attempt...');
+        if (window.TEUI && window.TEUI.StateManager) {
+            // console.log('[IT-DEPENDS] Auto-initializing calculation orchestration (immediate)...');
             initializeCalculationOrchestration();
         }
-    }, 500);
+    }, 100);
 }
 
 // Export for use in other modules

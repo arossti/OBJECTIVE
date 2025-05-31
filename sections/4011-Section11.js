@@ -1129,183 +1129,92 @@ window.TEUI.SectionModules.sect11 = (function() {
         
         // Register IT-DEPENDS calculation functions (AFTER all existing initialization)
         if (window.TEUI?.StateManager?.registerCalculation) {
-            console.log('[S11 IT-DEPENDS] Registering calculation functions...');
+            // console.log('[S11 IT-DEPENDS] Registering calculation functions...');
             
-            // 1. Component calculations for each row
+            // Register calculations for all S11 rows (85-95) and totals (97-98)
             componentConfig.forEach(config => {
-                const rowStr = config.row.toString();
+                const row = config.row;
                 
-                // Register area calculation (if it has source mapping)
-                const sourceAreaField = areaSourceMap[config.row];
-                if (sourceAreaField) {
-                    window.TEUI.StateManager.registerCalculation(
-                        `d_${rowStr}`,
-                        () => {
-                            const sourceValue = getNumericValue(sourceAreaField) || 0;
-                            setCalculatedValue(`d_${rowStr}`, sourceValue);
-                            return sourceValue;
-                        },
-                        `Copy area from ${sourceAreaField} to d_${rowStr}`
-                    );
+                // RSI calculation (Column F) - Convert U-value to RSI
+                window.TEUI.StateManager.registerCalculation(`f_${row}`, function() {
+                    const uValue = getNumericValue(`g_${row}`);
+                    return uValue > 0 ? (1 / uValue) : 0;
+                }, `Calculate RSI from U-value for row ${row}`);
+                
+                // U-value calculation (Column G) - Convert RSI to U-value  
+                window.TEUI.StateManager.registerCalculation(`g_${row}`, function() {
+                    const rsiValue = getNumericValue(`f_${row}`);
+                    return rsiValue > 0 ? (1 / rsiValue) : 0;
+                }, `Calculate U-value from RSI for row ${row}`);
+                
+                // Heat loss calculation (Column I)
+                window.TEUI.StateManager.registerCalculation(`i_${row}`, function() {
+                    return calculateHeatLoss(row, false); // false = Application calculation
+                }, `Calculate heat loss for row ${row}`);
+                
+                // Heat gain calculation (Column K)
+                window.TEUI.StateManager.registerCalculation(`k_${row}`, function() {
+                    return calculateHeatGain(row, false); // false = Application calculation
+                }, `Calculate heat gain for row ${row}`);
+                
+                // Area copy calculations for certain rows
+                if (config.areaCopySource) {
+                    window.TEUI.StateManager.registerCalculation(`d_${row}`, function() {
+                        return getNumericValue(config.areaCopySource);
+                    }, `Copy area from ${config.areaCopySource} to d_${row}`);
                 }
                 
-                // Register RSI/U-value complementary calculations
-                window.TEUI.StateManager.registerCalculation(
-                    `f_${rowStr}`,
-                    () => {
-                        const uValue = getNumericValue(`g_${rowStr}`);
-                        if (uValue > 0) {
-                            const rsiValue = 1 / uValue;
-                            setCalculatedValue(`f_${rowStr}`, rsiValue);
-                            return rsiValue;
-                        }
-                        return 0;
-                    },
-                    `Calculate RSI from U-value for row ${config.row}`
-                );
-                
-                window.TEUI.StateManager.registerCalculation(
-                    `g_${rowStr}`,
-                    () => {
-                        const rsiValue = getNumericValue(`f_${rowStr}`);
-                        if (rsiValue > 0) {
-                            const uValue = 1 / rsiValue;
-                            setCalculatedValue(`g_${rowStr}`, uValue, 'W/m2');
-                            return uValue;
-                        }
-                        return 0;
-                    },
-                    `Calculate U-value from RSI for row ${config.row}`
-                );
-                
-                // Register heat loss/gain calculations
-                window.TEUI.StateManager.registerCalculation(
-                    `i_${rowStr}`,
-                    () => {
-                        calculateComponentRow(config.row, config, false);
-                        return getNumericValue(`i_${rowStr}`);
-                    },
-                    `Calculate heat loss for row ${config.row}`
-                );
-                
-                window.TEUI.StateManager.registerCalculation(
-                    `k_${rowStr}`,
-                    () => {
-                        calculateComponentRow(config.row, config, false);
-                        return getNumericValue(`k_${rowStr}`);
-                    },
-                    `Calculate heat gain for row ${config.row}`
-                );
+                // Reference percentage indicators (Column M)
+                window.TEUI.StateManager.registerCalculation(`m_${row}`, function() {
+                    updateReferencePercentageIndicator(row);
+                    return getFieldValue(`m_${row}`) || '';
+                }, `Update reference percentage indicator for row ${row}`);
             });
             
-            // 2. Thermal Bridge Penalty calculations (CRITICAL: Preserve cross-section calls)
-            window.TEUI.StateManager.registerCalculation(
-                'd_97',
-                () => {
-                    // This function is triggered when d_97 changes
-                    const penaltyPercent = getNumericValue('d_97');
-                    
-                    // Calculate TBP effects on Section 11
-                    const componentLoss = componentConfig.reduce((sum, config) => 
-                        sum + (getNumericValue(`i_${config.row}`) || 0), 0);
-                    const componentGain = componentConfig.reduce((sum, config) => 
-                        sum + (getNumericValue(`k_${config.row}`) || 0), 0);
-                    
-                    calculateThermalBridgePenalty(componentLoss, componentGain);
-                    
-                    // CRITICAL: Maintain cross-section call to Section 12 for immediate feedback
-                    if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
-                        window.TEUI.SectionModules.sect12.calculateCombinedUValue();
-                    }
-                    
-                    return penaltyPercent;
-                },
-                'Calculate TBP effects on S11 and trigger S12 U-value updates'
-            );
-            
-            // 3. Total calculations (row 98)
-            window.TEUI.StateManager.registerCalculation(
-                'd_98',
-                () => {
-                    const totalArea = componentConfig
-                        .filter(config => config.row >= 85 && config.row <= 95)
-                        .reduce((sum, config) => sum + (getNumericValue(`d_${config.row}`) || 0), 0);
-                    setCalculatedValue('d_98', totalArea);
-                    return totalArea;
-                },
-                'Calculate total area (rows 85-95)'
-            );
-            
-            window.TEUI.StateManager.registerCalculation(
-                'i_98',
-                () => {
-                    const componentLoss = componentConfig.reduce((sum, config) => 
-                        sum + (getNumericValue(`i_${config.row}`) || 0), 0);
-                    const penaltyLoss = getNumericValue('i_97') || 0;
-                    const totalLoss = componentLoss + penaltyLoss;
-                    setCalculatedValue('i_98', totalLoss);
-                    return totalLoss;
-                },
-                'Calculate total heat loss including TBP'
-            );
-            
-            window.TEUI.StateManager.registerCalculation(
-                'k_98',
-                () => {
-                    const componentGain = componentConfig.reduce((sum, config) => 
-                        sum + (getNumericValue(`k_${config.row}`) || 0), 0);
-                    const penaltyGain = getNumericValue('k_97') || 0;
-                    const totalGain = componentGain + penaltyGain;
-                    setCalculatedValue('k_98', totalGain);
-                    return totalGain;
-                },
-                'Calculate total heat gain including TBP'
-            );
-            
-            // 4. Reference indicators
-            componentConfig.forEach(config => {
-                window.TEUI.StateManager.registerCalculation(
-                    `m_${config.row}`,
-                    () => {
-                        updateReferenceIndicators(config.row);
-                        return getNumericValue(`m_${config.row}`);
-                    },
-                    `Update reference percentage indicator for row ${config.row}`
-                );
-            });
-            
-            console.log('[S11 IT-DEPENDS] ✅ Successfully registered calculation functions');
-            
-            // 5. Add smart listeners for key dependencies (PRESERVE existing TBP slider handlers)
-            // TEMPORARILY DISABLED: Smart listeners causing recursion due to callback signature mismatch
-            // The smart listener passes (newValue, oldValue, changedFieldId, state) but we expect only (changedFieldId)
-            // TODO: Fix callback signature and re-enable after testing
-            /*
-            const keyDependencies = [
-                'd_20', 'd_21', 'd_22', 'h_22', 'i_21', // Climate data
-                'd_97', // TBP (handled by existing slider + this system)
-                ...componentConfig.map(c => `f_${c.row}`), // RSI values
-                ...componentConfig.map(c => `g_${c.row}`), // U-values  
-                ...Object.values(areaSourceMap) // Source area fields
-            ];
-            
-            keyDependencies.forEach(fieldId => {
-                if (window.TEUI.StateManager.addSmartListener) {
-                    window.TEUI.StateManager.addSmartListener(fieldId, (changedFieldId) => {
-                        // Use IT-DEPENDS targeted calculation instead of calculateAll()
-                        window.TEUI.StateManager.triggerFieldCalculation(changedFieldId);
-                    });
+            // Register TBP calculation (d_97) - CRITICAL: This affects Section 12
+            window.TEUI.StateManager.registerCalculation('d_97', function() {
+                const tbpValue = getNumericValue('d_97');
+                
+                // Trigger cross-section effects (Section 12 U-value updates)
+                if (window.TEUI?.SectionModules?.sect12?.updateTBPEffects) {
+                    window.TEUI.SectionModules.sect12.updateTBPEffects(tbpValue);
                 }
-            });
+                
+                // Return the TBP value for internal calculations
+                return tbpValue;
+            }, 'Calculate TBP effects on S11 and trigger S12 U-value updates');
             
-            console.log('[S11 IT-DEPENDS] ✅ Added smart listeners for key dependency fields');
-            */
+            // Register total calculations (row 98)
+            window.TEUI.StateManager.registerCalculation('d_98', function() {
+                let totalArea = 0;
+                componentConfig.forEach(config => {
+                    totalArea += getNumericValue(`d_${config.row}`);
+                });
+                return totalArea;
+            }, 'Calculate total area (rows 85-95)');
             
-            console.log('[S11 IT-DEPENDS] ⚠️ Smart listeners temporarily disabled to prevent recursion');
-            console.log('[S11 IT-DEPENDS] Manual testing available via: window.TEUI.StateManager.triggerFieldCalculation("d_97")');
+            window.TEUI.StateManager.registerCalculation('i_98', function() {
+                const { loss } = calculateApplicationModel();
+                const tbpPenalty = calculateTBPEffects();
+                return loss + tbpPenalty.heatloss;
+            }, 'Calculate total heat loss including TBP');
+            
+            window.TEUI.StateManager.registerCalculation('k_98', function() {
+                const { gain } = calculateApplicationModel();
+                const tbpPenalty = calculateTBPEffects();
+                return gain + tbpPenalty.heatgain;
+            }, 'Calculate total heat gain including TBP');
+            
+            // console.log('[S11 IT-DEPENDS] ✅ Successfully registered calculation functions');
+            
+            // DISABLED: Smart listeners to prevent conflicts with existing traffic cop systems
+            // setupSmartListeners(); // Available for manual testing
+            
+            // console.log('[S11 IT-DEPENDS] ⚠️ Smart listeners temporarily disabled to prevent recursion');
+            // console.log('[S11 IT-DEPENDS] Manual testing available via: window.TEUI.StateManager.triggerFieldCalculation("d_97")');
             
         } else {
-            console.warn('[S11 IT-DEPENDS] StateManager calculation orchestration not available');
+            console.warn('[S11 IT-DEPENDS] StateManager.registerCalculation not available');
         }
     }
     
