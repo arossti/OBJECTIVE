@@ -1556,6 +1556,9 @@ window.TEUI.SectionModules.sect13 = (function() {
             // console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
             handleHeatingSystemChangeForGhosting(initialHeatingSystem);
         }, 100); // Short delay might be needed
+        
+        // IT-DEPENDS: Register calculation functions after all initialization is complete
+        registerITDEPENDSCalculations();
     }
     
     /**
@@ -2348,3 +2351,132 @@ function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') 
         element.classList.toggle('negative-value', rawValue < 0);
     } 
 }
+
+//==========================================================================
+// IT-DEPENDS: CALCULATION ORCHESTRATION REGISTRATION
+//==========================================================================
+
+/**
+ * Register IT-DEPENDS calculation functions for Section 13
+ * CONSERVATIVE APPROACH: Only register safe calculations, preserve cooling physics
+ */
+function registerITDEPENDSCalculations() {
+    if (!window.TEUI?.StateManager?.registerCalculation) {
+        console.warn('[S13 IT-DEPENDS] StateManager not available for calculation registration');
+        return;
+    }
+    
+    // console.log('[S13 IT-DEPENDS] Registering calculation functions...');
+    
+    const stateManager = window.TEUI.StateManager;
+    
+    // SAFE REGISTRATIONS: Simple COP and efficiency calculations
+    // These don't touch the complex cooling physics
+    
+    // 1. COP Heat calculation (h_113) - depends on HSPF
+    stateManager.registerCalculation('h_113', function() {
+        const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 0;
+        const systemType = getFieldValue('d_113');
+        if (systemType === 'Heatpump' && hspf > 0) {
+            return hspf / 3.412;
+        }
+        return 1;
+    }, 'Heat pump COP heating from HSPF');
+    
+    // 2. COP Cool calculation (j_113) - depends on COP heat
+    stateManager.registerCalculation('j_113', function() {
+        const copheat = window.TEUI.parseNumeric(getFieldValue('h_113')) || 1;
+        return Math.max(1, copheat - 1);
+    }, 'Heat pump COP cooling derived from COP heating');
+    
+    // 3. CEER calculation (j_114) - depends on COP cool
+    stateManager.registerCalculation('j_114', function() {
+        const copcool = window.TEUI.parseNumeric(getFieldValue('j_113')) || 0;
+        return 3.412 * copcool;
+    }, 'CEER from COP cooling');
+    
+    // 4. Ventilation rate conversions (safe calculations)
+    stateManager.registerCalculation('f_119', function() {
+        const ventRate = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
+        return ventRate * 2.11888; // L/s per person to L/s per m²
+    }, 'Ventilation rate L/s per m²');
+    
+    stateManager.registerCalculation('h_119', function() {
+        const ventRate = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
+        return ventRate * 3.6; // L/s per person to m³/h per person
+    }, 'Ventilation rate m³/h per person');
+    
+    stateManager.registerCalculation('h_120', function() {
+        const ventRatePerPerson = window.TEUI.parseNumeric(getFieldValue('h_119')) || 0;
+        const occupancy = window.TEUI.parseNumeric(getFieldValue('h_16')) || 0;
+        return ventRatePerPerson * occupancy; // Total m³/h
+    }, 'Total ventilation rate m³/h');
+    
+    // 5. Simple heating energy calculation (d_114) - safe calculation
+    stateManager.registerCalculation('d_114', function() {
+        const heatingDemand = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; // TED from S14
+        const systemType = getFieldValue('d_113');
+        const copheat = window.TEUI.parseNumeric(getFieldValue('h_113')) || 1;
+        const afue = window.TEUI.parseNumeric(getFieldValue('j_115')) || 0.9;
+        
+        if (systemType === 'Heatpump') {
+            return copheat > 0 ? heatingDemand / copheat : 0;
+        } else if (systemType === 'Electricity') {
+            return heatingDemand; // 100% efficient
+        } else {
+            return afue > 0 ? heatingDemand / afue : 0; // Gas/Oil with AFUE
+        }
+    }, 'Heating system electrical load');
+    
+    // 6. Heating intensity calculation (f_114) - safe calculation
+    stateManager.registerCalculation('f_114', function() {
+        const heatingLoad = window.TEUI.parseNumeric(getFieldValue('d_114')) || 0;
+        const area = window.TEUI.parseNumeric(getFieldValue('h_15')) || 0;
+        return area > 0 ? heatingLoad / area : 0;
+    }, 'Heating intensity kWh/m²');
+    
+    // NOTE: NOT REGISTERING complex cooling calculations yet
+    // These will be added in Phase 2 after testing:
+    // - calculateCoolingSystem() (depends on complex cooling state)
+    // - calculateFreeCooling() (has recursion protection, very complex)
+    // - calculateCoolingVentilation() (depends on cooling physics)
+    // - runIntegratedCoolingCalculations() (the entire cooling physics engine)
+    
+    // console.log('[S13 IT-DEPENDS] ✅ Successfully registered 8 safe calculation functions');
+    
+    // 7. Add smart listeners for key dependencies (SAFE FIELDS ONLY)
+    // Only listen to fields that don't trigger cooling physics
+    const safeDependencies = [
+        'f_113', // HSPF
+        'j_115', // AFUE
+        'd_113', // Heating system type
+        'd_119', // Ventilation rate
+        'h_16',  // Occupancy
+        'd_127'  // TED from S14
+    ];
+    
+    safeDependencies.forEach(fieldId => {
+        stateManager.addSmartListener(fieldId, function(newValue, oldValue, changedFieldId) {
+            // Only trigger recalculation of dependent fields, not full cooling system
+            const dependentFields = {
+                'f_113': ['h_113', 'j_113', 'j_114'], // HSPF affects COP calculations
+                'd_113': ['d_114', 'f_114'], // System type affects heating calculations
+                'j_115': ['d_114', 'f_114'], // AFUE affects heating calculations
+                'd_119': ['f_119', 'h_119', 'h_120'], // Vent rate affects conversions
+                'h_16': ['h_120'], // Occupancy affects total vent rate
+                'd_127': ['d_114', 'f_114'] // TED affects heating load
+            };
+            
+            const toRecalculate = dependentFields[changedFieldId] || [];
+            toRecalculate.forEach(depFieldId => {
+                stateManager.triggerFieldCalculation(depFieldId);
+            });
+        });
+    });
+    
+    // console.log('[S13 IT-DEPENDS] ✅ Added smart listeners for 6 safe dependency fields');
+}
+
+//==========================================================================
+// SECTION INITIALIZATION AND EVENT HANDLING
+//==========================================================================
