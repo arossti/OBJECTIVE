@@ -1196,6 +1196,94 @@ window.TEUI.SectionModules.sect03 = (function() {
                 document.removeEventListener('location-data-ready', handler);
             });
         }
+
+        // =============================================================================
+        // IT-DEPENDS MIGRATION: Register calculation functions (CONSERVATIVE APPROACH)
+        // =============================================================================
+        
+        if (window.TEUI?.StateManager?.registerCalculation) {
+            console.log('[S03 IT-DEPENDS] Registering calculation functions...');
+            
+            try {
+                // CLIMATE ZONE CALCULATION (depends on HDD)
+                window.TEUI.StateManager.registerCalculation('j_19', function() {
+                    const hdd = getNumericValue('d_20');
+                    const climateZone = determineClimateZone(hdd);
+                    return climateZone;
+                }, 'Climate zone based on HDD');
+
+                // HEATING SETPOINT CALCULATIONS (depend on occupancy type)
+                window.TEUI.StateManager.registerCalculation('h_23', function() {
+                    return calculateHeatingSetpoint();
+                }, 'Heating setpoint based on occupancy type');
+
+                window.TEUI.StateManager.registerCalculation('i_23', function() {
+                    const heatingC = getNumericValue('h_23');
+                    return Math.round((heatingC * 9/5) + 32);
+                }, 'Heating setpoint Fahrenheit conversion');
+
+                // COOLING SETPOINT CALCULATIONS (depend on occupancy type and override)
+                window.TEUI.StateManager.registerCalculation('h_24', function() {
+                    return calculateCoolingSetpoint_h24();
+                }, 'Base cooling setpoint based on occupancy type');
+
+                window.TEUI.StateManager.registerCalculation('i_24', function() {
+                    const effectiveSetpointC = determineEffectiveCoolingSetpoint();
+                    return Math.round((effectiveSetpointC * 9/5) + 32);
+                }, 'Effective cooling setpoint Fahrenheit conversion');
+
+                // GROUND FACING CALCULATIONS (depend on setpoints and cooling days)
+                window.TEUI.StateManager.registerCalculation('d_22', function() {
+                    const heatingSetpoint = getNumericValue('h_23');
+                    const coolingDays = getNumericValue('m_19');
+                    const heatingDays = 365 - coolingDays;
+                    return Math.round((heatingSetpoint - 10) * heatingDays);
+                }, 'Ground facing heating degree days');
+
+                window.TEUI.StateManager.registerCalculation('h_22', function() {
+                    const capacitanceSetting = getFieldValue('h_21') || 'Static';
+                    const coolingSetpoint_h24 = getNumericValue('h_24');
+                    const coolingDays_m19 = getNumericValue('m_19');
+                    
+                    let gfcdd;
+                    if (capacitanceSetting === 'Static') {
+                        gfcdd = Math.max(0, (10 - coolingSetpoint_h24) * coolingDays_m19);
+                    } else {
+                        gfcdd = (10 - coolingSetpoint_h24) * coolingDays_m19;
+                    }
+                    return Math.round(gfcdd);
+                }, 'Ground facing cooling degree days');
+
+                // TEMPERATURE CONVERSIONS (depend on design temperatures)
+                window.TEUI.StateManager.registerCalculation('e_23', function() {
+                    const coldestC = getNumericValue('d_23');
+                    return Math.round((coldestC * 9/5) + 32);
+                }, 'Coldest day Fahrenheit conversion');
+
+                window.TEUI.StateManager.registerCalculation('e_24', function() {
+                    const hottestC = getNumericValue('d_24');
+                    return Math.round((hottestC * 9/5) + 32);
+                }, 'Hottest day Fahrenheit conversion');
+
+                console.log('[S03 IT-DEPENDS] ✅ Successfully registered 8 calculation functions');
+                
+                // Register smart listeners to replace some manual calculateAll() calls
+                if (window.TEUI.StateManager.addSmartListener) {
+                    window.TEUI.StateManager.addSmartListener('d_12'); // Occupancy type changes
+                    window.TEUI.StateManager.addSmartListener('d_20'); // HDD changes
+                    window.TEUI.StateManager.addSmartListener('h_21'); // Capacitance setting changes
+                    window.TEUI.StateManager.addSmartListener('l_24'); // Cooling override changes
+                    window.TEUI.StateManager.addSmartListener('m_19'); // Cooling days changes
+                    
+                    console.log('[S03 IT-DEPENDS] ✅ Added smart listeners for 5 key dependency fields');
+                }
+
+            } catch (error) {
+                console.error('[S03 IT-DEPENDS] Error during registration:', error);
+            }
+        } else {
+            console.warn('[S03 IT-DEPENDS] StateManager.registerCalculation not available');
+        }
     }
     
     //==========================================================================
