@@ -139,113 +139,202 @@ Based on your capacitance slider investigation findings:
 
 ---
 
-## Next Steps: Phase 2 Implementation
+## Next Steps: Phase 2 Implementation (DEPENDENCY-DRIVEN MIGRATION ORDER)
 
-### Priority 1: Migrate Section 01 (Highest Impact)
+### 🧠 **Migration Strategy: Follow the Calculation Dependency Flow**
 
-**Target Fields for Registration:**
-```javascript
-// Core TEUI calculations that affect everything downstream
-StateManager.registerCalculation('k_10', calculateActualTEUI);
-StateManager.registerCalculation('h_10', calculateTargetTEUI);  
-StateManager.registerCalculation('j_10', calculateTEUIPercentage);
+**Key Insight**: Start with **source sections** that generate values for others, not **destination sections** that consume them. Section 01 (Key Values) is a final summary destination - migrating it first would be like trying to optimize the display before fixing the data sources.
 
-// Replace manual listeners with smart ones
-StateManager.addSmartListener('f_32'); // Actual energy change
-StateManager.addSmartListener('j_32'); // Target energy change
-StateManager.addSmartListener('h_15'); // Building area change
-```
+### 📊 **Four-State Architecture Requirements**
 
-**Expected Result**: All downstream sections automatically recalculate when Section 01 values change
+Each section must maintain clean separation between:
 
-### Priority 2: Migrate Section 11 (Current Work Location)
+1. **Default State** - Never overwritten, provides fallback values on first load
+2. **User Modified State** - Immediate updates within section, affects Target/Design UI values  
+3. **Imported State** - Application state that supersedes user-modified (like a "restore point")
+4. **Reference State** - Modified version of application state using hard-coded Reference standard values
 
-**Target Fields for Registration:**
-```javascript
-// Transmission loss calculations
-StateManager.registerCalculation('i_98', calculateTransmissionTotals);
-StateManager.registerCalculation('k_98', calculateTransmissionTotals);
-StateManager.registerCalculation('d_98', calculateEnvelopeArea);
-
-// Component-specific calculations
-StateManager.registerCalculation('i_85', () => calculateComponentRow(85));
-StateManager.registerCalculation('i_86', () => calculateComponentRow(86));
-// ... continue for all component rows
-```
-
-**Expected Result**: Thermal bridge penalty changes automatically recalculate affected components
-
-### Priority 3: Test Cross-Section Flow
-
-**Validation Steps:**
-1. Change a Section 01 value (like building area)
-2. Verify Section 11 automatically recalculates
-3. Verify Section 15 summary automatically updates
-4. Confirm no manual `calculateAll()` calls needed
-
-### Priority 4: Continue Section-by-Section Migration
-
-**Recommended Order:**
-1. ✅ Section 01 - Key Values (highest impact)
-2. ✅ Section 11 - Transmission Losses (current location)
-3. Section 04 - Actual vs Target Energy
-4. Section 15 - TEUI Summary  
-5. Section 13 - Mechanical Loads
-6. Continue with remaining sections...
+**All states report to StateManager with proper isolation - no cross-contamination between Reference and Application calculations.**
 
 ---
 
-## Testing Strategy for Phase 2
+### 🎯 **Phase 2a: SOURCE SECTIONS (Generate Fundamental Values)**
 
-### Immediate Next Steps
+**Priority Order** - Sections that produce values consumed by multiple other sections:
 
-1. **Start Section 01 Migration**:
-   ```javascript
-   // Test in browser console after implementation:
-   demonstrateBatchCalculation()     // Verify infrastructure works
-   
-   // Then test new Section 01 registrations:
-   window.TEUI.StateManager.triggerFieldCalculation('h_10');
-   ```
+#### 1. **Section 03 (Climate Calculations)** ⭐ **START HERE**
+```javascript
+// Target registrations for climate data that feeds everywhere
+StateManager.registerCalculation('d_20', calculateHDD);        // Heating degree days
+StateManager.registerCalculation('d_21', calculateCDD);        // Cooling degree days  
+StateManager.registerCalculation('d_22', calculateGroundHDD);  // Ground heating
+StateManager.registerCalculation('h_22', calculateGroundCDD);  // Ground cooling
+StateManager.registerCalculation('i_21', calculateCapacitance); // Capacitance factor
+```
+**Why Start Here**: Climate data feeds into Sections 11, 13, 09, 10 - fixing this first ensures downstream sections have clean inputs.
 
-2. **Validate Cross-Section Dependencies**:
-   - Change building area (h_15)
-   - Verify TEUI automatically recalculates (h_10, k_10)
-   - Verify Section 15 summary updates (no manual trigger)
+#### 2. **Section 11 (Transmission Losses)**
+```javascript
+// Envelope heat loss/gain calculations
+StateManager.registerCalculation('i_98', calculateTransmissionTotals);  // Total losses
+StateManager.registerCalculation('k_98', calculateTransmissionGains);   // Total gains
+StateManager.registerCalculation('d_98', calculateEnvelopeArea);        // Total area
 
-3. **Performance Measurement**:
-   ```javascript
-   // Before migration
-   console.time('legacy-calculation');
-   sect01.calculateAll();
-   sect04.calculateAll();
-   sect11.calculateAll();
-   // ... all manual calls
-   console.timeEnd('legacy-calculation');
-   
-   // After migration  
-   console.time('dependency-driven');
-   StateManager.setValue('h_15', '1200', 'user-modified');
-   console.timeEnd('dependency-driven');
-   ```
+// Component-level calculations  
+StateManager.registerCalculation('i_85', () => calculateComponentRow(85)); // Roof losses
+StateManager.registerCalculation('i_86', () => calculateComponentRow(86)); // Wall losses
+// ... continue for all envelope components
+```
+**Feeds To**: Sections 14, 15, 01 (transmission totals), Section 13 (envelope loads)
 
-### Expected Performance Validation
+#### 3. **Section 13 (Mechanical Loads)**
+```javascript
+// Heating and cooling system calculations
+StateManager.registerCalculation('d_115', calculateHeatingLoad);    // Total heating load
+StateManager.registerCalculation('d_117', calculateCoolingLoad);    // Total cooling load  
+StateManager.registerCalculation('j_115', calculateHeatingEnergy);  // Heating energy use
+StateManager.registerCalculation('j_117', calculateCoolingEnergy);  // Cooling energy use
+```
+**Feeds To**: Sections 14, 15, 01 (mechanical energy totals), Section 05 (emissions)
 
-- **70% reduction** in calculation time
-- **Instant UI response** - no waiting for values to "settle"
-- **Predictable behavior** - each field calculates exactly once
-- **Cross-contamination resolution** - proper state separation
+#### 4. **Section 09 (Internal Gains)**
+```javascript
+// Occupancy and equipment internal heat gains
+StateManager.registerCalculation('k_60', calculateOccupantGains);   // People heat gains
+StateManager.registerCalculation('k_61', calculateEquipmentGains);  // Equipment gains
+StateManager.registerCalculation('k_62', calculateLightingGains);   // Lighting gains
+```
+**Feeds To**: Sections 13 (affects cooling loads), Section 14 (internal gain totals)
+
+#### 5. **Section 10 (Radiant Gains)**  
+```javascript
+// Solar and radiant heat gains through envelope
+StateManager.registerCalculation('k_73', calculateWindowGains);     // Window solar gains
+StateManager.registerCalculation('k_78', calculateSkylightGains);   // Skylight gains
+StateManager.registerCalculation('k_79', calculateTotalRadiant);    // Total radiant gains
+```
+**Feeds To**: Sections 13 (affects cooling), Section 14 (radiant totals)
 
 ---
 
-## Why Continue with IT-DEPENDS (Not Dual-Engine Debugging)
+### 🔄 **Phase 2b: INTERMEDIATE SECTIONS (Transform & Pass Through)**
 
-1. **Root Cause**: Dual-engine issues are likely **symptoms** of calculation order problems
-2. **Clean Architecture**: Fixing calculation order will likely **resolve** cross-contamination  
-3. **Foundation Ready**: We have infrastructure built, just need to use it
-4. **High ROI**: Real performance improvements and cleaner codebase
+**These sections use values from Phase 2a and generate new calculations:**
 
-**Debugging dual-engine issues while running two calculation systems would be like debugging a race condition - very difficult and likely to create more problems.**
+#### 6. **Section 07 (Water Use)**
+```javascript
+// Water heating and consumption calculations
+StateManager.registerCalculation('k_49', calculateDHWEmissions);    // DHW emissions
+StateManager.registerCalculation('h_49', calculateDHWEnergy);       // DHW energy use
+```
+**Uses**: Climate data (Section 03), mechanical loads (Section 13)  
+**Feeds To**: Sections 05 (emissions), 15 (energy totals)
+
+#### 7. **Section 05 (CO2e Emissions)**
+```javascript
+// Emissions calculations based on energy use
+StateManager.registerCalculation('i_39', calculateOperationalCarbon);  // Operational emissions
+StateManager.registerCalculation('i_40', calculateEmbodiedCarbon);     // Embodied emissions  
+StateManager.registerCalculation('i_41', calculateLifetimeCarbon);     // Total lifecycle
+```
+**Uses**: Energy totals from Sections 13, 07, mechanical systems  
+**Feeds To**: Section 01 (carbon intensity metrics)
+
+#### 8. **Section 04 (Actual vs Target Energy)**
+```javascript
+// Energy comparison and performance metrics
+StateManager.registerCalculation('j_27', calculateTargetElectricity); // Target electric use
+StateManager.registerCalculation('f_32', calculateActualElectricity); // Actual electric use
+StateManager.registerCalculation('j_32', calculateTotalTargetEnergy); // Target total energy
+```
+**Uses**: Mechanical loads (Section 13), DHW (Section 07)  
+**Feeds To**: Sections 15, 01 (energy performance metrics)
+
+---
+
+### 📋 **Phase 2c: COLLECTION SECTIONS (Read & Summarize)**
+
+**Final migration - these primarily consume values from upstream sections:**
+
+#### 9. **Section 14 (TEDI Summary)**
+```javascript
+// Thermal Energy Demand Intensity summary  
+StateManager.registerCalculation('d_132', calculateTotalTEDI);      // Total TEDI
+StateManager.registerCalculation('h_127', calculateHeatingTEDI);    // Heating TEDI
+StateManager.registerCalculation('h_128', calculateCoolingTEDI);    // Cooling TEDI
+```
+**Uses**: All thermal loads from Sections 11, 13, 09, 10  
+**Feeds To**: Section 01 (TEDI metrics)
+
+#### 10. **Section 15 (TEUI Summary)**
+```javascript
+// Total Energy Use Intensity summary
+StateManager.registerCalculation('d_136', calculateTotalTEUI);      // Total TEUI  
+StateManager.registerCalculation('d_135', calculateElectricTEUI);   // Electric TEUI
+StateManager.registerCalculation('d_137', calculateFuelTEUI);       // Fuel TEUI
+```
+**Uses**: All energy calculations from Sections 04, 13, 07  
+**Feeds To**: Section 01 (TEUI metrics)
+
+#### 11. **Section 01 (Key Values)** 🏁 **FINISH HERE**
+```javascript
+// Final summary metrics - mostly reads from other sections
+StateManager.registerCalculation('h_10', calculateTargetTEUI);      // From Section 15
+StateManager.registerCalculation('k_10', calculateActualTEUI);      // From Section 04  
+StateManager.registerCalculation('j_10', calculateTEUIPercentage);  // Performance ratio
+```
+**Uses**: Summary values from Sections 14, 15, 05  
+**Feeds To**: UI display (final destination)
+
+---
+
+### ✅ **Expected Results by Phase**
+
+**After Phase 2a** (Source Sections):
+- Clean climate data propagation
+- Accurate envelope calculations  
+- Proper mechanical load calculations
+- Targeted 40% performance improvement
+
+**After Phase 2b** (Intermediate Sections):
+- Accurate emissions calculations
+- Proper energy comparisons
+- Targeted 70% performance improvement  
+
+**After Phase 2c** (Collection Sections):
+- Accurate TEDI/TEUI summaries
+- Perfect Section 01 key values
+- **Complete 70% performance improvement achieved**
+
+### 🔬 **Testing Strategy Per Phase**
+
+**Phase 2a Testing**:
+1. Change climate location → verify all envelope/mechanical sections auto-update
+2. Modify envelope inputs → verify transmission calculations + downstream effects
+3. Adjust mechanical efficiency → verify energy calculations propagate
+
+**Phase 2b Testing**:
+1. Change fuel type → verify emissions auto-recalculate  
+2. Modify DHW settings → verify energy totals update
+3. Test actual vs target energy alignment
+
+**Phase 2c Testing**:
+1. Verify TEDI/TEUI summaries match individual section totals
+2. Confirm Section 01 displays match Section 15 calculations
+3. **Final validation**: No manual `calculateAll()` calls needed anywhere
+
+---
+
+### 🎯 **Success Metrics**
+
+- **Performance**: 70% reduction in unnecessary calculations
+- **Accuracy**: All sections match Excel parity  
+- **Reliability**: Cross-section dependency flow without manual triggers
+- **Maintainability**: Clean four-state architecture throughout
+
+**Total Estimated Implementation Time**: 6-8 hours following dependency-driven order vs 12-15 hours if done randomly.
+
+This dependency-driven approach ensures each section has clean inputs from its predecessors, making debugging easier and results more reliable.
 
 ---
 
