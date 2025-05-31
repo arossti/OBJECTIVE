@@ -1277,6 +1277,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             console.log('[S11 IT-DEPENDS] ✅ Successfully registered calculation functions');
             
             // 5. Add smart listeners for key dependencies (PRESERVE existing TBP slider handlers)
+            // TEMPORARILY DISABLED: Smart listeners causing recursion due to callback signature mismatch
+            // The smart listener passes (newValue, oldValue, changedFieldId, state) but we expect only (changedFieldId)
+            // TODO: Fix callback signature and re-enable after testing
+            /*
             const keyDependencies = [
                 'd_20', 'd_21', 'd_22', 'h_22', 'i_21', // Climate data
                 'd_97', // TBP (handled by existing slider + this system)
@@ -1295,6 +1299,10 @@ window.TEUI.SectionModules.sect11 = (function() {
             });
             
             console.log('[S11 IT-DEPENDS] ✅ Added smart listeners for key dependency fields');
+            */
+            
+            console.log('[S11 IT-DEPENDS] ⚠️ Smart listeners temporarily disabled to prevent recursion');
+            console.log('[S11 IT-DEPENDS] Manual testing available via: window.TEUI.StateManager.triggerFieldCalculation("d_97")');
             
         } else {
             console.warn('[S11 IT-DEPENDS] StateManager calculation orchestration not available');

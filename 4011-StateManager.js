@@ -593,21 +593,17 @@ TEUI.StateManager = (function() {
     }
     
     /**
-     * Get state information for debugging
-     * @param {string} fieldId - Optional field ID to get info for
-     * @returns {Object} Debug information
+     * CALCULATION ORCHESTRATION: Get debug information about the system
      */
-    function getDebugInfo(fieldId = null) {
-        if (fieldId) {
-            return fields.has(fieldId) ? fields.get(fieldId) : null;
-        }
-        
+    function getDebugInfo() {
         return {
-            fieldCount: fields.size,
-            dependencyCount: dependencies.size,
-            calculatedCount: calculatedFields.size,
-            dirtyCount: dirtyFields.size,
-            listenerCount: listeners.size
+            totalFields: fields.size,
+            totalDependencies: Object.keys(dependencies).length,
+            calculatedFields: Array.from(calculatedFields),
+            dirtyFields: Array.from(dirtyFields),
+            registeredCalculations: fieldCalculations, // Expose the Map directly
+            calculationOrder: calculationOrder.slice(), // Return copy
+            listeners: Object.keys(listeners).length
         };
     }
     
@@ -1429,28 +1425,36 @@ TEUI.StateManager = (function() {
     }
     
     /**
-     * CALCULATION ORCHESTRATION: Execute calculation for a specific field
-     * @param {string} fieldId - Field ID to calculate
-     * @returns {any} The calculated value, or null if calculation failed
+     * CALCULATION ORCHESTRATION: Trigger calculation for a specific field
+     * This replaces manual calculateAll() calls with targeted calculations
+     * @param {string} fieldId - The field ID to trigger calculation for
      */
     function triggerFieldCalculation(fieldId) {
-        const calculation = fieldCalculations.get(fieldId);
-        if (!calculation) {
+        // Validate that fieldId is actually a string field ID, not a value
+        if (typeof fieldId !== 'string' || fieldId.length === 0) {
+            console.warn(`[StateManager] Invalid field ID for calculation: ${fieldId} (type: ${typeof fieldId})`);
+            return;
+        }
+        
+        // Check if this looks like a numeric value instead of a field ID
+        if (!isNaN(parseFloat(fieldId)) && isFinite(fieldId)) {
+            console.warn(`[StateManager] Received numeric value instead of field ID: ${fieldId}`);
+            return;
+        }
+        
+        if (!fieldCalculations.has(fieldId)) {
             console.warn(`[StateManager] No calculation registered for field ${fieldId}`);
-            return null;
+            return;
         }
         
         try {
+            const calculation = fieldCalculations.get(fieldId);
             const result = calculation.fn();
-            if (result !== null && result !== undefined) {
-                setValue(fieldId, result, VALUE_STATES.CALCULATED);
-                return result;
-            }
+            console.log(`[StateManager] ✅ Executed calculation for ${fieldId}: ${result}`);
+            return result;
         } catch (error) {
-            console.error(`[StateManager] Error calculating field ${fieldId}:`, error);
+            console.error(`[StateManager] ❌ Error calculating ${fieldId}:`, error);
         }
-        
-        return null;
     }
     
     /**
