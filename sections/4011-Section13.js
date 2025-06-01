@@ -1341,19 +1341,32 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_113', function(newValue, oldValue, fieldId) {
                 console.log(`[S13 IT-DEPENDS] 🔥 Heating system changed: ${oldValue} → ${newValue}`);
                 
-                // FIXED: Always trigger fuel-specific calculations when system type changes
-                // This ensures Oil↔Gas transitions work correctly even when heating demand stays the same
-                const fuelSpecificChain = ['f_115', 'h_115', 'l_115', 'f_114'];
+                // ENHANCED: Force recalculation of fuel-specific values for Oil↔Gas transitions
                 console.log(`[S13 IT-DEPENDS] 🛠️ Forcing fuel-specific recalculations for Oil↔Gas transitions`);
                 
-                fuelSpecificChain.forEach(targetField => {
-                    if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                        console.log(`[S13 IT-DEPENDS] ⚡ Force triggering ${targetField}`);
-                        sm.triggerFieldCalculation(targetField);
-                    } else {
-                        console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`);
-                    }
-                });
+                // For Oil↔Gas transitions, we need to force updates even when heating demand stays same
+                if ((oldValue === 'Oil' && newValue === 'Gas') || (oldValue === 'Gas' && newValue === 'Oil')) {
+                    console.log(`[S13 IT-DEPENDS] 🔄 Detected Oil↔Gas transition - forcing comprehensive recalculation`);
+                    
+                    // Force a mini recalculation cycle for fuel-specific values
+                    setTimeout(() => {
+                        // Use our own calculation functions directly
+                        calculateHeatingFuelImpact(); // This calculates d_115, f_115, h_115, l_115, f_114
+                        
+                        console.log(`[S13 IT-DEPENDS] ✅ Oil↔Gas transition calculations complete`);
+                    }, 10); // Small delay to ensure state is settled
+                } else {
+                    // Normal IT-DEPENDS chain for other transitions
+                    const fuelSpecificChain = ['f_115', 'h_115', 'l_115', 'f_114'];
+                    fuelSpecificChain.forEach(targetField => {
+                        if (sm.hasCalculation && sm.hasCalculation(targetField)) {
+                            console.log(`[S13 IT-DEPENDS] ⚡ Force triggering ${targetField}`);
+                            sm.triggerFieldCalculation(targetField);
+                        } else {
+                            console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`);
+                        }
+                    });
+                }
                 
                 // Also trigger the main heating dependency chain
                 const heatingChain = ['h_113', 'j_113', 'd_114', 'l_113', 'd_115'];
@@ -1413,6 +1426,32 @@ window.TEUI.SectionModules.sect13 = (function() {
                         console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
                 });
+            });
+
+            // *** SMART f_114 EMISSIONS LISTENER - Oil↔Gas Detection ***
+            // This listener catches Oil↔Gas transitions because emissions always change
+            // between different fuel types even when heating demand stays the same
+            sm.addListener('f_114', function(newValue, oldValue, fieldId) {
+                console.log(`[S13 IT-DEPENDS] 🏭 Emissions changed: ${oldValue} → ${newValue}`);
+                
+                const systemType = getFieldValue('d_113');
+                console.log(`[S13 IT-DEPENDS] 🔍 Current system: ${systemType}`);
+                
+                // Only act on meaningful emission changes for fossil fuel systems
+                const isSignificantChange = Math.abs(window.TEUI.parseNumeric(newValue) - window.TEUI.parseNumeric(oldValue)) > 0.01;
+                
+                if ((systemType === 'Oil' || systemType === 'Gas') && isSignificantChange) {
+                    console.log(`[S13 IT-DEPENDS] 🔄 Fossil fuel emissions changed - refreshing fuel calculations`);
+                    
+                    // Force refresh all fuel-related calculations to ensure UI consistency
+                    const fuelRefreshChain = ['d_115', 'f_115', 'h_115', 'l_115'];
+                    fuelRefreshChain.forEach(targetField => {
+                        if (sm.hasCalculation && sm.hasCalculation(targetField)) {
+                            console.log(`[S13 IT-DEPENDS] 🔄 Refreshing ${targetField}`);
+                            sm.triggerFieldCalculation(targetField);
+                        }
+                    });
+                }
             });
 
             // *** REMAINING TRADITIONAL LISTENERS (unchanged) ***
