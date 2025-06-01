@@ -1562,45 +1562,49 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Register this section's dependencies with StateManager
      */
     function registerWithStateManager() {
-        if (!window.TEUI.StateManager) return;
-        
-        const sm = window.TEUI.StateManager;
-        
-        // Register dependencies from other sections
-        sm.registerDependency('d_20', 'd_121'); 
-        sm.registerDependency('d_21', 'd_122'); 
-        sm.registerDependency('d_105', 'd_120'); 
-        sm.registerDependency('d_63', 'd_120'); 
-        sm.registerDependency('h_15', 'f_117'); 
-        sm.registerDependency('d_127', 'd_114'); 
-        sm.registerDependency('l_128', 'd_117'); 
-        sm.registerDependency('l_128', 'h_130'); 
-        sm.registerDependency('g_118', 'h_124'); 
-        sm.registerDependency('k_120', 'h_124'); 
-        sm.registerDependency('d_129', 'm_129');
-        sm.registerDependency('h_124', 'm_129');
-        sm.registerDependency('d_123', 'm_129');
+        if (!window.TEUI || !window.TEUI.StateManager) {
+            console.warn('[S13] StateManager not available for registration');
+            return;
+        }
 
-        // Added Dependencies for AFUE (j_115)
-        sm.registerDependency('j_115', 'd_115'); // AFUE affects Fuel Impact
-        sm.registerDependency('j_115', 'l_115'); // AFUE affects Exhaust (via d_115)
-        sm.registerDependency('j_115', 'm_115'); // AFUE affects % comparison
-        // Dependencies for Exhaust (l_115) based on formula = d_115 - d_114
-        sm.registerDependency('d_115', 'l_115'); 
-        sm.registerDependency('d_114', 'l_115'); 
-        
-        // NEW: Dependencies for Space Heating Emissions (f_114)
-        sm.registerDependency('d_113', 'f_114'); // Heating system type affects emissions
-        sm.registerDependency('f_115', 'f_114'); // Oil volume affects emissions
-        sm.registerDependency('h_115', 'f_114'); // Gas volume affects emissions
-        sm.registerDependency('l_30', 'f_114');  // Oil emissions factor
-        sm.registerDependency('l_28', 'f_114');  // Gas emissions factor
-        
-        // CRITICAL: Listen for d_13 changes to update reference indicators
-        sm.addListener('d_13', () => {
-            console.log('[Section13] d_13 changed - updating reference indicators');
-            updateAllReferenceIndicators();
-        });
+        const sm = window.TEUI.StateManager;
+
+        try {
+            // Register dependencies
+            sm.registerDependency('d_113', 'h_113'); // System type affects HSPF COP
+            sm.registerDependency('f_113', 'h_113'); // HSPF affects heating COP
+            sm.registerDependency('d_127', 'd_114'); // TEDI affects heating demand
+            sm.registerDependency('j_115', 'd_115'); // AFUE affects fuel impact
+            sm.registerDependency('d_116', 'd_117'); // Cooling system affects load
+            sm.registerDependency('g_118', 'd_120'); // Ventilation method affects rate
+            sm.registerDependency('d_119', 'd_120'); // Per person rate affects total
+            sm.registerDependency('d_20', 'd_121');  // HDD affects heating ventilation
+            sm.registerDependency('d_21', 'd_122');  // CDD affects cooling ventilation
+            sm.registerDependency('h_124', 'm_129'); // Free cooling affects mitigated load
+            sm.registerDependency('d_123', 'm_129'); // Ventilation recovery affects mitigated load
+
+            // *** IT-DEPENDS PHASE 1 - FIRST REGISTRATION ***
+            // Register calculation for d_115 (Total Heating Fuel Impact)
+            sm.registerCalculation('d_115', function() {
+                // Extract the core d_115 calculation logic from calculateHeatingFuelImpact
+                const systemType = getFieldValue('d_113');
+                const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
+                const afue = window.TEUI.parseNumeric(getFieldValue('j_115')) || 1;
+                
+                let fuelImpact = 0;
+                
+                if ((systemType === 'Gas' || systemType === 'Oil') && afue > 0) {
+                    fuelImpact = tedTarget / afue; // d_115 = d_127 / j_115
+                }
+                
+                return fuelImpact;
+            }, 'Section 13: Heating Fuel Impact (kWh/yr)');
+
+            console.log('[S13] IT-DEPENDS registration complete - d_115 registered');
+
+        } catch (error) {
+            console.error('[S13] Error during StateManager registration:', error);
+        }
     }
     
     /**
