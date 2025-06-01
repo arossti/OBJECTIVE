@@ -1107,14 +1107,28 @@ window.TEUI.SectionModules.sect11 = (function() {
                     const targetElement = document.querySelector(`[data-field-id="${targetFieldId}"]`);
                     if (targetElement) {
                         const numericValue = getNumericValue(sourceFieldId) || 0;
+                        console.log(`[S11 AREA SYNC] 🔄 ${sourceFieldId} changed → updating ${targetFieldId} to ${numericValue}`);
+                        
+                        // Update StateManager first
+                        if (window.TEUI?.StateManager?.setValue) {
+                            window.TEUI.StateManager.setValue(targetFieldId, numericValue.toString(), 'calculated');
+                        }
+                        
+                        // Update DOM with proper formatting
                         targetElement.textContent = formatNumber(numericValue, 'number');
+                        console.log(`[S11 AREA SYNC] ✅ DOM updated: ${targetFieldId} = "${targetElement.textContent}"`);
+                        
                         // Recalculation will be triggered by StateManager listeners
                         // RESTORE: Direct calculation trigger for immediate reactivity
                         if (!window.sectionCalculationInProgress) {
                             calculateAll();
                         }
+                    } else {
+                        console.warn(`[S11 AREA SYNC] ❌ Target element not found: ${targetFieldId}`);
                     }
                 });
+                
+                console.log(`[S11 AREA SYNC] 📡 Listener registered: ${sourceFieldId} → d_${targetRow}`);
             }
         });
 
@@ -1448,6 +1462,83 @@ window.TEUI.SectionModules.sect11 = (function() {
         console.log('Toggle between Reference/Application modes to see contamination tracking');
     }
 
+    /**
+     * *** S10→S11 AREA SYNC TEST FUNCTION ***
+     * Test Section 10 to Section 11 area communication
+     * Call from console: window.TEUI.SectionModules.sect11.testS10AreaSync()
+     */
+    function testS10AreaSync() {
+        console.log('=== S10→S11 AREA SYNC TEST ===');
+        
+        const sm = window.TEUI.StateManager;
+        if (!sm) {
+            console.error('❌ StateManager not found');
+            return false;
+        }
+        
+        console.log('✓ StateManager found');
+        
+        // Test the area source mapping
+        console.log('\n--- Testing Area Source Mapping ---');
+        Object.entries(areaSourceMap).forEach(([targetRow, sourceFieldId]) => {
+            const targetFieldId = `d_${targetRow}`;
+            const sourceValue = sm.getValue(sourceFieldId);
+            const targetValue = sm.getValue(targetFieldId);
+            const targetElement = document.querySelector(`[data-field-id="${targetFieldId}"]`);
+            const domValue = targetElement?.textContent?.trim();
+            
+            console.log(`${sourceFieldId} → ${targetFieldId}:`);
+            console.log(`  Source State: ${sourceValue || 'UNDEFINED'}`);
+            console.log(`  Target State: ${targetValue || 'UNDEFINED'}`);
+            console.log(`  Target DOM: "${domValue || 'ELEMENT NOT FOUND'}"`);
+            console.log(`  Element exists: ${!!targetElement}`);
+        });
+        
+        // Test manual trigger
+        console.log('\n--- Testing Manual Trigger ---');
+        const testFieldId = 'd_73'; // Door area in S10
+        const testTargetRow = '88'; // Door row in S11
+        const testTargetFieldId = `d_${testTargetRow}`;
+        
+        const originalValue = sm.getValue(testFieldId);
+        const testValue = '12.5'; // Test value
+        
+        console.log(`Original ${testFieldId} value: ${originalValue}`);
+        console.log(`Setting ${testFieldId} to ${testValue}...`);
+        
+        // Manually trigger the change
+        sm.setValue(testFieldId, testValue, 'user-modified');
+        
+        // Check results after small delay
+        setTimeout(() => {
+            const newSourceValue = sm.getValue(testFieldId);
+            const newTargetValue = sm.getValue(testTargetFieldId);
+            const targetElement = document.querySelector(`[data-field-id="${testTargetFieldId}"]`);
+            const newDomValue = targetElement?.textContent?.trim();
+            
+            console.log('\n--- Test Results ---');
+            console.log(`Source ${testFieldId}: ${originalValue} → ${newSourceValue}`);
+            console.log(`Target ${testTargetFieldId} State: ${newTargetValue}`);
+            console.log(`Target ${testTargetFieldId} DOM: "${newDomValue}"`);
+            
+            const success = newSourceValue === testValue && 
+                           newTargetValue === testValue && 
+                           newDomValue === '12.50';
+            
+            console.log(`\n🎯 SYNC TEST: ${success ? '✅ PASSED' : '❌ FAILED'}`);
+            
+            // Restore original value
+            if (originalValue) {
+                sm.setValue(testFieldId, originalValue, 'user-modified');
+                console.log(`✅ Restored ${testFieldId} to ${originalValue}`);
+            }
+            
+            console.log('=== END S10→S11 AREA SYNC TEST ===');
+        }, 100);
+        
+        return true;
+    }
+
     //==========================================================================
     // PUBLIC API
     //==========================================================================
@@ -1465,6 +1556,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         queueDOMUpdate, // Expose the queueDOMUpdate function
         flushDOMUpdates, // Expose the flushDOMUpdates function
         testTrafficCop, // Expose the testTrafficCop function
-        trackModeSwitch // Expose the trackModeSwitch function
+        trackModeSwitch, // Expose the trackModeSwitch function
+        testS10AreaSync // Expose the testS10AreaSync function
     };
 })();
