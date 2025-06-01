@@ -1341,12 +1341,14 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_113', function(newValue, oldValue, fieldId) {
                 console.log(`[S13 IT-DEPENDS] 🔥 Heating system changed: ${oldValue} → ${newValue}`);
                 
-                // Trigger dependency chain for heating system
-                const heatingChain = ['h_113', 'j_113', 'd_114', 'l_113', 'd_115', 'f_115', 'h_115', 'l_115'];
+                // Trigger dependency chain for heating system (Section 13 only)
+                const heatingChain = ['h_113', 'j_113', 'd_114', 'l_113', 'd_115', 'f_115', 'h_115', 'l_115', 'f_114'];
                 heatingChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
                         console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
                         sm.triggerFieldCalculation(targetField);
+                    } else {
+                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
                 });
                 
@@ -1358,12 +1360,14 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('f_113', function(newValue, oldValue, fieldId) {
                 console.log(`[S13 IT-DEPENDS] 🔄 HSPF changed: ${oldValue} → ${newValue}`);
                 
-                // Trigger COP chain
+                // Trigger COP chain (Section 13 only)
                 const copChain = ['h_113', 'j_113', 'd_114', 'l_113'];
                 copChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
                         console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
                         sm.triggerFieldCalculation(targetField);
+                    } else {
+                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
                 });
             });
@@ -1372,12 +1376,14 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_127', function(newValue, oldValue, fieldId) {
                 console.log(`[S13 IT-DEPENDS] 📊 TEDI changed: ${oldValue} → ${newValue}`);
                 
-                // Trigger heating demand chain
-                const tediChain = ['d_114', 'l_113', 'd_115', 'f_115', 'h_115', 'l_115'];
+                // Trigger heating demand chain (Section 13 only)
+                const tediChain = ['d_114', 'l_113', 'd_115', 'f_115', 'h_115', 'l_115', 'f_114'];
                 tediChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
                         console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
                         sm.triggerFieldCalculation(targetField);
+                    } else {
+                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
                 });
             });
@@ -1386,12 +1392,14 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('j_115', function(newValue, oldValue, fieldId) {
                 console.log(`[S13 IT-DEPENDS] ⛽ AFUE changed: ${oldValue} → ${newValue}`);
                 
-                // Trigger fuel chain
-                const fuelChain = ['d_115', 'f_115', 'h_115', 'l_115'];
+                // Trigger fuel chain (Section 13 only)
+                const fuelChain = ['d_115', 'f_115', 'h_115', 'l_115', 'f_114'];
                 fuelChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
                         console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
                         sm.triggerFieldCalculation(targetField);
+                    } else {
+                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
                 });
             });
@@ -1783,11 +1791,33 @@ window.TEUI.SectionModules.sect13 = (function() {
                 return exhaust;
             }, 'Section 13: Exhaust (kWh/yr)');
 
+            // Register f_114 (Space Heating Emissions) - depends on system type and fuel volumes
+            sm.registerCalculation('f_114', function() {
+                const systemType = getFieldValue('d_113');
+                const oilVolume = window.TEUI.parseNumeric(getFieldValue('f_115')) || 0;
+                const gasVolume = window.TEUI.parseNumeric(getFieldValue('h_115')) || 0;
+                
+                // Emissions factors (get from StateManager or use defaults)
+                const oilEmissionsFactor = window.TEUI.parseNumeric(getFieldValue('l_30')) || 2.753;
+                const gasEmissionsFactor = window.TEUI.parseNumeric(getFieldValue('l_28')) || 2.03;
+                
+                let emissions = 0;
+                
+                if (systemType === 'Oil') {
+                    emissions = oilVolume * oilEmissionsFactor / 1000; // Convert to kgCO2e/yr
+                } else if (systemType === 'Gas') {
+                    emissions = gasVolume * gasEmissionsFactor / 1000; // Convert to kgCO2e/yr
+                }
+                // For Electric and Heatpump, emissions = 0 (handled by electricity emissions elsewhere)
+                
+                return emissions;
+            }, 'Section 13: Space Heating Emissions (kgCO2e/yr)');
+
             console.log('[S13 DEBUG] IT-DEPENDS COMPREHENSIVE: All heating calculations registered');
-            console.log('[S13 DEBUG] Registered calculations: d_115, h_113, j_113, d_114, l_113, f_115, h_115, l_115');
+            console.log('[S13 DEBUG] Registered calculations: d_115, h_113, j_113, d_114, l_113, f_115, h_115, l_115, f_114');
 
             // Validate all registrations
-            const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115'];
+            const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115', 'f_114'];
             const registeredCount = expectedCalculations.filter(id => sm.hasCalculation && sm.hasCalculation(id)).length;
             console.log(`[S13 DEBUG] Validation: ${registeredCount}/${expectedCalculations.length} calculations registered successfully`);
             
@@ -2452,7 +2482,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         console.log('✓ StateManager found');
         
         // Test 1: Validate all calculation registrations
-        const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115'];
+        const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115', 'f_114'];
         const results = {};
         
         console.log('\n--- Testing All Calculation Registrations ---');
@@ -2531,7 +2561,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const fuelTests = [
             { id: 'f_115', desc: 'Oil Volume (depends on d_115)' },
             { id: 'h_115', desc: 'Gas Volume (depends on d_115)' },
-            { id: 'l_115', desc: 'Exhaust (depends on d_115, d_114)' }
+            { id: 'l_115', desc: 'Exhaust (depends on d_115, d_114)' },
+            { id: 'f_114', desc: 'Space Heating Emissions (depends on f_115, h_115, system type)' }
         ];
         
         let allFuelPassed = true;
@@ -2654,7 +2685,7 @@ window.TEUI.SectionModules.sect13 = (function() {
         }
         
         // Check registrations
-        const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115'];
+        const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115', 'f_114'];
         const registeredCount = expectedCalculations.filter(id => sm.hasCalculation && sm.hasCalculation(id)).length;
         
         console.log(`📊 Calculations: ${registeredCount}/${expectedCalculations.length} registered`);
