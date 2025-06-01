@@ -21,11 +21,11 @@ window.TEUI.sect13.calculatingCOP = false;
 window.TEUI.sect13.calculatingHeating = false;
 window.TEUI.sect13.calculatingCooling = false;
 window.TEUI.sect13.calculationInProgress = false;
-window.TEUI.sect13.migratedToITDepends = false;
+window.TEUI.sect13.migratedToITDepends = true; // ✅ FULLY MIGRATED
 
 // Section 13: Mechanical Loads Module
 window.TEUI.SectionModules.sect13 = (function() {
-    console.log('[S13 DEBUG] Section 13 module loading...');
+    // console.log('[S13 DEBUG] Section 13 module loading...'); // REMOVED DEBUG
     
     //==========================================================================
     // ADDED: HELPER FUNCTIONS (Standard Implementation)
@@ -1339,32 +1339,31 @@ window.TEUI.SectionModules.sect13 = (function() {
             
             // Smart listener for d_113 (Heating System Type) changes
             sm.addListener('d_113', function(newValue, oldValue, fieldId) {
-                console.log(`[S13 IT-DEPENDS] 🔥 Heating system changed: ${oldValue} → ${newValue}`);
+                console.log(`[S13 IT-DEPENDS] Heating system: ${oldValue} → ${newValue}`); // KEPT: Key operational message
                 
                 // ENHANCED: Force recalculation of fuel-specific values for Oil↔Gas transitions
-                console.log(`[S13 IT-DEPENDS] 🛠️ Forcing fuel-specific recalculations for Oil↔Gas transitions`);
+                // console.log(`[S13 IT-DEPENDS] 🛠️ Forcing fuel-specific recalculations for Oil↔Gas transitions`); // REMOVED DEBUG
                 
                 // For Oil↔Gas transitions, we need to force updates even when heating demand stays same
                 if ((oldValue === 'Oil' && newValue === 'Gas') || (oldValue === 'Gas' && newValue === 'Oil')) {
-                    console.log(`[S13 IT-DEPENDS] 🔄 Detected Oil↔Gas transition - forcing comprehensive recalculation`);
+                    console.log(`[S13 IT-DEPENDS] Oil↔Gas transition detected - applying fix`); // KEPT: Important fix notification
                     
                     // Force a mini recalculation cycle for fuel-specific values
                     setTimeout(() => {
                         // Use our own calculation functions directly
                         calculateHeatingFuelImpact(); // This calculates d_115, f_115, h_115, l_115, f_114
                         
-                        console.log(`[S13 IT-DEPENDS] ✅ Oil↔Gas transition calculations complete`);
+                        // console.log(`[S13 IT-DEPENDS] ✅ Oil↔Gas transition calculations complete`); // REMOVED DEBUG
                     }, 10); // Small delay to ensure state is settled
                 } else {
                     // Normal IT-DEPENDS chain for other transitions
                     const fuelSpecificChain = ['f_115', 'h_115', 'l_115', 'f_114'];
                     fuelSpecificChain.forEach(targetField => {
                         if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                            console.log(`[S13 IT-DEPENDS] ⚡ Force triggering ${targetField}`);
+                            // console.log(`[S13 IT-DEPENDS] ⚡ Force triggering ${targetField}`); // REMOVED DEBUG
                             sm.triggerFieldCalculation(targetField);
-                        } else {
-                            console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`);
                         }
+                        // else console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`); // REMOVED DEBUG
                     });
                 }
                 
@@ -1372,59 +1371,55 @@ window.TEUI.SectionModules.sect13 = (function() {
                 const heatingChain = ['h_113', 'j_113', 'd_114', 'l_113', 'd_115'];
                 heatingChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                        console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
+                        // console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`); // REMOVED DEBUG
                         sm.triggerFieldCalculation(targetField);
-                    } else {
-                        console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`);
                     }
+                    // else console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`); // REMOVED DEBUG
                 });
             });
             
             // Smart listener for f_113 (HSPF) changes
             sm.addListener('f_113', function(newValue, oldValue, fieldId) {
-                console.log(`[S13 IT-DEPENDS] 🔄 HSPF changed: ${oldValue} → ${newValue}`);
+                // console.log(`[S13 IT-DEPENDS] 🔄 HSPF changed: ${oldValue} → ${newValue}`); // REMOVED DEBUG
                 
                 // Trigger COP chain (Section 13 only)
                 const copChain = ['h_113', 'j_113', 'd_114', 'l_113'];
                 copChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                        console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
+                        // console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`); // REMOVED DEBUG
                         sm.triggerFieldCalculation(targetField);
-                    } else {
-                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
+                    // else console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`); // REMOVED DEBUG
                 });
             });
             
             // Smart listener for d_127 (TEDI) changes - triggers heating demand
             sm.addListener('d_127', function(newValue, oldValue, fieldId) {
-                console.log(`[S13 IT-DEPENDS] 📊 TEDI changed: ${oldValue} → ${newValue}`);
+                // console.log(`[S13 IT-DEPENDS] 📊 TEDI changed: ${oldValue} → ${newValue}`); // REMOVED DEBUG
                 
                 // Trigger heating demand chain (Section 13 only)
                 const tediChain = ['d_114', 'l_113', 'd_115', 'f_115', 'h_115', 'l_115', 'f_114'];
                 tediChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                        console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
+                        // console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`); // REMOVED DEBUG
                         sm.triggerFieldCalculation(targetField);
-                    } else {
-                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
+                    // else console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`); // REMOVED DEBUG
                 });
             });
             
             // Smart listener for j_115 (AFUE) changes - triggers fuel calculations
             sm.addListener('j_115', function(newValue, oldValue, fieldId) {
-                console.log(`[S13 IT-DEPENDS] ⛽ AFUE changed: ${oldValue} → ${newValue}`);
+                // console.log(`[S13 IT-DEPENDS] ⛽ AFUE changed: ${oldValue} → ${newValue}`); // REMOVED DEBUG
                 
                 // Trigger fuel chain (Section 13 only)
                 const fuelChain = ['d_115', 'f_115', 'h_115', 'l_115', 'f_114'];
                 fuelChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                        console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
+                        // console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`); // REMOVED DEBUG
                         sm.triggerFieldCalculation(targetField);
-                    } else {
-                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
                     }
+                    // else console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`); // REMOVED DEBUG
                 });
             });
 
@@ -1432,22 +1427,22 @@ window.TEUI.SectionModules.sect13 = (function() {
             // This listener catches Oil↔Gas transitions because emissions always change
             // between different fuel types even when heating demand stays the same
             sm.addListener('f_114', function(newValue, oldValue, fieldId) {
-                console.log(`[S13 IT-DEPENDS] 🏭 Emissions changed: ${oldValue} → ${newValue}`);
+                // console.log(`[S13 IT-DEPENDS] 🏭 Emissions changed: ${oldValue} → ${newValue}`); // REMOVED DEBUG
                 
                 const systemType = getFieldValue('d_113');
-                console.log(`[S13 IT-DEPENDS] 🔍 Current system: ${systemType}`);
+                // console.log(`[S13 IT-DEPENDS] 🔍 Current system: ${systemType}`); // REMOVED DEBUG
                 
                 // Only act on meaningful emission changes for fossil fuel systems
                 const isSignificantChange = Math.abs(window.TEUI.parseNumeric(newValue) - window.TEUI.parseNumeric(oldValue)) > 0.01;
                 
                 if ((systemType === 'Oil' || systemType === 'Gas') && isSignificantChange) {
-                    console.log(`[S13 IT-DEPENDS] 🔄 Fossil fuel emissions changed - refreshing fuel calculations`);
+                    // console.log(`[S13 IT-DEPENDS] 🔄 Fossil fuel emissions changed - refreshing fuel calculations`); // REMOVED DEBUG
                     
                     // Force refresh all fuel-related calculations to ensure UI consistency
                     const fuelRefreshChain = ['d_115', 'f_115', 'h_115', 'l_115'];
                     fuelRefreshChain.forEach(targetField => {
                         if (sm.hasCalculation && sm.hasCalculation(targetField)) {
-                            console.log(`[S13 IT-DEPENDS] 🔄 Refreshing ${targetField}`);
+                            // console.log(`[S13 IT-DEPENDS] 🔄 Refreshing ${targetField}`); // REMOVED DEBUG
                             sm.triggerFieldCalculation(targetField);
                         }
                     });
@@ -1475,7 +1470,6 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_129', calculateMitigatedCED); // d_129 from S14
             sm.addListener('h_124', calculateMitigatedCED); // h_124 from S13 (Free Cooling)
             sm.addListener('d_123', calculateMitigatedCED); // d_123 from S13 (Vent Recovery)
-            // -----------------------------------------
 
             // Add listeners for climate/gain/loss data changes from other sections
             sm.addListener('d_20', calculateAll); // HDD
@@ -1498,9 +1492,9 @@ window.TEUI.SectionModules.sect13 = (function() {
                 setCalculatedValue('m_124', coolingState.daysActiveCooling, 'integer');
             });
             
-            console.log('✅ [S13] IT-DEPENDS smart listeners active alongside traditional system');
+            console.log('✅ [S13] IT-DEPENDS fully operational with traditional backup listeners');
         } else {
-            // console.warn("Section 13: StateManager not available to add listeners.");
+            console.warn('[S13] StateManager not available - calculation listeners disabled');
         }
 
         // --- Use Event Delegation for k_120 control --- 
@@ -1556,18 +1550,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         const fieldId = this.getAttribute('data-field-id');
         if (!fieldId) return;
 
-        // if (fieldId === 'l_118') {
-        //     console.log(`[S13 DEBUG l_118] Blur event triggered for l_118. Current textContent: "${this.textContent}"`);
-        // }
-
         const newValue = this.textContent.trim();
         const numericValue = window.TEUI.parseNumeric(newValue, NaN); 
-
-        // --- Add Log for j_115 ---
-        // if (fieldId === 'j_115') {
-        //     console.log(`[S13 DEBUG] j_115 Blur: Read "${newValue}", Parsed: ${numericValue}`);
-        // }
-        // --- End Log ---
 
         if (!isNaN(numericValue)) {
             const formatType = (fieldId === 'j_115' || fieldId === 'l_118') ? 'number-2dp' : 'number-2dp'; // Default format
@@ -1576,23 +1560,13 @@ window.TEUI.SectionModules.sect13 = (function() {
             
             if (window.TEUI.StateManager) {
                 const valueToStore = numericValue.toString();
-                 // --- Add Log for j_115 ---
-                // if (fieldId === 'j_115') {
-                //     console.log(`[S13 DEBUG] j_115 Blur: Storing "${valueToStore}" in StateManager. Formatted display: "${formattedDisplay}"`);
-                // }
-                // --- End Log ---
-                // if (fieldId === 'l_118') {
-                //     console.log(`[S13 DEBUG l_118] Attempting to set StateManager for l_118 to: "${valueToStore}". Display will be: "${formattedDisplay}"`);
-                // }
                 window.TEUI.StateManager.setValue(fieldId, valueToStore, 'user-modified');
                 // ADDED: Explicitly trigger calculateAll after user modifies AFUE
                 if (fieldId === 'j_115') {
-                    // console.log("[S13 DEBUG] j_115 changed by user, explicitly calling calculateAll().")
                     calculateAll(); // Keep this trigger for AFUE changes
                 }
                 // ADDED: Explicitly trigger calculateAll after user modifies l_118 (ACH)
                 if (fieldId === 'l_118') {
-                    // console.log("[S13 DEBUG l_118] l_118 changed by user, explicitly calling S13.calculateAll().")
                     calculateAll(); 
                 }
                 // ADDED: Explicitly trigger calculateAll after user modifies d_119 (Per Person Vent)
@@ -1611,7 +1585,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
             const formatType = (fieldId === 'j_115' || fieldId === 'l_118') ? 'number-2dp' : 'number-2dp';
             this.textContent = window.TEUI.formatNumber(prevNumericValue, formatType);
-            // console.warn(`Invalid input for ${fieldId}: "${newValue}". Reverted to ${this.textContent}.`);
+            console.warn(`[S13] Invalid input for ${fieldId}: "${newValue}". Reverted to previous value.`);
         }
     }
     
@@ -1620,17 +1594,10 @@ window.TEUI.SectionModules.sect13 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
-        console.log('[S13 DEBUG] onSectionRendered called');
+        // console.log('[S13 DEBUG] onSectionRendered called'); // REMOVED DEBUG
         
-        // Log initial DOM state
-        // const d119ElementInitial = document.querySelector('td[data-field-id="d_119"]');
-        // const j115ElementInitial = document.querySelector('td[data-field-id="j_115"]');
-        // console.log(`[S13 Init] Initial d_119 textContent: "${d119ElementInitial?.textContent}"`);
-        // console.log(`[S13 Init] Initial j_115 textContent: "${j115ElementInitial?.textContent}"`);
-
         if (window.TEUI?.StateManager?.setValue) {
-            // window.TEUI.StateManager.setValue('k_120', '0.9', 'default'); // Default to 90% << OLD BEHAVIOR
-            window.TEUI.StateManager.setValue('k_120', '90', 'default');    // CORRECTED: Default to 90 (string) for 90%
+            window.TEUI.StateManager.setValue('k_120', '90', 'default');    // Default to 90 (string) for 90%
         }
         initializeEventHandlers();
         registerWithStateManager();
@@ -1640,29 +1607,20 @@ window.TEUI.SectionModules.sect13 = (function() {
             const fields = getFields(); // Get field definitions for this section
             Object.entries(fields).forEach(([fieldId, fieldDef]) => {
                 // Check if it's one of the problematic editable fields with a defined default
-                if ((fieldId === 'd_119' || fieldId === 'j_115' || fieldId === 'l_118') && fieldDef.defaultValue) { // ADDED l_118
+                if ((fieldId === 'd_119' || fieldId === 'j_115' || fieldId === 'l_118') && fieldDef.defaultValue) {
                     // Check if StateManager *doesn't* already have a value (to avoid overwriting user/imported data later)
                     if (window.TEUI.StateManager.getValue(fieldId) === null) {
-                        // console.log(`[S13 Init Defaults] Setting default for ${fieldId} to ${fieldDef.defaultValue}`);
                         window.TEUI.StateManager.setValue(fieldId, fieldDef.defaultValue, 'default');
                     }
-                    // else {
-                    //    console.log(`[S13 Init Defaults] StateManager already has value for ${fieldId}: ${window.TEUI.StateManager.getValue(fieldId)}`);
-                    // }
                 }
             });
         }
-        // --- END ADDED --- 
         
-        // Log DOM state BEFORE calculateAll
-        // console.log(`[S13 Init] BEFORE calculateAll - d_119 textContent: "${d119ElementInitial?.textContent}"`);
-        // console.log(`[S13 Init] BEFORE calculateAll - j_115 textContent: "${j115ElementInitial?.textContent}"`);
-
         calculateAll(); // Run initial calculations first
 
         // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
         if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
-            const fieldsToUpdate = ['d_119', 'j_115', 'l_118']; // ADDED l_118
+            const fieldsToUpdate = ['d_119', 'j_115', 'l_118'];
             fieldsToUpdate.forEach(fieldId => {
                 const element = document.querySelector(`td[data-field-id="${fieldId}"]`);
                 const stateValue = window.TEUI.StateManager.getValue(fieldId);
@@ -1671,18 +1629,15 @@ window.TEUI.SectionModules.sect13 = (function() {
                     if (!isNaN(numericValue)) {
                         const formatType = 'number-2dp'; // Assuming 2 decimal places for both
                         const formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
-                        // console.log(`[S13 Init Display Fix] Setting ${fieldId} textContent to: "${formattedDisplay}" from state value "${stateValue}"`);
                         element.textContent = formattedDisplay;
                     }
                 }
             });
         }
-        // --- END ADDED ---
 
         // Set initial ghosting state after calculations might have populated values
         setTimeout(() => { // Use timeout to ensure initial state is settled
             const initialHeatingSystem = getFieldValue('d_113') || 'Heatpump'; // Get current value or default
-            // console.log(`[S13 Ghosting] Setting initial ghosting based on system: ${initialHeatingSystem}`);
             handleHeatingSystemChangeForGhosting(initialHeatingSystem);
         }, 100); // Short delay might be needed
     }
@@ -1691,14 +1646,14 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Register this section's dependencies with StateManager
      */
     function registerWithStateManager() {
-        console.log('[S13 DEBUG] registerWithStateManager called');
+        // console.log('[S13 DEBUG] registerWithStateManager called'); // REMOVED DEBUG
         
         if (!window.TEUI || !window.TEUI.StateManager) {
             console.warn('[S13] StateManager not available for registration');
             return;
         }
 
-        console.log('[S13 DEBUG] StateManager found:', !!window.TEUI.StateManager);
+        // console.log('[S13 DEBUG] StateManager found:', !!window.TEUI.StateManager); // REMOVED DEBUG
         const sm = window.TEUI.StateManager;
 
         try {
@@ -1715,7 +1670,7 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.registerDependency('h_124', 'm_129'); // Free cooling affects mitigated load
             sm.registerDependency('d_123', 'm_129'); // Ventilation recovery affects mitigated load
 
-            console.log('[S13 DEBUG] Dependencies registered, checking registerCalculation method:', !!sm.registerCalculation);
+            // console.log('[S13 DEBUG] Dependencies registered, checking registerCalculation method:', !!sm.registerCalculation); // REMOVED DEBUG
 
             // *** IT-DEPENDS PHASE 1 - FIRST REGISTRATION ***
             // Register calculation for d_115 (Total Heating Fuel Impact)
@@ -1869,10 +1824,10 @@ window.TEUI.SectionModules.sect13 = (function() {
             // Validate all registrations
             const expectedCalculations = ['d_115', 'h_113', 'j_113', 'd_114', 'l_113', 'f_115', 'h_115', 'l_115', 'f_114'];
             const registeredCount = expectedCalculations.filter(id => sm.hasCalculation && sm.hasCalculation(id)).length;
-            console.log(`[S13 DEBUG] Validation: ${registeredCount}/${expectedCalculations.length} calculations registered successfully`);
+            // console.log(`[S13 DEBUG] Validation: ${registeredCount}/${expectedCalculations.length} calculations registered successfully`); // REMOVED DEBUG
             
             if (registeredCount === expectedCalculations.length) {
-                console.log('✅ [S13] IT-DEPENDS comprehensive registration complete - All heating calculations active');
+                console.log('✅ [S13] IT-DEPENDS system fully operational - All heating calculations registered');
             } else {
                 console.warn('⚠️ [S13] Some IT-DEPENDS calculations failed to register');
             }
@@ -1887,7 +1842,7 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateCOPValues() {
         // Add recursion protection
         if (window.TEUI.sect13.calculatingCOP) {
-            console.log('[S13 COP] ⏸️ COP calculation already in progress, skipping...');
+            // console.log('[S13 COP] ⏸️ COP calculation already in progress, skipping...'); // REMOVED DEBUG
             return;
         }
         window.TEUI.sect13.calculatingCOP = true;
@@ -1914,7 +1869,7 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateHeatingSystem() {
         // Add recursion protection
         if (window.TEUI.sect13.calculatingHeating) {
-            console.log('[S13 HEATING] ⏸️ Heating calculation already in progress, skipping...');
+            // console.log('[S13 HEATING] ⏸️ Heating calculation already in progress, skipping...'); // REMOVED DEBUG
             return;
         }
         window.TEUI.sect13.calculatingHeating = true;
@@ -1954,15 +1909,10 @@ window.TEUI.SectionModules.sect13 = (function() {
                 // Not a Heatpump - Use TEDI directly, sink is 0
                 heatingDemand_d114 = tedTarget;
                 heatingSink_l113 = 0;
-                // --- Add Log for j_115 --- 
-                const current_j115 = getFieldValue('j_115');
-                // console.log(`[S13 DEBUG] Switching away from Heatpump. Current j_115 state: "${current_j115}". Forcing COPs to 1/0.`);
-                // --- End Log ---
                 // Force COP values for non-heatpump systems
                 setCalculatedValue('h_113', 1.0, 'number-2dp'); 
                 setCalculatedValue('j_113', 0.0, 'number-1dp'); 
                 setCalculatedValue('j_114', 0.0, 'number-1dp'); // CEER is also 0
-                // NOTE: We are NOT explicitly setting j_115 here, relying on its default/user value.
             }
             
             setCalculatedValue('d_114', heatingDemand_d114, 'number-2dp-comma'); 
@@ -1979,11 +1929,9 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Calculate heating fuel impact for gas and oil systems
      */
     function calculateHeatingFuelImpact() {
-        // console.log("[S13 DEBUG] Entering calculateHeatingFuelImpact"); // LOG ENTRY
         const systemType = getFieldValue('d_113');
         const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
         const afue = window.TEUI.parseNumeric(getFieldValue('j_115')) || 1; // Read current AFUE
-        // console.log(`[S13 DEBUG] calculateHeatingFuelImpact using AFUE (j_115) = ${afue}`); // LOG AFUE value used
         const heatingDemand_d114 = window.TEUI.parseNumeric(getFieldValue('d_114')) || 0;
         
         let fuelImpact = 0, oilLitres = 0, gasM3 = 0, exhaust = 0;
@@ -2050,7 +1998,7 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateCoolingSystem() {
         // Add recursion protection
         if (window.TEUI.sect13.calculatingCooling) {
-            console.log('[S13 COOLING] ⏸️ Cooling calculation already in progress, skipping...');
+            // console.log('[S13 COOLING] ⏸️ Cooling calculation already in progress, skipping...'); // REMOVED DEBUG
             return;
         }
         window.TEUI.sect13.calculatingCooling = true;
@@ -2081,7 +2029,6 @@ window.TEUI.SectionModules.sect13 = (function() {
                          coolingSink_l114 = 0;
                     }
                     coolingSink_l116 = 0;
-                     // Note: Original logic had a duplicate assignment here `coolingSink_l114 = 0;`, removed.
                 } else {
                     copcool_to_use = copcool_dedicated_h116; 
                      if (copcool_to_use > 0) {
@@ -2145,17 +2092,14 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateVentilationRates() {
         // Use helper defined in this module
         const ratePerPerson = getNumericValue('d_119'); 
-        // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson}`); // Log value read
         const cfm = ratePerPerson * 2.11888;
         const m3hr = ratePerPerson * 3.6;
         setCalculatedValue('f_119', cfm, 'number-2dp');
         setCalculatedValue('h_119', m3hr, 'number-2dp');
-        // console.log(`[S13 CalcVentRates] Calculated f_119: ${cfm}, h_119: ${m3hr}`); // Log calculated values
 
         // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
         const ventMethod = getFieldValue('g_118'); // This was likely causing issues, use getNumericValue/parseNum if needed
         const ratePerPerson_d119 = window.TEUI.parseNumeric(getFieldValue('d_119')) || 0;
-        // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
         const volume = window.TEUI.parseNumeric(getFieldValue('d_105')) || 0;
         const ach = window.TEUI.parseNumeric(getFieldValue('l_118')) || 0;
         const occupiedHours = window.TEUI.parseNumeric(getFieldValue('i_63')) || 0;
@@ -2343,19 +2287,15 @@ window.TEUI.SectionModules.sect13 = (function() {
     function calculateAll() {
         // Add recursion protection for Section 13
         if (window.TEUI.sect13.calculationInProgress) {
-            console.log('[S13 TRAFFIC COP] ⏸️ Calculation already in progress, skipping...');
+            // console.log('[S13 TRAFFIC COP] ⏸️ Calculation already in progress, skipping...'); // REMOVED DEBUG
             return;
         }
         
         window.TEUI.sect13.calculationInProgress = true;
         
         try {
-            // console.log("[Section13] Running dual-engine calculations..."); // Ensure this is commented
-            
             calculateReferenceModel();
             calculateTargetModel();
-            
-            // console.log("[Section13] Dual-engine calculations complete"); // Ensure this is commented
         } finally {
             window.TEUI.sect13.calculationInProgress = false;
         }
@@ -2366,7 +2306,6 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        // console.log("[Section13] Running Reference Model calculations..."); // Ensure this is commented
         try {
             // For Reference calculations, we need to use reference values from StateManager
             // Since cooling physics are complex, we'll run them separately for Reference
@@ -2395,9 +2334,6 @@ window.TEUI.SectionModules.sect13 = (function() {
                 // Note: Full implementation would calculate all dependent values
                 // For now, storing key reference values that might be needed by other sections
             }
-            
-            // console.log("[Section13] Reference Model values stored"); // Comment out
-        // console.log("[Section13] Reference Model values stored");
         } catch (error) {
             console.error('[Section13] Error in Reference Model calculations:', error);
         }
@@ -2408,7 +2344,6 @@ window.TEUI.SectionModules.sect13 = (function() {
      * This is the existing calculateAll logic, refactored
      */
     function calculateTargetModel() {
-        // console.log("[Section13] Running Target Model calculations..."); // Ensure this is commented
         try {
             // Run cooling physics *first* to update coolingState centrally
             runIntegratedCoolingCalculations(); 
@@ -2838,7 +2773,6 @@ function setFieldDisabled(fieldId, isDisabled) {
  * @param {boolean} shouldBeGhosted 
  */
 function setFieldGhosted(fieldId, shouldBeGhosted) {
-    // console.log(`[S13 Ghosting] Setting ghosted=${shouldBeGhosted} for field ${fieldId}`); // Add log
     const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
     
     if (valueCell) {
@@ -2863,8 +2797,6 @@ function setFieldGhosted(fieldId, shouldBeGhosted) {
             // Optional stricter check: if (labelCell && labelCell.classList.contains('label-prefix')) { ... }
             labelCell.classList.toggle('disabled-input', shouldBeGhosted);
         }
-    } else {
-        // console.warn(`Ghosting: Element for field ${fieldId} not found.`);
     }
 }
 
@@ -2873,7 +2805,6 @@ function setFieldGhosted(fieldId, shouldBeGhosted) {
  */
 function handleHeatingSystemChangeForGhosting(newValue) {
     const systemType = newValue; // e.g., "Gas", "Oil", "Heatpump", "Electricity"
-    // console.log(`[S13 Ghosting] System changed to: ${systemType}`); // Log system type
 
     // Determine active state based on system type
     const isHP = systemType === 'Heatpump';
@@ -2935,9 +2866,7 @@ function handleHeatingSystemChangeForGhosting(newValue) {
                 setFieldGhosted('j_115', !isFossilFuel);
             }
         });
-    } else {
-        // console.warn("[S13 Ghosting] Could not find row TR element for M.2.2");
-    } 
+    }
 }
 
 //==========================================================================
