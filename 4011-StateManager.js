@@ -162,6 +162,37 @@ TEUI.StateManager = (function() {
     // Track warnings to avoid spam during IT-DEPENDS migration
     const warnedMissingCalculations = new Set();
     
+    // ============================================================================
+    // GLOBAL RECURSION PROTECTION FOR IT-DEPENDS MIGRATION
+    // ============================================================================
+    
+    // Track active calculation chains to prevent cross-section recursion
+    const activeSections = new Set();
+    const globalCalculationDepth = { current: 0 };
+    const MAX_GLOBAL_DEPTH = 3;
+    
+    /**
+     * Check if we should allow cross-section calculations during IT-DEPENDS migration
+     * @param {string} triggeringSection - The section that started the calculation 
+     * @param {string} targetSection - The section being triggered
+     * @returns {boolean} Whether to allow the calculation
+     */
+    function shouldAllowCrossSectionCalculation(triggeringSection, targetSection) {
+        // During IT-DEPENDS migration, limit cross-section cascading
+        if (globalCalculationDepth.current >= MAX_GLOBAL_DEPTH) {
+            console.warn(`[StateManager] 🚨 Cross-section recursion protection: depth ${globalCalculationDepth.current}, blocking ${triggeringSection} → ${targetSection}`);
+            return false;
+        }
+        
+        // Prevent immediate back-and-forth between same sections
+        if (activeSections.has(targetSection)) {
+            console.warn(`[StateManager] 🚨 Cross-section recursion protection: ${targetSection} already active, blocking feedback loop`);
+            return false;
+        }
+        
+        return true;
+    }
+    
     /**
      * Initialize the state manager
      */
@@ -1434,6 +1465,17 @@ TEUI.StateManager = (function() {
      * @param {string} changedFieldId - The field that changed, triggering calculations
      */
     function triggerFieldCalculation(changedFieldId) {
+        // ⚠️ INPUT VALIDATION: Essential validation checks
+        if (typeof changedFieldId === 'number') {
+            console.warn(`[StateManager] triggerFieldCalculation received numeric fieldId: ${changedFieldId}. Skipping calculation.`);
+            return;
+        }
+        
+        if (!changedFieldId || typeof changedFieldId !== 'string') {
+            console.warn(`[StateManager] triggerFieldCalculation requires valid string fieldId, got: ${changedFieldId}`);
+            return;
+        }
+        
         // ⚠️ RECURSION PROTECTION: Prevent infinite loops
         if (calculationInProgress) {
             console.warn(`[StateManager] Recursion detected: already calculating for ${changedFieldId}`);
@@ -1444,21 +1486,24 @@ TEUI.StateManager = (function() {
             console.warn(`[StateManager] Maximum calculation depth (${MAX_CALCULATION_DEPTH}) reached for ${changedFieldId}`);
             return;
         }
+
+        // 🛡️ GLOBAL CROSS-SECTION PROTECTION
+        globalCalculationDepth.current++;
         
-        calculationInProgress = true;
-        calculationDepth++;
+        // Determine which section this field belongs to
+        const currentSection = changedFieldId.includes('_') ? 
+            `S${changedFieldId.split('_')[1].substring(0, 2)}` : 'Unknown';
         
-        try {
-            // Validate input - prevent numeric fieldIds from being processed
-            if (typeof changedFieldId === 'number') {
-                console.warn(`[StateManager] triggerFieldCalculation received numeric fieldId: ${changedFieldId}. Skipping calculation.`);
-            return;
+        if (globalCalculationDepth.current > 1) {
+            console.log(`[StateManager] 🌐 Cross-section calculation: ${currentSection} (global depth: ${globalCalculationDepth.current})`);
         }
         
-            if (!changedFieldId || typeof changedFieldId !== 'string') {
-                console.warn(`[StateManager] triggerFieldCalculation requires valid string fieldId, got: ${changedFieldId}`);
-                return;
-            }
+        // Add current section to active set
+        activeSections.add(currentSection);
+        
+        try {
+            calculationInProgress = true;
+            calculationDepth++;
             
             console.log(`[StateManager] Triggering calculations for changed field: ${changedFieldId} (depth: ${calculationDepth})`);
             
@@ -1478,6 +1523,17 @@ TEUI.StateManager = (function() {
             
             // Execute calculations for dependent fields
             for (const fieldId of dependentFields) {
+                const targetSection = fieldId.includes('_') ? 
+                    `S${fieldId.split('_')[1].substring(0, 2)}` : 'Unknown';
+                    
+                // Check cross-section permission before calculating
+                if (currentSection !== targetSection) {
+                    if (!shouldAllowCrossSectionCalculation(currentSection, targetSection)) {
+                        console.log(`[StateManager] ⏸️ Skipping cross-section calculation: ${currentSection} → ${targetSection} (${fieldId})`);
+                        continue;
+                    }
+                }
+                
                 if (fieldCalculations.has(fieldId)) {
                     try {
                         console.log(`[StateManager] Executing calculation for: ${fieldId}`);
@@ -1494,19 +1550,26 @@ TEUI.StateManager = (function() {
                 } else {
                     // Field has dependencies but no calculation function
                     // Only warn once per field to reduce spam during migration
-                    if (!warnedMissingCalculations.has(fieldId)) {
+                    const warningKey = `${fieldId}_missing`;
+                    if (!warnedMissingCalculations.has(warningKey)) {
                         console.warn(`[StateManager] No calculation function registered for dependent field: ${fieldId} (migration warning - shown once)`);
-                        warnedMissingCalculations.add(fieldId);
+                        warnedMissingCalculations.add(warningKey);
                     }
                 }
             }
+            
         } catch (error) {
             console.error(`[StateManager] Error in triggerFieldCalculation for ${changedFieldId}:`, error);
         } finally {
+            calculationInProgress = false;
             calculationDepth--;
-            if (calculationDepth <= 0) {
-                calculationInProgress = false;
-                calculationDepth = 0; // Reset to 0 when we're done
+            
+            // Clean up global tracking
+            activeSections.delete(currentSection);
+            globalCalculationDepth.current--;
+            
+            if (globalCalculationDepth.current === 0) {
+                console.log(`[StateManager] ✅ Global calculation chain complete`);
             }
         }
     }
