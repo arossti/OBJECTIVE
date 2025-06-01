@@ -134,23 +134,26 @@ function handleFieldBlur(event) {
 
 **Critical Achievement**: S10→S11→S01 dependency chain now working with IT-DEPENDS architecture!
 
+**🚨 HEMISPHERE SEPARATION IMPERATIVE**: IT-DEPENDS migration is essential for **dual-engine hemisphere integrity**. Traditional `calculateAll()` listeners in dual-engine sections create contamination risks where Reference and Application calculations may accidentally read from wrong state hemispheres. IT-DEPENDS provides explicit hemisphere separation through dedicated calculation functions.
+
 ```
 S10 Building Geometry Changes (IT-DEPENDS)
     ↓ Area sync with dependency triggers
-S11 Envelope Heat Loss/Gain (HYBRID)
+S11 Envelope Heat Loss/Gain (HYBRID - needs completion for hemisphere separation)
     ↓ StateManager propagation
 S12 Combined U-values (Traditional)
     ↓ Cross-section integration
-S15 Energy Calculations (Traditional)
+S15 Energy Calculations (Traditional - dual-engine, needs IT-DEPENDS)
     ↓ Dual-engine calculations
-S01 Reference & Target TEUI Models (Traditional)
+S01 Reference & Target TEUI Models (Traditional - dual-engine, needs IT-DEPENDS)
 ```
 
 **What This Proves**: 
 - IT-DEPENDS architecture works across section boundaries
 - Hybrid sections can coexist with traditional sections
 - Dependency-driven calculations eliminate calculation storms
-- Performance improvement path is viable
+- **Hemisphere separation is achievable** through explicit IT-DEPENDS calculations
+- **Foundation exists for reference model completion**
 
 #### **🎯 HYBRID IT-DEPENDS Benefits**
 

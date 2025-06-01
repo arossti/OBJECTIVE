@@ -1,6 +1,6 @@
 # IT-DEPENDS MIGRATION STATUS
 
-**Status as of**: 2025-01-20  
+**Status as of**: 2025-06-01 5.25pm EST  
 **Branch**: IT-DEPENDS  
 **Commit**: Post-S10→S11 Area Sync Fix
 
@@ -9,6 +9,10 @@
 **CRITICAL BREAKTHROUGH**: We have achieved **end-to-end dependency flow** from S10 building geometry changes through S11 envelope calculations to S01 final TEUI results, proving the IT-DEPENDS architecture works across section boundaries.
 
 The S10→S11 area sync issue has been resolved, eliminating the need for manual thermal bridge slider manipulation to trigger S11 calculations. Changes now flow automatically through the proper dependency chains.
+
+**🚨 HEMISPHERE SEPARATION IMPERATIVE**: The primary driver for completing IT-DEPENDS migration is **dual-engine hemisphere integrity**. Traditional `calculateAll()` listeners create contamination risks where Reference and Application calculations may accidentally read from wrong state hemispheres. IT-DEPENDS provides explicit hemisphere separation through dedicated calculation functions, which is **essential for proper reference model implementation**.
+
+This branch serves as a **prerequisite for reference model completion** - we cannot safely implement dual-engine calculations without guaranteed hemisphere separation that only IT-DEPENDS provides.
 
 ## 📊 MIGRATION STATUS BY SECTION
 
@@ -127,20 +131,24 @@ RESULT: S01 Reference & Target TEUI Updated
 
 ## 🎯 NEXT STEPS
 
-### Immediate (Current Sprint)
-1. **Commit current changes** - Major milestone achieved
-2. **S13 Phase 3**: Complete S13 migration to replace traditional listeners
-3. **Documentation**: Update user guides to reflect new behavior
+### Immediate (Current Sprint) - HEMISPHERE SEPARATION PRIORITY
+1. **Complete S11 IT-DEPENDS migration** - Critical for hemisphere separation integrity
+2. **Complete S13 Phase 3** - Replace traditional listeners with IT-DEPENDS triggers  
+3. **Commit milestone** - Establish foundation for reference model work
 
-### Medium Term  
-1. **S12 Migration**: Consider IT-DEPENDS for thermal bridge penalty calculations
-2. **Performance Analysis**: Measure performance improvements in production
-3. **Migration Template**: Create standardized approach for remaining sections
+### Medium Term - DUAL-ENGINE REFACTOR SEQUENCE
+**Planned refactor order for hemisphere separation compliance:**
+1. **S07**: Domestic Hot Water - dual-engine section
+2. **S05**: Embodied Carbon - dual-engine section  
+3. **S04**: Emissions - dual-engine section
+4. **S14**: Energy Demands - dual-engine section
+5. **S15**: Energy Use Intensity - dual-engine section  
+6. **S01**: Summary Dashboard - dual-engine section
 
-### Long Term
-1. **Complete Migration**: Migrate remaining traditional sections as needed
-2. **Pure IT-DEPENDS**: Remove traditional backup systems where no longer needed
-3. **Performance Optimization**: Optimize dependency chains for maximum efficiency
+### Long Term - REFERENCE MODEL COMPLETION
+1. **Implement reference model calculations** with guaranteed hemisphere separation
+2. **Performance optimization** of pure IT-DEPENDS dependency chains
+3. **Remove traditional backup systems** where no longer needed
 
 ## 🏗️ ARCHITECTURAL LESSONS LEARNED
 
@@ -149,17 +157,20 @@ RESULT: S01 Reference & Target TEUI Updated
 2. **Section Autonomy**: Sections manage internal math, StateManager handles orchestration  
 3. **Incremental Migration**: Can migrate sections one at a time without breaking others
 4. **Cross-Section Integration**: IT-DEPENDS works across section boundaries
+5. **Hemisphere Separation**: IT-DEPENDS provides explicit Reference/Application state isolation
 
 ### ❌ What Doesn't Work
 1. **Pure IT-DEPENDS Micromanagement**: Too much StateManager coordination overhead
 2. **Breaking Section Responsibility**: Sections losing control of internal calculations
 3. **Premature Optimization**: Migrating working systems without clear benefit
+4. **Traditional Listeners in Dual-Engine Sections**: Risk of hemisphere contamination
 
 ### 🎯 Golden Rules for Future Migration
 1. **Preserve working code** - add IT-DEPENDS as enhancement, not replacement
 2. **Section-first approach** - sections handle internal math efficiently
 3. **StateManager orchestration** - use for cross-section integration only
 4. **Incremental and safe** - hybrid approach allows testing before full migration
+5. **Hemisphere separation first** - dual-engine sections require explicit state isolation
 
 ## 🚨 CRITICAL SUCCESS METRICS
 
@@ -172,6 +183,11 @@ RESULT: S01 Reference & Target TEUI Updated
 - All existing functionality preserved
 - Backup systems ensure stability
 - Clear rollback path available
+
+### Hemisphere Separation ✅ (Partial - Needs Completion)
+- S03, S10: Pure IT-DEPENDS with explicit state isolation
+- S11, S13: Hybrid with contamination risk from traditional listeners
+- **Critical**: Complete IT-DEPENDS migration for dual-engine sections
 
 ### Developer Experience ✅
 - Detailed logging for debugging
