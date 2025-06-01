@@ -63,8 +63,11 @@ window.TEUI.SectionModules.sect10 = (function() {
     function setCalculatedValue(fieldId, rawValue, format = 'number') {
         // Handle N/A for non-finite numbers
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) { 
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (element) element.textContent = 'N/A';
+            // ✅ ARCHITECTURAL COMPLIANCE: Store N/A in StateManager, not direct DOM manipulation
+            // This follows The Word: "StateManager is the ONLY source of truth for all calculated values"
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
+            }
             return; 
         }
 
@@ -140,12 +143,9 @@ window.TEUI.SectionModules.sect10 = (function() {
             // console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
         }
 
-        // Trigger recalculation using the standardized calculateAll function
-        if (typeof calculateAll === 'function') {
-            calculateAll();
-        } else {
-            console.error('calculateAll function not found in Section 10');
-        }
+        // ✅ ARCHITECTURAL COMPLIANCE: No manual calculation triggers in IT-DEPENDS sections
+        // StateManager.setValue() will automatically trigger dependent calculations via registered dependencies
+        // This follows The Word: "Dependencies drive calculations - no manual triggers in IT-DEPENDS sections"
     }
 
     function setElementClass(fieldId, className) {
@@ -238,12 +238,9 @@ window.TEUI.SectionModules.sect10 = (function() {
             }
         }
         
-        // Update DOM display
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
-            element.textContent = formattedValue;
-        }
+        // ✅ ARCHITECTURAL COMPLIANCE: No direct DOM manipulation
+        // DOM updates happen via StateManager listeners - following The Word
+        // This ensures single source of truth and proper state management
     }
 
     //==========================================================================
@@ -1810,10 +1807,9 @@ window.TEUI.SectionModules.sect10 = (function() {
                     displayElement.textContent = `${this.value}%`;
                 }
                 
-                // Recalculate immediately (fixed setTimeout performance violation)
-                if (!window.sectionCalculationInProgress) {
-                    calculateAll();
-                }
+                // ✅ ARCHITECTURAL COMPLIANCE: No manual calculation triggers in IT-DEPENDS sections
+                // StateManager.setValue() will automatically trigger dependent calculations via registered dependencies
+                // This follows The Word: "Dependencies drive calculations - no manual triggers in IT-DEPENDS sections"
             });
         });
     }
