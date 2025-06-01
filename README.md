@@ -3,6 +3,119 @@ Objective TEUI 4.011 Codebase
 
 NOTICE: This codebase is licensed under the [Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)](https://creativecommons.org/licenses/by-nd/4.0/).(see footnote, LICENSE file in root)
 
+---
+
+## 📖 **TEUI TECH BIBLE - ARCHITECTURAL FOUNDATION**
+*Essential guidance for all future development and AI assistance*
+
+### **🎯 WHAT WE'RE BUILDING: The Simple Truth**
+
+This is a **static energy modeller** equivalent to our Excel worksheets that runs two parallel building models:
+
+- **🟢 REPORT Model**: User's design values (equipment efficiency, envelope performance, etc.)
+- **🔵 REFERENCE Model**: Code minimum values (from building standard selected at `d_13`)
+
+**Same geometry, different performance values. That's it.**
+
+#### **Core Requirements**
+1. **Dual-Engine Calculations**: Both models run simultaneously without interference
+2. **State Isolation**: Reference values never contaminate Application values (and vice versa)
+3. **Single Source of Truth**: StateManager holds all values, DOM displays them
+4. **Code Compliance**: Reference model uses ReferenceValues.js based on `d_13` selection
+
+---
+
+### **🏛️ PROVEN ARCHITECTURE: "Traffic Cop" + Dual-Engine**
+
+#### **StateManager as Single Source of Truth**
+```javascript
+// ✅ CORRECT: All values go through StateManager
+function setCalculatedValue(fieldId, value) {
+    window.TEUI.StateManager.setValue(fieldId, value.toString(), 'calculated');
+    // DOM updates happen via StateManager listeners - NOT direct manipulation
+}
+
+// ❌ WRONG: Direct DOM manipulation breaks state truth
+function setCalculatedValue(fieldId, value) {
+    element.textContent = value; // ARCHITECTURAL VIOLATION
+}
+```
+
+#### **State Hemisphere Separation**
+```javascript
+// 🔵 REFERENCE HEMISPHERE: Pure code minimum values
+function calculateReferenceModel() {
+    const hspf = getRefStateValue('f_113');     // Always 7.1 (code minimum)
+    const uValue = getRefStateValue('g_85');    // Always from ReferenceValues.js
+    // Calculations using ONLY Reference values
+}
+
+// 🟢 APPLICATION HEMISPHERE: Pure user design values  
+function calculateApplicationModel() {
+    const hspf = getAppStateValue('f_113');     // User's equipment (could be 12.5)
+    const uValue = getAppStateValue('g_85');    // User's envelope design
+    // Calculations using ONLY Application values
+}
+```
+
+---
+
+### **🚨 ANTI-PATTERNS THAT FAILED (AVOID AT ALL COSTS)**
+
+#### **❌ Direct DOM Manipulation**
+**What Broke**: State inconsistency, lost single source of truth, debugging nightmares
+**Lesson**: ALL calculated values must go through StateManager ONLY
+
+#### **❌ Cross-State Contamination**
+**What Broke**: Reference model showed Application values, defeating dual-engine purpose
+**Lesson**: Reference and Application states must NEVER mix
+
+#### **❌ Multiple Calculation Triggers**
+**What Broke**: Competing triggers, calculation storms, recursion loops
+**Lesson**: Single Traffic Cop coordination pattern ONLY
+
+---
+
+### **🔧 IT-DEPENDS MIGRATION ARCHITECTURE**
+
+We're migrating from Traffic Cop pattern to IT-DEPENDS (dependency-ordered calculations) to eliminate manual triggers and race conditions. **Critical**: This migration must preserve proven architecture.
+
+#### **✅ Correct IT-DEPENDS Implementation**
+```javascript
+// Register calculation with StateManager (dependency-driven)
+sm.registerCalculation('i_80', function() {
+    const totalGains = window.TEUI.parseNumeric(getFieldValue('e_80')) || 0;
+    const utilizationFactor = window.TEUI.parseNumeric(getFieldValue('g_80')) || 0;
+    return totalGains * utilizationFactor;
+}, 'Section 10: Net Usable Gains (kWh/yr)');
+
+// StateManager handles when/how calculation runs
+// StateManager updates DOM via listeners
+// NO direct DOM manipulation in calculation functions
+```
+
+#### **🎯 IT-DEPENDS Compliance Requirements**
+
+1. **StateManager-Only Writes**: All calculated values go to StateManager, zero direct DOM manipulation
+2. **Clean State Access**: `getFieldValue()` reads from StateManager only, no DOM fallbacks
+3. **Dependency-Only Triggering**: Remove traditional `calculateAll()` functions, let IT-DEPENDS handle orchestration
+4. **State Hemisphere Preservation**: Reference calculations use `ref_` prefixed values, Application uses main state values
+
+---
+
+### **⚠️ CRITICAL SUCCESS FACTORS**
+
+#### **Non-Negotiable Principles**
+1. **StateManager is the ONLY source of truth** for all calculated values
+2. **Reference and Application states NEVER contaminate** each other
+3. **DOM is display-only** - never read calculation inputs from DOM
+4. **Dependencies drive calculations** - no manual triggers in IT-DEPENDS sections
+5. **One calculation method per field** - no competing calculation paths
+
+**Every migration must preserve the dual-engine state hemisphere separation that we fought so hard to achieve.**
+
+---
+
 # TEUI 4.011 Calculator - Modular Architecture Overview
 
 > **Note for Devs and AI Agents**: This document serves as a comprehensive reference for understanding the TEUI 4.011 Calculator architecture. It contains the critical design patterns, implementation details, and technical decisions needed to assist with continued development of the application.
@@ -451,42 +564,7 @@ This architecture ensures that changes propagate correctly through the system vi
 
 ## Project Status & Implementation Summary
 
-The TEUI 4.011 Calculator has been successfully transformed into a modular, maintainable web application that closely follows the structure of the original Excel-based energy modeling tool. 
-
-### 🚀 **Current Implementation Status (IT-DEPENDS Branch)**
-
-**✅ DEPENDENCY OPTIMIZATION - Phase 1 Complete (33%)**
-- **Infrastructure Built**: StateManager enhanced with calculation orchestration
-- **Methods Available**: `registerCalculation()`, `triggerFieldCalculation()`, `calculateDependencyChain()`
-- **Performance Tools**: Topological sorting, batch calculations, smart listeners
-- **Documentation**: Complete implementation guide and examples
-- **Demo Functions**: Working examples for testing and validation
-
-**⏳ DEPENDENCY OPTIMIZATION - Phases 2 & 3 Pending (67%)**
-- **Phase 2 Needed**: Migrate sections to register field-specific calculations
-- **Phase 3 Needed**: Replace manual `calculateAll()` calls with smart dependency triggering
-- **Target Outcome**: 70% reduction in calculation time through targeted recalculation
-
-**🔧 DUAL-ENGINE ARCHITECTURE - Partially Implemented**
-- **Working Sections**: S01, S04, S05, S13, S15 (cross-state contamination fixed)
-- **In Progress**: Section 11 (Reference hemisphere creation issues being resolved)
-- **Outstanding Issues**: Cross-section dependency flow, state contamination in some sections
-- **Status**: Blocked pending completion of IT-DEPENDS optimization for clean calculation order
-
-### 📈 **Expected Benefits Upon Completion**
-- **Performance**: 70% reduction in unnecessary calculations
-- **Responsiveness**: Instant UI updates with no "settling time"
-- **Reliability**: Guaranteed calculation consistency across all scenarios
-- **Maintainability**: Clean dependency-driven architecture
-
-### 🎯 **Next Implementation Priority**
-**Complete IT-DEPENDS Phase 2**: Migrate core calculations (Section 01 TEUI, Section 11 Transmission) to new dependency-driven system. This will likely resolve dual-engine cross-contamination issues by establishing proper calculation order.
-
----
-
-## Application Features
-
-The application features:
+The TEUI 4.011 Calculator has been successfully transformed into a modular, maintainable web application that closely follows the structure of the original Excel-based energy modeling tool. The application features:
 
 - **Modularized Architecture**: Core functionality divided into 15+ code modules
 - **Section-Based Organization**: Each section implements its own layout, data structures, and calculations
@@ -1107,7 +1185,7 @@ This section outlines planned improvements for the user experience of `contented
 
 **Primary Author:** Andrew Thomson  
 **Date:** 2022-2025  
-**  License:** Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)
+**License:** Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)
 *Document co-authored by Human Architect Andy Thomson, and... 
 **AI Agent Co-Authors:**
 *maintained and co-authored by: Cognizant Architect Gemini ("Cosmo") - May 2025*
