@@ -324,30 +324,114 @@ window.TEUI.SectionModules.sect11.checkITDependsStatus()
 
 ---
 
-## Next Priority: S11 Migration
+## ❌ **FAILED ATTEMPT: S11 Direct Migration (Reverted)**
 
-### 🎯 **S11 Wholesale Migration Using Proven S13 Method**
+### What We Tried
+**Date**: Previous session  
+**Approach**: Direct S11 wholesale migration using S13 pattern  
+**Result**: **COMPLETE FAILURE** - Reverted via `git reset --hard dc297bf`
 
-**Current State**: Section 11 has 50+ calculations registered but still uses traditional `calculateAll()` calls
+### Critical Architectural Violations Discovered
 
-**Migration Goal**: Apply the exact wholesale approach that succeeded for S13
+#### **1. Missing S10 StateManager Integration**
+- **Problem**: S11 depends on area values (d_73-d_78) from S10 via StateManager
+- **Issue**: S10 was still using traditional direct DOM copying, not StateManager integration
+- **Result**: S11 IT-DEPENDS calculations failed due to missing dependency data
 
-#### Pre-Migration Checklist
-1. ✅ **Create Offline Backup**: `cp sections/4011-Section11.js sections/4011-Section11-SAFE-OFFLINE.js`
+#### **2. IT-DEPENDS Execution Failure**
+- **Symptom**: 120+ calculations registered successfully, but **ZERO calculations executing**
+- **Evidence**: Logs showed registrations but no calculation triggers or results
+- **Impact**: Complete "table of zeros" - no transmission loss calculations working
+
+#### **3. Dual-Engine Separation Violations**
+- **Problem**: Lost proper Reference vs Application independence during migration
+- **Issue**: Mass code replacement broke proven dual-engine patterns
+- **Result**: Incorrect TEUI calculations and state contamination
+
+### Key Lessons Learned
+
+#### **❌ What DOESN'T Work**
+1. **Direct Section Migration**: Cannot migrate S11 before its dependencies (S10)
+2. **Mass Code Replacement**: Wholesale replacement without understanding working baseline
+3. **Architectural Shortcuts**: Bypassing StateManager single-source-of-truth principle
+
+#### **✅ What DOES Work (S13 Success Pattern)**
+1. **Incremental Enhancement**: Keep traditional system as backup during migration
+2. **Dependency-First**: Migrate data providers before data consumers
+3. **Methodical Testing**: Test each piece thoroughly before proceeding
+
+---
+
+## Next Priority: Corrected S10 → S11 Migration Sequence
+
+### 🎯 **Phase 1: S10 StateManager Integration (PREREQUISITE)**
+
+**Current State**: S10 provides area data (d_73-d_78) but doesn't store in StateManager  
+**Migration Goal**: Ensure S10 properly stores area values in StateManager for S11 consumption
+
+#### S10 Pre-Migration Checklist
+1. ✅ **Create Offline Backup**: User will create `sections/4011-Section10-SAFE-OFFLINE.js`
 2. ✅ **Stable Git Commit**: Commit baseline before starting
-3. ✅ **Study S13 Implementation**: Use `sections/4011-Section13.js` as template
-4. ✅ **Crisis Recovery Plan**: Ready to restore from offline backup if needed
+3. ✅ **Study Current S10**: Understand existing area calculation and storage patterns
+4. ✅ **StateManager Integration**: Ensure all area values (d_73-d_78) stored via `setValue()`
 
-#### Implementation Strategy
-- **Wholesale File Replacement**: Complete implementation, not incremental
-- **Use S13 Patterns**: Recursion protection, smart listeners, comprehensive registration
-- **Test Functions**: Build `testS11_ITDepends_Full()` and `checkS11ITDependsStatus()`
-- **Edge Case Handling**: Identify S11-specific scenarios (like Oil↔Gas was for S13)
+#### S10 Success Criteria
+- Area values (d_73-d_78) available in StateManager for S11 to read
+- Dual-engine independence maintained (Reference vs Application)
+- All existing S10 functionality preserved
+- Clean logs with no calculation failures
 
-#### Expected Outcome
-- **~70% Performance Improvement**: In thermal/transmission calculations
-- **Clean Dependency Chains**: Targeted recalculation based on actual changes
-- **Production Ready**: Clean codebase with comprehensive test suite
+### 🎯 **Phase 2: S11 Migration (AFTER S10 Complete)**
+
+**Current State**: S11 has IT-DEPENDS registrations but disabled smart listeners  
+**Migration Goal**: Enable pure IT-DEPENDS operation with S10 dependency data
+
+#### S11 Pre-Migration Checklist
+1. ✅ **Verify S10 Integration**: Confirm area values available in StateManager
+2. ✅ **Create Offline Backup**: `sections/4011-Section11-SAFE-OFFLINE.js`
+3. ✅ **Enable Smart Listeners**: Activate the disabled IT-DEPENDS system
+4. ✅ **Test Area Dependencies**: Verify S11 can read S10 data properly
+
+#### S11 Success Criteria
+- All transmission loss calculations working via IT-DEPENDS
+- Proper area source mapping from S10 data
+- Performance improvement (70% reduction in calculation time)
+- Clean dual-engine operation
+
+### 🛡️ **Risk Mitigation Strategy**
+1. **OFFLINE Backups**: Always maintain working file copies before major changes
+2. **Incremental Commits**: Commit after each successful phase
+3. **Dependency Validation**: Test data flow between sections before proceeding
+4. **Immediate Revert Plan**: Ready to restore from offline backup if needed
+
+---
+
+## Current Status
+
+### ✅ COMPLETE: Phase 1 - Foundation (100%)
+- **StateManager Infrastructure**: All calculation orchestration methods implemented
+- **Section 03**: Climate calculations fully migrated to IT-DEPENDS
+- **Core Methods**: `registerCalculation()`, `triggerFieldCalculation()`, dependency management
+- **Testing**: Demo functions operational, performance gains proven
+
+### ✅ COMPLETE: Section 13 - Mechanical Loads (100%)
+- **Status**: **FULLY MIGRATED** - Uses pure IT-DEPENDS system
+- **Performance**: ~70% reduction in calculation time achieved
+- **Calculations**: 9 comprehensive heating-related calculations registered and operational
+- **Edge Cases**: Oil↔Gas transitions working perfectly with dual detection system
+- **Architecture**: Clean separation of Reference vs Application models
+
+### 🔄 NEXT: Section 10 - StateManager Integration (0%)
+- **Status**: **READY TO BEGIN** - Traditional system working, needs StateManager integration
+- **Priority**: **HIGH** - Required prerequisite for S11 migration
+- **Approach**: Add StateManager storage while preserving existing functionality
+- **Goal**: Enable S11 to read area dependencies via StateManager
+
+### ⏳ FUTURE: Section 11 - Transmission Losses (0%)
+- **Status**: **WAITING FOR S10** - Cannot proceed until S10 StateManager integration complete
+- **Current State**: IT-DEPENDS registrations present but disabled
+- **Approach**: Enable existing IT-DEPENDS system after S10 provides required data
+- **Goal**: Pure IT-DEPENDS operation with 70% performance improvement
 
 ---
 
