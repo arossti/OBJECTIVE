@@ -1341,19 +1341,30 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.addListener('d_113', function(newValue, oldValue, fieldId) {
                 console.log(`[S13 IT-DEPENDS] 🔥 Heating system changed: ${oldValue} → ${newValue}`);
                 
-                // Trigger dependency chain for heating system (Section 13 only)
-                const heatingChain = ['h_113', 'j_113', 'd_114', 'l_113', 'd_115', 'f_115', 'h_115', 'l_115', 'f_114'];
+                // FIXED: Always trigger fuel-specific calculations when system type changes
+                // This ensures Oil↔Gas transitions work correctly even when heating demand stays the same
+                const fuelSpecificChain = ['f_115', 'h_115', 'l_115', 'f_114'];
+                console.log(`[S13 IT-DEPENDS] 🛠️ Forcing fuel-specific recalculations for Oil↔Gas transitions`);
+                
+                fuelSpecificChain.forEach(targetField => {
+                    if (sm.hasCalculation && sm.hasCalculation(targetField)) {
+                        console.log(`[S13 IT-DEPENDS] ⚡ Force triggering ${targetField}`);
+                        sm.triggerFieldCalculation(targetField);
+                    } else {
+                        console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`);
+                    }
+                });
+                
+                // Also trigger the main heating dependency chain
+                const heatingChain = ['h_113', 'j_113', 'd_114', 'l_113', 'd_115'];
                 heatingChain.forEach(targetField => {
                     if (sm.hasCalculation && sm.hasCalculation(targetField)) {
                         console.log(`[S13 IT-DEPENDS] ⚡ Triggering ${targetField}`);
                         sm.triggerFieldCalculation(targetField);
                     } else {
-                        console.log(`[S13 IT-DEPENDS] ⏭️ Skipping ${targetField} (not registered yet)`);
+                        console.log(`[S13 IT-DEPENDS] ⚠️ No calculation registered for ${targetField}`);
                     }
                 });
-                
-                // Handle ghosting
-                handleHeatingSystemChangeForGhosting(newValue);
             });
             
             // Smart listener for f_113 (HSPF) changes

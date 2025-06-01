@@ -163,7 +163,16 @@ TEUI.StateManager = (function() {
     const warnedMissingCalculations = new Set();
     
     // ============================================================================
+    // TODO: REMOVE AFTER IT-DEPENDS MIGRATION COMPLETE
     // GLOBAL RECURSION PROTECTION FOR IT-DEPENDS MIGRATION
+    // ============================================================================
+    // 
+    // This cross-section recursion protection is TEMPORARY and needed only during
+    // the migration phase when some sections use IT-DEPENDS (S13) and others use
+    // traditional calculateAll() systems (S1, etc.).
+    // 
+    // Once ALL sections are migrated to IT-DEPENDS, this protection can be 
+    // simplified significantly or removed entirely.
     // ============================================================================
     
     // Track active calculation chains to prevent cross-section recursion
@@ -172,7 +181,7 @@ TEUI.StateManager = (function() {
     const MAX_GLOBAL_DEPTH = 3;
     
     /**
-     * Check if we should allow cross-section calculations during IT-DEPENDS migration
+     * TODO: REMOVE AFTER MIGRATION - Check if we should allow cross-section calculations during IT-DEPENDS migration
      * @param {string} triggeringSection - The section that started the calculation 
      * @param {string} targetSection - The section being triggered
      * @returns {boolean} Whether to allow the calculation
@@ -1487,7 +1496,7 @@ TEUI.StateManager = (function() {
             return;
         }
 
-        // 🛡️ GLOBAL CROSS-SECTION PROTECTION
+        // 🛡️ GLOBAL CROSS-SECTION PROTECTION (TODO: REMOVE AFTER MIGRATION)
         globalCalculationDepth.current++;
         
         // Determine which section this field belongs to
@@ -1498,7 +1507,7 @@ TEUI.StateManager = (function() {
             console.log(`[StateManager] 🌐 Cross-section calculation: ${currentSection} (global depth: ${globalCalculationDepth.current})`);
         }
         
-        // Add current section to active set
+        // Add current section to active set (TODO: REMOVE AFTER MIGRATION)
         activeSections.add(currentSection);
         
         try {
@@ -1526,7 +1535,7 @@ TEUI.StateManager = (function() {
                 const targetSection = fieldId.includes('_') ? 
                     `S${fieldId.split('_')[1].substring(0, 2)}` : 'Unknown';
                     
-                // Check cross-section permission before calculating
+                // Check cross-section permission before calculating (TODO: REMOVE AFTER MIGRATION)
                 if (currentSection !== targetSection) {
                     if (!shouldAllowCrossSectionCalculation(currentSection, targetSection)) {
                         console.log(`[StateManager] ⏸️ Skipping cross-section calculation: ${currentSection} → ${targetSection} (${fieldId})`);
@@ -1564,7 +1573,7 @@ TEUI.StateManager = (function() {
             calculationInProgress = false;
             calculationDepth--;
             
-            // Clean up global tracking
+            // Clean up global tracking (TODO: REMOVE AFTER MIGRATION)
             activeSections.delete(currentSection);
             globalCalculationDepth.current--;
             
