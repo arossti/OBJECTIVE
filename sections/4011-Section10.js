@@ -143,9 +143,13 @@ window.TEUI.SectionModules.sect10 = (function() {
             // console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
         }
 
-        // ✅ ARCHITECTURAL COMPLIANCE: No manual calculation triggers in IT-DEPENDS sections
-        // StateManager.setValue() will automatically trigger dependent calculations via registered dependencies
-        // This follows The Word: "Dependencies drive calculations - no manual triggers in IT-DEPENDS sections"
+        // Trigger recalculation - RESTORE WORKING FUNCTIONALITY
+        // TODO: Determine proper IT-DEPENDS vs manual trigger architecture consistently
+        if (typeof calculateAll === 'function') {
+            calculateAll();
+        } else {
+            console.error('calculateAll function not found in Section 10');
+        }
     }
 
     function setElementClass(fieldId, className) {
@@ -1807,9 +1811,11 @@ window.TEUI.SectionModules.sect10 = (function() {
                     displayElement.textContent = `${this.value}%`;
                 }
                 
-                // ✅ ARCHITECTURAL COMPLIANCE: No manual calculation triggers in IT-DEPENDS sections
-                // StateManager.setValue() will automatically trigger dependent calculations via registered dependencies
-                // This follows The Word: "Dependencies drive calculations - no manual triggers in IT-DEPENDS sections"
+                // Trigger recalculation - RESTORE WORKING FUNCTIONALITY
+                // TODO: Determine proper IT-DEPENDS vs manual trigger architecture consistently
+                if (!window.sectionCalculationInProgress) {
+                    calculateAll();
+                }
             });
         });
     }
