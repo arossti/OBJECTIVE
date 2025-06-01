@@ -1107,7 +1107,7 @@ window.TEUI.SectionModules.sect11 = (function() {
                     const targetElement = document.querySelector(`[data-field-id="${targetFieldId}"]`);
                     if (targetElement) {
                         const numericValue = getNumericValue(sourceFieldId) || 0;
-                        targetElement.textContent = formatNumber(numericValue, 2);
+                        targetElement.textContent = formatNumber(numericValue, 'number');
                         // Recalculation will be triggered by StateManager listeners
                         // RESTORE: Direct calculation trigger for immediate reactivity
                         if (!window.sectionCalculationInProgress) {
