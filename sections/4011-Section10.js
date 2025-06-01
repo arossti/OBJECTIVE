@@ -1931,7 +1931,7 @@ window.TEUI.SectionModules.sect10 = (function() {
 
         // Add StateManager listeners for this section
         addStateManagerListeners();
-
+        
         // =============================================================================
         // IT-DEPENDS: CALCULATION ORCHESTRATION REGISTRATION
         // =============================================================================
