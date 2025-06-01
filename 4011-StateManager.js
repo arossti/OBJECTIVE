@@ -159,6 +159,9 @@ TEUI.StateManager = (function() {
     let calculationDepth = 0;
     const MAX_CALCULATION_DEPTH = 5;
     
+    // Track warnings to avoid spam during IT-DEPENDS migration
+    const warnedMissingCalculations = new Set();
+    
     /**
      * Initialize the state manager
      */
@@ -1489,7 +1492,12 @@ TEUI.StateManager = (function() {
                         console.error(`[StateManager] Error calculating ${fieldId}:`, calcError);
                     }
                 } else {
-                    console.warn(`[StateManager] No calculation function registered for dependent field: ${fieldId}`);
+                    // Field has dependencies but no calculation function
+                    // Only warn once per field to reduce spam during migration
+                    if (!warnedMissingCalculations.has(fieldId)) {
+                        console.warn(`[StateManager] No calculation function registered for dependent field: ${fieldId} (migration warning - shown once)`);
+                        warnedMissingCalculations.add(fieldId);
+                    }
                 }
             }
         } catch (error) {
