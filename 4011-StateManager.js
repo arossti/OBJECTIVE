@@ -1478,8 +1478,8 @@ TEUI.StateManager = (function() {
                 if (fieldCalculations.has(fieldId)) {
                     try {
                         console.log(`[StateManager] Executing calculation for: ${fieldId}`);
-                        const calculationFn = fieldCalculations.get(fieldId);
-                        const result = calculationFn();
+                        const calculationData = fieldCalculations.get(fieldId);
+                        const result = calculationData.fn();
                         
                         // Set the calculated value using appropriate state
                         setValue(fieldId, result, 'calculated');
