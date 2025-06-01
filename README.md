@@ -78,39 +78,70 @@ function calculateApplicationModel() {
 
 ### **🔧 IT-DEPENDS MIGRATION ARCHITECTURE**
 
-We're migrating from Traffic Cop pattern to IT-DEPENDS (dependency-ordered calculations) to eliminate manual triggers and race conditions. **Critical**: This migration must preserve proven architecture.
+We're migrating from Traffic Cop pattern to **HYBRID IT-DEPENDS** (dependency-ordered calculations for cross-section integration) while preserving section-internal calculation efficiency. **Critical**: This migration must preserve proven architecture.
 
-#### **✅ Correct IT-DEPENDS Implementation**
+#### **✅ HYBRID IT-DEPENDS ARCHITECTURE (The Working Solution)**
+
+**"Sections handle their own math, report sums to StateManager for orchestration"**
+
 ```javascript
-// Register calculation with StateManager (dependency-driven)
-sm.registerCalculation('i_80', function() {
-    const totalGains = window.TEUI.parseNumeric(getFieldValue('e_80')) || 0;
-    const utilizationFactor = window.TEUI.parseNumeric(getFieldValue('g_80')) || 0;
-    return totalGains * utilizationFactor;
-}, 'Section 10: Net Usable Gains (kWh/yr)');
+// ✅ SECTION-INTERNAL: Handle row-by-row calculations efficiently
+function calculateAll() {
+    // Section manages its own internal math (low StateManager traffic)
+    calculateOrientationGains();  // Internal calculations
+    calculateSubtotals();         // Internal calculations
+    calculateUtilizationFactors(); // Internal calculations
+}
 
-// StateManager handles when/how calculation runs
-// StateManager updates DOM via listeners
-// NO direct DOM manipulation in calculation functions
+// ✅ CROSS-SECTION: Store key outputs in StateManager for orchestration
+function calculateUtilizationFactors() {
+    const usableGains = totalGains * utilizationFactor;
+    
+    // Store key results in StateManager for other sections
+    setCalculatedValue('i_80', usableGains);  // Other sections can access this
+}
+
+// ✅ IT-DEPENDS: Enhancement for direct field triggers when needed
+sm.registerCalculation('i_80', function() {
+    // Available for cross-section triggers, but section handles internal logic
+    return calculateUtilizationFactorsDirect();
+});
+
+// ✅ MANUAL TRIGGERS: Preserve for user interactions
+function handleFieldBlur(event) {
+    // Store user input in StateManager
+    StateManager.setValue(fieldId, value, 'user-modified');
+    
+    // Trigger section's internal calculations
+    calculateAll(); // Section responsibility
+}
 ```
 
-#### **🎯 IT-DEPENDS Compliance Requirements**
+#### **🎯 HYBRID IT-DEPENDS Benefits**
 
-1. **StateManager-Only Writes**: All calculated values go to StateManager, zero direct DOM manipulation
-2. **Clean State Access**: `getFieldValue()` reads from StateManager only, no DOM fallbacks
-3. **Dependency-Only Triggering**: Remove traditional `calculateAll()` functions, let IT-DEPENDS handle orchestration
-4. **State Hemisphere Preservation**: Reference calculations use `ref_` prefixed values, Application uses main state values
+1. **Low StateManager Traffic**: Internal calculations stay within sections
+2. **Section Responsibility**: Each section manages its own mathematical complexity  
+3. **StateManager Orchestration**: Key outputs available for cross-section dependencies
+4. **Working Code Preserved**: Don't break existing functionality with premature optimization
+5. **Performance + Maintainability**: Best of both worlds
+
+#### **🚨 ANTI-PATTERN: Pure IT-DEPENDS Micromanagement**
+
+**What We Tried**: Register every field calculation with StateManager
+**What Broke**: Sections lost control of their internal calculation flow
+**Why It Failed**: Too much coordination overhead, broke working calculation chains
+**Lesson**: Sections should handle internal math, StateManager handles cross-section integration
 
 ---
 
 ### **⚠️ CRITICAL SUCCESS FACTORS**
 
 #### **Non-Negotiable Principles**
-1. **StateManager is the ONLY source of truth** for all calculated values
+1. **StateManager is the ONLY source of truth** for cross-section calculated values
 2. **Reference and Application states NEVER contaminate** each other
-3. **DOM is display-only** - never read calculation inputs from DOM
-4. **Dependencies drive calculations** - no manual triggers in IT-DEPENDS sections
-5. **One calculation method per field** - no competing calculation paths
+3. **Sections handle their own internal math** - StateManager handles cross-section orchestration
+4. **Key outputs flow through StateManager** - but internal calculations stay within sections
+5. **Manual triggers preserved for user interactions** - automatic dependencies for cross-section integration
 
 **Every migration must preserve the dual-engine state hemisphere separation that we fought so hard to achieve.**
 
