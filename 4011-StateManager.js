@@ -143,7 +143,7 @@ TEUI.StateManager = (function() {
     
     // Private properties
     let fields = new Map();           // Map of all field values
-    let dependencies = new Map();     // Map of field dependencies
+    let fieldDependencies = new Map();     // Map of field dependencies
     let calculatedFields = new Set(); // Set of fields that are calculated
     let dirtyFields = new Set();      // Fields needing recalculation
     let listeners = new Map();        // Field change listeners
@@ -156,6 +156,8 @@ TEUI.StateManager = (function() {
     let fieldCalculations = new Map();  // Map of field-specific calculation functions
     let calculationOrder = [];          // Cached topological sort order
     let calculationInProgress = false;  // Flag to prevent recursive calculations
+    let calculationDepth = 0;
+    const MAX_CALCULATION_DEPTH = 5;
     
     /**
      * Initialize the state manager
@@ -204,7 +206,7 @@ TEUI.StateManager = (function() {
             }
         });
         
-        // console.log(`Initialized state with ${fields.size} fields and ${dependencies.size} dependencies`);
+        // console.log(`Initialized state with ${fields.size} fields and ${fieldDependencies.size} dependencies`);
     }
     
     /**
@@ -212,7 +214,7 @@ TEUI.StateManager = (function() {
      */
     function clear() {
         fields.clear();
-        dependencies.clear();
+        fieldDependencies.clear();
         calculatedFields.clear();
         dirtyFields.clear();
         listeners.clear();
@@ -335,12 +337,12 @@ TEUI.StateManager = (function() {
      */
     function registerDependency(sourceId, targetId) {
         // Ensure source is in the dependency map
-        if (!dependencies.has(sourceId)) {
-            dependencies.set(sourceId, new Set());
+        if (!fieldDependencies.has(sourceId)) {
+            fieldDependencies.set(sourceId, new Set());
         }
         
         // Add target to source's dependencies
-        dependencies.get(sourceId).add(targetId);
+        fieldDependencies.get(sourceId).add(targetId);
         
         // Add target to calculated fields set
         calculatedFields.add(targetId);
@@ -364,12 +366,12 @@ TEUI.StateManager = (function() {
         visited.add(fieldId);
         
         // Skip if no dependencies
-        if (!dependencies.has(fieldId)) {
+        if (!fieldDependencies.has(fieldId)) {
             return;
         }
         
         // Get dependent fields
-        const dependents = dependencies.get(fieldId);
+        const dependents = fieldDependencies.get(fieldId);
         
         // Mark each dependent as dirty and recurse
         dependents.forEach(dependentId => {
@@ -546,8 +548,8 @@ TEUI.StateManager = (function() {
                 temp.add(fieldId);
                 
                 // Visit all dependents
-                if (dependencies.has(fieldId)) {
-                    dependencies.get(fieldId).forEach(depId => visit(depId));
+                if (fieldDependencies.has(fieldId)) {
+                    fieldDependencies.get(fieldId).forEach(depId => visit(depId));
                 }
                 
                 temp.delete(fieldId);
@@ -598,7 +600,7 @@ TEUI.StateManager = (function() {
     function getDebugInfo() {
         return {
             totalFields: fields.size,
-            totalDependencies: Object.keys(dependencies).length,
+            totalDependencies: Object.keys(fieldDependencies).length,
             calculatedFields: Array.from(calculatedFields),
             dirtyFields: Array.from(dirtyFields),
             registeredCalculations: fieldCalculations, // Expose the Map directly
@@ -926,7 +928,7 @@ TEUI.StateManager = (function() {
         const links = [];
 
         // Iterate through the dependencies map (source -> Set<target>)
-        dependencies.forEach((targets, sourceId) => {
+        fieldDependencies.forEach((targets, sourceId) => {
             // Add source node if not already added
             if (!nodes.has(sourceId)) {
                 nodes.set(sourceId, { id: sourceId });
@@ -1425,35 +1427,79 @@ TEUI.StateManager = (function() {
     }
     
     /**
-     * CALCULATION ORCHESTRATION: Trigger calculation for a specific field
-     * This replaces manual calculateAll() calls with targeted calculations
-     * @param {string} fieldId - The field ID to trigger calculation for
+     * CALCULATION ORCHESTRATION: Trigger calculation for a specific field and its dependents
+     * @param {string} changedFieldId - The field that changed, triggering calculations
      */
-    function triggerFieldCalculation(fieldId) {
-        // Validate that fieldId is actually a string field ID, not a value
-        if (typeof fieldId !== 'string' || fieldId.length === 0) {
-            console.warn(`[StateManager] Invalid field ID for calculation: ${fieldId} (type: ${typeof fieldId})`);
+    function triggerFieldCalculation(changedFieldId) {
+        // ⚠️ RECURSION PROTECTION: Prevent infinite loops
+        if (calculationInProgress) {
+            console.warn(`[StateManager] Recursion detected: already calculating for ${changedFieldId}`);
             return;
         }
         
-        // Check if this looks like a numeric value instead of a field ID
-        if (!isNaN(parseFloat(fieldId)) && isFinite(fieldId)) {
-            console.warn(`[StateManager] Received numeric value instead of field ID: ${fieldId}`);
+        if (calculationDepth >= MAX_CALCULATION_DEPTH) {
+            console.warn(`[StateManager] Maximum calculation depth (${MAX_CALCULATION_DEPTH}) reached for ${changedFieldId}`);
             return;
         }
         
-        if (!fieldCalculations.has(fieldId)) {
-            console.warn(`[StateManager] No calculation registered for field ${fieldId}`);
-            return;
-        }
+        calculationInProgress = true;
+        calculationDepth++;
         
         try {
-            const calculation = fieldCalculations.get(fieldId);
-            const result = calculation.fn();
-            console.log(`[StateManager] ✅ Executed calculation for ${fieldId}: ${result}`);
-            return result;
+            // Validate input - prevent numeric fieldIds from being processed
+            if (typeof changedFieldId === 'number') {
+                console.warn(`[StateManager] triggerFieldCalculation received numeric fieldId: ${changedFieldId}. Skipping calculation.`);
+                return;
+            }
+            
+            if (!changedFieldId || typeof changedFieldId !== 'string') {
+                console.warn(`[StateManager] triggerFieldCalculation requires valid string fieldId, got: ${changedFieldId}`);
+                return;
+            }
+            
+            console.log(`[StateManager] Triggering calculations for changed field: ${changedFieldId} (depth: ${calculationDepth})`);
+            
+            // Find all fields that depend on the changed field
+            const dependentFields = [];
+            if (fieldDependencies.has(changedFieldId)) {
+                const targetSet = fieldDependencies.get(changedFieldId);
+                dependentFields.push(...targetSet);
+            }
+            
+            if (dependentFields.length === 0) {
+                console.log(`[StateManager] No dependent calculations found for: ${changedFieldId}`);
+                return;
+            }
+            
+            console.log(`[StateManager] Found ${dependentFields.length} dependent fields: [${dependentFields.join(', ')}]`);
+            
+            // Execute calculations for dependent fields
+            for (const fieldId of dependentFields) {
+                if (fieldCalculations.has(fieldId)) {
+                    try {
+                        console.log(`[StateManager] Executing calculation for: ${fieldId}`);
+                        const calculationFn = fieldCalculations.get(fieldId);
+                        const result = calculationFn();
+                        
+                        // Set the calculated value using appropriate state
+                        setValue(fieldId, result, 'calculated');
+                        console.log(`[StateManager] Calculation complete for ${fieldId}: ${result}`);
+                        
+                    } catch (calcError) {
+                        console.error(`[StateManager] Error calculating ${fieldId}:`, calcError);
+                    }
+                } else {
+                    console.warn(`[StateManager] No calculation function registered for dependent field: ${fieldId}`);
+                }
+            }
         } catch (error) {
-            console.error(`[StateManager] ❌ Error calculating ${fieldId}:`, error);
+            console.error(`[StateManager] Error in triggerFieldCalculation for ${changedFieldId}:`, error);
+        } finally {
+            calculationDepth--;
+            if (calculationDepth <= 0) {
+                calculationInProgress = false;
+                calculationDepth = 0; // Reset to 0 when we're done
+            }
         }
     }
     
@@ -1614,8 +1660,8 @@ TEUI.StateManager = (function() {
                 temp.add(fieldId);
                 
                 // Visit all dependents first (fields that depend on this field)
-                if (dependencies.has(fieldId)) {
-                    dependencies.get(fieldId).forEach(dependentId => {
+                if (fieldDependencies.has(fieldId)) {
+                    fieldDependencies.get(fieldId).forEach(dependentId => {
                         // Only visit if it's in our target set
                         if (fieldsToOrder.includes(dependentId)) {
                             visit(dependentId);
@@ -1660,6 +1706,13 @@ TEUI.StateManager = (function() {
      */
     function getRegisteredCalculations() {
         return Array.from(fieldCalculations.keys());
+    }
+    
+    /**
+     * Check if we're already in a calculation to prevent recursion
+     */
+    function isCalculationInProgress() {
+        return calculationInProgress || calculationDepth > 0;
     }
     
     // Public API
