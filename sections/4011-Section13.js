@@ -1595,7 +1595,7 @@ window.TEUI.SectionModules.sect13 = (function() {
      */
     function onSectionRendered() {
         // console.log('[S13 DEBUG] onSectionRendered called'); // REMOVED DEBUG
-        
+
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue('k_120', '90', 'default');    // Default to 90 (string) for 90%
         }
@@ -1615,7 +1615,7 @@ window.TEUI.SectionModules.sect13 = (function() {
                 }
             });
         }
-        
+
         calculateAll(); // Run initial calculations first
 
         // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
@@ -1655,7 +1655,7 @@ window.TEUI.SectionModules.sect13 = (function() {
 
         // console.log('[S13 DEBUG] StateManager found:', !!window.TEUI.StateManager); // REMOVED DEBUG
         const sm = window.TEUI.StateManager;
-
+        
         try {
             // Register dependencies
             sm.registerDependency('d_113', 'h_113'); // System type affects HSPF COP
@@ -1848,16 +1848,16 @@ window.TEUI.SectionModules.sect13 = (function() {
         window.TEUI.sect13.calculatingCOP = true;
         
         try {
-            const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 0;
-            const systemType = getFieldValue('d_113');
-            let copheat = 1;
-            if (systemType === 'Heatpump' && hspf > 0) { copheat = hspf / 3.412; }
-            let copcool = Math.max(1, copheat - 1);
-            setCalculatedValue('h_113', copheat, 'number-2dp'); 
-            setCalculatedValue('j_113', copcool, 'number-1dp'); 
-            const ceer = 3.412 * copcool;
-            setCalculatedValue('j_114', ceer, 'number-1dp'); 
-            calculateHeatingSystem();
+        const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 0;
+        const systemType = getFieldValue('d_113');
+        let copheat = 1;
+        if (systemType === 'Heatpump' && hspf > 0) { copheat = hspf / 3.412; }
+        let copcool = Math.max(1, copheat - 1);
+        setCalculatedValue('h_113', copheat, 'number-2dp'); 
+        setCalculatedValue('j_113', copcool, 'number-1dp'); 
+        const ceer = 3.412 * copcool;
+        setCalculatedValue('j_114', ceer, 'number-1dp'); 
+        calculateHeatingSystem();
         } finally {
             window.TEUI.sect13.calculatingCOP = false;
         }
@@ -1875,51 +1875,51 @@ window.TEUI.SectionModules.sect13 = (function() {
         window.TEUI.sect13.calculatingHeating = true;
         
         try {
-            const systemType = getFieldValue('d_113');
-            const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
-            let heatingDemand_d114 = 0;
-            let heatingSink_l113 = 0;
-            let isHeatpump = (systemType === 'Heatpump');
-            
-            // Apply dynamic styling/values
-            setFieldDisabled('f_113', !isHeatpump); 
-            setFieldDisabled('h_113', !isHeatpump); 
-            setFieldDisabled('j_113', !isHeatpump); 
-            setFieldDisabled('l_113', !isHeatpump); 
-            
-            if (isHeatpump) {
-                // Recalculate & set COPs when switching TO Heatpump
-                const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 3.5; 
-                const local_copheat = (hspf > 0) ? hspf / 3.412 : 1; 
-                const local_copcool = Math.max(1, local_copheat - 1);
-                const local_ceer = 3.412 * local_copcool;
-                setCalculatedValue('h_113', local_copheat, 'number-2dp'); 
-                setCalculatedValue('j_113', local_copcool, 'number-1dp'); 
-                setCalculatedValue('j_114', local_ceer, 'number-1dp'); 
+        const systemType = getFieldValue('d_113');
+        const tedTarget = window.TEUI.parseNumeric(getFieldValue('d_127')) || 0; 
+        let heatingDemand_d114 = 0;
+        let heatingSink_l113 = 0;
+        let isHeatpump = (systemType === 'Heatpump');
+        
+        // Apply dynamic styling/values
+        setFieldDisabled('f_113', !isHeatpump); 
+        setFieldDisabled('h_113', !isHeatpump); 
+        setFieldDisabled('j_113', !isHeatpump); 
+        setFieldDisabled('l_113', !isHeatpump); 
+        
+        if (isHeatpump) {
+            // Recalculate & set COPs when switching TO Heatpump
+            const hspf = window.TEUI.parseNumeric(getFieldValue('f_113')) || 3.5; 
+            const local_copheat = (hspf > 0) ? hspf / 3.412 : 1; 
+            const local_copcool = Math.max(1, local_copheat - 1);
+            const local_ceer = 3.412 * local_copcool;
+            setCalculatedValue('h_113', local_copheat, 'number-2dp'); 
+            setCalculatedValue('j_113', local_copcool, 'number-1dp'); 
+            setCalculatedValue('j_114', local_ceer, 'number-1dp'); 
 
-                // Calculate demand and sink using the recalculated COP
-                if (local_copheat > 0) { 
-                     heatingDemand_d114 = tedTarget / local_copheat; 
-                     heatingSink_l113 = heatingDemand_d114 * (local_copheat - 1);
-                } else {
-                     heatingDemand_d114 = tedTarget; 
-                     heatingSink_l113 = 0;
-                }
+            // Calculate demand and sink using the recalculated COP
+            if (local_copheat > 0) { 
+                 heatingDemand_d114 = tedTarget / local_copheat; 
+                 heatingSink_l113 = heatingDemand_d114 * (local_copheat - 1);
             } else {
-                // Not a Heatpump - Use TEDI directly, sink is 0
-                heatingDemand_d114 = tedTarget;
-                heatingSink_l113 = 0;
-                // Force COP values for non-heatpump systems
-                setCalculatedValue('h_113', 1.0, 'number-2dp'); 
-                setCalculatedValue('j_113', 0.0, 'number-1dp'); 
-                setCalculatedValue('j_114', 0.0, 'number-1dp'); // CEER is also 0
+                 heatingDemand_d114 = tedTarget; 
+                 heatingSink_l113 = 0;
             }
-            
-            setCalculatedValue('d_114', heatingDemand_d114, 'number-2dp-comma'); 
-            setCalculatedValue('l_113', heatingSink_l113, 'number-2dp-comma');
+        } else {
+            // Not a Heatpump - Use TEDI directly, sink is 0
+            heatingDemand_d114 = tedTarget;
+            heatingSink_l113 = 0;
+            // Force COP values for non-heatpump systems
+            setCalculatedValue('h_113', 1.0, 'number-2dp'); 
+            setCalculatedValue('j_113', 0.0, 'number-1dp'); 
+            setCalculatedValue('j_114', 0.0, 'number-1dp'); // CEER is also 0
+        }
+        
+        setCalculatedValue('d_114', heatingDemand_d114, 'number-2dp-comma'); 
+        setCalculatedValue('l_113', heatingSink_l113, 'number-2dp-comma');
 
-            calculateHeatingFuelImpact();
-            calculateCoolingSystem();
+        calculateHeatingFuelImpact();
+        calculateCoolingSystem();
         } finally {
             window.TEUI.sect13.calculatingHeating = false;
         }
@@ -2004,74 +2004,74 @@ window.TEUI.SectionModules.sect13 = (function() {
         window.TEUI.sect13.calculatingCooling = true;
         
         try {
-            const coolingSystemType = getFieldValue('d_116');
-            const heatingSystemType = getFieldValue('d_113');
-            const coolingDemand_m129 = window.TEUI.parseNumeric(getFieldValue('m_129')) || 0; 
-            const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue('j_113')) || 0;
-            const copcool_dedicated_h116 = 2.7; // Default value for dedicated
-            
-            let copcool_to_use = 0;
-            let coolingLoad_d117 = 0;
-            let coolingSink_l116 = 0; // Sink for Dedicated Cooling
-            let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
-            let isCoolingActive = (coolingSystemType === 'Cooling');
+        const coolingSystemType = getFieldValue('d_116');
+        const heatingSystemType = getFieldValue('d_113');
+        const coolingDemand_m129 = window.TEUI.parseNumeric(getFieldValue('m_129')) || 0; 
+        const copcool_hp_j113 = window.TEUI.parseNumeric(getFieldValue('j_113')) || 0;
+        const copcool_dedicated_h116 = 2.7; // Default value for dedicated
+        
+        let copcool_to_use = 0;
+        let coolingLoad_d117 = 0;
+        let coolingSink_l116 = 0; // Sink for Dedicated Cooling
+        let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
+        let isCoolingActive = (coolingSystemType === 'Cooling');
 
-            if (isCoolingActive) {
-                if (heatingSystemType === 'Heatpump') {
-                    copcool_to_use = copcool_hp_j113; 
-                    
-                    if (copcool_to_use > 0) { 
-                         // Clamp the result at 0 to prevent negative electrical load
-                         coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use); 
-                         coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
-                    } else {
-                         coolingLoad_d117 = 0; 
-                         coolingSink_l114 = 0;
-                    }
-                    coolingSink_l116 = 0;
-                } else {
-                    copcool_to_use = copcool_dedicated_h116; 
-                     if (copcool_to_use > 0) {
-                        // Clamp the result at 0 here as well
-                        coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use); 
-                        coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
-                    } else {
-                        coolingLoad_d117 = 0;
-                        coolingSink_l116 = 0;
-                    }
-                    coolingSink_l114 = 0;
-                }
+        if (isCoolingActive) {
+            if (heatingSystemType === 'Heatpump') {
+                copcool_to_use = copcool_hp_j113; 
                 
-            } else {
-                coolingLoad_d117 = 0;
+                if (copcool_to_use > 0) { 
+                     // Clamp the result at 0 to prevent negative electrical load
+                     coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use); 
+                     coolingSink_l114 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
+                } else {
+                     coolingLoad_d117 = 0; 
+                     coolingSink_l114 = 0;
+                }
                 coolingSink_l116 = 0;
-                coolingSink_l114 = 0; 
-                copcool_to_use = 0; 
+            } else {
+                copcool_to_use = copcool_dedicated_h116; 
+                 if (copcool_to_use > 0) {
+                    // Clamp the result at 0 here as well
+                    coolingLoad_d117 = Math.max(0, coolingDemand_m129 / copcool_to_use); 
+                    coolingSink_l116 = coolingLoad_d117 * (copcool_to_use - 1); // Sink depends on clamped load
+                } else {
+                    coolingLoad_d117 = 0;
+                    coolingSink_l116 = 0;
+                }
+                coolingSink_l114 = 0;
             }
+            
+        } else {
+            coolingLoad_d117 = 0;
+            coolingSink_l116 = 0;
+            coolingSink_l114 = 0; 
+            copcool_to_use = 0; 
+        }
 
-            setCalculatedValue('j_116', copcool_to_use, 'number-1dp'); 
-            setCalculatedValue('l_116', coolingSink_l116, 'number-2dp-comma'); 
-            setCalculatedValue('l_114', coolingSink_l114, 'number-2dp-comma'); 
-            setCalculatedValue('d_117', coolingLoad_d117, 'number-2dp-comma');
-            
-            const area_h15 = window.TEUI.parseNumeric(getFieldValue('h_15')) || 0;
-            const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
-            setCalculatedValue('f_117', intensity_f117, 'number-2dp');
-            
-            const ceer_j117 = 3.412 * copcool_to_use;
-            setCalculatedValue('j_117', ceer_j117, 'number-1dp');
-            
-            // TODO: Fetch actual Reference values (T116, T117) when available
-            const ref_cop_cool_T116 = 3.35; 
-            const ref_intensity_T117 = 138; 
-            
-            const m116_value = (copcool_to_use > 0) ? ref_cop_cool_T116 / copcool_to_use : 0;
-            setCalculatedValue('m_116', m116_value, 'percent-0dp'); 
+        setCalculatedValue('j_116', copcool_to_use, 'number-1dp'); 
+        setCalculatedValue('l_116', coolingSink_l116, 'number-2dp-comma'); 
+        setCalculatedValue('l_114', coolingSink_l114, 'number-2dp-comma'); 
+        setCalculatedValue('d_117', coolingLoad_d117, 'number-2dp-comma');
+        
+        const area_h15 = window.TEUI.parseNumeric(getFieldValue('h_15')) || 0;
+        const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
+        setCalculatedValue('f_117', intensity_f117, 'number-2dp');
+        
+        const ceer_j117 = 3.412 * copcool_to_use;
+        setCalculatedValue('j_117', ceer_j117, 'number-1dp');
+        
+        // TODO: Fetch actual Reference values (T116, T117) when available
+        const ref_cop_cool_T116 = 3.35; 
+        const ref_intensity_T117 = 138; 
+        
+        const m116_value = (copcool_to_use > 0) ? ref_cop_cool_T116 / copcool_to_use : 0;
+        setCalculatedValue('m_116', m116_value, 'percent-0dp'); 
 
-            const m117_value = (ref_intensity_T117 > 0) ? intensity_f117 / ref_intensity_T117 : 0;
-            setCalculatedValue('m_117', m117_value, 'percent-0dp'); 
+        const m117_value = (ref_intensity_T117 > 0) ? intensity_f117 / ref_intensity_T117 : 0;
+        setCalculatedValue('m_117', m117_value, 'percent-0dp'); 
 
-            calculateCoolingVentilation();
+        calculateCoolingVentilation();
         } finally {
             window.TEUI.sect13.calculatingCooling = false;
         }
@@ -2294,8 +2294,8 @@ window.TEUI.SectionModules.sect13 = (function() {
         window.TEUI.sect13.calculationInProgress = true;
         
         try {
-            calculateReferenceModel();
-            calculateTargetModel();
+        calculateReferenceModel();
+        calculateTargetModel();
         } finally {
             window.TEUI.sect13.calculationInProgress = false;
         }
@@ -2866,7 +2866,7 @@ function handleHeatingSystemChangeForGhosting(newValue) {
                 setFieldGhosted('j_115', !isFossilFuel);
             }
         });
-    }
+    } 
 }
 
 //==========================================================================

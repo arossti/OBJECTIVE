@@ -1115,13 +1115,40 @@ window.TEUI.SectionModules.sect11 = (function() {
                         }
                         
                         // Update DOM with proper formatting
-                        targetElement.textContent = formatNumber(numericValue, 'number');
+                        targetElement.textContent = window.TEUI?.formatNumber?.(numericValue, 'number-2dp-comma') || numericValue.toString();
                         console.log(`[S11 AREA SYNC] ✅ DOM updated: ${targetFieldId} = "${targetElement.textContent}"`);
                         
-                        // Recalculation will be triggered by StateManager listeners
-                        // RESTORE: Direct calculation trigger for immediate reactivity
-                        if (!window.sectionCalculationInProgress) {
-                            calculateAll();
+                        // HYBRID APPROACH: Trigger IT-DEPENDS calculations for this row if available, otherwise fallback
+                        if (window.TEUI?.StateManager?.triggerFieldCalculation) {
+                            const row = targetFieldId.replace('d_', '');
+                            console.log(`[S11 AREA SYNC] 🔄 Triggering IT-DEPENDS calculations for row ${row}...`);
+                            
+                            // Trigger the specific IT-DEPENDS calculations for this row
+                            const calculations = [`i_${row}`, `k_${row}`, `m_${row}`];
+                            calculations.forEach(calcId => {
+                                try {
+                                    window.TEUI.StateManager.triggerFieldCalculation(calcId);
+                                    console.log(`[S11 AREA SYNC] ✅ Triggered ${calcId}`);
+                                } catch (error) {
+                                    console.warn(`[S11 AREA SYNC] ⚠️ Could not trigger ${calcId}:`, error.message);
+                                }
+                            });
+                            
+                            // Also trigger totals that depend on this row
+                            try {
+                                window.TEUI.StateManager.triggerFieldCalculation('d_98'); // Total area
+                                window.TEUI.StateManager.triggerFieldCalculation('i_98'); // Total heat loss
+                                window.TEUI.StateManager.triggerFieldCalculation('k_98'); // Total heat gain
+                                console.log(`[S11 AREA SYNC] ✅ Triggered totals (d_98, i_98, k_98)`);
+                            } catch (error) {
+                                console.warn(`[S11 AREA SYNC] ⚠️ Could not trigger totals:`, error.message);
+                            }
+                        } else {
+                            // Fallback to traditional calculation system
+                            console.log(`[S11 AREA SYNC] 📊 Fallback to traditional calculateAll()`);
+                            if (!window.sectionCalculationInProgress) {
+                                calculateAll();
+                            }
                         }
                     } else {
                         console.warn(`[S11 AREA SYNC] ❌ Target element not found: ${targetFieldId}`);
