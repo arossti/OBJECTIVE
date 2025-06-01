@@ -20,6 +20,7 @@ window.TEUI.sect13.freeCalculationInProgress = false;
 
 // Section 13: Mechanical Loads Module
 window.TEUI.SectionModules.sect13 = (function() {
+    console.log('[S13 DEBUG] Section 13 module loading...');
     
     //==========================================================================
     // ADDED: HELPER FUNCTIONS (Standard Implementation)
@@ -1493,6 +1494,8 @@ window.TEUI.SectionModules.sect13 = (function() {
      * This is a good place to initialize values and run initial calculations
      */
     function onSectionRendered() {
+        console.log('[S13 DEBUG] onSectionRendered called');
+        
         // Log initial DOM state
         // const d119ElementInitial = document.querySelector('td[data-field-id="d_119"]');
         // const j115ElementInitial = document.querySelector('td[data-field-id="j_115"]');
@@ -1562,11 +1565,14 @@ window.TEUI.SectionModules.sect13 = (function() {
      * Register this section's dependencies with StateManager
      */
     function registerWithStateManager() {
+        console.log('[S13 DEBUG] registerWithStateManager called');
+        
         if (!window.TEUI || !window.TEUI.StateManager) {
             console.warn('[S13] StateManager not available for registration');
             return;
         }
 
+        console.log('[S13 DEBUG] StateManager found:', !!window.TEUI.StateManager);
         const sm = window.TEUI.StateManager;
 
         try {
@@ -1582,6 +1588,8 @@ window.TEUI.SectionModules.sect13 = (function() {
             sm.registerDependency('d_21', 'd_122');  // CDD affects cooling ventilation
             sm.registerDependency('h_124', 'm_129'); // Free cooling affects mitigated load
             sm.registerDependency('d_123', 'm_129'); // Ventilation recovery affects mitigated load
+
+            console.log('[S13 DEBUG] Dependencies registered, checking registerCalculation method:', !!sm.registerCalculation);
 
             // *** IT-DEPENDS PHASE 1 - FIRST REGISTRATION ***
             // Register calculation for d_115 (Total Heating Fuel Impact)
@@ -1599,6 +1607,11 @@ window.TEUI.SectionModules.sect13 = (function() {
                 
                 return fuelImpact;
             }, 'Section 13: Heating Fuel Impact (kWh/yr)');
+
+            console.log('[S13 DEBUG] d_115 calculation registered');
+            console.log('[S13 DEBUG] hasCalculation method exists:', !!sm.hasCalculation);
+            console.log('[S13 DEBUG] d_115 in registry:', sm.hasCalculation && sm.hasCalculation('d_115'));
+            console.log('[S13 DEBUG] Registry keys:', sm.getRegisteredCalculations ? sm.getRegisteredCalculations() : 'getRegisteredCalculations not found');
 
             console.log('[S13] IT-DEPENDS registration complete - d_115 registered');
 

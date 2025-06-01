@@ -250,4 +250,65 @@ window.TEUI.CalculationOrchestration = {
     setupCalculationMonitoring
 };
 
-console.log('[IT-DEPENDS-EXAMPLE-IMPLEMENTATION.js] Module loaded.'); 
+console.log('[IT-DEPENDS-EXAMPLE-IMPLEMENTATION.js] Module loaded.');
+
+/**
+ * Test the Section 13 d_115 IT-DEPENDS registration
+ * Run this in browser console after page loads
+ */
+function testS13_d115_ITDepends() {
+    console.log('🧪 Testing S13 d_115 IT-DEPENDS Registration');
+    
+    if (!window.TEUI?.StateManager) {
+        console.error('❌ StateManager not available');
+        return;
+    }
+    
+    const sm = window.TEUI.StateManager;
+    
+    // 1. Check if d_115 calculation is registered (FIXED: use public method)
+    console.log('📋 Checking d_115 registration...');
+    const hasRegistration = sm.hasCalculation && sm.hasCalculation('d_115');
+    console.log(`d_115 registered: ${hasRegistration ? '✅' : '❌'}`);
+    
+    if (!hasRegistration) {
+        console.error('❌ d_115 calculation not registered');
+        console.log('Available registered calculations:', sm.getRegisteredCalculations ? sm.getRegisteredCalculations() : 'getRegisteredCalculations not found');
+        return;
+    }
+    
+    // 2. Set up test scenario - Gas system with specific values
+    console.log('🔧 Setting up test scenario...');
+    sm.setValue('d_113', 'Gas', 'user-modified');     // Gas heating system
+    sm.setValue('d_127', '10000', 'user-modified');   // 10,000 kWh TEDI
+    sm.setValue('j_115', '0.9', 'user-modified');     // 90% AFUE
+    
+    // 3. Trigger the IT-DEPENDS calculation for d_115
+    console.log('⚡ Triggering IT-DEPENDS calculation...');
+    const result = sm.triggerFieldCalculation('d_115');
+    console.log(`Calculation result: ${result}`);
+    
+    // 4. Verify the calculation is correct
+    // Expected: 10,000 / 0.9 = 11,111.11
+    const expected = 10000 / 0.9;
+    const isCorrect = Math.abs(result - expected) < 0.01;
+    console.log(`Expected: ${expected.toFixed(2)}, Got: ${result}, Correct: ${isCorrect ? '✅' : '❌'}`);
+    
+    // 5. Check if StateManager value was updated
+    const stateValue = sm.getValue('d_115');
+    console.log(`StateManager d_115 value: ${stateValue}`);
+    
+    // 6. Test dependency chain calculation
+    console.log('🔗 Testing dependency chain...');
+    try {
+        sm.calculateDependencyChain('j_115'); // AFUE change should trigger d_115
+        console.log('✅ Dependency chain calculation completed');
+    } catch (error) {
+        console.error('❌ Dependency chain failed:', error);
+    }
+    
+    console.log('🎯 S13 d_115 IT-DEPENDS test complete');
+}
+
+// Make the test function globally available
+window.testS13_d115_ITDepends = testS13_d115_ITDepends; 

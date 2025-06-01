@@ -1645,6 +1645,23 @@ TEUI.StateManager = (function() {
         return order;
     }
     
+    /**
+     * CALCULATION ORCHESTRATION: Check if a calculation is registered for a field
+     * @param {string} fieldId - Field ID to check
+     * @returns {boolean} True if a calculation is registered for this field
+     */
+    function hasCalculation(fieldId) {
+        return fieldCalculations.has(fieldId);
+    }
+    
+    /**
+     * CALCULATION ORCHESTRATION: Get list of all registered calculation field IDs
+     * @returns {Array} Array of field IDs that have calculations registered
+     */
+    function getRegisteredCalculations() {
+        return Array.from(fieldCalculations.keys());
+    }
+    
     // Public API
     return {
         // Constants
@@ -1699,7 +1716,9 @@ TEUI.StateManager = (function() {
         triggerFieldCalculation: triggerFieldCalculation,
         calculateDependencyChain: calculateDependencyChain,
         addSmartListener: addSmartListener,
-        calculateBatchDependencies: calculateBatchDependencies
+        calculateBatchDependencies: calculateBatchDependencies,
+        hasCalculation: hasCalculation,
+        getRegisteredCalculations: getRegisteredCalculations
     };
 })();
 
