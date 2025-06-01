@@ -36,9 +36,15 @@ Transform the existing dependency graph into a **smart calculation engine**:
 ### ✅ COMPLETE: Phase 1 - Foundation (100%)
 - **StateManager Infrastructure**: All calculation orchestration methods implemented
 - **Section 03**: Climate calculations fully migrated to IT-DEPENDS
-- **Section 11**: Transmission losses fully migrated (50+ calculations)
 - **Core Methods**: `registerCalculation()`, `triggerFieldCalculation()`, dependency management
 - **Testing**: Demo functions operational, performance gains proven
+
+### 🔄 PARTIAL: Section 11 - IT-DEPENDS Registered but Not Active (10%)
+- **Status**: **HYBRID SYSTEM** - Still uses traditional `calculateAll()`
+- **IT-DEPENDS Ready**: 50+ calculation functions registered but **NOT triggered**
+- **Current Behavior**: Traditional dual-engine system with manual calculation calls
+- **Issue Fixed**: Added initial calculation trigger to prevent "table of zeros" on load
+- **Migration Needed**: Replace `calculateAll()` listeners with IT-DEPENDS triggers
 
 ### ✅ PARTIAL: Section 13 - Stable Hybrid State (25%)
 - **Traditional System**: HSPF slider works via `calculateCOPValues()`
@@ -275,59 +281,33 @@ Each section must maintain clean separation:
 
 ---
 
-## Fresh Workplan for Tomorrow
+## Tomorrow's Work Plan (Sunder June 1, 2025)
 
-### Priority 1: Debug StateManager IT-DEPENDS API 🔍
-**Time**: 30 minutes
-**Goal**: Understand why `registerCalculation` stored Objects instead of Functions
+### 🎯 **Priority 1: Complete Section 11 Migration (3-4 hours)**
+**CRITICAL**: S11 is NOT fully migrated as previously thought
+- Replace `calculateAll()` listeners with specific IT-DEPENDS triggers
+- Remove traditional dual-engine dependency (like S03 has done)
+- Test thermal bridge calculations work purely through IT-DEPENDS
+- Validate table initialization works without `calculateAll()` fallback
+- **Goal**: True IT-DEPENDS system, not hybrid
 
-**Tasks**:
-1. Test `registerCalculation()` in isolation with simple function
-2. Inspect StateManager storage mechanism (`fieldCalculations.set()`)
-3. Verify function execution context and scope
-4. Fix any bugs in the registration/execution pipeline
+### 🔬 **Priority 2: Careful S13 Completion (2-3 hours)** 
+**Learn from S13 failures** - take measured approach:
 
-### Priority 2: Single IT-DEPENDS Test in S13 🧪
-**Time**: 45 minutes  
-**Goal**: Get ONE IT-DEPENDS calculation working alongside traditional system
+#### Step 1: Add Second Calculation (30 min)
+- Choose simple field (maybe `h_113` - COP calculations)
+- Test thoroughly before proceeding
+- No broad listener changes yet
 
-**Tasks**:
-1. Enable only `f_113` listener to trigger `h_113` calculation
-2. Keep all other S13 listeners using traditional system
-3. Test HSPF slider triggers IT-DEPENDS for `h_113`, traditional for rest
-4. Verify no recursion, no conflicts, all values correct
+#### Step 2: Replace One Traditional Listener (30 min)
+- Target one specific input (not HSPF initially)
+- Replace with IT-DEPENDS trigger
+- Test specific functionality
 
-### Priority 3: Incremental S13 Expansion ⚡
-**Time**: 60 minutes
-**Goal**: Add remaining heating calculations one by one
-
-**Tasks**:
-1. Add `d_113` listener for heating system type changes
-2. Test heating system dropdown triggers multiple IT-DEPENDS calculations  
-3. Add `d_127` and `j_115` listeners
-4. Verify complete heating calculation chain works via IT-DEPENDS
-
-### Priority 4: Validate Performance Gains 📊
-**Time**: 30 minutes
-**Goal**: Measure actual performance improvement
-
-**Tasks**:
-1. Time HSPF slider response before/after IT-DEPENDS
-2. Count total calculations triggered by system changes
-3. Verify ~70% reduction in unnecessary calculations
-4. Document performance gains achieved
-
-### Contingency Plan 🛟
-**If IT-DEPENDS API has fundamental issues:**
-1. Keep current stable hybrid state (S11 IT-DEPENDS, S13 traditional)
-2. Focus on completing other sections with traditional system
-3. Return to IT-DEPENDS debugging when core functionality stable
-
-### Success Criteria for Tomorrow ✅
-1. **Understand** why previous IT-DEPENDS attempt failed
-2. **Achieve** at least one working S13 IT-DEPENDS calculation
-3. **Maintain** all existing functionality (no regressions)
-4. **Document** working approach for remaining sections
+#### Step 3: Debug & Validate (60 min)
+- Ensure no recursion
+- Verify calculations match traditional system
+- Check dependencies propagate correctly
 
 ---
 

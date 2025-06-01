@@ -1216,6 +1216,16 @@ window.TEUI.SectionModules.sect11 = (function() {
         } else {
             console.warn('[S11 IT-DEPENDS] StateManager.registerCalculation not available');
         }
+
+        // *** IMMEDIATE FIX: Initial calculation trigger ***
+        // The "central trigger" was never implemented, so add direct trigger
+        // This fixes the issue where table shows zeros until TB slider moves
+        setTimeout(() => {
+            if (!window.sectionCalculationInProgress) {
+                console.log('[S11 INIT] Triggering initial calculations to populate table...');
+                calculateAll();
+            }
+        }, 50); // Small delay to ensure full section initialization
     }
     
     //==========================================================================
