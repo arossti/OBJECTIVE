@@ -250,7 +250,7 @@ window.TEUI.CalculationOrchestration = {
     setupCalculationMonitoring
 };
 
-console.log('[IT-DEPENDS-EXAMPLE-IMPLEMENTATION.js] Module loaded.');
+console.log('[IT-DEPENDS-EXAMPLE-IMPLEMENTATION.js] Module loaded.'); 
 
 /**
  * Test the Section 13 d_115 IT-DEPENDS registration

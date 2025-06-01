@@ -1449,9 +1449,9 @@ TEUI.StateManager = (function() {
             // Validate input - prevent numeric fieldIds from being processed
             if (typeof changedFieldId === 'number') {
                 console.warn(`[StateManager] triggerFieldCalculation received numeric fieldId: ${changedFieldId}. Skipping calculation.`);
-                return;
-            }
-            
+            return;
+        }
+        
             if (!changedFieldId || typeof changedFieldId !== 'string') {
                 console.warn(`[StateManager] triggerFieldCalculation requires valid string fieldId, got: ${changedFieldId}`);
                 return;
