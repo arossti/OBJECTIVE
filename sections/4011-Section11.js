@@ -770,7 +770,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         // Apply penalty to Reference totals
         const penaltyHeatloss = totals.loss * validatedPenalty;
         const penaltyHeatgain = totals.gain * validatedPenalty;
-        
+
         // Store Reference thermal bridge penalty calculations (with ref_ prefix)
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue('ref_e_97', validatedPenalty.toString(), 'calculated');
@@ -781,7 +781,7 @@ window.TEUI.SectionModules.sect11 = (function() {
         // Calculate Reference totals (row 98) 
         const finalRefLoss = totals.loss + penaltyHeatloss;
         const finalRefGain = totals.gain + penaltyHeatgain;
-        
+            
         // Store Reference total calculations (with ref_ prefix)
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue('ref_d_98', totals.areaD.toString(), 'calculated');
@@ -807,7 +807,7 @@ window.TEUI.SectionModules.sect11 = (function() {
             const heatloss = getNumericValue(`i_${config.row}`) || 0;
             const heatgain = getNumericValue(`k_${config.row}`) || 0;
             const area = getNumericValue(`d_${config.row}`) || 0;
-
+            
             totals.loss += heatloss;
             totals.gain += heatgain;
             if (config.row >= 85 && config.row <= 95) totals.areaD += area;
@@ -820,12 +820,12 @@ window.TEUI.SectionModules.sect11 = (function() {
         calculateThermalBridgePenalty(totals.loss, totals.gain);
         const penaltyHeatloss = getNumericValue('i_97') || 0;
         const penaltyHeatgain = getNumericValue('k_97') || 0;
-        
+
         // console.log(`[S11 APP ENGINE] 🎯 SETTING ROW 98 APPLICATION VALUES:`);
         // console.log(`[S11 APP ENGINE]   d_98 (area): ${totals.areaD}`);
         // console.log(`[S11 APP ENGINE]   i_98 (loss): ${totals.loss + penaltyHeatloss}`);
         // console.log(`[S11 APP ENGINE]   k_98 (gain): ${totals.gain + penaltyHeatgain}`);
-        
+
         setCalculatedValue('d_98', totals.areaD);
         setCalculatedValue('i_98', totals.loss + penaltyHeatloss);
         setCalculatedValue('k_98', totals.gain + penaltyHeatgain);
@@ -853,21 +853,21 @@ window.TEUI.SectionModules.sect11 = (function() {
             const jCellFieldId = `j_${rowStr}`; // Field ID for Column J
 
             if (config.row !== 97) { // Area % only for components
-                const area = getNumericValue(`d_${rowStr}`) || 0;
-                const hValue = config.type === 'air' ? (area / totalAreaAe) * 100 :
-                              (config.type === 'ground' ? (area / totalAreaAg) * 100 : 0);
-                setCalculatedValue(hCellFieldId, hValue / 100, 'percent');
+                 const area = getNumericValue(`d_${rowStr}`) || 0;
+                 const hValue = config.type === 'air' ? (area / totalAreaAe) * 100 :
+                               (config.type === 'ground' ? (area / totalAreaAg) * 100 : 0);
+                 setCalculatedValue(hCellFieldId, hValue / 100, 'percent');
 
-                // Apply text color class to Column H based on type
-                const hElement = document.querySelector(`[data-field-id="${hCellFieldId}"]`);
-                if (hElement) {
-                    hElement.classList.remove('text-air-facing', 'text-ground-facing');
-                    if (config.type === 'air') {
-                        hElement.classList.add('text-air-facing');
-                    } else if (config.type === 'ground') {
-                        hElement.classList.add('text-ground-facing');
-                    }
-                }
+                 // Apply text color class to Column H based on type
+                 const hElement = document.querySelector(`[data-field-id="${hCellFieldId}"]`);
+                 if (hElement) {
+                     hElement.classList.remove('text-air-facing', 'text-ground-facing');
+                     if (config.type === 'air') {
+                         hElement.classList.add('text-air-facing');
+                     } else if (config.type === 'ground') {
+                         hElement.classList.add('text-ground-facing');
+                     }
+                 }
             }
             const heatloss = getNumericValue(`i_${rowStr}`) || 0;
             const grandTotalHeatlossI = totals.loss + (getNumericValue('i_97') || 0);
@@ -1425,9 +1425,9 @@ window.TEUI.SectionModules.sect11 = (function() {
             
             // Check state after switch (with small delay for processing)
             setTimeout(() => {
-                const afterMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
-                console.log(`\n🚥 MODE SWITCH COMPLETE - TO: ${afterMode}`);
-                
+            const afterMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'REFERENCE' : 'APPLICATION';
+            console.log(`\n🚥 MODE SWITCH COMPLETE - TO: ${afterMode}`);
+            
                 console.log('📊 State after switch (delayed):');
                 checkStateContamination();
                 console.log('=== 🔄 END MODE SWITCH TRACKING ===\n');

@@ -2,7 +2,7 @@
 
 **Goal:** Refactor Section 03 (Climate Calculations) to eliminate the dependency on external Excel file imports for weather data. Replace this with an internal JavaScript data source (`4011-ClimateValues.js`) containing climate data for Canadian locations. The refactored section should be functionally identical to the original (regarding displayed values and calculations) but faster, lighter, and provide a frictionless user experience for selecting locations, while adhering fully to the application's architecture.
 
-**Branch:** `CANADA2` (Created from latest `main` as of 2024-08-02)
+**Branch:** `CANADA2` (Created from latest `main` as of 2025-05-02)
 
 **Key Files:**
 *   `sections/4011-Section03.js` (The refactored module)

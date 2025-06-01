@@ -171,7 +171,7 @@ StateManager.registerCalculation('d_22', calculateGroundHDD);  // Ground heating
 StateManager.registerCalculation('h_22', calculateGroundCDD);  // Ground cooling
 StateManager.registerCalculation('i_21', calculateCapacitance); // Capacitance factor
 ```
-**Why Start Here**: Climate data feeds into Sections 11, 13, 09, 10 - fixing this first ensures downstream sections have clean inputs.
+**Why Start Here**: Climate data (S03, Done) feeds into Sections 11 (S11, Done), 13 (S13, Pending), 09, 10 - fixing this first ensures downstream sections have clean inputs.
 
 #### 2. **Section 11 (Transmission Losses)**
 ```javascript
@@ -340,11 +340,11 @@ This dependency-driven approach ensures each section has clean inputs from its p
 
 ## Conclusion: Ready for Phase 2
 
-The **IT-DEPENDS** foundation is complete but **unused**. We need to migrate real sections to realize the benefits.
+The **IT-DEPENDS** foundation is complete but **unused**. We need to migrate real sections to realize the benefits, sections 03, 11 are complete, S13 is next in cue.
 
-**Next milestone**: Complete Section 01 migration and validate that cross-section dependencies work through the new system. This should resolve most dual-engine contamination issues by establishing proper calculation order.
+**Next milestone**: Complete Section 03 & 11 migration and validate that cross-section dependencies work through the new system. This should resolve most dual-engine contamination issues by establishing proper calculation order.
 
-**Success metric**: Building area change triggers automatic recalculation of TEUI → Section 15 summary → all dependent sections, with 70% fewer total calculations.
+**Success metric**: Location change triggers automatic recalculation of TEUI → Section 15 summary → all dependent sections, with ~70% fewer total calculations.
 
 ---
 
