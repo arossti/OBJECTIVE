@@ -269,117 +269,107 @@ TEUI.StateManager = (function() {
      * @returns {any} The field value or null if not found
      */
     function getValue(fieldId) {
-        // Special debugging for e_10 contamination
-        if (fieldId === 'e_10') {
-            const isRefMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? true : false;
-            console.log(`[StateManager DEBUG] 📊 getValue called for e_10 - Mode: ${isRefMode ? 'REFERENCE' : 'APPLICATION'}`);
-        }
-        
-        // Handle prefixed reference fields (like ref_h_136)
-        if (fieldId.startsWith('ref_')) {
-            const actualFieldId = fieldId.substring(4); // Remove 'ref_' prefix
-            
-            // For prefixed fields, always return from Reference state
-            const refValue = getReferenceValue(actualFieldId);
-            
-            if (fieldId === 'ref_h_136' || fieldId === 'ref_e_10') {
-                console.log(`[StateManager DEBUG] 📌 Prefixed field ${fieldId} returning: ${refValue}`);
+        if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
+            // In Reference Mode, check independently editable fields first
+            if (independentReferenceState.hasOwnProperty(fieldId)) {
+                return independentReferenceState[fieldId];
             }
             
-            return refValue;
+            // Then check activeReferenceDataSet
+            // Fallback to application default if somehow not in activeReferenceDataSet (should be rare)
+            return activeReferenceDataSet.hasOwnProperty(fieldId) 
+                   ? activeReferenceDataSet[fieldId] 
+                   : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
+        } else {
+            // Existing logic for Application Mode
+        return fields.has(fieldId) ? fields.get(fieldId).value : null;
         }
-        
-        // If in Reference Mode, use Reference state
-        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-            const refValue = getReferenceValue(fieldId);
-            
-            if (fieldId === 'e_10') {
-                console.log(`[StateManager DEBUG] 🔵 Reference Mode - returning e_10: ${refValue}`);
-            }
-            
-            if (refValue !== null && refValue !== undefined) {
-                return refValue;
-            }
-            // If no Reference value, fall through to Application state
-        }
-        
-        // Use Application state (main fields map)
-        const field = fields.get(fieldId);
-        const appValue = field ? field.value : null;
-        
-        if (fieldId === 'e_10') {
-            console.log(`[StateManager DEBUG] 🟢 Application value for e_10: ${appValue}`);
-        }
-        
-        return appValue;
     }
     
     /**
-     * Sets a value in the state manager.
-     * @param {string} fieldId - The ID of the field to set.
-     * @param {any} value - The new value for the field.
-     * @param {string} state - The state of the value (e.g., 'user_modified', 'calculated').
-     * @returns {boolean} True if the value was set, false otherwise.
+     * Set a field value
+     * @param {string} fieldId - Field ID (DOM-based, e.g. 'd-12')
+     * @param {any} value - New value
+     * @param {string} state - Value state (default, user-modified, calculated, etc.)
+     * @returns {boolean} True if the value changed
      */
     function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
-        // CRITICAL DEBUGGING for e_10 contamination issue
-        if (fieldId === 'e_10') {
-            console.log(`[StateManager DEBUG] ⚠️ CRITICAL: e_10 being SET to ${value} with state=${state}`);
-            console.log(`[StateManager DEBUG] ⚠️ Reference Mode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'YES' : 'NO'}`);
-            console.log(`[StateManager DEBUG] ⚠️ Stack trace:`, new Error().stack);
+        // Check if we're in Reference Mode and this is an independently editable field
+        if (window.TEUI && TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode() && 
+            state === VALUE_STATES.USER_MODIFIED) {
+            
+            // Check if this field is independently editable in Reference Mode
+            if (window.TEUI?.AppendixE?.getFieldBehavior) {
+                const currentStandard = getValue('d_13') || 'OBC SB10 5.5-6 Z6';
+                const behavior = window.TEUI.AppendixE.getFieldBehavior(fieldId, currentStandard);
+                if (behavior === "Independently User-Editable in Reference Mode") {
+                    // Store in separate reference state and update activeReferenceDataSet
+                    const oldValue = independentReferenceState[fieldId] || null;
+                    independentReferenceState[fieldId] = value;
+                    activeReferenceDataSet[fieldId] = value; // Keep in sync
+                    
+                    console.log(`[StateManager] Set independent Reference value for ${fieldId}: ${value}`);
+                    notifyListeners(fieldId, value, oldValue, 'reference-user-modified');
+                    return true;
+                }
+            }
         }
         
-        // Muting application state logic (added for Reference Mode)
-        if (isApplicationStateMuted && window.TEUI?.ReferenceToggle?.isReferenceMode() && 
-            state !== 'system_reverted_to_import' && state !== 'reference-user-modified') {
+        // << NEW: Check if application state updates are muted >>
+        if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+            // if (fieldId === 'k_120') { // Intentionally commented out
+            //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
+            // }
+            // if (fieldId === 'g_67') { // Intentionally commented out
+            //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
+            // }
+            return false; // Prevent update to this.fields (application state)
+        }
+
+        // << NEW: Store value if it's from an import >>
+        if (state === VALUE_STATES.IMPORTED) {
+            lastImportedState[fieldId] = value;
+        }
+
+        // if (fieldId === 'k_120') { // Intentionally commented out
+        //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+        // }
+        // if (fieldId === 'g_67') { // Intentionally commented out
+        //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+        // }
+
+        const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
+
+        const oldValue = getValue(fieldId); // Use mode-aware getValue for oldValue as original did.
+        
+        // If field doesn't exist, create it
+        if (!fields.has(fieldId)) {
+            fields.set(fieldId, {
+                id: fieldId,
+                value: value,
+                state: state
+            });
             
-            if (fieldId === 'e_10') {
-                console.log(`[StateManager DEBUG] 🛑 BLOCKED: e_10 setValue MUTED in Reference Mode with state ${state}`);
-            }
-            
+            notifyListeners(fieldId, value, null, state);
+            return true;
+        }
+        
+        // Update the existing field
+        const field = fields.get(fieldId);
+        
+        if (field.value === value && field.state === state) {
             return false;
         }
-
-        // If in Reference Mode, use special setValueInReferenceMode method
-        if (window.TEUI?.ReferenceToggle?.isReferenceMode()) {
-            // Special check for e_10 to debug contamination
-            if (fieldId === 'e_10') {
-                console.log(`[StateManager DEBUG] 🔀 e_10 in Reference Mode - redirecting to Reference storage`);
-                // Special handling for Critical S01 fields like e_10 that need strict isolation
-                setValueInReferenceMode(fieldId, value);
-                setSessionReferenceValue(fieldId, value);
-                return true;
-            }
-            
-            return setValueInReferenceMode(fieldId, value);
+        
+        field.value = value;
+        field.state = state;
+        
+        if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+            markDependentsDirty(fieldId);
         }
-
-        // Normal setValue flow for Application state
-        let oldValue = null;
-        const oldField = fields.get(fieldId);
-        if (oldField) {
-            oldValue = oldField.value;
-            if (oldValue === value) {
-                return false; // No change, don't trigger updates
-            }
-            oldField.value = value;
-            oldField.state = state;
-        } else {
-            fields.set(fieldId, { value, state });
-        }
-
-        // Special case for field d_13 (reference standard selection) - trigger Reference data reload
-        if (fieldId === 'd_13' && value) {
-            const standardKey = value.toString();
-            loadReferenceData(standardKey);
-        }
-
-        // Mark fields that depend on this field as dirty
-        markDependentsDirty(fieldId);
-
-        // Notify listeners
+        
         notifyListeners(fieldId, value, oldValue, state);
-
+        
         return true;
     }
     
@@ -1313,59 +1303,18 @@ TEUI.StateManager = (function() {
     }
     
     /**
-     * Gets a value from the Reference Mode state.
-     * @param {string} fieldId - The ID of the field to get.
-     * @returns {any} The value from Reference Mode state, or null if not in Reference Mode.
+     * Get a field value from Reference state (for Column E calculations)
+     * @param {string} fieldId - Field ID
+     * @returns {any} The field value from reference state or null if not found
      */
     function getReferenceValue(fieldId) {
-        // Special debugging for e_10
-        if (fieldId === 'e_10' || fieldId === 'h_136') {
-            console.log(`[StateManager DEBUG] 🔍 getReferenceValue called for ${fieldId}`);
-            console.log(`[StateManager DEBUG] 🔍 Reference Mode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'YES' : 'NO'}`);
-            
-            // Check all possible storage locations
-            const directRefValue = activeReferenceDataSet[fieldId];
-            const sessionRefValue = window.TEUI?.sessionReferenceState?.[fieldId];
-            const prefixedValue = activeReferenceDataSet[`ref_${fieldId}`];
-            
-            console.log(`[StateManager DEBUG] 🔍 Available values for ${fieldId}:`);
-            console.log(`  - Direct Reference: ${directRefValue}`);
-            console.log(`  - Session Reference: ${sessionRefValue}`);
-            console.log(`  - Prefixed (ref_${fieldId}): ${prefixedValue}`);
-            console.log(`[StateManager DEBUG] 🔍 Stack trace:`, new Error().stack);
+        // First check if this is an independently editable field with a separate Reference value
+        if (independentReferenceState.hasOwnProperty(fieldId)) {
+            return independentReferenceState[fieldId];
         }
         
-        // Try to get the value from activeReferenceDataSet
-        const value = activeReferenceDataSet[fieldId];
-        if (value !== undefined) {
-            if (fieldId === 'e_10') {
-                console.log(`[StateManager DEBUG] ✅ Returning ${fieldId} from activeReferenceDataSet: ${value}`);
-            }
-            return value;
-        }
-        
-        // Try to get the value from sessionReferenceState (more persistent)
-        if (window.TEUI?.sessionReferenceState && window.TEUI.sessionReferenceState[fieldId] !== undefined) {
-            if (fieldId === 'e_10') {
-                console.log(`[StateManager DEBUG] ✅ Returning ${fieldId} from sessionReferenceState: ${window.TEUI.sessionReferenceState[fieldId]}`);
-            }
-            return window.TEUI.sessionReferenceState[fieldId];
-        }
-        
-        // Try prefixed version (ref_fieldId)
-        const prefixedValue = activeReferenceDataSet[`ref_${fieldId}`];
-        if (prefixedValue !== undefined) {
-            if (fieldId === 'e_10') {
-                console.log(`[StateManager DEBUG] ✅ Returning ${fieldId} from prefixed key (ref_${fieldId}): ${prefixedValue}`);
-            }
-            return prefixedValue;
-        }
-        
-        // Fallback to null
-        if (fieldId === 'e_10') {
-            console.log(`[StateManager DEBUG] ⚠️ No reference value found for ${fieldId}, returning null`);
-        }
-        return null;
+        // Otherwise use the standard activeReferenceDataSet
+        return activeReferenceDataSet.hasOwnProperty(fieldId) ? activeReferenceDataSet[fieldId] : null;
     }
     
     /**

@@ -665,14 +665,14 @@ window.TEUI.SectionModules.sect04 = (function() {
         if (window.TEUI.ReferenceToggle && typeof window.TEUI.ReferenceToggle.addToggleListener === 'function') {
             window.TEUI.ReferenceToggle.addToggleListener(function(isReference) {
                 console.log(`[S04] Reference mode changed to ${isReference ? 'Reference' : 'Application'}`);
-                
+        
                 // When switching to/from Reference Mode, update electricity emission factor for current mode
                 updateElectricityEmissionFactor();
                 
                 // Run full calculation to ensure all values are updated for the current mode
                 calculateAll();
             });
-        }
+            }
     }
     
     /**
@@ -1301,7 +1301,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             setCalculatedValue('d_35', 0, 'number-2dp-comma');
         }
     }
-
+    
     /**
      * Calculate F35 - Total Final Energy (kWh/m²/yr)
      * Converts GJ/m²/yr to kWh/m²/yr
@@ -1356,7 +1356,7 @@ window.TEUI.SectionModules.sect04 = (function() {
      */
     function calculateAll() {
         console.log('[S04] Running calculateAll()');
-        
+            
         // TRAFFIC COP: Prevent recursion
         if (window.TEUI.sect04.calculationInProgress) {
             console.log('[S04 TRAFFIC COP] ⏸️ Calculation already in progress, skipping...');
@@ -1387,8 +1387,8 @@ window.TEUI.SectionModules.sect04 = (function() {
             // Always clear the flag when done
             window.TEUI.sect04.calculationInProgress = false;
         }
-    }
-    
+        }
+        
     /**
      * Reference Model calculation engine
      * Follows Dual-Engine architecture from README.md
@@ -1485,7 +1485,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             // Calculate row 27 (Electricity)
             const f27Value = calculateF27();
             setCalculatedValue('f_27', f27Value, 'number-2dp-comma');
-            
+        
             const g27Value = calculateG27();
             setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
             
@@ -1493,13 +1493,13 @@ window.TEUI.SectionModules.sect04 = (function() {
             const d136Value = getAppNumericValue('d_136');
             const h27Value = calculateH27(d136Value);
             setCalculatedValue('h_27', h27Value, 'number-2dp-comma');
-            
+        
             const j27Value = calculateJ27();
             setCalculatedValue('j_27', j27Value, 'number-2dp-comma');
             
             const k27Value = calculateK27();
             setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-            
+        
             // Update all other rows and calculate subtotals
         updateSubtotals();
         } finally {

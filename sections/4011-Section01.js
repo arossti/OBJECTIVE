@@ -1398,23 +1398,9 @@ window.TEUI.SectionModules.sect01 = (function() {
         
         // e_10: Reference TEUI
         sm.registerCalculation('e_10', function() {
-            console.log(`[S01 DEBUG] 🔍 e_10 calculation triggered - Reference Mode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.() ? 'YES' : 'NO'}`);
-            
-            // Track current value before calculation
-            const currentValue = sm.getValue('e_10');
-            console.log(`[S01 DEBUG] 🔍 Current e_10 value before calculation: ${currentValue}`);
-            
             // Priority 1: Use S15 Reference TEUI if available
             const s15RefTEUI = sm.getValue('ref_h_136') || 0;
-            console.log(`[S01 DEBUG] 🔍 Looking for ref_h_136 value: ${s15RefTEUI}`);
-            
-            // Try alternative access methods to diagnose issues
-            const directRefH136 = window.TEUI?.StateManager?.getReferenceValue?.('h_136');
-            const sessionRefH136 = window.TEUI?.StateManager?.getSessionReferenceValue?.('h_136');
-            console.log(`[S01 DEBUG] 🔍 Alternative access methods - direct h_136 via getReferenceValue: ${directRefH136}, via session: ${sessionRefH136}`);
-            
             if (s15RefTEUI > 0) {
-                console.log(`[S01 DEBUG] ✅ Using S15 ref_h_136 value for e_10: ${s15RefTEUI}`);
                 return s15RefTEUI;
             }
             
@@ -1422,16 +1408,11 @@ window.TEUI.SectionModules.sect01 = (function() {
             const refEnergy = sm.getValue('ref_e_139') || 0;
             const refArea = sm.getValue('ref_h_15') || 1427.2; // Reference standard area
             
-            console.log(`[S01 DEBUG] 🔄 Fallback calculation for e_10: refEnergy=${refEnergy}, refArea=${refArea}`);
-            
             if (refEnergy > 0 && refArea > 0) {
-                const calculatedValue = refEnergy / refArea;
-                console.log(`[S01 DEBUG] ✅ Using calculated value for e_10: ${calculatedValue}`);
-                return calculatedValue;
+                return refEnergy / refArea;
             }
             
             // Fallback: Standard reference TEUI
-            console.log(`[S01 DEBUG] ⚠️ Using fallback value for e_10: 186.4`);
             return 186.4;
         }, 'Reference TEUI from S15 or calculation');
         
