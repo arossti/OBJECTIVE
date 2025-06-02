@@ -66,7 +66,24 @@ TEUI.ReferenceToggle = (function() {
   }
 
   function toggleReferenceView() {
+    const oldMode = referenceMode;
     referenceMode = !referenceMode;
+    
+    console.log(`[ReferenceToggle DEBUG] 🔄 MODE SWITCH: ${oldMode ? 'Reference' : 'Design'} -> ${referenceMode ? 'Reference' : 'Design'}`);
+    
+    // Debug e_10 state before mode switch
+    if (window.TEUI?.StateManager) {
+      const currentE10 = window.TEUI.StateManager.getValue('e_10');
+      const appE10 = window.TEUI.StateManager.getApplicationValue?.('e_10') || 'N/A';
+      const refE10 = window.TEUI.StateManager.getReferenceValue?.('e_10') || 'N/A';
+      const sessionRefE10 = window.TEUI.StateManager.getSessionReferenceValue?.('e_10') || 'N/A';
+      
+      console.log(`[ReferenceToggle DEBUG] 📊 BEFORE SWITCH - e_10 values:`);
+      console.log(`  - Current (from getValue): ${currentE10}`);
+      console.log(`  - Application state: ${appE10}`);
+      console.log(`  - Reference state: ${refE10}`);
+      console.log(`  - Session Reference state: ${sessionRefE10}`);
+    }
 
     document.body.classList.toggle(BODY_CLASS, referenceMode);
     updateButtonAppearance();
@@ -75,19 +92,42 @@ TEUI.ReferenceToggle = (function() {
     if (referenceMode) {
         // Entering Reference Mode - build reference state and run calculations
         const currentStandard = window.TEUI.StateManager.getValue('d_13');
+        console.log(`[ReferenceToggle DEBUG] 🏗️ Entering Reference Mode with standard: ${currentStandard}`);
+        
         if (currentStandard) {
+            console.log(`[ReferenceToggle DEBUG] 🔄 Building Reference State...`);
             window.TEUI.StateManager.buildReferenceState(currentStandard);
             
             // Use V2 Calculator orchestration if available
             if (window.TEUI.Calculator && typeof window.TEUI.Calculator.runAllCalculations === 'function') {
+                console.log(`[ReferenceToggle DEBUG] 🧮 Running all calculations in Reference Mode...`);
                 window.TEUI.Calculator.runAllCalculations('reference');
             } else if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+                console.log(`[ReferenceToggle DEBUG] 🧮 Running calculateAll in Reference Mode...`);
                 window.TEUI.Calculator.calculateAll();
             }
         }
+    } else {
+        console.log(`[ReferenceToggle DEBUG] 🔄 Exiting Reference Mode, returning to Design Mode...`);
     }
     
     triggerFullUIRefreshForModeChange();
+    
+    // Debug e_10 state after mode switch
+    if (window.TEUI?.StateManager) {
+      setTimeout(() => {
+        const newE10 = window.TEUI.StateManager.getValue('e_10');
+        const appE10 = window.TEUI.StateManager.getApplicationValue?.('e_10') || 'N/A';
+        const refE10 = window.TEUI.StateManager.getReferenceValue?.('e_10') || 'N/A';
+        const sessionRefE10 = window.TEUI.StateManager.getSessionReferenceValue?.('e_10') || 'N/A';
+        
+        console.log(`[ReferenceToggle DEBUG] 📊 AFTER SWITCH - e_10 values:`);
+        console.log(`  - Current (from getValue): ${newE10}`);
+        console.log(`  - Application state: ${appE10}`);
+        console.log(`  - Reference state: ${refE10}`);
+        console.log(`  - Session Reference state: ${sessionRefE10}`);
+      }, 100); // Small delay to let calculations complete
+    }
   }
 
   function triggerFullUIRefreshForModeChange() {
