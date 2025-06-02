@@ -176,39 +176,62 @@ window.TEUI.SectionModules.sect01 = (function() {
         return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
     }
 
-    // 3. EXPLICIT Reference state getter for Reference Model calculations - FIXED FOR CONTAMINATION
+    /**
+     * Helper to get Reference state values with proper hemisphere isolation.
+     * CRITICAL: Now prioritizes multiple methods for reference state access.
+     */
     function getRefStateValue(fieldId) {
-        // First try ref_ prefixed value (from upstream Reference calculations)
+        // Method 1: Try ref_ prefixed value in the StateManager (from upstream Reference calculations)
         const refFieldId = `ref_${fieldId}`;
         let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
+        if (value !== null && value !== undefined) {
+            return value;
+        }
         
-        // If no ref_ value exists, use Reference standard values ONLY (never fall back to Application)
-        if ((value === null || value === undefined) && window.TEUI?.StateManager?.getValue) {
-            // For Reference calculations, use the Reference standard values when available
-            const activeDataSet = window.TEUI.StateManager.activeReferenceDataSet || {};
-            if (activeDataSet[fieldId] !== undefined) {
-                value = activeDataSet[fieldId];
-            } else {
-                // CRITICAL FIX: Use hardcoded Reference standard values instead of Application fallback
-                // This prevents Reference Model from reading Application values
-                const referenceStandardValues = {
-                    'h_15': 1427.2,    // Reference standard area
-                    'h_13': 60,        // Reference standard service life
-                    'f_113': 7.1,      // Reference standard HSPF
-                    'd_119': 8.33,     // Reference standard ventilation rate
-                    'i_41': 0,         // Reference standard embodied carbon
-                    'e_139': 0,        // Reference standard energy (will be calculated)
-                    'h_136': 0         // Reference standard TEUI (will be calculated)
-                };
-                
-                if (referenceStandardValues[fieldId] !== undefined) {
-                    value = referenceStandardValues[fieldId];
-                }
-                // NO FALLBACK TO APPLICATION VALUES - keeps Reference hemisphere pure
+        // Method 2: Try SessionReferenceState (most persistent between toggles)
+        if (window.TEUI?.StateManager?.getSessionReferenceValue) {
+            const sessionValue = window.TEUI.StateManager.getSessionReferenceValue(refFieldId);
+            if (sessionValue !== null && sessionValue !== undefined) {
+                return sessionValue;
             }
         }
         
-        return value;
+        // Method 3: Try direct getReferenceValue API (V2 architecture)
+        if (window.TEUI?.StateManager?.getReferenceValue) {
+            const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+            if (refValue !== null && refValue !== undefined) {
+                return refValue;
+            }
+        }
+        
+        // Method 4: Try Reference standard values when available (from activeReferenceDataSet)
+        if (window.TEUI?.StateManager?.getValue) {
+            // For Reference calculations, use the Reference standard values when available
+            const activeDataSet = window.TEUI.StateManager.activeReferenceDataSet || {};
+            if (activeDataSet[fieldId] !== undefined) {
+                return activeDataSet[fieldId];
+            }
+        }
+        
+        // Method 5: Use hardcoded Reference standard values as the last resort
+        // This prevents Reference Model from reading Application values
+        const referenceStandardValues = {
+            'h_15': 1427.2,    // Reference standard area
+            'h_13': 60,        // Reference standard service life
+            'f_113': 7.1,      // Reference standard HSPF
+            'd_119': 8.33,     // Reference standard ventilation rate
+            'i_41': 0,         // Reference standard embodied carbon
+            'e_139': 0,        // Reference standard energy (will be calculated)
+            'h_136': 0,        // Reference standard TEUI (will be calculated)
+            'l_27': 18         // Reference standard emissions factor (default for 2017)
+        };
+        
+        if (referenceStandardValues[fieldId] !== undefined) {
+            return referenceStandardValues[fieldId];
+        }
+        
+        // Return null/undefined if no Reference value is found
+        return null;
     }
 
     // 4. EXPLICIT Application state getter for Target Model calculations  
@@ -270,23 +293,59 @@ window.TEUI.SectionModules.sect01 = (function() {
 
     /**
      * Helper function to safely get numeric values from the REFERENCE state.
+     * CRITICAL: Now uses proper Reference state access methods for hemisphere isolation.
      */
     function getRefNumericValue(fieldId, defaultValue = 0) {
         let value = defaultValue;
-        const stateValue = window.TEUI?.StateManager?.getValue?.(fieldId);
         
-        if (stateValue !== undefined && stateValue !== null && stateValue !== '') {
-            if (typeof stateValue === 'string') {
-                const cleanedValue = stateValue.replace(/[^\d.-]/g, '');
-                const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
-                if (!isNaN(parsed)) {
-                    value = parsed;
+        // Try multiple methods to get reference value, in order of preference:
+        
+        // Method 1: Try standard Reference Value getter (best practice)
+        if (window.TEUI?.StateManager?.getReferenceValue) {
+            const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+            if (refValue !== null && refValue !== undefined) {
+                // Parse the reference value
+                if (typeof refValue === 'string') {
+                    const cleanedValue = refValue.replace(/[^\d.-]/g, '');
+                    const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
+                    if (!isNaN(parsed)) {
+                        return parsed; // Return immediately with parsed reference value
+                    }
+                } else if (typeof refValue === 'number') {
+                    return refValue; // Return immediately with numeric reference value
                 }
-            } else if (typeof stateValue === 'number') {
-                value = stateValue;
             }
         }
-        return value;
+        
+        // Method 2: Try SessionReferenceState (persistent between Reference mode toggles)
+        if (window.TEUI?.StateManager?.getSessionReferenceValue) {
+            const sessionRefValue = window.TEUI.StateManager.getSessionReferenceValue(`ref_${fieldId}`);
+            if (sessionRefValue !== null && sessionRefValue !== undefined) {
+                const parsed = window.TEUI?.parseNumeric?.(sessionRefValue, defaultValue) ?? defaultValue;
+                if (!isNaN(parsed)) {
+                    return parsed; // Return immediately with parsed session value
+                }
+            }
+        }
+        
+        // Method 3: Try ref_ prefixed value in normal state
+        const prefixedFieldId = `ref_${fieldId}`;
+        const prefixedValue = window.TEUI?.StateManager?.getValue?.(prefixedFieldId);
+        if (prefixedValue !== null && prefixedValue !== undefined) {
+            // Parse the prefixed value
+            if (typeof prefixedValue === 'string') {
+                const cleanedValue = prefixedValue.replace(/[^\d.-]/g, '');
+                const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
+                if (!isNaN(parsed)) {
+                    return parsed; // Return immediately with parsed prefixed value
+                }
+            } else if (typeof prefixedValue === 'number') {
+                return prefixedValue; // Return immediately with numeric prefixed value
+            }
+        }
+        
+        // If all Reference state access methods failed, fall back to default value
+        return defaultValue;
     }
 
     /**
