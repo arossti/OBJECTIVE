@@ -981,8 +981,11 @@ window.TEUI.SectionModules.sect04 = (function() {
         const j34Value = calculateJ34(h33Value, d63Value);
         setCalculatedValue('j_34', j34Value, 'number-2dp-comma');
 
-        const d35Value = calculateD35(d14Value, j27Value, h35Value, f27Value);
-        setCalculatedValue('d_35', d35Value, 'number-2dp-comma');
+        // Call calculateD35 without parameters
+        calculateD35();
+        
+        // Get the updated d35Value after calculateD35() has set it
+        const d35Value = getNumericValue('d_35', 0);
 
         const f35Value = calculateF35(d35Value, h15Value);
         setCalculatedValue('f_35', f35Value, 'number-2dp-comma');
@@ -1259,10 +1262,8 @@ window.TEUI.SectionModules.sect04 = (function() {
     
     // Row 34: Annual Percapita Energy
     function calculateD34() {
-        const f32 = getAppNumericValue('f_32'); // FIXED: Use Application values for Target calculations
-        const d63 = getAppNumericValue('d_63'); // Occupants
-        // New formula: =F32/D63 (Actual Net Energy / Occupants)
-        return (f32) / (d63 || 1); // Ensure d63 is not zero
+        const d33Value = getNumericValue('d_33', 0);
+        setCalculatedValue('d_34', d33Value * 1000, 'number-2dp-comma');
     }
     
     function calculateF34() {
@@ -1284,6 +1285,30 @@ window.TEUI.SectionModules.sect04 = (function() {
         const d63 = getAppNumericValue('d_63'); 
         // =H33/D63 (Target GJ per person)
         return h33 / (d63 || 1);
+    }
+    
+    /**
+     * Calculate D35 - Total Final Energy (GJ/m²/yr)
+     */
+    function calculateD35() {
+        const d33Value = getAppNumericValue('d_33', 0); // Total energy in GJ/yr
+        const areaValue = getAppNumericValue('h_15', 1); // Conditioned area in m²
+        
+        if (areaValue > 0) {
+            const intensityValue = d33Value / areaValue; // Calculate GJ/m²/yr
+            setCalculatedValue('d_35', intensityValue, 'number-2dp-comma');
+        } else {
+            setCalculatedValue('d_35', 0, 'number-2dp-comma');
+        }
+    }
+
+    /**
+     * Calculate F35 - Total Final Energy (kWh/m²/yr)
+     * Converts GJ/m²/yr to kWh/m²/yr
+     */
+    function calculateF35(d35Value, h15Value) {
+        // Convert GJ/m²/yr to kWh/m²/yr (1 GJ = 277.778 kWh)
+        return d35Value * 277.778;
     }
 
     //==========================================================================
@@ -1530,6 +1555,9 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Register other dependent calculations
         sm.registerCalculation('d_33', calculateD33, 'Actual Total Net Energy (GJ/yr)');
         sm.registerCalculation('h_33', calculateH33, 'Target Total Net Energy (GJ/yr)');
+        sm.registerCalculation('d_34', calculateD34, 'Annual Per Capita Energy (kWh/person/yr)');
+        sm.registerCalculation('d_35', calculateD35, 'Total Final Energy (GJ/m²/yr)');
+        sm.registerCalculation('f_35', calculateF35, 'Total Final Energy (kWh/m²/yr)');
         
         // Register dependencies for electricity calculations
         sm.registerDependency('d_27', 'f_27');
