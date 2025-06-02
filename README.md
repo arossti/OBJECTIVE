@@ -1110,6 +1110,25 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
     *   Sections emitting events like `referenceModelCalculationComplete` or `targetModelValueAvailable(fieldId)`.
     *   Dependent sections (or a central calculation orchestrator) listening for these events from their specific data sources before triggering their own calculations.
     *   This approach would make the calculation flow more reactive and less reliant on a monolithic, perfectly ordered synchronous pass, ensuring data is only consumed once its precedent calculations are verifiably complete. This is particularly important for the dual-engine reference model where the `activeReferenceDataSet` and subsequent `ref_` prefixed values must be fully established before being used by downstream sections like S04 and S01.
+*   **Reference State Display Caching**: Implement a robust Reference state UI caching system to improve user experience when toggling between Reference and Application modes:
+    *   **Current Issue**: When toggling between Reference and Application (Design) modes, the UI always reflects the active calculation state. This means Reference UI values are calculated from scratch each toggle, even if no user interactions or changes occurred.
+    *   **Proposed Solution**: Create a DOM cache of all calculated Reference values and display elements:
+        *   When switching to Reference mode the first time, perform full Reference calculations
+        *   Create a "snapshot" of all DOM elements displaying Reference values
+        *   When switching back to Application mode, save this DOM snapshot
+        *   On subsequent toggles to Reference mode, restore the cached DOM snapshot if no relevant inputs have changed
+        *   Only trigger full Reference recalculation if user interacts with Reference inputs or if Application values that affect Reference calculations change
+    *   **Benefits**:
+        *   Faster toggle response: users can quickly switch between modes without waiting for recalculation
+        *   More consistent UI experience: Reference values don't appear to "recalculate" when nothing has changed
+        *   Values persist visually between toggles exactly as users expect
+        *   Clear distinction between "view cached state" and "recalculate fresh values"
+    *   **Implementation Approach**:
+        *   Add a `hasReferenceStateChanged()` check to determine if recalculation is needed
+        *   Store Reference DOM snapshot in `window.TEUI.cachedReferenceState`
+        *   Add mode-change hooks in `ReferenceToggle.js` to restore cached UI when appropriate
+        *   Only invalidate cache when specific events occur (user input in Reference mode, changes to values that affect Reference calculations)
+        *   Include visual indicator when using cached vs. fresh calculations
 
 ### UI/UX Improvements Needed
 

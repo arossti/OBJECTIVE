@@ -1795,6 +1795,32 @@ TEUI.StateManager = (function() {
         return calculationInProgress || calculationDepth > 0;
     }
     
+    /**
+     * Get a session reference value, which persists between Reference Mode toggles
+     * @param {string} key - The key to retrieve from session reference state
+     * @returns {string|null} The value or null if not found
+     */
+    function getSessionReferenceValue(key) {
+        // Check if session reference state exists
+        if (!window.TEUI.sessionReferenceState) {
+            return null;
+        }
+        return window.TEUI.sessionReferenceState[key] || null;
+    }
+
+    /**
+     * Set a session reference value, which persists between Reference Mode toggles
+     * @param {string} key - The key to store in session reference state
+     * @param {string} value - The value to store
+     */
+    function setSessionReferenceValue(key, value) {
+        // Initialize if not exists
+        if (!window.TEUI.sessionReferenceState) {
+            window.TEUI.sessionReferenceState = {};
+        }
+        window.TEUI.sessionReferenceState[key] = value;
+    }
+    
     // Public API
     return {
         // Constants
@@ -1851,7 +1877,9 @@ TEUI.StateManager = (function() {
         addSmartListener: addSmartListener,
         calculateBatchDependencies: calculateBatchDependencies,
         hasCalculation: hasCalculation,
-        getRegisteredCalculations: getRegisteredCalculations
+        getRegisteredCalculations: getRegisteredCalculations,
+        getSessionReferenceValue: getSessionReferenceValue,
+        setSessionReferenceValue: setSessionReferenceValue
     };
 })();
 

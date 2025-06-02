@@ -1609,6 +1609,7 @@ window.TEUI.SectionModules.sect01 = (function() {
     return {
         getFields: () => fields,
         getHTML: () => '',  // Section 01 renders directly
+        getLayout: () => ({ rows: [] }),  // Return empty layout since we render directly
         runAllCalculations: runAllCalculations,
         calculateAll: calculateAll,
         onSectionRendered: onSectionRendered,

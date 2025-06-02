@@ -966,6 +966,13 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Update the StateManager with user-modified state
             if (window.TEUI && window.TEUI.StateManager) {
                 window.TEUI.StateManager.setValue("h_15", newArea.toString(), "user-modified");
+                console.log(`[S02] Updated area to ${newArea}m² - triggering recalculations`);
+                
+                // CRITICAL FIX: Explicitly trigger Section 01 calculations
+                if (window.TEUI?.SectionModules?.sect01?.calculateAll) {
+                    console.log(`[S02] Explicitly triggering S01 calculations after area change`);
+                    window.TEUI.SectionModules.sect01.calculateAll();
+                }
             }
             
             // Reset the slider value back to 0 after applying the adjustment
@@ -974,7 +981,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Clear the stored original area value
             delete slider.dataset.originalArea;
         } catch (error) {
-            // console.warn("Error handling area slider change:", error);
+            console.warn("Error handling area slider change:", error);
         }
     }
     

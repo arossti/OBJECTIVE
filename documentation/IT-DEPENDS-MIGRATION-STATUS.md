@@ -9,6 +9,7 @@
 - ✅ e_10 (Reference TEUI) maintains correct values across multiple toggles
 - ✅ Fixed getNumericValue error in S01 by moving function inside module scope
 - ✅ Fixed calculateD35 error in S04 by adding the missing function and registerITDependsCalculations entries
+- ✅ Fixed Reference state contamination when switching between Reference and Application modes
 
 ### What's Working:
 - **S01**: IT-DEPENDS calculations for k_8, h_8, d_8, e_10, h_10 all working
@@ -28,8 +29,44 @@ if (window.TEUI?.StateManager?.setSessionReferenceValue) {
 }
 ```
 
+### Critical Fix for Reference State Contamination:
+The S01 module's `getRefNumericValue` and `getRefStateValue` functions were revised to properly isolate Reference state values:
+
+```javascript
+function getRefNumericValue(fieldId, defaultValue = 0) {
+    // Try multiple methods to get reference value, in order of preference:
+    
+    // Method 1: Try standard Reference Value getter (best practice)
+    if (window.TEUI?.StateManager?.getReferenceValue) {
+        const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+        if (refValue !== null && refValue !== undefined) {
+            // Parse the reference value
+            // ...
+            return parsed; // Return immediately with parsed reference value
+        }
+    }
+    
+    // Method 2: Try SessionReferenceState (persistent between toggles)
+    if (window.TEUI?.StateManager?.getSessionReferenceValue) {
+        const sessionRefValue = window.TEUI.StateManager.getSessionReferenceValue(`ref_${fieldId}`);
+        // ...
+    }
+    
+    // Method 3: Try ref_ prefixed value in normal state
+    const prefixedFieldId = `ref_${fieldId}`;
+    const prefixedValue = window.TEUI?.StateManager?.getValue?.(prefixedFieldId);
+    // ...
+}
+```
+
+The fix ensures that:
+1. S01 always gets Reference values from the proper sources, even in Application mode
+2. Values like e_10 and d_8 maintain their Reference values when switching modes
+3. Emissions factors correctly persist per-mode and don't contaminate each other
+4. Changes to reporting year in one mode don't affect the other mode's calculations
+
 ### Key Learning:
-The issue was simpler than initially thought - the Reference calculations were trying to read the emissions factor using the wrong key. The fix ensures Reference calculations always use `ref_l_27` which contains the emissions factor calculated from the Reference year slider.
+The state isolation between Reference and Application models requires careful attention to how helper functions access state. Using `getValue()` directly in `getRefNumericValue()` was causing it to return Application values when in Application mode, rather than properly accessing Reference state values. The V2 dual-engine architecture pattern requires explicitly separating state access methods.
 
 ## 🔄 REVERTED TO STABLE STATE - 2024-01-21
 

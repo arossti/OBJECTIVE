@@ -652,7 +652,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             console.log(`[S04] Area (h_15) changed to ${newValue}, recalculating all emissions and carbon intensities`);
             
             // Just run full calculation to update all intensity values
-            calculateAll();
+                calculateAll();
             
             // Then make sure S01 is updated with the new emissions values
             if (window.TEUI?.SectionModules?.sect01?.calculateAll) {
@@ -785,15 +785,15 @@ window.TEUI.SectionModules.sect04 = (function() {
             console.log(`[S04] 🔐 Stored APPLICATION emissions factor ${factor} for year ${reportingYear}`);
             
             // Recalculate dependent values for application state
-            const f27Value = getNumericValue('f_27');
-            const g27Value = calculateG27(f27Value, factor); 
-            setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
+        const f27Value = getNumericValue('f_27');
+        const g27Value = calculateG27(f27Value, factor); 
+        setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
 
-            const j27Value = getNumericValue('j_27');
-            const k27Value = calculateK27(j27Value, factor); 
-            setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-            
-            updateSubtotals();
+        const j27Value = getNumericValue('j_27');
+        const k27Value = calculateK27(j27Value, factor); 
+        setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
+        
+        updateSubtotals(); 
         }
     }
 
@@ -1310,7 +1310,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Convert GJ/m²/yr to kWh/m²/yr (1 GJ = 277.778 kWh)
         return d35Value * 277.778;
     }
-
+    
     //==========================================================================
     // PART 7: PUBLIC API
     //==========================================================================
@@ -1403,8 +1403,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         }
         
         try {
-            referenceCalculationInProgress = true;
-            
+        referenceCalculationInProgress = true;
+        
             // Get Reference Model inputs using Reference-specific getters
             const ref_d27 = getRefNumericValue('d_27');
             const ref_d28 = getRefNumericValue('d_28');
@@ -1424,9 +1424,9 @@ window.TEUI.SectionModules.sect04 = (function() {
             // Calculate Reference electricity values
             const ref_f27 = ref_d27 - ref_d43 - ref_i43;
             const ref_g27 = (ref_f27 * ref_l27) / 1000;
-            const ref_h27 = ref_d136;
+        const ref_h27 = ref_d136;
             const ref_j27 = ref_h27 - ref_d43 - ref_i43;
-            const ref_k27 = (ref_j27 * ref_l27) / 1000;
+        const ref_k27 = (ref_j27 * ref_l27) / 1000;
             
             // Store the Reference values if we're in Reference Mode UI
             if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
@@ -1459,8 +1459,8 @@ window.TEUI.SectionModules.sect04 = (function() {
                     window.TEUI.StateManager.setReferenceValue('ref_j_27', ref_j27.toString(), 'calculated-reference');
                     window.TEUI.StateManager.setReferenceValue('ref_f_32', ref_f27.toString(), 'calculated-reference'); // Simplified
                     window.TEUI.StateManager.setReferenceValue('ref_j_32', ref_j27.toString(), 'calculated-reference'); // Simplified
-                }
             }
+        }
         } finally {
             referenceCalculationInProgress = false;
         }
@@ -1480,8 +1480,8 @@ window.TEUI.SectionModules.sect04 = (function() {
         }
         
         try {
-            targetCalculationInProgress = true;
-            
+        targetCalculationInProgress = true;
+        
             // Calculate row 27 (Electricity)
             const f27Value = calculateF27();
             setCalculatedValue('f_27', f27Value, 'number-2dp-comma');
@@ -1501,12 +1501,12 @@ window.TEUI.SectionModules.sect04 = (function() {
             setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
             
             // Update all other rows and calculate subtotals
-            updateSubtotals();
+        updateSubtotals();
         } finally {
             targetCalculationInProgress = false;
         }
     }
-
+    
     /**
      * Called when the section is first rendered
      * Initializes calculations and default state
