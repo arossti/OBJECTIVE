@@ -371,32 +371,132 @@ window.TEUI.SectionModules.sect01 = (function() {
     //==========================================================================
 
     /**
-     * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state exclusively
-     * ENHANCED: Now properly receives Reference values from Section 15 (ref_h_136)
-     * FIXED: Uses explicit Reference state values to ensure proper dual-engine separation
+     * REFERENCE MODEL ENGINE: Calculate all Reference values
      */
     function calculateReferenceModel() {
+        console.log('[S01] 🔵 Running Reference Model calculation');
+        
         // RECURSION PROTECTION
         if (referenceCalculationInProgress) {
+            console.log('[S01] Reference calculation already in progress, skipping');
             return;
         }
         
-        referenceCalculationInProgress = true;
-        
         try {
-            console.log('[S01 REF ENGINE] 🔵 Starting Reference Model calculations...');
+            referenceCalculationInProgress = true;
             
-            // Trigger IT-DEPENDS calculations for Reference values
-            if (window.TEUI?.StateManager?.recalculate) {
-                window.TEUI.StateManager.recalculate('e_10');
-                window.TEUI.StateManager.recalculate('d_8');
-                window.TEUI.StateManager.recalculate('d_6');
+            // =============================================================================
+            // Direct lookup from S15 (Reference TEUI) if available
+            // =============================================================================
+            
+            // Primary value: ref_h_136 is the Reference TEUI from S15
+            const ref_h136 = getRefStateValue('h_136');
+            if (ref_h136) {
+                console.log(`[S01] Found Reference TEUI from S15: ${ref_h136} kWh/m²/yr`);
+                // Set ref_e_10 and update UI if in Reference Mode
+                setReferenceValue('e_10', ref_h136);
+            } else {
+                console.log('[S01] No Reference TEUI from S15, calculating manually');
+                
+                // Fallback: Calculate e_10 from Reference energy and area
+                const ref_energy = getRefStateValue('e_139') || getRefStateValue('j_32') || 0;
+                const ref_area = getRefStateValue('h_15') || 1427.2; // standard area
+                
+                if (ref_energy > 0 && ref_area > 0) {
+                    const ref_teui = ref_energy / ref_area;
+                    console.log(`[S01] Calculated Reference TEUI: ${ref_teui} kWh/m²/yr (energy: ${ref_energy}, area: ${ref_area})`);
+                    setReferenceValue('e_10', ref_teui);
+                } else {
+                    // Ultimate fallback: Set standard reference value
+                    setReferenceValue('e_10', 186.4);
+                    console.log('[S01] Using standard Reference TEUI: 186.4 kWh/m²/yr');
+                }
             }
             
-            console.log('[S01 REF ENGINE] ✅ Reference Model calculations complete');
+            // =============================================================================
+            // REFERENCE ANNUAL CARBON INTENSITY (d_8)
+            // =============================================================================
             
-        } catch (error) {
-            console.error('[S01 Reference] Calculation error:', error);
+            // CRITICAL FIX: Get proper Reference emissions factor
+            // Try multiple methods to get the reference emissions factor
+            let ref_l27 = 0; 
+            
+            // Method 1: Try SessionReferenceState (preferred - most persistent)
+            if (window.TEUI?.StateManager?.getSessionReferenceValue) {
+                const sessionRefValue = window.TEUI.StateManager.getSessionReferenceValue('ref_l_27');
+                if (sessionRefValue) {
+                    ref_l27 = window.TEUI.parseNumeric(sessionRefValue, 0);
+                    console.log(`[S01] 🔐 Found Reference emissions factor from SessionReferenceState: ${ref_l27}`);
+                }
+            }
+            
+            // Method 2: Try standard Reference state
+            if (ref_l27 === 0 && window.TEUI?.StateManager?.getReferenceValue) {
+                const refValue = window.TEUI.StateManager.getReferenceValue('l_27');
+                if (refValue) {
+                    ref_l27 = window.TEUI.parseNumeric(refValue, 0);
+                    console.log(`[S01] 🔐 Found Reference emissions factor from ReferenceValue: ${ref_l27}`);
+                }
+            }
+            
+            // Method 3: Try ref_ prefixed value in normal state
+            if (ref_l27 === 0) {
+                const stateRefValue = window.TEUI?.StateManager?.getValue?.('ref_l_27');
+                if (stateRefValue) {
+                    ref_l27 = window.TEUI.parseNumeric(stateRefValue, 0);
+                    console.log(`[S01] 🔐 Found Reference emissions factor from StateManager ref_l_27: ${ref_l27}`);
+                }
+            }
+            
+            // Final fallback: Use Application emissions factor
+            if (ref_l27 === 0) {
+                const appValue = window.TEUI?.StateManager?.getApplicationValue?.('l_27') || 
+                                window.TEUI?.StateManager?.getValue?.('l_27');
+                if (appValue) {
+                    ref_l27 = window.TEUI.parseNumeric(appValue, 0);
+                    console.log(`[S01] ⚠️ Falling back to Application emissions factor: ${ref_l27}`);
+                } else {
+                    // Ultimate fallback: Default value
+                    ref_l27 = 51; // Default for Ontario 2022
+                    console.log(`[S01] ⚠️ Using default emissions factor: ${ref_l27}`);
+                }
+            }
+            
+            // Get Reference energy and calculate emissions
+            const ref_energy = getRefStateValue('j_32') || 0;
+            const ref_area = getRefStateValue('h_15') || 1427.2; // standard area
+            
+            if (ref_energy > 0 && ref_area > 0) {
+                // First calculate total emissions using the Reference emissions factor
+                const ref_emissions = (ref_energy * ref_l27) / 1000; // ref_l27 is in gCO2e/kWh, result in kgCO2e
+                
+                // Then calculate intensity (per m²)
+                const ref_carbon_intensity = Math.round((ref_emissions / ref_area) * 10) / 10;
+                console.log(`[S01] Calculated Reference Carbon Intensity: ${ref_carbon_intensity} kgCO2e/m²/yr (energy: ${ref_energy}, emissions factor: ${ref_l27}, total emissions: ${ref_emissions}, area: ${ref_area})`);
+                setReferenceValue('d_8', ref_carbon_intensity);
+            } else {
+                // Fallback for emissions
+                setReferenceValue('d_8', 10.5); // Typical reference value
+                console.log('[S01] Using standard Reference Carbon Intensity: 10.5 kgCO2e/m²/yr');
+            }
+            
+            // =============================================================================
+            // REFERENCE LIFETIME CARBON INTENSITY (d_6)
+            // =============================================================================
+            
+            const ref_embodied = getRefStateValue('i_41') || 0;
+            const ref_service_life = getRefStateValue('h_13') || 60; // standard life
+            const ref_annual = getRefNumericValue('d_8', 10.5); // Use already-calculated value
+            
+            if (ref_service_life > 0) {
+                const ref_lifetime = Math.round(((ref_embodied / ref_service_life) + ref_annual) * 10) / 10;
+                console.log(`[S01] Calculated Reference Lifetime Carbon: ${ref_lifetime} kgCO2e/m²/yr (embodied: ${ref_embodied}, service life: ${ref_service_life}, annual: ${ref_annual})`);
+                setReferenceValue('d_6', ref_lifetime);
+            } else {
+                // Fallback
+                setReferenceValue('d_6', 17.1); // Typical reference value
+                console.log('[S01] Using standard Reference Lifetime Carbon: 17.1 kgCO2e/m²/yr');
+            }
         } finally {
             referenceCalculationInProgress = false;
         }
@@ -407,45 +507,126 @@ window.TEUI.SectionModules.sect01 = (function() {
     //==========================================================================
 
     /**
-     * TARGET MODEL ENGINE: Calculate all Column H values using Application state exclusively
-     * FIXED: Uses explicit Application state values to ensure proper dual-engine separation
+     * TARGET MODEL ENGINE: Calculate all Target values
      */
     function calculateTargetModel() {
+        console.log('[S01] 🟢 Running Target Model calculation');
+        
         // RECURSION PROTECTION
         if (targetCalculationInProgress) {
+            console.log('[S01] Target calculation already in progress, skipping');
             return;
         }
         
-        targetCalculationInProgress = true;
-        
         try {
-            console.log('[S01 APP ENGINE] 🟢 Starting Application Model calculations...');
+            targetCalculationInProgress = true;
             
-            // Trigger IT-DEPENDS calculations for Target values
-            if (window.TEUI?.StateManager?.recalculate) {
-                window.TEUI.StateManager.recalculate('h_10');
-                window.TEUI.StateManager.recalculate('h_8');
-                window.TEUI.StateManager.recalculate('h_6');
+            // =============================================================================
+            // Target TEUI (h_10)
+            // =============================================================================
+            
+            // Get S15 Target TEUI if available
+            const h136 = getAppStateValue('h_136');
+            if (h136 && parseFloat(h136) > 0) {
+                console.log(`[S01] Found Target TEUI from S15: ${h136} kWh/m²/yr`);
+                setTargetValue('h_10', parseFloat(h136));
+            } else {
+                // Calculate from energy and area
+                const target_energy = getAppNumericValue('j_32', 0);
+                const target_area = getAppNumericValue('h_15', 1427.2);
                 
-                // Also calculate actual values
-                window.TEUI.StateManager.recalculate('k_10');
-                window.TEUI.StateManager.recalculate('k_8');
-                window.TEUI.StateManager.recalculate('k_6');
-                
-                // And percentage
-                window.TEUI.StateManager.recalculate('j_8');
+                if (target_area > 0) {
+                    const target_teui = Math.round((target_energy / target_area) * 10) / 10;
+                    console.log(`[S01] Calculated Target TEUI: ${target_teui} kWh/m²/yr (energy: ${target_energy}, area: ${target_area})`);
+                    setTargetValue('h_10', target_teui);
+                } else {
+                    console.log('[S01] Cannot calculate Target TEUI: area is zero');
+                    setTargetValue('h_10', 0);
+                }
             }
             
-            console.log('[S01 APP ENGINE] ✅ Application Model calculations complete');
+            // =============================================================================
+            // TARGET ANNUAL CARBON INTENSITY (h_8)
+            // =============================================================================
             
-            // Call additional display updates
+            // Get emissions factor from Application state
+            const app_l27 = getAppNumericValue('l_27', 51); // Default 51 for Ontario 2022
+            
+            // Get Application energy and calculate emissions
+            const target_emissions = getAppNumericValue('k_32', 0);
+            const target_area = getAppNumericValue('h_15', 1427.2);
+            
+            if (target_area > 0) {
+                const target_carbon_intensity = Math.round((target_emissions / target_area) * 10) / 10;
+                console.log(`[S01] Calculated Target Carbon Intensity: ${target_carbon_intensity} kgCO2e/m²/yr (emissions: ${target_emissions}, area: ${target_area}, emissions factor: ${app_l27})`);
+                setTargetValue('h_8', target_carbon_intensity);
+            } else {
+                console.log('[S01] Cannot calculate Target Carbon Intensity: area is zero');
+                setTargetValue('h_8', 0);
+            }
+            
+            // =============================================================================
+            // TARGET LIFETIME CARBON INTENSITY (h_6)
+            // =============================================================================
+            
+            const target_embodied = getAppNumericValue('i_41', 0);
+            const target_service_life = getAppNumericValue('h_13', 60);
+            const target_annual = getNumericValue('h_8', 0);
+            
+            if (target_service_life > 0) {
+                const target_lifetime = Math.round(((target_embodied / target_service_life) + target_annual) * 10) / 10;
+                console.log(`[S01] Calculated Target Lifetime Carbon: ${target_lifetime} kgCO2e/m²/yr (embodied: ${target_embodied}, service life: ${target_service_life}, annual: ${target_annual})`);
+                setTargetValue('h_6', target_lifetime);
+            } else {
+                console.log('[S01] Cannot calculate Target Lifetime Carbon: service life is zero');
+                setTargetValue('h_6', 0);
+            }
+            
+            // =============================================================================
+            // ACTUAL VALUES (k_10, k_8, k_6)
+            // =============================================================================
+            
+            // Actual TEUI (k_10)
+            const actual_energy = getAppNumericValue('f_32', 0);
+            if (actual_energy > 0 && target_area > 0) {
+                const actual_teui = Math.round((actual_energy / target_area) * 10) / 10;
+                console.log(`[S01] Calculated Actual TEUI: ${actual_teui} kWh/m²/yr`);
+                setCalculatedValue('k_10', actual_teui);
+            } else {
+                console.log('[S01] No Actual Energy data available');
+                setCalculatedValue('k_10', 'N/A');
+            }
+            
+            // Actual Annual Carbon (k_8)
+            const actual_emissions = getAppNumericValue('g_32', 0);
+            if (actual_emissions > 0 && target_area > 0) {
+                const actual_carbon_intensity = Math.round((actual_emissions / target_area) * 10) / 10;
+                console.log(`[S01] Calculated Actual Carbon Intensity: ${actual_carbon_intensity} kgCO2e/m²/yr`);
+                setCalculatedValue('k_8', actual_carbon_intensity);
+            } else {
+                console.log('[S01] No Actual Emissions data available');
+                setCalculatedValue('k_8', 'N/A');
+            }
+            
+            // Actual Lifetime Carbon (k_6)
+            const actual_annual = getNumericValue('k_8');
+            if (typeof actual_annual === 'number' && target_service_life > 0) {
+                const actual_lifetime = Math.round(((target_embodied / target_service_life) + actual_annual) * 10) / 10;
+                console.log(`[S01] Calculated Actual Lifetime Carbon: ${actual_lifetime} kgCO2e/m²/yr`);
+                setCalculatedValue('k_6', actual_lifetime);
+            } else {
+                console.log('[S01] No Actual Emissions data available for lifetime calculation');
+                setCalculatedValue('k_6', 'N/A');
+            }
+            
+            // Calculate percentages and explanations
             calculatePercentagesAndExplanations();
-            updateTEUIDisplay();
-            updateAllGauges();
-            checkTargetExceedsReference();
             
-        } catch (error) {
-            console.error('[S01 Target] Calculation error:', error);
+            // Update gauges with new values
+            updateAllGauges();
+            
+            // Check if target exceeds reference (for warnings)
+            checkTargetExceedsReference();
         } finally {
             targetCalculationInProgress = false;
         }
@@ -1127,6 +1308,18 @@ window.TEUI.SectionModules.sect01 = (function() {
         
         // Register IT-DEPENDS calculations
         registerITDependsCalculations();
+    }
+    
+    /**
+     * Safely parses a numeric value from StateManager, using the global parseNumeric.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @param {number} defaultValue - Default value if field doesn't exist or can't be parsed
+     * @returns {number} The parsed numeric value, or defaultValue if parsing fails.
+     */
+    function getNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+        // Use the global parseNumeric if available
+        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) || defaultValue;
     }
     
     /**

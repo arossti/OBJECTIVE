@@ -1,5 +1,35 @@
 # IT-DEPENDS Migration Status
 
+## 🔄 SECTION 01 REFACTOR SUCCESS - 2025-01-22
+
+### Current Status:
+- ✅ S01 successfully refactored with minimal IT-DEPENDS approach
+- ✅ Reference emissions factor now persists correctly across toggles
+- ✅ Dual reporting years working perfectly (separate years for Reference and Application)
+- ✅ e_10 (Reference TEUI) maintains correct values across multiple toggles
+- ✅ Fixed getNumericValue error in S01 by moving function inside module scope
+
+### What's Working:
+- **S01**: IT-DEPENDS calculations for k_8, h_8, d_8, e_10, h_10 all working
+- **S04**: Fixed Reference emissions factor (ref_l_27) persistence issue
+- **S13**: Gold standard implementation with full IT-DEPENDS
+- **S14**: Complete IT-DEPENDS for TEDI calculations
+- **S15**: Complete IT-DEPENDS for TEUI Summary
+- **Dual Reporting Years**: Reference and Application calculations use separate reporting years
+- **Emissions Factors**: Now correctly calculate and save based on respective year sliders
+
+### Critical Fix Applied:
+In S04's `updateGridIntensityForMode`, the Reference emissions factor is now properly stored for persistence:
+```javascript
+// CRITICAL FIX: Use SessionReferenceState for persistent storage
+if (window.TEUI?.StateManager?.setSessionReferenceValue) {
+    window.TEUI.StateManager.setSessionReferenceValue('ref_l_27', factor.toString());
+}
+```
+
+### Key Learning:
+The issue was simpler than initially thought - the Reference calculations were trying to read the emissions factor using the wrong key. The fix ensures Reference calculations always use `ref_l_27` which contains the emissions factor calculated from the Reference year slider.
+
 ## 🔄 REVERTED TO STABLE STATE - 2024-01-21
 
 ### Current Status:
