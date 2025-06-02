@@ -8,6 +8,7 @@
 - ✅ Dual reporting years working perfectly (separate years for Reference and Application)
 - ✅ e_10 (Reference TEUI) maintains correct values across multiple toggles
 - ✅ Fixed getNumericValue error in S01 by moving function inside module scope
+- ✅ Fixed calculateD35 error in S04 by adding the missing function and registerITDependsCalculations entries
 
 ### What's Working:
 - **S01**: IT-DEPENDS calculations for k_8, h_8, d_8, e_10, h_10 all working
