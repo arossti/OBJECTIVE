@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Section 04 IT-DEPENDS Test</title>
+</head>
+<body>
+    <h1>Section 04 IT-DEPENDS Test</h1>
+    <p>Open the browser console to see test results.</p>
+    
+    <script>
+        // Wait for page to load
+        window.addEventListener('load', function() {
+            console.log('=== TESTING SECTION 04 IT-DEPENDS ===');
+            
+            // Check if Section 04 module exists
+            if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect04) {
+                console.log('✓ Section 04 module found');
+                
+                // Check if test function exists
+                if (window.TEUI.SectionModules.sect04.testS04_ITDepends) {
+                    console.log('✓ Test function found');
+                    
+                    // Run the test after a short delay to ensure everything is initialized
+                    setTimeout(() => {
+                        console.log('Running Section 04 IT-DEPENDS test...');
+                        window.TEUI.SectionModules.sect04.testS04_ITDepends();
+                    }, 2000);
+                } else {
+                    console.error('❌ Test function not found on Section 04 module');
+                }
+            } else {
+                console.error('❌ Section 04 module not found');
+                console.log('Available modules:', Object.keys(window.TEUI?.SectionModules || {}));
+            }
+        });
+    </script>
+    
+    <!-- Load the main app first -->
+    <iframe src="index.html" width="100%" height="600" style="border: 1px solid #ccc;"></iframe>
+</body>
+</html> 

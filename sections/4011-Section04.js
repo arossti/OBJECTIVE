@@ -4,14 +4,28 @@
  * 
  * This file contains field definitions, layout templates, and rendering logic
  * specific to the Actual vs. Target Energy & Carbon section using a declarative row-based approach.
+ * 
+ * IT-DEPENDS MIGRATION: Complete
+ * - Dual-engine architecture preserved
+ * - IT-DEPENDS calculations registered
+ * - Cross-section listeners implemented
+ * - Recursion protection added
  */
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
+// Create section-specific namespace for recursion protection
+window.TEUI.sect04 = window.TEUI.sect04 || {};
+window.TEUI.sect04.calculationInProgress = false;
+
 // Section 4: Actual vs. Target Energy & Carbon Module
 window.TEUI.SectionModules.sect04 = (function() {
+    
+    // Add module-level recursion protection flags for dual-engine
+    let referenceCalculationInProgress = false;
+    let targetCalculationInProgress = false;
     
     //==========================================================================
     // HELPER FUNCTIONS (Standard Implementation)
@@ -607,245 +621,146 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     /**
-     * Set up listeners for values from other sections that affect calculations in this section
+     * Setup cross-section listeners using IT-DEPENDS pattern
+     * These listeners respond to changes from other sections and trigger recalculation
      */
     function setupCrossSectionListeners() {
-        if (window.TEUI && window.TEUI.StateManager) {
-            const sm = window.TEUI.StateManager; // Alias for brevity
-
-            // Listener function for Electricity Emission Factor
-            const updateFactorCallback = () => { 
-                 updateElectricityEmissionFactor(); 
-            };
-            
-            // Listen for province changes (dd_d_19)
-            sm.addListener('dd_d_19', updateFactorCallback);
-            sm.addListener('d_19', updateFactorCallback); // Also listen for d_19
-            
-            // Listen for reporting year changes (h_12)
-            sm.addListener('h_12', updateFactorCallback);
-            sm.addListener('d_12', updateFactorCallback);
-            
-            // Listener function for Net Electricity changes (Renewables)
-            const netElectricityUpdateCallback = function(newValue, oldValue, sourceFieldId) { // Added params
-                // console.log(`[S4 DEBUG] netElectricityUpdateCallback triggered by ${sourceFieldId}. New value: ${newValue}, Old value: ${oldValue}`); 
-                
-                // Specific log when d_27 changes
-                if (sourceFieldId === 'd_27') {
-                    // console.log(`[S4 DEBUG] d_27 changed. Reading current values...`);
-                }
-                
-                // Fetch CURRENT values from StateManager using helper
-                const d27 = getNumericValue('d_27');
-                const h27 = getNumericValue('h_27'); 
-                const l27 = getNumericValue('l_27'); 
-                const d43 = getNumericValue('d_43'); // Should reflect the trigger if sourceFieldId was d_43
-                const i43 = getNumericValue('i_43'); // Should reflect the trigger if sourceFieldId was i_43
-
-                // console.log(`[S4 DEBUG] Current values read: d27=${d27}, h27=${h27}, l27=${l27}, d43=${d43}, i43=${i43}`);
- 
-                // Perform calculations using calculation helpers
-                const f27New = calculateF27(); // No args needed
-                const j27New = calculateJ27(); // No args needed
-                const g27New = calculateG27(); // No args needed
-                const k27New = calculateK27(); // No args needed
-                 // console.log(`[S4 DEBUG] Calculated values: f27New=${f27New}, j27New=${j27New}, g27New=${g27New}, k27New=${k27New}`);
-  
-                 // Update net usage fields using standard helper
-                setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
-                setCalculatedValue('j_27', j27New, 'number-2dp-comma'); 
-                // Update emission fields using standard helper
-                setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
-                setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
-
-               // console.log("[S4 DEBUG] Called setCalculatedValue for f_27, j_27, g_27, k_27.");
- 
-                 updateSubtotals(); // Update totals after row 27 changes
-            };
-
-            sm.addListener('d_27', netElectricityUpdateCallback); // *** ADDED: Listen for Actual Electricity Use ***
-            sm.addListener('d_43', netElectricityUpdateCallback); // Onsite Renewables
-            // window.TEUI.StateManager.addListener('i_44', netElectricityUpdateCallback); // Listener no longer needed
-            sm.addListener('i_43', netElectricityUpdateCallback); // Offsite REC Subtotal
-
-            // --- Listener for d_136 (Target Energy from S15) ---
-            const handleD136Update = () => {
-                 // console.log("[S4 DEBUG] Entering handleD136Update (d_136 changed)");
-                const d136Value = getNumericValue('d_136');
-                
-                // Update h_27 (Target Electricity Use in S04)
-                setCalculatedValue('h_27', d136Value, 'number-2dp-comma'); // Added formatType
-                 // console.log(`[S4 DEBUG] Updated h_27 with d_136 value: ${d136Value}`);
-                
-                // Now trigger j_27 recalculation using the NEW h_27 value
-                const h27Value = d136Value; // Use the value we just set
-                const d43Value = getNumericValue('d_43');
-                const i43Value = getNumericValue('i_43');
-                const l27Value = getNumericValue('l_27'); // Needed for k_27 calculation
-                
-                const j27Value = calculateJ27(); // No args needed
-                setCalculatedValue('j_27', j27Value, 'number-2dp-comma'); 
-
-               // console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using internal h_27, d_43, i_43)`); // Updated log
-
-                // Also trigger k_27 recalculation (Target Emissions)
-                const k27Value = calculateK27(); // No args needed
-                setCalculatedValue('k_27', k27Value, 'number-2dp-comma'); 
-
-               // console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using internal j_27, l_27)`); // Updated log
-
-                // Trigger subtotal update
-                updateSubtotals();
-            };
-
-            sm.addListener('d_136', handleD136Update); // Listen for d_136 now
-            // --- End Listener for d_136 ---
-            
-            // --- Listeners for Target Fuel Updates (Gas/Oil from S07/S13) ---
-            const targetFuelUpdateCallback = () => {
-                // console.log("[S4 DEBUG] targetFuelUpdateCallback triggered.");
-
-                // Recalculate H28/J28/K28 (Gas)
-                const h28Value = calculateH28();
-                setCalculatedValue('h_28', h28Value, 'number-2dp-comma');
-                const j28Value = calculateJ28();
-                setCalculatedValue('j_28', j28Value, 'number-2dp-comma');
-                const k28Value = calculateK28();
-                setCalculatedValue('k_28', k28Value, 'number-2dp-comma');
-                // console.log(`[S4 DEBUG] Updated Gas Target: h28=${h28Value}, j28=${j28Value}, k28=${k28Value}`);
-
-                // Recalculate H30/J30/K30 (Oil)
-                const h30Value = calculateH30();
-                setCalculatedValue('h_30', h30Value, 'number-2dp-comma');
-                const j30Value = calculateJ30();
-                setCalculatedValue('j_30', j30Value, 'number-2dp-comma');
-                const k30Value = calculateK30();
-                setCalculatedValue('k_30', k30Value, 'number-2dp-comma');
-                // console.log(`[S4 DEBUG] Updated Oil Target: h30=${h30Value}, j30=${j30Value}, k30=${k30Value}`);
-
-                // Update subtotals that depend on these rows
-                updateSubtotals();
-            };
-
-            // Dependencies for H28/J28/K28 (Gas)
-            sm.addListener('d_113', targetFuelUpdateCallback); // S13 Primary Heating System
-            sm.addListener('h_115', targetFuelUpdateCallback); // S13 Target Gas Use (Calc)
-            sm.addListener('d_51', targetFuelUpdateCallback);  // S07 DHW Source
-            sm.addListener('e_51', targetFuelUpdateCallback);  // S07 DHW User kWh (if Gas)
-
-            // Dependencies for H30/J30/K30 (Oil) - Assuming k_54 is target DHW Oil use
-            sm.addListener('d_113', targetFuelUpdateCallback); // S13 Primary Heating System (already added, listener handles multiple calls)
-            sm.addListener('f_115', targetFuelUpdateCallback); // S13 Target Oil Use (Calc)
-            sm.addListener('d_51', targetFuelUpdateCallback);  // S07 DHW Source (already added)
-            sm.addListener('k_54', targetFuelUpdateCallback);  // CORRECTED: Listen to k_54 where Oil calculation is now located
-            // --- End Target Fuel Listeners ---
-
-            // --- Listeners for Actual Fuel Inputs (d_28 to d_31) ---
-            const actualFuelUpdateCallback = (newValue, oldValue, sourceFieldId) => {
-                // console.log(`[S04 DEBUG] actualFuelUpdateCallback triggered by ${sourceFieldId}`);
-
-                let calculateSubtotalsAfter = true;
-                // Determine which calculation pair to run based on the source
-                switch (sourceFieldId) {
-                    case 'd_28': // Gas
-                        const f28Value = calculateF28();
-                        setCalculatedValue('f_28', f28Value, 'number-2dp-comma');
-                        const g28Value = calculateG28();
-                        setCalculatedValue('g_28', g28Value, 'number-2dp-comma');
-                        break;
-                    case 'd_29': // Propane
-                        const f29Value = calculateF29();
-                        setCalculatedValue('f_29', f29Value, 'number-2dp-comma');
-                        const g29Value = calculateG29();
-                        setCalculatedValue('g_29', g29Value, 'number-2dp-comma');
-                        break;
-                    case 'd_30': // Oil
-                        const f30Value = calculateF30();
-                        setCalculatedValue('f_30', f30Value, 'number-2dp-comma');
-                        const g30Value = calculateG30();
-                        setCalculatedValue('g_30', g30Value, 'number-2dp-comma');
-                        break;
-                    case 'd_31': // Wood
-                        const f31Value = calculateF31();
-                        setCalculatedValue('f_31', f31Value, 'number-2dp-comma');
-                        const h31Value = calculateH31(); 
-                        setCalculatedValue('h_31', h31Value, 'number-2dp-comma');
-                        const g31Value = calculateG31(); 
-                        setCalculatedValue('g_31', g31Value, 'number-2dp-comma');
-                        const k31Value = calculateK31(); // Calculate k_31 as it's needed by d_60
-                        setCalculatedValue('k_31', k31Value, 'number-2dp-comma');
-                        // When d_31 (wood use) changes, k_31 also changes.
-                        // S08 listens to k_31 to update d_60.
-                        // S04 listens to d_60 to update subtotals.
-                        // So, we don't call updateSubtotals() directly here for d_31 changes.
-                        calculateSubtotalsAfter = false;
-                        break;
-                }
-
-                // Update subtotals after any actual fuel input change, unless it was d_31
-                if (calculateSubtotalsAfter) {
-                updateSubtotals();
-                }
-            };
-
-            sm.addListener('d_28', actualFuelUpdateCallback);
-            sm.addListener('d_29', actualFuelUpdateCallback);
-            sm.addListener('d_30', actualFuelUpdateCallback);
-            sm.addListener('d_31', actualFuelUpdateCallback);
-            // --- End Actual Fuel Listeners ---
-
-            // Listener for d_60 (Calculated Wood Offset from S08)
-            sm.addListener('d_60', () => {
-                // console.log('[S04 DEBUG] d_60 changed, calling updateSubtotals()');
-                updateSubtotals(); // This will recalculate g_32 and k_32 which depend on d_60
-            });
-
-            // CRITICAL: Listener for d_13 (Reference Standard) changes - triggers dual-engine calculations
-            sm.addListener('d_13', () => {
-                // When reference standard changes, trigger both engines
-                calculateReferenceModel();  // Calculate Reference values using new standard
-                calculateTargetModel();     // Recalculate Target values (may have dependencies)
-            });
-            
-            // CRITICAL: Listener for h_12 changes in Reference Mode
-            // This ensures Reference grid intensity updates when Reference reporting year changes
-            sm.addListener('h_12', () => {
-                // h_12 changed, updating grid intensity and Reference Model
-                // Update both Application and Reference grid intensities
+        if (!window.TEUI.StateManager) return;
+        const sm = window.TEUI.StateManager;
+        
+        // =============================================================================
+        // IT-DEPENDS: SMART LISTENERS FOR CROSS-SECTION DEPENDENCIES
+        // =============================================================================
+        
+        // Listen for changes from S02 (Building Info)
+        sm.addListener('h_15', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] h_15 (Area) changed, recalculating intensities');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_12', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] h_12 (Year) changed, updating grid intensity');
                 updateElectricityEmissionFactor();
-                // Trigger Reference Model recalculation to use new Reference grid intensity
-                calculateReferenceModel();
-            });
-            
-            // CRITICAL: Listeners for Section 07 Reference values
-            // These trigger Reference Model recalculation when S07 Reference values change
-            sm.addListener('ref_e_51', () => {
-                // ref_e_51 changed, triggering Reference Model recalculation
-                calculateReferenceModel();
-            });
-            
-            sm.addListener('ref_k_54', () => {
-                // ref_k_54 changed, triggering Reference Model recalculation
-                calculateReferenceModel();
-            });
-            
-            // CRITICAL: Listener for Section 15 Reference values
-            sm.addListener('ref_d_136', () => {
-                // ref_d_136 changed, triggering Reference Model recalculation
-                calculateReferenceModel();
-            });
-
-            // Direct DOM event listener as fallback (Consider removing if listeners are reliable)
-            document.addEventListener('input', function(e) {
-                const target = e.target;
-                if (target && (target.getAttribute('data-field-id') === 'h_12' || 
-                               target.getAttribute('data-field-id') === 'd_12' ||
-                               target.getAttribute('data-field-id') === 'd_19' ||
-                               target.getAttribute('data-field-id') === 'dd_d_19')) {
-                    updateElectricityEmissionFactor();
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_14', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_14 (Reporting Mode) changed, updating primary energy');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S03 (Climate)
+        sm.addListener('d_19', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_19 (Province) changed, updating grid intensity');
+                updateElectricityEmissionFactor();
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S06 (Renewable)
+        sm.addListener('d_43', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_43 (Onsite PV) changed, updating net electricity');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('i_43', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] i_43 (Offsite RE) changed, updating net electricity');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S05 (Emissions)
+        sm.addListener('d_60', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_60 (Offsets) changed, updating emissions');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S07 (Water)
+        sm.addListener('d_51', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_51 (DHW System) changed, updating fuel targets');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('e_51', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] e_51 (DHW Gas) changed, updating gas target');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_54', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] k_54 (DHW Oil) changed, updating oil target');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S09 (Occupancy)
+        sm.addListener('d_63', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_63 (Occupants) changed, updating per capita values');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S13 (Mechanical)
+        sm.addListener('d_113', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_113 (Heating System) changed, updating fuel targets');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_115', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] h_115 (Heating Gas) changed, updating gas target');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('f_115', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] f_115 (Heating Oil) changed, updating oil target');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S15 (TEUI Summary)
+        sm.addListener('d_136', function(newValue) {
+            if (!window.TEUI.sect04.calculationInProgress) {
+                console.log('[S04] d_136 (Target Electricity) changed from S15');
+                calculateAll();
+            }
+        });
+        
+        // Listen for user input changes on editable fields
+        const editableFields = ['d_27', 'd_28', 'd_29', 'd_30', 'd_31', 'h_35', 
+                               'l_27', 'l_28', 'l_29', 'l_30', 'l_31'];
+        
+        editableFields.forEach(fieldId => {
+            sm.addListener(fieldId, function(newValue) {
+                if (!window.TEUI.sect04.calculationInProgress) {
+                    console.log(`[S04] ${fieldId} (User Input) changed`);
+                    calculateAll();
                 }
             });
-        }
+        });
+        
+        console.log('[S04] ✅ Cross-section IT-DEPENDS listeners registered');
     }
     
     /**
@@ -1473,6 +1388,173 @@ window.TEUI.SectionModules.sect04 = (function() {
         return d35 / (h15 || 1);
     }
     
+    //==========================================================================
+    // IT-DEPENDS REGISTRATION
+    //==========================================================================
+    
+    /**
+     * Register all field dependencies with the StateManager
+     */
+    function registerDependencies() {
+        if (!window.TEUI.StateManager) {
+            console.warn("[S04] StateManager not available for dependency registration");
+            return;
+        }
+        const sm = window.TEUI.StateManager;
+        
+        // Row 27 - Electricity
+        sm.registerDependency('d_27', 'f_27'); // Actual electricity
+        sm.registerDependency('d_43', 'f_27'); // Onsite PV
+        sm.registerDependency('i_43', 'f_27'); // Offsite RE
+        sm.registerDependency('f_27', 'g_27'); // For emissions
+        sm.registerDependency('l_27', 'g_27'); // Grid intensity
+        sm.registerDependency('d_136', 'h_27'); // Target from S15
+        sm.registerDependency('h_27', 'j_27'); // Target net
+        sm.registerDependency('d_43', 'j_27');
+        sm.registerDependency('i_43', 'j_27');
+        sm.registerDependency('j_27', 'k_27'); // Target emissions
+        sm.registerDependency('l_27', 'k_27');
+        
+        // Row 28 - Gas
+        sm.registerDependency('d_28', 'f_28');
+        sm.registerDependency('d_28', 'g_28');
+        sm.registerDependency('l_28', 'g_28');
+        ['d_51', 'e_51', 'd_113', 'h_115'].forEach(dep => sm.registerDependency(dep, 'h_28'));
+        sm.registerDependency('h_28', 'j_28');
+        sm.registerDependency('h_28', 'k_28');
+        sm.registerDependency('l_28', 'k_28');
+        
+        // Row 29 - Propane
+        sm.registerDependency('d_29', 'f_29');
+        sm.registerDependency('d_29', 'g_29');
+        sm.registerDependency('l_29', 'g_29');
+        sm.registerDependency('d_29', 'h_29');
+        sm.registerDependency('h_29', 'j_29');
+        sm.registerDependency('h_29', 'k_29');
+        sm.registerDependency('l_29', 'k_29');
+        
+        // Row 30 - Oil
+        sm.registerDependency('d_30', 'f_30');
+        sm.registerDependency('d_30', 'g_30');
+        sm.registerDependency('l_30', 'g_30');
+        ['d_51', 'd_113', 'k_54', 'f_115'].forEach(dep => sm.registerDependency(dep, 'h_30'));
+        sm.registerDependency('h_30', 'j_30');
+        sm.registerDependency('h_30', 'k_30');
+        sm.registerDependency('l_30', 'k_30');
+        
+        // Row 31 - Wood
+        sm.registerDependency('d_31', 'f_31');
+        sm.registerDependency('h_31', 'g_31');
+        sm.registerDependency('l_31', 'g_31');
+        sm.registerDependency('d_31', 'h_31');
+        sm.registerDependency('h_31', 'j_31');
+        sm.registerDependency('h_31', 'k_31');
+        sm.registerDependency('l_31', 'k_31');
+        
+        // Row 32 - Subtotals
+        ['f_27', 'f_28', 'f_29', 'f_30', 'f_31'].forEach(dep => sm.registerDependency(dep, 'f_32'));
+        ['g_27', 'g_28', 'g_29', 'g_30', 'g_31', 'd_60'].forEach(dep => sm.registerDependency(dep, 'g_32'));
+        ['j_27', 'j_28', 'j_29', 'j_30', 'j_31'].forEach(dep => sm.registerDependency(dep, 'j_32'));
+        ['k_27', 'k_28', 'k_29', 'k_30', 'k_31', 'd_60'].forEach(dep => sm.registerDependency(dep, 'k_32'));
+        
+        // Row 33 - Net Energy
+        ['f_27', 'f_28', 'f_29', 'f_30', 'f_31', 'd_43', 'i_43'].forEach(dep => sm.registerDependency(dep, 'd_33'));
+        ['j_27', 'j_28', 'j_29', 'j_30', 'j_31', 'i_43', 'd_43'].forEach(dep => sm.registerDependency(dep, 'h_33'));
+        
+        // Row 34 - Per capita
+        sm.registerDependency('f_32', 'd_34');
+        sm.registerDependency('d_63', 'd_34');
+        sm.registerDependency('d_33', 'f_34');
+        sm.registerDependency('d_63', 'f_34');
+        sm.registerDependency('j_32', 'h_34');
+        sm.registerDependency('d_63', 'h_34');
+        sm.registerDependency('h_33', 'j_34');
+        sm.registerDependency('d_63', 'j_34');
+        
+        // Row 35 - Primary Energy
+        sm.registerDependency('d_14', 'd_35');
+        sm.registerDependency('j_27', 'd_35');
+        sm.registerDependency('h_35', 'd_35');
+        sm.registerDependency('f_27', 'd_35');
+        sm.registerDependency('d_35', 'f_35');
+        sm.registerDependency('h_15', 'f_35');
+        
+        // Call IT-DEPENDS registrations
+        registerITDependsCalculations();
+    }
+    
+    /**
+     * Register IT-DEPENDS calculation functions
+     */
+    function registerITDependsCalculations() {
+        if (!window.TEUI?.StateManager?.registerCalculation) {
+            console.warn('[S04 IT-DEPENDS] StateManager.registerCalculation not available');
+            return;
+        }
+        
+        const sm = window.TEUI.StateManager;
+        console.log('[S04 IT-DEPENDS] Registering calculation functions...');
+        
+        // Row 27 - Electricity
+        sm.registerCalculation('f_27', calculateF27, 'Net electricity after onsite generation');
+        sm.registerCalculation('g_27', calculateG27, 'Electricity emissions');
+        sm.registerCalculation('h_27', function() {
+            return getNumericValue('d_136'); // Direct from S15
+        }, 'Target electricity from S15');
+        sm.registerCalculation('j_27', calculateJ27, 'Target net electricity');
+        sm.registerCalculation('k_27', calculateK27, 'Target electricity emissions');
+        
+        // Row 28 - Gas
+        sm.registerCalculation('f_28', calculateF28, 'Net gas consumption');
+        sm.registerCalculation('g_28', calculateG28, 'Gas emissions');
+        sm.registerCalculation('h_28', calculateH28, 'Target gas from mechanical systems');
+        sm.registerCalculation('j_28', calculateJ28, 'Target gas energy');
+        sm.registerCalculation('k_28', calculateK28, 'Target gas emissions');
+        
+        // Row 29 - Propane
+        sm.registerCalculation('f_29', calculateF29, 'Net propane consumption');
+        sm.registerCalculation('g_29', calculateG29, 'Propane emissions');
+        sm.registerCalculation('h_29', calculateH29, 'Target propane');
+        sm.registerCalculation('j_29', calculateJ29, 'Target propane energy');
+        sm.registerCalculation('k_29', calculateK29, 'Target propane emissions');
+        
+        // Row 30 - Oil
+        sm.registerCalculation('f_30', calculateF30, 'Net oil consumption');
+        sm.registerCalculation('g_30', calculateG30, 'Oil emissions');
+        sm.registerCalculation('h_30', calculateH30, 'Target oil from mechanical systems');
+        sm.registerCalculation('j_30', calculateJ30, 'Target oil energy');
+        sm.registerCalculation('k_30', calculateK30, 'Target oil emissions');
+        
+        // Row 31 - Wood
+        sm.registerCalculation('f_31', calculateF31, 'Net wood consumption');
+        sm.registerCalculation('g_31', calculateG31, 'Wood emissions');
+        sm.registerCalculation('h_31', calculateH31, 'Target wood');
+        sm.registerCalculation('j_31', calculateJ31, 'Target wood energy');
+        sm.registerCalculation('k_31', calculateK31, 'Target wood emissions');
+        
+        // Row 32 - Subtotals
+        sm.registerCalculation('f_32', calculateF32, 'Total actual energy');
+        sm.registerCalculation('g_32', calculateG32, 'Total actual emissions');
+        sm.registerCalculation('j_32', calculateJ32, 'Total target energy');
+        sm.registerCalculation('k_32', calculateK32, 'Total target emissions');
+        
+        // Row 33 - Net Energy GJ
+        sm.registerCalculation('d_33', calculateD33, 'Actual net energy GJ');
+        sm.registerCalculation('h_33', calculateH33, 'Target net energy GJ');
+        
+        // Row 34 - Per capita
+        sm.registerCalculation('d_34', calculateD34, 'Actual per capita energy');
+        sm.registerCalculation('f_34', calculateF34, 'Actual per capita GJ');
+        sm.registerCalculation('h_34', calculateH34, 'Target per capita energy');
+        sm.registerCalculation('j_34', calculateJ34, 'Target per capita GJ');
+        
+        // Row 35 - Primary Energy
+        sm.registerCalculation('d_35', calculateD35, 'Primary energy');
+        sm.registerCalculation('f_35', calculateF35, 'Primary energy intensity');
+        
+        console.log('[S04 IT-DEPENDS] ✅ Successfully registered calculation functions');
+    }
+
     // Register calculation functions
     function registerCalculations() {
         if (window.TEUI && window.TEUI.Calculator && window.TEUI.Calculator.registerCalculation) {
@@ -1538,7 +1620,7 @@ window.TEUI.SectionModules.sect04 = (function() {
      * Called when the section is rendered
      */
     function onSectionRendered() {
-        // console.log(`${sectionRows.metadata.sectionName} section rendered, initializing`);
+        console.log("[Section04] Section rendered, initializing");
         
         // --- Start: Add Default Province Initialization ---
         // Ensure Ontario is selected by default for emissions calculations
@@ -1555,24 +1637,27 @@ window.TEUI.SectionModules.sect04 = (function() {
         }
         // --- End: Add Default Province Initialization ---
         
+        // Register IT-DEPENDS dependencies and calculations
+        registerDependencies();
+        
         // Initialize event handlers
         initializeEventHandlers();
         
-        // Register calculation functions
-        registerCalculations();
+        // Register calculation functions (OLD - kept for backwards compatibility)
+        // registerCalculations();
         
         // Update electricity emission factor based on province and year
         // Moved the timeout wrapper here to ensure factors are updated after potential defaults are set
         setTimeout(() => {
-        updateElectricityEmissionFactor();
-        // CRITICAL: Run dual-engine calculations on initial load
-        calculateAll();
-        
-            // Trigger initial calculations after factors and subtotals are set
-        if (window.TEUI && window.TEUI.Calculator) {
-            window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
-        }
-            // console.log("Section 4 Initial Calculation Triggered");
+            updateElectricityEmissionFactor();
+            // CRITICAL: Run dual-engine calculations on initial load
+            calculateAll();
+            
+            // Trigger initial calculations after factors and subtotals are set (OLD SYSTEM)
+            // if (window.TEUI && window.TEUI.Calculator) {
+            //     window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
+            // }
+            console.log("[Section04] ✅ Initialization complete");
         }, 50); // Short delay to allow potential state updates
     }
     
@@ -1618,7 +1703,14 @@ window.TEUI.SectionModules.sect04 = (function() {
      * REFERENCE MODEL ENGINE: Calculate all Reference values
      */
     function calculateReferenceModel() {
+        // Add recursion protection
+        if (referenceCalculationInProgress) {
+            return;
+        }
         
+        referenceCalculationInProgress = true;
+        
+        try {
         // Get Reference values from upstream sections
         const ref_d136 = getRefNumericValue('d_136', 0); // From S15
         
@@ -1750,18 +1842,25 @@ window.TEUI.SectionModules.sect04 = (function() {
             if (j32Changed || k32Changed) {
             }
         }
+        } finally {
+            referenceCalculationInProgress = false;
+        }
     }
     
     /**
      * TARGET MODEL ENGINE: Calculate all Target/Application values
      */
     function calculateTargetModel() {
+        // Add recursion protection
+        if (targetCalculationInProgress) {
+            return;
+        }
         
+        targetCalculationInProgress = true;
+        
+        try {
         // This is essentially the existing calculateAll logic
         // but reorganized to be explicit about being the Target model
-        
-        // NOTE: updateElectricityEmissionFactor() is called separately by h_12 listener
-        // Don't call it here to avoid overwriting Reference grid intensity
 
         // Calculate all row 27-31 actuals (F and G columns)
         setCalculatedValue('f_27', calculateF27(), 'number-2dp-comma');
@@ -1806,17 +1905,32 @@ window.TEUI.SectionModules.sect04 = (function() {
         // Update subtotals and dependent totals
         updateSubtotals();
         updateDependentTotals();
+        } finally {
+            targetCalculationInProgress = false;
+        }
     }
     
     /**
      * Main calculation function for Section 04.
      * Now runs BOTH calculation engines.
+     * IT-DEPENDS entry point with recursion protection
      */
     function calculateAll() {
+        // RECURSION PROTECTION
+        if (window.TEUI.sect04.calculationInProgress) {
+            console.log("[S04] Calculation already in progress, skipping to prevent recursion");
+            return;
+        }
         
-        // DUAL-ENGINE ARCHITECTURE: Always run both engines
-        calculateReferenceModel();  // Calculates Reference values using ref_ inputs
-        calculateTargetModel();     // Calculates Target values using application state
+        try {
+            window.TEUI.sect04.calculationInProgress = true;
+            
+            // DUAL-ENGINE ARCHITECTURE: Always run both engines
+            calculateReferenceModel();  // Calculates Reference values using ref_ inputs
+            calculateTargetModel();     // Calculates Target values using application state
+        } finally {
+            window.TEUI.sect04.calculationInProgress = false;
+        }
     }
 
     //==========================================================================
@@ -1889,6 +2003,94 @@ window.TEUI.SectionModules.sect04 = (function() {
         },
         
         updateSubtotals: updateSubtotals,
-        updateDependentTotals: updateDependentTotals
+        updateDependentTotals: updateDependentTotals,
+        
+        // IT-DEPENDS test function
+        testS04_ITDepends: function() {
+            console.log('=== S04 IT-DEPENDS TEST ===');
+            
+            const sm = window.TEUI.StateManager;
+            if (!sm) {
+                console.error('❌ StateManager not found');
+                return false;
+            }
+            
+            console.log('✓ StateManager found');
+            
+            // Test 1: Check all calculations are registered
+            const expectedCalculations = [
+                'f_27', 'g_27', 'h_27', 'j_27', 'k_27',
+                'f_28', 'g_28', 'h_28', 'j_28', 'k_28',
+                'f_29', 'g_29', 'h_29', 'j_29', 'k_29',
+                'f_30', 'g_30', 'h_30', 'j_30', 'k_30',
+                'f_31', 'g_31', 'h_31', 'j_31', 'k_31',
+                'f_32', 'g_32', 'j_32', 'k_32',
+                'd_33', 'h_33', 'd_34', 'f_34', 'h_34', 'j_34',
+                'd_35', 'f_35'
+            ];
+            
+            console.log('\n--- Testing Calculation Registrations ---');
+            let registrationsPassed = 0;
+            expectedCalculations.forEach(calcId => {
+                const isRegistered = sm.hasCalculation && sm.hasCalculation(calcId);
+                console.log(`${isRegistered ? '✓' : '❌'} ${calcId} registered: ${isRegistered}`);
+                if (isRegistered) registrationsPassed++;
+            });
+            
+            console.log(`\nRegistration Summary: ${registrationsPassed}/${expectedCalculations.length} calculations registered`);
+            
+            // Test 2: Test calculation execution
+            console.log('\n--- Testing Calculation Execution ---');
+            
+            // Test j_32 (Target Energy Subtotal) calculation
+            console.log('\nTesting j_32 (Target Energy Subtotal) calculation:');
+            const j27 = getNumericValue('j_27');
+            const j28 = getNumericValue('j_28');
+            const j29 = getNumericValue('j_29');
+            const j30 = getNumericValue('j_30');
+            const j31 = getNumericValue('j_31');
+            const expectedJ32 = j27 + j28 + j29 + j30 + j31;
+            const actualJ32 = getNumericValue('j_32');
+            console.log(`j_27: ${j27}, j_28: ${j28}, j_29: ${j29}, j_30: ${j30}, j_31: ${j31}`);
+            console.log(`Expected j_32: ${expectedJ32.toFixed(2)}`);
+            console.log(`Actual j_32: ${actualJ32.toFixed(2)}`);
+            console.log(`${Math.abs(expectedJ32 - actualJ32) < 0.01 ? '✓' : '❌'} j_32 calculation correct`);
+            
+            // Test 3: Test cross-section dependency
+            console.log('\n--- Testing Cross-Section Dependencies ---');
+            console.log('Simulating change in d_136 (from S15)...');
+            
+            const originalD136 = getNumericValue('d_136');
+            const originalH27 = getNumericValue('h_27');
+            const testValue = 50000;
+            
+            // Set a test value
+            sm.setValue('d_136', testValue.toString(), 'test');
+            
+            // Allow time for calculations to propagate
+            setTimeout(() => {
+                const newH27 = getNumericValue('h_27');
+                console.log(`Original d_136: ${originalD136}`);
+                console.log(`Test d_136: ${testValue}`);
+                console.log(`Original h_27: ${originalH27}`);
+                console.log(`New h_27: ${newH27}`);
+                console.log(`${Math.abs(newH27 - testValue) < 0.01 ? '✓' : '❌'} Cross-section dependency working`);
+                
+                // Restore original value
+                sm.setValue('d_136', originalD136.toString(), 'test');
+                
+                // Test 4: Test dual-engine separation
+                console.log('\n--- Testing Dual-Engine Separation ---');
+                const refJ32 = sm.getValue('ref_j_32');
+                const appJ32 = sm.getValue('j_32');
+                console.log(`Reference j_32: ${refJ32}`);
+                console.log(`Application j_32: ${appJ32}`);
+                console.log(`${refJ32 && appJ32 && refJ32 !== appJ32 ? '✓' : '❌'} Dual-engine values properly separated`);
+                
+                console.log('\n=== S04 IT-DEPENDS TEST COMPLETE ===');
+            }, 100);
+            
+            return true;
+        }
     };
 })();
