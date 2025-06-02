@@ -1,3 +1,61 @@
+# IT-DEPENDS Migration Status
+
+## 🔄 REVERTED TO STABLE STATE - 2024-01-21
+
+### Current Status:
+- Reverted to commit `f463ff4` where S04 was working perfectly
+- Abandoned 3+ hours of circular debugging on S01 emissions display issues
+- Need smarter approach for S01 migration
+
+### What's Working:
+- **S04**: Complete IT-DEPENDS migration, dual-engine architecture, emissions calculations working
+- **S13**: Gold standard implementation with full IT-DEPENDS
+- **S14**: Complete IT-DEPENDS for TEDI calculations
+- **S15**: Complete IT-DEPENDS for TEUI Summary
+
+### Key Learning:
+The issue with S01 is likely much simpler than our attempts suggested. The custom rendering and unique structure of S01 requires a different approach than the standard sections.
+
+### Next Steps:
+1. **Analyze S01's unique structure** - It renders directly in index.html
+2. **Study how S04 emissions flow to S01** in the working version
+3. **Implement minimal IT-DEPENDS** without breaking the display logic
+4. **Test incrementally** rather than massive changes
+
+---
+
+## Overview
+Migrating TEUI Calculator sections from traditional `calculateAll()` architecture to IT-DEPENDS dependency-driven calculations.
+
+**Key Pattern**: Following Section 13 as the "gold standard" implementation
+- Dual-engine architecture (Reference/Application state separation)
+- IT-DEPENDS for field calculations
+- Smart listeners for cross-section dependencies
+- Recursion protection using `window.TEUI.sect[XX].calculationInProgress`
+
+## Migration Status by Section
+
+### ✅ Completed Sections
+- **S04**: Actual vs. Target Energy - Full IT-DEPENDS with 38 calculations
+- **S13**: Mechanical Systems - Gold standard implementation
+- **S14**: TEDI Summary - Complete with cross-section listeners
+- **S15**: TEUI Summary - Complete with GHG calculations
+
+### 🚧 In Progress
+- **S01**: Dashboard Summary - Basic structure added, needs smarter approach for custom rendering
+
+### 🔲 Not Started
+- **S02**: Building Info
+- **S03**: Climate
+- **S05**: GHG Emissions
+- **S06**: Renewable Energy
+- **S07**: Water Use
+- **S08**: Air Quality
+- **S09**: Internal Gains
+- **S10**: Radiant Gains
+- **S11**: Area Summary (Partial - has IT-DEPENDS structure)
+- **S12**: Volume Surface Metrics
+
 # IT-DEPENDS Migration Status & Technical Prompt
 
 ## 🚨 CRITICAL: READ FIRST
