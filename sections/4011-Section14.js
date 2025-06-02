@@ -7,11 +7,21 @@
  * 
  * Follows the consolidated declarative approach where field definitions
  * are integrated directly into the layout structure.
+ * 
+ * IT-DEPENDS MIGRATION: Complete
+ * - Dual-engine architecture preserved
+ * - IT-DEPENDS calculations registered
+ * - Cross-section listeners implemented
+ * - Recursion protection added
  */
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+
+// Create section-specific namespace for recursion protection
+window.TEUI.sect14 = window.TEUI.sect14 || {};
+window.TEUI.sect14.calculationInProgress = false;
 
 // Section 14: TEDI & TELI Module
 window.TEUI.SectionModules.sect14 = (function() {
@@ -580,6 +590,123 @@ window.TEUI.SectionModules.sect14 = (function() {
         sm.registerDependency('d_132', 'h_132');
         sm.registerDependency('h_15', 'h_132');
         
+        // =============================================================================
+        // IT-DEPENDS: CALCULATION REGISTRATIONS
+        // =============================================================================
+        registerITDependsCalculations();
+    }
+    
+    /**
+     * Register IT-DEPENDS calculation functions
+     */
+    function registerITDependsCalculations() {
+        if (!window.TEUI?.StateManager?.registerCalculation) {
+            console.warn('[S14 IT-DEPENDS] StateManager.registerCalculation not available');
+            return;
+        }
+        
+        const sm = window.TEUI.StateManager;
+        
+        // d_127: TED (Heating Load)
+        sm.registerCalculation('d_127', function() {
+            const i97 = getNumericValue('i_97');
+            const i98 = getNumericValue('i_98');
+            const i103 = getNumericValue('i_103');
+            const m121 = getNumericValue('m_121');
+            const i80 = getNumericValue('i_80');
+            return i97 + i98 + i103 + m121 - i80;
+        }, 'TED Targeted - Total heating energy demand');
+        
+        // h_127: TEDI (Heating Load Intensity)
+        sm.registerCalculation('h_127', function() {
+            const d127 = getNumericValue('d_127');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d127 / area : 0;
+        }, 'TEDI - Thermal Energy Demand Intensity');
+        
+        // d_128: TED Envelope (Heating Load - Envelope Only)
+        sm.registerCalculation('d_128', function() {
+            const i97 = getNumericValue('i_97');
+            const i98 = getNumericValue('i_98');
+            const i103 = getNumericValue('i_103');
+            const i80 = getNumericValue('i_80');
+            return i97 + i98 + i103 - i80;
+        }, 'TED Envelope - Excludes ventilation');
+        
+        // h_128: TEDI Envelope
+        sm.registerCalculation('h_128', function() {
+            const d128 = getNumericValue('d_128');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d128 / area : 0;
+        }, 'TEDI Envelope - Excludes ventilation intensity');
+        
+        // d_129: CED Cooling Load Unmitigated
+        sm.registerCalculation('d_129', function() {
+            const k71 = getNumericValue('k_71');
+            const k79 = getNumericValue('k_79');
+            const k98 = getNumericValue('k_98');
+            const d122 = getNumericValue('d_122');
+            return k71 + k79 + k98 + d122;
+        }, 'CED Cooling Load Unmitigated');
+        
+        // h_129: CEDI Unmitigated (kWh/m²/yr)
+        sm.registerCalculation('h_129', function() {
+            const d129 = getNumericValue('d_129');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d129 / area : 0;
+        }, 'CEDI Unmitigated intensity');
+        
+        // m_129: CED Mitigated (kWh/yr)
+        sm.registerCalculation('m_129', function() {
+            const d129 = getNumericValue('d_129');
+            const h124 = getNumericValue('h_124');
+            const d123 = getNumericValue('d_123');
+            return d129 - h124 - d123;
+        }, 'CED Mitigated - After free cooling');
+        
+        // d_130: CEDI Cooling Load W/m2 Unmitigated
+        sm.registerCalculation('d_130', function() {
+            const d129 = getNumericValue('d_129');
+            const area = getNumericValue('h_15');
+            return area > 0 ? (d129 / 8760 * 1000) / area : 0;
+        }, 'CEDI Cooling Load W/m2 Unmitigated');
+        
+        // h_130: CEDI Mitigated W/m2
+        sm.registerCalculation('h_130', function() {
+            const m129 = getNumericValue('m_129');
+            const area = getNumericValue('h_15');
+            return area > 0 ? (m129 / 8760 * 1000) / area : 0;
+        }, 'CEDI Mitigated W/m2');
+        
+        // d_131: TEL Heatloss (Total Envelope Heatloss)
+        sm.registerCalculation('d_131', function() {
+            const i97 = getNumericValue('i_97');
+            const i98 = getNumericValue('i_98');
+            const i103 = getNumericValue('i_103');
+            return i97 + i98 + i103;
+        }, 'TEL Total Envelope Heatloss');
+        
+        // h_131: TELI Heatloss Intensity
+        sm.registerCalculation('h_131', function() {
+            const d131 = getNumericValue('d_131');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d131 / area : 0;
+        }, 'TELI - Total Envelope Loss Intensity');
+        
+        // d_132: CEG (Cooling Envelope Heatgain)
+        sm.registerCalculation('d_132', function() {
+            const k97 = getNumericValue('k_97');
+            const k98 = getNumericValue('k_98');
+            const k103 = getNumericValue('k_103');
+            return k97 + k98 + k103;
+        }, 'CEG Cooling Envelope Heatgain');
+        
+        // h_132: CEGI
+        sm.registerCalculation('h_132', function() {
+            const d132 = getNumericValue('d_132');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d132 / area : 0;
+        }, 'CEGI - Cooling Envelope Gain Intensity');
     }
     
     /**
@@ -587,13 +714,25 @@ window.TEUI.SectionModules.sect14 = (function() {
      * This follows the template pattern expected by the system
      */
     function calculateAll() {
-        // console.log("[Section14] Running dual-engine calculations...");
+        // RECURSION PROTECTION
+        if (window.TEUI.sect14.calculationInProgress) {
+            console.log("[S14] Calculation already in progress, skipping to prevent recursion");
+            return;
+        }
         
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
-        
-        // console.log("[Section14] Dual-engine calculations complete");
+        try {
+            window.TEUI.sect14.calculationInProgress = true;
+            
+            // console.log("[Section14] Running dual-engine calculations...");
+            
+            // Run both engines independently
+            calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+            calculateTargetModel();     // Calculates Target values (existing logic)
+            
+            // console.log("[Section14] Dual-engine calculations complete");
+        } finally {
+            window.TEUI.sect14.calculationInProgress = false;
+        }
     }
     
     /**
@@ -920,23 +1059,113 @@ window.TEUI.SectionModules.sect14 = (function() {
         if (!window.TEUI.StateManager) return;
         const sm = window.TEUI.StateManager;
 
-        // Create a list of all unique dependencies needed by this section's calculations
-        // Restoring S13 dependencies (d_122, h_124, d_123, m_121)
-        const dependencies = [
-            'h_15', 'i_97', 'i_98', 'i_103', 'm_121', 'i_80',
-            'k_71', 'k_79', 'k_97', 'k_98', 'k_103', 'd_122',
-            'h_124', 'd_123'
-        ];
+        // =============================================================================
+        // IT-DEPENDS: SMART LISTENERS FOR CROSS-SECTION DEPENDENCIES
+        // =============================================================================
         
-        // Remove duplicates
-        const uniqueDependencies = [...new Set(dependencies)];
-
-        // Add listeners for all unique dependencies
-        uniqueDependencies.forEach(dep => {
-            sm.addListener(dep, () => {
-                // console.log(`Listener triggered for dependency: ${dep} in Section 14`);
-                calculateAll(); 
-            });
+        // Listen for changes from S11 (heat losses)
+        sm.addListener('i_97', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] i_97 changed, recalculating TEDI/TELI values');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('i_98', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] i_98 changed, recalculating TEDI/TELI values');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('i_103', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] i_103 changed, recalculating TEDI/TELI values');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S13 (ventilation/cooling)
+        sm.addListener('m_121', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] m_121 changed, recalculating heating loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_122', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] d_122 changed, recalculating cooling loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_124', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] h_124 changed, recalculating mitigated cooling');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_123', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] d_123 changed, recalculating mitigated cooling');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S10 (internal gains)
+        sm.addListener('i_80', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] i_80 changed, recalculating heating demands');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S09 (occupant/equipment gains)
+        sm.addListener('k_71', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] k_71 changed, recalculating cooling loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_79', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] k_79 changed, recalculating cooling loads');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S12 (transmission/air leakage)
+        sm.addListener('k_98', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] k_98 changed, recalculating cooling loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_103', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] k_103 changed, recalculating CEG/CEGI');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S10 solar gains (for heat gain calculations)
+        sm.addListener('k_97', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] k_97 changed, recalculating CEG/CEGI');
+                calculateAll();
+            }
+        });
+        
+        // Listen for area changes from S02
+        sm.addListener('h_15', function(newValue) {
+            if (!window.TEUI.sect14.calculationInProgress) {
+                console.log('[S14] h_15 (area) changed, recalculating all intensities');
+                calculateAll();
+            }
         });
 
         // Add listeners for climate data changes from Section 3 (needed for some calcs)
@@ -976,6 +1205,82 @@ window.TEUI.SectionModules.sect14 = (function() {
     }
     
     //==========================================================================
+    // IT-DEPENDS TEST FUNCTION
+    //==========================================================================
+    
+    /**
+     * Test function for Section 14 IT-DEPENDS implementation
+     * Run from console: window.TEUI.SectionModules.sect14.testS14_ITDepends()
+     */
+    function testS14_ITDepends() {
+        console.log('=== S14 IT-DEPENDS TEST ===');
+        
+        const sm = window.TEUI.StateManager;
+        if (!sm) {
+            console.error('❌ StateManager not found');
+            return false;
+        }
+        
+        console.log('✓ StateManager found');
+        
+        // Test 1: Check all calculations are registered
+        const expectedCalculations = [
+            'd_127', 'h_127', 'd_128', 'h_128', 'd_129', 'h_129',
+            'm_129', 'd_130', 'h_130', 'd_131', 'h_131', 'd_132', 'h_132'
+        ];
+        
+        console.log('\n--- Testing Calculation Registrations ---');
+        let registrationsPassed = 0;
+        expectedCalculations.forEach(calcId => {
+            const isRegistered = sm.hasCalculation && sm.hasCalculation(calcId);
+            console.log(`${isRegistered ? '✓' : '❌'} ${calcId} registered: ${isRegistered}`);
+            if (isRegistered) registrationsPassed++;
+        });
+        
+        console.log(`\nRegistration Summary: ${registrationsPassed}/${expectedCalculations.length} calculations registered`);
+        
+        // Test 2: Test calculation execution
+        console.log('\n--- Testing Calculation Execution ---');
+        
+        // Test h_127 (TEDI) calculation
+        console.log('\nTesting h_127 (TEDI) calculation:');
+        const d127Value = getNumericValue('d_127');
+        const areaValue = getNumericValue('h_15');
+        const expectedTEDI = areaValue > 0 ? d127Value / areaValue : 0;
+        const actualTEDI = getNumericValue('h_127');
+        console.log(`d_127: ${d127Value}, h_15: ${areaValue}`);
+        console.log(`Expected TEDI: ${expectedTEDI.toFixed(2)}`);
+        console.log(`Actual TEDI: ${actualTEDI.toFixed(2)}`);
+        console.log(`${Math.abs(expectedTEDI - actualTEDI) < 0.01 ? '✓' : '❌'} TEDI calculation correct`);
+        
+        // Test 3: Test cross-section dependency
+        console.log('\n--- Testing Cross-Section Dependencies ---');
+        console.log('Simulating change in i_97 (from S11)...');
+        
+        const originalI97 = getNumericValue('i_97');
+        const testValue = 1000;
+        
+        // Set a test value
+        sm.setValue('i_97', testValue.toString(), 'test');
+        
+        // Allow time for calculations to propagate
+        setTimeout(() => {
+            const newD127 = getNumericValue('d_127');
+            console.log(`Original i_97: ${originalI97}`);
+            console.log(`Test i_97: ${testValue}`);
+            console.log(`New d_127: ${newD127}`);
+            console.log(`${newD127 !== d127Value ? '✓' : '❌'} Cross-section dependency working`);
+            
+            // Restore original value
+            sm.setValue('i_97', originalI97.toString(), 'test');
+            
+            console.log('\n=== S14 IT-DEPENDS TEST COMPLETE ===');
+        }, 100);
+        
+        return true;
+    }
+    
+    //==========================================================================
     // PUBLIC API
     //==========================================================================
     
@@ -990,7 +1295,10 @@ window.TEUI.SectionModules.sect14 = (function() {
         
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
-        onSectionRendered: onSectionRendered
+        onSectionRendered: onSectionRendered,
+        
+        // IT-DEPENDS test function
+        testS14_ITDepends: testS14_ITDepends
     };
 })();
 
