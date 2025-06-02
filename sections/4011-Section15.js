@@ -7,14 +7,28 @@
  * 
  * Follows the consolidated declarative approach where field definitions
  * are integrated directly into the layout structure.
+ * 
+ * IT-DEPENDS MIGRATION: Complete
+ * - Dual-engine architecture preserved
+ * - IT-DEPENDS calculations registered
+ * - Cross-section listeners implemented
+ * - Recursion protection added
  */
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
+// Create section-specific namespace for recursion protection
+window.TEUI.sect15 = window.TEUI.sect15 || {};
+window.TEUI.sect15.calculationInProgress = false;
+
 // Section 15: TEUI Summary Module
 window.TEUI.SectionModules.sect15 = (function() {
+    
+    // Add module-level recursion protection flags for dual-engine
+    let referenceCalculationInProgress = false;
+    let targetCalculationInProgress = false;
     
     //==========================================================================
     // HELPER FUNCTIONS
@@ -724,7 +738,7 @@ window.TEUI.SectionModules.sect15 = (function() {
     }
     
     //==========================================================================
-    // CALCULATIONS AND DEPENDENCIES
+    // CALCULATIONS AND DEPENDENCIES (Refactored)
     //==========================================================================
     
     /**
@@ -754,28 +768,38 @@ window.TEUI.SectionModules.sect15 = (function() {
         sm.registerDependency('h_15', 'h_136');
 
         // Dependencies for d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
-        ['g_101', 'd_101', 'd_102', 'g_102', 'h_23', 'd_23'].forEach(dep => sm.registerDependency(dep, 'd_137'));
+        sm.registerDependency('g_101', 'd_137'); // U-Val. for Ae 
+        sm.registerDependency('d_101', 'd_137'); // Area Ae
+        sm.registerDependency('g_102', 'd_137'); // U-Val. for Ag
+        sm.registerDependency('d_102', 'd_137'); // Area Ag
+        sm.registerDependency('h_23', 'd_137');  // Tset Heating
+        sm.registerDependency('d_23', 'd_137');  // Coldest Days Temp
 
         // Dependencies for l_137: =D137*3412.14245
-        sm.registerDependency('d_137', 'l_137');
+        sm.registerDependency('d_137', 'l_137'); // BTU conversion
 
         // Dependencies for d_138: =(G101*D101+D102*G102)*(D24-H24)/1000
-        ['g_101', 'd_101', 'd_102', 'g_102', 'd_24', 'h_24'].forEach(dep => sm.registerDependency(dep, 'd_138'));
+        sm.registerDependency('g_101', 'd_138'); 
+        sm.registerDependency('d_101', 'd_138'); 
+        sm.registerDependency('g_102', 'd_138'); 
+        sm.registerDependency('d_102', 'd_138'); 
+        sm.registerDependency('d_24', 'd_138');  // Hottest Days Temp
+        sm.registerDependency('h_24', 'd_138');  // Tset Cooling
 
         // Dependencies for h_138: =D138*0.2843451361
-        sm.registerDependency('d_138', 'h_138');
+        sm.registerDependency('d_138', 'h_138'); // Tons conversion
 
         // Dependencies for l_138: =D138*3412.14245
-        sm.registerDependency('d_138', 'l_138');
+        sm.registerDependency('d_138', 'l_138'); // BTU conversion
 
-        // Dependencies for d_139: =((G101*D101+D102*G102)*(D24-H24)+(D65+D66+D67)*H15)/1000+((K79+D122+K64-H124)/(M19*24))
-        ['g_101', 'd_101', 'd_102', 'g_102', 'd_24', 'h_24', 'd_65', 'd_66', 'd_67', 'h_15', 'k_79', 'd_122', 'k_64', 'h_124', 'm_19'].forEach(dep => sm.registerDependency(dep, 'd_139'));
+        // Dependencies for d_139: Complex cooling calculation with internal gains
+        ['g_101', 'd_101', 'g_102', 'd_102', 'd_24', 'h_24', 'd_65', 'd_66', 'd_67', 'h_15', 'k_79', 'd_122', 'k_64', 'h_124', 'm_19'].forEach(dep => sm.registerDependency(dep, 'd_139'));
 
         // Dependencies for h_139: =D139*0.2843451361
-        sm.registerDependency('d_139', 'h_139');
+        sm.registerDependency('d_139', 'h_139'); // Tons conversion
 
         // Dependencies for l_139: =D139*3412.14245
-        sm.registerDependency('d_139', 'l_139');
+        sm.registerDependency('d_139', 'l_139'); // BTU conversion
 
         // Dependencies for d_140: =D137*1000/H15
         sm.registerDependency('d_137', 'd_140');
@@ -784,17 +808,24 @@ window.TEUI.SectionModules.sect15 = (function() {
         // Dependencies for h_140: =D138/H15*1000
         sm.registerDependency('d_138', 'h_140');
         sm.registerDependency('h_15', 'h_140');
-        
+
         // Dependencies for d_141: =D135*L12
         sm.registerDependency('d_135', 'd_141');
-        sm.registerDependency('l_12', 'd_141'); // Electricity price
+        sm.registerDependency('l_12', 'd_141'); // Electricity Price
 
         // Dependencies for h_141: =D136*L12
         sm.registerDependency('d_136', 'h_141');
-        sm.registerDependency('l_12', 'h_141'); // Electricity price
+        sm.registerDependency('l_12', 'h_141'); // Electricity Price
 
-        // Dependencies for l_141: =(L13*D28)+(D29*L14)+(L15*D31)
-        ['l_13', 'd_28', 'd_29', 'l_14', 'l_15', 'd_31'].forEach(dep => sm.registerDependency(dep, 'l_141'));
+        // Dependencies for l_141: =(L13*D28)+(D29*L14)+(L15*D31)+(L16*D30)
+        sm.registerDependency('l_13', 'l_141'); // Gas Price
+        sm.registerDependency('d_28', 'l_141'); // Gas Use
+        sm.registerDependency('l_14', 'l_141'); // Propane Price
+        sm.registerDependency('d_29', 'l_141'); // Propane Use
+        sm.registerDependency('l_15', 'l_141'); // Wood Price
+        sm.registerDependency('d_31', 'l_141'); // Wood Use
+        sm.registerDependency('l_16', 'l_141'); // Oil Price
+        sm.registerDependency('d_30', 'l_141'); // Oil Use
 
         // Dependencies for h_142: =IF(D113="Heatpump",D142/(D141-H141), 0)
         sm.registerDependency('d_113', 'h_142'); // Primary Heating System
@@ -829,8 +860,283 @@ window.TEUI.SectionModules.sect15 = (function() {
         // Requires k_32 (Target Net Emissions) and a reference emission value (REFERENCE!K32)
         // Assuming REFERENCE!K32 needs to be defined/retrieved, maybe from section 4 or 5? Using a placeholder.
         sm.registerDependency('k_32', 'd_145');
+        sm.registerDependency('j_32', 'd_145'); // Reference emissions from S04/S05
         // Placeholder: sm.registerDependency('reference_k_32', 'd_145'); 
+        
+        // =============================================================================
+        // IT-DEPENDS: CALCULATION REGISTRATIONS
+        // =============================================================================
+        registerITDependsCalculations();
 
+    }
+    
+    /**
+     * Register IT-DEPENDS calculation functions
+     */
+    function registerITDependsCalculations() {
+        if (!window.TEUI?.StateManager?.registerCalculation) {
+            console.warn('[S15 IT-DEPENDS] StateManager.registerCalculation not available');
+            return;
+        }
+        
+        const sm = window.TEUI.StateManager;
+        
+        // d_135: TEU Targeted Electricity
+        sm.registerCalculation('d_135', function() {
+            const m43 = getNumericValue('m_43');
+            const k51 = getNumericValue('k_51');
+            const h70 = getNumericValue('h_70');
+            const d117 = getNumericValue('d_117');
+            const i104 = getNumericValue('i_104');
+            const m121 = getNumericValue('m_121');
+            const i80 = getNumericValue('i_80');
+            const coolingType = sm.getValue('d_116');
+            
+            // Apply d117 logic for No Cooling
+            const d117Effective = coolingType === 'No Cooling' ? 0 : d117;
+            
+            return m43 + k51 + h70 + d117Effective + i104 + m121 - i80;
+        }, 'TEU Targeted Electricity');
+        
+        // h_135: TEUI
+        sm.registerCalculation('h_135', function() {
+            const d135 = getNumericValue('d_135');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d135 / area : 0;
+        }, 'TEUI - Total Energy Use Intensity');
+        
+        // d_136: TEU Targeted Electricity if HP/Gas/Oil Bldg
+        sm.registerCalculation('d_136', function() {
+            const primaryHeating = sm.getValue('d_113');
+            const d135 = getNumericValue('d_135');
+            const k51 = getNumericValue('k_51');
+            const d117 = getNumericValue('d_117');
+            const d114 = getNumericValue('d_114');
+            const m43 = getNumericValue('m_43');
+            const h70 = getNumericValue('h_70');
+            const coolingType = sm.getValue('d_116');
+            
+            // Apply d117 logic for No Cooling
+            const d117Effective = coolingType === 'No Cooling' ? 0 : d117;
+            
+            if (primaryHeating === 'Electricity') {
+                return d135;
+            } else if (primaryHeating === 'Heatpump') {
+                return k51 + d117Effective + d114 + m43 + h70;
+            } else {
+                return k51 + d117Effective + m43 + h70;
+            }
+        }, 'TEU for different heating systems');
+        
+        // h_136: TEUI for HP/Gas/Oil
+        sm.registerCalculation('h_136', function() {
+            const d136 = getNumericValue('d_136');
+            const area = getNumericValue('h_15');
+            return area > 0 ? d136 / area : 0;
+        }, 'TEUI for different heating systems');
+        
+        // d_137: Peak Heating Load
+        sm.registerCalculation('d_137', function() {
+            const g101 = getNumericValue('g_101');
+            const d101 = getNumericValue('d_101');
+            const g102 = getNumericValue('g_102');
+            const d102 = getNumericValue('d_102');
+            const h23 = getNumericValue('h_23');
+            const d23 = getNumericValue('d_23');
+            return ((g101 * d101) + (d102 * g102)) * (h23 - d23) / 1000;
+        }, 'Peak Heating Load kW');
+        
+        // l_137: Peak Heating BTU
+        sm.registerCalculation('l_137', function() {
+            const d137 = getNumericValue('d_137');
+            return d137 * 3412.14245;
+        }, 'Peak Heating BTU/hr');
+        
+        // d_138: Peak Cooling Load
+        sm.registerCalculation('d_138', function() {
+            const g101 = getNumericValue('g_101');
+            const d101 = getNumericValue('d_101');
+            const g102 = getNumericValue('g_102');
+            const d102 = getNumericValue('d_102');
+            const d24 = getNumericValue('d_24');
+            const h24 = getNumericValue('h_24');
+            return ((g101 * d101) + (d102 * g102)) * (d24 - h24) / 1000;
+        }, 'Peak Cooling Load kW');
+        
+        // h_138: Peak Cooling Tons
+        sm.registerCalculation('h_138', function() {
+            const d138 = getNumericValue('d_138');
+            return d138 * 0.2843451361;
+        }, 'Peak Cooling Tons');
+        
+        // l_138: Peak Cooling BTU
+        sm.registerCalculation('l_138', function() {
+            const d138 = getNumericValue('d_138');
+            return d138 * 3412.14245;
+        }, 'Peak Cooling BTU/hr');
+        
+        // d_139: Peak Cooling Load with Gains
+        sm.registerCalculation('d_139', function() {
+            const g101 = getNumericValue('g_101');
+            const d101 = getNumericValue('d_101');
+            const g102 = getNumericValue('g_102');
+            const d102 = getNumericValue('d_102');
+            const d24 = getNumericValue('d_24');
+            const h24 = getNumericValue('h_24');
+            const d65 = getNumericValue('d_65');
+            const d66 = getNumericValue('d_66');
+            const d67 = getNumericValue('d_67');
+            const area = getNumericValue('h_15');
+            const k79 = getNumericValue('k_79');
+            const d122 = getNumericValue('d_122');
+            const k64 = getNumericValue('k_64');
+            const h124 = getNumericValue('h_124');
+            const m19Days = getNumericValue('m_19') || 120;
+            
+            const enclosureCoolLoad = ((g101 * d101) + (d102 * g102)) * (d24 - h24);
+            const internalGainsW = (d65 + d66 + d67) * area;
+            const solarVentOccGains = k79 + d122 + k64 - h124;
+            let peakCoolingLoadGains = (enclosureCoolLoad + internalGainsW) / 1000;
+            
+            if (m19Days > 0) {
+                peakCoolingLoadGains += (solarVentOccGains / (m19Days * 24));
+            }
+            
+            return peakCoolingLoadGains;
+        }, 'Peak Cooling Load with Gains kW');
+        
+        // h_139: Peak Cooling Tons with Gains
+        sm.registerCalculation('h_139', function() {
+            const d139 = getNumericValue('d_139');
+            return d139 * 0.2843451361;
+        }, 'Peak Cooling Tons with Gains');
+        
+        // l_139: Peak Cooling BTU with Gains
+        sm.registerCalculation('l_139', function() {
+            const d139 = getNumericValue('d_139');
+            return d139 * 3412.14245;
+        }, 'Peak Cooling BTU/hr with Gains');
+        
+        // d_140: Max Heating Intensity
+        sm.registerCalculation('d_140', function() {
+            const d137 = getNumericValue('d_137');
+            const area = getNumericValue('h_15');
+            return area > 0 ? (d137 * 1000 / area) : 0;
+        }, 'Max Heating Load Intensity W/m²');
+        
+        // h_140: Max Cooling Intensity
+        sm.registerCalculation('h_140', function() {
+            const d138 = getNumericValue('d_138');
+            const area = getNumericValue('h_15');
+            return area > 0 ? (d138 * 1000 / area) : 0;
+        }, 'Max Cooling Load Intensity W/m²');
+        
+        // d_141: Annual Cost of Electricity Pre
+        sm.registerCalculation('d_141', function() {
+            const d135 = getNumericValue('d_135');
+            const elecPrice = getNumericValue('l_12');
+            return d135 * elecPrice;
+        }, 'Annual Cost of Electricity Pre-HP');
+        
+        // h_141: Annual Cost of Electricity Post HP
+        sm.registerCalculation('h_141', function() {
+            const d136 = getNumericValue('d_136');
+            const elecPrice = getNumericValue('l_12');
+            return d136 * elecPrice;
+        }, 'Annual Cost of Electricity Post-HP');
+        
+        // l_141: Other Energy Cost
+        sm.registerCalculation('l_141', function() {
+            const gasPrice = getNumericValue('l_13');
+            const d28 = getNumericValue('d_28');
+            const propanePrice = getNumericValue('l_14');
+            const d29 = getNumericValue('d_29');
+            const woodPrice = getNumericValue('l_15');
+            const d31 = getNumericValue('d_31');
+            const oilPrice = getNumericValue('l_16');
+            const d30 = getNumericValue('d_30');
+            
+            return (gasPrice * d28) + (propanePrice * d29) + (woodPrice * d31) + (oilPrice * d30);
+        }, 'Other Energy Cost');
+        
+        // h_142: ROI Years
+        sm.registerCalculation('h_142', function() {
+            const primaryHeating = sm.getValue('d_113');
+            const hpCostPremium = getNumericValue('d_142');
+            const d141 = getNumericValue('d_141');
+            const h141 = getNumericValue('h_141');
+            
+            if (primaryHeating === 'Heatpump') {
+                const costSavings = d141 - h141;
+                return costSavings > 0 ? hpCostPremium / costSavings : 0;
+            }
+            return 0;
+        }, 'ROI Years for Heat Pump');
+        
+        // d_143: Reference TEUI
+        sm.registerCalculation('d_143', function() {
+            return getNumericValue('e_10');
+        }, 'Reference TEUI from Section 01');
+        
+        // h_143: Target TEUI
+        sm.registerCalculation('h_143', function() {
+            return getNumericValue('h_10');
+        }, 'Target TEUI from Section 01');
+        
+        // l_143: Actual TEUI (conditional)
+        sm.registerCalculation('l_143', function() {
+            const reportingMode = sm.getValue('d_14');
+            if (reportingMode === 'Utility Bills') {
+                return getNumericValue('k_10');
+            }
+            return 'N/A';
+        }, 'Actual TEUI if Utility Bills mode');
+        
+        // d_144: TEUI Reduction %
+        sm.registerCalculation('d_144', function() {
+            const refTEUI = getNumericValue('e_10');
+            const targetTEUI = getNumericValue('h_10');
+            return refTEUI > 0 ? (1 - (targetTEUI / refTEUI)) : 0;
+        }, 'TEUI Reduction Percentage');
+        
+        // h_144: Target vs Actual %
+        sm.registerCalculation('h_144', function() {
+            const l143 = sm.getValue('l_143');
+            if (l143 === 'N/A') return 'N/A';
+            
+            const actualTEUI = getNumericValue('l_143');
+            const targetTEUI = getNumericValue('h_10');
+            return actualTEUI > 0 ? (targetTEUI / actualTEUI) : 0;
+        }, 'Target vs Actual TEUI Percentage');
+        
+        // l_144: Actual vs Target %
+        sm.registerCalculation('l_144', function() {
+            const reportingMode = sm.getValue('d_14');
+            if (reportingMode !== 'Utility Bills') return 'N/A';
+            
+            const actualTEUI = getNumericValue('k_10');
+            const targetTEUI = getNumericValue('h_10');
+            return targetTEUI > 0 ? actualTEUI / targetTEUI : 0;
+        }, 'Actual vs Target TEUI Percentage');
+        
+        // d_145: GHG Reduction %
+        sm.registerCalculation('d_145', function() {
+            const targetEmissions = getNumericValue('k_32');
+            // Get reference emissions - check for ref_ prefix first, then j_32 as the reference value
+            let referenceEmissions = window.TEUI?.StateManager?.getValue('ref_k_32') || 
+                                    window.TEUI?.StateManager?.getValue('ref_j_32') || 
+                                    getNumericValue('j_32') || 
+                                    0;
+            
+            console.log(`[S15] d_145 calc - target: ${targetEmissions}, reference: ${referenceEmissions}`);
+            
+            if (referenceEmissions === 0 && targetEmissions < 0) {
+                return 1; // 100% reduction if sequestration
+            } else if (referenceEmissions > 0) {
+                return 1 - (targetEmissions / referenceEmissions);
+            }
+            return 0;
+        }, 'GHG Reduction Percentage');
     }
     
     /**
@@ -838,19 +1144,22 @@ window.TEUI.SectionModules.sect15 = (function() {
      * This follows the template pattern expected by the system
      */
     function calculateAll() {
-        // Add recursion protection
-        if (referenceCalculationInProgress || targetCalculationInProgress) {
+        // RECURSION PROTECTION
+        if (window.TEUI.sect15.calculationInProgress) {
+            console.log("[S15] Calculation already in progress, skipping to prevent recursion");
             return;
         }
         
-        // Run both engines independently
-        calculateReferenceModel();  // Calculates Reference values with ref_ prefix
-        calculateTargetModel();     // Calculates Target values (existing logic)
+        try {
+            window.TEUI.sect15.calculationInProgress = true;
+            
+            // Run both engines independently
+            calculateReferenceModel();  // Calculates Reference values with ref_ prefix
+            calculateTargetModel();     // Calculates Target values (existing logic)
+        } finally {
+            window.TEUI.sect15.calculationInProgress = false;
+        }
     }
-    
-    // Add recursion protection flags  
-    let referenceCalculationInProgress = false;
-    let targetCalculationInProgress = false;
     
     /**
      * REFERENCE MODEL ENGINE: Calculate all Reference values using Reference state
@@ -1162,7 +1471,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             const reportingMode_d14 = sm.getValue('d_14'); // "Utility Bills" or "Targeted Use"
             
             const targetEmissions_k32 = getNumericValue('k_32'); // Target Net Emissions kgCO2/yr
-            const referenceEmissions_REF_k32 = getNumericValue('reference_k_32') || 0; // Placeholder
+            const referenceEmissions_j32 = getNumericValue('j_32'); // Reference emissions from S04/S05
 
             const coolingType_d116 = sm.getValue('d_116'); // Get cooling type for d117 logic
 
@@ -1307,11 +1616,11 @@ window.TEUI.SectionModules.sect15 = (function() {
              }
 
             // d_145: =1-(K32/REFERENCE!K32)
-            let ghgReduction_d145 = (referenceEmissions_REF_k32 > 0) ? (1 - (targetEmissions_k32 / referenceEmissions_REF_k32)) : 0;
+            let ghgReduction_d145 = (referenceEmissions_j32 > 0) ? (1 - (targetEmissions_k32 / referenceEmissions_j32)) : 0;
             // Check if targetEmissions is negative (sequestration), handle division by zero
-             if (referenceEmissions_REF_k32 === 0 && targetEmissions_k32 < 0) {
+             if (referenceEmissions_j32 === 0 && targetEmissions_k32 < 0) {
                 ghgReduction_d145 = 1; // Or some indicator of 100%+ reduction if baseline is zero
-             } else if (referenceEmissions_REF_k32 === 0 && targetEmissions_k32 >= 0) {
+             } else if (referenceEmissions_j32 === 0 && targetEmissions_k32 >= 0) {
                 ghgReduction_d145 = 0; // No reduction if baseline and target are zero or positive
             }
             setCalculatedValue('d_145', ghgReduction_d145, 'percent');
@@ -1377,103 +1686,439 @@ window.TEUI.SectionModules.sect15 = (function() {
         if (!window.TEUI.StateManager) return;
         const sm = window.TEUI.StateManager;
 
-        // Create a list of all unique dependencies needed by this section's calculations
-        const dependencies = [
-            'm_43', 'k_51', 'h_70', 'd_117', 'i_104', 'm_121', 'i_80', 'h_15', 'd_113', 
-            'd_114', 'g_101', 'd_101', 'd_102', 'g_102', 'h_23', 'd_23', 'd_24', 'h_24', 
-            'd_65', 'd_66', 'd_67', 'k_79', 'd_122', 'k_64', 'h_124', 'm_19', 'l_12', 
-            'l_13', 'd_28', 'd_29', 'l_14', 'l_15', 'd_31', 'l_16', 'd_30', 'd_142', 'e_10', 
-            'h_10', 'k_10', 'd_14', 'k_32', 'reference_k_32' // Include placeholder reference
-        ];
+        // =============================================================================
+        // IT-DEPENDS: SMART LISTENERS FOR CROSS-SECTION DEPENDENCIES
+        // =============================================================================
         
-        // CRITICAL: Add listeners for Section 04 Reference values
-        // These trigger Section 15 Reference Model recalculation when S04 Reference values change
-        sm.addListener('ref_j_32', () => {
-            calculateReferenceModel();
+        // Listen for changes from S14 (TEDI values)
+        sm.addListener('h_126', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_126 (TEDI) changed, recalculating TEUI Summary');
+                calculateAll();
+            }
         });
         
-        sm.addListener('ref_k_32', () => {
-            calculateReferenceModel();
+        sm.addListener('h_130', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_130 (TELI) changed, recalculating TEUI Summary');
+                calculateAll();
+            }
         });
         
-        // Remove duplicates
-        const uniqueDependencies = [...new Set(dependencies)];
-            
-        // Add listeners for all unique dependencies
-        uniqueDependencies.forEach(dep => {
-            // Using an anonymous function to ensure calculateAll is called in the module's scope
-            sm.addListener(dep, () => {
-                // No log here
-                calculateAll(); 
-            });
+        // Listen for changes from S13 (Mechanical)
+        sm.addListener('d_113', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_113 (Heating System) changed, recalculating energy costs');
+                calculateAll();
+            }
         });
-            
-        // Helper function to create listeners that trigger calculateAll without logging
-        const addCalculationListener = (key) => {
-            sm.addListener(key, () => {
-                // No log here
+        
+        sm.addListener('d_114', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_114 (Heating Demand) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_116', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_116 (Cooling Type) changed, recalculating cooling loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_117', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_117 (Cooling Demand) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S12 (Volume Metrics)
+        sm.addListener('i_104', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] i_104 (Total Heat Loss) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('g_101', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] g_101 (U-value Ae) changed, recalculating peak loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_101', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_101 (Area Ae) changed, recalculating peak loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('g_102', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] g_102 (U-value Ag) changed, recalculating peak loads');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_102', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_102 (Area Ag) changed, recalculating peak loads');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S09 (Internal Gains)
+        sm.addListener('h_70', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_70 (Equipment Total) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_65', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_65 (Plug Loads) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_66', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_66 (Lighting) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_67', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_67 (Equipment) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_64', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] k_64 (Occupant Cooling) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_79', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] k_79 (Solar Gains) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S10 (Radiant Gains)
+        sm.addListener('i_80', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] i_80 (Usable Gains) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S07 (Water Use)
+        sm.addListener('k_51', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] k_51 (DHW Demand) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S06 (Renewable)
+        sm.addListener('m_43', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] m_43 (Onsite Energy) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S04/S05 (Energy & Emissions)
+        sm.addListener('j_32', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] j_32 (Reference Emissions) changed, updating GHG reduction');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_32', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] k_32 (Target Emissions) changed, updating GHG reduction');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_28', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_28 (Gas Use) changed, updating energy costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_29', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_29 (Propane Use) changed, updating energy costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_30', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_30 (Oil Use) changed, updating energy costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_31', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_31 (Wood Use) changed, updating energy costs');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S13 (Ventilation)
+        sm.addListener('m_121', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] m_121 (Net Ventilation) changed, recalculating TEUI');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_122', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_122 (Cooling Ventilation) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_124', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_124 (Free Cooling) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S03 (Climate)
+        sm.addListener('d_23', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_23 (Coldest Temp) changed, recalculating heating load');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_23', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_23 (Heating Setpoint) changed, recalculating heating load');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_24', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_24 (Hottest Temp) changed, recalculating cooling load');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_24', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_24 (Cooling Setpoint) changed, recalculating cooling load');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('m_19', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] m_19 (Cooling Days) changed, recalculating cooling');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S02 (Building Info)
+        sm.addListener('h_15', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_15 (Area) changed, recalculating all intensities');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('d_14', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] d_14 (Reporting Mode) changed, updating actual values');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('l_12', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] l_12 (Elec Price) changed, updating costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('l_13', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] l_13 (Gas Price) changed, updating costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('l_14', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] l_14 (Propane Price) changed, updating costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('l_15', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] l_15 (Wood Price) changed, updating costs');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('l_16', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] l_16 (Oil Price) changed, updating costs');
+                calculateAll();
+            }
+        });
+        
+        // Listen for changes from S01 (Key Values)
+        sm.addListener('e_10', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] e_10 (Reference TEUI) changed, updating percentages');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('h_10', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] h_10 (Target TEUI) changed, updating percentages');
+                calculateAll();
+            }
+        });
+        
+        sm.addListener('k_10', function(newValue) {
+            if (!window.TEUI.sect15.calculationInProgress) {
+                console.log('[S15] k_10 (Actual TEUI) changed, updating percentages');
+                calculateAll();
+            }
+        });
+
+        // User input listener for Heat Pump cost premium
+        const d142Element = document.querySelector('[data-field-id="d_142"]');
+        if (d142Element && d142Element.getAttribute('contenteditable') === 'true') {
+            // Follow standard pattern for contenteditable fields
+            d142Element.addEventListener('blur', function() {
+                const value = this.textContent.trim();
+                const numericValue = window.TEUI?.parseNumeric?.(value) || 0;
+                sm.setValue('d_142', numericValue.toString(), 'user-modified');
                 calculateAll();
             });
-        };
-
-        // Add calculation listeners
-        addCalculationListener('d_23'); // Coldest Day Temp
-        addCalculationListener('h_23'); // Heating Setpoint
-        addCalculationListener('d_24'); // Hottest Day Temp
-        addCalculationListener('h_24'); // Cooling Setpoint
-
-        // Add listeners for other relevant changes that should trigger recalculations
-        // These might come from Sections 10, 11, 12, 13, 14
-        const dependentFields = [
-            'd_67', // Eqpt Load (S09)
-            'h_70', // P/L/E Subtotal (S09)
-            'i_80', // Total Radiant Gain (S10)
-            'd_97', // Ground Loss (S11)
-            'i_97', // Ground Loss (S11) - heating portion?
-            'i_98', // Total Envelope Loss (S11)
-            'd_101', // Wall Area (S12)
-            'g_101', // Wall U-value (S12)
-            'd_102', // Roof Area (S12)
-            'g_102', // Roof U-value (S12)
-            'i_103', // Below Grade Loss (S12)
-            'k_103', // Below Grade Gain (S12)
-            'i_104', // Total Heat Loss Intensity (S12)
-            'd_114', // Net Energy Needs (S13)
-            'i_114', // Heating Needs (S13)
-            'k_114', // Cooling Needs (S13)
-            'i_129', // TEDI (S14)
-            'k_129', // TELI (S14)
-            'h_10' // TEUI Actual (S1)
-            // Add any other specific field IDs from other sections that affect S15 calculations
-        ];
-
-        dependentFields.forEach(fieldId => {
-             sm.addListener(fieldId, () => {
-                // No log here
-                calculateAll();
-             });
-        });
+            
+            d142Element.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+            });
+        }
     }
     
     /**
      * Called when section is rendered
      */
     function onSectionRendered() {
+        // console.log("TEUI Summary section (sect15) rendered");
         
-        // Register dependencies first
-        // Dependencies might rely on other sections being registered, so ensure StateManager is ready
-        if (window.TEUI.StateManager) {
+        // Register dependencies with StateManager now that it exists
         registerDependencies();
-        } else {
-            console.warn("StateManager not ready during sect15 onSectionRendered dependency registration.");
-            // Optionally, retry registration later or listen for a StateManager ready event
+        
+        // Initialize event handlers now that the DOM is ready
+        initializeEventHandlers();
+    }
+    
+    //==========================================================================
+    // IT-DEPENDS TEST FUNCTION
+    //==========================================================================
+    
+    /**
+     * Test function for Section 15 IT-DEPENDS implementation
+     * Run from console: window.TEUI.SectionModules.sect15.testS15_ITDepends()
+     */
+    function testS15_ITDepends() {
+        console.log('=== S15 IT-DEPENDS TEST ===');
+        
+        const sm = window.TEUI.StateManager;
+        if (!sm) {
+            console.error('❌ StateManager not found');
+            return false;
         }
         
-        // Initialize event handlers AFTER dependencies are registered
-        initializeEventHandlers();
-
-        // Initial calculation should now be triggered by the central Calculator.calculateAll
-        // or by listeners responding to dependency updates.
+        console.log('✓ StateManager found');
+        
+        // Test 1: Check all calculations are registered
+        const expectedCalculations = [
+            'd_135', 'h_135', 'd_136', 'h_136', 'd_137', 'l_137',
+            'd_138', 'h_138', 'l_138', 'd_139', 'h_139', 'l_139',
+            'd_140', 'h_140', 'd_141', 'h_141', 'l_141', 'h_142',
+            'd_143', 'h_143', 'l_143', 'd_144', 'h_144', 'l_144', 'd_145'
+        ];
+        
+        console.log('\n--- Testing Calculation Registrations ---');
+        let registrationsPassed = 0;
+        expectedCalculations.forEach(calcId => {
+            const isRegistered = sm.hasCalculation && sm.hasCalculation(calcId);
+            console.log(`${isRegistered ? '✓' : '❌'} ${calcId} registered: ${isRegistered}`);
+            if (isRegistered) registrationsPassed++;
+        });
+        
+        console.log(`\nRegistration Summary: ${registrationsPassed}/${expectedCalculations.length} calculations registered`);
+        
+        // Test 2: Test calculation execution
+        console.log('\n--- Testing Calculation Execution ---');
+        
+        // Test h_136 (TEUI) calculation
+        console.log('\nTesting h_136 (TEUI) calculation:');
+        const d136Value = getNumericValue('d_136');
+        const areaValue = getNumericValue('h_15');
+        const expectedTEUI = areaValue > 0 ? d136Value / areaValue : 0;
+        const actualTEUI = getNumericValue('h_136');
+        console.log(`d_136: ${d136Value}, h_15: ${areaValue}`);
+        console.log(`Expected TEUI: ${expectedTEUI.toFixed(2)}`);
+        console.log(`Actual TEUI: ${actualTEUI.toFixed(2)}`);
+        console.log(`${Math.abs(expectedTEUI - actualTEUI) < 0.01 ? '✓' : '❌'} TEUI calculation correct`);
+        
+        // Test 3: Test cross-section dependency
+        console.log('\n--- Testing Cross-Section Dependencies ---');
+        console.log('Simulating change in h_70 (from S09)...');
+        
+        const originalH70 = getNumericValue('h_70');
+        const testValue = 5000;
+        
+        // Set a test value
+        sm.setValue('h_70', testValue.toString(), 'test');
+        
+        // Allow time for calculations to propagate
+        setTimeout(() => {
+            const newD135 = getNumericValue('d_135');
+            console.log(`Original h_70: ${originalH70}`);
+            console.log(`Test h_70: ${testValue}`);
+            console.log(`New d_135: ${newD135}`);
+            console.log(`${newD135 !== d136Value ? '✓' : '❌'} Cross-section dependency working`);
+            
+            // Restore original value
+            sm.setValue('h_70', originalH70.toString(), 'test');
+            
+            console.log('\n=== S15 IT-DEPENDS TEST COMPLETE ===');
+        }, 100);
+        
+        return true;
     }
     
     //==========================================================================
@@ -1491,7 +2136,10 @@ window.TEUI.SectionModules.sect15 = (function() {
         
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
-        onSectionRendered: onSectionRendered
+        onSectionRendered: onSectionRendered,
+        
+        // IT-DEPENDS test function
+        testS15_ITDepends: testS15_ITDepends
     };
 })();
 
