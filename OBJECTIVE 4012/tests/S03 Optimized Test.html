@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S03 Climate Calculations - Optimized with Reference Mode</title>
+    
+    <!-- Link to 4012-styles.css for dropdown and slider styles -->
+    <link rel="stylesheet" href="../4012-styles.css">
+    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -586,70 +590,58 @@
            el = external lookup
         */
         
-        /* Browser-specific fixes from 4011-styles.css */
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
-            /* Safari and Chrome specific fixes */
-            [contenteditable="true"],
-            .editable,
-            select.form-select {
-                -webkit-appearance: none;
-                border: 0;
-                outline: none;
-            }
-        }
-        
-        /* dd - Dropdown styles - Match 4011-styles.css exactly */
+        /* dd - Dropdown styles - Use Bootstrap defaults with consistent font */
         .cell-dd select,
-        select.form-select,
-        .data-table td select.form-select,
-        .data-table td select.form-control,
-        table.data-table select.form-select {
+        select.form-select {
             width: 100%;
-            min-width: 140px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #333;
             cursor: pointer;
-            border: 1px solid #ced4da !important;
-            border-radius: 0.25rem !important;
-            padding: 0.375rem 2.25rem 0.375rem 0.75rem !important;
-            background-color: #fff !important;
-            margin: 2px 0;
-            height: calc(100% - 4px);
-            /* Remove native appearance */
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            appearance: none !important;
-            /* Add Bootstrap-style background arrow */
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 0.75rem center !important;
-            background-size: 16px 12px !important;
-            /* Blue text for user inputs */
-            color: #0066cc !important;
-            font-weight: 500 !important;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg width='12' height='6' viewBox='0 0 12 6' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M0 0l6 6 6-6z' fill='%23333'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            padding-right: 36px;
+            transition: all 0.2s;
         }
         
-        /* Add hover effect */
-        .cell-dd select:hover,
-        select.form-select:hover,
-        .data-table td select.form-select:hover,
-        .data-table td select.form-control:hover,
-        table.data-table select.form-select:hover {
-            border-color: #86b7fe !important;
+        /* Editable dropdown styling */
+        .cell-dd select:not(:disabled):not(.reference-value) {
+            color: #0066cc;
+            font-weight: bold;
         }
         
-        /* Ensure dropdown cells have minimum width */
-        [data-dropdown-id],
-        .dropdown-cell,
-        .cell-dd {
+        .cell-dd select:hover:not(:disabled) {
+            border-color: #0066cc;
+        }
+        
+        .cell-dd select:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        /* Dropdown options */
+        .cell-dd select option {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                         "Helvetica Neue", Arial, sans-serif;
+            font-weight: normal;
+            padding: 8px;
+        }
+        
+        /* Dropdown cells */
+        .cell-dd,
+        .dropdown-cell {
             min-width: 140px;
             padding: 2px 8px !important;
-        }
-        
-        /* Handle dropdowns spanning columns */
-        td[colspan="2"] .form-select {
-            min-width: 180px;
         }
         
         /* sl - Slider styles - Match 4011 styling */
@@ -1050,10 +1042,116 @@
     <script src="../core/data/4012-ClimateValues.js"></script>
     
     <script>
-        // Create TEUI namespace if it doesn't exist
+        // Initialize namespace
         window.TEUI = window.TEUI || {};
         
-        // S03 Climate Calculations Module with Reference Mode
+        // Add formatNumber function from 4011-StateManager.js for slider display
+        window.TEUI.formatNumber = function(value, formatType = 'number-2dp') {
+            // Handle N/A or null/undefined input first
+            if (value === null || value === undefined || String(value).trim().toUpperCase() === 'N/A') {
+                return "N/A";
+            }
+            // Handle raw format type
+            if (formatType === 'raw') {
+                return String(value);
+            }
+
+            // Use global parseNumeric to get a clean number or NaN
+            const numValue = window.TEUI.parseNumeric(value, NaN); 
+
+            // Handle non-numeric values after parsing
+            if (isNaN(numValue)) {
+                 // Return original string if it wasn't parseable but wasn't explicitly N/A
+                 if (typeof value === 'string' && value.trim() !== '') return value;
+                 // Otherwise return a default based on expected format
+                 if (formatType.startsWith('percent')) return '0%';
+                 if (formatType.startsWith('currency')) return '$0.00'; // Basic currency default
+                 return '0.00'; // Default numeric format
+            }
+
+            try {
+                // Handle Aliases
+                if (formatType === 'u-value') formatType = 'number-3dp';
+                if (formatType === 'rsi') formatType = 'number-2dp';
+
+                // Handle Integer types first
+                if (formatType === 'integer') {
+                    return numValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true }); // With commas
+                }
+                if (formatType === 'integer-nocomma') {
+                    return numValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: false }); // No commas
+                }
+
+                // Parsing complex format types
+                const formatParts = formatType.split('-');
+                let type = formatParts[0]; // 'number', 'percent', 'cad'
+                const dpPart = formatParts[1] || ''; // e.g., '0dp', '2dp', '3dp', '4dp'
+                const useCommas = formatParts.includes('comma');
+
+                let decimals = 2; // Default decimal places
+                if (dpPart) {
+                    const match = dpPart.match(/(\d+)d/);
+                    if (match) decimals = parseInt(match[1], 10);
+                }
+
+                // Percentage Formatting
+                if (type === 'percent') {
+                     return numValue.toLocaleString(undefined, { 
+                         style: 'percent', 
+                         minimumFractionDigits: decimals, 
+                         maximumFractionDigits: decimals 
+                     });
+                }
+                // CAD Currency Formatting (using toFixed)
+                else if (type === 'cad') {
+                     if (isNaN(decimals) || decimals < 0) decimals = 2; // Safety check
+                     const fixedString = numValue.toFixed(decimals);
+                     // Basic comma insertion - might need refinement for edge cases
+                     let finalString = fixedString;
+                     if (useCommas) {
+                         const parts = fixedString.split('.');
+                         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                         finalString = parts.join('.');
+                     }
+                     return '$' + finalString;
+                }
+                // Number Formatting (Default)
+                else { 
+                    return numValue.toLocaleString(undefined, { 
+                        minimumFractionDigits: decimals, 
+                        maximumFractionDigits: decimals, 
+                        useGrouping: useCommas 
+                    });
+                }
+            } catch (e) {
+                console.error(`Error formatting value ${value} with format ${formatType}:`, e);
+                return String(value); // Fallback to string representation on error
+            }
+        };
+        
+        // Add parseNumeric function from 4011-StateManager.js
+        window.TEUI.parseNumeric = function(value, defaultValue = 0) {
+            if (value === null || value === undefined) {
+                return defaultValue;
+            }
+            let numericValue;
+            if (typeof value === 'string') {
+                // Remove commas, trim whitespace
+                const cleanedValue = value.replace(/,/g, '').trim();
+                if (cleanedValue === '' || cleanedValue.toUpperCase() === 'N/A') {
+                    return defaultValue;
+                }
+                numericValue = parseFloat(cleanedValue);
+            } else if (typeof value === 'number') {
+                numericValue = value;
+            } else {
+                numericValue = NaN; // Handle other types if needed
+            }
+            // Return defaultValue if parsing resulted in NaN
+            return isNaN(numericValue) ? defaultValue : numericValue;
+        };
+        
+        // Dual state management for Target and Reference modes
         (function() {
             // Number formatting system (similar to 4011-StateManager)
             const NumberFormat = {
@@ -1502,23 +1600,25 @@
                         CalculationService.calculateAll();
                     });
                     
-                    // Capacitance slider
-                    const capacitanceSlider = document.getElementById('capacitance_slider');
-                    const capacitanceValue = document.getElementById('capacitance_value');
-                    
-                    // Function to update slider value
-                    function updateCapacitanceValue() {
-                        const value = capacitanceSlider.value;
-                        capacitanceValue.textContent = NumberFormat.format(value, 'percent');
+                    // Slider
+                    elements.capacitanceSlider.addEventListener('input', function() {
+                        const value = this.value;
+                        capacitanceValue.textContent = window.TEUI.formatNumber(value/100, 'percent-0dp');
                         DualState.setValue('i_21', value);
                         
                         // Update calculations
                         UIController.updateCalculations();
-                    }
+                    });
                     
-                    // Use both input and change events for cross-browser compatibility
-                    capacitanceSlider.addEventListener('input', updateCapacitanceValue);
-                    capacitanceSlider.addEventListener('change', updateCapacitanceValue);
+                    // Also listen to 'change' event for Safari compatibility
+                    elements.capacitanceSlider.addEventListener('change', function() {
+                        const value = this.value;
+                        capacitanceValue.textContent = window.TEUI.formatNumber(value/100, 'percent-0dp');
+                        DualState.setValue('i_21', value);
+                        
+                        // Update calculations
+                        UIController.updateCalculations();
+                    });
                     
                     // Weather data button
                     document.getElementById('showWeatherDataBtn').addEventListener('click', function() {
