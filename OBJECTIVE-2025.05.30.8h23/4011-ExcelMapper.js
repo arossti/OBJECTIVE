@@ -36,15 +36,9 @@ EXCEL_MAPPING: {
 // Placeholder for the old mapping (referenced by existing code) - will be deprecated
 const excelMapping = CONFIG.EXCEL_MAPPING.NODE_VALUES || {}; 
 
-// Reverse mapping for export (based on the old mapping for now)
-const reverseMapping = Object.fromEntries(
-    Object.entries(excelMapping).map(([key, value]) => [value, key])
-);
-
 class ExcelMapper {
     constructor() {
         this.mapping = excelMapping; // Keep old mapping for now if needed by existing export
-        this.reverseMapping = reverseMapping;
         // Define the NEW specific mapping for user input import
         this.excelReportInputMapping = {
             // Section 02: Building Information (REPORT! Sheet)
@@ -183,8 +177,6 @@ class ExcelMapper {
             console.error(`Sheet named '${sheetName}' not found in the workbook.`);
             return null; // Indicate error
         }
-
-        console.log(`Mapping data from sheet: ${sheetName}`);
 
         Object.entries(this.excelReportInputMapping).forEach(([cellRef, fieldId]) => {
             // Construct the full cell reference with the sheet name for clarity if needed
@@ -334,29 +326,6 @@ class ExcelMapper {
                         extractedValue = "0"; // Default if parsing failed
                     }
                 }
-                // Normalization for SHGC fields (f_73 to f_78) is removed as they will be handled as direct coefficients.
-                // The new 'coefficient_slider' type expects the decimal value directly.
-                /*
-                const shgcFields = ['f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78'];
-                if (shgcFields.includes(fieldId)) {
-                    let numVal;
-                    if (typeof extractedValue === 'string') {
-                        numVal = parseFloat(extractedValue);
-                    } else if (typeof extractedValue === 'number') {
-                        numVal = extractedValue;
-                    }
-
-                    if (!isNaN(numVal)) {
-                        if (numVal >= 0 && numVal <= 1) { 
-                            extractedValue = (numVal * 100).toString();
-                        } else {
-                            extractedValue = Math.min(Math.max(numVal, 0), 100).toString(); 
-                        }
-                    } else {
-                        extractedValue = "50"; 
-                    }
-                }
-                */
                 // Normalize d_97 (Thermal Bridge Penalty %) value from Excel
                 if (fieldId === 'd_97') {
                     if (typeof extractedValue === 'number' && extractedValue >= 0 && extractedValue <= 1) {
@@ -429,13 +398,9 @@ class ExcelMapper {
                     }
                 }
                 importedData[fieldId] = extractedValue;
-                // console.log(`Mapped ${sheetName}!${cellRef} -> ${fieldId}: ${importedData[fieldId]}`);
-            } else {
-                // console.warn(`Cell ${sheetName}!${cellRef} (for ${fieldId}) not found.`);
             }
         });
         
-        console.log("Finished mapping. Imported data keys:", Object.keys(importedData));
         return importedData;
     }
 
