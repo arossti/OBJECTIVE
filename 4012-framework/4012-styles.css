@@ -745,30 +745,38 @@ body.reference-mode .user-input {
     grid-template-columns: 
         30px                           /* A: Row number */
         60px                           /* B: ID */
-        minmax(180px, max-content)     /* C: Label */
-        minmax(150px, 1fr)             /* D: Primary input */
-        80px                           /* E: Unit/secondary */
+        minmax(200px, max-content)     /* C: Label - wider for long labels */
+        minmax(180px, 1fr)             /* D: Primary input/dropdown */
+        40px                           /* E: Spacer */
         60px                           /* F: Secondary ID */
-        minmax(120px, max-content)     /* G: Secondary label */
-        minmax(120px, 1fr)             /* H: Secondary input */
-        80px                           /* I: Slider/value */
-        60px                           /* J: Tertiary ID */
-        minmax(100px, max-content)     /* K: Tertiary label */
-        minmax(80px, max-content)      /* L: Value */
-        60px                           /* M: Unit */
-        auto;                          /* N: Extra */
+        minmax(140px, max-content)     /* G: Secondary label */
+        minmax(100px, 1fr)             /* H: Secondary input */
+        80px                           /* I: Slider value */
+        40px                           /* J: Spacer */
+        80px                           /* K: Energy label */
+        minmax(80px, max-content)      /* L: Energy cost */
+        60px                           /* M: Energy unit */
+        40px;                          /* N: Spacer */
 }
 
 #buildingInfo .section-cell {
     display: flex;
     align-items: center;
     padding: 6px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Ensure dropdowns span properly */
+#buildingInfo .section-cell[colspan] {
+    grid-column: span var(--colspan, 1);
 }
 
 #buildingInfo select.form-select-sm {
     font-size: 0.8125rem;
     padding: 2px 6px;
     height: 28px;
+    width: 100%;
 }
 
 #buildingInfo .slider-container {
@@ -792,4 +800,42 @@ body.reference-mode .user-input {
 #buildingInfo .editable {
     min-width: 80px;
     padding: 2px 6px;
+}
+
+/* Align text properly */
+#buildingInfo .text-end {
+    text-align: right;
+    justify-content: flex-end;
+}
+
+#buildingInfo .text-center {
+    text-align: center;
+    justify-content: center;
+}
+
+#buildingInfo .label-prefix {
+    color: #666;
+    font-size: 0.875rem;
+    margin-right: 4px;
+}
+
+/* Header styling for T.10 */
+#buildingInfo .section-subheader {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    padding: 8px;
+}
+
+/* Ensure proper colspan handling */
+#buildingInfo .section-cell[colspan="2"] {
+    grid-column: span 2;
+}
+
+#buildingInfo .section-cell[colspan="3"] {
+    grid-column: span 3;
+}
+
+#buildingInfo .section-cell[colspan="4"] {
+    grid-column: span 4;
 } 

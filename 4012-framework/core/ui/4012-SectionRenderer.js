@@ -86,34 +86,79 @@
         },
         
         // Render a single cell
-        renderCell: function(cellDef, column) {
-            const cellElement = document.createElement('div');
-            cellElement.className = `section-cell col-${column}`;
+        renderCell: function(cell, columnIndex) {
+            const cellDiv = document.createElement('div');
+            cellDiv.className = 'section-cell col-' + String.fromCharCode(97 + columnIndex); // a, b, c, etc.
+            
+            // Handle colspan
+            if (cell.colspan) {
+                cellDiv.setAttribute('colspan', cell.colspan);
+                cellDiv.style.gridColumn = `span ${cell.colspan}`;
+            }
             
             // Add custom classes
-            if (cellDef.classes && Array.isArray(cellDef.classes)) {
-                cellElement.classList.add(...cellDef.classes);
+            if (cell.classes && Array.isArray(cell.classes)) {
+                cellDiv.classList.add(...cell.classes);
             }
             
             // Handle different cell types
-            if (cellDef.type === 'dropdown') {
-                const select = this.createDropdown(cellDef);
-                cellElement.appendChild(select);
-            } else if (cellDef.type === 'editable') {
-                const editable = this.createEditable(cellDef);
-                cellElement.appendChild(editable);
-            } else if (cellDef.type === 'slider') {
-                const slider = this.createSlider(cellDef);
-                cellElement.appendChild(slider);
-            } else if (cellDef.type === 'calculated' || cellDef.type === 'derived') {
-                const calculated = this.createCalculated(cellDef);
-                cellElement.appendChild(calculated);
-            } else if (cellDef.content) {
-                // Plain text content
-                cellElement.textContent = cellDef.content;
+            if (cell.type === 'dropdown' && cell.options) {
+                const select = document.createElement('select');
+                select.className = 'form-select form-select-sm';
+                if (cell.fieldId) select.setAttribute('data-field-id', cell.fieldId);
+                if (cell.dropdownId) select.setAttribute('data-dropdown-id', cell.dropdownId);
+                
+                // Add options
+                cell.options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.name || opt.value;
+                    if (opt.value === cell.value) option.selected = true;
+                    select.appendChild(option);
+                });
+                
+                cellDiv.appendChild(select);
+            }
+            else if (cell.type === 'editable') {
+                cellDiv.contentEditable = true;
+                cellDiv.classList.add('editable');
+                if (cell.fieldId) cellDiv.setAttribute('data-field-id', cell.fieldId);
+                cellDiv.textContent = cell.value || '';
+            }
+            else if (cell.type === 'slider') {
+                const container = document.createElement('div');
+                container.className = 'slider-container';
+                
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.className = 'slider';
+                if (cell.fieldId) slider.setAttribute('data-field-id', cell.fieldId);
+                slider.min = cell.min || 0;
+                slider.max = cell.max || 100;
+                slider.step = cell.step || 1;
+                slider.value = cell.value || 50;
+                
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'slider-value';
+                valueSpan.textContent = cell.value || '50';
+                
+                container.appendChild(slider);
+                container.appendChild(valueSpan);
+                cellDiv.appendChild(container);
+            }
+            else if (cell.type === 'calculated') {
+                cellDiv.classList.add('calculated-value');
+                if (cell.fieldId) cellDiv.setAttribute('data-field-id', cell.fieldId);
+                cellDiv.textContent = cell.value || '';
+            }
+            else if (cell.label) {
+                cellDiv.textContent = cell.label;
+            }
+            else if (cell.content !== undefined) {
+                cellDiv.textContent = cell.content;
             }
             
-            return cellElement;
+            return cellDiv;
         },
         
         // Create dropdown element
