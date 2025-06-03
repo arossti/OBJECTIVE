@@ -575,6 +575,186 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
+        /* Cell Type Naming Convention:
+           dd = dropdown
+           sl = slider  
+           ref = reference
+           dv = derived values
+           cf = calculated fields
+           ue = user editable
+           el = external lookup
+        */
+        
+        /* dd - Dropdown styles - Use Bootstrap defaults with consistent font */
+        .cell-dd select,
+        select.form-select {
+            width: 100%;
+            min-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid #ced4da !important; /* Bootstrap border */
+            border-radius: 0.25rem !important; /* Bootstrap radius */
+            padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap padding */
+            background-color: #fff !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                         "Helvetica Neue", Arial, sans-serif !important;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #0066cc; /* Blue for editable */
+            margin: 2px 0; /* Small margin to prevent border touching table lines */
+            height: calc(100% - 4px); /* Account for margins */
+        }
+        
+        /* Ensure dropdown options also use sans-serif */
+        .cell-dd select option,
+        select.form-select option {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                         "Helvetica Neue", Arial, sans-serif !important;
+        }
+        
+        /* Dropdown cells */
+        .cell-dd,
+        .dropdown-cell {
+            min-width: 140px;
+            padding: 2px 8px !important;
+        }
+        
+        /* sl - Slider styles */
+        .cell-sl {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cell-sl .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .cell-sl .slider-value {
+            font-weight: 500;
+            color: #333;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        /* dv - Derived values (calculated/non-editable) */
+        .cell-dv {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #000 !important;
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        /* cf - Calculated fields */
+        .cell-cf {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #000 !important;
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        /* ue - User editable fields */
+        .cell-ue {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #0066cc !important;
+            background-color: #f0f7ff !important;
+            border: 1px solid #0066cc;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            cursor: text;
+        }
+        
+        .cell-ue:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        /* el - External lookup (HTTP links) */
+        .cell-el {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7 !important;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.2s;
+            white-space: nowrap;  /* Prevent wrapping */
+            display: inline-block;
+        }
+        
+        button.cell-el {
+            font-family: inherit;
+        }
+        
+        .cell-el:hover {
+            background-color: #ffeaa7 !important;
+            border-color: #ffe8a1 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* ref - Reference mode styles */
+        .cell-ref {
+            color: #dc3545 !important;
+            font-weight: bold !important;
+            font-style: italic !important;
+            background-color: #fee !important;
+            border-color: #dc3545 !important;
+        }
+        
+        /* Missing/null values */
+        .cell-missing {
+            color: #6c757d !important;
+            font-style: italic;
+            font-weight: normal;
+        }
+        
+        /* Reference mode overrides */
+        .reference-mode .cell-ue:not(.reference-exempt),
+        .reference-mode .cell-dd select:not(.reference-exempt),
+        .reference-mode .cell-sl .slider:not(.reference-exempt) {
+            background-color: #ffebee !important;
+            color: #b71c1c !important;
+            font-weight: bold !important;
+            font-style: italic !important;
+            pointer-events: none !important;
+            opacity: 0.8;
+        }
+        
+        /* Global font family - ensure sans-serif everywhere */
+        body, select, option, input, button {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                         "Helvetica Neue", Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -621,7 +801,7 @@
                         <td class="row-label">Province</td>
                         <td colspan="2">
                             <div class="dropdown-container">
-                                <select id="provinceSelect" class="dropdown-select" data-field-id="d_19" data-dropdown-id="dd_d_19">
+                                <select id="provinceSelect" class="cell-dd" data-field-id="d_19" data-dropdown-id="dd_d_19">
                                     <option value="">Select Province</option>
                                 </select>
                             </div>
@@ -631,19 +811,19 @@
                         <td class="label-main">City</td>
                         <td>
                             <div class="dropdown-container">
-                                <select id="citySelect" class="dropdown-select" data-field-id="h_19" data-dropdown-id="dd_h_19" disabled>
+                                <select id="citySelect" class="cell-dd" data-field-id="h_19" data-dropdown-id="dd_h_19" disabled>
                                     <option value="">Select City</option>
                                 </select>
                             </div>
                         </td>
                         <td>Climate Zone</td>
                         <td>
-                            <span id="climateZone" class="calculated-value" data-field-id="j_19">4.0</span>
+                            <span id="climateZone" class="cell-cf" data-field-id="j_19">4.0</span>
                         </td>
                         <td class="label-prefix">L.3.3</td>
                         <td class="label-main">Days Cooling</td>
                         <td>
-                            <span id="daysCooling" class="user-input editable" data-field-id="m_19" contenteditable="true">120</span>
+                            <span id="daysCooling" class="cell-ue" data-field-id="m_19" contenteditable="true">120</span>
                         </td>
                     </tr>
                     
@@ -652,14 +832,14 @@
                         <td class="row-id">L.2.1</td>
                         <td class="row-label">Heating Degree Days (HDD)</td>
                         <td>
-                            <span id="hdd" class="calculated-value" data-field-id="d_20">0</span>
+                            <span id="hdd" class="cell-dv" data-field-id="d_20">0</span>
                         </td>
                         <td></td>
                         <td class="label-prefix">L.2.2</td>
                         <td class="label-main">Current or Future Values</td>
                         <td>
                             <div class="dropdown-container reference-exempt">
-                                <select id="timeframeSelect" class="dropdown-select reference-exempt" data-field-id="h_20" data-dropdown-id="dd_h_20">
+                                <select id="timeframeSelect" class="cell-dd reference-exempt" data-field-id="h_20" data-dropdown-id="dd_h_20">
                                     <option value="Present">Present (1991-2020)</option>
                                     <option value="Future">Future (2021-2050)</option>
                                 </select>
@@ -667,7 +847,7 @@
                         </td>
                         <td></td>
                         <td>
-                            <button id="hdd_ref_lookup" class="reference-value external-lookup">HDD Ref<br>Lookup</button>
+                            <button id="hdd_ref_lookup" class="cell-el">HDD Ref Lookup</button>
                         </td>
                         <td>
                             <span class="reference-label">HDD - Energy Star</span>
@@ -682,14 +862,14 @@
                         <td class="row-id">L.2.3</td>
                         <td class="row-label">Cooling Degree Days (CDD)</td>
                         <td>
-                            <span id="cdd" class="calculated-value" data-field-id="d_21">0</span>
+                            <span id="cdd" class="cell-dv" data-field-id="d_21">0</span>
                         </td>
                         <td></td>
                         <td class="label-prefix">G.4.2</td>
                         <td class="label-main">Capacitance</td>
                         <td>
                             <div class="dropdown-container">
-                                <select id="capacitanceSelect" class="dropdown-select" data-field-id="h_21" data-dropdown-id="dd_h_21">
+                                <select id="capacitanceSelect" class="cell-dd" data-field-id="h_21" data-dropdown-id="dd_h_21">
                                     <option value="Static">Static</option>
                                     <option value="Capacitance" selected>Capacitance</option>
                                 </select>
@@ -697,12 +877,12 @@
                         </td>
                         <td>
                             <div class="slider-container">
-                                <input type="range" id="capacitanceSlider" class="slider" min="0" max="100" step="5" value="50">
-                                <span id="capacitanceValue" class="slider-value" data-field-id="i_21">50%</span>
+                                <input type="range" id="capacitanceSlider" class="cell-sl slider" min="0" max="100" step="5" value="50">
+                                <span id="capacitanceValue" class="cell-sl slider-value" data-field-id="i_21">50%</span>
                             </div>
                         </td>
                         <td>
-                            <button id="cdd_ref_lookup" class="reference-value external-lookup">CDD Ref<br>Lookup</button>
+                            <button id="cdd_ref_lookup" class="cell-el">CDD Ref Lookup</button>
                         </td>
                         <td>
                             <span class="reference-label">CDD - Energy Star</span>
@@ -717,19 +897,19 @@
                         <td class="row-id">L.2.4</td>
                         <td class="row-label">Ground Facing GF HDD</td>
                         <td>
-                            <span id="gfHdd" class="calculated-value" data-field-id="d_22">1960</span>
+                            <span id="gfHdd" class="cell-dv" data-field-id="d_22">1960</span>
                         </td>
                         <td class="unit-label">°C•days</td>
                         <td class="label-prefix">L.2.5</td>
                         <td class="label-main">GF CDD</td>
                         <td>
-                            <span id="gfCdd" class="calculated-value" data-field-id="h_22">0</span>
+                            <span id="gfCdd" class="cell-dv" data-field-id="h_22">0</span>
                         </td>
                         <td class="unit-label">°C•days</td>
                         <td class="label-prefix">L.1.3</td>
                         <td class="label-main">Elevation (ASL)</td>
                         <td>
-                            <span id="elevation" class="calculated-value" data-field-id="l_22">0</span>
+                            <span id="elevation" class="cell-dv" data-field-id="l_22">0</span>
                         </td>
                         <td class="unit-label">m</td>
                         <td></td>
@@ -740,24 +920,24 @@
                         <td class="row-id">L.3.1</td>
                         <td class="row-label">Coldest Days (Location Specific)</td>
                         <td>
-                            <span id="coldestDays" class="calculated-value" data-field-id="d_23">0</span>
+                            <span id="coldestDays" class="cell-dv" data-field-id="d_23">0</span>
                         </td>
                         <td>
-                            <span id="coldestDaysF" class="calculated-value" data-field-id="e_23">32</span>
+                            <span id="coldestDaysF" class="cell-dv" data-field-id="e_23">32</span>
                         </td>
                         <td class="label-prefix">B.1.2</td>
                         <td class="label-main">Tset Heating</td>
                         <td>
-                            <span id="tsetHeating" class="calculated-value" data-field-id="h_23">18</span>
+                            <span id="tsetHeating" class="cell-dv" data-field-id="h_23">18</span>
                         </td>
                         <td>
-                            <span id="tsetHeatingF" class="calculated-value" data-field-id="i_23">64</span>
+                            <span id="tsetHeatingF" class="cell-dv" data-field-id="i_23">64</span>
                         </td>
                         <td></td>
                         <td></td>
                         <td></td>
                         <td>
-                            <span id="heatingPercent" class="calculated-value" data-field-id="m_23">0%</span>
+                            <span id="heatingPercent" class="cell-dv" data-field-id="m_23">0%</span>
                         </td>
                         <td></td>
                     </tr>
@@ -767,26 +947,26 @@
                         <td class="row-id">L.3.2</td>
                         <td class="row-label">Hottest Days (Location Specific)</td>
                         <td>
-                            <span id="hottestDays" class="calculated-value" data-field-id="d_24">0</span>
+                            <span id="hottestDays" class="cell-dv" data-field-id="d_24">0</span>
                         </td>
                         <td>
-                            <span id="hottestDaysF" class="calculated-value" data-field-id="e_24">32</span>
+                            <span id="hottestDaysF" class="cell-dv" data-field-id="e_24">32</span>
                         </td>
                         <td class="label-prefix">B.1.3</td>
                         <td class="label-main">Tset Cooling</td>
                         <td>
-                            <span id="tsetCooling" class="calculated-value" data-field-id="h_24">24</span>
+                            <span id="tsetCooling" class="cell-dv" data-field-id="h_24">24</span>
                         </td>
                         <td>
-                            <span id="tsetCoolingF" class="calculated-value" data-field-id="i_24">75</span>
+                            <span id="tsetCoolingF" class="cell-dv" data-field-id="i_24">75</span>
                         </td>
                         <td class="label-prefix">B.1.4</td>
                         <td class="label-main">Cooling Override</td>
                         <td>
-                            <span id="coolingOverride" class="user-input editable" data-field-id="l_24" contenteditable="true">24</span>
+                            <span id="coolingOverride" class="cell-ue" data-field-id="l_24" contenteditable="true">24</span>
                         </td>
                         <td>
-                            <span id="coolingPercent" class="calculated-value" data-field-id="m_24">109%</span>
+                            <span id="coolingPercent" class="cell-dv" data-field-id="m_24">109%</span>
                         </td>
                         <td></td>
                     </tr>
@@ -1264,16 +1444,12 @@
                     
                     // Slider
                     elements.capacitanceSlider.addEventListener('input', function() {
-                        const sliderValue = this.value;
-                        // Store the raw numeric value in state
-                        DualState.setValue('i_21', sliderValue, 'user');
-                        // Display with percentage
-                        elements.capacitanceValue.textContent = NumberFormat.format(sliderValue, 'percent');
-                    });
-                    
-                    // Slider change should recalculate
-                    DualState.addListener('i_21', function() {
-                        CalculationService.calculateAll();
+                        const value = this.value;
+                        capacitanceValue.textContent = NumberFormat.format(value, 'percent');
+                        DualState.setValue('i_21', value);
+                        
+                        // Update calculations
+                        UIController.updateCalculations();
                     });
                     
                     // Weather data button
@@ -1435,10 +1611,10 @@
                     if (hddElement) {
                         if (hddValue === null || hddValue === undefined || hddValue === 666) {
                             hddElement.textContent = 'N/A';
-                            hddElement.className = 'value-cell missing-value';
+                            hddElement.className = 'cell-missing';
                         } else {
                             hddElement.textContent = hddValue;
-                            hddElement.className = 'value-cell';  // Regular calculated value styling
+                            hddElement.className = 'cell-dv';  // Regular calculated value styling
                         }
                         DualState.setValue('l_21', hddValue);
                     }
@@ -1448,10 +1624,10 @@
                     if (mainHddElement) {
                         if (hddValue === null || hddValue === undefined || hddValue === 666) {
                             mainHddElement.textContent = 'N/A';
-                            mainHddElement.className = 'calculated-value missing-value';
+                            mainHddElement.className = 'cell-missing';
                         } else {
                             mainHddElement.textContent = hddValue;
-                            mainHddElement.className = 'calculated-value';  // Regular calculated value styling
+                            mainHddElement.className = 'cell-dv';  // Regular calculated value styling
                         }
                         DualState.setValue('d_20', hddValue);
                     }
@@ -1462,18 +1638,18 @@
                     if (cddElement) {
                         if (cddValue === null || cddValue === undefined || cddValue === 666) {
                             cddElement.textContent = 'N/A';
-                            cddElement.className = 'value-cell missing-value';
+                            cddElement.className = 'cell-missing';
                             
                             // Check if we're using a fallback
                             if (timeframe === 'Future' && cityData.CDD24 !== null && cityData.CDD24 !== undefined && cityData.CDD24 !== 666) {
                                 console.warn(`Future CDD not available for ${city}, ${province}. Using present value as fallback.`);
                                 cddElement.textContent = cityData.CDD24;
-                                cddElement.className = 'value-cell';  // Regular calculated value styling
+                                cddElement.className = 'cell-dv';  // Regular calculated value styling
                                 DualState.setValue('l_23', cityData.CDD24);
                             }
                         } else {
                             cddElement.textContent = cddValue;
-                            cddElement.className = 'value-cell';  // Regular calculated value styling
+                            cddElement.className = 'cell-dv';  // Regular calculated value styling
                             DualState.setValue('l_23', cddValue);
                         }
                     }
@@ -1483,17 +1659,17 @@
                     if (mainCddElement) {
                         if (cddValue === null || cddValue === undefined || cddValue === 666) {
                             mainCddElement.textContent = 'N/A';
-                            mainCddElement.className = 'calculated-value missing-value';
+                            mainCddElement.className = 'cell-missing';
                             
                             // Check if we're using a fallback
                             if (timeframe === 'Future' && cityData.CDD24 !== null && cityData.CDD24 !== undefined && cityData.CDD24 !== 666) {
                                 mainCddElement.textContent = cityData.CDD24;
-                                mainCddElement.className = 'calculated-value';  // Regular calculated value styling
+                                mainCddElement.className = 'cell-dv';  // Regular calculated value styling
                                 DualState.setValue('d_21', cityData.CDD24);
                             }
                         } else {
                             mainCddElement.textContent = cddValue;
-                            mainCddElement.className = 'calculated-value';  // Regular calculated value styling
+                            mainCddElement.className = 'cell-dv';  // Regular calculated value styling
                             DualState.setValue('d_21', cddValue);
                         }
                     }
@@ -1512,10 +1688,10 @@
                         if (element) {
                             if (update.value === null || update.value === undefined || update.value === 666) {
                                 element.textContent = 'N/A';
-                                element.className = 'value-cell missing-value';
+                                element.className = 'cell-missing';
                             } else {
                                 element.textContent = update.value;
-                                element.className = 'value-cell';
+                                element.className = 'cell-dv';
                             }
                             DualState.setValue(update.id, update.value);
                         }
@@ -1556,6 +1732,10 @@
                 
                 closeModal: function() {
                     document.getElementById('weatherDataModal').style.display = 'none';
+                },
+                
+                updateCalculations: function() {
+                    // Implementation of updateCalculations method
                 }
             };
             
@@ -1616,7 +1796,7 @@
                 },
                 formatValue(value, isMissing = false) {
                     if (value === null || value === undefined || value === 666 || isNaN(value)) {
-                        return { text: 'N/A', className: 'missing' };
+                        return { text: 'N/A', className: 'cell-missing' };
                     }
                     return { text: value.toString(), className: '' };
                 },
