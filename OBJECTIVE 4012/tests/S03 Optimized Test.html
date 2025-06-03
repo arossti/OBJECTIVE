@@ -31,44 +31,38 @@
         }
         
         .section-title {
-            font-size: 20px;
+            font-size: 1.5rem;
             font-weight: 600;
             color: #333;
-            margin: 0;
         }
         
-        /* Reference mode toggle */
-        .reference-toggle {
+        /* Mode toggle switch */
+        .mode-toggle {
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .reference-toggle label {
-            font-weight: 500;
-            color: #666;
-        }
-        
         .toggle-switch {
             position: relative;
-            width: 50px;
-            height: 24px;
-            background-color: #ccc;
-            border-radius: 12px;
+            width: 60px;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         
         .toggle-switch.active {
-            background-color: #2196F3;
+            background-color: #dc3545; /* Bootstrap danger red */
         }
         
         .toggle-slider {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
             background-color: white;
             border-radius: 50%;
             transition: transform 0.3s;
@@ -76,1365 +70,803 @@
         }
         
         .toggle-switch.active .toggle-slider {
-            transform: translateX(26px);
+            transform: translateX(30px);
         }
         
-        /* Weather data button */
-        .weather-data-btn {
-            padding: 8px 16px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
+        .mode-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .mode-label.reference {
+            color: #dc3545;
+        }
+        
+        /* Console messages */
+        .console-messages {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.875rem;
+            color: #6c757d;
+            min-height: 30px;
         }
         
-        .weather-data-btn:hover {
-            background-color: #1976D2;
+        .console-message {
+            margin: 2px 0;
+        }
+        
+        .console-message.warning {
+            color: #856404;
+            background-color: #fff3cd;
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
         }
         
         /* Table styles */
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
         }
         
-        th {
-            background-color: #f5f5f5;
-            padding: 10px 8px;
-            text-align: left;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 2px solid #e0e0e0;
+        tr {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        tr:last-child {
+            border-bottom: none;
         }
         
         td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 8px;
             vertical-align: middle;
         }
         
-        /* Field styles */
-        .row-id {
+        /* Field labels */
+        .field-label {
             font-weight: 600;
             color: #666;
-            width: 60px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        .row-label {
-            font-weight: 500;
-            color: #333;
-            min-width: 200px;
-        }
-        
-        .label-prefix {
-            font-weight: 600;
-            color: #666;
-            text-align: right;
-            padding-right: 4px;
-        }
-        
-        .label-main {
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .unit-label {
-            color: #666;
-            font-size: 12px;
-        }
-        
-        /* Calculated values */
-        .calculated-value {
-            font-weight: 500;
-            color: #2196F3;
-            padding: 4px 8px;
-            background-color: #f0f8ff;
-            border-radius: 4px;
-            display: inline-block;
-            min-width: 60px;
-            text-align: center;
-        }
-        
-        .calculated-value.negative-value {
-            color: #f44336;
-            background-color: #ffebee;
-        }
-        
-        /* Reference values */
-        .reference-value {
-            color: #ff5722;
-            background-color: #fff3e0;
-        }
-        
-        .reference-label {
-            color: #ff5722;
-            font-style: italic;
-            font-size: 12px;
-        }
-        
-        /* Reference mode styles */
-        .reference-mode .user-input:not(.reference-exempt),
-        .reference-mode .dropdown-select:not(.reference-exempt),
-        .reference-mode .slider:not(.reference-exempt) {
-            background-color: #ffebee !important;
-            color: #b71c1c !important;
-            font-weight: bold !important;
-            font-style: italic !important;
-            pointer-events: none !important;
-            opacity: 0.8;
-        }
-        
-        .reference-mode .dropdown-container:not(.reference-exempt) select {
-            background-color: #ffebee !important;
-            color: #b71c1c !important;
-            font-weight: bold !important;
-            font-style: italic !important;
-        }
-        
-        /* Exempt the timeframe dropdown from reference mode lockdown */
-        #timeframeSelect {
-            /* This will remain active in reference mode */
-        }
-        
-        /* User input fields */
-        .user-input {
-            padding: 4px 8px;
-            background-color: #fff;
+        /* Input fields */
+        .input-field {
+            width: 100%;
+            padding: 8px 12px;
             border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background-color: #f8f9fa;
+        }
+        
+        /* Editable input fields (blue text) */
+        .input-field.editable {
+            color: #0066cc;
+            background-color: #f0f7ff;
+            font-weight: 500;
+        }
+        
+        .input-field.editable:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        /* Non-editable fields (bold black text on light grey) */
+        .input-field:disabled:not(.reference-value),
+        .value-cell:not(.editable) {
+            background-color: #f8f9fa;
+            color: #000;
+            font-weight: 600;
+            cursor: not-allowed;
+            border-color: #e9ecef;
+        }
+        
+        /* Reference mode fields */
+        .reference-value {
+            background-color: #ffe0e0 !important;
+            color: #dc3545 !important;
+            font-weight: 600 !important;
+            font-style: italic !important;
+            border-color: #f5c6cb !important;
+        }
+        
+        /* Value cells */
+        .value-cell {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            text-align: center;
+            min-width: 80px;
+            background-color: #f8f9fa;
+            color: #000;
+            font-weight: 600;
+        }
+        
+        /* Editable value cells */
+        .value-cell.editable {
+            background-color: #f0f7ff;
+            color: #0066cc;
+            font-weight: 500;
+        }
+        
+        /* Null/missing values */
+        .value-cell.missing {
+            color: #6c757d;
+            font-style: italic;
+            font-weight: normal;
+            background-color: #f8f9fa;
+        }
+        
+        /* Lookup values (yellow highlight) */
+        .lookup-value {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            font-weight: 600;
+        }
+        
+        /* Inline calculations */
+        .calculation-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.875rem;
+        }
+        
+        .calculation-label {
+            color: #666;
+            min-width: 60px;
+        }
+        
+        .calculation-value {
+            font-weight: 600;
+            color: #333;
+            padding: 4px 8px;
+            background-color: #f8f9fa;
             border-radius: 4px;
             min-width: 60px;
             text-align: center;
-            transition: all 0.2s;
-        }
-        
-        .user-input.editable {
-            cursor: text;
-        }
-        
-        .user-input.editable:hover {
-            border-color: #2196F3;
-            background-color: #f0f8ff;
-        }
-        
-        .user-input.editable:focus,
-        .user-input.editable.editing {
-            outline: none;
-            border-color: #2196F3;
-            background-color: #fff;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
         }
         
         /* Dropdown styles */
-        .dropdown-container {
-            display: inline-block;
-            width: 100%;
-        }
-        
-        .dropdown-select {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: white;
-            font-size: 14px;
+        select.input-field {
             cursor: pointer;
-            transition: all 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
         }
         
-        .dropdown-select:hover:not(:disabled) {
-            border-color: #2196F3;
-        }
-        
-        .dropdown-select:focus {
-            outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-        }
-        
-        .dropdown-select:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        /* Slider styles */
-        .slider-container {
+        /* Override checkbox container */
+        .override-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .slider {
-            flex: 1;
-            height: 6px;
-            border-radius: 3px;
-            background: #ddd;
+        .override-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .override-label {
+            font-size: 0.875rem;
+            color: #666;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        /* Focus states */
+        .input-field:focus,
+        .override-checkbox:focus {
             outline: none;
-            -webkit-appearance: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
         }
         
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #2196F3;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        /* Temperature unit */
+        .temp-unit {
+            font-size: 0.875rem;
+            color: #666;
+            margin-left: 4px;
         }
         
-        .slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #2196F3;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .slider-value {
-            font-weight: 500;
-            color: #333;
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            position: relative;
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 5px;
-            width: 70%;
-            max-width: 700px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-        }
-        
-        .close-btn:hover {
-            color: #333;
-        }
-        
-        .modal-body {
-            margin-top: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .data-row {
-            display: flex;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .data-label {
-            flex: 1;
-            font-weight: 500;
-        }
-        
-        .data-value {
-            flex: 1;
-            text-align: right;
-        }
-        
-        /* Debug section */
-        .debug-info {
-            margin-top: 30px;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            height: 200px;
-            overflow-y: auto;
-        }
-        
-        /* State indicator */
-        .state-indicator {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 20px;
-        }
-        
-        .state-indicator.target {
-            background-color: #e3f2fd;
-            color: #1976d2;
-        }
-        
-        .state-indicator.reference {
-            background-color: #ffebee;
-            color: #c62828;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .calculation-group {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
 <body>
     <div class="section-container">
         <div class="section-header">
-            <h2 class="section-title">
-                SECTION 3. Climate Calculations
-                <span id="stateIndicator" class="state-indicator target">TARGET MODE</span>
-            </h2>
-            <div style="display: flex; gap: 20px; align-items: center;">
-                <div class="reference-toggle">
-                    <label for="referenceToggle">Show Reference</label>
-                    <div id="referenceToggle" class="toggle-switch">
-                        <div class="toggle-slider"></div>
-                    </div>
+            <h2 class="section-title">S03 Climate Calculations</h2>
+            <div class="mode-toggle">
+                <span class="mode-label" id="modeLabel">TARGET MODE</span>
+                <div class="toggle-switch" id="modeToggle">
+                    <div class="toggle-slider"></div>
                 </div>
-                <button id="showWeatherDataBtn" class="weather-data-btn">More Weather Data</button>
+                <span class="mode-label reference">REFERENCE</span>
             </div>
         </div>
         
-        <div class="section-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>03-ID</th>
-                        <th>Climate Units</th>
-                        <th>°C</th>
-                        <th>°F</th>
-                        <th>F</th>
-                        <th>G</th>
-                        <th>°C</th>
-                        <th>°F</th>
-                        <th>J</th>
-                        <th>K</th>
-                        <th>L</th>
-                        <th>M</th>
-                        <th>N</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Province Row -->
-                    <tr data-id="L.1.1">
-                        <td class="row-id">L.1.1</td>
-                        <td class="row-label">Province</td>
-                        <td colspan="2">
-                            <div class="dropdown-container">
-                                <select id="provinceSelect" class="dropdown-select" data-field-id="d_19" data-dropdown-id="dd_d_19">
-                                    <option value="">Select Province</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td></td>
-                        <td class="label-prefix">L.1.2</td>
-                        <td class="label-main">City</td>
-                        <td>
-                            <div class="dropdown-container">
-                                <select id="citySelect" class="dropdown-select" data-field-id="h_19" data-dropdown-id="dd_h_19" disabled>
-                                    <option value="">Select City</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td>Climate Zone</td>
-                        <td>
-                            <span id="climateZone" class="calculated-value" data-field-id="j_19">4.0</span>
-                        </td>
-                        <td class="label-prefix">L.3.3</td>
-                        <td class="label-main">Days Cooling</td>
-                        <td>
-                            <span id="daysCooling" class="user-input editable" data-field-id="m_19" contenteditable="true">120</span>
-                        </td>
-                    </tr>
-                    
-                    <!-- Heating Degree Days Row -->
-                    <tr data-id="L.2.1">
-                        <td class="row-id">L.2.1</td>
-                        <td class="row-label">Heating Degree Days (HDD)</td>
-                        <td>
-                            <span id="hdd" class="calculated-value" data-field-id="d_20">0</span>
-                        </td>
-                        <td></td>
-                        <td class="label-prefix">L.2.2</td>
-                        <td class="label-main">Current or Future Values</td>
-                        <td>
-                            <div class="dropdown-container reference-exempt">
-                                <select id="timeframeSelect" class="dropdown-select reference-exempt" data-field-id="h_20" data-dropdown-id="dd_h_20">
-                                    <option value="Present">Present (1991-2020)</option>
-                                    <option value="Future">Future (2021-2050)</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td></td>
-                        <td>
-                            <span id="hddRef" class="calculated-value reference-value" data-field-id="j_20">HDD Ref Lookup</span>
-                        </td>
-                        <td>
-                            <span class="reference-label">HDD - Energy Star</span>
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    
-                    <!-- Cooling Degree Days Row -->
-                    <tr data-id="L.2.3">
-                        <td class="row-id">L.2.3</td>
-                        <td class="row-label">Cooling Degree Days (CDD)</td>
-                        <td>
-                            <span id="cdd" class="calculated-value" data-field-id="d_21">0</span>
-                        </td>
-                        <td></td>
-                        <td class="label-prefix">G.4.2</td>
-                        <td class="label-main">Capacitance</td>
-                        <td>
-                            <div class="dropdown-container">
-                                <select id="capacitanceSelect" class="dropdown-select" data-field-id="h_21" data-dropdown-id="dd_h_21">
-                                    <option value="Static">Static</option>
-                                    <option value="Capacitance" selected>Capacitance</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" id="capacitanceSlider" class="slider" min="0" max="100" step="5" value="50">
-                                <span id="capacitanceValue" class="slider-value" data-field-id="i_21">50%</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span id="cddRef" class="calculated-value reference-value" data-field-id="j_21">CDD Ref Lookup</span>
-                        </td>
-                        <td>
-                            <span class="reference-label">CDD - Energy Star</span>
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    
-                    <!-- Ground Facing & Elevation Row -->
-                    <tr data-id="L.2.4">
-                        <td class="row-id">L.2.4</td>
-                        <td class="row-label">Ground Facing GF HDD</td>
-                        <td>
-                            <span id="gfHdd" class="calculated-value" data-field-id="d_22">1960</span>
-                        </td>
-                        <td class="unit-label">°C•days</td>
-                        <td class="label-prefix">L.2.5</td>
-                        <td class="label-main">GF CDD</td>
-                        <td>
-                            <span id="gfCdd" class="calculated-value" data-field-id="h_22">0</span>
-                        </td>
-                        <td class="unit-label">°C•days</td>
-                        <td class="label-prefix">L.1.3</td>
-                        <td class="label-main">Elevation (ASL)</td>
-                        <td>
-                            <span id="elevation" class="calculated-value" data-field-id="l_22">0</span>
-                        </td>
-                        <td class="unit-label">m</td>
-                        <td></td>
-                    </tr>
-                    
-                    <!-- Coldest Days Row -->
-                    <tr data-id="L.3.1">
-                        <td class="row-id">L.3.1</td>
-                        <td class="row-label">Coldest Days (Location Specific)</td>
-                        <td>
-                            <span id="coldestDays" class="calculated-value" data-field-id="d_23">0</span>
-                        </td>
-                        <td>
-                            <span id="coldestDaysF" class="calculated-value" data-field-id="e_23">32</span>
-                        </td>
-                        <td class="label-prefix">B.1.2</td>
-                        <td class="label-main">Tset Heating</td>
-                        <td>
-                            <span id="tsetHeating" class="calculated-value" data-field-id="h_23">18</span>
-                        </td>
-                        <td>
-                            <span id="tsetHeatingF" class="calculated-value" data-field-id="i_23">64</span>
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>
-                            <span id="heatingPercent" class="calculated-value" data-field-id="m_23">0%</span>
-                        </td>
-                        <td></td>
-                    </tr>
-                    
-                    <!-- Hottest Days Row -->
-                    <tr data-id="L.3.2">
-                        <td class="row-id">L.3.2</td>
-                        <td class="row-label">Hottest Days (Location Specific)</td>
-                        <td>
-                            <span id="hottestDays" class="calculated-value" data-field-id="d_24">0</span>
-                        </td>
-                        <td>
-                            <span id="hottestDaysF" class="calculated-value" data-field-id="e_24">32</span>
-                        </td>
-                        <td class="label-prefix">B.1.3</td>
-                        <td class="label-main">Tset Cooling</td>
-                        <td>
-                            <span id="tsetCooling" class="calculated-value" data-field-id="h_24">24</span>
-                        </td>
-                        <td>
-                            <span id="tsetCoolingF" class="calculated-value" data-field-id="i_24">75</span>
-                        </td>
-                        <td class="label-prefix">B.1.4</td>
-                        <td class="label-main">Cooling Override</td>
-                        <td>
-                            <span id="coolingOverride" class="user-input editable" data-field-id="l_24" contenteditable="true">24</span>
-                        </td>
-                        <td>
-                            <span id="coolingPercent" class="calculated-value" data-field-id="m_24">109%</span>
-                        </td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Console Messages Area -->
+        <div class="console-messages" id="consoleMessages">
+            <!-- Messages will appear here -->
         </div>
+        
+        <table>
+            <!-- Row S03-01: Province -->
+            <tr>
+                <td style="width: 30%;">
+                    <label class="field-label">S03-01 PROVINCE</label>
+                </td>
+                <td>
+                    <select id="province" class="input-field">
+                        <option value="">Select Province</option>
+                    </select>
+                </td>
+            </tr>
+            
+            <!-- Row S03-02: City -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-02 CITY</label>
+                </td>
+                <td>
+                    <select id="city" class="input-field" disabled>
+                        <option value="">Select City</option>
+                    </select>
+                </td>
+            </tr>
+            
+            <!-- Row S03-03: Elevation -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-03 ELEVATION</label>
+                </td>
+                <td>
+                    <input type="text" id="elevation" class="input-field" disabled readonly>
+                </td>
+            </tr>
+            
+            <!-- Row S03-04: Present or Future -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-04 PRESENT OR FUTURE</label>
+                </td>
+                <td>
+                    <select id="timeframe" class="input-field">
+                        <option value="present">Present</option>
+                        <option value="future">Future</option>
+                    </select>
+                </td>
+            </tr>
+            
+            <!-- Row S03-05: HDD18 -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-05 HDD18</label>
+                </td>
+                <td>
+                    <span id="hdd18" class="value-cell">–</span>
+                    <span class="temp-unit">°C·days</span>
+                </td>
+            </tr>
+            
+            <!-- Row S03-06: CDD24 -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-06 CDD24</label>
+                </td>
+                <td>
+                    <span id="cdd24" class="value-cell">–</span>
+                    <span class="temp-unit">°C·days</span>
+                </td>
+            </tr>
+            
+            <!-- Row S03-07: Extreme Min Winter Temp -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-07 EXTREME MIN WINTER TEMP (2.5%)</label>
+                </td>
+                <td>
+                    <span id="extremeMinTemp" class="value-cell">–</span>
+                    <span class="temp-unit">°C</span>
+                </td>
+            </tr>
+            
+            <!-- Row S03-08: Extreme Max Summer Temp -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-08 EXTREME MAX SUMMER TEMP (2.5%)</label>
+                </td>
+                <td>
+                    <span id="extremeMaxTemp" class="value-cell">–</span>
+                    <span class="temp-unit">°C</span>
+                </td>
+            </tr>
+            
+            <!-- Row S03-09: Capacitance Calculations -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-09 CAPACITANCE</label>
+                </td>
+                <td>
+                    <div class="calculation-group">
+                        <span class="calculation-label">HDD Ratio:</span>
+                        <span id="hddRatio" class="calculation-value">–</span>
+                        
+                        <span class="calculation-label">CDD Ratio:</span>
+                        <span id="cddRatio" class="calculation-value">–</span>
+                        
+                        <span class="calculation-label">Combined:</span>
+                        <span id="capacitance" class="calculation-value">–</span>
+                    </div>
+                </td>
+            </tr>
+            
+            <!-- Row S03-10: Cooling Override -->
+            <tr>
+                <td>
+                    <label class="field-label">S03-10 COOLING OVERRIDE</label>
+                </td>
+                <td>
+                    <div class="override-container">
+                        <input type="checkbox" id="coolingOverride" class="override-checkbox">
+                        <label for="coolingOverride" class="override-label">Enable cooling mode override</label>
+                        <input type="number" id="coolingOverrideValue" class="input-field editable" 
+                               style="width: 100px; margin-left: 20px; display: none;" 
+                               placeholder="CDD value" min="0" step="1">
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
-    
-    <!-- Weather Data Modal -->
-    <div id="weatherDataModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h3 id="weatherDataModalTitle">Weather Data</h3>
-            <div id="weatherDataContent" class="modal-body"></div>
-        </div>
-    </div>
-    
-    <div id="debugInfo" class="debug-info"></div>
 
-    <!-- Include ClimateValues.js -->
+    <!-- Load Climate Data -->
     <script src="../core/data/4012-ClimateValues.js"></script>
     
     <script>
-        // Create TEUI namespace if it doesn't exist
-        window.TEUI = window.TEUI || {};
+        // Application State with dual states for Target and Reference
+        const AppState = {
+            target: {
+                mode: 'target',
+                province: '',
+                city: '',
+                elevation: '',
+                timeframe: 'present',
+                hdd18: null,
+                cdd24: null,
+                extremeMinTemp: null,
+                extremeMaxTemp: null,
+                capacitance: null,
+                hddRatio: null,
+                cddRatio: null,
+                coolingOverride: false,
+                coolingOverrideValue: null
+            },
+            reference: {
+                mode: 'reference',
+                province: '',
+                city: '',
+                elevation: '',
+                timeframe: 'present',
+                hdd18: null,
+                cdd24: null,
+                extremeMinTemp: null,
+                extremeMaxTemp: null,
+                capacitance: null,
+                hddRatio: null,
+                cddRatio: null,
+                coolingOverride: false,
+                coolingOverrideValue: null
+            },
+            currentMode: 'target',
+            // Shared fields that sync between modes
+            sharedFields: ['province', 'city', 'elevation']
+        };
         
-        // S03 Climate Calculations Module with Reference Mode
-        (function() {
-            // Dual State Management - Target and Reference states
-            const DualState = {
-                // Current mode: 'target' or 'reference'
-                currentMode: 'target',
-                
-                // Separate states for Target and Reference
-                states: {
-                    target: {
-                        'd_19': 'ON',
-                        'h_19': '',
-                        'd_20': 0,
-                        'd_21': 0,
-                        'h_20': 'Present',
-                        'h_21': 'Capacitance',
-                        'i_21': 50,
-                        'd_22': 1960,
-                        'h_22': 0,
-                        'l_22': 0,
-                        'd_23': 0,
-                        'e_23': 32,
-                        'h_23': 18,
-                        'i_23': 64,
-                        'm_23': '0%',
-                        'd_24': 0,
-                        'e_24': 32,
-                        'h_24': 24,
-                        'i_24': 75,
-                        'l_24': 24,
-                        'm_24': '109%',
-                        'j_19': 4.0,
-                        'j_20': 'HDD Ref Lookup',
-                        'j_21': 'CDD Ref Lookup',
-                        'm_19': 120
-                    },
-                    reference: {
-                        // Reference state starts as a copy of target
-                        'd_19': 'ON',
-                        'h_19': '',
-                        'd_20': 0,
-                        'd_21': 0,
-                        'h_20': 'Present', // Can be different from target
-                        'h_21': 'Capacitance',
-                        'i_21': 50,
-                        'd_22': 1960,
-                        'h_22': 0,
-                        'l_22': 0,
-                        'd_23': 0,
-                        'e_23': 32,
-                        'h_23': 18,
-                        'i_23': 64,
-                        'm_23': '0%',
-                        'd_24': 0,
-                        'e_24': 32,
-                        'h_24': 24,
-                        'i_24': 75,
-                        'l_24': 24,
-                        'm_24': '109%',
-                        'j_19': 4.0,
-                        'j_20': 'HDD Ref Lookup',
-                        'j_21': 'CDD Ref Lookup',
-                        'm_19': 120
-                    }
-                },
-                
-                // Get current state object
-                getCurrentState: function() {
-                    return this.states[this.currentMode];
-                },
-                
-                // Set value in current state
-                setValue: function(fieldId, value, source) {
-                    const state = this.getCurrentState();
-                    state[fieldId] = value;
-                    
-                    // If in target mode and field is shared, update reference too
-                    if (this.currentMode === 'target' && this.isSharedField(fieldId)) {
-                        this.states.reference[fieldId] = value;
-                    }
-                    
-                    this.notifyListeners(fieldId, value, source);
-                    return value;
-                },
-                
-                // Get value from current state
-                getValue: function(fieldId) {
-                    return this.getCurrentState()[fieldId];
-                },
-                
-                // Check if field is shared between target and reference
-                isSharedField: function(fieldId) {
-                    // Province, City, and other location-specific fields are shared
-                    const sharedFields = ['d_19', 'h_19', 'l_22'];
-                    return sharedFields.includes(fieldId);
-                },
-                
-                // Switch between target and reference mode
-                switchMode: function(mode) {
-                    if (mode === this.currentMode) return;
-                    
-                    this.currentMode = mode;
-                    logDebug(`Switched to ${mode} mode`);
-                    
-                    // Update all UI elements to reflect new mode
-                    this.refreshAllUI();
-                },
-                
-                // Copy target state to reference (for initialization)
-                copyTargetToReference: function() {
-                    // Copy all values except timeframe
-                    Object.keys(this.states.target).forEach(key => {
-                        if (key !== 'h_20') { // Don't copy timeframe
-                            this.states.reference[key] = this.states.target[key];
-                        }
-                    });
-                },
-                
-                // Observer pattern
-                listeners: {},
-                
-                addListener: function(fieldId, callback) {
-                    if (!this.listeners[fieldId]) {
-                        this.listeners[fieldId] = [];
-                    }
-                    this.listeners[fieldId].push(callback);
-                },
-                
-                notifyListeners: function(fieldId, value, source) {
-                    if (this.listeners[fieldId]) {
-                        this.listeners[fieldId].forEach(callback => {
-                            try {
-                                callback(value, fieldId, source);
-                            } catch (e) {
-                                console.error(`Error in listener for ${fieldId}:`, e);
-                            }
-                        });
-                    }
-                },
-                
-                // Refresh all UI elements with current state
-                refreshAllUI: function() {
-                    const state = this.getCurrentState();
-                    Object.keys(state).forEach(fieldId => {
-                        updateUIFromState(fieldId, state[fieldId]);
-                    });
-                }
-            };
+        // Get current state based on mode
+        function getCurrentState() {
+            return AppState[AppState.currentMode];
+        }
+        
+        // Console messaging system
+        const ConsoleManager = {
+            messages: [],
             
-            // DOM element cache
-            const DOMElements = {
-                provinceSelect: null,
-                citySelect: null,
-                timeframeSelect: null,
-                capacitanceSelect: null,
-                capacitanceSlider: null,
-                capacitanceValue: null,
-                referenceToggle: null,
-                stateIndicator: null,
-                sectionContent: null,
-                calculatedFields: {},
-                editableFields: {},
-                debugInfo: null,
-                
-                init: function() {
-                    if (this.initialized) return;
-                    
-                    this.provinceSelect = document.getElementById('provinceSelect');
-                    this.citySelect = document.getElementById('citySelect');
-                    this.timeframeSelect = document.getElementById('timeframeSelect');
-                    this.capacitanceSelect = document.getElementById('capacitanceSelect');
-                    this.capacitanceSlider = document.getElementById('capacitanceSlider');
-                    this.capacitanceValue = document.getElementById('capacitanceValue');
-                    this.referenceToggle = document.getElementById('referenceToggle');
-                    this.stateIndicator = document.getElementById('stateIndicator');
-                    this.sectionContent = document.querySelector('.section-content');
-                    this.debugInfo = document.getElementById('debugInfo');
-                    
-                    // Cache all calculated fields
-                    const calculatedElements = document.querySelectorAll('[data-field-id]');
-                    calculatedElements.forEach(element => {
-                        const fieldId = element.getAttribute('data-field-id');
-                        if (fieldId) {
-                            this.calculatedFields[fieldId] = element;
-                        }
-                    });
-                    
-                    // Cache editable fields
-                    const editableElements = document.querySelectorAll('.editable');
-                    editableElements.forEach(element => {
-                        const fieldId = element.getAttribute('data-field-id');
-                        if (fieldId) {
-                            this.editableFields[fieldId] = element;
-                        }
-                    });
-                    
-                    this.initialized = true;
-                },
-                
-                get: function(id) {
-                    if (!this.initialized) this.init();
-                    
-                    if (this[id]) return this[id];
-                    if (this.calculatedFields[id]) return this.calculatedFields[id];
-                    
-                    return document.querySelector(`[data-field-id="${id}"]`);
-                }
-            };
+            addMessage(message, type = 'info') {
+                this.messages.push({ message, type, timestamp: new Date() });
+                this.render();
+            },
             
-            // Debug logging
-            function logDebug(message, obj) {
-                console.log(message, obj);
-                const debugElem = DOMElements.debugInfo;
-                if (debugElem) {
-                    const timestamp = new Date().toLocaleTimeString();
-                    let content = debugElem.innerHTML;
-                    
-                    let objString = '';
-                    if (obj !== undefined) {
-                        if (typeof obj === 'object' && obj !== null) {
-                            try {
-                                objString = JSON.stringify(obj, null, 2);
-                            } catch (e) {
-                                objString = String(obj);
-                            }
-                        } else {
-                            objString = String(obj);
-                        }
-                    }
-                    
-                    content = `[${timestamp}] ${message} ${objString}\n` + content;
-                    debugElem.innerHTML = content;
+            clearMessages() {
+                this.messages = [];
+                this.render();
+            },
+            
+            render() {
+                const container = document.getElementById('consoleMessages');
+                if (this.messages.length === 0) {
+                    container.innerHTML = '<span style="color: #999;">No messages</span>';
+                    return;
                 }
+                
+                container.innerHTML = this.messages.map(msg => {
+                    const className = msg.type === 'warning' ? 'console-message warning' : 'console-message';
+                    return `<div class="${className}">${msg.message}</div>`;
+                }).join('');
             }
+        };
+        
+        // UI Controller
+        const UI = {
+            elements: {
+                province: document.getElementById('province'),
+                city: document.getElementById('city'),
+                elevation: document.getElementById('elevation'),
+                timeframe: document.getElementById('timeframe'),
+                hdd18: document.getElementById('hdd18'),
+                cdd24: document.getElementById('cdd24'),
+                extremeMinTemp: document.getElementById('extremeMinTemp'),
+                extremeMaxTemp: document.getElementById('extremeMaxTemp'),
+                capacitance: document.getElementById('capacitance'),
+                hddRatio: document.getElementById('hddRatio'),
+                cddRatio: document.getElementById('cddRatio'),
+                coolingOverride: document.getElementById('coolingOverride'),
+                coolingOverrideValue: document.getElementById('coolingOverrideValue'),
+                modeToggle: document.getElementById('modeToggle'),
+                modeLabel: document.getElementById('modeLabel')
+            },
             
-            // ClimateData Access
-            const ClimateDataService = {
-                ensureAvailable: function(callback, maxRetries = 10) {
-                    let attempts = 0;
-                    
-                    const checkData = () => {
-                        attempts++;
-                        logDebug(`Checking climate data availability (attempt ${attempts}/${maxRetries})`);
-                        
-                        if (window.TEUI?.ClimateData && Object.keys(window.TEUI.ClimateData).length > 0) {
-                            logDebug('Climate data available', Object.keys(window.TEUI.ClimateData));
-                            callback(window.TEUI.ClimateData);
-                            return;
-                        }
-                        
-                        if (attempts >= maxRetries) {
-                            logDebug('Error: Climate data not available after max retries');
-                            this.showDataError();
-                            return;
-                        }
-                        
-                        const delay = Math.min(100 * Math.pow(2, attempts), 2000);
-                        logDebug(`Will retry in ${delay}ms`);
-                        setTimeout(checkData, delay);
-                    };
-                    
-                    checkData();
-                },
-                
-                showDataError: function() {
-                    const errorDiv = document.createElement('div');
-                    errorDiv.style.padding = '20px';
-                    errorDiv.style.margin = '20px 0';
-                    errorDiv.style.backgroundColor = '#ffebee';
-                    errorDiv.style.color = '#c62828';
-                    errorDiv.style.border = '1px solid #ef9a9a';
-                    errorDiv.style.borderRadius = '4px';
-                    
-                    errorDiv.innerHTML = `
-                        <h3 style="margin-top:0">Climate Data Error</h3>
-                        <p>The application was unable to load climate data from 4012-ClimateValues.js.</p>
-                        <p>Please ensure the file is correctly loaded and contains valid data.</p>
-                        <button id="retryButton" style="padding:8px 16px; background:#2196F3; color:white; border:none; border-radius:4px; cursor:pointer;">
-                            Retry Loading
-                        </button>
-                    `;
-                    
-                    document.body.insertBefore(errorDiv, document.body.firstChild);
-                    
-                    document.getElementById('retryButton').addEventListener('click', function() {
-                        errorDiv.remove();
-                        initializeApplication();
-                    });
-                },
-                
-                getProvinces: function() {
-                    if (!window.TEUI?.ClimateData) return [];
-                    return Object.keys(window.TEUI.ClimateData).sort();
-                },
-                
-                getCitiesForProvince: function(province) {
-                    if (!window.TEUI?.ClimateData || !window.TEUI.ClimateData[province]) return [];
-                    return Object.keys(window.TEUI.ClimateData[province]).sort();
-                },
-                
-                getCityData: function(province, city) {
-                    if (!window.TEUI?.ClimateData || 
-                        !window.TEUI.ClimateData[province] || 
-                        !window.TEUI.ClimateData[province][city]) {
-                        return null;
-                    }
-                    return window.TEUI.ClimateData[province][city];
-                },
-                
-                getProvinceFullName: function(abbr) {
-                    const provinceNames = {
-                        'AB': 'Alberta',
-                        'BC': 'British Columbia',
-                        'MB': 'Manitoba',
-                        'NB': 'New Brunswick',
-                        'NL': 'Newfoundland and Labrador',
-                        'NS': 'Nova Scotia',
-                        'NT': 'Northwest Territories',
-                        'NU': 'Nunavut',
-                        'ON': 'Ontario',
-                        'PE': 'Prince Edward Island',
-                        'QC': 'Québec',
-                        'SK': 'Saskatchewan',
-                        'YT': 'Yukon'
-                    };
-                    return provinceNames[abbr] || abbr;
-                }
-            };
+            initialize() {
+                this.setupEventListeners();
+                this.populateProvinces();
+                this.updateModeDisplay();
+                ConsoleManager.addMessage('S03 Climate module initialized');
+            },
             
-            // UI Controller
-            const UIController = {
-                initialize: function() {
-                    DOMElements.init();
-                    this.setupEventListeners();
-                    this.setupEditableFields();
-                    this.setupReferenceToggle();
-                },
-                
-                setupReferenceToggle: function() {
-                    const toggle = DOMElements.referenceToggle;
-                    const indicator = DOMElements.stateIndicator;
-                    const content = DOMElements.sectionContent;
-                    
-                    toggle.addEventListener('click', function() {
-                        const isActive = toggle.classList.contains('active');
-                        
-                        if (!isActive) {
-                            // Switching to reference mode
-                            toggle.classList.add('active');
-                            content.classList.add('reference-mode');
-                            indicator.textContent = 'REFERENCE MODE';
-                            indicator.classList.remove('target');
-                            indicator.classList.add('reference');
-                            
-                            // Copy current target state to reference before switching
-                            DualState.copyTargetToReference();
-                            DualState.switchMode('reference');
-                        } else {
-                            // Switching to target mode
-                            toggle.classList.remove('active');
-                            content.classList.remove('reference-mode');
-                            indicator.textContent = 'TARGET MODE';
-                            indicator.classList.remove('reference');
-                            indicator.classList.add('target');
-                            
-                            DualState.switchMode('target');
-                        }
-                    });
-                },
-                
-                setupEventListeners: function() {
-                    const elements = DOMElements;
-                    
-                    // Province dropdown
-                    elements.provinceSelect.addEventListener('change', function() {
-                        const provinceValue = this.value;
-                        logDebug('Province changed to:', provinceValue);
-                        DualState.setValue('d_19', provinceValue, 'user');
-                    });
-                    
-                    // Province change should update city options
-                    DualState.addListener('d_19', function(value) {
-                        UIController.updateCityDropdown(value);
-                    });
-                    
-                    // City dropdown
-                    elements.citySelect.addEventListener('change', function() {
-                        const cityValue = this.value;
-                        logDebug('City changed to:', cityValue);
-                        DualState.setValue('h_19', cityValue, 'user');
-                    });
-                    
-                    // City change should update climate data
-                    DualState.addListener('h_19', function(value) {
-                        if (value) {
-                            UIController.updateClimateData();
-                        }
-                    });
-                    
-                    // Timeframe dropdown (exempt from reference lockdown)
-                    elements.timeframeSelect.addEventListener('change', function() {
-                        const timeframeValue = this.value;
-                        logDebug('Timeframe changed to:', timeframeValue);
-                        DualState.setValue('h_20', timeframeValue, 'user');
-                    });
-                    
-                    // Timeframe change should update climate data
-                    DualState.addListener('h_20', function() {
-                        UIController.updateClimateData();
-                    });
-                    
-                    // Capacitance dropdown
-                    elements.capacitanceSelect.addEventListener('change', function() {
-                        const capacitanceValue = this.value;
-                        logDebug('Capacitance changed to:', capacitanceValue);
-                        DualState.setValue('h_21', capacitanceValue, 'user');
-                    });
-                    
-                    // Capacitance change should recalculate
-                    DualState.addListener('h_21', function() {
-                        CalculationService.calculateAll();
-                    });
-                    
-                    // Slider
-                    elements.capacitanceSlider.addEventListener('input', function() {
-                        const sliderValue = this.value;
-                        elements.capacitanceValue.textContent = sliderValue + '%';
-                        DualState.setValue('i_21', sliderValue, 'user');
-                    });
-                    
-                    // Slider change should recalculate
-                    DualState.addListener('i_21', function() {
-                        CalculationService.calculateAll();
-                    });
-                    
-                    // Weather data button
-                    document.getElementById('showWeatherDataBtn').addEventListener('click', function() {
-                        UIController.showWeatherDataModal();
-                    });
-                    
-                    // Modal close button
-                    document.querySelector('.close-btn').addEventListener('click', function() {
-                        UIController.closeModal();
-                    });
-                    
-                    // Click outside modal to close
-                    window.addEventListener('click', function(event) {
-                        if (event.target === document.getElementById('weatherDataModal')) {
-                            UIController.closeModal();
-                        }
-                    });
-                    
-                    // Escape key to close modal
-                    document.addEventListener('keydown', function(event) {
-                        if (event.key === 'Escape' && document.getElementById('weatherDataModal').style.display === 'block') {
-                            UIController.closeModal();
-                        }
-                    });
-                },
-                
-                setupEditableFields: function() {
-                    const editableFields = document.querySelectorAll('.editable');
-                    
-                    editableFields.forEach(field => {
-                        const fieldId = field.getAttribute('data-field-id');
-                        if (!fieldId) return;
-                        
-                        field.removeEventListener('blur', handleEditableBlur);
-                        field.addEventListener('blur', handleEditableBlur);
-                        
-                        field.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                this.blur();
-                            }
-                        });
-                        
-                        field.addEventListener('focus', function() {
-                            this.classList.add('editing');
-                        });
-                        
-                        field.addEventListener('focusout', function() {
-                            this.classList.remove('editing');
-                        });
-                    });
-                    
-                    function handleEditableBlur() {
-                        const fieldId = this.getAttribute('data-field-id');
-                        if (!fieldId) return;
-                        
-                        const newValue = this.textContent.trim();
-                        const numericValue = parseFloat(newValue) || 0;
-                        DualState.setValue(fieldId, numericValue, 'user');
-                        
-                        logDebug(`Editable field ${fieldId} changed to:`, numericValue);
-                        CalculationService.calculateAll();
-                    }
-                },
-                
-                populateProvinceDropdown: function() {
-                    const provinceSelect = DOMElements.provinceSelect;
-                    
-                    while (provinceSelect.options.length > 1) {
-                        provinceSelect.remove(1);
-                    }
-                    
-                    const provinces = ClimateDataService.getProvinces();
-                    
-                    provinces.forEach(province => {
-                        const option = document.createElement('option');
-                        option.value = province;
-                        option.textContent = ClimateDataService.getProvinceFullName(province);
-                        provinceSelect.appendChild(option);
-                    });
-                    
-                    logDebug('Populated province dropdown with options:', provinces);
-                    
-                    const defaultProvince = DualState.getValue('d_19') || 'ON';
-                    provinceSelect.value = defaultProvince;
-                    
-                    if (provinceSelect.value) {
-                        DualState.setValue('d_19', provinceSelect.value, 'init');
-                    }
-                },
-                
-                updateCityDropdown: function(provinceValue) {
-                    const citySelect = DOMElements.citySelect;
-                    const dropdownContainer = citySelect.parentElement;
-                    
-                    while (citySelect.options.length > 1) {
-                        citySelect.remove(1);
-                    }
-                    
-                    if (!provinceValue) {
-                        citySelect.disabled = true;
-                        return;
-                    }
-                    
-                    const cities = ClimateDataService.getCitiesForProvince(provinceValue);
-                    
-                    if (cities.length === 0) {
-                        logDebug('No cities found for province:', provinceValue);
-                        citySelect.disabled = true;
-                        return;
-                    }
-                    
-                    cities.forEach(city => {
-                        const option = document.createElement('option');
-                        option.value = city;
-                        option.textContent = city;
-                        citySelect.appendChild(option);
-                    });
-                    
-                    citySelect.disabled = false;
-                    
-                    if (dropdownContainer) {
-                        dropdownContainer.style.display = '';
-                    }
-                    
-                    let cityToSelect = '';
-                    if (provinceValue === 'ON' && cities.includes('Alexandria')) {
-                        cityToSelect = 'Alexandria';
-                    } else if (cities.length > 0) {
-                        cityToSelect = cities[0];
-                    }
-                    
-                    citySelect.value = cityToSelect;
-                    logDebug('Default city selected:', cityToSelect);
-                    
-                    DualState.setValue('h_19', cityToSelect, 'init');
-                },
-                
-                updateClimateData: function() {
-                    const provinceValue = DualState.getValue('d_19');
-                    const cityValue = DualState.getValue('h_19');
-                    const timeframeValue = DualState.getValue('h_20');
-                    
-                    if (!provinceValue || !cityValue) {
-                        logDebug('Missing province or city values');
-                        return;
-                    }
-                    
-                    try {
-                        const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
-                        logDebug('Retrieved climate data for city:', cityData);
-                        
-                        if (!cityData) {
-                            logDebug('No climate data found for city');
-                            return;
-                        }
-                        
-                        // Update elevation (shared field)
-                        DualState.setValue('l_22', cityData["Elev ASL (m)"] || 0, 'data');
-                        
-                        // Update HDD based on timeframe
-                        const hddValue = timeframeValue === 'Future' 
-                            ? (cityData.HDD18_2021_2050 || 0) 
-                            : (cityData.HDD18 || 0);
-                        DualState.setValue('d_20', hddValue, 'data');
-                        
-                        // Update CDD based on timeframe
-                        const cddValue = timeframeValue === 'Future' 
-                            ? (cityData.CDD24_2021_2050 || 0) 
-                            : (cityData.CDD24 || 0);
-                        DualState.setValue('d_21', cddValue, 'data');
-                        
-                        // Update coldest days
-                        DualState.setValue('d_23', cityData.January_2_5 || 0, 'data');
-                        
-                        // Update hottest days based on timeframe
-                        const hottestValue = timeframeValue === 'Future' 
-                            ? (cityData.Future_July_2_5_Tdb || 0) 
-                            : (cityData.July_2_5_Tdb || 0);
-                        DualState.setValue('d_24', hottestValue, 'data');
-                        
-                        // Update reference lookups (always use present values)
-                        DualState.setValue('j_20', cityData.HDD18 || 0, 'data');
-                        DualState.setValue('j_21', cityData.CDD24 || 0, 'data');
-                        
-                        CalculationService.calculateAll();
-                        
-                    } catch (error) {
-                        logDebug('Error updating climate data:', error.message);
-                    }
-                },
-                
-                showWeatherDataModal: function() {
-                    const provinceValue = DualState.getValue('d_19');
-                    const cityValue = DualState.getValue('h_19');
-                    
-                    if (!provinceValue || !cityValue) {
-                        alert('Please select a province and city first.');
-                        return;
-                    }
-                    
-                    const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
-                    
-                    if (!cityData) {
-                        alert(`No climate data found for ${cityValue}, ${provinceValue}`);
-                        return;
-                    }
-                    
-                    const weatherDataModalTitle = document.getElementById('weatherDataModalTitle');
-                    weatherDataModalTitle.textContent = `Weather Data for ${cityValue}, ${ClimateDataService.getProvinceFullName(provinceValue)}`;
-                    
-                    const weatherDataContent = document.getElementById('weatherDataContent');
-                    let formattedData = '';
-                    Object.entries(cityData).forEach(([key, value]) => {
-                        formattedData += `<div class="data-row"><div class="data-label">${key}</div><div class="data-value">${value}</div></div>`;
-                    });
-                    
-                    weatherDataContent.innerHTML = formattedData;
-                    document.getElementById('weatherDataModal').style.display = 'block';
-                },
-                
-                closeModal: function() {
-                    document.getElementById('weatherDataModal').style.display = 'none';
-                }
-            };
-            
-            // Calculation Service
-            const CalculationService = {
-                calculateAll: function() {
-                    // Calculate climate zone based on HDD
-                    const hddValue = parseFloat(DualState.getValue('d_20'));
-                    let climateZoneValue = '6.0';
-                    
-                    if (hddValue < 3000) climateZoneValue = '4.0';
-                    else if (hddValue < 4000) climateZoneValue = '5.0';
-                    else if (hddValue < 5000) climateZoneValue = '6.0';
-                    else if (hddValue < 6000) climateZoneValue = '7.1';
-                    else if (hddValue < 7000) climateZoneValue = '7.2';
-                    else climateZoneValue = '8.0';
-                    
-                    DualState.setValue('j_19', climateZoneValue, 'calculated');
-                    
-                    // Calculate Fahrenheit conversions
-                    const coldestC = parseFloat(DualState.getValue('d_23'));
-                    const coldestF = (coldestC * 9/5) + 32;
-                    DualState.setValue('e_23', Math.round(coldestF), 'calculated');
-                    
-                    const hottestC = parseFloat(DualState.getValue('d_24'));
-                    const hottestF = (hottestC * 9/5) + 32;
-                    DualState.setValue('e_24', Math.round(hottestF), 'calculated');
-                    
-                    // Calculate heating setpoint Fahrenheit
-                    const heatingC = parseFloat(DualState.getValue('h_23'));
-                    const heatingF = (heatingC * 9/5) + 32;
-                    DualState.setValue('i_23', Math.round(heatingF), 'calculated');
-                    
-                    // Calculate cooling setpoint Fahrenheit
-                    const coolingC = parseFloat(DualState.getValue('h_24'));
-                    const coolingF = (coolingC * 9/5) + 32;
-                    DualState.setValue('i_24', Math.round(coolingF), 'calculated');
-                    
-                    // Calculate ground facing HDD
-                    const daysCoolingValue = parseFloat(DualState.getValue('m_19'));
-                    const heatingDays = 365 - daysCoolingValue;
-                    const gfHddValue = Math.round((heatingC - 10) * heatingDays);
-                    DualState.setValue('d_22', gfHddValue, 'calculated');
-                    
-                    // Calculate ground facing CDD based on capacitance setting
-                    const capacitanceSetting = DualState.getValue('h_21');
-                    const gfCddValue = capacitanceSetting === 'Static'
-                        ? Math.max(0, (10 - coolingC) * daysCoolingValue)
-                        : (10 - coolingC) * daysCoolingValue;
-                    DualState.setValue('h_22', Math.round(gfCddValue), 'calculated');
-                    
-                    // Calculate cooling percentage
-                    const coolingOverrideValue = parseFloat(DualState.getValue('l_24'));
-                    const coolingPercent = Math.round((coolingOverrideValue / 22) * 100);
-                    DualState.setValue('m_24', coolingPercent + '%', 'calculated');
-                    
-                    logDebug('Calculations complete');
-                }
-            };
-            
-            // Subscribe to state changes to update UI
-            function setupStateObservers() {
-                const allFields = new Set([
-                    ...Object.keys(DualState.states.target),
-                    ...Object.keys(DualState.states.reference)
-                ]);
-                
-                allFields.forEach(fieldId => {
-                    DualState.addListener(fieldId, (value) => {
-                        updateUIFromState(fieldId, value);
-                    });
+            setupEventListeners() {
+                // Province change
+                this.elements.province.addEventListener('change', (e) => {
+                    this.handleProvinceChange(e.target.value);
                 });
-            }
-            
-            // Update UI element from state value
-            function updateUIFromState(fieldId, value) {
-                const element = DOMElements.get(fieldId);
-                if (!element) return;
                 
-                if (element.tagName === 'SELECT') {
-                    element.value = value;
-                } else if (element.tagName === 'INPUT' && element.type === 'range') {
-                    element.value = value;
-                } else if (element.isContentEditable) {
-                    if (!element.classList.contains('editing')) {
-                        element.textContent = value;
+                // City change
+                this.elements.city.addEventListener('change', (e) => {
+                    this.handleCityChange(e.target.value);
+                });
+                
+                // Timeframe change
+                this.elements.timeframe.addEventListener('change', (e) => {
+                    this.handleTimeframeChange(e.target.value);
+                });
+                
+                // Cooling override
+                this.elements.coolingOverride.addEventListener('change', (e) => {
+                    this.handleCoolingOverrideChange(e.target.checked);
+                });
+                
+                this.elements.coolingOverrideValue.addEventListener('input', (e) => {
+                    this.handleCoolingOverrideValueChange(e.target.value);
+                });
+                
+                // Mode toggle
+                this.elements.modeToggle.addEventListener('click', () => {
+                    this.toggleMode();
+                });
+            },
+            
+            toggleMode() {
+                AppState.currentMode = AppState.currentMode === 'target' ? 'reference' : 'target';
+                this.updateModeDisplay();
+                this.restoreStateFromMode();
+                
+                const modeText = AppState.currentMode.toUpperCase();
+                ConsoleManager.addMessage(`Switched to ${modeText} mode`);
+            },
+            
+            updateModeDisplay() {
+                const isReference = AppState.currentMode === 'reference';
+                
+                // Update toggle
+                this.elements.modeToggle.classList.toggle('active', isReference);
+                this.elements.modeLabel.textContent = isReference ? 'REFERENCE MODE' : 'TARGET MODE';
+                this.elements.modeLabel.classList.toggle('reference', isReference);
+                
+                // Update field styles
+                const inputs = ['province', 'city', 'elevation', 'coolingOverride'];
+                inputs.forEach(id => {
+                    const element = this.elements[id];
+                    if (element) {
+                        if (isReference) {
+                            element.classList.add('reference-value');
+                            if (id !== 'coolingOverride') {
+                                element.disabled = true;
+                            }
+                        } else {
+                            element.classList.remove('reference-value');
+                            if (id === 'province' || (id === 'city' && this.elements.province.value)) {
+                                element.disabled = false;
+                            }
+                        }
                     }
+                });
+                
+                // Timeframe remains editable in both modes
+                this.elements.timeframe.classList.toggle('reference-value', isReference);
+            },
+            
+            restoreStateFromMode() {
+                const state = getCurrentState();
+                
+                // Restore all values
+                this.elements.province.value = state.province;
+                this.handleProvinceChange(state.province, false);
+                this.elements.city.value = state.city;
+                this.elements.elevation.value = state.elevation;
+                this.elements.timeframe.value = state.timeframe;
+                this.elements.coolingOverride.checked = state.coolingOverride;
+                this.elements.coolingOverrideValue.value = state.coolingOverrideValue || '';
+                this.elements.coolingOverrideValue.style.display = state.coolingOverride ? 'inline-block' : 'none';
+                
+                // Update displays
+                this.updateDisplays();
+            },
+            
+            populateProvinces() {
+                const provinces = Object.keys(window.TEUI.ClimateData);
+                this.elements.province.innerHTML = '<option value="">Select Province</option>' +
+                    provinces.map(prov => `<option value="${prov}">${prov}</option>`).join('');
+            },
+            
+            handleProvinceChange(province, updateState = true) {
+                const state = getCurrentState();
+                
+                if (updateState) {
+                    // Update the current state
+                    state.province = province;
+                    state.city = '';
+                    state.elevation = '';
+                    
+                    // Sync shared fields to other mode
+                    const otherMode = AppState.currentMode === 'target' ? 'reference' : 'target';
+                    AppState.sharedFields.forEach(field => {
+                        AppState[otherMode][field] = state[field];
+                    });
+                }
+                
+                // Update city dropdown
+                this.elements.city.innerHTML = '<option value="">Select City</option>';
+                this.elements.city.disabled = !province;
+                
+                if (province) {
+                    const cities = Object.keys(window.TEUI.ClimateData[province]);
+                    this.elements.city.innerHTML += cities.map(city => 
+                        `<option value="${city}">${city}</option>`
+                    ).join('');
+                }
+                
+                // Clear displays
+                this.elements.elevation.value = '';
+                this.clearCalculatedValues();
+            },
+            
+            handleCityChange(city) {
+                const state = getCurrentState();
+                state.city = city;
+                
+                // Sync shared fields to other mode
+                const otherMode = AppState.currentMode === 'target' ? 'reference' : 'target';
+                AppState.sharedFields.forEach(field => {
+                    AppState[otherMode][field] = state[field];
+                });
+                
+                if (city && state.province) {
+                    const cityData = window.TEUI.ClimateData[state.province][city];
+                    state.elevation = cityData['Elev ASL (m)'];
+                    this.elements.elevation.value = state.elevation + ' m';
+                    
+                    // Sync elevation to other mode
+                    AppState[otherMode].elevation = state.elevation;
+                    
+                    this.updateClimateValues();
+                    ConsoleManager.addMessage(`Selected ${city}, ${state.province}`);
                 } else {
-                    let displayValue = value;
-                    
-                    if (fieldId.startsWith('d_') || fieldId.startsWith('h_') || 
-                        fieldId.startsWith('e_') || fieldId.startsWith('i_') || 
-                        fieldId.startsWith('l_')) {
-                        if (typeof value === 'number') {
-                            if (fieldId === 'j_19') {
-                                displayValue = value.toFixed(1);
-                            } else {
-                                displayValue = Math.round(value);
-                            }
+                    state.elevation = '';
+                    this.elements.elevation.value = '';
+                    this.clearCalculatedValues();
+                }
+            },
+            
+            handleTimeframeChange(timeframe) {
+                const state = getCurrentState();
+                state.timeframe = timeframe;
+                this.updateClimateValues();
+                
+                if (state.city) {
+                    ConsoleManager.addMessage(`${AppState.currentMode.toUpperCase()} mode: Using ${timeframe} climate data`);
+                }
+            },
+            
+            handleCoolingOverrideChange(checked) {
+                const state = getCurrentState();
+                state.coolingOverride = checked;
+                this.elements.coolingOverrideValue.style.display = checked ? 'inline-block' : 'none';
+                
+                if (!checked) {
+                    state.coolingOverrideValue = null;
+                    this.elements.coolingOverrideValue.value = '';
+                    this.updateClimateValues();
+                }
+            },
+            
+            handleCoolingOverrideValueChange(value) {
+                const state = getCurrentState();
+                state.coolingOverrideValue = value ? parseFloat(value) : null;
+                this.updateCalculations();
+            },
+            
+            formatValue(value, isMissing = false) {
+                if (value === null || value === undefined || value === 666 || isNaN(value)) {
+                    return { text: 'N/A', className: 'missing' };
+                }
+                return { text: value.toString(), className: '' };
+            },
+            
+            updateClimateValues() {
+                const state = getCurrentState();
+                if (!state.province || !state.city) return;
+                
+                const cityData = window.TEUI.ClimateData[state.province][state.city];
+                ConsoleManager.clearMessages();
+                
+                // Get climate values based on timeframe
+                const isPresent = state.timeframe === 'present';
+                
+                // HDD18
+                state.hdd18 = isPresent ? cityData.HDD18 : cityData.HDD18_2021_2050;
+                
+                // CDD24
+                const presentCDD = cityData.CDD24;
+                const futureCDD = cityData.CDD24_2021_2050;
+                
+                // Handle CDD24 with fallback logic
+                if (isPresent) {
+                    state.cdd24 = presentCDD;
+                } else {
+                    if (futureCDD === null || futureCDD === undefined || futureCDD === 666) {
+                        state.cdd24 = presentCDD;
+                        if (presentCDD !== null && presentCDD !== undefined && presentCDD !== 666) {
+                            ConsoleManager.addMessage(
+                                `Future CDD24 not available for ${state.city}. Using present value (${presentCDD}) as fallback.`,
+                                'warning'
+                            );
                         }
-                    }
-                    
-                    element.textContent = displayValue;
-                    
-                    if (typeof value === 'number' && value < 0) {
-                        element.classList.add('negative-value');
                     } else {
-                        element.classList.remove('negative-value');
+                        state.cdd24 = futureCDD;
                     }
                 }
+                
+                // Extreme temperatures
+                state.extremeMinTemp = cityData.January_2_5;
+                state.extremeMaxTemp = isPresent ? cityData.July_2_5_Tdb : cityData.Future_July_2_5_Tdb;
+                
+                // Update displays
+                this.updateDisplays();
+                this.updateCalculations();
+            },
+            
+            updateDisplays() {
+                const state = getCurrentState();
+                
+                // HDD18
+                const hddFormatted = this.formatValue(state.hdd18);
+                this.elements.hdd18.textContent = hddFormatted.text;
+                this.elements.hdd18.className = `value-cell ${hddFormatted.className}`;
+                
+                // CDD24
+                const cddFormatted = this.formatValue(state.cdd24);
+                this.elements.cdd24.textContent = cddFormatted.text;
+                this.elements.cdd24.className = `value-cell ${cddFormatted.className}`;
+                
+                // Check if CDD is using a fallback (for highlighting)
+                if (state.timeframe === 'future' && state.city) {
+                    const cityData = window.TEUI.ClimateData[state.province][state.city];
+                    const futureCDD = cityData.CDD24_2021_2050;
+                    if ((futureCDD === null || futureCDD === undefined || futureCDD === 666) && 
+                        state.cdd24 !== null && state.cdd24 !== undefined && state.cdd24 !== 666) {
+                        this.elements.cdd24.classList.add('lookup-value');
+                    }
+                }
+                
+                // Extreme temperatures
+                const minTempFormatted = this.formatValue(state.extremeMinTemp);
+                this.elements.extremeMinTemp.textContent = minTempFormatted.text;
+                this.elements.extremeMinTemp.className = `value-cell ${minTempFormatted.className}`;
+                
+                const maxTempFormatted = this.formatValue(state.extremeMaxTemp);
+                this.elements.extremeMaxTemp.textContent = maxTempFormatted.text;
+                this.elements.extremeMaxTemp.className = `value-cell ${maxTempFormatted.className}`;
+            },
+            
+            updateCalculations() {
+                const state = getCurrentState();
+                
+                // Skip if we don't have valid values
+                if (state.hdd18 === null || state.hdd18 === undefined || state.hdd18 === 666) {
+                    this.clearCalculatedValues();
+                    return;
+                }
+                
+                // Get CDD value (use override if enabled and valid)
+                let cddValue = state.cdd24;
+                if (state.coolingOverride && state.coolingOverrideValue !== null) {
+                    cddValue = state.coolingOverrideValue;
+                    this.elements.cdd24.textContent = cddValue;
+                    this.elements.cdd24.className = 'value-cell lookup-value';
+                }
+                
+                // Check if CDD is valid
+                if (cddValue === null || cddValue === undefined || cddValue === 666) {
+                    cddValue = 0; // Use 0 for calculations if no valid CDD
+                }
+                
+                // Calculate ratios
+                state.hddRatio = state.hdd18 / 5000; // Reference HDD
+                state.cddRatio = cddValue > 0 ? cddValue / 400 : 0; // Reference CDD
+                
+                // Combined capacitance
+                state.capacitance = state.hddRatio + state.cddRatio;
+                
+                // Update displays
+                this.elements.hddRatio.textContent = state.hddRatio.toFixed(3);
+                this.elements.cddRatio.textContent = state.cddRatio.toFixed(3);
+                this.elements.capacitance.textContent = state.capacitance.toFixed(3);
+            },
+            
+            clearCalculatedValues() {
+                const state = getCurrentState();
+                state.hdd18 = null;
+                state.cdd24 = null;
+                state.extremeMinTemp = null;
+                state.extremeMaxTemp = null;
+                state.hddRatio = null;
+                state.cddRatio = null;
+                state.capacitance = null;
+                
+                this.elements.hdd18.textContent = '–';
+                this.elements.hdd18.className = 'value-cell';
+                this.elements.cdd24.textContent = '–';
+                this.elements.cdd24.className = 'value-cell';
+                this.elements.extremeMinTemp.textContent = '–';
+                this.elements.extremeMinTemp.className = 'value-cell';
+                this.elements.extremeMaxTemp.textContent = '–';
+                this.elements.extremeMaxTemp.className = 'value-cell';
+                this.elements.hddRatio.textContent = '–';
+                this.elements.cddRatio.textContent = '–';
+                this.elements.capacitance.textContent = '–';
             }
-            
-            // Application initialization
-            function initializeApplication() {
-                ClimateDataService.ensureAvailable(function() {
-                    UIController.initialize();
-                    UIController.populateProvinceDropdown();
-                    setupStateObservers();
-                    
-                    // Initialize temperature setpoints
-                    DualState.setValue('h_23', 18, 'init');
-                    DualState.setValue('h_24', 24, 'init');
-                    
-                    logDebug('Application initialized successfully');
-                });
-            }
-            
-            // Start the application when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initializeApplication);
-            } else {
-                initializeApplication();
-            }
-            
-            // Export for testing
-            window.S03Module = {
-                DualState: DualState,
-                ClimateDataService: ClimateDataService,
-                UIController: UIController,
-                CalculationService: CalculationService
-            };
-            
-        })();
+        };
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            UI.initialize();
+        });
     </script>
 </body>
 </html> 
