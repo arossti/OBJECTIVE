@@ -815,6 +815,32 @@
         
         // S03 Climate Calculations Module with Reference Mode
         (function() {
+            // Number formatting system (similar to 4011-StateManager)
+            const NumberFormat = {
+                formats: {
+                    '0dp': (value) => Math.round(value).toString(),
+                    '1dp': (value) => value.toFixed(1),
+                    '2dp': (value) => value.toFixed(2),
+                    'percent': (value) => Math.round(value) + '%',
+                    'currency': (value) => '$' + value.toFixed(2),
+                    'temperature': (value) => Math.round(value) + '°C',
+                    'temperatureF': (value) => Math.round(value) + '°F'
+                },
+                
+                format: function(value, format) {
+                    if (value === null || value === undefined || value === 666 || isNaN(value)) {
+                        return 'N/A';
+                    }
+                    
+                    const formatter = this.formats[format];
+                    if (formatter) {
+                        return formatter(value);
+                    }
+                    
+                    return value.toString();
+                }
+            };
+            
             // Dual State Management - Target and Reference states
             const DualState = {
                 // Current mode: 'target' or 'reference'
@@ -1239,8 +1265,10 @@
                     // Slider
                     elements.capacitanceSlider.addEventListener('input', function() {
                         const sliderValue = this.value;
-                        elements.capacitanceValue.textContent = sliderValue + '%';
+                        // Store the raw numeric value in state
                         DualState.setValue('i_21', sliderValue, 'user');
+                        // Display with percentage
+                        elements.capacitanceValue.textContent = NumberFormat.format(sliderValue, 'percent');
                     });
                     
                     // Slider change should recalculate
