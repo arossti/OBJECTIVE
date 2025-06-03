@@ -45,247 +45,7 @@
                             n: { content: 'N', classes: ['section-subheader'] }
                         }
                     },
-                    // Row 19: Province, City, Climate Zone
-                    {
-                        id: 'L.1.1',
-                        label: 'Province',
-                        cells: {
-                            b: { content: 'L.1.1' },
-                            c: { content: 'Province' },
-                            d: {
-                                fieldId: 'd_19',
-                                type: 'dropdown',
-                                dropdownId: 'dd_d_19',
-                                value: 'ON',
-                                options: self.getProvinceOptions(),
-                                colspan: 2
-                            },
-                            f: { content: 'L.1.2', classes: ['label-prefix'] },
-                            g: { content: 'City', classes: ['label-main'] },
-                            h: {
-                                fieldId: 'h_19',
-                                type: 'dropdown',
-                                dropdownId: 'dd_h_19',
-                                value: '',
-                                options: [{ value: '', name: 'Select City' }]
-                            },
-                            i: { content: 'Climate Zone' },
-                            j: {
-                                fieldId: 'j_19',
-                                type: 'calculated',
-                                value: '6.0',
-                                classes: ['calculated-value']
-                            },
-                            k: { content: 'L.3.3', classes: ['label-prefix'] },
-                            l: { content: 'Days Cooling', classes: ['label-main'] },
-                            m: {
-                                fieldId: 'm_19',
-                                type: 'editable',
-                                value: '120',
-                                classes: ['user-input', 'editable']
-                            }
-                        }
-                    },
-                    // Row 20: Heating Degree Days
-                    {
-                        id: 'L.2.1',
-                        label: 'Heating Degree Days (HDD)',
-                        cells: {
-                            b: { content: 'L.2.1' },
-                            c: { content: 'Heating Degree Days (HDD)' },
-                            d: {
-                                fieldId: 'd_20',
-                                type: 'calculated',
-                                value: '4600',
-                                classes: ['calculated-value']
-                            },
-                            f: { content: 'L.2.2', classes: ['label-prefix'] },
-                            g: { content: 'Current or Future Values', classes: ['label-main'] },
-                            h: {
-                                fieldId: 'h_20',
-                                type: 'dropdown',
-                                dropdownId: 'dd_h_20',
-                                value: 'Present',
-                                options: [
-                                    { value: 'Present', name: 'Present (1991-2020)' },
-                                    { value: 'Future', name: 'Future (2021-2050)' }
-                                ]
-                            },
-                            j: {
-                                fieldId: 'j_20',
-                                type: 'calculated',
-                                value: 'HDD Ref Lookup',
-                                classes: ['reference-value']
-                            },
-                            k: { content: 'HDD - Energy Star', classes: ['reference-label'] }
-                        }
-                    },
-                    // Row 21: Cooling Degree Days
-                    {
-                        id: 'L.2.3',
-                        label: 'Cooling Degree Days (CDD)',
-                        cells: {
-                            b: { content: 'L.2.3' },
-                            c: { content: 'Cooling Degree Days (CDD)' },
-                            d: {
-                                fieldId: 'd_21',
-                                type: 'calculated',
-                                value: '196',
-                                classes: ['calculated-value']
-                            },
-                            f: { content: 'G.4.2', classes: ['label-prefix'] },
-                            g: { content: 'Capacitance', classes: ['label-main'] },
-                            h: {
-                                fieldId: 'h_21',
-                                type: 'dropdown',
-                                dropdownId: 'dd_h_21',
-                                value: 'Capacitance',
-                                options: [
-                                    { value: 'Static', name: 'Static' },
-                                    { value: 'Capacitance', name: 'Capacitance' }
-                                ]
-                            },
-                            i: {
-                                fieldId: 'i_21',
-                                type: 'percentage',
-                                value: '50',
-                                min: 0,
-                                max: 100,
-                                step: 5
-                            },
-                            j: {
-                                fieldId: 'j_21',
-                                type: 'calculated',
-                                value: 'CDD Ref Lookup',
-                                classes: ['reference-value']
-                            },
-                            k: { content: 'CDD - Energy Star', classes: ['reference-label'] }
-                        }
-                    },
-                    // Row 22: Ground Facing HDD/CDD, Elevation
-                    {
-                        id: 'L.2.4',
-                        label: 'Ground Facing GF HDD',
-                        cells: {
-                            b: { content: 'L.2.4' },
-                            c: { content: 'Ground Facing GF HDD' },
-                            d: {
-                                fieldId: 'd_22',
-                                type: 'calculated',
-                                value: '1960',
-                                classes: ['calculated-value']
-                            },
-                            e: { content: '°C•days', classes: ['unit-label'] },
-                            f: { content: 'L.2.5', classes: ['label-prefix'] },
-                            g: { content: 'GF CDD', classes: ['label-main'] },
-                            h: {
-                                fieldId: 'h_22',
-                                type: 'calculated',
-                                value: '-1680',
-                                classes: ['calculated-value']
-                            },
-                            i: { content: '°C•days', classes: ['unit-label'] },
-                            j: { content: 'L.1.3', classes: ['label-prefix'] },
-                            k: { content: 'Elevation (ASL)', classes: ['label-main'] },
-                            l: {
-                                fieldId: 'l_22',
-                                type: 'editable',
-                                value: '80',
-                                classes: ['user-input', 'editable']
-                            },
-                            m: { content: 'm', classes: ['unit-label'] }
-                        }
-                    },
-                    // Row 23: Coldest Days, Heating Setpoint
-                    {
-                        id: 'L.3.1',
-                        label: 'Coldest Days (Location Specific)',
-                        cells: {
-                            b: { content: 'L.3.1' },
-                            c: { content: 'Coldest Days (Location Specific)' },
-                            d: {
-                                fieldId: 'd_23',
-                                type: 'calculated',
-                                value: '-24',
-                                classes: ['calculated-value']
-                            },
-                            e: {
-                                fieldId: 'e_23',
-                                type: 'calculated',
-                                value: '-11',
-                                classes: ['calculated-value']
-                            },
-                            f: { content: 'B.1.2', classes: ['label-prefix'] },
-                            g: { content: 'Tset Heating', classes: ['label-main'] },
-                            h: {
-                                fieldId: 'h_23',
-                                type: 'calculated',
-                                value: '18',
-                                classes: ['calculated-value']
-                            },
-                            i: {
-                                fieldId: 'i_23',
-                                type: 'calculated',
-                                value: '64',
-                                classes: ['calculated-value']
-                            },
-                            m: {
-                                fieldId: 'm_23',
-                                type: 'calculated',
-                                value: '0%',
-                                classes: ['calculated-value']
-                            }
-                        }
-                    },
-                    // Row 24: Hottest Days, Cooling Setpoint
-                    {
-                        id: 'L.3.2',
-                        label: 'Hottest Days (Location Specific)',
-                        cells: {
-                            b: { content: 'L.3.2' },
-                            c: { content: 'Hottest Days (Location Specific)' },
-                            d: {
-                                fieldId: 'd_24',
-                                type: 'calculated',
-                                value: '30',
-                                classes: ['calculated-value']
-                            },
-                            e: {
-                                fieldId: 'e_24',
-                                type: 'calculated',
-                                value: '86',
-                                classes: ['calculated-value']
-                            },
-                            f: { content: 'B.1.3', classes: ['label-prefix'] },
-                            g: { content: 'Tset Cooling', classes: ['label-main'] },
-                            h: {
-                                fieldId: 'h_24',
-                                type: 'calculated',
-                                value: '24',
-                                classes: ['calculated-value']
-                            },
-                            i: {
-                                fieldId: 'i_24',
-                                type: 'calculated',
-                                value: '75',
-                                classes: ['calculated-value']
-                            },
-                            j: { content: 'B.1.4', classes: ['label-prefix'] },
-                            k: { content: 'Cooling Override', classes: ['label-main'] },
-                            l: {
-                                fieldId: 'l_24',
-                                type: 'editable',
-                                value: '24',
-                                classes: ['user-input', 'editable']
-                            },
-                            m: {
-                                fieldId: 'm_24',
-                                type: 'calculated',
-                                value: '109%',
-                                classes: ['calculated-value']
-                            }
-                        }
-                    },
+                    
                     // Row 2: Province and City
                     {
                         id: '2',
@@ -530,7 +290,7 @@
         
         // Get province options
         getProvinceOptions: function() {
-            const climateData = window.TEUI.v4012.ClimateData || {};
+            const climateData = window.TEUI.ClimateData || {};
             const provinces = Object.keys(climateData);
             const options = [{ value: '', name: 'Select Province' }];
             
@@ -633,14 +393,14 @@
         // Handle province change
         handleProvinceChange: function(e) {
             const province = e.target.value;
-            const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
+            const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_14"]');
             
             if (!cityDropdown) return;
             
             // Clear cities
             cityDropdown.innerHTML = '<option value="">Select City</option>';
             
-            const climateData = window.TEUI.v4012.ClimateData;
+            const climateData = window.TEUI.ClimateData;
             if (province && climateData && climateData[province]) {
                 const cities = Object.keys(climateData[province]);
                 cities.forEach(city => {
@@ -664,7 +424,7 @@
             const province = document.querySelector('[data-field-id="d_14"]')?.value;
             
             if (city && province) {
-                const climateData = window.TEUI.v4012.ClimateData || {};
+                const climateData = window.TEUI.ClimateData || {};
                 const cityData = climateData[province]?.[city];
                 
                 if (cityData) {
@@ -724,6 +484,18 @@
             // Update state
             state.setValue('d_16', temps.heating);
             state.setValue('h_16', temps.cooling);
+        },
+        
+        // Helper function to update field values in the DOM
+        updateField: function(fieldId, value) {
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+                    element.value = value;
+                } else {
+                    element.textContent = value;
+                }
+            }
         },
         
         // Load initial data
