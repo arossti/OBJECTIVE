@@ -53,7 +53,6 @@ TEUI.FieldManager = (function() {
      * @returns {Object} - Empty module with required methods
      */
     function createEmptyModule(sectionId) {
-        // console.log(`Creating empty module for ${sectionId}`);
         return {
             getFields: function() { return {}; },
             getDropdownOptions: function() { return {}; },
@@ -80,20 +79,15 @@ TEUI.FieldManager = (function() {
      * Uses modules pre-loaded by script tags in the HTML
      */
     function initializeSections() {
-        // console.log('Initializing section modules...');
-        
         // Process each section, using the already loaded module or creating a fallback
         Object.entries(sections).forEach(([uiSectionId, moduleSectionId]) => {
             // Check if the module exists in the global namespace
             if (TEUI.SectionModules[moduleSectionId]) {
-                // console.log(`Using pre-loaded module for ${moduleSectionId}`);
-                
                 // Collect fields from this section
                 try {
                     if (TEUI.SectionModules[moduleSectionId].getFields) {
                         const sectionFields = TEUI.SectionModules[moduleSectionId].getFields();
                         Object.assign(allFields, sectionFields);
-                        // console.log(`Added ${Object.keys(sectionFields).length} fields from ${moduleSectionId}`);
                     }
                     
                     // Collect dropdown options from this section
@@ -106,12 +100,10 @@ TEUI.FieldManager = (function() {
                 }
             } else {
                 // Create fallback empty module
-                console.warn(`Module ${moduleSectionId} not found, using fallback`);
                 TEUI.SectionModules[moduleSectionId] = createEmptyModule(moduleSectionId);
             }
         });
         
-        // console.log('All section modules initialized');
         isInitialized = true;
         
         // Make fields available globally for backward compatibility
@@ -216,7 +208,6 @@ TEUI.FieldManager = (function() {
         ];
 
         if (!allFields) {
-            console.warn("[FieldManager.getAllUserEditableFields] allFields is not initialized.");
             return {};
         }
 
@@ -268,7 +259,6 @@ TEUI.FieldManager = (function() {
      * @param {string} sectionId - Section ID
      */
     function initializeSectionEventHandlers(sectionId) {
-        // console.log(`[FieldManager] Initializing event handlers for section: ${sectionId}`);
         const internalSectionId = sections[sectionId];
         if (!internalSectionId || !TEUI.SectionModules[internalSectionId]) {
             console.warn(`Module not found for section ${sectionId}`);
@@ -279,7 +269,6 @@ TEUI.FieldManager = (function() {
         
         // Call module-specific event handler initialization if it exists
         if (sectionModule.initializeEventHandlers) {
-            // console.log(`Initializing module-specific event handlers for section ${sectionId}`);
             try {
                 sectionModule.initializeEventHandlers();
             } catch (error) {
@@ -289,15 +278,12 @@ TEUI.FieldManager = (function() {
         
         // Also call onSectionRendered if it exists (often used for initialization)
         if (sectionModule.onSectionRendered) {
-            // console.log(`Calling onSectionRendered for section ${sectionId}`);
              try {
                 sectionModule.onSectionRendered();
             } catch (error) {
                  console.error(`Error in ${sectionId} module onSectionRendered:`, error);
             }
         }
-
-        // console.log(`[FieldManager] Finished initializing event handlers for section: ${sectionId}`);
     }
 
     /**
@@ -308,7 +294,6 @@ TEUI.FieldManager = (function() {
     function renderSection(sectionId) {
         // Make sure initialization is complete
         if (!isInitialized) {
-            // console.log(`Initializing before rendering section ${sectionId}`);
             initializeSections();
         }
         
@@ -322,8 +307,6 @@ TEUI.FieldManager = (function() {
             console.error(`Module not found for section ${sectionId} (${internalSectionId})`);
             return false;
         }
-        
-        // console.log(`Rendering section: ${sectionId} using module ${internalSectionId}`);
         
         try {
             const layout = getLayoutForSection(sectionId);
@@ -357,8 +340,6 @@ TEUI.FieldManager = (function() {
      * Render all sections
      */
     function renderAllSections() {
-        // console.log('Rendering all sections...');
-        
         // Make sure initialization is complete
         if (!isInitialized) {
             initializeSections();
@@ -386,13 +367,11 @@ TEUI.FieldManager = (function() {
         const sectionElement = document.getElementById(sectionId);
         
         if (!sectionElement) {
-            // console.warn(`Section element with ID '${sectionId}' not found in DOM`);
             return;
         }
         
         const contentContainer = sectionElement.querySelector('.section-content');
         if (!contentContainer) {
-            // console.warn(`Content container not found in section '${sectionId}'`);
             return;
         }
         
@@ -1032,13 +1011,11 @@ TEUI.FieldManager = (function() {
      */
     function updateFieldDisplay(fieldId, displayValue, fieldDef) {
         if (!fieldDef) {
-            // console.warn(`[FieldManager.updateFieldDisplay] No field definition for ${fieldId}`);
             return;
         }
 
         const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
         if (!element) {
-            // console.warn(`[FieldManager.updateFieldDisplay] Element not found for ${fieldId}`);
             return;
         }
 
@@ -1112,7 +1089,6 @@ TEUI.FieldManager = (function() {
                 }
                 break;
         }
-        // console.log(`[FieldManager.updateFieldDisplay] Updated ${fieldId} to "${displayValue}" (Type: ${fieldDef.type})`);
     }
     
     // Public API
@@ -1161,8 +1137,6 @@ TEUI.FieldManager = (function() {
 
 // Initialize when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // console.log('TEUI FieldManager initializing...');
-    
     // Initialize and load all section modules
     TEUI.FieldManager.initialize();
     
