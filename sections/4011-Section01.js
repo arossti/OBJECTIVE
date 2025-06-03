@@ -1146,6 +1146,9 @@ window.TEUI.SectionModules.sect01 = (function() {
     // INITIALIZATION
     //==========================================================================
 
+    /**
+     * Initialize event handlers for this section
+     */
     function initializeEventHandlers() {
         if (!window.TEUI.StateManager) return;
         const sm = window.TEUI.StateManager;
@@ -1257,6 +1260,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             }
         });
         
+        // Add specialized cross-section listeners for emissions data flow
+        setupCrossSectionListeners();
+        
         console.log('[S01 INIT] ✅ Event handlers initialized successfully');
     }
 
@@ -1275,6 +1281,9 @@ window.TEUI.SectionModules.sect01 = (function() {
         toggleIcon?.remove();
     }
     
+    /**
+     * Called when the section is rendered
+     */
     function onSectionRendered() {
         console.log("[Section01] Section rendered, initializing...");
         
@@ -1606,6 +1615,106 @@ window.TEUI.SectionModules.sect01 = (function() {
     // PUBLIC API
     //==========================================================================
     
+    /**
+     * Called when the Targeted Use vs. Utility Bills dropdown (d_14) changes
+     * Updates the actual values (k_6, k_8, k_10) to show or hide N/A based on selection
+     */
+    function updateActualValuesBasedOnDropdown() {
+        console.log("[S01] 🔄 Updating actual values based on dropdown change");
+        
+        // Get the current dropdown value
+        const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
+        console.log(`[S01] Dropdown value changed to: ${useType}`);
+        
+        if (useType === "Targeted Use") {
+            // Set actual values to N/A in Targeted Use mode
+            console.log("[S01] Setting actual values to N/A (Targeted Use mode)");
+            
+            // Update display values
+            updateDisplayValue('k_6', 'N/A');
+            updateDisplayValue('k_8', 'N/A');
+            updateDisplayValue('k_10', 'N/A');
+            
+            // Also update state manager values for consistency
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue('k_6', 'N/A', 'calculated');
+                window.TEUI.StateManager.setValue('k_8', 'N/A', 'calculated');
+                window.TEUI.StateManager.setValue('k_10', 'N/A', 'calculated');
+            }
+        } else {
+            // Use regular TEUI display update for Utility Bills mode
+            console.log("[S01] Recalculating actual values (Utility Bills mode)");
+            
+            // Recalculate and update display
+            updateTEUIDisplay();
+            
+            // Force a recalculation in case values need updating
+            calculateAll();
+        }
+        
+        // Update the gauges to reflect the new state
+        updateAllGauges();
+    }
+    
+    /**
+     * Set up listeners for cross-section dependencies
+     */
+    function setupCrossSectionListeners() {
+        if (!window.TEUI?.StateManager) return;
+        
+        const sm = window.TEUI.StateManager;
+        
+        // Listen for changes in Section 04 emissions values (k_32_for_k_8)
+        sm.addListener('k_32_for_k_8', function(newValue) {
+            if (targetCalculationInProgress || referenceCalculationInProgress) return;
+            
+            // Update Actual Annual Carbon (k_8) using the emissions data
+            const emissions = window.TEUI.parseNumeric(newValue, 0);
+            const area = getAppNumericValue('h_15', 1);
+            
+            if (emissions > 0 && area > 0) {
+                const carbonIntensity = Math.round((emissions / area) * 10) / 10;
+                setCalculatedValue('k_8', carbonIntensity, 'number-1dp');
+                
+                // Also update dependent k_6 (Actual Lifetime Carbon)
+                updateLifetimeCarbonValues();
+            }
+        });
+        
+        // Listen for changes in Reference emissions (ref_k_32)
+        sm.addListener('ref_k_32', function(newValue) {
+            if (targetCalculationInProgress || referenceCalculationInProgress) return;
+            
+            if (window.TEUI.ReferenceToggle?.isReferenceMode?.()) {
+                // Update Reference mode emissions display
+                const refEmissions = window.TEUI.parseNumeric(newValue, 0);
+                const area = getRefNumericValue('h_15', 1);
+                
+                if (refEmissions > 0 && area > 0) {
+                    const refCarbonIntensity = Math.round((refEmissions / area) * 10) / 10;
+                    setCalculatedValue('k_8', refCarbonIntensity, 'number-1dp');
+                    
+                    // Update dependent values
+                    updateLifetimeCarbonValues();
+                }
+            }
+        });
+    }
+    
+    /**
+     * Update lifetime carbon values (k_6, h_6) based on annual carbon
+     */
+    function updateLifetimeCarbonValues() {
+        const embodiedCarbon = getAppNumericValue('i_41', 0);
+        const serviceLife = getAppNumericValue('h_13', 60);
+        const annualCarbon = getNumericValue('k_8');
+        
+        if (typeof annualCarbon === 'number' && serviceLife > 0) {
+            const lifetimeCarbon = Math.round(((embodiedCarbon / serviceLife) + annualCarbon) * 10) / 10;
+            setCalculatedValue('k_6', lifetimeCarbon, 'number-1dp');
+        }
+    }
+    
     return {
         getFields: () => fields,
         getHTML: () => '',  // Section 01 renders directly
@@ -1614,6 +1723,8 @@ window.TEUI.SectionModules.sect01 = (function() {
         calculateAll: calculateAll,
         onSectionRendered: onSectionRendered,
         renderKeyValuesSection: renderKeyValuesSection,
-        testS01_ITDepends: testS01_ITDepends
+        testS01_ITDepends: testS01_ITDepends,
+        updateTEUIDisplay: updateTEUIDisplay,
+        updateActualValuesBasedOnDropdown: updateActualValuesBasedOnDropdown
     };
 })();

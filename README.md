@@ -1474,3 +1474,176 @@ The V2 Traffic Cop architecture represents a **fundamental breakthrough** in bui
 This architecture enables **reliable dual-engine energy modeling** - a capability that sets TEUI apart from traditional single-calculation tools and provides the foundation for advanced scenario comparison and code compliance checking.
 
 ## 7. Future Integration Plans
+
+## 8. v4.012 Architectural Revolution: Tuple-Based Dual Calculations
+
+### 🎯 Vision: Radical Simplicity Through Functional Architecture
+
+The current codebase has grown complex through incremental additions and workarounds. Version 4.012 will implement a fundamental architectural shift toward functional programming principles and radical simplification.
+
+### Core Concept: Single Logic, Dual Computation
+
+Instead of maintaining separate Reference and Target calculation paths with duplicated logic, each calculation becomes a pure function that computes both values simultaneously:
+
+```javascript
+// Current approach: Duplicated logic, state dependencies
+function calculateReferenceModel() {
+    const d27 = getRefNumericValue('d_27');
+    const d43 = getRefNumericValue('d_43');
+    const i43 = getRefNumericValue('i_43');
+    const f27 = d27 - d43 - i43;
+    setReferenceValue('f_27', f27);
+}
+
+function calculateTargetModel() {
+    const d27 = getAppNumericValue('d_27');
+    const d43 = getAppNumericValue('d_43');
+    const i43 = getAppNumericValue('i_43');
+    const f27 = d27 - d43 - i43;
+    setCalculatedValue('f_27', f27);
+}
+
+// New approach: Pure function, explicit inputs/outputs
+function calculateNetElectricity(inputs) {
+    const calc = (d27, d43, i43) => d27 - d43 - i43;
+    
+    return {
+        target: calc(inputs.target.d27, inputs.target.d43, inputs.target.i43),
+        reference: calc(inputs.reference.d27, inputs.reference.d43, inputs.reference.i43)
+    };
+}
+```
+
+### Architectural Benefits
+
+1. **Single Source of Truth**: Each calculation's logic exists in exactly one place
+2. **Pure Functions**: No side effects, completely testable
+3. **Explicit Data Flow**: Clear inputs → computation → outputs
+4. **Reduced State Complexity**: Functions don't read from global state
+5. **Parallel Computation**: Both models calculated in one pass
+6. **Type Safety Ready**: Structure supports future TypeScript migration
+
+### Implementation Workplan
+
+#### Phase 1: Proof of Concept with Section 03 (Climate)
+Section 03 is ideal for prototyping because:
+- Relatively simple calculations (HDD, CDD, design temperatures)
+- Limited cross-section dependencies
+- Clear input/output relationships
+
+```javascript
+// Example: Climate calculations as pure functions
+function calculateDegreeDays(inputs) {
+    const { baseTemp, yearlyTemps } = inputs;
+    
+    const calc = (temps, base, isHeating) => {
+        return temps.reduce((sum, temp) => {
+            const diff = isHeating ? base - temp : temp - base;
+            return sum + Math.max(0, diff);
+        }, 0);
+    };
+    
+    return {
+        target: {
+            hdd: calc(yearlyTemps.target, baseTemp.target.heating, true),
+            cdd: calc(yearlyTemps.target, baseTemp.target.cooling, false)
+        },
+        reference: {
+            hdd: calc(yearlyTemps.reference, baseTemp.reference.heating, true),
+            cdd: calc(yearlyTemps.reference, baseTemp.reference.cooling, false)
+        }
+    };
+}
+```
+
+#### Phase 2: New State Management Layer
+
+Create a simplified state container that explicitly separates inputs and outputs:
+
+```javascript
+class DualState {
+    constructor() {
+        this.inputs = {
+            target: {},
+            reference: {}
+        };
+        this.outputs = {
+            target: {},
+            reference: {}
+        };
+    }
+    
+    setInput(field, value, model = 'target') {
+        this.inputs[model][field] = value;
+        this.recalculate(field);
+    }
+    
+    recalculate(changedField) {
+        // Dependency graph determines what to recalculate
+        const affected = this.dependencies.get(changedField);
+        affected.forEach(calc => {
+            const result = calc(this.inputs);
+            this.outputs.target[calc.field] = result.target;
+            this.outputs.reference[calc.field] = result.reference;
+        });
+    }
+}
+```
+
+#### Phase 3: Fresh Application Scaffold
+
+Build a minimal new application structure:
+
+```
+teui-v4.012/
+├── core/
+│   ├── calculations/          # Pure calculation functions
+│   │   ├── climate.js
+│   │   ├── energy.js
+│   │   └── emissions.js
+│   ├── state/
+│   │   ├── DualState.js      # Simplified state management
+│   │   └── Dependencies.js   # Calculation dependency graph
+│   └── ui/
+│       ├── Section.js        # Generic section renderer
+│       └── Field.js          # Generic field component
+├── sections/
+│   ├── s03-climate.js        # Section-specific config only
+│   └── s04-energy.js
+└── app.js                    # Minimal bootstrap
+```
+
+#### Phase 4: Migration Strategy
+
+1. **Start Fresh**: Build new structure alongside existing code
+2. **Migrate by Section**: Port one section at a time to new architecture
+3. **Maintain Compatibility**: Keep data import/export working
+4. **Progressive Enhancement**: Add features only after core is solid
+
+### Radical Simplification Principles
+
+1. **No Magic**: Every calculation is explicit and traceable
+2. **No Hidden State**: All inputs and outputs are visible
+3. **No Circular Dependencies**: Clear, acyclic calculation graph
+4. **No Premature Abstraction**: Start concrete, generalize later
+5. **No Framework Lock-in**: Use vanilla JS, minimal dependencies
+
+### Success Metrics
+
+- **Code Reduction**: Target 50% fewer lines of code
+- **Performance**: Sub-100ms full recalculation
+- **Test Coverage**: 100% of calculation logic
+- **Maintainability**: New developer can understand section in < 30 minutes
+
+### Next Steps
+
+1. Create `teui-v4.012` branch
+2. Build minimal scaffold with Section 03 as proof of concept
+3. Demonstrate tuple-based calculations working end-to-end
+4. Evaluate before proceeding with full migration
+
+This architectural shift represents a fundamental rethinking of how building energy calculations should be implemented, prioritizing clarity, correctness, and maintainability over incremental patches.
+
+---
+
+## Known Limitations and Future Work

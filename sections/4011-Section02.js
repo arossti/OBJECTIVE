@@ -9,11 +9,16 @@
  * are integrated directly into the layout structure.
  */
 
-// Create section-specific namespace for global references
+// Ensure namespace exists
 window.TEUI = window.TEUI || {};
+window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 window.TEUI.sect02 = window.TEUI.sect02 || {};
 window.TEUI.sect02.initialized = false;
 window.TEUI.sect02.userInteracted = false;
+// Add recursion protection flag
+window.TEUI.sect02.calculationInProgress = false;
+// Add migration status flag
+window.TEUI.sect02.migratedToITDepends = true;
 
 // Section 2: Building Information Module
 window.TEUI.SectionModules.sect02 = (function() {
@@ -322,6 +327,147 @@ window.TEUI.SectionModules.sect02 = (function() {
     };
     
     //==========================================================================
+    // HELPER FUNCTIONS (Standard Implementation like S03)
+    //==========================================================================
+    
+    /**
+     * Safely parses a numeric value from StateManager, using the global parseNumeric.
+     * @param {string} fieldId - The ID of the field to retrieve the value for.
+     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     */
+    function getNumericValue(fieldId, defaultValue = 0) {
+        // Always use global parseNumeric and StateManager
+        const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) || defaultValue;
+    }
+    
+    /**
+     * Helper to get field value, preferring StateManager but falling back to DOM.
+     * @param {string} fieldId 
+     * @returns {string | null} Value as string or null if not found.
+     */
+    function getFieldValue(fieldId) {
+        if (window.TEUI?.StateManager?.getValue) {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== null && value !== undefined) {
+                return value.toString();
+            }
+        }
+        
+        // Fall back to DOM
+        const element = document.querySelector(`[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`);
+        if (element) {
+            return element.value !== undefined ? element.value : element.textContent;
+        }
+        return null;
+    }
+    
+    /**
+     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
+     * @param {string} fieldId - The ID of the field to update.
+     * @param {number|string} rawValue - The raw calculated value or special string value (e.g., "N/A").
+     * @param {string} [formatType='number-2dp-comma'] - The format type string.
+     */
+    function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
+        // Special case for "N/A" display
+        if (rawValue === "N/A") {
+            // Store special value in StateManager
+            if (window.TEUI?.StateManager?.setValue) {
+                window.TEUI.StateManager.setValue(fieldId, "N/A", 'calculated');
+            }
+            
+            // Update DOM
+            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (element) {
+                element.textContent = "N/A";
+            }
+            return;
+        }
+        
+        // Use global formatter for numeric values
+        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
+        
+        // Store raw value as string in StateManager for precision
+        if (window.TEUI?.StateManager?.setValue) {
+            let stateValue = isFinite(rawValue) ? rawValue.toString() : null; 
+            window.TEUI.StateManager.setValue(fieldId, stateValue, 'calculated');
+        }
+        
+        // Update DOM
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = formattedValue;
+            element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
+        }
+    }
+
+    //==========================================================================
+    // V2 DUAL-ENGINE HELPER FUNCTIONS
+    //==========================================================================
+    
+    /**
+     * Get numeric value from Reference state
+     * First checks for Reference values, falls back to Reference standard defaults
+     */
+    function getRefNumericValue(fieldId, defaultValue = 0) {
+        // Try multiple methods to get reference value, in order of preference:
+        
+        // Method 1: Try standard Reference Value getter (best practice)
+        if (window.TEUI?.StateManager?.getReferenceValue) {
+            const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+            if (refValue !== null && refValue !== undefined) {
+                // Parse the reference value
+                const parsed = window.TEUI?.parseNumeric?.(refValue, defaultValue);
+                return parsed; // Return immediately with parsed reference value
+            }
+        }
+        
+        // Method 2: Try SessionReferenceState (persistent between toggles)
+        if (window.TEUI?.StateManager?.getSessionReferenceValue) {
+            const sessionRefValue = window.TEUI.StateManager.getSessionReferenceValue(`ref_${fieldId}`);
+            if (sessionRefValue !== null && sessionRefValue !== undefined) {
+                const parsed = window.TEUI?.parseNumeric?.(sessionRefValue, defaultValue);
+                return parsed;
+            }
+        }
+        
+        // Method 3: Try ref_ prefixed value in normal state
+        const prefixedFieldId = `ref_${fieldId}`;
+        const prefixedValue = window.TEUI?.StateManager?.getValue?.(prefixedFieldId);
+        if (prefixedValue !== null && prefixedValue !== undefined) {
+            const parsed = window.TEUI?.parseNumeric?.(prefixedValue, defaultValue);
+            return parsed;
+        }
+        
+        // Method 4: Get default value from a standard
+        const standardValue = getStandardValue(fieldId);
+        if (standardValue !== null && standardValue !== undefined) {
+            return standardValue;
+        }
+        
+        // Fallback: return application value or default
+        return getNumericValue(fieldId, defaultValue);
+    }
+    
+    /**
+     * Get numeric value from Application state (for Target calculations)
+     */
+    function getAppNumericValue(fieldId, defaultValue = 0) {
+        const value = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
+                     window.TEUI?.StateManager?.getValue?.(fieldId);
+        return window.TEUI?.parseNumeric?.(value, defaultValue) || defaultValue;
+    }
+    
+    /**
+     * Helper to get a value from the selected reference standard
+     */
+    function getStandardValue(fieldId) {
+        // Currently no standard values used in Section 02
+        // If needed in future, implement similar to other sections
+        return null;
+    }
+    
+    //==========================================================================
     // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
     //==========================================================================
     
@@ -474,64 +620,6 @@ window.TEUI.SectionModules.sect02 = (function() {
     //==========================================================================
     
     /**
-     * Helper function to get a field value from StateManager or DOM
-     * Follows the standard pattern from SectionXX template for consistency
-     */
-    function getFieldValue(fieldId) {
-        // Try to get from StateManager first
-        if (window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
-            const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null && value !== undefined) {
-                return value;
-            }
-        }
-        
-        // Fall back to DOM
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            if (element.tagName === 'SELECT' || element.tagName === 'INPUT') {
-                return element.value;
-            } else {
-                return element.textContent;
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Helper function to safely get numeric values with proper comma handling
-     * Uses global window.TEUI.parseNumeric for consistency
-     */
-    function getNumericValue(fieldId, defaultValue = 0) {
-        const rawValue = getFieldValue(fieldId);
-        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
-    }
-
-    /**
-     * Update a calculated field with proper state management and DOM updates
-     * Uses global window.TEUI.formatNumber for consistency
-     * Updated for V2 dual-engine architecture using setDualEngineValue
-     */
-    function setCalculatedValue(fieldId, value) {
-        // Handle N/A cases
-        if (value === "N/A" || value === null || value === undefined || !isFinite(value)) {
-            // For N/A values, update display directly and store as 'N/A'
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-                element.textContent = "N/A";
-            }
-            if (window.TEUI?.StateManager?.setValue) {
-                window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
-        }
-            return;
-        }
-        
-        // Use V2 dual-engine setter for numeric values
-        setDualEngineValue(fieldId, value, 'number-2dp-comma');
-    }
-    
-    /**
      * Calculate Embodied Carbon Target (d_16) based on selected Carbon Standard (d_15)
      * Standard calculation function pattern from SectionXX template
      */
@@ -584,42 +672,81 @@ window.TEUI.SectionModules.sect02 = (function() {
     }
     
     /**
-     * Register calculations with StateManager 
-     * This is the standard approach from other working sections
+     * Calculate all values for this section with recursion protection
+     * IT-DEPENDS architecture: Implements dual-engine model
      */
-    function registerCalculations() {
-        if (!window.TEUI || !window.TEUI.StateManager) {
-            return;
-        }
+    function calculateAll() {
+        // RECURSION PROTECTION: Prevent infinite calculation loops
+        if (window.TEUI.sect02.calculationInProgress) return;
+        
+        window.TEUI.sect02.calculationInProgress = true;
         
         try {
-            // Register dependencies - these must be registered AFTER the calculation
-            window.TEUI.StateManager.registerDependency("d_15", "d_16"); // d_16 depends on the standard selected
-            window.TEUI.StateManager.registerDependency("i_41", "d_16"); // d_16 depends on i_41 when standard is 'Self Reported' or default
-            window.TEUI.StateManager.registerDependency("i_39", "d_16"); // d_16 depends on i_39 when standard is 'TGS4'
+            // Make sure calculations are registered with IT-DEPENDS
+            registerITDependsCalculations();
+            
+            // DUAL-ENGINE ARCHITECTURE: Always run both engines
+            calculateReferenceModel();  // Calculates Reference values using ref_ inputs
+            calculateApplicationModel(); // Calculates Target values using application state
         } catch (error) {
-            // console.warn("Error registering calculations:", error);
+            // Error handling without logs
+        } finally {
+            window.TEUI.sect02.calculationInProgress = false;
         }
     }
     
     /**
-     * Calculate all values for this section
-     * Following pattern from Section10
+     * REFERENCE MODEL ENGINE: Calculate all Reference values
+     * IT-DEPENDS architecture: Reference model engine
      */
-    function calculateAll() {
-        // Make sure calculations are registered
-        registerCalculations();
+    function calculateReferenceModel() {
+        // For Section 02, Reference model calculations are identical to Application
+        // since there are no specific reference standard values for d_16
         
-        // Calculate Embodied Carbon Target directly
-        try {
-            // Calculate the target value
-            const targetValue = calculateEmbodiedCarbonTarget();
-            
-            // Pass the value directly (already formatted correctly in the calculation function)
-            setCalculatedValue("d_16", targetValue);
-        } catch (error) {
-            // console.warn("Error calculating values:", error);
+        // Get Reference values
+        const carbonStandard = getRefNumericValue('d_15') || 'Self Reported';
+        
+        // Calculate d_16 for Reference mode
+        const targetValue = calculateEmbodiedCarbonTarget();
+        
+        // Store in Reference state
+        if (window.TEUI?.StateManager?.setReferenceValue) {
+            window.TEUI.StateManager.setReferenceValue('ref_d_16', 
+                targetValue === 'N/A' ? 'N/A' : targetValue.toString(), 
+                'calculated-reference');
         }
+    }
+    
+    /**
+     * APPLICATION MODEL ENGINE: Calculate all Application values
+     * IT-DEPENDS architecture: Application model engine
+     */
+    function calculateApplicationModel() {
+        // Calculate the target value
+        const targetValue = calculateEmbodiedCarbonTarget();
+        
+        // Store in Application state using standard helper
+        setCalculatedValue('d_16', targetValue);
+    }
+    
+    /**
+     * Register IT-DEPENDS calculations with StateManager
+     * IT-DEPENDS architecture: Registers all calculations with StateManager
+     */
+    function registerITDependsCalculations() {
+        if (!window.TEUI?.StateManager) {
+            return;
+        }
+        
+        const sm = window.TEUI.StateManager;
+        
+        // Register the main calculation function
+        sm.registerCalculation('d_16', calculateEmbodiedCarbonTarget, 'Embodied Carbon Target');
+        
+        // Register dependencies
+        sm.registerDependency('d_15', 'd_16'); // d_16 depends on the Carbon Standard
+        sm.registerDependency('i_41', 'd_16'); // d_16 depends on i_41 from Section 5 when "Self Reported"
+        sm.registerDependency('i_39', 'd_16'); // d_16 depends on i_39 from Section 5 when "TGS4"
     }
     
     /**
@@ -664,8 +791,8 @@ window.TEUI.SectionModules.sect02 = (function() {
      * Initialize event handlers for this section
      */
     function initializeEventHandlers() {
-        // Register calculations with StateManager
-        registerCalculations();
+        // Register calculations with IT-DEPENDS
+        registerITDependsCalculations();
         
         // Set up dropdown handlers
         setupCarbonStandardDropdown();
@@ -692,7 +819,28 @@ window.TEUI.SectionModules.sect02 = (function() {
             areaField.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault(); 
-                    this.blur(); 
+                    
+                    // Get current displayed value
+                    const displayedArea = this.textContent.trim();
+                    const areaValue = window.TEUI?.parseNumeric?.(displayedArea, 0) ?? 0;
+                    
+                    // Update StateManager immediately
+                    if (window.TEUI && window.TEUI.StateManager && areaValue > 0) {
+                        window.TEUI.StateManager.setValue("h_15", areaValue.toString(), "user-modified");
+                        
+                        // Format the display immediately for responsive feedback
+                        this.textContent = window.TEUI?.formatNumber?.(areaValue, 'number-2dp-comma') ?? areaValue.toString();
+                        
+                        // Trigger immediate calculation update
+                        calculateAll();
+                        
+                        // Update S01 calculations to reflect the area change
+                        if (window.TEUI?.SectionModules?.sect01?.calculateAll) {
+                            window.TEUI.SectionModules.sect01.calculateAll();
+                        }
+                    }
+                    
+                    this.blur(); // This will also call updateAreaValue from the blur event
                 }
             });
         }
@@ -741,7 +889,6 @@ window.TEUI.SectionModules.sect02 = (function() {
             if (!currentStandard) {
                 // Set the default reference standard
                 window.TEUI.StateManager.setValue('d_13', 'OBC SB10 5.5-6 Z6', 'default');
-                console.log('[Section02] Set default reference standard: OBC SB10 5.5-6 Z6');
             }
         }
         
@@ -841,6 +988,29 @@ window.TEUI.SectionModules.sect02 = (function() {
                     field.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
                             e.preventDefault();
+                            
+                            // Get current value
+                            const currentValue = this.textContent.trim();
+                            
+                            // Update state immediately for responsive feel
+                            if (window.TEUI && window.TEUI.StateManager && 
+                                this.dataset.originalValue !== currentValue) {
+                                window.TEUI.StateManager.setValue(fieldId, currentValue, "user-modified");
+                                
+                                // For numeric fields, format the display immediately
+                                if (fieldId.startsWith('l_')) { // Cost fields
+                                    const numericValue = window.TEUI?.parseNumeric?.(currentValue, 0);
+                                    if (!isNaN(numericValue) && numericValue > 0) {
+                                        // Use appropriate formatting for cost fields
+                                        const formatType = (fieldId === 'l_15') ? 'cad-2dp' : 'cad-4dp';
+                                        this.textContent = window.TEUI.formatNumber(numericValue, formatType);
+                                    }
+                                }
+                                
+                                // Trigger calculations
+                                calculateAll();
+                            }
+                            
                             this.blur();
                         }
                     });
@@ -872,6 +1042,7 @@ window.TEUI.SectionModules.sect02 = (function() {
     
     /**
      * Update area value in StateManager and propagate to TEUI calculations
+     * IT-DEPENDS architecture: Remove setTimeout in favor of direct calculation
      */
     function updateAreaValue() {
         const areaField = document.querySelector('[data-field-id="h_15"]');
@@ -884,12 +1055,12 @@ window.TEUI.SectionModules.sect02 = (function() {
         if (!isNaN(areaValue) && areaValue > 0 && window.TEUI && window.TEUI.StateManager) {
             window.TEUI.StateManager.setValue("h_15", areaValue.toString(), "user-modified");
             
-            // Trigger TEUI recalculation with the new area value
-            setTimeout(() => {
-                if (typeof window.calculateTEUI === 'function') {
-                    window.calculateTEUI();
-                }
-            }, 100);
+            // IT-DEPENDS architecture: Directly trigger calculations instead of setTimeout
+            if (typeof window.calculateTEUI === 'function') {
+                window.calculateTEUI();
+            } else if (window.TEUI?.SectionModules?.sect01?.calculateAll) {
+                window.TEUI.SectionModules.sect01.calculateAll();
+            }
         }
     }
     
@@ -966,11 +1137,9 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Update the StateManager with user-modified state
             if (window.TEUI && window.TEUI.StateManager) {
                 window.TEUI.StateManager.setValue("h_15", newArea.toString(), "user-modified");
-                console.log(`[S02] Updated area to ${newArea}m² - triggering recalculations`);
                 
-                // CRITICAL FIX: Explicitly trigger Section 01 calculations
+                // Directly trigger Section 01 calculations
                 if (window.TEUI?.SectionModules?.sect01?.calculateAll) {
-                    console.log(`[S02] Explicitly triggering S01 calculations after area change`);
                     window.TEUI.SectionModules.sect01.calculateAll();
                 }
             }
@@ -981,7 +1150,7 @@ window.TEUI.SectionModules.sect02 = (function() {
             // Clear the stored original area value
             delete slider.dataset.originalArea;
         } catch (error) {
-            console.warn("Error handling area slider change:", error);
+            // Error handling without logs
         }
     }
     
@@ -1027,55 +1196,6 @@ window.TEUI.SectionModules.sect02 = (function() {
             }
         });
     }
-    
-    //==========================================================================
-    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
-    //==========================================================================
-    
-    // 1. Mode-aware value getter
-    function getRefFieldValue(fieldId) {
-        if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-            return window.TEUI.StateManager?.getReferenceValue?.(fieldId) || getFieldValue(fieldId);
-        } else {
-            return getFieldValue(fieldId);
-        }
-    }
-
-    // 2. Application value getter
-    function getAppFieldValue(fieldId) {
-        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
-    }
-
-    // 3. Dual-engine value setter
-    function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
-        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
-        
-        if (isReferenceMode) {
-            // Reference Mode - store with ref_ prefix using new V2 API
-            if (window.TEUI?.StateManager?.setReferenceValue) {
-                window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
-            }
-        } else {
-            // Application Mode - store in main state using new V2 API
-            if (window.TEUI?.StateManager?.setApplicationValue) {
-                window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
-            }
-        }
-        
-        // Update DOM with proper formatting using global formatNumber
-        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-            element.textContent = formattedValue;
-        }
-    }
-
-    /**
-     * Enhanced numeric value getter with proper V2 dual-state support
-     * @param {string} fieldId - The field ID to retrieve
-     * @param {number} defaultValue - Default value if field not found
-     * @returns {number} The numeric value
-     */
     
     /**
      * Set up event handlers for year sliders (h_12, h_13)
@@ -1124,6 +1244,11 @@ window.TEUI.SectionModules.sect02 = (function() {
         // Event handling and initialization - REQUIRED
         initializeEventHandlers: initializeEventHandlers,
         onSectionRendered: onSectionRendered,
+        
+        // Public API for calculations
+        calculateAll: calculateAll,
+        calculateReferenceModel: calculateReferenceModel,
+        calculateApplicationModel: calculateApplicationModel,
         
         // Public API for carbon target calculation
         calculateEmbodiedCarbonTarget: calculateEmbodiedCarbonTarget,

@@ -1288,7 +1288,7 @@ window.TEUI.SectionModules.sect15 = (function() {
             // h_136: TEUI (HP/Gas/Oil) (Reference)
             let ref_teui_h136 = area > 0 ? ref_teuTargetedElecHPGasOil / area : 0;
             setRefValueIfChanged('h_136', ref_teui_h136);
-
+            
             // Calculate all other Reference values using the same pattern...
             
             // d_137: Peak Heating Load (Reference)

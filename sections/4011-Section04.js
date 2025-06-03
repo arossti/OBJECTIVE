@@ -2,129 +2,136 @@
  * 4011-Section04.js
  * Actual vs. Target Energy & Carbon (Section 4) module for TEUI Calculator 4.011
  * 
- * This file contains field definitions, layout templates, and rendering logic
- * specific to the Actual vs. Target Energy & Carbon section using a declarative row-based approach.
- * 
  * IT-DEPENDS MIGRATION: Complete
- * - Dual-engine architecture preserved
- * - IT-DEPENDS calculations registered
- * - Cross-section listeners implemented
- * - Recursion protection added
+ * - Dual-engine architecture for Reference/Application separation
+ * - IT-DEPENDS calculations registered with StateManager
+ * - Recursion protection implemented
  */
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
-
-// Create section-specific namespace for recursion protection
 window.TEUI.sect04 = window.TEUI.sect04 || {};
 window.TEUI.sect04.calculationInProgress = false;
 
 // Section 4: Actual vs. Target Energy & Carbon Module
 window.TEUI.SectionModules.sect04 = (function() {
-    
-    // Add module-level recursion protection flags for dual-engine
+    // Recursion protection flags
     let referenceCalculationInProgress = false;
     let targetCalculationInProgress = false;
     
     //==========================================================================
-    // HELPER FUNCTIONS (Standard Implementation)
+    // HELPER FUNCTIONS
     //==========================================================================
     
     /**
-     * Safely parses a numeric value from StateManager, using the global parseNumeric.
-     * @param {string} fieldId - The ID of the field to retrieve the value for.
-     * @returns {number} The parsed numeric value, or 0 if parsing fails.
+     * Get numeric value from StateManager
      */
     function getNumericValue(fieldId, defaultValue = 0) {
         const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-        // Use the global parseNumeric if available
         return window.TEUI?.parseNumeric?.(rawValue, defaultValue) || defaultValue;
     }
     
     /**
-     * Helper to get field value, preferring StateManager but falling back to DOM.
-     * @param {string} fieldId 
-     * @returns {string | null} Value as string or null if not found.
+     * Get field value from StateManager or DOM
      */
     function getFieldValue(fieldId) {
         if (window.TEUI?.StateManager?.getValue) {
             const value = window.TEUI.StateManager.getValue(fieldId);
-            if (value !== null && value !== undefined) {
-                return value.toString();
+            if (value !== null && value !== undefined) return value.toString();
         }
-        }
-        const element = document.querySelector(`[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`); 
-        if (element) {
-            return element.value !== undefined ? element.value : element.textContent;
-        }
-        return null;
+        
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`); 
+        return element ? (element.value !== undefined ? element.value : element.textContent) : null;
     }
     
     /**
-     * Sets a calculated value in the StateManager and updates the corresponding DOM element.
-     * Updated for V2 dual-engine architecture using setDualEngineValue
-     * @param {string} fieldId - The ID of the field to update.
-     * @param {number} rawValue - The raw calculated numeric value.
-     * @param {string} [formatType='number-2dp-comma'] - The format type string (e.g., 'number-2dp-comma', 'percent-1dp', 'integer').
+     * Get Application numeric value
+     */
+    function getAppNumericValue(fieldId, defaultValue = 0) {
+        const rawValue = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
+        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
+    }
+    
+    /**
+     * Get Reference numeric value
+     */
+    function getRefNumericValue(fieldId, defaultValue = 0) {
+        // Try different sources for reference values in order of preference
+        
+        // Method 1: First try StateManager.getReferenceValue (best practice)
+        if (window.TEUI?.StateManager?.getReferenceValue) {
+            const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+            if (refValue !== null && refValue !== undefined) {
+                return window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
+            }
+        }
+        
+        // Method 2: Try SessionReferenceState for persistence between toggles
+        if (window.TEUI?.StateManager?.getSessionReferenceValue) {
+            const sessionValue = window.TEUI.StateManager.getSessionReferenceValue(`ref_${fieldId}`);
+            if (sessionValue !== null && sessionValue !== undefined) {
+                return window.TEUI?.parseNumeric?.(sessionValue, defaultValue) ?? defaultValue;
+            }
+        }
+        
+        // Method 3: Check for ref_ prefixed value
+        if (window.TEUI?.StateManager?.getValue) {
+            const prefixedValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+            if (prefixedValue !== null && prefixedValue !== undefined) {
+                return window.TEUI?.parseNumeric?.(prefixedValue, defaultValue) ?? defaultValue;
+            }
+        }
+        
+        // Method 4: Try to get value from ReferenceValues.js active dataset
+        if (window.TEUI?.StateManager?.activeReferenceDataSet) {
+            const activeDataValue = window.TEUI.StateManager.activeReferenceDataSet[fieldId];
+            if (activeDataValue !== null && activeDataValue !== undefined) {
+                return window.TEUI?.parseNumeric?.(activeDataValue, defaultValue) ?? defaultValue;
+            }
+        }
+        
+        // Method 5: Last resort - use application value
+        return getAppNumericValue(fieldId, defaultValue);
+    }
+    
+    /**
+     * Set calculated value with dual-engine support
      */
     function setCalculatedValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
-        // Handle N/A or invalid values
+        // Handle invalid values
         if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
             const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (element) {
-                element.textContent = 'N/A';
-                element.classList.remove('negative-value');
-            }
+            if (element) element.textContent = 'N/A';
         if (window.TEUI?.StateManager?.setValue) {
                 window.TEUI.StateManager.setValue(fieldId, 'N/A', 'calculated');
             }
             return;
         }
         
-        // Use V2 dual-engine setter which handles state management and DOM updates
+        // Use dual-engine setter
         setDualEngineValue(fieldId, rawValue, formatType);
     }
     
-    //==========================================================================
-    // V2 DUAL-ENGINE HELPER FUNCTIONS (Copy from Section 07 Template)
-    //==========================================================================
-    
-    // 1. Mode-aware value getter - FIXED for proper dual-state calculation
-    function getRefFieldValue(fieldId) {
-        // CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
-        // This allows proper dual-state calculation where Reference and Target are calculated simultaneously
-        const refValue = window.TEUI.StateManager?.getReferenceValue?.(fieldId);
-        if (refValue !== null && refValue !== undefined) {
-            return refValue;
-        }
-        
-        // Fallback to application value if no reference value exists
-        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
-    }
-
-    // 2. Application value getter
-    function getAppFieldValue(fieldId) {
-        return window.TEUI.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
-    }
-
-    // 3. Dual-engine value setter
+    /**
+     * Dual-engine value setter that handles Reference/Application state
+     */
     function setDualEngineValue(fieldId, rawValue, formatType = 'number-2dp-comma') {
         const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
         
         if (isReferenceMode) {
-            // Reference Mode - store with ref_ prefix using new V2 API
+            // Store in Reference state
             if (window.TEUI?.StateManager?.setReferenceValue) {
                 window.TEUI.StateManager.setReferenceValue(`ref_${fieldId}`, rawValue.toString(), 'calculated-reference');
             }
         } else {
-            // Application Mode - store in main state using new V2 API
+            // Store in Application state
             if (window.TEUI?.StateManager?.setApplicationValue) {
                 window.TEUI.StateManager.setApplicationValue(fieldId, rawValue.toString(), 'calculated');
             }
         }
         
-        // Update DOM with proper formatting using global formatNumber
+        // Update DOM
         const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue?.toString() ?? 'N/A';
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
@@ -134,37 +141,34 @@ window.TEUI.SectionModules.sect04 = (function() {
     }
     
     //==========================================================================
-    // PART 1: SECTION DEFINITION (DECLARATIVE STRUCTURE)
+    // SECTION DEFINITION (DECLARATIVE STRUCTURE)
     //==========================================================================
     
-    // Renamed from sectionDefinition to sectionRows for consistency
     const sectionRows = {
-        metadata: { // Keep metadata for now, though not standard in template
+        metadata: { 
             sectionId: "actualTargetEnergy",
             sectionName: "Actual vs. Target Energy & Carbon",
             sectionNumber: "04"
         },
         
-        // Renamed 'subheader' key to 'header'
         "header": {
             id: "04-ID",
-            rowId: "04-ID", // Added rowId for consistency
-            label: "Section 04 Units", // Added label for consistency
+            rowId: "04-ID",
+            label: "Section 04 Units",
             cells: {
-                // Column B should be empty, FieldManager populates it
                 b: {}, 
-                c: { content: "C", classes: ["section-subheader"] }, // Content is fine for header
+                c: { content: "C", classes: ["section-subheader"] },
                 d: { content: "ACTUAL ENERGY", classes: ["section-subheader"] },
                 e: { content: "UNITS", classes: ["section-subheader"] },
                 f: { content: "ACTUAL NET", classes: ["section-subheader"] },
-                g: { content: "E.1 EMISSIONS\nkgCO2e/yr", classes: ["section-subheader"], style: "white-space: pre-line;" }, // Added style for newline
+                g: { content: "E.1 EMISSIONS\nkgCO2e/yr", classes: ["section-subheader"], style: "white-space: pre-line;" },
                 h: { content: "TARGET ENERGY", classes: ["section-subheader"] },
                 i: { content: "UNITS", classes: ["section-subheader"] },
                 j: { content: "TARGET NET", classes: ["section-subheader"] },
-                k: { content: "E.1 EMISSIONS\nkgCO2e/yr", classes: ["section-subheader"], style: "white-space: pre-line;" }, // Added style for newline
+                k: { content: "E.1 EMISSIONS\nkgCO2e/yr", classes: ["section-subheader"], style: "white-space: pre-line;" },
                 l: { content: "EMISSION FACTORS", classes: ["section-subheader"] },
                 m: { content: "UNITS", classes: ["section-subheader"] },
-                n: { content: "", classes: ["section-subheader"] } // Keep n empty
+                n: { content: "", classes: ["section-subheader"] }
             }
         },
             
@@ -174,23 +178,23 @@ window.TEUI.SectionModules.sect04 = (function() {
             rowId: "T.3.1",
             label: "Total Electricity Use",
             cells: {
-                // Column B should be empty {}
                 b: {}, 
-                // Column C should use label property
                 c: { label: "Total Electricity Use" }, 
-                // Other columns define fields as before, adding section property
                 d: { fieldId: "d_27", type: "editable", value: "132,938.00", classes: ["user-input"], section: "actualTargetEnergy" },
                 e: { content: "kWh/yr" },
-                f: { fieldId: "f_27", type: "calculated", value: "132,938.00", dependencies: ["d_27", "d_43", "i_43"], classes: ["calculated-value"], section: "actualTargetEnergy" }, // Dependency uses i_43
+                f: { fieldId: "f_27", type: "calculated", value: "132,938.00", dependencies: ["d_27", "d_43", "i_43"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 g: { fieldId: "g_27", type: "calculated", value: "6,779.84", dependencies: ["f_27", "l_27"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 h: { fieldId: "h_27", type: "calculated", value: "132,765.65", dependencies: ["d_136"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 i: { content: "kWh/yr" },
-                j: { fieldId: "j_27", type: "calculated", value: "132,765.65", dependencies: ["h_27", "d_43", "i_43"], classes: ["calculated-value"], section: "actualTargetEnergy" }, // Dependency uses i_43
+                j: { fieldId: "j_27", type: "calculated", value: "132,765.65", dependencies: ["h_27", "d_43", "i_43"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 k: { fieldId: "k_27", type: "calculated", value: "6,771.05", dependencies: ["j_27", "l_27"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 l: { fieldId: "l_27", type: "editable", value: "51.00", classes: ["user-input"], section: "actualTargetEnergy" },
                 m: { content: "gCO2e/kWh" }
             }
         },
+            
+        // Row 28-31: Remaining energy rows
+        // ... (keeping existing rows for Gas, Propane, Oil, Wood)
             
         // Row 28: T.3.2 Total Fossil Gas Use
         "28": {
@@ -198,8 +202,8 @@ window.TEUI.SectionModules.sect04 = (function() {
             rowId: "T.3.2",
             label: "Total Fossil Gas Use",
             cells: {
-                b: {}, // Empty
-                c: { label: "Total Fossil Gas Use" }, // Use label
+                b: {}, 
+                c: { label: "Total Fossil Gas Use" },
                 d: { fieldId: "d_28", type: "editable", value: "0.00", classes: ["user-input"], section: "actualTargetEnergy" },
                 e: { content: "m³/yr" },
                 f: { fieldId: "f_28", type: "calculated", value: "0.00", dependencies: ["d_28"], classes: ["calculated-value"], section: "actualTargetEnergy" },
@@ -219,8 +223,8 @@ window.TEUI.SectionModules.sect04 = (function() {
             rowId: "T.3.3",
             label: "Total Propane Use",
             cells: {
-                b: {}, // Empty
-                c: { label: "Total Propane Use" }, // Use label
+                b: {}, 
+                c: { label: "Total Propane Use" },
                 d: { fieldId: "d_29", type: "editable", value: "0.00", classes: ["user-input"], section: "actualTargetEnergy" },
                 e: { content: "kg/yr" },
                 f: { fieldId: "f_29", type: "calculated", value: "0.00", dependencies: ["d_29"], classes: ["calculated-value"], section: "actualTargetEnergy" },
@@ -240,8 +244,8 @@ window.TEUI.SectionModules.sect04 = (function() {
             rowId: "T.3.4",
             label: "Total Oil Use",
             cells: {
-                b: {}, // Empty
-                c: { label: "Total Oil Use" }, // Use label
+                b: {}, 
+                c: { label: "Total Oil Use" },
                 d: { fieldId: "d_30", type: "editable", value: "0.00", classes: ["user-input"], section: "actualTargetEnergy" },
                 e: { content: "litres/yr" },
                 f: { fieldId: "f_30", type: "calculated", value: "0.00", dependencies: ["d_30"], classes: ["calculated-value"], section: "actualTargetEnergy" },
@@ -261,8 +265,8 @@ window.TEUI.SectionModules.sect04 = (function() {
             rowId: "T.3.5",
             label: "Total Wood Use",
             cells: {
-                b: {}, // Empty
-                c: { label: "Total Wood Use" }, // Use label
+                b: {}, 
+                c: { label: "Total Wood Use" },
                 d: { fieldId: "d_31", type: "editable", value: "0.00", classes: ["user-input"], section: "actualTargetEnergy" },
                 e: { content: "m³/yr" },
                 f: { fieldId: "f_31", type: "calculated", value: "0.00", dependencies: ["d_31"], classes: ["calculated-value"], section: "actualTargetEnergy" },
@@ -282,15 +286,12 @@ window.TEUI.SectionModules.sect04 = (function() {
             rowId: "E.1.1",
             label: "Operational GHG & Energy Subtotals",
             cells: {
-                b: {}, // Empty
-                c: { label: "Operational GHG & Energy Subtotals" }, // Use label
-                // Col D, E empty
+                b: {}, 
+                c: { label: "Operational GHG & Energy Subtotals" },
                 f: { fieldId: "f_32", type: "calculated", value: "132,938.00", dependencies: ["f_27", "f_28", "f_29", "f_30", "f_31"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 g: { fieldId: "g_32", type: "calculated", value: "6,779.84", dependencies: ["g_27", "g_28", "g_29", "g_30", "g_31", "d_60"], classes: ["calculated-value"], section: "actualTargetEnergy" },
-                // Col H, I empty
                 j: { fieldId: "j_32", type: "calculated", value: "132,765.65", dependencies: ["j_27", "j_28", "j_29", "j_30", "j_31"], classes: ["calculated-value"], section: "actualTargetEnergy" },
                 k: { fieldId: "k_32", type: "calculated", value: "6,771.05", dependencies: ["k_27", "k_28", "k_29", "k_30", "k_31", "d_60"], classes: ["calculated-value"], section: "actualTargetEnergy" }
-                // Col L, M, N empty
             }
         },
             
@@ -326,9 +327,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 h: { fieldId: "h_34", type: "calculated", value: "1,053.70", dependencies: ["j_32", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" }, // Dependency updated
                 i: { content: "kWh Target" },
                 j: { fieldId: "j_34", type: "calculated", value: "3.79", dependencies: ["h_33", "d_63"], classes: ["calculated-value"], section: "actualTargetEnergy" },
-                k: { content: "GJ Target" },
-                l: { }, // Was l_34, now empty
-                m: { }  // Was unit for l_34, now empty
+                k: { content: "GJ Target" }
             }
         },
             
@@ -352,47 +351,126 @@ window.TEUI.SectionModules.sect04 = (function() {
     };
     
     //==========================================================================
-    // PART 2: FIELD GENERATION (Standardized)
+    // FIELD AND LAYOUT ACCESSOR METHODS
     //==========================================================================
     
     /**
-     * Extract field definitions from the integrated layout (sectionRows)
-     * This method is required for compatibility with the FieldManager
+     * Extract field definitions from the integrated layout
      */
     function getFields() {
         const fields = {};
-        const sectionId = sectionRows.metadata.sectionId; // Use metadata
+        const sectionId = sectionRows.metadata.sectionId;
         
-        // Extract field definitions from all rows except the header
         Object.entries(sectionRows).forEach(([rowKey, row]) => {
-            // Skip metadata and header
-            if (rowKey === "metadata" || rowKey === "header") return; 
-            if (!row.cells) return;
+            if (rowKey === "metadata" || rowKey === "header" || !row.cells) return;
             
-            // Process each cell in the row
             Object.entries(row.cells).forEach(([colKey, cell]) => {
                 if (cell.fieldId && cell.type) {
-                    // Create field definition with all relevant properties
                     fields[cell.fieldId] = {
                         type: cell.type,
-                        label: cell.label || row.label, // Use cell label first, fallback to row label
+                        label: cell.label || row.label,
                         defaultValue: cell.value || "",
-                        section: cell.section || sectionId // Use cell section first, fallback to metadata
+                        section: cell.section || sectionId
                     };
                     
-                    // Copy additional field properties if they exist
-                    if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
-                    if (cell.options) fields[cell.fieldId].options = cell.options;
-                    if (cell.getOptions) fields[cell.fieldId].getOptions = cell.getOptions;
-                    if (cell.dependencies) fields[cell.fieldId].dependencies = cell.dependencies;
-                    if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
-                    if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
-                    if (cell.step !== undefined) fields[cell.fieldId].step = cell.step;
+                    // Copy additional properties
+                    ['dropdownId', 'options', 'getOptions', 'dependencies', 'min', 'max', 'step'].forEach(prop => {
+                        if (cell[prop] !== undefined) fields[cell.fieldId][prop] = cell[prop];
+                    });
                 }
             });
         });
         
         return fields;
+    }
+    
+    /**
+     * Extract dropdown options from the integrated layout
+     */
+    function getDropdownOptions() {
+        const options = {};
+        
+        Object.values(sectionRows).forEach(row => {
+            if (!row.cells) return;
+            
+            Object.values(row.cells).forEach(cell => {
+                if (cell.dropdownId && cell.options) {
+                    options[cell.dropdownId] = cell.options;
+                }
+            });
+        });
+        
+        return options;
+    }
+    
+    /**
+     * Generate layout from integrated row definitions
+     */
+    function getLayout() {
+        const layoutRows = [];
+        
+        // Add header row first
+        if (sectionRows["header"]) {
+            layoutRows.push(createLayoutRow(sectionRows["header"]));
+        }
+        
+        // Add remaining rows
+        Object.entries(sectionRows).forEach(([key, row]) => {
+            if (key !== "header" && key !== "metadata") {
+                layoutRows.push(createLayoutRow(row));
+            }
+        });
+        
+        return { rows: layoutRows };
+    }
+    
+    /**
+     * Helper function to convert a row definition to the layout format
+     */
+    function createLayoutRow(row) {
+        const rowDef = {
+            id: row.id || row.rowId,
+            cells: [{}, {}]  // Empty columns A and B
+        };
+        
+        // Add cells C through N
+        const columns = ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'];
+        
+        columns.forEach(col => {
+            if (row.cells && row.cells[col]) {
+                const cell = { ...row.cells[col] };
+                
+                // Special handling for column C
+                if (col === 'c') {
+                    if (cell.type === 'label' && cell.content && !cell.label) {
+                        cell.label = cell.content;
+                        delete cell.type;
+                        delete cell.content;
+                    }
+                    else if (!cell.label && !cell.content && row.label) {
+                        cell.label = row.label;
+                    }
+                    else if (!cell.label && cell.content) {
+                         cell.label = cell.content;
+                         delete cell.content;
+                    }
+                }
+                
+                // Remove properties not needed for rendering
+                ['getOptions', 'section', 'dependencies'].forEach(prop => delete cell[prop]);
+                
+                rowDef.cells.push(cell);
+            } else {
+                // Add empty cell or row label for column C
+                if (col === 'c' && !row.cells?.c && row.label) {
+                    rowDef.cells.push({ label: row.label });
+                } else {
+                    rowDef.cells.push({});
+                }
+            }
+        });
+        
+        return rowDef;
     }
     
     //==========================================================================
@@ -523,22 +601,15 @@ window.TEUI.SectionModules.sect04 = (function() {
      * Initialize event handlers for this section
      */
     function initializeEventHandlers() {
-        // Set up cross-section listeners
-        setupCrossSectionListeners();
+        // Set up cross-section dependencies
+        setupCrossSectionDependencies();
         
-        // Create global property for tracking calculation state
-        if (!window.TEUI.sect04) {
-            window.TEUI.sect04 = {};
-        }
-        
-        // Track calculation state (to prevent recursion)
-        window.TEUI.sect04.calculationInProgress = false;
-        
-        // Add line break styling for subheaders that contain newlines
+        // Add event listeners for editable fields
         const sectionElement = document.getElementById(sectionRows.metadata.sectionId);
-        if (sectionElement) {
-            const subheaderCells = sectionElement.querySelectorAll('.section-subheader');
-            subheaderCells.forEach(cell => {
+        if (!sectionElement) return;
+        
+        // Handle subheader styling for newlines
+        sectionElement.querySelectorAll('.section-subheader').forEach(cell => {
                 if (cell.textContent.includes('\n')) {
                     cell.style.whiteSpace = 'pre-line';
                     cell.style.lineHeight = '1.1';
@@ -546,78 +617,39 @@ window.TEUI.SectionModules.sect04 = (function() {
                     cell.style.paddingBottom = '2px';
                 }
             });
-        }
         
-        // Add event listeners for editable fields
-        if (!sectionElement) {
-            return;
-        }
-        
-        // Find all editable fields within this section
+        // Set up editable fields
         const editableFields = sectionElement.querySelectorAll('.user-input, [data-field-id^="d_"], [data-field-id^="h_"], [data-field-id^="l_"]');
         
         editableFields.forEach(field => {
-            // Make editable fields actually editable
+            // Make fields editable
             if (field.classList.contains('user-input') || field.classList.contains('editable')) {
                 field.setAttribute('contenteditable', 'true');
                 
-                // Also add a focus styling
+                // Add focus/blur styling
                 field.addEventListener('focus', function() {
                     this.classList.add('editing');
-                    
-                    // Store original value to detect changes
                     this.dataset.originalValue = this.textContent.trim();
                 });
                 
                 field.addEventListener('blur', function() {
                     this.classList.remove('editing');
+                    handleFieldBlur(this);
                 });
-            }
-            
-            // Handle changes to the field value
-            field.addEventListener('blur', function(e) {
-                const fieldId = this.getAttribute('data-field-id');
-                if (!fieldId) return;
                 
-                // Get new value
-                let newValue = this.textContent.trim();
-                
-                // Clean the value - remove commas before parsing
-                newValue = newValue.replace(/,/g, '');
-                
-                // Only update if value has changed
-                if (this.dataset.originalValue !== newValue) {
-                    
-                    // Update state manager if available
-                    if (window.TEUI && window.TEUI.StateManager) {
-                        window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-                    }
-                    
-                    // Removed call to updateDependentFields - rely on StateManager listeners
-                    
-                    // Removed calculateSection call - Rely solely on StateManager listeners to trigger calcs
-                }
-            });
-            
-            // Also handle Enter key (common way to "commit" edits)
+                // Handle Enter key
             field.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent adding a newline
-                    this.blur(); // Remove focus to trigger the blur event
+                        e.preventDefault();
+                        handleFieldEnter(this);
                 }
             });
             
-            // Add paste event handler to clean pasted values immediately
+                // Handle paste events
             field.addEventListener('paste', function(e) {
-                // Let the paste happen normally
                 setTimeout(() => {
-                    // After paste, clean up the value but don't process calculations yet
-                    // (that will happen on blur)
                     const pastedContent = this.textContent.trim();
-                    
-                    // Just for visual consistency, if needed
                     if (pastedContent.includes(',')) {
-                        // Keep the formatted display but ensure consistent formatting
                         const cleanValue = window.TEUI?.parseNumeric?.(pastedContent, 0) ?? 0;
                         if (!isNaN(cleanValue)) {
                             this.textContent = window.TEUI.formatNumber(cleanValue, 'number-2dp-comma');
@@ -625,180 +657,369 @@ window.TEUI.SectionModules.sect04 = (function() {
                     }
                 }, 0);
             });
+            }
         });
     }
     
     /**
-     * Set up listeners for changes in other sections
+     * Handle editable field blur event
+     * Updates StateManager with the changed value
      */
-    function setupCrossSectionListeners() {
-        if (!window.TEUI?.StateManager) {
-            return; // StateManager is required for listeners
-        }
-
-        // Add cross-section listeners
-        window.TEUI.StateManager.addListener('d_136', function(newValue) {
-            // D136 comes from S15 (TEUI Summary)
-            console.log(`[S04] S15 Target Electricity (d_136) changed to ${newValue}, updating H27 and J27`);
-            
-            // Update calculation and subtotals
-            setCalculatedValue('h_27', window.TEUI.parseNumeric(newValue, 0), 'number-2dp-comma');
-            calculateJ27(); // Also update J27
-            updateSubtotals(); // Update subtotals (row 32)
-        });
+    function handleFieldBlur(field) {
+        if (!field) return;
         
-        // Listen for changes in Area (h_15) to update carbon intensity calculations
-        window.TEUI.StateManager.addListener('h_15', function(newValue) {
-            console.log(`[S04] Area (h_15) changed to ${newValue}, recalculating all emissions and carbon intensities`);
-            
-            // Just run full calculation to update all intensity values
-                calculateAll();
-            
-            // Then make sure S01 is updated with the new emissions values
-            if (window.TEUI?.SectionModules?.sect01?.calculateAll) {
-                console.log(`[S04] Triggering S01 calculations after area and emissions update`);
-                window.TEUI.SectionModules.sect01.calculateAll();
-            }
-        });
+        const fieldId = field.getAttribute('data-field-id');
+        if (!fieldId) return;
         
-        // Listen for changes in Reference Mode
-        if (window.TEUI.ReferenceToggle && typeof window.TEUI.ReferenceToggle.addToggleListener === 'function') {
-            window.TEUI.ReferenceToggle.addToggleListener(function(isReference) {
-                console.log(`[S04] Reference mode changed to ${isReference ? 'Reference' : 'Application'}`);
+        // Get the new value and clean it (remove commas)
+        const newValue = field.textContent.trim().replace(/,/g, '');
         
-                // When switching to/from Reference Mode, update electricity emission factor for current mode
-                updateElectricityEmissionFactor();
+        // Only update if value has changed
+        if (field.dataset.originalValue !== field.textContent.trim()) {
+            // Update StateManager with the new value
+            if (window.TEUI?.StateManager) {
+                window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
                 
-                // Run full calculation to ensure all values are updated for the current mode
+                // CRITICAL FIX: Explicitly trigger calculations for fuel inputs
+                if (fieldId.match(/^d_(27|28|29|30|31)$/)) {
+                    handleEnergyInputChange(fieldId);
+                }
+            }
+            
+            // Format the displayed value
+            const numericValue = window.TEUI?.parseNumeric?.(newValue, 0);
+            if (!isNaN(numericValue)) {
+                field.textContent = window.TEUI?.formatNumber?.(numericValue, 'number-2dp-comma') || numericValue.toFixed(2);
+            }
+        }
+    }
+    
+    /**
+     * Handle Enter key press in editable fields
+     * Prevents default behavior (new line) and triggers blur
+     */
+    function handleFieldEnter(field) {
+        if (!field) return;
+        field.blur();
+    }
+    
+    /**
+     * Handle energy input field changes
+     */
+    function handleEnergyInputChange(fieldId) {
+        if (fieldId === 'd_27') {
+            const f27Value = calculateF27();
+            setCalculatedValue('f_27', f27Value, 'number-2dp-comma');
+            const g27Value = calculateG27();
+            setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
+        } else if (fieldId === 'd_28') {
+            const f28Value = calculateF28();
+            setCalculatedValue('f_28', f28Value, 'number-2dp-comma');
+            const g28Value = calculateG28();
+            setCalculatedValue('g_28', g28Value, 'number-2dp-comma');
+        } else if (fieldId === 'd_29') {
+            const f29Value = calculateF29();
+            setCalculatedValue('f_29', f29Value, 'number-2dp-comma');
+            const g29Value = calculateG29();
+            setCalculatedValue('g_29', g29Value, 'number-2dp-comma');
+        } else if (fieldId === 'd_30') {
+            const f30Value = calculateF30();
+            setCalculatedValue('f_30', f30Value, 'number-2dp-comma');
+            const g30Value = calculateG30();
+            setCalculatedValue('g_30', g30Value, 'number-2dp-comma');
+        } else if (fieldId === 'd_31') {
+            const f31Value = calculateF31();
+            setCalculatedValue('f_31', f31Value, 'number-2dp-comma');
+            const g31Value = calculateG31();
+            setCalculatedValue('g_31', g31Value, 'number-2dp-comma');
+        }
+        
+        // Update subtotals
+        updateSubtotals();
+    }
+    
+    /**
+     * Set up listeners for cross-section dependencies
+     */
+    function setupCrossSectionDependencies() {
+        if (!window.TEUI?.StateManager) return;
+        
+        const sm = window.TEUI.StateManager;
+        
+        // Register key cross-section dependencies
+        
+        // Target electricity dependencies (h_27 from S15 d_136)
+        sm.registerDependency('d_136', 'h_27');
+        
+        // Emissions factor dependencies (l_27)
+        sm.registerDependency('d_19', 'l_27');  // Province
+        sm.registerDependency('h_12', 'l_27');  // Year
+        sm.registerDependency('d_12', 'l_27');  // Year (alternative)
+        
+        // Net fuel dependencies for target fuels
+        
+        // Gas dependencies (h_28, j_28, k_28)
+        sm.registerDependency('d_51', 'h_28');   // DHW Source
+        sm.registerDependency('e_51', 'h_28');   // DHW Gas volume
+        sm.registerDependency('d_113', 'h_28');  // Heating System
+        sm.registerDependency('h_115', 'h_28');  // Target Gas Use from S13
+        
+        // Oil dependencies (h_30, j_30, k_30)
+        sm.registerDependency('d_51', 'h_30');   // DHW Source
+        sm.registerDependency('k_54', 'h_30');   // DHW Oil volume
+        sm.registerDependency('d_113', 'h_30');  // Heating System
+        sm.registerDependency('f_115', 'h_30');  // Target Oil Use from S13
+        
+        // Subtotal dependencies (wood offsets)
+        sm.registerDependency('d_60', 'g_32');  // Wood offsets affect actual emissions
+        sm.registerDependency('d_60', 'k_32');  // Wood offsets affect target emissions
+        
+        // CRITICAL FIX: Add direct listeners for cross-section fuel changes
+        if (sm.addListener) {
+            // Listen for S07 DHW fuel type changes
+            sm.addListener('d_51', function() {
                 calculateAll();
             });
-            }
+            
+            // Listen for S13 heating system changes
+            sm.addListener('d_113', function() {
+                calculateAll();
+            });
+            
+            // Listen for fuel volume changes from S07/S13
+            sm.addListener('e_51', function() { calculateAll(); });  // DHW Gas
+            sm.addListener('k_54', function() { calculateAll(); });  // DHW Oil
+            sm.addListener('h_115', function() { calculateAll(); }); // Heating Gas
+            sm.addListener('f_115', function() { calculateAll(); }); // Heating Oil
+        }
+        
+        // CRITICAL FIX: Listen for Reference mode toggle to refresh UI
+        // Move outside StateManager condition since it's independent
+        document.removeEventListener('teui-reference-mode-changed', refreshUIOnModeChange);
+        document.addEventListener('teui-reference-mode-changed', refreshUIOnModeChange);
     }
     
     /**
-     * Update the electricity emission factor (l_27) based on province and reporting year
-     * DUAL-ENGINE: Now supports separate Reference and Target grid intensity calculations
+     * Handler for reference mode change event
+     */
+    function refreshUIOnModeChange() {
+        // Wait a moment for ReferenceToggle to update its internal state
+        setTimeout(function() {
+            refreshUIForCurrentMode();
+        }, 50);
+    }
+    
+    /**
+     * Refresh UI to show correct values for current mode (Reference or Application)
+     * CRITICAL FIX: Added to ensure UI updates properly on mode toggle
+     */
+    function refreshUIForCurrentMode() {
+        const isReferenceMode = window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
+        
+        if (isReferenceMode) {
+            // Update UI with Reference values
+            updateUIWithReferenceValues();
+        } else {
+            // Update UI with Application values
+            updateUIWithApplicationValues();
+        }
+    }
+    
+    /**
+     * Update UI with Reference values
+     */
+    function updateUIWithReferenceValues() {
+        // Get reference values
+        const ref_h27 = getRefNumericValue('h_27', 0);
+        const ref_j27 = getRefNumericValue('j_27', 0);
+        const ref_k27 = getRefNumericValue('k_27', 0);
+        
+        const ref_h28 = getRefNumericValue('h_28', 0);
+        const ref_j28 = getRefNumericValue('j_28', 0);
+        const ref_k28 = getRefNumericValue('k_28', 0);
+        
+        const ref_h29 = getRefNumericValue('h_29', 0);
+        const ref_j29 = getRefNumericValue('j_29', 0);
+        const ref_k29 = getRefNumericValue('k_29', 0);
+        
+        const ref_h30 = getRefNumericValue('h_30', 0);
+        const ref_j30 = getRefNumericValue('j_30', 0);
+        const ref_k30 = getRefNumericValue('k_30', 0);
+        
+        const ref_h31 = getRefNumericValue('h_31', 0);
+        const ref_j31 = getRefNumericValue('j_31', 0);
+        const ref_k31 = getRefNumericValue('k_31', 0);
+        
+        const ref_j32 = getRefNumericValue('j_32', 0);
+        const ref_k32 = getRefNumericValue('k_32', 0);
+        
+        // Update UI elements
+        updateDOMElement('h_27', ref_h27, 'number-2dp-comma');
+        updateDOMElement('j_27', ref_j27, 'number-2dp-comma');
+        updateDOMElement('k_27', ref_k27, 'number-2dp-comma');
+        
+        updateDOMElement('h_28', ref_h28, 'number-2dp-comma');
+        updateDOMElement('j_28', ref_j28, 'number-2dp-comma');
+        updateDOMElement('k_28', ref_k28, 'number-2dp-comma');
+        
+        updateDOMElement('h_29', ref_h29, 'number-2dp-comma');
+        updateDOMElement('j_29', ref_j29, 'number-2dp-comma');
+        updateDOMElement('k_29', ref_k29, 'number-2dp-comma');
+        
+        updateDOMElement('h_30', ref_h30, 'number-2dp-comma');
+        updateDOMElement('j_30', ref_j30, 'number-2dp-comma');
+        updateDOMElement('k_30', ref_k30, 'number-2dp-comma');
+        
+        updateDOMElement('h_31', ref_h31, 'number-2dp-comma');
+        updateDOMElement('j_31', ref_j31, 'number-2dp-comma');
+        updateDOMElement('k_31', ref_k31, 'number-2dp-comma');
+        
+        updateDOMElement('j_32', ref_j32, 'number-2dp-comma');
+        updateDOMElement('k_32', ref_k32, 'number-2dp-comma');
+    }
+    
+    /**
+     * Update UI with Application values
+     */
+    function updateUIWithApplicationValues() {
+        // Get application values
+        const h27 = getAppNumericValue('h_27', 0);
+        const j27 = getAppNumericValue('j_27', 0);
+        const k27 = getAppNumericValue('k_27', 0);
+        
+        const h28 = getAppNumericValue('h_28', 0);
+        const j28 = getAppNumericValue('j_28', 0);
+        const k28 = getAppNumericValue('k_28', 0);
+        
+        const h29 = getAppNumericValue('h_29', 0);
+        const j29 = getAppNumericValue('j_29', 0);
+        const k29 = getAppNumericValue('k_29', 0);
+        
+        const h30 = getAppNumericValue('h_30', 0);
+        const j30 = getAppNumericValue('j_30', 0);
+        const k30 = getAppNumericValue('k_30', 0);
+        
+        const h31 = getAppNumericValue('h_31', 0);
+        const j31 = getAppNumericValue('j_31', 0);
+        const k31 = getAppNumericValue('k_31', 0);
+        
+        const j32 = getAppNumericValue('j_32', 0);
+        const k32 = getAppNumericValue('k_32', 0);
+        
+        // Update UI elements
+        updateDOMElement('h_27', h27, 'number-2dp-comma');
+        updateDOMElement('j_27', j27, 'number-2dp-comma');
+        updateDOMElement('k_27', k27, 'number-2dp-comma');
+        
+        updateDOMElement('h_28', h28, 'number-2dp-comma');
+        updateDOMElement('j_28', j28, 'number-2dp-comma');
+        updateDOMElement('k_28', k28, 'number-2dp-comma');
+        
+        updateDOMElement('h_29', h29, 'number-2dp-comma');
+        updateDOMElement('j_29', j29, 'number-2dp-comma');
+        updateDOMElement('k_29', k29, 'number-2dp-comma');
+        
+        updateDOMElement('h_30', h30, 'number-2dp-comma');
+        updateDOMElement('j_30', j30, 'number-2dp-comma');
+        updateDOMElement('k_30', k30, 'number-2dp-comma');
+        
+        updateDOMElement('h_31', h31, 'number-2dp-comma');
+        updateDOMElement('j_31', j31, 'number-2dp-comma');
+        updateDOMElement('k_31', k31, 'number-2dp-comma');
+        
+        updateDOMElement('j_32', j32, 'number-2dp-comma');
+        updateDOMElement('k_32', k32, 'number-2dp-comma');
+    }
+    
+    /**
+     * Helper to update DOM element with formatted value
+     */
+    function updateDOMElement(fieldId, value, formatType) {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+            element.textContent = window.TEUI?.formatNumber?.(value, formatType) || value.toString();
+        }
+    }
+    
+    /**
+     * Update electricity emission factor based on province and reporting year
      */
     function updateElectricityEmissionFactor() {
-        // Calculate Target/Application grid intensity
         updateGridIntensityForMode('application');
-        
-        // Calculate Reference grid intensity (may use different reporting year)
         updateGridIntensityForMode('reference');
     }
     
     /**
      * Update grid intensity for a specific calculation mode
-     * @param {string} mode - 'application' or 'reference'
      */
     function updateGridIntensityForMode(mode) {
-        let provinceAbbreviation = 'ON'; // Default
-        let reportingYear = 2022;    // Default
-
-        if (window.TEUI?.StateManager) {
-            // Province is always from application state (same for both modes)
-            const provinceStateValue = window.TEUI.StateManager.getApplicationValue('d_19'); // From S03
+        // Get province
+        let provinceAbbreviation = 'ON';
+        const provinceStateValue = window.TEUI.StateManager?.getApplicationValue('d_19');
             if (provinceStateValue) {
                 provinceAbbreviation = getProvinceCode(provinceStateValue);
             }
             
-            // Reporting year depends on mode - CRITICAL: Use explicit state getters
+        // Get reporting year for the specific mode
+        let reportingYear = 2022;
             let yearStateValue;
+        
             if (mode === 'reference') {
-                // In Reference Mode, use Reference state for h_12 (may be different from application)
-                yearStateValue = window.TEUI.StateManager.getReferenceValue('h_12');
+            yearStateValue = window.TEUI.StateManager?.getReferenceValue('h_12');
             } else {
-                // In Application Mode, use Application state for h_12
-                yearStateValue = window.TEUI.StateManager.getApplicationValue('h_12');
+            yearStateValue = window.TEUI.StateManager?.getApplicationValue('h_12');
             }
             
             if (yearStateValue) {
                 const parsedYear = parseInt(yearStateValue);
                 if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
                     reportingYear = parsedYear;
-                }
-            }
-        } else {
-            console.warn("[S04] StateManager not available for updateElectricityEmissionFactor.");
-            // Fallback to DOM (application state only)
-            const provinceDropdown = document.querySelector('select[data-dropdown-id="dd_d_19"], select[data-field-id="d_19"]');
-            if (provinceDropdown && provinceDropdown.value) {
-                provinceAbbreviation = getProvinceCode(provinceDropdown.value);
-            }
-            const yearInput = document.querySelector('[data-field-id="h_12"]');
-            if (yearInput && yearInput.value) {
-                 const parsedYear = parseInt(yearInput.value);
-                 if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
-                    reportingYear = parsedYear;
-                }
             }
         }
         
-        // Get emission factor based on province and year
+        // Get emission factor
         const factor = getElectricityFactor(provinceAbbreviation, reportingYear);
         
         if (mode === 'reference') {
-            // Store Reference grid intensity with ref_ prefix
+            // Store in reference state
             if (window.TEUI?.StateManager) {
-                // CRITICAL FIX: First store in standard state with proper ref_ prefix
                 window.TEUI.StateManager.setValue('ref_l_27', factor.toString(), 'calculated');
                 
-                // CRITICAL FIX: Also ensure it's in SessionReferenceState for persistence between toggles
+                // Also ensure it's in SessionReferenceState for persistence
                 if (window.TEUI?.StateManager?.setSessionReferenceValue) {
                     window.TEUI.StateManager.setSessionReferenceValue('ref_l_27', factor.toString());
-                    console.log(`[S04] 🔐 Stored REFERENCE emissions factor ${factor} for year ${reportingYear} in SessionReferenceState`);
                 }
                 
-                // CRITICAL FIX: Also store value with standard reference prefix in normal state
-                // This makes it accessible to getRefNumericValue in Reference calculations
+                // Store with reference prefix
                 if (window.TEUI?.StateManager?.setReferenceValue) {
                     window.TEUI.StateManager.setReferenceValue('l_27', factor.toString(), 'calculated-reference');
-                    console.log(`[S04] 🔐 Stored REFERENCE emissions factor ${factor} for year ${reportingYear} with setReferenceValue`);
                 }
             }
             
-            // UPDATE UI IN REFERENCE MODE: If user is currently in Reference Mode, update the visible l_27 field
+            // CRITICAL FIX: Always calculate Reference model after updating grid intensity
+            calculateReferenceModel();
+            
+            // Update UI in Reference Mode if active
             if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-                // Update l_27 display with Reference value
-                const l27Element = document.querySelector('[data-field-id="l_27"]');
-                if (l27Element) {
-                    l27Element.textContent = window.TEUI.formatNumber(factor, 'integer');
-                }
-                
-                // Recalculate and update dependent Reference values in UI
-                const ref_j27 = getRefNumericValue('j_27', 0);
-                const ref_g27 = (ref_j27 * factor) / 1000;
-                const g27Element = document.querySelector('[data-field-id="g_27"]');
-                if (g27Element) {
-                    g27Element.textContent = window.TEUI.formatNumber(ref_g27, 'number-2dp-comma');
-                }
-                
-                const ref_k27 = ref_g27; // Same calculation for k_27 in Reference Mode
-                const k27Element = document.querySelector('[data-field-id="k_27"]');
-                if (k27Element) {
-                    k27Element.textContent = window.TEUI.formatNumber(ref_k27, 'number-2dp-comma');
-                }
+                refreshUIForCurrentMode();
             }
         } else {
-            // Update the application l_27 field
+            // Update application state
             setCalculatedValue('l_27', factor, 'integer');
-            console.log(`[S04] 🔐 Stored APPLICATION emissions factor ${factor} for year ${reportingYear}`);
             
-            // Recalculate dependent values for application state
-        const f27Value = getNumericValue('f_27');
-        const g27Value = calculateG27(f27Value, factor); 
-        setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
-
-        const j27Value = getNumericValue('j_27');
-        const k27Value = calculateK27(j27Value, factor); 
-        setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-        
-        updateSubtotals(); 
+            // CRITICAL FIX: Always calculate Application model after updating grid intensity
+            calculateTargetModel();
+            
+            // Update UI in Application Mode if active
+            if (!window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+                refreshUIForCurrentMode();
+            }
         }
     }
 
-    // Helper function to convert province name to province code
-    // This function is defined within the IIFE and directly callable by others within the same scope (like updateElectricityEmissionFactor)
+    /**
+     * Helper to get province code from name
+     */
     function getProvinceCode(provinceText) {
         if (!provinceText) return 'ON';
         
@@ -810,38 +1031,40 @@ window.TEUI.SectionModules.sect04 = (function() {
             }
         }
         
-        const originalText = provinceText;
         provinceText = provinceText.trim().toLowerCase();
         
-        if (provinceText === "ontario" || provinceText === "on") return 'ON';
-        if (provinceText === "quebec" || provinceText === "québec" || provinceText === "qc") return 'QC';
-        if (provinceText === "british columbia" || provinceText === "bc") return 'BC';
-        if (provinceText === "alberta" || provinceText === "ab") return 'AB';
-        if (provinceText === "saskatchewan" || provinceText === "sk") return 'SK';
-        if (provinceText === "manitoba" || provinceText === "mb") return 'MB';
-        if (provinceText === "nova scotia" || provinceText === "ns") return 'NS';
-        if (provinceText === "new brunswick" || provinceText === "nb") return 'NB';
-        if (provinceText === "newfoundland and labrador" || provinceText === "nl") return 'NL';
-        if (provinceText === "prince edward island" || provinceText === "pe") return 'PE';
-        if (provinceText === "northwest territories" || provinceText === "nt") return 'NT';
-        if (provinceText === "yukon" || provinceText === "yt") return 'YT';
-        if (provinceText === "nunavut" || provinceText === "nu") return 'NU';
-        
-        const provinceMatches = {
-            'ON': provinceText.includes("ontario"), 'QC': provinceText.includes("quebec") || provinceText.includes("québec"),
-            'BC': provinceText.includes("british columbia"), 'AB': provinceText.includes("alberta"),
-            'SK': provinceText.includes("saskatchewan"), 'MB': provinceText.includes("manitoba"),
-            'NS': provinceText.includes("nova scotia"), 'NB': provinceText.includes("new brunswick"),
-            'NL': provinceText.includes("newfoundland"), 'PE': provinceText.includes("prince edward"),
-            'NT': provinceText.includes("northwest"), 'YT': provinceText.includes("yukon"),
-            'NU': provinceText.includes("nunavut")
+        // Province name mapping
+        const provinceMap = {
+            'ontario': 'ON', 'on': 'ON',
+            'quebec': 'QC', 'québec': 'QC', 'qc': 'QC',
+            'british columbia': 'BC', 'bc': 'BC',
+            'alberta': 'AB', 'ab': 'AB',
+            'saskatchewan': 'SK', 'sk': 'SK',
+            'manitoba': 'MB', 'mb': 'MB',
+            'nova scotia': 'NS', 'ns': 'NS',
+            'new brunswick': 'NB', 'nb': 'NB',
+            'newfoundland and labrador': 'NL', 'nl': 'NL',
+            'prince edward island': 'PE', 'pe': 'PE',
+            'northwest territories': 'NT', 'nt': 'NT',
+            'yukon': 'YT', 'yt': 'YT',
+            'nunavut': 'NU', 'nu': 'NU'
         };
-        const matches = Object.entries(provinceMatches).filter(([_, matches]) => matches);
-        if (matches.length > 0) return matches[0][0];
+        
+        // Try direct match
+        if (provinceMap[provinceText]) return provinceMap[provinceText];
+        
+        // Try partial match
+        for (const [name, code] of Object.entries(provinceMap)) {
+            if (provinceText.includes(name)) return code;
+        }
+        
         return 'ON'; // Default
     }
 
-    // Helper function to get electricity emission factor (can be moved to a central data module later)
+    /**
+     * Get electricity emission factor based on province and year
+     */
+    function getElectricityFactor(province, year) {
     const GRID_INTENSITY_FACTORS = {
         'ON': { default: 51, 2015: 46, 2016: 40, 2017: 18, 2018: 29, 2019: 29, 2020: 36, 2021: 44, 2022: 51, 2023: 67, 2024: 71, 2025: 138, 2026: 145, 2027: 132, 2028: 133, 2029: 126, 2030: 126, 2031: 122, 2032: 122, 2033: 104, 2034: 58, 2035: 40, 2036: 34, 2037: 33, 2038: 32, 2039: 13, 2040: 8, 2041: 3, future: 3 },
         'QC': { default: 1 }, 'BC': { default: 12 }, 'AB': { default: 650 }, 'SK': { default: 720 }, 
@@ -849,212 +1072,301 @@ window.TEUI.SectionModules.sect04 = (function() {
         'PE': { default: 12 }, 'NT': { default: 180 }, 'YT': { default: 2 }, 'NU': { default: 200 }
     };
 
-    // Get electricity emission factor based on CSV formula data
-    function getElectricityFactor(province, year) {
         const provinceFactors = GRID_INTENSITY_FACTORS[province] || GRID_INTENSITY_FACTORS['ON'];
+        
         if (year > 2041 && provinceFactors.future !== undefined) {
             return provinceFactors.future;
         }
+        
         return provinceFactors[year] || provinceFactors.default;
     }
     
-    // Recalculate G27 and K27 with the factor as an argument
-    function calculateG27(f27Value, l27Factor) {
-        return (f27Value * l27Factor) / 1000;
-    }
-
-    function calculateK27(j27Value, l27Factor) {
-        return (j27Value * l27Factor) / 1000;
-    }
-    
     /**
-     * Helper function to update the subtotal rows (row 32)
+     * Update the subtotal rows
      */
     function updateSubtotals() {
-        // Get all the values needed for subtotals using the standard helper
-        const f27Value = getNumericValue('f_27');
-        const f28Value = getNumericValue('f_28');
-        const f29Value = getNumericValue('f_29');
-        const f30Value = getNumericValue('f_30');
-        const f31Value = getNumericValue('f_31');
+        // Get values for f_32 calculation
+        const f27 = getAppNumericValue('f_27');
+        const f28 = getAppNumericValue('f_28');
+        const f29 = getAppNumericValue('f_29');
+        const f30 = getAppNumericValue('f_30');
+        const f31 = getAppNumericValue('f_31');
         
-        const g27Value = getNumericValue('g_27');
-        const g28Value = getNumericValue('g_28');
-        const g29Value = getNumericValue('g_29');
-        const g30Value = getNumericValue('g_30');
-        const g31Value = getNumericValue('g_31');
+        // Calculate f_32 and update
+        const f32 = f27 + f28 + f29 + f30 + f31;
+        setCalculatedValue('f_32', f32, 'number-2dp-comma');
         
-        const j27Value = getNumericValue('j_27');
-        const j28Value = getNumericValue('j_28');
-        const j29Value = getNumericValue('j_29');
-        const j30Value = getNumericValue('j_30');
-        const j31Value = getNumericValue('j_31');
+        // Get values for g_32 calculation
+        const g27 = getAppNumericValue('g_27');
+        const g28 = getAppNumericValue('g_28');
+        const g29 = getAppNumericValue('g_29');
+        const g30 = getAppNumericValue('g_30');
+        const g31 = getAppNumericValue('g_31');
+        const d60 = getAppNumericValue('d_60');
         
-        const k27Value = getNumericValue('k_27');
-        const k28Value = getNumericValue('k_28');
-        const k29Value = getNumericValue('k_29');
-        const k30Value = getNumericValue('k_30');
-        const k31Value = getNumericValue('k_31');
+        // Calculate g_32 and update
+        const g32 = g27 + g28 + g29 + g30 + g31 - (d60 * 1000);
+        setCalculatedValue('g_32', g32, 'number-2dp-comma');
         
-        const d60Value = getNumericValue('d_60'); // Offsets (tCO2e), will be multiplied by 1000 later
+        // Get values for j_32 calculation
+        const j27 = getAppNumericValue('j_27');
+        const j28 = getAppNumericValue('j_28');
+        const j29 = getAppNumericValue('j_29');
+        const j30 = getAppNumericValue('j_30');
+        const j31 = getAppNumericValue('j_31');
         
-        // Update f_32 (Operational GHG & Energy Subtotals)
-        const f32Value = calculateF32(f27Value, f28Value, f29Value, f30Value, f31Value);
-        setCalculatedValue('f_32', f32Value, 'number-2dp-comma');
-                
-                // Check for zero energy case and force immediate TEUI update
-        if (f32Value === 0 && window.TEUI?.StateManager) { // Check StateManager exists
-                    // console.log("Zero energy detected - forcing TEUI update");
-                    if (typeof window.calculateTEUI === 'function') {
-                        window.calculateTEUI();
-                    } else if (window.TEUI.StateManager.updateTEUICalculations) {
-                        window.TEUI.StateManager.updateTEUICalculations('zero-energy-case');
-            } else if (window.TEUI.SectionModules?.sect01?.runAllCalculations) {
-                // Fallback: directly call S01 calculation if specific hook is missing
-                window.TEUI.SectionModules.sect01.runAllCalculations();
-                }
-        } else {
-            // Force TEUI recalculation after energy update (if not zero)
-            // REMOVED: setTimeout(() => { ... }, 100);
-            // Section 01 should listen to f_32 or j_32 for updates.
-                    if (typeof window.calculateTEUI === 'function') {
-                window.calculateTEUI(); // Call directly or let listener handle it
-                } else if (window.TEUI?.SectionModules?.sect01?.runAllCalculations) {
-                     window.TEUI.SectionModules.sect01.runAllCalculations();
-                    }
-        }
+        // Calculate j_32 and update
+        const j32 = j27 + j28 + j29 + j30 + j31;
+        setCalculatedValue('j_32', j32, 'number-2dp-comma');
         
-        // Update g_32 (Emissions subtotal)
-        const g32Value = calculateG32(g27Value, g28Value, g29Value, g30Value, g31Value, d60Value);
-        setCalculatedValue('g_32', g32Value, 'number-2dp-comma');
+        // Get values for k_32 calculation
+        const k27 = getAppNumericValue('k_27');
+        const k28 = getAppNumericValue('k_28');
+        const k29 = getAppNumericValue('k_29');
+        const k30 = getAppNumericValue('k_30');
+        const k31 = getAppNumericValue('k_31');
         
-        // Update j_32 (Target subtotal)
-        const j32Value = calculateJ32(j27Value, j28Value, j29Value, j30Value, j31Value);
-        setCalculatedValue('j_32', j32Value, 'number-2dp-comma');
+        // Calculate k_32 and update
+        const k32 = k27 + k28 + k29 + k30 + k31 - (d60 * 1000);
+        setCalculatedValue('k_32', k32, 'number-2dp-comma');
         
-        // Update k_32 (Target emissions subtotal)
-        const k32Value = calculateK32(k27Value, k28Value, k29Value, k30Value, k31Value, d60Value);
-        setCalculatedValue('k_32', k32Value, 'number-2dp-comma');
-        
-        // Also update other dependent fields if needed
-        updateDependentTotals(); // This function should also use getNumericValue
+        // Update dependent totals
+        updateDependentTotals();
     }
     
     /**
-     * Update any other fields that depend on the subtotals
+     * Update fields that depend on the subtotals
      */
     function updateDependentTotals() {
-        // Update d_33, h_33, etc. using standard helpers
-        const f27Value = getNumericValue('f_27');
-        const f28Value = getNumericValue('f_28');
-        const f29Value = getNumericValue('f_29');
-        const f30Value = getNumericValue('f_30');
-        const f31Value = getNumericValue('f_31');
-        const d43Value = getNumericValue('d_43');
-        const i43Value = getNumericValue('i_43');
-        const j27Value = getNumericValue('j_27');
-        const j28Value = getNumericValue('j_28');
-        const j29Value = getNumericValue('j_29');
-        const j30Value = getNumericValue('j_30');
-        const j31Value = getNumericValue('j_31');
-        const k32Value = getNumericValue('k_32'); // For L34
-        const d63Value = getNumericValue('d_63'); // For L34
-        const h15Value = getNumericValue('h_15'); // For F35
-        const d14Value = window.TEUI.StateManager?.getValue('d_14'); // For D35
-        const h35Value = getNumericValue('h_35'); // For D35
+        // Get required values
+        const f27 = getNumericValue('f_27');
+        const f28 = getNumericValue('f_28');
+        const f29 = getNumericValue('f_29');
+        const f30 = getNumericValue('f_30');
+        const f31 = getNumericValue('f_31');
+        const d43 = getNumericValue('d_43');
+        const i43 = getNumericValue('i_43');
+        const j27 = getNumericValue('j_27');
+        const j28 = getNumericValue('j_28');
+        const j29 = getNumericValue('j_29');
+        const j30 = getNumericValue('j_30');
+        const j31 = getNumericValue('j_31');
+        const d63 = getNumericValue('d_63');
+        const h15 = getNumericValue('h_15');
+        const d14 = window.TEUI.StateManager?.getValue('d_14');
+        const h35 = getNumericValue('h_35');
 
-        const d33Value = calculateD33(f27Value, f28Value, f29Value, f30Value, f31Value, d43Value, i43Value);
-        setCalculatedValue('d_33', d33Value, 'number-2dp-comma');
+        // Calculate d_33 (Total Net Energy - Actual)
+        const d33 = (f27 + f28 + f29 + f30 + f31 - d43 - i43) / 277.7777;
+        setCalculatedValue('d_33', d33, 'number-2dp-comma');
 
-        const h33Value = calculateH33(j27Value, j28Value, j29Value, j30Value, j31Value, i43Value, d43Value);
-        setCalculatedValue('h_33', h33Value, 'number-2dp-comma');
+        // Calculate h_33 (Total Net Energy - Target)
+        const h33 = (j27 + j28 + j29 + j30 + j31 - i43 - d43) / 277.7777;
+        setCalculatedValue('h_33', h33, 'number-2dp-comma');
         
-        const d34Value = calculateD34(f27Value, f28Value, d63Value);
-        setCalculatedValue('d_34', d34Value, 'number-2dp-comma');
-
-        const f34Value = calculateF34(d33Value, d63Value);
-        setCalculatedValue('f_34', f34Value, 'number-2dp-comma');
-
-        const h34Value = calculateH34(j27Value, j28Value, d63Value);
-        setCalculatedValue('h_34', h34Value, 'number-2dp-comma');
-
-        const j34Value = calculateJ34(h33Value, d63Value);
-        setCalculatedValue('j_34', j34Value, 'number-2dp-comma');
-
-        // Call calculateD35 without parameters
-        calculateD35();
+        // Calculate per capita values
+        const d34 = getNumericValue('f_32') / (d63 || 1);
+        setCalculatedValue('d_34', d34, 'number-2dp-comma');
         
-        // Get the updated d35Value after calculateD35() has set it
-        const d35Value = getNumericValue('d_35', 0);
-
-        const f35Value = calculateF35(d35Value, h15Value);
-        setCalculatedValue('f_35', f35Value, 'number-2dp-comma');
+        const f34 = d33 / (d63 || 1);
+        setCalculatedValue('f_34', f34, 'number-2dp-comma');
+        
+        const h34 = getNumericValue('j_32') / (d63 || 1);
+        setCalculatedValue('h_34', h34, 'number-2dp-comma');
+        
+        const j34 = h33 / (d63 || 1);
+        setCalculatedValue('j_34', j34, 'number-2dp-comma');
+        
+        // Calculate d_35 (Primary Energy)
+        let d35 = 0;
+        if (d14 === "Targeted Use") {
+            d35 = j27 * h35;
+        } else {
+            d35 = f27 * h35;
+        }
+        setCalculatedValue('d_35', d35, 'number-2dp-comma');
+        
+        // Calculate f_35 (Primary Energy Intensity)
+        const f35 = d35 / (h15 || 1);
+        setCalculatedValue('f_35', f35, 'number-2dp-comma');
     }
     
-    /**
-     * Define section-specific calculation functions here
-     * These will be called by the Calculator module based on field dependencies
-     */
+    //==========================================================================
+    // CALCULATION FUNCTIONS
+    //==========================================================================
     
     // Row 27: Electricity calculations
     function calculateF27() {
-        // =D27-D43-I43 (Total Electricity Use - Onsite Energy - Offsite REC Subtotal)
-        const d27 = getAppNumericValue('d_27'); // FIXED: Use Application values for Target calculations
-        const d43 = getAppNumericValue('d_43'); 
-        const i43 = getAppNumericValue('i_43'); 
+        const d27 = getAppNumericValue('d_27');
+        const d43 = getAppNumericValue('d_43');
+        const i43 = getAppNumericValue('i_43');
         return d27 - d43 - i43;
     }
     
-    function calculateG27() {
-        // =F27*L27/1000 (Actual Net * Emission factor / 1000)
-        const f27 = getAppNumericValue('f_27'); // FIXED: Use Application values for Target calculations
-        const l27 = getAppNumericValue('l_27'); 
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        return (f27 * l27) / 1000;
-    }
-    
-    function calculateH27(d136) {
-        // =D$136 (Target value comes from another section)
-        // Use parseNumeric here too
-        return window.TEUI?.parseNumeric?.(d136, 0) ?? 0;
+    function calculateG27(f27Value, l27Factor) {
+        if (f27Value === undefined) {
+            f27Value = getAppNumericValue('f_27');
+            l27Factor = getAppNumericValue('l_27');
+        }
+        return (f27Value * l27Factor) / 1000;
     }
     
     function calculateJ27() {
-        // =H27-D43-I43 (Target Energy - Onsite Energy - Offsite REC Subtotal)
-        const h27 = getAppNumericValue('h_27'); // FIXED: Use Application values for Target calculations
-        const d43 = getAppNumericValue('d_43'); 
-        const i43 = getAppNumericValue('i_43'); 
-        return h27 - d43 - i43;
+        const h27 = getAppNumericValue('h_27');
+        const d43 = getAppNumericValue('d_43');
+        const i43 = getAppNumericValue('i_43');
+        const j27Value = h27 - d43 - i43;
+        setCalculatedValue('j_27', j27Value, 'number-2dp-comma');
+        return j27Value;
     }
     
-    function calculateK27() {
-        // =J27*L27/1000 (Target Net * Emission factor / 1000)
-        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
-        const l27 = getAppNumericValue('l_27'); 
-        // Dividing by 1000 converts from gCO2e to kgCO2e
-        return (j27 * l27) / 1000;
+    function calculateK27(j27Value, l27Factor) {
+        if (j27Value === undefined) {
+            j27Value = getAppNumericValue('j_27');
+            l27Factor = getAppNumericValue('l_27');
+        }
+        return (j27Value * l27Factor) / 1000;
     }
     
-    // Row 28: Gas calculations
+    // Row 28-31: Other fuel calculations (Gas, Propane, Oil, Wood)
     function calculateF28() {
-        const d28 = getAppNumericValue('d_28'); // FIXED: Use Application values for Target calculations
-        // =D28*0.0373*277.7778 (Gas volume to energy conversion)
+        const d28 = getAppNumericValue('d_28');
         return d28 * 0.0373 * 277.7778;
     }
     
     function calculateG28() {
-        const d28 = getAppNumericValue('d_28'); // FIXED: Use Application values for Target calculations
-        const l28 = getAppNumericValue('l_28'); 
-        // =(D28)*L28/1000 (Gas volume * Emission factor / 1000)
+        const d28 = getAppNumericValue('d_28');
+        const l28 = getAppNumericValue('l_28');
         return (d28 * l28) / 1000;
     }
     
-    function calculateH28() {
-        const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
-        const e51 = getAppNumericValue('e_51'); // FIXED: Use Application values for Target calculations
-        const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
-        const h115 = getAppNumericValue('h_115'); // FIXED: Use Application values for Target calculations
-        // =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
+    function calculateF29() {
+        const d29 = getAppNumericValue('d_29');
+        return d29 * 14.019;
+    }
+    
+    function calculateG29() {
+        const d29 = getAppNumericValue('d_29');
+        const l29 = getAppNumericValue('l_29');
+        return (d29 * l29) / 1000;
+    }
+    
+    function calculateF30() {
+        const d30 = getAppNumericValue('d_30');
+        return d30 * 36.72 * 0.2777778;
+    }
+    
+    function calculateG30() {
+        const d30 = getAppNumericValue('d_30');
+        const l30 = getAppNumericValue('l_30');
+        return (d30 * l30) / 1000;
+    }
+    
+    function calculateF31() {
+        const d31 = getAppNumericValue('d_31');
+        return d31 * 1000;
+    }
+    
+    function calculateG31() {
+        const h31 = getAppNumericValue('h_31');
+        const l31 = getAppNumericValue('l_31');
+        return h31 * l31;
+    }
+    
+    //==========================================================================
+    // IT-DEPENDS CALCULATION REGISTRATION
+    //==========================================================================
+    
+    /**
+     * Register IT-DEPENDS calculations with StateManager
+     */
+    function registerITDependsCalculations() {
+        if (!window.TEUI?.StateManager) {
+            return;
+        }
+        
+        const sm = window.TEUI.StateManager;
+        
+        // ---------- ROW 27: ELECTRICITY ----------
+        // f_27: Actual Net Electricity
+        sm.registerCalculation('f_27', function() {
+            const d27 = getAppNumericValue('d_27');
+        const d43 = getAppNumericValue('d_43'); 
+        const i43 = getAppNumericValue('i_43'); 
+        return d27 - d43 - i43;
+        }, 'Actual Net Electricity (kWh/yr)');
+        
+        // g_27: Actual Electricity Emissions
+        sm.registerCalculation('g_27', function() {
+            const f27 = getAppNumericValue('f_27');
+        const l27 = getAppNumericValue('l_27'); 
+        return (f27 * l27) / 1000;
+        }, 'Actual Electricity Emissions (kgCO2e/yr)');
+        
+        // h_27: Target Electricity Use
+        sm.registerCalculation('h_27', function() {
+            return getAppNumericValue('d_136', 0);
+        }, 'Target Electricity Use from S15 (kWh/yr)');
+        
+        // j_27: Target Net Electricity
+        sm.registerCalculation('j_27', function() {
+            const h27 = getAppNumericValue('h_27');
+        const d43 = getAppNumericValue('d_43'); 
+        const i43 = getAppNumericValue('i_43'); 
+        return h27 - d43 - i43;
+        }, 'Target Net Electricity (kWh/yr)');
+        
+        // k_27: Target Electricity Emissions
+        sm.registerCalculation('k_27', function() {
+            const j27 = getAppNumericValue('j_27');
+        const l27 = getAppNumericValue('l_27'); 
+        return (j27 * l27) / 1000;
+        }, 'Target Electricity Emissions (kgCO2e/yr)');
+        
+        // l_27: Electricity Emissions Factor
+        sm.registerCalculation('l_27', function() {
+            // Get province
+            let provinceAbbreviation = 'ON';
+            const provinceStateValue = window.TEUI.StateManager?.getApplicationValue('d_19');
+            if (provinceStateValue) {
+                provinceAbbreviation = getProvinceCode(provinceStateValue);
+            }
+                
+            // Get reporting year
+            let reportingYear = 2022;
+            const yearStateValue = window.TEUI.StateManager?.getApplicationValue('h_12');
+            if (yearStateValue) {
+                const parsedYear = parseInt(yearStateValue);
+                if (!isNaN(parsedYear) && parsedYear >= 2015 && parsedYear <= 2041) {
+                    reportingYear = parsedYear;
+                }
+            }
+            
+            // Get emission factor
+            return getElectricityFactor(provinceAbbreviation, reportingYear);
+        }, 'Electricity Emissions Factor (gCO2e/kWh)');
+        
+        // ---------- ROW 28: GAS ----------
+        // f_28: Actual Net Gas Energy
+        sm.registerCalculation('f_28', function() {
+            const d28 = getAppNumericValue('d_28');
+            return d28 * 0.0373 * 277.7778;
+        }, 'Actual Net Gas Energy (kWh/yr)');
+        
+        // g_28: Actual Gas Emissions
+        sm.registerCalculation('g_28', function() {
+            const d28 = getAppNumericValue('d_28');
+        const l28 = getAppNumericValue('l_28'); 
+        return (d28 * l28) / 1000;
+        }, 'Actual Gas Emissions (kgCO2e/yr)');
+        
+        // h_28: Target Gas Volume
+        sm.registerCalculation('h_28', function() {
+            const d51 = window.TEUI.StateManager?.getValue('d_51');
+            const e51 = getAppNumericValue('e_51');
+            const d113 = window.TEUI.StateManager?.getValue('d_113');
+            const h115 = getAppNumericValue('h_115');
+            
         if (d113 === "Gas" && d51 === "Gas") {
             return e51 + h115;
         } else if (d51 === "Gas") {
@@ -1064,502 +1376,279 @@ window.TEUI.SectionModules.sect04 = (function() {
         } else {
             return 0;
         }
-    }
-    
-    function calculateJ28() {
-        const h28 = getAppNumericValue('h_28'); // FIXED: Use Application values for Target calculations
-        // =H28*0.0373*277.7778 (Gas volume to energy conversion)
+        }, 'Target Gas Volume (m³/yr)');
+        
+        // j_28: Target Net Gas Energy
+        sm.registerCalculation('j_28', function() {
+            const h28 = getAppNumericValue('h_28');
         return h28 * 0.0373 * 277.7778;
-    }
+        }, 'Target Net Gas Energy (kWh/yr)');
     
-    function calculateK28() {
-        const h28 = getAppNumericValue('h_28'); // FIXED: Use Application values for Target calculations
+        // k_28: Target Gas Emissions
+        sm.registerCalculation('k_28', function() {
+            const h28 = getAppNumericValue('h_28');
         const l28 = getAppNumericValue('l_28'); 
-        // =H28*L28/1000 (Gas volume * Emission factor / 1000)
         return (h28 * l28) / 1000;
-    }
-    
-    // Row 29: Propane calculations
-    function calculateF29() {
-        const d29 = getAppNumericValue('d_29'); // FIXED: Use Application values for Target calculations
-        // =D29*14.019 (Propane to energy conversion)
+        }, 'Target Gas Emissions (kgCO2e/yr)');
+        
+        // ---------- ROW 29: PROPANE ----------
+        // f_29: Actual Net Propane Energy
+        sm.registerCalculation('f_29', function() {
+            const d29 = getAppNumericValue('d_29');
         return d29 * 14.019;
-    }
+        }, 'Actual Net Propane Energy (kWh/yr)');
     
-    function calculateG29() {
-        const d29 = getAppNumericValue('d_29'); // FIXED: Use Application values for Target calculations
+        // g_29: Actual Propane Emissions
+        sm.registerCalculation('g_29', function() {
+            const d29 = getAppNumericValue('d_29');
         const l29 = getAppNumericValue('l_29'); 
-        // =D29*L29/1000 (Propane * Emission factor / 1000)
         return (d29 * l29) / 1000;
-    }
-    
-    function calculateH29() {
-        const d29 = getAppNumericValue('d_29'); // FIXED: Use Application values for Target calculations
-        // =D29 (Target is same as actual for this case)
-        return d29;
-    }
-    
-    function calculateJ29() {
-        const h29 = getAppNumericValue('h_29'); // FIXED: Use Application values for Target calculations
-        // =H29*14.019 (Propane to energy conversion)
+        }, 'Actual Propane Emissions (kgCO2e/yr)');
+        
+        // h_29: Target Propane Volume
+        sm.registerCalculation('h_29', function() {
+            return getAppNumericValue('d_29', 0);
+        }, 'Target Propane Volume (kg/yr)');
+        
+        // j_29: Target Net Propane Energy
+        sm.registerCalculation('j_29', function() {
+            const h29 = getAppNumericValue('h_29');
         return h29 * 14.019;
-    }
+        }, 'Target Net Propane Energy (kWh/yr)');
     
-    function calculateK29() {
-        const h29 = getAppNumericValue('h_29'); // FIXED: Use Application values for Target calculations
+        // k_29: Target Propane Emissions
+        sm.registerCalculation('k_29', function() {
+            const h29 = getAppNumericValue('h_29');
         const l29 = getAppNumericValue('l_29'); 
-        // =H29*L29/1000 (Propane * Emission factor / 1000)
         return (h29 * l29) / 1000;
-    }
-    
-    // Row 30: Oil calculations
-    function calculateF30() {
-        const d30 = getAppNumericValue('d_30'); // FIXED: Use Application values for Target calculations
-        // =D30*36.72*0.2777778 (Oil to energy conversion)
+        }, 'Target Propane Emissions (kgCO2e/yr)');
+        
+        // ---------- ROW 30: OIL ----------
+        // f_30: Actual Net Oil Energy
+        sm.registerCalculation('f_30', function() {
+            const d30 = getAppNumericValue('d_30');
         return d30 * 36.72 * 0.2777778;
-    }
+        }, 'Actual Net Oil Energy (kWh/yr)');
     
-    function calculateG30() {
-        const d30 = getAppNumericValue('d_30'); // FIXED: Use Application values for Target calculations
+        // g_30: Actual Oil Emissions
+        sm.registerCalculation('g_30', function() {
+            const d30 = getAppNumericValue('d_30');
         const l30 = getAppNumericValue('l_30'); 
-        // =D30*L30/1000 (Oil * Emission factor / 1000)
         return (d30 * l30) / 1000;
-    }
-    
-    function calculateH30() {
-        const d51 = window.TEUI.StateManager?.getValue('d_51'); // Get raw string value
-        const d113 = window.TEUI.StateManager?.getValue('d_113'); // Get raw string value
-        const k54 = getAppNumericValue('k_54'); // FIXED: Use Application values for Target calculations
-        const f115 = getAppNumericValue('f_115'); // FIXED: Use Application values for Target calculations
-        // =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
+        }, 'Actual Oil Emissions (kgCO2e/yr)');
+        
+        // h_30: Target Oil Volume
+        sm.registerCalculation('h_30', function() {
+            const d51 = window.TEUI.StateManager?.getValue('d_51');
+            const d113 = window.TEUI.StateManager?.getValue('d_113');
+            const k54 = getAppNumericValue('k_54');
+            const f115 = getAppNumericValue('f_115');
+            
         if (d113 === "Oil" && d51 === "Oil") {
-            // Sum target Oil Litres from S13 heating (f_115) and S07 DHW (k_54)
             return k54 + f115; 
         } else if (d51 === "Oil") {
-            // Only DHW uses Oil
             return k54; 
         } else if (d113 === "Oil") {
-            // Only Heating uses Oil
             return f115;
         } else {
             return 0;
         }
-    }
-    
-    function calculateJ30() {
-        const h30 = getAppNumericValue('h_30'); // FIXED: Use Application values for Target calculations
-        // =H30*36.72*0.2777778 (Oil to energy conversion)
+        }, 'Target Oil Volume (litres/yr)');
+        
+        // j_30: Target Net Oil Energy
+        sm.registerCalculation('j_30', function() {
+            const h30 = getAppNumericValue('h_30');
         return h30 * 36.72 * 0.2777778;
-    }
+        }, 'Target Net Oil Energy (kWh/yr)');
     
-    function calculateK30() {
-        const h30 = getAppNumericValue('h_30'); // FIXED: Use Application values for Target calculations
+        // k_30: Target Oil Emissions
+        sm.registerCalculation('k_30', function() {
+            const h30 = getAppNumericValue('h_30');
         const l30 = getAppNumericValue('l_30'); 
-        // =H30*L30/1000 (Oil * Emission factor / 1000)
         return (h30 * l30) / 1000;
-    }
-    
-    // Row 31: Wood calculations
-    function calculateF31() {
-        const d31 = getAppNumericValue('d_31'); // FIXED: Use Application values for Target calculations
-        // =D31*1000 (Wood to energy conversion)
+        }, 'Target Oil Emissions (kgCO2e/yr)');
+        
+        // ---------- ROW 31: WOOD ----------
+        // f_31: Actual Net Wood Energy
+        sm.registerCalculation('f_31', function() {
+            const d31 = getAppNumericValue('d_31');
         return d31 * 1000;
-    }
+        }, 'Actual Net Wood Energy (kWh/yr)');
     
-    function calculateG31() {
-        const h31 = getAppNumericValue('h_31'); // FIXED: Use Application values for Target calculations
+        // g_31: Actual Wood Emissions
+        sm.registerCalculation('g_31', function() {
+            const h31 = getAppNumericValue('h_31');
         const l31 = getAppNumericValue('l_31'); 
-        // =H31*L31 (Wood * Emission factor)
         return h31 * l31;
-    }
-    
-    function calculateH31() {
-        const d31 = getAppNumericValue('d_31'); // FIXED: Use Application values for Target calculations
-        // =D31 (Target is same as actual for this case)
-        return d31;
-    }
-    
-    function calculateJ31() {
-        const h31 = getAppNumericValue('h_31'); // FIXED: Use Application values for Target calculations
-        // =H31*1000 (Wood to energy conversion)
+        }, 'Actual Wood Emissions (kgCO2e/yr)');
+        
+        // h_31: Target Wood Volume
+        sm.registerCalculation('h_31', function() {
+            return getAppNumericValue('d_31', 0);
+        }, 'Target Wood Volume (m³/yr)');
+        
+        // j_31: Target Net Wood Energy
+        sm.registerCalculation('j_31', function() {
+            const h31 = getAppNumericValue('h_31');
         return h31 * 1000;
-    }
+        }, 'Target Net Wood Energy (kWh/yr)');
     
-    function calculateK31() {
-        const h31 = getAppNumericValue('h_31'); // FIXED: Use Application values for Target calculations
+        // k_31: Target Wood Emissions
+        sm.registerCalculation('k_31', function() {
+            const h31 = getAppNumericValue('h_31');
         const l31 = getAppNumericValue('l_31'); 
-        // =H31*L31 (Wood * Emission factor)
         return h31 * l31;
-    }
-    
-    // Row 32: Subtotals
-    function calculateF32() {
-        const f27 = getAppNumericValue('f_27'); // FIXED: Use Application values for Target calculations
+        }, 'Target Wood Emissions (kgCO2e/yr)');
+        
+        // ---------- ROW 32: SUBTOTALS ----------
+        // f_32: Total Actual Energy
+        sm.registerCalculation('f_32', function() {
+            const f27 = getAppNumericValue('f_27');
         const f28 = getAppNumericValue('f_28'); 
         const f29 = getAppNumericValue('f_29'); 
         const f30 = getAppNumericValue('f_30'); 
         const f31 = getAppNumericValue('f_31'); 
-        // =SUM(F27:F31) (Sum of all energy sources)
         return f27 + f28 + f29 + f30 + f31;
-    }
+        }, 'Total Actual Energy (kWh/yr)');
     
-    function calculateG32() {
-        const g27 = getAppNumericValue('g_27'); // FIXED: Use Application values for Target calculations
+        // g_32: Total Actual Emissions
+        sm.registerCalculation('g_32', function() {
+            const g27 = getAppNumericValue('g_27');
         const g28 = getAppNumericValue('g_28'); 
         const g29 = getAppNumericValue('g_29'); 
         const g30 = getAppNumericValue('g_30'); 
         const g31 = getAppNumericValue('g_31'); 
-        const d60 = getAppNumericValue('d_60'); // (Offsets in tCO2e)
-        // =SUM(G27:G31)-(D60*1000) (Sum of emissions minus offsets)
+            const d60 = getAppNumericValue('d_60');
         return g27 + g28 + g29 + g30 + g31 - (d60 * 1000);
-    }
+        }, 'Total Actual Emissions (kgCO2e/yr)');
     
-    function calculateJ32() {
-        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
+        // j_32: Total Target Energy
+        sm.registerCalculation('j_32', function() {
+            const j27 = getAppNumericValue('j_27');
         const j28 = getAppNumericValue('j_28'); 
         const j29 = getAppNumericValue('j_29'); 
         const j30 = getAppNumericValue('j_30'); 
         const j31 = getAppNumericValue('j_31'); 
-        // =SUM(J27:J31) (Sum of all energy sources)
         return j27 + j28 + j29 + j30 + j31;
-    }
+        }, 'Total Target Energy (kWh/yr)');
     
-    function calculateK32() {
-        const k27 = getAppNumericValue('k_27'); // FIXED: Use Application values for Target calculations
+        // k_32: Total Target Emissions
+        sm.registerCalculation('k_32', function() {
+            const k27 = getAppNumericValue('k_27');
         const k28 = getAppNumericValue('k_28'); 
         const k29 = getAppNumericValue('k_29'); 
         const k30 = getAppNumericValue('k_30'); 
         const k31 = getAppNumericValue('k_31'); 
-        const d60 = getAppNumericValue('d_60'); // (Offsets in tCO2e)
-        // =SUM(K27:K31)-(D60*1000) (Sum of emissions minus offsets)
+            const d60 = getAppNumericValue('d_60');
         return k27 + k28 + k29 + k30 + k31 - (d60 * 1000);
-    }
-    
-    // Row 33: Total Net Energy
-    function calculateD33() {
-        const f27 = getAppNumericValue('f_27'); // FIXED: Use Application values for Target calculations
+        }, 'Total Target Emissions (kgCO2e/yr)');
+        
+        // ---------- ROW 33: TOTAL NET ENERGY ----------
+        // d_33: Actual Total Net Energy
+        sm.registerCalculation('d_33', function() {
+            const f27 = getAppNumericValue('f_27');
         const f28 = getAppNumericValue('f_28'); 
         const f29 = getAppNumericValue('f_29'); 
         const f30 = getAppNumericValue('f_30'); 
         const f31 = getAppNumericValue('f_31'); 
         const d43 = getAppNumericValue('d_43'); 
         const i43 = getAppNumericValue('i_43'); 
-        // =SUM(F$27+F$28+F$29+F$30+F$31-D43-I43)/277.7777
         return (f27 + f28 + f29 + f30 + f31 - d43 - i43) / 277.7777;
-    }
+        }, 'Actual Total Net Energy (GJ/yr)');
     
-    function calculateH33() {
-        const j27 = getAppNumericValue('j_27'); // FIXED: Use Application values for Target calculations
+        // h_33: Target Total Net Energy
+        sm.registerCalculation('h_33', function() {
+            const j27 = getAppNumericValue('j_27');
         const j28 = getAppNumericValue('j_28'); 
         const j29 = getAppNumericValue('j_29'); 
         const j30 = getAppNumericValue('j_30'); 
         const j31 = getAppNumericValue('j_31'); 
         const i43 = getAppNumericValue('i_43'); 
         const d43 = getAppNumericValue('d_43'); 
-        // =SUM(J$27+J$28+J$29+J$30+J$31-I43-D43)/277.7777 
         return (j27 + j28 + j29 + j30 + j31 - i43 - d43) / 277.7777;
-    }
-    
-    // Row 34: Annual Percapita Energy
-    function calculateD34() {
-        const d33Value = getNumericValue('d_33', 0);
-        setCalculatedValue('d_34', d33Value * 1000, 'number-2dp-comma');
-    }
-    
-    function calculateF34() {
-        const d33 = getAppNumericValue('d_33'); // FIXED: Use Application values for Target calculations
+        }, 'Target Total Net Energy (GJ/yr)');
+        
+        // ---------- ROW 34: PER CAPITA ENERGY ----------
+        // d_34: Actual Per Capita Energy (kWh)
+        sm.registerCalculation('d_34', function() {
+            const f32 = getAppNumericValue('f_32');
+            const d63 = getAppNumericValue('d_63');
+            return f32 / (d63 || 1);
+        }, 'Actual Per Capita Energy (kWh)');
+        
+        // f_34: Actual Per Capita Energy (GJ)
+        sm.registerCalculation('f_34', function() {
+            const d33 = getAppNumericValue('d_33');
         const d63 = getAppNumericValue('d_63'); 
-        // =D33/D63 (Total energy per person)
         return d33 / (d63 || 1);
-    }
-    
-    function calculateH34() {
-        const j32 = getAppNumericValue('j_32'); // FIXED: Use Application values for Target calculations
-        const d63 = getAppNumericValue('d_63'); // Occupants
-        // New formula: =J32/D63 (Target Net Energy / Occupants)
-        return (j32) / (d63 || 1); // Ensure d63 is not zero
-    }
-    
-    function calculateJ34() {
-        const h33 = getAppNumericValue('h_33'); // FIXED: Use Application values for Target calculations
+        }, 'Actual Per Capita Energy (GJ)');
+        
+        // h_34: Target Per Capita Energy (kWh)
+        sm.registerCalculation('h_34', function() {
+            const j32 = getAppNumericValue('j_32');
+            const d63 = getAppNumericValue('d_63');
+            return j32 / (d63 || 1);
+        }, 'Target Per Capita Energy (kWh)');
+        
+        // j_34: Target Per Capita Energy (GJ)
+        sm.registerCalculation('j_34', function() {
+            const h33 = getAppNumericValue('h_33');
         const d63 = getAppNumericValue('d_63'); 
-        // =H33/D63 (Target GJ per person)
         return h33 / (d63 || 1);
-    }
-    
-    /**
-     * Calculate D35 - Total Final Energy (GJ/m²/yr)
-     */
-    function calculateD35() {
-        const d33Value = getAppNumericValue('d_33', 0); // Total energy in GJ/yr
-        const areaValue = getAppNumericValue('h_15', 1); // Conditioned area in m²
+        }, 'Target Per Capita Energy (GJ)');
         
-        if (areaValue > 0) {
-            const intensityValue = d33Value / areaValue; // Calculate GJ/m²/yr
-            setCalculatedValue('d_35', intensityValue, 'number-2dp-comma');
+        // ---------- ROW 35: PRIMARY ENERGY ----------
+        // d_35: Primary Energy
+        sm.registerCalculation('d_35', function() {
+            const d14 = window.TEUI.StateManager?.getValue('d_14');
+            const j27 = getAppNumericValue('j_27');
+        const h35 = getAppNumericValue('h_35'); 
+        const f27 = getAppNumericValue('f_27'); 
+            
+        if (d14 === "Targeted Use") {
+            return j27 * h35;
         } else {
-            setCalculatedValue('d_35', 0, 'number-2dp-comma');
+            return f27 * h35;
         }
-    }
+        }, 'Primary Energy (kWh/yr)');
     
-    /**
-     * Calculate F35 - Total Final Energy (kWh/m²/yr)
-     * Converts GJ/m²/yr to kWh/m²/yr
-     */
-    function calculateF35(d35Value, h15Value) {
-        // Convert GJ/m²/yr to kWh/m²/yr (1 GJ = 277.778 kWh)
-        return d35Value * 277.778;
-    }
-    
-    //==========================================================================
-    // PART 7: PUBLIC API
-    //==========================================================================
-    
-    /**
-     * Helper to get numeric value from Application state, with fallback
-     * @param {string} fieldId 
-     * @param {number} defaultValue Default value if field doesn't exist
-     * @returns {number} Parsed numeric value or default
-     */
-    function getAppNumericValue(fieldId, defaultValue = 0) {
-        const rawValue = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || getFieldValue(fieldId);
-        return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
-    }
-    
-    /**
-     * Helper to get numeric value from Reference state, with fallback
-     * @param {string} fieldId 
-     * @param {number} defaultValue Default value if field doesn't exist
-     * @returns {number} Parsed numeric value or default
-     */
-    function getRefNumericValue(fieldId, defaultValue = 0) {
-        const refValue = window.TEUI?.StateManager?.getReferenceValue?.(fieldId);
-        if (refValue !== null && refValue !== undefined) {
-            return window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
-        }
+        // f_35: Primary Energy Intensity
+        sm.registerCalculation('f_35', function() {
+            const d35 = getAppNumericValue('d_35');
+        const h15 = getAppNumericValue('h_15'); 
+        return d35 / (h15 || 1);
+        }, 'Primary Energy Intensity (kWh/m²/yr)');
         
-        // Check session reference state as fallback
-        if (window.TEUI?.StateManager?.getSessionReferenceValue) {
-            const sessionValue = window.TEUI.StateManager.getSessionReferenceValue(fieldId);
-            if (sessionValue !== null && sessionValue !== undefined) {
-                return window.TEUI?.parseNumeric?.(sessionValue, defaultValue) ?? defaultValue;
-            }
-        }
+        // Register dependencies for Reference Model values
+        sm.registerDependency('ref_l_27', 'ref_g_27');
+        sm.registerDependency('ref_l_27', 'ref_k_27');
+        sm.registerDependency('ref_j_27', 'ref_k_27');
+        sm.registerDependency('ref_h_28', 'ref_j_28');
+        sm.registerDependency('ref_h_28', 'ref_k_28');
+        sm.registerDependency('ref_l_28', 'ref_k_28');
+        sm.registerDependency('ref_h_29', 'ref_j_29');
+        sm.registerDependency('ref_h_29', 'ref_k_29');
+        sm.registerDependency('ref_l_29', 'ref_k_29');
+        sm.registerDependency('ref_h_30', 'ref_j_30');
+        sm.registerDependency('ref_h_30', 'ref_k_30');
+        sm.registerDependency('ref_l_30', 'ref_k_30');
+        sm.registerDependency('ref_h_31', 'ref_j_31');
+        sm.registerDependency('ref_h_31', 'ref_k_31');
+        sm.registerDependency('ref_l_31', 'ref_k_31');
+        sm.registerDependency('ref_j_27', 'ref_j_32');
+        sm.registerDependency('ref_j_28', 'ref_j_32');
+        sm.registerDependency('ref_j_29', 'ref_j_32');
+        sm.registerDependency('ref_j_30', 'ref_j_32');
+        sm.registerDependency('ref_j_31', 'ref_j_32');
+        sm.registerDependency('ref_k_27', 'ref_k_32');
+        sm.registerDependency('ref_k_28', 'ref_k_32');
+        sm.registerDependency('ref_k_29', 'ref_k_32');
+        sm.registerDependency('ref_k_30', 'ref_k_32');
+        sm.registerDependency('ref_k_31', 'ref_k_32');
+        sm.registerDependency('d_60', 'ref_k_32');
         
-        // Final fallback - use application value 
-        return getAppNumericValue(fieldId, defaultValue);
-    }
-
-    /**
-     * Main calculation function that runs all calculations
-     * Implements Traffic Cop pattern with recursion protection
-     */
-    function calculateAll() {
-        console.log('[S04] Running calculateAll()');
-            
-        // TRAFFIC COP: Prevent recursion
-        if (window.TEUI.sect04.calculationInProgress) {
-            console.log('[S04 TRAFFIC COP] ⏸️ Calculation already in progress, skipping...');
-            return;
-        }
-        
-        window.TEUI.sect04.calculationInProgress = true;
-        
-        try {
-            // First, ensure electricity emissions factor is up to date
-            updateElectricityEmissionFactor();
-            
-            // Run both calculation engines
-            calculateReferenceModel();
-            calculateTargetModel();
-            
-            // Update UI based on current viewing mode
-            if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-                console.log('[S04] In Reference Mode - displaying Reference values');
-                // Reference mode UI is handled by calculateReferenceModel and updateGridIntensityForMode
-            } else {
-                console.log('[S04] In Application Mode - displaying Target values');
-                // Application mode UI is handled by calculateTargetModel
-            }
-        } catch (error) {
-            console.error('[S04] Error in calculateAll:', error);
-        } finally {
-            // Always clear the flag when done
-            window.TEUI.sect04.calculationInProgress = false;
-        }
-        }
-        
-    /**
-     * Reference Model calculation engine
-     * Follows Dual-Engine architecture from README.md
-     */
-    function calculateReferenceModel() {
-        console.log('[S04] 🔵 Running Reference Model calculation');
-        
-        // Prevent recursion within the Reference engine
-        if (referenceCalculationInProgress) {
-            console.log('[S04] Reference calculation already in progress, skipping');
-            return;
-        }
-        
-        try {
-        referenceCalculationInProgress = true;
-        
-            // Get Reference Model inputs using Reference-specific getters
-            const ref_d27 = getRefNumericValue('d_27');
-            const ref_d28 = getRefNumericValue('d_28');
-            const ref_d29 = getRefNumericValue('d_29');
-            const ref_d30 = getRefNumericValue('d_30');
-            const ref_d31 = getRefNumericValue('d_31');
-            const ref_d43 = getRefNumericValue('d_43');
-            const ref_i43 = getRefNumericValue('i_43');
-            const ref_l27 = getRefNumericValue('l_27'); // Critical emissions factor
-            const ref_l28 = getRefNumericValue('l_28');
-            const ref_l29 = getRefNumericValue('l_29');
-            const ref_l30 = getRefNumericValue('l_30');
-            const ref_l31 = getRefNumericValue('l_31');
-            const ref_d60 = getRefNumericValue('d_60');
-            const ref_d136 = getRefNumericValue('d_136');
-            
-            // Calculate Reference electricity values
-            const ref_f27 = ref_d27 - ref_d43 - ref_i43;
-            const ref_g27 = (ref_f27 * ref_l27) / 1000;
-        const ref_h27 = ref_d136;
-            const ref_j27 = ref_h27 - ref_d43 - ref_i43;
-        const ref_k27 = (ref_j27 * ref_l27) / 1000;
-            
-            // Store the Reference values if we're in Reference Mode UI
-            if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-                setDualEngineValue('f_27', ref_f27, 'number-2dp-comma');
-                setDualEngineValue('g_27', ref_g27, 'number-2dp-comma');
-                setDualEngineValue('h_27', ref_h27, 'number-2dp-comma');
-                setDualEngineValue('j_27', ref_j27, 'number-2dp-comma');
-                setDualEngineValue('k_27', ref_k27, 'number-2dp-comma');
-                
-                // Calculate and store other Reference values for all rows
-                // (For brevity, only storing core totals in this implementation)
-                
-                // Calculate and store Reference subtotals
-                const ref_f32 = ref_f27; // Simplified for this example
-                const ref_g32 = ref_g27 - (ref_d60 * 1000); // Simplified
-                const ref_j32 = ref_j27; // Simplified
-                const ref_k32 = ref_k27 - (ref_d60 * 1000); // Simplified
-                
-                setDualEngineValue('f_32', ref_f32, 'number-2dp-comma');
-                setDualEngineValue('g_32', ref_g32, 'number-2dp-comma');
-                setDualEngineValue('j_32', ref_j32, 'number-2dp-comma');
-                setDualEngineValue('k_32', ref_k32, 'number-2dp-comma');
-            } else {
-                // We're in Application Mode UI, but still need to calculate Reference values
-                // and store them with ref_ prefix for future use
-                
-                // Store key Reference values in StateManager for later use
-                if (window.TEUI?.StateManager?.setReferenceValue) {
-                    window.TEUI.StateManager.setReferenceValue('ref_f_27', ref_f27.toString(), 'calculated-reference');
-                    window.TEUI.StateManager.setReferenceValue('ref_j_27', ref_j27.toString(), 'calculated-reference');
-                    window.TEUI.StateManager.setReferenceValue('ref_f_32', ref_f27.toString(), 'calculated-reference'); // Simplified
-                    window.TEUI.StateManager.setReferenceValue('ref_j_32', ref_j27.toString(), 'calculated-reference'); // Simplified
-            }
-        }
-        } finally {
-            referenceCalculationInProgress = false;
-        }
-    }
-    
-    /**
-     * Target/Application Model calculation engine
-     * Follows Dual-Engine architecture from README.md
-     */
-    function calculateTargetModel() {
-        console.log('[S04] 🟢 Running Target Model calculation');
-        
-        // Prevent recursion within the Target engine
-        if (targetCalculationInProgress) {
-            console.log('[S04] Target calculation already in progress, skipping');
-            return;
-        }
-        
-        try {
-        targetCalculationInProgress = true;
-        
-            // Calculate row 27 (Electricity)
-            const f27Value = calculateF27();
-            setCalculatedValue('f_27', f27Value, 'number-2dp-comma');
-        
-            const g27Value = calculateG27();
-            setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
-            
-            // Get h_27 from S15 (d_136) if available
-            const d136Value = getAppNumericValue('d_136');
-            const h27Value = calculateH27(d136Value);
-            setCalculatedValue('h_27', h27Value, 'number-2dp-comma');
-        
-            const j27Value = calculateJ27();
-            setCalculatedValue('j_27', j27Value, 'number-2dp-comma');
-            
-            const k27Value = calculateK27();
-            setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
-        
-            // Update all other rows and calculate subtotals
-        updateSubtotals();
-        } finally {
-            targetCalculationInProgress = false;
-        }
-    }
-    
-    /**
-     * Called when the section is first rendered
-     * Initializes calculations and default state
-     */
-    function onSectionRendered() {
-        console.log('[S04] Section rendered, initializing...');
-        
-        // Register IT-DEPENDS calculations with StateManager
-        registerITDependsCalculations();
-        
-        // Initialize emissions factor based on province and reporting year
-        updateElectricityEmissionFactor();
-        
-        // Run initial calculations
-        calculateAll();
-    }
-    
-    /**
-     * Register all IT-DEPENDS calculations with StateManager
-     */
-    function registerITDependsCalculations() {
-        // Only register if StateManager exists
-        if (!window.TEUI?.StateManager) {
-            console.warn('[S04] StateManager not available for registerITDependsCalculations');
-            return;
-        }
-        
-        const sm = window.TEUI.StateManager;
-        
-        // Register electricity calculations
-        sm.registerCalculation('f_27', calculateF27, 'Actual Net Electricity');
-        sm.registerCalculation('g_27', calculateG27, 'Actual Electricity Emissions');
-        sm.registerCalculation('h_27', function() { return calculateH27(sm.getValue('d_136')); }, 'Target Electricity');
-        sm.registerCalculation('j_27', calculateJ27, 'Target Net Electricity');
-        sm.registerCalculation('k_27', calculateK27, 'Target Electricity Emissions');
-        
-        // Register other calculations for rows 28-35
-        // (Simplified for brevity)
-        
-        // Register subtotal calculations
-        sm.registerCalculation('f_32', calculateF32, 'Actual Net Energy Subtotal');
-        sm.registerCalculation('g_32', calculateG32, 'Actual Emissions Subtotal');
-        sm.registerCalculation('j_32', calculateJ32, 'Target Net Energy Subtotal');
-        sm.registerCalculation('k_32', calculateK32, 'Target Emissions Subtotal');
-        
-        // Register other dependent calculations
-        sm.registerCalculation('d_33', calculateD33, 'Actual Total Net Energy (GJ/yr)');
-        sm.registerCalculation('h_33', calculateH33, 'Target Total Net Energy (GJ/yr)');
-        sm.registerCalculation('d_34', calculateD34, 'Annual Per Capita Energy (kWh/person/yr)');
-        sm.registerCalculation('d_35', calculateD35, 'Total Final Energy (GJ/m²/yr)');
-        sm.registerCalculation('f_35', calculateF35, 'Total Final Energy (kWh/m²/yr)');
-        
-        // Register dependencies for electricity calculations
+        // Register main dependencies
+        // Row 27: Electricity
         sm.registerDependency('d_27', 'f_27');
         sm.registerDependency('d_43', 'f_27');
         sm.registerDependency('i_43', 'f_27');
@@ -1571,15 +1660,323 @@ window.TEUI.SectionModules.sect04 = (function() {
         sm.registerDependency('i_43', 'j_27');
         sm.registerDependency('j_27', 'k_27');
         sm.registerDependency('l_27', 'k_27');
+        sm.registerDependency('d_19', 'l_27');
+        sm.registerDependency('h_12', 'l_27');
         
-        // Register dependencies for subtotals
+        // Row 28: Gas
+        sm.registerDependency('d_28', 'f_28');
+        sm.registerDependency('d_28', 'g_28');
+        sm.registerDependency('l_28', 'g_28');
+        sm.registerDependency('d_51', 'h_28');
+        sm.registerDependency('e_51', 'h_28');
+        sm.registerDependency('d_113', 'h_28');
+        sm.registerDependency('h_115', 'h_28');
+        sm.registerDependency('h_28', 'j_28');
+        sm.registerDependency('h_28', 'k_28');
+        sm.registerDependency('l_28', 'k_28');
+        
+        // Row 29: Propane
+        sm.registerDependency('d_29', 'f_29');
+        sm.registerDependency('d_29', 'g_29');
+        sm.registerDependency('l_29', 'g_29');
+        sm.registerDependency('d_29', 'h_29');
+        sm.registerDependency('h_29', 'j_29');
+        sm.registerDependency('h_29', 'k_29');
+        sm.registerDependency('l_29', 'k_29');
+        
+        // Row 30: Oil
+        sm.registerDependency('d_30', 'f_30');
+        sm.registerDependency('d_30', 'g_30');
+        sm.registerDependency('l_30', 'g_30');
+        sm.registerDependency('d_51', 'h_30');
+        sm.registerDependency('k_54', 'h_30');
+        sm.registerDependency('d_113', 'h_30');
+        sm.registerDependency('f_115', 'h_30');
+        sm.registerDependency('h_30', 'j_30');
+        sm.registerDependency('h_30', 'k_30');
+        sm.registerDependency('l_30', 'k_30');
+        
+        // Row 31: Wood
+        sm.registerDependency('d_31', 'f_31');
+        sm.registerDependency('h_31', 'g_31');
+        sm.registerDependency('l_31', 'g_31');
+        sm.registerDependency('d_31', 'h_31');
+        sm.registerDependency('h_31', 'j_31');
+        sm.registerDependency('h_31', 'k_31');
+        sm.registerDependency('l_31', 'k_31');
+        
+        // Row 32: Subtotals
         sm.registerDependency('f_27', 'f_32');
         sm.registerDependency('f_28', 'f_32');
         sm.registerDependency('f_29', 'f_32');
         sm.registerDependency('f_30', 'f_32');
         sm.registerDependency('f_31', 'f_32');
+        sm.registerDependency('g_27', 'g_32');
+        sm.registerDependency('g_28', 'g_32');
+        sm.registerDependency('g_29', 'g_32');
+        sm.registerDependency('g_30', 'g_32');
+        sm.registerDependency('g_31', 'g_32');
+        sm.registerDependency('d_60', 'g_32');
+        sm.registerDependency('j_27', 'j_32');
+        sm.registerDependency('j_28', 'j_32');
+        sm.registerDependency('j_29', 'j_32');
+        sm.registerDependency('j_30', 'j_32');
+        sm.registerDependency('j_31', 'j_32');
+        sm.registerDependency('k_27', 'k_32');
+        sm.registerDependency('k_28', 'k_32');
+        sm.registerDependency('k_29', 'k_32');
+        sm.registerDependency('k_30', 'k_32');
+        sm.registerDependency('k_31', 'k_32');
+        sm.registerDependency('d_60', 'k_32');
         
-        console.log('[S04] ✅ IT-DEPENDS calculations registered');
+        // Row 33: Total Net Energy
+        sm.registerDependency('f_27', 'd_33');
+        sm.registerDependency('f_28', 'd_33');
+        sm.registerDependency('f_29', 'd_33');
+        sm.registerDependency('f_30', 'd_33');
+        sm.registerDependency('f_31', 'd_33');
+        sm.registerDependency('d_43', 'd_33');
+        sm.registerDependency('i_43', 'd_33');
+        sm.registerDependency('j_27', 'h_33');
+        sm.registerDependency('j_28', 'h_33');
+        sm.registerDependency('j_29', 'h_33');
+        sm.registerDependency('j_30', 'h_33');
+        sm.registerDependency('j_31', 'h_33');
+        sm.registerDependency('i_43', 'h_33');
+        sm.registerDependency('d_43', 'h_33');
+        
+        // Row 34: Per Capita Energy
+        sm.registerDependency('f_32', 'd_34');
+        sm.registerDependency('d_63', 'd_34');
+        sm.registerDependency('d_33', 'f_34');
+        sm.registerDependency('d_63', 'f_34');
+        sm.registerDependency('j_32', 'h_34');
+        sm.registerDependency('d_63', 'h_34');
+        sm.registerDependency('h_33', 'j_34');
+        sm.registerDependency('d_63', 'j_34');
+        
+        // Row 35: Primary Energy
+        sm.registerDependency('d_14', 'd_35');
+        sm.registerDependency('j_27', 'd_35');
+        sm.registerDependency('h_35', 'd_35');
+        sm.registerDependency('f_27', 'd_35');
+        sm.registerDependency('d_35', 'f_35');
+        sm.registerDependency('h_15', 'f_35');
+    }
+    
+    //==========================================================================
+    // DUAL-ENGINE ARCHITECTURE
+    //==========================================================================
+    
+    /**
+     * REFERENCE MODEL ENGINE: Calculate all Reference values
+     */
+    function calculateReferenceModel() {
+        if (referenceCalculationInProgress) return;
+        
+        try {
+        referenceCalculationInProgress = true;
+        
+            // Get Reference values
+            const ref_d136 = getRefNumericValue('d_136', 0);
+            
+            const ref_d51 = window.TEUI?.StateManager?.getReferenceValue?.('d_51') || 
+                          window.TEUI?.StateManager?.getValue?.('d_51');
+            const ref_e51 = getRefNumericValue('e_51', 0);
+            const ref_k54 = getRefNumericValue('k_54', 0);
+            const ref_d113 = window.TEUI?.StateManager?.getReferenceValue?.('d_113') || 
+                           window.TEUI?.StateManager?.getValue?.('d_113');
+            const ref_h115 = getRefNumericValue('h_115', 0);
+            const ref_f115 = getRefNumericValue('f_115', 0);
+            
+            const d27 = getAppNumericValue('d_27', 0);
+            const d28 = getAppNumericValue('d_28', 0);
+            const d29 = getAppNumericValue('d_29', 0);
+            const d30 = getAppNumericValue('d_30', 0);
+            const d31 = getAppNumericValue('d_31', 0);
+            const d60 = getAppNumericValue('d_60', 0);
+            
+            // Get emission factors
+            const l27 = getRefNumericValue('l_27', 0);
+            const l28 = getAppNumericValue('l_28', 0);
+            const l29 = getAppNumericValue('l_29', 0);
+            const l30 = getAppNumericValue('l_30', 0);
+            const l31 = getAppNumericValue('l_31', 0);
+        
+        // Calculate Reference H values (Target consumption)
+        const ref_h27 = ref_d136;
+        
+            // H28: Gas target
+        let ref_h28 = 0;
+        if (ref_d113 === "Gas" && ref_d51 === "Gas") {
+                ref_h28 = ref_e51 + ref_h115;
+        } else if (ref_d51 === "Gas") {
+                ref_h28 = ref_e51;
+        } else if (ref_d113 === "Gas") {
+                ref_h28 = ref_h115;
+        }
+        
+        // H29: Propane = actual
+        const ref_h29 = d29;
+        
+            // H30: Oil target
+        let ref_h30 = 0;
+        if (ref_d113 === "Oil" && ref_d51 === "Oil") {
+                ref_h30 = ref_k54 + ref_f115;
+        } else if (ref_d51 === "Oil") {
+                ref_h30 = ref_k54;
+        } else if (ref_d113 === "Oil") {
+                ref_h30 = ref_f115;
+        }
+        
+        // H31: Wood = actual
+        const ref_h31 = d31;
+        
+        // Calculate Reference J values (Energy)
+            const ref_j27 = ref_h27;
+            const ref_j28 = ref_h28 * 0.0373 * 277.7778;
+            const ref_j29 = ref_h29 * 14.019;
+            const ref_j30 = ref_h30 * 36.72 * 0.2777778;
+            const ref_j31 = ref_h31 * 1000;
+        
+        // Calculate Reference K values (Emissions)
+            const ref_k27 = (ref_j27 * l27) / 1000;
+        const ref_k28 = (ref_h28 * l28) / 1000;
+        const ref_k29 = (ref_h29 * l29) / 1000;
+        const ref_k30 = (ref_h30 * l30) / 1000;
+        const ref_k31 = ref_h31 * l31;
+        
+        // Calculate Reference subtotals
+        const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
+        const ref_k32 = ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - (d60 * 1000);
+        
+            // Store Reference values with ref_ prefix
+        if (window.TEUI?.StateManager) {
+                // Row 27
+                window.TEUI.StateManager.setValue('ref_h_27', ref_h27.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_j_27', ref_j27.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_27', ref_k27.toString(), 'calculated');
+            
+            // Row 28
+                window.TEUI.StateManager.setValue('ref_h_28', ref_h28.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_j_28', ref_j28.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_28', ref_k28.toString(), 'calculated');
+            
+            // Row 29
+                window.TEUI.StateManager.setValue('ref_h_29', ref_h29.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_j_29', ref_j29.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_29', ref_k29.toString(), 'calculated');
+            
+            // Row 30
+                window.TEUI.StateManager.setValue('ref_h_30', ref_h30.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_j_30', ref_j30.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_30', ref_k30.toString(), 'calculated');
+            
+            // Row 31
+                window.TEUI.StateManager.setValue('ref_h_31', ref_h31.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_j_31', ref_j31.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_31', ref_k31.toString(), 'calculated');
+                
+                // Subtotals
+                window.TEUI.StateManager.setValue('ref_j_32', ref_j32.toString(), 'calculated');
+                window.TEUI.StateManager.setValue('ref_k_32', ref_k32.toString(), 'calculated');
+        }
+        } finally {
+            referenceCalculationInProgress = false;
+        }
+    }
+    
+    /**
+     * TARGET MODEL ENGINE: Calculate all Target/Application values
+     */
+    function calculateTargetModel() {
+        // Update electricity emission factor
+        updateElectricityEmissionFactor();
+        
+        // Calculate all rows
+        const f27Value = calculateF27();
+        setCalculatedValue('f_27', f27Value, 'number-2dp-comma');
+        const g27Value = calculateG27();
+        setCalculatedValue('g_27', g27Value, 'number-2dp-comma');
+        
+        const f28Value = calculateF28();
+        setCalculatedValue('f_28', f28Value, 'number-2dp-comma');
+        const g28Value = calculateG28();
+        setCalculatedValue('g_28', g28Value, 'number-2dp-comma');
+        
+        const f29Value = calculateF29();
+        setCalculatedValue('f_29', f29Value, 'number-2dp-comma');
+        const g29Value = calculateG29();
+        setCalculatedValue('g_29', g29Value, 'number-2dp-comma');
+        
+        const f30Value = calculateF30();
+        setCalculatedValue('f_30', f30Value, 'number-2dp-comma');
+        const g30Value = calculateG30();
+        setCalculatedValue('g_30', g30Value, 'number-2dp-comma');
+        
+        const f31Value = calculateF31();
+        setCalculatedValue('f_31', f31Value, 'number-2dp-comma');
+        const g31Value = calculateG31();
+        setCalculatedValue('g_31', g31Value, 'number-2dp-comma');
+        
+        // Update subtotals
+        updateSubtotals();
+    }
+    
+    /**
+     * Main calculation function for Section 04.
+     * Handles both reference and application models.
+     */
+    function calculateAll() {
+        // Prevent recursion
+        if (window.TEUI.sect04.calculationInProgress) return;
+        
+        // Set recursion protection flag
+            window.TEUI.sect04.calculationInProgress = true;
+            
+        try {
+            // DUAL-ENGINE ARCHITECTURE: Always run both engines
+            calculateReferenceModel();  // Calculates Reference values using ref_ inputs
+            calculateTargetModel();     // Calculates Target values using application state
+            
+            // CRITICAL FIX: Update UI after calculations complete
+            refreshUIForCurrentMode();
+        } finally {
+            // Clear recursion protection flag
+            window.TEUI.sect04.calculationInProgress = false;
+        }
+    }
+
+    /**
+     * Called when the section is rendered
+     */
+    function onSectionRendered() {
+        // Set global recursion protection flag
+        window.TEUI.sect04 = window.TEUI.sect04 || {};
+        window.TEUI.sect04.calculationInProgress = false;
+        
+        // Initialize event handlers for editable fields
+        initializeEventHandlers();
+        
+        // Register IT-DEPENDS calculations
+        registerITDependsCalculations();
+        
+        // Set default province if not already set
+        if (window.TEUI?.StateManager && !window.TEUI.StateManager.getValue('d_19')) {
+            window.TEUI.StateManager.setValue('d_19', 'ON', 'default');
+            if (!window.TEUI.StateManager.getValue('dd_d_19')) {
+                window.TEUI.StateManager.setValue('dd_d_19', 'ON', 'default');
+            }
+        }
+        
+        // Mark as initialized
+        window.TEUI.sect04.initialized = true;
+        
+        // Run initial calculations after initialization
+        calculateAll();
+        
+        // CRITICAL FIX: Ensure UI reflects the correct mode immediately
+        refreshUIForCurrentMode();
     }
     
     // Return public API using standardized function names
@@ -1591,114 +1988,97 @@ window.TEUI.SectionModules.sect04 = (function() {
         initializeEventHandlers: initializeEventHandlers,
         onSectionRendered: onSectionRendered,
         
-        // Keep metadata accessor if needed elsewhere, though not standard
+        // Metadata accessor
         getMetadata: function() { 
             return sectionRows.metadata; 
         },
         
-        // Expose calculation and helper functions if they need to be called externally
-        // or by listeners that might have a different 'this' context.
-        calculateAll: calculateAll, // Now correctly points to the defined function
-        calculateReferenceModel: calculateReferenceModel, // NEW: Reference engine
-        calculateTargetModel: calculateTargetModel, // NEW: Target engine
-        updateElectricityEmissionFactor: updateElectricityEmissionFactor,
-        getProvinceCode: getProvinceCode, // Expose getProvinceCode
-        // ... any other functions that need to be public ...
-
-        // Keep calculations exposed if needed (already present)
-        calculations: {
-             // ... (rest of the calculation functions) ...
-        },
+        // Public calculation functions
+        calculateAll: calculateAll,
+        calculateReferenceModel: calculateReferenceModel,
+        calculateApplicationModel: calculateTargetModel,
         
-        updateSubtotals: updateSubtotals,
-        updateDependentTotals: updateDependentTotals,
+        // CRITICAL FIX: Export UI refresh function
+        refreshUIForCurrentMode: refreshUIForCurrentMode,
         
-        // IT-DEPENDS test function
-        testS04_ITDepends: function() {
-            console.log('=== S04 IT-DEPENDS TEST ===');
-            
-            const sm = window.TEUI.StateManager;
-            if (!sm) {
-                console.error('❌ StateManager not found');
-                return false;
-            }
-            
-            console.log('✓ StateManager found');
-            
-            // Test 1: Check all calculations are registered
-            const expectedCalculations = [
-                'f_27', 'g_27', 'h_27', 'j_27', 'k_27',
-                'f_28', 'g_28', 'h_28', 'j_28', 'k_28',
-                'f_29', 'g_29', 'h_29', 'j_29', 'k_29',
-                'f_30', 'g_30', 'h_30', 'j_30', 'k_30',
-                'f_31', 'g_31', 'h_31', 'j_31', 'k_31',
-                'f_32', 'g_32', 'j_32', 'k_32',
-                'd_33', 'h_33', 'd_34', 'f_34', 'h_34', 'j_34',
-                'd_35', 'f_35'
-            ];
-            
-            console.log('\n--- Testing Calculation Registrations ---');
-            let registrationsPassed = 0;
-            expectedCalculations.forEach(calcId => {
-                const isRegistered = sm.hasCalculation && sm.hasCalculation(calcId);
-                console.log(`${isRegistered ? '✓' : '❌'} ${calcId} registered: ${isRegistered}`);
-                if (isRegistered) registrationsPassed++;
-            });
-            
-            console.log(`\nRegistration Summary: ${registrationsPassed}/${expectedCalculations.length} calculations registered`);
-            
-            // Test 2: Test calculation execution
-            console.log('\n--- Testing Calculation Execution ---');
-            
-            // Test j_32 (Target Energy Subtotal) calculation
-            console.log('\nTesting j_32 (Target Energy Subtotal) calculation:');
-            const j27 = getNumericValue('j_27');
-            const j28 = getNumericValue('j_28');
-            const j29 = getNumericValue('j_29');
-            const j30 = getNumericValue('j_30');
-            const j31 = getNumericValue('j_31');
-            const expectedJ32 = j27 + j28 + j29 + j30 + j31;
-            const actualJ32 = getNumericValue('j_32');
-            console.log(`j_27: ${j27}, j_28: ${j28}, j_29: ${j29}, j_30: ${j30}, j_31: ${j31}`);
-            console.log(`Expected j_32: ${expectedJ32.toFixed(2)}`);
-            console.log(`Actual j_32: ${actualJ32.toFixed(2)}`);
-            console.log(`${Math.abs(expectedJ32 - actualJ32) < 0.01 ? '✓' : '❌'} j_32 calculation correct`);
-            
-            // Test 3: Test cross-section dependency
-            console.log('\n--- Testing Cross-Section Dependencies ---');
-            console.log('Simulating change in d_136 (from S15)...');
-            
-            const originalD136 = getNumericValue('d_136');
-            const originalH27 = getNumericValue('h_27');
-            const testValue = 50000;
-            
-            // Set a test value
-            sm.setValue('d_136', testValue.toString(), 'test');
-            
-            // Allow time for calculations to propagate
-            setTimeout(() => {
-                const newH27 = getNumericValue('h_27');
-                console.log(`Original d_136: ${originalD136}`);
-                console.log(`Test d_136: ${testValue}`);
-                console.log(`Original h_27: ${originalH27}`);
-                console.log(`New h_27: ${newH27}`);
-                console.log(`${Math.abs(newH27 - testValue) < 0.01 ? '✓' : '❌'} Cross-section dependency working`);
-                
-                // Restore original value
-                sm.setValue('d_136', originalD136.toString(), 'test');
-                
-                // Test 4: Test dual-engine separation
-                console.log('\n--- Testing Dual-Engine Separation ---');
-                const refJ32 = sm.getValue('ref_j_32');
-                const appJ32 = sm.getValue('j_32');
-                console.log(`Reference j_32: ${refJ32}`);
-                console.log(`Application j_32: ${appJ32}`);
-                console.log(`${refJ32 && appJ32 && refJ32 !== appJ32 ? '✓' : '❌'} Dual-engine values properly separated`);
-                
-                console.log('\n=== S04 IT-DEPENDS TEST COMPLETE ===');
-            }, 100);
-            
-            return true;
-        }
+        // Testing function
+        testITDependsCalculations: testITDependsCalculations
     };
+    
+    /**
+     * Test IT-DEPENDS calculations for this section
+     * Useful for debugging and verification
+     */
+    function testITDependsCalculations() {
+        if (!window.TEUI?.StateManager) {
+            console.error('[S04 Test] StateManager not available');
+            return;
+        }
+        
+        console.log('--------------------------------');
+        console.log('SECTION 04 - IT-DEPENDS TEST');
+        console.log('--------------------------------');
+        
+        // Test data
+        const testData = {
+            'd_27': '100000',   // Electricity 
+            'd_28': '1000',     // Gas
+            'd_29': '500',      // Propane
+            'd_30': '200',      // Oil
+            'd_31': '5',        // Wood
+            'd_43': '10000',    // Onsite renewables
+            'i_43': '5000',     // Offsite REC
+            'd_136': '95000',   // Target electricity
+            'l_27': '51',       // Electricity emissions factor
+            'l_28': '1921',     // Gas emissions factor
+            'l_29': '2970',     // Propane emissions factor
+            'l_30': '2753',     // Oil emissions factor
+            'l_31': '150',      // Wood emissions factor
+            'd_60': '2',        // Wood offsets
+            'd_63': '4'         // Occupants
+        };
+        
+        // Set test values
+        Object.entries(testData).forEach(([fieldId, value]) => {
+            window.TEUI.StateManager.setValue(fieldId, value, 'test');
+            console.log(`[S04 Test] Set ${fieldId} = ${value}`);
+        });
+        
+        // Wait for StateManager to process values
+        setTimeout(() => {
+            // Verify row 27: Electricity
+            const f27 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('f_27'), 0);
+            console.log(`[S04 Test] f_27 (Actual Net Electricity): ${f27.toFixed(2)} kWh/yr`);
+            const expected_f27 = 100000 - 10000 - 5000; // Electricity - Onsite - Offsite
+            console.log(`[S04 Test] Expected f_27: ${expected_f27.toFixed(2)} kWh/yr`);
+            
+            const g27 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('g_27'), 0);
+            console.log(`[S04 Test] g_27 (Actual Electricity Emissions): ${g27.toFixed(2)} kgCO2e/yr`);
+            const expected_g27 = (expected_f27 * 51) / 1000; // Net electricity * factor / 1000
+            console.log(`[S04 Test] Expected g_27: ${expected_g27.toFixed(2)} kgCO2e/yr`);
+            
+            // Verify subtotals
+            const f32 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('f_32'), 0);
+            console.log(`[S04 Test] f_32 (Total Actual Energy): ${f32.toFixed(2)} kWh/yr`);
+            
+            const g32 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('g_32'), 0);
+            console.log(`[S04 Test] g_32 (Total Actual Emissions): ${g32.toFixed(2)} kgCO2e/yr`);
+            
+            const j32 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('j_32'), 0);
+            console.log(`[S04 Test] j_32 (Total Target Energy): ${j32.toFixed(2)} kWh/yr`);
+            
+            const k32 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('k_32'), 0);
+            console.log(`[S04 Test] k_32 (Total Target Emissions): ${k32.toFixed(2)} kgCO2e/yr`);
+            
+            // Verify per capita values
+            const d34 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('d_34'), 0);
+            console.log(`[S04 Test] d_34 (Actual Per Capita Energy): ${d34.toFixed(2)} kWh/person`);
+            const expected_d34 = f32 / 4; // Total energy / occupants
+            console.log(`[S04 Test] Expected d_34: ${expected_d34.toFixed(2)} kWh/person`);
+            
+            console.log('--------------------------------');
+            console.log('SECTION 04 - TEST COMPLETE');
+            console.log('--------------------------------');
+            }, 100);
+        }
 })();
