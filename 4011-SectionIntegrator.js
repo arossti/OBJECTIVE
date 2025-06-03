@@ -95,7 +95,6 @@ TEUI.SectionIntegrator = (function() {
      * Initialize the integrator
      */
     function initialize() {
-        // console.log('Initializing SectionIntegrator');
         
         // Register known integrations
         registerTEUIIntegration();
@@ -106,7 +105,6 @@ TEUI.SectionIntegrator = (function() {
         
         // Listen for rendering complete event
         document.addEventListener('teui-rendering-complete', function() {
-            // console.log('Rendering complete, initializing section integrations');
             initializeAllIntegrations();
         });
     }
@@ -123,7 +121,6 @@ TEUI.SectionIntegrator = (function() {
             initialize: initializeTEUIIntegration
         };
         
-        // console.log('TEUI Integration registered');
     }
     
     /**
@@ -138,7 +135,6 @@ TEUI.SectionIntegrator = (function() {
             initialize: initializeEmissionsFactorIntegration
         };
         
-        // console.log('Emissions Factor Integration registered');
     }
     
     /**
@@ -153,7 +149,6 @@ TEUI.SectionIntegrator = (function() {
             initialize: initializeRadiantGainsIntegration
         };
         
-        // console.log('Radiant Gains Integration registered');
     }
     
     /**
@@ -168,7 +163,6 @@ TEUI.SectionIntegrator = (function() {
             initialize: initializeTEDITELIIntegration
         };
         
-        // console.log('TEDI & TELI Integration registered');
     }
     
     /**
@@ -183,7 +177,6 @@ TEUI.SectionIntegrator = (function() {
             initialize: initializeVolumeMetricsIntegration
         };
         
-        // console.log('Volume Metrics Integration registered');
     }
     
     /**
@@ -205,7 +198,6 @@ TEUI.SectionIntegrator = (function() {
      * Initialize the TEUI integration between Section04 and Section01
      */
     function initializeTEUIIntegration() {
-        // console.log('Initializing TEUI integration');
         
         if (!window.TEUI.StateManager) {
             console.error('StateManager not available for TEUI integration');
@@ -213,7 +205,6 @@ TEUI.SectionIntegrator = (function() {
         }
         
         // Set correct values in the StateManager to ensure proper TEUI calculation
-        // console.log('Ensuring correct TEUI source values are set in StateManager');
         ensureCorrectTEUIValues();
         
         // For Section04, find the total energy input fields and add change listeners
@@ -225,14 +216,12 @@ TEUI.SectionIntegrator = (function() {
         // Make initial calculation
         updateTEUIValues();
         
-        // console.log('TEUI integration complete');
     }
     
     /**
      * Initialize the TEDI & TELI integration between Section14, Section15, and other sections
      */
     function initializeTEDITELIIntegration() {
-        // console.log('Initializing TEDI & TELI integration');
         
         if (!window.TEUI.StateManager) {
             console.error('StateManager not available for TEDI/TELI integration');
@@ -247,14 +236,12 @@ TEUI.SectionIntegrator = (function() {
         
         // Create a global function for forcing TEDI/TELI recalculation from any section
         window.TEUI.updateTEDITELIValues = function() {
-            // console.log('Global TEDI/TELI update function called');
             forceTEDITELIUpdate();
         };
         
         // Initial calculation to ensure consistency 
         forceTEDITELIUpdate();
         
-        // console.log('TEDI & TELI integration complete');
     }
     
     /**
@@ -276,7 +263,6 @@ TEUI.SectionIntegrator = (function() {
         // Register other critical cross-section dependencies
         window.TEUI.StateManager.registerDependency('d_121', 'd_126'); // Ventilation affects TED Targeted
         
-        // console.log('TEDI/TELI cross-section dependencies registered');
     }
     
     /**
@@ -287,34 +273,28 @@ TEUI.SectionIntegrator = (function() {
         
         // Listen for area changes to update intensity values
         window.TEUI.StateManager.addListener('h_15', function() {
-            // console.log('Building area changed, updating TEDI/TELI values');
             forceTEDITELIUpdate();
         });
         
         // Listen for ventilation changes
         window.TEUI.StateManager.addListener('d_121', function() {
-            // console.log('Ventilation values changed, updating TEDI values');
             forceTEDITELIUpdate();
         });
         
-        // console.log('TEDI/TELI listeners registered');
     }
     
     /**
      * Force update of TEDI/TELI calculations across all affected sections
      */
     function forceTEDITELIUpdate() {
-        // console.log('🔄 [SectionIntegrator] Forcing TEDI/TELI recalculation');
         
         // First try using Section 14's calculation function
         if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect14) {
             if (typeof window.TEUI.SectionModules.sect14.calculateValues === 'function') {
-                // console.log('Using sect14.calculateValues to update TEDI/TELI');
                 window.TEUI.SectionModules.sect14.calculateValues();
             }
             
             if (typeof window.TEUI.SectionModules.sect14.updateDisplay === 'function') {
-                // console.log('Using sect14.updateDisplay to refresh TEDI/TELI display');
                 window.TEUI.SectionModules.sect14.updateDisplay();
             }
         }
@@ -322,11 +302,9 @@ TEUI.SectionIntegrator = (function() {
         // Then update Section 15 if available
         if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect15) {
             if (typeof window.TEUI.SectionModules.sect15.calculateAll === 'function') {
-                // console.log('Using sect15.calculateAll to update TEUI Summary');
                 window.TEUI.SectionModules.sect15.calculateAll();
             } else if (typeof window.TEUI.SectionModules.sect15.calculateValues === 'function') {
                 // Fallback to calculateValues if calculateAll not available
-                // console.log('Using sect15.calculateValues as fallback');
                 window.TEUI.SectionModules.sect15.calculateValues();
                 
                 // Also call updateDisplay separately if calculateAll not available
@@ -339,12 +317,10 @@ TEUI.SectionIntegrator = (function() {
         // If Section 1 exists, trigger TEUI update there as well since it uses TEDI values
         if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect01) {
             if (typeof window.TEUI.SectionModules.sect01.updateTEUIDisplay === 'function') {
-                // console.log('Updating Section 1 TEUI display with new TEDI values');
                 window.TEUI.SectionModules.sect01.updateTEUIDisplay();
             }
         }
         
-        // console.log('🔄 [SectionIntegrator] TEDI/TELI update complete');
     }
     
     /**
@@ -360,19 +336,16 @@ TEUI.SectionIntegrator = (function() {
             
             // Only set defaults if they don't already exist from any source
             if (!hasF32) {
-                // console.log('Setting initial default for f_32');
                 window.TEUI.StateManager.setValue('f_32', '132938.00', 
                     window.TEUI.StateManager.VALUE_STATES.DEFAULT);
             }
             
             if (!hasJ32) {
-                // console.log('Setting initial default for j_32');
                 window.TEUI.StateManager.setValue('j_32', '132763.65',
                     window.TEUI.StateManager.VALUE_STATES.DEFAULT);
             }
             
             if (!hasH15) {
-                // console.log('Setting initial default for h_15');
                 window.TEUI.StateManager.setValue('h_15', '1427.20',
                     window.TEUI.StateManager.VALUE_STATES.DEFAULT);
             }
@@ -407,7 +380,6 @@ TEUI.SectionIntegrator = (function() {
             });
         });
         
-        // console.log(`Added TEUI listeners to ${actualEnergyInputs.length} actual energy inputs`);
         
         // Also listen for the target energy inputs
         const targetEnergyInputs = section04.querySelectorAll('input[data-contributes-to="j_32"]');
@@ -419,7 +391,6 @@ TEUI.SectionIntegrator = (function() {
             });
         });
         
-        // console.log(`Added TEUI listeners to ${targetEnergyInputs.length} target energy inputs`);
     }
     
     /**
@@ -443,7 +414,6 @@ TEUI.SectionIntegrator = (function() {
                 }
             });
             
-            // console.log('Added TEUI listener to Section 2 dropdown');
         }
     }
     
@@ -451,35 +421,29 @@ TEUI.SectionIntegrator = (function() {
      * Update TEUI values based on current energy and area data
      */
     function updateTEUIValues() {
-        // console.log('🔄 [SectionIntegrator] Forcing TEUI recalculation');
         
         // First, try to directly call the global calculateTEUI function (most direct method)
         if (typeof window.calculateTEUI === 'function') {
-            // console.log('🔄 [SectionIntegrator] Using global calculateTEUI function');
             window.calculateTEUI();
         }
         // Fallback to StateManager if direct function not available
         else if (window.TEUI.StateManager && 
             typeof window.TEUI.StateManager.updateTEUICalculations === 'function') {
-            // console.log('🔄 [SectionIntegrator] Using StateManager.updateTEUICalculations');
             window.TEUI.StateManager.updateTEUICalculations('section-integrator-force');
         }
         
         // Always trigger display update regardless of calculation method
         if (window.TEUI.SectionModules.sect01 && 
             typeof window.TEUI.SectionModules.sect01.updateTEUIDisplay === 'function') {
-            // console.log('🔄 [SectionIntegrator] Updating TEUI display');
             window.TEUI.SectionModules.sect01.updateTEUIDisplay();
         }
         
-        // console.log('🔄 [SectionIntegrator] TEUI update complete');
     }
     
     /**
      * Initialize the emissions factor integration between Section03 and Section04
      */
     function initializeEmissionsFactorIntegration() {
-        // console.log('Initializing emissions factor integration');
         
         if (!window.TEUI.StateManager) {
             console.error('StateManager not available for emissions factor integration');
@@ -492,26 +456,22 @@ TEUI.SectionIntegrator = (function() {
         
         // Add listener to force recalculation when province changes
         window.TEUI.StateManager.addListener('d_19', function(newValue) {
-            // console.log('Province changed in StateManager to:', newValue);
             forceEmissionsFactorUpdate();
         });
         
         // Add listener to force recalculation when reporting year changes
         window.TEUI.StateManager.addListener('h_12', function(newValue) {
-            // console.log('Reporting Year changed in StateManager to:', newValue);
             forceEmissionsFactorUpdate();
         });
         
         // Create a global function that Section09 can use safely
         window.TEUI.updateEmissionFactor = function() {
-            // console.log('Global emission factor update function called');
             forceEmissionsFactorUpdate();
         };
         
         // Initial update
         forceEmissionsFactorUpdate();
         
-        // console.log('Emissions factor integration complete');
     }
     
     /**
@@ -520,7 +480,6 @@ TEUI.SectionIntegrator = (function() {
     function forceEmissionsFactorUpdate() {
         // First try using the global function if it's available
         if (typeof window.updateElectricityEmissionFactor === 'function') {
-            // console.log('Using global updateElectricityEmissionFactor function');
             window.updateElectricityEmissionFactor();
             return;
         }
@@ -528,13 +487,11 @@ TEUI.SectionIntegrator = (function() {
         // Then try using the module function
         if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect04) {
             if (typeof window.TEUI.SectionModules.sect04.updateElectricityEmissionFactor === 'function') {
-                // console.log('Forcing emissions factor update via module function');
                 window.TEUI.SectionModules.sect04.updateElectricityEmissionFactor();
                 return;
             }
         }
         
-        // console.log('Emissions factor function not available, trying indirect method');
         // Try indirect method through DOM event
         const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
         if (provinceDropdown) {
@@ -546,7 +503,6 @@ TEUI.SectionIntegrator = (function() {
      * Initialize the radiant gains integration
      */
     function initializeRadiantGainsIntegration() {
-        // console.log('Initializing Radiant Gains integration');
         
         if (!window.TEUI.StateManager) {
             console.error('StateManager not available for Radiant Gains integration');
@@ -567,7 +523,6 @@ TEUI.SectionIntegrator = (function() {
         
         // Set up listener for climate zone changes
         window.TEUI.StateManager.addListener('j_19', function() {
-            // console.log('Climate zone changed, updating radiant gains');
             if (typeof window.recalculateRadiantGains === 'function') {
                 window.recalculateRadiantGains();
             }
@@ -575,20 +530,17 @@ TEUI.SectionIntegrator = (function() {
         
         // Create a global function that any section can use
         window.TEUI.updateRadiantGains = function() {
-            // console.log('Global radiant gains update function called');
             if (typeof window.recalculateRadiantGains === 'function') {
                 window.recalculateRadiantGains();
             }
         };
         
-        // console.log('Radiant Gains integration complete');
     }
     
     /**
      * Initialize the TEDI & TELI integration between Section14, Section15, and other sections
      */
     function initializeTEDITELIIntegration() {
-        // console.log('Initializing TEDI & TELI integration');
         
         if (!window.TEUI.StateManager) {
             console.error('StateManager not available for TEDI/TELI integration');
@@ -603,21 +555,18 @@ TEUI.SectionIntegrator = (function() {
         
         // Create a global function for forcing TEDI/TELI recalculation from any section
         window.TEUI.updateTEDITELIValues = function() {
-            // console.log('Global TEDI/TELI update function called');
             forceTEDITELIUpdate();
         };
         
         // Initial calculation to ensure consistency 
         forceTEDITELIUpdate();
         
-        // console.log('TEDI & TELI integration complete');
     }
     
     /**
      * Initialize the Volume Metrics integration between Section12 and related sections
      */
     function initializeVolumeMetricsIntegration() {
-        // console.log('Initializing Volume Metrics integration');
         
         if (!window.TEUI.StateManager) {
             console.error('StateManager not available for Volume Metrics integration');
@@ -632,14 +581,12 @@ TEUI.SectionIntegrator = (function() {
         
         // Create a global function for forcing Volume Metrics recalculation from any section
         window.TEUI.updateVolumeMetrics = function() {
-            // console.log('Global Volume Metrics update function called');
             forceVolumeMetricsUpdate();
         };
         
         // Initial calculation to ensure consistency 
         forceVolumeMetricsUpdate();
         
-        // console.log('Volume Metrics integration complete');
     }
     
     /**
@@ -658,7 +605,6 @@ TEUI.SectionIntegrator = (function() {
         window.TEUI.StateManager.registerDependency('i_104', 'i_126'); // Total heat loss affects TEDI
         window.TEUI.StateManager.registerDependency('i_103', 'i_126'); // Air leakage heat loss affects TEDI
         
-        // console.log('Volume Metrics cross-section dependencies registered');
     }
     
     /**
@@ -672,12 +618,10 @@ TEUI.SectionIntegrator = (function() {
         
         envelopeFields.forEach(fieldId => {
             window.TEUI.StateManager.addListener(fieldId, function() {
-                // console.log(`Envelope field ${fieldId} changed, updating Volume Metrics`);
                 forceVolumeMetricsUpdate();
             });
         });
         
-        // console.log('Volume Metrics listeners registered');
     }
     
     // Add debouncing for Volume Metrics updates
@@ -694,12 +638,10 @@ TEUI.SectionIntegrator = (function() {
         
         // Debounce the update to prevent excessive calls
         volumeMetricsUpdateTimeout = setTimeout(() => {
-        // console.log('🔄 [SectionIntegrator] Forcing Volume Metrics recalculation');
         
         // First try using Section 12's calculation function
         if (window.TEUI.SectionModules && window.TEUI.SectionModules.sect12) {
             if (typeof window.TEUI.SectionModules.sect12.calculateAll === 'function') {
-                // console.log('Using sect12.calculateAll to update Volume Metrics');
                 window.TEUI.SectionModules.sect12.calculateAll();
             }
         }
@@ -710,11 +652,9 @@ TEUI.SectionIntegrator = (function() {
         
         // Update TEDI/TELI if available since it depends on volume metrics
         if (window.TEUI.updateTEDITELIValues) {
-            // console.log('Updating TEDI/TELI values based on new Volume Metrics');
             window.TEUI.updateTEDITELIValues();
         }
         
-        // console.log('🔄 [SectionIntegrator] Volume Metrics update complete');
             volumeMetricsUpdateTimeout = null;
         }, 100); // 100ms debounce
     }
@@ -725,17 +665,13 @@ TEUI.SectionIntegrator = (function() {
     // Create a globally available safe version for any section to use
     /*
     window.setInitialDropdownValues = function() {
-        // console.log("Global setInitialDropdownValues called");
         // Create a safe delayed call
         setTimeout(function() {
             if (window.updateElectricityEmissionFactor) {
-                // console.log("Global calling updateElectricityEmissionFactor safely");
                 window.updateElectricityEmissionFactor();
             } else if (window.TEUI?.SectionModules?.sect04?.updateElectricityEmissionFactor) {
-                // console.log("Global calling sect04.updateElectricityEmissionFactor safely");
                 window.TEUI.SectionModules.sect04.updateElectricityEmissionFactor();
             } else if (window.TEUI?.updateEmissionFactor) {
-                // console.log("Global calling TEUI.updateEmissionFactor safely");
                 window.TEUI.updateEmissionFactor();
             } else {
                 // console.warn("No emission factor update function available");

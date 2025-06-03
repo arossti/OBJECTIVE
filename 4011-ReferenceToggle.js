@@ -17,8 +17,6 @@ TEUI.ReferenceToggle = (function() {
     if (toggleBtn) {
       toggleBtn.addEventListener('click', toggleReferenceView);
       updateButtonAppearance();
-    } else {
-      console.warn('[ReferenceToggle] Toggle Button not found.');
     }
 
     // Add listener for changes to the reference standard selector (d_13)
@@ -28,11 +26,7 @@ TEUI.ReferenceToggle = (function() {
         const actualSelect = standardSelector.tagName === 'SELECT' ? standardSelector : standardSelector.querySelector('select');
         if (actualSelect) {
             actualSelect.addEventListener('change', handleStandardChange);
-        } else {
-            console.warn(`[ReferenceToggle] SELECT element for ${STANDARD_SELECTOR_ID} not found.`);
         }
-    } else {
-        console.warn(`[ReferenceToggle] Standard selector dropdown ${STANDARD_SELECTOR_ID} not found.`);
     }
   }
 
@@ -109,15 +103,12 @@ TEUI.ReferenceToggle = (function() {
 
         if (referenceMode) {
             if (!currentStandardKey) {
-                console.warn("[ReferenceToggle] No reference standard selected (d_13 is empty). Cannot load reference data for display.");
             } else {
-                console.log(`[ReferenceToggle] Loading reference data for standard: ${currentStandardKey}`);
                 TEUI.StateManager.loadReferenceData(currentStandardKey);
             }
         }
 
         if (!allUserEditableFields || Object.keys(allUserEditableFields).length === 0) {
-            console.warn("[ReferenceToggle] No user-editable fields found.");
             return;
         }
 
@@ -130,7 +121,6 @@ TEUI.ReferenceToggle = (function() {
             // CRITICAL: Skip Section 01 calculated fields that should always display dual-engine values
             const section01CalculatedFields = ['d_6', 'd_8', 'e_10', 'h_6', 'h_8', 'h_10', 'k_6', 'k_8', 'k_10', 'j_8', 'j_10', 'i_10'];
             if (section01CalculatedFields.includes(fieldId)) {
-                // console.log(`[ReferenceToggle] Skipping ${fieldId} - Section 01 dual-engine field`); // Keep this useful skip log if desired, but commented for now
                 continue;
             }
 
@@ -258,7 +248,6 @@ TEUI.ReferenceToggle = (function() {
 
   function refreshAllSectionsDisplay() {
     if (referenceMode) {
-      console.log('[ReferenceToggle] Refreshing all sections display for Reference Mode');
       triggerFullUIRefreshForModeChange();
     }
   }
