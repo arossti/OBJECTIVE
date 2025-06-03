@@ -447,6 +447,26 @@ input[type="range"]::-moz-range-thumb {
     border: none;
 }
 
+/* Slider container */
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.slider-container input[type="range"] {
+    flex: 1;
+    min-width: 80px;
+}
+
+.slider-value {
+    font-weight: 500;
+    color: var(--user-input-color);
+    min-width: 30px;
+    text-align: right;
+}
+
 /* Unit labels */
 .unit-label {
     color: var(--secondary-text);

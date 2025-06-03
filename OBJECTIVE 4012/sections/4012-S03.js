@@ -23,6 +23,7 @@
         
         // Get layout definition for grid renderer
         getLayout: function() {
+            const self = this; // Capture the context
             return {
                 rows: [
                     // Header row
@@ -56,7 +57,7 @@
                                 type: 'dropdown',
                                 dropdownId: 'dd_d_19',
                                 value: 'ON',
-                                options: this.getProvinceOptions(),
+                                options: self.getProvinceOptions(),
                                 colspan: 2
                             },
                             f: { content: 'L.1.2', classes: ['label-prefix'] },
@@ -284,6 +285,244 @@
                                 classes: ['calculated-value']
                             }
                         }
+                    },
+                    // Row 2: Province and City
+                    {
+                        id: '2',
+                        rowNumber: '14',
+                        cells: {
+                            b: { content: 'C.2' },
+                            c: { content: 'Province' },
+                            d: { 
+                                type: 'dropdown',
+                                fieldId: 'd_14',
+                                dropdownId: 'dd_d_14',
+                                value: '',
+                                options: self.getProvinceOptions()
+                            },
+                            e: { content: '' },
+                            f: { content: 'C.3', classes: ['label-prefix'] },
+                            g: { content: 'City' },
+                            h: { 
+                                type: 'dropdown',
+                                fieldId: 'h_14',
+                                dropdownId: 'dd_h_14',
+                                value: '',
+                                options: [{ value: '', name: 'Select City' }]
+                            },
+                            i: { content: '' },
+                            j: { content: '' },
+                            k: { content: '' },
+                            l: { content: '' },
+                            m: { content: '' }
+                        }
+                    },
+                    
+                    // Row 3: Elevation and Capacitance
+                    {
+                        id: '3',
+                        rowNumber: '15',
+                        cells: {
+                            b: { content: 'C.4' },
+                            c: { content: 'Elevation (m)' },
+                            d: { 
+                                type: 'calculated',
+                                fieldId: 'd_15',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            e: { content: '' },
+                            f: { content: 'C.5', classes: ['label-prefix'] },
+                            g: { content: 'Capacitance' },
+                            h: { 
+                                type: 'slider',
+                                fieldId: 'h_15',
+                                value: '50',
+                                min: 0,
+                                max: 100,
+                                step: 5
+                            },
+                            i: { content: '%' },
+                            j: { content: '' },
+                            k: { content: '' },
+                            l: { content: '' },
+                            m: { content: '' }
+                        }
+                    },
+                    
+                    // Row 4: Temperature Setpoints
+                    {
+                        id: '4',
+                        rowNumber: '16',
+                        cells: {
+                            b: { content: 'C.6' },
+                            c: { content: 'Tset Heating (°C)' },
+                            d: { 
+                                type: 'calculated',
+                                fieldId: 'd_16',
+                                value: '21',
+                                classes: ['calculated-value']
+                            },
+                            e: { content: '' },
+                            f: { content: 'C.7', classes: ['label-prefix'] },
+                            g: { content: 'Tset Cooling (°C)' },
+                            h: { 
+                                type: 'calculated',
+                                fieldId: 'h_16',
+                                value: '24',
+                                classes: ['calculated-value']
+                            },
+                            i: { content: '' },
+                            j: { content: '' },
+                            k: { content: '' },
+                            l: { content: '' },
+                            m: { content: '' }
+                        }
+                    },
+                    
+                    // Row 5: Climate Data Headers
+                    {
+                        id: '5',
+                        rowNumber: '17',
+                        cells: {
+                            b: { content: '' },
+                            c: { content: 'Climate Data', classes: ['section-subheader'] },
+                            d: { content: 'Current', classes: ['section-subheader'] },
+                            e: { content: 'Future', classes: ['section-subheader'] },
+                            f: { content: '', classes: ['section-subheader'] },
+                            g: { content: 'Climate Data', classes: ['section-subheader'] },
+                            h: { content: 'Current', classes: ['section-subheader'] },
+                            i: { content: 'Future', classes: ['section-subheader'] },
+                            j: { content: '', classes: ['section-subheader'] },
+                            k: { content: 'Climate Data', classes: ['section-subheader'] },
+                            l: { content: 'Current', classes: ['section-subheader'] },
+                            m: { content: 'Future', classes: ['section-subheader'] }
+                        }
+                    },
+                    
+                    // Row 6: HDD18
+                    {
+                        id: '6',
+                        rowNumber: '18',
+                        cells: {
+                            b: { content: 'C.8' },
+                            c: { content: 'HDD18' },
+                            d: { 
+                                type: 'calculated',
+                                fieldId: 'd_18',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            e: { 
+                                type: 'calculated',
+                                fieldId: 'e_18',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            f: { content: 'C.11', classes: ['label-prefix'] },
+                            g: { content: 'CDD24' },
+                            h: { 
+                                type: 'calculated',
+                                fieldId: 'h_18',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            i: { 
+                                type: 'calculated',
+                                fieldId: 'i_18',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            j: { content: 'C.14', classes: ['label-prefix'] },
+                            k: { content: 'January 2.5%' },
+                            l: { 
+                                type: 'calculated',
+                                fieldId: 'l_18',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            m: { content: '°C' }
+                        }
+                    },
+                    
+                    // Row 7: HDD15
+                    {
+                        id: '7',
+                        rowNumber: '19',
+                        cells: {
+                            b: { content: 'C.9' },
+                            c: { content: 'HDD15' },
+                            d: { 
+                                type: 'calculated',
+                                fieldId: 'd_19',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            e: { content: '' },
+                            f: { content: 'C.12', classes: ['label-prefix'] },
+                            g: { content: 'July 2.5% Tdb' },
+                            h: { 
+                                type: 'calculated',
+                                fieldId: 'h_19',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            i: { 
+                                type: 'calculated',
+                                fieldId: 'i_19',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            j: { content: 'C.15', classes: ['label-prefix'] },
+                            k: { content: 'January 1%' },
+                            l: { 
+                                type: 'calculated',
+                                fieldId: 'l_19',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            m: { content: '°C' }
+                        }
+                    },
+                    
+                    // Row 8: Rain Annual
+                    {
+                        id: '8',
+                        rowNumber: '20',
+                        cells: {
+                            b: { content: 'C.10' },
+                            c: { content: 'Rain Annual (mm)' },
+                            d: { 
+                                type: 'calculated',
+                                fieldId: 'd_20',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            e: { 
+                                type: 'calculated',
+                                fieldId: 'e_20',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            f: { content: 'C.13', classes: ['label-prefix'] },
+                            g: { content: 'July 2.5% Twb' },
+                            h: { 
+                                type: 'calculated',
+                                fieldId: 'h_20',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            i: { 
+                                type: 'calculated',
+                                fieldId: 'i_20',
+                                value: '0',
+                                classes: ['calculated-value']
+                            },
+                            j: { content: '' },
+                            k: { content: '' },
+                            l: { content: '' },
+                            m: { content: '' }
+                        }
                     }
                 ]
             };
@@ -291,7 +530,8 @@
         
         // Get province options
         getProvinceOptions: function() {
-            const provinces = Object.keys(window.TEUI.ClimateData || {});
+            const climateData = window.TEUI.v4012.ClimateData || {};
+            const provinces = Object.keys(climateData);
             const options = [{ value: '', name: 'Select Province' }];
             
             provinces.forEach(prov => {
@@ -345,51 +585,48 @@
         
         // Set up event handlers
         setupEventHandlers: function() {
-            // Province dropdown change
-            const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-            if (provinceDropdown) {
-                provinceDropdown.addEventListener('change', (e) => this.handleProvinceChange(e));
-            }
+            const section = document.getElementById('climateCalculations');
+            if (!section) return;
             
-            // City dropdown change
-            const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_19"]');
-            if (cityDropdown) {
-                cityDropdown.addEventListener('change', (e) => this.handleCityChange(e));
-            }
-            
-            // Timeframe dropdown change
-            const timeframeDropdown = document.querySelector('[data-dropdown-id="dd_h_20"]');
-            if (timeframeDropdown) {
-                timeframeDropdown.addEventListener('change', (e) => this.updateClimateData());
-            }
-            
-            // Capacitance dropdown
-            const capacitanceDropdown = document.querySelector('[data-dropdown-id="dd_h_21"]');
-            if (capacitanceDropdown) {
-                capacitanceDropdown.addEventListener('change', (e) => this.calculateAll());
-            }
-            
-            // Capacitance slider
-            const capacitanceSlider = document.querySelector('[data-field-id="i_21"]');
-            if (capacitanceSlider) {
-                capacitanceSlider.addEventListener('input', (e) => this.calculateAll());
-            }
-            
-            // Editable fields
-            document.querySelectorAll('#climateCalculations .editable').forEach(field => {
-                field.addEventListener('blur', (e) => this.handleEditableChange(e));
-                field.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.target.blur();
+            // Handle dropdown changes
+            section.addEventListener('change', (e) => {
+                if (e.target.matches('select')) {
+                    const dropdownId = e.target.getAttribute('data-dropdown-id');
+                    
+                    if (dropdownId === 'dd_d_14') {
+                        this.handleProvinceChange(e);
+                    } else if (dropdownId === 'dd_h_14') {
+                        this.handleCityChange(e);
                     }
-                });
+                }
             });
             
-            // Weather data button
-            const weatherBtn = document.getElementById('showWeatherDataBtn');
-            if (weatherBtn) {
-                weatherBtn.addEventListener('click', () => this.showWeatherData());
+            // Handle slider changes
+            section.addEventListener('input', (e) => {
+                if (e.target.matches('input[type="range"]')) {
+                    const fieldId = e.target.getAttribute('data-field-id');
+                    const value = e.target.value;
+                    
+                    // Update display
+                    const valueDisplay = e.target.parentElement.querySelector('.slider-value');
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value;
+                    }
+                    
+                    // Update state
+                    const state = window.TEUI.v4012?.DualState;
+                    if (state) {
+                        state.setValue(fieldId, value);
+                    }
+                }
+            });
+            
+            // Listen for occupancy changes from S02
+            const state = window.TEUI.v4012?.DualState;
+            if (state) {
+                state.subscribe('d_12', () => {
+                    this.updateTemperatureSetpoints();
+                });
             }
         },
         
@@ -403,8 +640,9 @@
             // Clear cities
             cityDropdown.innerHTML = '<option value="">Select City</option>';
             
-            if (province && window.TEUI.ClimateData && window.TEUI.ClimateData[province]) {
-                const cities = Object.keys(window.TEUI.ClimateData[province]);
+            const climateData = window.TEUI.v4012.ClimateData;
+            if (province && climateData && climateData[province]) {
+                const cities = Object.keys(climateData[province]);
                 cities.forEach(city => {
                     const option = document.createElement('option');
                     option.value = city;
@@ -422,162 +660,92 @@
         
         // Handle city change
         handleCityChange: function(e) {
-            this.updateClimateData();
-        },
-        
-        // Handle editable field change
-        handleEditableChange: function(e) {
-            const fieldId = e.target.getAttribute('data-field-id');
-            const value = e.target.textContent.trim();
+            const city = e.target.value;
+            const province = document.querySelector('[data-field-id="d_14"]')?.value;
             
-            // Store in state if available
-            if (window.TEUI.v4012.DualState) {
-                window.TEUI.v4012.DualState.setValue(fieldId, value);
-            }
-            
-            // Recalculate
-            this.calculateAll();
-        },
-        
-        // Update climate data based on selections
-        updateClimateData: function() {
-            const province = document.querySelector('[data-dropdown-id="dd_d_19"]')?.value;
-            const city = document.querySelector('[data-dropdown-id="dd_h_19"]')?.value;
-            const timeframe = document.querySelector('[data-dropdown-id="dd_h_20"]')?.value || 'Present';
-            
-            if (!province || !city || !window.TEUI.ClimateData) return;
-            
-            const cityData = window.TEUI.ClimateData[province]?.[city];
-            if (!cityData) return;
-            
-            // Update HDD
-            const hddValue = timeframe === 'Future' ? cityData.HDD18_2021_2050 : cityData.HDD18;
-            this.updateField('d_20', hddValue || 0);
-            
-            // Update CDD
-            const cddValue = timeframe === 'Future' ? cityData.CDD24_2021_2050 : cityData.CDD24;
-            this.updateField('d_21', cddValue || 0);
-            
-            // Update temperatures
-            this.updateField('d_23', cityData.January_2_5 || -24);
-            const hottestTemp = timeframe === 'Future' ? cityData.Future_July_2_5_Tdb : cityData.July_2_5_Tdb;
-            this.updateField('d_24', hottestTemp || 30);
-            
-            // Update elevation
-            this.updateField('l_22', cityData['Elev ASL (m)'] || 80);
-            
-            // Update reference values
-            this.updateField('j_20', cityData.HDD18 || 0);
-            this.updateField('j_21', cityData.CDD24 || 0);
-            
-            // Recalculate
-            this.calculateAll();
-        },
-        
-        // Update field value
-        updateField: function(fieldId, value) {
-            const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (element) {
-                element.textContent = value;
+            if (city && province) {
+                const climateData = window.TEUI.v4012.ClimateData || {};
+                const cityData = climateData[province]?.[city];
+                
+                if (cityData) {
+                    // Update elevation (derived field)
+                    this.updateField('d_15', cityData['Elev ASL (m)'] || 0);
+                    
+                    // Update climate values
+                    this.updateField('d_18', cityData.HDD18 || 0);
+                    this.updateField('e_18', cityData.HDD18_2021_2050 || 0);
+                    this.updateField('d_19', cityData.HDD15 || 0);
+                    this.updateField('h_18', cityData.CDD24 || 0);
+                    this.updateField('i_18', cityData.CDD24_2021_2050 || 0);
+                    this.updateField('h_19', cityData.July_2_5_Tdb || 0);
+                    this.updateField('i_19', cityData.Future_July_2_5_Tdb || 0);
+                    this.updateField('h_20', cityData.July_2_5_Twb || 0);
+                    this.updateField('i_20', cityData.Future_July_2_5_Twb || 0);
+                    this.updateField('l_18', cityData.January_2_5 || 0);
+                    this.updateField('l_19', cityData.January_1 || 0);
+                    this.updateField('d_20', cityData.Rain_Annual_mm || 0);
+                    this.updateField('e_20', cityData.Rain_Annual_mm_New || 0);
+                }
             }
             
             // Update state
-            if (window.TEUI.v4012.DualState) {
-                window.TEUI.v4012.DualState.setValue(fieldId, value);
+            const state = window.TEUI.v4012?.DualState;
+            if (state) {
+                state.setValue('h_14', city);
             }
         },
         
-        // Calculate all derived values
-        calculateAll: function() {
-            // Climate zone based on HDD
-            const hdd = parseFloat(document.querySelector('[data-field-id="d_20"]')?.textContent) || 0;
-            let climateZone = '6.0';
-            if (hdd < 3000) climateZone = '4.0';
-            else if (hdd < 4000) climateZone = '5.0';
-            else if (hdd < 5000) climateZone = '6.0';
-            else if (hdd < 6000) climateZone = '7.1';
-            else if (hdd < 7000) climateZone = '7.2';
-            else climateZone = '8.0';
-            this.updateField('j_19', climateZone);
+        // Update temperature setpoints based on occupancy type
+        updateTemperatureSetpoints: function() {
+            const state = window.TEUI.v4012?.DualState;
+            if (!state) return;
             
-            // Temperature conversions
-            const coldestC = parseFloat(document.querySelector('[data-field-id="d_23"]')?.textContent) || 0;
-            this.updateField('e_23', Math.round((coldestC * 9/5) + 32));
+            // Get occupancy type from S02
+            const occupancy = state.getValue('d_12') || 'D-Business & Personal Services';
             
-            const hottestC = parseFloat(document.querySelector('[data-field-id="d_24"]')?.textContent) || 0;
-            this.updateField('e_24', Math.round((hottestC * 9/5) + 32));
+            // Temperature setpoints by occupancy type
+            const setpoints = {
+                'A-Assembly': { heating: 20, cooling: 25 },
+                'B1-Detention': { heating: 21, cooling: 24 },
+                'B2-Care and Treatment': { heating: 22, cooling: 24 },
+                'B3-Detention Care & Treatment': { heating: 22, cooling: 24 },
+                'C-Residential': { heating: 21, cooling: 24 },
+                'D-Business & Personal Services': { heating: 21, cooling: 24 },
+                'E-Mercantile': { heating: 20, cooling: 25 },
+                'F-Industrial': { heating: 18, cooling: 26 }
+            };
             
-            const heatingC = parseFloat(document.querySelector('[data-field-id="h_23"]')?.textContent) || 18;
-            this.updateField('i_23', Math.round((heatingC * 9/5) + 32));
+            const temps = setpoints[occupancy] || { heating: 21, cooling: 24 };
             
-            const coolingC = parseFloat(document.querySelector('[data-field-id="h_24"]')?.textContent) || 24;
-            this.updateField('i_24', Math.round((coolingC * 9/5) + 32));
+            // Update display
+            this.updateField('d_16', temps.heating);
+            this.updateField('h_16', temps.cooling);
             
-            // Ground facing calculations
-            const daysCooling = parseFloat(document.querySelector('[data-field-id="m_19"]')?.textContent) || 120;
-            const heatingDays = 365 - daysCooling;
-            const gfHdd = Math.round((heatingC - 10) * heatingDays);
-            this.updateField('d_22', gfHdd);
-            
-            const capacitance = document.querySelector('[data-dropdown-id="dd_h_21"]')?.value || 'Capacitance';
-            let gfCdd;
-            if (capacitance === 'Static') {
-                gfCdd = Math.max(0, (10 - coolingC) * daysCooling);
-            } else {
-                gfCdd = (10 - coolingC) * daysCooling;
-            }
-            this.updateField('h_22', Math.round(gfCdd));
-            
-            // Cooling percentage
-            const coolingOverride = parseFloat(document.querySelector('[data-field-id="l_24"]')?.textContent) || 24;
-            const coolingPercent = Math.round((coolingOverride / 22) * 100);
-            this.updateField('m_24', coolingPercent + '%');
-        },
-        
-        // Show weather data modal
-        showWeatherData: function() {
-            const province = document.querySelector('[data-dropdown-id="dd_d_19"]')?.value;
-            const city = document.querySelector('[data-dropdown-id="dd_h_19"]')?.value;
-            
-            if (!province || !city) {
-                alert('Please select a province and city first.');
-                return;
-            }
-            
-            const cityData = window.TEUI.ClimateData?.[province]?.[city];
-            if (!cityData) {
-                alert('No weather data available for the selected location.');
-                return;
-            }
-            
-            // Update modal content
-            const modalTitle = document.getElementById('weatherDataModalLabel');
-            const modalContent = document.getElementById('weatherDataContent');
-            
-            if (modalTitle) {
-                modalTitle.textContent = `Weather Data for ${city}, ${this.getProvinceName(province)}`;
-            }
-            
-            if (modalContent) {
-                let content = '';
-                Object.entries(cityData).forEach(([key, value]) => {
-                    content += `${key}: ${value}\n`;
-                });
-                modalContent.textContent = content;
-            }
-            
-            // Show modal using Bootstrap
-            const modal = new bootstrap.Modal(document.getElementById('weatherDataModal'));
-            modal.show();
+            // Update state
+            state.setValue('d_16', temps.heating);
+            state.setValue('h_16', temps.cooling);
         },
         
         // Load initial data
         loadInitialData: function() {
-            // Set default province
-            const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_19"]');
-            if (provinceDropdown && provinceDropdown.value) {
+            // Set default province and city
+            const provinceDropdown = document.querySelector('[data-dropdown-id="dd_d_14"]');
+            if (provinceDropdown) {
+                provinceDropdown.value = 'ON';
                 this.handleProvinceChange({ target: provinceDropdown });
+                
+                // After province is set, set default city
+                setTimeout(() => {
+                    const cityDropdown = document.querySelector('[data-dropdown-id="dd_h_14"]');
+                    if (cityDropdown && cityDropdown.options.length > 1) {
+                        cityDropdown.value = 'Toronto';
+                        this.handleCityChange({ target: cityDropdown });
+                    }
+                }, 100);
             }
+            
+            // Update temperature setpoints based on current occupancy
+            this.updateTemperatureSetpoints();
         }
     };
     
