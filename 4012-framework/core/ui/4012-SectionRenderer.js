@@ -58,25 +58,32 @@
             // Add row number in column A
             const rowNumberCell = document.createElement('div');
             rowNumberCell.className = 'section-cell col-a';
-            rowNumberCell.textContent = rowIndex > 0 ? rowIndex : '';
+            // Use explicit rowNumber if provided, otherwise use index (but not for header row)
+            const displayNumber = row.rowNumber || (rowIndex > 0 ? rowIndex : '');
+            rowNumberCell.textContent = displayNumber;
             rowElement.appendChild(rowNumberCell);
             
-            // Add ID in column B
-            const idCell = document.createElement('div');
-            idCell.className = 'section-cell col-b';
-            idCell.textContent = row.id || '';
-            rowElement.appendChild(idCell);
+            // Render cells B through N from the row definition
+            const columns = ['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'];
+            let skipColumns = [];
             
-            // Render cells for columns C through N
-            const columns = ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'];
-            
-            columns.forEach(col => {
+            columns.forEach((col) => {
+                // Skip if this column was covered by a previous colspan
+                if (skipColumns.includes(col)) {
+                    return;
+                }
+                
                 const cellDef = row.cells?.[col] || {};
                 const cellElement = this.renderCell(cellDef, col);
                 
                 // Handle colspan
                 if (cellDef.colspan && cellDef.colspan > 1) {
                     cellElement.classList.add(`colspan-${cellDef.colspan}`);
+                    // Mark the next columns as skipped
+                    const colIndex = columns.indexOf(col);
+                    for (let i = 1; i < cellDef.colspan && colIndex + i < columns.length; i++) {
+                        skipColumns.push(columns[colIndex + i]);
+                    }
                 }
                 
                 rowElement.appendChild(cellElement);
@@ -86,9 +93,9 @@
         },
         
         // Render a single cell
-        renderCell: function(cell, columnIndex) {
+        renderCell: function(cell, columnLetter) {
             const cellDiv = document.createElement('div');
-            cellDiv.className = 'section-cell col-' + String.fromCharCode(97 + columnIndex); // a, b, c, etc.
+            cellDiv.className = 'section-cell col-' + columnLetter;
             
             // Handle colspan
             if (cell.colspan) {

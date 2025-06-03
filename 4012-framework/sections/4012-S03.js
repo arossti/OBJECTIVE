@@ -29,7 +29,6 @@
                     {
                         id: 'header',
                         cells: {
-                            a: { content: '' },
                             b: { content: '03-ID', classes: ['section-subheader'] },
                             c: { content: 'Climate Units', classes: ['section-subheader'] },
                             d: { content: '°C', classes: ['section-subheader'] },
@@ -50,6 +49,7 @@
                         id: 'L.1.1',
                         label: 'Province',
                         cells: {
+                            b: { content: 'L.1.1' },
                             c: { content: 'Province' },
                             d: {
                                 fieldId: 'd_19',
@@ -90,6 +90,7 @@
                         id: 'L.2.1',
                         label: 'Heating Degree Days (HDD)',
                         cells: {
+                            b: { content: 'L.2.1' },
                             c: { content: 'Heating Degree Days (HDD)' },
                             d: {
                                 fieldId: 'd_20',
@@ -123,6 +124,7 @@
                         id: 'L.2.3',
                         label: 'Cooling Degree Days (CDD)',
                         cells: {
+                            b: { content: 'L.2.3' },
                             c: { content: 'Cooling Degree Days (CDD)' },
                             d: {
                                 fieldId: 'd_21',
@@ -164,6 +166,7 @@
                         id: 'L.2.4',
                         label: 'Ground Facing GF HDD',
                         cells: {
+                            b: { content: 'L.2.4' },
                             c: { content: 'Ground Facing GF HDD' },
                             d: {
                                 fieldId: 'd_22',
@@ -197,6 +200,7 @@
                         id: 'L.3.1',
                         label: 'Coldest Days (Location Specific)',
                         cells: {
+                            b: { content: 'L.3.1' },
                             c: { content: 'Coldest Days (Location Specific)' },
                             d: {
                                 fieldId: 'd_23',
@@ -237,6 +241,7 @@
                         id: 'L.3.2',
                         label: 'Hottest Days (Location Specific)',
                         cells: {
+                            b: { content: 'L.3.2' },
                             c: { content: 'Hottest Days (Location Specific)' },
                             d: {
                                 fieldId: 'd_24',

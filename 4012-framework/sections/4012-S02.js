@@ -29,7 +29,6 @@
                     {
                         id: 'header',
                         cells: {
-                            a: { content: '' },
                             b: { content: '02-ID' },
                             c: { content: 'Building Info Units', classes: ['section-subheader'] },
                             d: { content: '', classes: ['section-subheader'] },
@@ -46,8 +45,8 @@
                     // Row 1: Major Occupancy
                     {
                         id: '1',
+                        rowNumber: '12',
                         cells: {
-                            a: { content: '1' },
                             b: { content: 'B.1' },
                             c: { content: 'Major Occupancy' },
                             d: { 
@@ -91,8 +90,8 @@
                     // Row 2: Reference Standard
                     {
                         id: '2',
+                        rowNumber: '13',
                         cells: {
-                            a: { content: '2' },
                             b: { content: 'S.1' },
                             c: { content: 'Reference Standard' },
                             d: { 
@@ -144,8 +143,8 @@
                     // Row 3: Actual/Target Use
                     {
                         id: '3',
+                        rowNumber: '14',
                         cells: {
-                            a: { content: '3' },
                             b: { content: 'S.2' },
                             c: { content: 'Actual (Bills) or Targeted (Design) Use' },
                             d: { 
@@ -184,8 +183,8 @@
                     // Row 4: Carbon Benchmarking Standard
                     {
                         id: '4',
+                        rowNumber: '15',
                         cells: {
-                            a: { content: '4' },
                             b: { content: 'S.3' },
                             c: { content: 'Carbon Benchmarking Standard' },
                             d: { 
@@ -236,8 +235,8 @@
                     // Row 5: Embodied Carbon Target
                     {
                         id: '5',
+                        rowNumber: '16',
                         cells: {
-                            a: { content: '5' },
                             b: { content: 'S.4' },
                             c: { content: 'Embodied Carbon Target (kgCO₂e/m²)' },
                             d: { 
@@ -272,8 +271,8 @@
                     // Row 6: License Number
                     {
                         id: '6',
+                        rowNumber: '17',
                         cells: {
-                            a: { content: '6' },
                             b: { content: 'L' },
                             c: { content: '' },
                             d: { content: '' },

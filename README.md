@@ -1810,3 +1810,68 @@ This architectural shift represents a fundamental rethinking of how building ene
 - Preserve the local-first, no-compilation approach
 
 **Vision**: Complete refactoring of all sections to achieve full Excel independence while maintaining calculation parity. The v4.012 framework will become the new foundation for OBJECTIVE, providing a modern, maintainable codebase that validates building performance through the unique Reference/Target/Actual comparison methodology.
+
+## TEUI 4.012 Framework
+
+The 4012-framework directory contains a simplified, refactored version of the TEUI calculator with the following improvements:
+
+### Section Development Guidelines
+
+When creating sections for the 4012 framework, follow these principles:
+
+#### 1. DOM Namespace = Excel Structure
+- Each cell in the grid corresponds directly to an Excel cell (A1, B2, C3, etc.)
+- Column A: Row numbers (automatically added by renderer)
+- Column B: IDs (B.1, S.1, L.1.1, etc.)
+- Column C: Labels/descriptions
+- Columns D-N: Data fields
+
+#### 2. Row Structure
+```javascript
+{
+    id: 'unique-id',
+    rowNumber: '19',  // Actual Excel row number
+    cells: {
+        b: { content: 'L.1.1' },  // ID column
+        c: { content: 'Province' },  // Label
+        d: { 
+            type: 'dropdown',
+            fieldId: 'd_19',
+            value: 'ON',
+            options: [...]
+        },
+        // Define ALL columns even if empty
+        e: { content: '' },
+        f: { content: 'L.1.2' },
+        // ... through column n
+    }
+}
+```
+
+#### 3. Key Requirements
+- **Always define all columns (b through n)** even if empty
+- Use `rowNumber` property for Excel row numbers
+- Don't define column 'a' (renderer adds it automatically)
+- Use `colspan` for cells that span multiple columns
+- Empty cells must be explicitly defined: `{ content: '' }`
+
+#### 4. Cell Types
+- `dropdown`: Select input with options
+- `editable`: ContentEditable text field
+- `slider`: Range input with value display
+- `calculated`: Read-only calculated value
+- Default: Static text content
+
+#### 5. CSS Grid Benefits
+- Automatic alignment without tables
+- Flexible column widths
+- Responsive design support
+- Clean, maintainable styling
+
+### Architecture Benefits
+- **Excel Parity**: Direct mapping to source spreadsheet
+- **Flexibility**: CSS Grid allows dynamic layouts
+- **Simplicity**: No complex table structures
+- **Maintainability**: Clear separation of data and presentation
+
+## Contributing
