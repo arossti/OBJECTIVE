@@ -1,162 +1,248 @@
 /**
  * 4012-styles.css
  * Clean, modern styling for TEUI 4.012
- * Using CSS Grid and Flexbox for layout
+ * Based on 4.011 design principles with CSS Grid and Flexbox
+ * Implements compact, information-dense layout for data sections
  */
 
 /* CSS Variables for easy theming */
 :root {
-    /* Colors */
-    --color-primary: #1a73e8;
-    --color-secondary: #34a853;
-    --color-danger: #ea4335;
-    --color-warning: #fbbc04;
+    /* Layout dimensions */
+    --header-height: 60px;
+    --key-values-height: 180px;
+    --tab-height: 40px;
+    --section-spacing: 12px;
     
-    /* Neutrals */
-    --color-text: #202124;
-    --color-text-secondary: #5f6368;
-    --color-border: #dadce0;
-    --color-background: #ffffff;
-    --color-surface: #f8f9fa;
+    /* Grid column widths for 14-column layout (A-N) */
+    --col-a-width: 30px;  /* Row number */
+    --col-b-width: 50px;  /* ID */
+    --col-c-width: 200px; /* Label */
+    --col-default-width: 80px; /* Default for data columns */
     
-    /* Spacing */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
+    /* Colors - matching 4.011 */
+    --primary-text: #212529;
+    --secondary-text: #5f6368;
+    --header-bg: #212529;
+    --header-text: #ffffff;
+    --border-color: #dee2e6;
+    --hover-bg: #f8f9fa;
+    --table-header-bg: #f1f3f4;
+    --user-input-color: #0d6efd;
+    --calculated-value-color: #202124;
+    --reference-value-color: #8B0000;
+    --target-value-color: #1a73e8;
+    --actual-value-color: #202124;
+    --link-color: #0d6efd;
+    --tab-active-bg: #495057;
+    --tab-active-border: #0d6efd;
+    
+    /* Key values specific colors */
+    --tier1-color: #dc3545;
+    --tier2-color: #fd7e14;
+    --tier3-color: #ffc107;
+    --tier4-color: #198754;
+    --tier5-color: #0dcaf0;
+    
+    /* Spacing and sizing */
+    --cell-padding: 4px 8px;
+    --header-cell-padding: 6px 8px;
+    --border-radius: 8px;
     
     /* Typography */
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    --font-size-sm: 12px;
-    --font-size-base: 14px;
-    --font-size-lg: 16px;
-    --font-size-xl: 20px;
-    
-    /* Layout */
-    --header-height: 56px;
-    --footer-height: 32px;
-    --section-max-width: 1200px;
-    
-    /* Transitions */
-    --transition-fast: 150ms ease;
-    --transition-base: 250ms ease;
+    --base-font-size: 0.85rem;
+    --small-font-size: 0.8rem;
+    --header-font-size: 1rem;
+    --key-values-font-size: 1.3rem;
 }
 
 /* Reset and base styles */
 * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 body {
     font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    color: var(--color-text);
-    background: var(--color-surface);
+    font-size: var(--base-font-size);
     line-height: 1.5;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    color: var(--primary-text);
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+/* Bootstrap overrides for compact layout */
+.p-4 {
+    padding: 1rem !important;
+}
+
+.py-md-5 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1rem !important;
 }
 
 /* Header */
-.app-header {
-    background: var(--color-background);
-    border-bottom: 1px solid var(--color-border);
-    height: var(--header-height);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+header {
+    background-color: white;
+    padding: 1rem 0;
 }
 
-.header-content {
-    max-width: var(--section-max-width);
-    margin: 0 auto;
-    padding: 0 var(--spacing-lg);
-    height: 100%;
+.logo {
+    height: 40px;
+}
+
+header h1 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+/* Action buttons row */
+.button-row {
+    margin-bottom: 0.5rem !important;
+}
+
+.controls-container {
+    gap: 0.5rem;
+}
+
+/* Buttons - more compact */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+}
+
+/* Main layout */
+#app-wrapper {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+#calculator-container {
+    padding: 1rem;
+}
+
+/* Key Values Section */
+#keyValues {
+    background-color: white;
+    border: 2px solid var(--header-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--section-spacing);
+    overflow: hidden;
+}
+
+#keyValues .section-header {
+    background-color: var(--header-bg);
+    color: white;
+    padding: 8px 12px;
+    font-weight: 500;
+    font-size: var(--header-font-size);
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.app-header h1 {
-    font-size: var(--font-size-xl);
-    font-weight: 500;
-    color: var(--color-text);
+.section-icon {
+    margin-right: 8px;
 }
 
-.version {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    font-weight: normal;
+.key-values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 15px;
 }
 
-.header-controls {
+.key-value-item {
     display: flex;
-    gap: var(--spacing-sm);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
 }
 
-/* Buttons */
-button {
-    font-family: inherit;
-    font-size: var(--font-size-base);
+.key-value-label {
+    font-size: 0.75rem;
+    color: var(--secondary-text);
+    margin-bottom: 3px;
+}
+
+.key-value-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+.key-value-unit {
+    font-size: 0.75rem;
+    color: var(--secondary-text);
+}
+
+/* Tier colors for key values */
+.tier1 { color: var(--tier1-color); }
+.tier2 { color: var(--tier2-color); }
+.tier3 { color: var(--tier3-color); }
+.tier4 { color: var(--tier4-color); }
+.tier5 { color: var(--tier5-color); }
+
+/* Tab container */
+.tab-container {
+    display: flex;
+    background-color: var(--header-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--section-spacing);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.tab-container::-webkit-scrollbar {
+    display: none;
+}
+
+.tab {
+    padding: 8px 16px;
+    color: white;
+    background-color: transparent;
     border: none;
-    border-radius: 4px;
-    padding: var(--spacing-sm) var(--spacing-md);
     cursor: pointer;
-    transition: all var(--transition-fast);
-    font-weight: 500;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+    font-size: 0.8125rem;
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 
-.btn-mode {
-    background: var(--color-surface);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
+.tab:hover {
+    background-color: var(--tab-active-bg);
 }
 
-.btn-mode:hover {
-    background: var(--color-border);
-}
-
-.btn-mode.reference-mode {
-    background: var(--color-primary);
-    color: white;
-    border-color: var(--color-primary);
-}
-
-.btn-action {
-    background: var(--color-primary);
-    color: white;
-}
-
-.btn-action:hover {
-    background: #1557b0;
-}
-
-/* Main content */
-.app-main {
-    flex: 1;
-    max-width: var(--section-max-width);
-    margin: 0 auto;
-    padding: var(--spacing-lg);
-    width: 100%;
+.tab.active {
+    background-color: var(--tab-active-bg);
+    border-bottom: 3px solid var(--tab-active-border);
 }
 
 /* Sections */
 .section {
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    margin-bottom: var(--spacing-md);
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--section-spacing);
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .section-header {
-    background: var(--color-surface);
-    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: var(--header-bg);
+    color: white;
+    padding: 8px 12px;
+    font-weight: 500;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -164,188 +250,546 @@ button {
     user-select: none;
 }
 
-.section-header h2 {
-    font-size: var(--font-size-lg);
-    font-weight: 500;
-}
-
-.section-toggle {
+.btn-collapse {
     background: none;
     border: none;
-    font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
-    padding: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform var(--transition-fast);
-}
-
-.section.collapsed .section-toggle {
-    transform: rotate(-90deg);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
 }
 
 .section-content {
-    padding: var(--spacing-lg);
-    display: block;
+    padding: 0;
+    transition: max-height 0.3s ease-out;
+    overflow: hidden;
 }
 
 .section.collapsed .section-content {
-    display: none;
+    max-height: 0 !important;
+    padding: 0;
 }
 
-/* Key values grid */
-.key-values-grid {
+/* Grid-based section layout for data rows */
+.section-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: 
+        var(--col-a-width)     /* A: Row number */
+        var(--col-b-width)     /* B: ID */
+        minmax(200px, max-content)     /* C: Label - flexible but doesn't shrink below 200px */
+        repeat(11, minmax(var(--col-default-width), max-content)); /* D-N: Data columns - flexible */
+    gap: 0;
+    font-size: 0.8125rem;
+    width: 100%;
+    overflow-x: auto; /* Allow horizontal scroll if needed */
 }
 
-.key-value {
-    text-align: center;
+/* Section row */
+.section-row {
+    display: contents; /* Makes children participate in parent grid */
 }
 
-.key-value label {
-    display: block;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-xs);
+.section-row:hover > .section-cell {
+    background-color: var(--hover-bg);
 }
 
-.key-value .value {
-    font-size: 32px;
-    font-weight: 300;
-    color: var(--color-text);
-    line-height: 1.2;
-}
-
-.key-value .unit {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-}
-
-/* Field grid */
-.field-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
-}
-
-.field {
+/* Section cells */
+.section-cell {
+    padding: var(--cell-padding);
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #f0f0f0;
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
+    align-items: center;
+    min-height: 32px;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.field label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+/* Column-specific styling */
+.col-a { /* Row number */
+    color: #999;
+    font-size: 0.75rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.col-b { /* ID */
+    color: #666;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
-/* Inputs */
-input, select {
-    font-family: inherit;
-    font-size: var(--font-size-base);
-    padding: var(--spacing-sm);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    background: var(--color-background);
-    color: var(--color-text);
-    transition: border-color var(--transition-fast);
+.col-c { /* Label */
+    font-weight: 500;
+    color: var(--primary-text);
 }
 
-input:focus, select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-}
-
-input[readonly] {
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-}
-
-.input-number {
+/* Data columns default styling */
+.col-d, .col-e, .col-f, .col-g, .col-h, 
+.col-i, .col-j, .col-k, .col-l, .col-m, .col-n {
     text-align: right;
+    justify-content: flex-end;
 }
 
-.calculated {
-    background: var(--color-surface);
+/* Colspan support using CSS Grid */
+.colspan-2 { grid-column: span 2; }
+.colspan-3 { grid-column: span 3; }
+.colspan-4 { grid-column: span 4; }
+.colspan-5 { grid-column: span 5; }
+.colspan-6 { grid-column: span 6; }
+.colspan-7 { grid-column: span 7; }
+.colspan-8 { grid-column: span 8; }
+.colspan-9 { grid-column: span 9; }
+.colspan-10 { grid-column: span 10; }
+.colspan-11 { grid-column: span 11; }
+
+/* Header row styling */
+.section-subheader {
+    background-color: var(--table-header-bg);
+    font-weight: 600;
+    text-align: center !important;
+    justify-content: center !important;
+    color: var(--secondary-text);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.unit {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-left: var(--spacing-xs);
+/* Input and value styling */
+.user-input {
+    color: var(--user-input-color);
+    font-weight: 500;
+    background-color: #e6f2ff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    min-width: 50px;
 }
 
-/* Footer */
-.app-footer {
-    background: var(--color-background);
-    border-top: 1px solid var(--color-border);
-    height: var(--footer-height);
+.calculated-value {
+    color: var(--calculated-value-color);
+    font-weight: 500;
 }
 
-.status-bar {
-    max-width: var(--section-max-width);
-    margin: 0 auto;
-    padding: 0 var(--spacing-lg);
-    height: 100%;
+.reference-value {
+    color: var(--reference-value-color);
+}
+
+/* Editable fields */
+.editable {
+    cursor: text;
+    position: relative;
+}
+
+.editable:hover {
+    background-color: #d4e5ff;
+}
+
+.editable:focus {
+    outline: none;
+    background-color: white;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+/* Select dropdowns - compact */
+select, .form-select {
+    padding: 2px 20px 2px 6px;
+    font-size: 0.8125rem;
+    height: 26px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    background-color: white;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    background-size: 12px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    min-width: 100px; /* Minimum width to prevent bouncing */
+    max-width: 100%; /* But don't exceed cell width */
+}
+
+select:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--user-input-color);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+}
+
+/* Sliders - compact */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: #ddd;
+    outline: none;
+    border-radius: 2px;
+    margin: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--user-input-color);
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--user-input-color);
+    cursor: pointer;
+    border-radius: 50%;
+    border: none;
+}
+
+/* Unit labels */
+.unit-label {
+    color: var(--secondary-text);
+    font-size: 0.75rem;
+    margin-left: 4px;
+}
+
+/* Label prefixes */
+.label-prefix {
+    color: #666;
+    font-size: 0.75rem;
+    margin-right: 6px;
+}
+
+.label-main {
+    font-weight: 500;
+}
+
+/* Reference labels */
+.reference-label {
+    color: var(--secondary-text);
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: var(--border-radius);
+}
+
+.modal-header {
+    padding: 1rem;
+}
+
+.modal-body {
+    padding: 1rem;
+}
+
+.modal-footer {
+    padding: 0.75rem 1rem;
+}
+
+/* Layout modes */
+.horizontal-layout .section:not(#keyValues):not(.active) {
+    display: none;
+}
+
+.horizontal-layout .tab-container {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
 }
 
-/* Responsive */
+.vertical-layout .tab-container {
+    display: none;
+}
+
+.vertical-layout .section {
+    display: block;
+}
+
+/* Reference mode styling */
+body.reference-mode .section {
+    border-color: var(--reference-value-color);
+}
+
+body.reference-mode .section-header {
+    background-color: var(--reference-value-color);
+}
+
+body.reference-mode .user-input {
+    color: var(--reference-value-color);
+    background-color: #ffe6e6;
+}
+
+/* Spacers */
+.tab-spacer {
+    height: 10px;
+}
+
+.section-spacer {
+    height: 10px;
+}
+
+/* Feedback area */
+#feedback-area {
+    font-size: 0.8125rem;
+}
+
+/* Layout toggle button */
+.layout-toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 8px;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+    .section-grid {
+        grid-template-columns: 
+            var(--col-a-width)
+            var(--col-b-width)
+            minmax(150px, 1fr) /* C: Label - flexible */
+            repeat(11, minmax(60px, 1fr)); /* D-N: Data columns - flexible */
+    }
+}
+
 @media (max-width: 768px) {
-    .app-main {
-        padding: var(--spacing-md);
+    /* Switch to a simpler layout on mobile */
+    .section-grid {
+        grid-template-columns: 1fr;
     }
     
-    .field-grid {
-        grid-template-columns: 1fr;
+    .section-cell {
+        grid-column: 1 / -1 !important; /* Full width */
+        justify-content: space-between;
+        padding: 8px 12px;
+    }
+    
+    .col-a, .col-b {
+        display: none; /* Hide row numbers and IDs on mobile */
     }
     
     .key-values-grid {
         grid-template-columns: 1fr;
-        gap: var(--spacing-md);
     }
     
-    .key-value .value {
-        font-size: 24px;
+    header {
+        text-align: center;
+    }
+    
+    header .d-flex {
+        flex-direction: column;
+        align-items: center !important;
     }
 }
 
-/* Loading state */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
+/* Print styles */
+@media print {
+    .controls-container,
+    .tab-container,
+    .btn-collapse,
+    .layout-toggle-btn,
+    #expand-collapse-all {
+        display: none !important;
+    }
+    
+    .section {
+        page-break-inside: avoid;
+        margin-bottom: 10px;
+        border: 1px solid #000;
+    }
+    
+    .section-content {
+        max-height: none !important;
+        display: block !important;
+    }
+    
+    .section-header {
+        background-color: #f0f0f0 !important;
+        color: #000 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
 }
 
-/* Error state */
-.error {
-    border-color: var(--color-danger) !important;
+/* Section 01 Key Values - Special 3-column layout */
+#keyValues .key-values-table {
+    width: 100%;
+    margin: 0;
 }
 
-.error-message {
-    color: var(--color-danger);
-    font-size: var(--font-size-sm);
-    margin-top: var(--spacing-xs);
+#keyValues .key-values-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+    background-color: var(--table-header-bg);
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0;
 }
 
-/* Reference mode styling */
-body.reference-mode {
-    --color-primary: #5f6368;
+#keyValues .key-values-header > div {
+    padding: 10px 12px;
+    text-align: center;
+    border-right: 1px solid #dee2e6;
 }
 
-body.reference-mode .section-header {
-    background: #e8eaed;
+#keyValues .key-values-header > div:first-child {
+    text-align: left;
 }
 
-body.reference-mode input:not([readonly]) {
-    background: #f1f3f4;
+#keyValues .key-values-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+    border-bottom: 1px solid #dee2e6;
+    align-items: center;
+    min-height: 60px;
+}
+
+#keyValues .key-values-row > div {
+    padding: 12px;
+    border-right: 1px solid #f0f0f0;
+}
+
+#keyValues .key-value-label {
+    font-weight: 500;
+    color: var(--primary-text);
+}
+
+#keyValues .key-value-sublabel {
+    font-size: 0.75rem;
+    color: var(--secondary-text);
+    margin-top: 2px;
+}
+
+#keyValues .key-value-metric {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+}
+
+#keyValues .key-value-metric.reference {
+    color: var(--reference-value-color);
+}
+
+#keyValues .key-value-metric.target {
+    color: var(--target-value-color);
+}
+
+#keyValues .key-value-metric.actual {
+    color: var(--actual-value-color);
+}
+
+#keyValues .key-value-unit {
+    font-size: 0.875rem;
+    color: var(--secondary-text);
+    font-weight: normal;
+}
+
+#keyValues .key-value-percentage {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+#keyValues .key-value-percentage.positive {
+    color: var(--tier4-color);
+}
+
+#keyValues .key-value-percentage.negative {
+    color: var(--tier1-color);
+}
+
+/* Tier indicators for key values */
+#keyValues .tier-indicator {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+#keyValues .tier1 { background-color: var(--tier1-color); color: white; }
+#keyValues .tier2 { background-color: var(--tier2-color); color: white; }
+#keyValues .tier3 { background-color: var(--tier3-color); color: #000; }
+#keyValues .tier4 { background-color: var(--tier4-color); color: white; }
+#keyValues .tier5 { background-color: var(--tier5-color); color: #000; }
+
+/* Progress bars for key values - make them chubbier */
+#keyValues .progress-bar-container {
+    height: 12px; /* Increased from 8px */
+    background-color: #e9ecef;
+    border-radius: 6px; /* Adjusted for new height */
+    overflow: hidden;
+    margin-top: 6px; /* Slightly more spacing */
+}
+
+#keyValues .progress-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* Progress bar tier colors */
+#keyValues .progress-bar.tier1 { background-color: var(--tier1-color); }
+#keyValues .progress-bar.tier2 { background-color: var(--tier2-color); }
+#keyValues .progress-bar.tier3 { background-color: var(--tier3-color); }
+#keyValues .progress-bar.tier4 { background-color: var(--tier4-color); }
+#keyValues .progress-bar.tier5 { background-color: var(--tier5-color); }
+
+/* Section 02 specific fixes */
+#buildingInfo .section-grid {
+    font-size: 0.875rem; /* Slightly larger text for readability */
+    grid-template-columns: 
+        30px                           /* A: Row number */
+        60px                           /* B: ID */
+        minmax(180px, max-content)     /* C: Label */
+        minmax(150px, 1fr)             /* D: Primary input */
+        80px                           /* E: Unit/secondary */
+        60px                           /* F: Secondary ID */
+        minmax(120px, max-content)     /* G: Secondary label */
+        minmax(120px, 1fr)             /* H: Secondary input */
+        80px                           /* I: Slider/value */
+        60px                           /* J: Tertiary ID */
+        minmax(100px, max-content)     /* K: Tertiary label */
+        minmax(80px, max-content)      /* L: Value */
+        60px                           /* M: Unit */
+        auto;                          /* N: Extra */
+}
+
+#buildingInfo .section-cell {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+}
+
+#buildingInfo select.form-select-sm {
+    font-size: 0.8125rem;
+    padding: 2px 6px;
+    height: 28px;
+}
+
+#buildingInfo .slider-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#buildingInfo .slider-container input[type="range"] {
+    flex: 1;
+    margin-right: 8px;
+}
+
+#buildingInfo .slider-value {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 500;
+}
+
+/* Fix for editable fields in Section 02 */
+#buildingInfo .editable {
+    min-width: 80px;
+    padding: 2px 6px;
 } 

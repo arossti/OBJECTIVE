@@ -3,230 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEUI 4.012 Calculator</title>
-    <link rel="stylesheet" href="4012-styles.css">
-</head>
-<body>
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-content">
-            <h1>TEUI Calculator <span class="version">v4.012</span></h1>
-            <div class="header-controls">
-                <button class="btn-mode" id="modeToggle">
-                    <span class="mode-label">Target</span>
-                </button>
-                <button class="btn-action" id="saveBtn">Save</button>
-                <button class="btn-action" id="loadBtn">Load</button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="app-main">
-        <div class="container">
-            <!-- Status Bar -->
-            <div class="status-bar">
-                <span class="status-text" id="statusText">Ready</span>
-                <span class="timestamp" id="timestamp"></span>
-            </div>
-
-            <!-- Sections Container -->
-            <div class="sections-container" id="sectionsContainer">
-                <!-- Section 03: Climate -->
-                <section class="section" id="section03">
-                    <div class="section-header">
-                        <h2 class="section-title">
-                            <span class="section-number">03</span>
-                            Climate
-                        </h2>
-                        <button class="btn-collapse" data-section="section03">−</button>
-                    </div>
-                    <div class="section-content">
-                        <div class="field-grid">
-                            <!-- Province and City -->
-                            <div class="field-row">
-                                <label class="field-label">Province</label>
-                                <select class="field-input" data-field-id="d_19">
-                                    <option value="">Select Province</option>
-                                </select>
-                                <label class="field-label">City</label>
-                                <select class="field-input" data-field-id="h_19">
-                                    <option value="">Select City</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Climate Data -->
-                            <div class="field-row">
-                                <label class="field-label">HDD</label>
-                                <span class="field-value" data-field-id="d_20">0</span>
-                                <label class="field-label">CDD</label>
-                                <span class="field-value" data-field-id="d_21">0</span>
-                                <label class="field-label">Climate Zone</label>
-                                <span class="field-value" data-field-id="j_19">6.0</span>
-                            </div>
-                            
-                            <!-- Timeframe -->
-                            <div class="field-row">
-                                <label class="field-label">Timeframe</label>
-                                <select class="field-input" data-field-id="h_20">
-                                    <option value="Present">Present (1991-2020)</option>
-                                    <option value="Future">Future (2021-2050)</option>
-                                </select>
-                                <button class="btn-info" id="showWeatherDataBtn">More Weather Data</button>
-                            </div>
-                            
-                            <!-- Temperature Data -->
-                            <div class="field-row">
-                                <label class="field-label">Coldest Days</label>
-                                <span class="field-value" data-field-id="d_23">-24</span>
-                                <span class="field-unit">°C</span>
-                                <span class="field-value" data-field-id="e_23">-11</span>
-                                <span class="field-unit">°F</span>
-                            </div>
-                            
-                            <div class="field-row">
-                                <label class="field-label">Hottest Days</label>
-                                <span class="field-value" data-field-id="d_24">30</span>
-                                <span class="field-unit">°C</span>
-                                <span class="field-value" data-field-id="e_24">86</span>
-                                <span class="field-unit">°F</span>
-                            </div>
-                            
-                            <!-- User Inputs -->
-                            <div class="field-row">
-                                <label class="field-label">Days Cooling</label>
-                                <span class="field-input editable" data-field-id="m_19" contenteditable="true">120</span>
-                                <label class="field-label">Elevation</label>
-                                <span class="field-value" data-field-id="l_22">80</span>
-                                <span class="field-unit">m</span>
-                            </div>
-                            
-                            <!-- Setpoints -->
-                            <div class="field-row">
-                                <label class="field-label">Heating Setpoint</label>
-                                <span class="field-value" data-field-id="h_23">18</span>
-                                <span class="field-unit">°C</span>
-                                <span class="field-value" data-field-id="i_23">64</span>
-                                <span class="field-unit">°F</span>
-                            </div>
-                            
-                            <div class="field-row">
-                                <label class="field-label">Cooling Setpoint</label>
-                                <span class="field-value" data-field-id="h_24">24</span>
-                                <span class="field-unit">°C</span>
-                                <span class="field-value" data-field-id="i_24">75</span>
-                                <span class="field-unit">°F</span>
-                                <label class="field-label">Override</label>
-                                <span class="field-input editable" data-field-id="l_24" contenteditable="true">24</span>
-                            </div>
-                            
-                            <!-- Ground Facing -->
-                            <div class="field-row">
-                                <label class="field-label">GF HDD</label>
-                                <span class="field-value" data-field-id="d_22">1960</span>
-                                <label class="field-label">GF CDD</label>
-                                <span class="field-value" data-field-id="h_22">-1680</span>
-                            </div>
-                            
-                            <!-- Capacitance -->
-                            <div class="field-row">
-                                <label class="field-label">Capacitance</label>
-                                <select class="field-input" data-field-id="h_21">
-                                    <option value="Static">Static</option>
-                                    <option value="Capacitance" selected>Capacitance</option>
-                                </select>
-                                <input type="range" class="field-slider" data-field-id="i_21" min="0" max="100" value="50" step="5">
-                                <span class="field-value" data-field-id="i_21_display">50%</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- More sections will be added here -->
-            </div>
-        </div>
-    </main>
-
-    <!-- Weather Data Modal -->
-    <div class="modal" id="weatherDataModal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
-            <div id="weatherDataContent"></div>
-        </div>
-    </div>
-
-    <!-- Scripts - Local first, no modules -->
-    <!-- Core utilities first -->
-    <script>
-        // Initialize TEUI namespace
-        window.TEUI = window.TEUI || {};
-        
-        // Add parseNumeric if not already defined
-        if (!window.TEUI.parseNumeric) {
-            window.TEUI.parseNumeric = function(value, defaultValue) {
-                if (value === null || value === undefined || value === '') {
-                    return defaultValue !== undefined ? defaultValue : null;
-                }
-                const str = value.toString().replace(/,/g, '');
-                const num = parseFloat(str);
-                return isNaN(num) ? (defaultValue !== undefined ? defaultValue : null) : num;
-            };
-        }
-        
-        // Add formatNumber if not already defined
-        if (!window.TEUI.formatNumber) {
-            window.TEUI.formatNumber = function(value, formatType) {
-                if (value === null || value === undefined || isNaN(value)) return 'N/A';
-                
-                const num = parseFloat(value);
-                
-                switch(formatType) {
-                    case 'integer-comma':
-                        return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                    case 'integer-nocomma':
-                        return num.toFixed(0);
-                    case 'number-1dp':
-                        return num.toFixed(1);
-                    case 'number-2dp':
-                        return num.toFixed(2);
-                    case 'number-3dp':
-                        return num.toFixed(3);
-                    case 'percent-0dp':
-                        return num.toFixed(0) + '%';
-                    case 'percent-1dp':
-                        return num.toFixed(1) + '%';
-                    default:
-                        return num.toString();
-                }
-            };
-        }
-    </script>
+    <title>TEUI 4.012 Framework</title>
+    <meta name="description" content="TEUI 4.012 - Simplified Energy and Carbon Modelling Framework">
     
-    <!-- Core framework files -->
+    <!-- CSS Resources -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Direct style override for select elements -->
+    <style>
+        select, option, .form-select, select.form-select {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                        "Helvetica Neue", Arial, sans-serif !important;
+            /* Force sans-serif as fallback */
+            font-family: sans-serif !important;
+        }
+    </style>
+    
+    <link href="4012-styles.css" rel="stylesheet">
+    
+    <!-- Core Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Core Framework Files -->
     <script src="core/state/4012-DualState.js"></script>
     <script src="core/data/4012-ClimateValues.js"></script>
     <script src="core/calculations/4012-climate.js"></script>
+    <script src="core/ui/4012-SectionRenderer.js"></script>
     
-    <!-- Section modules -->
+    <!-- Section Files -->
+    <script src="sections/4012-S01.js"></script>
+    <script src="sections/4012-S02.js"></script>
     <script src="sections/4012-S03.js"></script>
     
-    <!-- Main app initialization -->
+    <!-- Main Application -->
     <script src="4012-app.js"></script>
-    
-    <!-- Initialize the app -->
+</head>
+<body>
+    <!-- Main container -->
+    <div class="col-lg-12 mx-auto p-4 py-md-5">
+        <!-- Header -->
+        <header class="d-flex align-items-center pb-3 mb-4 border-bottom">
+            <a href="https://openbuilding.ca" class="text-dark text-decoration-none">
+                <img src="../assets/image041.png" class="logo" title="OBJECTIVE Logo" alt="OBJECTIVE 4.012 TEUI Framework" style="height: 50px;"/>
+            </a>
+            <div class="ms-auto text-end">
+                <h1 class="mb-0 fs-4">Simple Energy and Carbon Modelling <br> TEUI v.4.012 Framework | for Canadian Projects</h1>
+            </div>
+        </header>
+
+        <!-- Action buttons row -->
+        <div class="row button-row mb-2">
+            <div class="col-12 text-end">
+                <div class="col text-end controls-container d-flex align-items-center justify-content-end">
+                    <!-- Weather Data Button -->
+                    <button type="button" class="btn btn-outline-info btn-sm me-2" id="showWeatherDataBtn" data-bs-toggle="modal" data-bs-target="#weatherDataModal">
+                        <i class="bi bi-cloud-sun"></i> More Weather Data
+                    </button>
+                    
+                    <!-- Reference Toggle -->
+                    <button id="toggleReferenceBtn" class="btn btn-sm btn-danger reference-model-toggle me-2">Show Reference</button>
+                    
+                    <!-- Disclaimer Button -->
+                    <button id="disclaimerBtn" class="btn btn-sm btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">
+                        <i class="bi bi-info-circle"></i> Disclaimer
+                    </button>
+                    
+                    <!-- Reset Button -->
+                    <button id="reset-btn" type="button" class="btn btn-sm btn-success me-2">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                    
+                    <!-- Import/Export Dropdown -->
+                    <div class="btn-group">
+                        <button id="downloadBtn" type="button" class="btn btn-sm btn-primary">
+                            <i class="bi bi-download"></i> Import/Export
+                        </button>
+                        <button class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="import-data-btn"><i class="bi bi-upload me-2"></i>Import Data (Excel/CSV)</a></li>
+                            <li><a class="dropdown-item" href="#" id="export-data-btn"><i class="bi bi-save me-2"></i>Export User Data (CSV)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="downloadReport">Download Report (PDF)</a></li>
+                            <li><a class="dropdown-item" href="#" id="teui-factsheet">TEUI Factsheet (PDF)</a></li>
+                            <li><a class="dropdown-item" href="#" id="tedi-factsheet">TEDI Factsheet (PDF)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="export-excel"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export All Data (Excel)</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Hidden File Input for Import -->
+                <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="display: none;">
+            </div>
+        </div>
+
+        <!-- App wrapper -->
+        <div id="app-wrapper">
+            <!-- Calculator container -->
+            <div id="calculator-container">
+                <!-- Key Values Section -->
+                <div id="keyValues" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-key-fill"></i></span>
+                        SECTION 1. Key Values
+                        <div class="ms-auto d-flex align-items-center">
+                            <div class="section-controls me-2">
+                                <span id="feedback-area" style="color: #0dcaf0; font-size: 0.9rem; margin-left: 10px;"></span>
+                            </div>
+                            <button id="expand-collapse-all" class="btn btn-sm btn-link text-white me-2">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                            <button class="layout-toggle-btn">
+                                <i class="bi bi-arrow-right-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <!-- Key Values content will be generated dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Spacer to maintain consistent gap -->
+                <div class="tab-spacer"></div>
+                
+                <!-- Tab container for horizontal layout -->
+                <div class="tab-container" style="display: none;">
+                    <!-- Tabs will be generated by JavaScript -->
+                </div>
+                
+                <!-- Section spacer -->
+                <div id="section-spacer" class="section-spacer"></div>
+
+                <!-- Section 2: Building Information -->
+                <div id="buildingInfo" class="section" data-section="2">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-info-circle"></i></span>
+                        SECTION 2. Building Information
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <!-- Content will be generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Section 3: Climate Calculations -->
+                <div id="climateCalculations" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-thermometer-half"></i></span>
+                        SECTION 3. Climate Calculations
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <!-- Section 3 content will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Section 4: Actual vs. Target Energy & Carbon -->
+                <div id="actualTargetEnergy" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-bullseye"></i></span>
+                        SECTION 4. Actual vs. Target Energy & Carbon
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 4 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 5: CO2e Emissions -->
+                <div id="emissions" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-cloud-upload"></i></span>
+                        SECTION 5. CO2e Emissions
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 5 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 6: Renewable Energy -->
+                <div id="onSiteEnergy" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-sun"></i></span>
+                        SECTION 6. Renewable Energy
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 6 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 7: Water Use -->
+                <div id="waterUse" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-droplet"></i></span>
+                        SECTION 7. Water Use
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 7 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 8: Indoor Air Quality -->
+                <div id="indoorAirQuality" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-lungs"></i></span>
+                        SECTION 8. Indoor Air Quality
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 8 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 9: Occupant + Internal Gains -->
+                <div id="occupantInternalGains" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-cup-hot"></i></span>
+                        SECTION 9. Occupant + Internal Gains
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 9 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 10: Radiant Gains -->
+                <div id="envelopeRadiantGains" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-box-arrow-in-down-right"></i></span>
+                        SECTION 10. Radiant Gains
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 10 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 11: Transmission Losses -->
+                <div id="envelopeTransmissionLosses" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-box-arrow-up-right"></i></span>
+                        SECTION 11. Transmission Losses
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 11 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 12: Volume and Surface Metrics -->
+                <div id="volumeSurfaceMetrics" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-box"></i></span>
+                        SECTION 12. Volume and Surface Metrics
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 12 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 13: Mechanical Loads -->
+                <div id="mechanicalLoads" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-house-gear"></i></span>
+                        SECTION 13. Mechanical Loads
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 13 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 14: TEDI & TELI -->
+                <div id="tediSummary" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-fire"></i></span>
+                        SECTION 14. TEDI & TELI
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 14 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 15: TEUI -->
+                <div id="teuiSummary" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-outlet"></i></span>
+                        SECTION 15. TEUI
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 15 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 16: Sankey Diagram -->
+                <div id="sankeyDiagram" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-sliders2"></i></span>
+                        SECTION 16. Sankey Diagram
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 16 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 17: Dependency Graph -->
+                <div id="dependencyDiagram" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-link-45deg"></i></span>
+                        SECTION 17. Dependency Graph
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 17 content will be implemented...</p>
+                    </div>
+                </div>
+
+                <!-- Section 18: Notes -->
+                <div id="notes" class="section">
+                    <div class="section-header">
+                        <span class="section-icon"><i class="bi bi-info-square"></i></span>
+                        SECTION 18. Notes
+                        <button class="btn-collapse">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="section-content">
+                        <p class="text-muted">Section 18 content will be implemented...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="pt-5 mt-5 text-muted border-top">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>Based on the framework by <a href="https://OpenBuilding.ca">OpenBuilding.ca</a> - Version 4.012</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p>TEUI 4.012 Framework</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal for disclaimer -->
+    <div class="modal fade" id="disclaimerModal" tabindex="-1" aria-labelledby="disclaimerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning bg-opacity-25">
+                    <h5 class="modal-title" id="disclaimerModalLabel">Using this calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This tool helps you calculate the Total Energy Use Intensity (TEUI) & Thermal Energy Demand Intensity (TEDI) of a building or home.</p>
+                    <p>Simply enter your information (Blue inputs). Press the tab key on your keyboard to jump to the next input field and enter values for your building or project.</p>
+                    <p>Default values exist to speed up the process, but you must over-write them with relevant values from your own project. Results will be calculated automatically (Black text).</p>
+                    <hr>
+                    <p><strong>Disclaimer:</strong> OBJECTIVE 4.012 is a framework IN DEVELOPMENT. IT IS NOT YET COMPLETE! This is a simplified version of the TEUI calculator designed for maximum code clarity and maintainability.</p>
+                    <p>Click the download button to generate reports (feature pending development). Only for Canadian projects.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weather Data Modal -->
+    <div class="modal fade" id="weatherDataModal" tabindex="-1" aria-labelledby="weatherDataModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="weatherDataModalLabel">Weather Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="weatherDataContent" class="bg-light p-3" style="max-height: 400px; overflow-y: auto;">Select a province and city to view weather data.</pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global modal fix script -->
     <script>
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                if (window.TEUI.v4012 && window.TEUI.v4012.Sections && window.TEUI.v4012.Sections.S03) {
-                    window.TEUI.v4012.Sections.S03.initialize();
-                }
+        // Simplified fix for lingering modal backdrops
+        document.addEventListener('DOMContentLoaded', function() {
+            // This single event listener handles all modals, but only cleans up when needed
+            document.body.addEventListener('hidden.bs.modal', function() {
+                // Use a short timeout to ensure Bootstrap has completed its operations
+                setTimeout(function() {
+                    // Only clean up if there are backdrops but no visible modals
+                    if (document.querySelectorAll('.modal-backdrop').length > 0 && 
+                        !document.querySelector('.modal.show')) {
+                        
+                        console.log('Cleaning up lingering modal backdrops');
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }
+                }, 150);
             });
-        } else {
-            if (window.TEUI.v4012 && window.TEUI.v4012.Sections && window.TEUI.v4012.Sections.S03) {
-                window.TEUI.v4012.Sections.S03.initialize();
-            }
-        }
+        });
     </script>
 </body>
 </html> 
