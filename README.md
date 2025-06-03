@@ -1,7 +1,73 @@
 # OBJECTIVE
-Objective TEUI 4.011 Codebase
+Objective TEUI 4.012 Framework - Next Generation Architecture
 
-NOTICE: This codebase is licensed under the [Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)](https://creativecommons.org/licenses/by-nd/4.0/).(see footnote, LICENSE file in root)
+> **🚀 ACTIVE DEVELOPMENT BRANCH: 4012-FRAMEWORK**
+> 
+> This branch represents a complete architectural revolution of the TEUI calculator, implementing:
+> - **Tuple-based dual calculations** - Single logic serving both Target and Reference models
+> - **Pure functional architecture** - No side effects, 100% testable
+> - **Modern UI with CSS Grid/Flexbox** - Replacing rigid table structures
+> - **50% code reduction target** - Through radical simplification
+> - **Sub-100ms recalculation** - Through efficient dependency graphs
+
+---
+
+## 🏗️ v4.012 FRAMEWORK ARCHITECTURE
+
+### Core Principles
+
+1. **Single Logic, Dual Output**
+   ```javascript
+   // Every calculation returns both Target and Reference values
+   function calculateHeatLoss(inputs) {
+       const calc = (area, rsi, hdd) => (area * hdd * 24) / (rsi * 1000);
+       
+       return {
+           target: calc(inputs.geometry.area, inputs.target.rsi, inputs.target.hdd),
+           reference: calc(inputs.geometry.area, inputs.reference.rsi, inputs.reference.hdd)
+       };
+   }
+   ```
+
+2. **Explicit State Structure**
+   ```javascript
+   state = {
+       inputs: {
+           geometry: {},      // Shared between models
+           target: {},        // User design values
+           reference: {}      // Code minimum values
+       },
+       outputs: {
+           target: {},        // Calculated target results
+           reference: {}      // Calculated reference results
+       }
+   }
+   ```
+
+3. **File Naming Convention**
+   - All new framework files prefixed with `4012-`
+   - Legacy files remain unprefixed for clear distinction
+   - Example: `4012-S03.js` (new) vs `4011-Section03.js` (legacy)
+
+### Development Guidelines
+
+- **Least Verbose**: Every line of code must justify its existence
+- **Robust**: Pure functions with explicit error handling
+- **Strict**: No implicit dependencies or hidden state
+- **Performant**: Target sub-100ms full recalculation
+
+### Migration Status
+
+- ✅ **Proof of Concept**: `4012-S11.js` demonstrates envelope calculations
+- ✅ **State Manager**: `4012-SM.js` shows simplified state management
+- 🔄 **Section 03**: First full section for migration (climate calculations)
+- 📋 **Section 04**: Marked "in transition" in IT-DEPENDS branch
+
+---
+
+## 📖 LEGACY DOCUMENTATION (v4.011)
+
+The following documentation describes the current production system (v4.011) which will remain operational during the v4.012 migration.
 
 ---
 

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEUI 4.012 Calculator</title>
+    <link rel="stylesheet" href="4012-styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1>TEUI Calculator <span class="version">v4.012</span></h1>
+            <div class="header-controls">
+                <button class="btn-mode" id="modeToggle">
+                    <span class="mode-label">Target</span>
+                </button>
+                <button class="btn-action" id="saveBtn">Save</button>
+                <button class="btn-action" id="loadBtn">Load</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+        <div class="container">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <span class="status-text" id="statusText">Ready</span>
+                <span class="timestamp" id="timestamp"></span>
+            </div>
+
+            <!-- Sections Container -->
+            <div class="sections-container" id="sectionsContainer">
+                <!-- Section 03: Climate -->
+                <section class="section" id="section03">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <span class="section-number">03</span>
+                            Climate
+                        </h2>
+                        <button class="btn-collapse" data-section="section03">−</button>
+                    </div>
+                    <div class="section-content">
+                        <div class="field-grid">
+                            <!-- Province and City -->
+                            <div class="field-row">
+                                <label class="field-label">Province</label>
+                                <select class="field-input" data-field-id="d_19">
+                                    <option value="">Select Province</option>
+                                </select>
+                                <label class="field-label">City</label>
+                                <select class="field-input" data-field-id="h_19">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Climate Data -->
+                            <div class="field-row">
+                                <label class="field-label">HDD</label>
+                                <span class="field-value" data-field-id="d_20">0</span>
+                                <label class="field-label">CDD</label>
+                                <span class="field-value" data-field-id="d_21">0</span>
+                                <label class="field-label">Climate Zone</label>
+                                <span class="field-value" data-field-id="j_19">6.0</span>
+                            </div>
+                            
+                            <!-- Timeframe -->
+                            <div class="field-row">
+                                <label class="field-label">Timeframe</label>
+                                <select class="field-input" data-field-id="h_20">
+                                    <option value="Present">Present (1991-2020)</option>
+                                    <option value="Future">Future (2021-2050)</option>
+                                </select>
+                                <button class="btn-info" id="showWeatherDataBtn">More Weather Data</button>
+                            </div>
+                            
+                            <!-- Temperature Data -->
+                            <div class="field-row">
+                                <label class="field-label">Coldest Days</label>
+                                <span class="field-value" data-field-id="d_23">-24</span>
+                                <span class="field-unit">°C</span>
+                                <span class="field-value" data-field-id="e_23">-11</span>
+                                <span class="field-unit">°F</span>
+                            </div>
+                            
+                            <div class="field-row">
+                                <label class="field-label">Hottest Days</label>
+                                <span class="field-value" data-field-id="d_24">30</span>
+                                <span class="field-unit">°C</span>
+                                <span class="field-value" data-field-id="e_24">86</span>
+                                <span class="field-unit">°F</span>
+                            </div>
+                            
+                            <!-- User Inputs -->
+                            <div class="field-row">
+                                <label class="field-label">Days Cooling</label>
+                                <span class="field-input editable" data-field-id="m_19" contenteditable="true">120</span>
+                                <label class="field-label">Elevation</label>
+                                <span class="field-value" data-field-id="l_22">80</span>
+                                <span class="field-unit">m</span>
+                            </div>
+                            
+                            <!-- Setpoints -->
+                            <div class="field-row">
+                                <label class="field-label">Heating Setpoint</label>
+                                <span class="field-value" data-field-id="h_23">18</span>
+                                <span class="field-unit">°C</span>
+                                <span class="field-value" data-field-id="i_23">64</span>
+                                <span class="field-unit">°F</span>
+                            </div>
+                            
+                            <div class="field-row">
+                                <label class="field-label">Cooling Setpoint</label>
+                                <span class="field-value" data-field-id="h_24">24</span>
+                                <span class="field-unit">°C</span>
+                                <span class="field-value" data-field-id="i_24">75</span>
+                                <span class="field-unit">°F</span>
+                                <label class="field-label">Override</label>
+                                <span class="field-input editable" data-field-id="l_24" contenteditable="true">24</span>
+                            </div>
+                            
+                            <!-- Ground Facing -->
+                            <div class="field-row">
+                                <label class="field-label">GF HDD</label>
+                                <span class="field-value" data-field-id="d_22">1960</span>
+                                <label class="field-label">GF CDD</label>
+                                <span class="field-value" data-field-id="h_22">-1680</span>
+                            </div>
+                            
+                            <!-- Capacitance -->
+                            <div class="field-row">
+                                <label class="field-label">Capacitance</label>
+                                <select class="field-input" data-field-id="h_21">
+                                    <option value="Static">Static</option>
+                                    <option value="Capacitance" selected>Capacitance</option>
+                                </select>
+                                <input type="range" class="field-slider" data-field-id="i_21" min="0" max="100" value="50" step="5">
+                                <span class="field-value" data-field-id="i_21_display">50%</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- More sections will be added here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Weather Data Modal -->
+    <div class="modal" id="weatherDataModal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+            <div id="weatherDataContent"></div>
+        </div>
+    </div>
+
+    <!-- Scripts - Local first, no modules -->
+    <!-- Core utilities first -->
+    <script>
+        // Initialize TEUI namespace
+        window.TEUI = window.TEUI || {};
+        
+        // Add parseNumeric if not already defined
+        if (!window.TEUI.parseNumeric) {
+            window.TEUI.parseNumeric = function(value, defaultValue) {
+                if (value === null || value === undefined || value === '') {
+                    return defaultValue !== undefined ? defaultValue : null;
+                }
+                const str = value.toString().replace(/,/g, '');
+                const num = parseFloat(str);
+                return isNaN(num) ? (defaultValue !== undefined ? defaultValue : null) : num;
+            };
+        }
+        
+        // Add formatNumber if not already defined
+        if (!window.TEUI.formatNumber) {
+            window.TEUI.formatNumber = function(value, formatType) {
+                if (value === null || value === undefined || isNaN(value)) return 'N/A';
+                
+                const num = parseFloat(value);
+                
+                switch(formatType) {
+                    case 'integer-comma':
+                        return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                    case 'integer-nocomma':
+                        return num.toFixed(0);
+                    case 'number-1dp':
+                        return num.toFixed(1);
+                    case 'number-2dp':
+                        return num.toFixed(2);
+                    case 'number-3dp':
+                        return num.toFixed(3);
+                    case 'percent-0dp':
+                        return num.toFixed(0) + '%';
+                    case 'percent-1dp':
+                        return num.toFixed(1) + '%';
+                    default:
+                        return num.toString();
+                }
+            };
+        }
+    </script>
+    
+    <!-- Core framework files -->
+    <script src="core/state/4012-DualState.js"></script>
+    <script src="core/data/4012-ClimateValues.js"></script>
+    <script src="core/calculations/4012-climate.js"></script>
+    
+    <!-- Section modules -->
+    <script src="sections/4012-S03.js"></script>
+    
+    <!-- Main app initialization -->
+    <script src="4012-app.js"></script>
+    
+    <!-- Initialize the app -->
+    <script>
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.TEUI.v4012 && window.TEUI.v4012.Sections && window.TEUI.v4012.Sections.S03) {
+                    window.TEUI.v4012.Sections.S03.initialize();
+                }
+            });
+        } else {
+            if (window.TEUI.v4012 && window.TEUI.v4012.Sections && window.TEUI.v4012.Sections.S03) {
+                window.TEUI.v4012.Sections.S03.initialize();
+            }
+        }
+    </script>
+</body>
+</html> 
