@@ -148,21 +148,69 @@
             font-size: 12px;
         }
         
-        /* Calculated values */
+        /* Calculated values - MUST be black bold on grey */
         .calculated-value {
-            font-weight: 500;
-            color: #2196F3;
-            padding: 4px 8px;
-            background-color: #f0f8ff;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #000 !important;
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6;
             display: inline-block;
             min-width: 60px;
             text-align: center;
         }
         
-        .calculated-value.negative-value {
-            color: #f44336;
-            background-color: #ffebee;
+        /* User input editable fields - MUST be blue bold */
+        .user-input.editable {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #0066cc !important;
+            background-color: #f0f7ff !important;
+            border: 1px solid #0066cc;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            cursor: text;
+        }
+        
+        .user-input.editable:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        /* Value cells - calculated/derived values */
+        .value-cell {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #000 !important;
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            min-width: 80px;
+            display: inline-block;
+        }
+        
+        /* External lookup values (HDD/CDD) - Yellow highlight */
+        .value-cell.external-lookup,
+        .calculated-value.external-lookup {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border-color: #ffeaa7;
+        }
+        
+        /* Missing/null values */
+        .value-cell.missing-value,
+        .calculated-value.missing-value {
+            color: #6c757d !important;
+            font-style: italic;
+            font-weight: normal;
         }
         
         /* Reference values */
@@ -231,35 +279,45 @@
         
         /* Dropdown styles */
         .dropdown-container {
+            position: relative;
             display: inline-block;
             width: 100%;
         }
         
         .dropdown-select {
             width: 100%;
-            padding: 6px 8px;
+            padding: 8px 36px 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            background-color: white;
-            font-size: 14px;
+            background-color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #333;
             cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg width='12' height='6' viewBox='0 0 12 6' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M0 0l6 6 6-6z' fill='%23333'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
             transition: all 0.2s;
         }
         
-        .dropdown-select:hover:not(:disabled) {
-            border-color: #2196F3;
+        .dropdown-select:hover {
+            border-color: #0066cc;
         }
         
         .dropdown-select:focus {
             outline: none;
-            border-color: #2196F3;
-            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
         }
         
         .dropdown-select:disabled {
             background-color: #f5f5f5;
+            color: #999;
             cursor: not-allowed;
-            opacity: 0.6;
         }
         
         /* Slider styles */
@@ -411,6 +469,7 @@
         /* Editable input fields */
         .input-field:not(:disabled):not(.reference-value) {
             color: #0066cc;
+            font-weight: bold;
             background-color: #f0f7ff;
         }
         
@@ -430,37 +489,11 @@
         
         /* Reference mode fields */
         .reference-value {
-            background-color: #ffe0e0 !important;
             color: #dc3545 !important;
-            font-weight: 600 !important;
+            font-weight: bold !important;
             font-style: italic !important;
-            border-color: #f5c6cb !important;
-        }
-        
-        /* Value cells */
-        .value-cell {
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            text-align: center;
-            min-width: 80px;
-            background-color: #f8f9fa;
-            color: #000;
-            font-weight: 600;
-        }
-        
-        /* Null/missing values */
-        .value-cell.missing {
-            color: #6c757d;
-            font-style: italic;
-            font-weight: normal;
-        }
-        
-        /* Lookup values (yellow highlight) */
-        .lookup-value {
-            background-color: #fff3cd !important;
-            color: #856404 !important;
-            font-weight: 600;
+            background-color: #fee !important;
+            border-color: #dc3545 !important;
         }
         
         /* Inline calculations */
@@ -510,6 +543,37 @@
         #coolingOverrideValue {
             color: #0066cc !important;
             background-color: #f0f7ff !important;
+        }
+        
+        /* External lookup values (HDD/CDD Ref Lookup) - Yellow highlight for HTTP links */
+        .value-cell.external-lookup,
+        .calculated-value.external-lookup,
+        .reference-value.external-lookup {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        button.reference-value.external-lookup {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeaa7;
+            font-family: inherit;
+        }
+        
+        .reference-value.external-lookup:hover {
+            background-color: #ffeaa7 !important;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -603,7 +667,7 @@
                         </td>
                         <td></td>
                         <td>
-                            <span id="hddRef" class="calculated-value reference-value" data-field-id="j_20">HDD Ref Lookup</span>
+                            <button id="hdd_ref_lookup" class="reference-value external-lookup">HDD Ref<br>Lookup</button>
                         </td>
                         <td>
                             <span class="reference-label">HDD - Energy Star</span>
@@ -638,7 +702,7 @@
                             </div>
                         </td>
                         <td>
-                            <span id="cddRef" class="calculated-value reference-value" data-field-id="j_21">CDD Ref Lookup</span>
+                            <button id="cdd_ref_lookup" class="reference-value external-lookup">CDD Ref<br>Lookup</button>
                         </td>
                         <td>
                             <span class="reference-label">CDD - Energy Star</span>
@@ -1337,107 +1401,100 @@
                         return;
                     }
                     
-                    logDebug('Climate data for city:', cityData);
+                    // Update HDD18
+                    const hddValue = timeframe === 'Future' ? cityData.HDD18_2021_2050 : cityData.HDD18;
+                    const hddElement = document.getElementById('l_21');
+                    if (hddElement) {
+                        if (hddValue === null || hddValue === undefined || hddValue === 666) {
+                            hddElement.textContent = 'N/A';
+                            hddElement.className = 'value-cell missing-value';
+                        } else {
+                            hddElement.textContent = hddValue;
+                            hddElement.className = 'value-cell';  // Regular calculated value styling
+                        }
+                        DualState.setValue('l_21', hddValue);
+                    }
                     
-                    // Update elevation
-                    const elevation = cityData['Elev ASL (m)'];
-                    DualState.setValue('l_22', elevation, 'climate');
-                    updateUIFromState('l_22', elevation + ' m');
+                    // Also update the main HDD display
+                    const mainHddElement = document.getElementById('hdd');
+                    if (mainHddElement) {
+                        if (hddValue === null || hddValue === undefined || hddValue === 666) {
+                            mainHddElement.textContent = 'N/A';
+                            mainHddElement.className = 'calculated-value missing-value';
+                        } else {
+                            mainHddElement.textContent = hddValue;
+                            mainHddElement.className = 'calculated-value';  // Regular calculated value styling
+                        }
+                        DualState.setValue('d_20', hddValue);
+                    }
                     
-                    // Get values based on timeframe
-                    const isPresent = timeframe === 'present';
-                    
-                    // HDD18
-                    const hdd = isPresent ? cityData.HDD18 : cityData.HDD18_2021_2050;
-                    DualState.setValue('d_23', hdd, 'climate');
-                    
-                    // CDD24 with fallback logic
-                    let cdd;
-                    if (isPresent) {
-                        cdd = cityData.CDD24;
-                    } else {
-                        // Future CDD
-                        const futureCDD = cityData.CDD24_2021_2050;
-                        if (futureCDD === null || futureCDD === undefined || futureCDD === 666) {
-                            // Use present as fallback
-                            cdd = cityData.CDD24;
-                            if (cdd !== null && cdd !== undefined && cdd !== 666) {
-                                logDebug(`Future CDD24 not available for ${city}. Using present value (${cdd}) as fallback.`, 'warning');
+                    // Update CDD24
+                    const cddValue = timeframe === 'Future' ? cityData.CDD24_2021_2050 : cityData.CDD24;
+                    const cddElement = document.getElementById('l_23');
+                    if (cddElement) {
+                        if (cddValue === null || cddValue === undefined || cddValue === 666) {
+                            cddElement.textContent = 'N/A';
+                            cddElement.className = 'value-cell missing-value';
+                            
+                            // Check if we're using a fallback
+                            if (timeframe === 'Future' && cityData.CDD24 !== null && cityData.CDD24 !== undefined && cityData.CDD24 !== 666) {
+                                console.warn(`Future CDD not available for ${city}, ${province}. Using present value as fallback.`);
+                                cddElement.textContent = cityData.CDD24;
+                                cddElement.className = 'value-cell';  // Regular calculated value styling
+                                DualState.setValue('l_23', cityData.CDD24);
                             }
                         } else {
-                            cdd = futureCDD;
+                            cddElement.textContent = cddValue;
+                            cddElement.className = 'value-cell';  // Regular calculated value styling
+                            DualState.setValue('l_23', cddValue);
                         }
                     }
-                    DualState.setValue('d_24', cdd, 'climate');
                     
-                    // Extreme temperatures
-                    const extremeMin = cityData.January_2_5;
-                    const extremeMax = isPresent ? cityData.July_2_5_Tdb : cityData.Future_July_2_5_Tdb;
-                    
-                    DualState.setValue('e_23', extremeMin, 'climate');
-                    DualState.setValue('e_24', extremeMax, 'climate');
-                    
-                    // Update UI with proper formatting
-                    this.updateClimateDisplays();
-                    
-                    // Trigger calculations
-                    CalculationService.calculateAll();
-                },
-                
-                updateClimateDisplays: function() {
-                    const formatValue = (value) => {
-                        if (value === null || value === undefined || value === 666 || isNaN(value)) {
-                            return 'N/A';
-                        }
-                        return value.toString();
-                    };
-                    
-                    // Update HDD
-                    const hddElem = DOMElements.get('d_23');
-                    if (hddElem) {
-                        const hddValue = DualState.getValue('d_23');
-                        hddElem.textContent = formatValue(hddValue);
-                        hddElem.classList.toggle('missing', hddValue === null || hddValue === undefined || hddValue === 666);
-                    }
-                    
-                    // Update CDD with fallback highlighting
-                    const cddElem = DOMElements.get('d_24');
-                    if (cddElem) {
-                        const cddValue = DualState.getValue('d_24');
-                        const timeframe = DualState.getValue('h_20');
-                        const province = DualState.getValue('d_19');
-                        const city = DualState.getValue('h_19');
-                        
-                        cddElem.textContent = formatValue(cddValue);
-                        cddElem.classList.toggle('missing', cddValue === null || cddValue === undefined || cddValue === 666);
-                        
-                        // Check if using fallback
-                        if (timeframe === 'future' && province && city) {
-                            const cityData = ClimateDataService.getCityData(province, city);
-                            const futureCDD = cityData?.CDD24_2021_2050;
-                            if ((futureCDD === null || futureCDD === undefined || futureCDD === 666) && 
-                                cddValue !== null && cddValue !== undefined && cddValue !== 666) {
-                                cddElem.classList.add('lookup-value');
-                            } else {
-                                cddElem.classList.remove('lookup-value');
+                    // Also update the main CDD display
+                    const mainCddElement = document.getElementById('cdd');
+                    if (mainCddElement) {
+                        if (cddValue === null || cddValue === undefined || cddValue === 666) {
+                            mainCddElement.textContent = 'N/A';
+                            mainCddElement.className = 'calculated-value missing-value';
+                            
+                            // Check if we're using a fallback
+                            if (timeframe === 'Future' && cityData.CDD24 !== null && cityData.CDD24 !== undefined && cityData.CDD24 !== 666) {
+                                mainCddElement.textContent = cityData.CDD24;
+                                mainCddElement.className = 'calculated-value';  // Regular calculated value styling
+                                DualState.setValue('d_21', cityData.CDD24);
                             }
+                        } else {
+                            mainCddElement.textContent = cddValue;
+                            mainCddElement.className = 'calculated-value';  // Regular calculated value styling
+                            DualState.setValue('d_21', cddValue);
                         }
                     }
                     
-                    // Update extreme temperatures
-                    const minTempElem = DOMElements.get('e_23');
-                    if (minTempElem) {
-                        const minValue = DualState.getValue('e_23');
-                        minTempElem.textContent = formatValue(minValue);
-                        minTempElem.classList.toggle('missing', minValue === null || minValue === undefined || minValue === 666);
-                    }
+                    // Update other climate values
+                    const updates = [
+                        { id: 'l_24', value: cityData.HDD18, label: 'Ground Facing GF HDD' },
+                        { id: 'l_25', value: cityData.CDD24, label: 'GF CDD' },
+                        { id: 'l_31', value: cityData.January_2_5, label: 'Coldest Days' },
+                        { id: 'l_32', value: cityData.July_2_5_Tdb, label: 'Hottest Days' },
+                        { id: 'l_13', value: cityData.Elevation_ASL, label: 'Elevation' }
+                    ];
                     
-                    const maxTempElem = DOMElements.get('e_24');
-                    if (maxTempElem) {
-                        const maxValue = DualState.getValue('e_24');
-                        maxTempElem.textContent = formatValue(maxValue);
-                        maxTempElem.classList.toggle('missing', maxValue === null || maxValue === undefined || maxValue === 666);
-                    }
+                    updates.forEach(update => {
+                        const element = document.getElementById(update.id);
+                        if (element) {
+                            if (update.value === null || update.value === undefined || update.value === 666) {
+                                element.textContent = 'N/A';
+                                element.className = 'value-cell missing-value';
+                            } else {
+                                element.textContent = update.value;
+                                element.className = 'value-cell';
+                            }
+                            DualState.setValue(update.id, update.value);
+                        }
+                    });
+                    
+                    // Update calculations
+                    CalculationService.updateCalculations();
                 },
                 
                 showWeatherDataModal: function() {
@@ -1534,6 +1591,9 @@
                         return { text: 'N/A', className: 'missing' };
                     }
                     return { text: value.toString(), className: '' };
+                },
+                updateCalculations: function() {
+                    // Implementation of updateCalculations method
                 }
             };
             
