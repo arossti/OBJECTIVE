@@ -640,27 +640,57 @@
             padding: 2px 8px !important;
         }
         
-        /* sl - Slider styles */
+        /* sl - Slider styles - Match 4011 styling */
         .cell-sl {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
         }
         
         .cell-sl .slider {
-            flex: 1;
-            height: 6px;
-            border-radius: 3px;
+            width: 100%;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
             background: #ddd;
             outline: none;
-            -webkit-appearance: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            border-radius: 5px;
         }
         
+        .cell-sl .slider:hover {
+            opacity: 1;
+        }
+        
+        .cell-sl .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #0066cc;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        
+        .cell-sl .slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: #0066cc;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+        
+        /* Slider value display - Match 4011 styling */
         .cell-sl .slider-value {
-            font-weight: 500;
-            color: #333;
-            min-width: 40px;
+            display: inline-block;
+            min-width: 50px;
             text-align: center;
+            font-weight: 500;
+            color: #0066cc !important;  /* Blue text like 4011 */
+            cursor: pointer;
         }
         
         /* dv - Derived values (calculated/non-editable) */
@@ -894,9 +924,9 @@
                             </div>
                         </td>
                         <td>
-                            <div class="slider-container">
-                                <input type="range" id="capacitanceSlider" class="cell-sl slider" min="0" max="100" step="5" value="50">
-                                <span id="capacitanceValue" class="cell-sl slider-value" data-field-id="i_21">50%</span>
+                            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                                <input type="range" id="capacitance_slider" class="slider" min="0" max="100" value="50" style="flex: 1;">
+                                <span id="capacitance_value" class="slider-value">50%</span>
                             </div>
                         </td>
                         <td>
@@ -1208,8 +1238,8 @@
                     this.citySelect = document.getElementById('citySelect');
                     this.timeframeSelect = document.getElementById('timeframeSelect');
                     this.capacitanceSelect = document.getElementById('capacitanceSelect');
-                    this.capacitanceSlider = document.getElementById('capacitanceSlider');
-                    this.capacitanceValue = document.getElementById('capacitanceValue');
+                    this.capacitanceSlider = document.getElementById('capacitance_slider');
+                    this.capacitanceValue = document.getElementById('capacitance_value');
                     this.referenceToggle = document.getElementById('referenceToggle');
                     this.stateIndicator = document.getElementById('stateIndicator');
                     this.sectionContent = document.querySelector('.section-content');
