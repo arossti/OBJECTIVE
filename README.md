@@ -65,6 +65,60 @@ Objective TEUI 4.012 Framework - Next Generation Architecture
 
 ---
 
+## 📜 PROJECT HISTORY
+
+### The Journey to v4.012
+
+The TEUI calculator has undergone significant architectural evolution:
+
+1. **v4.011 Original** - Simple, functional calculator mirroring Excel workflows
+   - Direct calculations from user inputs
+   - Clear state management
+   - Currently deployed on GitHub Pages (stable demo)
+
+2. **Traffic Cop Pattern** - Added orchestration to prevent calculation loops
+   - Introduced explicit coordination between sections
+   - Added state flags and recursion protection
+   - Increased complexity but improved stability
+
+3. **Dual-Engine Architecture** - Separated Reference and Target models
+   - Split calculations into Application and Reference hemispheres
+   - Required complex state isolation mechanisms
+   - Achieved compliance calculations but at significant complexity cost
+
+4. **IT-DEPENDS Branch** - Attempted dependency-ordered calculations
+   - Promised performance improvements through smart dependency tracking
+   - Eliminated race conditions and calculation storms
+   - Ultimately created an unmaintainable web of interdependencies
+   - **Abandoned June 2024** due to overwhelming complexity
+
+5. **v4.012 Framework** - Complete architectural reset
+   - Tuple-based calculations: Single logic returning both Target and Reference values
+   - Pure functional approach with no side effects
+   - Dramatic simplification while preserving dual-model capabilities
+   - Foundation for future hourly analysis (8760x current calculations)
+
+### Why the Reset?
+
+As captured in `OBJECTIVE 4011/documentation/SOUL-SEARCH.md`, the v4.011 codebase had accumulated multiple overlapping architectural patterns, making it increasingly difficult to maintain and extend. The IT-DEPENDS branch represented the breaking point where additional complexity yielded diminishing returns.
+
+The v4.012 framework represents a return to first principles:
+- **Simplicity**: Every calculation is a pure function
+- **Performance**: Sub-100ms full recalculation target
+- **Maintainability**: 50% code reduction goal
+- **Scalability**: Architecture ready for hourly analysis
+
+### Legacy Support
+
+The v4.011 codebase remains as:
+- A working reference implementation
+- Source of business logic and calculations
+- Stable fallback during v4.012 development
+
+For the GitHub Pages demo, consider using a commit from the **SSv2 branch** before the IT-DEPENDS complexity was introduced - this represents the most stable, production-ready version of v4.011.
+
+---
+
 ## 📖 LEGACY DOCUMENTATION (v4.011)
 
 The following documentation describes the current production system (v4.011) which will remain operational during the v4.012 migration.
