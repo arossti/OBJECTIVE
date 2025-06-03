@@ -156,7 +156,6 @@ TEUI.StateManager = (function() {
      * Initialize the state manager
      */
     function initialize() {
-        // console.log('Initializing StateManager');
         clear();
         
         // Initialize with default values from FieldManager
@@ -198,8 +197,6 @@ TEUI.StateManager = (function() {
                 });
             }
         });
-        
-        // console.log(`Initialized state with ${fields.size} fields and ${dependencies.size} dependencies`);
     }
     
     /**
@@ -232,7 +229,7 @@ TEUI.StateManager = (function() {
                    : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
         } else {
             // Existing logic for Application Mode
-        return fields.has(fieldId) ? fields.get(fieldId).value : null;
+            return fields.has(fieldId) ? fields.get(fieldId).value : null;
         }
     }
     
@@ -258,7 +255,6 @@ TEUI.StateManager = (function() {
                     independentReferenceState[fieldId] = value;
                     activeReferenceDataSet[fieldId] = value; // Keep in sync
                     
-                    console.log(`[StateManager] Set independent Reference value for ${fieldId}: ${value}`);
                     notifyListeners(fieldId, value, oldValue, 'reference-user-modified');
                     return true;
                 }
@@ -267,12 +263,6 @@ TEUI.StateManager = (function() {
         
         // << NEW: Check if application state updates are muted >>
         if (isApplicationStateMuted && state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
-            // if (fieldId === 'k_120') { // Intentionally commented out
-            //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
-            // }
-            // if (fieldId === 'g_67') { // Intentionally commented out
-            //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
-            // }
             return false; // Prevent update to this.fields (application state)
         }
 
@@ -280,13 +270,6 @@ TEUI.StateManager = (function() {
         if (state === VALUE_STATES.IMPORTED) {
             lastImportedState[fieldId] = value;
         }
-
-        // if (fieldId === 'k_120') { // Intentionally commented out
-        //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
-        // }
-        // if (fieldId === 'g_67') { // Intentionally commented out
-        //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
-        // }
 
         const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
 
@@ -339,8 +322,6 @@ TEUI.StateManager = (function() {
         
         // Add target to calculated fields set
         calculatedFields.add(targetId);
-        
-        // console.log(`Registered dependency: ${sourceId} → ${targetId}`);
     }
     
     /**
@@ -351,7 +332,6 @@ TEUI.StateManager = (function() {
     function markDependentsDirty(fieldId, visited = new Set()) {
         // Skip if already visited (prevent circular dependency infinite recursion)
         if (visited.has(fieldId)) {
-            // console.warn(`Circular dependency detected with field ${fieldId}`);
             return;
         }
         
@@ -460,7 +440,6 @@ TEUI.StateManager = (function() {
         // Save to localStorage
         try {
             localStorage.setItem('TEUI_4011_STATE', JSON.stringify(state));
-            // console.log('State saved to localStorage');
         } catch (error) {
             console.error('Error saving state to localStorage:', error);
         }
@@ -475,7 +454,6 @@ TEUI.StateManager = (function() {
             const stateJson = localStorage.getItem('TEUI_4011_STATE');
             
             if (!stateJson) {
-                // console.log('No saved state found in localStorage');
                 return;
             }
             
@@ -486,8 +464,6 @@ TEUI.StateManager = (function() {
             Object.entries(state).forEach(([fieldId, field]) => {
                 setValue(fieldId, field.value, field.state);
             });
-            
-            // console.log('State loaded from localStorage');
         } catch (error) {
             console.error('Error loading state from localStorage:', error);
         }
@@ -502,8 +478,6 @@ TEUI.StateManager = (function() {
         Object.entries(data).forEach(([fieldId, value]) => {
             setValue(fieldId, value, VALUE_STATES.IMPORTED);
         });
-        
-        // console.log('State imported from data object');
     }
     
     /**
@@ -533,7 +507,6 @@ TEUI.StateManager = (function() {
         // Helper function for depth-first topological sort
         const visit = (fieldId) => {
             if (temp.has(fieldId)) {
-                // console.warn(`Circular dependency detected with field ${fieldId}`);
                 return;
             }
             
@@ -615,8 +588,6 @@ TEUI.StateManager = (function() {
      * initialization and dependency chain establishment.
      */
     function registerTEUIFields() {
-        // console.log('Registering TEUI-related fields');
-        
         // =========================================================================
         // 1. REGISTER INPUT FIELDS FIRST (always register dependencies before dependents)
         // =========================================================================
@@ -659,7 +630,6 @@ TEUI.StateManager = (function() {
         registerDependency('h_15', 'k_10'); // Area affects actual TEUI
         registerDependency('f_32', 'k_10'); // Actual energy affects actual TEUI
         
-        // console.log('TEUI fields registered with dependency relationships established');
     }
     
     /**
@@ -667,8 +637,6 @@ TEUI.StateManager = (function() {
      * This ensures that Section14 and Section15 values are properly initialized
      */
     function registerTEDITELIFields() {
-        // console.log('Registering TEDI/TELI and TEUI Summary related fields');
-        
         // =========================================================================
         // 1. REGISTER KEY TEDI & TELI FIELDS (SECTION 14)
         // =========================================================================
@@ -722,8 +690,6 @@ TEUI.StateManager = (function() {
         registerDependency('h_15', 'd_144');   // Area affects reduction calculations
         registerDependency('h_15', 'd_141');   // Area affects cost metrics
         registerDependency('h_15', 'h_141');   // Area affects cost metrics
-        
-        // console.log('TEDI/TELI and TEUI Summary fields registered with dependencies established');
     }
     
     /**
@@ -731,8 +697,6 @@ TEUI.StateManager = (function() {
      * This ensures proper integration with other sections
      */
     function registerVolumeMetricsFields() {
-        // console.log('Registering Volume and Surface Metrics fields');
-        
         // =========================================================================
         // 1. REGISTER KEY SURFACE AREA FIELDS
         // =========================================================================
@@ -798,8 +762,6 @@ TEUI.StateManager = (function() {
         // Building volume affects metrics
         registerDependency('d_105', 'g_105'); // Volume affects volume/area ratio
         registerDependency('d_105', 'i_105'); // Volume affects area/volume ratio
-        
-        // console.log('Volume and Surface Metrics fields registered with dependencies established');
     }
     
     /**
@@ -807,20 +769,11 @@ TEUI.StateManager = (function() {
      * @param {string} sourceField - The source field that changed
      */
     function updateTEUICalculations(sourceField) {
-        // console.log(`Updating TEUI calculations due to change in ${sourceField}`);
-        
         try {
             // Get raw values from state manager
             const rawActualEnergy = getValue('f_32');
             const rawTargetEnergy = getValue('j_32');
             const rawArea = getValue('h_15');
-            
-            /*
-            console.log("Raw values from StateManager:");
-            console.log(`- Actual Energy (f_32): "${rawActualEnergy}"`);
-            console.log(`- Target Energy (j_32): "${rawTargetEnergy}"`);
-            console.log(`- Conditioned Area (h_15): "${rawArea}"`);
-            */
             
             // Parse values with appropriate fallbacks
             let actualEnergy, targetEnergy, area;
@@ -884,13 +837,6 @@ TEUI.StateManager = (function() {
                 area = 1427.20; // Default value
             }
             
-            /*
-            console.log("Final values for calculation:");
-            console.log("- Actual Energy:", actualEnergy);
-            console.log("- Target Energy:", targetEnergy);
-            console.log("- Area:", area);
-            */
-            
             // Calculate TEUI values (rounded to 1 decimal place)
             let actualTEUI, targetTEUI;
             
@@ -903,8 +849,6 @@ TEUI.StateManager = (function() {
             
             // Calculate Target TEUI - always use target energy
             targetTEUI = Math.round((targetEnergy / area) * 10) / 10;
-            
-            // console.log(`Calculated TEUI values - Actual: ${actualTEUI}, Target: ${targetTEUI}`);
             
             // Update the TEUI values
             setValue('k_10', actualTEUI.toString(), VALUE_STATES.CALCULATED);
@@ -1017,7 +961,7 @@ TEUI.StateManager = (function() {
                     activeReferenceDataSet[fieldId] = independentReferenceState[fieldId];
                 } else {
                     // Use application state value
-                activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
+                    activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
                 }
             });
             console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet (preserving independent Reference values). d_53 value:', activeReferenceDataSet['d_53']);
@@ -1092,7 +1036,6 @@ TEUI.StateManager = (function() {
                 if (!activeReferenceDataSet.hasOwnProperty(fieldId)) {
                     const fieldDef = TEUI.FieldManager?.getField(fieldId);
                     activeReferenceDataSet[fieldId] = fieldDef?.defaultValue; 
-                    // console.log(`[StateManager] Step 4: Field ${fieldId} fell back to system default.`);
                 }
             });
         }
@@ -1147,7 +1090,6 @@ TEUI.StateManager = (function() {
      */
     function setMuteApplicationStateUpdates(isMuted) {
         isApplicationStateMuted = isMuted;
-        // console.log(`[StateManager] Application state updates ${isMuted ? 'MUTED' : 'UNMUTED'}.`);
     }
 
     /**
@@ -1372,10 +1314,10 @@ TEUI.StateManager = (function() {
         exportDependencyGraph: exportDependencyGraph,
         loadReferenceData: loadReferenceData,           
         setValueInReferenceMode: setValueInReferenceMode, 
-        setMuteApplicationStateUpdates: setMuteApplicationStateUpdates, // << NEW
-        revertToLastImportedState: revertToLastImportedState, // << NEW
-        getApplicationStateValue: getApplicationStateValue, // << NEW
-        getActiveReferenceModeValue: getActiveReferenceModeValue, // << NEW
+        setMuteApplicationStateUpdates: setMuteApplicationStateUpdates,
+        revertToLastImportedState: revertToLastImportedState,
+        getApplicationStateValue: getApplicationStateValue,
+        getActiveReferenceModeValue: getActiveReferenceModeValue,
         getApplicationValue: getApplicationValue,
         getReferenceValue: getReferenceValue,
         getCurrentDisplayValue: getCurrentDisplayValue,

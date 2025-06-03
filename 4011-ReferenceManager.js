@@ -11,14 +11,11 @@ TEUI.ReferenceManager = (function() {
   let currentStandard = null;
 
   function fetchInitialStandard() {
-    // console.log("[ReferenceManager] fetchInitialStandard called by teui-rendering-complete event.");
     currentStandard = TEUI.StateManager?.getValue('d_13');
     if (!currentStandard) {
-        // console.warn("ReferenceManager: Could not get initial standard from d_13 after rendering. Defaulting might occur.");
         const d13Field = TEUI.FieldManager?.getField('d_13');
         currentStandard = d13Field?.defaultValue || null;
     }
-    // console.log(`ReferenceManager: Initialized with standard after rendering: ${currentStandard}`);
   }
 
   function initialize() {
@@ -31,7 +28,6 @@ TEUI.ReferenceManager = (function() {
     // Listen for standard selection changes from Section 2 dropdown (d_13)
     TEUI.StateManager.addListener('d_13', function(newValue) {
       currentStandard = newValue;
-      console.log(`[ReferenceManager] d_13 changed to: ${newValue}. activeReferenceDataSet will be updated by StateManager or ReferenceToggle.`);
       
       // DO NOT call StateManager.loadReferenceData here directly anymore.
       // Let StateManager (if d_13 is set by system) or ReferenceToggle (on mode switch) handle it.
@@ -41,7 +37,6 @@ TEUI.ReferenceManager = (function() {
       // ReferenceToggle's handleStandardChange will manage this if it also listens to d_13, 
       // or an explicit refresh call can be made if ReferenceManager is the sole d_13 state updater for Reference Mode.
       if (window.TEUI.ReferenceToggle && TEUI.ReferenceToggle.isReferenceMode()) {
-        console.log("[ReferenceManager] In Reference Mode, d_13 changed. Triggering UI refresh via ReferenceToggle.");
         setTimeout(() => { // Keep timeout to allow other d_13 listeners to complete if any
             if (TEUI.ReferenceToggle.isReferenceMode()) { // Double check mode before refresh
                  TEUI.ReferenceToggle.refreshAllSectionsDisplay(); // This will call loadReferenceData
@@ -61,7 +56,6 @@ TEUI.ReferenceManager = (function() {
    */
   function getValue(fieldId) {
     if (!currentStandard) {
-      // console.warn(`ReferenceManager.getValue: Current standard not set. Cannot get value for ${fieldId}`);
       return null;
     }
     return TEUI.ReferenceValues.getValue(currentStandard, fieldId);
@@ -198,8 +192,6 @@ TEUI.ReferenceManager = (function() {
             const standardFields = TEUI.ReferenceValues?.getStandardFields(currentStandard);
             if (!standardFields) return;
 
-            // console.warn(`Ref Handler (${sectionName}): Updating display for standard: ${currentStandard}`);
-
             Object.entries(standardFields).forEach(([fieldId, fieldData]) => {
                 if (fieldData.section !== sectionName || !fieldData.targetCell) return;
 
@@ -242,7 +234,6 @@ TEUI.ReferenceManager = (function() {
                         const currentRowNumber = parseInt(fieldData.targetCell.split('_')[1]);
                         const componentConf = componentConfig.find(conf => conf.row === currentRowNumber);
                         if (componentConf) {
-                            // console.warn(`  -> Calling sectionRecalculateRow for row ${currentRowNumber} (using reference value via fieldId: ${fieldId}).`);
                             sectionRecalculateRow(currentRowNumber, componentConf, fieldId); // Pass original fieldId
                         }
                     }
@@ -254,14 +245,11 @@ TEUI.ReferenceManager = (function() {
                     }
                 }
             });
-            // console.warn(`Ref Handler (${sectionName}): Finished updateReferenceDisplay.`);
         },
 
         restoreDisplay: function() {
             const sectionContainer = document.getElementById(sectionId);
             if (!sectionContainer) return;
-
-            // console.warn(`Ref Handler (${sectionName}): Restoring design display`);
 
             const elements = sectionContainer.querySelectorAll('[data-original-value]');
             elements.forEach(element => {
@@ -283,7 +271,6 @@ TEUI.ReferenceManager = (function() {
 
             // Recalculate the entire section using its design values
             if (typeof sectionCalculateAll === 'function') {
-                // console.warn(`Ref Handler (${sectionName}): Calling sectionCalculateAll to restore design state.`);
                 sectionCalculateAll();
             } else {
                  console.error(`Ref Handler (${sectionName}): sectionCalculateAll function is not valid!`);
