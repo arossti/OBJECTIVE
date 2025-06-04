@@ -1456,6 +1456,16 @@ body.reference-mode #keyValues .key-values-table tr {
     border-bottom-color: var(--reference-value-color) !important;
 }
 
+/* NEW STYLE for locked reference input display */
+.reference-input-display-locked {
+    background-color: #f0f0f0 !important; /* Light grey background */
+    color: #555 !important; /* Darker grey text for readability */
+    cursor: default !important; /* Indicate non-interactive */
+    font-style: italic; /* Differentiate display */
+    /* Ensure inputs are truly not editable if somehow missed by JS */
+    pointer-events: none;
+}
+
 /* Dependency Graph Floating Controls in Fullscreen Mode */
 .dependency-graph-floating-controls,
 .dependency-graph-floating-info {

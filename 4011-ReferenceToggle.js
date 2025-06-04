@@ -7,22 +7,38 @@
 window.TEUI = window.TEUI || {};
 
 TEUI.ReferenceToggle = (function() {
-  let referenceMode = false;
-  const BODY_CLASS = 'reference-mode';
-  const BUTTON_ID = 'toggleReferenceBtn';
+  let referenceMode = false; // This will be true only temporarily during executeReferenceRunAndCache
   const STANDARD_SELECTOR_ID = 'd_13'; // ID of the reference standard dropdown
 
+  let cachedReferenceResults = null;
+  const RUN_REFERENCE_BUTTON_ID = 'runReferenceBtn'; 
+  // NEW: Button ID and state for viewing reference inputs
+  const VIEW_REFERENCE_INPUTS_BUTTON_ID = 'viewReferenceInputsBtn';
+  let isViewingReferenceInputs = false;
+
+  const inputFieldTypes = [
+      'editable', 'dropdown', 'year_slider', 'percentage',
+      'coefficient', 'coefficient_slider', 'number', 'generic_slider'
+  ];
+
   function initialize() {
-    const toggleBtn = document.getElementById(BUTTON_ID);
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', toggleReferenceView);
-      updateButtonAppearance();
+    // MODIFICATION: Only setup the runRefBtn
+    const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
+    if (runRefBtn) {
+        runRefBtn.addEventListener('click', executeReferenceRunAndCache);
+        // Initial button text can be set here or in HTML
+        runRefBtn.textContent = 'Run Reference & Update Comparison'; 
     }
 
-    // Add listener for changes to the reference standard selector (d_13)
+    // NEW: Setup for the viewReferenceInputsBtn
+    const viewRefInputsBtn = document.getElementById(VIEW_REFERENCE_INPUTS_BUTTON_ID);
+    if (viewRefInputsBtn) {
+        viewRefInputsBtn.addEventListener('click', toggleReferenceInputsView);
+        viewRefInputsBtn.textContent = 'Show Cached Reference Inputs'; // Initial text
+    }
+
     const standardSelector = document.getElementById(STANDARD_SELECTOR_ID) || document.querySelector(`[data-field-id='${STANDARD_SELECTOR_ID}']`);
     if (standardSelector) {
-        // Ensure the listener is attached to the actual select element if d_13 is a more complex component
         const actualSelect = standardSelector.tagName === 'SELECT' ? standardSelector : standardSelector.querySelector('select');
         if (actualSelect) {
             actualSelect.addEventListener('change', handleStandardChange);
@@ -32,230 +48,277 @@ TEUI.ReferenceToggle = (function() {
 
   function handleStandardChange(event) {
     const newStandardKey = event.target.value;
-    
     if (window.TEUI && TEUI.StateManager) {
-        // Always update StateManager first
         TEUI.StateManager.setValue(STANDARD_SELECTOR_ID, newStandardKey, TEUI.StateManager.VALUE_STATES.USER_MODIFIED);
-        
-        if (referenceMode) {
-            // Step 1: Reload reference data immediately (synchronous)
-            TEUI.StateManager.loadReferenceData(newStandardKey);
-            
-            // Step 2: Trigger UI refresh (synchronous)
-            triggerFullUIRefreshForModeChange();
-            
-            // Step 3: Trigger calculations (single timeout for DOM stability)
-            setTimeout(() => {
-                if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
-                    window.TEUI.Calculator.calculateAll();
-                }
-            }, 50); // Single 50ms delay for DOM stability
-        } else {
-            // In Design Mode, just reload reference data for when user enters Reference Mode later
-            TEUI.StateManager.loadReferenceData(newStandardKey);
+        // Only load the data; don't trigger calculations or UI refreshes.
+        // User must click the button to see the effect of the new standard.
+        TEUI.StateManager.loadReferenceData(newStandardKey);
+        // If currently viewing reference inputs, and standard changes, revert to target view
+        // to avoid confusion, as the displayed inputs are no longer from the selected standard until re-run.
+        if (isViewingReferenceInputs) {
+            toggleReferenceInputsView(); // This will flip to false and show target inputs
+             alert("Reference standard changed. Click 'Run Reference' to update and then 'Show Cached Reference Inputs' to view the new inputs.");
         }
     } else {
         console.error("[ReferenceToggle] StateManager not available to handle standard change.");
     }
   }
 
-  function toggleReferenceView() {
-    referenceMode = !referenceMode;
-
-    document.body.classList.toggle(BODY_CLASS, referenceMode);
-    updateButtonAppearance();
-    triggerFullUIRefreshForModeChange();
-  }
-
-  function triggerFullUIRefreshForModeChange() {
-    if (!window.TEUI || !TEUI.StateManager) {
-        console.error("[ReferenceToggle] Missing StateManager for UI refresh.");
-        return;
-    }
-
-    // Check for FieldManager - if missing, use fallback
-    let allUserEditableFields = {};
-    if (TEUI.FieldManager && typeof TEUI.FieldManager.getAllUserEditableFields === 'function') {
-        allUserEditableFields = TEUI.FieldManager.getAllUserEditableFields();
-    } else {
-        // Basic fallback - target the key fields we know should work
-        allUserEditableFields = {
-            'd_53': { type: 'percentage' },
-            'd_52': { type: 'percentage' }, 
-            'f_85': { type: 'editable' },
-            'f_86': { type: 'editable' },
-            'g_88': { type: 'editable' },
-            'g_89': { type: 'editable' },
-            'd_13': { type: 'dropdown' }
-        };
-    }
-
-    // CRITICAL: Ensure d_13 is always included as it's required for Reference Mode to work
-    if (!allUserEditableFields[STANDARD_SELECTOR_ID]) {
-        allUserEditableFields[STANDARD_SELECTOR_ID] = { type: 'dropdown' };
-    }
-
-    // Unconditionally mute application state updates for the duration of this UI refresh operation
-    TEUI.StateManager.setMuteApplicationStateUpdates(true);
-
-    try {
-        const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID);
-
-        if (referenceMode) {
-            if (!currentStandardKey) {
-            } else {
-                TEUI.StateManager.loadReferenceData(currentStandardKey);
-            }
-        }
-
-        if (!allUserEditableFields || Object.keys(allUserEditableFields).length === 0) {
-            return;
-        }
-
-        const fieldIds = Object.keys(allUserEditableFields);
-
-        for (const fieldId of fieldIds) {
-            const fieldDef = allUserEditableFields[fieldId];
-            if (!fieldDef) continue;
-
-            // CRITICAL: Skip Section 01 calculated fields that should always display dual-engine values
-            const section01CalculatedFields = ['d_6', 'd_8', 'e_10', 'h_6', 'h_8', 'h_10', 'k_6', 'k_8', 'k_10', 'j_8', 'j_10', 'i_10'];
-            if (section01CalculatedFields.includes(fieldId)) {
-                continue;
-            }
-
-            let displayValue;
-
-            if (referenceMode) {
-                displayValue = TEUI.StateManager.getValue(fieldId); // Mode-aware, gets from activeReferenceDataSet
-            } else {
-                displayValue = TEUI.StateManager.getApplicationValue ? 
-                              TEUI.StateManager.getApplicationValue(fieldId) : 
-                              TEUI.StateManager.getValue(fieldId);
-            }
-
-            // Update the field display
-            if (TEUI.FieldManager && typeof TEUI.FieldManager.updateFieldDisplay === 'function') {
-                TEUI.FieldManager.updateFieldDisplay(fieldId, displayValue, fieldDef);
-            } else {
-                // Basic fallback - directly update the DOM element
-                const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
-                if (element) {
-                    if (element.tagName === 'SELECT') {
-                        element.value = displayValue;
-                    } else if (element.tagName === 'INPUT') {
-                        element.value = displayValue;
-                    } else if (element.hasAttribute('contenteditable')) {
-                        element.textContent = displayValue;
-                    } else {
-                        element.textContent = displayValue;
-                    }
-                }
-            }
-            
-            const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
-
-            if (element) {
-                if (referenceMode) {
-                    // In Reference Mode - check if field should be editable
-                    let lockField = true; // Default: lock fields in Reference Mode
-                    
-                    // SPECIAL CASE: d_13 (reference standard selector) must ALWAYS be editable in Reference Mode
-                    if (fieldId === 'd_13') {
-                        lockField = false;
-                    } else {
-                        // Check AppendixE if available, otherwise lock other fields
-                        if (TEUI.AppendixE && typeof TEUI.AppendixE.getFieldBehavior === 'function') {
-                            const behavior = TEUI.AppendixE.getFieldBehavior(fieldId, currentStandardKey);
-                            lockField = behavior !== "Independently User-Editable in Reference Mode";
-                        } else {
-                            lockField = true; // Lock all other fields by default
-                        }
-                        
-                        if (fieldDef.type === 'calculated' || fieldDef.type === 'derived') {
-                            lockField = true;
-                        }
-                    }
-
-                    // Apply locking
-                    if (lockField) {
-                        element.classList.add('reference-locked');
-                        const inputElement = element.querySelector('input, select, textarea') || 
-                                           (element.matches('input, select, textarea') ? element : null);
-                        if (inputElement) {
-                            inputElement.disabled = true;
-                        }
-                        if (element.hasAttribute('contenteditable')) {
-                            element.setAttribute('contenteditable', 'false');
-                        }
-                    } else {
-                        element.classList.remove('reference-locked');
-                        const inputElement = element.querySelector('input, select, textarea') || 
-                                           (element.matches('input, select, textarea') ? element : null);
-                        if (inputElement) {
-                            inputElement.disabled = false;
-                        }
-                        if (element.hasAttribute('contenteditable')) {
-                            element.setAttribute('contenteditable', 'true');
-                        }
-                    }
-                } else {
-                    // In Design Mode - restore normal editability
-                    element.classList.remove('reference-locked');
-                    const isNormallyEditable = ['editable', 'number', 'dropdown', 'year_slider', 'percentage', 'coefficient', 'coefficient_slider', 'generic_slider'].includes(fieldDef.type);
-                    
-                    const inputElement = element.querySelector('input, select, textarea') || 
-                                       (element.matches('input, select, textarea') ? element : null);
-                    
-                    if (isNormallyEditable) {
-                        if (inputElement) inputElement.disabled = false;
-                        if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'true');
-                    } else { 
-                        if (inputElement) inputElement.disabled = true; 
-                        if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'false');
-                    }
-                }
-            }
-        }
-        // Call section-specific display updates
-        if (TEUI.SectionModules && TEUI.SectionModules.sect05 && typeof TEUI.SectionModules.sect05.updateI39Display === 'function') {
-            TEUI.SectionModules.sect05.updateI39Display();
-        }
-    } finally {
-        // ALWAYS Unmute application state updates after the refresh attempt
-        TEUI.StateManager.setMuteApplicationStateUpdates(false);
-    }
-  }
-
-  function updateButtonAppearance() {
-      const toggleBtn = document.getElementById(BUTTON_ID);
-      if (!toggleBtn) return;
-      
-      if (referenceMode) {
-          toggleBtn.textContent = 'Show Design';
-          toggleBtn.classList.remove('btn-danger'); 
-          toggleBtn.classList.add('btn-primary'); 
-      } else {
-          toggleBtn.textContent = 'Show Reference';
-          toggleBtn.classList.remove('btn-primary');
-          toggleBtn.classList.add('btn-danger'); 
-      }
-  }
-
   function isReferenceMode() {
+    // This now reflects if a reference calculation is actively in progress within this module
     return referenceMode;
   }
 
-  function refreshAllSectionsDisplay() {
-    if (referenceMode) {
-      triggerFullUIRefreshForModeChange();
+  // NEW FUNCTION: toggleReferenceInputsView
+  function toggleReferenceInputsView() {
+    isViewingReferenceInputs = !isViewingReferenceInputs;
+    const viewRefInputsBtn = document.getElementById(VIEW_REFERENCE_INPUTS_BUTTON_ID);
+
+    // NEW: Add/Remove body class for global styling
+    document.body.classList.toggle('viewing-reference-inputs', isViewingReferenceInputs);
+
+    if (!TEUI.FieldManager || !TEUI.StateManager) {
+        console.error("[ReferenceToggle] FieldManager or StateManager not available for toggleReferenceInputsView.");
+        if (viewRefInputsBtn) viewRefInputsBtn.textContent = 'Error';
+        return;
+    }
+
+    const allFieldDefs = TEUI.FieldManager.getAllFields();
+    if (!allFieldDefs) {
+        console.error("[ReferenceToggle] Could not get allFieldDefinitions from FieldManager.");
+        return;
+    }
+
+    for (const fieldId in allFieldDefs) {
+        if (allFieldDefs.hasOwnProperty(fieldId)) {
+            const fieldDef = allFieldDefs[fieldId];
+            if (fieldDef && inputFieldTypes.includes(fieldDef.type)) {
+                let displayValue;
+                let makeReadOnly;
+
+                if (isViewingReferenceInputs) {
+                    displayValue = cachedReferenceResults ? cachedReferenceResults[fieldId] : TEUI.StateManager.getApplicationStateValue(fieldId); // Fallback to app state if no cache
+                    makeReadOnly = true;
+                } else {
+                    displayValue = TEUI.StateManager.getApplicationStateValue(fieldId);
+                    makeReadOnly = false;
+                }
+                
+                // Ensure displayValue is not null/undefined before formatting, default to empty string if so.
+                const valueToDisplay = (displayValue === null || displayValue === undefined) ? '' : displayValue;
+
+                TEUI.FieldManager.updateFieldDisplay(fieldId, valueToDisplay, fieldDef);
+                
+                const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
+                if (element) {
+                    const inputElement = element.querySelector('input, select, textarea') || 
+                                       (element.matches('input, select, textarea') ? element : null);
+                    if (inputElement) {
+                        inputElement.disabled = makeReadOnly;
+                    }
+                    if (element.hasAttribute('contenteditable')) {
+                        element.setAttribute('contenteditable', String(!makeReadOnly));
+                    }
+                    if (makeReadOnly) {
+                        element.classList.add('reference-input-display-locked');
+                    } else {
+                        element.classList.remove('reference-input-display-locked');
+                    }
+                }
+            }
+        }
+    }
+
+    if (viewRefInputsBtn) {
+        viewRefInputsBtn.textContent = isViewingReferenceInputs ? 'Show Target Inputs' : 'Show Cached Reference Inputs';
+    }
+    
+    // After toggling, ensure the main "Run Reference" button is in its normal state
+    const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
+    if(runRefBtn && runRefBtn.disabled) {
+        // If by any chance it was left disabled, re-enable it, as this view toggle is separate.
+        runRefBtn.disabled = false;
+        runRefBtn.textContent = 'Run Reference & Update Comparison';
+    }
+}
+
+  function executeReferenceRunAndCache() {
+    if (!window.TEUI || !TEUI.StateManager || !TEUI.Calculator || !TEUI.FieldManager) {
+        console.error("[ReferenceToggle] Missing critical modules (StateManager, Calculator, FieldManager).");
+        alert("Error: Essential application components are missing. Cannot run reference calculation.");
+        return;
+    }
+
+    const currentStandardKey = TEUI.StateManager.getValue(STANDARD_SELECTOR_ID);
+    if (!currentStandardKey) {
+        alert("Please select a Reference Standard (usually field 'd_13') before running the reference calculation.");
+        console.warn("[ReferenceToggle] No reference standard selected.");
+        return;
+    }
+
+    const runButton = document.getElementById(RUN_REFERENCE_BUTTON_ID);
+    if (runButton) {
+        runButton.disabled = true;
+        runButton.textContent = 'Running Reference...';
+    }
+
+    TEUI.StateManager.setMuteApplicationStateUpdates(true);
+    const originalReferenceModeFlag = referenceMode; // Should be false here unless something is wrong
+    referenceMode = true; // Temporarily set for StateManager.getValue() to use activeReferenceDataSet
+
+    try {
+        TEUI.StateManager.loadReferenceData(currentStandardKey);
+        TEUI.Calculator.calculateAll(); // This will use reference values due to 'referenceMode' being true
+        
+        // After calculation, capture the results.
+        // Inputs from activeReferenceDataSet, outputs from application state (which was just calculated with ref inputs)
+        cachedReferenceResults = {};
+        const allFieldDefinitions = TEUI.FieldManager.getAllFields();
+
+        if (allFieldDefinitions) {
+            Object.keys(allFieldDefinitions).forEach(fieldId => {
+                const fieldDef = allFieldDefinitions[fieldId];
+                if (fieldDef && fieldDef.type) {
+                    if (inputFieldTypes.includes(fieldDef.type)) {
+                        // For input fields, their value *is* the reference value used
+                        const refValue = TEUI.StateManager.getActiveReferenceModeValue(fieldId); // Get from the loaded ref data
+                        if (refValue !== undefined && refValue !== null) {
+                             cachedReferenceResults[fieldId] = refValue;
+                        }
+                    } else { 
+                        // For calculated/derived fields, their value is the result of the reference calculation
+                        const appValue = TEUI.StateManager.getApplicationStateValue(fieldId); // Get from current state post-calc
+                        if (appValue !== undefined && appValue !== null) {
+                            cachedReferenceResults[fieldId] = appValue;
+                        }
+                    }
+                }
+            });
+        } else {
+            console.warn("[ReferenceToggle] TEUI.FieldManager.getAllFields() not available. Caching will be less precise.");
+            // Fallback can be improved by adding getActiveReferenceDataSetContents and getAllApplicationStateValues to StateManager
+            const tempRefInputs = TEUI.StateManager.getActiveReferenceDataSetContents ? TEUI.StateManager.getActiveReferenceDataSetContents() : {};
+            Object.assign(cachedReferenceResults, tempRefInputs);
+            const tempAppValues = TEUI.StateManager.getAllApplicationStateValues ? TEUI.StateManager.getAllApplicationStateValues() : {};
+            Object.assign(cachedReferenceResults, tempAppValues); 
+        }
+        
+        console.log("[ReferenceToggle] Reference run complete. Results cached:", cachedReferenceResults);
+        document.dispatchEvent(new CustomEvent('teui-reference-cache-updated', { detail: cachedReferenceResults }));
+
+    } catch (error) {
+        console.error("[ReferenceToggle] Error during executeReferenceRunAndCache:", error);
+        alert("An error occurred while running the reference calculation. Please check the console for details.");
+    } finally {
+        referenceMode = originalReferenceModeFlag; // Restore (should be back to false)
+        TEUI.StateManager.setMuteApplicationStateUpdates(false);
+
+        if (runButton) {
+            runButton.disabled = false;
+            runButton.textContent = 'Run Reference & Update Comparison';
+        }
+
+        // Recalculate Target model now that application state is unmuted and referenceMode is false
+        if (window.TEUI.Calculator && typeof window.TEUI.Calculator.calculateAll === 'function') {
+            TEUI.Calculator.calculateAll(); 
+        }
+        
+        updateComparisonDisplay();
+
+        // NEW: If currently viewing reference inputs, refresh the view with new cached data
+        if (isViewingReferenceInputs) {
+            // Call directly, don't flip the flag, just refresh the display state
+            const viewRefInputsBtn = document.getElementById(VIEW_REFERENCE_INPUTS_BUTTON_ID);
+            const allFieldDefs = TEUI.FieldManager.getAllFields();
+            if (allFieldDefs && TEUI.FieldManager && TEUI.StateManager) {
+                 for (const fieldId in allFieldDefs) {
+                    if (allFieldDefs.hasOwnProperty(fieldId)) {
+                        const fieldDef = allFieldDefs[fieldId];
+                        if (fieldDef && inputFieldTypes.includes(fieldDef.type)) {
+                            const displayValue = cachedReferenceResults ? cachedReferenceResults[fieldId] : '';
+                            TEUI.FieldManager.updateFieldDisplay(fieldId, displayValue, fieldDef);
+                            // Ensure read-only state is reapplied
+                            const element = document.getElementById(fieldId) || document.querySelector(`[data-field-id='${fieldId}']`);
+                            if (element) {
+                                const inputElement = element.querySelector('input, select, textarea') || (element.matches('input, select, textarea') ? element : null);
+                                if (inputElement) inputElement.disabled = true;
+                                if (element.hasAttribute('contenteditable')) element.setAttribute('contenteditable', 'false');
+                                element.classList.add('reference-input-display-locked');
+                            }
+                        }
+                    }
+                }
+            }
+            if(viewRefInputsBtn) viewRefInputsBtn.textContent = 'Show Target Inputs'; // Ensure button text is correct
+        }
     }
   }
 
-  // Public API
+  function getCompareValue(fieldId) {
+    return cachedReferenceResults && cachedReferenceResults.hasOwnProperty(fieldId) ? cachedReferenceResults[fieldId] : null;
+  }
+
+  function updateComparisonDisplay() {
+    console.log("[ReferenceToggle] Updating comparison display elements with new cached data.");
+
+    if (!window.TEUI || !TEUI.FieldManager || !TEUI.formatNumber) {
+        console.error("[ReferenceToggle] Missing TEUI.FieldManager or TEUI.formatNumber for updateComparisonDisplay.");
+        return;
+    }
+
+    // Select all elements designated for displaying comparison values.
+    // These elements should have a 'data-compare-field-id' attribute 
+    // specifying which field's cached reference value they should display.
+    const compareElements = document.querySelectorAll('[data-compare-field-id]');
+
+    compareElements.forEach(el => {
+        const fieldId = el.dataset.compareFieldId;
+        if (!fieldId) return;
+
+        const value = getCompareValue(fieldId); // From cachedReferenceResults
+        const fieldDef = TEUI.FieldManager.getField(fieldId);
+
+        let formatType = 'raw'; // Default to 'raw' if no specific format found
+        if (fieldDef) {
+            // Prioritize formatType if explicitly defined in fieldDef
+            if (fieldDef.formatType) {
+                formatType = fieldDef.formatType;
+            } else {
+                // Fallback based on field type if formatType is not present
+                switch (fieldDef.type) {
+                    case 'percentage':
+                        formatType = 'percent-0dp'; 
+                        break;
+                    case 'year_slider':
+                        formatType = 'integer-nocomma';
+                        break;
+                    case 'coefficient':
+                    case 'coefficient_slider':
+                    case 'number':
+                    case 'editable': 
+                        formatType = 'number-2dp'; 
+                        break;
+                    case 'calculated':
+                    case 'derived':
+                        formatType = fieldDef.format || 'number-2dp';
+                        break;
+                    default:
+                        formatType = 'raw'; 
+                }
+            }
+        }
+        
+        const formattedValue = (value !== null && value !== undefined)
+            ? TEUI.formatNumber(value, formatType)
+            : "N/A"; 
+
+        el.textContent = formattedValue;
+    });
+  }
+
   return {
     initialize,
-    isReferenceMode,
-    refreshAllSectionsDisplay
+    isReferenceMode, // Kept for StateManager.getValue()
+    getCompareValue
   };
 })(); 
