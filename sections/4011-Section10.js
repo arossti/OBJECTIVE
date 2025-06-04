@@ -1817,7 +1817,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             });
             
             // Add listener for internal gains (i_71)
-            window.TEUI.StateManager.addListener('i_71', calculateUtilizationFactors);
+            window.TEUI.StateManager.addListener('i_71', calculateAll);
             // Add listeners for loss factors used in PH Method
             ['i_97', 'i_103', 'm_121', 'i_98'].forEach(lossField => {
                 window.TEUI.StateManager.addListener(lossField, calculateUtilizationFactors);
