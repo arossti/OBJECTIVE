@@ -69,7 +69,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', isFinite(rawValue) && rawValue < 0);
         } else {
-            // console.warn(`setCalculatedValue (S13): Element not found for fieldId ${fieldId}`);
+            
         }
     }
     
@@ -582,11 +582,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             
             // Listener function for Net Electricity changes (Renewables)
             const netElectricityUpdateCallback = function(newValue, oldValue, sourceFieldId) { // Added params
-                // console.log(`[S4 DEBUG] netElectricityUpdateCallback triggered by ${sourceFieldId}. New value: ${newValue}, Old value: ${oldValue}`); 
+                
                 
                 // Specific log when d_27 changes
                 if (sourceFieldId === 'd_27') {
-                    // console.log(`[S4 DEBUG] d_27 changed. Reading current values...`);
+                    
                 }
                 
                 // Fetch CURRENT values from StateManager using helper
@@ -596,14 +596,14 @@ window.TEUI.SectionModules.sect04 = (function() {
                 const d43 = getNumericValue('d_43'); // Should reflect the trigger if sourceFieldId was d_43
                 const i43 = getNumericValue('i_43'); // Should reflect the trigger if sourceFieldId was i_43
 
-                // console.log(`[S4 DEBUG] Current values read: d27=${d27}, h27=${h27}, l27=${l27}, d43=${d43}, i43=${i43}`);
+                
  
                 // Perform calculations using calculation helpers
                 const f27New = calculateF27(); // No args needed
                 const j27New = calculateJ27(); // No args needed
                 const g27New = calculateG27(); // No args needed
                 const k27New = calculateK27(); // No args needed
-                 // console.log(`[S4 DEBUG] Calculated values: f27New=${f27New}, j27New=${j27New}, g27New=${g27New}, k27New=${k27New}`);
+                  
   
                  // Update net usage fields using standard helper
                 setCalculatedValue('f_27', f27New, 'number-2dp-comma'); 
@@ -612,7 +612,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 setCalculatedValue('g_27', g27New, 'number-2dp-comma'); 
                 setCalculatedValue('k_27', k27New, 'number-2dp-comma'); 
 
-               // console.log("[S4 DEBUG] Called setCalculatedValue for f_27, j_27, g_27, k_27.");
+               
  
                  updateSubtotals(); // Update totals after row 27 changes
             };
@@ -624,12 +624,12 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // --- Listener for d_136 (Target Energy from S15) ---
             const handleD136Update = () => {
-                 // console.log("[S4 DEBUG] Entering handleD136Update (d_136 changed)");
+                
                 const d136Value = getNumericValue('d_136');
                 
                 // Update h_27 (Target Electricity Use in S04)
                 setCalculatedValue('h_27', d136Value, 'number-2dp-comma'); // Added formatType
-                 // console.log(`[S4 DEBUG] Updated h_27 with d_136 value: ${d136Value}`);
+                
                 
                 // Now trigger j_27 recalculation using the NEW h_27 value
                 const h27Value = d136Value; // Use the value we just set
@@ -640,13 +640,13 @@ window.TEUI.SectionModules.sect04 = (function() {
                 const j27Value = calculateJ27(); // No args needed
                 setCalculatedValue('j_27', j27Value, 'number-2dp-comma'); 
 
-               // console.log(`[S4 DEBUG] Recalculated j_27: ${j27Value} (using internal h_27, d_43, i_43)`); // Updated log
+               
 
                 // Also trigger k_27 recalculation (Target Emissions)
                 const k27Value = calculateK27(); // No args needed
                 setCalculatedValue('k_27', k27Value, 'number-2dp-comma'); 
 
-               // console.log(`[S4 DEBUG] Recalculated k_27: ${k27Value} (using internal j_27, l_27)`); // Updated log
+               
 
                 // Trigger subtotal update
                 updateSubtotals();
@@ -657,7 +657,7 @@ window.TEUI.SectionModules.sect04 = (function() {
             
             // --- Listeners for Target Fuel Updates (Gas/Oil from S07/S13) ---
             const targetFuelUpdateCallback = () => {
-                // console.log("[S4 DEBUG] targetFuelUpdateCallback triggered.");
+                
 
                 // Recalculate H28/J28/K28 (Gas)
                 const h28Value = calculateH28();
@@ -666,7 +666,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 setCalculatedValue('j_28', j28Value, 'number-2dp-comma');
                 const k28Value = calculateK28();
                 setCalculatedValue('k_28', k28Value, 'number-2dp-comma');
-                // console.log(`[S4 DEBUG] Updated Gas Target: h28=${h28Value}, j28=${j28Value}, k28=${k28Value}`);
+                
 
                 // Recalculate H30/J30/K30 (Oil)
                 const h30Value = calculateH30();
@@ -675,7 +675,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 setCalculatedValue('j_30', j30Value, 'number-2dp-comma');
                 const k30Value = calculateK30();
                 setCalculatedValue('k_30', k30Value, 'number-2dp-comma');
-                // console.log(`[S4 DEBUG] Updated Oil Target: h30=${h30Value}, j30=${j30Value}, k30=${k30Value}`);
+                
 
                 // Update subtotals that depend on these rows
                 updateSubtotals();
@@ -696,7 +696,6 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // --- Listeners for Actual Fuel Inputs (d_28 to d_31) ---
             const actualFuelUpdateCallback = (newValue, oldValue, sourceFieldId) => {
-                // console.log(`[S04 DEBUG] actualFuelUpdateCallback triggered by ${sourceFieldId}`);
 
                 let calculateSubtotalsAfter = true;
                 // Determine which calculation pair to run based on the source
@@ -725,6 +724,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                         const h31Value = calculateH31(); 
                         setCalculatedValue('h_31', h31Value, 'number-2dp-comma');
                         const g31Value = calculateG31(); 
+                        
                         setCalculatedValue('g_31', g31Value, 'number-2dp-comma');
                         const k31Value = calculateK31(); // Calculate k_31 as it's needed by d_60
                         setCalculatedValue('k_31', k31Value, 'number-2dp-comma');
@@ -733,6 +733,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                         // S04 listens to d_60 to update subtotals.
                         // So, we don't call updateSubtotals() directly here for d_31 changes.
                         calculateSubtotalsAfter = false;
+                        
                         break;
                 }
 
@@ -750,7 +751,7 @@ window.TEUI.SectionModules.sect04 = (function() {
 
             // Listener for d_60 (Calculated Wood Offset from S08)
             sm.addListener('d_60', () => {
-                // console.log('[S04 DEBUG] d_60 changed, calling updateSubtotals()');
+                
                 updateSubtotals(); // This will recalculate g_32 and k_32 which depend on d_60
             });
 
@@ -834,11 +835,11 @@ window.TEUI.SectionModules.sect04 = (function() {
             if (mode === 'reference') {
                 // In Reference Mode, use Reference state for h_12 (may be different from application)
                 yearStateValue = window.TEUI.StateManager.getReferenceValue('h_12');
-                // console.log(`[S04] Reference Mode: Using Reference h_12 value: ${yearStateValue}`);
+                
             } else {
                 // In Application Mode, use Application state for h_12
                 yearStateValue = window.TEUI.StateManager.getApplicationValue('h_12');
-                // console.log(`[S04] Application Mode: Using Application h_12 value: ${yearStateValue}`);
+                
             }
             
             if (yearStateValue) {
@@ -848,7 +849,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 }
             }
         } else {
-            console.warn("[S04] StateManager not available for updateElectricityEmissionFactor.");
+            
             // Fallback to DOM (application state only)
             const provinceDropdown = document.querySelector('select[data-dropdown-id="dd_d_19"], select[data-field-id="d_19"]');
             if (provinceDropdown && provinceDropdown.value) {
@@ -895,10 +896,10 @@ window.TEUI.SectionModules.sect04 = (function() {
                 }
                 
                 // Reference Mode UI updated successfully
-                // console.log(`[S04] Reference Mode UI updated: l_27=${factor}, g_27=${ref_g27.toFixed(2)}, k_27=${ref_k27.toFixed(2)}`);
+                
             }
             
-            // console.log(`[S04] Reference grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+            
         } else {
             // Update the application l_27 field
             setCalculatedValue('l_27', factor, 'integer');
@@ -913,7 +914,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         setCalculatedValue('k_27', k27Value, 'number-2dp-comma');
         
         updateSubtotals(); 
-            // console.log(`[S04] Application grid intensity updated: ${factor} gCO2e/kWh (Province: ${provinceAbbreviation}, Year: ${reportingYear})`);
+            
         }
     }
 
@@ -1024,7 +1025,7 @@ window.TEUI.SectionModules.sect04 = (function() {
                 
                 // Check for zero energy case and force immediate TEUI update
         if (f32Value === 0 && window.TEUI?.StateManager) { // Check StateManager exists
-                    // console.log("Zero energy detected - forcing TEUI update");
+                    
                     if (typeof window.calculateTEUI === 'function') {
                         window.calculateTEUI();
                     } else if (window.TEUI.StateManager.updateTEUICalculations) {
@@ -1046,6 +1047,7 @@ window.TEUI.SectionModules.sect04 = (function() {
         
         // Update g_32 (Emissions subtotal)
         const g32Value = calculateG32(g27Value, g28Value, g29Value, g30Value, g31Value, d60Value);
+        
         setCalculatedValue('g_32', g32Value, 'number-2dp-comma');
         
         // Update j_32 (Target subtotal)
@@ -1328,8 +1330,11 @@ window.TEUI.SectionModules.sect04 = (function() {
         const g30 = getNumericValue('g_30'); // Use helper
         const g31 = getNumericValue('g_31'); // Use helper
         const d60 = getNumericValue('d_60'); // Use helper (Offsets in tCO2e)
+        
         // =SUM(G27:G31)-(D60*1000) (Sum of emissions minus offsets)
-        return g27 + g28 + g29 + g30 + g31 - (d60 * 1000);
+        const result = g27 + g28 + g29 + g30 + g31 - (d60 * 1000);
+        
+        return result;
     }
     
     function calculateJ32() {
@@ -1503,7 +1508,6 @@ window.TEUI.SectionModules.sect04 = (function() {
      * Called when the section is rendered
      */
     function onSectionRendered() {
-        // console.log(`${sectionRows.metadata.sectionName} section rendered, initializing`);
         
         // --- Start: Add Default Province Initialization ---
         // Ensure Ontario is selected by default for emissions calculations
@@ -1515,7 +1519,6 @@ window.TEUI.SectionModules.sect04 = (function() {
                 if (!window.TEUI.StateManager.getValue('dd_d_19')) {
                     window.TEUI.StateManager.setValue('dd_d_19', 'ON', 'default');
                 }
-                // console.log("Set default province to ON in StateManager.");
             }
         }
         // --- End: Add Default Province Initialization ---
@@ -1537,7 +1540,6 @@ window.TEUI.SectionModules.sect04 = (function() {
         if (window.TEUI && window.TEUI.Calculator) {
             window.TEUI.Calculator.calculateSection(sectionRows.metadata.sectionId);
         }
-            // console.log("Section 4 Initial Calculation Triggered");
         }, 50); // Short delay to allow potential state updates
     }
     

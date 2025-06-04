@@ -224,7 +224,7 @@ window.TEUI.SectionModules.sect01 = (function() {
 
     /**
      * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state exclusively
-     * ENHANCED: Now properly receives Reference TEUI from Section 15 (ref_h_136)
+     * ENHANCED: Now properly receives Reference TEUI from Section 15 (column ref_h_136)
      */
     function calculateReferenceModel() {
         // Add recursion protection
@@ -311,6 +311,7 @@ window.TEUI.SectionModules.sect01 = (function() {
             const appServiceLife = getAppNumericValue('h_13', 50);
             const appEmbodiedCarbon = getAppNumericValue('i_41', 345.82);
             const useType = window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
+            
 
             // Calculate Target TEUI (h_10)
             let targetTEUI = 0;
@@ -356,7 +357,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Handle Actual values (K column) - conditional based on use type
             if (useType === "Utility Bills") {
                 setCalculatedValue('k_10', actualTEUI, 'number-1dp');
+                
                 setCalculatedValue('k_8', actualAnnualCarbon, 'number-1dp');
+                
                 setCalculatedValue('k_6', actualLifetimeCarbon, 'number-1dp');
             } else {
                 setCalculatedValue('k_10', 'N/A', 'raw');
@@ -687,8 +690,8 @@ window.TEUI.SectionModules.sect01 = (function() {
                 actualTEUIDisplay = "0.0";
             } else {
                 actualTEUIDisplay = window.TEUI?.formatNumber?.(window.TEUI?.parseNumeric?.(k10Raw, 93.1), 'number-1dp') ?? k10Raw;
-        }
-        updateDisplayValue('k_10', actualTEUIDisplay);
+            }
+            updateDisplayValue('k_10', actualTEUIDisplay);
         } else {
             updateDisplayValue('k_6', 'N/A');
             updateDisplayValue('k_8', 'N/A');
@@ -854,6 +857,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             window.TEUI.StateManager.addListener(fieldId, (newValue, oldValue, sourceFieldId) => {
                 // Only recalculate if the value actually changed
                 if (newValue !== oldValue) {
+                    if (fieldId === 'g_32') {
+                        
+                    }
                     runAllCalculations();
                 }
             });
