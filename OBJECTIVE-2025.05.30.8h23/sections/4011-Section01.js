@@ -406,6 +406,7 @@ window.TEUI.SectionModules.sect01 = (function() {
         const targetLifetimeCarbon = getAppNumericValue("h_6", 11.7);
         const targetTEUI = getAppNumericValue("h_10", 93.0);
         
+        const actualLifetimeCarbon = getAppNumericValue("k_6", 11.7); // Added for k_6 explanation
         const actualAnnualCarbon = getAppNumericValue("k_8", 4.8);
         const actualTEUI = getAppNumericValue("k_10", 93.1);
 
@@ -442,6 +443,11 @@ window.TEUI.SectionModules.sect01 = (function() {
         updateExplanationText('h_6', targetLifetimeCarbon, referenceLifetimeCarbon);
         updateExplanationText('h_8', targetAnnualCarbon, referenceAnnualCarbon);
         updateExplanationText('h_10', targetTEUI, referenceTEUI);
+
+        // Update explanation text for Actual columns
+        updateActualExplanationText('k_6', actualLifetimeCarbon, referenceLifetimeCarbon, useType);
+        updateActualExplanationText('k_8', actualAnnualCarbon, referenceAnnualCarbon, useType);
+        updateActualExplanationText('k_10', actualTEUI, referenceTEUI, useType);
     }
 
     function updateExplanationText(fieldId, targetValue, referenceValue) {
@@ -454,6 +460,19 @@ window.TEUI.SectionModules.sect01 = (function() {
             if (explanationSpan) {
                 explanationSpan.textContent = explanationText;
             }
+        }
+    }
+
+    function updateActualExplanationText(fieldId, actualValue, referenceValue, useType) {
+        const explanationSpan = document.querySelector(`[data-field-id="${fieldId}"] .key-explanation`);
+        if (!explanationSpan) return;
+
+        if (useType === "Utility Bills" && referenceValue > 0 && typeof actualValue === 'number' && isFinite(actualValue)) {
+            const reduction = 1 - (actualValue / referenceValue);
+            const reductionPercent = Math.round(reduction * 100);
+            explanationSpan.textContent = `Actual (Utility Bills) ${reductionPercent}% Reduction`;
+        } else {
+            explanationSpan.textContent = "Actual (Utility Bills)";
         }
     }
 
