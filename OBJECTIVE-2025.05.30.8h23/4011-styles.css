@@ -1377,31 +1377,31 @@ table.data-table select.form-select:hover {
     margin-right: 0.5rem; /* Space before disclaimer button */
 }
 
-/* Reference Mode Body Class Styles */
-body.reference-mode .section {
+/* Reference Mode Body Class Styles - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .section {
     border-color: var(--reference-value-color) !important; /* Use #8B0000 */
 }
 
-body.reference-mode .section-header {
+body.viewing-reference-inputs .section-header {
     background-color: var(--reference-value-color) !important; /* Use #8B0000 */
     color: white !important;
     border: 1px solid var(--reference-value-color); /* Match border to bg */
 }
 
-/* Style section subheaders (unit rows) in reference mode */
-body.reference-mode .data-table tr td.section-subheader,
-body.reference-mode .data-table tr:has(td.section-subheader) td {
+/* Style section subheaders (unit rows) in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .data-table tr td.section-subheader,
+body.viewing-reference-inputs .data-table tr:has(td.section-subheader) td {
     background-color: rgba(139, 0, 0, 0.5) !important; /* 50% opacity of #8B0000 */
     color: #ffffff !important; /* White text for contrast */
     border-bottom-color: rgba(139, 0, 0, 0.7) !important; /* Darker, semi-transparent border */
 }
-body.reference-mode .data-table tr:has(td.section-subheader) td:empty {
+body.viewing-reference-inputs .data-table tr:has(td.section-subheader) td:empty {
     background-color: rgba(139, 0, 0, 0.5) !important; /* Ensure empty cells match */
 }
 
-/* Example: Style locked fields in reference mode */
-/* Use the class added by JS for styling */
-body.reference-mode .reference-locked {
+/* Example: Style locked fields in reference mode - CHANGED TO viewing-reference-inputs */
+/* This .reference-locked class might be from the old system, review if still used/needed */
+body.viewing-reference-inputs .reference-locked {
     color: var(--reference-value-color) !important; /* Red text #8B0000 */
     font-weight: bold !important; 
     font-style: italic !important; 
@@ -1414,8 +1414,9 @@ body.reference-mode .reference-locked {
     user-modify: read-only !important;
 }
 
-/* Ensure user-input fields retain their blue color ONLY IF NOT locked */
-body.reference-mode .user-input:not(.reference-locked) { 
+/* Ensure user-input fields retain their blue color ONLY IF NOT locked - CHANGED TO viewing-reference-inputs */
+/* This also relates to the old .reference-locked style */
+body.viewing-reference-inputs .user-input:not(.reference-locked) { 
     color: var(--user-input-color) !important; 
     font-weight: 500 !important; 
     font-style: normal !important; 
@@ -1426,44 +1427,124 @@ body.reference-mode .user-input:not(.reference-locked) {
     user-modify: read-write !important;
 }
 
-/* Style tab container in reference mode */
-body.reference-mode .tab-container {
+/* Style tab container in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab-container {
     background-color: var(--reference-value-color) !important;
     border-color: var(--reference-value-color) !important;
 }
 
-/* Style tabs in reference mode */
-body.reference-mode .tab {
+/* Style tabs in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab {
     border-right-color: rgba(255, 255, 255, 0.3); /* Lighter border between tabs */
 }
 
-/* Style tab hover in reference mode */
-body.reference-mode .tab:hover {
+/* Style tab hover in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab:hover {
     background-color: rgba(255, 255, 255, 0.15); /* Slightly lighter transparent white */
 }
 
-/* Style active tab in reference mode */
-body.reference-mode .tab.active {
+/* Style active tab in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs .tab.active {
     background-color: rgba(255, 255, 255, 0.15) !important; /* Match hover background */
     border-bottom: 4px solid var(--tab-active-border) !important; /* Explicitly set 4px blue border */
 }
 
-/* Style Key Values table borders in reference mode */
-body.reference-mode #keyValues .key-values-table {
+/* Style Key Values table borders in reference mode - CHANGED TO viewing-reference-inputs */
+body.viewing-reference-inputs #keyValues .key-values-table {
     border-color: var(--reference-value-color) !important;
 }
-body.reference-mode #keyValues .key-values-table tr {
+body.viewing-reference-inputs #keyValues .key-values-table tr {
     border-bottom-color: var(--reference-value-color) !important;
 }
 
-/* NEW STYLE for locked reference input display */
-.reference-input-display-locked {
-    background-color: #f0f0f0 !important; /* Light grey background */
-    color: #555 !important; /* Darker grey text for readability */
-    cursor: default !important; /* Indicate non-interactive */
-    font-style: italic; /* Differentiate display */
-    /* Ensure inputs are truly not editable if somehow missed by JS */
+/* MODIFIED STYLE for locked reference input display cells/elements */
+/* This applies when viewing cached reference inputs */
+body.viewing-reference-inputs .reference-input-display-locked {
+    /* This rule primarily handles the background fill for PARENT elements like <td> */
+    background-color: rgba(139, 0, 0, 0.1) !important; /* Subtle 10% red overlay */
+    /* Apply text styles here too, in case the class is on a non-input element that contains text */
+    color: var(--reference-value-color) !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+    cursor: default !important; 
+    pointer-events: none !important;
+}
+
+/* --- START SUPER TARGETED OVERRIDES FOR INPUTS --- */
+
+/* Rule for ANY element that has BOTH .user-input AND .reference-input-display-locked */
+body.viewing-reference-inputs .user-input.reference-input-display-locked {
+    color: var(--reference-value-color) !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+    background-color: rgba(139, 0, 0, 0.1) !important; /* Ensure fill is also on the input */
+    opacity: 0.95 !important; /* Slightly less dim to see text better */
+    -webkit-text-fill-color: var(--reference-value-color) !important;
+    pointer-events: none !important; /* Ensure it's not interactive */
+    cursor: default !important;
+}
+
+/* Specific for input[type="number"] elements that have BOTH classes */
+body.viewing-reference-inputs input[type="number"].user-input.reference-input-display-locked {
+    color: var(--reference-value-color) !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+    background-color: rgba(139, 0, 0, 0.1) !important; /* Ensure fill is also on the input */
+    opacity: 0.95 !important;
+    -webkit-text-fill-color: var(--reference-value-color) !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+/* If an input is a child of .reference-input-display-locked AND is a .user-input */
+body.viewing-reference-inputs .reference-input-display-locked .user-input {
+    color: var(--reference-value-color) !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+    background-color: rgba(139, 0, 0, 0.1) !important; /* Ensure fill is also on the input */
+    opacity: 0.95 !important;
+    -webkit-text-fill-color: var(--reference-value-color) !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+/* Fallback for general child inputs/selects/textareas if they DON'T have .user-input */
+/* but are still meant to be locked and styled for reference display */
+body.viewing-reference-inputs .reference-input-display-locked input,
+body.viewing-reference-inputs .reference-input-display-locked select,
+body.viewing-reference-inputs .reference-input-display-locked textarea {
+    color: var(--reference-value-color) !important;
+    font-weight: bold !important;
+    font-style: italic !important;
+    background-color: rgba(139, 0, 0, 0.1) !important; 
+    opacity: 0.95; 
+    pointer-events: none !important;
+    cursor: default !important;
+}
+/* --- END SUPER TARGETED OVERRIDES FOR INPUTS --- */
+
+/* Specifically for select elements to ensure arrow is visible if theme changes too much */
+body.viewing-reference-inputs .reference-input-display-locked select {
+    /* If your select arrow relies on background, you might need to ensure it's still visible */
+    /* For now, the general background above should apply. If an issue, add specific SVG here */
+}
+
+/* Fallback style (grey) - keep this for cases where the class might be applied without the body class */
+/* This can be removed if .reference-input-display-locked is ONLY ever used with the body class */
+.reference-input-display-locked:not(body.viewing-reference-inputs *) { /* More specific to avoid conflict */
+    background-color: #f0f0f0; 
+    color: #555; 
+    cursor: default; 
+    font-style: italic; 
     pointer-events: none;
+}
+.reference-input-display-locked:not(body.viewing-reference-inputs *) input,
+.reference-input-display-locked:not(body.viewing-reference-inputs *) select,
+.reference-input-display-locked:not(body.viewing-reference-inputs *) textarea {
+    background-color: #f0f0f0; 
+    color: #555;
+    font-style: italic;
+    opacity: 0.9;
 }
 
 /* Dependency Graph Floating Controls in Fullscreen Mode */

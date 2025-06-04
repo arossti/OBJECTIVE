@@ -19,7 +19,7 @@ function initializeUIHandlers() {
     // Disclaimer Modal Button listener (already implicitly handled by Bootstrap attributes)
 
     // Add any other general UI setup here
-    
+
     // << NEW: Event listener for Reset Imported button >>
     const resetImportedBtn = document.getElementById('reset-imported-btn');
     if (resetImportedBtn) {
@@ -760,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdownEl.value = config.defaultValue;
         }
     }
-    
+
     // Replace the scroll event listener with a much simpler approach
     document.addEventListener('scroll', function() {
         // Only apply in horizontal layout
