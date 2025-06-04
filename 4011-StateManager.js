@@ -229,7 +229,7 @@ TEUI.StateManager = (function() {
                    : (fields.has(fieldId) ? fields.get(fieldId).value : null); // Last resort fallback
         } else {
             // Existing logic for Application Mode
-            return fields.has(fieldId) ? fields.get(fieldId).value : null;
+        return fields.has(fieldId) ? fields.get(fieldId).value : null;
         }
     }
     
@@ -961,7 +961,7 @@ TEUI.StateManager = (function() {
                     activeReferenceDataSet[fieldId] = independentReferenceState[fieldId];
                 } else {
                     // Use application state value
-                    activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
+                activeReferenceDataSet[fieldId] = getApplicationStateValueInternal(fieldId);
                 }
             });
             console.log('[StateManager] Step 1: Copied application state to activeReferenceDataSet (preserving independent Reference values). d_53 value:', activeReferenceDataSet['d_53']);
