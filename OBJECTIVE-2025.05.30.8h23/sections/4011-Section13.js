@@ -2120,7 +2120,11 @@ window.TEUI.SectionModules.sect13 = (function() {
         // Logging removed
         // console.warn(`[S13 Debug MitigatedCED Inputs] Unmitigated(d129): ${d129.toFixed(2)}, FreeCooling(h124): ${h124.toFixed(2)}, VentRecovery(d123): ${d123.toFixed(2)}`);
 
-        const m129 = d129 - h124 - d123;
+        let m129_calculated = d129 - h124 - d123;
+        const m129 = Math.max(0, m129_calculated); // Clamp to zero
+
+        console.log(`[S13 Cool Target m_129] Inputs -> d129: ${d129.toFixed(2)}, h124: ${h124.toFixed(2)}, d123: ${d123.toFixed(2)}`);
+        console.log(`[S13 Cool Target m_129] Calculated (pre-clamp): ${m129_calculated.toFixed(2)}, Final (post-clamp): ${m129.toFixed(2)}`);
 
         // Logging removed
         // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);

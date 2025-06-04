@@ -1053,21 +1053,33 @@ Section 03 (Climate Calculations) provides core climate data to other sections t
 
 ### Cooling Integration
 
+### Cooling Methodology Overview
+
+Our approach to modeling cooling energy within the TEUI calculator aims to balance the simplicity of a 'napkin sketch' model with a degree of sophistication that reflects the thermal dynamics observed in high-performance buildings. This is particularly relevant for buildings in Canadian climates that benefit from good design practices such as effective destratification, well-distributed ventilation, high insulation levels, significant thermal mass, and strategic night-time cooling.
+
+The model is conceptualized as a single thermal zone and is not intended to calculate localized overheating in specific areas (e.g., a small, heavily glazed, south-facing room). Instead, it focuses on the global cooling effects and demands on the building's systems.
+
+A key innovation in our cooling calculations is the method for determining and incorporating latent loads alongside sensible loads. We achieve this by:
+1.  Calculating a dynamic **Latent Load Factor**. This factor is derived from psychrometric properties, including a Wet Bulb Temperature (Twb) that we calculate based on average seasonal overnight humidity and outdoor temperatures. This approach is designed to maximize the recognized potential for free cooling.
+2.  Applying this Latent Load Factor to sensible energy components (e.g., sensible ventilation load) to determine their total (sensible + latent) thermal impact.
+
+The overall cooling energy demand is then determined by considering:
+*   The **unmitigated cooling load** (`d_129` from Section 14).
+*   The **sensible free cooling potential** (`h_124`), which represents the benefits of strategies like window opening during cooler night-time hours. This is influenced by ventilation rates, air properties, and the temperature difference between outdoor night air and the indoor cooling setpoint.
+*   The **recovered energy from ventilation** (`d_123`), which accounts for heat recovery/rejection by HRV/ERV systems, including both sensible and latent effects due to the application of our Latent Load Factor.
+
+The **mitigated cooling energy demand** (`m_129`) is then calculated as:
+`m_129 = d_129 (unmitigated load) - h_124 (sensible free cooling) - d_123 (total recovered vent energy)`
+
+It's important to note that if the combined benefits from free cooling and ventilation recovery (`h_124 + d_123`) exceed the unmitigated load (`d_129`), the calculated `m_129` could become negative. While this reflects a scenario where passive strategies effectively eliminate active cooling needs, a negative load isn't physically meaningful for calculating the energy consumption of an active cooling system. Therefore, for determining the **cooling system's electrical load** (`d_117`), we clamp the `m_129` value at a minimum of zero before dividing by the cooling system's Coefficient of Performance (COPcool). This ensures the model accurately reflects that a cooling system cannot have negative energy consumption.
+
+This methodology allows us to simulate a more 'optimised' cooling solution, reflecting how well-designed buildings can significantly reduce or even eliminate active cooling needs through intelligent use of ventilation and passive strategies.
+
+It is important to understand that this detailed cooling strategy is intended to demonstrate an 'optimal' cooling design scenario. This scenario assumes good architectural practices, including passive design elements that facilitate effective night-time cooling, destratification, and efficient ventilation. For comparative purposes, we also provide simpler 'Peak' cooling load calculation methods. These alternative methods do not rely on the complex psychrometric and free cooling equations detailed above and can be found in Section 15 at fields `h_138` (Peak Sensible Cooling Load) and `h_139` (Peak Latent Cooling Load), corresponding to cells H138 and H139 in our Excel reference model. These 'Peak' values offer a more conventional calculation for designers who may not be incorporating the full suite of passive strategies assumed in our 'optimal' approach.
+
 **Section 13 Cooling Calculation Revisions (Ventilation Method Impact - 2024-08-01 / 2024-08-02):**
 
 - **Challenge:** Accurately modelling the impact of different ventilation strategies (selected in `g_118`) on both the cooling load imposed by ventilation and the potential benefit from free cooling, particularly concerning night-time setbacks in "by Schedule" methods.
-- **Revised Approach:** 
-    1.  **Incoming Cooling Ventilation Energy (`d_122`):** This calculation remains based on the **average schedule-adjusted ventilation rate (`d_120`)**.
-        - **Excel Formula (D122):** `=IF(D116="Cooling",IF(L119="None", (1.21*D120*D21*24/1000)*(I63/J63)*I122, (1.21*D120*D21*24/1000)*(I63/J63)*L119*I122),IF(L119="None", (1.21*D120*D21*24/1000)*I122, (1.21*D120*D21*24/1000)*I122*L119)))`
-    2.  **Free Cooling Limit (`h_124`):** To account for reduced night-time potential with scheduled ventilation without completely eliminating the benefit, this is now modulated by a user-adjustable setback factor.
-        - **Implementation:** A new percentage dropdown field `k_120` ("Unoccupied Setback", default 90%) was added. 
-        - **Logic:** The `calculateFreeCooling` function checks the ventilation method (`g_118`). If "Constant", the full potential free cooling limit is used. If "by Schedule", the potential free cooling limit is multiplied by the percentage selected in `k_120`.
-        - **Excel Formula (H124):** `=IF(ISNUMBER(SEARCH("Constant", G118)), 'COOLING-TARGET'!A33*M19, ('COOLING-TARGET'!A33*M19)*K120)`
-- **Outcome:** This approach allows users to estimate the reduction in free cooling effectiveness due to scheduled setbacks, offering flexibility for calibrating against known building performance or legacy models, while still acknowledging that scheduled ventilation differs from constant operation. 
-- **Note:** The `k_120` field replaces a previous approach that overbroadly zeroed out free cooling for scheduled methods, removing both the benefit of mechanical overnight ventilation but also the probability of user-behaviour (opening windows when appropriate, not modelled, but assumed to have some unknown effect).
-- **Additional Refinements (Implemented 2024-05-01):**
-    - **Elevation Adjustment:** Atmospheric pressure used in humidity calculations (`coolingState.atmPressure`) is now adjusted based on project elevation (`l_22`, defaulting to 80m) for improved accuracy.
-    - **`A50_temp` Implementation:** The specific psychrometric approximation for average outdoor saturation temperature from `COOLING-TARGET.csv` (cell A50) is now implemented in `calculateA50Temp` and used for outdoor air property calculations within the cooling logic.
 
 ## 5. UI Implementation
 
@@ -1799,6 +1811,7 @@ The v4.012 "Tuple-Based Dual Calculations" framework is a promising and well-arc
 2. Build minimal scaffold with Section 03 as proof of concept
 3. Demonstrate tuple-based calculations working end-to-end
 4. Evaluate before proceeding with full migration
+5. **Comprehensive Cooling Model for Target and Reference**: While TEUI 4.011 includes detailed cooling calculations for the Target model, a fully distinct and comprehensive Reference model cooling pass (using Reference-defined efficiencies based on the `d_13` selection) is a significant piece of work. The v4.012 tuple-based architecture is ideally suited for implementing this, ensuring both Target and Reference cooling loads and system impacts are calculated with the same underlying logic but with their respective distinct inputs. We're saving the full, dual-engine tuple-based cooling deep-dive for the 4.012 implementation – a treat for a rainy day!!
 
 This architectural shift represents a fundamental rethinking of how building energy calculations should be implemented, prioritizing clarity, correctness, and maintainability over incremental patches.
 
