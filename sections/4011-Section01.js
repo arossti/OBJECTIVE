@@ -111,8 +111,23 @@ window.TEUI.SectionModules.sect01 = (function() {
         .gauge-poor { background-color: #d9534f; }
         .key-title-container { display: flex; flex-direction: column; }
         .teui-warning { color: #8B0000; font-family: "Arial Black", Gadget, sans-serif; font-size: 1.5rem; font-weight: 900; }
-        @media (max-width: 992px) { .key-value { font-size: 1.7rem; } .key-title-combined { font-size: 1.3rem; } }
-        @media (max-width: 768px) { .key-value { font-size: 1.4rem; } .key-title-combined { font-size: 1.1rem; } .key-explanation { font-size: 0.65rem; } }
+        .key-title-mode-text {
+            font-weight: bold; /* Matches Arial Black's typical boldness */
+            margin-left: 8px; 
+            font-size: 1.5rem; /* Match .key-title-combined */
+            /* Color is inherited from .key-title-combined */
+        }
+        @media (max-width: 992px) { 
+            .key-value { font-size: 1.7rem; } 
+            .key-title-combined { font-size: 1.3rem; } 
+            .key-title-mode-text { font-size: 1.3rem; }
+        }
+        @media (max-width: 768px) { 
+            .key-value { font-size: 1.4rem; } 
+            .key-title-combined { font-size: 1.1rem; } 
+            .key-title-mode-text { font-size: 1.1rem; }
+            .key-explanation { font-size: 0.65rem; } 
+        }
     `;
     
     //==========================================================================
@@ -124,9 +139,9 @@ window.TEUI.SectionModules.sect01 = (function() {
             <table class="key-values-table">
                 <thead><tr><th class="key-values-label-cell key-values-header">Key Values</th><th class="key-values-ref-cell key-values-header">Reference</th><th class="key-values-target-cell key-values-header">Target</th><th class="key-values-actual-cell key-values-header">Actual</th><th class="key-values-percent-cell key-values-header">%</th></tr></thead>
                 <tbody>
-                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Lifetime Emissions Intensity kgCO2e/m²/Service Life (Yrs)</span><span class="key-title-combined"><span class="key-title-id">T.1</span>Lifetime Carbon</span><div id="lifetime-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_6"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">24.4</span></td><td class="key-values-target-cell" data-field-id="h_6"><span class="key-explanation">Targeted (Design) 71% Reduction</span><span class="key-value">11.7</span></td><td class="key-values-actual-cell" data-field-id="k_6"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">11.7</span></td><td class="key-values-percent-cell"><span class="percent-value">N/A</span></td></tr>
-                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Annual Operational Emissions Intensity kgCO2e/m²</span><span class="key-title-combined"><span class="key-title-id">T.2</span>Annual Carbon</span><div id="annual-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_8"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">17.4</span></td><td class="key-values-target-cell" data-field-id="h_8"><span class="key-explanation">Targeted (Design) 86% Reduction</span><span class="key-value">4.7</span></td><td class="key-values-actual-cell" data-field-id="k_8"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">4.8</span></td><td class="key-values-percent-cell" data-field-id="j_8"><span class="checkmark">✓</span><span class="percent-value">14%</span></td></tr>
-                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Total Annual Operational Energy Use Intensity kWh/m²/yr</span><span class="key-title-combined"><span class="key-title-id">T.3</span>TEUI</span><div id="teui-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="e_10"><span class="key-explanation ref-explanation">Reference 100% (Baseline) <span class="cost-indicator ref-cost"></span></span><span class="key-value ref-value"><span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">341.2</span></span></td><td class="key-values-target-cell" data-field-id="h_10"><span class="key-explanation">Targeted (Design) 59% Reduction <span class="cost-indicator"></span></span><span class="key-value" data-tier-field="i_10"><span class="tier-indicator t3-tag">tier3</span> 93.0</span></td><td class="key-values-actual-cell" data-field-id="k_10"><span class="key-explanation">Actual (Utility Bills) <span class="cost-indicator"></span></span><span class="key-value">93.1</span></td><td class="key-values-percent-cell" data-field-id="j_10"><span class="checkmark">✓</span><span class="percent-value">41%</span></td></tr>
+                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Lifetime Emissions Intensity kgCO2e/m²/Service Life (Yrs)</span><span class="key-title-combined" id="title-t1"><span class="key-title-id">T.1</span>Lifetime Carbon <span class="key-title-mode-text"></span></span><div id="lifetime-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_6"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">24.4</span></td><td class="key-values-target-cell" data-field-id="h_6"><span class="key-explanation">Targeted (Design) 71% Reduction</span><span class="key-value">11.7</span></td><td class="key-values-actual-cell" data-field-id="k_6"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">11.7</span></td><td class="key-values-percent-cell"><span class="percent-value">N/A</span></td></tr>
+                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Annual Operational Emissions Intensity kgCO2e/m²</span><span class="key-title-combined" id="title-t2"><span class="key-title-id">T.2</span>Annual Carbon <span class="key-title-mode-text"></span></span><div id="annual-carbon-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="d_8"><span class="key-explanation ref-explanation">Reference 100% (Baseline)</span><span class="key-value ref-value">17.4</span></td><td class="key-values-target-cell" data-field-id="h_8"><span class="key-explanation">Targeted (Design) 86% Reduction</span><span class="key-value">4.7</span></td><td class="key-values-actual-cell" data-field-id="k_8"><span class="key-explanation">Actual (Utility Bills)</span><span class="key-value">4.8</span></td><td class="key-values-percent-cell" data-field-id="j_8"><span class="checkmark">✓</span><span class="percent-value">14%</span></td></tr>
+                    <tr><td class="key-values-label-cell"><div class="key-title-container"><span class="title-explanation">Total Annual Operational Energy Use Intensity kWh/m²/yr</span><span class="key-title-combined" id="title-t3"><span class="key-title-id">T.3</span>TEUI <span class="key-title-mode-text"></span></span><div id="teui-gauge" class="linear-gauge-container"><div class="linear-gauge-bar"></div></div></div></td><td class="key-values-ref-cell" data-field-id="e_10"><span class="key-explanation ref-explanation">Reference 100% (Baseline) <span class="cost-indicator ref-cost"></span></span><span class="key-value ref-value"><span class="tier-indicator t1-tag">tier1</span> <span class="numeric-value">341.2</span></span></td><td class="key-values-target-cell" data-field-id="h_10"><span class="key-explanation">Targeted (Design) 59% Reduction <span class="cost-indicator"></span></span><span class="key-value" data-tier-field="i_10"><span class="tier-indicator t3-tag">tier3</span> 93.0</span></td><td class="key-values-actual-cell" data-field-id="k_10"><span class="key-explanation">Actual (Utility Bills) <span class="cost-indicator"></span></span><span class="key-value">93.1</span></td><td class="key-values-percent-cell" data-field-id="j_10"><span class="checkmark">✓</span><span class="percent-value">41%</span></td></tr>
                 </tbody>
             </table>
         `;
@@ -787,6 +802,49 @@ window.TEUI.SectionModules.sect01 = (function() {
     let calculationInProgress = false;
     let isInitializing = false;
 
+    function updateTitleModeIndicators() {
+        if (!window.TEUI || !window.TEUI.StateManager) return;
+
+        const useType = window.TEUI.StateManager.getApplicationValue("d_14") || "Targeted Use";
+        const modeTextContent = (useType === "Utility Bills") ? "Actual" : "Targeted";
+
+        const indicators = [
+            { textElId: '#title-t1 .key-title-mode-text', gaugeBarElId: '#lifetime-carbon-gauge .linear-gauge-bar' },
+            { textElId: '#title-t2 .key-title-mode-text', gaugeBarElId: '#annual-carbon-gauge .linear-gauge-bar' },
+            { textElId: '#title-t3 .key-title-mode-text', gaugeBarElId: '#teui-gauge .linear-gauge-bar' }
+        ];
+
+        const colorMap = {
+            'gauge-excellent': '#28a745',
+            'gauge-good': '#5bc0de',
+            'gauge-warning': '#f0ad4e',
+            'gauge-poor': '#d9534f'
+        };
+
+        indicators.forEach(indicator => {
+            const textElement = document.querySelector(indicator.textElId);
+            const gaugeBarElement = document.querySelector(indicator.gaugeBarElId);
+
+            if (textElement) {
+                textElement.textContent = modeTextContent;
+                textElement.style.opacity = '0.5'; // Set 50% opacity
+
+                if (gaugeBarElement) {
+                    let determinedColor = 'inherit'; // Default to inherit parent color
+                    for (const className in colorMap) {
+                        if (gaugeBarElement.classList.contains(className)) {
+                            determinedColor = colorMap[className];
+                            break;
+                        }
+                    }
+                    textElement.style.color = determinedColor;
+                } else {
+                    textElement.style.color = 'inherit'; // Fallback if gauge bar not found
+                }
+            }
+        });
+    }
+
     function runAllCalculations() {
         // Add recursion protection
         if (calculationInProgress) {
@@ -803,6 +861,7 @@ window.TEUI.SectionModules.sect01 = (function() {
             // Calculate tiers and display updates
             calculateTargetTier();      // Calculate i_10 (Target Tier for h_10)
             updateTEUIDisplay();        // Update all visual displays
+            updateTitleModeIndicators(); // <-- ADDED CALL HERE
         } finally {
             calculationInProgress = false;
         }
