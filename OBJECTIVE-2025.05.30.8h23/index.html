@@ -100,8 +100,16 @@
                         <i class="bi bi-cloud-sun"></i> More Weather Data
                     </button>
                     
-                    <button id="runReferenceBtn" class="btn btn-sm btn-primary me-2">Run Reference & Update Comparison</button>
-                    <button id="viewReferenceInputsBtn" class="btn btn-sm btn-secondary me-2">Show Cached Reference Inputs</button>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-danger">Reference</button>
+                        <button type="button" class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" id="runReferenceBtn">Calculate Reference</a></li>
+                            <li><a class="dropdown-item" href="#" id="viewReferenceInputsBtn">View Cached Inputs</a></li>
+                        </ul>
+                    </div>
                     <button id="disclaimerBtn" class="btn btn-sm btn-warning me-2" data-bs-toggle="modal" data-bs-target="#disclaimerModal">ⓘ Disclaimer</button>
                     <button id="reset-imported-btn" type="button" class="btn btn-sm btn-success me-2"><i class="bi bi-arrow-clockwise"></i> Reset</button>
                     <div class="btn-group">
