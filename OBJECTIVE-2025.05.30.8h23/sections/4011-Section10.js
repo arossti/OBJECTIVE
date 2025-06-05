@@ -70,7 +70,7 @@ window.TEUI.SectionModules.sect10 = (function() {
 
         // Determine format if not specified
         if (format === 'number') {
-            if (/[jl]_[\\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) { format = 'percent'; }
+            if (/[jl]_[\d]{2,}/.test(fieldId) || /[jl]_79/.test(fieldId)) { format = 'percent'; }
             else if (fieldId.startsWith('p_')) { format = 'currency'; }
             // default is 'number' (2 decimals)
         }
@@ -87,8 +87,6 @@ window.TEUI.SectionModules.sect10 = (function() {
         if (element) {
             element.textContent = formattedValue;
             element.classList.toggle('negative-value', rawValue < 0);
-        } else {
-             // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`); // Commented out to reduce noise
         }
     }
 
@@ -98,7 +96,6 @@ window.TEUI.SectionModules.sect10 = (function() {
         if (!currentFieldId) return;
 
         if (currentFieldId === 'd_74') {
-            console.log(`[S10 handleFieldBlur DEBUG] Entered for d_74. Initial textContent: "${fieldElement.textContent}"`);
         }
 
         let valueStr = fieldElement.textContent.trim().replace(/,/g, '');
@@ -138,21 +135,17 @@ window.TEUI.SectionModules.sect10 = (function() {
                 displayValue = formatNumber(0, 'number');
                 rawValueToStore = '0';
             }
-            console.warn(`Invalid input "${valueStr}" for ${currentFieldId}. Resetting to 0.`);
         }
         fieldElement.textContent = displayValue; // Update DOM display
 
         // Store the validated, raw numeric string for user inputs
         if (window.TEUI?.StateManager?.setValue) {
             window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, 'user-modified'); 
-            console.log(`handleFieldBlur: StateManager set ${currentFieldId} to ${rawValueToStore}`); // DEBUG LOG
         }
 
         // Trigger recalculation using the standardized calculateAll function
         if (typeof calculateAll === 'function') {
             calculateAll();
-        } else {
-            console.error('calculateAll function not found in Section 10');
         }
     }
 
@@ -1042,7 +1035,6 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             return fields;
         } catch (error) {
-            // console.error("Error in getFields:", error);
             return {}; // Return empty object to avoid breaking the application
         }
     }
@@ -1068,7 +1060,6 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             return options;
         } catch (error) {
-            // console.error("Error in getDropdownOptions:", error);
             return {}; // Return empty object to avoid breaking the application
         }
     }
@@ -1099,7 +1090,6 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             return { rows: layoutRows };
         } catch (error) {
-            // console.error("Error in getLayout:", error);
             return { rows: [] }; // Return empty rows to avoid breaking the application
         }
     }
@@ -1177,7 +1167,6 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Rows 73-78 don't need reference comparison - they show gain factors in Column M
             updateReferenceIndicators(80);
         } catch (error) {
-            console.error('Error updating reference indicators:', error);
         }
     }
     
@@ -1211,7 +1200,6 @@ window.TEUI.SectionModules.sect10 = (function() {
                 setElementClass(nFieldId, isGood ? 'checkmark' : 'warning');
             }
         } catch (error) {
-            console.error(`Error updating reference indicators for row ${rowId}:`, error);
         }
     }
 
@@ -1220,12 +1208,8 @@ window.TEUI.SectionModules.sect10 = (function() {
      * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
      */
     function calculateAll() {
-        // console.log('[Section10] Running dual-engine calculations...'); // Comment out
-        
         calculateReferenceModel();
         calculateTargetModel();
-        
-        // console.log('[Section10] Dual-engine calculations complete'); // Comment out
     }
     
     /**
@@ -1233,8 +1217,6 @@ window.TEUI.SectionModules.sect10 = (function() {
      * Stores results with ref_ prefix to keep separate from Target values
      */
     function calculateReferenceModel() {
-        // console.log("[Section10] Running Reference Model calculations...");
-        
         try {
             // Calculate individual orientation rows using reference values
             const orientationResults = {};
@@ -1264,10 +1246,8 @@ window.TEUI.SectionModules.sect10 = (function() {
                 
                 // Note: Utilization factors are stored within calculateUtilizationFactors
             }
-            
-            console.log("[Section10] Reference Model values stored");
         } catch (error) {
-            console.error('[Section10] Error in Reference Model calculations:', error);
+            // Error in Reference Model calculations was previously logged here
         }
     }
     
@@ -1276,8 +1256,6 @@ window.TEUI.SectionModules.sect10 = (function() {
      * This is the existing calculation logic, refactored
      */
     function calculateTargetModel() {
-        // console.log("[Section10] Running Target Model calculations...");
-        
         try {
             // Calculate individual orientation rows
             orientationConfig.forEach(rowId => {
@@ -1293,7 +1271,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             // Update reference indicators for all rows
             updateAllReferenceIndicators();
         } catch (error) {
-            console.error('[Section10] Error in Target Model calculations:', error);
+            // Error in Target Model calculations was previously logged here
         }
 
         // Target Model calculations completed
@@ -1368,7 +1346,6 @@ window.TEUI.SectionModules.sect10 = (function() {
                 gainFactor
             };
         } catch (error) {
-            console.error(`Error calculating orientation gains for row ${rowId}:`, error);
             return { heatingGains: 0, coolingGains: 0, gainFactor: 0 };
         }
     }
@@ -1480,7 +1457,6 @@ window.TEUI.SectionModules.sect10 = (function() {
                 coolingGains
             };
         } catch (error) {
-            console.error('Error calculating subtotals:', error);
             return { heatingGains: 0, coolingGains: 0 };
         }
     }
@@ -1636,7 +1612,6 @@ window.TEUI.SectionModules.sect10 = (function() {
             const unusedGains = totalGains - usableGains;
             setCalculatedValue("i_82", unusedGains, 'number');
         } catch (error) {
-            console.error('Error calculating utilization factors:', error);
             // Set error values or defaults
             if (!isReferenceCalculation) {
                 setCalculatedValue("e_80", 0); setCalculatedValue("g_80", 0, 'percent'); setCalculatedValue("i_80", 0);
@@ -1677,7 +1652,6 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             return values[valueIndex];
         } catch (error) {
-            console.error('Error calculating gain factor:', error);
             return 50.0; // Fallback default value in case of unexpected error
         }
     }
@@ -1772,7 +1746,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             // console.log('Radiant Gains dropdown defaults initialized');
         } catch (error) {
-            // console.error('Error in setupDropdownDefaults:', error);
+            // Error in setupDropdownDefaults was previously logged here
         }
     }
     
@@ -1782,7 +1756,6 @@ window.TEUI.SectionModules.sect10 = (function() {
     function registerWithStateManager() {
         try {
             if (!window.TEUI?.StateManager) {
-                // console.warn('StateManager not available for Radiant Gains registration');
                 return;
             }
             
@@ -1795,7 +1768,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             // console.log('Radiant Gains values registered with StateManager');
         } catch (error) {
-            // console.error('Error in registerWithStateManager:', error);
+            // Error in registerWithStateManager was previously logged here
         }
     }
     
@@ -1805,7 +1778,6 @@ window.TEUI.SectionModules.sect10 = (function() {
     function addStateManagerListeners() {
         try {
             if (!window.TEUI?.StateManager) {
-                // console.warn('StateManager not available for Radiant Gains listeners');
                 return;
             }
             
@@ -1825,7 +1797,7 @@ window.TEUI.SectionModules.sect10 = (function() {
             
             // console.log('Radiant Gains StateManager listeners added');
         } catch (error) {
-            // console.error('Error in addStateManagerListeners:', error);
+            // Error in addStateManagerListeners was previously logged here
         }
     }
     
@@ -1836,11 +1808,9 @@ window.TEUI.SectionModules.sect10 = (function() {
         try {
             // If the integrator exists, register dependencies
             if (window.TEUI?.SectionIntegrator) {
-                // console.log('Registering with SectionIntegrator');
-                // Add any required integrations
             }
         } catch (error) {
-            // console.error('Error in registerWithIntegrator:', error);
+            // Error in registerWithIntegrator was previously logged here
         }
     }
     
@@ -1924,7 +1894,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.TEUI.sect10.calculateAll();
             }
         } catch (e) {
-            // console.error('Error in global recalculateRadiantGains:', e);
+            // Error in global recalculateRadiantGains was previously logged here
         } finally {
             window.recalculateRadiantGainsRunning = false;
         }
