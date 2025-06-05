@@ -93,7 +93,7 @@ TEUI.FieldManager = (function () {
    */
   function initializeSections() {
     // Process each section, using the already loaded module or creating a fallback
-    Object.entries(sections).forEach(([uiSectionId, moduleSectionId]) => {
+    Object.entries(sections).forEach(([_uiSectionId, moduleSectionId]) => {
       // Check if the module exists in the global namespace
       if (TEUI.SectionModules[moduleSectionId]) {
         // Collect fields from this section
@@ -235,7 +235,7 @@ TEUI.FieldManager = (function () {
     }
 
     for (const fieldId in allFields) {
-      if (allFields.hasOwnProperty(fieldId)) {
+      if (Object.prototype.hasOwnProperty.call(allFields, fieldId)) {
         const field = allFields[fieldId];
         // Check if field and field.type are defined, and if type is in editableTypes
         if (
@@ -1217,9 +1217,7 @@ TEUI.FieldManager = (function () {
         }
         break;
       case "year_slider":
-      case "percentage":
-      case "coefficient_slider":
-      case "generic_slider":
+      case "percentage": {
         // For sliders, the main element might be a container.
         // The actual input (type=range) and display span are often sub-elements.
         const sliderInput = element.matches('input[type="range"]')
@@ -1261,13 +1259,78 @@ TEUI.FieldManager = (function () {
           }
         }
         break;
+      }
+      case "coefficient_slider": {
+        // For sliders, the main element might be a container.
+        // The actual input (type=range) and display span are often sub-elements.
+        const sliderInput = element.matches('input[type="range"]')
+          ? element
+          : element.querySelector('input[type="range"]');
+        const displaySpan =
+          element.parentNode.querySelector(
+            `span[data-field-id='${fieldId}-value']`,
+          ) || element.querySelector(`span`);
+
+        if (sliderInput) {
+          // Note: displayValue for a slider should be the raw numeric value.
+          // The slider's own event handler usually formats it for the displaySpan.
+          if (sliderInput.value !== displayValue) {
+            sliderInput.value = displayValue;
+          }
+        }
+        if (displaySpan) {
+          // Attempt to format if a global formatter is available, otherwise set directly
+          let formattedSliderValue = displayValue;
+          if (window.TEUI && window.TEUI.formatNumber) {
+            if (fieldDef.type === "percentage") {
+              // Assuming displayValue is '20' for 20% for the input, but formatNumber expects 0.20 for 'percent'
+              // This part might need adjustment based on how slider values are stored/passed.
+              // For now, let's assume displayValue is ready for direct display or needs simple formatting.
+              formattedSliderValue = window.TEUI.formatNumber(
+                parseFloat(displayValue) / 100,
+                "percent-0dp",
+              ); // Example: 20 -> 20%
+            } else {
+              formattedSliderValue = window.TEUI.formatNumber(
+                parseFloat(displayValue),
+                "number-2dp",
+              ); // Default for others
+            }
+          }
+          if (displaySpan.textContent !== formattedSliderValue) {
+            displaySpan.textContent = formattedSliderValue;
+          }
+        }
+        break;
+      }
+      case "generic_slider": {
+        // For sliders, the main element might be a container.
+        // The actual input (type=range) and display span are often sub-elements.
+        const sliderInput = element.matches('input[type="range"]')
+          ? element
+          : element.querySelector('input[type="range"]');
+        // Generic sliders in some earlier versions might not have had a separate displaySpan for their value,
+        // if they did, it would be found similarly to other sliders.
+        // const displaySpan = element.parentNode.querySelector(...) || element.querySelector(...);
+
+        if (sliderInput) {
+          if (sliderInput.value !== displayValue) {
+            sliderInput.value = displayValue;
+          }
+        }
+        // if (displaySpan && displaySpan.textContent !== displayValue) { // If generic had a span
+        // displaySpan.textContent = displayValue;
+        // }
+        break;
+      }
       case "calculated":
       case "derived":
-      default: // Includes simple text display fields not covered above
+      default: { // Includes simple text display fields not covered above
         if (element.textContent !== displayValue) {
           element.textContent = displayValue;
         }
         break;
+      }
     }
   }
 

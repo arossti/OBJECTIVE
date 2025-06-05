@@ -1457,20 +1457,16 @@
             this.provinceSelect = document.getElementById("provinceSelect");
             this.citySelect = document.getElementById("citySelect");
             this.timeframeSelect = document.getElementById("timeframeSelect");
-            this.capacitanceSelect =
-              document.getElementById("capacitanceSelect");
-            this.capacitanceSlider =
-              document.getElementById("capacitance_slider");
-            this.capacitanceValue =
-              document.getElementById("capacitance_value");
+            this.capacitanceSelect = document.getElementById("capacitanceSelect");
+            this.capacitanceSlider = document.getElementById("capacitance_slider");
+            this.capacitanceValue = document.getElementById("capacitance_value");
             this.referenceToggle = document.getElementById("referenceToggle");
             this.stateIndicator = document.getElementById("stateIndicator");
             this.sectionContent = document.querySelector(".section-content");
             this.debugInfo = document.getElementById("debugInfo");
 
             // Cache all calculated fields
-            const calculatedElements =
-              document.querySelectorAll("[data-field-id]");
+            const calculatedElements = document.querySelectorAll("[data-field-id]");
             calculatedElements.forEach((element) => {
               const fieldId = element.getAttribute("data-field-id");
               if (fieldId) {
@@ -1769,9 +1765,7 @@
 
             // Click outside modal to close
             window.addEventListener("click", function (event) {
-              if (
-                event.target === document.getElementById("weatherDataModal")
-              ) {
+              if (event.target === document.getElementById("weatherDataModal")) {
                 UIController.closeModal();
               }
             });
@@ -1780,8 +1774,7 @@
             document.addEventListener("keydown", function (event) {
               if (
                 event.key === "Escape" &&
-                document.getElementById("weatherDataModal").style.display ===
-                  "block"
+                document.getElementById("weatherDataModal").style.display === "block"
               ) {
                 UIController.closeModal();
               }
@@ -1839,8 +1832,7 @@
             provinces.forEach((province) => {
               const option = document.createElement("option");
               option.value = province;
-              option.textContent =
-                ClimateDataService.getProvinceFullName(province);
+              option.textContent = ClimateDataService.getProvinceFullName(province);
               provinceSelect.appendChild(option);
             });
 
@@ -1867,8 +1859,7 @@
               return;
             }
 
-            const cities =
-              ClimateDataService.getCitiesForProvince(provinceValue);
+            const cities = ClimateDataService.getCitiesForProvince(provinceValue);
 
             if (cities.length === 0) {
               logDebug("No cities found for province:", provinceValue);
@@ -1920,16 +1911,10 @@
 
             // Update HDD18
             const hddValue =
-              timeframe === "Future"
-                ? cityData.HDD18_2021_2050
-                : cityData.HDD18;
+              timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
             const hddElement = document.getElementById("l_21");
             if (hddElement) {
-              if (
-                hddValue === null ||
-                hddValue === undefined ||
-                hddValue === 666
-              ) {
+              if (hddValue === null || hddValue === undefined || hddValue === 666) {
                 hddElement.textContent = "N/A";
                 hddElement.className = "cell-missing";
               } else {
@@ -1942,11 +1927,7 @@
             // Also update the main HDD display
             const mainHddElement = document.getElementById("hdd");
             if (mainHddElement) {
-              if (
-                hddValue === null ||
-                hddValue === undefined ||
-                hddValue === 666
-              ) {
+              if (hddValue === null || hddValue === undefined || hddValue === 666) {
                 mainHddElement.textContent = "N/A";
                 mainHddElement.className = "cell-missing";
               } else {
@@ -1958,16 +1939,10 @@
 
             // Update CDD24
             const cddValue =
-              timeframe === "Future"
-                ? cityData.CDD24_2021_2050
-                : cityData.CDD24;
+              timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
             const cddElement = document.getElementById("l_23");
             if (cddElement) {
-              if (
-                cddValue === null ||
-                cddValue === undefined ||
-                cddValue === 666
-              ) {
+              if (cddValue === null || cddValue === undefined || cddValue === 666) {
                 cddElement.textContent = "N/A";
                 cddElement.className = "cell-missing";
 
@@ -1995,11 +1970,7 @@
             // Also update the main CDD display
             const mainCddElement = document.getElementById("cdd");
             if (mainCddElement) {
-              if (
-                cddValue === null ||
-                cddValue === undefined ||
-                cddValue === 666
-              ) {
+              if (cddValue === null || cddValue === undefined || cddValue === 666) {
                 mainCddElement.textContent = "N/A";
                 mainCddElement.className = "cell-missing";
 
@@ -2073,10 +2044,7 @@
               return;
             }
 
-            const cityData = ClimateDataService.getCityData(
-              provinceValue,
-              cityValue,
-            );
+            const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
 
             if (!cityData) {
               alert(`No climate data found for ${cityValue}, ${provinceValue}`);
@@ -2088,8 +2056,7 @@
             );
             weatherDataModalTitle.textContent = `Weather Data for ${cityValue}, ${ClimateDataService.getProvinceFullName(provinceValue)}`;
 
-            const weatherDataContent =
-              document.getElementById("weatherDataContent");
+            const weatherDataContent = document.getElementById("weatherDataContent");
             let formattedData = "";
             Object.entries(cityData).forEach(([key, value]) => {
               formattedData += `<div class="data-row"><div class="data-label">${key}</div><div class="data-value">${value}</div></div>`;
@@ -2159,9 +2126,7 @@
 
             // Calculate cooling percentage
             const coolingOverrideValue = parseFloat(DualState.getValue("l_24"));
-            const coolingPercent = Math.round(
-              (coolingOverrideValue / 22) * 100,
-            );
+            const coolingPercent = Math.round((coolingOverrideValue / 22) * 100);
             DualState.setValue("m_24", coolingPercent + "%", "calculated");
 
             logDebug("Calculations complete");

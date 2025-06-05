@@ -643,13 +643,9 @@
         convertToObjects(links, nodes) {
           return links.map((link) => ({
             source:
-              typeof link.source === "number"
-                ? nodes[link.source]
-                : link.source,
+              typeof link.source === "number" ? nodes[link.source] : link.source,
             target:
-              typeof link.target === "number"
-                ? nodes[link.target]
-                : link.target,
+              typeof link.target === "number" ? nodes[link.target] : link.target,
             value: link.value,
             isEmissions: link.isEmissions,
           }));

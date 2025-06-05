@@ -688,16 +688,13 @@
             this.provinceSelect = document.getElementById("provinceSelect");
             this.citySelect = document.getElementById("citySelect");
             this.timeframeSelect = document.getElementById("timeframeSelect");
-            this.capacitanceSelect =
-              document.getElementById("capacitanceSelect");
-            this.capacitanceSlider =
-              document.getElementById("capacitanceSlider");
+            this.capacitanceSelect = document.getElementById("capacitanceSelect");
+            this.capacitanceSlider = document.getElementById("capacitanceSlider");
             this.capacitanceValue = document.getElementById("capacitanceValue");
             this.debugInfo = document.getElementById("debugInfo");
 
             // Cache all calculated fields
-            const calculatedElements =
-              document.querySelectorAll("[data-field-id]");
+            const calculatedElements = document.querySelectorAll("[data-field-id]");
             calculatedElements.forEach((element) => {
               const fieldId = element.getAttribute("data-field-id");
               if (fieldId) {
@@ -973,9 +970,7 @@
 
             // Click outside modal to close
             window.addEventListener("click", function (event) {
-              if (
-                event.target === document.getElementById("weatherDataModal")
-              ) {
+              if (event.target === document.getElementById("weatherDataModal")) {
                 UIController.closeModal();
               }
             });
@@ -984,8 +979,7 @@
             document.addEventListener("keydown", function (event) {
               if (
                 event.key === "Escape" &&
-                document.getElementById("weatherDataModal").style.display ===
-                  "block"
+                document.getElementById("weatherDataModal").style.display === "block"
               ) {
                 UIController.closeModal();
               }
@@ -1058,8 +1052,7 @@
             provinces.forEach((province) => {
               const option = document.createElement("option");
               option.value = province;
-              option.textContent =
-                ClimateDataService.getProvinceFullName(province);
+              option.textContent = ClimateDataService.getProvinceFullName(province);
               provinceSelect.appendChild(option);
             });
 
@@ -1093,8 +1086,7 @@
             }
 
             // Get cities for the selected province
-            const cities =
-              ClimateDataService.getCitiesForProvince(provinceValue);
+            const cities = ClimateDataService.getCitiesForProvince(provinceValue);
 
             if (cities.length === 0) {
               logDebug("No cities found for province:", provinceValue);
@@ -1206,10 +1198,7 @@
             }
 
             // Get city data
-            const cityData = ClimateDataService.getCityData(
-              provinceValue,
-              cityValue,
-            );
+            const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
 
             if (!cityData) {
               alert(`No climate data found for ${cityValue}, ${provinceValue}`);
@@ -1223,8 +1212,7 @@
             weatherDataModalTitle.textContent = `Weather Data for ${cityValue}, ${ClimateDataService.getProvinceFullName(provinceValue)}`;
 
             // Format data for display
-            const weatherDataContent =
-              document.getElementById("weatherDataContent");
+            const weatherDataContent = document.getElementById("weatherDataContent");
             let formattedData = "";
             Object.entries(cityData).forEach(([key, value]) => {
               formattedData += `<div class="data-row"><div class="data-label">${key}</div><div class="data-value">${value}</div></div>`;
@@ -1295,9 +1283,7 @@
 
             // Calculate cooling percentage
             const coolingOverrideValue = parseFloat(AppState.getValue("l_24"));
-            const coolingPercent = Math.round(
-              (coolingOverrideValue / 22) * 100,
-            );
+            const coolingPercent = Math.round((coolingOverrideValue / 22) * 100);
             AppState.setValue("m_24", coolingPercent + "%", "calculated");
 
             logDebug("Calculations complete");

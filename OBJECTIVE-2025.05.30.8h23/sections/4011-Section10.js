@@ -116,12 +116,13 @@ window.TEUI.SectionModules.sect10 = (function () {
     }
   }
 
-  function handleFieldBlur(event) {
+  function handleFieldBlur(_event) {
     const fieldElement = this;
     const currentFieldId = fieldElement.getAttribute("data-field-id");
     if (!currentFieldId) return;
 
     if (currentFieldId === "d_74") {
+      /* No specific action for d_74 blur, but keeping structure */
     }
 
     let valueStr = fieldElement.textContent.trim().replace(/,/g, "");
@@ -1105,7 +1106,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         if (!row.cells) return;
 
         // Process each cell in the row
-        Object.entries(row.cells).forEach(([colKey, cell]) => {
+        Object.entries(row.cells).forEach(([_colKey, cell]) => {
           if (cell.fieldId && cell.type) {
             // Create field definition with all relevant properties
             fields[cell.fieldId] = {
@@ -1131,7 +1132,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       });
 
       return fields;
-    } catch (error) {
+    } catch (_error) {
       return {}; // Return empty object to avoid breaking the application
     }
   }
@@ -1156,7 +1157,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       });
 
       return options;
-    } catch (error) {
+    } catch (_error) {
       return {}; // Return empty object to avoid breaking the application
     }
   }
@@ -1186,7 +1187,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       });
 
       return { rows: layoutRows };
-    } catch (error) {
+    } catch (_error) {
       return { rows: [] }; // Return empty rows to avoid breaking the application
     }
   }
@@ -1276,7 +1277,9 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Only update reference indicator for method row (80)
       // Rows 73-78 don't need reference comparison - they show gain factors in Column M
       updateReferenceIndicators(80);
-    } catch (error) {}
+    } catch (_error) {
+      /* No operation needed, was empty catch */
+    }
   }
 
   /**
@@ -1310,7 +1313,9 @@ window.TEUI.SectionModules.sect10 = (function () {
         nElement.textContent = isGood ? "✓" : "✗";
         setElementClass(nFieldId, isGood ? "checkmark" : "warning");
       }
-    } catch (error) {}
+    } catch (_error) {
+      /* No operation needed, was empty catch */
+    }
   }
 
   /**
@@ -1378,7 +1383,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
         // Note: Utilization factors are stored within calculateUtilizationFactors
       }
-    } catch (error) {
+    } catch (_error) {
       // Error in Reference Model calculations was previously logged here
     }
   }
@@ -1402,7 +1407,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // Update reference indicators for all rows
       updateAllReferenceIndicators();
-    } catch (error) {
+    } catch (_error) {
       // Error in Target Model calculations was previously logged here
     }
 
@@ -1489,7 +1494,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         coolingGains,
         gainFactor,
       };
-    } catch (error) {
+    } catch (_error) {
       return { heatingGains: 0, coolingGains: 0, gainFactor: 0 };
     }
   }
@@ -1618,7 +1623,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         heatingGains,
         coolingGains,
       };
-    } catch (error) {
+    } catch (_error) {
       return { heatingGains: 0, coolingGains: 0 };
     }
   }
@@ -1800,7 +1805,7 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       const unusedGains = totalGains - usableGains;
       setCalculatedValue("i_82", unusedGains, "number");
-    } catch (error) {
+    } catch (_error) {
       // Set error values or defaults
       if (!isReferenceCalculation) {
         setCalculatedValue("e_80", 0);
@@ -1857,7 +1862,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       const valueIndex = orientationIndex === -1 ? 8 : orientationIndex;
 
       return values[valueIndex];
-    } catch (error) {
+    } catch (_error) {
       return 50.0; // Fallback default value in case of unexpected error
     }
   }
@@ -1965,7 +1970,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       });
 
       // console.log('Radiant Gains dropdown defaults initialized');
-    } catch (error) {
+    } catch (_error) {
       // Error in setupDropdownDefaults was previously logged here
     }
   }
@@ -1989,12 +1994,12 @@ window.TEUI.SectionModules.sect10 = (function () {
         "West",
         "Skylight",
       ];
-      orientations.forEach((orientation) => {
+      orientations.forEach((_orientation) => {
         // Register orientation-specific fields if needed
       });
 
       // console.log('Radiant Gains values registered with StateManager');
-    } catch (error) {
+    } catch (_error) {
       // Error in registerWithStateManager was previously logged here
     }
   }
@@ -2026,7 +2031,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       });
 
       // console.log('Radiant Gains StateManager listeners added');
-    } catch (error) {
+    } catch (_error) {
       // Error in addStateManagerListeners was previously logged here
     }
   }
@@ -2038,8 +2043,9 @@ window.TEUI.SectionModules.sect10 = (function () {
     try {
       // If the integrator exists, register dependencies
       if (window.TEUI?.SectionIntegrator) {
+        // Example: window.TEUI.SectionIntegrator.addDependency('sect10_someOutput', 'sectXX_someInput');
       }
-    } catch (error) {
+    } catch (_error) {
       // Error in registerWithIntegrator was previously logged here
     }
   }
@@ -2093,8 +2099,8 @@ window.TEUI.SectionModules.sect10 = (function () {
     calculateGainFactor: function (orientation, climateZone) {
       try {
         return calculateGainFactor(orientation, climateZone);
-      } catch (error) {
-        // console.error('Error in Section10 calculateGainFactor:', error);
+      } catch (_error) {
+        // console.error('Error in Section10 calculateGainFactor:', _error);
         return 50.0; // Default value in case of error
       }
     },
@@ -2124,7 +2130,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (window.TEUI?.sect10?.calculateAll) {
         window.TEUI.sect10.calculateAll();
       }
-    } catch (e) {
+    } catch (_e) {
       // Error in global recalculateRadiantGains was previously logged here
     } finally {
       window.recalculateRadiantGainsRunning = false;

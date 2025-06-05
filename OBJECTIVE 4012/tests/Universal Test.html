@@ -104,11 +104,7 @@
         }
         const str = value.toString().replace(/,/g, "");
         const num = parseFloat(str);
-        return isNaN(num)
-          ? defaultValue !== undefined
-            ? defaultValue
-            : null
-          : num;
+        return isNaN(num) ? (defaultValue !== undefined ? defaultValue : null) : num;
       };
 
       window.TEUI.formatNumber = function (value, formatType) {
@@ -174,8 +170,7 @@
           },
           {
             name: "Alexandria data exists",
-            test: () =>
-              window.TEUI.v4012.ClimateData?.ON?.Alexandria !== undefined,
+            test: () => window.TEUI.v4012.ClimateData?.ON?.Alexandria !== undefined,
           },
         ];
 
@@ -194,8 +189,7 @@
 
         if (allPassed) {
           status.className = "status success";
-          status.textContent =
-            "✓ All framework components loaded successfully!";
+          status.textContent = "✓ All framework components loaded successfully!";
         } else {
           status.className = "status error";
           status.textContent = "✗ Some framework components failed to load";
@@ -244,10 +238,8 @@
           // Display results
           let html = "<h4>Calculation Results:</h4>";
           html += '<table style="width: 100%; border-collapse: collapse;">';
-          html +=
-            '<tr><th style="border: 1px solid #ddd; padding: 8px;">Field</th>';
-          html +=
-            '<th style="border: 1px solid #ddd; padding: 8px;">Target</th>';
+          html += '<tr><th style="border: 1px solid #ddd; padding: 8px;">Field</th>';
+          html += '<th style="border: 1px solid #ddd; padding: 8px;">Target</th>';
           html +=
             '<th style="border: 1px solid #ddd; padding: 8px;">Reference</th></tr>';
 
