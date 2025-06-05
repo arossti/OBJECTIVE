@@ -17,15 +17,20 @@ This document outlines the refactored approach to Section 04 as a model for IT-D
 Every calculated field should be registered with StateManager using `registerCalculation`:
 
 ```javascript
-sm.registerCalculation('f_27', function() {
-    const d27 = getAppNumericValue('d_27');
-    const d43 = getAppNumericValue('d_43');
-    const i43 = getAppNumericValue('i_43');
+sm.registerCalculation(
+  "f_27",
+  function () {
+    const d27 = getAppNumericValue("d_27");
+    const d43 = getAppNumericValue("d_43");
+    const i43 = getAppNumericValue("i_43");
     return d27 - d43 - i43;
-}, 'Actual Net Electricity (kWh/yr)');
+  },
+  "Actual Net Electricity (kWh/yr)",
+);
 ```
 
 These registrations should include:
+
 - The field ID to be calculated
 - A pure function that returns the calculated value
 - A description of the calculation
@@ -36,11 +41,11 @@ Dependencies must be explicitly registered using `registerDependency`:
 
 ```javascript
 // Row 27: Electricity
-sm.registerDependency('d_27', 'f_27');
-sm.registerDependency('d_43', 'f_27');
-sm.registerDependency('i_43', 'f_27');
-sm.registerDependency('f_27', 'g_27');
-sm.registerDependency('l_27', 'g_27');
+sm.registerDependency("d_27", "f_27");
+sm.registerDependency("d_43", "f_27");
+sm.registerDependency("i_43", "f_27");
+sm.registerDependency("f_27", "g_27");
+sm.registerDependency("l_27", "g_27");
 ```
 
 This tells StateManager that when `d_27` changes, `f_27` should be recalculated, and when `f_27` changes, `g_27` should be recalculated.
@@ -51,16 +56,16 @@ For cross-section dependencies, use `setupCrossSectionDependencies` to register 
 
 ```javascript
 function setupCrossSectionDependencies() {
-    if (!window.TEUI?.StateManager) return;
-    
-    const sm = window.TEUI.StateManager;
-    
-    // Target electricity dependencies (h_27 from S15 d_136)
-    sm.registerDependency('d_136', 'h_27');
-    
-    // Emissions factor dependencies (l_27)
-    sm.registerDependency('d_19', 'l_27');  // Province
-    sm.registerDependency('h_12', 'l_27');  // Year
+  if (!window.TEUI?.StateManager) return;
+
+  const sm = window.TEUI.StateManager;
+
+  // Target electricity dependencies (h_27 from S15 d_136)
+  sm.registerDependency("d_136", "h_27");
+
+  // Emissions factor dependencies (l_27)
+  sm.registerDependency("d_19", "l_27"); // Province
+  sm.registerDependency("h_12", "l_27"); // Year
 }
 ```
 
@@ -69,48 +74,57 @@ function setupCrossSectionDependencies() {
 Section 04 maintains a clear dual-engine architecture with:
 
 1. **Separate Calculation Functions**:
+
    ```javascript
-   function calculateReferenceModel() { /* Reference calculations */ }
-   function calculateApplicationModel() { /* Application calculations */ }
+   function calculateReferenceModel() {
+     /* Reference calculations */
+   }
+   function calculateApplicationModel() {
+     /* Application calculations */
+   }
    ```
 
 2. **State-Isolated Helper Functions**:
+
    ```javascript
    function getAppNumericValue(fieldId, defaultValue = 0) {
-       const value = window.TEUI?.StateManager?.getApplicationValue?.(fieldId) || 
-                    window.TEUI?.StateManager?.getValue?.(fieldId);
-       return parseFloat(value) || defaultValue;
+     const value =
+       window.TEUI?.StateManager?.getApplicationValue?.(fieldId) ||
+       window.TEUI?.StateManager?.getValue?.(fieldId);
+     return parseFloat(value) || defaultValue;
    }
-   
+
    function getRefNumericValue(fieldId, defaultValue = 0) {
-       // Try multiple methods to get reference value, in order of preference
-       if (window.TEUI?.StateManager?.getReferenceValue) {
-           const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
-           if (refValue !== null && refValue !== undefined) {
-               return parseFloat(refValue) || defaultValue;
-           }
+     // Try multiple methods to get reference value, in order of preference
+     if (window.TEUI?.StateManager?.getReferenceValue) {
+       const refValue = window.TEUI.StateManager.getReferenceValue(fieldId);
+       if (refValue !== null && refValue !== undefined) {
+         return parseFloat(refValue) || defaultValue;
        }
-       
-       // Try ref_ prefixed value in normal state
-       const prefixedFieldId = `ref_${fieldId}`;
-       const prefixedValue = window.TEUI?.StateManager?.getValue?.(prefixedFieldId);
-       return parseFloat(prefixedValue) || defaultValue;
+     }
+
+     // Try ref_ prefixed value in normal state
+     const prefixedFieldId = `ref_${fieldId}`;
+     const prefixedValue =
+       window.TEUI?.StateManager?.getValue?.(prefixedFieldId);
+     return parseFloat(prefixedValue) || defaultValue;
    }
    ```
 
 3. **Combined Execution in `calculateAll`**:
+
    ```javascript
    function calculateAll() {
-       if (window.TEUI.sect04.calculationInProgress) return;
-       
-       window.TEUI.sect04.calculationInProgress = true;
-       
-       try {
-           calculateReferenceModel();  // Calculates Reference values
-           calculateApplicationModel(); // Calculates Application values
-       } finally {
-           window.TEUI.sect04.calculationInProgress = false;
-       }
+     if (window.TEUI.sect04.calculationInProgress) return;
+
+     window.TEUI.sect04.calculationInProgress = true;
+
+     try {
+       calculateReferenceModel(); // Calculates Reference values
+       calculateApplicationModel(); // Calculates Application values
+     } finally {
+       window.TEUI.sect04.calculationInProgress = false;
+     }
    }
    ```
 
@@ -120,18 +134,18 @@ Section 04 uses a global protection flag to prevent infinite calculation loops:
 
 ```javascript
 function calculateAll() {
-    // Prevent recursion
-    if (window.TEUI.sect04.calculationInProgress) return;
-    
-    // Set recursion protection flag
-    window.TEUI.sect04.calculationInProgress = true;
-    
-    try {
-        // Calculations here
-    } finally {
-        // Clear recursion protection flag even if an error occurs
-        window.TEUI.sect04.calculationInProgress = false;
-    }
+  // Prevent recursion
+  if (window.TEUI.sect04.calculationInProgress) return;
+
+  // Set recursion protection flag
+  window.TEUI.sect04.calculationInProgress = true;
+
+  try {
+    // Calculations here
+  } finally {
+    // Clear recursion protection flag even if an error occurs
+    window.TEUI.sect04.calculationInProgress = false;
+  }
 }
 ```
 
@@ -143,27 +157,29 @@ Editable field handling is streamlined with clean functions:
 
 ```javascript
 function handleFieldBlur(field) {
-    if (!field) return;
-    
-    const fieldId = field.getAttribute('data-field-id');
-    if (!fieldId) return;
-    
-    // Get the new value and clean it (remove commas)
-    const newValue = field.textContent.trim().replace(/,/g, '');
-    
-    // Only update if value has changed
-    if (field.dataset.originalValue !== field.textContent.trim()) {
-        // Update StateManager with the new value
-        if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue(fieldId, newValue, 'user-modified');
-        }
-        
-        // Format the displayed value
-        const numericValue = window.TEUI?.parseNumeric?.(newValue, 0);
-        if (!isNaN(numericValue)) {
-            field.textContent = window.TEUI?.formatNumber?.(numericValue, 'number-2dp-comma') || numericValue.toFixed(2);
-        }
+  if (!field) return;
+
+  const fieldId = field.getAttribute("data-field-id");
+  if (!fieldId) return;
+
+  // Get the new value and clean it (remove commas)
+  const newValue = field.textContent.trim().replace(/,/g, "");
+
+  // Only update if value has changed
+  if (field.dataset.originalValue !== field.textContent.trim()) {
+    // Update StateManager with the new value
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
     }
+
+    // Format the displayed value
+    const numericValue = window.TEUI?.parseNumeric?.(newValue, 0);
+    if (!isNaN(numericValue)) {
+      field.textContent =
+        window.TEUI?.formatNumber?.(numericValue, "number-2dp-comma") ||
+        numericValue.toFixed(2);
+    }
+  }
 }
 ```
 
@@ -173,28 +189,33 @@ Section 04 includes a test function to verify correct calculations:
 
 ```javascript
 function testITDependsCalculations() {
-    // Set test values
-    const testData = {
-        'd_27': '100000',   // Electricity 
-        'd_28': '1000',     // Gas
-        // ...
-    };
-    
-    // Set values and verify results
-    Object.entries(testData).forEach(([fieldId, value]) => {
-        window.TEUI.StateManager.setValue(fieldId, value, 'test');
-    });
-    
-    // Wait for StateManager to process values
-    setTimeout(() => {
-        // Verify calculations
-        const f27 = window.TEUI.parseNumeric(window.TEUI.StateManager.getValue('f_27'), 0);
-        console.log(`[S04 Test] f_27 (Actual Net Electricity): ${f27.toFixed(2)} kWh/yr`);
-        const expected_f27 = 100000 - 10000 - 5000; // Electricity - Onsite - Offsite
-        console.log(`[S04 Test] Expected f_27: ${expected_f27.toFixed(2)} kWh/yr`);
-        
-        // More verification...
-    }, 100);
+  // Set test values
+  const testData = {
+    d_27: "100000", // Electricity
+    d_28: "1000", // Gas
+    // ...
+  };
+
+  // Set values and verify results
+  Object.entries(testData).forEach(([fieldId, value]) => {
+    window.TEUI.StateManager.setValue(fieldId, value, "test");
+  });
+
+  // Wait for StateManager to process values
+  setTimeout(() => {
+    // Verify calculations
+    const f27 = window.TEUI.parseNumeric(
+      window.TEUI.StateManager.getValue("f_27"),
+      0,
+    );
+    console.log(
+      `[S04 Test] f_27 (Actual Net Electricity): ${f27.toFixed(2)} kWh/yr`,
+    );
+    const expected_f27 = 100000 - 10000 - 5000; // Electricity - Onsite - Offsite
+    console.log(`[S04 Test] Expected f_27: ${expected_f27.toFixed(2)} kWh/yr`);
+
+    // More verification...
+  }, 100);
 }
 ```
 
@@ -219,4 +240,4 @@ When migrating other sections to this pattern:
 
 ## Conclusion
 
-The IT-DEPENDS pattern implemented in Section 04 provides a clean, maintainable approach to calculations that eliminates race conditions and ensures proper state isolation. This pattern should be followed for all future section refactoring to achieve a consistent, reliable codebase. 
+The IT-DEPENDS pattern implemented in Section 04 provides a clean, maintainable approach to calculations that eliminates race conditions and ensures proper state isolation. This pattern should be followed for all future section refactoring to achieve a consistent, reliable codebase.

@@ -20,7 +20,7 @@ We've observed an issue where the `e_10` field (Reference TEUI) gets contaminate
 We've added comprehensive logging to track this issue. The debugging focuses on three key areas:
 
 1. **Section01.js**: Detailed logging in the `e_10` calculation to track data sources and values
-2. **StateManager.js**: 
+2. **StateManager.js**:
    - Logs all `getValue` and `setValue` calls for `e_10`
    - Tracks access to Reference vs. Application state
    - Logs the stack traces to identify where contamination occurs
@@ -35,7 +35,6 @@ We've added comprehensive logging to track this issue. The debugging focuses on 
    - `[StateManager DEBUG] 📊` - State access logs
    - `[StateManager DEBUG] ⚠️` - Critical state changes
    - `[ReferenceToggle DEBUG] 🔄` - Mode switch logs
-   
 3. Follow these specific logging patterns:
    - `e_10 calculation triggered` - Shows when and why e_10 is recalculated
    - `CRITICAL: e_10 being SET` - Shows when e_10 is changed and by what
@@ -60,11 +59,13 @@ Based on our initial investigation, these are likely areas to fix:
 ## How to Remove Debugging
 
 Once the issue is fixed, the debugging code can be removed or commented out by reverting the recent commit:
+
 ```
 git revert d99d11b
 ```
 
 Or by manually removing the console.log statements from:
+
 - sections/4011-Section01.js
 - 4011-ReferenceToggle.js
-- 4011-StateManager.js 
+- 4011-StateManager.js

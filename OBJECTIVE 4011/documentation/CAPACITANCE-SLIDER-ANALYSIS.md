@@ -37,12 +37,17 @@ The problem occurs because:
 
 ```javascript
 // Track capacitance slider changes specifically
-window.TEUI.StateManager.addListener('i_21', (newValue, oldValue, sourceFieldId) => {
-    console.log(`[S01 CAPACITANCE DEBUG] i_21 changed from ${oldValue} to ${newValue}`);
-    console.log('[S01 CAPACITANCE DEBUG] Current state snapshot:');
+window.TEUI.StateManager.addListener(
+  "i_21",
+  (newValue, oldValue, sourceFieldId) => {
+    console.log(
+      `[S01 CAPACITANCE DEBUG] i_21 changed from ${oldValue} to ${newValue}`,
+    );
+    console.log("[S01 CAPACITANCE DEBUG] Current state snapshot:");
     // ... detailed state logging
     runAllCalculations();
-});
+  },
+);
 ```
 
 ### 2. Diagnostic Detection and Auto-Fix
@@ -50,13 +55,15 @@ window.TEUI.StateManager.addListener('i_21', (newValue, oldValue, sourceFieldId)
 ```javascript
 // Detect incomplete initialization
 if (targetTEUI < 10 && area > 100) {
-    console.log('[S01 Diagnostic] DETECTED LOW TEUI - May indicate incomplete initialization');
-    
-    // Force dependency recalculation
-    if (!hasS15Energy || !hasS04Totals) {
-        // Trigger Section 15 and Section 04 calculations
-        // Re-run Section 01 calculations after dependencies complete
-    }
+  console.log(
+    "[S01 Diagnostic] DETECTED LOW TEUI - May indicate incomplete initialization",
+  );
+
+  // Force dependency recalculation
+  if (!hasS15Energy || !hasS04Totals) {
+    // Trigger Section 15 and Section 04 calculations
+    // Re-run Section 01 calculations after dependencies complete
+  }
 }
 ```
 
@@ -64,12 +71,12 @@ if (targetTEUI < 10 && area > 100) {
 
 ```javascript
 const initializationSequence = [
-    { name: 'Section 03 (Climate)', module: 'sect03', method: 'calculateAll' },
-    { name: 'Section 07 (DHW)', module: 'sect07', method: 'calculateAll' },
-    { name: 'Section 11 (Envelope)', module: 'sect11', method: 'calculateAll' },
-    { name: 'Section 13 (Heating)', module: 'sect13', method: 'calculateAll' },
-    { name: 'Section 15 (Summary)', module: 'sect15', method: 'calculateValues' },
-    { name: 'Section 04 (Energy)', module: 'sect04', method: 'updateSubtotals' }
+  { name: "Section 03 (Climate)", module: "sect03", method: "calculateAll" },
+  { name: "Section 07 (DHW)", module: "sect07", method: "calculateAll" },
+  { name: "Section 11 (Envelope)", module: "sect11", method: "calculateAll" },
+  { name: "Section 13 (Heating)", module: "sect13", method: "calculateAll" },
+  { name: "Section 15 (Summary)", module: "sect15", method: "calculateValues" },
+  { name: "Section 04 (Energy)", module: "sect04", method: "updateSubtotals" },
 ];
 ```
 
@@ -100,4 +107,4 @@ This fix addresses a fundamental initialization timing issue that likely affects
 1. Test the fix with the live calculator
 2. Monitor console logs to verify proper initialization
 3. Consider applying similar diagnostic patterns to other critical calculation sections
-4. Remove debug logging once the fix is confirmed working 
+4. Remove debug logging once the fix is confirmed working

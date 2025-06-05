@@ -35,7 +35,7 @@
   --header-height: 60px;
   --tab-height: 40px;
   --tab-spacer-height: 15px; /* Fixed spacer height */
-  
+
   /* Colors */
   --primary-text: #212529;
   --secondary-text: #5f6368;
@@ -47,23 +47,23 @@
   --user-input-color: #0d6efd;
   --calculated-value-color: #202124;
   --derived-value-color: #202124;
-  --reference-value-color: #8B0000;
+  --reference-value-color: #8b0000;
   --target-value-color: #1a73e8;
   --actual-value-color: #202124;
   --link-color: #0d6efd;
   --tab-active-bg: #495057;
   --tab-active-border: #0d6efd;
-  
+
   /* Sizes and spacings */
   --section-spacing: 12px;
   --cell-padding: 4px 8px;
   --header-cell-padding: 6px 8px;
   --border-radius: 8px;
-  
+
   /* Font sizes */
   --base-font-size: 0.85rem;
   --small-font-size: 0.8em;
-  --smaller-font-size: 0.75em;  /* Adjusted this for header rows */
+  --smaller-font-size: 0.75em; /* Adjusted this for header rows */
   --header-font-size: 1rem;
   --key-values-font-size: 1.3rem;
 }
@@ -71,8 +71,9 @@
 /* =============== Base Element Styling =============== */
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
-               "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   font-size: var(--base-font-size);
   line-height: 1.5;
   color: var(--primary-text);
@@ -158,7 +159,7 @@ body {
   position: sticky;
   top: var(--key-values-height); /* Stick exactly at the bottom of Key Values */
   z-index: 109;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
   margin-top: 0;
   margin-bottom: 0;
@@ -206,7 +207,9 @@ body {
 }
 
 .section-content {
-  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+  transition:
+    max-height 0.3s ease-out,
+    opacity 0.2s ease-out;
   max-height: 2000px;
   opacity: 1;
   overflow: hidden;
@@ -230,7 +233,8 @@ body {
 }
 
 /* Table cells with no wrapping */
-.data-table td, .data-table th {
+.data-table td,
+.data-table th {
   padding: var(--cell-padding);
   text-align: left; /* Default alignment */
   border-bottom: 1px solid #eeeeee;
@@ -257,10 +261,22 @@ body {
 }
 
 /* Force specific text columns (Units, secondary labels) to left-align */
-.data-table td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell),
-.data-table td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell),
-.data-table td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell),
-.data-table td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(.user-input):not(.number-input-cell) {
+.data-table
+  td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell) {
   text-align: left; /* Only apply left-align if the cell doesn't contain a calculated/derived/input value */
 }
 
@@ -293,7 +309,7 @@ body {
 .data-table td.col-g.number-input-cell,
 .data-table td.col-i.number-input-cell,
 .data-table td.col-m.number-input-cell {
-    text-align: right !important; /* Use !important to ensure override */
+  text-align: right !important; /* Use !important to ensure override */
 }
 
 /* Calculated/Derived values styling (keep base style) */
@@ -505,16 +521,18 @@ option,
 .data-table td.dropdown-cell, /* Target the cell itself */
 .data-table td select.form-select {
   /* Font consistency */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   font-family: sans-serif; /* Fallback */
-  
+
   /* Restore forcing removal of border and outline */
   border: none !important; /* Restored rule */
-  outline: none !important; 
+  outline: none !important;
   box-shadow: none;
   /* Keep dropdowns transparent, they don't need hover bg */
-  background-color: transparent; 
-  
+  background-color: transparent;
+
   /* Ensure consistent size and appearance */
   font-size: inherit; /* Inherit from parent cell */
   color: var(--user-input-color); /* Blue color for select */
@@ -522,32 +540,33 @@ option,
 }
 
 /* Restore Bootstrap's default for dropdown-menu and dropdown-item */
-.dropdown-menu, .dropdown-item {
+.dropdown-menu,
+.dropdown-item {
   background-color: #fff !important;
 }
 
 /* Apply to select elements within table cells */
 .data-table select.form-select {
-    width: 100%;
-    min-width: 140px; /* Ensure minimum width for content */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: pointer;
-    border: 1px solid #ced4da !important; /* Restore Bootstrap border */
-    border-radius: 0.25rem !important; /* Bootstrap default radius */
-    padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap default padding */
-    background-color: #fff !important; /* Ensure white background */
-    /* Ensure the select sits properly in the cell */
-    margin: 2px 0; /* Small margin to prevent border touching table lines */
-    height: calc(100% - 4px); /* Account for margins */
+  width: 100%;
+  min-width: 140px; /* Ensure minimum width for content */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ced4da !important; /* Restore Bootstrap border */
+  border-radius: 0.25rem !important; /* Bootstrap default radius */
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap default padding */
+  background-color: #fff !important; /* Ensure white background */
+  /* Ensure the select sits properly in the cell */
+  margin: 2px 0; /* Small margin to prevent border touching table lines */
+  height: calc(100% - 4px); /* Account for margins */
 }
 
 /* Ensure dropdown cells have minimum width */
 [data-dropdown-id],
 .dropdown-cell {
-    min-width: 140px;
-    padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
+  min-width: 140px;
+  padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
 }
 
 /* Handle dropdowns spanning columns */
@@ -574,17 +593,17 @@ td[colspan="2"] .form-select {
   #layout-toggle {
     display: none !important;
   }
-  
+
   .section {
     display: block !important;
     page-break-inside: avoid;
   }
-  
+
   .section-content {
     max-height: none !important;
     opacity: 1 !important;
   }
-  
+
   #keyValues {
     position: static;
   }
@@ -597,44 +616,44 @@ td[colspan="2"] .form-select {
     padding: 8px 10px;
     min-width: 70px;
   }
-  
+
   .tab-text-full {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   /* Adjust column behavior at medium size */
   .data-table {
     width: 100%;
   }
-  
+
   /* Allow description text to wrap only at medium size if absolutely necessary */
   .description-cell,
   .data-table td:nth-child(6),
   .data-table td:nth-child(7) {
     white-space: normal;
   }
-  
+
   /* Prioritize showing description column */
   .data-table col.col-c {
     min-width: 200px;
   }
-  
+
   /* Also prioritize F and G at medium sizes */
   .data-table col.col-f,
   .data-table col.col-g {
     min-width: 100px;
   }
-  
-  .data-table col.col-d, 
+
+  .data-table col.col-d,
   .data-table col.col-e,
-  .data-table col.col-h, 
-  .data-table col.col-i, 
-  .data-table col.col-j, 
-  .data-table col.col-k, 
-  .data-table col.col-l, 
-  .data-table col.col-m { 
+  .data-table col.col-h,
+  .data-table col.col-i,
+  .data-table col.col-j,
+  .data-table col.col-k,
+  .data-table col.col-l,
+  .data-table col.col-m {
     width: 80px; /* Further reduce value columns at medium size */
     min-width: 60px;
   }
@@ -646,37 +665,37 @@ td[colspan="2"] .form-select {
     --base-font-size: 0.8rem;
     --header-font-size: 0.9rem;
   }
-  
+
   .tab {
     min-width: 60px;
     padding: 8px 6px;
   }
-  
+
   .tab-text-full {
     display: none;
   }
-  
+
   .tab-text-short {
     max-width: 60px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .data-table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
   }
-  
+
   /* Ensure ID and description columns stay visible */
   .data-table col.col-b {
     min-width: 60px;
   }
-  
+
   .data-table col.col-c {
     min-width: 160px;
   }
-  
+
   .tab {
     padding: 8px 4px;
     min-width: 60px;
@@ -690,11 +709,11 @@ td[colspan="2"] .form-select {
     padding: 8px 8px;
     justify-content: center;
   }
-  
+
   .tab .tab-text {
     display: none;
   }
-  
+
   .tab i {
     margin-right: 0;
     font-size: 1.1em;
@@ -703,105 +722,113 @@ td[colspan="2"] .form-select {
 
 /* Section Controls and Excel Loader Styles */
 .section-controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
 }
 
 .excel-loader {
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .excel-loader button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .excel-loader button i {
-    font-size: 0.9em;
+  font-size: 0.9em;
 }
 
 #excelStatus {
-    font-size: 0.875rem;
-    font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
-.status-error { color: #dc3545; }
-.status-success { color: #198754; }
-.status-info { color: #0dcaf0; }
-.status-warning { color: #ffc107; }
+.status-error {
+  color: #dc3545;
+}
+.status-success {
+  color: #198754;
+}
+.status-info {
+  color: #0dcaf0;
+}
+.status-warning {
+  color: #ffc107;
+}
 
 /* Weather Data Modal Styles */
 .weather-data-pre {
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: 0.25rem;
-    max-height: 500px;
-    overflow-y: auto;
-    white-space: pre-wrap;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  max-height: 500px;
+  overflow-y: auto;
+  white-space: pre-wrap;
 }
 
 /* Fix for column width constraints */
 .max-width-150 {
-    max-width: 150px !important;
-    width: auto !important;
-    white-space: normal !important;
-    overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
+  max-width: 150px !important;
+  width: auto !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
 }
 
 /* Column spanning for end-of-row text */
 .span3 {
-    grid-column: span 3;
-    width: auto !important;
-    min-width: 200px;
+  grid-column: span 3;
+  width: auto !important;
+  min-width: 200px;
 }
 
 /* Allow text to wrap within span cells */
 .span3.white-space-normal {
-    white-space: normal !important;
+  white-space: normal !important;
 }
 
 /* Text truncation with ellipsis - can be used independently */
 .truncate-text {
-    max-width: 120px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 /* Tooltip functionality - now independent from truncation */
 .tooltip-cell {
-    position: relative;
-    cursor: help;
+  position: relative;
+  cursor: help;
 }
 
 .tooltip-cell:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    left: 0;
-    top: 100%;
-    z-index: 100;
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 5px 8px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    white-space: normal;
-    max-width: 250px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  white-space: normal;
+  max-width: 250px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Ensure calculated values using reference-value class are properly styled */
 [data-field-id^="m_7"] {
-    color: var(--reference-value-color);
-    font-weight: bold;
+  color: var(--reference-value-color);
+  font-weight: bold;
 }
 
 /* Preserve table row borders */
@@ -823,7 +850,7 @@ td[colspan="2"] .form-select {
 }
 
 /* Browser-specific fixes */
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
   /* Safari and Chrome specific fixes */
   [contenteditable="true"],
   .editable,
@@ -852,12 +879,12 @@ td[colspan="2"] .form-select {
   border-top: none;
   border-bottom-left-radius: var(--border-radius);
   border-bottom-right-radius: var(--border-radius);
-  position: sticky; 
+  position: sticky;
   top: var(--key-values-height);
   z-index: 109;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
-  margin-bottom: 0; 
+  margin-bottom: 0;
   height: var(--tab-height);
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
@@ -885,13 +912,13 @@ td[colspan="2"] .form-select {
 }
 
 /* Hide default number input spinners */
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-  -webkit-appearance: none; 
-  margin: 0; 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
 }
 
@@ -908,7 +935,8 @@ input[type=number].form-control {
 .data-table td.editable.editing,
 .data-table td.user-input.editing,
 .data-table td:has([contenteditable="true"].editing),
-.data-table td:has(input[type="number"]:focus) { /* Apply to TD when child input is focused */
+.data-table td:has(input[type="number"]:focus) {
+  /* Apply to TD when child input is focused */
   box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25); /* Smaller blue glow on the TD */
   border-radius: 0.25rem; /* Rounded corners */
   outline: none; /* Remove default dotted outline */
@@ -921,8 +949,13 @@ input[type=number].form-control {
 .data-table td.user-input:hover,
 .data-table td:has(input[type="number"]:hover),
 .data-table td:has([contenteditable="true"]:hover) {
-    background-color: rgba(66, 133, 244, 0.08) !important; /* Re-added !important */
-    cursor: pointer; /* Indicate interactivity */
+  background-color: rgba(
+    66,
+    133,
+    244,
+    0.08
+  ) !important; /* Re-added !important */
+  cursor: pointer; /* Indicate interactivity */
 }
 /* --- End Hover Style --- */
 
@@ -939,82 +972,84 @@ input[type=number].form-control {
 
 /* Force blue color on focused number inputs */
 .data-table td input[type="number"].user-input:focus {
-    color: var(--user-input-color) !important; /* Force color on focus */
-    /* Keep other focus styles minimal or handled by TD focus */
-    outline: none !important; 
-    box-shadow: none !important;
-    border: none !important;
-    background-color: transparent !important;
+  color: var(--user-input-color) !important; /* Force color on focus */
+  /* Keep other focus styles minimal or handled by TD focus */
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background-color: transparent !important;
 }
 
 /* Remove all the recent numeric input styling we added */
 .data-table td input[type="number"].form-control,
 .data-table td input[type="number"].user-input {
-    width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: text;
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
-    padding: 0.375rem 0.75rem !important;
-    /* Remove spinners */
-    -webkit-appearance: none !important;
-    -moz-appearance: textfield !important;
-    appearance: none !important;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  padding: 0.375rem 0.75rem !important;
+  /* Remove spinners */
+  -webkit-appearance: none !important;
+  -moz-appearance: textfield !important;
+  appearance: none !important;
 }
 
 /* Remove spinner buttons in Webkit browsers */
 .data-table td input[type="number"]::-webkit-outer-spin-button,
 .data-table td input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none !important;
-    margin: 0 !important;
+  -webkit-appearance: none !important;
+  margin: 0 !important;
 }
 
 /* Ensure the cell itself doesn't interfere */
 .data-table td.number-input-cell {
-    padding: 2px 8px !important;
-    background: transparent !important;
-    border: none !important;
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 /* Keep the blue color for user input */
 .data-table td input[type="number"].user-input {
-    color: var(--user-input-color) !important;
-    font-weight: 500 !important;
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
 }
 
 /* Ensure text alignment is preserved */
 .data-table td input[type="number"].form-control,
 .data-table td input[type="number"].user-input {
-    text-align: right !important; /* Most numeric cells are right-aligned */
+  text-align: right !important; /* Most numeric cells are right-aligned */
 }
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
 .data-table tr td.section-subheader,
 .data-table tr:has(td.section-subheader) td {
-    background-color: #eaeaea; /* Light grey background - removed !important */
-    color: #333; /* Darker text - removed !important */
-    font-size: var(--smaller-font-size); /* Use smaller font - removed !important */
-    font-weight: 600; /* Bold - removed !important */
-    padding: 3px 6px; /* Tighter padding - removed !important */
-    border-bottom: 1px solid #d0d0d0; /* Separator line - removed !important */
-    text-align: center; /* Center align by default */
-    white-space: pre-line; /* Allow wrapping on explicit newlines */
+  background-color: #eaeaea; /* Light grey background - removed !important */
+  color: #333; /* Darker text - removed !important */
+  font-size: var(
+    --smaller-font-size
+  ); /* Use smaller font - removed !important */
+  font-weight: 600; /* Bold - removed !important */
+  padding: 3px 6px; /* Tighter padding - removed !important */
+  border-bottom: 1px solid #d0d0d0; /* Separator line - removed !important */
+  text-align: center; /* Center align by default */
+  white-space: pre-line; /* Allow wrapping on explicit newlines */
 }
 
 /* Ensure empty cells in section-subheader rows maintain styling */
 .data-table tr:has(td.section-subheader) td:empty {
-    background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
+  background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
 }
 
 /* Styling for first-column subheader labels (typically in columns A-C) - Left align */
 .data-table tr:has(td.section-subheader) td:nth-child(1),
 .data-table tr:has(td.section-subheader) td:nth-child(2),
 .data-table tr:has(td.section-subheader) td:nth-child(3) {
-    text-align: left !important; /* Keep important here as it overrides the general center align */
+  text-align: left !important; /* Keep important here as it overrides the general center align */
 }
 
 /* --- Section 02 Specific Overrides --- */
@@ -1024,7 +1059,7 @@ input[type=number].form-control {
 #buildingInfo td[data-field-id="h_14"],
 #buildingInfo td[data-field-id="i_16"],
 #buildingInfo td[data-field-id="i_17"] {
-    text-align: left !important; /* !important needed to override global !important rule */
+  text-align: left !important; /* !important needed to override global !important rule */
 }
 
 /* --- End Section 02 Overrides --- */
@@ -1033,67 +1068,67 @@ input[type=number].form-control {
 .data-table td select.form-select,
 .data-table td select.form-control,
 table.data-table select.form-select {
-    width: 100%;
-    min-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: pointer;
-    border: 1px solid #ced4da !important;
-    border-radius: 0.25rem !important;
-    padding: 0.375rem 2.25rem 0.375rem 0.75rem !important;
-    background-color: #fff !important;
-    margin: 2px 0;
-    height: calc(100% - 4px);
-    /* Remove native appearance */
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    /* Add Bootstrap-style background arrow */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 0.75rem center !important;
-    background-size: 16px 12px !important;
+  width: 100%;
+  min-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.25rem !important;
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important;
+  background-color: #fff !important;
+  margin: 2px 0;
+  height: calc(100% - 4px);
+  /* Remove native appearance */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  /* Add Bootstrap-style background arrow */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
 }
 
 /* Add hover effect */
 .data-table td select.form-select:hover,
 .data-table td select.form-control:hover,
 table.data-table select.form-select:hover {
-    border-color: #86b7fe !important;
+  border-color: #86b7fe !important;
 }
 
 /* Ensure the cell itself doesn't interfere */
 .data-table td.dropdown-cell {
-    padding: 2px 8px !important;
-    background: transparent !important;
-    border: none !important;
+  padding: 2px 8px !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 /* --- Utility Classes --- */
 .text-left {
-    text-align: left !important; /* Added important to override column defaults */
+  text-align: left !important; /* Added important to override column defaults */
 }
 
 .text-center {
-    text-align: center !important;
+  text-align: center !important;
 }
 
 .text-right {
-    text-align: right !important;
+  text-align: right !important;
 }
 
 /* Style for disabled/non-applicable input fields */
 .disabled-input {
-    color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
-    font-style: italic !important;
-    cursor: default !important;
-    background-color: transparent !important; /* Ensure no background interferes */
+  color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
+  font-style: italic !important;
+  cursor: default !important;
+  background-color: transparent !important; /* Ensure no background interferes */
 }
 /* --- End Utility Classes --- */
 
 .text-left-indicator {
-    text-align: left !important; /* Force left alignment for specific indicator columns */
+  text-align: left !important; /* Force left alignment for specific indicator columns */
 }
 
 /* --- Section 11 Visual Indicators --- */
@@ -1101,63 +1136,63 @@ table.data-table select.form-select:hover {
 /* Base style for indicator cells */
 .loss-indicator,
 .gain-indicator {
-    position: relative;
+  position: relative;
 }
 
 /* Dot styles using pseudo-elements */
 .loss-indicator::before,
 .gain-indicator::before {
-    content: '';
-    position: absolute;
-    left: 6px; /* Nudge dot slightly right */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 10px; /* Increased dot size */
-    height: 10px; /* Increased dot size */
-    border-radius: 50%;
-    display: inline-block;
+  content: "";
+  position: absolute;
+  left: 6px; /* Nudge dot slightly right */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px; /* Increased dot size */
+  height: 10px; /* Increased dot size */
+  border-radius: 50%;
+  display: inline-block;
 }
 
 /* Apply padding only when text is left aligned AND indicator is present */
 .text-left-indicator.loss-indicator,
 .text-left-indicator.gain-indicator {
-    padding-left: 20px; /* Space for dot + small gap */
+  padding-left: 20px; /* Space for dot + small gap */
 }
 
 /* Heat Loss Indicator Colors (Loss High = Red)*/
 .loss-high::before {
-    background-color: #dc3545; /* Red */
+  background-color: #dc3545; /* Red */
 }
 .loss-medium::before {
-    background-color: #ffc107; /* Yellow */
+  background-color: #ffc107; /* Yellow */
 }
 .loss-low::before {
-    background-color: #28a745; /* Green */
+  background-color: #28a745; /* Green */
 }
 
 /* Heat Gain Indicator Colors (Gain High = Green) */
-.gain-high::before { 
-    background-color: #28a745; /* Green */ 
+.gain-high::before {
+  background-color: #28a745; /* Green */
 }
-.gain-medium::before { 
-    background-color: #ffc107; /* Yellow */ 
+.gain-medium::before {
+  background-color: #ffc107; /* Yellow */
 }
-.gain-low::before { 
-    background-color: #dc3545; /* Red */ 
+.gain-low::before {
+  background-color: #dc3545; /* Red */
 }
 
 /* Text Color for Air vs Ground Facing % (Column H) */
 .text-air-facing {
-    color: #B0E0E6; /* Powder Blue */
+  color: #b0e0e6; /* Powder Blue */
 }
 
 .text-ground-facing {
-    color: #8B4513; /* Brown (SaddleBrown) */
+  color: #8b4513; /* Brown (SaddleBrown) */
 }
 
 /* Style for bolding text in total rows */
 .total-row-text {
-    font-weight: 600; /* Semi-bold */
+  font-weight: 600; /* Semi-bold */
 }
 
 /* ======================================
@@ -1166,177 +1201,188 @@ table.data-table select.form-select:hover {
 
 .dependency-graph-controls-wrapper,
 .dependency-graph-info-wrapper {
-    /* Wrappers for placement above the SVG */
-    padding-left: 1rem; /* Align with section content padding */
-    padding-right: 1rem;
-    background-color: #f8f9fa; /* Add light background for fullscreen contrast */
-    border-radius: 0.25rem; /* Optional rounding */
+  /* Wrappers for placement above the SVG */
+  padding-left: 1rem; /* Align with section content padding */
+  padding-right: 1rem;
+  background-color: #f8f9fa; /* Add light background for fullscreen contrast */
+  border-radius: 0.25rem; /* Optional rounding */
 }
 
 .dependency-graph-controls {
-    /* Styles for the filter/button container */
-    background-color: #f8f9fa; /* Light background */
-    padding: 10px;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    margin-bottom: 1rem;
+  /* Styles for the filter/button container */
+  background-color: #f8f9fa; /* Light background */
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
 }
 
 .dependency-graph-controls .form-control-sm,
 .dependency-graph-controls .form-select-sm,
 .dependency-graph-controls .btn-sm {
-    font-size: 0.875rem; /* Match Bootstrap small size */
+  font-size: 0.875rem; /* Match Bootstrap small size */
 }
 
 .layout-button.active {
-    background-color: #0d6efd; /* Bootstrap primary blue */
-    color: white;
-    border-color: #0d6efd;
+  background-color: #0d6efd; /* Bootstrap primary blue */
+  color: white;
+  border-color: #0d6efd;
 }
 
 .dependency-info-panel {
-    font-size: 0.9rem;
-    max-height: 200px; /* Increased height for more visible content */
-    overflow-y: auto; /* Allow scrolling if content overflows */
-    padding: 12px; /* More internal spacing */
-    margin-bottom: 15px; /* More space below panel */
-    border-left: 3px solid #0d6efd; /* Add accent border */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.9rem;
+  max-height: 200px; /* Increased height for more visible content */
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  padding: 12px; /* More internal spacing */
+  margin-bottom: 15px; /* More space below panel */
+  border-left: 3px solid #0d6efd; /* Add accent border */
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .dependency-info-panel .info-title {
-    color: #0d6efd; /* Blue title for emphasis */
-    margin-bottom: 10px; /* More space after title */
+  color: #0d6efd; /* Blue title for emphasis */
+  margin-bottom: 10px; /* More space after title */
 }
 
 .dependency-info-panel strong {
-    font-weight: 600; /* Slightly heavier weight for better visibility */
+  font-weight: 600; /* Slightly heavier weight for better visibility */
 }
 
 .dependency-graph-svg-wrapper {
-    /* Container for the SVG element */
-    overflow: hidden; /* Hide scrollbars caused by D3 layout */
-    /* Keep initial border */
-    border: 1px solid #dee2e6;
-    border-radius: 6px; /* Rounded corners */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Subtle shadow */
-    background-color: #ffffff; /* Ensure white background */
-    position: relative; /* For tooltip positioning */
+  /* Container for the SVG element */
+  overflow: hidden; /* Hide scrollbars caused by D3 layout */
+  /* Keep initial border */
+  border: 1px solid #dee2e6;
+  border-radius: 6px; /* Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  background-color: #ffffff; /* Ensure white background */
+  position: relative; /* For tooltip positioning */
 }
 
 .dependency-graph-svg-wrapper svg {
-    display: block; /* Remove extra space below SVG */
-    width: 100%;   /* Make SVG fill wrapper width */
-    height: 100%;  /* Make SVG fill wrapper height */
+  display: block; /* Remove extra space below SVG */
+  width: 100%; /* Make SVG fill wrapper width */
+  height: 100%; /* Make SVG fill wrapper height */
 }
 
 /* Graph element styles */
 .link {
-    stroke: #999;
-    stroke-opacity: 0.6;
-    stroke-width: 1.5px;
-    transition: stroke 0.3s, stroke-opacity 0.3s, stroke-width 0.3s;
+  stroke: #999;
+  stroke-opacity: 0.6;
+  stroke-width: 1.5px;
+  transition:
+    stroke 0.3s,
+    stroke-opacity 0.3s,
+    stroke-width 0.3s;
 }
 
 .node circle {
-    stroke: #fff;
-    stroke-width: 2px;
-    transition: r 0.3s, stroke-width 0.3s, filter 0.3s;
-    filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));
+  stroke: #fff;
+  stroke-width: 2px;
+  transition:
+    r 0.3s,
+    stroke-width 0.3s,
+    filter 0.3s;
+  filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
 }
 
 .node-background {
-    fill: white;
-    opacity: 0;
-    transition: opacity 0.3s;
+  fill: white;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .node text {
-    font-size: 12px;
-    font-weight: 500;
-    fill: #333;
-    pointer-events: none; /* Ensure circle is clickable */
-    text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white;
-    transition: font-size 0.3s;
+  font-size: 12px;
+  font-weight: 500;
+  fill: #333;
+  pointer-events: none; /* Ensure circle is clickable */
+  text-shadow:
+    0 0 3px white,
+    0 0 3px white,
+    0 0 3px white,
+    0 0 3px white;
+  transition: font-size 0.3s;
 }
 
 /* Custom tooltip style */
 .node title {
-    font-size: 14px;
-    font-weight: bold;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 /* Styles for highlighted nodes/links */
 .node.highlight circle {
-    stroke: #333;
-    stroke-width: 3px;
-    filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.3));
+  stroke: #333;
+  stroke-width: 3px;
+  filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.3));
 }
 
 .link.highlight-source {
-    stroke: #cc0000; /* Red for outgoing */
-    stroke-opacity: 0.9;
-    stroke-width: 2px;
+  stroke: #cc0000; /* Red for outgoing */
+  stroke-opacity: 0.9;
+  stroke-width: 2px;
 }
 
 .link.highlight-target {
-    stroke: #0077cc; /* Blue for incoming */
-    stroke-opacity: 0.9;
-    stroke-width: 2px;
+  stroke: #0077cc; /* Blue for incoming */
+  stroke-opacity: 0.9;
+  stroke-width: 2px;
 }
 
 /* Style wrapper AND SVG in fullscreen */
 .dependency-graph-svg-wrapper:fullscreen {
-    background-color: white; /* White background in fullscreen */
-    width: 100%; /* Fill available width */
-    height: 100%; /* Fill available height */
-    border: none; /* Ensure no border */
-    padding: 20px; /* Add padding in fullscreen mode */
+  background-color: white; /* White background in fullscreen */
+  width: 100%; /* Fill available width */
+  height: 100%; /* Fill available height */
+  border: none; /* Ensure no border */
+  padding: 20px; /* Add padding in fullscreen mode */
 }
 
 .dependency-graph-svg-wrapper:fullscreen svg {
-    /* Ensure SVG also fills with padding */
-    width: calc(100% - 40px); 
-    height: calc(100% - 40px);
+  /* Ensure SVG also fills with padding */
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 .dependency-graph-svg-wrapper:-webkit-full-screen {
-    background-color: white;
-    width: 100%;
-    height: 100%;
-    border: none;
-    padding: 20px;
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 20px;
 }
 
 .dependency-graph-svg-wrapper:-webkit-full-screen svg {
-    width: calc(100% - 40px);
-    height: calc(100% - 40px);
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 .dependency-graph-svg-wrapper:-moz-full-screen {
-    background-color: white;
-    width: 100%;
-    height: 100%;
-    border: none;
-    padding: 20px;
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 20px;
 }
 
 .dependency-graph-svg-wrapper:-moz-full-screen svg {
-    width: calc(100% - 40px);
-    height: calc(100% - 40px);
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 .dependency-graph-svg-wrapper:-ms-fullscreen {
-    background-color: white;
-    width: 100%;
-    height: 100%;
-    border: none;
-    padding: 20px;
+  background-color: white;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 20px;
 }
 
 .dependency-graph-svg-wrapper:-ms-fullscreen svg {
-    width: calc(100% - 40px);
-    height: calc(100% - 40px);
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 /* Enhancement for text in fullscreen */
@@ -1344,18 +1390,26 @@ table.data-table select.form-select:hover {
 .dependency-graph-svg-wrapper:-webkit-full-screen .node text,
 .dependency-graph-svg-wrapper:-moz-full-screen .node text,
 .dependency-graph-svg-wrapper:-ms-fullscreen .node text {
-    font-size: 14px; /* Larger text in fullscreen */
-    font-weight: 600; /* Bolder text in fullscreen */
-    fill: #000; /* Black text for better contrast */
+  font-size: 14px; /* Larger text in fullscreen */
+  font-weight: 600; /* Bolder text in fullscreen */
+  fill: #000; /* Black text for better contrast */
 }
 
 /* Make nodes more visible in fullscreen */
 .dependency-graph-svg-wrapper:fullscreen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-webkit-full-screen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-moz-full-screen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-ms-fullscreen .node circle:not(.node-background) {
-    filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.3)); /* Stronger shadow in fullscreen */
-    stroke-width: 2.5px; /* Thicker border in fullscreen */
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle:not(.node-background) {
+  filter: drop-shadow(
+    0px 3px 5px rgba(0, 0, 0, 0.3)
+  ); /* Stronger shadow in fullscreen */
+  stroke-width: 2.5px; /* Thicker border in fullscreen */
 }
 
 /* Make links more visible in fullscreen */
@@ -1363,8 +1417,8 @@ table.data-table select.form-select:hover {
 .dependency-graph-svg-wrapper:-webkit-full-screen .link,
 .dependency-graph-svg-wrapper:-moz-full-screen .link,
 .dependency-graph-svg-wrapper:-ms-fullscreen .link {
-    stroke-width: 2px; /* Thicker links in fullscreen */
-    stroke-opacity: 0.7; /* More opaque links in fullscreen */
+  stroke-width: 2px; /* Thicker links in fullscreen */
+  stroke-opacity: 0.7; /* More opaque links in fullscreen */
 }
 
 /* ==========================================================================
@@ -1372,225 +1426,259 @@ table.data-table select.form-select:hover {
    ========================================================================== */
 
 .reference-model-toggle {
-    /* Rely on Bootstrap classes (e.g., btn-danger, btn-primary) for background/border */
-    color: white !important; /* Ensure white text (overrides Bootstrap potentially) */
-    margin-right: 0.5rem; /* Space before disclaimer button */
+  /* Rely on Bootstrap classes (e.g., btn-danger, btn-primary) for background/border */
+  color: white !important; /* Ensure white text (overrides Bootstrap potentially) */
+  margin-right: 0.5rem; /* Space before disclaimer button */
 }
 
 /* Reference Mode Body Class Styles */
 body.reference-mode .section {
-    border-color: var(--reference-value-color) !important; /* Use #8B0000 */
+  border-color: var(--reference-value-color) !important; /* Use #8B0000 */
 }
 
 body.reference-mode .section-header {
-    background-color: var(--reference-value-color) !important; /* Use #8B0000 */
-    color: white !important;
-    border: 1px solid var(--reference-value-color); /* Match border to bg */
+  background-color: var(--reference-value-color) !important; /* Use #8B0000 */
+  color: white !important;
+  border: 1px solid var(--reference-value-color); /* Match border to bg */
 }
 
 /* Style section subheaders (unit rows) in reference mode */
 body.reference-mode .data-table tr td.section-subheader,
 body.reference-mode .data-table tr:has(td.section-subheader) td {
-    background-color: rgba(139, 0, 0, 0.5) !important; /* 50% opacity of #8B0000 */
-    color: #ffffff !important; /* White text for contrast */
-    border-bottom-color: rgba(139, 0, 0, 0.7) !important; /* Darker, semi-transparent border */
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.5
+  ) !important; /* 50% opacity of #8B0000 */
+  color: #ffffff !important; /* White text for contrast */
+  border-bottom-color: rgba(
+    139,
+    0,
+    0,
+    0.7
+  ) !important; /* Darker, semi-transparent border */
 }
 body.reference-mode .data-table tr:has(td.section-subheader) td:empty {
-    background-color: rgba(139, 0, 0, 0.5) !important; /* Ensure empty cells match */
+  background-color: rgba(
+    139,
+    0,
+    0,
+    0.5
+  ) !important; /* Ensure empty cells match */
 }
 
 /* Example: Style locked fields in reference mode */
 /* Use the class added by JS for styling */
 body.reference-mode .reference-locked {
-    color: var(--reference-value-color) !important; /* Red text #8B0000 */
-    font-weight: bold !important; 
-    font-style: italic !important; 
-    background-color: transparent !important; 
-    cursor: default !important; 
-    pointer-events: none !important; 
-    /* Visually disable contenteditable */
-    -webkit-user-modify: read-only !important;
-    -moz-user-modify: read-only !important;
-    user-modify: read-only !important;
+  color: var(--reference-value-color) !important; /* Red text #8B0000 */
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: transparent !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  /* Visually disable contenteditable */
+  -webkit-user-modify: read-only !important;
+  -moz-user-modify: read-only !important;
+  user-modify: read-only !important;
 }
 
 /* Style locked dropdowns in reference mode */
 body.reference-mode .reference-locked select.form-select,
 body.reference-mode .reference-locked .form-select,
 body.reference-mode select.form-select.reference-locked {
-    color: var(--reference-value-color) !important; /* Red text #8B0000 */
-    font-weight: bold !important; 
-    font-style: italic !important; 
-    background-color: transparent !important; 
-    border: none !important;
-    cursor: default !important; 
-    pointer-events: none !important;
-    /* Remove dropdown arrow for locked dropdowns */
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    background-image: none !important;
+  color: var(--reference-value-color) !important; /* Red text #8B0000 */
+  font-weight: bold !important;
+  font-style: italic !important;
+  background-color: transparent !important;
+  border: none !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  /* Remove dropdown arrow for locked dropdowns */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
 }
 
 /* Ensure user-input fields retain their blue color ONLY IF NOT locked */
-body.reference-mode .user-input:not(.reference-locked) { 
-    color: var(--user-input-color) !important; 
-    font-weight: 500 !important; 
-    font-style: normal !important; 
-    cursor: text !important; 
-    pointer-events: auto !important; 
-    -webkit-user-modify: read-write !important;
-    -moz-user-modify: read-write !important;
-    user-modify: read-write !important;
+body.reference-mode .user-input:not(.reference-locked) {
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+  font-style: normal !important;
+  cursor: text !important;
+  pointer-events: auto !important;
+  -webkit-user-modify: read-write !important;
+  -moz-user-modify: read-write !important;
+  user-modify: read-write !important;
 }
 
 /* Ensure editable dropdowns in reference mode retain normal styling */
 body.reference-mode select.form-select:not(.reference-locked),
 body.reference-mode .form-select:not(.reference-locked) {
-    color: var(--user-input-color) !important; /* Blue text for editable dropdowns */
-    font-weight: 500 !important; 
-    font-style: normal !important; 
-    cursor: pointer !important; 
-    pointer-events: auto !important;
-    background-color: #fff !important;
-    border: 1px solid #ced4da !important;
-    /* Restore dropdown arrow for editable dropdowns */
-    -webkit-appearance: auto !important;
-    -moz-appearance: auto !important;
-    appearance: auto !important;
+  color: var(
+    --user-input-color
+  ) !important; /* Blue text for editable dropdowns */
+  font-weight: 500 !important;
+  font-style: normal !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+  /* Restore dropdown arrow for editable dropdowns */
+  -webkit-appearance: auto !important;
+  -moz-appearance: auto !important;
+  appearance: auto !important;
 }
 
 /* Style tab container in reference mode */
 body.reference-mode .tab-container {
-    background-color: var(--reference-value-color) !important;
-    border-color: var(--reference-value-color) !important;
+  background-color: var(--reference-value-color) !important;
+  border-color: var(--reference-value-color) !important;
 }
 
 /* Style tabs in reference mode */
 body.reference-mode .tab {
-    border-right-color: rgba(255, 255, 255, 0.3); /* Lighter border between tabs */
+  border-right-color: rgba(
+    255,
+    255,
+    255,
+    0.3
+  ); /* Lighter border between tabs */
 }
 
 /* Style tab hover in reference mode */
 body.reference-mode .tab:hover {
-    background-color: rgba(255, 255, 255, 0.15); /* Slightly lighter transparent white */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ); /* Slightly lighter transparent white */
 }
 
 /* Style active tab in reference mode */
 body.reference-mode .tab.active {
-    background-color: rgba(255, 255, 255, 0.15) !important; /* Match hover background */
-    border-bottom: 4px solid var(--tab-active-border) !important; /* Explicitly set 4px blue border */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ) !important; /* Match hover background */
+  border-bottom: 4px solid var(--tab-active-border) !important; /* Explicitly set 4px blue border */
 }
 
 /* Style Key Values table borders in reference mode */
 body.reference-mode #keyValues .key-values-table {
-    border-color: var(--reference-value-color) !important;
+  border-color: var(--reference-value-color) !important;
 }
 body.reference-mode #keyValues .key-values-table tr {
-    border-bottom-color: var(--reference-value-color) !important;
+  border-bottom-color: var(--reference-value-color) !important;
 }
 
 /* Dependency Graph Floating Controls in Fullscreen Mode */
 .dependency-graph-floating-controls,
 .dependency-graph-floating-info {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.98);
-    padding: 14px;
-    border-radius: 10px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-    z-index: 9999;
-    transition: all 0.3s ease;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(0,0,0,0.1);
+  position: absolute;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 14px;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transition: all 0.3s ease;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .dependency-graph-floating-controls {
-    top: 20px;
-    right: 20px;
-    max-width: 600px;
+  top: 20px;
+  right: 20px;
+  max-width: 600px;
 }
 
 .dependency-graph-floating-controls .dependency-graph-controls {
-    margin-bottom: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 .dependency-graph-floating-controls input,
 .dependency-graph-floating-controls select {
-    border: 1px solid #dee2e6 !important;
-    background-color: #fff !important;
-    padding: 6px 12px !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #fff !important;
+  padding: 6px 12px !important;
 }
 
 .dependency-graph-floating-info {
-    top: 20px;
-    left: 20px;
-    max-width: 350px;
-    max-height: 400px; /* Increased height for more content */
-    overflow-y: auto;
-    z-index: 10000; /* Ensure it's above everything else */
+  top: 20px;
+  left: 20px;
+  max-width: 350px;
+  max-height: 400px; /* Increased height for more content */
+  overflow-y: auto;
+  z-index: 10000; /* Ensure it's above everything else */
 }
 
 .dependency-graph-floating-info .dependency-info-panel {
-    margin-bottom: 0;
-    border-left: 3px solid #0d6efd;
-    padding-left: 12px;
+  margin-bottom: 0;
+  border-left: 3px solid #0d6efd;
+  padding-left: 12px;
 }
 
 .dependency-graph-floating-info .info-title {
-    color: #0d6efd;
-    font-size: 16px;
-    margin-bottom: 10px;
-    font-weight: 600;
+  color: #0d6efd;
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .dependency-graph-floating-info .info-value,
 .dependency-graph-floating-info .info-dependencies,
 .dependency-graph-floating-info .info-dependents {
-    margin-bottom: 12px;
-    line-height: 1.5;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 .dependency-graph-floating-info .info-note {
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-    margin-top: 10px;
-    font-size: 13px;
-    color: #666;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
 }
 
 /* Color legend styling */
 .dependency-graph-legend {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 12px;
-    border-radius: 8px;
-    /* Removed box-shadow for frameless appearance */
-    max-width: 300px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 12px;
-    z-index: 100;
-    transition: opacity 0.2s ease-in-out;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px;
+  border-radius: 8px;
+  /* Removed box-shadow for frameless appearance */
+  max-width: 300px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  z-index: 100;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .dependency-graph-legend > div:first-child {
-    font-weight: bold;
-    margin-bottom: 10px;
-    /* Removed border-bottom for frameless appearance */
-    padding-bottom: 5px;
-    font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  /* Removed border-bottom for frameless appearance */
+  padding-bottom: 5px;
+  font-size: 14px;
 }
 
 /* Make the legend items grid nicer */
 .dependency-graph-legend > div:last-child {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
 }
 
 /* Fullscreen specific enhancements for the legend */
@@ -1598,24 +1686,35 @@ body.reference-mode #keyValues .key-values-table tr {
 .dependency-graph-svg-wrapper:-webkit-full-screen .dependency-graph-legend,
 .dependency-graph-svg-wrapper:-moz-full-screen .dependency-graph-legend,
 .dependency-graph-svg-wrapper:-ms-fullscreen .dependency-graph-legend {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 15px;
-    font-size: 14px;
-    /* Removed box-shadow for frameless appearance */
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px;
+  font-size: 14px;
+  /* Removed box-shadow for frameless appearance */
 }
 
-.dependency-graph-svg-wrapper:fullscreen .dependency-graph-legend > div:first-child,
-.dependency-graph-svg-wrapper:-webkit-full-screen .dependency-graph-legend > div:first-child,
-.dependency-graph-svg-wrapper:-moz-full-screen .dependency-graph-legend > div:first-child,
-.dependency-graph-svg-wrapper:-ms-fullscreen .dependency-graph-legend > div:first-child {
-    font-size: 16px;
+.dependency-graph-svg-wrapper:fullscreen
+  .dependency-graph-legend
+  > div:first-child,
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .dependency-graph-legend
+  > div:first-child,
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .dependency-graph-legend
+  > div:first-child,
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .dependency-graph-legend
+  > div:first-child {
+  font-size: 16px;
 }
 
 /* Node styling enhancements */
 .node circle {
-    stroke: #fff;
-    stroke-width: 2px;
-    transition: r 0.3s, stroke-width 0.3s, filter 0.3s;
+  stroke: #fff;
+  stroke-width: 2px;
+  transition:
+    r 0.3s,
+    stroke-width 0.3s,
+    filter 0.3s;
 }
 
 /* Make the links more visible in fullscreen */
@@ -1623,25 +1722,43 @@ body.reference-mode #keyValues .key-values-table tr {
 .dependency-graph-svg-wrapper:-webkit-full-screen .link,
 .dependency-graph-svg-wrapper:-moz-full-screen .link,
 .dependency-graph-svg-wrapper:-ms-fullscreen .link {
-    stroke-width: 2px; /* Thicker links in fullscreen */
-    stroke-opacity: 0.7; /* More opaque links in fullscreen */
+  stroke-width: 2px; /* Thicker links in fullscreen */
+  stroke-opacity: 0.7; /* More opaque links in fullscreen */
 }
 
 /* Improve visibility of influential nodes in fullscreen */
 .dependency-graph-svg-wrapper:fullscreen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-webkit-full-screen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-moz-full-screen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-ms-fullscreen .node circle:not(.node-background) {
-    filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.3)); /* Stronger shadow in fullscreen */
-    stroke-width: 2.5px; /* Thicker border in fullscreen */
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle:not(.node-background) {
+  filter: drop-shadow(
+    0px 3px 5px rgba(0, 0, 0, 0.3)
+  ); /* Stronger shadow in fullscreen */
+  stroke-width: 2.5px; /* Thicker border in fullscreen */
 }
 
 /* Special styling for influential nodes (stronger glow in fullscreen) */
-.dependency-graph-svg-wrapper:fullscreen .node circle[style*="drop-shadow(0px 0px"], 
-.dependency-graph-svg-wrapper:-webkit-full-screen .node circle[style*="drop-shadow(0px 0px"],
-.dependency-graph-svg-wrapper:-moz-full-screen .node circle[style*="drop-shadow(0px 0px"],
-.dependency-graph-svg-wrapper:-ms-fullscreen .node circle[style*="drop-shadow(0px 0px"] {
-    filter: drop-shadow(0px 0px 20px rgba(255,82,82,1.0)) !important; /* Even stronger glow in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen
+  .node
+  circle[style*="drop-shadow(0px 0px"],
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle[style*="drop-shadow(0px 0px"],
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle[style*="drop-shadow(0px 0px"],
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle[style*="drop-shadow(0px 0px"] {
+  filter: drop-shadow(
+    0px 0px 20px rgba(255, 82, 82, 1)
+  ) !important; /* Even stronger glow in fullscreen */
 }
 
 /* ======================================
@@ -1751,7 +1868,7 @@ body.reference-mode #keyValues .key-values-table tr {
 #selectExcelBtn,
 #debugExcelBtn,
 #showWeatherDataBtn {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 /* Optional: If all buttons in that controls-container need it */

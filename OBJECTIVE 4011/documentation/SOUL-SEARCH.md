@@ -8,7 +8,7 @@ The TEUI Calculator has evolved through multiple architectural approaches, each 
 
 1. **Original Simple Model**: The app began with a straightforward approach, directly calculating values based on user inputs.
 
-2. **Reference Model Addition**: The requirement to support both Reference and Target models introduced state management complexity. 
+2. **Reference Model Addition**: The requirement to support both Reference and Target models introduced state management complexity.
 
 3. **Traffic Cop Pattern**: To prevent infinite recalculation loops, we added explicit orchestration with state flags.
 
@@ -25,12 +25,14 @@ The result is a system with multiple overlapping calculation patterns, inconsist
 ## The Core Problems
 
 1. **Calculation Orchestration Inconsistency**: We have multiple ways to trigger calculations:
+
    - Legacy `calculateAll()` functions
    - Traffic Cop pattern
    - IT-DEPENDS dependency-ordered calculation
    - Direct cross-section listeners
 
 2. **State Management Fragmentation**:
+
    - StateManager's `fields` Map for Application state
    - `activeReferenceDataSet` object for Reference state
    - `ref_` prefixed fields in StateManager
@@ -38,6 +40,7 @@ The result is a system with multiple overlapping calculation patterns, inconsist
    - Independent Reference state values
 
 3. **Recursion Protection Ineffectiveness**:
+
    - Multiple protection flags that don't coordinate
    - Cross-section dependencies bypass protection
 
@@ -60,12 +63,14 @@ TEUI-Calculator/
 ```
 
 **Benefits**:
+
 - Complete isolation between Reference and Target calculations
 - No need for complex state management between modes
 - Each model can use the simplest calculation approaches
 - Straightforward to maintain parity with Excel
 
 **Drawbacks**:
+
 - Duplicated code (though with proper abstractions, this can be minimized)
 - Need to implement UI switching between modes
 
@@ -74,11 +79,13 @@ TEUI-Calculator/
 If a complete rewrite isn't feasible, refocus on state management as the foundation:
 
 1. **Create a proper Redux-like store with immutable state**:
+
    - Reference state and Application state as separate slices
    - Pure reducer functions for all calculations
    - Explicit actions to trigger calculations
 
 2. **Replace event-based calculations with reactive state subscriptions**:
+
    - Sections subscribe to state changes they care about
    - Calculations are pure functions of state
 
@@ -87,11 +94,13 @@ If a complete rewrite isn't feasible, refocus on state management as the foundat
    - Use a single calculation dispatch mechanism
 
 **Benefits**:
+
 - Clear data flow and predictable state updates
 - Easier debugging (state transitions are explicit)
 - More maintainable in the long term
 
 **Drawbacks**:
+
 - Significant refactoring required
 - Learning curve for team members
 
@@ -100,14 +109,17 @@ If a complete rewrite isn't feasible, refocus on state management as the foundat
 If time constraints are significant, focus on targeted improvements:
 
 1. **Standardize on a single calculation pattern**:
+
    - Complete the IT-DEPENDS migration as the only calculation system
    - Deprecate and remove legacy patterns
 
 2. **Consolidate state storage**:
+
    - Use a consistent pattern for Reference state (pick one approach)
    - Document and enforce this pattern across the codebase
 
 3. **Strengthen recursion protection**:
+
    - Implement a global calculation lock that all systems respect
    - Add maximum recursion depth circuit breakers
 
@@ -116,11 +128,13 @@ If time constraints are significant, focus on targeted improvements:
    - Better error recovery to prevent cascading failures
 
 **Benefits**:
+
 - Less disruption to existing code
 - Incremental improvements to stability
 - Can be done in smaller chunks
 
 **Drawbacks**:
+
 - Doesn't address fundamental architectural issues
 - May still have edge cases around state management
 
@@ -146,10 +160,12 @@ Based on the analysis, I recommend:
 ### Short-term (Immediate Relief)
 
 1. **Fix the e_10 contamination issue**:
+
    - Create a dedicated storage mechanism for critical dual-engine fields
    - Add special handling in setValue/getValue for these fields
 
 2. **Reduce excessive recursion**:
+
    - Add global recursion depth tracking
    - Implement stricter trigger filtering
    - Batch calculations when possible
@@ -161,6 +177,7 @@ Based on the analysis, I recommend:
 ### Medium-term (Next Month)
 
 1. **Complete IT-DEPENDS migration**:
+
    - Finish converting all sections
    - Remove legacy calculation patterns
    - Consolidate to a single calculation orchestration system
@@ -175,6 +192,7 @@ Based on the analysis, I recommend:
 Consider a more fundamental redesign based on modern frontend patterns:
 
 1. **State-first architecture**:
+
    - Redux-like state management
    - Pure function calculations
    - Reactive UI updates
@@ -190,4 +208,4 @@ The TEUI Calculator has evolved to solve specific problems, but the accumulation
 
 The Excel approach works because it has a single, simple calculation model with separate reference cells. We should aim to mirror this clarity in our web implementation, whether through better state isolation or completely separate calculation engines.
 
-Whatever approach is chosen, the key is consistency and simplicity. Pick one pattern and use it throughout the codebase, rather than mixing multiple approaches. 
+Whatever approach is chosen, the key is consistency and simplicity. Pick one pattern and use it throughout the codebase, rather than mixing multiple approaches.

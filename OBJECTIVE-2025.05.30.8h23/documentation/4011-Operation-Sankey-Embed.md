@@ -7,6 +7,7 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 ## Key Features
 
 ### Interactive Visualization
+
 - **Animated Energy Flows**: Links animate with a flowing effect from left to right
 - **Interactive Tooltips**: Hovering over nodes and links displays detailed information
 - **Fullscreen Mode**: Toggle between embedded and fullscreen views
@@ -15,11 +16,13 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 - **Emissions Toggle**: Show or hide emissions flows in the diagram
 
 ### Data Integration
+
 - **StateManager Sourcing**: All energy values pulled directly from TEUI StateManager
 - **Isolated Emissions Calculations**: Dedicated emissions calculations from Section 7 (DHW/SHW emissions) and Section 13 (Space Heating emissions)
 - **Dynamic Updates**: Manual refresh button triggers data updates from StateManager
 
 ### Visual Enhancements
+
 - **Color-Coded Links**: Different types of energy flows use distinct colors
   - Regular energy flows in blue/teal
   - Gas exhaust in red
@@ -32,6 +35,7 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 ## Technical Implementation
 
 ### Architecture
+
 - **TEUI_SankeyDiagram Class**: Encapsulates all D3 Sankey functionality
 - **Data Processing Pipeline**:
   1. Fetch values from StateManager using field IDs from 3037DOM.csv
@@ -41,6 +45,7 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 - **Animation System**: Uses SVG dasharray/dashoffset techniques for flowing effect
 
 ### Core Methods
+
 - **`render()`**: Main rendering function that handles all aspects of the visualization
 - **`updateEmissionsFlows()`**: Adds/removes emissions-related nodes and links
 - **`getLinkColor()`**: Determines link colors based on type and flow
@@ -48,6 +53,7 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 - **`buildSankeyDataFromStateManager()`**: Constructs diagram data from TEUI state
 
 ### D3.js Integration
+
 - Uses D3.js Sankey layout algorithm with customized parameters
 - Custom node positioning and coloring
 - Link styling with gradient effects
@@ -56,6 +62,7 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 ## Important Implementation Details
 
 ### Emissions Handling
+
 - Emissions data sourced from dedicated calculation fields:
   - Section 7: `k_49` for DHW/SHW emissions
   - Section 13: `f_114` for Space Heating emissions
@@ -65,6 +72,7 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 - Physical flow accuracy: emissions from gas/oil combustion flow through Building node
 
 ### Reference Stability
+
 - D3 Sankey requires stable object references between updates
 - Careful handling of node/link references using helper methods:
   - `convertToIndices()`: Converts object references to indices
@@ -72,12 +80,14 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
   - `validateNodeReferences()`: Ensures consistency in references
 
 ### Performance Considerations
+
 - Rendering triggered manually via "Refresh Sankey" button
 - Maximum node width cap (300%) prevents layout issues
 - Animation system optimized for smooth transitions
 - Careful handling of style vs. attr properties in D3
 
 ## Future Enhancement Opportunities
+
 - Automated updates using StateManager listeners for key values
 - Additional visualization options (color schemes, alternative layouts)
 - Additional data layers (cost information, carbon intensity indicators)
@@ -85,4 +95,4 @@ The Sankey diagram in Section 16 successfully visualizes energy flows and emissi
 
 ---
 
-This document summarizes the final implementation of the Sankey diagram in Section 16 of the TEUI 4.011 Calculator. The diagram provides an intuitive visualization of energy flows and emissions, helping users understand the relationships between different building systems and energy pathways. 
+This document summarizes the final implementation of the Sankey diagram in Section 16 of the TEUI 4.011 Calculator. The diagram provides an intuitive visualization of energy flows and emissions, helping users understand the relationships between different building systems and energy pathways.
