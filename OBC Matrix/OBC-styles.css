@@ -48,7 +48,8 @@ body {
 }
 
 .logo {
-  height: var(--header-height);
+  height: calc(var(--header-height) * 1.5); /* Make logo 150% larger */
+  width: auto; /* Maintain aspect ratio */
 }
 
 /* =============== Layout Framework =============== */
@@ -125,17 +126,15 @@ body {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
   font-size: var(--base-font-size);
-  table-layout: auto;
 }
 
-/* Improved row padding and spacing */
 .data-table td {
-  padding: 8px;
-  border-bottom: 1px solid #dee2e6;
-  height: 42px;
-  vertical-align: middle;
+  padding: var(--cell-padding);
+  border-bottom: 1px solid var(--light-border);
+  height: 40px; /* Standard height for all cells */
+  position: relative;
 }
 
 /* Table cells with no wrapping */
@@ -283,14 +282,7 @@ option,
     Arial, sans-serif;
   font-family: sans-serif; /* Fallback */
 
-  /* Restore forcing removal of border and outline */
-  border: none !important;
-  outline: none !important;
-  box-shadow: none;
-  /* Keep dropdowns transparent, they don't need hover bg */
-  background-color: transparent;
-
-  /* Ensure consistent size and appearance */
+  /* Improved styling to match TEUI 4.011 */
   font-size: inherit; /* Inherit from parent cell */
   color: var(--user-input-color); /* Blue color for select */
   font-weight: 500;
@@ -304,31 +296,34 @@ option,
 
 /* Apply to select elements within table cells */
 .data-table select.form-select {
-  width: 100%;
-  min-width: 140px; /* Ensure minimum width for content */
+  width: 320px; /* Fixed width as requested */
+  max-width: 320px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
-  border: 1px solid #ced4da !important; /* Restore Bootstrap border */
-  border-radius: 0.25rem !important; /* Bootstrap default radius */
-  padding: 0.375rem 2.25rem 0.375rem 0.75rem !important; /* Bootstrap default padding */
-  background-color: #fff !important; /* Ensure white background */
-  /* Ensure the select sits properly in the cell */
-  margin: 2px 0; /* Small margin to prevent border touching table lines */
-  height: calc(100% - 4px); /* Account for margins */
+  border: 1px solid #ced4da !important; /* Clear border */
+  border-radius: 4px !important; /* Consistent with input fields */
+  padding: 4px 24px 4px 8px !important; /* Match text input padding */
+  background-color: #f8f9fa !important; /* Match text input bg color */
+  /* Consistent spacing with text inputs */
+  margin: 3px 0; 
+  height: 30px; /* Match text input height */
+  outline: 1px solid #dee2e6 !important; /* Add outline to match request */
+  box-shadow: none;
 }
 
-/* Ensure dropdown cells have minimum width */
+.data-table select.form-select:focus {
+  border-color: #80bdff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Ensure dropdown cells have consistent spacing */
 [data-dropdown-id],
 .dropdown-cell {
-  min-width: 140px;
-  padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
-}
-
-/* Handle dropdowns spanning columns */
-td[colspan="2"] .form-select {
-  min-width: 180px;
+  padding: 4px 8px !important; /* Match user-input padding */
+  vertical-align: middle;
 }
 
 /* =============== User Input Fields =============== */
@@ -353,7 +348,7 @@ td[colspan="2"] .form-select {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-/* Enhanced user input styling */
+/* User input styles */
 .user-input {
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
@@ -363,27 +358,28 @@ td[colspan="2"] .form-select {
   max-height: 30px;
   color: #0066cc;
   font-weight: bold;
-  width: 100%;
+  width: 600px; /* Fixed width as requested */
   display: block;
   font-size: 14px;
   margin: 3px 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-align: left !important;
+  text-align: left !important; /* Ensure left-justified text */
 }
 
-.user-input:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+/* Notes fields should fill available space */
+td[class*="col-m"] .user-input {
+  width: 100% !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 
-.user-input:empty::before {
-  content: attr(data-placeholder);
-  color: #6c757d;
-  opacity: 0.7;
-  font-style: italic;
+/* Column M (Notes) styling */
+.col-m {
+  width: 100%; /* Use all available space */
 }
 
 /* Apply focus style to editable table cells when editing */
@@ -707,11 +703,6 @@ input[type="range"]::-webkit-slider-thumb {
   border-bottom: none;
 }
 
-/* Make notes fields wider */
-.col-m {
-  width: 30% !important;
-}
-
 /* Add styling for architect stamp box */
 .stamp-box {
   border: 1px dashed #6c757d;
@@ -759,4 +750,51 @@ input[type="range"]::-webkit-slider-thumb {
 /* Add file input styling */
 .file-input {
   display: none;
+}
+
+/* OBC reference styling in column L */
+.obc-cell-reference {
+  color: #555;
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+/* Stamp upload box */
+#stamp-box {
+  border: 2px dashed var(--light-border);
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  width: 200px; /* Square dimensions as requested */
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  margin: 10px 0;
+}
+
+/* Column specifics */
+.col-a { width: 30px; }  /* First column (Row ID) */
+.col-b { width: 80px; }  /* Second column (Field ID) */
+.col-c { width: 180px; } /* Third column (Label) */
+.col-d { width: 600px; } /* Fourth column (Value/Input) - fixed width as requested */
+
+/* Make cells align content left */
+.data-table td {
+  text-align: left;
+}
+
+/* Ensure inputs fill available space */
+.data-table td.col-d {
+  width: 600px;
+}
+
+.data-table td.col-d .user-input,
+.data-table td.col-d select.form-select {
+  width: 100%;
+  max-width: 600px;
 }

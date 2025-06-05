@@ -68,6 +68,25 @@ OBC.MatrixData = {
                 ]
             },
             {
+                title: "Building Information",
+                fields: [
+                    {
+                        id: "p3_building_description",
+                        label: "Description",
+                        type: "text",
+                        value: "",
+                        placeholder: "Enter building description"
+                    },
+                    {
+                        id: "p3_project_location",
+                        label: "Project Location",
+                        type: "text",
+                        value: "",
+                        placeholder: "Enter project location"
+                    }
+                ]
+            },
+            {
                 title: "Major Occupancy Classification",
                 fields: [
                     {
@@ -90,7 +109,8 @@ OBC.MatrixData = {
                             "Group F, Division 3 - Low-hazard industrial"
                         ],
                         value: "",
-                        placeholder: "-- Select Occupancy --"
+                        placeholder: "-- Select Occupancy --",
+                        obcReference: "3.1.2."
                     }
                 ]
             },
@@ -378,6 +398,25 @@ OBC.MatrixData = {
                         ],
                         value: "Yes",
                         placeholder: "-- Select --"
+                    }
+                ]
+            },
+            {
+                title: "Superimposed Major Occupancies",
+                fields: [
+                    {
+                        id: "p3_superimposed_occupancies",
+                        label: "Superimposed Major Occupancies",
+                        type: "dropdown",
+                        options: [
+                            "Yes",
+                            "No"
+                        ],
+                        value: "",
+                        placeholder: "-- Select --",
+                        obcReference: "3.2.2.7.",
+                        columnI: "EXISTING",
+                        columnJ: "New"
                     }
                 ]
             }
@@ -693,27 +732,6 @@ OBC.MatrixData.part9.sections.forEach(section => {
             }
         });
     }
-});
-
-// Add Building Classification section for Part 3 (below major occupancy)
-OBC.MatrixData.part3.sections.splice(1, 0, {
-    title: "Building Information",
-    fields: [
-        {
-            id: "p3_building_description",
-            label: "Description",
-            type: "text",
-            value: "",
-            placeholder: "Enter building description"
-        },
-        {
-            id: "p3_project_location",
-            label: "Project Location",
-            type: "text",
-            value: "",
-            placeholder: "Enter project location"
-        }
-    ]
 });
 
 // Make sure the sections are in the order shown in the screenshot

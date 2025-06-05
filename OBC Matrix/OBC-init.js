@@ -253,8 +253,27 @@ window.OBC = window.OBC || {};
                         }
                         
                         // Add "Seal & Signature" for last row in column I (index 8)
-                        if (i === 8 && section.fields.indexOf(field) === section.fields.length - 1) {
+                        // Only show in the Building Information section (first section)
+                        if (i === 8 && section.fields.indexOf(field) === section.fields.length - 1 && 
+                            section.title === "Building Information") {
                             emptyCell.textContent = "Seal & Signature";
+                        }
+                        
+                        // Add OBC references in column L (index 11)
+                        if (i === 11) {
+                            if (field.obcReference) {
+                                emptyCell.textContent = field.obcReference;
+                                emptyCell.className += ' obc-cell-reference';
+                            }
+                        }
+                        
+                        // Add values for other columns if available
+                        if (i === 8 && field.columnI) { // Column I (index 8)
+                            emptyCell.textContent = field.columnI;
+                        }
+                        
+                        if (i === 9 && field.columnJ) { // Column J (index 9)
+                            emptyCell.textContent = field.columnJ;
                         }
                         
                         row.appendChild(emptyCell);
@@ -332,6 +351,35 @@ window.OBC = window.OBC || {};
                         section.title !== "Building Information" || 
                         section === data.sections[0]
                     );
+                    
+                    // Add OBC references and column data
+                    // This would ideally come from the CSV parsing, but we're adding it manually for demonstration
+                    data.sections.forEach(section => {
+                        if (section.title === "Major Occupancy Classification" && section.fields[0]) {
+                            section.fields[0].obcReference = "3.1.2.";
+                        }
+                        if (section.title === "Superimposed Major Occupancies" && section.fields[0]) {
+                            section.fields[0].obcReference = "3.2.2.7.";
+                            section.fields[0].columnI = "EXISTING";
+                            section.fields[0].columnJ = "New";
+                        }
+                        if (section.title === "Building Area" && section.fields[0]) {
+                            section.fields[0].obcReference = "[A] 1.4.1.2.";
+                        }
+                        if (section.title === "Building Height" && section.fields[0]) {
+                            section.fields[0].obcReference = "[A] 1.4.1.2. & 3.2.1.1.";
+                        }
+                        if (section.title === "Building Classification" && section.fields[0]) {
+                            section.fields[0].obcReference = "3.2.2.20-83.";
+                        }
+                        if (section.title === "Fire Resistance Rating" && section.fields[0]) {
+                            section.fields[0].obcReference = "3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15.";
+                        }
+                        if (section.title === "Occupant Load" && section.fields[0]) {
+                            section.fields[0].obcReference = "3.1.17. and 3.1.17.1.(2)";
+                        }
+                    });
+                    
                 } else {
                     // Fallback to placeholder data
                     data = {
@@ -350,6 +398,30 @@ window.OBC = window.OBC || {};
                         section.title !== "Building Information" || 
                         section === data.sections[0]
                     );
+                    
+                    // Add OBC references and column data for Part 9
+                    data.sections.forEach(section => {
+                        if (section.title === "Occupancy Classification" && section.fields[0]) {
+                            section.fields[0].obcReference = "9.10.2.";
+                        }
+                        if (section.title === "Superimposed Major Occupancies" && section.fields[0]) {
+                            section.fields[0].obcReference = "9.10.2.3.";
+                            section.fields[0].columnI = "EXISTING";
+                            section.fields[0].columnJ = "New";
+                        }
+                        if (section.title === "Building Area" && section.fields[0]) {
+                            section.fields[0].obcReference = "[A] 1.4.1.2.";
+                        }
+                        if (section.title === "Building Height" && section.fields[0]) {
+                            section.fields[0].obcReference = "[A] 1.4.1.2. & 9.10.4.";
+                        }
+                        if (section.title === "Fire Resistance Rating" && section.fields[0]) {
+                            section.fields[0].obcReference = "9.10.8. and 9.10.11.";
+                        }
+                        if (section.title === "Occupant Load" && section.fields[0]) {
+                            section.fields[0].obcReference = "9.9.1.3., and Table 3.1.17.1.";
+                        }
+                    });
                 } else {
                     // Fallback to placeholder data
                     data = {
