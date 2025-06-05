@@ -1319,7 +1319,14 @@ window.TEUI.SectionModules.sect13 = (function() {
             const sm = window.TEUI.StateManager; // Alias for brevity
 
             // Listener for d_113 (Heating System) changes
-            sm.addListener('d_113', calculateHeatingSystem);
+            sm.addListener('d_113', () => {
+                if (typeof calculateHeatingSystem === 'function') {
+                    calculateHeatingSystem();
+                }
+                if (window.TEUI && window.TEUI.StateManager && typeof window.TEUI.StateManager.updateTEUICalculations === 'function') {
+                    window.TEUI.StateManager.updateTEUICalculations('S13_d113_fuel_switch');
+                }
+            });
             
             // Listener for f_113 (HSPF) changes
             sm.addListener('f_113', calculateCOPValues);
@@ -2123,9 +2130,6 @@ window.TEUI.SectionModules.sect13 = (function() {
         let m129_calculated = d129 - h124 - d123;
         const m129 = Math.max(0, m129_calculated); // Clamp to zero
 
-        console.log(`[S13 Cool Target m_129] Inputs -> d129: ${d129.toFixed(2)}, h124: ${h124.toFixed(2)}, d123: ${d123.toFixed(2)}`);
-        console.log(`[S13 Cool Target m_129] Calculated (pre-clamp): ${m129_calculated.toFixed(2)}, Final (post-clamp): ${m129.toFixed(2)}`);
-
         // Logging removed
         // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);
 
@@ -2268,6 +2272,44 @@ function handleHeatingSystemChangeForGhosting(newValue) {
     // Exhaust field (l_115) - Active only for Gas/Oil
     setFieldGhosted('l_115', !isFossilFuel);
     
+    // --- ADDED: Set default AFUE for Gas/Oil ---
+    if (isFossilFuel) {
+        const afueField = 'j_115';
+        let newAFUEString = '0.90'; // Fallback default
+
+        if (window.TEUI && window.TEUI.StateManager && window.TEUI.ReferenceValues) {
+            const currentD13 = window.TEUI.StateManager.getValue('d_13');
+            // Attempt to get AFUE from ReferenceValues based on d_13
+            // This assumes a structure like: ReferenceValues.getStandardData(standardKey).j_115
+            // Or ReferenceValues.getSpecificReferenceValue(standardKey, fieldId)
+            let referenceAFUE = undefined;
+            if (typeof window.TEUI.ReferenceValues.getStandardData === 'function') {
+                const standardData = window.TEUI.ReferenceValues.getStandardData(currentD13);
+                if (standardData && standardData[afueField] !== undefined) {
+                    referenceAFUE = standardData[afueField];
+                }
+            } else if (typeof window.TEUI.ReferenceValues.getSpecificReferenceValue === 'function') {
+                referenceAFUE = window.TEUI.ReferenceValues.getSpecificReferenceValue(currentD13, afueField);
+            }
+
+            if (referenceAFUE !== undefined && referenceAFUE !== null) {
+                newAFUEString = String(referenceAFUE);
+            }
+            // Further refinement could be to check if j_115 was 'user-modified' and prefer that.
+            // For now, this prioritizes ReferenceValue for the standard, then 0.90.
+        }
+        
+        if (window.TEUI && window.TEUI.StateManager && window.TEUI.StateManager.setValue) {
+            window.TEUI.StateManager.setValue(afueField, newAFUEString, 'system-update'); 
+            const afueElement = document.querySelector(`[data-field-id="${afueField}"]`);
+            if (afueElement && afueElement.getAttribute('contenteditable') === 'true') {
+                // Ensure newAFUEString is parsed as a number for formatting
+                afueElement.textContent = window.TEUI.formatNumber(parseFloat(newAFUEString), 'number-2dp');
+            }
+        }
+    }
+    // --- END ADDED / MODIFIED ---
+
     // --- Ghosting based on Cooling System (d_116) --- 
     const isCoolingActive = window.TEUI?.StateManager?.getValue('d_116') === 'Cooling'; // Use StateManager directly
     setFieldGhosted('j_116', !(isCoolingActive && !isHP)); 
