@@ -1397,7 +1397,7 @@ This section outlines planned improvements for the user experience of `contented
 
 *   Investigated and corrected formulas in Section 14 (`d_132`, `h_127`, `h_128`, `h_129`) for improved Excel parity.
 *   Investigated `d_135` discrepancy in Section 15; confirmed formula match but identified precedent (`d_117`) difference related to cooling calculations. Added TODO item.
-*   Fixed issue causing duplicate file selection dialogs for weather/location import in Section 03 by ensuring event listeners are attached idempotently in `4011-FileHandler.js`.
+*   Fixed issue causing duplicate file selection dialogs for weather/location import in Section 03 by ensuring event listeners are attached idempotently in `4011-FileHandler.js`. (Fixed for Safari, Unresolved for Chrome)
 *   Synced `FILEHANDLER` branch updates to `main` and remote repository.
 
 ---
@@ -1829,14 +1829,14 @@ This architectural shift represents a fundamental rethinking of how building ene
    - Implemented modular architecture with `core/`, `sections/`, and `tests/` directories
    - All files prefixed with "4012-" for clear distinction from legacy code
 
-2. **Core Components Implemented**
+2. **Core Components Implemented (Initial Prototypes)**
    - **4012-DualState.js**: Simplified state management with explicit target/reference separation
    - **4012-ClimateValues.js**: Internalized climate data (no Excel imports needed)
    - **4012-climate.js**: Pure functional calculations returning tuples `{ target, reference }`
-   - **4012-SectionRenderer.js**: Grid-based renderer replacing table layouts
-   - **4012-app.js**: Main application controller with dual layout support
+   - **4012-SectionRenderer.js**: Grid-based renderer replacing table layouts (concept)
+   - **4012-app.js**: Main application controller with dual layout support (concept)
 
-3. **UI/UX Improvements**
+3. **UI/UX Improvements (Conceptual)**
    - Modern CSS Grid layout (14 columns A-N matching Excel paradigm)
    - Dual layout modes: vertical (all sections) and horizontal (tabbed)
    - Bootstrap integration with icons and smooth animations
@@ -1844,76 +1844,73 @@ This architectural shift represents a fundamental rethinking of how building ene
    - Text stays on one line without wrapping, preventing UI bounce
    - Responsive design that adapts to mobile
 
-4. **Sections Completed**
+4. **Sections Completed (Initial Prototypes in `4012-framework/`)**
    - **Section 01 (Key Values)**: Implemented critical 3-column layout (Reference/Target/Actual)
      - This is what makes OBJECTIVE unique - it validates actual performance!
      - Large metrics with tier indicators and progress bars
    - **Section 02 (Building Information)**: Grid-based layout with all input types
    - **Section 03 (Climate)**: Full implementation with dropdown cascading and calculations
 
-#### Key Architecture Decisions
-- **No ES6 modules**: Uses IIFE pattern for air-gapped environments
-- **No compilation needed**: Works with standard `<script>` tags
-- **Local-first approach**: 100% data privacy, works offline
-- **Tuple-based calculations**: Single functions return both target and reference values
-- **50% code reduction**: Achieved through modern patterns and eliminating duplication
+#### Key Architecture Decisions (for v4.012 Principles)
+- **No ES6 modules**: Uses IIFE pattern for air-gapped environments (Maintain for refactored 4.011)
+- **No compilation needed**: Works with standard `<script>` tags (Maintain for refactored 4.011)
+- **Local-first approach**: 100% data privacy, works offline (Maintain for refactored 4.011)
+- **Tuple-based calculations**: Single functions return both target and reference values (Key principle for refactor)
+- **50% code reduction**: Target through applying modern patterns and eliminating duplication in 4.011 base.
 
-#### Handoff Notes for Next Agent
+#### Handoff Notes for Next Agent (Revised Strategy: Refactoring 4.011 Gold Standard)
 
-**Immediate Tasks:**
-1. **Section Tab Names**: Update the tab generation in `4012-app.js` to use short names:
-   ```javascript
-   sections: [
-       { id: 'buildingInfo', name: 'Building Information', shortName: 'Info', icon: 'bi-info-circle' },
-       { id: 'climateCalculations', name: 'Climate Calculations', shortName: 'Climate', icon: 'bi-thermometer-half' },
-       // etc...
-   ]
-   ```
+**Overarching Strategy Shift:**
+The initial ground-up rebuild of v4.012 (in the `4012-framework/` directory) provided valuable prototypes for tuple-based calculations, state management (`DualState.js`), and internalized climate data (`4012-ClimateValues.js`). However, to avoid re-solving already perfected UI/UX aspects of v4.011 and to ensure a more efficient path to a stable v4.012, the strategy has been revised.
 
-2. **Complete Section Renderer**: The `4012-SectionRenderer.js` needs implementation:
-   - Parse layout definition and generate grid HTML
-   - Handle all field types (dropdown, editable, slider, calculated)
-   - Support colspan for multi-column cells
+**The primary goal now is to refactor the "Gold Standard" 4.011 codebase (from `OBJECTIVE-2025.05.30.8h23`) by applying the core architectural principles of v4.012.** This approach will leverage the proven stability, comprehensive functionality, and refined UI/UX of the 4.011 gold standard.
 
-3. **Remaining Sections to Implement** (following S01/S02/S03 patterns):
-   - S04: Actual vs. Target Energy
-   - S05: CO2e Emissions  
-   - S06: Renewable Energy
-   - S07: Water Use
-   - S08: Indoor Air Quality
-   - S09: Occupant + Internal Gains
-   - S10: Radiant Gains
-   - S11: Transmission Losses
-   - S12: Volume and Surface Metrics
-   - S13: Mechanical Loads
-   - S14: TEDI & TELI
-   - S15: TEUI
-   - S16: Sankey Diagram
-   - S17: Dependency Graph
+**The main guiding document for this refactoring effort is now `OBJECTIVE-2025.05.30.8h23/documentation/4012-Refactoring-Plan.md`.** Please refer to it for detailed phases, tasks, and rationale.
 
-4. **State Management Integration**:
-   - Connect all sections to DualState
-   - Implement calculation dependencies
-   - Add state persistence (localStorage)
+**Key Tasks (Guided by `4012-Refactoring-Plan.md`):**
 
-5. **Excel Parity Features**:
-   - Import remaining climate data from CANDA.csv
-   - Implement reference value lookups based on building codes
-   - Add calculation validation against Excel formulas
+1.  **Environment Setup:**
+    *   Follow the "Next Steps" in `4012-Refactoring-Plan.md` to set up the refactoring environment using `OBJECTIVE-2025.05.30.8h23` as the base.
+    *   Preserve useful assets from the initial `OBJECTIVE 4012` attempt (e.g., `README.md` for project docs, `4012-ClimateValues.js`, `S03 Optimized Test.html`, `4012-styles.css` if adaptable) as outlined in the plan.
 
-6. **Testing**:
-   - Create test cases for each section
-   - Validate calculations against Excel outputs
-   - Test in air-gapped environment
+2.  **Phase 1: Cleanup & Housekeeping (on 4.011 Gold Standard Base):**
+    *   Execute all cleanup tasks detailed in the refactoring plan (clear logs, remove dead code, consolidate section files, standardize naming, etc.). This prepares the 4.011 codebase for easier integration of v4.012 principles.
 
-**Architecture Guidelines**:
-- Keep sections modular and self-contained
-- Use the established patterns from S01/S02/S03
-- Maintain the grid-based layout system
-- Ensure all calculations return tuples
-- Preserve the local-first, no-compilation approach
+3.  **Refactor Sections (Applying v4.012 Principles to 4.011 Sections):**
+    *   Instead of "implementing new sections" from scratch, **refactor existing 4.011 sections** one by one.
+    *   Integrate **tuple-based calculations**: Modify existing calculation logic within each 4.011 section to become pure functions returning `{ target, reference }` tuples.
+    *   Adapt sections to use a new **`DualState`-inspired State Management Layer**. This will be a critical part of the refactor, replacing or augmenting the existing 4.011 `StateManager` to explicitly handle `inputs: {target, reference}` and `outputs: {target, reference}`.
+    *   The goal is to achieve the logical separation and calculation purity of the v4.012 architecture *within* the structure of the 4.011 sections.
 
-**Vision**: Complete refactoring of all sections to achieve full Excel independence while maintaining calculation parity. The v4.012 framework will become the new foundation for OBJECTIVE, providing a modern, maintainable codebase that validates building performance through the unique Reference/Target/Actual comparison methodology.
+4.  **UI/UX Preservation and Enhancement:**
+    *   The primary goal is to **preserve the existing, well-refined UI/UX of the 4.011 gold standard.**
+    *   The "Modern CSS Grid layout" and `4012-SectionRenderer.js` from the initial 4012 framework attempt should be considered as *potential enhancements* or alternatives **only if** they can be integrated without significant rework of the 4.011 UI and offer clear benefits. The preference is to avoid re-litigating UI design.
+    *   The refined tab system prototyped in `4012-app.js` might be adaptable for the 4.011 structure if it enhances navigation.
+
+5.  **State Management Integration:**
+    *   Transition all refactored 4.011 sections to the new `DualState`-based management system.
+    *   Re-evaluate and implement calculation dependencies within this new state paradigm.
+    *   Ensure robust state persistence (localStorage).
+
+6.  **Excel Parity & Internalized Data:**
+    *   Integrate `4012-ClimateValues.js` for internalized climate data, reducing reliance on Excel imports for climate.
+    *   Continue to ensure calculation validation against Excel formulas for all sections.
+    *   Implement reference value lookups (e.g., from building codes) within the new architecture.
+
+7.  **Testing (as per `4012-Refactoring-Plan.md` Phase 2):**
+    *   Create/update test cases for each refactored section.
+    *   Validate calculations against Excel outputs rigorously.
+    *   Test in air-gapped environment.
+
+**Revised Architecture Guidelines (for Refactoring 4.011):**
+- Apply v4.012 patterns (tuple calculations, `DualState`) to existing 4.011 section structures.
+- Prioritize preserving the 4.011 UI/UX. Evaluate assets from the initial 4012 framework (like CSS Grid styles or renderer) for adoption only if they improve the existing UI without extensive rework.
+- Ensure all refactored calculations return `{ target, reference }` tuples.
+- Maintain the local-first, no-compilation development approach of 4.011.
+- Follow the detailed phases in `4012-Refactoring-Plan.md`.
+
+**Vision (Revised Focus):**
+Successfully refactor the TEUI 4.011 "Gold Standard" codebase by integrating the v4.012 architectural principles. This will result in a TEUI 4.012 that combines the stability, rich feature set, and perfected UI of 4.011 with the calculation clarity, state integrity, and maintainability of the tuple-based functional approach. The ultimate goal remains to achieve full Excel independence while validating building performance through the unique Reference/Target/Actual comparison methodology, now built upon a more robust and understandable foundation.
 
 ## TEUI 4.012 Framework
 

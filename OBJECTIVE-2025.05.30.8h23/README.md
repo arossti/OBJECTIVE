@@ -1,5 +1,5 @@
 # OBJECTIVE
-Objective TEUI 4.011 Codebase
+Objective TEUI 4.011 Codebase (SUPERCEDED BY 4.012 README.md in OBJECTIVE WORKSPACE Root)
 
 NOTICE: This codebase is licensed under the [Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)](https://creativecommons.org/licenses/by-nd/4.0/).(see footnote, LICENSE file in root)
 
