@@ -102,31 +102,13 @@
               <button
                 id="import-export-btn"
                 type="button"
-                class="btn btn-sm btn-primary"
-              >
-                <i class="bi bi-upload"></i> Import/Export
-              </button>
-              <!-- Dropdown Toggle -->
-              <button
-                class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split"
+                class="btn btn-sm btn-primary dropdown-toggle"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <span class="visually-hidden">Toggle Dropdown</span>
+                <i class="bi bi-upload"></i> Import/Export
               </button>
-              <!-- Dropdown Menu -->
               <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <a class="dropdown-item" href="#" id="load-part3-btn"
-                    ><i class="bi bi-file-earmark-spreadsheet me-2"></i>Load Part 3 CSV</a
-                  >
-                </li>
-                 <li>
-                  <a class="dropdown-item" href="#" id="load-part9-btn"
-                    ><i class="bi bi-file-earmark-spreadsheet me-2"></i>Load Part 9 CSV</a
-                  >
-                </li>
-                <li><hr class="dropdown-divider" /></li>
                 <li>
                   <a class="dropdown-item" href="#" id="import-data-btn"
                     ><i class="bi bi-upload me-2"></i>Import Data (Excel/CSV)</a
@@ -135,12 +117,6 @@
                 <li>
                   <a class="dropdown-item" href="#" id="export-data-btn"
                     ><i class="bi bi-save me-2"></i>Export Data (CSV)</a
-                  >
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item" href="#" id="downloadPdf"
-                    >Download PDF Form</a
                   >
                 </li>
               </ul>
@@ -160,7 +136,7 @@
       <div id="app-wrapper">
         <!-- OBC Matrix container -->
         <div id="obc-container">
-          <!-- This container will be populated by FieldManager -->
+          <!-- The entire matrix, including headers and all sections, will be rendered here -->
         </div>
       </div>
 

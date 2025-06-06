@@ -148,21 +148,31 @@ OBC.FileHandler = (function() {
     
     // Populate form fields with imported data
     function populateFormFields(formData) {
+        const validIdRegex = /^[a-zA-Z]_\d+$/; // Matches patterns like d_12, c_3, etc.
+
         // Iterate through form data
         Object.keys(formData).forEach(fieldId => {
+            // VALIDATION: Ensure the fieldId is a valid format before using it in a selector.
+            if (!fieldId || typeof fieldId !== 'string' || !validIdRegex.test(fieldId)) {
+                // console.log(`Skipping invalid fieldId from import: ${fieldId}`);
+                return; // Skip this entry
+            }
+
             const value = formData[fieldId];
-            const field = document.querySelector(`[data-field-id="${fieldId}"], #${fieldId}`);
+            const field = document.querySelector(`#${fieldId}`);
             
             if (!field) return;
 
-            // Since our matrix is rendered with contenteditable tds, we update textContent
-            if (field.hasAttribute('contenteditable')) {
-                field.textContent = value;
-            } else if (field.tagName === 'SELECT') {
-                // Handle dropdown
+            // Check if the target is a container for a contenteditable div
+            if (field.classList.contains('user-input') && field.hasAttribute('contenteditable')) {
+                 field.textContent = value;
+            } 
+            // Check if the target is a select dropdown
+            else if (field.tagName === 'SELECT') {
                 field.value = value;
-            } else if (field.tagName === 'INPUT') {
-                // Handle input fields
+            } 
+            // Handle other direct input types if necessary
+            else if (field.tagName === 'INPUT') {
                 field.value = value;
             }
         });

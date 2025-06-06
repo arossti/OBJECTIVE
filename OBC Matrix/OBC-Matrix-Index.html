@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OBC Matrix Framework | Part 3</title>
+    <title>2024 OBC Matrix Framework | Part 3</title>
     <meta
       name="description"
       content="Calculate Total Energy Use Intensity & Thermal Energy Demand Intensity for buildings"
@@ -35,8 +35,7 @@
 
     <link href="4011-styles.css" rel="stylesheet" />
 
-    <!-- Mobile Detection Script (Must load before other scripts) -->
-    <script src="4011-MobileDetect.js"></script>
+
 
     <!-- Core Dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -53,16 +52,15 @@
     <script src="4011-ReferenceValues.js"></script>
     <script src="4011-ReferenceManager.js"></script>
     <script src="4011-ReferenceToggle.js"></script>
-    <script src="4011-FieldManager.js"></script>
+    <script src="OBC-FieldManager.js"></script>
     <!-- FieldManager depends on StateManager -->
     <script src="4011-SectionIntegrator.js"></script>
     <!-- Integrator might depend on managers -->
     <script src="4011-Calculator.js"></script>
     <!-- Calculator logic -->
     <script src="4011-ComponentBridge.js"></script>
-    <script src="4011-ExcelLocationHandler.js"></script>
-    <script src="4011-ExcelMapper.js"></script>
-    <script src="4011-FileHandler.js"></script>
+    <script src="OBC-ExcelMapper.js"></script>
+    <script src="OBC-FileHandler.js"></script>
     <script src="4011-Dependency.js"></script>
 
     <!-- Initialize everything AFTER core scripts are loaded -->
@@ -106,8 +104,8 @@
         </a>
         <div class="ms-auto text-end">
           <h1 class="mb-0 fs-4">
-            Simple Energy and Carbon Modelling <br />
-            TEUI v.4.011 | for Canadian Projects
+            2024 Ontario Building Code Data Matrix <br />
+            Interactive Edition | v2025.06.05
           </h1>
         </div>
       </header>
@@ -118,56 +116,8 @@
           <div
             class="col text-end controls-container d-flex align-items-center justify-content-end"
           >
-            <!-- Moved Location/Weather Buttons HERE -->
-            <button
-              type="button"
-              class="btn btn-outline-primary btn-sm me-2"
-              id="selectExcelBtn"
-            >
-              <i class="bi bi-file-earmark-excel"></i> Load Locations
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-danger btn-sm me-2"
-              id="debugExcelBtn"
-            >
-              <i class="bi bi-bug"></i> Debug
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-info btn-sm me-2"
-              id="showWeatherDataBtn"
-              data-bs-toggle="modal"
-              data-bs-target="#weatherDataModal"
-            >
-              <i class="bi bi-cloud-sun"></i> More Weather Data
-            </button>
 
-            <div class="btn-group me-2">
-              <button type="button" class="btn btn-sm btn-danger">
-                Reference
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-danger dropdown-toggle dropdown-toggle-split"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <span class="visually-hidden">Toggle Dropdown</span>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <a class="dropdown-item" href="#" id="runReferenceBtn"
-                    >Calculate Reference</a
-                  >
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" id="viewReferenceInputsBtn"
-                    >View Cached Inputs</a
-                  >
-                </li>
-              </ul>
-            </div>
+
             <button
               id="disclaimerBtn"
               class="btn btn-sm btn-warning me-2"
@@ -244,13 +194,7 @@
             accept=".xlsx, .xls, .csv"
             style="display: none"
           />
-          <!-- Hidden File Input specifically for Location/Weather Excel Import -->
-          <input
-            type="file"
-            id="location-excel-input"
-            accept=".xlsx, .xls"
-            style="display: none"
-          />
+
         </div>
       </div>
 
@@ -259,10 +203,10 @@
         <!-- Calculator container -->
         <div id="calculator-container">
           <!-- The HTML for the Key Values section should be: -->
-          <div id="keyValues" class="section">
+          <div id="buildingInfo" class="section">
             <div class="section-header">
-              <span class="section-icon"><i class="bi bi-key-fill"></i></span>
-              SECTION 1. Key Values
+              <span class="section-icon"><i class="bi bi-info-circle"></i></span>
+              SECTION 1. Building Information
               <div class="ms-auto d-flex align-items-center">
                 <div class="section-controls me-2">
                   <!-- Buttons moved out, only feedback-area and potentially applyExcelBtn remain here -->
@@ -297,7 +241,7 @@
             </div>
             <div class="section-content">
               <!-- Key Values content will be generated by FieldManager using Section01.js -->
-              <div data-render-section="keyValues"></div>
+              <div data-render-section="buildingInfo"></div>
             </div>
           </div>
 
@@ -331,7 +275,7 @@
               <span class="section-icon"
                 ><i class="bi bi-thermometer-half"></i
               ></span>
-              SECTION 3. Climate Calculations
+              SECTION 3. Test
             </div>
             <div class="section-content">
               <!-- Rendered section content will be inserted here -->
@@ -554,7 +498,7 @@
         <div class="modal-content">
           <div class="modal-header bg-warning bg-opacity-25">
             <h5 class="modal-title" id="disclaimerModalLabel">
-              Using this calculator
+              Using the OBC Matrix
             </h5>
             <button
               type="button"
@@ -565,40 +509,20 @@
           </div>
           <div class="modal-body">
             <p>
-              This tool helps you calculate the Total Energy Use Intensity
-              (TEUI) & Thermal Energy Demand Intensity (TEDI) of a building or
-              home.
+              This tool helps you complete the Ontario Building Code Data Matrix for building permit applications.
             </p>
             <p>
-              Simply enter your information (Blue inputs). Press the tab key on
-              your keyboard to jump to the next input field and enter values for
-              your building or project.
+              Simply enter your information in the blue input fields. You can toggle between Part 3 (large buildings) and Part 9 (housing and small buildings) forms using the toggle switch at the top.
             </p>
             <p>
-              Default values exist to speed up the process, but you must
-              over-write them with relevant values from your own project.
-              Results will be calculated automatically (Black text).
+              When you're finished, you can export your data as a CSV file or download a completed PDF form.
             </p>
             <hr />
             <p>
-              <strong>Disclaimer:</strong> OBJECTIVE 4.011 is software IN
-              DEVELOPMENT. IT IS NOT YET COMPLETE! As such it is not fit for any
-              purpose, and is meant for demonstration only. Our team has made
-              every effort to have OBJECTIVE's Targeted Energy Use match
-              real-world values by reviewing a wide range of building types and
-              utility bills, but no energy model can accurately predict energy
-              use due to hundreds of influences beyond our ability to model,
-              from exact weather in a given year, to user behaviours, to actual
-              commissioned equipment efficiencies. This static modelling tool
-              aims to set Targets in a consistent way to compare against
-              Reference cases, but our experience has shown that with correct
-              use, we can arrive at values very close to real-world,
-              utility-bill values for total energy use.
+              <strong>Disclaimer:</strong> This interactive OBC Matrix is provided as a convenience tool. While every effort has been made to ensure accuracy, the official Ontario Building Code and related regulations should always be consulted for definitive requirements. This form is not a substitute for professional engineering or architectural advice.
             </p>
             <p>
-              Click the download button to generate a complete OBJECTIVE
-              TEUIv.4.011 Report (feature pending development). Only for
-              Canadian projects.
+              © Ontario Association of Architects - Interactive version by OpenBuilding.ca
             </p>
           </div>
           <div class="modal-footer">

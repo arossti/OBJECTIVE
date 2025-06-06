@@ -1,4 +1,57 @@
-# OBC Matrix Documentation
+# OBC Matrix - Implementation Plan
+
+## 1. Core Objective
+
+To create a simple, static web form that is a high-fidelity replica of the OBC Data Matrix Excel spreadsheet. The final application must:
+
+-   Visually match the layout, structure, and style of the TEUI 4.011 core application.
+-   Be rendered from a static, pre-defined data structure, not dynamically from a CSV.
+-   Support data import/export to populate the form fields from user-provided Excel or CSV files.
+-   Use a DOM namespace that mirrors Excel cell coordinates (e.g., cell D12 becomes an element with `id="d_12"`).
+
+## 2. Architecture: "Copy and Simplify"
+
+We will leverage the mature assets from the "gold standard" TEUI 4.011 application (`OBJECTIVE-2025.05.30.8h23/`) to ensure consistency and speed up development.
+
+-   **HTML (`index.html`):** A simple shell providing the header, footer, and a main container div (`#obc-container`) where the matrix will be rendered.
+-   **Styling (`OBC-styles.css`):** This will be a direct copy of `4011-styles.css` from the core app to ensure identical visual appearance.
+-   **Data Model (`OBC-MatrixData.js`):** This is the heart of the application. It will contain a hand-crafted JavaScript object that defines the entire structure of the Part 3 and Part 9 forms, row by row, and cell by cell, including `colspan` and `rowspan` attributes to match the Excel layout.
+-   **Rendering (`OBC-init.js`):** This script will read from `OBC-MatrixData.js` on page load and use a `renderMatrix` function to dynamically build the `<table>` element and inject it into the main container. It is responsible for translating the data model into HTML.
+-   **File Operations:**
+    -   `OBC-FileHandler.js`: Manages the user interaction for importing and exporting data.
+    -   `OBC-ExcelMapper.js`: A copy of the core app's mapper, responsible for translating data between an imported Excel file and the application's field IDs.
+
+This architecture intentionally avoids the complexity of the core TEUI app (e.g., no `StateManager`, no complex calculation engine) and focuses on being a simple, elegant, and robust web form.
+
+## 3. Implementation Steps
+
+The following steps will be taken to refactor the application to meet the objective.
+
+### Step 1: Asset Alignment
+1.  **Copy Stylesheet:** Copy `4011-styles.css` from `OBJECTIVE-2025.05.30.8h23/` to `OBC Matrix/` and rename it to `OBC-styles.css`.
+2.  **Update HTML:** Modify `OBC Matrix/index.html` to reference the new `OBC-styles.css`. Ensure the basic structure (header, buttons, main container) is clean.
+
+### Step 2: Data Structure Overhaul
+1.  **Define High-Fidelity Model:** Manually transcribe the complete layout for Part 3 from the Excel screenshots into the `OBC.MatrixData.part3.rows` array in `OBC-MatrixData.js`.
+2.  **Data Specificity:** Each entry in the `rows` array will be an object representing a `<tr>`. Each row object will contain a `cells` array, where each cell object specifies its content, type (`editable`, `dropdown`, `static`), column (`A`-`N`), `fieldId` (e.g., `d_12`), and any `colspan` or `rowspan` attributes.
+
+### Step 3: Rendering Engine Rewrite
+1.  **Rebuild `renderMatrix`:** Completely rewrite the `renderMatrix` function in `OBC-init.js`.
+2.  **Logic:** The function will:
+    -   Accept a `part` ('part3' or 'part9') as an argument.
+    -   Select the corresponding data from `OBC.MatrixData`.
+    -   Create a `<table>` and `<tbody>` element.
+    -   Iterate through the `rows` array from the data model.
+    -   For each `row` object, create a `<tr>`.
+    -   For each `cell` object in the row's `cells` array, create the corresponding `<td>`, applying all properties (`colspan`, `rowspan`, content, and classes for styling).
+    -   Correctly handle empty columns to maintain the grid structure.
+    -   Inject the final table into the `#obc-container`.
+3.  **Event Handlers:** Re-attach event listeners for the Part 3/9 toggle and import/export buttons after rendering.
+
+### Step 4: Final Verification
+1.  **Visual Match:** Confirm that the rendered form is a pixel-perfect match of the Excel screenshot.
+2.  **Functionality:** Verify that the Part 3/9 toggle works correctly and that the import/export buttons trigger the `FileHandler`.
+3.  **DOM Namespace:** Inspect the rendered HTML to ensure all input elements have the correct positional `id` (e.g., `d_12`).
 
 ## Completed Features
 

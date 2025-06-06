@@ -833,7 +833,7 @@ td[colspan="2"] .form-select {
 
 /* Preserve table row borders */
 .data-table tr {
-  border-bottom: 1px solid #e0e0e0; /* Hairline divider */
+  border-bottom: 1px solid #eeeeee !important;
 }
 
 .data-table td {
@@ -963,17 +963,11 @@ input[type=number].form-control {
 
 /* Base style for user-input class (text color) */
 .user-input {
-  background-color: transparent;
-  border: 1px solid #ced4da; /* Hairline frame */
-  border-radius: 4px;
-  padding: 4px 8px;
-  height: 30px;
-  color: #0d6efd; /* Blue text */
   font-weight: 500;
-  width: 100%;
-  display: block;
-  font-size: 14px;
-  text-align: left !important;
+  color: var(--user-input-color); /* Removed !important */
+  border: none !important;
+  outline: none !important;
+  background-color: transparent !important; /* Ensure no background */
 }
 
 /* Force blue color on focused number inputs */
@@ -1565,6 +1559,7 @@ body.viewing-reference-inputs .reference-input-display-locked {
   font-weight: bold !important;
   font-style: italic !important;
   cursor: default !important;
+  pointer-events: none !important;
 }
 
 /* --- START SUPER TARGETED OVERRIDES FOR INPUTS --- */
@@ -1960,47 +1955,3 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 /* .controls-container .btn {
     white-space: nowrap;
 } */
-
-/* Stamp upload box */
-#stamp-box {
-  width: 200px;
-  height: 200px;
-  border: 1px dashed #6c757d;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f8f9fa;
-  cursor: pointer;
-  color: #6c757d;
-  text-align: center;
-  padding: 10px;
-  margin: 10px auto; /* Center it horizontally */
-  position: relative;
-  overflow: hidden; /* Ensures the image fits within the box */
-}
-
-#stamp-box:hover {
-  background-color: #e9ecef;
-}
-
-#stamp-box img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain; /* Scales image down to fit inside */
-}
-
-.user-input:empty::before {
-  content: attr(data-placeholder);
-  color: #6c757d;
-  font-style: italic;
-}
-
-.form-select {
-  font-weight: 500;
-  color: #0d6efd;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  height: 30px;
-  padding: 4px 8px;
-}
