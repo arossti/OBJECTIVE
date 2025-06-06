@@ -136,7 +136,94 @@ The workspace contains three versions of the codebase:
 - [ ] Ensure proper state switching
 - [ ] Test calculation accuracy against Excel
 
-### 3.3 Architecture Improvements
+### 3.3 Global Input Handling System (Proven in OBC Matrix)
+
+**Status: PROTOTYPED and Working - Ready for Integration**
+
+The OBC Matrix project successfully implemented a global input handling system that eliminates code duplication across sections and provides consistent input behavior. This should be integrated as part of the 4.012 refactor.
+
+#### ✅ **Proven Benefits:**
+
+1. **Enter/Return Key Fix**: Prevents newlines in text entry across ALL sections automatically
+2. **Auto-blur on Enter**: Pressing Enter properly finishes field editing and triggers calculations  
+3. **Visual Feedback**: Fields show "editing" state with CSS classes
+4. **Centralized Logic**: No code duplication - one handler for all sections
+5. **Consistent Formatting**: Uses global `window.TEUI.formatNumber` for consistent display
+6. **State Integration**: Automatic integration with StateManager for user-modified values
+
+#### 🔧 **Implementation Tasks:**
+
+- [ ] Add `initializeGlobalInputHandlers()` to StateManager or create dedicated InputHandler module
+- [ ] Remove individual `handleEditableBlur` functions from all 18 sections
+- [ ] Standardize CSS classes (`.editing`) across all sections for visual feedback
+- [ ] Initialize once after all sections render, eliminating per-section initialization
+- [ ] Extend pattern to handle all field types (currency, percentages, RSI, U-values)
+- [ ] Test across all sections to ensure no regression in input behavior
+
+#### 📋 **Integration Pattern:**
+
+```javascript
+// In StateManager or dedicated InputHandler module
+function initializeGlobalInputHandlers() {
+  const editableFields = document.querySelectorAll('.editable[data-field-id]');
+  
+  editableFields.forEach((field) => {
+    if (!field.hasGlobalListeners) {
+      // Prevent enter key from creating newlines
+      field.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          field.blur();
+        }
+      });
+      
+      // Handle field blur (when user finishes editing)
+      field.addEventListener("blur", handleFieldBlur);
+      
+      // Visual feedback for editing state
+      field.addEventListener("focus", () => field.classList.add("editing"));
+      field.addEventListener("focusout", () => field.classList.remove("editing"));
+      
+      field.hasGlobalListeners = true;
+    }
+  });
+}
+
+function handleFieldBlur(event) {
+  const fieldElement = event.target;
+  const fieldId = fieldElement.getAttribute("data-field-id");
+  if (!fieldId) return;
+  
+  let valueStr = fieldElement.textContent.trim();
+  let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+  
+  // Apply appropriate formatting based on field type
+  if (!isNaN(numValue)) {
+    if (fieldId.includes('area') || fieldId.includes('dimension')) {
+      valueStr = window.TEUI.formatNumber(numValue, "number-2dp");
+    } else if (fieldId.includes('percent')) {
+      valueStr = window.TEUI.formatNumber(numValue, "percent");
+    } else {
+      valueStr = window.TEUI.formatNumber(numValue, "number");
+    }
+  }
+  
+  // Update display and state
+  fieldElement.textContent = valueStr;
+  window.TEUI.StateManager.setValue(fieldId, valueStr, "user-modified");
+}
+```
+
+#### 🎯 **Expected Benefits:**
+
+- **Code Reduction**: ~50-100 lines removed per section (18 sections = significant reduction)
+- **Consistency**: Identical input behavior across entire application
+- **Maintainability**: One place to fix input issues or add features
+- **User Experience**: Consistent, predictable input handling everywhere
+
+This represents exactly the kind of "radical simplification" that v4.012 aims to achieve.
+
+### 3.4 Architecture Improvements
 
 - [ ] Implement proper module system (ES6 modules)
 - [ ] Create clear API boundaries

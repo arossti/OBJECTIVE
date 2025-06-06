@@ -1455,9 +1455,95 @@ These issues will be addressed comprehensively in the upcoming 4012 release, whi
 
 The modular architecture enables easier maintenance, extension, and validation while preserving the core calculation methodology that makes TEUI a valuable tool for building energy modeling.
 
+### TODO: Global Input Handling System (v4.012 Refactor Priority)
+
+**Status: PROTOTYPED in OBC Matrix - Ready for Integration**
+
+The OBC Matrix project successfully implemented a global input handling system that eliminates code duplication across sections and provides consistent input behavior. This pattern should be integrated into the main TEUI 4011 codebase as part of the v4.012 refactor.
+
+#### ✅ **Proven Benefits from OBC Matrix Implementation:**
+
+1. **Enter/Return Key Fix**: Prevents newlines in text entry across ALL sections automatically
+2. **Auto-blur on Enter**: Pressing Enter properly finishes field editing and triggers calculations  
+3. **Visual Feedback**: Fields show "editing" state with CSS classes
+4. **Centralized Logic**: No code duplication - one handler for all sections
+5. **Consistent Formatting**: Uses global `window.TEUI.formatNumber` for consistent display
+6. **State Integration**: Automatic integration with StateManager for user-modified values
+
+#### 🔧 **Implementation Pattern (Ready to Apply):**
+
+```javascript
+// In StateManager or dedicated InputHandler module
+function initializeGlobalInputHandlers() {
+  const editableFields = document.querySelectorAll('.editable[data-field-id]');
+  
+  editableFields.forEach((field) => {
+    if (!field.hasGlobalListeners) {
+      // Prevent enter key from creating newlines
+      field.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          field.blur();
+        }
+      });
+      
+      // Handle field blur (when user finishes editing)
+      field.addEventListener("blur", handleFieldBlur);
+      
+      // Visual feedback for editing state
+      field.addEventListener("focus", () => field.classList.add("editing"));
+      field.addEventListener("focusout", () => field.classList.remove("editing"));
+      
+      field.hasGlobalListeners = true;
+    }
+  });
+}
+
+function handleFieldBlur(event) {
+  const fieldElement = event.target;
+  const fieldId = fieldElement.getAttribute("data-field-id");
+  if (!fieldId) return;
+  
+  let valueStr = fieldElement.textContent.trim();
+  let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+  
+  // Apply appropriate formatting based on field type
+  if (!isNaN(numValue)) {
+    if (fieldId.includes('area') || fieldId.includes('dimension')) {
+      valueStr = window.TEUI.formatNumber(numValue, "number-2dp");
+    } else if (fieldId.includes('percent')) {
+      valueStr = window.TEUI.formatNumber(numValue, "percent");
+    } else {
+      valueStr = window.TEUI.formatNumber(numValue, "number");
+    }
+  }
+  
+  // Update display and state
+  fieldElement.textContent = valueStr;
+  window.TEUI.StateManager.setValue(fieldId, valueStr, "user-modified");
+}
+```
+
+#### 📋 **v4.012 Integration Plan:**
+
+1. **Move to Core**: Add `initializeGlobalInputHandlers()` to StateManager or create dedicated InputHandler module
+2. **Remove Section Duplication**: Eliminate individual `handleEditableBlur` functions from all sections
+3. **Standardize CSS**: Use consistent `.editing` class across all sections for visual feedback
+4. **Call Once**: Initialize after all sections render, eliminating per-section initialization
+5. **Enhance Formatting**: Extend pattern to handle all field types (currency, percentages, RSI, U-values)
+
+#### 🎯 **Expected v4.012 Benefits:**
+
+- **Code Reduction**: ~50-100 lines removed per section (15+ sections = significant reduction)
+- **Consistency**: Identical input behavior across entire application
+- **Maintainability**: One place to fix input issues or add features
+- **User Experience**: Consistent, predictable input handling everywhere
+
+This represents exactly the kind of "radical simplification" that v4.012 aims to achieve - taking proven patterns and applying them globally rather than duplicating logic across sections.
+
 ### TODO: Numeric Input UX Enhancements (Post-Conference)
 
-This section outlines planned improvements for the user experience of `contenteditable` numeric input fields across the application. The goal is to provide clearer feedback, consistent formatting, and more intuitive interaction, while leveraging existing tools like `window.TEUI.formatNumber` and `StateManager`.
+This section outlines additional planned improvements for the user experience of `contenteditable` numeric input fields, building on the global input handling system above.
 
 ### TODO: Fix Thermal Bridge Penalty (d_97) Update Propagation to Section 12 (Post-Conference)
 
