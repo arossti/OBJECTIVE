@@ -452,7 +452,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_19",
           type: "editable",
-          value: "[If Yes, provide explanation here; add lines as necessary]",
+          value: "If Yes, provide explanation here...",
           section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 6, // Span columns E-J
