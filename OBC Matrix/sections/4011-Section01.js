@@ -487,6 +487,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           <div class="stamp-title">Seal & Signature</div>
           <div class="stamp-instructions">Upload Seal Image Here</div>
           <div class="stamp-hint">200x200px recommended</div>
+          <div class="stamp-oaa-note">The stamp image will be inspected for validity with the OAA</div>
         </div>
         <input type="file" id="floating-stamp-upload-input" accept="image/*" style="display: none;">
         <img id="floating-stamp-preview" class="stamp-preview" style="display: none;">
@@ -556,11 +557,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       addFloatingStampUpload();
     }, 100);
 
-    // Add custom CSS for stamp upload
+    // Add custom CSS for stamp upload and Section 01 spacing
     if (!document.getElementById('stamp-upload-styles')) {
       const style = document.createElement('style');
       style.id = 'stamp-upload-styles';
       style.textContent = `
+        /* Section 01 specific row spacing for stamp panel breathing room */
+        [data-render-section="buildingInfo"] .row {
+          padding-top: 2px;
+          padding-bottom: 2px;
+        }
+
         .stamp-upload-container {
           width: 200px;
           height: 200px;
@@ -609,6 +616,15 @@ window.TEUI.SectionModules.sect01 = (function () {
           font-size: 10px;
           color: #999;
           text-align: center;
+          margin-bottom: 4px;
+        }
+
+        .stamp-oaa-note {
+          font-size: 9px;
+          color: #666;
+          text-align: center;
+          font-style: italic;
+          line-height: 1.2;
         }
 
         .stamp-preview {
