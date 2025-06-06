@@ -40,6 +40,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- App-specific scripts -->
+    <script src="OBC-FieldManager.js"></script>
+    <script src="OBC-ExcelMapper.js"></script>
     <script src="OBC-FileHandler.js"></script>
     <script src="OBC-MatrixData.js"></script>
     <script src="OBC-init.js"></script>
@@ -115,6 +117,17 @@
               <!-- Dropdown Menu -->
               <ul class="dropdown-menu dropdown-menu-end">
                 <li>
+                  <a class="dropdown-item" href="#" id="load-part3-btn"
+                    ><i class="bi bi-file-earmark-spreadsheet me-2"></i>Load Part 3 CSV</a
+                  >
+                </li>
+                 <li>
+                  <a class="dropdown-item" href="#" id="load-part9-btn"
+                    ><i class="bi bi-file-earmark-spreadsheet me-2"></i>Load Part 9 CSV</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
                   <a class="dropdown-item" href="#" id="import-data-btn"
                     ><i class="bi bi-upload me-2"></i>Import Data (Excel/CSV)</a
                   >
@@ -147,167 +160,7 @@
       <div id="app-wrapper">
         <!-- OBC Matrix container -->
         <div id="obc-container">
-          <!-- Header information section -->
-          <div id="buildingInfo" class="section">
-            <div class="section-header">
-              <span class="section-icon"><i class="bi bi-building"></i></span>
-              Building Information
-            </div>
-            <div class="section-content">
-              <div id="building-info-content">
-                <table class="data-table">
-                  <colgroup>
-                    <col class="col-a" />
-                    <col class="col-b" />
-                    <col class="col-c" />
-                    <col class="col-d" />
-                    <col class="col-e" />
-                    <col class="col-f" />
-                    <col class="col-g" />
-                    <col class="col-h" />
-                    <col class="col-i" />
-                    <col class="col-j" />
-                    <col class="col-k" />
-                    <col class="col-l" />
-                    <col class="col-m" />
-                  </colgroup>
-                  <tr>
-                    <td class="col-c">Name of Practice</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter practice name">Thomson Architecture, Inc.</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m">Notes:</td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Address 1</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter address line 1">1017 Dominion Road</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes">Make input...</td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Address 2</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter address line 2">Algonquin Highlands, ON. KOM 1S0</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Contact</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter contact name">Andy Thomson, M.Arch, OAA</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Name of Project</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter project name">Three Feathers Terrace</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Location/Address</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter project location">1267 3rd Line, Innisfil, ON</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Date</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter date">2025.06.05</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">OAA Registration URI</td>
-                    <td class="col-d user-input" contenteditable="true" data-placeholder="Enter OAA Registration URI">https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson</td>
-                    <td class="col-e"></td>
-                    <td class="col-f"></td>
-                    <td class="col-g"></td>
-                    <td class="col-h"></td>
-                    <td class="col-i"></td>
-                    <td class="col-j"></td>
-                    <td class="col-k"></td>
-                    <td class="col-l"></td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                  <tr>
-                    <td class="col-c">Seal & Signature</td>
-                    <td class="col-d" colspan="9">
-                      <!-- Add architect stamp upload box -->
-                      <div class="stamp-box-container">
-                        <div class="stamp-box-wrapper">
-                          <div id="stamp-box" class="stamp-box">
-                            <span class="signature-label">Click to upload architect stamp</span>
-                          </div>
-                          <input type="file" id="stamp-input" class="file-input" accept="image/*">
-                        </div>
-                      </div>
-                    </td>
-                    <td class="col-m user-input" contenteditable="true" data-placeholder="Enter notes"></td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Main OBC Matrix Data -->
-          <div id="obcMatrix" class="section">
-            <div class="section-header">
-              <span class="section-icon"><i class="bi bi-table"></i></span>
-              <span id="matrix-title">PART 3 - FIRE PROTECTION, OCCUPANT SAFETY AND ACCESSIBILITY</span>
-            </div>
-            <div class="section-content">
-              <div id="matrix-content">
-                <!-- This div will be populated based on the selected matrix (Part 3 or Part 9) -->
-                <div class="alert alert-info m-3">Loading matrix data...</div>
-              </div>
-            </div>
-          </div>
+          <!-- This container will be populated by FieldManager -->
         </div>
       </div>
 
@@ -383,9 +236,6 @@
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         // The functionality has been moved to OBC-init.js
-        // No need to duplicate the initialization here
-        
-        // Any additional page-specific initialization can go here
       });
     </script>
   </body>

@@ -68,12 +68,25 @@ OBC.FileHandler = (function() {
                         const parsedData = parseCSV(contents);
                         processImportedData(parsedData);
                     } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-                        // Parse Excel with xlsx.js
+                        // Use xlsx.js to read the workbook
                         const workbook = XLSX.read(contents, {type: 'binary'});
-                        const sheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                        processImportedData({data: jsonData});
+                        
+                        // Use the ExcelMapper to get structured data
+                        if (window.TEUI && window.TEUI.ExcelMapper) {
+                            const mappedData = window.TEUI.ExcelMapper.mapExcelToReportModel(workbook);
+                            if (mappedData) {
+                                // The mapper returns a direct fieldId:value object.
+                                // The processImportedData function expects a { data: [...] } structure,
+                                // so we need to adapt this. A simple way is to pass the mapped data directly
+                                // to the form population function.
+                                populateFormFields(mappedData);
+                                alert('Excel data imported successfully.');
+                            } else {
+                                alert('Failed to map data from Excel file. The required "REPORT" sheet might be missing or empty.');
+                            }
+                        } else {
+                             alert('Excel Mapper is not available. Could not process .xlsx file.');
+                        }
                     } else {
                         alert('Unsupported file format. Please use CSV or Excel file.');
                     }
@@ -141,13 +154,13 @@ OBC.FileHandler = (function() {
             const field = document.querySelector(`[data-field-id="${fieldId}"], #${fieldId}`);
             
             if (!field) return;
-            
-            if (field.tagName === 'SELECT') {
+
+            // Since our matrix is rendered with contenteditable tds, we update textContent
+            if (field.hasAttribute('contenteditable')) {
+                field.textContent = value;
+            } else if (field.tagName === 'SELECT') {
                 // Handle dropdown
                 field.value = value;
-            } else if (field.hasAttribute('contenteditable')) {
-                // Handle contenteditable
-                field.textContent = value;
             } else if (field.tagName === 'INPUT') {
                 // Handle input fields
                 field.value = value;

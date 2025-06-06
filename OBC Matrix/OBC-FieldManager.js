@@ -1,11 +1,11 @@
 /**
- * 4011-FieldManager.js
+ * OBC-FieldManager.js
  *
  * V3 of a Lightweight field management system that coordinates section modules
  * which are pre-loaded via script tags in the HTML.
  *
  * This approach avoids dynamic script loading security restrictions
- * while maintaining modularity.
+ * while maintaining modularity. NOT yet modified for use wih OBC MAtrix App
  */
 
 window.TEUI = window.TEUI || {};
