@@ -50,8 +50,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 3: Practice Information
     3: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.01",
+      rowId: "1.01",
       label: "Name of Practice",
       cells: {
         b: { label: "Name of Practice" },
@@ -87,8 +87,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 4: Address 1
     4: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.02",
+      rowId: "1.02",
       label: "Address 1",
       cells: {
         b: { label: "Address 1" },
@@ -124,8 +124,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 5: Address 2
     5: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.03",
+      rowId: "1.03",
       label: "Address 2",
       cells: {
         b: { label: "Address 2" },
@@ -161,8 +161,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 6: Contact
     6: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.04",
+      rowId: "1.04",
       label: "Contact",
       cells: {
         b: { label: "Contact" },
@@ -198,8 +198,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 7: Name of Project
     7: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.05",
+      rowId: "1.05",
       label: "Name of Project",
       cells: {
         b: { label: "Name of Project" },
@@ -235,8 +235,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 8: Location/Address
     8: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.06",
+      rowId: "1.06",
       label: "Location/Address",
       cells: {
         b: { label: "Location/Address" },
@@ -272,8 +272,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 9: Date with Seal & Signature
     9: {
-      id: "3.00",
-      rowId: "3.00",
+      id: "1.07",
+      rowId: "1.07",
       label: "Date",
       cells: {
         b: { label: "Date" },
@@ -313,7 +313,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.01",
       label: "Project Type",
       cells: {
-        b: { label: "3.01 PROJECT TYPE" },
+        b: { label: "PROJECT TYPE" },
         c: {
           fieldId: "c_10", // FileHandler will read from column C
           type: "dropdown",
@@ -322,7 +322,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           section: "buildingInfo",
           colspan: 4, // Span columns C-F for dropdown
           options: [
-            { value: "-", name: "-" },
+            { value: "-", name: "Select Project Type" },
             { value: "New Construction", name: "New Construction" },
             { value: "Addition", name: "Addition" },
             { value: "Alteration", name: "Alteration" },
@@ -357,7 +357,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.02",
       label: "Major Occupancy Classification",
       cells: {
-        b: { label: "3.02 MAJOR OCCUPANCY CLASSIFICATION" },
+        b: { label: "MAJOR OCCUPANCY CLASSIFICATION" },
         c: {
           fieldId: "c_12", // FileHandler will read from column C
           type: "dropdown",
@@ -366,7 +366,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           section: "buildingInfo",
           colspan: 4, // Span columns C-F for dropdown
           options: [
-            { value: "-", name: "-" },
+            { value: "-", name: "Select Occupancy Classification" },
             { value: "A-Assembly", name: "A-Assembly" },
             { value: "B1-Detention", name: "B1-Detention" },
             { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
