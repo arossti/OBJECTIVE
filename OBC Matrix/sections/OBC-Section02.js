@@ -224,7 +224,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
-          classes: ["dropdown-lg"],
+          classes: ["dropdown-md"],
         },
         e: {
           fieldId: "e_14",
@@ -268,7 +268,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
-          classes: ["dropdown-lg"],
+          classes: ["dropdown-md"],
         },
         e: {
           fieldId: "e_15",
@@ -311,7 +311,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
-          classes: ["dropdown-lg"],
+          classes: ["dropdown-md"],
         },
         e: {
           fieldId: "e_16",
@@ -355,7 +355,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
-          classes: ["dropdown-lg"],
+          classes: ["dropdown-md"],
         },
         e: {
           fieldId: "e_17",
@@ -399,7 +399,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
-          classes: ["dropdown-lg"],
+          classes: ["dropdown-md"],
         },
         e: {
           fieldId: "e_18",

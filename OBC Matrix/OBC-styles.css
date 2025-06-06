@@ -1,32 +1,7 @@
 /**
- * 4011-styles.css Refactored 2025.04.21 to consolidate column widths and improve readability
- * Core styles for TEUI Calculator 4.011
- * Clean foundation with essential styling only
- * 
- * STYLING PRIORITY NOTE:
- * ---------------------
- * This application uses Bootstrap 5.1.3 which can influence and override our custom styles.
- * If fighting with conflicting styles, check Bootstrap influence first!
- * For critical elements like dropdowns, consider using direct HTML style tags in the head section.
- * 
- * INPUT FIELD STYLING GUIDELINES:
- * ------------------------------
- * This stylesheet implements a clean, borderless design for all user input elements.
- * The following principles apply across all input types:
- * 
- * 1. NO BORDERS OR BOX SHADOWS: Input fields should never have visible borders or box-shadows
- *    This includes text fields, numeric inputs, and editable cells.
- * 
- * 2. COLOR CODING: User-editable fields are colored blue (--user-input-color)
- *    Calculated/derived values use black text (--calculated-value-color)
- * 
- * 3. MINIMAL STYLING: Only use subtle background changes for hover/focus states
- *    Avoid using decorative elements that distract from content
- * 
- * 4. TABLE STRUCTURE: Preserve table row borders while keeping input fields borderless
- * 
- * IMPORTANT: DO NOT add inline styles to override these global styles!
- * If adjustments are needed, modify the global classes below.
+ * OBC-styles.css Refactored 2025.06.06 to consolidate column widths and improve readability
+ * Core styles for OBC Matrix
+
  */
 
 :root {
@@ -236,7 +211,7 @@ body {
 .data-table td,
 .data-table th {
   padding: var(--cell-padding);
-  text-align: left; /* Default alignment */
+  text-align: left; /* Default alignment - all text naturally left-aligned */
   border-bottom: 1px solid #eeeeee;
   line-height: 1.2;
   white-space: nowrap; /* Prevent wrapping */
@@ -250,79 +225,27 @@ body {
   padding-bottom: 4px !important; /* Reduced back to 4px */
 }
 
-/* Right-align numeric columns (D-M) */
+/* Right-align ALL numeric/data columns (D, F, H, J, K, L, M, N) - accounting style */
 .data-table td.col-d,
 .data-table td.col-f,
 .data-table td.col-h,
 .data-table td.col-j,
 .data-table td.col-k,
-.data-table td.col-l {
+.data-table td.col-l,
+.data-table td.col-m,
+.data-table td.col-n {
   text-align: right;
 }
 
-/* Force specific text columns (Units, secondary labels) to left-align */
-.data-table
-  td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell),
-.data-table
-  td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell),
-.data-table
-  td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell),
-.data-table
-  td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell) {
-  text-align: left; /* Only apply left-align if the cell doesn't contain a calculated/derived/input value */
-}
-
-/* Ensure Calculated/Derived/User Input values are RIGHT-aligned, overriding column defaults */
-.data-table td.col-e.calculated-value,
-.data-table td.col-g.calculated-value,
-.data-table td.col-i.calculated-value,
-.data-table td.col-m.calculated-value,
-.data-table td.col-e .calculated-value, /* Target inner elements too */
-.data-table td.col-g .calculated-value,
-.data-table td.col-i .calculated-value,
-.data-table td.col-m .calculated-value,
-.data-table td.col-e.derived-value,
-.data-table td.col-g.derived-value,
-.data-table td.col-i.derived-value,
-.data-table td.col-m.derived-value,
-.data-table td.col-e .derived-value,
-.data-table td.col-g .derived-value,
-.data-table td.col-i .derived-value,
-.data-table td.col-m .derived-value,
-.data-table td.col-e.user-input,
-.data-table td.col-g.user-input,
-.data-table td.col-i.user-input,
-.data-table td.col-m.user-input,
-.data-table td.col-e .user-input,
-.data-table td.col-g .user-input,
-.data-table td.col-i .user-input,
-.data-table td.col-m .user-input,
-.data-table td.col-e.number-input-cell,
-.data-table td.col-g.number-input-cell,
-.data-table td.col-i.number-input-cell,
-.data-table td.col-m.number-input-cell {
-  text-align: right !important; /* Use !important to ensure override */
-}
-
-/* Calculated/Derived values styling (keep base style) */
+/* Calculated/Derived values inherit alignment from their column position */
 .calculated-value {
   font-weight: 500;
   color: var(--calculated-value-color);
-  /* text-align is now handled by the more specific rule above */
 }
 
 .derived-value {
   font-weight: 500;
   color: var(--derived-value-color);
-  /* text-align is now handled by the more specific rule above */
 }
 
 /* Style for fields awaiting measurement/input */
@@ -1254,9 +1177,11 @@ table.data-table select.form-select:hover {
   border: none !important;
 }
 
-/* --- Utility Classes --- */
+/* =============== Text Alignment Utilities =============== */
+
+/* Use these sparingly - most alignment should follow the natural column pattern */
 .text-left {
-  text-align: left !important; /* Added important to override column defaults */
+  text-align: left !important;
 }
 
 .text-center {
@@ -1267,17 +1192,17 @@ table.data-table select.form-select:hover {
   text-align: right !important;
 }
 
+/* Special case: Text labels in numeric columns that should stay left-aligned */
+.text-left-indicator {
+  text-align: left !important; /* For labels in otherwise right-aligned columns */
+}
+
 /* Style for disabled/non-applicable input fields */
 .disabled-input {
   color: #6c757d !important; /* Bootstrap's secondary text color (grey) */
   font-style: italic !important;
   cursor: default !important;
-  background-color: transparent !important; /* Ensure no background interferes */
-}
-/* --- End Utility Classes --- */
-
-.text-left-indicator {
-  text-align: left !important; /* Force left alignment for specific indicator columns */
+  background-color: transparent !important;
 }
 
 /* --- Section 11 Visual Indicators --- */
@@ -2141,8 +2066,4 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   min-width: 430px !important;
 }
 
-/* Ensure editable fields respect text alignment classes */
-.data-table td[contenteditable="true"].text-left,
-.data-table td.editable.text-left {
-  text-align: left !important;
-}
+/* Note: Editable fields automatically inherit column alignment (left for text, right for numbers) */
