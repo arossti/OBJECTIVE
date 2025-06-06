@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Get DOM elements
   const body = document.body;
-  const keyValuesSection = document.getElementById("keyValues");
+  const keyValuesSection = document.getElementById("keyValues"); // May not exist in OBC Matrix
   const expandCollapseBtn = document.getElementById("expand-collapse-all");
   const layoutToggleButton = document.querySelector(".layout-toggle-btn");
   const sections = document.querySelectorAll(".section");
@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Bootstrap icons mapping
   const bootstrapIcons = {
-    keyValues: "bi-key-fill",
     buildingInfo: "bi-info-circle",
     climateCalculations: "bi-thermometer-half",
     actualTargetEnergy: "bi-bullseye",

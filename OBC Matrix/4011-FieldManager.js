@@ -17,8 +17,7 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 TEUI.FieldManager = (function () {
   // Section mapping from UI IDs to internal section module IDs
   const sections = {
-    keyValues: "sect01",
-    buildingInfo: "sect02",
+    buildingInfo: "sect01",
     climateCalculations: "sect03",
     actualTargetEnergy: "sect04",
     emissions: "sect05",
