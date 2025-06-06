@@ -65,7 +65,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         n: { content: "N", classes: ["section-subheader"] },
         o: {
           content: "Notes",
-          classes: ["section-subheader", "text-center", "notes-column"],
+          classes: ["section-subheader", "text-left", "notes-column"],
         },
       },
     },

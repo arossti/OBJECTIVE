@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The OBC Matrix is an interactive web form that replicates the Ontario Association of Architects' standardized Building Code Data Matrix. This tool enables architects to complete building permit applications digitally while maintaining the exact structure and field mapping of the original Excel template for seamless data import/export.
+The OBC Matrix is an interactive web form that replicates the Ontario Association of Architects' standardized Building Code Data Matrix. This tool enables architects to complete building permit applications digitally while maintaining the exact structure and field mapping of the original Excel template for seamless data import/export. Note: all OBC Matrix related files are under the 'OBC Matrix' Directory of the OBJECTIVE workspace. DO NOT mix files (ie index.html, README.md, etc), all OBC Matrix is isolated to this single directory. 
 
 ## Core Strategy: Excel-Aligned Web Form
 
@@ -17,6 +17,7 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 - Excel cell coordinate mapping (e.g., Excel cell D12 → DOM element `id="d_12"`)
 - Field-for-field correspondence with OBC_2024_PART3.csv and OBC_2024_PART9.csv
 - Responsive design with sticky navigation for improved UX
+- Eventual connection to the 4011 OBJECTIVE TEUI Calculator App can harvest values from the OBC Matrix app to auto-populate building use and geometric data to speed the pathway to a schematic energy model scenario with relevant code bencmkarking for assemblies (ie RSI values) and system efficiencies
 
 ## Implementation Phases
 
@@ -40,13 +41,13 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 - Updated disclaimer to reference official Ontario Building Code regulations
 - Added Ontario Association of Architects copyright notice
 
-### ✅ Phase 3: Section Restructuring Analysis (COMPLETED)
-**Objective**: Understand CSV structure and plan section reorganization
+### ✅ Phase 3: Section Restructuring Analysis (COMPLETED - Needs refinement)
+**Objective**: Understand CSV structure and plan section reorganization, add basic math scripts, use numeric values, consider addition of OBC-Matrix-StateManager.js as a simpler copy of the 4011-StateManager.js, but where we only need 1. Default, 2. user-modifed, and 3. imported states.  
 
 **Completed Work**:
 - Analyzed OBC_2024_PART3.csv structure showing sections 3.01, 3.02, etc.
 - Identified Notes fields in column O requiring 3-column span
-- Planned removal of energy-specific fields (reporting year, service life, energy costs)
+- Removal of TEUI energy-specific fields (reporting year, service life, energy costs)
 - Mapped required fields: practice info, project info, classification dropdowns
 
 ### ✅ Phase 4: Building Information Section Implementation (COMPLETED)
@@ -81,13 +82,30 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 
 **Current Status**: Section 01 is production-ready with working dropdowns, perfect Excel alignment, and all core functionality operational.
 
-### 🔄 Phase 6: Additional Sections Implementation (READY TO START)
-**Objective**: Build out remaining OBC Matrix sections based on CSV structure
+### ✅ Phase 6: Building Occupancy Section Implementation (COMPLETED)
+**Objective**: Create Section 02 with occupancy classification and project details
 
-**Next Priority - Section 02**:
-- **Section 3.03**: Building Classification & Use Group details
-- **Section 3.04**: Construction Type and specifications  
-- **Additional Fields**: Height, area, occupancy load calculations
+**Completed Work**:
+- **Section 02 (Building Occupancy)**: Complete implementation covering Excel rows 10-20
+- **Building Code Version**: Consolidated O.Reg. 163/24 and amendment info 
+- **Project Type Dropdown**: Medium-sized dropdown with 6 project types
+- **Major Occupancy Classification**: 5 large dropdowns with full OBC occupancy options
+- **Superimposed Major Occupancies**: Small Yes/No dropdown with explanation field
+- **Description Field**: User-editable clarification area for project details
+- **OAA Member Registration**: New custom field with URL for architect verification
+- **Responsive Dropdown Sizing**: sm/md/lg system for optimal layout
+- **Layout Optimization**: Compressed columns, moved OBC references to column L
+- **No Horizontal Scrolling**: Content fits perfectly at 100% browser zoom
+
+**Current Status**: Section 02 is production-ready with proper dropdown sizing, clean layout, and all occupancy classification functionality operational.
+
+### 🔄 Phase 7: Building Areas Section Implementation (PARTIAL)
+**Objective**: Create Section 03 with building area calculations and measurements
+
+**Next Priority - Section 03**:
+- **Building Areas (Rows 21-39)**: Area calculations and measurements
+- **Construction Type**: Building construction specifications
+- **Height Calculations**: Stories above/below grade measurements
 - **Reference Integration**: Proper OBC section cross-references
 
 **Future Sections**:
@@ -95,7 +113,172 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 - **Notes Section**: Dedicated notes area for project-specific information  
 - **Summary Section**: Overview of completed fields and validation status
 
-### 📋 Phase 7: Data Import/Export Engine (PLANNED)
+### 📋 Phase 8: OAA Stamp Validation Engine (PLANNED)
+**Objective**: Automated validation of architect stamps against OAA membership directory
+
+**Technical Implementation Strategy**:
+
+#### **Step 1: Image Text Extraction (OCR)**
+Implement Optical Character Recognition to extract architect name and license number from uploaded stamp images:
+
+```javascript
+// Using Tesseract.js for client-side OCR
+import Tesseract from 'tesseract.js';
+
+async function extractStampInfo(imageFile) {
+  const { data: { text } } = await Tesseract.recognize(imageFile, 'eng');
+  
+  // Parse for name and license patterns
+  const nameMatch = text.match(/([A-Z\s]+)(?=\s+LICENCE|\s+LICENSE)/i);
+  const licenseMatch = text.match(/LICEN[CS]E\s*(\d+)/i);
+  
+  return {
+    name: nameMatch?.[1]?.trim(),
+    license: licenseMatch?.[1]
+  };
+}
+```
+
+#### **Step 2: OAA Directory Integration**
+The [OAA Directory](https://oaa.on.ca/oaa-directory) provides publicly available member data with multiple integration approaches:
+
+**Option A: Excel Download Integration**
+```javascript
+// Periodic update from OAA's public Excel download
+async function updateOAADatabase() {
+  // Download public Excel file of practices
+  const response = await fetch('https://oaa.on.ca/oaa-directory/practices-listing.xlsx');
+  const workbook = XLSX.read(await response.arrayBuffer());
+  
+  // Parse and store member data locally
+  const members = parseOAAWorkbook(workbook);
+  localStorage.setItem('oaaMembers', JSON.stringify(members));
+}
+```
+
+**Option B: Directory Search Integration**
+```javascript
+async function validateWithOAA(name, license) {
+  // Search public OAA directory (data already publicly accessible)
+  const searchUrl = `https://oaa.on.ca/oaa-directory/search`;
+  
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('license', license);
+  
+  const response = await fetch(searchUrl, {
+    method: 'POST',
+    body: formData
+  });
+  
+  return parseSearchResults(response);
+}
+```
+
+#### **Step 3: Automated Validation Workflow**
+```javascript
+async function validateArchitectStamp(imageFile) {
+  try {
+    // Extract info from stamp image
+    const { name, license } = await extractStampInfo(imageFile);
+    
+    // Validate against public OAA directory
+    const member = await validateWithOAA(name, license);
+    
+    if (member.verified) {
+      return {
+        valid: true,
+        memberUri: `https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/${member.slug}`,
+        name: member.fullName,
+        license: member.licenseNumber,
+        status: member.membershipStatus,
+        practiceStatus: member.certificateOfPractice
+      };
+    } else {
+      return {
+        valid: false,
+        reason: 'Member not found in OAA directory',
+        suggestedMatches: member.similarNames || []
+      };
+    }
+  } catch (error) {
+    return {
+      valid: false,
+      reason: 'Unable to process stamp image',
+      error: error.message
+    };
+  }
+}
+```
+
+#### **Step 4: Enhanced UI Integration**
+```javascript
+// Enhanced stamp upload with real-time validation
+async function handleStampUpload(file) {
+  // Show processing indicator
+  updateStampStatus('Processing stamp image...', 'info');
+  
+  // Validate stamp against OAA directory
+  const validation = await validateArchitectStamp(file);
+  
+  if (validation.valid) {
+    // Auto-populate OAA Member Registration field
+    document.getElementById('c_10').value = validation.memberUri;
+    
+    // Show success with member details
+    updateStampStatus(
+      `✓ Verified: ${validation.name} (License ${validation.license})`, 
+      'success'
+    );
+    
+    // Optional: Auto-populate other form fields
+    populateArchitectInfo(validation);
+    
+  } else {
+    // Show validation warning with manual override
+    updateStampStatus(
+      `⚠ ${validation.reason}. Please verify manually.`, 
+      'warning'
+    );
+    
+    // Provide suggested matches if available
+    if (validation.suggestedMatches?.length > 0) {
+      showSuggestedMatches(validation.suggestedMatches);
+    }
+  }
+}
+
+function populateArchitectInfo(memberData) {
+  // Auto-populate practice information if validated
+  if (memberData.practiceName) {
+    document.getElementById('c_3').value = memberData.practiceName;
+  }
+  if (memberData.practiceAddress) {
+    document.getElementById('c_4').value = memberData.practiceAddress;
+  }
+}
+```
+
+#### **Technical Considerations**:
+- **OCR Accuracy**: Stamp image quality varies; implement confidence scoring
+- **Name Matching**: Fuzzy matching for "Andy Thomson" vs "Andrew Thomson" variations
+- **Rate Limiting**: Implement delays to respect OAA server resources
+- **Caching**: Local storage of validated results to reduce API calls
+- **Fallback Options**: Manual verification path when automated validation fails
+
+#### **Data Privacy & Compliance**:
+- **Public Data**: OAA directory is publicly accessible and commonly scraped
+- **Professional Use**: Validation serves legitimate professional compliance purpose
+- **Transparency**: Users see validation results and can manually override
+- **No Storage**: Validation results not permanently stored, only used for form completion
+
+#### **Implementation Phases**:
+1. **Phase 8A**: Basic OCR extraction with manual confirmation
+2. **Phase 8B**: OAA directory integration with automated validation
+3. **Phase 8C**: Enhanced fuzzy matching and suggested alternatives
+4. **Phase 8D**: Certificate of Practice (CoP) verification integration
+
+### 📋 Phase 9: Data Import/Export Engine (PLANNED)
 **Objective**: Enable seamless data exchange with Excel/CSV files
 
 **Key Features**:
@@ -105,7 +288,7 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 - **Export Function**: Generate Excel-compatible CSV from form data
 - **Validation**: Ensure data integrity during import/export
 
-### 📋 Phase 8: User Experience Enhancements (PLANNED)
+### 📋 Phase 10: User Experience Enhancements (PLANNED)
 **Objective**: Add modern web form features while maintaining Excel compatibility
 
 **Planned Features**:
