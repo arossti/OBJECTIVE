@@ -853,10 +853,17 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(updateStickyElementHeights, 300);
 
   // Initialize core components after DOM is loaded
-  if (window.TEUI && window.TEUI.StateManager && window.TEUI.FieldManager) {
-    window.TEUI.StateManager.initialize();
+  if (window.TEUI && window.TEUI.FieldManager) {
+    // Initialize FieldManager (core requirement for OBC Matrix)
     window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
-    window.TEUI.SectionIntegrator.initialize();
+    
+    // Initialize optional modules only if they exist
+    if (window.TEUI.StateManager) {
+      window.TEUI.StateManager.initialize();
+    }
+    if (window.TEUI.SectionIntegrator) {
+      window.TEUI.SectionIntegrator.initialize();
+    }
     // Initialize Reference components (Manager depends on Values, Toggle is independent UI)
     if (window.TEUI.ReferenceValues) {
       // Manager depends on this data
@@ -869,7 +876,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Initialize other UI handlers
     initializeUIHandlers();
+    console.log("OBC Matrix initialization complete - FieldManager loaded");
   } else {
-    console.error("Core TEUI modules (StateManager, FieldManager) not found!");
+    console.error("Core TEUI modules (FieldManager) not found!");
   }
 });
