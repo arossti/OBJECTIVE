@@ -31,6 +31,26 @@
         /* Force sans-serif as fallback */
         font-family: sans-serif !important;
       }
+
+      /* Notes Column Toggle Styles */
+      .notes-column {
+        transition: opacity 0.3s ease, width 0.3s ease;
+      }
+
+      /* Hide notes column when body has notes-hidden class */
+      body.notes-hidden .notes-column {
+        display: none;
+      }
+
+      /* Notes toggle button active state */
+      #notes-toggle-btn.active {
+        background-color: rgba(255,255,255,0.2);
+      }
+
+      /* Hide the separate notes panel - we're using column toggle instead */
+      #global-notes-panel {
+        display: none !important;
+      }
     </style>
 
     <link href="4011-styles.css" rel="stylesheet" />
@@ -232,6 +252,13 @@
                   class="btn btn-sm btn-link text-white me-2"
                 >
                   <i class="bi bi-plus-circle"></i>
+                </button>
+                <button
+                  id="notes-toggle-btn"
+                  class="btn btn-sm btn-link text-white me-2"
+                  title="Toggle Notes Panel"
+                >
+                  <i class="bi bi-card-text"></i>
                 </button>
                 <button class="layout-toggle-btn">
                   <i class="bi bi-arrow-right-circle"></i>
@@ -457,6 +484,24 @@
         </div>
       </div>
 
+      <!-- Global Notes Panel -->
+      <div id="global-notes-panel" class="notes-panel" style="display: none;">
+        <div class="notes-panel-header">
+          <h5><i class="bi bi-card-text"></i> Project Notes</h5>
+          <button id="close-notes-panel" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        <div class="notes-panel-content">
+          <textarea 
+            id="global-notes-textarea" 
+            class="form-control" 
+            rows="15" 
+            placeholder="Enter project notes here...">
+          </textarea>
+        </div>
+      </div>
+
       <!-- Footer -->
       <footer class="pt-5 mt-5 text-muted border-top">
         <div class="row">
@@ -626,8 +671,54 @@ Select a province and city to view weather data.</pre
           }, 500);
         }
 
+        // Initialize Global Notes Panel with delay to ensure DOM is ready
+        setTimeout(function() {
+          initializeNotesPanel();
+        }, 100);
+
         console.log("TEUI Calculator 4.011 initialization complete");
       });
+
+      // Global Notes Panel functionality
+      function initializeNotesPanel() {
+        console.log('Initializing notes panel...');
+        const notesToggleBtn = document.getElementById('notes-toggle-btn');
+        const closeNotesBtn = document.getElementById('close-notes-panel');
+        const notesPanel = document.getElementById('global-notes-panel');
+        const notesTextarea = document.getElementById('global-notes-textarea');
+
+        console.log('Found elements:', { notesToggleBtn, closeNotesBtn, notesPanel, notesTextarea });
+
+        if (!notesToggleBtn || !notesPanel) {
+          console.error('Required notes panel elements not found');
+          return;
+        }
+
+        // Toggle notes column
+        function toggleNotesPanel() {
+          console.log('Toggle notes column clicked');
+          const isHidden = document.body.classList.contains('notes-hidden');
+          
+          if (isHidden) {
+            // Show notes column
+            document.body.classList.remove('notes-hidden');
+            notesToggleBtn.classList.add('active');
+            console.log('Showed notes column');
+          } else {
+            // Hide notes column
+            document.body.classList.add('notes-hidden');
+            notesToggleBtn.classList.remove('active');
+            console.log('Hidden notes column');
+          }
+        }
+
+        // Event listeners
+        notesToggleBtn.addEventListener('click', toggleNotesPanel);
+        console.log('Added click listener to notes toggle button');
+        
+        // Set initial state - notes visible by default
+        notesToggleBtn.classList.add('active');
+      }
     </script>
   </body>
 </html>

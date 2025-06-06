@@ -32,21 +32,21 @@ window.TEUI.SectionModules.sect01 = (function () {
           content: "BUILDING INFORMATION",
           classes: ["section-header"],
         },
-        d: { content: "", classes: ["section-subheader"] },
-        e: { content: "", classes: ["section-subheader"] },
-        f: { content: "", classes: ["section-subheader"] },
-        g: { content: "", classes: ["section-subheader"] },
-        h: { content: "", classes: ["section-subheader"] },
-        i: { content: "", classes: ["section-subheader"] },
-        j: { content: "", classes: ["section-subheader"] },
-        k: { content: "", classes: ["section-subheader"] },
+        d: { content: "D", classes: ["section-subheader"] },
+        e: { content: "E", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "G", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "I", classes: ["section-subheader"] },
+        j: { content: "J", classes: ["section-subheader"] },
+        k: { content: "K", classes: ["section-subheader"] },
         l: {
           content: "Notes",
-          classes: ["section-subheader", "text-center"],
+          classes: ["section-subheader", "text-center", "notes-column"],
           colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
+        m: { content: "M" },
+        n: { content: "N" },
       },
     },
 
@@ -58,13 +58,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "Name of Practice" },
         d: {
-          fieldId: "d_3",
-          type: "editable",
+          fieldId: "c_3", // FileHandler will read from column C
+          type: "editable", 
           value: "Enter practice name",
           section: "buildingInfo",
           placeholder: "Enter practice name",
           classes: ["text-left", "no-wrap"],
-          span: 2,
+          colspan: 6, // Span columns D-I
         },
         e: { content: "" },
         f: { content: "" },
@@ -78,7 +78,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -94,13 +94,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "Address 1" },
         d: {
-          fieldId: "d_4",
+          fieldId: "c_4", // FileHandler will read from column C
           type: "editable",
           value: "Enter address line 1",
           section: "buildingInfo",
           placeholder: "Enter address line 1",
           classes: ["text-left", "no-wrap"],
-          span: 2,
+          colspan: 6, // Span columns D-I
         },
         e: { content: "" },
         f: { content: "" },
@@ -114,7 +114,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -150,7 +150,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -166,13 +166,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "Contact" },
         d: {
-          fieldId: "d_6",
+          fieldId: "c_6", // FileHandler will read from column C
           type: "editable",
           value: "Enter contact information",
           section: "buildingInfo",
           placeholder: "Enter contact information",
           classes: ["text-left", "no-wrap"],
-          span: 2,
+          colspan: 6, // Span columns D-I
         },
         e: { content: "" },
         f: { content: "" },
@@ -186,7 +186,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -202,13 +202,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "Name of Project" },
         d: {
-          fieldId: "d_7",
+          fieldId: "c_7", // FileHandler will read from column C
           type: "editable",
           value: "Enter project name",
           section: "buildingInfo",
           placeholder: "Enter project name",
           classes: ["text-left", "no-wrap"],
-          span: 2,
+          colspan: 6, // Span columns D-I
         },
         e: { content: "" },
         f: { content: "" },
@@ -222,7 +222,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -238,13 +238,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "Location/Address" },
         d: {
-          fieldId: "d_8",
+          fieldId: "c_8", // FileHandler will read from column C
           type: "editable",
           value: "Enter project location",
           section: "buildingInfo",
           placeholder: "Enter project location",
           classes: ["text-left", "no-wrap"],
-          span: 2,
+          colspan: 6, // Span columns D-I
         },
         e: { content: "" },
         f: { content: "" },
@@ -258,7 +258,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -274,13 +274,13 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "Date" },
         d: {
-          fieldId: "d_9",
+          fieldId: "c_9", // FileHandler will read from column C
           type: "editable",
           value: "Enter date",
           section: "buildingInfo",
           placeholder: "Enter date",
           classes: ["text-left", "no-wrap"],
-          span: 1,
+          colspan: 3, // Span columns D-F for date field
         },
         e: { content: "" },
         f: { content: "" },
@@ -292,7 +292,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "",
           section: "buildingInfo",
           classes: ["stamp-upload-area"],
-          span: 2,
+          colspan: 2, // Span columns I-J for stamp upload
         },
         j: { content: "" },
         k: { content: "" },
@@ -301,7 +301,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -317,11 +317,12 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "3.01 PROJECT TYPE" },
         d: {
-          fieldId: "d_10",
+          fieldId: "c_10", // FileHandler will read from column C
           type: "dropdown",
-          dropdownId: "dd_d_10",
+          dropdownId: "dd_c_10",
           value: "-",
           section: "buildingInfo",
+          colspan: 4, // Span columns D-G for dropdown
           options: [
             { value: "-", name: "-" },
             { value: "New Construction", name: "New Construction" },
@@ -343,7 +344,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
@@ -359,11 +360,12 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         c: { label: "3.02 MAJOR OCCUPANCY CLASSIFICATION" },
         d: {
-          fieldId: "d_12",
+          fieldId: "c_12", // FileHandler will read from column C
           type: "dropdown",
-          dropdownId: "dd_d_12",
+          dropdownId: "dd_c_12",
           value: "-",
           section: "buildingInfo",
+          colspan: 4, // Span columns D-G for dropdown
           options: [
             { value: "-", name: "-" },
             { value: "A-Assembly", name: "A-Assembly" },
@@ -394,7 +396,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "notes-column"],
           colspan: 3,
         },
         m: { content: "" },
