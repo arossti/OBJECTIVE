@@ -251,6 +251,19 @@ window.TEUI.OBCStateManager = (function () {
       } else {
         element.textContent = value;
       }
+      
+      // Update CSS classes based on field state
+      const fieldState = getState(fieldId);
+      if (fieldState === VALUE_STATES.USER_MODIFIED) {
+        element.classList.add('user-modified');
+        element.classList.remove('default', 'imported');
+      } else if (fieldState === VALUE_STATES.IMPORTED) {
+        element.classList.add('imported');
+        element.classList.remove('user-modified', 'default');
+      } else {
+        element.classList.add('default');
+        element.classList.remove('user-modified', 'imported');
+      }
     }
   }
 
@@ -334,6 +347,15 @@ window.TEUI.OBCStateManager = (function () {
     if (!currentFieldId) return;
     
     let valueStr = fieldElement.textContent.trim();
+    const originalValue = fieldElement.dataset.originalValue || "";
+    
+    // Check if the user actually made any changes
+    const hasActualChanges = valueStr !== originalValue;
+    
+    if (!hasActualChanges) {
+      // User clicked in but didn't change anything - no state change needed
+      return;
+    }
     
     // Handle numeric formatting if needed
     let numValue = window.TEUI.parseNumeric(valueStr, NaN);
@@ -355,7 +377,7 @@ window.TEUI.OBCStateManager = (function () {
     // Update display
     fieldElement.textContent = displayValue;
     
-    // Store the value in OBC StateManager
+    // Store the value in OBC StateManager as user-modified (only if there were actual changes)
     setValue(currentFieldId, valueStr, VALUE_STATES.USER_MODIFIED);
   }
 
@@ -383,8 +405,23 @@ window.TEUI.OBCStateManager = (function () {
         field.addEventListener("blur", handleFieldBlur);
         
         // Visual feedback for editing state
-        field.addEventListener("focus", () => field.classList.add("editing"));
-        field.addEventListener("focusout", () => field.classList.remove("editing"));
+        field.addEventListener("focus", () => {
+          field.classList.add("editing");
+          
+          // Store original value for change detection on blur
+          field.dataset.originalValue = field.textContent.trim();
+          
+          // Add temporary editing class for immediate blue styling (doesn't change state)
+          const currentState = getState(field.getAttribute("data-field-id"));
+          if (!currentState || currentState === VALUE_STATES.DEFAULT) {
+            field.classList.add("editing-intent");
+          }
+        });
+        
+        field.addEventListener("focusout", () => {
+          field.classList.remove("editing");
+          field.classList.remove("editing-intent"); // Always remove temporary class
+        });
         
         field.hasOBCGlobalListeners = true; // Mark as listener attached
       }

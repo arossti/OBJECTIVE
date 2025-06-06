@@ -583,6 +583,133 @@ td[colspan="2"] .form-select {
   font-weight: 500;
 }
 
+/* =============== MINIMAL INPUT FIELD STYLING =============== */
+/* Ultra-minimal approach - just enough to show editability without visual noise */
+
+/* Base styling for editable fields - minimal and clean */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  /* No borders - completely clean */
+  border: none !important;
+  border-bottom: 1px solid transparent !important; /* Invisible by default */
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+  
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: inherit !important;
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+  
+  /* Clean interactions */
+  outline: none !important;
+  transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important;
+  cursor: text !important;
+  
+  /* Default alignment */
+  text-align: left !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Special alignment for numeric fields */
+.data-table td input[type="number"].user-input,
+.data-table td[contenteditable="true"][data-field-id*="area"],
+.data-table td[contenteditable="true"][data-field-id*="dimension"], 
+.data-table td[contenteditable="true"][data-field-id*="height"],
+.data-table td[contenteditable="true"][data-field-id*="cost"],
+.data-table td[contenteditable="true"][data-field-id*="value"] {
+  text-align: right !important;
+}
+
+/* Hover state - very subtle background hint */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  background-color: rgba(13, 110, 253, 0.03) !important;
+  border-bottom-color: rgba(13, 110, 253, 0.3) !important;
+}
+
+/* Focus state - subtle underline */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Parent cell styling - minimal */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.editable,
+.data-table td:has(.user-input[contenteditable="true"]) {
+  padding: 4px 8px !important;
+  vertical-align: middle !important;
+}
+
+/* Override conflicting cell hover styles */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td.editable:hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: transparent !important;
+}
+
+/* Remove conflicting TD focus styles */
+.data-table td.editable.editing,
+.data-table td.user-input.editing,
+.data-table td:has([contenteditable="true"].editing),
+.data-table td:has(input[type="number"]:focus) {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Default/placeholder text styling - muted grey */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* Smooth transition between states */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  transition: color 0.3s ease, font-style 0.3s ease, font-weight 0.3s ease, 
+              border-bottom-color 0.2s ease, background-color 0.2s ease !important;
+}
+
+/* =============== END MINIMAL INPUT FIELD STYLING =============== */
+
 /* =============== Print Styling =============== */
 
 @media print {
