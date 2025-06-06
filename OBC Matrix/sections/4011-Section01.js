@@ -28,11 +28,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "01-HEADER",
       label: "Building Information Header",
       cells: {
-        b: { content: "Descriptive Text", classes: ["section-subheader"] },
-        c: {
-          content: "BUILDING INFORMATION",
-          classes: ["section-header"],
-        },
+        b: { content: "B", classes: ["section-subheader"] },
+        c: { content: "C", classes: ["section-subheader"] },
         d: { content: "D", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
@@ -57,17 +54,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Name of Practice",
       cells: {
-        b: { content: "Name of Practice" },
-        c: { content: "" },
-        d: {
+        b: { label: "Name of Practice" },
+        c: {
           fieldId: "c_3", // FileHandler will read from column C
           type: "editable", 
           value: "Enter practice name",
           section: "buildingInfo",
           placeholder: "Enter practice name",
           classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns D-I
+          colspan: 6, // Span columns C-H
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -94,17 +91,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Address 1",
       cells: {
-        b: { content: "Address 1" },
-        c: { content: "" },
-        d: {
+        b: { label: "Address 1" },
+        c: {
           fieldId: "c_4", // FileHandler will read from column C
           type: "editable",
           value: "Enter address line 1",
           section: "buildingInfo",
           placeholder: "Enter address line 1",
           classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns D-I
+          colspan: 6, // Span columns C-H
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -131,17 +128,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Address 2",
       cells: {
-        b: { content: "Address 2" },
-        c: { content: "" },
-        d: {
-          fieldId: "d_5",
+        b: { label: "Address 2" },
+        c: {
+          fieldId: "c_5", // Fixed: should be c_5 not d_5
           type: "editable",
           value: "Enter address line 2",
           section: "buildingInfo",
           placeholder: "Enter address line 2",
           classes: ["text-left", "no-wrap"],
-          span: 2,
+          colspan: 6, // Changed to colspan to match other rows
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -168,17 +165,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Contact",
       cells: {
-        b: { content: "Contact" },
-        c: { content: "" },
-        d: {
+        b: { label: "Contact" },
+        c: {
           fieldId: "c_6", // FileHandler will read from column C
           type: "editable",
           value: "Enter contact information",
           section: "buildingInfo",
           placeholder: "Enter contact information",
           classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns D-I
+          colspan: 6, // Span columns C-H
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -205,17 +202,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Name of Project",
       cells: {
-        b: { content: "Name of Project" },
-        c: { content: "" },
-        d: {
+        b: { label: "Name of Project" },
+        c: {
           fieldId: "c_7", // FileHandler will read from column C
           type: "editable",
           value: "Enter project name",
           section: "buildingInfo",
           placeholder: "Enter project name",
           classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns D-I
+          colspan: 6, // Span columns C-H
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -242,17 +239,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Location/Address",
       cells: {
-        b: { content: "Location/Address" },
-        c: { content: "" },
-        d: {
+        b: { label: "Location/Address" },
+        c: {
           fieldId: "c_8", // FileHandler will read from column C
           type: "editable",
           value: "Enter project location",
           section: "buildingInfo",
           placeholder: "Enter project location",
           classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns D-I
+          colspan: 6, // Span columns C-H
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -279,17 +276,17 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Date",
       cells: {
-        b: { content: "Date" },
-        c: { content: "" },
-        d: {
+        b: { label: "Date" },
+        c: {
           fieldId: "c_9", // FileHandler will read from column C
           type: "editable",
           value: "Enter date",
           section: "buildingInfo",
           placeholder: "Enter date",
           classes: ["text-left", "no-wrap"],
-          colspan: 3, // Span columns D-F for date field
+          colspan: 3, // Span columns C-E for date field
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -316,15 +313,14 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.01",
       label: "Project Type",
       cells: {
-        b: { content: "3.01 PROJECT TYPE" },
-        c: { content: "" },
-        d: {
+        b: { label: "3.01 PROJECT TYPE" },
+        c: {
           fieldId: "c_10", // FileHandler will read from column C
           type: "dropdown",
           dropdownId: "dd_c_10",
           value: "-",
           section: "buildingInfo",
-          colspan: 4, // Span columns D-G for dropdown
+          colspan: 4, // Span columns C-F for dropdown
           options: [
             { value: "-", name: "-" },
             { value: "New Construction", name: "New Construction" },
@@ -334,11 +330,12 @@ window.TEUI.SectionModules.sect01 = (function () {
             { value: "Repair", name: "Repair" },
           ],
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
-        h: { content: "" },
-        i: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
+        h: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
+        i: { content: "" },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -360,15 +357,14 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.02",
       label: "Major Occupancy Classification",
       cells: {
-        b: { content: "3.02 MAJOR OCCUPANCY CLASSIFICATION" },
-        c: { content: "" },
-        d: {
+        b: { label: "3.02 MAJOR OCCUPANCY CLASSIFICATION" },
+        c: {
           fieldId: "c_12", // FileHandler will read from column C
           type: "dropdown",
           dropdownId: "dd_c_12",
           value: "-",
           section: "buildingInfo",
-          colspan: 4, // Span columns D-G for dropdown
+          colspan: 4, // Span columns C-F for dropdown
           options: [
             { value: "-", name: "-" },
             { value: "A-Assembly", name: "A-Assembly" },
@@ -387,11 +383,12 @@ window.TEUI.SectionModules.sect01 = (function () {
             { value: "F-Industrial", name: "F-Industrial" },
           ],
         },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
-        h: { content: "" },
-        i: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
+        h: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
+        i: { content: "" },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -614,74 +611,26 @@ window.TEUI.SectionModules.sect01 = (function () {
       </div>
     `;
 
+    // Add CSS for floating positioning  
+    stampContainer.style.cssText = `
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      width: 220px;
+    `;
+
     // Position relative to section
     sectionContent.style.position = 'relative';
     sectionContent.appendChild(stampContainer);
 
-    // Set up table-aware positioning
-    positionStampToColumnJ(stampContainer);
-
     // Initialize stamp upload functionality on the floating element
     initializeFloatingStampUpload();
-  }
-
-  function positionStampToColumnJ(stampContainer) {
-    // Wait for table to render, then position relative to column J
-    setTimeout(() => {
-      const table = document.querySelector('[data-render-section="buildingInfo"] table');
-      if (!table) return;
-
-      // Find the first row to get column positions
-      const firstRow = table.querySelector('tr');
-      if (!firstRow) return;
-
-      // Get all cells in the first row to find column J
-      const cells = firstRow.querySelectorAll('td, th');
-      
-      // Column positions: A(0), B(1), C(2), D(3), E(4), F(5), G(6), H(7), I(8), J(9)
-      // Since we start from column B in our structure: B(0), C(1), D(2)... J(8)
-      let columnJIndex = 8; // J is the 9th column, but 8th index in our array starting from B
-      
-      if (cells[columnJIndex]) {
-        const columnJRect = cells[columnJIndex].getBoundingClientRect();
-        const tableRect = table.getBoundingClientRect();
-        
-        // Position stamp at column J's left edge
-        const leftOffset = columnJRect.left - tableRect.left;
-        
-        stampContainer.style.cssText = `
-          position: absolute;
-          top: 20px;
-          left: ${leftOffset}px;
-          z-index: 10;
-          background: white;
-          border: 1px solid #dee2e6;
-          border-radius: 8px;
-          padding: 15px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          width: 200px;
-        `;
-      } else {
-        // Fallback to right positioning if column detection fails
-        stampContainer.style.cssText = `
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          z-index: 10;
-          background: white;
-          border: 1px solid #dee2e6;
-          border-radius: 8px;
-          padding: 15px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          width: 200px;
-        `;
-      }
-
-      // Reposition on window resize
-      window.addEventListener('resize', () => {
-        positionStampToColumnJ(stampContainer);
-      });
-    }, 200);
   }
 
   function initializeFloatingStampUpload() {
