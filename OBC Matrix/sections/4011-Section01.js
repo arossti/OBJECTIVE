@@ -41,10 +41,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "L", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
-        o: {
-          content: "Notes",
-          classes: ["section-subheader", "text-center", "notes-column"],
-        },
       },
     },
 
@@ -75,13 +71,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_3",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
@@ -112,13 +101,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_4",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
@@ -149,13 +131,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_5",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
@@ -186,13 +161,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_6",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
@@ -223,13 +191,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_7",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
@@ -260,13 +221,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_8",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
@@ -297,16 +251,38 @@ window.TEUI.SectionModules.sect01 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: {
-          fieldId: "o_9",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
       },
     },
 
+    // Row 10: OAA Member Registration (new feature, not part of Excel DOM)
+    10: {
+      id: "1.08",
+      rowId: "1.08", 
+      label: "OAA MEMBER REGISTRATION",
+      cells: {
+        b: { label: "OAA MEMBER REGISTRATION" },
+        c: {
+          fieldId: "c_10",
+          type: "editable",
+          value: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
+          section: "buildingInfo",
+          placeholder: "Enter OAA member directory URL",
+          classes: ["text-left", "no-wrap"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
 
   };
 
@@ -506,10 +482,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     const stampContainer = document.createElement('div');
     stampContainer.id = 'floating-stamp-upload';
     stampContainer.innerHTML = `
-      <div class="stamp-upload-label">Seal & Signature</div>
       <div class="stamp-upload-container">
         <div class="stamp-placeholder" id="floating-stamp-placeholder">
-          <div class="stamp-instructions">Upload seal image here</div>
+          <div class="stamp-title">Seal & Signature</div>
+          <div class="stamp-instructions">Upload Seal Image Here</div>
           <div class="stamp-hint">200x200px recommended</div>
         </div>
         <input type="file" id="floating-stamp-upload-input" accept="image/*" style="display: none;">
@@ -524,11 +500,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       right: 20px;
       z-index: 10;
       background: white;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      width: 220px;
+      width: 200px;
     `;
 
     // Position relative to section
@@ -590,15 +562,15 @@ window.TEUI.SectionModules.sect01 = (function () {
       style.id = 'stamp-upload-styles';
       style.textContent = `
         .stamp-upload-container {
-          width: 180px;
-          height: 180px;
+          width: 200px;
+          height: 200px;
           position: relative;
-          margin: 0 auto;
+          margin: 0;
         }
 
         .stamp-placeholder {
-          width: 180px;
-          height: 180px;
+          width: 200px;
+          height: 200px;
           border: 2px dashed #ccc;
           border-radius: 8px;
           display: flex;
@@ -607,12 +579,22 @@ window.TEUI.SectionModules.sect01 = (function () {
           justify-content: center;
           cursor: pointer;
           transition: border-color 0.3s ease;
-          background-color: #fafafa;
+          background-color: white;
+          padding: 8px;
+          box-sizing: border-box;
         }
 
         .stamp-placeholder:hover {
           border-color: #007bff;
           background-color: #f0f8ff;
+        }
+
+        .stamp-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+          text-align: center;
+          margin-bottom: 8px;
         }
 
         .stamp-instructions {
@@ -630,20 +612,13 @@ window.TEUI.SectionModules.sect01 = (function () {
         }
 
         .stamp-preview {
-          width: 180px;
-          height: 180px;
+          width: 200px;
+          height: 200px;
           object-fit: contain;
           border-radius: 8px;
           cursor: pointer;
           border: 2px solid #ddd;
-        }
-
-        .stamp-upload-label {
-          font-size: 14px;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 8px;
-          text-align: center;
+          background-color: white;
         }
 
         #floating-stamp-upload {
