@@ -73,6 +73,40 @@ Objective TEUI 4.012 Framework - Next Generation Architecture
 
 ---
 
+## 🏢 **OBC MATRIX PROJECT** (PARALLEL DEVELOPMENT)
+
+### Current Status: Phase 5 Complete ✅
+
+A specialized adaptation of the TEUI 4011 codebase to create the **2024 Ontario Building Code Data Matrix** - an interactive web form that replicates the Ontario Association of Architects' standardized Building Code Excel template.
+
+#### **Completed Phases**:
+- ✅ **Phase 1**: Infrastructure setup and TEUI-specific removals
+- ✅ **Phase 2**: OBC Matrix branding and disclaimer modal  
+- ✅ **Phase 3**: CSV structure analysis and field mapping
+- ✅ **Phase 4**: Section 01 implementation with practice info, dropdowns, stamp upload
+- ✅ **Phase 5**: 15-column Excel structure compliance and Notes column toggle
+
+#### **Phase 5 Achievements**:
+- **Perfect Excel Structure Match**: Extended table from 14 to 15 columns (A-O)
+- **Column Alignment Fixed**: Labels in Column B, User inputs in Column C, Notes in Column O
+- **Notes Toggle System**: Column-level show/hide functionality (Excel column O equivalent)
+- **Floating Stamp Upload**: Professional seal upload positioned outside table structure
+- **Column B Width Control**: 320px restriction for optimal spacing
+- **OAA Compliance**: Exact structural correspondence with official Excel template
+
+#### **Technical Architecture**:
+- **Excel Cell Mapping**: DOM elements use Excel coordinates (e.g., `id="c_3"` for cell C3)
+- **Section-Based Modules**: `4011-Section01.js` handles building information forms
+- **Field Management**: Centralized state through FieldManager system
+- **CSS Grid Layout**: Clean responsive design matching Excel visual structure
+
+#### **Next Development Phases**:
+- **Phase 6**: Additional OBC sections (3.03, 3.04, etc.)
+- **Phase 7**: Form validation and data export
+- **Phase 8**: Import/export compatibility with Excel template
+
+---
+
 ## 📜 PROJECT HISTORY
 
 ### The Journey to v4.012
