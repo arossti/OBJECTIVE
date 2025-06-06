@@ -424,6 +424,7 @@ window.TEUI.SectionModules.sect01 = (function () {
             max: cell.max,
             step: cell.step,
             options: cell.options,
+            dropdownId: cell.dropdownId,
             classes: cell.classes,
             placeholder: cell.placeholder,
             colspan: cell.colspan,

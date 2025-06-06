@@ -447,6 +447,7 @@ TEUI.FieldManager = (function () {
                     <col class="col-l">
                     <col class="col-m">
                     <col class="col-n">
+                    <col class="col-o">
                 </colgroup>
                 <tbody></tbody>
             `;
@@ -970,19 +971,6 @@ TEUI.FieldManager = (function () {
 
     Object.entries(fields).forEach(([fieldId, field]) => {
       if (field.type === "dropdown" && field.dropdownId) {
-        // <<<< ADD LOGGING FOR k_120 RELATED DROPDOWNS >>>>
-        if (field.dropdownId === "dd_k_120" || fieldId === "k_120") {
-          console.log(
-            `[FieldManager InitDropdowns] Found field related to k_120. fieldId: ${fieldId}, dropdownId: ${field.dropdownId}, type: ${field.type}`,
-          );
-          const tempOptions = getDropdownOptions(field.dropdownId); // Check what options it would get
-          console.log(
-            `[FieldManager InitDropdowns] Options for ${field.dropdownId}:`,
-            JSON.stringify(tempOptions),
-          );
-        }
-        // <<<< END LOGGING >>>>
-
         const selectElement = document.querySelector(
           `[data-dropdown-id="${field.dropdownId}"]`,
         );
