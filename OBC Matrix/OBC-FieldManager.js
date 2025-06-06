@@ -19,7 +19,8 @@ TEUI.FieldManager = (function () {
   const sections = {
     buildingInfo: "sect01",
     buildingOccupancy: "sect02",
-    climateCalculations: "sect03",
+    buildingAreas: "sect03",
+    // climateCalculations: "sect03", // Temporarily disabled for Building Areas
     actualTargetEnergy: "sect04",
     emissions: "sect05",
     onSiteEnergy: "sect06",
