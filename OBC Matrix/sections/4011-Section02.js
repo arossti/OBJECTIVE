@@ -1,21 +1,21 @@
 /**
- * 4011-Section01.js
- * Building Information (Section 1) module for OBC Matrix
+ * 4011-Section02.js
+ * Building Occupancy (Section 2) module for OBC Matrix
  *
  * This file contains field definitions, layout templates, and rendering logic
- * specific to the Building Information section for the OBC Matrix application.
+ * specific to the Building Occupancy section for the OBC Matrix application.
  *
- * Restructured to match the OBC Matrix Part 3 structure with proper Notes fields.
+ * Based on OBC Matrix Part 3 structure covering rows 10-20 with user inputs in column D.
  */
 
 // Create section-specific namespace for global references
 window.TEUI = window.TEUI || {};
-window.TEUI.sect01 = window.TEUI.sect01 || {};
-window.TEUI.sect01.initialized = false;
-window.TEUI.sect01.userInteracted = false;
+window.TEUI.sect02 = window.TEUI.sect02 || {};
+window.TEUI.sect02.initialized = false;
+window.TEUI.sect02.userInteracted = false;
 
-// Section 1: Building Information Module
-window.TEUI.SectionModules.sect01 = (function () {
+// Section 2: Building Occupancy Module
+window.TEUI.SectionModules.sect02 = (function () {
   //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
@@ -24,9 +24,9 @@ window.TEUI.SectionModules.sect01 = (function () {
   const sectionRows = {
     // HEADER ROW
     header: {
-      id: "01-HEADER",
-      rowId: "01-HEADER",
-      label: "Building Information Header",
+      id: "02-HEADER",
+      rowId: "02-HEADER",
+      label: "Building Occupancy Header",
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
         c: { content: "C", classes: ["section-subheader"] },
@@ -48,22 +48,87 @@ window.TEUI.SectionModules.sect01 = (function () {
       },
     },
 
-    // Row 3: Practice Information
-    3: {
-      id: "1.01",
-      rowId: "1.01",
-      label: "Name of Practice",
+    // Row 10: 3.00 Building Code Version
+    10: {
+      id: "3.00",
+      rowId: "3.00",
+      label: "BUILDING CODE VERSION",
       cells: {
-        b: { label: "Name of Practice" },
-        c: {
-          fieldId: "c_3", // FileHandler will read from column C
-          type: "editable", 
-          value: "Enter practice name",
-          section: "buildingInfo",
-          placeholder: "Enter practice name",
-          classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns C-H
+        b: { label: "BUILDING CODE VERSION" },
+        c: { content: "" },
+        d: { content: "O.Reg. 163/24" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "LAST CODE AMENDMENT" },
+        i: { content: "O.Reg. 447/24" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_10",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
         },
+      },
+    },
+
+    // Row 11: 3.01 Project Type (moved from Section 01)
+    11: {
+      id: "3.01",
+      rowId: "3.01",
+      label: "PROJECT TYPE",
+      cells: {
+        b: { label: "PROJECT TYPE" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_11", // User inputs now in column D
+          type: "dropdown",
+          dropdownId: "dd_d_11",
+          value: "-",
+          section: "buildingOccupancy",
+          colspan: 4, // Span columns D-G for dropdown
+          options: [
+            { value: "-", name: "Select Project Type" },
+            { value: "New Construction", name: "New Construction" },
+            { value: "Addition", name: "Addition" },
+            { value: "Alteration", name: "Alteration" },
+            { value: "Change of Use", name: "Change of Use" },
+            { value: "Repair", name: "Repair" },
+          ],
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "[Provide further description below.]" },
+        j: { content: "" },
+        k: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_11",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 12: Empty row
+    12: {
+      id: "12-EMPTY",
+      rowId: "12-EMPTY",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
         d: { content: "" },
         e: { content: "" },
         f: { content: "" },
@@ -76,31 +141,364 @@ window.TEUI.SectionModules.sect01 = (function () {
         m: { content: "" },
         n: { content: "" },
         o: {
-          fieldId: "o_3",
+          fieldId: "o_12",
           type: "editable",
           value: "enter notes here...",
-          section: "buildingInfo",
+          section: "buildingOccupancy",
           classes: ["text-left", "no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 4: Address 1
-    4: {
-      id: "1.02",
-      rowId: "1.02",
-      label: "Address 1",
+    // Row 13: 3.02 Major Occupancy Classification (moved from Section 01)
+    13: {
+      id: "3.02",
+      rowId: "3.02",
+      label: "MAJOR OCCUPANCY CLASSIFICATION",
       cells: {
-        b: { label: "Address 1" },
-        c: {
-          fieldId: "c_4", // FileHandler will read from column C
+        b: { label: "MAJOR OCCUPANCY CLASSIFICATION" },
+        c: { content: "" },
+        d: { content: "OCCUPANCY" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "USE" },
+        j: { content: "" },
+        k: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_13",
           type: "editable",
-          value: "Enter address line 1",
-          section: "buildingInfo",
-          placeholder: "Enter address line 1",
-          classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns C-H
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
         },
+      },
+    },
+
+    // Row 14: First occupancy dropdown row
+    14: {
+      id: "14-OCC1",
+      rowId: "14-OCC1",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_14",
+          type: "dropdown",
+          dropdownId: "dd_d_14",
+          value: "-",
+          section: "buildingOccupancy",
+          options: [
+            { value: "-", name: "Select Occupancy Classification" },
+            { value: "A-Assembly", name: "A-Assembly" },
+            { value: "B1-Detention", name: "B1-Detention" },
+            { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
+            { value: "B3-Detention Care & Treatment", name: "B3-Detention Care & Treatment" },
+            { value: "C-Residential", name: "C-Residential" },
+            { value: "D-Business & Personal Services", name: "D-Business & Personal Services" },
+            { value: "E-Mercantile", name: "E-Mercantile" },
+            { value: "F-Industrial", name: "F-Industrial" },
+          ],
+        },
+        e: {
+          fieldId: "e_14",
+          type: "editable",
+          value: "Select occupancy group/division from in-cell drop-down list to the left.",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap"],
+          colspan: 5, // Span columns E-I
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_14",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 15: Second occupancy dropdown row
+    15: {
+      id: "15-OCC2",
+      rowId: "15-OCC2",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_15",
+          type: "dropdown",
+          dropdownId: "dd_d_15",
+          value: "-",
+          section: "buildingOccupancy",
+          options: [
+            { value: "-", name: "Select Occupancy Classification" },
+            { value: "A-Assembly", name: "A-Assembly" },
+            { value: "B1-Detention", name: "B1-Detention" },
+            { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
+            { value: "B3-Detention Care & Treatment", name: "B3-Detention Care & Treatment" },
+            { value: "C-Residential", name: "C-Residential" },
+            { value: "D-Business & Personal Services", name: "D-Business & Personal Services" },
+            { value: "E-Mercantile", name: "E-Mercantile" },
+            { value: "F-Industrial", name: "F-Industrial" },
+          ],
+        },
+        e: {
+          fieldId: "e_15",
+          type: "editable",
+          value: "Select occupancy group/division from in-cell drop-down list to the left.",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap"],
+          colspan: 5, // Span columns E-I
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_15",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 16: Third occupancy dropdown row
+    16: {
+      id: "16-OCC3",
+      rowId: "16-OCC3",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_16",
+          type: "dropdown",
+          dropdownId: "dd_d_16",
+          value: "-",
+          section: "buildingOccupancy",
+          options: [
+            { value: "-", name: "Select Occupancy Classification" },
+            { value: "A-Assembly", name: "A-Assembly" },
+            { value: "B1-Detention", name: "B1-Detention" },
+            { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
+            { value: "B3-Detention Care & Treatment", name: "B3-Detention Care & Treatment" },
+            { value: "C-Residential", name: "C-Residential" },
+            { value: "D-Business & Personal Services", name: "D-Business & Personal Services" },
+            { value: "E-Mercantile", name: "E-Mercantile" },
+            { value: "F-Industrial", name: "F-Industrial" },
+          ],
+        },
+        e: {
+          fieldId: "e_16",
+          type: "editable",
+          value: "Select occupancy group/division from in-cell drop-down list to the left.",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap"],
+          colspan: 5, // Span columns E-I
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_16",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 17: Fourth occupancy dropdown row
+    17: {
+      id: "17-OCC4",
+      rowId: "17-OCC4",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_17",
+          type: "dropdown",
+          dropdownId: "dd_d_17",
+          value: "-",
+          section: "buildingOccupancy",
+          options: [
+            { value: "-", name: "Select Occupancy Classification" },
+            { value: "A-Assembly", name: "A-Assembly" },
+            { value: "B1-Detention", name: "B1-Detention" },
+            { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
+            { value: "B3-Detention Care & Treatment", name: "B3-Detention Care & Treatment" },
+            { value: "C-Residential", name: "C-Residential" },
+            { value: "D-Business & Personal Services", name: "D-Business & Personal Services" },
+            { value: "E-Mercantile", name: "E-Mercantile" },
+            { value: "F-Industrial", name: "F-Industrial" },
+          ],
+        },
+        e: {
+          fieldId: "e_17",
+          type: "editable",
+          value: "Select occupancy group/division from in-cell drop-down list to the left.",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap"],
+          colspan: 5, // Span columns E-I
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_17",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 18: Fifth occupancy dropdown row
+    18: {
+      id: "18-OCC5",
+      rowId: "18-OCC5",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_18",
+          type: "dropdown",
+          dropdownId: "dd_d_18",
+          value: "-",
+          section: "buildingOccupancy",
+          options: [
+            { value: "-", name: "Select Occupancy Classification" },
+            { value: "A-Assembly", name: "A-Assembly" },
+            { value: "B1-Detention", name: "B1-Detention" },
+            { value: "B2-Care and Treatment", name: "B2-Care and Treatment" },
+            { value: "B3-Detention Care & Treatment", name: "B3-Detention Care & Treatment" },
+            { value: "C-Residential", name: "C-Residential" },
+            { value: "D-Business & Personal Services", name: "D-Business & Personal Services" },
+            { value: "E-Mercantile", name: "E-Mercantile" },
+            { value: "F-Industrial", name: "F-Industrial" },
+          ],
+        },
+        e: {
+          fieldId: "e_18",
+          type: "editable",
+          value: "Select occupancy group/division from in-cell drop-down list to the left.",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap"],
+          colspan: 5, // Span columns E-I
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_18",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 19: 3.03 Superimposed Major Occupancies
+    19: {
+      id: "3.03",
+      rowId: "3.03",
+      label: "SUPERIMPOSED MAJOR OCCUPANCIES",
+      cells: {
+        b: { label: "SUPERIMPOSED MAJOR OCCUPANCIES" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_19",
+          type: "dropdown",
+          dropdownId: "dd_d_19",
+          value: "-",
+          section: "buildingOccupancy",
+          options: [
+            { value: "-", name: "Select Yes/No" },
+            { value: "Yes", name: "Yes" },
+            { value: "No", name: "No" },
+          ],
+        },
+        e: {
+          fieldId: "e_19",
+          type: "editable",
+          value: "[If Yes, provide explanation below; add lines as necessary]",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap"],
+          colspan: 6, // Span columns E-J
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "3.2.2.7.", classes: ["text-left", "obc-reference"] },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_19",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "notes-column"],
+        },
+      },
+    },
+
+    // Row 20: Empty row
+    20: {
+      id: "20-EMPTY",
+      rowId: "20-EMPTY",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
         d: { content: "" },
         e: { content: "" },
         f: { content: "" },
@@ -113,201 +511,14 @@ window.TEUI.SectionModules.sect01 = (function () {
         m: { content: "" },
         n: { content: "" },
         o: {
-          fieldId: "o_4",
+          fieldId: "o_20",
           type: "editable",
           value: "enter notes here...",
-          section: "buildingInfo",
+          section: "buildingOccupancy",
           classes: ["text-left", "no-wrap", "notes-column"],
         },
       },
     },
-
-    // Row 5: Address 2
-    5: {
-      id: "1.03",
-      rowId: "1.03",
-      label: "Address 2",
-      cells: {
-        b: { label: "Address 2" },
-        c: {
-          fieldId: "c_5", // Fixed: should be c_5 not d_5
-          type: "editable",
-          value: "Enter address line 2",
-          section: "buildingInfo",
-          placeholder: "Enter address line 2",
-          classes: ["text-left", "no-wrap"],
-          colspan: 6, // Changed to colspan to match other rows
-        },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_5",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
-      },
-    },
-
-    // Row 6: Contact
-    6: {
-      id: "1.04",
-      rowId: "1.04",
-      label: "Contact",
-      cells: {
-        b: { label: "Contact" },
-        c: {
-          fieldId: "c_6", // FileHandler will read from column C
-          type: "editable",
-          value: "Enter contact information",
-          section: "buildingInfo",
-          placeholder: "Enter contact information",
-          classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns C-H
-        },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_6",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
-      },
-    },
-
-    // Row 7: Name of Project
-    7: {
-      id: "1.05",
-      rowId: "1.05",
-      label: "Name of Project",
-      cells: {
-        b: { label: "Name of Project" },
-        c: {
-          fieldId: "c_7", // FileHandler will read from column C
-          type: "editable",
-          value: "Enter project name",
-          section: "buildingInfo",
-          placeholder: "Enter project name",
-          classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns C-H
-        },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_7",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
-      },
-    },
-
-    // Row 8: Location/Address
-    8: {
-      id: "1.06",
-      rowId: "1.06",
-      label: "Location/Address",
-      cells: {
-        b: { label: "Location/Address" },
-        c: {
-          fieldId: "c_8", // FileHandler will read from column C
-          type: "editable",
-          value: "Enter project location",
-          section: "buildingInfo",
-          placeholder: "Enter project location",
-          classes: ["text-left", "no-wrap"],
-          colspan: 6, // Span columns C-H
-        },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_8",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
-      },
-    },
-
-    // Row 9: Date with Seal & Signature
-    9: {
-      id: "1.07",
-      rowId: "1.07",
-      label: "Date",
-      cells: {
-        b: { label: "Date" },
-        c: {
-          fieldId: "c_9", // FileHandler will read from column C
-          type: "editable",
-          value: "Enter date",
-          section: "buildingInfo",
-          placeholder: "Enter date",
-          classes: ["text-left", "no-wrap"],
-          colspan: 3, // Span columns C-E for date field
-        },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_9",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingInfo",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
-      },
-    },
-
-
   };
 
   //==========================================================================
@@ -493,9 +704,9 @@ window.TEUI.SectionModules.sect01 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 01 event handlers");
+    console.log("Initializing Section 02 event handlers");
     
-    window.TEUI.sect01.initialized = true;
+    window.TEUI.sect02.initialized = true;
   }
 
   function addFloatingStampUpload() {
@@ -572,10 +783,10 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function onSectionRendered() {
-    console.log("Section 01 rendered - Building Information (OBC Matrix)");
+    console.log("Section 02 rendered - Building Occupancy (OBC Matrix)");
     
     // Initialize any section-specific functionality after rendering
-    if (!window.TEUI.sect01.initialized) {
+    if (!window.TEUI.sect02.initialized) {
       initializeEventHandlers();
     }
 
