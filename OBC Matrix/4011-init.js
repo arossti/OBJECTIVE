@@ -22,19 +22,22 @@ function initializeUIHandlers() {
 
   // Add any other general UI setup here
 
-  // << NEW: Event listener for Reset Imported button >>
+  // << OBC: Event listener for Reset button >>
   const resetImportedBtn = document.getElementById("reset-imported-btn");
   if (resetImportedBtn) {
     resetImportedBtn.addEventListener("click", function () {
       if (
         window.TEUI &&
-        window.TEUI.StateManager &&
-        typeof window.TEUI.StateManager.revertToLastImportedState === "function"
+        window.TEUI.OBCStateManager &&
+        typeof window.TEUI.OBCStateManager.resetFields === "function"
       ) {
-        window.TEUI.StateManager.revertToLastImportedState();
+        if (confirm("Are you sure you want to reset? This will clear user-modified values but keep imported data.")) {
+          window.TEUI.OBCStateManager.resetFields();
+          console.log("OBC Matrix: Fields reset successfully");
+        }
       } else {
         console.error(
-          "StateManager or revertToLastImportedState function not found.",
+          "OBCStateManager or resetFields function not found.",
         );
         alert("Error: Reset function is not available.");
       }
@@ -856,6 +859,16 @@ document.addEventListener("DOMContentLoaded", function () {
   if (window.TEUI && window.TEUI.FieldManager) {
     // Initialize FieldManager (core requirement for OBC Matrix)
     window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
+    
+    // Initialize OBC StateManager and global input handlers
+    if (window.TEUI.OBCStateManager) {
+      window.TEUI.OBCStateManager.initialize();
+      
+      // Initialize global input handlers after sections are rendered
+      setTimeout(() => {
+        window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+      }, 500); // Give sections time to fully render
+    }
     
     // Initialize optional modules only if they exist
     if (window.TEUI.StateManager) {
