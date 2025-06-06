@@ -75,6 +75,7 @@ body {
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 30px;
+  padding-right: 20px; /* Add 20px padding to the right side of the container */
 }
 
 /* =============== Section Styling =============== */
@@ -95,11 +96,20 @@ body {
   font-weight: 500;
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Space between title and OBC reference */
 }
 
 .section-icon {
   margin-right: 10px;
   font-size: 16px;
+}
+
+/* OBC reference in section header */
+.header-obc-reference {
+  font-size: 0.9em;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: auto;
 }
 
 .section-content {
@@ -311,6 +321,11 @@ option,
   height: 30px; /* Match text input height */
   outline: 1px solid #dee2e6 !important; /* Add outline to match request */
   box-shadow: none;
+  color: #0066cc !important; /* Ensure text is blue and visible */
+  font-weight: 500 !important;
+  appearance: auto !important; /* Restore default appearance to fix dropdown arrow */
+  -webkit-appearance: menulist !important; /* For Safari/Chrome */
+  -moz-appearance: menulist !important; /* For Firefox */
 }
 
 .data-table select.form-select:focus {
@@ -548,6 +563,15 @@ td[class*="col-m"] .user-input {
   margin: 0;
   border-bottom: 1px solid #dee2e6;
   font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.matrix-section-header .obc-reference {
+  font-size: 0.85em;
+  font-style: italic;
+  color: #666;
 }
 
 /* Section spacing improvements */

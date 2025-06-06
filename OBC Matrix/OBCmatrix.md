@@ -10,7 +10,7 @@
 - Dropdown menus for selection fields
 - Import/Export buttons (UI only)
 - Reset button
-- OBC references displayed in column L
+- OBC references displayed in section headers
 - Column I and J values displayed where available
 
 ## DOM-Excel Cell Mapping (Important Implementation Note)
@@ -35,33 +35,183 @@ Following the TEUI 4.011 model (per README.md), the DOM IDs should be structured
    - Map directly to the corresponding DOM elements by position
    - Preserve OBC references (Column L), column values (I/J), and other data
    
-4. **Implementation Steps**:
-   - Modify `OBC-MatrixData.js` to use Excel cell-based IDs
-   - Update the rendering logic in `OBC-init.js` to create elements with position-based IDs
-   - Modify the CSV parser in `OBC-FileHandler.js` to map cell values directly to DOM IDs
-   - Ensure all fields from the CSV are captured in the rendering (OBC refs, column values, etc.)
+### Implementation Steps
 
-### Example Structure
+To implement proper Excel cell reference mapping:
+
+1. **Update Data Model**:
+   ```javascript
+   // Current approach (descriptive IDs)
+   const field = {
+     id: "p3_occupancy_classification",
+     label: "Major Occupancy Classification",
+     // ...
+   };
+   
+   // New approach (position-based IDs)
+   const field = {
+     id: "d_14", // Based on Excel cell coordinate
+     excelRef: "D14", // Store the original Excel reference
+     label: "Major Occupancy Classification",
+     // ...
+   };
+   ```
+
+2. **CSV Parsing Logic**:
+   ```javascript
+   function parseCSV(csvData) {
+     // Parse CSV into rows and columns
+     const rows = csvData.split('\n');
+     const matrix = rows.map(row => row.split(','));
+     
+     // Process cell by cell
+     const data = { sections: [] };
+     let currentSection = null;
+     
+     // Iterate through rows
+     for (let rowIdx = 0; rowIdx < matrix.length; rowIdx++) {
+       const row = matrix[rowIdx];
+       
+       // Check if this row defines a section
+       if (row[0] && row[0].trim().match(/^\d+\.\d+/) && row[1] && row[2]) {
+         // This is a section header row (e.g., "3.02, MAJOR OCCUPANCY CLASSIFICATION")
+         currentSection = {
+           title: row[1],
+           obcReference: row[11] || "", // OBC reference from column L
+           fields: []
+         };
+         data.sections.push(currentSection);
+       }
+       
+       // Process input fields (typically in column D)
+       if (currentSection && row[3] && row[3].trim()) {
+         const field = {
+           id: `d_${rowIdx + 1}`, // Create position-based ID
+           excelRef: `D${rowIdx + 1}`, // Store Excel reference
+           label: row[2] || "",
+           value: row[3] || "",
+           columnI: row[8] || "",
+           columnJ: row[9] || ""
+         };
+         currentSection.fields.push(field);
+       }
+     }
+     
+     return data;
+   }
+   ```
+
+3. **Rendering Logic**:
+   ```javascript
+   function renderField(field, row) {
+     // Extract coordinates from the ID
+     const cellCoords = field.id.split('_');
+     const col = cellCoords[0]; // e.g., 'd'
+     const rowNum = cellCoords[1]; // e.g., '14'
+     
+     const input = document.createElement('div');
+     input.setAttribute('contenteditable', 'true');
+     input.className = 'user-input';
+     input.id = field.id; // position-based ID
+     input.dataset.excelRef = field.excelRef; // Store Excel reference
+     input.textContent = field.value || '';
+     
+     return input;
+   }
+   ```
+
+4. **Import/Export Functions**:
+   ```javascript
+   function importFromCSV(csvData) {
+     const parsedData = parseCSV(csvData);
+     
+     // For each field in the parsed data
+     parsedData.sections.forEach(section => {
+       section.fields.forEach(field => {
+         // Find the corresponding DOM element by position-based ID
+         const element = document.getElementById(field.id);
+         if (element) {
+           // Update the element with the CSV value
+           element.textContent = field.value;
+         }
+       });
+     });
+   }
+   
+   function exportToCSV() {
+     // Get all input elements
+     const inputs = document.querySelectorAll('[id^="d_"], [id^="dd_"], [id^="cf_"]');
+     
+     // Create a sparse matrix to represent the Excel structure
+     const matrix = [];
+     
+     // Fill in the matrix with values
+     inputs.forEach(input => {
+       const parts = input.id.replace(/^[a-z]+_/, '').split('_'); // Remove prefix if any
+       const col = parts[0].charCodeAt(0) - 97; // Convert 'a' to 0, 'b' to 1, etc.
+       const row = parseInt(parts[1]) - 1; // Convert to 0-based index
+       
+       // Ensure the row exists in the matrix
+       if (!matrix[row]) matrix[row] = [];
+       
+       // Set the value in the matrix
+       matrix[row][col] = input.textContent || input.value || '';
+     });
+     
+     // Convert matrix to CSV
+     return matrix.map(row => row.join(',')).join('\n');
+   }
+   ```
+
+### Handling Excel Formulas and Calculated Fields
+
+When implementing the Excel-to-DOM mapping, it's crucial to handle Excel formulas properly:
+
+1. **Identify Formula Cells**: In the CSV, cells with Excel formulas start with `=`. These should be mapped to calculated fields in the DOM.
+
+2. **Cell Dependencies**: When a formula references other cells, those dependencies need to be tracked.
+
+3. **Real-time Calculation**: When a dependency cell changes, all formulas that depend on it should be recalculated.
+
+Example implementation for calculated fields:
 
 ```javascript
-// Example of proper DOM element creation with Excel-matching IDs
-function createInputField(row, col, value) {
-  const cell = document.createElement('td');
-  const letter = String.fromCharCode(97 + col).toUpperCase(); // Convert 0 to 'A', 1 to 'B', etc.
+// Track formula cells and their dependencies
+const formulaCells = {};
+const cellDependencies = {};
+
+function parseFormula(formula, rowIdx) {
+  // Extract cell references from the formula (e.g., "=SUM(D14:D16)" -> ["D14", "D15", "D16"])
+  const cellRefs = formula.match(/[A-Z]+\d+/g) || [];
   
-  const input = document.createElement('div');
-  input.setAttribute('contenteditable', 'true');
-  input.className = 'user-input';
-  input.id = `${letter.toLowerCase()}_${row}`;
-  input.dataset.fieldId = `${letter.toLowerCase()}_${row}`;
-  input.textContent = value || '';
+  // Register dependencies
+  cellRefs.forEach(ref => {
+    const domId = ref.toLowerCase().replace(/([a-z])(\d+)/, '$1_$2');
+    if (!cellDependencies[domId]) cellDependencies[domId] = [];
+    cellDependencies[domId].push(`cf_${rowIdx}`);
+  });
   
-  cell.appendChild(input);
-  return cell;
+  return {
+    formula,
+    cellRefs
+  };
+}
+
+// When user inputs change, recalculate dependent fields
+function updateCalculatedFields(changedCellId) {
+  if (cellDependencies[changedCellId]) {
+    cellDependencies[changedCellId].forEach(dependentCellId => {
+      // Recalculate the formula result
+      // This would require a proper formula parser in a real implementation
+      const result = evaluateFormula(formulaCells[dependentCellId].formula);
+      
+      // Update the DOM
+      const element = document.getElementById(dependentCellId);
+      if (element) element.textContent = result;
+    });
+  }
 }
 ```
-
-This approach ensures that Excel formulas, CSV imports, and data validation can work consistently across the application, matching the proven architecture of TEUI 4.011.
 
 ## TODO Items
 
@@ -69,28 +219,28 @@ This approach ensures that Excel formulas, CSV imports, and data validation can 
    - Implement proper mapping between Excel cells and DOM IDs (e.g., Excel D27 → DOM ID d_27)
    - Update the data model to use position-based IDs instead of descriptive IDs
    - Ensure proper CSV import/export with this mapping
+   - Implement real-time calculation for Excel formula equivalents
 
 2. **UI Improvements**
-   - Make input fields 600px wide
-   - Left-justify all input fields
-   - Make stamp field a square (200x200 pixels)
-   - Remove duplicate "Seal & Signature" from lower sections
-   - Make input fields fill available space and align left
+   - Fix dropdown text visibility ✅
+   - Add 20px padding to the right side of the container ✅
+   - Move OBC references to section headers ✅
 
-3. **Functionality**
-   - Implement full CSV parsing for all data from Part 3 and Part 9 CSVs
-   - Complete PDF export functionality
-   - Implement actual file saving/loading
+3. **CSV Data Integration**
+   - Implement full parsing of OBC_2024_PART3.csv and OBC_2024_PART9.csv
+   - Map Excel row/column positions to DOM elements
+   - Support all formula cells and calculated fields
+   - Preserve all metadata from CSV (OBC references, existing/new values, etc.)
 
 4. **Data and Validation**
    - Add data validation for numeric fields
-   - Implement Excel formula equivalents for calculation fields
-   - Integrate all OBC references from the CSVs
-   - Complete the dropdown options for all selection fields
+   - Implement proper value formatting based on field types
+   - Add support for conditional visibility based on other field values
 
-5. **Performance**
+5. **Performance and UX**
    - Optimize rendering for large matrices
    - Add loading indicators for data operations
+   - Improve error handling and validation feedback
 
 ## Reference Information
 

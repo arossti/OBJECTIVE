@@ -143,7 +143,20 @@ window.OBC = window.OBC || {};
             // Create section header
             const sectionHeader = document.createElement('div');
             sectionHeader.className = 'matrix-section-header';
-            sectionHeader.textContent = section.title;
+            
+            // Create span for section title
+            const titleSpan = document.createElement('span');
+            titleSpan.textContent = section.title;
+            sectionHeader.appendChild(titleSpan);
+            
+            // Add OBC reference to section header if available
+            if (section.obcReference) {
+                const refSpan = document.createElement('span');
+                refSpan.className = 'obc-reference';
+                refSpan.textContent = section.obcReference;
+                sectionHeader.appendChild(refSpan);
+            }
+            
             matrixContent.appendChild(sectionHeader);
             
             // Create table for this section
@@ -259,14 +272,6 @@ window.OBC = window.OBC || {};
                             emptyCell.textContent = "Seal & Signature";
                         }
                         
-                        // Add OBC references in column L (index 11)
-                        if (i === 11) {
-                            if (field.obcReference) {
-                                emptyCell.textContent = field.obcReference;
-                                emptyCell.className += ' obc-cell-reference';
-                            }
-                        }
-                        
                         // Add values for other columns if available
                         if (i === 8 && field.columnI) { // Column I (index 8)
                             emptyCell.textContent = field.columnI;
@@ -355,28 +360,30 @@ window.OBC = window.OBC || {};
                     // Add OBC references and column data
                     // This would ideally come from the CSV parsing, but we're adding it manually for demonstration
                     data.sections.forEach(section => {
-                        if (section.title === "Major Occupancy Classification" && section.fields[0]) {
-                            section.fields[0].obcReference = "3.1.2.";
+                        if (section.title === "Major Occupancy Classification") {
+                            section.obcReference = "3.1.2.";
                         }
-                        if (section.title === "Superimposed Major Occupancies" && section.fields[0]) {
-                            section.fields[0].obcReference = "3.2.2.7.";
-                            section.fields[0].columnI = "EXISTING";
-                            section.fields[0].columnJ = "New";
+                        if (section.title === "Superimposed Major Occupancies") {
+                            section.obcReference = "3.2.2.7.";
+                            if (section.fields && section.fields[0]) {
+                                section.fields[0].columnI = "EXISTING";
+                                section.fields[0].columnJ = "New";
+                            }
                         }
-                        if (section.title === "Building Area" && section.fields[0]) {
-                            section.fields[0].obcReference = "[A] 1.4.1.2.";
+                        if (section.title === "Building Area") {
+                            section.obcReference = "[A] 1.4.1.2.";
                         }
-                        if (section.title === "Building Height" && section.fields[0]) {
-                            section.fields[0].obcReference = "[A] 1.4.1.2. & 3.2.1.1.";
+                        if (section.title === "Building Height") {
+                            section.obcReference = "[A] 1.4.1.2. & 3.2.1.1.";
                         }
-                        if (section.title === "Building Classification" && section.fields[0]) {
-                            section.fields[0].obcReference = "3.2.2.20-83.";
+                        if (section.title === "Building Classification") {
+                            section.obcReference = "3.2.2.20-83.";
                         }
-                        if (section.title === "Fire Resistance Rating" && section.fields[0]) {
-                            section.fields[0].obcReference = "3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15.";
+                        if (section.title === "Fire Resistance Rating") {
+                            section.obcReference = "3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15.";
                         }
-                        if (section.title === "Occupant Load" && section.fields[0]) {
-                            section.fields[0].obcReference = "3.1.17. and 3.1.17.1.(2)";
+                        if (section.title === "Occupant Load") {
+                            section.obcReference = "3.1.17. and 3.1.17.1.(2)";
                         }
                     });
                     
@@ -401,25 +408,27 @@ window.OBC = window.OBC || {};
                     
                     // Add OBC references and column data for Part 9
                     data.sections.forEach(section => {
-                        if (section.title === "Occupancy Classification" && section.fields[0]) {
-                            section.fields[0].obcReference = "9.10.2.";
+                        if (section.title === "Occupancy Classification") {
+                            section.obcReference = "9.10.2.";
                         }
-                        if (section.title === "Superimposed Major Occupancies" && section.fields[0]) {
-                            section.fields[0].obcReference = "9.10.2.3.";
-                            section.fields[0].columnI = "EXISTING";
-                            section.fields[0].columnJ = "New";
+                        if (section.title === "Superimposed Major Occupancies") {
+                            section.obcReference = "9.10.2.3.";
+                            if (section.fields && section.fields[0]) {
+                                section.fields[0].columnI = "EXISTING";
+                                section.fields[0].columnJ = "New";
+                            }
                         }
-                        if (section.title === "Building Area" && section.fields[0]) {
-                            section.fields[0].obcReference = "[A] 1.4.1.2.";
+                        if (section.title === "Building Area") {
+                            section.obcReference = "[A] 1.4.1.2.";
                         }
-                        if (section.title === "Building Height" && section.fields[0]) {
-                            section.fields[0].obcReference = "[A] 1.4.1.2. & 9.10.4.";
+                        if (section.title === "Building Height") {
+                            section.obcReference = "[A] 1.4.1.2. & 9.10.4.";
                         }
-                        if (section.title === "Fire Resistance Rating" && section.fields[0]) {
-                            section.fields[0].obcReference = "9.10.8. and 9.10.11.";
+                        if (section.title === "Fire Resistance Rating") {
+                            section.obcReference = "9.10.8. and 9.10.11.";
                         }
-                        if (section.title === "Occupant Load" && section.fields[0]) {
-                            section.fields[0].obcReference = "9.9.1.3., and Table 3.1.17.1.";
+                        if (section.title === "Occupant Load") {
+                            section.obcReference = "9.9.1.3., and Table 3.1.17.1.";
                         }
                     });
                 } else {
