@@ -52,15 +52,15 @@ window.TEUI.SectionModules.sect02 = (function () {
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
         c: { content: "C", classes: ["section-subheader"] },
-        d: { content: "D", classes: ["section-subheader"] },
-        e: { content: "E", classes: ["section-subheader"] },
+        d: { content: "OCCUPANCY", classes: ["section-subheader"] },
+        e: { content: "Use Description", classes: ["section-subheader", "text-left"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
         h: { content: "H", classes: ["section-subheader"] },
         i: { content: "I", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "L", classes: ["section-subheader"] },
+        l: { content: "OBC References", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
         o: {
@@ -78,12 +78,12 @@ window.TEUI.SectionModules.sect02 = (function () {
       cells: {
         b: { label: "BUILDING CODE VERSION" },
         c: { content: "" },
-        d: { content: "O.Reg. 163/24" },
+        d: { content: "O.Reg. 163/24 (Last Amendment: O.Reg. 447/24)" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
-        h: { content: "LAST CODE AMENDMENT" },
-        i: { content: "O.Reg. 447/24" },
+        h: { content: "" },
+        i: { content: "" },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -114,6 +114,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           colspan: 4, // Span columns D-G for dropdown
+          classes: ["dropdown-md"],
           options: [
             { value: "-", name: "Select Project Type" },
             { value: "New Construction", name: "New Construction" },
@@ -127,10 +128,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         f: { content: "" },
         g: { content: "" },
         h: { content: "" },
-        i: { content: "[Provide further description below.]" },
+        i: { content: "" },
         j: { content: "" },
-        k: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
-        l: { content: "" },
+        k: { content: "" },
+        l: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -143,15 +144,22 @@ window.TEUI.SectionModules.sect02 = (function () {
       },
     },
 
-    // Row 12: Empty row
+    // Row 12: Description row
     12: {
-      id: "12-EMPTY",
-      rowId: "12-EMPTY",
-      label: "",
+      id: "12-DESC",
+      rowId: "12-DESC",
+      label: "DESCRIPTION",
       cells: {
-        b: { content: "" },
+        b: { label: "DESCRIPTION" },
         c: { content: "" },
-        d: { content: "" },
+        d: {
+          fieldId: "d_12",
+          type: "editable",
+          value: "Provide additional clarification of project type if needed",
+          section: "buildingOccupancy",
+          classes: ["text-left", "no-wrap", "user-input"],
+          colspan: 6, // Span columns D-I for description field
+        },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -185,10 +193,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         f: { content: "" },
         g: { content: "" },
         h: { content: "" },
-        i: { content: "USE" },
+        i: { content: "" },
         j: { content: "" },
-        k: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
-        l: { content: "" },
+        k: { content: "" },
+        l: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -216,11 +224,12 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
+          classes: ["dropdown-lg"],
         },
         e: {
           fieldId: "e_14",
           type: "editable",
-          value: "Provide description of use; e.g. \"Restaurant\", \"Medical Office\", \"Retirement Home\", \"Storage Garage\"",
+          value: "Provide description of use here...",
           section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 5, // Span columns E-I
@@ -259,12 +268,12 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
+          classes: ["dropdown-lg"],
         },
         e: {
           fieldId: "e_15",
           type: "editable",
-          value: "Provide description of use; e.g. \"Restaurant\", \"Medical Office\", \"Retirement Home\", \"Storage Garage\"",
-          section: "buildingOccupancy",
+          value: "Provide description of use here...",          section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 5, // Span columns E-I
         },
@@ -302,11 +311,12 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
+          classes: ["dropdown-lg"],
         },
         e: {
           fieldId: "e_16",
           type: "editable",
-          value: "Provide description of use; e.g. \"Restaurant\", \"Medical Office\", \"Retirement Home\", \"Storage Garage\"",
+          value: "Provide description of use here...",
           section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 5, // Span columns E-I
@@ -345,11 +355,12 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
+          classes: ["dropdown-lg"],
         },
         e: {
           fieldId: "e_17",
           type: "editable",
-          value: "Provide description of use; e.g. \"Restaurant\", \"Medical Office\", \"Retirement Home\", \"Storage Garage\"",
+          value: "Provide description of use here...",
           section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 5, // Span columns E-I
@@ -388,11 +399,12 @@ window.TEUI.SectionModules.sect02 = (function () {
           value: "-",
           section: "buildingOccupancy",
           options: occupancyOptions,
+          classes: ["dropdown-lg"],
         },
         e: {
           fieldId: "e_18",
           type: "editable",
-          value: "Provide description of use; e.g. \"Restaurant\", \"Medical Office\", \"Retirement Home\", \"Storage Garage\"",
+          value: "Provide description of use here...",
           section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 5, // Span columns E-I
@@ -430,6 +442,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           dropdownId: "dd_d_19",
           value: "-",
           section: "buildingOccupancy",
+          classes: ["dropdown-sm"],
           options: [
             { value: "-", name: "Select Yes/No" },
             { value: "Yes", name: "Yes" },
@@ -439,7 +452,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_19",
           type: "editable",
-          value: "[If Yes, provide explanation below; add lines as necessary]",
+          value: "[If Yes, provide explanation here; add lines as necessary]",
           section: "buildingOccupancy",
           classes: ["text-left", "no-wrap"],
           colspan: 6, // Span columns E-J
@@ -449,8 +462,8 @@ window.TEUI.SectionModules.sect02 = (function () {
         h: { content: "" },
         i: { content: "" },
         j: { content: "" },
-        k: { content: "3.2.2.7.", classes: ["text-left", "obc-reference"] },
-        l: { content: "" },
+        k: { content: "" },
+        l: { content: "3.2.2.7.", classes: ["text-left", "obc-reference"] },
         m: { content: "" },
         n: { content: "" },
         o: {
