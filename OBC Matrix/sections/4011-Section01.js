@@ -28,6 +28,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "01-HEADER",
       label: "Building Information Header",
       cells: {
+        b: { content: "Descriptive Text", classes: ["section-subheader"] },
         c: {
           content: "BUILDING INFORMATION",
           classes: ["section-header"],
@@ -40,13 +41,13 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "I", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: {
+        l: { content: "L", classes: ["section-subheader"] },
+        m: { content: "M", classes: ["section-subheader"] },
+        n: { content: "N", classes: ["section-subheader"] },
+        o: {
           content: "Notes",
           classes: ["section-subheader", "text-center", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "M" },
-        n: { content: "N" },
       },
     },
 
@@ -56,7 +57,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Name of Practice",
       cells: {
-        c: { label: "Name of Practice" },
+        b: { content: "Name of Practice" },
+        c: { content: "" },
         d: {
           fieldId: "c_3", // FileHandler will read from column C
           type: "editable", 
@@ -73,16 +75,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_3",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -92,7 +94,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Address 1",
       cells: {
-        c: { label: "Address 1" },
+        b: { content: "Address 1" },
+        c: { content: "" },
         d: {
           fieldId: "c_4", // FileHandler will read from column C
           type: "editable",
@@ -109,16 +112,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_4",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -128,7 +131,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Address 2",
       cells: {
-        c: { label: "Address 2" },
+        b: { content: "Address 2" },
+        c: { content: "" },
         d: {
           fieldId: "d_5",
           type: "editable",
@@ -145,16 +149,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_5",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -164,7 +168,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Contact",
       cells: {
-        c: { label: "Contact" },
+        b: { content: "Contact" },
+        c: { content: "" },
         d: {
           fieldId: "c_6", // FileHandler will read from column C
           type: "editable",
@@ -181,16 +186,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_6",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -200,7 +205,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Name of Project",
       cells: {
-        c: { label: "Name of Project" },
+        b: { content: "Name of Project" },
+        c: { content: "" },
         d: {
           fieldId: "c_7", // FileHandler will read from column C
           type: "editable",
@@ -217,16 +223,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_7",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -236,7 +242,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Location/Address",
       cells: {
-        c: { label: "Location/Address" },
+        b: { content: "Location/Address" },
+        c: { content: "" },
         d: {
           fieldId: "c_8", // FileHandler will read from column C
           type: "editable",
@@ -253,16 +260,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_8",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -272,7 +279,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.00",
       label: "Date",
       cells: {
-        c: { label: "Date" },
+        b: { content: "Date" },
+        c: { content: "" },
         d: {
           fieldId: "c_9", // FileHandler will read from column C
           type: "editable",
@@ -285,27 +293,20 @@ window.TEUI.SectionModules.sect01 = (function () {
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
-        h: { content: "Seal & Signature", classes: ["text-left"] },
-        i: {
-          fieldId: "i_9",
-          type: "stamp_upload",
-          value: "",
-          section: "buildingInfo",
-          classes: ["stamp-upload-area"],
-          colspan: 2, // Span columns I-J for stamp upload
-        },
+        h: { content: "" },
+        i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_9",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -315,7 +316,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.01",
       label: "Project Type",
       cells: {
-        c: { label: "3.01 PROJECT TYPE" },
+        b: { content: "3.01 PROJECT TYPE" },
+        c: { content: "" },
         d: {
           fieldId: "c_10", // FileHandler will read from column C
           type: "dropdown",
@@ -339,16 +341,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_10",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
 
@@ -358,7 +360,8 @@ window.TEUI.SectionModules.sect01 = (function () {
       rowId: "3.02",
       label: "Major Occupancy Classification",
       cells: {
-        c: { label: "3.02 MAJOR OCCUPANCY CLASSIFICATION" },
+        b: { content: "3.02 MAJOR OCCUPANCY CLASSIFICATION" },
+        c: { content: "" },
         d: {
           fieldId: "c_12", // FileHandler will read from column C
           type: "dropdown",
@@ -391,16 +394,16 @@ window.TEUI.SectionModules.sect01 = (function () {
         i: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
         j: { content: "" },
         k: { content: "" },
-        l: {
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
           fieldId: "o_12",
           type: "editable",
           value: "enter notes here...",
           section: "buildingInfo",
           classes: ["text-left", "no-wrap", "notes-column"],
-          colspan: 3,
         },
-        m: { content: "" },
-        n: { content: "" },
       },
     },
   };
@@ -481,8 +484,9 @@ window.TEUI.SectionModules.sect01 = (function () {
       ],
     };
 
-    // Add cells C through N based on the row definition
+    // Add cells B through O based on the row definition (matching Excel structure)
     const columns = [
+      "b",
       "c",
       "d",
       "e",
@@ -495,6 +499,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       "l",
       "m",
       "n",
+      "o",
     ];
 
     // For each column, add the cell definition if it exists in the row
@@ -577,29 +582,114 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   //==========================================================================
-  // STAMP UPLOAD FUNCTIONALITY
+  // FLOATING STAMP UPLOAD FUNCTIONALITY  
   //==========================================================================
 
-  function initializeStampUpload() {
-    const stampArea = document.querySelector('[data-field-id="i_9"]');
-    if (!stampArea) return;
+  //==========================================================================
+  // EVENT HANDLERS
+  //==========================================================================
 
-    // Create the stamp upload HTML
-    stampArea.innerHTML = `
+  function initializeEventHandlers() {
+    console.log("Initializing Section 01 event handlers");
+    
+    window.TEUI.sect01.initialized = true;
+  }
+
+  function addFloatingStampUpload() {
+    const sectionContent = document.querySelector('[data-render-section="buildingInfo"]');
+    if (!sectionContent || document.getElementById('floating-stamp-upload')) return;
+
+    // Create floating stamp upload container
+    const stampContainer = document.createElement('div');
+    stampContainer.id = 'floating-stamp-upload';
+    stampContainer.innerHTML = `
+      <div class="stamp-upload-label">Seal & Signature</div>
       <div class="stamp-upload-container">
-        <div class="stamp-placeholder" id="stamp-placeholder">
+        <div class="stamp-placeholder" id="floating-stamp-placeholder">
           <div class="stamp-instructions">Upload seal image here</div>
           <div class="stamp-hint">200x200px recommended</div>
         </div>
-        <input type="file" id="stamp-upload-input" accept="image/*" style="display: none;">
-        <img id="stamp-preview" class="stamp-preview" style="display: none;">
+        <input type="file" id="floating-stamp-upload-input" accept="image/*" style="display: none;">
+        <img id="floating-stamp-preview" class="stamp-preview" style="display: none;">
       </div>
     `;
 
-    // Add event listeners
-    const placeholder = stampArea.querySelector('#stamp-placeholder');
-    const fileInput = stampArea.querySelector('#stamp-upload-input');
-    const preview = stampArea.querySelector('#stamp-preview');
+    // Position relative to section
+    sectionContent.style.position = 'relative';
+    sectionContent.appendChild(stampContainer);
+
+    // Set up table-aware positioning
+    positionStampToColumnJ(stampContainer);
+
+    // Initialize stamp upload functionality on the floating element
+    initializeFloatingStampUpload();
+  }
+
+  function positionStampToColumnJ(stampContainer) {
+    // Wait for table to render, then position relative to column J
+    setTimeout(() => {
+      const table = document.querySelector('[data-render-section="buildingInfo"] table');
+      if (!table) return;
+
+      // Find the first row to get column positions
+      const firstRow = table.querySelector('tr');
+      if (!firstRow) return;
+
+      // Get all cells in the first row to find column J
+      const cells = firstRow.querySelectorAll('td, th');
+      
+      // Column positions: A(0), B(1), C(2), D(3), E(4), F(5), G(6), H(7), I(8), J(9)
+      // Since we start from column B in our structure: B(0), C(1), D(2)... J(8)
+      let columnJIndex = 8; // J is the 9th column, but 8th index in our array starting from B
+      
+      if (cells[columnJIndex]) {
+        const columnJRect = cells[columnJIndex].getBoundingClientRect();
+        const tableRect = table.getBoundingClientRect();
+        
+        // Position stamp at column J's left edge
+        const leftOffset = columnJRect.left - tableRect.left;
+        
+        stampContainer.style.cssText = `
+          position: absolute;
+          top: 20px;
+          left: ${leftOffset}px;
+          z-index: 10;
+          background: white;
+          border: 1px solid #dee2e6;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          width: 200px;
+        `;
+      } else {
+        // Fallback to right positioning if column detection fails
+        stampContainer.style.cssText = `
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          z-index: 10;
+          background: white;
+          border: 1px solid #dee2e6;
+          border-radius: 8px;
+          padding: 15px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          width: 200px;
+        `;
+      }
+
+      // Reposition on window resize
+      window.addEventListener('resize', () => {
+        positionStampToColumnJ(stampContainer);
+      });
+    }, 200);
+  }
+
+  function initializeFloatingStampUpload() {
+    const placeholder = document.getElementById('floating-stamp-placeholder');
+    const fileInput = document.getElementById('floating-stamp-upload-input');
+    const preview = document.getElementById('floating-stamp-preview');
+
+    if (!placeholder || !fileInput || !preview) return;
 
     placeholder.addEventListener('click', () => {
       fileInput.click();
@@ -626,21 +716,6 @@ window.TEUI.SectionModules.sect01 = (function () {
     });
   }
 
-  //==========================================================================
-  // EVENT HANDLERS
-  //==========================================================================
-
-  function initializeEventHandlers() {
-    console.log("Initializing Section 01 event handlers");
-    
-    // Initialize stamp upload functionality
-    setTimeout(() => {
-      initializeStampUpload();
-    }, 100);
-    
-    window.TEUI.sect01.initialized = true;
-  }
-
   function onSectionRendered() {
     console.log("Section 01 rendered - Building Information (OBC Matrix)");
     
@@ -649,21 +724,26 @@ window.TEUI.SectionModules.sect01 = (function () {
       initializeEventHandlers();
     }
 
+    // Add floating stamp upload after section renders
+    setTimeout(() => {
+      addFloatingStampUpload();
+    }, 100);
+
     // Add custom CSS for stamp upload
     if (!document.getElementById('stamp-upload-styles')) {
       const style = document.createElement('style');
       style.id = 'stamp-upload-styles';
       style.textContent = `
         .stamp-upload-container {
-          width: 200px;
-          height: 200px;
+          width: 180px;
+          height: 180px;
           position: relative;
           margin: 0 auto;
         }
 
         .stamp-placeholder {
-          width: 200px;
-          height: 200px;
+          width: 180px;
+          height: 180px;
           border: 2px dashed #ccc;
           border-radius: 8px;
           display: flex;
@@ -695,17 +775,28 @@ window.TEUI.SectionModules.sect01 = (function () {
         }
 
         .stamp-preview {
-          width: 200px;
-          height: 200px;
+          width: 180px;
+          height: 180px;
           object-fit: contain;
           border-radius: 8px;
           cursor: pointer;
           border: 2px solid #ddd;
         }
 
-        .stamp-upload-area {
-          padding: 0 !important;
-          vertical-align: middle;
+        .stamp-upload-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 8px;
+          text-align: center;
+        }
+
+        #floating-stamp-upload {
+          transition: opacity 0.3s ease;
+        }
+
+        body.notes-hidden #floating-stamp-upload {
+          /* Keep stamp visible when notes are hidden */
         }
       `;
       document.head.appendChild(style);
