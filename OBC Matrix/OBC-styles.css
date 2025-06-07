@@ -215,6 +215,37 @@ body {
   max-width: none !important;
 }
 
+/* RESPONSIVE COLUMN OPTIMIZATION: More intelligent column behavior */
+.data-table {
+  /* Enhanced natural column sizing */
+  table-layout: auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Allow columns with minimal content to shrink naturally */
+.data-table td:empty {
+  min-width: 8px; /* Minimal visual separator */
+  width: 8px;
+  padding: 0 4px;
+}
+
+/* Content-based width optimization */
+.data-table td:not([data-field-id]):not(:has(input)):not(:has(select)):not(:has(.user-input)):not(:has(.calculated-value)) {
+  width: min-content;
+  white-space: nowrap;
+}
+
+/* Field containers should expand to fit content */
+.data-table td[data-field-id],
+.data-table td:has(.user-input),
+.data-table td:has(.calculated-value),
+.data-table td:has(input),
+.data-table td:has(select) {
+  width: max-content;
+  min-width: fit-content;
+}
+
 /* Table cells - clean and simple */
 .data-table td,
 .data-table th {
@@ -1098,7 +1129,7 @@ input[type=number].form-control {
 .data-table td select.form-control,
 table.data-table select.form-select {
   width: 100%;
-  min-width: 140px;
+  min-width: fit-content;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
