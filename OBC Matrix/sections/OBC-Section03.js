@@ -22,11 +22,10 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   // Define shared mezzanine type options
   const mezzanineOptions = [
-    { value: "-", name: "Select applicable" },
-    { value: "Type 1", name: "Type 1" },
-    { value: "Type 2", name: "Type 2" },
-    { value: "Type 3", name: "Type 3" },
+    { value: "-", name: "Select..." },
     { value: "N/A", name: "N/A" },
+    { value: "≤10% Mezzanine", name: "≤10% Mezzanine" },
+    { value: "≤40% Mezzanine", name: "≤40% Mezzanine" },
   ];
 
   // Define rows with integrated field definitions
@@ -47,7 +46,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         i: { content: "TOTAL", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC References", classes: ["section-subheader"] },
+        l: { content: "OBC [A] 1.4.1.2.", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
         o: {
@@ -163,17 +162,70 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Row 24: Building Area Total
-    24: {
-      id: "24-AREATOTAL",
-      rowId: "24-AREATOTAL",
+        // Row 24: Building Area Row 3
+        24: {
+          id: "24-AREA3",
+          rowId: "24-AREA3",
+          label: "",
+          cells: {
+            b: { content: "" },
+            c: { content: "" },
+            d: {
+              fieldId: "d_24",
+              type: "editable",
+              value: "Enter area description",
+              section: "buildingAreas",
+              classes: ["text-left", "no-wrap", "user-input"],
+            },
+            e: {
+              fieldId: "e_24",
+              type: "editable",
+              value: "200.00",
+              section: "buildingAreas",
+              classes: ["text-center", "user-input"],
+            },
+            f: { content: "" },
+            g: {
+              fieldId: "g_24",
+              type: "editable",
+              value: "300.00",
+              section: "buildingAreas",
+              classes: ["text-center", "user-input"],
+            },
+            h: { content: "" },
+            i: {
+              fieldId: "i_24",
+              type: "calculated",
+              value: "500.00",
+              section: "buildingAreas",
+              classes: ["text-center", "calculated-value"],
+            },
+            j: { content: "" },
+            k: { content: "" },
+            l: { content: "" },
+            m: { content: "" },
+            n: { content: "" },
+            o: {
+              fieldId: "o_24",
+              type: "editable",
+              value: "enter notes here...",
+              section: "buildingAreas",
+              classes: ["text-left", "no-wrap", "notes-column", "user-input"],
+            },
+          },
+        },
+
+    // Row 25: Building Area Total
+    25: {
+      id: "25-AREATOTAL",
+      rowId: "25-AREATOTAL",
       label: "",
       cells: {
         b: { content: "" },
         c: { content: "" },
         d: { content: "TOTAL" },
         e: {
-          fieldId: "e_24",
+          fieldId: "e_25",
           type: "calculated",
           value: "1,300.00",
           section: "buildingAreas",
@@ -181,7 +233,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         },
         f: { content: "" },
         g: {
-          fieldId: "g_24",
+          fieldId: "g_25",
           type: "calculated",
           value: "400.00",
           section: "buildingAreas",
@@ -189,7 +241,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         },
         h: { content: "" },
         i: {
-          fieldId: "i_24",
+          fieldId: "i_25",
           type: "calculated",
           value: "1,700.00",
           section: "buildingAreas",
@@ -201,40 +253,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         m: { content: "" },
         n: { content: "" },
         o: {
-          fieldId: "o_24",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
-        },
-      },
-    },
-
-    // Row 25: Empty spacer
-    25: {
-      id: "25-EMPTY",
-      rowId: "25-EMPTY",
-      label: "",
-      cells: {
-        b: { content: "" },
-        c: { content: "" },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
           fieldId: "o_25",
           type: "editable",
           value: "enter notes here...",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
         },
       },
     },
@@ -265,20 +288,44 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Row 27: 3.05 Gross Area
+    // Row 28-30: Gross Area rows (similar pattern)
     27: {
-      id: "3.05",
-      rowId: "3.05",
-      label: "GROSS AREA (m²)",
+      id: "27-GROSS1",
+      rowId: "27-GROSS1",
+      label: "",
       cells: {
-        b: { label: "GROSS AREA (m²)" },
+        b: { content: "" },
         c: { content: "" },
-        d: { content: "DESCRIPTION" },
-        e: { content: "EXISTING" },
+        d: {
+          fieldId: "d_27",
+          type: "editable",
+          value: "Enter gross area description",
+          section: "buildingAreas",
+          classes: ["text-left", "no-wrap"],
+        },
+        e: {
+          fieldId: "e_27",
+          type: "editable",
+          value: "-",
+          section: "buildingAreas",
+          classes: ["text-center"],
+        },
         f: { content: "" },
-        g: { content: "NEW" },
+        g: {
+          fieldId: "g_27",
+          type: "editable",
+          value: "-",
+          section: "buildingAreas",
+          classes: ["text-center"],
+        },
         h: { content: "" },
-        i: { content: "TOTAL [A] 1.4.1.2." },
+        i: {
+          fieldId: "i_27",
+          type: "editable",
+          value: "-",
+          section: "buildingAreas",
+          classes: ["text-center"],
+        },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -347,31 +394,28 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Row 31: 3.06 Mezzanine Area
+    // Row 31: Intermediate Header - Gross Area
     31: {
-      id: "3.06",
-      rowId: "3.06",
+      id: "31-MEZZ",
+      rowId: "31-MEZZ",
       label: "MEZZANINE AREA (m²)",
       cells: {
-        b: { label: "MEZZANINE AREA (m²)" },
-        c: { content: "" },
-        d: { content: "DESCRIPTION" },
-        e: { content: "MEZZ TYPE" },
-        f: { content: "EXISTING" },
-        g: { content: "" },
-        h: { content: "NEW" },
-        i: { content: "" },
-        j: { content: "TOTAL 3.2.1.1." },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
+        b: { label: "MEZZANINE AREA (m²)", classes: ["section-subheader", "text-left"] },
+        c: { content: "", classes: ["section-subheader"] },
+        d: { content: "DESCRIPTION", classes: ["section-subheader"] },
+        e: { content: "EXISTING", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "NEW", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "TOTAL", classes: ["section-subheader"] },
+        j: { content: "NEW", classes: ["section-subheader"] },
+        k: { content: "K", classes: ["section-subheader"] },
+        l: { content: "OBC 3.2.1.1.", classes: ["section-subheader"] },
+        m: { content: "M", classes: ["section-subheader"] },
+        n: { content: "N", classes: ["section-subheader"] },
         o: {
-          fieldId: "o_31",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          content: "Notes",
+          classes: ["section-subheader", "text-left", "notes-column"],
         },
       },
     },
@@ -436,6 +480,67 @@ window.TEUI.SectionModules.sect03 = (function () {
         },
       },
     },
+
+        // Row 33: Mezzanine Area Row 2
+        33: {
+          id: "33-MEZZ2",
+          rowId: "33-MEZZ2",
+          label: "",
+          cells: {
+            b: { content: "" },
+            c: { content: "" },
+            d: {
+              fieldId: "d_33",
+              type: "editable",
+              value: "Enter mezzanine description",
+              section: "buildingAreas",
+              classes: ["text-left", "no-wrap"],
+            },
+            e: {
+              fieldId: "e_33",
+              type: "dropdown",
+              dropdownId: "dd_e_33",
+              value: "-",
+              section: "buildingAreas",
+              classes: ["dropdown-sm"],
+              options: mezzanineOptions,
+            },
+            f: {
+              fieldId: "f_33",
+              type: "editable",
+              value: "-",
+              section: "buildingAreas",
+              classes: ["text-center"],
+            },
+            g: { content: "" },
+            h: {
+              fieldId: "h_33",
+              type: "editable",
+              value: "-",
+              section: "buildingAreas",
+              classes: ["text-center"],
+            },
+            i: { content: "" },
+            j: {
+              fieldId: "j_33",
+              type: "editable",
+              value: "-",
+              section: "buildingAreas",
+              classes: ["text-center"],
+            },
+            k: { content: "" },
+            l: { content: "" },
+            m: { content: "" },
+            n: { content: "" },
+            o: {
+              fieldId: "o_33",
+              type: "editable",
+              value: "enter notes here...",
+              section: "buildingAreas",
+              classes: ["text-left", "no-wrap", "notes-column"],
+            },
+          },
+        },
 
     // Row 36: 3.07 Building Height (Stories Above Grade)
     36: {
@@ -784,14 +889,20 @@ window.TEUI.SectionModules.sect03 = (function () {
     const i23Total = e23 + g23;
     setCalculatedValue("i_23", i23Total);
 
-    // Row 24 vertical totals
-    const e24Total = e22 + e23; // Sum of EXISTING column
-    const g24Total = g22 + g23; // Sum of NEW column  
-    const i24Total = i22Total + i23Total; // Sum of TOTAL column
-    
-    setCalculatedValue("e_24", e24Total);
-    setCalculatedValue("g_24", g24Total);
+    // Row 24 horizontal total (i_24 = e_24 + g_24)
+    const e24 = getNumericValue("e_24");
+    const g24 = getNumericValue("g_24");
+    const i24Total = e24 + g24;
     setCalculatedValue("i_24", i24Total);
+
+    // Row 25 vertical totals (sum of all area rows)
+    const e25Total = e22 + e23 + e24; // Sum of EXISTING column
+    const g25Total = g22 + g23 + g24; // Sum of NEW column  
+    const i25Total = i22Total + i23Total + i24Total; // Sum of TOTAL column
+    
+    setCalculatedValue("e_25", e25Total);
+    setCalculatedValue("g_25", g25Total);
+    setCalculatedValue("i_25", i25Total);
   }
 
   function calculateGrossAreaTotals() {
@@ -857,13 +968,13 @@ window.TEUI.SectionModules.sect03 = (function () {
     let rawValueToStore = "";
 
     // Determine if this is a numeric field
-    const numericFields = ['e_22', 'g_22', 'e_23', 'g_23', 'd_36', 'd_37', 'i_36'];
+    const numericFields = ['e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24', 'd_36', 'd_37', 'i_36'];
     const isNumericField = numericFields.includes(currentFieldId);
     
     // Determine decimal places for different field types
     const heightStoriesFields = ['d_36', 'd_37']; // 1 decimal place
     const heightMetresFields = ['i_36']; // 2 decimal places  
-    const areaFields = ['e_22', 'g_22', 'e_23', 'g_23']; // 2 decimal places with commas
+    const areaFields = ['e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24']; // 2 decimal places with commas
 
     if (isNumericField) {
       // Parse numeric value using TEUI parseNumeric if available
@@ -960,7 +1071,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     
     // All editable fields in Section 03
     const editableFields = [
-      'd_22', 'd_23', 'e_22', 'g_22', 'e_23', 'g_23', 
+      'd_22', 'd_23', 'e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24',
       'd_36', 'd_37', 'i_36', 'o_22', 'o_23', 'o_24', 'o_25', 'o_27', 
       'o_28', 'o_31', 'o_32', 'o_36', 'o_37', 'o_38'
     ];
@@ -1003,7 +1114,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Register StateManager listeners for cross-field dependencies
     if (window.TEUI?.StateManager?.addListener) {
       // Listen for changes to area fields to trigger calculations
-      const calculationTriggers = ['e_22', 'g_22', 'e_23', 'g_23'];
+      const calculationTriggers = ['e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24'];
       calculationTriggers.forEach(fieldId => {
         window.TEUI.StateManager.addListener(fieldId, () => {
           if (!window.sectionCalculationInProgress) {
@@ -1023,11 +1134,14 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (window.TEUI?.StateManager) {
       const defaultValues = {
         'd_22': 'Enter area description',
-        'd_23': 'Enter area description', 
+        'd_23': 'Enter area description',
+        'd_24': 'Enter area description', 
         'e_22': '1000.00',
         'g_22': '100.00',
         'e_23': '200.00',
         'g_23': '300.00',
+        'e_24': '200.00',
+        'g_24': '300.00',
         'd_36': '2.0',  // Stories above grade
         'd_37': '1.0',  // Stories below grade
         'i_36': '6.20'  // Metres above grade
