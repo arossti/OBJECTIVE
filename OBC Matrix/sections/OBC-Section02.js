@@ -52,15 +52,15 @@ window.TEUI.SectionModules.sect02 = (function () {
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
         c: { content: "C", classes: ["section-subheader"] },
-        d: { content: "OCCUPANCY", classes: ["section-subheader"] },
-        e: { content: "USE", classes: ["section-subheader"] },
+        d: { content: "D", classes: ["section-subheader"] },
+        e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
         h: { content: "H", classes: ["section-subheader"] },
         i: { content: "I", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC References", classes: ["section-subheader"] },
+        l: { content: "L", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
         o: {
