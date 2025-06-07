@@ -224,18 +224,37 @@ body {
   max-width: none !important;
 }
 
-/* Enhanced empty column behavior for better space distribution */
-.data-table td:empty {
-  min-width: 12px; /* Minimal but visible separator */
-  width: 12px;
-  padding: 0 6px;
+/* ELIMINATE MIDDLE GAPS: Collapse empty columns to prevent "goalposts" */
+.data-table col:nth-child(5),   /* E: Empty - collapse */
+.data-table col:nth-child(6),   /* F: Empty - collapse */
+.data-table col:nth-child(7),   /* G: Empty - collapse */
+.data-table col:nth-child(13),  /* M: Empty - collapse */
+.data-table col:nth-child(14) { /* N: Empty - collapse */
+  width: 2px !important;
+  min-width: 2px !important;
+  max-width: 2px !important;
 }
 
-/* Allow important content columns to be more generous with space */
+/* EXPANSION ZONE: Notes column becomes the expansion area */
+.data-table col:nth-child(15) { /* O: Notes - this absorbs extra space */
+  width: auto !important;
+  min-width: 120px !important; /* Minimum for functionality */
+}
+
+/* Keep content columns left-justified and compact */
 .data-table td[data-field-id*="d_"],
 .data-table td:has(.user-input),
 .data-table td:has(.calculated-value) {
-  padding: 4px 12px; /* More generous padding for content */
+  padding: 4px 8px; /* Compact but readable */
+  white-space: nowrap; /* Prevent unnecessary wrapping */
+}
+
+/* Make empty cells truly invisible */
+.data-table td:empty {
+  width: 2px;
+  padding: 0;
+  border-left: none;
+  border-right: none;
 }
 
 /* Table cells - clean and simple */
