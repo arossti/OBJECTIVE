@@ -57,7 +57,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter practice name",
           section: "buildingInfo",
           placeholder: "Enter practice name",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns C-H
         },
         d: { content: "" },
@@ -87,7 +87,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter address line 1",
           section: "buildingInfo",
           placeholder: "Enter address line 1",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns C-H
         },
         d: { content: "" },
@@ -117,7 +117,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter address line 2",
           section: "buildingInfo",
           placeholder: "Enter address line 2",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Changed to colspan to match other rows
         },
         d: { content: "" },
@@ -147,7 +147,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter contact information",
           section: "buildingInfo",
           placeholder: "Enter contact information",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns C-H
         },
         d: { content: "" },
@@ -177,7 +177,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter project name",
           section: "buildingInfo",
           placeholder: "Enter project name",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns C-H
         },
         d: { content: "" },
@@ -207,7 +207,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter project location",
           section: "buildingInfo",
           placeholder: "Enter project location",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns C-H
         },
         d: { content: "" },
@@ -237,7 +237,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "Enter date",
           section: "buildingInfo",
           placeholder: "Enter date",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 3, // Span columns C-E for date field
         },
         d: { content: "" },
@@ -267,7 +267,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           value: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
           section: "buildingInfo",
           placeholder: "Enter OAA member directory URL",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns C-H
         },
         d: { content: "" },

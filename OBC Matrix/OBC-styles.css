@@ -233,33 +233,32 @@ body {
   padding-bottom: 4px !important;
 }
 
-/* SIMPLIFIED ALIGNMENT: Text fields left, numeric fields right */
+/* UNIVERSAL ALIGNMENT: Simple and clean */
 .data-table td {
-  text-align: left; /* Default: text fields left-aligned */
+  text-align: left; /* All table content left-aligned by default */
 }
 
-/* Numeric columns (E, F, G, H, I, J, K) right-aligned */
-.data-table td:nth-child(5),  /* Column E */
-.data-table td:nth-child(6),  /* Column F */
-.data-table td:nth-child(7),  /* Column G */
-.data-table td:nth-child(8),  /* Column H */
-.data-table td:nth-child(9),  /* Column I */
-.data-table td:nth-child(10), /* Column J */
-.data-table td:nth-child(11)  /* Column K */ {
-  text-align: right !important;
+/* Numeric fields right-aligned (by content type, not column position) */
+.data-table td[data-field-id*="area"],
+.data-table td[data-field-id*="dimension"],
+.data-table td[data-field-id*="height"],
+.data-table td[data-field-id*="cost"],
+.data-table td[data-field-id*="value"],
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td input[type="number"] {
+  text-align: right;
 }
 
-/* Calculated values are bold and right-aligned */
+/* Calculated values are bold (alignment handled above) */
 .calculated-value {
   font-weight: 700;
   color: var(--calculated-value-color);
-  text-align: right !important;
 }
 
 .derived-value {
   font-weight: 600;
   color: var(--derived-value-color);
-  text-align: right !important;
 }
 
 /* Style for fields awaiting measurement/input */
@@ -539,10 +538,10 @@ option,
   transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important;
   cursor: text !important;
   
-  /* Default alignment */
-  text-align: left !important;
+  /* Default sizing */
   width: 100% !important;
   box-sizing: border-box !important;
+  /* text-align: left inherited from universal rule */
 }
 
 /* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
@@ -554,15 +553,7 @@ option,
   border-bottom: 1px solid #eeeeee !important;
 }
 
-/* Special alignment for numeric fields */
-.data-table td input[type="number"].user-input,
-.data-table td[contenteditable="true"][data-field-id*="area"],
-.data-table td[contenteditable="true"][data-field-id*="dimension"], 
-.data-table td[contenteditable="true"][data-field-id*="height"],
-.data-table td[contenteditable="true"][data-field-id*="cost"],
-.data-table td[contenteditable="true"][data-field-id*="value"] {
-  text-align: right !important;
-}
+/* Special alignment for numeric fields handled by universal rule above */
 
 /* Hover state - very subtle background hint + enhanced border */
 .data-table td[contenteditable="true"].user-input:hover,
@@ -1080,25 +1071,19 @@ input[type=number].form-control {
   font-weight: 500 !important;
 }
 
-/* Ensure text alignment is preserved */
-.data-table td input[type="number"].form-control,
-.data-table td input[type="number"].user-input {
-  text-align: right !important; /* Most numeric cells are right-aligned */
-}
+/* Text alignment handled by universal rule above */
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
 .data-table tr td.section-subheader,
 .data-table tr:has(td.section-subheader) td {
-  background-color: #eaeaea; /* Light grey background - removed !important */
-  color: #333; /* Darker text - removed !important */
-  font-size: var(
-    --smaller-font-size
-  ); /* Use smaller font - removed !important */
-  font-weight: 600; /* Bold - removed !important */
-  padding: 3px 6px; /* Tighter padding - removed !important */
-  border-bottom: 1px solid #d0d0d0; /* Separator line - removed !important */
-  text-align: left; /* Left align all subheader content by default */
+  background-color: #eaeaea; /* Light grey background */
+  color: #333; /* Darker text */
+  font-size: var(--smaller-font-size); /* Use smaller font */
+  font-weight: 600; /* Bold */
+  padding: 3px 6px; /* Tighter padding */
+  border-bottom: 1px solid #d0d0d0; /* Separator line */
   white-space: pre-line; /* Allow wrapping on explicit newlines */
+  /* text-align: left inherited from universal rule above */
 }
 
 /* Ensure empty cells in section-subheader rows maintain styling */
@@ -1106,17 +1091,7 @@ input[type=number].form-control {
   background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
 }
 
-/* --- Section 02 Specific Overrides --- */
-
-/* Force left alignment for specific text-based input/derived fields in Section 02 */
-#buildingInfo td[data-field-id="d_16"],
-#buildingInfo td[data-field-id="h_14"],
-#buildingInfo td[data-field-id="i_16"],
-#buildingInfo td[data-field-id="i_17"] {
-  text-align: left !important; /* !important needed to override global !important rule */
-}
-
-/* --- End Section 02 Overrides --- */
+/* Section 02 specific overrides no longer needed - universal rule handles alignment */
 
 /* Make the dropdown styling more specific */
 .data-table td select.form-select,
@@ -1161,22 +1136,22 @@ table.data-table select.form-select:hover {
 
 /* =============== Text Alignment Utilities =============== */
 
-/* Use these sparingly - most alignment should follow the natural column pattern */
+/* Use these sparingly - most alignment handled by universal rule above */
 .text-left {
-  text-align: left !important;
+  text-align: left;
 }
 
 .text-center {
-  text-align: center !important;
+  text-align: center;
 }
 
 .text-right {
-  text-align: right !important;
+  text-align: right;
 }
 
-/* Special case: Text labels in numeric columns that should stay left-aligned */
+/* Special case: Text labels that need specific alignment */
 .text-left-indicator {
-  text-align: left !important; /* For labels in otherwise right-aligned columns */
+  text-align: left; /* For labels that need explicit left alignment */
 }
 
 /* Style for disabled/non-applicable input fields */

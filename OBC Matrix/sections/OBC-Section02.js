@@ -1,5 +1,5 @@
 /**
- * 4011-Section02.js
+ * OBC-Section02.js
  * Building Occupancy (Section 2) module for OBC Matrix
  *
  * This file contains field definitions, layout templates, and rendering logic
@@ -46,14 +46,14 @@ window.TEUI.SectionModules.sect02 = (function () {
   const sectionRows = {
     // HEADER ROW
     header: {
-      id: "02-HEADER",
-      rowId: "02-HEADER",
+      id: "2.00",
+      rowId: "2.00",
       label: "Building Occupancy Header",
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
         c: { content: "C", classes: ["section-subheader"] },
         d: { content: "OCCUPANCY", classes: ["section-subheader"] },
-        e: { content: "Use Description", classes: ["section-subheader", "text-left"] },
+        e: { content: "USE", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
         h: { content: "H", classes: ["section-subheader"] },
@@ -65,28 +65,28 @@ window.TEUI.SectionModules.sect02 = (function () {
         n: { content: "N", classes: ["section-subheader"] },
         o: {
           content: "Notes",
-          classes: ["section-subheader", "text-left", "notes-column"],
+          classes: ["section-subheader", "notes-column"],
         },
       },
     },
 
-    // Row 10: 3.00 Building Code Version
-    10: {
-      id: "3.00",
-      rowId: "3.00",
+    // Row 2.10: 3.00 Building Code Version
+    "2.10": {
+      id: "2.10",
+      rowId: "2.10",
       label: "BUILDING CODE VERSION",
       cells: {
-        b: { label: "BUILDING CODE VERSION" },
-        c: { content: "" },
-        d: { content: "O.Reg. 163/24 (Last Amendment: O.Reg. 447/24)" },
+        b: { label: "3.00" },
+        c: { label: "BUILDING CODE VERSION" },
+        d: { content: "O.Reg. 163/24" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
         h: { content: "" },
         i: { content: "" },
         j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
+        k: { content: "LAST CODE AMENDMENT" },
+        l: { content: "O.Reg. 447/24" },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -94,26 +94,25 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 11: 3.01 Project Type (moved from Section 01)
-    11: {
-      id: "3.01",
-      rowId: "3.01",
+    // Row 2.11: 3.01 Project Type
+    "2.11": {
+      id: "2.11",
+      rowId: "2.11",
       label: "PROJECT TYPE",
       cells: {
-        b: { label: "PROJECT TYPE" },
-        c: { content: "" },
+        b: { label: "3.01" },
+        c: { label: "PROJECT TYPE" },
         d: {
-          fieldId: "d_11", // User inputs now in column D
+          fieldId: "d_11",
           type: "dropdown",
           dropdownId: "dd_d_11",
           value: "-",
           section: "buildingOccupancy",
-          colspan: 4, // Span columns D-G for dropdown
           classes: ["dropdown-md"],
           options: [
             { value: "-", name: "Select Project Type" },
@@ -124,14 +123,21 @@ window.TEUI.SectionModules.sect02 = (function () {
             { value: "Repair", name: "Repair" },
           ],
         },
-        e: { content: "" },
+        e: {
+          fieldId: "e_11",
+          type: "editable",
+          value: "[Provide further description below.]",
+          section: "buildingOccupancy",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns E-J
+        },
         f: { content: "" },
         g: { content: "" },
         h: { content: "" },
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: { content: "[A] 1.3.3.2.", classes: ["text-left", "obc-reference"] },
+        l: { content: "[A] 1.3.3.2.", classes: ["obc-reference"] },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -139,27 +145,20 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 12: Description row
-    12: {
-      id: "12-DESC",
-      rowId: "12-DESC",
-      label: "DESCRIPTION",
+    // Row 2.12: Empty row for spacing
+    "2.12": {
+      id: "2.12",
+      rowId: "2.12",
+      label: "",
       cells: {
-        b: { label: "DESCRIPTION" },
+        b: { content: "12" },
         c: { content: "" },
-        d: {
-          fieldId: "d_12",
-          type: "editable",
-          value: "Provide additional clarification of project type if needed",
-          section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "user-input"],
-          colspan: 6, // Span columns D-I for description field
-        },
+        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -175,53 +174,47 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 13: 3.02 Major Occupancy Classification (moved from Section 01)
-    13: {
-      id: "3.02",
-      rowId: "3.02",
+    // Row 2.13: 3.02 Major Occupancy Classification Header
+    "2.13": {
+      id: "2.13",
+      rowId: "2.13",
       label: "MAJOR OCCUPANCY CLASSIFICATION",
       cells: {
-        b: { label: "MAJOR OCCUPANCY CLASSIFICATION" },
-        c: { content: "" },
-        d: { content: "OCCUPANCY" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "3.1.2.", classes: ["text-left", "obc-reference"] },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_13",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
+        b: { label: "3.02", classes: ["section-subheader"] },
+        c: { label: "MAJOR OCCUPANCY CLASSIFICATION", classes: ["section-subheader"] },
+        d: { label: "OCCUPANCY TYPE", classes: ["section-subheader"] },
+        e: { label: "USE DESCRIPTION", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "3.1.2.", classes: ["section-subheader", "obc-reference"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+        o: { content: "", classes: ["section-subheader", "notes-column"] },
       },
     },
 
-    // Row 14: First occupancy dropdown row
-    14: {
-      id: "14-OCC1",
-      rowId: "14-OCC1",
+    // Row 2.14: First occupancy dropdown row
+    "2.14": {
+      id: "2.14",
+      rowId: "2.14",
       label: "",
       cells: {
-        b: { content: "" },
+        b: { content: "14" },
         c: { content: "" },
         d: {
           fieldId: "d_14",
           type: "dropdown",
           dropdownId: "dd_d_14",
-          value: "-",
+          value: "A2",
           section: "buildingOccupancy",
           options: occupancyOptions,
           classes: ["dropdown-md"],
@@ -229,10 +222,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_14",
           type: "editable",
-          value: "Provide description of use here...",
+          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap"],
-          colspan: 5, // Span columns E-I
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns E-J
         },
         f: { content: "" },
         g: { content: "" },
@@ -248,24 +241,24 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 15: Second occupancy dropdown row
-    15: {
-      id: "15-OCC2",
-      rowId: "15-OCC2",
+    // Row 2.15: Second occupancy dropdown row
+    "2.15": {
+      id: "2.15",
+      rowId: "2.15",
       label: "",
       cells: {
-        b: { content: "" },
+        b: { content: "15.0" },
         c: { content: "" },
         d: {
           fieldId: "d_15",
           type: "dropdown",
           dropdownId: "dd_d_15",
-          value: "-",
+          value: "F1",
           section: "buildingOccupancy",
           options: occupancyOptions,
           classes: ["dropdown-md"],
@@ -273,9 +266,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_15",
           type: "editable",
-          value: "Provide description of use here...",          section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap"],
-          colspan: 5, // Span columns E-I
+          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
+          section: "buildingOccupancy",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns E-J
         },
         f: { content: "" },
         g: { content: "" },
@@ -291,24 +285,24 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 16: Third occupancy dropdown row
-    16: {
-      id: "16-OCC3",
-      rowId: "16-OCC3",
+    // Row 2.16: Third occupancy dropdown row
+    "2.16": {
+      id: "2.16",
+      rowId: "2.16",
       label: "",
       cells: {
-        b: { content: "" },
+        b: { content: "16.0" },
         c: { content: "" },
         d: {
           fieldId: "d_16",
           type: "dropdown",
           dropdownId: "dd_d_16",
-          value: "-",
+          value: "A3",
           section: "buildingOccupancy",
           options: occupancyOptions,
           classes: ["dropdown-md"],
@@ -316,10 +310,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_16",
           type: "editable",
-          value: "Provide description of use here...",
+          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap"],
-          colspan: 5, // Span columns E-I
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns E-J
         },
         f: { content: "" },
         g: { content: "" },
@@ -335,24 +329,24 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 17: Fourth occupancy dropdown row
-    17: {
-      id: "17-OCC4",
-      rowId: "17-OCC4",
+    // Row 2.17: Fourth occupancy dropdown row
+    "2.17": {
+      id: "2.17",
+      rowId: "2.17",
       label: "",
       cells: {
-        b: { content: "" },
+        b: { content: "17.0" },
         c: { content: "" },
         d: {
           fieldId: "d_17",
           type: "dropdown",
           dropdownId: "dd_d_17",
-          value: "-",
+          value: "B1",
           section: "buildingOccupancy",
           options: occupancyOptions,
           classes: ["dropdown-md"],
@@ -360,10 +354,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_17",
           type: "editable",
-          value: "Provide description of use here...",
+          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap"],
-          colspan: 5, // Span columns E-I
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns E-J
         },
         f: { content: "" },
         g: { content: "" },
@@ -379,24 +373,24 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 18: Fifth occupancy dropdown row
-    18: {
-      id: "18-OCC5",
-      rowId: "18-OCC5",
+    // Row 2.18: Fifth occupancy dropdown row
+    "2.18": {
+      id: "2.18",
+      rowId: "2.18",
       label: "",
       cells: {
-        b: { content: "" },
+        b: { content: "18.0" },
         c: { content: "" },
         d: {
           fieldId: "d_18",
           type: "dropdown",
           dropdownId: "dd_d_18",
-          value: "-",
+          value: "E",
           section: "buildingOccupancy",
           options: occupancyOptions,
           classes: ["dropdown-md"],
@@ -404,10 +398,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_18",
           type: "editable",
-          value: "Provide description of use here...",
+          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap"],
-          colspan: 5, // Span columns E-I
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns E-J
         },
         f: { content: "" },
         g: { content: "" },
@@ -423,19 +417,19 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 19: 3.03 Superimposed Major Occupancies
-    19: {
-      id: "3.03",
-      rowId: "3.03",
+    // Row 2.19: 3.03 Superimposed Major Occupancies
+    "2.19": {
+      id: "2.19",
+      rowId: "2.19",
       label: "SUPERIMPOSED MAJOR OCCUPANCIES",
       cells: {
-        b: { label: "SUPERIMPOSED MAJOR OCCUPANCIES" },
-        c: { content: "" },
+        b: { label: "3.03" },
+        c: { label: "SUPERIMPOSED MAJOR OCCUPANCIES" },
         d: {
           fieldId: "d_19",
           type: "dropdown",
@@ -454,7 +448,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "If Yes, provide explanation here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap"],
+          classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
         },
         f: { content: "" },
@@ -463,7 +457,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: { content: "3.2.2.7.", classes: ["text-left", "obc-reference"] },
+        l: { content: "3.2.2.7.", classes: ["obc-reference"] },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -471,18 +465,18 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
 
-    // Row 20: Empty row
-    20: {
-      id: "20-EMPTY",
-      rowId: "20-EMPTY",
+    // Row 2.20: Empty row
+    "2.20": {
+      id: "2.20",
+      rowId: "2.20",
       label: "",
       cells: {
-        b: { content: "" },
+        b: { content: "19" },
         c: { content: "" },
         d: { content: "" },
         e: { content: "" },
@@ -500,7 +494,7 @@ window.TEUI.SectionModules.sect02 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["no-wrap", "notes-column"],
         },
       },
     },
@@ -552,10 +546,7 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   function getLayout() {
-    // IMPORTANT: To ensure the header appears first, we process the rows in
-    // a specific order: header first, then all other rows
-
-    // Start with an empty array for rows
+    // Process rows in specific order: header first, then all other rows
     const layoutRows = [];
 
     // First add the header row if it exists
@@ -681,10 +672,6 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   //==========================================================================
-  // FLOATING STAMP UPLOAD FUNCTIONALITY  
-  //==========================================================================
-
-  //==========================================================================
   // EVENT HANDLERS
   //==========================================================================
 
@@ -694,163 +681,12 @@ window.TEUI.SectionModules.sect02 = (function () {
     window.TEUI.sect02.initialized = true;
   }
 
-  function addFloatingStampUpload() {
-    const sectionContent = document.querySelector('[data-render-section="buildingInfo"]');
-    if (!sectionContent || document.getElementById('floating-stamp-upload')) return;
-
-    // Create floating stamp upload container
-    const stampContainer = document.createElement('div');
-    stampContainer.id = 'floating-stamp-upload';
-    stampContainer.innerHTML = `
-      <div class="stamp-upload-label">Seal & Signature</div>
-      <div class="stamp-upload-container">
-        <div class="stamp-placeholder" id="floating-stamp-placeholder">
-          <div class="stamp-instructions">Upload seal image here</div>
-          <div class="stamp-hint">200x200px recommended</div>
-        </div>
-        <input type="file" id="floating-stamp-upload-input" accept="image/*" style="display: none;">
-        <img id="floating-stamp-preview" class="stamp-preview" style="display: none;">
-      </div>
-    `;
-
-    // Add CSS for floating positioning  
-    stampContainer.style.cssText = `
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 10;
-      background: white;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      width: 220px;
-    `;
-
-    // Position relative to section
-    sectionContent.style.position = 'relative';
-    sectionContent.appendChild(stampContainer);
-
-    // Initialize stamp upload functionality on the floating element
-    initializeFloatingStampUpload();
-  }
-
-  function initializeFloatingStampUpload() {
-    const placeholder = document.getElementById('floating-stamp-placeholder');
-    const fileInput = document.getElementById('floating-stamp-upload-input');
-    const preview = document.getElementById('floating-stamp-preview');
-
-    if (!placeholder || !fileInput || !preview) return;
-
-    placeholder.addEventListener('click', () => {
-      fileInput.click();
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-          placeholder.style.display = 'none';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Allow reset by clicking on the preview
-    preview.addEventListener('click', () => {
-      preview.style.display = 'none';
-      placeholder.style.display = 'flex';
-      fileInput.value = '';
-    });
-  }
-
   function onSectionRendered() {
     console.log("Section 02 rendered - Building Occupancy (OBC Matrix)");
     
     // Initialize any section-specific functionality after rendering
     if (!window.TEUI.sect02.initialized) {
       initializeEventHandlers();
-    }
-
-    // Add floating stamp upload after section renders
-    setTimeout(() => {
-      addFloatingStampUpload();
-    }, 100);
-
-    // Add custom CSS for stamp upload
-    if (!document.getElementById('stamp-upload-styles')) {
-      const style = document.createElement('style');
-      style.id = 'stamp-upload-styles';
-      style.textContent = `
-        .stamp-upload-container {
-          width: 180px;
-          height: 180px;
-          position: relative;
-          margin: 0 auto;
-        }
-
-        .stamp-placeholder {
-          width: 180px;
-          height: 180px;
-          border: 2px dashed #ccc;
-          border-radius: 8px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: border-color 0.3s ease;
-          background-color: #fafafa;
-        }
-
-        .stamp-placeholder:hover {
-          border-color: #007bff;
-          background-color: #f0f8ff;
-        }
-
-        .stamp-instructions {
-          font-size: 12px;
-          color: #666;
-          text-align: center;
-          margin-bottom: 4px;
-          font-weight: 500;
-        }
-
-        .stamp-hint {
-          font-size: 10px;
-          color: #999;
-          text-align: center;
-        }
-
-        .stamp-preview {
-          width: 180px;
-          height: 180px;
-          object-fit: contain;
-          border-radius: 8px;
-          cursor: pointer;
-          border: 2px solid #ddd;
-        }
-
-        .stamp-upload-label {
-          font-size: 14px;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 8px;
-          text-align: center;
-        }
-
-        #floating-stamp-upload {
-          transition: opacity 0.3s ease;
-        }
-
-        body.notes-hidden #floating-stamp-upload {
-          /* Keep stamp visible when notes are hidden */
-        }
-      `;
-      document.head.appendChild(style);
     }
   }
 
