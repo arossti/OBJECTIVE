@@ -38,7 +38,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       cells: {
         b: { label: "3.04" },
         c: { label: "BUILDING AREA (m²)", classes: ["section-subheader"] },
-        d: { content: "DESCRIPTION", classes: ["section-subheader"] },
+        d: { content: "BUILDING AREA (m²)", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
@@ -269,8 +269,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       label: "GROSS AREA (m²)",
       cells: {
         b: { label: "3.05" },
-        c: { label: "GROSS AREA (m²)", classes: ["section-subheader"] },
-        d: { content: "DESCRIPTION", classes: ["section-subheader"] },
+        c: { content: "C", classes: ["section-subheader"] },
+        d: { content: "GROSS AREA (m²)", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
@@ -502,7 +502,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       cells: {
         b: { label: "3.06", classes: ["section-subheader"] },
         c: { content: "", classes: ["section-subheader"] },
-        d: { content: "DESCRIPTION", classes: ["section-subheader"] },
+        d: { content: "MEZZANINE AREA (m²)", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
