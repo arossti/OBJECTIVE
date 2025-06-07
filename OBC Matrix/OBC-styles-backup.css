@@ -198,74 +198,166 @@ body {
   display: none;
 }
 
-/* =============== Data Tables - Simplified Accordion Layout =============== */
+/* =============== Data Tables =============== */
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--base-font-size);
-  table-layout: auto; /* Natural column sizing based on content */
-  max-width: 100%;
+  table-layout: auto; /* Allow flexible column sizing */
+  max-width: 100%; /* Prevent table from exceeding container */
 }
 
-/* SINGLE RULE: Natural accordion-style column sizing */
+/* Make columns size naturally to their content */
 .data-table col {
   width: auto !important;
   min-width: unset !important;
-  max-width: none !important;
 }
 
-/* Table cells - clean and simple */
+/* Description column should flex but not get too wide */
+.data-table col.col-d {
+  width: auto !important;
+  min-width: 180px !important;
+  max-width: 250px !important; /* Prevent excessive width like 446px */
+}
+
+/* Only numeric columns should have minimal fixed widths */
+.data-table col.col-e,
+.data-table col.col-f,
+.data-table col.col-g,
+.data-table col.col-h,
+.data-table col.col-i,
+.data-table col.col-j,
+.data-table col.col-k {
+  width: 80px !important; /* Fixed narrow width for numeric columns */
+  min-width: 60px !important;
+  max-width: 80px !important;
+}
+
+/* Table cells with no wrapping */
 .data-table td,
 .data-table th {
   padding: var(--cell-padding);
+  text-align: left; /* Default alignment - all text naturally left-aligned */
   border-bottom: 1px solid #eeeeee;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Changed from visible */
+  text-overflow: ellipsis; /* Added */
 }
 
 /* Ensure cells have minimum vertical padding for focus glow */
 .data-table td {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
+  padding-top: 4px !important; /* Reduced back to 4px */
+  padding-bottom: 4px !important; /* Reduced back to 4px */
 }
 
-/* SIMPLIFIED ALIGNMENT: Text fields left, numeric fields right */
-.data-table td {
-  text-align: left; /* Default: text fields left-aligned */
-}
-
-/* Numeric columns (E, F, G, H, I, J, K) right-aligned */
-.data-table td:nth-child(5),  /* Column E */
-.data-table td:nth-child(6),  /* Column F */
-.data-table td:nth-child(7),  /* Column G */
-.data-table td:nth-child(8),  /* Column H */
-.data-table td:nth-child(9),  /* Column I */
-.data-table td:nth-child(10), /* Column J */
-.data-table td:nth-child(11)  /* Column K */ {
+/* Right-align ALL numeric/data columns (D, E, F, G, H, I, J, K, L, M, N) - accounting style */
+.data-table td.col-d,
+.data-table td.col-e,
+.data-table td.col-f,
+.data-table td.col-g,
+.data-table td.col-h,
+.data-table td.col-i,
+.data-table td.col-j,
+.data-table td.col-k,
+.data-table td.col-l,
+.data-table td.col-m,
+.data-table td.col-n {
   text-align: right !important;
 }
 
-/* Calculated values are bold and right-aligned */
+/* Override any existing text-center or text-left classes on numeric columns */
+.data-table td.col-e *,
+.data-table td.col-f *,
+.data-table td.col-g *,
+.data-table td.col-h *,
+.data-table td.col-i *,
+.data-table td.col-j *,
+.data-table td.col-k * {
+  text-align: right !important;
+}
+
+/* Super aggressive override for all numeric values in area columns */
+.data-table tbody tr td:nth-child(5),  /* Column E - EXISTING */
+.data-table tbody tr td:nth-child(7),  /* Column G - NEW */
+.data-table tbody tr td:nth-child(9),  /* Column I - TOTAL */
+.data-table tbody tr td:nth-child(6),  /* Column F */
+.data-table tbody tr td:nth-child(8),  /* Column H */
+.data-table tbody tr td:nth-child(10), /* Column J */
+.data-table tbody tr td:nth-child(11)  /* Column K */ {
+  text-align: right !important;
+}
+
+/* Even more aggressive - target the content inside these cells */
+.data-table tbody tr td:nth-child(5) *,
+.data-table tbody tr td:nth-child(7) *,
+.data-table tbody tr td:nth-child(9) *,
+.data-table tbody tr td:nth-child(6) *,
+.data-table tbody tr td:nth-child(8) *,
+.data-table tbody tr td:nth-child(10) *,
+.data-table tbody tr td:nth-child(11) * {
+  text-align: right !important;
+}
+
+/* Calculated/Derived values inherit alignment from their column position */
 .calculated-value {
-  font-weight: 700;
+  font-weight: 700; /* Bold for calculated values */
   color: var(--calculated-value-color);
-  text-align: right !important;
+  text-align: right !important; /* Force right alignment for all calculated values */
 }
 
 .derived-value {
-  font-weight: 600;
+  font-weight: 600; /* Semi-bold for derived values */
   color: var(--derived-value-color);
+  text-align: right !important; /* Force right alignment for all derived values */
+}
+
+/* Global rule: All numeric input fields should be right-aligned */
+.data-table td [data-field-id*="_22"][contenteditable="true"],
+.data-table td [data-field-id*="_23"][contenteditable="true"],
+.data-table td [data-field-id*="_24"][contenteditable="true"],
+.data-table td [data-field-id*="_27"][contenteditable="true"],
+.data-table td [data-field-id*="_28"][contenteditable="true"],
+.data-table td [data-field-id*="_29"][contenteditable="true"],
+.data-table td [data-field-id*="_32"][contenteditable="true"],
+.data-table td [data-field-id*="_33"][contenteditable="true"],
+.data-table td [data-field-id*="_34"][contenteditable="true"],
+.data-table td [data-field-id*="_36"][contenteditable="true"],
+.data-table td [data-field-id*="_37"][contenteditable="true"],
+/* Target all fields that start with e_, g_, i_, f_, h_, j_ for area/numeric values */
+.data-table td [data-field-id^="e_"][contenteditable="true"],
+.data-table td [data-field-id^="g_"][contenteditable="true"],
+.data-table td [data-field-id^="i_"][contenteditable="true"],
+.data-table td [data-field-id^="f_"][contenteditable="true"],
+.data-table td [data-field-id^="h_"][contenteditable="true"],
+.data-table td [data-field-id^="j_"][contenteditable="true"] {
   text-align: right !important;
 }
+
+/* Override any text-center classes on numeric fields specifically */
+.data-table .text-center[data-field-id^="e_"],
+.data-table .text-center[data-field-id^="g_"],
+.data-table .text-center[data-field-id^="i_"],
+.data-table .text-center[data-field-id^="f_"],
+.data-table .text-center[data-field-id^="h_"],
+.data-table .text-center[data-field-id^="j_"],
+.data-table .text-center.calculated-value,
+.data-table .text-center.user-input[data-field-id^="e_"],
+.data-table .text-center.user-input[data-field-id^="g_"],
+.data-table .text-center.user-input[data-field-id^="i_"],
+.data-table .text-center.user-input[data-field-id^="f_"],
+.data-table .text-center.user-input[data-field-id^="h_"],
+.data-table .text-center.user-input[data-field-id^="j_"] {
+  text-align: right !important;
+}
+
+
 
 /* Style for fields awaiting measurement/input */
 .PendingValue {
   font-style: italic;
-  color: #888888;
+  color: #888888; /* Light grey */
 }
 
 /* =============== Layout Toggle and Navigation =============== */
