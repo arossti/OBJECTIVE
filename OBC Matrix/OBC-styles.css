@@ -225,27 +225,111 @@ body {
   padding-bottom: 4px !important; /* Reduced back to 4px */
 }
 
-/* Right-align ALL numeric/data columns (D, F, H, J, K, L, M, N) - accounting style */
+/* Right-align ALL numeric/data columns (D, E, F, G, H, I, J, K, L, M, N) - accounting style */
 .data-table td.col-d,
+.data-table td.col-e,
 .data-table td.col-f,
+.data-table td.col-g,
 .data-table td.col-h,
+.data-table td.col-i,
 .data-table td.col-j,
 .data-table td.col-k,
 .data-table td.col-l,
 .data-table td.col-m,
 .data-table td.col-n {
-  text-align: right;
+  text-align: right !important;
+}
+
+/* Override any existing text-center or text-left classes on numeric columns */
+.data-table td.col-e *,
+.data-table td.col-f *,
+.data-table td.col-g *,
+.data-table td.col-h *,
+.data-table td.col-i *,
+.data-table td.col-j *,
+.data-table td.col-k * {
+  text-align: right !important;
+}
+
+/* Super aggressive override for all numeric values in area columns */
+.data-table tbody tr td:nth-child(5),  /* Column E - EXISTING */
+.data-table tbody tr td:nth-child(7),  /* Column G - NEW */
+.data-table tbody tr td:nth-child(9),  /* Column I - TOTAL */
+.data-table tbody tr td:nth-child(6),  /* Column F */
+.data-table tbody tr td:nth-child(8),  /* Column H */
+.data-table tbody tr td:nth-child(10), /* Column J */
+.data-table tbody tr td:nth-child(11)  /* Column K */ {
+  text-align: right !important;
+}
+
+/* Even more aggressive - target the content inside these cells */
+.data-table tbody tr td:nth-child(5) *,
+.data-table tbody tr td:nth-child(7) *,
+.data-table tbody tr td:nth-child(9) *,
+.data-table tbody tr td:nth-child(6) *,
+.data-table tbody tr td:nth-child(8) *,
+.data-table tbody tr td:nth-child(10) *,
+.data-table tbody tr td:nth-child(11) * {
+  text-align: right !important;
 }
 
 /* Calculated/Derived values inherit alignment from their column position */
 .calculated-value {
   font-weight: 700; /* Bold for calculated values */
   color: var(--calculated-value-color);
+  text-align: right !important; /* Force right alignment for all calculated values */
 }
 
 .derived-value {
   font-weight: 600; /* Semi-bold for derived values */
   color: var(--derived-value-color);
+  text-align: right !important; /* Force right alignment for all derived values */
+}
+
+/* Global rule: All numeric input fields should be right-aligned */
+.data-table td [data-field-id*="_22"][contenteditable="true"],
+.data-table td [data-field-id*="_23"][contenteditable="true"],
+.data-table td [data-field-id*="_24"][contenteditable="true"],
+.data-table td [data-field-id*="_27"][contenteditable="true"],
+.data-table td [data-field-id*="_28"][contenteditable="true"],
+.data-table td [data-field-id*="_29"][contenteditable="true"],
+.data-table td [data-field-id*="_32"][contenteditable="true"],
+.data-table td [data-field-id*="_33"][contenteditable="true"],
+.data-table td [data-field-id*="_34"][contenteditable="true"],
+.data-table td [data-field-id*="_36"][contenteditable="true"],
+.data-table td [data-field-id*="_37"][contenteditable="true"],
+/* Target all fields that start with e_, g_, i_, f_, h_, j_ for area/numeric values */
+.data-table td [data-field-id^="e_"][contenteditable="true"],
+.data-table td [data-field-id^="g_"][contenteditable="true"],
+.data-table td [data-field-id^="i_"][contenteditable="true"],
+.data-table td [data-field-id^="f_"][contenteditable="true"],
+.data-table td [data-field-id^="h_"][contenteditable="true"],
+.data-table td [data-field-id^="j_"][contenteditable="true"] {
+  text-align: right !important;
+}
+
+/* Override any text-center classes on numeric fields specifically */
+.data-table .text-center[data-field-id^="e_"],
+.data-table .text-center[data-field-id^="g_"],
+.data-table .text-center[data-field-id^="i_"],
+.data-table .text-center[data-field-id^="f_"],
+.data-table .text-center[data-field-id^="h_"],
+.data-table .text-center[data-field-id^="j_"],
+.data-table .text-center.calculated-value,
+.data-table .text-center.user-input[data-field-id^="e_"],
+.data-table .text-center.user-input[data-field-id^="g_"],
+.data-table .text-center.user-input[data-field-id^="i_"],
+.data-table .text-center.user-input[data-field-id^="f_"],
+.data-table .text-center.user-input[data-field-id^="h_"],
+.data-table .text-center.user-input[data-field-id^="j_"] {
+  text-align: right !important;
+}
+
+/* Bold styling for ALL mezzanine totals in row 35 (F, H, J columns) */
+.data-table td [data-field-id="f_35"].calculated-value,
+.data-table td [data-field-id="h_35"].calculated-value,
+.data-table td [data-field-id="j_35"].calculated-value {
+  font-weight: 700 !important;
 }
 
 /* Style for fields awaiting measurement/input */
