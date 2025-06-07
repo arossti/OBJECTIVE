@@ -52,7 +52,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Name of Practice" },
         c: {
-          fieldId: "c_3", // FileHandler will read from column C
+          fieldId: "c_3", // Maps to Excel Column C
           type: "editable", 
           value: "Enter practice name",
           section: "buildingInfo",
@@ -82,7 +82,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Address 1" },
         c: {
-          fieldId: "c_4", // FileHandler will read from column C
+          fieldId: "c_4", // Maps to Excel Column C
           type: "editable",
           value: "Enter address line 1",
           section: "buildingInfo",
@@ -112,7 +112,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Address 2" },
         c: {
-          fieldId: "c_5", // Fixed: should be c_5 not d_5
+          fieldId: "c_5", // Maps to Excel Column C
           type: "editable",
           value: "Enter address line 2",
           section: "buildingInfo",
@@ -142,7 +142,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Contact" },
         c: {
-          fieldId: "c_6", // FileHandler will read from column C
+          fieldId: "c_6", // Maps to Excel Column C
           type: "editable",
           value: "Enter contact information",
           section: "buildingInfo",
@@ -172,7 +172,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Name of Project" },
         c: {
-          fieldId: "c_7", // FileHandler will read from column C
+          fieldId: "c_7", // Maps to Excel Column C
           type: "editable",
           value: "Enter project name",
           section: "buildingInfo",
@@ -202,7 +202,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Location/Address" },
         c: {
-          fieldId: "c_8", // FileHandler will read from column C
+          fieldId: "c_8", // Maps to Excel Column C
           type: "editable",
           value: "Enter project location",
           section: "buildingInfo",
@@ -232,7 +232,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Date" },
         c: {
-          fieldId: "c_9", // FileHandler will read from column C
+          fieldId: "c_9", // Maps to Excel Column C
           type: "editable",
           value: "Enter date",
           section: "buildingInfo",
@@ -262,7 +262,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "OAA MEMBER REGISTRATION" },
         c: {
-          fieldId: "c_10",
+          fieldId: "c_10", // Maps to Excel Column C
           type: "editable",
           value: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
           section: "buildingInfo",
@@ -354,19 +354,19 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function createLayoutRow(row) {
-    // Create standard row structure
+    // Create standard row structure (DOM positions for rendering)
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Empty column A
+        {}, // Empty column A for padding
         {}, // ID column B (auto-populated)
       ],
     };
 
-    // Add cells B through O based on the row definition (matching Excel structure)
+    // Add cells B through O based on the row definition (DOM rendering order)
     const columns = [
-      "b",
-      "c",
+      "b", // DOM Label column
+      "c", // DOM User input column (maps to Excel C via fieldId)
       "d",
       "e",
       "f",
@@ -388,19 +388,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         // without the extra field properties
         const cell = { ...row.cells[col] };
 
-        // Special handling for column C to support both label patterns
-        if (col === "c") {
-          // If using content+type pattern, convert to label pattern
-          if (cell.type === "label" && cell.content && !cell.label) {
-            cell.label = cell.content;
-            delete cell.type; // Not needed for rendering
-            delete cell.content; // Not needed once we have label
-          }
-          // If neither label nor content exists, use row's label as fallback
-          else if (!cell.label && !cell.content && row.label) {
-            cell.label = row.label;
-          }
-        }
+        // No special handling needed - direct Excel column mapping
 
         // Remove field-specific properties that aren't needed for rendering
         delete cell.getOptions;
@@ -410,13 +398,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         rowDef.cells.push(cell);
       } else {
         // Add empty cell if not defined
-        // Special handling for column C - use row's label if available
-        if (col === "c" && !row.cells?.c && row.label) {
-          rowDef.cells.push({ label: row.label });
-        } else {
-          // Otherwise add empty cell
-          rowDef.cells.push({});
-        }
+        rowDef.cells.push({});
       }
     });
 

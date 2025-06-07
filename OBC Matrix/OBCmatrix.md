@@ -417,7 +417,7 @@ Critical audit needed to ensure Excel mapping accuracy:
 **Excel Import/Export Risk**:
 - Misaligned fields will cause data mapping failures during CSV import
 - Field coordinate mismatches will break Excel template compatibility
-- Column positioning errors will create user confusion
+- Column positioning errors will create user and dev confusion
 
 ## Risk Mitigation
 
