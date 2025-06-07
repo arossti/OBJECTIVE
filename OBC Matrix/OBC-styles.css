@@ -208,53 +208,34 @@ body {
   max-width: 100%;
 }
 
-/* PROPORTIONAL EXPANSION SYSTEM: "Raisin Bread" Universal Growth */
+/* SMART ACCORDION SYSTEM: Content-first with proportional expansion */
 .data-table {
-  table-layout: fixed !important; /* Fixed layout enables proportional control */
   width: 100%;
   border-collapse: collapse;
+  font-size: var(--base-font-size);
+  table-layout: auto; /* Natural sizing based on content */
+  max-width: 100%;
 }
 
-/* UNIVERSAL COLUMN PROPORTIONS: Each column gets a base fraction of total width */
-.data-table col:nth-child(1) { width: 3%; }   /* A: Row spacer */
-.data-table col:nth-child(2) { width: 5%; }   /* B: Row ID */
-.data-table col:nth-child(3) { width: 15%; }  /* C: Labels */
-.data-table col:nth-child(4) { width: 20%; }  /* D: Descriptions/Values */
-.data-table col:nth-child(5) { width: 6%; }   /* E: Expand proportionally */
-.data-table col:nth-child(6) { width: 6%; }   /* F: Expand proportionally */
-.data-table col:nth-child(7) { width: 6%; }   /* G: Expand proportionally */
-.data-table col:nth-child(8) { width: 8%; }   /* H: Dropdown/text */
-.data-table col:nth-child(9) { width: 10%; }  /* I: EXISTING values */
-.data-table col:nth-child(10) { width: 8%; }  /* J: NEW values */
-.data-table col:nth-child(11) { width: 10%; } /* K: TOTAL values */
-.data-table col:nth-child(12) { width: 8%; }  /* L: References */
-.data-table col:nth-child(13) { width: 3%; }  /* M: Expand proportionally */
-.data-table col:nth-child(14) { width: 3%; }  /* N: Expand proportionally */
-.data-table col:nth-child(15) { width: 9%; }  /* O: Notes */
-
-/* PROPORTIONAL GROWTH: All columns grow together as browser widens */
-.data-table td {
-  /* Allow text to wrap in wider columns for better responsive behavior */
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  /* Enable proportional expansion */
-  box-sizing: border-box;
+/* WORKING ACCORDION: Content-first approach that was working */
+.data-table col {
+  width: auto !important;
+  min-width: unset !important;
+  max-width: none !important;
 }
 
-/* Specific content type optimizations within proportional system */
-.data-table td[data-field-id*="area"],
-.data-table td[data-field-id*="dimension"],
-.data-table td[data-field-id*="height"],
-.data-table td.calculated-value,
-.data-table td.derived-value {
-  /* Numeric fields: prevent wrapping for clean number display */
-  white-space: nowrap;
+/* Enhanced empty column behavior for better space distribution */
+.data-table td:empty {
+  min-width: 12px; /* Minimal but visible separator */
+  width: 12px;
+  padding: 0 6px;
 }
 
-.data-table td:has(select),
-.data-table td.dropdown-cell {
-  /* Dropdown cells: allow internal content to size properly */
-  position: relative;
+/* Allow important content columns to be more generous with space */
+.data-table td[data-field-id*="d_"],
+.data-table td:has(.user-input),
+.data-table td:has(.calculated-value) {
+  padding: 4px 12px; /* More generous padding for content */
 }
 
 /* Table cells - clean and simple */
