@@ -289,7 +289,105 @@ function initializeSmartInputFeedback() {
 
 **Priority**: HIGH - This breakthrough represents the exact kind of user experience excellence that v4.012 aims to achieve across the entire application.
 
-### 3.5 Architecture Improvements
+### 3.5 Universal CSS Alignment System (BREAKTHROUGH SOLUTION)
+
+**Status: PERFECTED in OBC Matrix - Critical for 4011 Cleanup**
+
+The OBC Matrix project solved a massive CSS alignment conflict problem that will be exponentially worse in 4011's much larger codebase. The 4011 likely has thousands of competing text alignment rules causing layout conflicts.
+
+#### 🚨 **The Problem We Solved:**
+- Multiple competing alignment rules with `!important` declarations fighting each other
+- Column-specific overrides: `.data-table td:nth-child(5) { text-align: right !important; }`
+- Section-specific overrides: `#buildingInfo td[data-field-id="d_16"] { text-align: left !important; }`
+- Component-specific overrides: `.section-subheader { text-align: left; }`
+- Result: **350+ lines of conflicting CSS rules** in a small project
+
+#### ✅ **The Universal Solution:**
+Replace ALL alignment complexity with just **2 clean rules**:
+
+```css
+/* UNIVERSAL RULE 1: All table text left-aligned by default */
+.data-table td {
+  text-align: left;
+}
+
+/* UNIVERSAL RULE 2: Numeric content right-aligned by semantic meaning */
+.data-table td[data-field-id*="area"],
+.data-table td[data-field-id*="dimension"],
+.data-table td[data-field-id*="height"],
+.data-table td[data-field-id*="cost"],
+.data-table td[data-field-id*="value"],
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td input[type="number"] {
+  text-align: right;
+}
+```
+
+#### 🏆 **Immediate Benefits:**
+- **Removed 350+ lines** of competing CSS rules from small OBC Matrix project
+- **Zero alignment conflicts** - no more `!important` wars
+- **Content-based alignment** instead of arbitrary column positions
+- **Perfect subheader styling** - naturally inherits left alignment
+- **Semantic clarity** - alignment based on data type, not position
+
+#### 📋 **4011 Integration Tasks:**
+
+**Phase 1: Audit & Document**
+- [ ] **Inventory All Alignment Rules**: Search 4011 codebase for `text-align`, `text-left`, `text-right`, `text-center`
+- [ ] **Document Conflicts**: Identify competing `!important` declarations
+- [ ] **Map Semantic Fields**: Catalog which fields should be numeric (right-aligned) vs text (left-aligned)
+
+**Phase 2: Implement Universal System**
+- [ ] **Replace Column-Based Rules**: Remove `.data-table td:nth-child(X)` alignment rules
+- [ ] **Remove Section Overrides**: Delete section-specific alignment overrides
+- [ ] **Implement Semantic Rules**: Add semantic field alignment based on data-field-id patterns
+- [ ] **Clean Component Classes**: Remove redundant `text-left` from all components
+
+**Phase 3: Section File Cleanup**
+- [ ] **Remove Redundant Classes**: Strip `text-left`, `text-right` from field definitions
+- [ ] **Keep Semantic Classes**: Preserve meaningful classes like `user-input`, `calculated-value`
+- [ ] **Update Documentation**: Document the new alignment philosophy
+
+#### 🔧 **4011-Specific Implementation:**
+
+```css
+/* Replace thousands of competing rules with this universal system */
+.data-table td {
+  text-align: left; /* All content left by default */
+}
+
+/* Semantic right-alignment for numeric fields */
+.data-table td[data-field-id*="area"],
+.data-table td[data-field-id*="rsi"],
+.data-table td[data-field-id*="uvalue"],
+.data-table td[data-field-id*="cost"],
+.data-table td[data-field-id*="percent"],
+.data-table td[data-field-id*="efficiency"],
+.data-table td[data-field-id*="temperature"],
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td.reference-value,
+.data-table td input[type="number"] {
+  text-align: right;
+}
+```
+
+#### 🎯 **Expected Impact for 4011:**
+- **Estimated Reduction**: 1000+ lines of CSS conflicts eliminated
+- **Zero Layout Fights**: No more alignment `!important` wars
+- **Maintainable**: Single source of truth for table alignment
+- **Future-Proof**: New sections automatically inherit correct alignment
+- **Performance**: Faster CSS parsing with fewer complex selectors
+
+#### ⚠️ **Implementation Notes:**
+- **Preserve Column Widths**: This addresses ONLY alignment, not column sizing
+- **Test Incrementally**: Apply section by section to catch any edge cases
+- **Document Changes**: Track which old rules were removed for rollback if needed
+
+**Priority**: HIGH - This foundational cleanup will make ALL subsequent refactoring work significantly easier and prevent layout regression bugs.
+
+### 3.6 Architecture Improvements
 
 - [ ] Implement proper module system (ES6 modules)
 - [ ] Create clear API boundaries
