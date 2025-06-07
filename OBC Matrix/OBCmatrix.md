@@ -429,12 +429,115 @@ id: "3.21" // Section 3, Excel Row 21
 - NOT by Excel column: Avoid `.col-e` type selectors
 - Use natural accordion sizing: `width: auto !important`
 
-**Step 4: Validation Checklist**
+**Step 4: MANDATORY - Global Input Handling Implementation**
+⚠️ **CRITICAL**: Do NOT create section-specific input handlers. Always use the global system:
+
+```javascript
+function initializeEventHandlers() {
+  console.log("Initializing Section XX event handlers");
+  
+  // ✅ REQUIRED: Use global input handler for graceful behavior
+  if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
+    window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+  }
+  
+  // ✅ REQUIRED: Only add calculation listeners (if needed)
+  if (window.TEUI?.StateManager?.addListener || window.TEUI?.OBCStateManager?.addListener) {
+    const calculationTriggers = ['field_1', 'field_2']; // Your calculation fields
+    calculationTriggers.forEach(fieldId => {
+      // Try both StateManager systems for compatibility
+      if (window.TEUI.StateManager?.addListener) {
+        window.TEUI.StateManager.addListener(fieldId, performCalculations);
+      }
+      if (window.TEUI.OBCStateManager?.addListener) {
+        window.TEUI.OBCStateManager.addListener(fieldId, performCalculations);
+      }
+    });
+  }
+}
+```
+
+**❌ DO NOT DO**: Custom blur handlers, section-specific event management, or direct state setting without change detection.
+
+#### 📋 **COPY-PASTE TEMPLATE FOR NEW SECTIONS**
+
+```javascript
+// ===== MANDATORY EVENT HANDLER PATTERN =====
+function initializeEventHandlers() {
+  console.log("Initializing Section XX event handlers");
+  
+  // ✅ STEP 1: Always use global input handler (provides graceful behavior)
+  if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
+    window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+  }
+
+  // ✅ STEP 2: Only add calculation listeners if section has calculations
+  if (window.TEUI?.StateManager?.addListener || window.TEUI?.OBCStateManager?.addListener) {
+    const calculationTriggers = ['i_XX', 'j_XX']; // Replace with your numeric fields
+    calculationTriggers.forEach(fieldId => {
+      if (window.TEUI.StateManager?.addListener) {
+        window.TEUI.StateManager.addListener(fieldId, () => {
+          if (!window.sectionCalculationInProgress) {
+            performCalculations(); // Replace with your calculation function
+          }
+        });
+      }
+      if (window.TEUI.OBCStateManager?.addListener) {
+        window.TEUI.OBCStateManager.addListener(fieldId, () => {
+          if (!window.sectionCalculationInProgress) {
+            performCalculations(); // Replace with your calculation function
+          }
+        });
+      }
+    });
+  }
+  
+  window.TEUI.sectXX.initialized = true; // Replace XX with section number
+}
+
+// ===== MANDATORY FORMATTING PATTERN =====
+function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  if (element) {
+    // ✅ ALWAYS use global formatNumber
+    const formattedValue = window.TEUI?.formatNumber ? 
+      window.TEUI.formatNumber(rawValue, formatType) : 
+      rawValue.toString();
+    
+    element.textContent = formattedValue;
+    element.classList.add('calculated-value');
+    element.classList.remove('user-input', 'user-modified', 'editing-intent');
+    element.removeAttribute('contenteditable');
+    
+    // Register with StateManager
+    if (window.TEUI?.StateManager?.setValue) {
+      window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+    }
+  }
+}
+```
+
+**Step 5: MANDATORY - Number Formatting**
+⚠️ **REQUIRED**: Always use global formatNumber utility:
+
+```javascript
+// ✅ CORRECT: Use global formatNumber
+const formatted = window.TEUI.formatNumber(numValue, "number-2dp-comma");
+
+// ❌ WRONG: Custom formatting logic
+const formatted = numValue.toLocaleString('en-US', {...});
+```
+
+**Step 6: Validation Checklist**
 - [ ] Row IDs match Excel exactly (3.21, 3.22, etc.)
 - [ ] Field IDs use Excel coordinates (d_22, e_22, etc.)  
 - [ ] Content renders properly in browser
 - [ ] Input fields are editable and functional
 - [ ] No competing CSS width constraints
+- [ ] **✅ Uses `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`**
+- [ ] **✅ Uses `window.TEUI.formatNumber()` for all numeric display**
+- [ ] **✅ NO custom blur/focus handlers**
+- [ ] **✅ Graceful input behavior: grey→blue→grey/permanent blue**
 
 ## Technical Debt & Cleanup Requirements
 
@@ -535,8 +638,83 @@ const field = {
 - **✅ Calculation Engine**: Real-time math with proper number formatting
 - **✅ Excel Integration**: Row IDs and field coordinates aligned for import/export
 
+## Layout Expansion Attempts & Outstanding Issues
+
+### ⚠️ CSS Layout Expansion Issue (ATTEMPTED - Needs Alternative Solution)
+**User Request**: "Raisin Bread" proportional expansion where all columns grow proportionally as browser widens, not just the F/G/H region acting as expansion zone.
+
+**Failed Attempts**:
+1. **Fixed percentage system**: Assigned specific percentages to all 15 columns (A: 3%, B: 5%, C: 15%, D: 20%, etc.) but caused content clipping and text wrapping issues
+2. **Flex-grow hybrid**: Attempted flex-grow properties but incompatible with table elements
+
+**Final Solution - Anti-Goalpost Layout**:
+User identified real problem as creating "goalposts" - annoying middle whitespace gulf that pushes important content apart. Wanted left-justified content with expansion on right side.
+
+Final implementation:
+- Collapsed middle empty columns (E, F, G, M, N) to 2px width (nearly invisible)
+- Made Notes column (O) the expansion zone to absorb extra browser width  
+- Kept important content left-justified and compact
+- Eliminated middle whitespace "gulf"
+
+**Current Status**: Working anti-goalpost layout achieved, but true proportional expansion remains unsolved.
+
+### 🏗️ DOM/Excel Namespace Architecture (CRITICAL UNDERSTANDING)
+
+**Key Architecture Note**: 
+- **DOM Column A**: Empty spacer for visual padding
+- **DOM Column B**: Renders Excel Column A content
+- **DOM Column C**: Renders Excel Column B content
+- **etc.**
+
+**Field ID System**: 
+- Field IDs match Excel coordinates exactly: `fieldId: "c_3"` = Excel Column C, Row 3
+- This creates correct Excel mapping despite DOM rendering offset
+- Import/Export functions use fieldIds to maintain Excel correspondence
+
+**Visual vs Data Separation**:
+- DOM handles visual layout (with spacer column)
+- FieldIds handle data mapping (Excel-aligned)
+- Renderer bridges the gap between visual DOM and data coordinates
+
+### ✅ Input State Management Fix - RESOLVED
+
+**Issue Identified**: Section 03 had broken input field state behavior compared to Section 01.
+
+**Problem**: 
+- Section 03 used its own `handleFieldBlur` function that always marked fields as "user-modified"
+- Section 01 used global `initializeGlobalInputHandlers()` from OBC-StateManager.js with proper change detection
+- This caused Section 03 fields to permanently turn blue even on accidental clicks without changes
+
+**Solution Implemented**:
+- Removed Section 03's custom `handleFieldBlur` function
+- Implemented global input handler usage: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`
+- Added change detection logic that only commits to "user-modified" state if actual changes were made
+- Preserved Section 03's custom numeric formatting with new `formatSection03Field()` helper function
+
+**Result - Universal Graceful Behavior**:
+- Click in → converts to blue confident text ✅
+- Click out without changes → gracefully restores grey default text ✅
+- Click out with changes → commits to blue confident text ✅
+- Works consistently across ALL sections now ✅
+
+**Technical Implementation**:
+- Global handler stores `originalValue` on focus for change detection
+- Only calls `setValue(fieldId, value, "user-modified")` if `valueStr !== originalValue`
+- CSS classes `.editing-intent` (temporary blue) and `.user-modified` (permanent blue) work perfectly
+- Smooth transitions between grey italic placeholder → blue confident text states
+
+**🚨 CRITICAL FOR FUTURE DEVELOPMENT**: This fix establishes the **mandatory pattern** for all future sections. Section 03 was initially built without this system and had to be retrofitted. The Implementation Guide now includes explicit warnings and code examples to prevent this regression in Sections 4-14.
+
 ### Next Development Priorities
-1. **📋 Sections 4-14 Development**: Use established patterns from Sections 01-03 with universal alignment for rapid completion
+
+#### 🚨 **MANDATORY PATTERNS FOR ALL FUTURE SECTIONS:**
+- **Global Input Handling**: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()` - NO custom blur handlers
+- **Number Formatting**: `window.TEUI.formatNumber(value, "format-type")` - NO custom toLocaleString logic  
+- **Field IDs**: Excel coordinates (d_22, e_22) regardless of DOM structure
+- **Row IDs**: Section.ExcelRow format (4.20, 5.15, etc.)
+
+1. **📋 Sections 4-14 Development**: Use established patterns from Sections 01-03 with mandatory global input handling and universal alignment for rapid completion
 2. **🔗 Excel Integration**: Test import/export with updated field coordinate system across all sections
-3. **⚡ Performance Optimization**: Universal alignment system enables faster rendering and simpler maintenance
-4. **🎨 Visual Polish**: Final styling touches and responsive design improvements 
+3. **⚡ Performance Optimization**: Universal alignment system and global input handling enable faster rendering and simpler maintenance
+4. **🎨 Visual Polish**: Final styling touches and responsive design improvements
+5. **🌐 Universal Input Handling**: Apply the working OBC-StateManager global handler to all remaining sections for consistency 

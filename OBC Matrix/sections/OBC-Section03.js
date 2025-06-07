@@ -1213,24 +1213,9 @@ window.TEUI.SectionModules.sect03 = (function () {
   // EVENT HANDLERS
   //==========================================================================
 
-  function handleFieldBlur(event) {
-    const fieldElement = this;
-    const currentFieldId = fieldElement.getAttribute("data-field-id");
-    if (!currentFieldId) return;
-
-    let valueStr = fieldElement.textContent.trim().replace(/,/g, "");
-    let displayValue = "";
-    let rawValueToStore = "";
-
-    // Determine if this is a numeric field
-    const numericFields = [
-      'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
-      'i_27', 'j_27', 'k_27', 'i_28', 'j_28', 'k_28', 'i_29', 'j_29', 'k_29',
-      'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34',
-      'd_36', 'd_37', 'j_36'
-    ];
-    const isNumericField = numericFields.includes(currentFieldId);
-    
+  // Removed handleFieldBlur - now using global handler from OBC-StateManager.js
+  // Custom numeric formatting for Section 03 fields (if needed)
+  function formatSection03Field(fieldId, value) {
     // Determine decimal places for different field types
     const heightStoriesFields = ['d_36', 'd_37']; // 1 decimal place
     const heightMetresFields = ['j_36']; // 2 decimal places  
@@ -1238,159 +1223,76 @@ window.TEUI.SectionModules.sect03 = (function () {
       'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
       'i_27', 'j_27', 'k_27', 'i_28', 'j_28', 'k_28', 'i_29', 'j_29', 'k_29',
       'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
-    ]; // 2 decimal places with commas
+    ];
 
-    if (isNumericField) {
-      // Parse numeric value using TEUI parseNumeric if available
-      let numValue = window.TEUI?.parseNumeric ? 
-        window.TEUI.parseNumeric(valueStr, NaN) : 
-        parseFloat(valueStr);
+    const numValue = window.TEUI?.parseNumeric ? 
+      window.TEUI.parseNumeric(value, NaN) : 
+      parseFloat(value);
 
-      if (!isNaN(numValue) && numValue >= 0) {
-        // Successfully parsed a number
-        rawValueToStore = numValue.toString();
-        
-        // Apply formatting based on field type
-        if (heightStoriesFields.includes(currentFieldId)) {
-          // Stories (1 decimal place, no commas)
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(numValue, "number-1dp") :
-            numValue.toFixed(1);
-        } else if (heightMetresFields.includes(currentFieldId)) {
-          // Metres (2 decimal places, no commas for small numbers)
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(numValue, "number-2dp") :
-            numValue.toFixed(2);
-        } else if (areaFields.includes(currentFieldId)) {
-          // Area fields (2 decimal places with commas)
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(numValue, "number-2dp-comma") :
-            numValue.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-              useGrouping: true  // Ensure thousands separators
-            });
-        } else {
-          // Default formatting
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(numValue, "number-2dp-comma") :
-            numValue.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-              useGrouping: true  // Ensure thousands separators
-            });
-        }
-      } else {
-        // Invalid number, reset to previous value or default
-        const previousValue = getNumericValue(currentFieldId, 0);
-        rawValueToStore = previousValue.toString();
-        
-        // Apply same formatting logic for fallback
-        if (heightStoriesFields.includes(currentFieldId)) {
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(previousValue, "number-1dp") :
-            previousValue.toFixed(1);
-        } else if (heightMetresFields.includes(currentFieldId)) {
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(previousValue, "number-2dp") :
-            previousValue.toFixed(2);
-        } else {
-          displayValue = window.TEUI?.formatNumber ? 
-            window.TEUI.formatNumber(previousValue, "number-2dp-comma") :
-            previousValue.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-              useGrouping: true  // Ensure thousands separators
-            });
-        }
-      }
+    if (isNaN(numValue)) return value;
+
+    // Apply formatting based on field type
+    if (heightStoriesFields.includes(fieldId)) {
+      // Stories (1 decimal place, no commas)
+      return window.TEUI?.formatNumber ? 
+        window.TEUI.formatNumber(numValue, "number-1dp") :
+        numValue.toFixed(1);
+    } else if (heightMetresFields.includes(fieldId)) {
+      // Metres (2 decimal places, no commas for small numbers)
+      return window.TEUI?.formatNumber ? 
+        window.TEUI.formatNumber(numValue, "number-2dp") :
+        numValue.toFixed(2);
+    } else if (areaFields.includes(fieldId)) {
+      // Area fields (2 decimal places with commas)
+      return window.TEUI?.formatNumber ? 
+        window.TEUI.formatNumber(numValue, "number-2dp-comma") :
+        numValue.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+          useGrouping: true
+        });
     } else {
-      // Text field - store as-is but clean up
-      rawValueToStore = valueStr;
-      displayValue = valueStr;
-    }
-
-    // Update DOM
-    fieldElement.textContent = displayValue;
-    
-    // Add user-modified styling
-    fieldElement.classList.add('user-modified');
-    fieldElement.classList.remove('user-input', 'editing-intent');
-
-    // Register with StateManager
-    if (window.TEUI?.StateManager?.setValue) {
-      window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, "user-modified");
-    }
-
-    // Trigger calculations for numeric fields
-    if (isNumericField && !window.sectionCalculationInProgress) {
-      setTimeout(() => {
-        performAllCalculations();
-      }, 50);
+      // Default formatting
+      return window.TEUI?.formatNumber ? 
+        window.TEUI.formatNumber(numValue, "number-2dp") :
+        numValue.toFixed(2);
     }
   }
 
   function initializeEventHandlers() {
     console.log("Initializing Section 03 event handlers");
     
-    // All editable fields in Section 03
-    const editableFields = [
-      'd_22', 'd_23', 'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
-      'd_27', 'i_27', 'j_27', 'k_27', 'd_28', 'i_28', 'j_28', 'k_28', 'd_29', 'i_29', 'j_29', 'k_29',
-      'd_32', 'h_32', 'i_32', 'j_32', 'd_33', 'h_33', 'i_33', 'j_33', 'd_34', 'h_34', 'i_34', 'j_34',
-      'd_36', 'd_37', 'j_36', 'o_22', 'o_23', 'o_24', 'o_25', 'o_27', 
-      'o_28', 'o_29', 'o_30', 'o_31', 'o_32', 'o_33', 'o_34', 'o_35', 'o_36', 'o_37', 'o_38'
-    ];
-    
-    editableFields.forEach(fieldId => {
-      const field = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (field?.classList.contains("user-input") && field.contentEditable === "true") {
-        if (!field.hasEditableListeners) {
-          // Enter key triggers blur
-          field.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              field.blur();
-            }
-          });
-          
-          // Blur handler for formatting and state management
-          field.addEventListener("blur", handleFieldBlur.bind(field));
-          
-          // Focus/focusout for styling
-          field.addEventListener("focus", () => {
-            field.classList.add("editing-intent");
-          });
-          
-          field.addEventListener("focusout", () => {
-            field.classList.remove("editing-intent");
-          });
-          
-          // Input handler for immediate visual feedback
-          field.addEventListener("input", () => {
-            field.classList.add("user-modified", "editing-intent");
-            field.classList.remove("user-input");
-          });
-          
-          field.hasEditableListeners = true; // Prevent duplicate listeners
-        }
-      }
-    });
+    // Use the global input handler from OBC-StateManager.js instead of section-specific handlers
+    // This provides proper "graceful" behavior where accidental clicks are forgiven
+    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
+      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    }
 
-    // Register StateManager listeners for cross-field dependencies
-    if (window.TEUI?.StateManager?.addListener) {
+    // Register custom calculation listeners for numeric fields
+    if (window.TEUI?.StateManager?.addListener || window.TEUI?.OBCStateManager?.addListener) {
       // Listen for changes to area fields to trigger calculations
       const calculationTriggers = [
         'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
         'i_27', 'j_27', 'k_27', 'i_28', 'j_28', 'k_28', 'i_29', 'j_29', 'k_29',
         'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
       ];
+      
       calculationTriggers.forEach(fieldId => {
-        window.TEUI.StateManager.addListener(fieldId, () => {
-          if (!window.sectionCalculationInProgress) {
-            performAllCalculations();
-          }
-        });
+        // Try both StateManager systems for compatibility
+        if (window.TEUI.StateManager?.addListener) {
+          window.TEUI.StateManager.addListener(fieldId, () => {
+            if (!window.sectionCalculationInProgress) {
+              performAllCalculations();
+            }
+          });
+        }
+        if (window.TEUI.OBCStateManager?.addListener) {
+          window.TEUI.OBCStateManager.addListener(fieldId, () => {
+            if (!window.sectionCalculationInProgress) {
+              performAllCalculations();
+            }
+          });
+        }
       });
     }
     
@@ -1479,8 +1381,8 @@ window.TEUI.SectionModules.sect03 = (function () {
     performAllCalculations: performAllCalculations,
     
     // Event handling functions
-    handleFieldBlur: handleFieldBlur,
     initializeEventHandlers: initializeEventHandlers,
+    formatSection03Field: formatSection03Field,
     
     // Diagnostic functions
     checkS03State: checkS03State,
