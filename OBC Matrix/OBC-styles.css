@@ -485,8 +485,6 @@ option,
 /* Apply to select elements within table cells */
 .data-table select.form-select {
   width: 100%;
-  min-width: 120px !important; /* Reduced from 140px for better fit */
-  max-width: 200px !important; /* Prevent dropdowns from being too wide */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -500,16 +498,10 @@ option,
   height: calc(100% - 4px); /* Account for margins */
 }
 
-/* Ensure dropdown cells have minimum width */
+/* Natural dropdown cell sizing - no min-width constraints */
 [data-dropdown-id],
 .dropdown-cell {
-  min-width: 140px;
   padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
-}
-
-/* Handle dropdowns spanning columns */
-td[colspan="2"] .form-select {
-  min-width: 180px;
 }
 
 /* Sliders */
@@ -722,11 +714,9 @@ td[colspan="2"] .form-select {
     white-space: normal;
   }
 
-  /* Let description column flex naturally */
+  /* Description column also uses natural accordion sizing */
   .data-table col.col-c {
     width: auto !important;
-    min-width: 150px !important; /* Reduced from 200px */
-    max-width: 300px !important; /* Add max to prevent excessive width */
   }
 }
 
@@ -2022,40 +2012,23 @@ body.viewing-reference-inputs .reference-input-display-locked select {
     white-space: nowrap;
 } */
 
-/* =============== Dropdown Sizing System =============== */
+/* =============== Dropdown Sizing - Accordion Style =============== */
 
-/* Small dropdowns - compact for simple selections */
+/* All dropdowns use natural accordion sizing - no fixed widths */
 .dropdown-sm,
-.dropdown-sm .form-select {
-  min-width: 140px !important;
-  width: auto !important;
-}
-
-/* Medium dropdowns - for moderate length options */
-.dropdown-md,
-.dropdown-md .form-select {
-  min-width: 220px !important;
-  width: auto !important;
-}
-
-/* Large dropdowns - for long options like occupancy classifications */
+.dropdown-md, 
 .dropdown-lg,
+.dropdown-sm .form-select,
+.dropdown-md .form-select,
 .dropdown-lg .form-select {
-  min-width: 420px !important;
   width: auto !important;
 }
 
-/* Ensure cells containing sized dropdowns accommodate the content */
-[data-dropdown-size="sm"] {
-  min-width: 150px !important;
-}
-
-[data-dropdown-size="md"] {
-  min-width: 230px !important;
-}
-
+/* Cells containing dropdowns also use natural sizing */
+[data-dropdown-size="sm"],
+[data-dropdown-size="md"],
 [data-dropdown-size="lg"] {
-  min-width: 430px !important;
+  width: auto !important;
 }
 
-/* Note: Editable fields automatically inherit column alignment (left for text, right for numbers) */
+/* Note: All elements now use accordion-style natural sizing based on content */
