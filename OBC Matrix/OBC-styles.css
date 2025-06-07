@@ -204,7 +204,34 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--base-font-size);
-  table-layout: auto; /* Changed from fixed to auto */
+  table-layout: auto; /* Allow flexible column sizing */
+  max-width: 100%; /* Prevent table from exceeding container */
+}
+
+/* Make columns size naturally to their content */
+.data-table col {
+  width: auto !important;
+  min-width: unset !important;
+}
+
+/* Description column should flex but not get too wide */
+.data-table col.col-d {
+  width: auto !important;
+  min-width: 180px !important;
+  max-width: 250px !important; /* Prevent excessive width like 446px */
+}
+
+/* Only numeric columns should have minimal fixed widths */
+.data-table col.col-e,
+.data-table col.col-f,
+.data-table col.col-g,
+.data-table col.col-h,
+.data-table col.col-i,
+.data-table col.col-j,
+.data-table col.col-k {
+  width: 80px !important; /* Fixed narrow width for numeric columns */
+  min-width: 60px !important;
+  max-width: 80px !important;
 }
 
 /* Table cells with no wrapping */
@@ -325,12 +352,7 @@ body {
   text-align: right !important;
 }
 
-/* Bold styling for ALL mezzanine totals in row 35 (F, H, K columns) */
-.data-table td [data-field-id="f_35"].calculated-value,
-.data-table td [data-field-id="h_35"].calculated-value,
-.data-table td [data-field-id="k_35"].calculated-value {
-  font-weight: 700 !important;
-}
+
 
 /* Style for fields awaiting measurement/input */
 .PendingValue {
@@ -555,7 +577,8 @@ option,
 /* Apply to select elements within table cells */
 .data-table select.form-select {
   width: 100%;
-  min-width: 140px; /* Ensure minimum width for content */
+  min-width: 120px !important; /* Reduced from 140px for better fit */
+  max-width: 200px !important; /* Prevent dropdowns from being too wide */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -791,27 +814,11 @@ td[colspan="2"] .form-select {
     white-space: normal;
   }
 
-  /* Prioritize showing description column */
+  /* Let description column flex naturally */
   .data-table col.col-c {
-    min-width: 200px;
-  }
-
-  /* Also prioritize F and G at medium sizes */
-  .data-table col.col-f,
-  .data-table col.col-g {
-    min-width: 100px;
-  }
-
-  .data-table col.col-d,
-  .data-table col.col-e,
-  .data-table col.col-h,
-  .data-table col.col-i,
-  .data-table col.col-j,
-  .data-table col.col-k,
-  .data-table col.col-l,
-  .data-table col.col-m {
-    width: 80px; /* Further reduce value columns at medium size */
-    min-width: 60px;
+    width: auto !important;
+    min-width: 150px !important; /* Reduced from 200px */
+    max-width: 300px !important; /* Add max to prevent excessive width */
   }
 }
 

@@ -728,15 +728,15 @@ window.TEUI.SectionModules.sect03 = (function () {
           section: "buildingAreas",
           classes: ["text-center", "calculated-value"],
         },
-        i: { content: "" },
-        j: { content: "" },
-        k: {
-          fieldId: "k_35",
+        i: {
+          fieldId: "i_35",
           type: "calculated",
           value: "150.00",
           section: "buildingAreas",
           classes: ["text-right", "calculated-value"],
         },
+        j: { content: "" },
+        k: { content: "" },
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
@@ -776,7 +776,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           section: "buildingAreas",
           classes: ["text-center", "user-input"],
         },
-        j: { content: "(m) ABOVE GRADE [A] 1.4.1.2. & 3.2.1.1." },
+        j: { content: "" },
         k: { content: "" },
         l: { content: "" },
         m: { content: "" },
@@ -1155,11 +1155,11 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Row 35 mezzanine area totals (sum of rows 32, 33, 34)
     const f35Total = f32 + f33 + f34;
     const h35Total = h32 + h33 + h34;
-    const k35Total = k32Total + k33Total + k34Total;
+    const i35Total = k32Total + k33Total + k34Total; // Total goes in column I to stack with other totals
     
     setCalculatedValue("f_35", f35Total);
     setCalculatedValue("h_35", h35Total);
-    setCalculatedValue("k_35", k35Total);
+    setCalculatedValue("i_35", i35Total);
   }
 
   function performAllCalculations() {
