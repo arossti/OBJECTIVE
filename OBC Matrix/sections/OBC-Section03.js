@@ -560,14 +560,14 @@ window.TEUI.SectionModules.sect03 = (function () {
           classes: ["text-center", "user-input"],
         },
         i: { content: "" },
-        j: {
-          fieldId: "j_32",
-          type: "editable",
+        j: { content: "" },
+        k: {
+          fieldId: "k_32",
+          type: "calculated",
           value: "75.00",
           section: "buildingAreas",
-          classes: ["text-center", "user-input"],
+          classes: ["text-right", "calculated-value"],
         },
-        k: { content: "" },
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
@@ -620,15 +620,15 @@ window.TEUI.SectionModules.sect03 = (function () {
           section: "buildingAreas",
           classes: ["text-center", "user-input"],
         },
-        i: { content: "" },
-        j: {
-          fieldId: "j_33",
-          type: "editable",
+                i: { content: "" },
+        j: { content: "" },
+        k: {
+          fieldId: "k_33",
+          type: "calculated",
           value: "45.00",
           section: "buildingAreas",
-          classes: ["text-center", "user-input"],
+          classes: ["text-right", "calculated-value"],
         },
-            k: { content: "" },
             l: { content: "" },
             m: { content: "" },
             n: { content: "" },
@@ -682,14 +682,14 @@ window.TEUI.SectionModules.sect03 = (function () {
           classes: ["text-center", "user-input"],
         },
         i: { content: "" },
-        j: {
-          fieldId: "j_34",
-          type: "editable",
+        j: { content: "" },
+        k: {
+          fieldId: "k_34",
+          type: "calculated",
           value: "30.00",
           section: "buildingAreas",
-          classes: ["text-center", "user-input"],
+          classes: ["text-right", "calculated-value"],
         },
-        k: { content: "" },
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
@@ -729,14 +729,14 @@ window.TEUI.SectionModules.sect03 = (function () {
           classes: ["text-center", "calculated-value"],
         },
         i: { content: "" },
-        j: {
-          fieldId: "j_35",
+        j: { content: "" },
+        k: {
+          fieldId: "k_35",
           type: "calculated",
-          value: "-",
+          value: "150.00",
           section: "buildingAreas",
-          classes: ["text-center", "calculated-value"],
+          classes: ["text-right", "calculated-value"],
         },
-        k: { content: "" },
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
@@ -1136,25 +1136,30 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   function calculateMezzanineAreaTotals() {
-    // Row 35 mezzanine area totals (sum of rows 32, 33, 34)
+    // Individual mezzanine row calculations (k = f + h for each row)
     const f32 = getNumericValue("f_32", 0);
-    const f33 = getNumericValue("f_33", 0);
-    const f34 = getNumericValue("f_34", 0);
-    const f35Total = f32 + f33 + f34;
-    
     const h32 = getNumericValue("h_32", 0);
+    const k32Total = f32 + h32;
+    setCalculatedValue("k_32", k32Total);
+
+    const f33 = getNumericValue("f_33", 0);
     const h33 = getNumericValue("h_33", 0);
+    const k33Total = f33 + h33;
+    setCalculatedValue("k_33", k33Total);
+
+    const f34 = getNumericValue("f_34", 0);
     const h34 = getNumericValue("h_34", 0);
-    const h35Total = h32 + h33 + h34;
+    const k34Total = f34 + h34;
+    setCalculatedValue("k_34", k34Total);
     
-    const j32 = getNumericValue("j_32", 0);
-    const j33 = getNumericValue("j_33", 0);
-    const j34 = getNumericValue("j_34", 0);
-    const j35Total = j32 + j33 + j34;
+    // Row 35 mezzanine area totals (sum of rows 32, 33, 34)
+    const f35Total = f32 + f33 + f34;
+    const h35Total = h32 + h33 + h34;
+    const k35Total = k32Total + k33Total + k34Total;
     
     setCalculatedValue("f_35", f35Total);
     setCalculatedValue("h_35", h35Total);
-    setCalculatedValue("j_35", j35Total);
+    setCalculatedValue("k_35", k35Total);
   }
 
   function performAllCalculations() {
@@ -1219,7 +1224,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const numericFields = [
       'e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24',
       'e_27', 'g_27', 'i_27', 'e_28', 'g_28', 'i_28', 'e_29', 'g_29', 'i_29',
-      'f_32', 'h_32', 'j_32', 'f_33', 'h_33', 'j_33', 'f_34', 'h_34', 'j_34',
+      'f_32', 'h_32', 'f_33', 'h_33', 'f_34', 'h_34',
       'd_36', 'd_37', 'i_36'
     ];
     const isNumericField = numericFields.includes(currentFieldId);
@@ -1230,7 +1235,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const areaFields = [
       'e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24',
       'e_27', 'g_27', 'i_27', 'e_28', 'g_28', 'i_28', 'e_29', 'g_29', 'i_29',
-      'f_32', 'h_32', 'j_32', 'f_33', 'h_33', 'j_33', 'f_34', 'h_34', 'j_34'
+      'f_32', 'h_32', 'f_33', 'h_33', 'f_34', 'h_34'
     ]; // 2 decimal places with commas
 
     if (isNumericField) {
@@ -1330,7 +1335,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const editableFields = [
       'd_22', 'd_23', 'e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24',
       'd_27', 'e_27', 'g_27', 'i_27', 'd_28', 'e_28', 'g_28', 'i_28', 'd_29', 'e_29', 'g_29', 'i_29',
-      'd_32', 'f_32', 'h_32', 'j_32', 'd_33', 'f_33', 'h_33', 'j_33', 'd_34', 'f_34', 'h_34', 'j_34',
+      'd_32', 'f_32', 'h_32', 'd_33', 'f_33', 'h_33', 'd_34', 'f_34', 'h_34',
       'd_36', 'd_37', 'i_36', 'o_22', 'o_23', 'o_24', 'o_25', 'o_27', 
       'o_28', 'o_29', 'o_30', 'o_31', 'o_32', 'o_33', 'o_34', 'o_35', 'o_36', 'o_37', 'o_38'
     ];
@@ -1376,7 +1381,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       const calculationTriggers = [
         'e_22', 'g_22', 'e_23', 'g_23', 'e_24', 'g_24',
         'e_27', 'g_27', 'i_27', 'e_28', 'g_28', 'i_28', 'e_29', 'g_29', 'i_29',
-        'f_32', 'h_32', 'j_32', 'f_33', 'h_33', 'j_33', 'f_34', 'h_34', 'j_34'
+        'f_32', 'h_32', 'f_33', 'h_33', 'f_34', 'h_34'
       ];
       calculationTriggers.forEach(fieldId => {
         window.TEUI.StateManager.addListener(fieldId, () => {
@@ -1418,13 +1423,10 @@ window.TEUI.SectionModules.sect03 = (function () {
         // Mezzanine area defaults
         'f_32': '50.00',
         'h_32': '25.00',
-        'j_32': '75.00',
         'f_33': '30.00',
         'h_33': '15.00',
-        'j_33': '45.00',
         'f_34': '20.00',
         'h_34': '10.00',
-        'j_34': '30.00',
         // Building height defaults
         'd_36': '2.0',  // Stories above grade
         'd_37': '1.0',  // Stories below grade

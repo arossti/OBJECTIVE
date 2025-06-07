@@ -325,10 +325,10 @@ body {
   text-align: right !important;
 }
 
-/* Bold styling for ALL mezzanine totals in row 35 (F, H, J columns) */
+/* Bold styling for ALL mezzanine totals in row 35 (F, H, K columns) */
 .data-table td [data-field-id="f_35"].calculated-value,
 .data-table td [data-field-id="h_35"].calculated-value,
-.data-table td [data-field-id="j_35"].calculated-value {
+.data-table td [data-field-id="k_35"].calculated-value {
   font-weight: 700 !important;
 }
 
