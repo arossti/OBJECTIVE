@@ -46,8 +46,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 3: Practice Information
     3: {
-      id: "1.01",
-      rowId: "1.01",
+      id: "1.03", // Excel Row 03
+      rowId: "1.03",
       label: "Name of Practice",
       cells: {
         b: { label: "Name of Practice" },
@@ -76,8 +76,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 4: Address 1
     4: {
-      id: "1.02",
-      rowId: "1.02",
+      id: "1.04", // Excel Row 04
+      rowId: "1.04",
       label: "Address 1",
       cells: {
         b: { label: "Address 1" },
@@ -106,8 +106,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 5: Address 2
     5: {
-      id: "1.03",
-      rowId: "1.03",
+      id: "1.05", // Excel Row 05
+      rowId: "1.05",
       label: "Address 2",
       cells: {
         b: { label: "Address 2" },
@@ -136,8 +136,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 6: Contact
     6: {
-      id: "1.04",
-      rowId: "1.04",
+      id: "1.06", // Excel Row 06
+      rowId: "1.06",
       label: "Contact",
       cells: {
         b: { label: "Contact" },
@@ -166,8 +166,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 7: Name of Project
     7: {
-      id: "1.05",
-      rowId: "1.05",
+      id: "1.07", // Excel Row 07
+      rowId: "1.07",
       label: "Name of Project",
       cells: {
         b: { label: "Name of Project" },
@@ -196,8 +196,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 8: Location/Address
     8: {
-      id: "1.06",
-      rowId: "1.06",
+      id: "1.08", // Excel Row 08
+      rowId: "1.08",
       label: "Location/Address",
       cells: {
         b: { label: "Location/Address" },
@@ -226,8 +226,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 9: Date with Seal & Signature
     9: {
-      id: "1.07",
-      rowId: "1.07",
+      id: "1.09", // Excel Row 09
+      rowId: "1.09",
       label: "Date",
       cells: {
         b: { label: "Date" },
@@ -256,8 +256,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Row 10: OAA Member Registration (new feature, not part of Excel DOM)
     10: {
-      id: "1.08",
-      rowId: "1.08", 
+      id: "1.10", // Excel Row 10
+      rowId: "1.10", 
       label: "OAA MEMBER REGISTRATION",
       cells: {
         b: { label: "OAA MEMBER REGISTRATION" },
