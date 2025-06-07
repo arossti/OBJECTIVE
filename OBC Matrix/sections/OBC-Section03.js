@@ -33,12 +33,12 @@ window.TEUI.SectionModules.sect03 = (function () {
   const sectionRows = {
     // HEADER ROW
     header: {
-      id: "03-HEADER",
-      rowId: "03-HEADER",
+      id: "3.04",
+      rowId: "3.04",
       label: "Building Areas Header",
       cells: {
-        b: { content: "B", classes: ["section-subheader"] },
-        c: { content: "C", classes: ["section-subheader"] },
+        b: { label: "BUILDING AREA (m²)", classes: ["section-subheader", "text-left"] },
+        c: { content: "", classes: ["section-subheader"] },
         d: { content: "DESCRIPTION", classes: ["section-subheader"] },
         e: { content: "EXISTING", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
@@ -57,49 +57,44 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Row 21: Empty spacer row
-    21: {
-      id: "21-EMPTY",
-      rowId: "21-EMPTY",
+    // Row 22: Building Area Row 1
+    22: {
+      id: "22-AREA1",
+      rowId: "22-AREA1",
       label: "",
       cells: {
         b: { content: "" },
         c: { content: "" },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_21",
+        d: {
+          fieldId: "d_22",
           type: "editable",
-          value: "enter notes here...",
+          value: "Enter area description",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "user-input"],
         },
-      },
-    },
-
-    // Row 22: 3.04 Building Area
-    22: {
-      id: "3.04",
-      rowId: "3.04",
-      label: "BUILDING AREA (m²)",
-      cells: {
-        b: { label: "BUILDING AREA (m²)" },
-        c: { content: "" },
-        d: { content: "DESCRIPTION" },
-        e: { content: "EXISTING" },
+        e: {
+          fieldId: "e_22",
+          type: "editable",
+          value: "1,000.00",
+          section: "buildingAreas",
+          classes: ["text-center", "user-input"],
+        },
         f: { content: "" },
-        g: { content: "NEW" },
+        g: {
+          fieldId: "g_22",
+          type: "editable",
+          value: "100.00",
+          section: "buildingAreas",
+          classes: ["text-center", "user-input"],
+        },
         h: { content: "" },
-        i: { content: "TOTAL [A] 1.4.1.2." },
+        i: {
+          fieldId: "i_22",
+          type: "calculated",
+          value: "1,100.00",
+          section: "buildingAreas",
+          classes: ["text-center", "calculated-value"],
+        },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -110,15 +105,15 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
         },
       },
     },
 
-    // Row 23: Building Area Row 1
+    // Row 23: Building Area Row 2
     23: {
-      id: "23-AREA1",
-      rowId: "23-AREA1",
+      id: "23-AREA2",
+      rowId: "23-AREA2",
       label: "",
       cells: {
         b: { content: "" },
@@ -128,30 +123,30 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "Enter area description",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap"],
+          classes: ["text-left", "no-wrap", "user-input"],
         },
         e: {
           fieldId: "e_23",
           type: "editable",
-          value: "-",
+          value: "200.00",
           section: "buildingAreas",
-          classes: ["text-center"],
+          classes: ["text-center", "user-input"],
         },
         f: { content: "" },
         g: {
           fieldId: "g_23",
           type: "editable",
-          value: "-",
+          value: "300.00",
           section: "buildingAreas",
-          classes: ["text-center"],
+          classes: ["text-center", "user-input"],
         },
         h: { content: "" },
         i: {
           fieldId: "i_23",
-          type: "editable",
-          value: "-",
+          type: "calculated",
+          value: "500.00",
           section: "buildingAreas",
-          classes: ["text-center"],
+          classes: ["text-center", "calculated-value"],
         },
         j: { content: "" },
         k: { content: "" },
@@ -163,48 +158,42 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
         },
       },
     },
 
-    // Row 24: Building Area Row 2
+    // Row 24: Building Area Total
     24: {
-      id: "24-AREA2",
-      rowId: "24-AREA2",
+      id: "24-AREATOTAL",
+      rowId: "24-AREATOTAL",
       label: "",
       cells: {
         b: { content: "" },
         c: { content: "" },
-        d: {
-          fieldId: "d_24",
-          type: "editable",
-          value: "Enter area description",
-          section: "buildingAreas",
-          classes: ["text-left", "no-wrap"],
-        },
+        d: { content: "TOTAL" },
         e: {
           fieldId: "e_24",
-          type: "editable",
-          value: "-",
+          type: "calculated",
+          value: "1,300.00",
           section: "buildingAreas",
-          classes: ["text-center"],
+          classes: ["text-center", "calculated-value"],
         },
         f: { content: "" },
         g: {
           fieldId: "g_24",
-          type: "editable",
-          value: "-",
+          type: "calculated",
+          value: "400.00",
           section: "buildingAreas",
-          classes: ["text-center"],
+          classes: ["text-center", "calculated-value"],
         },
         h: { content: "" },
         i: {
           fieldId: "i_24",
-          type: "editable",
-          value: "-",
+          type: "calculated",
+          value: "1,700.00",
           section: "buildingAreas",
-          classes: ["text-center"],
+          classes: ["text-center", "calculated-value"],
         },
         j: { content: "" },
         k: { content: "" },
@@ -216,43 +205,25 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
         },
       },
     },
 
-    // Row 25: Building Area Total
+    // Row 25: Empty spacer
     25: {
-      id: "25-AREATOTAL",
-      rowId: "25-AREATOTAL",
+      id: "25-EMPTY",
+      rowId: "25-EMPTY",
       label: "",
       cells: {
         b: { content: "" },
         c: { content: "" },
-        d: { content: "TOTAL" },
-        e: {
-          fieldId: "e_25",
-          type: "editable",
-          value: "-",
-          section: "buildingAreas",
-          classes: ["text-center"],
-        },
+        d: { content: "" },
+        e: { content: "" },
         f: { content: "" },
-        g: {
-          fieldId: "g_25",
-          type: "editable",
-          value: "-",
-          section: "buildingAreas",
-          classes: ["text-center"],
-        },
+        g: { content: "" },
         h: { content: "" },
-        i: {
-          fieldId: "i_25",
-          type: "editable",
-          value: "-",
-          section: "buildingAreas",
-          classes: ["text-center"],
-        },
+        i: { content: "" },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -268,31 +239,28 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Row 26: Empty spacer
+                     // Row 26: Intermediate Header - Gross Area
     26: {
-      id: "26-EMPTY",
-      rowId: "26-EMPTY",
-      label: "",
+      id: "3.05",
+      rowId: "3.05",
+      label: "GROSS AREA (m²)",
       cells: {
-        b: { content: "" },
-        c: { content: "" },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
+        b: { label: "GROSS AREA (m²)", classes: ["section-subheader", "text-left"] },
+        c: { content: "", classes: ["section-subheader"] },
+        d: { content: "DESCRIPTION", classes: ["section-subheader"] },
+        e: { content: "EXISTING", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "NEW", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "TOTAL", classes: ["section-subheader"] },
+        j: { content: "J", classes: ["section-subheader"] },
+        k: { content: "K", classes: ["section-subheader"] },
+        l: { content: "OBC [A] 1.4.1.2.", classes: ["section-subheader"] },
+        m: { content: "M", classes: ["section-subheader"] },
+        n: { content: "N", classes: ["section-subheader"] },
         o: {
-          fieldId: "o_26",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          content: "Notes",
+          classes: ["section-subheader", "text-left", "notes-column"],
         },
       },
     },
@@ -469,20 +437,67 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
-    // Row 37: 3.07 Building Height
-    37: {
+    // Row 36: 3.07 Building Height (Stories Above Grade)
+    36: {
       id: "3.07",
       rowId: "3.07",
       label: "BUILDING HEIGHT",
       cells: {
         b: { label: "BUILDING HEIGHT" },
         c: { content: "" },
-        d: { content: "STOREYS ABOVE GRADE" },
-        e: { content: "" },
+        d: {
+          fieldId: "d_36",
+          type: "editable",
+          value: "2.0",
+          section: "buildingAreas",
+          classes: ["text-center", "user-input"],
+        },
+        e: { content: "STOREYS ABOVE GRADE" },
         f: { content: "" },
         g: { content: "" },
         h: { content: "" },
-        i: { content: "(m) ABOVE GRADE [A] 1.4.1.2. & 3.2.1.1." },
+        i: {
+          fieldId: "i_36",
+          type: "editable",
+          value: "6.20",
+          section: "buildingAreas",
+          classes: ["text-center", "user-input"],
+        },
+        j: { content: "(m) ABOVE GRADE [A] 1.4.1.2. & 3.2.1.1." },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_36",
+          type: "editable",
+          value: "enter notes here...",
+          section: "buildingAreas",
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
+        },
+      },
+    },
+
+    // Row 37: Building Height (Stories Below Grade)
+    37: {
+      id: "37-HEIGHT2",
+      rowId: "37-HEIGHT2",
+      label: "",
+      cells: {
+        b: { content: "" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_37",
+          type: "editable",
+          value: "1.0",
+          section: "buildingAreas",
+          classes: ["text-center", "user-input"],
+        },
+        e: { content: "STOREYS BELOW GRADE" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
         j: { content: "" },
         k: { content: "" },
         l: { content: "" },
@@ -493,32 +508,38 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
         },
       },
     },
 
-    // Row 38: Building Height Row 1
+    // Row 38: 3.08 High Building
     38: {
-      id: "38-HEIGHT1",
-      rowId: "38-HEIGHT1",
-      label: "",
+      id: "3.08",
+      rowId: "3.08",
+      label: "HIGH BUILDING",
       cells: {
-        b: { content: "" },
+        b: { label: "HIGH BUILDING" },
         c: { content: "" },
-        d: { content: "STOREYS BELOW GRADE" },
+        d: {
+          fieldId: "d_38",
+          type: "dropdown",
+          dropdownId: "dd_d_38",
+          value: "-",
+          section: "buildingAreas",
+          classes: ["dropdown-sm"],
+          options: [
+            { value: "-", name: "Select..." },
+            { value: "Yes", name: "Yes" },
+            { value: "No", name: "No" },
+          ],
+        },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
         h: { content: "" },
-        i: {
-          fieldId: "i_38",
-          type: "editable",
-          value: "Enter height in metres",
-          section: "buildingAreas",
-          classes: ["text-center"],
-        },
-        j: { content: "" },
+        i: { content: "" },
+        j: { content: "3.2.6." },
         k: { content: "" },
         l: { content: "" },
         m: { content: "" },
@@ -528,39 +549,12 @@ window.TEUI.SectionModules.sect03 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
+          classes: ["text-left", "no-wrap", "notes-column", "user-input"],
         },
       },
     },
 
-    // Row 39: 3.08 High Building
-    39: {
-      id: "3.08",
-      rowId: "3.08",
-      label: "HIGH BUILDING",
-      cells: {
-        b: { label: "HIGH BUILDING" },
-        c: { content: "" },
-        d: { content: "-" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "3.2.6." },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_39",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingAreas",
-          classes: ["text-left", "no-wrap", "notes-column"],
-        },
-      },
-    },
+
 
   };
 
@@ -706,59 +700,359 @@ window.TEUI.SectionModules.sect03 = (function () {
   //==========================================================================
 
   function getFieldValue(fieldId) {
-    const field = document.getElementById(fieldId);
+    const field = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (!field) return "";
 
     if (field.type === "checkbox") {
       return field.checked;
-    } else if (field.type === "number" || field.type === "range") {
-      return parseFloat(field.value) || 0;
-    } else {
+    } else if (field.tagName === "INPUT") {
       return field.value || "";
+    } else if (field.contentEditable === "true") {
+      return field.textContent || "";
+    } else {
+      return field.textContent || "";
     }
   }
 
   function getNumericValue(fieldId, defaultValue = 0) {
+    // Try StateManager first, then fallback to DOM
+    if (window.TEUI?.StateManager?.getValue) {
+      const stateValue = window.TEUI.StateManager.getValue(fieldId);
+      if (stateValue !== null && stateValue !== undefined) {
+        const numericValue = window.TEUI.parseNumeric ? 
+          window.TEUI.parseNumeric(stateValue, defaultValue) : 
+          parseFloat(stateValue.toString().replace(/,/g, ''));
+        return isNaN(numericValue) ? defaultValue : numericValue;
+      }
+    }
+    
+    // Fallback to DOM
     const value = getFieldValue(fieldId);
-    const numericValue = parseFloat(value);
+    const cleanValue = value.toString().replace(/,/g, '').replace(/[^\d.-]/g, '');
+    const numericValue = parseFloat(cleanValue);
     return isNaN(numericValue) ? defaultValue : numericValue;
   }
 
-  function setCalculatedValue(fieldId, value) {
-    const element = document.getElementById(fieldId);
+  function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
-      if (typeof value === "number") {
-        element.textContent = value.toLocaleString(undefined, {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        });
+      // Use TEUI formatNumber if available, otherwise fallback with proper thousands separators
+      let formattedValue;
+      if (typeof rawValue === "number") {
+        if (window.TEUI?.formatNumber) {
+          formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+        } else {
+          // Ensure thousands separators are included in fallback
+          formattedValue = rawValue.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true  // Explicitly enable thousands separators
+          });
+        }
       } else {
-        element.textContent = value;
+        formattedValue = rawValue;
+      }
+      
+      element.textContent = formattedValue;
+      
+      // Add calculated value styling and remove user input styling
+      element.classList.add('calculated-value');
+      element.classList.remove('user-input', 'user-modified', 'editing-intent');
+      element.removeAttribute('contenteditable');
+      
+      // Register value with StateManager
+      if (window.TEUI?.StateManager?.setValue) {
+        window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
       }
     }
+  }
+
+  //==========================================================================
+  // CALCULATION FUNCTIONS
+  //==========================================================================
+
+  function calculateAreaTotals() {
+    // Row 22 horizontal total (i_22 = e_22 + g_22)
+    const e22 = getNumericValue("e_22");
+    const g22 = getNumericValue("g_22");
+    const i22Total = e22 + g22;
+    setCalculatedValue("i_22", i22Total);
+
+    // Row 23 horizontal total (i_23 = e_23 + g_23)
+    const e23 = getNumericValue("e_23");
+    const g23 = getNumericValue("g_23");
+    const i23Total = e23 + g23;
+    setCalculatedValue("i_23", i23Total);
+
+    // Row 24 vertical totals
+    const e24Total = e22 + e23; // Sum of EXISTING column
+    const g24Total = g22 + g23; // Sum of NEW column  
+    const i24Total = i22Total + i23Total; // Sum of TOTAL column
+    
+    setCalculatedValue("e_24", e24Total);
+    setCalculatedValue("g_24", g24Total);
+    setCalculatedValue("i_24", i24Total);
+  }
+
+  function calculateGrossAreaTotals() {
+    // Calculate gross area totals when implemented
+    // Placeholder for future gross area calculations
+  }
+
+  function performAllCalculations() {
+    // Add recursion protection
+    if (window.sectionCalculationInProgress) {
+      console.log("[S03] Calculation already in progress, skipping...");
+      return;
+    }
+
+    window.sectionCalculationInProgress = true;
+
+    try {
+      console.log("[S03] Starting area calculations...");
+      calculateAreaTotals();
+      calculateGrossAreaTotals();
+      console.log("[S03] Area calculations complete");
+    } finally {
+      window.sectionCalculationInProgress = false;
+    }
+  }
+
+  //==========================================================================
+  // DIAGNOSTIC FUNCTIONS
+  //==========================================================================
+
+  function checkS03State() {
+    console.log("=== S03 STATE CHECK ===");
+    console.log("Section 03 module loaded:", !!window.TEUI?.SectionModules?.sect03);
+    console.log("StateManager available:", !!window.TEUI?.StateManager);
+    
+    const testFields = ['e_22', 'g_22', 'e_23', 'g_23', 'i_22', 'i_23', 'e_24', 'g_24', 'i_24'];
+    testFields.forEach(fieldId => {
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+      const numericValue = getNumericValue(fieldId);
+      
+      console.log(`${fieldId}:`);
+      console.log(`  DOM: "${element?.textContent || "ELEMENT NOT FOUND"}"`);
+      console.log(`  State: ${stateValue || "UNDEFINED"}`);
+      console.log(`  Numeric: ${numericValue}`);
+    });
+    
+    console.log("=== END S03 CHECK ===");
+    return true;
   }
 
   //==========================================================================
   // EVENT HANDLERS
   //==========================================================================
 
+  function handleFieldBlur(event) {
+    const fieldElement = this;
+    const currentFieldId = fieldElement.getAttribute("data-field-id");
+    if (!currentFieldId) return;
+
+    let valueStr = fieldElement.textContent.trim().replace(/,/g, "");
+    let displayValue = "";
+    let rawValueToStore = "";
+
+    // Determine if this is a numeric field
+    const numericFields = ['e_22', 'g_22', 'e_23', 'g_23', 'd_36', 'd_37', 'i_36'];
+    const isNumericField = numericFields.includes(currentFieldId);
+    
+    // Determine decimal places for different field types
+    const heightStoriesFields = ['d_36', 'd_37']; // 1 decimal place
+    const heightMetresFields = ['i_36']; // 2 decimal places  
+    const areaFields = ['e_22', 'g_22', 'e_23', 'g_23']; // 2 decimal places with commas
+
+    if (isNumericField) {
+      // Parse numeric value using TEUI parseNumeric if available
+      let numValue = window.TEUI?.parseNumeric ? 
+        window.TEUI.parseNumeric(valueStr, NaN) : 
+        parseFloat(valueStr);
+
+      if (!isNaN(numValue) && numValue >= 0) {
+        // Successfully parsed a number
+        rawValueToStore = numValue.toString();
+        
+        // Apply formatting based on field type
+        if (heightStoriesFields.includes(currentFieldId)) {
+          // Stories (1 decimal place, no commas)
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(numValue, "number-1dp") :
+            numValue.toFixed(1);
+        } else if (heightMetresFields.includes(currentFieldId)) {
+          // Metres (2 decimal places, no commas for small numbers)
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(numValue, "number-2dp") :
+            numValue.toFixed(2);
+        } else if (areaFields.includes(currentFieldId)) {
+          // Area fields (2 decimal places with commas)
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(numValue, "number-2dp-comma") :
+            numValue.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+              useGrouping: true  // Ensure thousands separators
+            });
+        } else {
+          // Default formatting
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(numValue, "number-2dp-comma") :
+            numValue.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+              useGrouping: true  // Ensure thousands separators
+            });
+        }
+      } else {
+        // Invalid number, reset to previous value or default
+        const previousValue = getNumericValue(currentFieldId, 0);
+        rawValueToStore = previousValue.toString();
+        
+        // Apply same formatting logic for fallback
+        if (heightStoriesFields.includes(currentFieldId)) {
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(previousValue, "number-1dp") :
+            previousValue.toFixed(1);
+        } else if (heightMetresFields.includes(currentFieldId)) {
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(previousValue, "number-2dp") :
+            previousValue.toFixed(2);
+        } else {
+          displayValue = window.TEUI?.formatNumber ? 
+            window.TEUI.formatNumber(previousValue, "number-2dp-comma") :
+            previousValue.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+              useGrouping: true  // Ensure thousands separators
+            });
+        }
+      }
+    } else {
+      // Text field - store as-is but clean up
+      rawValueToStore = valueStr;
+      displayValue = valueStr;
+    }
+
+    // Update DOM
+    fieldElement.textContent = displayValue;
+    
+    // Add user-modified styling
+    fieldElement.classList.add('user-modified');
+    fieldElement.classList.remove('user-input', 'editing-intent');
+
+    // Register with StateManager
+    if (window.TEUI?.StateManager?.setValue) {
+      window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, "user-modified");
+    }
+
+    // Trigger calculations for numeric fields
+    if (isNumericField && !window.sectionCalculationInProgress) {
+      setTimeout(() => {
+        performAllCalculations();
+      }, 50);
+    }
+  }
+
   function initializeEventHandlers() {
     console.log("Initializing Section 03 event handlers");
+    
+    // All editable fields in Section 03
+    const editableFields = [
+      'd_22', 'd_23', 'e_22', 'g_22', 'e_23', 'g_23', 
+      'd_36', 'd_37', 'i_36', 'o_22', 'o_23', 'o_24', 'o_25', 'o_27', 
+      'o_28', 'o_31', 'o_32', 'o_36', 'o_37', 'o_38'
+    ];
+    
+    editableFields.forEach(fieldId => {
+      const field = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (field?.classList.contains("user-input") && field.contentEditable === "true") {
+        if (!field.hasEditableListeners) {
+          // Enter key triggers blur
+          field.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              field.blur();
+            }
+          });
+          
+          // Blur handler for formatting and state management
+          field.addEventListener("blur", handleFieldBlur.bind(field));
+          
+          // Focus/focusout for styling
+          field.addEventListener("focus", () => {
+            field.classList.add("editing-intent");
+          });
+          
+          field.addEventListener("focusout", () => {
+            field.classList.remove("editing-intent");
+          });
+          
+          // Input handler for immediate visual feedback
+          field.addEventListener("input", () => {
+            field.classList.add("user-modified", "editing-intent");
+            field.classList.remove("user-input");
+          });
+          
+          field.hasEditableListeners = true; // Prevent duplicate listeners
+        }
+      }
+    });
+
+    // Register StateManager listeners for cross-field dependencies
+    if (window.TEUI?.StateManager?.addListener) {
+      // Listen for changes to area fields to trigger calculations
+      const calculationTriggers = ['e_22', 'g_22', 'e_23', 'g_23'];
+      calculationTriggers.forEach(fieldId => {
+        window.TEUI.StateManager.addListener(fieldId, () => {
+          if (!window.sectionCalculationInProgress) {
+            performAllCalculations();
+          }
+        });
+      });
+    }
     
     window.TEUI.sect03.initialized = true;
   }
 
-
-
   function onSectionRendered() {
     console.log("Section 03 rendered - Building Areas (OBC Matrix)");
     
-    // Initialize any section-specific functionality after rendering
+    // Initialize default state values in StateManager
+    if (window.TEUI?.StateManager) {
+      const defaultValues = {
+        'd_22': 'Enter area description',
+        'd_23': 'Enter area description', 
+        'e_22': '1000.00',
+        'g_22': '100.00',
+        'e_23': '200.00',
+        'g_23': '300.00',
+        'd_36': '2.0',  // Stories above grade
+        'd_37': '1.0',  // Stories below grade
+        'i_36': '6.20'  // Metres above grade
+      };
+      
+      Object.entries(defaultValues).forEach(([fieldId, defaultValue]) => {
+        // Only set default if no value exists (won't overwrite user-modified values)
+        if (!window.TEUI.StateManager.getValue(fieldId)) {
+          window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        }
+      });
+    }
+    
+    // Initialize event handlers
     if (!window.TEUI.sect03.initialized) {
       initializeEventHandlers();
     }
 
-
+    // Perform initial calculations after a small delay to ensure full initialization
+    setTimeout(() => {
+      if (!window.sectionCalculationInProgress) {
+        console.log("[S03 INIT] Triggering initial calculations to populate calculated values...");
+        performAllCalculations();
+      }
+    }, 100);
   }
 
   //==========================================================================
@@ -775,5 +1069,17 @@ window.TEUI.SectionModules.sect03 = (function () {
     getFieldValue: getFieldValue,
     getNumericValue: getNumericValue,
     setCalculatedValue: setCalculatedValue,
+    
+    // Calculation functions
+    calculateAreaTotals: calculateAreaTotals,
+    calculateGrossAreaTotals: calculateGrossAreaTotals,
+    performAllCalculations: performAllCalculations,
+    
+    // Event handling functions
+    handleFieldBlur: handleFieldBlur,
+    initializeEventHandlers: initializeEventHandlers,
+    
+    // Diagnostic functions
+    checkS03State: checkS03State,
   };
 })();

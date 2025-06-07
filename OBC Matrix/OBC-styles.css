@@ -239,12 +239,12 @@ body {
 
 /* Calculated/Derived values inherit alignment from their column position */
 .calculated-value {
-  font-weight: 500;
+  font-weight: 700; /* Bold for calculated values */
   color: var(--calculated-value-color);
 }
 
 .derived-value {
-  font-weight: 500;
+  font-weight: 600; /* Semi-bold for derived values */
   color: var(--derived-value-color);
 }
 
@@ -1108,20 +1108,13 @@ input[type=number].form-control {
   font-weight: 600; /* Bold - removed !important */
   padding: 3px 6px; /* Tighter padding - removed !important */
   border-bottom: 1px solid #d0d0d0; /* Separator line - removed !important */
-  text-align: center; /* Center align by default */
+  text-align: left; /* Left align all subheader content by default */
   white-space: pre-line; /* Allow wrapping on explicit newlines */
 }
 
 /* Ensure empty cells in section-subheader rows maintain styling */
 .data-table tr:has(td.section-subheader) td:empty {
   background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
-}
-
-/* Styling for first-column subheader labels (typically in columns A-C) - Left align */
-.data-table tr:has(td.section-subheader) td:nth-child(1),
-.data-table tr:has(td.section-subheader) td:nth-child(2),
-.data-table tr:has(td.section-subheader) td:nth-child(3) {
-  text-align: left !important; /* Keep important here as it overrides the general center align */
 }
 
 /* --- Section 02 Specific Overrides --- */
