@@ -51,8 +51,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       label: "Building Occupancy Header",
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
-        c: { content: "C", classes: ["section-subheader"] },
-        d: { content: "D", classes: ["section-subheader"] },
+        c: { content: "", classes: ["section-subheader"] },
+        d: { content: "O.Reg. 163/24 | LAST CODE AMENDMENT | O.Reg. 447/24", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
@@ -60,41 +60,12 @@ window.TEUI.SectionModules.sect02 = (function () {
         i: { content: "I", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "L", classes: ["section-subheader"] },
+        l: { content: "OBC Reference", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
         o: {
           content: "Notes",
           classes: ["section-subheader", "notes-column"],
-        },
-      },
-    },
-
-    // Row 2.10: 3.00 Building Code Version
-    "2.10": {
-      id: "2.10",
-      rowId: "2.10",
-      label: "BUILDING CODE VERSION",
-      cells: {
-        b: { label: "3.00" },
-        c: { label: "BUILDING CODE VERSION" },
-        d: { content: "O.Reg. 163/24" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "LAST CODE AMENDMENT" },
-        l: { content: "O.Reg. 447/24" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_10",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingOccupancy",
-          classes: ["no-wrap", "notes-column"],
         },
       },
     },
@@ -222,7 +193,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_14",
           type: "editable",
-          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
+          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -266,7 +237,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_15",
           type: "editable",
-          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
+          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -310,7 +281,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_16",
           type: "editable",
-          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
+          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -354,7 +325,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_17",
           type: "editable",
-          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
+          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -398,7 +369,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_18",
           type: "editable",
-          value: 'Provide Description of Use, ie. "Restaurant", "Medical Office", etc.',
+          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip) 
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J

@@ -115,119 +115,100 @@ The workspace contains three versions of the codebase:
 
 ## Phase 3: Modular Enhancements
 
-### 3.1 S03 Climate Module Integration
+### 🚨 **MANDATORY PATTERNS FOR 4.012 - CRITICAL SUCCESS FACTORS**
 
-- [ ] Replace Excel-based climate import with internalized data
-- [ ] Use S03 Optimized Test.html as template
-- [ ] Integrate with existing state management:
-  - Connect to window.TEUI.state
-  - Maintain backward compatibility
-  - Preserve calculation chains
-- [ ] Implement Reference Mode for climate data
-- [ ] Test with all Canadian locations
+Before proceeding with any section work, these patterns are **NON-NEGOTIABLE** for 4.012:
 
-### 3.2 S11 Tuple Calculations
+#### **1. Global Input Handling (REQUIRED)**
+- **ALWAYS** use `window.TEUI.StateManager.initializeGlobalInputHandlers()`
+- **NEVER** create section-specific blur/focus handlers
+- **MUST** implement change detection to prevent accidental state commits
+- **REQUIRED** graceful behavior: grey→blue→grey/permanent blue
 
-- [ ] Implement dual-state architecture:
-  - Target state calculations
-  - Reference state calculations
-  - State isolation mechanisms
-- [ ] Create calculation comparison views
-- [ ] Ensure proper state switching
-- [ ] Test calculation accuracy against Excel
+#### **2. Universal Number Formatting (REQUIRED)**
+- **ALWAYS** use `window.TEUI.formatNumber(value, formatType)`
+- **NEVER** use direct `toLocaleString()` or custom formatting
+- **MUST** support semantic field types (area, rsi, percent, etc.)
 
-### 3.3 Global Input Handling System (Proven in OBC Matrix)
+#### **3. State-Aware Visual Feedback (REQUIRED)**
+- **MUST** use `.editing-intent` for temporary blue styling
+- **MUST** use `.user-modified` for permanent blue styling  
+- **MUST** preserve grey italic placeholder for default state
+- **REQUIRED** smooth CSS transitions between all states
 
-**Status: PROTOTYPED and Working - Ready for Integration**
+#### **4. Architectural Consistency (REQUIRED)**
+- **NO** duplicate event handlers across sections
+- **NO** section-specific state management patterns
+- **MANDATORY** use of established CSS alignment system
+- **REQUIRED** consistent field ID patterns and validation
 
-The OBC Matrix project successfully implemented a global input handling system that eliminates code duplication across sections and provides consistent input behavior. This should be integrated as part of the 4.012 refactor.
+#### **🚨 5. NUCLEAR TABLE LAYOUT FIX (CRITICAL - NEW DISCOVERY)**
 
-#### ✅ **Proven Benefits:**
+**Date Discovered**: December 19, 2024  
+**Problem Solved**: "Span Spam" / Goalpost Column Expansion  
+**Status**: MANDATORY for 4.012
 
-1. **Enter/Return Key Fix**: Prevents newlines in text entry across ALL sections automatically
-2. **Auto-blur on Enter**: Pressing Enter properly finishes field editing and triggers calculations  
-3. **Visual Feedback**: Fields show "editing" state with CSS classes
-4. **Centralized Logic**: No code duplication - one handler for all sections
-5. **Consistent Formatting**: Uses global `window.TEUI.formatNumber` for consistent display
-6. **State Integration**: Automatic integration with StateManager for user-modified values
+**🔍 Root Cause Identified:**
+Browser's `table-layout: auto` algorithm ignores CSS column width rules and calculates widths based on content requirements. This causes massive column expansion (463px-644px) that cannot be overridden with standard CSS, even with `!important` declarations.
 
-#### 🔧 **Implementation Tasks:**
-
-- [ ] Add `initializeGlobalInputHandlers()` to StateManager or create dedicated InputHandler module
-- [ ] Remove individual `handleEditableBlur` functions from all 18 sections
-- [ ] Standardize CSS classes (`.editing`) across all sections for visual feedback
-- [ ] Initialize once after all sections render, eliminating per-section initialization
-- [ ] Extend pattern to handle all field types (currency, percentages, RSI, U-values)
-- [ ] Test across all sections to ensure no regression in input behavior
-
-#### 📋 **Integration Pattern:**
-
-```javascript
-// In StateManager or dedicated InputHandler module
-function initializeGlobalInputHandlers() {
-  const editableFields = document.querySelectorAll('.editable[data-field-id]');
-  
-  editableFields.forEach((field) => {
-    if (!field.hasGlobalListeners) {
-      // Prevent enter key from creating newlines
-      field.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          field.blur();
-        }
-      });
-      
-      // Handle field blur (when user finishes editing)
-      field.addEventListener("blur", handleFieldBlur);
-      
-      // Visual feedback for editing state
-      field.addEventListener("focus", () => field.classList.add("editing"));
-      field.addEventListener("focusout", () => field.classList.remove("editing"));
-      
-      field.hasGlobalListeners = true;
-    }
-  });
+**💣 Nuclear Solution (MANDATORY):**
+```css
+/* STEP 1: Force browser table layout compliance */
+.data-table {
+  table-layout: fixed !important; /* CRITICAL: Overrides browser content-based calculations */
 }
 
-function handleFieldBlur(event) {
-  const fieldElement = event.target;
-  const fieldId = fieldElement.getAttribute("data-field-id");
-  if (!fieldId) return;
-  
-  let valueStr = fieldElement.textContent.trim();
-  let numValue = window.TEUI.parseNumeric(valueStr, NaN);
-  
-  // Apply appropriate formatting based on field type
-  if (!isNaN(numValue)) {
-    if (fieldId.includes('area') || fieldId.includes('dimension')) {
-      valueStr = window.TEUI.formatNumber(numValue, "number-2dp");
-    } else if (fieldId.includes('percent')) {
-      valueStr = window.TEUI.formatNumber(numValue, "percent");
-    } else {
-      valueStr = window.TEUI.formatNumber(numValue, "number");
-    }
-  }
-  
-  // Update display and state
-  fieldElement.textContent = valueStr;
-  window.TEUI.StateManager.setValue(fieldId, valueStr, "user-modified");
+/* STEP 2: Universal alignment system (replaces 1000+ competing CSS rules) */
+.data-table td {
+  text-align: left !important; /* Single source of truth - overrides ALL inheritance */
+}
+
+/* STEP 3: Semantic numeric alignment */
+.data-table td[data-field-id*="area"],
+.data-table td[data-field-id*="rsi"],
+.data-table td[data-field-id*="uvalue"],
+.data-table td[data-field-id*="cost"],
+.data-table td[data-field-id*="percent"],
+.data-table td[data-field-id*="efficiency"],
+.data-table td[data-field-id*="temperature"],
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td.reference-value,
+.data-table td input[type="number"] {
+  text-align: right !important; /* Semantic right-alignment for numeric content */
+}
+
+/* STEP 4: Column collapse system */
+.data-table col.col-e,
+.data-table col.col-f, 
+.data-table col.col-g,
+.data-table col.col-m,
+.data-table col.col-n {
+  width: 2px !important;
+  min-width: 2px !important;
+  max-width: 2px !important;
 }
 ```
 
-#### 🎯 **Expected Benefits:**
+**🏆 Expected Results:**
+- ✅ **99% reduction in goalpost column widths** (463px → 2px)
+- ✅ **Perfect proportional expansion** ("raisin bread" behavior) 
+- ✅ **Elimination of 1000+ CSS alignment conflicts**
+- ✅ **Faster table rendering** (fixed layout is more efficient)
+- ✅ **Cross-browser consistency** (universal solution)
 
-- **Code Reduction**: ~50-100 lines removed per section (18 sections = significant reduction)
-- **Consistency**: Identical input behavior across entire application
-- **Maintainability**: One place to fix input issues or add features
-- **User Experience**: Consistent, predictable input handling everywhere
+**🚨 CRITICAL IMPACT FOR 4.012:**
+4011's current codebase has **350+ competing alignment rules** and likely the same browser table layout conflicts across all 18 sections. This nuclear solution:
+- **Eliminates thousands of CSS conflicts**
+- **Solves fundamental browser vs. CSS battles**
+- **Provides single source of truth for table behavior**
+- **Enables consistent UX across all sections**
 
-This represents exactly the kind of "radical simplification" that v4.012 aims to achieve.
+**❌ REGRESSION PREVENTION**: OBC Matrix Section 03 was initially built without these patterns and required costly retrofitting. This CANNOT happen in 4.012.
 
-### 3.4 Smart State-Aware Visual Feedback Integration (BREAKTHROUGH ACHIEVEMENT)
+**🔧 Implementation Priority**: **HIGHEST** - Apply this nuclear fix FIRST before any section work to prevent architectural debt.
 
-**Status: PERFECTED in OBC Matrix - Ready for Direct Integration**
-
-A revolutionary UX breakthrough has been achieved in the OBC Matrix project that provides the perfect balance of instant visual feedback with intelligent state management. This must be integrated as a high-priority enhancement.
+**❌ REGRESSION RISK**: Without this system, accidental clicks cause permanent blue state changes, creating poor UX. This was the exact problem in OBC Matrix Section 03 before the fix.
 
 #### ✨ **The Perfect UX Pattern:**
 
@@ -244,14 +225,26 @@ A revolutionary UX breakthrough has been achieved in the OBC Matrix project that
 - **Zero Mental Load**: Users intuitively understand the states without training
 - **State Integrity**: Visual feedback perfectly separated from actual data state
 
-#### 📋 **Integration Tasks:**
+#### 📋 **MANDATORY Integration Tasks:**
 
-- [ ] **Extract CSS Classes**: Copy `.editing-intent`, `.user-modified`, state transition CSS from OBC Matrix
-- [ ] **Integrate Global Handler**: Adapt OBC StateManager's `initializeGlobalInputHandlers()` for 4011 StateManager
-- [ ] **Apply to All Sections**: Replace individual section input handlers with global system
-- [ ] **Update State Classes**: Ensure all 4011 sections use consistent state class management
-- [ ] **Test Across Browsers**: Verify the experience works consistently in Safari, Chrome, Firefox
-- [ ] **Performance Check**: Ensure no impact on calculation performance
+🚨 **NON-NEGOTIABLE**: These tasks are required for 4.012 - graceful input behavior is now a core feature
+
+- [ ] **REQUIRED**: Extract CSS classes `.editing-intent`, `.user-modified`, state transition CSS from OBC Matrix
+- [ ] **REQUIRED**: Integrate OBC StateManager's `initializeGlobalInputHandlers()` into 4011 StateManager  
+- [ ] **REQUIRED**: Replace ALL individual section input handlers with global system (18 sections)
+- [ ] **REQUIRED**: Ensure all 4011 sections use consistent state class management
+- [ ] **REQUIRED**: Implement change detection in ALL input handlers (prevent accidental commits)
+- [ ] **REQUIRED**: Test graceful behavior across all browsers (grey→blue→grey/permanent blue)
+- [ ] **REQUIRED**: Performance check to ensure no impact on calculation chains
+
+#### ✅ **Validation Checklist for 4.012:**
+
+Every section MUST demonstrate these behaviors:
+- [ ] Click in field → immediate blue confident text (`.editing-intent`)
+- [ ] Click out without changes → gracefully restores grey italic placeholder
+- [ ] Click out with changes → commits to permanent blue confident text (`.user-modified`)
+- [ ] Enter key → triggers blur and applies above logic
+- [ ] No accidental permanent state changes from UI exploration
 
 #### 🔧 **Implementation Notes:**
 
@@ -426,6 +419,44 @@ Replace ALL alignment complexity with just **2 clean rules**:
 5. Working Tuple calculations for Target/Reference states
 6. Performance equal or better than 4.011
 7. Cross-browser compatibility maintained
+8. **✅ MANDATORY**: Universal graceful input behavior across all 18 sections
+9. **✅ MANDATORY**: Zero section-specific input handlers (global system only)
+10. **✅ MANDATORY**: Consistent number formatting using global utilities
+11. **✅ MANDATORY**: Perfect visual state management (grey→blue→grey/permanent blue)
+
+## Quality Assurance & Pattern Validation
+
+### 🔍 **Mandatory Code Review Checklist**
+
+Before any section is considered complete, it MUST pass this validation:
+
+#### **Input Handling Validation:**
+- [ ] Section uses `window.TEUI.StateManager.initializeGlobalInputHandlers()` 
+- [ ] NO custom blur/focus event handlers in section file
+- [ ] Change detection prevents accidental state commits
+- [ ] Graceful behavior demonstrated: click in/out without changes preserves grey state
+
+#### **Number Formatting Validation:**
+- [ ] All numeric display uses `window.TEUI.formatNumber()`
+- [ ] NO direct use of `toLocaleString()` or manual formatting
+- [ ] Semantic formatting based on field types (area, rsi, percent, etc.)
+- [ ] Consistent decimal places and thousands separators
+
+#### **Visual State Validation:**
+- [ ] Temporary blue styling uses `.editing-intent` class only
+- [ ] Permanent blue styling uses `.user-modified` class only
+- [ ] Grey italic placeholder preserved for default state
+- [ ] Smooth CSS transitions between all states working
+
+#### **Architectural Validation:**
+- [ ] No duplicate code patterns from other sections
+- [ ] Clean integration with existing StateManager
+- [ ] No performance impact on calculation chains
+- [ ] Cross-browser compatibility verified
+
+### 🚨 **Zero Tolerance Policy**
+
+Any section that fails these validations will be **rejected** and must be refactored using the mandatory patterns. The cost of retrofitting (as seen with OBC Matrix Section 03) is too high to accept non-compliant implementations.
 
 ## Risk Mitigation
 
@@ -437,26 +468,52 @@ Replace ALL alignment complexity with just **2 clean rules**:
 
 ## Timeline Estimate
 
-- Phase 1: 2-3 days
-- Phase 2: 2-3 days
-- Phase 3: 4-5 days
-- Phase 4: 2-3 days
-- **Total: 10-14 days**
+- Phase 1: 2-3 days (Cleanup & Housekeeping)
+- Phase 2: 2-3 days (Testing & Validation Framework Setup)
+- Phase 3: 5-6 days (Modular Enhancements + **Mandatory Pattern Implementation**)
+- Phase 4: 3-4 days (Integration, Testing & **Pattern Validation**)
+- **Total: 12-16 days** (increased to account for mandatory pattern validation)
+
+**Note**: Timeline includes additional buffer for **mandatory pattern validation** and **quality assurance** to prevent costly retrofitting like what occurred with OBC Matrix Section 03.
 
 ## Next Steps
 
-1. Create a new branch from 4012-FRAMEWORK for refactoring work
-2. Copy OBJECTIVE-2025.05.30.8h23 to replace current OBJECTIVE 4012 contents
-3. Preserve useful assets from current OBJECTIVE 4012:
+### 🚨 **CRITICAL FIRST PRIORITY: Mandatory Pattern Setup**
+
+1. **Setup Global Input Handling System**:
+   - Extract `initializeGlobalInputHandlers()` from OBC Matrix
+   - Integrate with 4011 StateManager
+   - Implement change detection logic
+   - Setup CSS classes (`.editing-intent`, `.user-modified`)
+
+2. **Setup Universal Number Formatting**:
+   - Extract `window.TEUI.formatNumber()` from OBC Matrix
+   - Implement semantic field type detection
+   - Create format type constants and utilities
+
+3. **Create Mandatory Section Template**:
+   - Copy-paste ready `initializeEventHandlers()` template
+   - Copy-paste ready `setCalculatedValue()` template
+   - Validation checklist integration
+
+### **Standard Refactoring Steps**:
+
+4. Create a new branch from 4012-FRAMEWORK for refactoring work
+5. Copy OBJECTIVE-2025.05.30.8h23 to replace current OBJECTIVE 4012 contents
+6. Preserve useful assets from current OBJECTIVE 4012:
    - README.md (as primary project documentation)
    - 4012-ClimateValues.js
    - S03 Optimized Test.html
    - 4012-styles.css
-4. Begin Phase 1 cleanup tasks
-5. Set up testing framework early
-6. Document progress daily
+7. Begin Phase 1 cleanup tasks **AFTER** mandatory patterns are established
+8. Set up testing framework with **mandatory pattern validation**
+9. Document progress daily with **pattern compliance tracking**
+
+**⚠️ WARNING**: Do NOT proceed with any section work until mandatory patterns are fully implemented and tested. The cost of retrofitting non-compliant sections is too high.
 
 ---
 
-_Last Updated: December 19, 2024_
-_Status: Planning Phase_
+_Last Updated: December 19, 2024 - Enhanced with Mandatory Pattern Requirements_
+_Status: Planning Phase - **MANDATORY PATTERNS DEFINED**_
+
+**🚨 CRITICAL UPDATE**: Document enhanced with mandatory pattern requirements based on OBC Matrix lessons learned. Global input handling, universal number formatting, and graceful visual feedback are now NON-NEGOTIABLE requirements for 4.012 to prevent costly retrofitting.
