@@ -76,6 +76,13 @@ window.TEUI.OBCStateManager = (function () {
             useGrouping: false
           });
         
+        case "number-2dp-comma":
+          return numValue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true  // Enable thousands separators (commas)
+          });
+        
         case "percent":
           return numValue.toLocaleString(undefined, {
             style: "percent",
@@ -249,7 +256,24 @@ window.TEUI.OBCStateManager = (function () {
       } else if (element.tagName === 'SELECT') {
         element.value = value;
       } else {
-        element.textContent = value;
+        // Check if this is a numeric field that might already have formatting
+        const isNumericField = element.hasAttribute('data-type') && 
+                              element.getAttribute('data-type') === 'numeric';
+        
+        if (isNumericField) {
+          // For numeric fields, only update if the current content is unformatted
+          const currentText = element.textContent.trim();
+          const hasFormatting = currentText.includes(',') && currentText.includes('.');
+          
+          if (!hasFormatting) {
+            // No formatting present, safe to update with raw value
+            element.textContent = value;
+          }
+          // If formatting is present, preserve it (don't override)
+        } else {
+          // Non-numeric fields, update normally
+          element.textContent = value;
+        }
       }
       
       // Update CSS classes based on field state
@@ -344,6 +368,7 @@ window.TEUI.OBCStateManager = (function () {
   function handleFieldBlur(event) {
     const fieldElement = event.target;
     const currentFieldId = fieldElement.getAttribute("data-field-id");
+    
     if (!currentFieldId) return;
     
     let valueStr = fieldElement.textContent.trim();
@@ -363,9 +388,13 @@ window.TEUI.OBCStateManager = (function () {
     
     // Apply formatting for numeric fields
     if (!isNaN(numValue)) {
-      // Check if field has specific formatting requirements
-      if (currentFieldId.includes('area') || currentFieldId.includes('dimension')) {
-        displayValue = window.TEUI.formatNumber(numValue, "number-2dp");
+      // Check if field is explicitly marked as numeric
+      const isNumericField = fieldElement.hasAttribute('data-type') && 
+                            fieldElement.getAttribute('data-type') === 'numeric';
+      
+      // Apply formatting based on field type
+      if (isNumericField) {
+        displayValue = window.TEUI.formatNumber(numValue, "number-2dp-comma");
       } else if (currentFieldId.includes('percent')) {
         displayValue = window.TEUI.formatNumber(numValue, "percent");
       } else {
@@ -374,10 +403,11 @@ window.TEUI.OBCStateManager = (function () {
       }
     }
     
-    // Update display
+    // Update display with formatting first
     fieldElement.textContent = displayValue;
     
-    // Store the value in OBC StateManager as user-modified (only if there were actual changes)
+    // Store the RAW value in OBC StateManager (for calculations)
+    // updateUI now preserves existing formatting, so this won't override
     setValue(currentFieldId, valueStr, VALUE_STATES.USER_MODIFIED);
   }
 

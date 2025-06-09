@@ -231,15 +231,12 @@ body {
   text-align: left; /* All table content left-aligned by default */
 }
 
-/* Numeric fields right-aligned (by content type, not column position) */
-.data-table td[data-field-id*="area"],
-.data-table td[data-field-id*="dimension"],
-.data-table td[data-field-id*="height"],
-.data-table td[data-field-id*="cost"],
-.data-table td[data-field-id*="value"],
+/* Universal numeric field right-alignment - clean field type approach */
 .data-table td.calculated-value,
 .data-table td.derived-value,
-.data-table td input[type="number"] {
+.data-table td input[type="number"],
+.data-table td[data-type="numeric"],
+.data-table td.numeric-field {
   text-align: right;
 }
 

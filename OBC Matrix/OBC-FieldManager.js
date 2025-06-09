@@ -549,6 +549,11 @@ TEUI.FieldManager = (function () {
                 cellElement.classList.add("editable", "user-input");
                 cellElement.textContent = cellDef.value || "0";
                 cellElement.setAttribute("contenteditable", "true");
+              } else if (cellDef.type === "num-editable") {
+                cellElement.classList.add("editable", "user-input", "numeric-field");
+                cellElement.textContent = cellDef.value || "0.00";
+                cellElement.setAttribute("contenteditable", "true");
+                cellElement.setAttribute("data-type", "numeric");
               } else if (cellDef.type === "number") {
                 // Create a number input element
                 const inputElement = document.createElement("input");

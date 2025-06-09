@@ -179,6 +179,8 @@
                 <option value="min-width">Min-Width + Auto (Blue Border)</option>
                 <option value="css-grid">CSS Grid + min-content (Green Border)</option>
                 <option value="stealth-mode">Stealth Mode - Hide Complexity (Purple Border)</option>
+                <option value="hide-column-d">🔍 DEBUG: Hide Column D (Red Border)</option>
+                <option value="hide-column-e">🔍 DEBUG: Hide Column E (Crimson Border)</option>
             </select>
         </div>
         <div class="mb-3">
@@ -567,6 +569,38 @@
                      
                      .data-table { border: 3px solid purple !important; }
                  `;
+             } else if (testMode === 'hide-column-d') {
+                 subNuclearCSS = `
+                     /* DEBUG EXPERIMENT: Hide Column D (Content Column) */
+                     .data-table {
+                         table-layout: auto !important; /* Let browser recalculate without column D */
+                         width: 100% !important;
+                     }
+                     
+                     /* Completely hide Column D (5th column - the actual content/dropdown column) */
+                     .data-table td:nth-child(5),
+                     .data-table th:nth-child(5) {
+                         display: none !important;
+                     }
+                     
+                     .data-table { border: 3px solid red !important; }
+                 `;
+             } else if (testMode === 'hide-column-e') {
+                 subNuclearCSS = `
+                     /* DEBUG EXPERIMENT: Hide Column E (Problem Expander) */
+                     .data-table {
+                         table-layout: auto !important; /* Let browser recalculate without column E */
+                         width: 100% !important;
+                     }
+                     
+                     /* Completely hide Column E (6th column - the problematic expanding empty column) */
+                     .data-table td:nth-child(6),
+                     .data-table th:nth-child(6) {
+                         display: none !important;
+                     }
+                     
+                     .data-table { border: 3px solid crimson !important; }
+                 `;
              } else {
                 // Default percentage mode
                 subNuclearCSS = `
@@ -627,6 +661,20 @@
                      <em>"These are not the droids you're looking for" - browser treats dropdowns as simple text</em>
                  `;
                  borderColor = 'purple';
+             } else if (testMode === 'hide-column-d') {
+                 modeDescription = `
+                     <strong>🔍 DEBUG: Hide Column D (Content Column)</strong><br>
+                     <code>display: none</code> on column D to test if removing the content column affects expansion<br>
+                     <em>Red border indicates Column D hidden - see if expansion moves to a different column</em>
+                 `;
+                 borderColor = 'red';
+             } else if (testMode === 'hide-column-e') {
+                 modeDescription = `
+                     <strong>🔍 DEBUG: Hide Column E (Problem Expander)</strong><br>
+                     <code>display: none</code> on column E to test if removing the problematic expander fixes it<br>
+                     <em>Crimson border indicates Column E hidden - see if problem moves or disappears</em>
+                 `;
+                 borderColor = 'crimson';
              } else {
                  modeDescription = `
                      <strong>🧪 EXPERIMENT 3: Fixed Percentages</strong><br>
