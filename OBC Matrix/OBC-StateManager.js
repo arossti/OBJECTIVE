@@ -272,7 +272,7 @@ window.TEUI.OBCStateManager = (function () {
           // If formatting is present, preserve it (don't override)
         } else {
           // Non-numeric fields, update normally
-          element.textContent = value;
+        element.textContent = value;
         }
       }
       
