@@ -157,22 +157,41 @@
             </button>
         </div>
 
-        <div class="debug-section">
-            <h2>🚀 Sub-Nuclear CSS Test (Safe Width Constraints)</h2>
-            <p>Testing <code>table-layout: fixed</code> with <strong>reasonable</strong> column widths instead of content-destroying 2px limits.</p>
+            <div class="debug-section">
+        <h2>🚀 Sub-Nuclear CSS Test (Content-Aware Experiments)</h2>
+        <p>Testing different approaches to achieve <strong>"proportional expansion while respecting content minimums"</strong> - the holy grail of table layout!</p>
+        
+        <div class="alert alert-info" style="font-size: 0.9em; background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px; padding: 12px; margin: 8px 0;">
+            <strong>🎯 The Goal:</strong> Browser correctly calculates minimum column widths at small size, but ruins them when expanding. 
+            We want: <em>"Go nuclear but preserve content visibility"</em><br><br>
             
-            <!-- Sub-Nuclear Test Controls -->
-            <div class="mb-3">
-                <button onclick="applySubNuclearCSS()" class="btn btn-warning btn-sm me-2">
-                    🚀 Apply Sub-Nuclear Fix
-                </button>
-                <button onclick="removeSubNuclearCSS()" class="btn btn-secondary btn-sm me-2">
-                    🔄 Remove Fix
-                </button>
-                <button onclick="testWidthMeasurement()" class="btn btn-info btn-sm">
-                    📏 Measure Results
-                </button>
-            </div>
+            <strong>🧪 Experiment 1 (Blue):</strong> <code>min-width + width: auto</code> - Set minimums, let browser expand proportionally<br>
+            <strong>🧪 Experiment 2 (Green):</strong> <code>CSS Grid + min-content</code> - Modern layout with content awareness<br>
+            <strong>🧪 Experiment 3 (Orange):</strong> <code>Fixed percentages</code> - Traditional table-layout: fixed approach<br>
+            <strong>🧪 Experiment 4 (Purple):</strong> <code>Stealth Mode</code> - Hide dropdown complexity from layout engine
+        </div>
+            
+                    <!-- Sub-Nuclear Test Controls -->
+        <div class="mb-3">
+            <label for="test-mode-select" class="form-label">Test Approach:</label>
+            <select id="test-mode-select" class="form-select form-select-sm mb-2" style="width: auto; display: inline-block;">
+                <option value="percentages">Fixed Percentages (Orange Border)</option>
+                <option value="min-width">Min-Width + Auto (Blue Border)</option>
+                <option value="css-grid">CSS Grid + min-content (Green Border)</option>
+                <option value="stealth-mode">Stealth Mode - Hide Complexity (Purple Border)</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <button onclick="applySubNuclearCSS()" class="btn btn-warning btn-sm me-2">
+                🚀 Apply Selected Test
+            </button>
+            <button onclick="removeSubNuclearCSS()" class="btn btn-secondary btn-sm me-2">
+                🔄 Remove Fix
+            </button>
+            <button onclick="testWidthMeasurement()" class="btn btn-info btn-sm">
+                📏 Measure Results
+            </button>
+        </div>
             
             <div id="sub-nuclear-results" class="dom-inspector" style="min-height: 100px;">
                 Click "Apply Sub-Nuclear Fix" to test the approach...
@@ -443,38 +462,139 @@
             // Remove any existing sub-nuclear styles
             removeSubNuclearCSS();
             
-            // Create the sub-nuclear CSS with reasonable column widths
-            const subNuclearCSS = `
-                /* Sub-Nuclear Test: table-layout fixed with REASONABLE widths */
-                .data-table {
-                    table-layout: fixed !important;
-                    width: 100% !important;
-                }
-                
-                /* Safe column width constraints by position - preserve content visibility */
-                .data-table td:nth-child(1) { width: 3% !important; }   /* Empty spacer */
-                .data-table td:nth-child(2) { width: 4% !important; }   /* ID column */
-                .data-table td:nth-child(3) { width: 20% !important; }  /* Description - needs space */
-                .data-table td:nth-child(4) { width: 15% !important; }  /* Value - dropdowns need space */
-                .data-table td:nth-child(5) { width: 3% !important; }   /* Empty - minimal but not invisible */
-                .data-table td:nth-child(6) { width: 3% !important; }   /* Empty */
-                .data-table td:nth-child(7) { width: 3% !important; }   /* Empty */
-                .data-table td:nth-child(8) { width: 8% !important; }   /* Headers */
-                .data-table td:nth-child(9) { width: 8% !important; }   /* Existing */
-                .data-table td:nth-child(10) { width: 8% !important; }  /* New */
-                .data-table td:nth-child(11) { width: 8% !important; }  /* Total */
-                .data-table td:nth-child(12) { width: 6% !important; }  /* Ref */
-                .data-table td:nth-child(13) { width: 3% !important; }  /* Empty */
-                .data-table td:nth-child(14) { width: 3% !important; }  /* Empty */
-                .data-table td:nth-child(15) { width: 15% !important; } /* Notes - needs expansion space */
-                
-                /* Highlight that sub-nuclear is active */
-                .data-table {
-                    border: 3px solid orange !important;
-                }
-                
-                /* NOTE: This targets columns by position since we removed .col-* classes */
-            `;
+            // Get current test mode
+            const testMode = document.getElementById('test-mode-select')?.value || 'percentages';
+            
+            let subNuclearCSS = '';
+            
+            if (testMode === 'min-width') {
+                subNuclearCSS = `
+                    /* EXPERIMENT 1: min-width + table-layout fixed */
+                    .data-table {
+                        table-layout: fixed !important;
+                        width: 100% !important;
+                    }
+                    
+                    /* Let browser expand from minimums proportionally */
+                    .data-table td:nth-child(1) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(2) { min-width: 30px !important; width: auto; }   /* ID */
+                    .data-table td:nth-child(3) { min-width: 120px !important; width: auto; }  /* Description */
+                    .data-table td:nth-child(4) { min-width: 100px !important; width: auto; }  /* Value */
+                    .data-table td:nth-child(5) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(6) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(7) { min-width: 20px !important; width: auto; }   /* Empty */
+                    .data-table td:nth-child(8) { min-width: 60px !important; width: auto; }   /* Headers */
+                    .data-table td:nth-child(9) { min-width: 60px !important; width: auto; }   /* Existing */
+                    .data-table td:nth-child(10) { min-width: 60px !important; width: auto; }  /* New */
+                    .data-table td:nth-child(11) { min-width: 60px !important; width: auto; }  /* Total */
+                    .data-table td:nth-child(12) { min-width: 50px !important; width: auto; }  /* Ref */
+                    .data-table td:nth-child(13) { min-width: 20px !important; width: auto; }  /* Empty */
+                    .data-table td:nth-child(14) { min-width: 20px !important; width: auto; }  /* Empty */
+                    .data-table td:nth-child(15) { min-width: 100px !important; width: auto; } /* Notes */
+                    
+                    .data-table { border: 3px solid blue !important; }
+                `;
+            } else if (testMode === 'css-grid') {
+                subNuclearCSS = `
+                    /* EXPERIMENT 2: CSS Grid with min-content */
+                    .data-table {
+                        display: grid !important;
+                        grid-template-columns: 
+                            min-content      /* Empty */
+                            min-content      /* ID */
+                            minmax(120px, 2fr)  /* Description - expandable */
+                            minmax(100px, 1fr)  /* Value */
+                            min-content      /* Empty */
+                            min-content      /* Empty */
+                            min-content      /* Empty */
+                            minmax(60px, 1fr)   /* Headers */
+                            minmax(60px, 1fr)   /* Existing */
+                            minmax(60px, 1fr)   /* New */
+                            minmax(60px, 1fr)   /* Total */
+                            min-content      /* Ref */
+                            min-content      /* Empty */
+                            min-content      /* Empty */
+                            minmax(100px, 2fr); /* Notes - expandable */
+                        width: 100% !important;
+                        border-collapse: collapse !important;
+                    }
+                    
+                    .data-table tr {
+                        display: contents !important;
+                    }
+                    
+                    .data-table td {
+                        border: 1px solid #ccc !important;
+                        padding: 4px 8px !important;
+                    }
+                    
+                                         .data-table { border: 3px solid green !important; }
+                 `;
+             } else if (testMode === 'stealth-mode') {
+                 subNuclearCSS = `
+                     /* EXPERIMENT 4: Stealth Mode - "These are not the droids you're looking for" */
+                     .data-table {
+                         table-layout: auto !important; /* Let browser calculate naturally */
+                         width: 100% !important;
+                     }
+                     
+                     /* Hide form complexity from layout engine */
+                     .data-table td {
+                         contain: layout style !important; /* Don't look inside for layout decisions */
+                         position: relative !important;
+                     }
+                     
+                     /* Alternative: Isolate complex elements from layout flow */
+                     .data-table select,
+                     .data-table input {
+                         position: absolute !important;
+                         top: 0;
+                         left: 0;
+                         width: 100% !important;
+                         height: 100% !important;
+                         z-index: 10 !important;
+                         /* User sees and interacts with these */
+                     }
+                     
+                     /* Provide simple text content for layout calculation */
+                     .data-table td:has(select)::before,
+                     .data-table td:has(input)::before {
+                         content: "Text" !important;
+                         visibility: hidden !important; /* Layout sees this, user doesn't */
+                         position: static !important;
+                         z-index: 1 !important;
+                     }
+                     
+                     .data-table { border: 3px solid purple !important; }
+                 `;
+             } else {
+                // Default percentage mode
+                subNuclearCSS = `
+                    /* EXPERIMENT 3: Fixed percentages (original approach) */
+                    .data-table {
+                        table-layout: fixed !important;
+                        width: 100% !important;
+                    }
+                    
+                    .data-table td:nth-child(1) { width: 3% !important; }   /* Empty spacer */
+                    .data-table td:nth-child(2) { width: 4% !important; }   /* ID column */
+                    .data-table td:nth-child(3) { width: 20% !important; }  /* Description - needs space */
+                    .data-table td:nth-child(4) { width: 15% !important; }  /* Value - dropdowns need space */
+                    .data-table td:nth-child(5) { width: 3% !important; }   /* Empty - minimal but not invisible */
+                    .data-table td:nth-child(6) { width: 3% !important; }   /* Empty */
+                    .data-table td:nth-child(7) { width: 3% !important; }   /* Empty */
+                    .data-table td:nth-child(8) { width: 8% !important; }   /* Headers */
+                    .data-table td:nth-child(9) { width: 8% !important; }   /* Existing */
+                    .data-table td:nth-child(10) { width: 8% !important; }  /* New */
+                    .data-table td:nth-child(11) { width: 8% !important; }  /* Total */
+                    .data-table td:nth-child(12) { width: 6% !important; }  /* Ref */
+                    .data-table td:nth-child(13) { width: 3% !important; }  /* Empty */
+                    .data-table td:nth-child(14) { width: 3% !important; }  /* Empty */
+                    .data-table td:nth-child(15) { width: 15% !important; } /* Notes - needs expansion space */
+                    
+                    .data-table { border: 3px solid orange !important; }
+                `;
+            }
             
             // Create and inject the style element
             subNuclearStyleElement = document.createElement('style');
@@ -482,12 +602,44 @@
             subNuclearStyleElement.id = 'sub-nuclear-test-styles';
             document.head.appendChild(subNuclearStyleElement);
             
-            // Update results
+            // Update results with mode-specific messaging
+            let modeDescription = '';
+            let borderColor = '';
+            
+            if (testMode === 'min-width') {
+                modeDescription = `
+                    <strong>🧪 EXPERIMENT 1: Min-Width + Auto</strong><br>
+                    <code>min-width</code> sets content minimums, <code>width: auto</code> allows proportional growth<br>
+                    <em>This attempts to preserve content while allowing browser to expand proportionally</em>
+                `;
+                borderColor = 'blue';
+            } else if (testMode === 'css-grid') {
+                modeDescription = `
+                    <strong>🧪 EXPERIMENT 2: CSS Grid + min-content</strong><br>
+                    <code>minmax(min, fr)</code> respects content minimums while using fractional units for expansion<br>
+                    <em>Modern layout that should understand content requirements better than tables</em>
+                `;
+                borderColor = 'green';
+                         } else if (testMode === 'stealth-mode') {
+                 modeDescription = `
+                     <strong>🧪 EXPERIMENT 4: Stealth Mode</strong><br>
+                     <code>contain: layout</code> + absolute positioning hides form complexity from layout engine<br>
+                     <em>"These are not the droids you're looking for" - browser treats dropdowns as simple text</em>
+                 `;
+                 borderColor = 'purple';
+             } else {
+                 modeDescription = `
+                     <strong>🧪 EXPERIMENT 3: Fixed Percentages</strong><br>
+                     <code>table-layout: fixed</code> with reasonable column percentages<br>
+                     <em>Traditional approach - may clip content if percentages are too small</em>
+                 `;
+                 borderColor = 'orange';
+             }
+            
             document.getElementById('sub-nuclear-results').innerHTML = `
-                <strong>🚀 Sub-Nuclear CSS Applied!</strong><br>
-                <code>table-layout: fixed</code> with reasonable column percentages<br>
-                Orange border indicates sub-nuclear mode is active<br>
-                <em>Tables should now have controlled proportional expansion...</em>
+                ${modeDescription}<br>
+                ${borderColor.charAt(0).toUpperCase() + borderColor.slice(1)} border indicates test mode is active<br>
+                <strong>Resize browser window to test proportional expansion behavior</strong>
             `;
             
             console.log('✅ Sub-Nuclear CSS applied successfully');
