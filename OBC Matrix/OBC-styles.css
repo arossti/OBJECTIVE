@@ -1073,6 +1073,17 @@ input[type=number].form-control {
   background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
 }
 
+/* Prevent text wrapping in specific subheader columns */
+.data-table td.col-c.section-subheader {
+  min-width: 220px; /* Ensure longer text like "MAJOR OCCUPANCY CLASSIFICATION" doesn't wrap */
+  width: 220px;
+}
+
+.data-table td.col-l.section-subheader {
+  min-width: 140px; /* Ensure "[A] 1.4.1.2. & 3.2.1.1." doesn't wrap */
+  width: 140px;
+}
+
 /* Section 02 specific overrides no longer needed - universal rule handles alignment */
 
 /* Make the dropdown styling more specific */

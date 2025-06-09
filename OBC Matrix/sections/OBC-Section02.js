@@ -545,9 +545,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       ],
     };
 
-    // Add cells B through O based on the row definition (matching Excel structure)
+    // Add cells C through O based on the row definition (matching Excel structure)
+    // Skip "b" since Column B is auto-populated by FieldManager
     const columns = [
-      "b",
       "c",
       "d",
       "e",

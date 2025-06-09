@@ -37,7 +37,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       label: "Building Areas Header",
       cells: {
         b: { label: "3.04" },
-        c: { label: "C-BUILDING AREA (m²)", classes: ["section-subheader"] },
+        c: { label: "BUILDING AREA (m²)", classes: ["section-subheader"] },
         d: { content: "BUILDING AREA (m²)", classes: ["section-subheader"] },
         e: { content: "e", classes: ["section-subheader"] },
         f: { content: "f", classes: ["section-subheader"] },
@@ -269,7 +269,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       label: "GROSS AREA (m²)",
       cells: {
         b: { label: "3.05" },
-        c: { content: "C", classes: ["section-subheader"] },
+        c: { content: "GROSS AREA (m²)", classes: ["section-subheader"] },
         d: { content: "GROSS AREA (m²)", classes: ["section-subheader"] },
         e: { content: "e", classes: ["section-subheader"] },
         f: { content: "f", classes: ["section-subheader"] },
@@ -750,14 +750,40 @@ window.TEUI.SectionModules.sect03 = (function () {
       },
     },
 
+    // Row 3.35h: Building Height Section Header (visual separator)
+    "3.35h": {
+      id: "3.35h",
+      rowId: "3.35h",
+      label: "BUILDING HEIGHT & HIGH BUILDING",
+      cells: {
+        b: { label: "3.07" },
+        c: { label: "BUILDING HEIGHT", classes: ["section-subheader"] },
+        d: { content: "", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "[A] 1.4.1.2. & 3.2.1.1.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+        o: {
+          content: "Notes",
+          classes: ["section-subheader", "notes-column"],
+        },
+      },
+    },
+
     // Row 3.36: Building Height
     "3.36": {
       id: "3.36",
       rowId: "3.36",
-      label: "BUILDING HEIGHT",
+      label: "",
       cells: {
         b: { label: "3.07" },
-        c: { label: "BUILDING HEIGHT" },
+        c: { label: "" },
         d: {
           fieldId: "d_36",
           type: "num-editable",
@@ -778,7 +804,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           classes: ["user-input"],
         },
         k: { content: "(m) ABOVE GRADE" },
-        l: { content: "[A] 1.4.1.2. & 3.2.1.1." },
+        l: { content: "" },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -945,9 +971,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       ],
     };
 
-    // Add cells B through O based on the row definition (matching Excel structure)
+    // Add cells C through O based on the row definition (matching Excel structure)
+    // Skip "b" since Column B is auto-populated by FieldManager
     const columns = [
-      "b",
       "c",
       "d",
       "e",
