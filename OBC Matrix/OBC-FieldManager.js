@@ -433,26 +433,7 @@ TEUI.FieldManager = (function () {
     if (!tableElement) {
       tableElement = document.createElement("table");
       tableElement.className = "data-table";
-      tableElement.innerHTML = `
-                <colgroup>
-                    <col class="col-a">
-                    <col class="col-b">
-                    <col class="col-c">
-                    <col class="col-d">
-                    <col class="col-e">
-                    <col class="col-f">
-                    <col class="col-g">
-                    <col class="col-h">
-                    <col class="col-i">
-                    <col class="col-j">
-                    <col class="col-k">
-                    <col class="col-l">
-                    <col class="col-m">
-                    <col class="col-n">
-                    <col class="col-o">
-                </colgroup>
-                <tbody></tbody>
-            `;
+      tableElement.innerHTML = `<tbody></tbody>`;
 
       containerElement.appendChild(tableElement);
     }
@@ -490,20 +471,14 @@ TEUI.FieldManager = (function () {
 
           const cellElement = document.createElement("td");
 
-          // Apply column class
-          const colLetter = String.fromCharCode(97 + index); // a, b, c, etc.
-          cellElement.className = `col-${colLetter}`;
-
           // Add specific classes
           if (index === 0) {
             // Empty first column
           } else if (index === 1) {
             // ID column
-            cellElement.classList.add("id-cell");
             cellElement.textContent = rowDef.id;
           } else if (index === 2) {
             // Description column
-            cellElement.classList.add("description-cell");
             cellElement.textContent = cellDef.label || "";
           } else {
             // Value columns with enhanced dropdown handling
@@ -525,7 +500,6 @@ TEUI.FieldManager = (function () {
                 }
 
                 cellElement.appendChild(selectElement);
-                cellElement.classList.add("dropdown-cell");
               } else if (
                 cellDef.type === "year_slider" ||
                 cellDef.type === "percentage" ||
@@ -608,7 +582,6 @@ TEUI.FieldManager = (function () {
                 });
 
                 cellElement.appendChild(inputElement);
-                cellElement.classList.add("number-input-cell");
               }
 
               // Handle other data attributes
