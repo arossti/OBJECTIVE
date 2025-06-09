@@ -198,16 +198,14 @@ body {
   display: none;
 }
 
-/* =============== Data Tables - PURE BROWSER DEFAULT EXPERIMENT =============== */
+/* =============== Data Tables - PURE NATURAL BROWSER BEHAVIOR =============== */
 
-/* Absolute minimal table styling - let browser decide everything */
+/* Minimal table styling - let browser's natural algorithm work perfectly */
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--base-font-size);
-  /* NO table-layout specified - browser decides */
-  /* NO column width rules - browser decides */
-  /* NO min/max width constraints - browser decides */
+  /* NO column constraints - pure browser content-based sizing */
 }
 
 /* Table cells - clean and simple */

@@ -432,22 +432,6 @@ TEUI.FieldManager = (function () {
       tableElement = document.createElement("table");
       tableElement.className = "data-table";
       tableElement.innerHTML = `
-                <colgroup>
-                    <col class="col-a">
-                    <col class="col-b">
-                    <col class="col-c">
-                    <col class="col-d">
-                    <col class="col-e">
-                    <col class="col-f">
-                    <col class="col-g">
-                    <col class="col-h">
-                    <col class="col-i">
-                    <col class="col-j">
-                    <col class="col-k">
-                    <col class="col-l">
-                    <col class="col-m">
-                    <col class="col-n">
-                </colgroup>
                 <tbody></tbody>
             `;
 
@@ -487,9 +471,7 @@ TEUI.FieldManager = (function () {
 
           const cellElement = document.createElement("td");
 
-          // Apply column class
-          const colLetter = String.fromCharCode(97 + index); // a, b, c, etc.
-          cellElement.className = `col-${colLetter}`;
+          // No automatic column classes - let browser handle natural sizing
 
           // Add specific classes
           if (index === 0) {
