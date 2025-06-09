@@ -471,6 +471,10 @@ TEUI.FieldManager = (function () {
 
           const cellElement = document.createElement("td");
 
+          // Apply column class for debugging
+          const colLetter = String.fromCharCode(97 + index); // a, b, c, etc.
+          cellElement.classList.add(`col-${colLetter}`);
+
           // Add specific classes
           if (index === 0) {
             // Empty first column
