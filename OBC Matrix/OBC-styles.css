@@ -641,6 +641,60 @@ option,
 
 /* =============== END MINIMAL INPUT FIELD STYLING =============== */
 
+/* =============== SECTION 04 SPECIFIC LAYOUT OPTIMIZATION =============== */
+
+/* Section 04: Hide completely empty columns to improve density */
+#firefightingSystems .data-table td:nth-child(6),  /* Column F - empty */
+#firefightingSystems .data-table td:nth-child(7),  /* Column G - empty */
+#firefightingSystems .data-table td:nth-child(10), /* Column J - empty */
+#firefightingSystems .data-table td:nth-child(13), /* Column M - empty */
+#firefightingSystems .data-table td:nth-child(14)  /* Column N - empty */
+{
+    display: none;
+}
+
+/* Section 04: Flex/Auto responsive layout for remaining columns */
+#firefightingSystems .data-table {
+    table-layout: auto; /* Allow flexible column sizing */
+    width: 100%;
+}
+
+/* Section 04: Intelligent column sizing for content-bearing columns */
+#firefightingSystems .data-table td:nth-child(1) { width: 4%; }   /* Row numbers */
+#firefightingSystems .data-table td:nth-child(2) { width: 6%; }   /* Section numbers */
+#firefightingSystems .data-table td:nth-child(3) { width: 25%; }  /* Labels */
+#firefightingSystems .data-table td:nth-child(4) { width: 15%; }  /* Dropdowns */
+#firefightingSystems .data-table td:nth-child(5) { width: 30%; }  /* Descriptions */
+#firefightingSystems .data-table td:nth-child(8) { width: 12%; }  /* Content labels */
+#firefightingSystems .data-table td:nth-child(9) { width: 10%; }  /* Additional dropdowns */
+#firefightingSystems .data-table td:nth-child(11) { /* Column K - flex */ }
+#firefightingSystems .data-table td:nth-child(12) { width: 10%; } /* OBC references */
+#firefightingSystems .data-table td:nth-child(15) { width: 8%; }  /* Notes */
+
+/* Section 04: Ensure descriptions wrap properly instead of expanding table width */
+#firefightingSystems .data-table td:nth-child(5) {
+    white-space: normal !important; /* Allow text wrapping in description column */
+    word-wrap: break-word;
+    hyphens: auto;
+    max-width: 300px; /* Prevent excessive expansion */
+}
+
+/* Section 04: Compact dropdown sizing */
+#firefightingSystems .data-table select.form-select {
+    font-size: 0.85rem; /* Slightly smaller font for dropdowns */
+    padding: 0.25rem 1.5rem 0.25rem 0.5rem !important; /* Tighter padding */
+}
+
+/* Section 04: Prevent OBC reference column from expanding */
+#firefightingSystems .data-table td:nth-child(12) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    font-size: 0.8rem; /* Smaller font for references */
+    max-width: 120px;
+}
+
+/* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
+
 /* =============== Print Styling =============== */
 
 @media print {

@@ -118,6 +118,33 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   // Define rows with integrated field definitions
   const sectionRows = {
+
+        // HEADER ROW - 3.04 Building Area
+        header: {
+          id: "4h",
+          rowId: "4h",
+          label: "Fire Stuff",
+          cells: {
+            b: { label: "4h" },
+            c: { label: "FIRE PROTECTION", classes: ["section-subheader"] },
+            d: { content: "BUILDING CLASSIFICATION", classes: ["section-subheader"] },
+            e: { content: "E", classes: ["section-subheader"] },
+            f: { content: "F", classes: ["section-subheader"] },
+            g: { content: "G", classes: ["section-subheader"] },
+            h: { content: "H", classes: ["section-subheader"] },
+            i: { content: "I", classes: ["section-subheader"] },
+            j: { content: "J", classes: ["section-subheader"] },
+            k: { content: "K", classes: ["section-subheader"] },
+            l: { content: "OBC 3.2.2.10. & 3.2.5.", classes: ["section-subheader"] },
+            m: { content: "M", classes: ["section-subheader"] },
+            n: { content: "N", classes: ["section-subheader"] },
+            o: {
+              content: "Notes",
+              classes: ["section-subheader", "notes-column"],
+            },
+          },
+        },
+
     // Row 39: 3.09 Number of Streets/Firefighter Access
     "4.39": {
       id: "4.39",
@@ -283,6 +310,32 @@ window.TEUI.SectionModules.sect04 = (function () {
           readonly: true
         }
       }
+    },
+
+    // HEADER ROW - 3.04 Building Area
+    "4.44h": {
+      id: "4.44h",
+      rowId: "4.44h",
+      label: "Fire Stuff",
+      cells: {
+        b: { label: "4h" },
+        c: { label: "SPRINKLER", classes: ["section-subheader"] },
+        d: { content: "SPRINKLER STUFF", classes: ["section-subheader"] },
+        e: { content: "E", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "G", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "I", classes: ["section-subheader"] },
+        j: { content: "J", classes: ["section-subheader"] },
+        k: { content: "K", classes: ["section-subheader"] },
+        l: { content: "OBC 3.2.1.5. & 3.2.2.17., 3.2.2.18., 3.2.4.8. to 3.2.4.10. and 3.2.5.13.", classes: ["section-subheader"] },
+        m: { content: "M", classes: ["section-subheader"] },
+        n: { content: "N", classes: ["section-subheader"] },
+        o: {
+          content: "Notes",
+          classes: ["section-subheader", "notes-column"],
+        },
+      },
     },
 
     // Row 45: 3.11 Sprinkler System
@@ -471,7 +524,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       rowId: "4.51",
       label: "Construction Type Restrictions",
       cells: {
-        d: { label: "RESTRICTIONS" },
+        d: { content: "RESTRICTIONS" },
         e: { 
           fieldId: "e_51", 
           type: "dropdown", 
@@ -495,7 +548,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       rowId: "4.52",
       label: "Actual Construction",
       cells: {
-        d: { label: "ACTUAL" },
+        d: { content: "ACTUAL" },
         e: { 
           fieldId: "e_52", 
           type: "dropdown", 
@@ -512,7 +565,7 @@ window.TEUI.SectionModules.sect04 = (function () {
             { value: "EMT & Noncomb. in Combination", name: "EMT & Noncomb. in Combination" }
           ]
         },
-        h: { label: "HEAVY TIMBER CONSTRUCTION" },
+        h: { content: "HEAVY TIMBER CONSTRUCTION" },
         j: { 
           fieldId: "j_52", 
           type: "dropdown", 
