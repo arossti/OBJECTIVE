@@ -198,63 +198,16 @@ body {
   display: none;
 }
 
-/* =============== Data Tables - Simplified Accordion Layout =============== */
+/* =============== Data Tables - PURE BROWSER DEFAULT EXPERIMENT =============== */
 
+/* Absolute minimal table styling - let browser decide everything */
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--base-font-size);
-  table-layout: auto; /* Natural column sizing based on content */
-  max-width: 100%;
-}
-
-/* SMART ACCORDION SYSTEM: Content-first with proportional expansion */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--base-font-size);
-  table-layout: auto; /* Natural sizing based on content */
-  max-width: 100%;
-}
-
-/* WORKING ACCORDION: Content-first approach that was working */
-.data-table col {
-  width: auto !important;
-  min-width: unset !important;
-  max-width: none !important;
-}
-
-/* ELIMINATE MIDDLE GAPS: Collapse empty columns to prevent "goalposts" */
-.data-table col:nth-child(5),   /* E: Empty - collapse */
-.data-table col:nth-child(6),   /* F: Empty - collapse */
-.data-table col:nth-child(7),   /* G: Empty - collapse */
-.data-table col:nth-child(13),  /* M: Empty - collapse */
-.data-table col:nth-child(14) { /* N: Empty - collapse */
-  width: 2px !important;
-  min-width: 2px !important;
-  max-width: 2px !important;
-}
-
-/* EXPANSION ZONE: Notes column becomes the expansion area */
-.data-table col:nth-child(15) { /* O: Notes - this absorbs extra space */
-  width: auto !important;
-  min-width: 120px !important; /* Minimum for functionality */
-}
-
-/* Keep content columns left-justified and compact */
-.data-table td[data-field-id*="d_"],
-.data-table td:has(.user-input),
-.data-table td:has(.calculated-value) {
-  padding: 4px 8px; /* Compact but readable */
-  white-space: nowrap; /* Prevent unnecessary wrapping */
-}
-
-/* Make empty cells truly invisible */
-.data-table td:empty {
-  width: 2px;
-  padding: 0;
-  border-left: none;
-  border-right: none;
+  /* NO table-layout specified - browser decides */
+  /* NO column width rules - browser decides */
+  /* NO min/max width constraints - browser decides */
 }
 
 /* Table cells - clean and simple */
