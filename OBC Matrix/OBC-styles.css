@@ -447,7 +447,6 @@ select.form-select,
 select.form-control,
 select,
 option,
-.data-table td.dropdown-cell, /* Target the cell itself */
 .data-table td select.form-select {
   /* Font consistency */
   font-family:
@@ -491,8 +490,7 @@ option,
 }
 
 /* Natural dropdown cell sizing - no min-width constraints */
-[data-dropdown-id],
-.dropdown-cell {
+[data-dropdown-id] {
   padding: 2px 8px !important; /* Adjust cell padding to accommodate select borders */
 }
 
@@ -692,15 +690,9 @@ option,
   }
 
   /* Allow description text to wrap only at medium size if absolutely necessary */
-  .description-cell,
   .data-table td:nth-child(6),
   .data-table td:nth-child(7) {
     white-space: normal;
-  }
-
-  /* Description column also uses natural accordion sizing */
-  .data-table col.col-c {
-    width: auto !important;
   }
 }
 
@@ -732,12 +724,12 @@ option,
     white-space: nowrap;
   }
 
-  /* Ensure ID and description columns stay visible */
-  .data-table col.col-b {
+  /* Ensure ID and description columns stay visible - use nth-child instead */
+  .data-table td:nth-child(2) {
     min-width: 60px;
   }
 
-  .data-table col.col-c {
+  .data-table td:nth-child(3) {
     min-width: 160px;
   }
 
@@ -1120,12 +1112,7 @@ table.data-table select.form-select:hover {
   border-color: #86b7fe !important;
 }
 
-/* Ensure the cell itself doesn't interfere */
-.data-table td.dropdown-cell {
-  padding: 2px 8px !important;
-  background: transparent !important;
-  border: none !important;
-}
+/* Cell padding handled by universal rule above */
 
 /* =============== Text Alignment Utilities =============== */
 

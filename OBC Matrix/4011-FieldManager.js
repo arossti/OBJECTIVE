@@ -473,16 +473,14 @@ TEUI.FieldManager = (function () {
 
           // No automatic column classes - let browser handle natural sizing
 
-          // Add specific classes
+          // Add content without interfering classes
           if (index === 0) {
             // Empty first column
           } else if (index === 1) {
             // ID column
-            cellElement.classList.add("id-cell");
             cellElement.textContent = rowDef.id;
           } else if (index === 2) {
             // Description column
-            cellElement.classList.add("description-cell");
             cellElement.textContent = cellDef.label || "";
           } else {
             // Value columns with enhanced dropdown handling
@@ -504,7 +502,6 @@ TEUI.FieldManager = (function () {
                 }
 
                 cellElement.appendChild(selectElement);
-                cellElement.classList.add("dropdown-cell");
               } else if (
                 cellDef.type === "year_slider" ||
                 cellDef.type === "percentage" ||
@@ -587,7 +584,6 @@ TEUI.FieldManager = (function () {
                 });
 
                 cellElement.appendChild(inputElement);
-                cellElement.classList.add("number-input-cell");
               }
 
               // Handle other data attributes
