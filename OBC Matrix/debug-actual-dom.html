@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Structure Debug - Find the Goalpost Culprit</title>
+    <style>
+        .debug-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background-color: #f8f9ff;
+        }
+        .dom-inspector {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .width-measurement {
+            font-size: 10px;
+            color: red;
+            font-weight: bold;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .comparison-table td, .comparison-table th {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        .problematic {
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+        .good {
+            background-color: rgba(0, 255, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <h1>🔍 DOM Structure Debug - Find the Goalpost Culprit</h1>
+        <p class="lead">Let's see exactly what our app generates vs. the working pure HTML test</p>
+
+        <div class="debug-section">
+            <h2>📊 Width Comparison Analysis</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Pure HTML (Working)</th>
+                        <th>OBC App (Broken)</th>
+                        <th>Difference</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="width-comparison">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="debug-section">
+            <h2>🧪 Pure HTML Test (Working Baseline)</h2>
+            <table id="pure-test-table" class="data-table">
+                <thead>
+                    <tr>
+                        <td></td>
+                        <td>B</td>
+                        <td>DESCRIPTION</td>
+                        <td>VALUE</td>
+                        <td class="problematic">E <span class="width-measurement" id="pure-width-e"></span></td>
+                        <td>F</td>
+                        <td>G</td>
+                        <td>H</td>
+                        <td>EXISTING</td>
+                        <td>NEW</td>
+                        <td>TOTAL</td>
+                        <td>REF</td>
+                        <td>M</td>
+                        <td>N</td>
+                        <td>NOTES</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td>22</td>
+                        <td>Building area description here</td>
+                        <td>Some value</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>1,000.00</td>
+                        <td>100.00</td>
+                        <td>1,100.00</td>
+                        <td>3.2.1.1</td>
+                        <td></td>
+                        <td></td>
+                        <td>Notes here</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="pure-dom-structure" class="dom-inspector"></div>
+        </div>
+
+        <div class="debug-section">
+            <h2>🔧 OBC App Generated Structure (Broken)</h2>
+            <div id="obc-app-table-container">
+                <!-- This will be populated by loading the actual OBC Matrix structure -->
+            </div>
+            <div id="obc-dom-structure" class="dom-inspector"></div>
+        </div>
+
+        <div class="debug-section">
+            <h2>🎯 Structure Comparison</h2>
+            <div id="structure-diff" class="dom-inspector"></div>
+        </div>
+
+        <div class="debug-section">
+            <h2>🚨 Findings & Next Steps</h2>
+            <div id="findings">
+                <p>Run the analysis to see what's different between working and broken structures...</p>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button onclick="runFullAnalysis()" class="btn btn-primary btn-lg me-3">
+                🔍 Run Full Analysis
+            </button>
+            <button onclick="copyOBCAppStructure()" class="btn btn-secondary btn-lg">
+                📋 Copy OBC App Structure
+            </button>
+        </div>
+    </div>
+
+    <!-- Load OBC Matrix dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="OBC-StateManager.js"></script>
+    <script src="OBC-FieldManager.js"></script>
+    <script src="sections/OBC-Section03.js"></script>
+
+    <style>
+        /* Include the exact same CSS as our app */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+    </style>
+
+    <script>
+        function runFullAnalysis() {
+            console.log('🔍 Starting full DOM structure analysis...');
+            
+            // Step 1: Measure pure HTML test
+            const pureWidths = measureTableWidths('pure-test-table', 'pure');
+            
+            // Step 2: Generate OBC app structure
+            generateOBCAppStructure();
+            
+            // Wait for generation, then measure
+            setTimeout(() => {
+                const obcTable = document.querySelector('#obc-app-table-container .data-table');
+                if (obcTable) {
+                    obcTable.id = 'obc-app-table';
+                    const obcWidths = measureTableWidths('obc-app-table', 'obc');
+                    
+                    // Step 3: Compare structures
+                    compareStructures(pureWidths, obcWidths);
+                    
+                    // Step 4: Show DOM differences
+                    showDOMDifferences();
+                    
+                    console.log('✅ Analysis complete!');
+                } else {
+                    document.getElementById('findings').innerHTML = 
+                        '<p class="text-danger">❌ Failed to generate OBC app structure. Check console for errors.</p>';
+                }
+            }, 500);
+        }
+
+        function measureTableWidths(tableId, prefix) {
+            const table = document.getElementById(tableId);
+            if (!table) return null;
+            
+            const firstRow = table.querySelector('tr');
+            const cells = firstRow.querySelectorAll('td, th');
+            const widths = [];
+            
+            cells.forEach((cell, index) => {
+                const width = cell.offsetWidth;
+                widths.push({index, width, element: cell});
+                
+                // Update display if element exists
+                const widthSpan = document.getElementById(`${prefix}-width-e`);
+                if (widthSpan && index === 4) { // Column E
+                    widthSpan.textContent = `${width}px`;
+                }
+            });
+            
+            console.log(`${prefix} table widths:`, widths);
+            return widths;
+        }
+
+        function generateOBCAppStructure() {
+            console.log('🏗️ Generating OBC app structure...');
+            
+            try {
+                // Initialize the global TEUI namespace
+                window.TEUI = window.TEUI || {};
+                window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+                
+                // Make sure FieldManager is properly initialized
+                if (window.TEUI && window.TEUI.FieldManager) {
+                    console.log('🔧 Initializing FieldManager...');
+                    
+                    // Force initialization if needed
+                    if (window.TEUI.FieldManager.initializeSections) {
+                        window.TEUI.FieldManager.initializeSections();
+                    }
+                    
+                    // Create a container for the OBC app table
+                    const container = document.getElementById('obc-app-table-container');
+                    container.innerHTML = '<div data-render-section="buildingAreas"></div>';
+                    
+                    // Simulate what happens in the real app
+                    console.log('🎯 Rendering buildingAreas section...');
+                    const success = window.TEUI.FieldManager.renderSection('buildingAreas');
+                    
+                    if (success) {
+                        console.log('✅ OBC app structure generated successfully');
+                    } else {
+                        throw new Error('renderSection returned false');
+                    }
+                } else {
+                    throw new Error('TEUI.FieldManager not available');
+                }
+            } catch (error) {
+                console.error('❌ Error generating OBC app structure:', error);
+                console.error('Available TEUI modules:', Object.keys(window.TEUI?.SectionModules || {}));
+                document.getElementById('obc-app-table-container').innerHTML = 
+                    `<p class="text-danger">Error: ${error.message}<br>
+                     Available modules: ${Object.keys(window.TEUI?.SectionModules || {}).join(', ')}</p>`;
+            }
+        }
+
+        function compareStructures(pureWidths, obcWidths) {
+            if (!pureWidths || !obcWidths) return;
+            
+            const comparisonBody = document.getElementById('width-comparison');
+            comparisonBody.innerHTML = '';
+            
+            const maxLength = Math.max(pureWidths.length, obcWidths.length);
+            
+            for (let i = 0; i < maxLength; i++) {
+                const pureWidth = pureWidths[i]?.width || 0;
+                const obcWidth = obcWidths[i]?.width || 0;
+                const difference = obcWidth - pureWidth;
+                const percentDiff = pureWidth > 0 ? ((difference / pureWidth) * 100).toFixed(1) : 'N/A';
+                
+                const row = document.createElement('tr');
+                const isProblematic = Math.abs(difference) > 50; // Significant difference
+                row.className = isProblematic ? 'problematic' : 'good';
+                
+                row.innerHTML = `
+                    <td>Column ${i + 1}</td>
+                    <td>${pureWidth}px</td>
+                    <td>${obcWidth}px</td>
+                    <td>${difference > 0 ? '+' : ''}${difference}px (${percentDiff}%)</td>
+                    <td>${isProblematic ? '🚨 PROBLEMATIC' : '✅ Good'}</td>
+                `;
+                
+                comparisonBody.appendChild(row);
+            }
+        }
+
+        function showDOMDifferences() {
+            // Show actual DOM structure
+            const pureTable = document.getElementById('pure-test-table');
+            const obcTable = document.getElementById('obc-app-table');
+            
+            if (pureTable) {
+                document.getElementById('pure-dom-structure').textContent = 
+                    formatHTML(pureTable.outerHTML);
+            }
+            
+            if (obcTable) {
+                document.getElementById('obc-dom-structure').textContent = 
+                    formatHTML(obcTable.outerHTML);
+                
+                // Show differences
+                const findings = document.getElementById('findings');
+                findings.innerHTML = `
+                    <h4>🔍 Key Findings:</h4>
+                    <ul>
+                        <li><strong>Pure HTML rows:</strong> ${pureTable.querySelectorAll('tr').length}</li>
+                        <li><strong>OBC App rows:</strong> ${obcTable.querySelectorAll('tr').length}</li>
+                        <li><strong>Pure HTML cells (first row):</strong> ${pureTable.querySelector('tr').children.length}</li>
+                        <li><strong>OBC App cells (first row):</strong> ${obcTable.querySelector('tr').children.length}</li>
+                        <li><strong>OBC App classes:</strong> ${Array.from(obcTable.classList).join(', ') || 'None'}</li>
+                    </ul>
+                    <h4>🎯 Next Steps:</h4>
+                    <p>Compare the DOM structures above to identify what's causing the goalpost expansion.</p>
+                `;
+            } else {
+                document.getElementById('findings').innerHTML = 
+                    '<p class="text-danger">❌ Could not generate OBC app structure for comparison.</p>';
+            }
+        }
+
+        function formatHTML(html) {
+            // Simple HTML formatting for readability
+            return html
+                .replace(/></g, '>\n<')
+                .replace(/^\s*\n/gm, '')
+                .replace(/\n\s*\n/g, '\n');
+        }
+
+        function copyOBCAppStructure() {
+            const obcTable = document.getElementById('obc-app-table');
+            if (obcTable) {
+                navigator.clipboard.writeText(obcTable.outerHTML).then(() => {
+                    alert('OBC App structure copied to clipboard!');
+                });
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 DOM Debug page loaded. Click "Run Full Analysis" to start.');
+            
+            // Initialize TEUI namespace
+            window.TEUI = window.TEUI || {};
+            window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+            
+            // Wait a bit for all scripts to load, then check what's available
+            setTimeout(() => {
+                console.log('Available TEUI components:', {
+                    FieldManager: !!window.TEUI.FieldManager,
+                    StateManager: !!window.TEUI.StateManager,
+                    SectionModules: Object.keys(window.TEUI.SectionModules || {}),
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html> 
