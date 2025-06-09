@@ -2,7 +2,7 @@
 
 ## 🎯 Executive Summary - Current Status & Next Steps
 
-**CURRENT ACHIEVEMENT**: We have successfully completed Sections 01-03 of the OBC Matrix web application with breakthrough solutions to critical architecture challenges. **Key accomplishments include**: (1) **Universal CSS Alignment System** - eliminated 350+ lines of competing CSS rules and replaced with 2 clean universal rules that handle all text alignment semantically, (2) **Excel-Perfect DOM Structure** - resolved column misalignment issues using separation of concerns (DOM rendering vs Excel field mapping), (3) **"Span Spam" Solution DESIGNED** - identified root cause of the notorious "goalpost expansion" problem where middle columns expand to 400-600px instead of intended 2px, and designed a comprehensive template-based solution using `table-layout: fixed !important` with width templates for proportional expansion. **The solution concept is complete and ready for implementation but has not yet been applied - the visual effect has not been achieved yet.** **READY FOR HANDOFF**: The foundation is rock-solid with working patterns established. **Next agent should focus on**: (1) **IMPLEMENTING the template-based CSS solution** to achieve proportional expansion across all sections, (2) Replicating Section 03 patterns to rapidly complete Sections 4-14, (3) Using the mandatory global input handling (`window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`) and universal number formatting (`window.TEUI.formatNumber()`) to maintain consistency. **Critical files**: All section modules in `/sections/`, the universal alignment CSS rules, and the OBC-StateManager.js global handlers. **Architecture is battle-tested and ready for scale-up to remaining 11 sections.**
+**CURRENT ACHIEVEMENT**: We have successfully completed Sections 01-03 of the OBC Matrix web application with working core functionality and established development patterns. **Key accomplishments include**: (1) **Universal CSS Alignment System** - eliminated 350+ lines of competing CSS rules and replaced with 2 clean universal rules that handle all text alignment semantically, (2) **Excel-Perfect DOM Structure** - resolved column misalignment issues using separation of concerns (DOM rendering vs Excel field mapping), (3) **Universal Number Formatting** - automatic formatting of numeric inputs (1000 → 1,000.00) with graceful change detection and state management, (4) **Working Calculations Engine** - real-time area calculations with proper state management. **KNOWN ISSUE**: "Goalpost expansion" problem where middle columns (E, M) expand to 400-600px instead of minimal width remains unresolved despite exhaustive debugging attempts including ellipsis approaches, fixed table layout with percentages, and content-aware width systems. **READY FOR HANDOFF**: The foundation is rock-solid with working patterns established. **Next agent should focus on**: (1) Replicating Section 03 patterns to rapidly complete Sections 4-14, (2) Using the mandatory global input handling (`window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`) and universal number formatting (`window.TEUI.formatNumber()`) to maintain consistency, (3) **DEFERRING** layout expansion fixes until core form completion. **Critical files**: All section modules in `/sections/`, the universal alignment CSS rules, and the OBC-StateManager.js global handlers. **Architecture is battle-tested and ready for scale-up to remaining 11 sections.**
 
 ## Project Overview
 
@@ -642,105 +642,70 @@ const field = {
 - **✅ Calculation Engine**: Real-time math with proper number formatting
 - **✅ Excel Integration**: Row IDs and field coordinates aligned for import/export
 
-## Layout Expansion Attempts & Outstanding Issues
+## Layout Expansion Debugging & Known Issues
 
-### ✅ **BREAKTHROUGH: Clean Table Architecture Solution (IMPLEMENTED)**
+### ⚠️ **KNOWN ISSUE: "Goalpost Expansion" Problem (UNRESOLVED)**
 
-**Date Achieved**: December 19, 2024  
-**Problem Solved**: Goalpost expansion and CSS complexity  
-**Status**: 🎯 **PRODUCTION READY**
+**Issue Identified**: December 2024  
+**Problem**: Complex interaction between form fields and browser layout rendering engine  
+**Status**: 🚨 **DEFERRED FOR FUTURE RESOLUTION**
 
-#### **🔍 Root Cause Analysis Complete:**
+#### **🔍 Problem Analysis:**
 
-**The Real Problem**: Artificial complexity fighting natural browser behavior
-- **Colgroup generation** with 15 `<col class="col-x">` elements
-- **Automatic cell classes** (`.col-a`, `.col-b`, `id-cell`, `dropdown-cell`, etc.)
-- **CSS targeting complexity** trying to override browser table layout algorithm
-- **350+ lines of competing CSS rules** for alignment alone
+**The "Goalpost Expansion" Issue**: Middle columns (specifically E and M) consistently expand to 400-600px width instead of minimal space, creating visual "goalposts" that push important content apart and make the interface difficult to use.
 
-#### **💡 The Elegant Solution: Radical Simplification**
+**Root Cause Discovery**: This appears to be a complex interaction between:
+- **Browser table layout algorithms** calculating width requirements for complex form elements
+- **Dropdown/select elements** causing the browser to reserve excessive space
+- **Table-layout rendering engine** treating form controls differently than standard text
 
-**BEFORE - Artificial Structure:**
-```html
-<table class="data-table">
-  <colgroup>
-    <col class="col-a"><col class="col-b"><!-- 15 col elements -->
-  </colgroup>
-  <tbody>
-    <tr>
-      <td class="col-a"></td>
-      <td class="col-b id-cell">3.22</td>
-      <td class="col-c description-cell">Building Area</td>
-      <td class="col-d dropdown-cell"><select...></select></td>
-      <!-- Complex structure with artificial constraints -->
-    </tr>
-  </tbody>
-</table>
-```
+#### **🧪 Exhaustive Debugging Attempts (All Failed):**
 
-**NOW - Natural Structure:**
-```html
-<table class="data-table">
-  <tbody>
-    <tr>
-      <td></td>
-      <td>3.22</td>
-      <td>Building Area</td>
-      <td><select class="form-select">...</select></td>
-      <!-- Pure browser natural table algorithm -->
-    </tr>
-  </tbody>
-</table>
-```
+**Approach 1 - CSS Simplification:**
+- **Attempted**: Removed colgroup generation, artificial column classes, competing CSS rules
+- **Result**: Cleaned up CSS significantly but goalpost expansion persisted
+- **Status**: ✅ **Successful cleanup**, ❌ **No layout fix**
 
-#### **🏆 Results Achieved:**
+**Approach 2 - Ellipsis Content Truncation:**
+- **Attempted**: Applied `text-overflow: ellipsis` and removed `min-width` constraints from dropdowns
+- **Result**: Zero visual change, expansion behavior identical
+- **Status**: ❌ **No effect on layout**
 
-**1. Zero Goalpost Expansion:**
-- Column E: 394px (broken) → 30-40px (natural) ✅
-- Perfect content-driven sizing ✅
-- Natural proportional expansion when browser widens ✅
+**Approach 3 - Fixed Table Layout with Percentages:**
+- **Attempted**: `table-layout: fixed` with explicit column percentages
+- **Result**: Content became unreadable, text wrapping, dropdown functionality broken
+- **Status**: ❌ **Broke functionality**
 
-**2. Massive CSS Simplification:**
-- Removed colgroup generation from FieldManager ✅
-- Removed automatic column class assignment ✅
-- Removed cell type classes (`id-cell`, `dropdown-cell`, etc.) ✅
-- Clean CSS with **zero artificial constraints** ✅
+**Approach 4 - Content-Aware Width Calculation:**
+- **Attempted**: Percentages based on actual minimum text requirements  
+- **Result**: Only worked in Section 01 (no dropdowns), failed in sections with form elements
+- **Status**: ❌ **Inconsistent behavior**
 
-**3. Perfect Element Styling:**
-- Dropdowns style correctly with just `class="form-select"` ✅
-- Input fields work perfectly without container classes ✅
-- Content determines layout, not arbitrary rules ✅
+#### **🎯 Current Understanding:**
 
-#### **🎯 Critical Insight for 4011-4012 Refactor:**
+**The browser's table layout engine appears to treat form controls (dropdowns, inputs) fundamentally differently than text content**, causing it to reserve significantly more space than CSS rules can override. Standard CSS layout techniques that work perfectly with text content fail when complex form elements are involved.
 
-**The colgroup was unnecessary architectural debt** that:
-- ❌ Fought against natural browser table layout
-- ❌ Created CSS cascade complexity 
-- ❌ Prevented responsive column behavior
-- ❌ Added no actual styling value
+#### **💡 Potential Future Approaches:**
 
-**Modern CSS reality**: `<select class="form-select">` styles itself perfectly. The `<td>` doesn't need artificial column classes.
+**Theory: "Stealth Mode" Rendering**
+- Render form controls outside the table layout flow using absolute positioning
+- Present simple text content to the table layout engine for width calculations  
+- Layer interactive elements on top invisibly ("These are not the droids you're looking for")
+- This would require significant architectural changes to the FieldManager
 
-#### **📋 4011-4012 Refactor Recommendation:**
+**Alternative: Accept Current Behavior**
+- The application functions perfectly despite the visual appearance
+- Form completion, calculations, and data export all work correctly
+- Goalpost expansion is cosmetic, not functional
+- Focus development effort on completing remaining sections rather than layout perfectionism
 
-**PRIORITY: HIGH** - Apply this same radical simplification approach:
+#### **📋 Recommendation for Future Development:**
 
-```javascript
-// 4011 likely has similar artificial complexity
-// REMOVE: Colgroup generation
-// REMOVE: Automatic column classes  
-// REMOVE: Cell type classes
-// KEEP: Element-level styling (form-select, user-input, etc.)
-```
-
-**Expected Impact:**
-- **Thousands of lines** of CSS conflicts eliminated
-- **Natural table expansion** behavior restored
-- **Simplified maintenance** - no artificial mappings to track
-- **Better performance** - browser optimizes natural tables
-
-#### **✅ Production Status:**
-This clean architecture is now **production-ready** in OBC Matrix and should serve as the **template for 4011-4012 refactor** to eliminate similar artificial complexity.
+**PRIORITY: LOW** - Defer layout expansion fixes until after core form completion:
+- Complete Sections 4-14 using current working patterns
+- Achieve full OBC Matrix functionality first
+- Revisit layout issues in v2.0 with dedicated browser rendering research
+- Consider alternative approaches like CSS Grid or different DOM structures for form layout
 
 ### ⚠️ CSS Layout Expansion Issue (ATTEMPTED - Needs Alternative Solution)
 **User Request**: "Raisin Bread" proportional expansion where all columns grow proportionally as browser widens, not just the F/G/H region acting as expansion zone.
@@ -760,11 +725,11 @@ Final implementation:
 
 **Current Status**: Working anti-goalpost layout achieved through **clean architecture** rather than complex CSS fixes.
 
-### 🚨 **BREAKTHROUGH: "Span Spam" Solution - DESIGNED FOR IMPLEMENTATION** 
+### ❌ **ATTEMPTED: "Span Spam" Template-Based Solution (FAILED)** 
 
-**Date Designed**: December 19, 2024  
+**Date Attempted**: December 19, 2024  
 **Problem Name**: "Span Spam" (goalpost expansion behavior)  
-**Status**: 🔧 **SOLUTION DESIGNED - AWAITING IMPLEMENTATION**
+**Status**: ❌ **APPROACH FAILED - DEFERRED FOR FUTURE RESEARCH**
 
 #### **🔍 Root Cause Analysis:**
 
@@ -790,123 +755,34 @@ Final implementation:
 - Debugging showed `width: 463px` as computed width, not inline style
 - Multiple CSS specificity attempts failed completely
 
-#### **💡 The Template-Based Solution:**
+#### **💡 The Template-Based Approach (Attempted):**
 
-**Two-Step Elegant Fix:**
-```css
-/* STEP 1: Force table layout compliance */
-.data-table {
-  table-layout: fixed !important; /* FORCE browser to respect column proportions */
-}
+**Theoretical Solution:**
+Attempted to use `table-layout: fixed` with percentage-based column widths to force browser compliance, but this approach failed due to content readability issues and inconsistent behavior across sections.
 
-/* STEP 2: Universal alignment system */
-.data-table td {
-  text-align: left !important; /* Override ALL inherited alignment conflicts */
-}
+**Why It Failed:**
+- **Content became unreadable**: Text wrapping and ellipsis made form unusable
+- **Dropdown functionality broken**: Form elements didn't work properly within constrained widths  
+- **Inconsistent behavior**: Only worked in sections without complex form elements
+- **Browser layout engine resistance**: Even with `table-layout: fixed !important`, the browser's form element width calculations overrode CSS rules
 
-.data-table td[data-field-id*="area"],
-.data-table td[data-field-id*="dimension"], 
-.data-table td[data-field-id*="height"],
-.data-table td[data-field-id*="cost"],
-.data-table td[data-field-id*="value"],
-.data-table td.calculated-value,
-.data-table td.derived-value,
-.data-table td input[type="number"] {
-  text-align: right !important; /* Semantic numeric alignment */
-}
+**Key Learning:**
+The browser's table layout algorithm appears to have deep-seated behavior for form controls that cannot be easily overridden with standard CSS techniques. This suggests the issue requires a fundamentally different approach to DOM structure rather than CSS modifications.
 
-/* STEP 3: Section-specific width templates in first row */
-/* Each section defines its ideal column proportions via first row content */
-/* Example: Section 03 template row for Building Areas */
-.section-subheader.width-template .col-a::after { content: "++"; color: transparent; }
-.section-subheader.width-template .col-b::after { content: "+++"; color: transparent; }  
-.section-subheader.width-template .col-c::after { content: "BUILDING AREA (m²)+++++++++"; color: transparent; }
-.section-subheader.width-template .col-d::after { content: "DESCRIPTION+++++++++++++"; color: transparent; }
-/* Empty columns get minimal template */
-.section-subheader.width-template .col-e::after { content: "+"; color: transparent; }
-.section-subheader.width-template .col-f::after { content: "+"; color: transparent; }
-.section-subheader.width-template .col-g::after { content: "+"; color: transparent; }
-```
+#### **📋 Lessons Learned:**
 
-#### **🏆 Template-Based Solution Benefits:**
+**Key Insights from Debugging:**
+- Browser table layout algorithms have deep-seated behavior for form controls that CSS cannot easily override
+- `table-layout: fixed` breaks form usability when widths are too constrained
+- Ellipsis approaches work for text but not for complex form elements
+- The issue is cosmetic - the application functions perfectly despite visual appearance
+- Section 01 (without dropdowns) naturally displays correctly, confirming the issue is form element specific
 
-**BEFORE Fix:**
-- ❌ Section 02 Column E: 463px (goalpost)
-- ❌ Section 02 Column M: 108px (goalpost)
-- ❌ Section 03 Column E: 644px (goalpost)  
-- ❌ Section 03 Column M: 141px (goalpost)
-
-**EXPECTED AFTER Template-Based Fix Implementation:**
-- 🎯 Each section will control its own column proportions via first row template
-- 🎯 Content preserved and visible (no more invisible/clipped content)
-- 🎯 Goalpost expansion eliminated by browser respecting fixed proportions
-- 🎯 Section-specific optimization (S01, S02, S03 each perfectly tuned)
-
-**Expected Perfect Proportional "Raisin Bread" Expansion:**
-- Browser should respect proportional relationships established in template row
-- ALL columns should grow proportionally maintaining their designed relationships
-- **True universal expansion to be achieved WITHOUT destroying content!**
-
-#### **📋 Section 03 Implementation Template:**
-
-```html
-<!-- First row acts as width template for entire Section 03 table -->
-<tr class="section-subheader width-template">
-  <td class="col-a"><!-- Empty spacer --></td>
-  <td class="col-b">3.04</td>
-  <td class="col-c">BUILDING AREA (m²)+++++++++++</td>
-  <td class="col-d">DESCRIPTION++++++++++++++++++</td>
-  <td class="col-e">+</td> <!-- Minimal spacer -->
-  <td class="col-f">+</td> <!-- Minimal spacer -->
-  <td class="col-g">+</td> <!-- Minimal spacer -->
-  <td class="col-h">EXISTING+++++</td>
-  <td class="col-i">NEW+++++</td>
-  <td class="col-j">TOTAL+++++</td>
-  <td class="col-k">CALC++++</td>
-  <td class="col-l">[A] 1.4.1.2.+++</td>
-  <td class="col-m">+</td> <!-- Minimal spacer -->
-  <td class="col-n">+</td> <!-- Minimal spacer -->
-  <td class="col-o">Notes++++++++++++</td>
-</tr>
-```
-
-```css
-/* Hide template padding while preserving proportional width calculation */
-.width-template td {
-  color: rgba(51, 51, 51, 0.8); /* Keep real text visible */
-}
-.width-template td::after {
-  color: transparent !important; /* Hide padding characters */
-}
-```
-
-#### **🔧 Technical Impact:**
-
-1. **Universal Solution**: `table-layout: fixed` works across all browsers
-2. **Performance Gain**: Faster table rendering (fixed layout is more efficient)  
-3. **Content Preservation**: No more invisible/clipped content from brutal width forcing
-4. **Section-Specific Control**: Each table optimizes its own column proportions
-5. **Maintainable**: Template-based approach is easy to understand and modify
-6. **Architectural**: Solves fundamental browser vs. CSS conflict elegantly
-
-#### **🚨 Critical for 4011 Application:**
-
-This template-based solution directly applies to the 4011 TEUI application which likely has the same browser table layout conflicts. The template-based CSS approach should be applied to 4011-styles.css to eliminate goalpost behaviors across all 18 sections while preserving content visibility.
-
-#### **📋 Implementation Checklist:**
-
-- [x] Root cause identified (browser table layout algorithm)
-- [x] Template-based solution designed and documented
-- [x] Section 03 implementation template created
-- [x] Content preservation approach validated  
-- [x] Cross-browser compatibility confirmed (table-layout: fixed universal)
-- [x] Performance impact assessed (positive - faster rendering)
-- [ ] **🚨 HIGH PRIORITY: Apply template-based fix to production OBC Matrix**
-- [ ] **🚨 HIGH PRIORITY: Test proportional expansion behavior**
-- [ ] **Document solution in 4012 Refactoring Plan**
-- [ ] **Apply similar approach to 4011 TEUI application**
-
-**Priority**: 🚨 **CRITICAL - NEXT AGENT'S PRIMARY TASK** - This solves fundamental layout issues while preserving content visibility across the entire application suite. **The visual goalpost expansion problem still exists and needs this implementation to be resolved.**
+**Recommended Future Research:**
+- Alternative DOM structures (CSS Grid, Flexbox) for form layout
+- "Stealth mode" rendering with absolute positioning of form elements
+- Investigation into browser-specific table layout behaviors
+- Analysis of how other complex form applications handle similar issues
 
 ### 🏗️ DOM/Excel Namespace Architecture (CRITICAL UNDERSTANDING)
 
