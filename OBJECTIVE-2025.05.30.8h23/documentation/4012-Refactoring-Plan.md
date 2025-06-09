@@ -142,28 +142,31 @@ Before proceeding with any section work, these patterns are **NON-NEGOTIABLE** f
 - **MANDATORY** use of established CSS alignment system
 - **REQUIRED** consistent field ID patterns and validation
 
-#### **🚨 5. NUCLEAR TABLE LAYOUT FIX (CRITICAL - NEW DISCOVERY)**
+#### **🚨 5. TABLE LAYOUT CHALLENGES (RESEARCH ONGOING)**
 
-**Date Discovered**: December 19, 2024  
-**Problem Solved**: "Span Spam" / Goalpost Column Expansion  
-**Status**: MANDATORY for 4.012
+**Date Identified**: December 19, 2024  
+**Problem**: "Goalpost Column Expansion" - Browser Layout Engine Conflicts  
+**Status**: DEFERRED - Complex browser rendering issue requiring future research
 
-**🔍 Root Cause Identified:**
-Browser's `table-layout: auto` algorithm ignores CSS column width rules and calculates widths based on content requirements. This causes massive column expansion (463px-644px) that cannot be overridden with standard CSS, even with `!important` declarations.
+**🔍 Issue Analysis:**
+Browser's `table-layout: auto` algorithm calculates column widths based on form element content requirements, causing middle columns to expand beyond desired widths (400-600px). This appears to be a complex interaction between browser table layout algorithms and form controls that cannot be easily resolved with standard CSS approaches.
 
-**💣 Nuclear Solution (MANDATORY):**
+**⚠️ Research Findings:**
+Multiple approaches attempted in OBC Matrix project with limited success:
+- `table-layout: fixed` approaches broke form functionality and readability
+- CSS width constraints ignored by browser's form element rendering
+- Ellipsis and content truncation had no effect on layout calculation
+- Issue appears cosmetic rather than functional - forms work correctly despite expansion
+
+**🔧 Partial Mitigation Available:**
+While full layout control remains challenging, some improvements achievable:
 ```css
-/* STEP 1: Force browser table layout compliance */
-.data-table {
-  table-layout: fixed !important; /* CRITICAL: Overrides browser content-based calculations */
-}
-
-/* STEP 2: Universal alignment system (replaces 1000+ competing CSS rules) */
+/* Universal alignment system (proven effective) */
 .data-table td {
-  text-align: left !important; /* Single source of truth - overrides ALL inheritance */
+  text-align: left; /* Single source of truth alignment */
 }
 
-/* STEP 3: Semantic numeric alignment */
+/* Semantic numeric alignment */
 .data-table td[data-field-id*="area"],
 .data-table td[data-field-id*="rsi"],
 .data-table td[data-field-id*="uvalue"],
@@ -175,38 +178,16 @@ Browser's `table-layout: auto` algorithm ignores CSS column width rules and calc
 .data-table td.derived-value,
 .data-table td.reference-value,
 .data-table td input[type="number"] {
-  text-align: right !important; /* Semantic right-alignment for numeric content */
-}
-
-/* STEP 4: Column collapse system */
-.data-table col.col-e,
-.data-table col.col-f, 
-.data-table col.col-g,
-.data-table col.col-m,
-.data-table col.col-n {
-  width: 2px !important;
-  min-width: 2px !important;
-  max-width: 2px !important;
+  text-align: right; /* Semantic right-alignment for numeric content */
 }
 ```
 
-**🏆 Expected Results:**
-- ✅ **99% reduction in goalpost column widths** (463px → 2px)
-- ✅ **Perfect proportional expansion** ("raisin bread" behavior) 
-- ✅ **Elimination of 1000+ CSS alignment conflicts**
-- ✅ **Faster table rendering** (fixed layout is more efficient)
-- ✅ **Cross-browser consistency** (universal solution)
+**📋 4.012 Strategy:**
+- **Priority**: Focus on core functionality and proven improvements (input handling, number formatting)
+- **Layout**: Accept current browser behavior while monitoring for alternative approaches
+- **Future Research**: Consider CSS Grid, Flexbox, or alternative DOM structures in v2.0
 
-**🚨 CRITICAL IMPACT FOR 4.012:**
-4011's current codebase has **350+ competing alignment rules** and likely the same browser table layout conflicts across all 18 sections. This nuclear solution:
-- **Eliminates thousands of CSS conflicts**
-- **Solves fundamental browser vs. CSS battles**
-- **Provides single source of truth for table behavior**
-- **Enables consistent UX across all sections**
-
-**❌ REGRESSION PREVENTION**: OBC Matrix Section 03 was initially built without these patterns and required costly retrofitting. This CANNOT happen in 4.012.
-
-**🔧 Implementation Priority**: **HIGHEST** - Apply this nuclear fix FIRST before any section work to prevent architectural debt.
+**⚠️ Implementation Note**: Do NOT delay 4.012 development for layout perfectionism - proven patterns available for immediate implementation.
 
 **❌ REGRESSION RISK**: Without this system, accidental clicks cause permanent blue state changes, creating poor UX. This was the exact problem in OBC Matrix Section 03 before the fix.
 
@@ -282,11 +263,11 @@ function initializeSmartInputFeedback() {
 
 **Priority**: HIGH - This breakthrough represents the exact kind of user experience excellence that v4.012 aims to achieve across the entire application.
 
-### 3.5 Universal CSS Alignment System (BREAKTHROUGH SOLUTION)
+### 3.5 Universal CSS Alignment System (PROVEN IMPROVEMENT)
 
-**Status: PERFECTED in OBC Matrix - Critical for 4011 Cleanup**
+**Status: Successfully Implemented in OBC Matrix - Applicable to 4011**
 
-The OBC Matrix project solved a massive CSS alignment conflict problem that will be exponentially worse in 4011's much larger codebase. The 4011 likely has thousands of competing text alignment rules causing layout conflicts.
+The OBC Matrix project successfully streamlined CSS alignment rules, reducing conflicts and complexity. This approach could provide similar benefits for 4011's larger codebase by consolidating competing text alignment rules.
 
 #### 🚨 **The Problem We Solved:**
 - Multiple competing alignment rules with `!important` declarations fighting each other
@@ -367,11 +348,11 @@ Replace ALL alignment complexity with just **2 clean rules**:
 ```
 
 #### 🎯 **Expected Impact for 4011:**
-- **Estimated Reduction**: 1000+ lines of CSS conflicts eliminated
-- **Zero Layout Fights**: No more alignment `!important` wars
+- **Potential Reduction**: Significant consolidation of competing alignment rules (exact reduction TBD by audit)
+- **Reduced Layout Conflicts**: Fewer alignment `!important` declarations fighting each other
 - **Maintainable**: Single source of truth for table alignment
 - **Future-Proof**: New sections automatically inherit correct alignment
-- **Performance**: Faster CSS parsing with fewer complex selectors
+- **Performance**: Potentially faster CSS parsing with fewer complex selectors
 
 #### ⚠️ **Implementation Notes:**
 - **Preserve Column Widths**: This addresses ONLY alignment, not column sizing
@@ -423,6 +404,7 @@ Replace ALL alignment complexity with just **2 clean rules**:
 9. **✅ MANDATORY**: Zero section-specific input handlers (global system only)
 10. **✅ MANDATORY**: Consistent number formatting using global utilities
 11. **✅ MANDATORY**: Perfect visual state management (grey→blue→grey/permanent blue)
+12. **📋 GOAL**: Improved CSS alignment consistency (goalpost expansion remains research topic)
 
 ## Quality Assurance & Pattern Validation
 
@@ -509,11 +491,11 @@ Any section that fails these validations will be **rejected** and must be refact
 8. Set up testing framework with **mandatory pattern validation**
 9. Document progress daily with **pattern compliance tracking**
 
-**⚠️ WARNING**: Do NOT proceed with any section work until mandatory patterns are fully implemented and tested. The cost of retrofitting non-compliant sections is too high.
+**⚠️ WARNING**: Do NOT proceed with any section work until mandatory patterns (input handling, number formatting, visual feedback) are fully implemented and tested. The cost of retrofitting non-compliant sections is too high.
 
 ---
 
 _Last Updated: December 19, 2024 - Enhanced with Mandatory Pattern Requirements_
 _Status: Planning Phase - **MANDATORY PATTERNS DEFINED**_
 
-**🚨 CRITICAL UPDATE**: Document enhanced with mandatory pattern requirements based on OBC Matrix lessons learned. Global input handling, universal number formatting, and graceful visual feedback are now NON-NEGOTIABLE requirements for 4.012 to prevent costly retrofitting.
+**🚨 CRITICAL UPDATE**: Document enhanced with mandatory pattern requirements based on OBC Matrix lessons learned. Global input handling, universal number formatting, and graceful visual feedback are now NON-NEGOTIABLE requirements for 4.012 to prevent costly retrofitting. Table layout challenges identified but deferred as research topic.
