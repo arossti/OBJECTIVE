@@ -222,6 +222,14 @@ TEUI.StateManager = (function () {
     calculatedFields.clear();
     dirtyFields.clear();
     listeners.clear();
+    
+    // Also clear localStorage
+    try {
+      localStorage.removeItem('TEUI_Calculator_State');
+      console.log("TEUI StateManager: Cleared state from localStorage");
+    } catch (e) {
+      console.error("TEUI StateManager: Failed to clear localStorage:", e);
+    }
   }
 
   /**
@@ -337,6 +345,15 @@ TEUI.StateManager = (function () {
     }
 
     notifyListeners(fieldId, value, oldValue, state);
+
+    // Auto-save state for user-modified and imported values (not defaults)
+    if (state === VALUE_STATES.USER_MODIFIED || state === VALUE_STATES.IMPORTED) {
+      // Debounce saves to avoid excessive localStorage writes
+      clearTimeout(window.teuiAutoSaveTimeout);
+      window.teuiAutoSaveTimeout = setTimeout(() => {
+        saveState();
+      }, 1000); // Save 1 second after last change
+    }
 
     return true;
   }
@@ -477,7 +494,7 @@ TEUI.StateManager = (function () {
 
     // Save to localStorage
     try {
-      localStorage.setItem("TEUI_4011_STATE", JSON.stringify(state));
+      localStorage.setItem("TEUI_Calculator_State", JSON.stringify(state));
     } catch (error) {
       console.error("Error saving state to localStorage:", error);
     }
@@ -489,7 +506,7 @@ TEUI.StateManager = (function () {
   function loadState() {
     try {
       // Get state from localStorage
-      const stateJson = localStorage.getItem("TEUI_4011_STATE");
+      const stateJson = localStorage.getItem("TEUI_Calculator_State");
 
       if (!stateJson) {
         return;
@@ -1217,6 +1234,12 @@ TEUI.StateManager = (function () {
     // The main calculation loop should use mode-aware getValue().
     // Using a distinct state prevents this from being caught by the mute if it also checks state.
     notifyListeners(fieldId, value, oldValueInRef, "reference-user-modified");
+
+    // Auto-save reference mode changes to localStorage
+    clearTimeout(window.teuiAutoSaveTimeout);
+    window.teuiAutoSaveTimeout = setTimeout(() => {
+      saveState();
+    }, 1000); // Save 1 second after last change
 
     // TODO: Consider if markDependentsDirty specifically for reference mode is needed,
     // or if the existing mechanism + mode-aware getValue is sufficient.
