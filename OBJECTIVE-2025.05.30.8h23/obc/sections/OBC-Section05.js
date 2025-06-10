@@ -7,13 +7,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect05 = window.TEUI.sect05 || {};
-window.TEUI.sect05.initialized = false;
-window.TEUI.sect05.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect05 = window.OBC.sect05 || {};
+window.OBC.sect05.initialized = false;
+window.OBC.sect05.userInteracted = false;
 
 // Section 5: Structural Requirements Module
-window.TEUI.SectionModules.sect05 = (function () {
+window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
@@ -271,15 +271,15 @@ window.TEUI.SectionModules.sect05 = (function () {
   function initializeEventHandlers() {
     console.log("Initializing Section 05 event handlers");
     
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
   }
 
   function onSectionRendered() {
     console.log("Section 05 rendered");
     initializeEventHandlers();
-    window.TEUI.sect05.initialized = true;
+    window.OBC.sect05.initialized = true;
   }
 
   //==========================================================================

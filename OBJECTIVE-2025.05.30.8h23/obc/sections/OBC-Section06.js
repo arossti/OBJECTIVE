@@ -7,13 +7,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect06 = window.TEUI.sect06 || {};
-window.TEUI.sect06.initialized = false;
-window.TEUI.sect06.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect06 = window.OBC.sect06 || {};
+window.OBC.sect06.initialized = false;
+window.OBC.sect06.userInteracted = false;
 
 // Section 6: Occupant Safety & Accessibility Module
-window.TEUI.SectionModules.sect06 = (function () {
+window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================

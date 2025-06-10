@@ -7,13 +7,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect07 = window.TEUI.sect07 || {};
-window.TEUI.sect07.initialized = false;
-window.TEUI.sect07.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect07 = window.OBC.sect07 || {};
+window.OBC.sect07.initialized = false;
+window.OBC.sect07.userInteracted = false;
 
 // Section 7: Fire Resistance & Spatial Separation Module
-window.TEUI.SectionModules.sect07 = (function () {
+window.OBC.SectionModules.sect07 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================

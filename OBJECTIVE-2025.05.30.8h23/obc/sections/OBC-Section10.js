@@ -7,13 +7,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect10 = window.TEUI.sect10 || {};
-window.TEUI.sect10.initialized = false;
-window.TEUI.sect10.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect10 = window.OBC.sect10 || {};
+window.OBC.sect10.initialized = false;
+window.OBC.sect10.userInteracted = false;
 
 // Section 10: Notes Module
-window.TEUI.SectionModules.sect10 = (function () {
+window.OBC.SectionModules.sect10 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================

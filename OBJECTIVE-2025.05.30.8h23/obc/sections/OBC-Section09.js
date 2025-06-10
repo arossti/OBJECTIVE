@@ -7,13 +7,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect09 = window.TEUI.sect09 || {};
-window.TEUI.sect09.initialized = false;
-window.TEUI.sect09.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect09 = window.OBC.sect09 || {};
+window.OBC.sect09.initialized = false;
+window.OBC.sect09.userInteracted = false;
 
 // Section 9: Compliance & Design Module
-window.TEUI.SectionModules.sect09 = (function () {
+window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================

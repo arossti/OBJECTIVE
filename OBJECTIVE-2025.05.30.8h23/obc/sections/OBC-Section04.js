@@ -9,13 +9,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect04 = window.TEUI.sect04 || {};
-window.TEUI.sect04.initialized = false;
-window.TEUI.sect04.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect04 = window.OBC.sect04 || {};
+window.OBC.sect04.initialized = false;
+window.OBC.sect04.userInteracted = false;
 
 // Section 4: Firefighting & Life Safety Systems Module
-window.TEUI.SectionModules.sect04 = (function () {
+window.OBC.SectionModules.sect04 = (function () {
   //==========================================================================
   // SHARED DROPDOWN OPTIONS 
   //==========================================================================

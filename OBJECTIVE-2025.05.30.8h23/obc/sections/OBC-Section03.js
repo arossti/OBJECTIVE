@@ -1216,13 +1216,13 @@ window.OBC.SectionModules.sect03 = (function () {
 
   function checkS03State() {
     console.log("=== S03 STATE CHECK ===");
-    console.log("Section 03 module loaded:", !!window.TEUI?.SectionModules?.sect03);
-    console.log("StateManager available:", !!window.TEUI?.StateManager);
+    console.log("Section 03 module loaded:", !!window.OBC?.SectionModules?.sect03);
+    console.log("StateManager available:", !!window.OBC?.StateManager);
     
     const testFields = ['e_22', 'g_22', 'e_23', 'g_23', 'i_22', 'i_23', 'e_24', 'g_24', 'i_24'];
     testFields.forEach(fieldId => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+      const stateValue = window.OBC?.StateManager?.getValue(fieldId);
       const numericValue = getNumericValue(fieldId);
       
       console.log(`${fieldId}:`);
@@ -1251,8 +1251,8 @@ window.OBC.SectionModules.sect03 = (function () {
       'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
     ];
 
-    const numValue = window.TEUI?.parseNumeric ? 
-      window.TEUI.parseNumeric(value, NaN) : 
+        const numValue = window.OBC?.parseNumeric ?
+      window.OBC.parseNumeric(value, NaN) : 
       parseFloat(value);
 
     if (isNaN(numValue)) return value;
@@ -1260,18 +1260,18 @@ window.OBC.SectionModules.sect03 = (function () {
     // Apply formatting based on field type
     if (heightStoriesFields.includes(fieldId)) {
       // Stories (1 decimal place, no commas)
-      return window.TEUI?.formatNumber ? 
-        window.TEUI.formatNumber(numValue, "number-1dp") :
+            return window.OBC?.formatNumber ?
+        window.OBC.formatNumber(numValue, "number-1dp") :
         numValue.toFixed(1);
     } else if (heightMetresFields.includes(fieldId)) {
       // Metres (2 decimal places, no commas for small numbers)
-      return window.TEUI?.formatNumber ? 
-        window.TEUI.formatNumber(numValue, "number-2dp") :
+      return window.OBC?.formatNumber ? 
+        window.OBC.formatNumber(numValue, "number-2dp") :
         numValue.toFixed(2);
     } else if (areaFields.includes(fieldId)) {
       // Area fields (2 decimal places with commas)
-      return window.TEUI?.formatNumber ? 
-        window.TEUI.formatNumber(numValue, "number-2dp-comma") :
+      return window.OBC?.formatNumber ? 
+        window.OBC.formatNumber(numValue, "number-2dp-comma") :
         numValue.toLocaleString('en-US', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
@@ -1279,8 +1279,8 @@ window.OBC.SectionModules.sect03 = (function () {
         });
     } else {
       // Default formatting
-      return window.TEUI?.formatNumber ? 
-        window.TEUI.formatNumber(numValue, "number-2dp") :
+      return window.OBC?.formatNumber ? 
+        window.OBC.formatNumber(numValue, "number-2dp") :
         numValue.toFixed(2);
     }
   }
@@ -1295,7 +1295,7 @@ window.OBC.SectionModules.sect03 = (function () {
     }
 
     // Register custom calculation listeners for numeric fields
-    if (window.TEUI?.StateManager?.addListener || window.TEUI?.OBCStateManager?.addListener) {
+    if (window.OBC?.StateManager?.addListener) {
       // Listen for changes to area fields to trigger calculations
       const calculationTriggers = [
         'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
@@ -1312,13 +1312,7 @@ window.OBC.SectionModules.sect03 = (function () {
             }
           });
         }
-        if (window.TEUI.OBCStateManager?.addListener) {
-          window.TEUI.OBCStateManager.addListener(fieldId, () => {
-            if (!window.sectionCalculationInProgress) {
-              performAllCalculations();
-            }
-          });
-        }
+
       });
     }
     
@@ -1329,7 +1323,7 @@ window.OBC.SectionModules.sect03 = (function () {
     console.log("Section 03 rendered - Building Areas (OBC Matrix)");
     
     // Initialize default state values in StateManager
-    if (window.TEUI?.StateManager) {
+    if (window.OBC?.StateManager) {
       const defaultValues = {
         'd_22': 'Enter area description',
         'd_23': 'Enter area description',
@@ -1365,14 +1359,14 @@ window.OBC.SectionModules.sect03 = (function () {
       
       Object.entries(defaultValues).forEach(([fieldId, defaultValue]) => {
         // Only set default if no value exists (won't overwrite user-modified values)
-        if (!window.TEUI.StateManager.getValue(fieldId)) {
-          window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        if (!window.OBC.StateManager.getValue(fieldId)) {
+          window.OBC.StateManager.setValue(fieldId, defaultValue, "default");
         }
       });
     }
     
     // Initialize event handlers
-    if (!window.TEUI.sect03.initialized) {
+    if (!window.OBC.sect03.initialized) {
       initializeEventHandlers();
     }
 

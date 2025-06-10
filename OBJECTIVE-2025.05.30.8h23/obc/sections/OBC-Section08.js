@@ -7,13 +7,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect08 = window.TEUI.sect08 || {};
-window.TEUI.sect08.initialized = false;
-window.TEUI.sect08.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect08 = window.OBC.sect08 || {};
+window.OBC.sect08.initialized = false;
+window.OBC.sect08.userInteracted = false;
 
 // Section 8: Plumbing Fixture Requirements Module
-window.TEUI.SectionModules.sect08 = (function () {
+window.OBC.SectionModules.sect08 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
