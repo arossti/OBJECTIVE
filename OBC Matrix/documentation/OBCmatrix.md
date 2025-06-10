@@ -495,184 +495,534 @@ function initializeEventHandlers() {
 
 **❌ DO NOT DO**: Custom blur handlers, section-specific event management, or direct state setting without change detection.
 
-#### 📋 **COPY-PASTE TEMPLATE FOR NEW SECTIONS**
+### 📋 **COPY-PASTE TEMPLATE FOR NEW SECTIONS**
 
 ```javascript
-// ===== MANDATORY EVENT HANDLER PATTERN =====
-function initializeEventHandlers() {
-  console.log("Initializing Section XX event handlers");
+/**
+ * OBC-SectionXX.js
+ * [SECTION NAME] (Section XX) module for OBC Matrix
+ *
+ * OBC MATRIX SECTION TEMPLATE - Based on proven 4011 patterns
+ * Adapted for OBC Matrix architecture with Excel mapping, global input handling,
+ * universal number formatting, and refined styling patterns.
+ *
+ * IMPLEMENTATION STANDARDS:
+ * ========================
+ * 1. ✅ ALWAYS use window.TEUI.OBCStateManager.initializeGlobalInputHandlers()
+ * 2. ✅ ALWAYS use window.TEUI.formatNumber(value, "number-2dp-comma") for numbers  
+ * 3. ✅ Field IDs must match Excel coordinates exactly (d_39, e_40, etc.)
+ * 4. ✅ Row IDs must match Excel format (4.39, 4.40, etc.)
+ * 5. ✅ Use field types: "editable", "num-editable", "dropdown", "calculated"
+ * 6. ✅ Include section-specific CSS optimization if needed
+ * 7. ✅ NO custom blur/focus handlers - use global system
+ * 8. ✅ Subheaders use section-subheader class and proper content/label patterns
+ *
+ * FIELD TYPE PATTERNS:
+ * ===================
+ * - "editable": Regular text input (automatically gets graceful input styling)
+ * - "num-editable": Numeric input with right alignment and auto-formatting
+ * - "dropdown": Select field with options array, gets compact styling
+ * - "calculated": Read-only calculated values, gets bold styling
+ * - "text": Static text content, no interaction
+ *
+ * EXCEL MAPPING REQUIREMENTS:
+ * ===========================
+ * - fieldId: Must match Excel coordinates exactly (d_39 = Column D, Row 39)
+ * - rowId: Must match Excel row format (4.39 for Section 4, Row 39)
+ * - All columns A-O must be accounted for in cells object (even if empty)
+ * - Notes fields typically go in column O with "notes-column" class
+ *
+ * GRACEFUL INPUT BEHAVIOR (AUTOMATIC):
+ * ====================================
+ * When using global input handlers, fields automatically get:
+ * - Grey italic placeholder text for defaults
+ * - Blue confident text while editing (editing-intent)
+ * - Blue confident text for user-modified values (user-modified)
+ * - Grey restore if user clicks without changes
+ * - Automatic number formatting for num-editable fields
+ *
+ * CSS OPTIMIZATION PATTERN:
+ * =========================
+ * If your section has excessive empty columns causing whitespace issues,
+ * add section-specific CSS optimization following Section 04 pattern.
+ */
+
+// Create section-specific namespace for global references
+window.TEUI = window.TEUI || {};
+window.TEUI.sectXX = window.TEUI.sectXX || {};
+window.TEUI.sectXX.initialized = false;
+window.TEUI.sectXX.userInteracted = false;
+
+// Section XX: [SECTION NAME] Module
+window.TEUI.SectionModules.sectXX = (function () {
+  //==========================================================================
+  // SECTION CONFIGURATION
+  //==========================================================================
   
-  // ✅ STEP 1: Always use global input handler (provides graceful behavior)
-  if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-    window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+  const SECTION_CONFIG = {
+    name: "sectionName",           // Replace with actual section name
+    excelRowStart: 39,             // First Excel row for this section
+    excelRowEnd: 52,               // Last Excel row for this section
+    hasCalculations: true,         // Set to false if no calculations needed
+    hasDropdowns: true,            // Set to false if no dropdowns
+    needsCSS: false,               // Set to true if section needs layout optimization
+  };
+
+  //==========================================================================
+  // DROPDOWN OPTIONS (if needed)
+  //==========================================================================
+  
+  const dropdownOptions = {
+    // Example dropdown options
+    basicOptions: [
+      { value: "-", name: "Select..." },
+      { value: "Yes", name: "Yes" },
+      { value: "No", name: "No" },
+      { value: "N/A", name: "N/A" }
+    ],
+    
+    // Building classification example (use if relevant)
+    buildingClassifications: [
+      { value: "-", name: "Select Building Classification", description: "" },
+      { value: "3.2.2.20", name: "3.2.2.20", description: "Group A, Division 1, Any Height, Any Area, Sprinklered" },
+      // Add more as needed...
+    ]
+  };
+
+  //==========================================================================
+  // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
+  //==========================================================================
+
+  // Define rows with integrated field definitions
+  const sectionRows = {
+    
+    // SUBHEADER ROW - Always include for visual organization
+    header: {
+      id: "X.h",                    // Replace X with section number
+      rowId: "X.h",
+      label: "Section Header",
+      cells: {
+        b: { label: "X.h" },       // Section identifier
+        c: { label: "MAIN CATEGORY", classes: ["section-subheader"] },
+        d: { content: "SUBCATEGORY", classes: ["section-subheader"] },
+        e: { content: "E", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "G", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "I", classes: ["section-subheader"] },
+        j: { content: "J", classes: ["section-subheader"] },
+        k: { content: "K", classes: ["section-subheader"] },
+        l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
+        m: { content: "M", classes: ["section-subheader"] },
+        n: { content: "N", classes: ["section-subheader"] },
+        o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
+      },
+    },
+
+    // ROW XX: First content row (replace XX with actual row number)
+    "X.39": {                       // Excel format: Section.Row
+      id: "X.39",
+      rowId: "X.39",
+      label: "Row Label",
+      cells: {
+        b: { label: "3.XX" },      // OBC section reference
+        c: { label: "FIELD LABEL" }, // Main field label
+        d: { 
+          fieldId: "d_39",          // Excel coordinate format
+          type: "dropdown",         // Field type
+          dropdownId: "dd_d_39",    // Dropdown ID
+          value: "-",               // Default value
+          section: SECTION_CONFIG.name,
+          classes: ["dropdown-sm"], // Size class
+          options: dropdownOptions.basicOptions
+        },
+        e: { 
+          fieldId: "e_39",
+          type: "text",
+          value: "",
+          section: SECTION_CONFIG.name,
+          classes: ["description"],
+          readonly: true
+        },
+        // ... continue for all columns through O
+        l: { content: "3.2.X.X." }, // OBC reference
+        o: {
+          fieldId: "o_39",
+          type: "editable",
+          value: "enter notes here...",
+          section: SECTION_CONFIG.name,
+          classes: ["notes-column", "user-input"]
+        }
+      }
+    },
+
+    // ROW XX+1: Numeric input example
+    "X.40": {
+      id: "X.40",
+      rowId: "X.40", 
+      label: "Numeric Field",
+      cells: {
+        b: { label: "3.XX" },
+        c: { label: "NUMERIC INPUT FIELD" },
+        d: {
+          fieldId: "d_40",
+          type: "num-editable",     // Automatic right-alignment and formatting
+          value: "0.00",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"]
+        },
+        e: {
+          fieldId: "e_40", 
+          type: "calculated",       // Bold calculated values
+          value: "0.00",
+          section: SECTION_CONFIG.name,
+          classes: ["calculated-value"]
+        },
+        l: { content: "3.2.X.X." },
+        o: {
+          fieldId: "o_40",
+          type: "editable",
+          value: "enter notes here...",
+          section: SECTION_CONFIG.name,
+          classes: ["notes-column", "user-input"]
+        }
+      }
+    },
+
+    // Add more rows following the same pattern...
+  };
+
+  //==========================================================================
+  // ACCESSOR METHODS (REQUIRED FOR FIELDMANAGER)
+  //==========================================================================
+
+  function getFields() {
+    const fields = {};
+    
+    Object.entries(sectionRows).forEach(([rowKey, row]) => {
+      if (rowKey === "header") return;
+      if (!row.cells) return;
+
+      Object.entries(row.cells).forEach(([colKey, cell]) => {
+        if (cell.fieldId && cell.type) {
+          fields[cell.fieldId] = {
+            type: cell.type,
+            label: cell.label || row.label,
+            defaultValue: cell.value || "",
+            section: cell.section || SECTION_CONFIG.name,
+          };
+
+          // Copy additional properties
+          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.options) fields[cell.fieldId].options = cell.options;
+          if (cell.readonly) fields[cell.fieldId].readonly = cell.readonly;
+        }
+      });
+    });
+
+    return fields;
   }
 
-  // ✅ STEP 2: Only add calculation listeners if section has calculations
-  if (window.TEUI?.StateManager?.addListener || window.TEUI?.OBCStateManager?.addListener) {
-    const calculationTriggers = ['i_XX', 'j_XX']; // Replace with your numeric fields
-    calculationTriggers.forEach(fieldId => {
-      if (window.TEUI.StateManager?.addListener) {
-        window.TEUI.StateManager.addListener(fieldId, () => {
-          if (!window.sectionCalculationInProgress) {
-            performCalculations(); // Replace with your calculation function
-          }
-        });
-      }
-      if (window.TEUI.OBCStateManager?.addListener) {
-        window.TEUI.OBCStateManager.addListener(fieldId, () => {
-          if (!window.sectionCalculationInProgress) {
-            performCalculations(); // Replace with your calculation function
-          }
-        });
+  function getDropdownOptions() {
+    const options = {};
+    
+    Object.values(sectionRows).forEach((row) => {
+      if (!row.cells) return;
+      Object.values(row.cells).forEach((cell) => {
+        if (cell.dropdownId && cell.options) {
+          options[cell.dropdownId] = cell.options;
+        }
+      });
+    });
+
+    return options;
+  }
+
+  function getLayout() {
+    const layoutRows = [];
+    
+    // Header first
+    if (sectionRows["header"]) {
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
+    }
+
+    // Then content rows
+    Object.entries(sectionRows).forEach(([key, row]) => {
+      if (key !== "header") {
+        layoutRows.push(createLayoutRow(row));
       }
     });
-  }
-  
-  window.TEUI.sectXX.initialized = true; // Replace XX with section number
-}
 
-// ===== MANDATORY FORMATTING PATTERN =====
-function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
-  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-  if (element) {
-    // ✅ ALWAYS use global formatNumber
-    const formattedValue = window.TEUI?.formatNumber ? 
+    return { rows: layoutRows };
+  }
+
+  function createLayoutRow(row) {
+    const rowDef = {
+      id: row.id,
+      cells: [
+        {}, // Column A - empty spacer
+        {}, // Column B - auto-populated with row number
+      ],
+    };
+
+    // Add columns C through O
+    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
+    
+    columns.forEach((col) => {
+      if (row.cells && row.cells[col]) {
+        const cell = { ...row.cells[col] };
+        
+        // Clean up for renderer
+        delete cell.section;
+        delete cell.readonly;
+        
+        rowDef.cells.push(cell);
+      } else {
+        rowDef.cells.push({});
+      }
+    });
+
+    return rowDef;
+  }
+
+  //==========================================================================
+  // CALCULATION FUNCTIONS (if SECTION_CONFIG.hasCalculations = true)
+  //==========================================================================
+
+  function getFieldValue(fieldId) {
+    // Try StateManager first, then DOM fallback
+    if (window.TEUI?.StateManager?.getValue) {
+      return window.TEUI.StateManager.getValue(fieldId);
+    }
+    
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      if (element.tagName === "SELECT") {
+        return element.value;
+      } else {
+        return element.textContent || element.value || "";
+      }
+    }
+    
+    return "";
+  }
+
+  function getNumericValue(fieldId, defaultValue = 0) {
+    const value = getFieldValue(fieldId);
+    
+    if (typeof value === 'string') {
+      // Remove commas and parse
+      const parsed = parseFloat(value.replace(/,/g, ''));
+      return isNaN(parsed) ? defaultValue : parsed;
+    } else if (typeof value === 'number') {
+      return isNaN(value) ? defaultValue : value;
+    }
+    
+    return defaultValue;
+  }
+
+  function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
+    // Use global formatNumber function
+    const formattedValue = window.TEUI.formatNumber ? 
       window.TEUI.formatNumber(rawValue, formatType) : 
       rawValue.toString();
-    
-    element.textContent = formattedValue;
-    element.classList.add('calculated-value');
-    element.classList.remove('user-input', 'user-modified', 'editing-intent');
-    element.removeAttribute('contenteditable');
-    
-    // Register with StateManager
+
+    // Update DOM
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.textContent = formattedValue;
+    }
+
+    // Update StateManager
     if (window.TEUI?.StateManager?.setValue) {
       window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
     }
   }
+
+  function performCalculations() {
+    if (!SECTION_CONFIG.hasCalculations) return;
+    
+    // Example calculation
+    // const value1 = getNumericValue("d_39");
+    // const value2 = getNumericValue("d_40"); 
+    // const total = value1 + value2;
+    // setCalculatedValue("e_40", total);
+    
+    console.log("Performing calculations for Section XX");
+  }
+
+  //==========================================================================
+  // EVENT HANDLING (OBC MATRIX PATTERN)
+  //==========================================================================
+
+  function initializeEventHandlers() {
+    console.log("Initializing Section XX event handlers");
+    
+    // ✅ REQUIRED: Use global input handler for graceful behavior
+    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
+      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    }
+    
+    // ✅ OPTIONAL: Add calculation listeners (if needed)
+    if (SECTION_CONFIG.hasCalculations) {
+      const calculationTriggers = ['d_39', 'd_40']; // Replace with actual field IDs
+      calculationTriggers.forEach(fieldId => {
+        if (window.TEUI.StateManager?.addListener) {
+          window.TEUI.StateManager.addListener(fieldId, performCalculations);
+        }
+        if (window.TEUI.OBCStateManager?.addListener) {
+          window.TEUI.OBCStateManager.addListener(fieldId, performCalculations);
+        }
+      });
+    }
+
+    // ✅ OPTIONAL: Add dropdown change handlers (if needed)
+    if (SECTION_CONFIG.hasDropdowns) {
+      // Example: Handle building classification descriptions
+      // document.addEventListener('change', function(e) {
+      //   if (e.target.matches('[data-dropdown-id^="dd_d_"]')) {
+      //     updateLinkedDescription(e.target);
+      //   }
+      // });
+    }
+  }
+
+  function onSectionRendered() {
+    console.log("Section XX rendered");
+    
+    // Initialize event handlers
+    initializeEventHandlers();
+    
+    // Run initial calculations
+    if (SECTION_CONFIG.hasCalculations) {
+      performCalculations();
+    }
+    
+    // Mark as initialized
+    window.TEUI.sectXX.initialized = true;
+  }
+
+  //==========================================================================
+  // PUBLIC API
+  //==========================================================================
+
+  return {
+    // Required for FieldManager
+    getFields: getFields,
+    getDropdownOptions: getDropdownOptions,
+    getLayout: getLayout,
+
+    // Required for initialization
+    initializeEventHandlers: initializeEventHandlers,
+    onSectionRendered: onSectionRendered,
+
+    // Optional calculation functions
+    performCalculations: performCalculations,
+    getFieldValue: getFieldValue,
+    getNumericValue: getNumericValue,
+    setCalculatedValue: setCalculatedValue,
+  };
+})();
+```
+
+### 📋 **CSS OPTIMIZATION TEMPLATE** (if SECTION_CONFIG.needsCSS = true)
+
+Add to `OBC-styles.css` following Section 04 pattern:
+
+```css
+/* =============== SECTION XX SPECIFIC LAYOUT OPTIMIZATION =============== */
+
+/* Section XX: Hide completely empty columns to improve density */
+#sectionName .data-table td:nth-child(6),  /* Column F - empty */
+#sectionName .data-table td:nth-child(7),  /* Column G - empty */
+#sectionName .data-table td:nth-child(10), /* Column J - empty */
+#sectionName .data-table td:nth-child(13), /* Column M - empty */
+#sectionName .data-table td:nth-child(14)  /* Column N - empty */
+{
+    display: none;
 }
+
+/* Section XX: Flex/Auto responsive layout for remaining columns */
+#sectionName .data-table {
+    table-layout: auto;
+    width: 100%;
+}
+
+/* Section XX: Intelligent column sizing for content-bearing columns */
+#sectionName .data-table td:nth-child(1) { width: 4%; }   /* Row numbers */
+#sectionName .data-table td:nth-child(2) { width: 6%; }   /* Section numbers */
+#sectionName .data-table td:nth-child(3) { width: 25%; }  /* Labels */
+#sectionName .data-table td:nth-child(4) { width: 15%; }  /* Dropdowns */
+#sectionName .data-table td:nth-child(5) { width: 30%; }  /* Descriptions */
+#sectionName .data-table td:nth-child(12) { width: 10%; } /* OBC references */
+#sectionName .data-table td:nth-child(15) { width: 10%; } /* Notes */
+
+/* Section XX: Ensure descriptions wrap properly instead of expanding */
+#sectionName .data-table td:nth-child(5) {
+    white-space: normal !important;
+    word-wrap: break-word;
+    max-width: 300px;
+}
+
+/* =============== END SECTION XX LAYOUT OPTIMIZATION =============== */
 ```
 
-**Step 5: MANDATORY - Number Formatting**
-⚠️ **REQUIRED**: Always use global formatNumber utility:
+### 📋 **IMPLEMENTATION CHECKLIST**
 
-```javascript
-// ✅ CORRECT: Use global formatNumber
-const formatted = window.TEUI.formatNumber(numValue, "number-2dp-comma");
+Before implementing a new section:
 
-// ❌ WRONG: Custom formatting logic
-const formatted = numValue.toLocaleString('en-US', {...});
-```
+**Pre-Implementation:**
+- [ ] Identify Excel row range (e.g., rows 53-65)
+- [ ] Determine field types needed (dropdowns, numeric, text, calculated)
+- [ ] Check if calculations are required
+- [ ] Assess if CSS optimization is needed
 
-**Step 6: Validation Checklist**
-- [ ] Row IDs match Excel exactly (3.21, 3.22, etc.)
-- [ ] Field IDs use Excel coordinates (d_22, e_22, etc.)  
-- [ ] Content renders properly in browser
-- [ ] Input fields are editable and functional
-- [ ] No competing CSS width constraints
-- [ ] **✅ Uses `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`**
-- [ ] **✅ Uses `window.TEUI.formatNumber()` for all numeric display**
-- [ ] **✅ NO custom blur/focus handlers**
-- [ ] **✅ Graceful input behavior: grey→blue→grey/permanent blue**
+**During Implementation:**
+- [ ] Replace all XX placeholders with actual section number
+- [ ] Replace "sectionName" with actual section identifier
+- [ ] Update SECTION_CONFIG with correct values
+- [ ] Add actual dropdown options if needed
+- [ ] Implement calculations if hasCalculations = true
+- [ ] Test field types render correctly
 
-## Technical Debt & Cleanup Requirements
+**Post-Implementation:**
+- [ ] Verify Excel coordinate mapping (d_39 = Column D, Row 39)
+- [ ] Test graceful input behavior (grey→blue→grey/permanent blue)
+- [ ] Confirm number formatting works for num-editable fields
+- [ ] Validate calculations trigger properly
+- [ ] Check responsive layout behavior
+- [ ] Test Notes column functionality
 
-### CSS Architecture Issues
-The current styling inherits from TEUI 4011 application, causing layout inflexibility:
+**Quality Assurance:**
+- [ ] Cross-browser testing (Chrome, Firefox, Safari)
+- [ ] Mobile/tablet responsiveness check
+- [ ] Dropdown functionality verification
+- [ ] State persistence testing
+- [ ] Excel import/export compatibility
 
-**Problematic Areas**:
-- **Fixed Column Widths**: Inherited CSS forcing column E to 446px width
-- **Text Alignment Conflicts**: Multiple competing alignment rules (text-center vs text-right)
-- **Table Layout Rigidity**: Column targeting not working as expected for dynamic content
-- **Legacy Bootstrap Overrides**: 4011-specific rules conflicting with OBC Matrix requirements
+### 🎯 **KEY DIFFERENCES FROM 4011 TEMPLATE**
 
-**Cleanup Strategy**:
-1. **Audit OBC-styles.css**: Remove all TEUI 4011-specific rules
-2. **Simplify Table Layout**: Use flexible CSS Grid or modern table-layout: auto
-3. **Consolidate Alignment Rules**: Single source of truth for column alignment
-4. **Remove Legacy Overrides**: Clean Bootstrap integration without conflicts
+**Simplified for OBC Matrix:**
+- ❌ No complex weather data integrations
+- ❌ No reference value systems
+- ❌ No multiple climate zones
+- ❌ No energy cost calculations
+- ✅ Focus on building code compliance data
+- ✅ Excel mapping priority
+- ✅ Graceful input styling built-in
+- ✅ Universal number formatting
+- ✅ Section-specific CSS optimization patterns
 
-### DOM Structure Verification Required
-Critical audit needed to ensure Excel mapping accuracy:
+**Enhanced OBC Matrix Features:**
+- ✅ Global input handler integration
+- ✅ Universal field type system
+- ✅ Excel coordinate fieldId system
+- ✅ Notes column integration
+- ✅ Subheader styling patterns
+- ✅ Responsive layout optimization
+- ✅ Building classification patterns
 
-**Field Positioning Audit**:
-- Verify all `data-field-id` attributes match Excel cell coordinates
-- Confirm column headers align with data content
-- Check mezzanine totals appear in correct visual columns (I vs K vs L)
-- Validate Notes fields (column O) span properly
-
-**Excel Import/Export Risk**:
-- Misaligned fields will cause data mapping failures during CSV import
-- Field coordinate mismatches will break Excel template compatibility
-- Column positioning errors will create user and dev confusion
-
-## Risk Mitigation
-
-- **Version Control**: Git tracking with branch-based development
-- **Backup Strategy**: Maintain copies of working TEUI 4011 components
-- **Testing Protocol**: Cross-browser testing on IE11+, Chrome, Firefox, Safari
-- **Data Validation**: Multiple layers of validation before import/export
-- **Fallback Options**: Excel template download if web form fails
-- **CSS Regression Testing**: Verify layout changes don't break existing sections
-
-## Development Notes
-
-### Excel-to-DOM Mapping Strategy
-The application maintains 1:1 correspondence with Excel cells to enable reliable import/export:
-
-```javascript
-// Example field mapping
-const field = {
-  id: "d_12",              // DOM element ID
-  excelRef: "D12",         // Original Excel cell reference
-  label: "Project Type",   // User-facing label
-  section: "buildingInfo", // Section grouping
-  type: "dropdown",        // Field type
-  required: true           // Validation rule
-};
-```
-
-### CSV Processing Approach
-1. **Structure Analysis**: Parse CSV to understand section headers, field locations, and data types
-2. **Field Extraction**: Map each input field to its Excel coordinate
-3. **Data Validation**: Ensure imported data matches expected field types
-4. **DOM Population**: Update form fields using coordinate-based element IDs
-
-### Current Implementation Status
-- **Foundation**: Stable base with cleaned UI and proper script references ✅
-- **Section 01 (Building Information)**: Production-ready with Excel-aligned architecture ✅
-  - Practice & project information fields ✅
-  - Working Project Type & Major Occupancy dropdowns ✅  
-  - Notes column with show/hide toggle ✅
-  - Floating stamp upload positioned correctly ✅
-  - Excel-aligned row IDs (1.03, 1.04, 1.05, etc.) ✅
-  - DOM/Excel mapping separation implemented ✅
-- **Section 02 (Building Occupancy)**: Production-ready with universal alignment ✅
-  - Building Code Version fields ✅
-  - Major Occupancy Classification system ✅
-  - Superimposed Major Occupancies logic ✅
-  - OAA Member Registration integration ✅
-  - Universal alignment system implemented ✅
-- **Section 03 (Building Areas)**: Production-ready with Excel-perfect alignment ✅
-  - Real-time area calculations with bold totals ✅
-  - OBC-StateManager integration ✅
-  - Building height and mezzanine type fields ✅
-  - Excel-aligned row IDs (3.22, 3.23, etc.) ✅
-  - Universal alignment system (removed 50+ redundant classes) ✅
-  - Mezzanine structure matches Excel exactly ✅
-- **Field Mapping**: Excel-aligned coordinate system (d_12 → DOM element pattern) ✅
-- **File Structure**: Organized with clear separation of concerns ✅
-- **User Interface**: Responsive design with modern styling ✅
-
-### Technical Architecture Status
-- **✅ JavaScript Pipeline**: All core modules loading without errors
-- **✅ Dropdown System**: Full initialization and population working
-- **✅ CSS Universal Alignment**: Single source of truth alignment system, removed 350+ lines of competing rules
-- **✅ DOM/Excel Mapping**: Separation of concerns implemented via fieldIds
-- **✅ Field Management**: Complete field registration and rendering
-- **✅ Event Handling**: User input and state management operational  
-- **✅ Calculation Engine**: Real-time math with proper number formatting
-- **✅ Excel Integration**: Row IDs and field coordinates aligned for import/export
+This template provides the structure and patterns proven in the 4011 codebase but refined specifically for OBC Matrix requirements.
 
 ## Layout Expansion Debugging & Known Issues
 
@@ -684,7 +1034,7 @@ const field = {
 
 #### **🔍 Problem Analysis:**
 
-**The "Goalpost Expansion" Issue**: Middle columns (specifically E and M) consistently expand to 400-600px width instead of minimal space, creating visual "goalposts" that push important content apart and make the interface difficult to use.
+**The "Goalpost Expansion" Issue**: Middle columns (specifically E and M) consistently expand to 400-600px width instead of target 2px, creating visual "goalposts" that push important content apart and make the interface difficult to use.
 
 **Root Cause Discovery**: This appears to be a complex interaction between:
 - **Browser table layout algorithms** calculating width requirements for complex form elements
@@ -1054,7 +1404,7 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 
 #### 🚨 **MANDATORY PATTERNS FOR ALL FUTURE SECTIONS:**
 - **Global Input Handling**: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()` - NO custom blur handlers
-- **Number Formatting**: `window.TEUI.formatNumber(value, "format-type")` - NO custom toLocaleString logic  
+- **Number Formatting**: `window.TEUI.formatNumber(value, "number-2dp-comma")` - NO custom toLocaleString logic  
 - **Field IDs**: Excel coordinates (d_22, e_22) regardless of DOM structure
 - **Row IDs**: Section.ExcelRow format (4.20, 5.15, etc.)
 

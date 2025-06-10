@@ -387,7 +387,14 @@ window.TEUI.SectionModules.sect04 = (function () {
       rowId: "4.46",
       label: "Sprinkler System Description",
       cells: {
-        d: { label: "DESCRIBE" },
+        d: { content: "DESCRIBE" },
+        e: {
+          fieldId: "e_46",
+          type: "editable",
+          value: "Describe Sprinkler System as Required or Not Required",
+          section: "firefightingSystems",
+          classes: ["no-wrap", "user-input"],
+        },
         l: { content: "3.2.2.17., 3.2.2.18., 3.2.4.8. to 3.2.4.10. and 3.2.5.13." }
       }
     },
@@ -482,7 +489,7 @@ window.TEUI.SectionModules.sect04 = (function () {
             { value: "N/A", name: "N/A" }
           ]
         },
-        h: { content: "[provide explanation here]" },
+        h: { content: "" },
         l: { content: "3.2.5.7." }
       }
     },
