@@ -1,93 +1,36 @@
-[Warning] 130 console messages are not shown.
-[Log] Field e_50: dropdownId=e_50, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_51: dropdownId=e_51, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_52: dropdownId=e_52, options=7 (OBC-Section04.js, line 583)
-[Log] Field j_52: dropdownId=j_52, options=5 (OBC-Section04.js, line 583)
-[Log] Initializing Section 04: Firefighting & Life Safety Systems (OBC-Section04.js, line 695)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 69 editable fields (OBC-StateManager.js, line 460)
-[Log] ✅ Section 04 initialized with global input handling (OBC-Section04.js, line 707)
-[Log] Section 04 rendered - Firefighting & Life Safety Systems (OBC-Section04.js, line 711)
-[Log] OBC StateManager: Initializing... (OBC-StateManager.js, line 137)
-[Log] OBC Matrix initialization complete - FieldManager loaded (4011-init.js, line 892)
-[Log] Initializing Section 04: Firefighting & Life Safety Systems (OBC-Section04.js, line 695)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 69 editable fields (OBC-StateManager.js, line 460)
-[Log] ✅ Section 04 initialized with global input handling (OBC-Section04.js, line 707)
-[Log] Section 01 rendered - Building Information (OBC Matrix) (OBC-Section01.js, line 530)
-[Log] Section 02 rendered - Building Occupancy (OBC Matrix) (OBC-Section02.js, line 656)
-[Log] Initializing Section 03 event handlers (OBC-Section03.js, line 1289)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 69 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 03 rendered - Building Areas (OBC Matrix) (OBC-Section03.js, line 1329)
-[Log] Field d_39: dropdownId=d_39, options=6 (OBC-Section04.js, line 583)
-[Log] Field d_40: dropdownId=d_40, options=81 (OBC-Section04.js, line 583)
-[Log] Field d_41: dropdownId=d_41, options=81 (OBC-Section04.js, line 583)
-[Log] Field d_42: dropdownId=d_42, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_43: dropdownId=d_43, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_44: dropdownId=d_44, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_45: dropdownId=d_45, options=4 (OBC-Section04.js, line 583)
-[Log] Field h_45: dropdownId=h_45, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_47: dropdownId=d_47, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_48: dropdownId=d_48, options=5 (OBC-Section04.js, line 583)
-[Log] Field i_48: dropdownId=i_48, options=6 (OBC-Section04.js, line 583)
-[Log] Field d_49: dropdownId=d_49, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_50: dropdownId=e_50, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_51: dropdownId=e_51, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_52: dropdownId=e_52, options=7 (OBC-Section04.js, line 583)
-[Log] Field j_52: dropdownId=j_52, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_39: dropdownId=d_39, options=6 (OBC-Section04.js, line 583)
-[Log] Field d_40: dropdownId=d_40, options=81 (OBC-Section04.js, line 583)
-[Log] Field d_41: dropdownId=d_41, options=81 (OBC-Section04.js, line 583)
-[Log] Field d_42: dropdownId=d_42, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_43: dropdownId=d_43, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_44: dropdownId=d_44, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_45: dropdownId=d_45, options=4 (OBC-Section04.js, line 583)
-[Log] Field h_45: dropdownId=h_45, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_47: dropdownId=d_47, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_48: dropdownId=d_48, options=5 (OBC-Section04.js, line 583)
-[Log] Field i_48: dropdownId=i_48, options=6 (OBC-Section04.js, line 583)
-[Log] Field d_49: dropdownId=d_49, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_50: dropdownId=e_50, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_51: dropdownId=e_51, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_52: dropdownId=e_52, options=7 (OBC-Section04.js, line 583)
-[Log] Field j_52: dropdownId=j_52, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_39: dropdownId=d_39, options=6 (OBC-Section04.js, line 583)
-[Log] Field d_40: dropdownId=d_40, options=81 (OBC-Section04.js, line 583)
-[Log] Field d_41: dropdownId=d_41, options=81 (OBC-Section04.js, line 583)
-[Log] Field d_42: dropdownId=d_42, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_43: dropdownId=d_43, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_44: dropdownId=d_44, options=16 (OBC-Section04.js, line 583)
-[Log] Field d_45: dropdownId=d_45, options=4 (OBC-Section04.js, line 583)
-[Log] Field h_45: dropdownId=h_45, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_47: dropdownId=d_47, options=5 (OBC-Section04.js, line 583)
-[Log] Field d_48: dropdownId=d_48, options=5 (OBC-Section04.js, line 583)
-[Log] Field i_48: dropdownId=i_48, options=6 (OBC-Section04.js, line 583)
-[Log] Field d_49: dropdownId=d_49, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_50: dropdownId=e_50, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_51: dropdownId=e_51, options=5 (OBC-Section04.js, line 583)
-[Log] Field e_52: dropdownId=e_52, options=7 (OBC-Section04.js, line 583)
-[Log] Field j_52: dropdownId=j_52, options=5 (OBC-Section04.js, line 583)
-[Log] Initializing Section 04: Firefighting & Life Safety Systems (OBC-Section04.js, line 695)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 69 editable fields (OBC-StateManager.js, line 460)
-[Log] ✅ Section 04 initialized with global input handling (OBC-Section04.js, line 707)
-[Log] Section 04 rendered - Firefighting & Life Safety Systems (OBC-Section04.js, line 711)
-[Log] OBC Matrix FieldManager initialized (OBC-Matrix-Index.html, line 680)
-[Log] OBC Matrix initialization complete (OBC-Matrix-Index.html, line 714)
-[Log] [S03 INIT] Triggering initial calculations to populate calculated values... (OBC-Section03.js, line 1382)
-[Log] [S03] Starting area calculations... (OBC-Section03.js, line 1203)
-[Log] [S03] Area calculations complete (OBC-Section03.js, line 1207)
-[Error] Not allowed to load local resource: file:///favicon.ico
-[Log] [S03 INIT] Triggering initial calculations to populate calculated values... (OBC-Section03.js, line 1382)
-[Log] [S03] Starting area calculations... (OBC-Section03.js, line 1203)
-[Log] [S03] Area calculations complete (OBC-Section03.js, line 1207)
-[Log] [S03 INIT] Triggering initial calculations to populate calculated values... (OBC-Section03.js, line 1382)
-[Log] [S03] Starting area calculations... (OBC-Section03.js, line 1203)
-[Log] [S03] Area calculations complete (OBC-Section03.js, line 1207)
-[Log] Initializing notes panel... (OBC-Matrix-Index.html, line 719)
-[Log] Found elements: – Object (OBC-Matrix-Index.html, line 725)
-Object
-[Log] Added click listener to notes toggle button (OBC-Matrix-Index.html, line 752)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 69 editable fields (OBC-StateManager.js, line 460)
+4011-MobileDetect.js:113 Desktop device detected
+4011-Dependency.js:2001 [4011-Dependency.js] Module loaded.
+4011-Section18.js:6 Section 18 (Notes) placeholder loaded.
+4011-StateManager.js:229 TEUI StateManager: Cleared state from localStorage
+4011-Section02.js:847 [Section02] Set default reference standard: OBC SB10 5.5-6 Z6
+4011-StateManager.js:229 TEUI StateManager: Cleared state from localStorage
+4011-FileHandler.js:62 [SAFARI DEBUG] Setting up S03 Excel import buttons. selectExcelBtn and locationFileInput FOUND.
+4011-StateManager.js:229 TEUI StateManager: Cleared state from localStorage
+index.html:741 🔍 DEBUG: StateManager functions available: {saveState: 'function', loadState: 'function', clear: 'function'}
+4011-StateManager.js:229 TEUI StateManager: Cleared state from localStorage
+index.html:748 🔍 DEBUG: About to load state from localStorage
+index.html:752 🔍 DEBUG: localStorage content: No saved state
+index.html:757 🔍 DEBUG: StateManager field count after load: 560
+index.html:762 🔍 DEBUG: About to render all sections
+index.html:764 🔍 DEBUG: After renderAllSections, field count: 650
+index.html:774 🔍 DEBUG: About to initialize Calculator
+4011-StateManager.js:229 TEUI StateManager: Cleared state from localStorage
+index.html:776 🔍 DEBUG: After Calculator.initialize, field count: 650
+index.html:786 TEUI Calculator 4.011 initialization complete
+4011-Dependency.js:1968 [DependencyGraph] DOMContentLoaded, attempting initialization...
+4011-Dependency.js:1887 [DependencyGraph] Initializing graph instance and UI...
+4011-StateManager.js:920 [StateManager] Exporting dependency graph data...
+4011-StateManager.js:959 [StateManager] Exported 425 nodes and 744 links.
+4011-Dependency.js:78 [DependencyGraph] Data loaded: 425 nodes, 744 links
+4011-Dependency.js:695 [DependencyGraph] Calculating node sizes...
+4011-Dependency.js:1935 [DependencyGraph] Applied Dagre layout on init.
+index.html:780 🔍 DEBUG: About to run calculateAll
+4011-Section17.js:67 [sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale.
+calculateAll @ 4011-Section17.js:67
+(anonymous) @ 4011-Calculator.js:505
+calculateAll @ 4011-Calculator.js:501
+(anonymous) @ index.html:781
+setTimeout
+(anonymous) @ index.html:779Understand this warningAI
+index.html:782 🔍 DEBUG: After calculateAll, field count: 690
+4011-Dependency.js:1736 [DependencyGraph] Fitted graph to container with scale 0.09809888951989876

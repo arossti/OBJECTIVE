@@ -1,147 +1,69 @@
-[Log] Desktop device detected (4011-MobileDetect.js, line 113)
-[Log] [4011-Dependency.js] Module loaded. (4011-Dependency.js, line 2001)
-[Log] Section 18 (Notes) placeholder loaded. (4011-Section18.js, line 6)
-[Log] [Section02] Set default reference standard: OBC SB10 5.5-6 Z6 (4011-Section02.js, line 847)
-[Log] [SAFARI DEBUG] Setting up S03 Excel import buttons. selectExcelBtn and locationFileInput FOUND. (4011-FileHandler.js, line 62)
-[Log] TEUI Calculator 4.011 initialization complete (index.html, line 728)
-[Error] Not allowed to load local resource: file:///favicon.ico
-[Log] [DependencyGraph] DOMContentLoaded, attempting initialization... (4011-Dependency.js, line 1968)
-[Log] [DependencyGraph] Initializing graph instance and UI... (4011-Dependency.js, line 1887)
-[Log] [StateManager] Exporting dependency graph data... (4011-StateManager.js, line 903)
-[Log] [StateManager] Exported 425 nodes and 744 links. (4011-StateManager.js, line 942)
-[Log] [DependencyGraph] Data loaded: – 425 – "nodes," – 744 – "links" (4011-Dependency.js, line 78)
-[Log] [DependencyGraph] Calculating node sizes... (4011-Dependency.js, line 695)
-[Log] [DependencyGraph] Applied Dagre layout on init. (4011-Dependency.js, line 1935)
-[Warning] [sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale. (4011-Section17.js, line 67)
-[Log] [DependencyGraph] Fitted graph to container with scale – 0.064054879027528 (4011-Dependency.js, line 1736)
+4011-MobileDetect.js:113 Desktop device detected
+4011-Dependency.js:2001 [4011-Dependency.js] Module loaded.
+4011-Section18.js:6 Section 18 (Notes) placeholder loaded.
+4011-Section02.js:847 [Section02] Set default reference standard: OBC SB10 5.5-6 Z6
+4011-FileHandler.js:62 [SAFARI DEBUG] Setting up S03 Excel import buttons. selectExcelBtn and locationFileInput FOUND.
+index.html:741 🔍 DEBUG: StateManager functions available: {saveState: 'function', loadState: 'function', clear: 'function'}
+index.html:749 🔍 DEBUG: localStorage content before initialize: State found
+index.html:753 🔍 DEBUG: Saved state details: {fieldCount: 8, sampleFields: Array(5), sampleValues: Array(3)}
+index.html:765 🔍 DEBUG: StateManager field count after initialize: 560
+index.html:786 🔍 DEBUG: Field states after initialize: {user-modified: 8, imported: 0, default: 549, calculated: 3, total: 560}
+index.html:797 🔍 DEBUG: About to render all sections
+index.html:799 🔍 DEBUG: After renderAllSections, field count: 650
+index.html:809 🔍 DEBUG: About to initialize Calculator
+index.html:811 🔍 DEBUG: After Calculator.initialize, field count: 650
+index.html:821 TEUI Calculator 4.011 initialization complete
+4011-Dependency.js:1968 [DependencyGraph] DOMContentLoaded, attempting initialization...
+4011-Dependency.js:1887 [DependencyGraph] Initializing graph instance and UI...
+4011-StateManager.js:931 [StateManager] Exporting dependency graph data...
+4011-StateManager.js:970 [StateManager] Exported 425 nodes and 744 links.
+4011-Dependency.js:78 [DependencyGraph] Data loaded: 425 nodes, 744 links
+4011-Dependency.js:695 [DependencyGraph] Calculating node sizes...
+4011-Dependency.js:1935 [DependencyGraph] Applied Dagre layout on init.
+index.html:815 🔍 DEBUG: About to run calculateAll
+4011-Section17.js:67 [sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale.
+calculateAll @ 4011-Section17.js:67
+(anonymous) @ 4011-Calculator.js:505
+calculateAll @ 4011-Calculator.js:501
+(anonymous) @ index.html:816
+setTimeout
+(anonymous) @ index.html:814Understand this warningAI
+index.html:817 🔍 DEBUG: After calculateAll, field count: 690
+4011-Dependency.js:1736 [DependencyGraph] Fitted graph to container with scale 0.09809888951989876
+// See what's actually saved
+const saved = JSON.parse(localStorage.getItem('TEUI_Calculator_State'));
+console.log("Actual saved data:", saved);
 
-
-[Log] ✅ Section 04 module loaded: Firefighting & Life Safety Systems (OBC-Section04.js, line 787)
-[Log] OBC StateManager: Initializing... (OBC-StateManager.js, line 137)
-[Log] Section 01 rendered - Building Information (OBC Matrix) (OBC-Section01.js, line 530)
-[Log] Initializing Section 01 event handlers (OBC-Section01.js, line 454)
-[Log] Section 02 rendered - Building Occupancy (OBC Matrix) (OBC-Section02.js, line 656)
-[Log] Initializing Section 02 event handlers (OBC-Section02.js, line 650)
-[Log] Initializing Section 03 event handlers (OBC-Section03.js, line 1289)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 69 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 03 rendered - Building Areas (OBC Matrix) (OBC-Section03.js, line 1329)
-[Log] Initializing Section 04: Firefighting & Life Safety Systems (OBC-Section04.js, line 728)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 70 editable fields (OBC-StateManager.js, line 460)
-[Log] ✅ Section 04 initialized with global input handling (OBC-Section04.js, line 747)
-[Log] Section 04 rendered - Firefighting & Life Safety Systems (OBC-Section04.js, line 751)
-[Log] Initializing Section 05 event handlers (OBC-Section05.js, line 272)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 75 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 05 rendered (OBC-Section05.js, line 280)
-[Log] Initializing Section 05 event handlers (OBC-Section05.js, line 272)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 75 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 06 event handlers (OBC-Section06.js, line 508)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 96 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 06 rendered (OBC-Section06.js, line 527)
-[Log] Initializing Section 06 event handlers (OBC-Section06.js, line 508)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 96 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 07 event handlers (OBC-Section07.js, line 493)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 111 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 07 rendered (OBC-Section07.js, line 501)
-[Log] Initializing Section 07 event handlers (OBC-Section07.js, line 493)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 111 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 08 event handlers (OBC-Section08.js, line 412)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 134 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 08 rendered (OBC-Section08.js, line 420)
-[Log] Initializing Section 08 event handlers (OBC-Section08.js, line 412)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 134 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 09 event handlers (OBC-Section09.js, line 375)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 146 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 09 rendered (OBC-Section09.js, line 383)
-[Log] Initializing Section 09 event handlers (OBC-Section09.js, line 375)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 146 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 10 event handlers (OBC-Section10.js, line 231)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 10 rendered (OBC-Section10.js, line 239)
-[Log] Initializing Section 10 event handlers (OBC-Section10.js, line 231)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Error] TypeError: null is not an object (evaluating 'expandCollapseBtn.addEventListener')
-	(anonymous function) (OBC-Navigation.js:347)
-[Log] Initializing Section 04: Firefighting & Life Safety Systems (OBC-Section04.js, line 728)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] ✅ Section 04 initialized with global input handling (OBC-Section04.js, line 747)
-[Log] Section 01 rendered - Building Information (OBC Matrix) (OBC-Section01.js, line 530)
-[Log] Section 02 rendered - Building Occupancy (OBC Matrix) (OBC-Section02.js, line 656)
-[Log] Initializing Section 03 event handlers (OBC-Section03.js, line 1289)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 03 rendered - Building Areas (OBC Matrix) (OBC-Section03.js, line 1329)
-[Log] Initializing Section 04: Firefighting & Life Safety Systems (OBC-Section04.js, line 728)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] ✅ Section 04 initialized with global input handling (OBC-Section04.js, line 747)
-[Log] Section 04 rendered - Firefighting & Life Safety Systems (OBC-Section04.js, line 751)
-[Log] Initializing Section 05 event handlers (OBC-Section05.js, line 272)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 05 rendered (OBC-Section05.js, line 280)
-[Log] Initializing Section 05 event handlers (OBC-Section05.js, line 272)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 06 event handlers (OBC-Section06.js, line 508)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 06 rendered (OBC-Section06.js, line 527)
-[Log] Initializing Section 06 event handlers (OBC-Section06.js, line 508)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 07 event handlers (OBC-Section07.js, line 493)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 07 rendered (OBC-Section07.js, line 501)
-[Log] Initializing Section 07 event handlers (OBC-Section07.js, line 493)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 08 event handlers (OBC-Section08.js, line 412)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 08 rendered (OBC-Section08.js, line 420)
-[Log] Initializing Section 08 event handlers (OBC-Section08.js, line 412)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 09 event handlers (OBC-Section09.js, line 375)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 09 rendered (OBC-Section09.js, line 383)
-[Log] Initializing Section 09 event handlers (OBC-Section09.js, line 375)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Initializing Section 10 event handlers (OBC-Section10.js, line 231)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] Section 10 rendered (OBC-Section10.js, line 239)
-[Log] Initializing Section 10 event handlers (OBC-Section10.js, line 231)
-[Log] OBC StateManager: Initializing global input handlers... (OBC-StateManager.js, line 419)
-[Log] OBC StateManager: Initialized handlers for 149 editable fields (OBC-StateManager.js, line 460)
-[Log] OBC Matrix FieldManager initialized (indexobc.html, line 516)
-[Log] OBC Matrix initialization complete (indexobc.html, line 533)
-[Error] Not allowed to load local resource: file:///favicon.ico
-[Log] [S03 INIT] Triggering initial calculations to populate calculated values... (OBC-Section03.js, line 1382)
-[Log] [S03] Starting area calculations... (OBC-Section03.js, line 1203)
-[Log] [S03] Area calculations complete (OBC-Section03.js, line 1207)
-[Log] [S03 INIT] Triggering initial calculations to populate calculated values... (OBC-Section03.js, line 1382)
-[Log] [S03] Starting area calculations... (OBC-Section03.js, line 1203)
-[Log] [S03] Area calculations complete (OBC-Section03.js, line 1207)
-[Log] Initializing notes panel... (indexobc.html, line 538)
-[Log] Found elements: – {notesToggleBtn: <button id="notes-toggle-btn">, closeNotesBtn: <button id="close-notes-panel">, notesPanel: <div id="global-notes-panel">, …} (indexobc.html, line 544)
-{notesToggleBtn: <button id="notes-toggle-btn">, closeNotesBtn: <button id="close-notes-panel">, notesPanel: <div id="global-notes-panel">, notesTextarea: <textarea id="global-notes-textarea">}Object
-[Log] Added click listener to notes toggle button (indexobc.html, line 571)
+// Check the specific fields you changed (S02 project/firm name)
+// Try these field IDs:
+console.log("d_10:", TEUI.StateManager.getValue("d_10")); // Project name maybe?
+console.log("d_11:", TEUI.StateManager.getValue("d_11")); // Firm name maybe?
+console.log("c_3:", TEUI.StateManager.getValue("c_3"));   // Another possibility
+VM2178:3 Actual saved data: {h_15: {…}, h_13: {…}, h_12: {…}, i_16: {…}, i_17: {…}, …}
+VM2178:7 d_10: null
+VM2178:8 d_11: null
+VM2178:9 c_3: null
+undefined
+// Check the ACTUAL saved fields
+const saved = JSON.parse(localStorage.getItem('TEUI_Calculator_State'));
+Object.entries(saved).forEach(([fieldId, data]) => {
+  console.log(`${fieldId}: "${data.value}" (${data.state})`);
+  console.log(`StateManager has: "${TEUI.StateManager.getValue(fieldId)}"`);
+});
+VM2182:4 h_15: "1427.2" (user-modified)
+VM2182:5 StateManager has: "1427.2"
+VM2182:4 h_13: "100" (user-modified)
+VM2182:5 StateManager has: "100"
+VM2182:4 h_12: "2030" (user-modified)
+VM2182:5 StateManager has: "2030"
+VM2182:4 i_16: "Changed" (user-modified)
+VM2182:5 StateManager has: "Changed"
+VM2182:4 i_17: "Changed" (user-modified)
+VM2182:5 StateManager has: "Changed"
+VM2182:4 h_14: "Change Name" (user-modified)
+VM2182:5 StateManager has: "Change Name"
+VM2182:4 d_12: "B1-Detention" (user-modified)
+VM2182:5 StateManager has: "B1-Detention"
+VM2182:4 l_16: "$1.5000" (user-modified)
+VM2182:5 StateManager has: "$1.5000"
+undefined
