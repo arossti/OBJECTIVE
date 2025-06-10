@@ -492,15 +492,15 @@ window.OBC.SectionModules.sect07 = (function () {
   function initializeEventHandlers() {
     console.log("Initializing Section 07 event handlers");
     
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
   }
 
   function onSectionRendered() {
     console.log("Section 07 rendered");
     initializeEventHandlers();
-    window.TEUI.sect07.initialized = true;
+    window.OBC.sect07.initialized = true;
   }
 
   //==========================================================================

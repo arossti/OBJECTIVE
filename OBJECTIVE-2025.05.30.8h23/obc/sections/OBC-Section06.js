@@ -457,8 +457,8 @@ window.OBC.SectionModules.sect06 = (function () {
   function getNumericValue(fieldId, defaultValue = 0) {
     // Try StateManager first, then DOM fallback
     let value = "";
-    if (window.TEUI?.StateManager?.getValue) {
-      value = window.TEUI.StateManager.getValue(fieldId);
+    if (window.OBC?.StateManager?.getValue) {
+      value = window.OBC.StateManager.getValue(fieldId);
     } else {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
@@ -477,8 +477,8 @@ window.OBC.SectionModules.sect06 = (function () {
   }
 
   function setCalculatedValue(fieldId, rawValue, formatType = "number-0dp-comma") {
-    const formattedValue = window.TEUI.formatNumber ? 
-      window.TEUI.formatNumber(rawValue, formatType) : 
+        const formattedValue = window.OBC.formatNumber ?
+      window.OBC.formatNumber(rawValue, formatType) :
       rawValue.toString();
 
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -486,8 +486,8 @@ window.OBC.SectionModules.sect06 = (function () {
       element.textContent = formattedValue;
     }
 
-    if (window.TEUI?.StateManager?.setValue) {
-      window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+    if (window.OBC?.StateManager?.setValue) {
+      window.OBC.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
     }
   }
 
@@ -507,19 +507,16 @@ window.OBC.SectionModules.sect06 = (function () {
   function initializeEventHandlers() {
     console.log("Initializing Section 06 event handlers");
     
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
     
     // Add calculation listeners for occupant load totals
     const calculationTriggers = ['h_59', 'h_60', 'h_61'];
     calculationTriggers.forEach(fieldId => {
-      if (window.TEUI.StateManager?.addListener) {
-        window.TEUI.StateManager.addListener(fieldId, calculateOccupantLoadTotal);
-      }
-      if (window.TEUI.OBCStateManager?.addListener) {
-        window.TEUI.OBCStateManager.addListener(fieldId, calculateOccupantLoadTotal);
-      }
+          if (window.OBC.StateManager?.addListener) {
+      window.OBC.StateManager.addListener(fieldId, calculateOccupantLoadTotal);
+    }
     });
   }
 
@@ -527,7 +524,7 @@ window.OBC.SectionModules.sect06 = (function () {
     console.log("Section 06 rendered");
     initializeEventHandlers();
     calculateOccupantLoadTotal(); // Run initial calculation
-    window.TEUI.sect06.initialized = true;
+    window.OBC.sect06.initialized = true;
   }
 
   //==========================================================================

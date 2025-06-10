@@ -649,14 +649,14 @@ window.OBC.SectionModules.sect02 = (function () {
   function initializeEventHandlers() {
     console.log("Initializing Section 02 event handlers");
     
-    window.TEUI.sect02.initialized = true;
+    window.OBC.sect02.initialized = true;
   }
 
   function onSectionRendered() {
     console.log("Section 02 rendered - Building Occupancy (OBC Matrix)");
     
     // Initialize any section-specific functionality after rendering
-    if (!window.TEUI.sect02.initialized) {
+    if (!window.OBC.sect02.initialized) {
       initializeEventHandlers();
     }
   }

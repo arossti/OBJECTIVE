@@ -570,16 +570,16 @@ OBC.FieldManager = (function () {
                   inputElement.max = cellDef.max;
                 }
 
-                // Simple change handler to update state manager
-                inputElement.addEventListener("change", function () {
-                  if (window.TEUI && window.TEUI.StateManager) {
-                    window.TEUI.StateManager.setValue(
-                      fieldId,
-                      this.value,
-                      "user",
-                    );
-                  }
-                });
+                        // Simple change handler to update state manager
+        inputElement.addEventListener("change", function () {
+          if (window.OBC && window.OBC.StateManager) {
+            window.OBC.StateManager.setValue(
+              fieldId,
+              this.value,
+              "user-modified",
+            );
+          }
+        });
 
                 cellElement.appendChild(inputElement);
               }
@@ -816,24 +816,24 @@ OBC.FieldManager = (function () {
               // For standard 0-100% sliders, convert current value (0-100) to decimal (0-1) for formatNumber
               valToFormat = valToFormat / 100;
             }
-            displayValue = window.TEUI.formatNumber(valToFormat, "percent-0dp");
-          } else if (field.type === "coefficient_slider") {
-            displayValue = window.TEUI.formatNumber(
-              parseFloat(value),
-              "number-2dp",
-            );
-          } else if (field.type === "year_slider") {
-            displayValue = window.TEUI.formatNumber(
-              parseFloat(value),
-              "integer-nocomma",
-            );
-          }
+            displayValue = window.OBC.formatNumber(valToFormat, "percent-0dp");
+                      } else if (field.type === "coefficient_slider") {
+              displayValue = window.OBC.formatNumber(
+                parseFloat(value),
+                "number-2dp",
+              );
+            } else if (field.type === "year_slider") {
+              displayValue = window.OBC.formatNumber(
+                parseFloat(value),
+                "integer-nocomma",
+              );
+            }
 
           displaySpan.textContent = displayValue;
 
           // Update state manager
-          if (TEUI.StateManager && TEUI.StateManager.setValue) {
-            TEUI.StateManager.setValue(fieldId, value);
+          if (OBC.StateManager && OBC.StateManager.setValue) {
+            OBC.StateManager.setValue(fieldId, value, "user-modified");
           }
         });
 
@@ -850,17 +850,17 @@ OBC.FieldManager = (function () {
           } else {
             valToFormat = valToFormat / 100;
           }
-          initialDisplayValue = window.TEUI.formatNumber(
+          initialDisplayValue = window.OBC.formatNumber(
             valToFormat,
             "percent-0dp",
           );
         } else if (field.type === "coefficient_slider") {
-          initialDisplayValue = window.TEUI.formatNumber(
+          initialDisplayValue = window.OBC.formatNumber(
             parseFloat(rangeInput.value),
             "number-2dp",
           );
         } else if (field.type === "year_slider") {
-          initialDisplayValue = window.TEUI.formatNumber(
+          initialDisplayValue = window.OBC.formatNumber(
             parseFloat(rangeInput.value),
             "integer-nocomma",
           );
@@ -1002,8 +1002,8 @@ OBC.FieldManager = (function () {
 
         // Add change listener to update state
         selectElement.addEventListener("change", function () {
-          if (TEUI.StateManager && TEUI.StateManager.setValue) {
-            TEUI.StateManager.setValue(fieldId, this.value);
+          if (OBC.StateManager && OBC.StateManager.setValue) {
+            OBC.StateManager.setValue(fieldId, this.value, "user-modified");
           }
 
           // Update dependent dropdowns if needed
@@ -1039,7 +1039,7 @@ OBC.FieldManager = (function () {
 
       // Get the value of the field this dropdown depends on
       const dependencyValue =
-        TEUI.StateManager?.getValue(fieldId) ||
+        OBC.StateManager?.getValue(fieldId) ||
         document.querySelector(`[data-field-id="${fieldId}"]`)?.value;
 
       // Get new options using the getOptions function
@@ -1200,17 +1200,17 @@ OBC.FieldManager = (function () {
         if (displaySpan) {
           // Attempt to format if a global formatter is available, otherwise set directly
           let formattedSliderValue = displayValue;
-          if (window.TEUI && window.TEUI.formatNumber) {
+          if (window.OBC && window.OBC.formatNumber) {
             if (fieldDef.type === "percentage") {
               // Assuming displayValue is '20' for 20% for the input, but formatNumber expects 0.20 for 'percent'
               // This part might need adjustment based on how slider values are stored/passed.
               // For now, let's assume displayValue is ready for direct display or needs simple formatting.
-              formattedSliderValue = window.TEUI.formatNumber(
+              formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue) / 100,
                 "percent-0dp",
               ); // Example: 20 -> 20%
             } else {
-              formattedSliderValue = window.TEUI.formatNumber(
+              formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue),
                 "number-2dp",
               ); // Default for others
@@ -1243,17 +1243,17 @@ OBC.FieldManager = (function () {
         if (displaySpan) {
           // Attempt to format if a global formatter is available, otherwise set directly
           let formattedSliderValue = displayValue;
-          if (window.TEUI && window.TEUI.formatNumber) {
+          if (window.OBC && window.OBC.formatNumber) {
             if (fieldDef.type === "percentage") {
               // Assuming displayValue is '20' for 20% for the input, but formatNumber expects 0.20 for 'percent'
               // This part might need adjustment based on how slider values are stored/passed.
               // For now, let's assume displayValue is ready for direct display or needs simple formatting.
-              formattedSliderValue = window.TEUI.formatNumber(
+              formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue) / 100,
                 "percent-0dp",
               ); // Example: 20 -> 20%
             } else {
-              formattedSliderValue = window.TEUI.formatNumber(
+              formattedSliderValue = window.OBC.formatNumber(
                 parseFloat(displayValue),
                 "number-2dp",
               ); // Default for others
@@ -1301,13 +1301,13 @@ OBC.FieldManager = (function () {
     // Initialization
     initialize: function () {
       // Make sure section modules namespace exists
-      window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+      window.OBC.SectionModules = window.OBC.SectionModules || {};
 
       // Initialize all sections
       initializeSections();
 
       // Make fields available to other modules
-      window.TEUI.fields = getAllFields();
+      window.OBC.fields = getAllFields();
 
       return this;
     },
@@ -1343,8 +1343,8 @@ OBC.FieldManager = (function () {
 // Initialize when the document is ready
 document.addEventListener("DOMContentLoaded", function () {
   // Initialize and load all section modules
-  TEUI.FieldManager.initialize();
+  OBC.FieldManager.initialize();
 
   // Render all sections
-  TEUI.FieldManager.renderAllSections();
+  OBC.FieldManager.renderAllSections();
 });

@@ -728,8 +728,8 @@ window.OBC.SectionModules.sect04 = (function () {
     console.log("Initializing Section 04: Firefighting & Life Safety Systems");
     
     // ✅ MANDATORY: Use global input handler for graceful behavior
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
 
     // Add event listeners for building classification dropdowns to update descriptions
@@ -743,7 +743,7 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     });
     
-    window.TEUI.sect04.initialized = true;
+    window.OBC.sect04.initialized = true;
     console.log("✅ Section 04 initialized with global input handling");
   }
 
@@ -751,7 +751,7 @@ window.OBC.SectionModules.sect04 = (function () {
     console.log("Section 04 rendered - Firefighting & Life Safety Systems");
     
     // Initialize event handlers after rendering
-    if (!window.TEUI.sect04?.initialized) {
+    if (!window.OBC.sect04?.initialized) {
       initializeEventHandlers();
     }
   }
@@ -773,14 +773,14 @@ window.OBC.SectionModules.sect04 = (function () {
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() {
-    if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect04) {
-      window.TEUI.SectionModules.sect04.initializeEventHandlers();
+    if (window.OBC && window.OBC.SectionModules && window.OBC.SectionModules.sect04) {
+      window.OBC.SectionModules.sect04.initializeEventHandlers();
     }
   });
 } else {
   // DOM already loaded
-  if (window.TEUI && window.TEUI.SectionModules && window.TEUI.SectionModules.sect04) {
-    window.TEUI.SectionModules.sect04.initializeEventHandlers();
+  if (window.OBC && window.OBC.SectionModules && window.OBC.SectionModules.sect04) {
+    window.OBC.SectionModules.sect04.initializeEventHandlers();
   }
 }
 

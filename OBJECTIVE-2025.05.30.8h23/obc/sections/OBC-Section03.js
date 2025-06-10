@@ -1300,10 +1300,10 @@ window.OBC.SectionModules.sect03 = (function () {
       
       calculationTriggers.forEach(fieldId => {
         window.OBC.StateManager.addListener(fieldId, () => {
-          if (!window.sectionCalculationInProgress) {
-            performAllCalculations();
-          }
-        });
+            if (!window.sectionCalculationInProgress) {
+              performAllCalculations();
+            }
+          });
       });
     }
 
@@ -1322,13 +1322,13 @@ window.OBC.SectionModules.sect03 = (function () {
           element.addEventListener(eventType, () => {
             // Small delay to allow StateManager to update first
             setTimeout(() => {
-              if (!window.sectionCalculationInProgress) {
-                performAllCalculations();
-              }
+            if (!window.sectionCalculationInProgress) {
+              performAllCalculations();
+            }
             }, 50);
           });
-        });
-      }
+      });
+    }
     });
     
     window.OBC.sect03.initialized = true;
@@ -1386,7 +1386,7 @@ window.OBC.SectionModules.sect03 = (function () {
 
     // Perform initial calculations after a brief delay to ensure full initialization
     setTimeout(() => {
-      performAllCalculations();
+        performAllCalculations();
     }, 100);
   }
 
