@@ -21,22 +21,12 @@ TEUI.FieldManager = (function () {
     buildingOccupancy: "sect02",
     buildingAreas: "sect03",
     firefightingSystems: "sect04",
-    // climateCalculations: "sect03", // Temporarily disabled for Building Areas
-    actualTargetEnergy: "sect05",
-    emissions: "sect06",
-    onSiteEnergy: "sect07",
-    waterUse: "sect08",
-    indoorAirQuality: "sect09",
-    occupantInternalGains: "sect10",
-    envelopeRadiantGains: "sect11",
-    envelopeTransmissionLosses: "sect12",
-    volumeSurfaceMetrics: "sect13",
-    mechanicalLoads: "sect14",
-    tediSummary: "sect15",
-    teuiSummary: "sect16",
-    sankeyDiagram: "sect17",
-    dependencyDiagram: "sect18",
-    notes: "sect19",
+    structuralRequirements: "sect05",
+    occupantSafety: "sect06",
+    fireResistance: "sect07",
+    plumbingFixtures: "sect08",
+    complianceDesign: "sect09",
+    notes: "sect10",
   };
 
   // Combined field registry (populated from section modules)
