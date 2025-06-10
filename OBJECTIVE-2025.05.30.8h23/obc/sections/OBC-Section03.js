@@ -1201,14 +1201,25 @@ window.OBC.SectionModules.sect03 = (function () {
 
     try {
       console.log("[S03] Starting area calculations...");
+      
+      // Debug: Show some input values before calculating
+      console.log(`[S03] Sample input values: i_22=${getNumericValue("i_22")}, j_22=${getNumericValue("j_22")}`);
+      
       calculateAreaTotals();
       calculateGrossAreaTotals();
       calculateMezzanineAreaTotals();
       console.log("[S03] Area calculations complete");
+      
+      // Debug: Show some output values after calculating
+      console.log(`[S03] Sample output values: k_22=${getNumericValue("k_22")}, i_25=${getNumericValue("i_25")}`);
+      
     } finally {
       window.sectionCalculationInProgress = false;
     }
   }
+  
+  // Expose calculation function globally for manual testing
+  window.OBC.triggerS03Calculations = performAllCalculations;
 
   //==========================================================================
   // DIAGNOSTIC FUNCTIONS
@@ -1294,27 +1305,48 @@ window.OBC.SectionModules.sect03 = (function () {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
 
-    // Register custom calculation listeners for numeric fields
+    // Register StateManager listeners for calculation triggers
     if (window.OBC?.StateManager?.addListener) {
-      // Listen for changes to area fields to trigger calculations
       const calculationTriggers = [
         'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
-        'i_27', 'j_27', 'k_27', 'i_28', 'j_28', 'k_28', 'i_29', 'j_29', 'k_29',
+        'i_27', 'j_27', 'i_28', 'j_28', 'i_29', 'j_29',
         'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
       ];
       
       calculationTriggers.forEach(fieldId => {
-        // Try both StateManager systems for compatibility
-        if (window.OBC.StateManager?.addListener) {
-          window.OBC.StateManager.addListener(fieldId, () => {
-            if (!window.sectionCalculationInProgress) {
-              performAllCalculations();
-            }
-          });
-        }
-
+        window.OBC.StateManager.addListener(fieldId, () => {
+          if (!window.sectionCalculationInProgress) {
+            console.log(`[S03] Field ${fieldId} changed, triggering calculations...`);
+            performAllCalculations();
+          }
+        });
       });
     }
+
+    // ALSO add direct DOM event listeners as backup for immediate responsiveness
+    const triggerFields = [
+      'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
+      'i_27', 'j_27', 'i_28', 'j_28', 'i_29', 'j_29', 
+      'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
+    ];
+
+    triggerFields.forEach(fieldId => {
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        // Add input event listeners for immediate calculation updates
+        ['blur', 'input', 'change'].forEach(eventType => {
+          element.addEventListener(eventType, () => {
+            // Small delay to allow StateManager to update first
+            setTimeout(() => {
+              if (!window.sectionCalculationInProgress) {
+                console.log(`[S03] Direct ${eventType} on ${fieldId}, triggering calculations...`);
+                performAllCalculations();
+              }
+            }, 50);
+          });
+        });
+      }
+    });
     
     window.OBC.sect03.initialized = true;
   }
@@ -1370,13 +1402,26 @@ window.OBC.SectionModules.sect03 = (function () {
       initializeEventHandlers();
     }
 
-    // Perform initial calculations after a small delay to ensure full initialization
+    // Perform initial calculations with multiple attempts to ensure they run
+    console.log("[S03 INIT] Setting up initial calculations...");
+    
+    // Try immediate calculation
     setTimeout(() => {
-      if (!window.sectionCalculationInProgress) {
-        console.log("[S03 INIT] Triggering initial calculations to populate calculated values...");
-        performAllCalculations();
-      }
-    }, 100);
+      console.log("[S03 INIT] Attempt 1 - Immediate calculation");
+      performAllCalculations();
+    }, 50);
+    
+    // Try again after a longer delay in case the first fails
+    setTimeout(() => {
+      console.log("[S03 INIT] Attempt 2 - Delayed calculation");
+      performAllCalculations();
+    }, 200);
+    
+    // Try one more time after even longer delay for stubborn cases
+    setTimeout(() => {
+      console.log("[S03 INIT] Attempt 3 - Final calculation");
+      performAllCalculations();
+    }, 500);
   }
 
   //==========================================================================
