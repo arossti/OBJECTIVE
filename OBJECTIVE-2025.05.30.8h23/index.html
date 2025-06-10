@@ -180,6 +180,8 @@
               id="reset-imported-btn"
               type="button"
               class="btn btn-sm btn-success me-2"
+              onclick="resetAllData()"
+              title="Reset all data and clear saved state"
             >
               <i class="bi bi-arrow-clockwise"></i> Reset
             </button>
@@ -239,8 +241,8 @@
             <!-- Cross-Navigation to OBC Matrix -->
             <button
               class="btn btn-sm btn-dark ms-2"
-              onclick="window.location.href='obc/indexobc.html'"
-              title="Switch to OBC Matrix for Building Code Compliance"
+              onclick="saveStateAndNavigate('obc/indexobc.html')"
+              title="Switch to OBC Matrix for Building Code Compliance (saves current work)"
               style="transition: background-color 0.2s ease;"
               onmouseover="this.style.backgroundColor='#6c757d'"
               onmouseout="this.style.backgroundColor=''"
@@ -698,6 +700,34 @@ Select a province and city to view weather data.</pre
 
     <!-- Initialize components on page load -->
     <script>
+      // Cross-system navigation with state preservation
+      function saveStateAndNavigate(url) {
+        if (TEUI && TEUI.StateManager) {
+          // Force immediate save before navigation
+          TEUI.StateManager.saveState();
+          console.log("TEUI StateManager: State saved before navigating to OBC Matrix");
+        }
+        
+        // Navigate after a brief delay to ensure save completes
+        setTimeout(() => {
+          window.location.href = url;
+        }, 100);
+      }
+
+      // Reset all data including localStorage
+      function resetAllData() {
+        if (TEUI && TEUI.StateManager) {
+          // Clear all state including localStorage
+          TEUI.StateManager.clear();
+          console.log("TEUI StateManager: All data cleared including localStorage");
+          
+          // Reload the page to show clean state
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
         // Initialize state manager
         if (TEUI.StateManager) {

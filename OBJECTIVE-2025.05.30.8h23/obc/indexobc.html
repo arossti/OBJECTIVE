@@ -137,6 +137,8 @@
               id="reset-imported-btn"
               type="button"
               class="btn btn-sm btn-success me-2"
+              onclick="resetAllData()"
+              title="Reset all data and clear saved state"
             >
               <i class="bi bi-arrow-clockwise"></i> Reset
             </button>
@@ -196,8 +198,8 @@
             <!-- Cross-Navigation to OBJECTIVE Calculator -->
             <button
               class="btn btn-sm btn-dark ms-2"
-              onclick="window.location.href='../index.html'"
-              title="Switch to OBJECTIVE TEUI Calculator"
+              onclick="saveStateAndNavigate('../index.html')"
+              title="Switch to OBJECTIVE TEUI Calculator (saves current work)"
               style="transition: background-color 0.2s ease;"
               onmouseover="this.style.backgroundColor='#6c757d'"
               onmouseout="this.style.backgroundColor=''"
@@ -543,7 +545,7 @@ Select a province and city to view weather data.</pre
         // Initialize optional state manager
         if (OBC && OBC.StateManager) {
           OBC.StateManager.initialize();
-          console.log("OBC StateManager initialized");
+          console.log("OBC StateManager initialized with auto-restore from localStorage");
         }
 
         // Initialize Global Notes Panel with delay to ensure DOM is ready
@@ -553,6 +555,34 @@ Select a province and city to view weather data.</pre
 
         console.log("OBC Matrix initialization complete");
       });
+
+      // Cross-system navigation with state preservation
+      function saveStateAndNavigate(url) {
+        if (OBC && OBC.StateManager) {
+          // Force immediate save before navigation
+          OBC.StateManager.saveState();
+          console.log("OBC StateManager: State saved before navigating to OBJECTIVE");
+        }
+        
+        // Navigate after a brief delay to ensure save completes
+        setTimeout(() => {
+          window.location.href = url;
+        }, 100);
+      }
+
+      // Reset all data including localStorage
+      function resetAllData() {
+        if (OBC && OBC.StateManager) {
+          // Clear all state including localStorage
+          OBC.StateManager.clear();
+          console.log("OBC StateManager: All data cleared including localStorage");
+          
+          // Reload the page to show clean state
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+      }
 
       // Global Notes Panel functionality
       function initializeNotesPanel() {

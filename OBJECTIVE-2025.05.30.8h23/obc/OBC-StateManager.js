@@ -138,6 +138,12 @@ window.OBC.StateManager = (function () {
     fields.clear();
     listeners.clear();
     importedState = {};
+    
+    // Try to load saved state from localStorage
+    const hasRestoredState = loadState();
+    if (!hasRestoredState) {
+      console.log("OBC StateManager: No saved state found, starting fresh");
+    }
   }
 
   /**
@@ -194,6 +200,15 @@ window.OBC.StateManager = (function () {
 
     // Notify listeners
     notifyListeners(fieldId, value, oldValue, state);
+
+    // Auto-save state for user-modified and imported values (not defaults)
+    if (state === VALUE_STATES.USER_MODIFIED || state === VALUE_STATES.IMPORTED) {
+      // Debounce saves to avoid excessive localStorage writes
+      clearTimeout(window.obcAutoSaveTimeout);
+      window.obcAutoSaveTimeout = setTimeout(() => {
+        saveState();
+      }, 1000); // Save 1 second after last change
+    }
   }
 
   /**
@@ -353,12 +368,66 @@ window.OBC.StateManager = (function () {
   }
 
   /**
-   * Clear all state
+   * Save current state to localStorage for cross-session persistence
+   */
+  function saveState() {
+    try {
+      const stateData = {
+        fields: Array.from(fields.entries()),
+        importedState: importedState,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('OBC_Matrix_State', JSON.stringify(stateData));
+      console.log("OBC StateManager: State saved to localStorage");
+    } catch (e) {
+      console.error("OBC StateManager: Failed to save state to localStorage:", e);
+    }
+  }
+
+  /**
+   * Load state from localStorage
+   */
+  function loadState() {
+    try {
+      const savedState = localStorage.getItem('OBC_Matrix_State');
+      if (savedState) {
+        const stateData = JSON.parse(savedState);
+        
+        // Restore fields
+        fields.clear();
+        stateData.fields.forEach(([fieldId, fieldData]) => {
+          fields.set(fieldId, fieldData);
+          // Update UI for restored fields
+          updateUI(fieldId, fieldData.value);
+        });
+        
+        // Restore imported state
+        importedState = stateData.importedState || {};
+        
+        console.log(`OBC StateManager: Restored state with ${fields.size} fields from localStorage`);
+        return true;
+      }
+    } catch (e) {
+      console.error("OBC StateManager: Failed to load state from localStorage:", e);
+    }
+    return false;
+  }
+
+  /**
+   * Clear all state (both memory and localStorage)
    */
   function clear() {
     fields.clear();
     listeners.clear();
     importedState = {};
+    
+    // Also clear localStorage
+    try {
+      localStorage.removeItem('OBC_Matrix_State');
+      console.log("OBC StateManager: Cleared state from localStorage");
+    } catch (e) {
+      console.error("OBC StateManager: Failed to clear localStorage:", e);
+    }
   }
 
   /**
@@ -472,6 +541,8 @@ window.OBC.StateManager = (function () {
     resetFields: resetFields,
     importState: importState,
     exportState: exportState,
+    saveState: saveState,
+    loadState: loadState,
     getDebugInfo: getDebugInfo,
     clear: clear,
     initializeGlobalInputHandlers: initializeGlobalInputHandlers
