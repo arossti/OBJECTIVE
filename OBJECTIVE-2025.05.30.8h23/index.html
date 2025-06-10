@@ -711,7 +711,7 @@ Select a province and city to view weather data.</pre
           
           // Check what was actually saved
           const saved = localStorage.getItem('TEUI_Calculator_State');
-          console.log("🔍 DEBUG: What was saved to localStorage:", saved ? JSON.parse(saved) : "Nothing saved");
+          console.log("🔍 DEBUG: What was saved to localStorage:", saved ? "State preserved" : "Nothing saved");
         }
         
         // Navigate after a brief delay to ensure save completes
@@ -744,17 +744,52 @@ Select a province and city to view weather data.</pre
             clear: typeof TEUI.StateManager.clear
           });
           
-          TEUI.StateManager.initialize();
-          console.log("🔍 DEBUG: About to load state from localStorage");
-          
-          // Check what's in localStorage before loading
+          // Check what's in localStorage before initialization
           const saved = localStorage.getItem('TEUI_Calculator_State');
-          console.log("🔍 DEBUG: localStorage content:", saved ? JSON.parse(saved) : "No saved state");
+          console.log("🔍 DEBUG: localStorage content before initialize:", saved ? "State found" : "No saved state");
           
-          TEUI.StateManager.loadState();
+          if (saved) {
+            const parsedState = JSON.parse(saved);
+            console.log("🔍 DEBUG: Saved state details:", {
+              fieldCount: Object.keys(parsedState).length,
+              sampleFields: Object.keys(parsedState).slice(0, 5),
+              sampleValues: Object.entries(parsedState).slice(0, 3)
+            });
+          }
           
-          // Check if state was actually loaded
-          console.log("🔍 DEBUG: StateManager field count after load:", TEUI.StateManager.getDebugInfo().fieldCount);
+          // Initialize now loads state automatically during initialization
+          TEUI.StateManager.initialize();
+          
+          // Check if state was preserved and loaded
+          const debugInfo = TEUI.StateManager.getDebugInfo();
+          console.log("🔍 DEBUG: StateManager field count after initialize:", debugInfo.fieldCount);
+          
+          // Check if user-modified fields are actually loaded
+          const allKeys = TEUI.StateManager.getAllKeys();
+          let userModifiedCount = 0;
+          let importedCount = 0;
+          let defaultCount = 0;
+          let calculatedCount = 0;
+          
+          allKeys.forEach(key => {
+            const fieldInfo = TEUI.StateManager.getDebugInfo(key);
+            if (fieldInfo) {
+              switch(fieldInfo.state) {
+                case 'user-modified': userModifiedCount++; break;
+                case 'imported': importedCount++; break;
+                case 'default': defaultCount++; break;
+                case 'calculated': calculatedCount++; break;
+              }
+            }
+          });
+          
+          console.log("🔍 DEBUG: Field states after initialize:", {
+            'user-modified': userModifiedCount,
+            'imported': importedCount,
+            'default': defaultCount,
+            'calculated': calculatedCount,
+            'total': allKeys.length
+          });
         }
 
         // Initialize FieldManager to generate content for all sections

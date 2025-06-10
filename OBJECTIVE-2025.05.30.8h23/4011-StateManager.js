@@ -170,9 +170,18 @@ TEUI.StateManager = (function () {
    * Initialize the state manager
    */
   function initialize() {
-    clear();
+    // CRITICAL FIX: Don't clear on initialization - preserve existing state for cross-system navigation
+    // Only clear internal maps, not localStorage
+    fields.clear();
+    dependencies.clear();
+    calculatedFields.clear();
+    dirtyFields.clear();
+    listeners.clear();
 
-    // Initialize with default values from FieldManager
+    // Load any existing state from localStorage FIRST (before registering defaults)
+    loadState();
+
+    // Initialize with default values from FieldManager (only if not already loaded)
     if (window.TEUI.fields) {
       initializeFromFieldManager();
     }
@@ -201,8 +210,10 @@ TEUI.StateManager = (function () {
       // Skip fields without default values
       if (field.defaultValue === undefined) return;
 
-      // Set default value
-      setValue(fieldId, field.defaultValue, VALUE_STATES.DEFAULT);
+      // CRITICAL FIX: Only set default if field doesn't already exist (preserves loaded state)
+      if (!fields.has(fieldId)) {
+        setValue(fieldId, field.defaultValue, VALUE_STATES.DEFAULT);
+      }
 
       // Register dependencies if any
       if (field.dependencies && Array.isArray(field.dependencies)) {
@@ -518,6 +529,8 @@ TEUI.StateManager = (function () {
       // Load each field
       Object.entries(state).forEach(([fieldId, field]) => {
         setValue(fieldId, field.value, field.state);
+        // CRITICAL FIX: Update UI to display loaded values
+        updateUI(fieldId, field.value);
       });
     } catch (error) {
       console.error("Error loading state from localStorage:", error);
@@ -1562,7 +1575,4 @@ TEUI.StateManager = (function () {
   };
 })();
 
-// Initialize when the document is ready
-document.addEventListener("DOMContentLoaded", function () {
-  TEUI.StateManager.initialize();
-});
+// NOTE: Initialization is now handled in index.html to control the sequence properly
