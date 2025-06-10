@@ -580,6 +580,279 @@ window.TEUI.FieldMetadata = {
 
 **Status**: **ARCHITECTURAL DESIGN COMPLETE** - Ready for development prioritization
 
+## 🐛 Bug Hunting Queue
+
+### ⚠️ **UI State Synchronization Issue (IDENTIFIED - 2025.06.05)**
+**Priority**: HIGH - Affects user experience significantly  
+**Status**: 🚨 **CONFIRMED BUG** - Requires investigation
+
+#### **🔍 Problem Description**
+State persistence is working correctly at the data level, but UI elements are not visually updating to reflect saved state when the application loads.
+
+#### **📊 Evidence from Debugging**
+**StateManager Analysis** (from Logs.md 2025.06.05):
+```javascript
+// localStorage correctly contains saved state
+const saved = JSON.parse(localStorage.getItem('TEUI_Calculator_State'));
+
+// StateManager correctly returns saved values
+h_15: "1427.2" (user-modified) → StateManager.getValue("h_15") returns "1427.2" ✅
+h_13: "100" (user-modified) → StateManager.getValue("h_13") returns "100" ✅  
+i_16: "Test Change 2" (user-modified) → StateManager.getValue("i_16") returns "Test Change 2" ✅
+d_12: "B1-Detention" (user-modified) → StateManager.getValue("d_12") returns "B1-Detention" ✅
+```
+
+**The Disconnect**: 
+- ✅ **Data Layer**: localStorage → StateManager restoration working perfectly
+- ❌ **UI Layer**: DOM elements not visually showing the restored values
+- ✅ **State Queries**: Programmatic access to values works correctly
+
+#### **🎯 Root Cause Hypothesis**
+The state restoration successfully loads data into StateManager, but the UI update mechanism isn't syncing DOM elements with the restored state. This suggests:
+
+1. **Missing UI Update Step**: `loadState()` restores data but doesn't call `updateUI()` for each field
+2. **Timing Issue**: UI elements might not exist when state restoration runs
+3. **Selector Mismatch**: `updateUI()` might be using different selectors than field rendering
+4. **State Class Application**: Restored fields might need CSS classes applied (`.user-modified`, etc.)
+
+#### **📋 Investigation Plan**
+
+**Step 1: State Restoration Analysis**
+```javascript
+// Debug the loadState() function in OBC-StateManager.js
+function loadState() {
+  const savedState = localStorage.getItem('OBC_Matrix_State');
+  if (savedState) {
+    const stateData = JSON.parse(savedState);
+    console.log("🔍 RESTORE DEBUG: Found saved state with", stateData.fields?.length, "fields");
+    
+    stateData.fields?.forEach(([fieldId, fieldData]) => {
+      fields.set(fieldId, fieldData);
+      console.log(`🔍 RESTORE: ${fieldId} = "${fieldData.value}" (${fieldData.state})`);
+      
+      // CHECK: Is updateUI being called?
+      updateUI(fieldId, fieldData.value);
+    });
+  }
+}
+```
+
+**Step 2: UI Update Function Analysis**
+```javascript
+// Verify updateUI() is correctly targeting DOM elements
+function updateUI(fieldId, value) {
+  console.log(`🔍 UI UPDATE: Attempting to update ${fieldId} with "${value}"`);
+  
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  console.log(`🔍 UI UPDATE: Element found:`, !!element);
+  
+  if (element) {
+    if (element.tagName === "SELECT") {
+      element.value = value;
+    } else if (element.tagName === "INPUT") {
+      element.value = value;
+    } else {
+      element.textContent = value;
+    }
+    console.log(`🔍 UI UPDATE: Updated ${fieldId} successfully`);
+  } else {
+    console.warn(`🔍 UI UPDATE: No element found for ${fieldId}`);
+  }
+}
+```
+
+**Step 3: Timing Investigation**
+```javascript
+// Check if DOM elements exist when state restoration runs
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("🔍 TIMING: DOM loaded, field elements exist:", 
+    document.querySelectorAll('[data-field-id]').length);
+    
+  // Delay state restoration to ensure all sections are rendered
+  setTimeout(() => {
+    StateManager.loadState();
+    console.log("🔍 TIMING: State restoration attempted after delay");
+  }, 500);
+});
+```
+
+**Step 4: CSS State Class Application**
+```javascript
+// Ensure restored fields get proper visual styling
+function applyFieldState(fieldId, fieldData) {
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  if (element) {
+    // Apply state-specific CSS classes
+    element.classList.remove('user-modified', 'imported', 'calculated');
+    if (fieldData.state === 'user-modified') {
+      element.classList.add('user-modified');
+    }
+    // Update visual value
+    updateUI(fieldId, fieldData.value);
+  }
+}
+```
+
+#### **🚀 Quick Diagnostic Test**
+```javascript
+// Run this in browser console to identify the specific disconnect
+function debugStateUISync() {
+  const saved = JSON.parse(localStorage.getItem('OBC_Matrix_State') || '{}');
+  const stateManagerFields = Object.keys(saved.fields || {});
+  const domElements = document.querySelectorAll('[data-field-id]');
+  
+  console.log("📊 STATE UI SYNC ANALYSIS:");
+  console.log(`StateManager fields: ${stateManagerFields.length}`);
+  console.log(`DOM elements: ${domElements.length}`);
+  
+  stateManagerFields.slice(0, 5).forEach(fieldId => {
+    const stateValue = StateManager.getValue(fieldId);
+    const domElement = document.querySelector(`[data-field-id="${fieldId}"]`);
+    const domValue = domElement ? (domElement.value || domElement.textContent) : 'NOT FOUND';
+    
+    console.log(`${fieldId}: State="${stateValue}" | DOM="${domValue}" | Match=${stateValue === domValue}`);
+  });
+}
+
+// Run diagnostic
+debugStateUISync();
+```
+
+#### **🎯 Expected Fix Approach**
+Once root cause is identified, the fix will likely involve:
+1. **Enhanced loadState()**: Ensure UI updates are called during state restoration
+2. **Timing Adjustment**: Delay state restoration until after complete section rendering
+3. **Selector Verification**: Confirm DOM element targeting is consistent
+4. **State Class Management**: Apply appropriate CSS classes for visual state indication
+
+#### **✅ Success Criteria**
+- Saved field values visually appear in form fields on page load
+- CSS state classes (user-modified, imported) applied correctly
+- No performance impact from state synchronization
+- Cross-browser compatibility maintained
+
+### ⚠️ **OBJECTIVE Calculator State Loss Issue (IDENTIFIED - 2025.06.05)**
+**Priority**: CRITICAL - Breaks professional cross-system workflow  
+**Status**: 🚨 **CONFIRMED BUG** - Ready for diagnosis
+
+#### **🔍 Problem Description**
+OBJECTIVE Calculator loses all user-modified field values when returning from OBC Matrix, despite successful navigation state saving. OBC Matrix → OBJECTIVE navigation works fine, but OBJECTIVE → OBC → OBJECTIVE results in wiped user data.
+
+#### **📊 Evidence & Analysis**
+**Cross-Navigation Flow Analysis**:
+- ✅ **OBJECTIVE → OBC**: State preservation works correctly
+- ✅ **OBC Matrix persistence**: Own state saves/loads correctly (localStorage format bug fixed)
+- ❌ **Return to OBJECTIVE**: User-modified fields reset to defaults
+- ✅ **localStorage exists**: `TEUI_Calculator_State` contains saved data
+- ❌ **UI not restored**: DOM elements show default values despite saved state
+
+**Root Cause Hypothesis**: `TEUI.Calculator.calculateAll()` is likely overwriting user-modified values during OBJECTIVE initialization sequence.
+
+#### **🚀 Ready-to-Run Diagnostic Script**
+```javascript
+function debugOBJECTIVEStateLoss() {
+  console.log("🔍 OBJECTIVE STATE LOSS DIAGNOSTIC");
+  console.log("=====================================");
+  
+  // 1. Check localStorage directly
+  const saved = localStorage.getItem('TEUI_Calculator_State');
+  console.log("1. localStorage check:", saved ? "✅ State exists" : "❌ No state found");
+  
+  if (saved) {
+    const parsedState = JSON.parse(saved);
+    const savedFieldIds = Object.keys(parsedState);
+    console.log(`   - Saved field count: ${savedFieldIds.length}`);
+    console.log(`   - Sample fields: ${savedFieldIds.slice(0, 5).join(', ')}`);
+    
+    // Check specific user-modified fields
+    const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+    testFields.forEach(fieldId => {
+      if (parsedState[fieldId]) {
+        console.log(`   - ${fieldId}: "${parsedState[fieldId].value}" (${parsedState[fieldId].state})`);
+      }
+    });
+  }
+  
+  // 2. Check StateManager internal state
+  if (window.TEUI?.StateManager) {
+    const debugInfo = TEUI.StateManager.getDebugInfo();
+    console.log(`2. StateManager field count: ${debugInfo.fieldCount}`);
+    
+    const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+    testFields.forEach(fieldId => {
+      const value = TEUI.StateManager.getValue(fieldId);
+      const state = TEUI.StateManager.getDebugInfo(fieldId);
+      console.log(`   - ${fieldId}: "${value}" (${state?.state || 'unknown'})`);
+    });
+  }
+  
+  // 3. Check actual DOM elements
+  console.log("3. DOM element check:");
+  const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+  testFields.forEach(fieldId => {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      const domValue = element.tagName === 'SELECT' ? element.value : 
+                      element.tagName === 'INPUT' ? element.value : 
+                      element.textContent;
+      console.log(`   - ${fieldId}: DOM shows "${domValue}"`);
+    } else {
+      console.log(`   - ${fieldId}: ❌ DOM element not found`);
+    }
+  });
+  
+  // 4. Test if Calculator is overwriting values
+  console.log("4. Calculator impact test:");
+  console.log("   - About to trigger calculateAll()...");
+  
+  // Store values before calculation
+  const beforeCalc = {};
+  const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+  testFields.forEach(fieldId => {
+    beforeCalc[fieldId] = TEUI.StateManager.getValue(fieldId);
+  });
+  
+  // Run calculation
+  if (window.TEUI?.Calculator?.calculateAll) {
+    TEUI.Calculator.calculateAll();
+    
+    // Check values after calculation
+    console.log("   - After calculateAll():");
+    testFields.forEach(fieldId => {
+      const afterValue = TEUI.StateManager.getValue(fieldId);
+      const changed = beforeCalc[fieldId] !== afterValue;
+      console.log(`     - ${fieldId}: "${beforeCalc[fieldId]}" → "${afterValue}" ${changed ? '❌ CHANGED' : '✅ preserved'}`);
+    });
+  }
+  
+  console.log("=====================================");
+}
+
+// Run diagnostic in OBJECTIVE Calculator console after returning from OBC Matrix
+debugOBJECTIVEStateLoss();
+```
+
+#### **🎯 Investigation Plan**
+1. **Run diagnostic script** in OBJECTIVE Calculator after cross-navigation
+2. **Identify specific failure point**: localStorage → StateManager → DOM → Calculator
+3. **Fix initialization order** if Calculator is overwriting user state
+4. **Test timing solutions** (delay calculateAll until after state restoration)
+5. **Verify state priority** (ensure user-modified beats calculated in setValue)
+
+#### **✅ OBC Matrix Changes Status**
+**Note**: OBC Matrix localStorage format fixes made during investigation were **legitimate bug fixes** and should be retained:
+- Fixed `Object.keys(array)` returning indices instead of field names
+- Added backward compatibility for both array and object formats
+- Improved OBC Matrix's own state persistence reliability
+
+#### **🚀 Next Steps for Resolution**
+- Run diagnostic script to pinpoint exact failure location
+- Likely fix location: `4011-StateManager.js` initialization sequence
+- Potential solution: Delay `calculateAll()` until after state restoration
+- Alternative: Modify Calculator to respect existing user-modified state
+
+---
+
 ## ✅ Phase 14: Namespace Architecture Resolution (COMPLETED - 2025.06.05)
 **Objective**: Fix critical namespace contamination between OBC Matrix and TEUI Calculator systems
 

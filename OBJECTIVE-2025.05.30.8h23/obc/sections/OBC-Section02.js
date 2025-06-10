@@ -649,6 +649,11 @@ window.OBC.SectionModules.sect02 = (function () {
   function initializeEventHandlers() {
     console.log("Initializing Section 02 event handlers");
     
+    // ✅ MANDATORY: Use global input handler for graceful behavior
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
+    }
+    
     window.OBC.sect02.initialized = true;
   }
 

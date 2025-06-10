@@ -1,69 +1,204 @@
-4011-MobileDetect.js:113 Desktop device detected
-4011-Dependency.js:2001 [4011-Dependency.js] Module loaded.
-4011-Section18.js:6 Section 18 (Notes) placeholder loaded.
-4011-Section02.js:847 [Section02] Set default reference standard: OBC SB10 5.5-6 Z6
-4011-FileHandler.js:62 [SAFARI DEBUG] Setting up S03 Excel import buttons. selectExcelBtn and locationFileInput FOUND.
-index.html:741 🔍 DEBUG: StateManager functions available: {saveState: 'function', loadState: 'function', clear: 'function'}
-index.html:749 🔍 DEBUG: localStorage content before initialize: State found
-index.html:753 🔍 DEBUG: Saved state details: {fieldCount: 8, sampleFields: Array(5), sampleValues: Array(3)}
-index.html:765 🔍 DEBUG: StateManager field count after initialize: 560
-index.html:786 🔍 DEBUG: Field states after initialize: {user-modified: 8, imported: 0, default: 549, calculated: 3, total: 560}
-index.html:797 🔍 DEBUG: About to render all sections
-index.html:799 🔍 DEBUG: After renderAllSections, field count: 650
-index.html:809 🔍 DEBUG: About to initialize Calculator
-index.html:811 🔍 DEBUG: After Calculator.initialize, field count: 650
-index.html:821 TEUI Calculator 4.011 initialization complete
-4011-Dependency.js:1968 [DependencyGraph] DOMContentLoaded, attempting initialization...
-4011-Dependency.js:1887 [DependencyGraph] Initializing graph instance and UI...
-4011-StateManager.js:931 [StateManager] Exporting dependency graph data...
-4011-StateManager.js:970 [StateManager] Exported 425 nodes and 744 links.
-4011-Dependency.js:78 [DependencyGraph] Data loaded: 425 nodes, 744 links
-4011-Dependency.js:695 [DependencyGraph] Calculating node sizes...
-4011-Dependency.js:1935 [DependencyGraph] Applied Dagre layout on init.
-index.html:815 🔍 DEBUG: About to run calculateAll
-4011-Section17.js:67 [sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale.
-calculateAll @ 4011-Section17.js:67
-(anonymous) @ 4011-Calculator.js:505
-calculateAll @ 4011-Calculator.js:501
-(anonymous) @ index.html:816
-setTimeout
-(anonymous) @ index.html:814Understand this warningAI
-index.html:817 🔍 DEBUG: After calculateAll, field count: 690
-4011-Dependency.js:1736 [DependencyGraph] Fitted graph to container with scale 0.09809888951989876
-// See what's actually saved
-const saved = JSON.parse(localStorage.getItem('TEUI_Calculator_State'));
-console.log("Actual saved data:", saved);
+ ✅ Section 04 module loaded: Firefighting & Life Safety Systems
+ OBC StateManager: Initializing...
+ OBC StateManager: No saved state found, starting fresh
+ Section 01 rendered - Building Information (OBC Matrix)
+ Initializing Section 01 event handlers
+ Section 02 rendered - Building Occupancy (OBC Matrix)
+ Initializing Section 02 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 69 editable fields
+ Initializing Section 04: Firefighting & Life Safety Systems
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 70 editable fields
+ ✅ Section 04 initialized with global input handling
+ Section 04 rendered - Firefighting & Life Safety Systems
+ Initializing Section 05 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 75 editable fields
+ Section 05 rendered
+ Initializing Section 05 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 75 editable fields
+ Initializing Section 06 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 96 editable fields
+ Section 06 rendered
+ Initializing Section 06 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 96 editable fields
+ Initializing Section 07 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 111 editable fields
+ Section 07 rendered
+OBC-Section07.js:493 Initializing Section 07 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 111 editable fields
+OBC-Section08.js:412 Initializing Section 08 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 134 editable fields
+OBC-Section08.js:420 Section 08 rendered
+OBC-Section08.js:412 Initializing Section 08 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 134 editable fields
+OBC-Section09.js:375 Initializing Section 09 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 146 editable fields
+OBC-Section09.js:383 Section 09 rendered
+OBC-Section09.js:375 Initializing Section 09 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 146 editable fields
+OBC-Section10.js:231 Initializing Section 10 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+OBC-Section10.js:239 Section 10 rendered
+OBC-Section10.js:231 Initializing Section 10 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+ Core TEUI modules (FieldManager) not found!
+(anonymous) @ OBC-Navigation.js:933Understand this errorAI
+ Initializing Section 04: Firefighting & Life Safety Systems
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ ✅ Section 04 initialized with global input handling
+ Section 01 rendered - Building Information (OBC Matrix)
+ Section 02 rendered - Building Occupancy (OBC Matrix)
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Initializing Section 04: Firefighting & Life Safety Systems
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ ✅ Section 04 initialized with global input handling
+ Section 04 rendered - Firefighting & Life Safety Systems
+ Initializing Section 05 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Section 05 rendered
+ Initializing Section 05 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Initializing Section 06 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Section 06 rendered
+ Initializing Section 06 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Initializing Section 07 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Section 07 rendered
+ Initializing Section 07 event handlers
+ OBC StateManager: Initializing global input handlers...
+ OBC StateManager: Initialized handlers for 149 editable fields
+ Initializing Section 08 event handlers
+ OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+OBC-Section08.js:420 Section 08 rendered
+OBC-Section08.js:412 Initializing Section 08 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+OBC-Section09.js:375 Initializing Section 09 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+OBC-Section09.js:383 Section 09 rendered
+OBC-Section09.js:375 Initializing Section 09 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+OBC-Section10.js:231 Initializing Section 10 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+OBC-Section10.js:239 Section 10 rendered
+OBC-Section10.js:231 Initializing Section 10 event handlers
+OBC-StateManager.js:500 OBC StateManager: Initializing global input handlers...
+OBC-StateManager.js:541 OBC StateManager: Initialized handlers for 149 editable fields
+indexobc.html:540 OBC Matrix FieldManager initialized
+OBC-StateManager.js:137 OBC StateManager: Initializing...
+OBC-StateManager.js:145 OBC StateManager: No saved state found, starting fresh
+indexobc.html:548 OBC StateManager initialized with auto-restore from localStorage
+indexobc.html:556 OBC Matrix initialization complete
+indexobc.html:589 Initializing notes panel...
+indexobc.html:595 Found elements: {notesToggleBtn: button#notes-toggle-btn.btn.btn-sm.btn-link.text-white.me-2.d-flex.align-items-center.justify-conte…, closeNotesBtn: button#close-notes-panel.btn.btn-sm.btn-outline-secondary, notesPanel: div#global-notes-panel.notes-panel, notesTextarea: textarea#global-notes-textarea.form-control}
+indexobc.html:622 Added click listener to notes toggle button
 
-// Check the specific fields you changed (S02 project/firm name)
-// Try these field IDs:
-console.log("d_10:", TEUI.StateManager.getValue("d_10")); // Project name maybe?
-console.log("d_11:", TEUI.StateManager.getValue("d_11")); // Firm name maybe?
-console.log("c_3:", TEUI.StateManager.getValue("c_3"));   // Another possibility
-VM2178:3 Actual saved data: {h_15: {…}, h_13: {…}, h_12: {…}, i_16: {…}, i_17: {…}, …}
-VM2178:7 d_10: null
-VM2178:8 d_11: null
-VM2178:9 c_3: null
-undefined
-// Check the ACTUAL saved fields
-const saved = JSON.parse(localStorage.getItem('TEUI_Calculator_State'));
-Object.entries(saved).forEach(([fieldId, data]) => {
-  console.log(`${fieldId}: "${data.value}" (${data.state})`);
-  console.log(`StateManager has: "${TEUI.StateManager.getValue(fieldId)}"`);
-});
-VM2182:4 h_15: "1427.2" (user-modified)
-VM2182:5 StateManager has: "1427.2"
-VM2182:4 h_13: "100" (user-modified)
-VM2182:5 StateManager has: "100"
-VM2182:4 h_12: "2030" (user-modified)
-VM2182:5 StateManager has: "2030"
-VM2182:4 i_16: "Changed" (user-modified)
-VM2182:5 StateManager has: "Changed"
-VM2182:4 i_17: "Changed" (user-modified)
-VM2182:5 StateManager has: "Changed"
-VM2182:4 h_14: "Change Name" (user-modified)
-VM2182:5 StateManager has: "Change Name"
-VM2182:4 d_12: "B1-Detention" (user-modified)
-VM2182:5 StateManager has: "B1-Detention"
-VM2182:4 l_16: "$1.5000" (user-modified)
-VM2182:5 StateManager has: "$1.5000"
-undefined
+// 🚨 CRITICAL DIAGNOSTIC: Test OBJECTIVE State Loss Issue
+// Run this in OBJECTIVE Calculator after returning from OBC Matrix
+
+function debugOBJECTIVEStateLoss() {
+  console.log("🔍 OBJECTIVE STATE LOSS DIAGNOSTIC");
+  console.log("=====================================");
+  
+  // 1. Check localStorage directly
+  const saved = localStorage.getItem('TEUI_Calculator_State');
+  console.log("1. localStorage check:", saved ? "✅ State exists" : "❌ No state found");
+  
+  if (saved) {
+    const parsedState = JSON.parse(saved);
+    const savedFieldIds = Object.keys(parsedState);
+    console.log(`   - Saved field count: ${savedFieldIds.length}`);
+    console.log(`   - Sample fields: ${savedFieldIds.slice(0, 5).join(', ')}`);
+    
+    // Check a few specific fields that should be user-modified
+    const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+    testFields.forEach(fieldId => {
+      if (parsedState[fieldId]) {
+        console.log(`   - ${fieldId}: "${parsedState[fieldId].value}" (${parsedState[fieldId].state})`);
+      }
+    });
+  }
+  
+  // 2. Check StateManager internal state
+  if (window.TEUI?.StateManager) {
+    const debugInfo = TEUI.StateManager.getDebugInfo();
+    console.log(`2. StateManager field count: ${debugInfo.fieldCount}`);
+    
+    const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+    testFields.forEach(fieldId => {
+      const value = TEUI.StateManager.getValue(fieldId);
+      const state = TEUI.StateManager.getDebugInfo(fieldId);
+      console.log(`   - ${fieldId}: "${value}" (${state?.state || 'unknown'})`);
+    });
+  }
+  
+  // 3. Check actual DOM elements
+  console.log("3. DOM element check:");
+  const testFields = ['h_15', 'h_13', 'd_12', 'i_16'];
+  testFields.forEach(fieldId => {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      const domValue = element.tagName === 'SELECT' ? element.value : 
+                      element.tagName === 'INPUT' ? element.value : 
+                      element.textContent;
+      console.log(`   - ${fieldId}: DOM shows "${domValue}"`);
+    } else {
+      console.log(`   - ${fieldId}: ❌ DOM element not found`);
+    }
+  });
+  
+  // 4. Test if Calculator is overwriting values
+  console.log("4. Calculator impact test:");
+  console.log("   - About to trigger calculateAll()...");
+  
+  // Store values before calculation
+  const beforeCalc = {};
+  testFields.forEach(fieldId => {
+    beforeCalc[fieldId] = TEUI.StateManager.getValue(fieldId);
+  });
+  
+  // Run calculation
+  if (window.TEUI?.Calculator?.calculateAll) {
+    TEUI.Calculator.calculateAll();
+    
+    // Check values after calculation
+    console.log("   - After calculateAll():");
+    testFields.forEach(fieldId => {
+      const afterValue = TEUI.StateManager.getValue(fieldId);
+      const changed = beforeCalc[fieldId] !== afterValue;
+      console.log(`     - ${fieldId}: "${beforeCalc[fieldId]}" → "${afterValue}" ${changed ? '❌ CHANGED' : '✅ preserved'}`);
+    });
+  }
+  
+  console.log("=====================================");
+}
+
+// Run the diagnostic
+debugOBJECTIVEStateLoss();

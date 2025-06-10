@@ -264,30 +264,44 @@ window.OBC.StateManager = (function () {
    * @param {string|number} value - The value to display
    */
   function updateUI(fieldId, value) {
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    // First try to find a SELECT element with this field ID (for dropdowns)
+    let element = document.querySelector(`select[data-field-id="${fieldId}"]`);
+    
+    // If no select found, look for any element with this field ID
+    if (!element) {
+      element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    }
+    
     if (element) {
       if (element.tagName === 'INPUT') {
         element.value = value;
       } else if (element.tagName === 'SELECT') {
         element.value = value;
       } else {
-        // Check if this is a numeric field that might already have formatting
-        const isNumericField = element.hasAttribute('data-type') && 
-                              element.getAttribute('data-type') === 'numeric';
-        
-        if (isNumericField) {
-          // For numeric fields, only update if the current content is unformatted
-          const currentText = element.textContent.trim();
-          const hasFormatting = currentText.includes(',') && currentText.includes('.');
+        // Check if this element contains a SELECT (dropdown in a cell)
+        const selectChild = element.querySelector('select[data-field-id]');
+        if (selectChild) {
+          selectChild.value = value;
+          element = selectChild; // Use the select for CSS class updates
+        } else {
+          // Check if this is a numeric field that might already have formatting
+          const isNumericField = element.hasAttribute('data-type') && 
+                                element.getAttribute('data-type') === 'numeric';
           
-          if (!hasFormatting) {
-            // No formatting present, safe to update with raw value
+          if (isNumericField) {
+            // For numeric fields, only update if the current content is unformatted
+            const currentText = element.textContent.trim();
+            const hasFormatting = currentText.includes(',') && currentText.includes('.');
+            
+            if (!hasFormatting) {
+              // No formatting present, safe to update with raw value
+              element.textContent = value;
+            }
+            // If formatting is present, preserve it (don't override)
+          } else {
+            // Non-numeric fields, update normally
             element.textContent = value;
           }
-          // If formatting is present, preserve it (don't override)
-        } else {
-          // Non-numeric fields, update normally
-        element.textContent = value;
         }
       }
       
@@ -373,7 +387,7 @@ window.OBC.StateManager = (function () {
   function saveState() {
     try {
       const stateData = {
-        fields: Array.from(fields.entries()),
+        fields: Object.fromEntries(fields.entries()), // Fix: Save as object, not array
         importedState: importedState,
         timestamp: Date.now()
       };
@@ -395,11 +409,23 @@ window.OBC.StateManager = (function () {
         
         // Restore fields
         fields.clear();
-        stateData.fields.forEach(([fieldId, fieldData]) => {
-          fields.set(fieldId, fieldData);
-          // Update UI for restored fields
-          updateUI(fieldId, fieldData.value);
-        });
+        
+        // Handle both old array format and new object format
+        if (Array.isArray(stateData.fields)) {
+          // Legacy array format: [["fieldId", fieldData], ...]
+          stateData.fields.forEach(([fieldId, fieldData]) => {
+            fields.set(fieldId, fieldData);
+            // Update UI for restored fields
+            updateUI(fieldId, fieldData.value);
+          });
+        } else if (stateData.fields && typeof stateData.fields === 'object') {
+          // New object format: {"fieldId": fieldData, ...}
+          Object.entries(stateData.fields).forEach(([fieldId, fieldData]) => {
+            fields.set(fieldId, fieldData);
+            // Update UI for restored fields
+            updateUI(fieldId, fieldData.value);
+          });
+        }
         
         // Restore imported state
         importedState = stateData.importedState || {};
