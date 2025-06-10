@@ -463,9 +463,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Update sticky element heights
       updateStickyElementHeights();
-
-      // Scroll to top of app wrapper
-      setTimeout(scrollAppWrapperToTop, 100);
     } else {
       // Default to vertical layout
       isVerticalLayout = true;

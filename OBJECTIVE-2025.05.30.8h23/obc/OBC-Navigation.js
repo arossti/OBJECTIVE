@@ -506,11 +506,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Update sticky element heights
       updateStickyElementHeights();
-
-      // Scroll to top of app wrapper (skip if navigation)
-      if (!isNavigation) {
-        setTimeout(scrollAppWrapperToTop, 100);
-      }
     } else {
       // Default to vertical layout
       isVerticalLayout = true;
@@ -897,24 +892,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Call updateStickyElementHeights after DOM is loaded
-  // Skip auto-scroll if coming from navigation button
-  const urlParams = new URLSearchParams(window.location.search);
-  const isNavigation = urlParams.get('nav') === 'true';
-  
-  if (!isNavigation) {
-    setTimeout(updateStickyElementHeights, 300);
-  } else {
-    // Still update heights but without scrolling
-    setTimeout(() => {
-      const stickySection = document.getElementById("keyValues") || document.getElementById("buildingInfo");
-      const tabContainer = document.querySelector(".tab-container");
-      if (stickySection && tabContainer) {
-        const stickyHeight = stickySection.offsetHeight;
-        document.documentElement.style.setProperty("--key-values-height", stickyHeight + "px");
-        tabContainer.style.top = stickyHeight + "px";
-      }
-    }, 300);
-  }
+  setTimeout(updateStickyElementHeights, 300);
 
   // Initialize core components after DOM is loaded
   if (window.TEUI && window.TEUI.FieldManager) {
