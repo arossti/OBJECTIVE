@@ -401,6 +401,185 @@ function populateArchitectInfo(memberData) {
 - **Responsive Design**: Optimize for tablet and mobile use
 - **Accessibility**: WCAG compliance for screen readers and keyboard navigation
 
+### 📋 Phase 13: Cross-System Data Integration (ARCHITECTURAL STRATEGY) 🆕
+**Objective**: Enable professional data sharing between OBC Matrix and OBJECTIVE TEUI Calculator
+
+**Strategic Vision**: Architects complete the required OBC Matrix for building permits and receive a "head start" on energy modeling through careful data mapping. This leverages familiar workflows while providing significant value-add for energy compliance.
+
+#### **🎯 Core Philosophy: Explicit User Control**
+- **NEVER automatic data transfer** - all imports must be user-initiated
+- **Preview before import** - show exactly what data will be transferred
+- **Full audit trail** - complete record of all data movements
+- **Professional liability protection** - architects control all decisions
+
+#### **🔄 Professional Workflow Example**
+
+**Step 1: OBC Matrix Completion**
+```
+Architect completes building areas, occupancy, window areas for permit submission
+Data shows: [user input] (no import stamps)
+Export OBC Matrix CSV for building department submission
+```
+
+**Step 2: TEUI Energy Modeling**
+```
+In OBJECTIVE Calculator: "Import from OBC Matrix"
+Preview: "Building area: 1000m² → Conditioned area: 950m²"
+User confirms import → TEUI fields show: [950m²] ⬇️ (import stamp)
+Architect adds mechanical systems, assemblies, completes energy model
+```
+
+**Step 3: Return to OBC for Final Submission**
+```
+In OBC Matrix: "Import from TEUI"
+Preview: "Window area: 200m² → 180m² (refined in energy model)"
+User confirms → OBC fields show: [180m²] ⬇️ (fresh import stamp)
+Final OBC Matrix export includes refined data from energy analysis
+```
+
+#### **🏗️ Technical Architecture: "Data Bridge" Pattern**
+
+**New Module: `OBC-DataBridge.js`**
+```javascript
+window.TEUI.DataBridge = {
+  // Cross-system field mappings
+  fieldMappings: {
+    'obc_gross_area': {
+      maps_to: 'teui_conditioned_area',
+      transform: (grossArea) => grossArea * 0.90, // Gross to conditioned
+      notes: "OBC uses gross area, TEUI uses conditioned area"
+    },
+    'obc_window_area': {
+      maps_to: 'teui_glazing_area',
+      transform: (area) => area, // Direct mapping
+      validation: (value) => value > 0 && value < 10000
+    },
+    'obc_occupancy_class': {
+      maps_to: 'teui_building_type',
+      transform: (obcClass) => mapOBCToTEUIClass(obcClass)
+    }
+  },
+  
+  // Safe data transformation with preview
+  previewImport: (sourceSystem, targetFields) => {
+    // Show user exactly what will change before import
+  },
+  
+  // Execute import with full audit trail
+  executeImport: (sourceSystem, confirmedFields) => {
+    // Perform data transfer and log to audit console
+  }
+}
+```
+
+#### **📝 Enhanced CSV Structure (6-Row Format)**
+```csv
+TEUI_Header,building_area,window_area,occupancy_class,...
+TEUI_Values,1000,200,A-1,...
+TEUI_Reference,800,150,A-1,...
+OBC_Header,Gross Building Area,Total Window Area,Major Occupancy,...
+OBC_Values,1050,200,Group A Division 1,...
+METADATA,building_area:imported_from:OBC|2024-01-15T09:00:00|modified:2024-01-15T14:30:00,window_area:imported_from:TEUI|2024-01-15T16:00:00,...
+```
+
+#### **📋 Notes Section as Professional Audit Console**
+
+**Auto-Generated Audit Trail**
+The Notes section serves as a **chronological project log** with auto-generated entries for all data movements:
+
+```
+2024-01-15 4:30 PM - IMPORT FROM TEUI
+Building areas updated: Gross 1000m² → Conditioned 950m²
+Window calculations imported: 15 window definitions
+Occupancy verified: Group A Division 1 confirmed
+----------------------------------------
+
+2024-01-15 2:15 PM - USER MODIFICATION  
+Building height changed from 3 stories to 4 stories
+Sprinkler requirements updated to "Required"
+----------------------------------------
+
+2024-01-15 9:30 AM - EXPORT TO CSV
+OBC Matrix data exported to: Project_ABC_OBC_Matrix.csv
+Data integrity verified: 47 fields populated
+----------------------------------------
+
+2024-01-14 3:45 PM - IMPORT FROM OBC MATRIX
+Project initialized from OBC Matrix submission
+Building type: Group A Division 1 - Assembly
+Gross building area: 1000m² imported
+----------------------------------------
+```
+
+#### **🎯 Enhanced Import/Export Dropdown Options**
+
+**Import Menu:**
+- **Import from OBJECTIVE (TEUI)** → Pull refined data from energy model
+- **Import from OBC Matrix** → Pull building code compliance data  
+- **Import Combined File (TEUI + OBC)** → Load 6-row CSV format
+- **Import Standard CSV** → Traditional 3-row format
+- **Import Excel/XLSX** → Standard Excel import
+
+**Export Menu:**
+- **Export Combined (TEUI + OBC)** → 6-row CSV with full audit metadata
+- **Export OBC Matrix Only** → Traditional OBC format for permit submission
+- **Export TEUI Only** → Energy model data
+- **Export Project Report** → Complete documentation with audit trail
+
+#### **🔒 Professional Safeguards**
+
+**Field-Level Metadata Tracking:**
+```javascript
+window.TEUI.FieldMetadata = {
+  trackImport: (fieldId, sourceSystem, timestamp) => {
+    // Record data provenance for professional liability
+  },
+  
+  trackModification: (fieldId, timestamp) => {
+    // Log user modifications after import
+  },
+  
+  decorateField: (fieldElement, fieldId) => {
+    // Add visual indicators: ⬇️ (imported) ✏️ (modified)
+  }
+}
+```
+
+**Visual Import Indicators:**
+- **⬇️ Green**: Field imported from other system (with timestamp tooltip)
+- **✏️ Blue**: Field modified after import (with modification timestamp)
+- **Clean**: User-entered data (no stamps)
+
+#### **💼 Benefits for Architects**
+
+**Workflow Efficiency:**
+- ✅ **Start with familiar OBC Matrix** (required for permits anyway)
+- ✅ **Get energy modeling head start** with building data already entered
+- ✅ **Iterate safely** between code compliance and energy analysis
+- ✅ **Professional documentation** with complete audit trail
+
+**Risk Management:**
+- ✅ **User controls all imports** - no automatic data transfers
+- ✅ **Clear data provenance** - audit trail for professional liability
+- ✅ **Validation previews** - see changes before applying
+- ✅ **Modification tracking** - know what was changed and when
+
+**Professional Output:**
+- ✅ **Combined project files** with both code compliance and energy data
+- ✅ **Complete audit documentation** in notes section
+- ✅ **Cross-referenced data** with transformation notes
+- ✅ **Single-source project truth** with full change history
+
+#### **🚧 Implementation Roadmap**
+
+**Phase 13A**: Cross-system memory and enhanced CSV structure
+**Phase 13B**: Basic field mapping (building areas, occupancy classes)
+**Phase 13C**: Complex mappings (window definitions, assemblies)
+**Phase 13D**: Advanced audit console and professional reporting
+**Phase 13E**: Validation engine and conflict resolution
+
+**Status**: **ARCHITECTURAL DESIGN COMPLETE** - Ready for development prioritization
+
 ## Technical Architecture
 
 ### File Structure (COMPLETED)
@@ -1249,7 +1428,7 @@ rowDef.cells = {
 ```
 
 **Potential Browser Advantages:**
-- **Selective Rendering**: Only defined columns get DOM elements created
+- **Selective Rendering**: Only create `<td>` elements for columns with content
 - **No Ghost Columns**: Browser doesn't calculate widths for undefined columns E-K
 - **Form Element Isolation**: Dropdowns in column D don't affect non-existent neighboring columns
 - **Natural Width Calculation**: Browser calculates minimum required width for actual content only
