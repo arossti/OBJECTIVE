@@ -51,15 +51,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Get DOM elements
   const body = document.body;
-  const keyValuesSection = document.getElementById("keyValues"); // May not exist in OBC Matrix
+  const keyValuesSection = document.getElementById("keyValues") || document.getElementById("buildingInfo"); // Support both section types
   const expandCollapseBtn = document.getElementById("expand-collapse-all");
   const layoutToggleButton = document.querySelector(".layout-toggle-btn");
   const sections = document.querySelectorAll(".section");
   const tabContainer = document.querySelector(".tab-container");
 
-  // Bootstrap icons mapping
+  // Bootstrap icons mapping - Updated for OBC Matrix sections
   const bootstrapIcons = {
+    // OBC Matrix sections
     buildingInfo: "bi-info-circle",
+    buildingOccupancy: "bi-building",
+    buildingAreas: "bi-bounding-box",
+    firefightingSystems: "bi-fire",
+    structuralRequirements: "bi-building",
+    occupantSafety: "bi-people",
+    fireResistance: "bi-shield",
+    plumbingFixtures: "bi-droplet",
+    complianceDesign: "bi-check-circle",
+    notes: "bi-card-text",
+    
+    // Legacy TEUI sections (for compatibility)
     climateCalculations: "bi-thermometer-half",
     actualTargetEnergy: "bi-bullseye",
     emissions: "bi-cloud-upload",
@@ -76,12 +88,23 @@ document.addEventListener("DOMContentLoaded", function () {
     sankeyDiagram: "bi-sliders2",
     dependencyDiagram: "bi-link-45deg",
     footer: "bi-info-square",
-    notes: "bi-info-square",
   };
 
-  // Mapping of section IDs to short tab labels
+  // Mapping of section IDs to short tab labels - Updated for OBC Matrix
   const tabLabels = {
+    // OBC Matrix sections - Short mnemonics for tabs
     buildingInfo: "Info",
+    buildingOccupancy: "Occupancy", 
+    buildingAreas: "Areas",
+    firefightingSystems: "Fire",
+    structuralRequirements: "Structure",
+    occupantSafety: "Safety",
+    fireResistance: "Resistance",
+    plumbingFixtures: "Plumbing",
+    complianceDesign: "Compliance",
+    notes: "Notes",
+    
+    // Legacy TEUI sections (for compatibility)
     climateCalculations: "Climate",
     actualTargetEnergy: "Target",
     emissions: "GHGI",
@@ -97,12 +120,23 @@ document.addEventListener("DOMContentLoaded", function () {
     teuiSummary: "TEUI",
     sankeyDiagram: "Sankey",
     dependencyDiagram: "Depend",
-    notes: "Notes",
   };
 
-  // Mapping of section IDs to full titles for tooltips
+  // Mapping of section IDs to full titles for tooltips - Updated for OBC Matrix
   const tabTooltips = {
-    buildingInfo: "Building Information",
+    // OBC Matrix sections - Full descriptive names for tooltips
+    buildingInfo: "Section 1. Building Information",
+    buildingOccupancy: "Section 2. Building Occupancy",
+    buildingAreas: "Section 3. Building Areas",
+    firefightingSystems: "Section 4. Firefighting & Life Safety Systems",
+    structuralRequirements: "Section 5. Structural Requirements",
+    occupantSafety: "Section 6. Occupant Safety & Accessibility",
+    fireResistance: "Section 7. Fire Resistance & Spatial Separation",
+    plumbingFixtures: "Section 8. Plumbing Fixture Requirements",
+    complianceDesign: "Section 9. Compliance & Design",
+    notes: "Section 10. Notes",
+    
+    // Legacy TEUI sections (for compatibility)
     climateCalculations: "Climate Calculations",
     actualTargetEnergy: "T.3 Actual vs. Target Energy & Carbon",
     emissions: "Emissions",
@@ -118,7 +152,6 @@ document.addEventListener("DOMContentLoaded", function () {
     teuiSummary: "TEUI Summary",
     sankeyDiagram: "Energy Flow Diagram",
     dependencyDiagram: "Dependencies Graph",
-    notes: "Project Notes",
   };
 
   // State variables
@@ -143,9 +176,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Clear existing tabs
     tabContainer.innerHTML = "";
 
-    // Create tabs for each section (except Key Values)
+    // Create tabs for each section (except sticky header section)
     sections.forEach((section) => {
-      if (section.id === "keyValues") return;
+      if (section.id === "keyValues" || section.id === "buildingInfo") return;
 
       const sectionHeader = section.querySelector(".section-header");
       if (!sectionHeader) return;
@@ -240,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelectorAll(".tab")
       .forEach((t) => t.classList.remove("active"));
     sections.forEach((s) => {
-      if (s.id !== "keyValues") {
+      if (s.id !== "keyValues" && s.id !== "buildingInfo") {
         s.classList.remove("active");
       }
     });
@@ -257,11 +290,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (selectedSection) {
       selectedSection.classList.add("active");
 
-      // If in horizontal layout, scroll to position Key Values at top of viewport
+      // If in horizontal layout, scroll to position sticky section at top of viewport
       if (document.body.classList.contains("horizontal-layout")) {
-        // Get the app wrapper or key values section
+        // Get the app wrapper or sticky header section
         const appWrapper = document.getElementById("app-wrapper");
-        const keyValues = document.getElementById("keyValues");
+        const stickySection = document.getElementById("keyValues") || document.getElementById("buildingInfo");
 
         if (appWrapper) {
           // Scroll to position the app wrapper at the top
@@ -294,8 +327,9 @@ document.addEventListener("DOMContentLoaded", function () {
       // Only toggle in vertical layout
       if (!isVerticalLayout) return;
 
-      // Skip Key Values section
-      if (header.closest(".section").id === "keyValues") return;
+      // Skip sticky header sections
+      const sectionId = header.closest(".section").id;
+      if (sectionId === "keyValues" || sectionId === "buildingInfo") return;
 
       // Toggle collapsed class
       header.classList.toggle("collapsed");
@@ -332,8 +366,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Helper function to collapse all sections
   function collapseAllSections() {
     document.querySelectorAll(".section-header").forEach((header) => {
-      // Skip Key Values section
-      if (header.closest(".section").id === "keyValues") return;
+      // Skip sticky header sections
+      const sectionId = header.closest(".section").id;
+      if (sectionId === "keyValues" || sectionId === "buildingInfo") return;
 
       header.classList.add("collapsed");
       header.setAttribute("aria-expanded", "false");
@@ -343,6 +378,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Helper function to expand all sections
   function expandAllSections() {
     document.querySelectorAll(".section-header").forEach((header) => {
+      // Skip sticky header sections
+      const sectionId = header.closest(".section").id;
+      if (sectionId === "keyValues" || sectionId === "buildingInfo") return;
+
       header.classList.remove("collapsed");
       header.setAttribute("aria-expanded", "true");
     });
@@ -413,7 +452,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll(".section-header").forEach((header) => {
       const section = header.closest(".section");
-      if (section.id === "keyValues") return;
+      // Skip sticky header sections
+      if (section.id === "keyValues" || section.id === "buildingInfo") return;
 
       collapsedSections[section.id] = header.classList.contains("collapsed");
     });
@@ -432,7 +472,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       document.querySelectorAll(".section-header").forEach((header) => {
         const section = header.closest(".section");
-        if (section.id === "keyValues") return;
+        // Skip sticky header sections
+        if (section.id === "keyValues" || section.id === "buildingInfo") return;
 
         if (collapsedSections[section.id]) {
           header.classList.add("collapsed");
@@ -486,7 +527,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll(".section-header").forEach((header) => {
       const section = header.closest(".section");
-      if (section.id === "keyValues") return;
+      // Skip sticky header sections
+      if (section.id === "keyValues" || section.id === "buildingInfo") return;
 
       totalSections++;
       if (header.classList.contains("collapsed")) {
@@ -832,23 +874,23 @@ document.addEventListener("DOMContentLoaded", function () {
     { passive: true },
   );
 
-  // Update key values height and tab container position
+  // Update sticky header height and tab container position
   function updateStickyElementHeights() {
-    const keyValues = document.getElementById("keyValues");
+    const stickySection = document.getElementById("keyValues") || document.getElementById("buildingInfo");
     const tabContainer = document.querySelector(".tab-container");
 
-    if (keyValues && tabContainer) {
-      // Get the exact height of the Key Values section
-      const keyValuesHeight = keyValues.offsetHeight;
+    if (stickySection && tabContainer) {
+      // Get the exact height of the sticky header section
+      const stickyHeight = stickySection.offsetHeight;
 
-      // Update CSS variable
+      // Update CSS variable (keep legacy name for compatibility)
       document.documentElement.style.setProperty(
         "--key-values-height",
-        keyValuesHeight + "px",
+        stickyHeight + "px",
       );
 
-      // Set tab container position exactly at bottom of Key Values
-      tabContainer.style.top = keyValuesHeight + "px";
+      // Set tab container position exactly at bottom of sticky section
+      tabContainer.style.top = stickyHeight + "px";
     }
   }
 

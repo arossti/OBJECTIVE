@@ -328,7 +328,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         i: { content: "I", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC 3.2.1.5. & 3.2.2.17., 3.2.2.18., 3.2.4.8. to 3.2.4.10. and 3.2.5.13.", classes: ["section-subheader"] },
+        l: { content: "OBC References", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
         o: {
