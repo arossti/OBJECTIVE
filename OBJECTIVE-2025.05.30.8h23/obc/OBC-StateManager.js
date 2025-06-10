@@ -7,10 +7,10 @@
  */
 
 // Define the global namespace if it doesn't exist
-window.TEUI = window.TEUI || {};
+window.OBC = window.OBC || {};
 
 // OBC State Manager Module
-window.TEUI.OBCStateManager = (function () {
+window.OBC.StateManager = (function () {
   
   // Value state constants
   const VALUE_STATES = {
@@ -30,7 +30,7 @@ window.TEUI.OBCStateManager = (function () {
    * @param {string} [formatType='number'] - The format type
    * @returns {string} The formatted string
    */
-  window.TEUI.formatNumber = function (value, formatType = "number") {
+  window.OBC.formatNumber = function (value, formatType = "number") {
     // Handle N/A or null/undefined input
     if (value === null || value === undefined || String(value).trim().toUpperCase() === "N/A") {
       return "N/A";
@@ -42,7 +42,7 @@ window.TEUI.OBCStateManager = (function () {
     }
 
     // Parse numeric value
-    const numValue = window.TEUI.parseNumeric(value, NaN);
+    const numValue = window.OBC.parseNumeric(value, NaN);
 
     // Handle non-numeric values
     if (isNaN(numValue)) {
@@ -109,7 +109,7 @@ window.TEUI.OBCStateManager = (function () {
    * @param {number} [defaultValue=0] - The value to return if parsing fails
    * @returns {number} The parsed number or the default value
    */
-  window.TEUI.parseNumeric = function (value, defaultValue = 0) {
+  window.OBC.parseNumeric = function (value, defaultValue = 0) {
     if (value === null || value === undefined) {
       return defaultValue;
     }
@@ -383,7 +383,7 @@ window.TEUI.OBCStateManager = (function () {
     }
     
     // Handle numeric formatting if needed
-    let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+    let numValue = window.OBC.parseNumeric(valueStr, NaN);
     let displayValue = valueStr;
     
     // Apply formatting for numeric fields
@@ -394,12 +394,12 @@ window.TEUI.OBCStateManager = (function () {
       
       // Apply formatting based on field type
       if (isNumericField) {
-        displayValue = window.TEUI.formatNumber(numValue, "number-2dp-comma");
+        displayValue = window.OBC.formatNumber(numValue, "number-2dp-comma");
       } else if (currentFieldId.includes('percent')) {
-        displayValue = window.TEUI.formatNumber(numValue, "percent");
+        displayValue = window.OBC.formatNumber(numValue, "percent");
       } else {
         // Default formatting for numbers
-        displayValue = window.TEUI.formatNumber(numValue, "number");
+        displayValue = window.OBC.formatNumber(numValue, "number");
       }
     }
     
@@ -480,7 +480,7 @@ window.TEUI.OBCStateManager = (function () {
 
 // Auto-initialize when script loads
 document.addEventListener('DOMContentLoaded', function() {
-  if (window.TEUI && window.TEUI.OBCStateManager) {
-    window.TEUI.OBCStateManager.initialize();
+  if (window.OBC && window.OBC.StateManager) {
+    window.OBC.StateManager.initialize();
   }
 }); 

@@ -8,13 +8,13 @@
  * while maintaining modularity. NOT yet modified for use wih OBC MAtrix App
  */
 
-window.TEUI = window.TEUI || {};
+window.OBC = window.OBC || {};
 
 // Ensure section modules namespace exists
-window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+window.OBC.SectionModules = window.OBC.SectionModules || {};
 
 // FieldManager Module
-TEUI.FieldManager = (function () {
+OBC.FieldManager = (function () {
   // Section mapping from UI IDs to internal section module IDs
   const sections = {
     buildingInfo: "sect01",
@@ -87,19 +87,19 @@ TEUI.FieldManager = (function () {
     // Process each section, using the already loaded module or creating a fallback
     Object.entries(sections).forEach(([_uiSectionId, moduleSectionId]) => {
       // Check if the module exists in the global namespace
-      if (TEUI.SectionModules[moduleSectionId]) {
+      if (OBC.SectionModules[moduleSectionId]) {
         // Collect fields from this section
         try {
-          if (TEUI.SectionModules[moduleSectionId].getFields) {
+          if (OBC.SectionModules[moduleSectionId].getFields) {
             const sectionFields =
-              TEUI.SectionModules[moduleSectionId].getFields();
+              OBC.SectionModules[moduleSectionId].getFields();
             Object.assign(allFields, sectionFields);
           }
 
           // Collect dropdown options from this section
-          if (TEUI.SectionModules[moduleSectionId].getDropdownOptions) {
+          if (OBC.SectionModules[moduleSectionId].getDropdownOptions) {
             const sectionOptions =
-              TEUI.SectionModules[moduleSectionId].getDropdownOptions();
+              OBC.SectionModules[moduleSectionId].getDropdownOptions();
             Object.assign(dropdownOptions, sectionOptions);
           }
         } catch (e) {
@@ -107,15 +107,15 @@ TEUI.FieldManager = (function () {
         }
       } else {
         // Create fallback empty module
-        TEUI.SectionModules[moduleSectionId] =
+        OBC.SectionModules[moduleSectionId] =
           createEmptyModule(moduleSectionId);
       }
     });
 
     isInitialized = true;
 
-    // Make fields available globally for backward compatibility
-    window.TEUI.fields = allFields;
+    // Make fields available globally for OBC compatibility
+    window.OBC.fields = allFields;
   }
 
   /**
@@ -133,12 +133,12 @@ TEUI.FieldManager = (function () {
    */
   function getFieldsBySection(sectionId) {
     const internalSectionId = sections[sectionId];
-    if (!internalSectionId || !TEUI.SectionModules[internalSectionId]) {
+    if (!internalSectionId || !OBC.SectionModules[internalSectionId]) {
       return {};
     }
 
     try {
-      return TEUI.SectionModules[internalSectionId].getFields() || {};
+      return OBC.SectionModules[internalSectionId].getFields() || {};
     } catch (e) {
       console.error(`Error getting fields for section ${sectionId}:`, e);
       return {};
@@ -175,9 +175,9 @@ TEUI.FieldManager = (function () {
     if (fieldId && allFields[fieldId].getOptions) {
       const parentValue =
         context.parentValue ||
-        (allFields[fieldId].dependencies &&
+        (        allFields[fieldId].dependencies &&
         allFields[fieldId].dependencies.length > 0
-          ? TEUI.StateManager?.getValue(allFields[fieldId].dependencies[0])
+          ? OBC.StateManager?.getValue(allFields[fieldId].dependencies[0])
           : null);
 
       try {
@@ -249,12 +249,12 @@ TEUI.FieldManager = (function () {
    */
   function getLayoutForSection(sectionId) {
     const internalSectionId = sections[sectionId];
-    if (!internalSectionId || !TEUI.SectionModules[internalSectionId]) {
+    if (!internalSectionId || !OBC.SectionModules[internalSectionId]) {
       return null;
     }
 
     try {
-      return TEUI.SectionModules[internalSectionId].getLayout();
+      return OBC.SectionModules[internalSectionId].getLayout();
     } catch (error) {
       console.error(`Error getting layout for section ${sectionId}:`, error);
       return {
@@ -289,12 +289,12 @@ TEUI.FieldManager = (function () {
    */
   function initializeSectionEventHandlers(sectionId) {
     const internalSectionId = sections[sectionId];
-    if (!internalSectionId || !TEUI.SectionModules[internalSectionId]) {
+    if (!internalSectionId || !OBC.SectionModules[internalSectionId]) {
       console.warn(`Module not found for section ${sectionId}`);
       return;
     }
 
-    const sectionModule = TEUI.SectionModules[internalSectionId];
+    const sectionModule = OBC.SectionModules[internalSectionId];
 
     // Call module-specific event handler initialization if it exists
     if (sectionModule.initializeEventHandlers) {
@@ -335,7 +335,7 @@ TEUI.FieldManager = (function () {
       return false;
     }
 
-    if (!TEUI.SectionModules[internalSectionId]) {
+    if (!OBC.SectionModules[internalSectionId]) {
       console.error(
         `Module not found for section ${sectionId} (${internalSectionId})`,
       );
@@ -360,7 +360,7 @@ TEUI.FieldManager = (function () {
 
       // Dispatch section-specific rendering complete event
       document.dispatchEvent(
-        new CustomEvent(`teui-section-rendered`, {
+        new CustomEvent(`obc-section-rendered`, {
           detail: { sectionId: sectionId },
         }),
       );
@@ -388,7 +388,7 @@ TEUI.FieldManager = (function () {
 
     // Dispatch event to notify other components that rendering is complete
     document.dispatchEvent(
-      new CustomEvent("teui-rendering-complete", {
+      new CustomEvent("obc-rendering-complete", {
         detail: { message: "All sections rendered successfully" },
       }),
     );

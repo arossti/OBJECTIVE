@@ -9,13 +9,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect02 = window.TEUI.sect02 || {};
-window.TEUI.sect02.initialized = false;
-window.TEUI.sect02.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect02 = window.OBC.sect02 || {};
+window.OBC.sect02.initialized = false;
+window.OBC.sect02.userInteracted = false;
 
 // Section 2: Building Occupancy Module
-window.TEUI.SectionModules.sect02 = (function () {
+window.OBC.SectionModules.sect02 = (function () {
   //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================

@@ -9,13 +9,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect03 = window.TEUI.sect03 || {};
-window.TEUI.sect03.initialized = false;
-window.TEUI.sect03.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect03 = window.OBC.sect03 || {};
+window.OBC.sect03.initialized = false;
+window.OBC.sect03.userInteracted = false;
 
 // Section 3: Building Areas Module
-window.TEUI.SectionModules.sect03 = (function () {
+window.OBC.SectionModules.sect03 = (function () {
   //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
@@ -1052,11 +1052,11 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   function getNumericValue(fieldId, defaultValue = 0) {
     // Try StateManager first, then fallback to DOM
-    if (window.TEUI?.StateManager?.getValue) {
-      const stateValue = window.TEUI.StateManager.getValue(fieldId);
+    if (window.OBC?.StateManager?.getValue) {
+      const stateValue = window.OBC.StateManager.getValue(fieldId);
       if (stateValue !== null && stateValue !== undefined) {
-        const numericValue = window.TEUI.parseNumeric ? 
-          window.TEUI.parseNumeric(stateValue, defaultValue) : 
+        const numericValue = window.OBC.parseNumeric ? 
+          window.OBC.parseNumeric(stateValue, defaultValue) : 
           parseFloat(stateValue.toString().replace(/,/g, ''));
         return isNaN(numericValue) ? defaultValue : numericValue;
       }
@@ -1075,8 +1075,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Use TEUI formatNumber if available, otherwise fallback with proper thousands separators
       let formattedValue;
       if (typeof rawValue === "number") {
-        if (window.TEUI?.formatNumber) {
-          formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+        if (window.OBC?.formatNumber) {
+          formattedValue = window.OBC.formatNumber(rawValue, formatType);
         } else {
           // Ensure thousands separators are included in fallback
           formattedValue = rawValue.toLocaleString('en-US', {
@@ -1097,8 +1097,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       element.removeAttribute('contenteditable');
       
       // Register value with StateManager
-      if (window.TEUI?.StateManager?.setValue) {
-        window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+      if (window.OBC?.StateManager?.setValue) {
+        window.OBC.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
       }
     }
   }
@@ -1290,8 +1290,8 @@ window.TEUI.SectionModules.sect03 = (function () {
     
     // Use the global input handler from OBC-StateManager.js instead of section-specific handlers
     // This provides proper "graceful" behavior where accidental clicks are forgiven
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
 
     // Register custom calculation listeners for numeric fields
@@ -1305,8 +1305,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       
       calculationTriggers.forEach(fieldId => {
         // Try both StateManager systems for compatibility
-        if (window.TEUI.StateManager?.addListener) {
-          window.TEUI.StateManager.addListener(fieldId, () => {
+        if (window.OBC.StateManager?.addListener) {
+          window.OBC.StateManager.addListener(fieldId, () => {
             if (!window.sectionCalculationInProgress) {
               performAllCalculations();
             }
@@ -1322,7 +1322,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
     }
     
-    window.TEUI.sect03.initialized = true;
+    window.OBC.sect03.initialized = true;
   }
 
   function onSectionRendered() {

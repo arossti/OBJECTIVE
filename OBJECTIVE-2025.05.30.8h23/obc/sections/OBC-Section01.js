@@ -9,13 +9,13 @@
  */
 
 // Create section-specific namespace for global references
-window.TEUI = window.TEUI || {};
-window.TEUI.sect01 = window.TEUI.sect01 || {};
-window.TEUI.sect01.initialized = false;
-window.TEUI.sect01.userInteracted = false;
+window.OBC = window.OBC || {};
+window.OBC.sect01 = window.OBC.sect01 || {};
+window.OBC.sect01.initialized = false;
+window.OBC.sect01.userInteracted = false;
 
 // Section 1: Building Information Module
-window.TEUI.SectionModules.sect01 = (function () {
+window.OBC.SectionModules.sect01 = (function () {
   //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
@@ -453,7 +453,7 @@ window.TEUI.SectionModules.sect01 = (function () {
   function initializeEventHandlers() {
     console.log("Initializing Section 01 event handlers");
     
-    window.TEUI.sect01.initialized = true;
+    window.OBC.sect01.initialized = true;
   }
 
   function addFloatingStampUpload() {
@@ -530,7 +530,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     console.log("Section 01 rendered - Building Information (OBC Matrix)");
     
     // Initialize any section-specific functionality after rendering
-    if (!window.TEUI.sect01.initialized) {
+    if (!window.OBC.sect01.initialized) {
       initializeEventHandlers();
     }
 

@@ -533,18 +533,17 @@ Select a province and city to view weather data.</pre
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         // Initialize FieldManager (core requirement for OBC Matrix)
-        if (TEUI && TEUI.FieldManager) {
-          TEUI.FieldManager.renderAllSections();
+        if (OBC && OBC.FieldManager) {
+          OBC.FieldManager.renderAllSections();
           console.log("OBC Matrix FieldManager initialized");
         } else {
-          console.error("TEUI.FieldManager not found - core functionality will not work");
+          console.error("OBC.FieldManager not found - core functionality will not work");
         }
 
         // Initialize optional state manager
-        if (TEUI && TEUI.StateManager) {
-          TEUI.StateManager.initialize();
-          TEUI.StateManager.loadState();
-          console.log("StateManager initialized");
+        if (OBC && OBC.StateManager) {
+          OBC.StateManager.initialize();
+          console.log("OBC StateManager initialized");
         }
 
         // Initialize Global Notes Panel with delay to ensure DOM is ready
