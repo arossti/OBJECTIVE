@@ -703,9 +703,15 @@ Select a province and city to view weather data.</pre
       // Cross-system navigation with state preservation
       function saveStateAndNavigate(url) {
         if (TEUI && TEUI.StateManager) {
+          console.log("🔍 DEBUG: Field count before save:", TEUI.StateManager.getDebugInfo().fieldCount);
+          
           // Force immediate save before navigation
           TEUI.StateManager.saveState();
           console.log("TEUI StateManager: State saved before navigating to OBC Matrix");
+          
+          // Check what was actually saved
+          const saved = localStorage.getItem('TEUI_Calculator_State');
+          console.log("🔍 DEBUG: What was saved to localStorage:", saved ? JSON.parse(saved) : "Nothing saved");
         }
         
         // Navigate after a brief delay to ensure save completes
@@ -731,13 +737,31 @@ Select a province and city to view weather data.</pre
       document.addEventListener("DOMContentLoaded", function () {
         // Initialize state manager
         if (TEUI.StateManager) {
+          // First, verify StateManager has the required functions
+          console.log("🔍 DEBUG: StateManager functions available:", {
+            saveState: typeof TEUI.StateManager.saveState,
+            loadState: typeof TEUI.StateManager.loadState,
+            clear: typeof TEUI.StateManager.clear
+          });
+          
           TEUI.StateManager.initialize();
+          console.log("🔍 DEBUG: About to load state from localStorage");
+          
+          // Check what's in localStorage before loading
+          const saved = localStorage.getItem('TEUI_Calculator_State');
+          console.log("🔍 DEBUG: localStorage content:", saved ? JSON.parse(saved) : "No saved state");
+          
           TEUI.StateManager.loadState();
+          
+          // Check if state was actually loaded
+          console.log("🔍 DEBUG: StateManager field count after load:", TEUI.StateManager.getDebugInfo().fieldCount);
         }
 
         // Initialize FieldManager to generate content for all sections
         if (TEUI.FieldManager) {
+          console.log("🔍 DEBUG: About to render all sections");
           TEUI.FieldManager.renderAllSections();
+          console.log("🔍 DEBUG: After renderAllSections, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
         }
 
         // Initialize Component Bridge
@@ -747,11 +771,15 @@ Select a province and city to view weather data.</pre
 
         // Initialize Calculator
         if (TEUI.Calculator) {
+          console.log("🔍 DEBUG: About to initialize Calculator");
           TEUI.Calculator.initialize();
+          console.log("🔍 DEBUG: After Calculator.initialize, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
 
           // Calculate all values after initialization
           setTimeout(function () {
+            console.log("🔍 DEBUG: About to run calculateAll");
             TEUI.Calculator.calculateAll();
+            console.log("🔍 DEBUG: After calculateAll, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
           }, 500);
         }
 
