@@ -1193,33 +1193,19 @@ window.OBC.SectionModules.sect03 = (function () {
   function performAllCalculations() {
     // Add recursion protection
     if (window.sectionCalculationInProgress) {
-      console.log("[S03] Calculation already in progress, skipping...");
       return;
     }
 
     window.sectionCalculationInProgress = true;
 
     try {
-      console.log("[S03] Starting area calculations...");
-      
-      // Debug: Show some input values before calculating
-      console.log(`[S03] Sample input values: i_22=${getNumericValue("i_22")}, j_22=${getNumericValue("j_22")}`);
-      
       calculateAreaTotals();
       calculateGrossAreaTotals();
       calculateMezzanineAreaTotals();
-      console.log("[S03] Area calculations complete");
-      
-      // Debug: Show some output values after calculating
-      console.log(`[S03] Sample output values: k_22=${getNumericValue("k_22")}, i_25=${getNumericValue("i_25")}`);
-      
     } finally {
       window.sectionCalculationInProgress = false;
     }
   }
-  
-  // Expose calculation function globally for manual testing
-  window.OBC.triggerS03Calculations = performAllCalculations;
 
   //==========================================================================
   // DIAGNOSTIC FUNCTIONS
@@ -1297,7 +1283,6 @@ window.OBC.SectionModules.sect03 = (function () {
   }
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 03 event handlers");
     
     // Use the global input handler from OBC-StateManager.js instead of section-specific handlers
     // This provides proper "graceful" behavior where accidental clicks are forgiven
@@ -1316,7 +1301,6 @@ window.OBC.SectionModules.sect03 = (function () {
       calculationTriggers.forEach(fieldId => {
         window.OBC.StateManager.addListener(fieldId, () => {
           if (!window.sectionCalculationInProgress) {
-            console.log(`[S03] Field ${fieldId} changed, triggering calculations...`);
             performAllCalculations();
           }
         });
@@ -1339,7 +1323,6 @@ window.OBC.SectionModules.sect03 = (function () {
             // Small delay to allow StateManager to update first
             setTimeout(() => {
               if (!window.sectionCalculationInProgress) {
-                console.log(`[S03] Direct ${eventType} on ${fieldId}, triggering calculations...`);
                 performAllCalculations();
               }
             }, 50);
@@ -1352,7 +1335,6 @@ window.OBC.SectionModules.sect03 = (function () {
   }
 
   function onSectionRendered() {
-    console.log("Section 03 rendered - Building Areas (OBC Matrix)");
     
     // Initialize default state values in StateManager
     if (window.OBC?.StateManager) {
@@ -1402,26 +1384,10 @@ window.OBC.SectionModules.sect03 = (function () {
       initializeEventHandlers();
     }
 
-    // Perform initial calculations with multiple attempts to ensure they run
-    console.log("[S03 INIT] Setting up initial calculations...");
-    
-    // Try immediate calculation
+    // Perform initial calculations after a brief delay to ensure full initialization
     setTimeout(() => {
-      console.log("[S03 INIT] Attempt 1 - Immediate calculation");
       performAllCalculations();
-    }, 50);
-    
-    // Try again after a longer delay in case the first fails
-    setTimeout(() => {
-      console.log("[S03 INIT] Attempt 2 - Delayed calculation");
-      performAllCalculations();
-    }, 200);
-    
-    // Try one more time after even longer delay for stubborn cases
-    setTimeout(() => {
-      console.log("[S03 INIT] Attempt 3 - Final calculation");
-      performAllCalculations();
-    }, 500);
+    }, 100);
   }
 
   //==========================================================================
