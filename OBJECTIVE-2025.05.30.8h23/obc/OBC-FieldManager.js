@@ -468,7 +468,16 @@ OBC.FieldManager = (function () {
 
           // Add specific classes
           if (index === 0) {
-            // Empty first column
+            // Column A - populate with content if provided
+            if (cellDef.content) {
+              cellElement.innerHTML = cellDef.content;
+            }
+            // Apply any custom classes to column A
+            if (cellDef.classes && Array.isArray(cellDef.classes)) {
+              cellDef.classes.forEach((className) => {
+                cellElement.classList.add(className);
+              });
+            }
           } else if (index === 1) {
             // ID column
             cellElement.textContent = rowDef.id;
