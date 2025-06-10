@@ -180,11 +180,19 @@ window.OBC.SectionModules.sect02 = (function () {
       label: "",
       cells: {
         a: { 
-          content: `<button class="btn btn-sm btn-outline-secondary occupancy-toggle-btn" 
-                     onclick="window.OBC.sect02.toggleOccupancyRows()" 
-                     title="Add/Remove additional occupancy classifications">
-                     <span class="toggle-icon">+</span>
-                   </button>`,
+          content: `<div class="occupancy-controls">
+                     <button class="btn btn-sm btn-outline-secondary occupancy-add-btn" 
+                             onclick="window.OBC.sect02.addOccupancyRow()" 
+                             title="Add additional occupancy classification">
+                             +
+                     </button>
+                     <button class="btn btn-sm btn-outline-secondary occupancy-remove-btn" 
+                             onclick="window.OBC.sect02.removeOccupancyRow()" 
+                             title="Remove last occupancy classification" 
+                             style="display: none;">
+                             −
+                     </button>
+                   </div>`,
           classes: ["toggle-cell"]
         },
         b: { content: "14" },
@@ -665,25 +673,39 @@ window.OBC.SectionModules.sect02 = (function () {
   const expandableRowIds = ["2.15", "2.16", "2.17", "2.18"]; // Rows that can be toggled
 
   /**
-   * Toggle occupancy classification rows visibility
+   * Add one additional occupancy classification row
    */
-  function toggleOccupancyRows() {
-    const isExpanding = visibleOccupancyRows < maxOccupancyRows;
-    
-    if (isExpanding) {
-      // Show next hidden row
+  function addOccupancyRow() {
+    if (visibleOccupancyRows < maxOccupancyRows) {
       showNextOccupancyRow();
-    } else {
-      // Hide last visible row (but never hide 2.14)
-      hideLastOccupancyRow();
+      updateButtonVisibility();
+      saveOccupancyVisibilityState();
     }
-    
-    updateToggleButton();
-    saveOccupancyVisibilityState();
   }
 
   /**
-   * Show the next hidden occupancy row
+   * Remove the last occupancy classification row
+   */
+  function removeOccupancyRow() {
+    if (visibleOccupancyRows > 1) {
+      hideLastOccupancyRow();
+      updateButtonVisibility();
+      saveOccupancyVisibilityState();
+    }
+  }
+
+  /**
+   * Toggle occupancy classification rows visibility (legacy function, kept for compatibility)
+   */
+  function toggleOccupancyRows() {
+    // For backward compatibility, just add a row if possible
+    addOccupancyRow();
+  }
+
+
+
+  /**
+   * Show the next hidden occupancy row (kept for backward compatibility)
    */
   function showNextOccupancyRow() {
     if (visibleOccupancyRows < maxOccupancyRows) {
@@ -698,7 +720,7 @@ window.OBC.SectionModules.sect02 = (function () {
   }
 
   /**
-   * Hide the last visible occupancy row (but never 2.14)
+   * Hide the last visible occupancy row (kept for backward compatibility)
    */
   function hideLastOccupancyRow() {
     if (visibleOccupancyRows > 1) {
@@ -712,20 +734,20 @@ window.OBC.SectionModules.sect02 = (function () {
   }
 
   /**
-   * Update the toggle button icon and tooltip
+   * Update the visibility of add/remove buttons based on current state
    */
-  function updateToggleButton() {
-    const toggleIcon = document.querySelector('.occupancy-toggle-btn .toggle-icon');
-    const toggleBtn = document.querySelector('.occupancy-toggle-btn');
+  function updateButtonVisibility() {
+    const addBtn = document.querySelector('.occupancy-add-btn');
+    const removeBtn = document.querySelector('.occupancy-remove-btn');
     
-    if (toggleIcon && toggleBtn) {
-      if (visibleOccupancyRows < maxOccupancyRows) {
-        toggleIcon.textContent = '+';
-        toggleBtn.title = 'Add additional occupancy classification';
-      } else {
-        toggleIcon.textContent = '−';
-        toggleBtn.title = 'Remove last occupancy classification';
-      }
+    if (addBtn) {
+      // Show add button if we can add more rows
+      addBtn.style.display = visibleOccupancyRows < maxOccupancyRows ? 'inline-block' : 'none';
+    }
+    
+    if (removeBtn) {
+      // Show remove button if we have more than 1 row visible
+      removeBtn.style.display = visibleOccupancyRows > 1 ? 'inline-block' : 'none';
     }
   }
 
@@ -789,7 +811,7 @@ window.OBC.SectionModules.sect02 = (function () {
     }
     
     // Update button state
-    updateToggleButton();
+    updateButtonVisibility();
     
     if (!hasRestoredState) {
       console.log("OBC Section 02: Initialized with default occupancy row visibility (1 row)");
@@ -798,8 +820,10 @@ window.OBC.SectionModules.sect02 = (function () {
     }
   }
 
-  // Make toggle function available globally for the onclick handler
+  // Make functions available globally for the onclick handlers
   window.OBC.sect02.toggleOccupancyRows = toggleOccupancyRows;
+  window.OBC.sect02.addOccupancyRow = addOccupancyRow;
+  window.OBC.sect02.removeOccupancyRow = removeOccupancyRow;
 
   //==========================================================================
   // EVENT HANDLERS
@@ -841,51 +865,80 @@ window.OBC.SectionModules.sect02 = (function () {
       const style = document.createElement('style');
       style.id = 'occupancy-toggle-css';
       style.textContent = `
-        /* Occupancy toggle button styling */
+        /* Occupancy controls styling */
         .toggle-cell {
           text-align: center !important;
           vertical-align: middle !important;
-          padding: 4px !important;
-          width: 40px !important;
+          padding: 2px !important;
+          width: 70px !important;
         }
         
-        .occupancy-toggle-btn {
+        .occupancy-controls {
+          display: flex !important;
+          gap: 2px !important;
+          justify-content: center !important;
+          align-items: center !important;
+        }
+        
+        .occupancy-add-btn,
+        .occupancy-remove-btn {
           border: 1px solid #6c757d !important;
           border-radius: 4px !important;
           padding: 2px 6px !important;
           font-size: 14px !important;
           font-weight: bold !important;
-          min-width: 28px !important;
-          height: 28px !important;
-          display: flex !important;
+          min-width: 24px !important;
+          height: 24px !important;
+          display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
           transition: all 0.2s ease !important;
           color: #6c757d !important;
           background-color: white !important;
+          margin: 0 !important;
         }
         
-        .occupancy-toggle-btn:hover {
+        .occupancy-add-btn:hover,
+        .occupancy-remove-btn:hover {
           background-color: #f8f9fa !important;
           border-color: #495057 !important;
           color: #495057 !important;
           transform: scale(1.05) !important;
         }
         
-        .occupancy-toggle-btn:active {
+        .occupancy-add-btn:active,
+        .occupancy-remove-btn:active {
           transform: scale(0.95) !important;
         }
         
-        .toggle-icon {
-          display: inline-block !important;
-          line-height: 1 !important;
+        /* Color differentiation */
+        .occupancy-add-btn {
+          border-color: #28a745 !important;
+          color: #28a745 !important;
+        }
+        
+        .occupancy-add-btn:hover {
+          background-color: #d4edda !important;
+          border-color: #1e7e34 !important;
+          color: #1e7e34 !important;
+        }
+        
+        .occupancy-remove-btn {
+          border-color: #dc3545 !important;
+          color: #dc3545 !important;
+        }
+        
+        .occupancy-remove-btn:hover {
+          background-color: #f8d7da !important;
+          border-color: #bd2130 !important;
+          color: #bd2130 !important;
         }
         
         /* Ensure proper spacing in column A */
         .data-table td:first-child {
-          width: 40px !important;
-          min-width: 40px !important;
-          max-width: 40px !important;
+          width: 70px !important;
+          min-width: 70px !important;
+          max-width: 70px !important;
         }
       `;
       document.head.appendChild(style);
@@ -909,6 +962,8 @@ window.OBC.SectionModules.sect02 = (function () {
     
     // Expandable rows functionality
     toggleOccupancyRows: toggleOccupancyRows,
+    addOccupancyRow: addOccupancyRow,
+    removeOccupancyRow: removeOccupancyRow,
     initializeOccupancyVisibility: initializeOccupancyVisibility,
   };
 })();
