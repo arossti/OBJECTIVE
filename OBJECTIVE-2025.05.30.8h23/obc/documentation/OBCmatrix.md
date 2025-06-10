@@ -471,14 +471,53 @@ TEUI.SectionModules.sect01 = {
 - **✅ Architecture**: Complete section-based architecture with proper patterns
 - **✅ Performance**: All sections render automatically with responsive design
 
+## 🏗️ System Architecture & Semantic Separation
+
+### **Critical: Two Distinct Application Systems**
+
+The OBJECTIVE workspace contains **two semantically separate applications** that must remain architecturally isolated:
+
+#### **System 1: OBJECTIVE TEUI Calculator**
+- **Location**: `OBJECTIVE-2025.05.30.8h23/index.html`
+- **Purpose**: Energy use intensity (TEUI) and thermal demand (TEDI) calculations
+- **Architecture**: 18-section calculation engine with complex dependencies
+- **File Prefix**: `4011-*` (e.g., `4011-StateManager.js`, `4011-Section01.js`)
+
+#### **System 2: OBC Matrix**
+- **Location**: `OBJECTIVE-2025.05.30.8h23/obc/indexobc.html`
+- **Purpose**: Ontario Building Code compliance data collection
+- **Architecture**: 10-section form system with Excel field mapping
+- **File Prefix**: `OBC-*` (e.g., `OBC-StateManager.js`, `OBC-Section01.js`)
+
+### **Cross-Navigation Implementation**
+
+**Navigation Buttons**: Black buttons with building icons positioned after Import/Export
+- **OBJECTIVE → OBC**: `obc/indexobc.html` (relative path into subdirectory)
+- **OBC → OBJECTIVE**: `../index.html` (relative path up one level)
+
+### **Why Semantic Separation Is Critical**
+
+1. **Different Data Models**: TEUI calculations vs. building code compliance data
+2. **Distinct Dependencies**: Energy calculations vs. form field management
+3. **Separate State Systems**: Complex calculation chains vs. simple form state
+4. **Independent Evolution**: Updates to one system don't affect the other
+5. **Error Isolation**: Issues in one system cannot cascade to the other
+
+### **Architecture Principles**
+
+- **No Shared Files**: Each system maintains its own JavaScript modules
+- **Clear Naming**: File prefixes prevent accidental cross-system imports
+- **Isolated Dependencies**: No cross-system state management or calculations
+- **Simple Navigation**: Clean HTML links between systems without deep integration
+
 ## 🚀 Next Steps for Testing & Deployment
 
 ### Immediate Testing (Ready Now)
-1. **Open Application**: Load `OBC-Matrix-Index.html` in web browser
+1. **Open Application**: Load `indexobc.html` in web browser
 2. **Section Verification**: Confirm all 10 sections render with proper structure
 3. **Field Functionality**: Test input fields, dropdowns, and number formatting
 4. **Calculations**: Verify Section 03 area calculations work correctly
-5. **Notes Column**: Test notes column toggle functionality
+5. **Cross-Navigation**: Test seamless switching between OBJECTIVE and OBC Matrix
 
 ### Phase 2: Content Population (CSV Data)
 1. **Dropdown Population**: Use CSV data to populate specific dropdown options
