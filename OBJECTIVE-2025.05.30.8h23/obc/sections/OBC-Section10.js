@@ -56,21 +56,41 @@ window.OBC.SectionModules.sect10 = (function () {
       },
     },
 
-    // Row 90: 3.00 Notes
+    // Row 90: 3.00 Notes - EXPANDABLE TRIGGER ROW
     "10.90": {
       id: "10.90",
       rowId: "10.90",
       label: "NOTES",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "project-notes",
+            "data-expandable-rows": "10.91,10.92",
+            "data-default-visible": "1"  // Shows only the trigger row initially
+          }
+        },
         b: { content: "3.00" },
         c: { content: "NOTES" },
         d: {
           fieldId: "d_90",
           type: "editable",
-          value: "Enter project notes here...",
+          value: "Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"]
-        }
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" }
       }
     },
 
@@ -80,13 +100,26 @@ window.OBC.SectionModules.sect10 = (function () {
       rowId: "10.91",
       label: "Notes Line 1",
       cells: {
+        b: { content: "91" },
+        c: { content: "" },
         d: {
           fieldId: "d_91",
           type: "editable",
-          value: "Enter additional notes...",
+          value: "Structural engineer: Jane Smith, P.Eng. Fire safety plan to be completed by occupancy date.",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"]
-        }
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" }
       }
     },
 
@@ -96,13 +129,26 @@ window.OBC.SectionModules.sect10 = (function () {
       rowId: "10.92",
       label: "Notes Line 2",
       cells: {
+        b: { content: "92" },
+        c: { content: "" },
         d: {
           fieldId: "d_92",
           type: "editable",
-          value: "Enter additional notes...",
+          value: "HVAC contractor: ABC Mechanical Ltd. All work to comply with applicable CSA standards.",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"]
-        }
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" }
       }
     },
 
@@ -203,10 +249,15 @@ window.OBC.SectionModules.sect10 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Column A - empty spacer
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
         {}, // Column B - auto-populated
       ],
     };
+
+    // Handle column A if defined (for expandable rows)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
 
     const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
     
