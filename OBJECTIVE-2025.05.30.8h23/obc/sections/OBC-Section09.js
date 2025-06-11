@@ -236,7 +236,7 @@ window.OBC.SectionModules.sect09 = (function () {
       }
     },
 
-    // Row 88: Alternative Solutions Details 1
+    // Row 88: Alternative Solutions Details 1 (Trigger Row)
     "9.88": {
       id: "9.88",
       rowId: "9.88",
@@ -247,7 +247,12 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "Alternative solution details...",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input", "expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "alternative-solutions",
+            "data-expandable-rows": "9.89",
+            "data-default-visible": "0"
+          }
         },
         o: {
           fieldId: "o_88",
@@ -259,11 +264,15 @@ window.OBC.SectionModules.sect09 = (function () {
       }
     },
 
-    // Row 89: Alternative Solutions Details 2
+    // Row 89: Alternative Solutions Details 2 (Expandable)
     "9.89": {
       id: "9.89",
       rowId: "9.89",
       label: "Alternative Solutions Details 2",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "alternative-solutions"
+      },
       cells: {
         d: {
           fieldId: "d_89",

@@ -32,10 +32,24 @@ window.OBC.SectionModules.sect08 = (function () {
   //==========================================================================
   
   const dropdownOptions = {
-    // TODO: Add OBC sentence options from CSV
     obcSentences: [
       { value: "-", name: "Select..." },
-      // // Add OBC sentence options later
+      { value: "3.7.4.1.(1)", name: "3.7.4.1.(1) - Assembly" },
+      { value: "3.7.4.2.(1)", name: "3.7.4.2.(1) - Business & Personal Services" },
+      { value: "3.7.4.3.(1)", name: "3.7.4.3.(1) - Care Occupancy" },
+      { value: "3.7.4.4.(1)", name: "3.7.4.4.(1) - Detention" },
+      { value: "3.7.4.5.(1)", name: "3.7.4.5.(1) - Industrial" },
+      { value: "3.7.4.6.(1)", name: "3.7.4.6.(1) - Mercantile" },
+      { value: "3.7.4.7.(1)", name: "3.7.4.7.(1) - Residential" },
+      { value: "3.7.4.8.(1)", name: "3.7.4.8.(1) - Treatment" },
+      { value: "Table 3.7.4.1.A", name: "Table 3.7.4.1.A - Assembly Occupancies" },
+      { value: "Table 3.7.4.2.A", name: "Table 3.7.4.2.A - Business & Personal Services" },
+      { value: "Table 3.7.4.3.A", name: "Table 3.7.4.3.A - Care Occupancies" },
+      { value: "Table 3.7.4.4.A", name: "Table 3.7.4.4.A - Detention Occupancies" },
+      { value: "Table 3.7.4.5.A", name: "Table 3.7.4.5.A - Industrial Occupancies" },
+      { value: "Table 3.7.4.6.A", name: "Table 3.7.4.6.A - Mercantile Occupancies" },
+      { value: "Table 3.7.4.7.A", name: "Table 3.7.4.7.A - Residential Occupancies" },
+      { value: "Table 3.7.4.8.A", name: "Table 3.7.4.8.A - Treatment Occupancies" }
     ]
   };
 
@@ -118,7 +132,7 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 79: Plumbing Requirements Row 1
+    // Row 79: Plumbing Requirements Row 1 (Trigger Row)
     "8.79": {
       id: "8.79",
       rowId: "8.79",
@@ -129,7 +143,12 @@ window.OBC.SectionModules.sect08 = (function () {
           type: "editable",
           value: "Floor/Area",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input", "expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "plumbing-fixtures",
+            "data-expandable-rows": "8.80,8.81",
+            "data-default-visible": "1"
+          }
         },
         g: {
           fieldId: "g_79",
@@ -185,11 +204,15 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 80: Plumbing Requirements Row 2
+    // Row 80: Plumbing Requirements Row 2 (Expandable)
     "8.80": {
       id: "8.80",
       rowId: "8.80",
       label: "Plumbing Row 2",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "plumbing-fixtures"
+      },
       cells: {
         d: {
           fieldId: "d_80",
@@ -252,11 +275,15 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 81: Plumbing Requirements Row 3
+    // Row 81: Plumbing Requirements Row 3 (Expandable)
     "8.81": {
       id: "8.81",
       rowId: "8.81",
       label: "Plumbing Row 3",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "plumbing-fixtures"
+      },
       cells: {
         d: {
           fieldId: "d_81",

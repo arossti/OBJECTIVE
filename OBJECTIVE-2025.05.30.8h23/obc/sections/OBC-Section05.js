@@ -38,10 +38,39 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "High", name: "High" },
       { value: "Post-disaster", name: "Post-disaster" }
     ],
-    // TODO: Add seismic category options from CSV
-    seismicOptions: [
+    
+    seismicCategory: [
       { value: "-", name: "Select..." },
-      // // Add seismic category options later
+      { value: "SC1", name: "SC1" },
+      { value: "SC2", name: "SC2" },
+      { value: "SC3", name: "SC3" },
+      { value: "SC4", name: "SC4" },
+      { value: "SC5", name: "SC5" },
+      { value: "SC6", name: "SC6" }
+    ],
+    
+    siteClass: [
+      { value: "-", name: "Select..." },
+      { value: "A", name: "A - Hard Rock" },
+      { value: "B", name: "B - Rock" },
+      { value: "C", name: "C - Very Dense Soil/Soft Rock" },
+      { value: "D", name: "D - Stiff Soil" },
+      { value: "E", name: "E - Soft Soil" },
+      { value: "F", name: "F - Other Soils" }
+    ],
+    
+    seismicDesignRequired: [
+      { value: "-", name: "Select..." },
+      { value: "Required", name: "Required" },
+      { value: "Not Required", name: "Not Required" },
+      { value: "N/A", name: "N/A" }
+    ],
+    
+    yesNoNA: [
+      { value: "-", name: "Select..." },
+      { value: "YES", name: "YES" },
+      { value: "NO", name: "NO" },
+      { value: "N/A", name: "N/A" }
     ]
   };
 
@@ -110,7 +139,15 @@ window.OBC.SectionModules.sect05 = (function () {
       cells: {
         b: { content: "3.17" },
         c: { content: "SEISMIC CATEGORY" },
-        d: { content: "SEISMIC CATEGORY -" }, // TODO: Make this a dropdown or calculated field
+        d: { 
+          fieldId: "d_54",
+          type: "dropdown",
+          dropdownId: "dd_d_54",
+          value: "-",
+          section: SECTION_CONFIG.name,
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.seismicCategory
+        },
         l: { content: "4.1.8.4.(1)" },
         o: {
           fieldId: "o_54",
@@ -129,8 +166,23 @@ window.OBC.SectionModules.sect05 = (function () {
       label: "SITE CLASS",
       cells: {
         c: { content: "SITE CLASS" },
-        d: { content: "-" }, // TODO: Add site class dropdown
-        e: { content: "-" }, // TODO: Add related field
+        d: { 
+          fieldId: "d_55",
+          type: "dropdown",
+          dropdownId: "dd_d_55",
+          value: "-",
+          section: SECTION_CONFIG.name,
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.siteClass
+        },
+        e: {
+          fieldId: "e_55",
+          type: "editable",
+          value: "Site description...",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"],
+          placeholder: "Describe site conditions"
+        },
         l: { content: "T4.1.8.5.-B" },
         o: {
           fieldId: "o_55",
@@ -149,7 +201,15 @@ window.OBC.SectionModules.sect05 = (function () {
       label: "SEISMIC DESIGN REQUIRED",
       cells: {
         c: { content: "SEISMIC DESIGN REQUIRED FOR Table 4.1.8.18. items 6 to 22:" },
-        i: { content: "Required" }, // TODO: Make this a dropdown
+        i: { 
+          fieldId: "i_56",
+          type: "dropdown",
+          dropdownId: "dd_i_56",
+          value: "-",
+          section: SECTION_CONFIG.name,
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.seismicDesignRequired
+        },
         l: { content: "4.1.8.18.(2)" },
         o: {
           fieldId: "o_56",
@@ -168,7 +228,14 @@ window.OBC.SectionModules.sect05 = (function () {
       label: "REASON FOR REQUIREMENT",
       cells: {
         d: { content: "REASON FOR REQUIREMENT" },
-        e: { content: "NEITHER SC1 NOR SC2." }, // TODO: Make this editable
+        e: {
+          fieldId: "e_57",
+          type: "editable",
+          value: "Neither SC1 nor SC2...",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"],
+          placeholder: "Describe reasoning for seismic design requirement"
+        },
         o: {
           fieldId: "o_57",
           type: "editable",

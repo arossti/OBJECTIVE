@@ -38,10 +38,43 @@ window.OBC.SectionModules.sect06 = (function () {
       { value: "No", name: "No" },
       { value: "N/A", name: "N/A" }
     ],
-    // TODO: Add occupancy type options from CSV
+    
     occupancyTypes: [
       { value: "-", name: "Select..." },
-      // // Add occupancy types later
+      // Group A Occupancies
+      { value: "A1", name: "A1 - Auditoriums, Concert Halls, Theatres" },
+      { value: "A2", name: "A2 - Exhibition Halls, Museums, Gymnasiums" },
+      { value: "A3", name: "A3 - Arena-type Buildings" },
+      { value: "A4", name: "A4 - Places of Worship, Public/Community Halls" },
+      // Group B Occupancies
+      { value: "B1", name: "B1 - Detention Occupancies" },
+      { value: "B2", name: "B2 - Treatment Occupancies" },
+      { value: "B3", name: "B3 - Care/Care & Treatment Occupancies" },
+      // Group C Occupancy
+      { value: "C", name: "C - Residential Occupancy" },
+      // Group D Occupancies
+      { value: "D", name: "D - Business & Personal Services Occupancy" },
+      // Group E Occupancies
+      { value: "E", name: "E - Mercantile Occupancy" },
+      // Group F Occupancies
+      { value: "F1", name: "F1 - High Hazard Industrial Occupancy" },
+      { value: "F2", name: "F2 - Medium Hazard Industrial Occupancy" },
+      { value: "F3", name: "F3 - Low Hazard Industrial Occupancy" }
+    ],
+    
+    basedOnOptions: [
+      { value: "-", name: "Select..." },
+      { value: "Floor Area", name: "Floor Area" },
+      { value: "Fixed Seats", name: "Fixed Seats" },
+      { value: "Actual Count", name: "Actual Count" },
+      { value: "Mixed Use", name: "Mixed Use" }
+    ],
+    
+    postedLimitOptions: [
+      { value: "-", name: "Select..." },
+      { value: "Required", name: "Required" },
+      { value: "Not Required", name: "Not Required" },
+      { value: "N/A", name: "N/A" }
     ]
   };
 
@@ -98,7 +131,7 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 59: Occupant Load Row 1
+    // Row 59: Occupant Load Row 1 (Trigger Row)
     "6.59": {
       id: "6.59",
       rowId: "6.59",
@@ -109,7 +142,12 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "Floor/Area",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input", "expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "occupant-loads",
+            "data-expandable-rows": "6.60,6.61",
+            "data-default-visible": "1"
+          }
         },
         f: {
           fieldId: "f_59",
@@ -129,17 +167,21 @@ window.OBC.SectionModules.sect06 = (function () {
         },
         i: {
           fieldId: "i_59",
-          type: "editable",
+          type: "dropdown",
+          dropdownId: "dd_i_59",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.basedOnOptions
         },
         j: {
           fieldId: "j_59",
-          type: "editable",
+          type: "dropdown",
+          dropdownId: "dd_j_59",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.postedLimitOptions
         },
         o: {
           fieldId: "o_59",
@@ -151,11 +193,15 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 60: Occupant Load Row 2  
+    // Row 60: Occupant Load Row 2 (Expandable)
     "6.60": {
       id: "6.60",
       rowId: "6.60",
       label: "Occupant Load 2",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "occupant-loads"
+      },
       cells: {
         d: {
           fieldId: "d_60",
@@ -182,17 +228,21 @@ window.OBC.SectionModules.sect06 = (function () {
         },
         i: {
           fieldId: "i_60",
-          type: "editable",
+          type: "dropdown",
+          dropdownId: "dd_i_60",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.basedOnOptions
         },
         j: {
           fieldId: "j_60",
-          type: "editable",
+          type: "dropdown",
+          dropdownId: "dd_j_60",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.postedLimitOptions
         },
         o: {
           fieldId: "o_60",
@@ -204,11 +254,15 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 61: Occupant Load Row 3
+    // Row 61: Occupant Load Row 3 (Expandable)
     "6.61": {
       id: "6.61",
       rowId: "6.61",
       label: "Occupant Load 3",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "occupant-loads"
+      },
       cells: {
         d: {
           fieldId: "d_61",
@@ -235,17 +289,21 @@ window.OBC.SectionModules.sect06 = (function () {
         },
         i: {
           fieldId: "i_61",
-          type: "editable",
+          type: "dropdown",
+          dropdownId: "dd_i_61",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.basedOnOptions
         },
         j: {
           fieldId: "j_61",
-          type: "editable",
+          type: "dropdown",
+          dropdownId: "dd_j_61",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.postedLimitOptions
         },
         o: {
           fieldId: "o_61",

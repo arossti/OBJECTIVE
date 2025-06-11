@@ -173,14 +173,22 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     },
 
-    // Row 40: 3.10 Building Classification (First)
+    // Row 40: 3.10 Building Classification (Trigger Row)
     "4.40": {
       id: "4.40",
       rowId: "4.40",
       label: "BUILDING CLASSIFICATION",
       cells: {
         b: { label: "3.1" },
-        c: { label: "BUILDING CLASSIFICATION" },
+        c: { 
+          label: "BUILDING CLASSIFICATION",
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "building-classifications",
+            "data-expandable-rows": "4.41,4.42,4.43,4.44",
+            "data-default-visible": "1"
+          }
+        },
         d: { 
           fieldId: "d_40", 
           type: "dropdown", 
@@ -189,7 +197,7 @@ window.OBC.SectionModules.sect04 = (function () {
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
-          linkedField: "e_40" // Field that will show the description
+          linkedField: "e_40"
         },
         e: { 
           fieldId: "e_40", 
@@ -203,11 +211,15 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     },
 
-    // Row 41: Building Classification - Size and Construction
+    // Row 41: Building Classification - Size and Construction (Expandable)
     "4.41": {
       id: "4.41",
       rowId: "4.41",
       label: "Size and Construction Relative to Occupancy",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "building-classifications"
+      },
       cells: {
         c: { content: "(SIZE AND CONSTRUCTION RELATIVE TO OCCUPANCY)" },
         d: { 
@@ -231,11 +243,15 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     },
 
-    // Row 42: Building Classification (Additional)
+    // Row 42: Building Classification (Additional - Expandable)
     "4.42": {
       id: "4.42",
       rowId: "4.42",
       label: "Building Classification Additional",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "building-classifications"
+      },
       cells: {
         d: { 
           fieldId: "d_42", 
@@ -258,11 +274,15 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     },
 
-    // Row 43: Building Classification (Additional)
+    // Row 43: Building Classification (Additional - Expandable)
     "4.43": {
       id: "4.43",
       rowId: "4.43",
       label: "Building Classification Additional",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "building-classifications"
+      },
       cells: {
         d: { 
           fieldId: "d_43", 
@@ -285,11 +305,15 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     },
 
-    // Row 44: Building Classification (Additional)
+    // Row 44: Building Classification (Additional - Expandable)
     "4.44": {
       id: "4.44",
       rowId: "4.44",
       label: "Building Classification Additional",
+      classes: ["expandable-row"],
+      attributes: {
+        "data-expandable-group": "building-classifications"
+      },
       cells: {
         d: { 
           fieldId: "d_44", 
