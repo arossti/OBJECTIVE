@@ -993,10 +993,15 @@ window.OBC.SectionModules.sect03 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Empty column A
+        {}, // Empty column A (will be populated if row has 'a' cell)
         {}, // ID column B (auto-populated)
       ],
     };
+
+    // Handle column A if defined
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
 
     // Add cells C through O based on the row definition (matching Excel structure)
     // Skip "b" since Column B is auto-populated by FieldManager
