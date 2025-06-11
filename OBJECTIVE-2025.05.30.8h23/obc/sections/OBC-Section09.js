@@ -217,19 +217,44 @@ window.OBC.SectionModules.sect09 = (function () {
       }
     },
 
-    // Row 87: 3.26 Alternative Solutions
+    // Row 87: 3.26 Alternative Solutions - EXPANDABLE TRIGGER ROW
     "9.87": {
       id: "9.87",
       rowId: "9.87",
       label: "ALTERNATIVE SOLUTIONS",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "alternative-solutions",
+            "data-expandable-rows": "9.88,9.89",
+            "data-default-visible": "1"  // Shows only the trigger row initially
+          }
+        },
         b: { content: "3.26" },
         c: { content: "ALTERNATIVE SOLUTIONS" },
+        d: {
+          fieldId: "d_87",
+          type: "editable",
+          value: "Enhanced egress lighting system exceeding prescriptive requirements",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"]
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
         l: { content: "[A]1.2.1.1. and [C]2.1." },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_87",
           type: "editable",
-          value: "enter notes here...",
+          value: "Alternative solution providing equivalent safety performance",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"]
         }
@@ -242,17 +267,29 @@ window.OBC.SectionModules.sect09 = (function () {
       rowId: "9.88",
       label: "Alternative Solutions Details 1",
       cells: {
+        b: { content: "88" },
+        c: { content: "" },
         d: {
           fieldId: "d_88",
           type: "editable",
-          value: "Alternative solution details...",
+          value: "Performance-based structural fire protection design",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_88",
           type: "editable",
-          value: "enter notes here...",
+          value: "Engineered solution with structural engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"]
         }
@@ -265,17 +302,29 @@ window.OBC.SectionModules.sect09 = (function () {
       rowId: "9.89",
       label: "Alternative Solutions Details 2",
       cells: {
+        b: { content: "89" },
+        c: { content: "" },
         d: {
           fieldId: "d_89",
           type: "editable",
-          value: "Alternative solution details...",
+          value: "Fire separation performance based on advanced modeling analysis",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_89",
           type: "editable",
-          value: "enter notes here...",
+          value: "Engineered solution with professional engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"]
         }
@@ -347,10 +396,15 @@ window.OBC.SectionModules.sect09 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Column A - empty spacer
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
         {}, // Column B - auto-populated
       ],
     };
+
+    // Handle column A if defined (for expandable rows)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
 
     const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
     
