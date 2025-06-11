@@ -284,22 +284,15 @@ window.OBC.StateManager = (function () {
           selectChild.value = value;
           element = selectChild; // Use the select for CSS class updates
         } else {
-          // Check if this is a numeric field that might already have formatting
-          const isNumericField = element.hasAttribute('data-type') && 
-                                element.getAttribute('data-type') === 'numeric';
+          // Check if this value should be formatted as a number
+          const numericValue = window.OBC.parseNumeric(value, NaN);
           
-          if (isNumericField) {
-            // For numeric fields, only update if the current content is unformatted
-            const currentText = element.textContent.trim();
-            const hasFormatting = currentText.includes(',') && currentText.includes('.');
-            
-            if (!hasFormatting) {
-              // No formatting present, safe to update with raw value
-              element.textContent = value;
-            }
-            // If formatting is present, preserve it (don't override)
+          if (!isNaN(numericValue)) {
+            // This is a numeric value - apply proper formatting for display
+            const formattedValue = window.OBC.formatNumber(numericValue, "number-2dp-comma");
+            element.textContent = formattedValue;
           } else {
-            // Non-numeric fields, update normally
+            // Non-numeric value, update normally
             element.textContent = value;
           }
         }
@@ -501,8 +494,8 @@ window.OBC.StateManager = (function () {
     // Update display with formatting first
     fieldElement.textContent = displayValue;
     
-    // Store the RAW value in OBC StateManager (for calculations)
-    // updateUI now preserves existing formatting, so this won't override
+    // Store the RAW USER INPUT in StateManager (for calculations)
+    // StateManager stores unformatted values, formatting only happens in display
     setValue(currentFieldId, valueStr, VALUE_STATES.USER_MODIFIED);
   }
 

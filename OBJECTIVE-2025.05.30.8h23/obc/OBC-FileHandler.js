@@ -72,8 +72,8 @@ OBC.FileHandler = (function() {
                         const workbook = XLSX.read(contents, {type: 'binary'});
                         
                         // Use the ExcelMapper to get structured data
-                        if (window.TEUI && window.TEUI.ExcelMapper) {
-                            const mappedData = window.TEUI.ExcelMapper.mapExcelToReportModel(workbook);
+                            if (window.OBC && window.OBC.ExcelMapper) {
+      const mappedData = window.OBC.ExcelMapper.mapExcelToReportModel(workbook);
                             if (mappedData) {
                                 // The mapper returns a direct fieldId:value object.
                                 // The processImportedData function expects a { data: [...] } structure,

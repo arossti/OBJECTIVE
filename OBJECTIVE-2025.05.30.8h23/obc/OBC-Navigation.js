@@ -27,12 +27,12 @@ function initializeUIHandlers() {
   if (resetImportedBtn) {
     resetImportedBtn.addEventListener("click", function () {
       if (
-        window.TEUI &&
-        window.TEUI.OBCStateManager &&
-        typeof window.TEUI.OBCStateManager.resetFields === "function"
+        window.OBC &&
+        window.OBC.StateManager &&
+        typeof window.OBC.StateManager.resetFields === "function"
       ) {
         if (confirm("Are you sure you want to reset? This will clear user-modified values but keep imported data.")) {
-          window.TEUI.OBCStateManager.resetFields();
+          window.OBC.StateManager.resetFields();
           console.log("OBC Matrix: Fields reset successfully");
         }
       } else {
@@ -46,8 +46,8 @@ function initializeUIHandlers() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Ensure TEUI namespace exists
-  window.TEUI = window.TEUI || {};
+  // Ensure OBC namespace exists
+  window.OBC = window.OBC || {};
 
   // Get DOM elements
   const body = document.body;
@@ -733,7 +733,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   document
-    .getElementById("teui-factsheet")
+    .getElementById("obc-factsheet")
     .addEventListener("click", function () {
       // This will be implemented later
     });
@@ -744,113 +744,11 @@ document.addEventListener("DOMContentLoaded", function () {
       // This will be implemented later
     });
 
-  // Initialize ExcelLocationHandler if it exists
-  if (TEUI.ExcelLocationHandler) {
-    TEUI.ExcelLocationHandler.initialize();
+  // Note: ExcelLocationHandler functionality removed 
+  // OBC Matrix is a building code compliance form, not an energy calculator
+  // Location/weather data handling is specific to TEUI Calculator
 
-    // Setup UI elements for Excel file input
-    const selectExcelBtn = document.getElementById("selectExcelBtn");
-    const applyExcelBtn = document.getElementById("applyExcelBtn");
-    const debugExcelBtn = document.getElementById("debugExcelBtn");
-    const feedbackArea = document.getElementById("feedback-area");
-
-    if (selectExcelBtn) {
-      selectExcelBtn.addEventListener("click", function () {
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = ".xlsx, .xls";
-        fileInput.style.display = "none";
-
-        fileInput.addEventListener("change", function (e) {
-          const file = e.target.files[0];
-          if (file) {
-            feedbackArea.textContent = "Reading Excel file...";
-
-            TEUI.ExcelLocationHandler.loadExcelFile(file)
-              .then(() => {
-                feedbackArea.textContent =
-                  "Excel data loaded successfully! Click Apply to use the data.";
-                applyExcelBtn.classList.remove("d-none");
-              })
-              .catch((error) => {
-                feedbackArea.textContent = `Error loading Excel file: ${error.message}`;
-              });
-          }
-        });
-
-        document.body.appendChild(fileInput);
-        fileInput.click();
-        document.body.removeChild(fileInput);
-      });
-    }
-
-    if (applyExcelBtn) {
-      applyExcelBtn.addEventListener("click", function () {
-        if (TEUI.ExcelLocationHandler.getLocationData()) {
-          // Update province dropdown
-          const provinceDropdown = document.getElementById("dd_d_19");
-          if (provinceDropdown) {
-            const provinceField = TEUI.getField("d_19");
-            if (provinceField && provinceField.getOptions) {
-              const options = provinceField.getOptions();
-              initializeDropdown(provinceDropdown, provinceField, options);
-            }
-          }
-
-          feedbackArea.textContent =
-            "Location data applied. Choose a province and city to continue.";
-          applyExcelBtn.classList.add("d-none");
-        } else {
-          feedbackArea.textContent =
-            "No location data available. Please select an Excel file first.";
-        }
-      });
-    }
-
-    if (debugExcelBtn) {
-      debugExcelBtn.addEventListener("click", function () {
-        const data = TEUI.ExcelLocationHandler.getLocationData();
-
-        if (data) {
-          alert("See console for location data");
-        } else {
-          alert("No location data available yet");
-        }
-      });
-    }
-  }
-
-  // Helper function to initialize dropdown for the location handler
-  function initializeDropdown(dropdownEl, config, options) {
-    if (!dropdownEl) return;
-
-    // Clear existing options
-    dropdownEl.innerHTML = "";
-
-    // Add options
-    if (options && options.length) {
-      options.forEach((option) => {
-        const optionEl = document.createElement("option");
-
-        if (typeof option === "object") {
-          // Option is an object with 'value' and 'name' properties
-          optionEl.value = option.value;
-          optionEl.textContent = option.name || option.value;
-        } else {
-          // Option is a simple string or value
-          optionEl.value = option;
-          optionEl.textContent = option;
-        }
-
-        dropdownEl.appendChild(optionEl);
-      });
-    }
-
-    // Set initial value if provided
-    if (config && config.defaultValue) {
-      dropdownEl.value = config.defaultValue;
-    }
-  }
+  // Helper function for dropdown initialization removed with ExcelLocationHandler
 
   // Replace the scroll event listener with a much simpler approach
   document.addEventListener(
@@ -895,41 +793,28 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(updateStickyElementHeights, 300);
 
   // Initialize core components after DOM is loaded
-  if (window.TEUI && window.TEUI.FieldManager) {
+  if (window.OBC && window.OBC.FieldManager) {
     // Initialize FieldManager (core requirement for OBC Matrix)
-    window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
+    window.OBC.FieldManager.renderAllSections(); // FieldManager handles initial rendering
     
     // Initialize OBC StateManager and global input handlers
-    if (window.TEUI.OBCStateManager) {
-      window.TEUI.OBCStateManager.initialize();
+    if (window.OBC.StateManager) {
+      window.OBC.StateManager.initialize();
       
       // Initialize global input handlers after sections are rendered
       setTimeout(() => {
-        window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
-      }, 500); // Give sections time to fully render
+        window.OBC.StateManager.initializeGlobalInputHandlers();
+      }, 100); // Reduced delay for faster startup
     }
     
-    // Initialize optional modules only if they exist
-    if (window.TEUI.StateManager) {
-      window.TEUI.StateManager.initialize();
-    }
-    if (window.TEUI.SectionIntegrator) {
-      window.TEUI.SectionIntegrator.initialize();
-    }
-    // Initialize Reference components (Manager depends on Values, Toggle is independent UI)
-    if (window.TEUI.ReferenceValues) {
-      // Manager depends on this data
-      if (window.TEUI.ReferenceManager) {
-        window.TEUI.ReferenceManager.initialize();
-      }
-    }
-    if (window.TEUI.ReferenceToggle) {
-      window.TEUI.ReferenceToggle.initialize();
-    }
+    // OBC Matrix doesn't use these TEUI-specific modules:
+    // - StateManager (has its own OBC.StateManager)
+    // - SectionIntegrator (form-based, no complex integrations)
+    // - ReferenceValues/ReferenceManager/ReferenceToggle (building code matrix, not energy calculator)
     // Initialize other UI handlers
     initializeUIHandlers();
     console.log("OBC Matrix initialization complete - FieldManager loaded");
   } else {
-    console.error("Core TEUI modules (FieldManager) not found!");
+    console.error("Core OBC modules (FieldManager) not found!");
   }
 });
