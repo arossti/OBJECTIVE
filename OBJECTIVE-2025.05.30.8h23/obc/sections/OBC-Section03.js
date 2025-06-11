@@ -62,6 +62,15 @@ window.OBC.SectionModules.sect03 = (function () {
       rowId: "3.22",
       label: "",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "building-areas",
+            "data-expandable-rows": "3.23,3.24",
+            "data-default-visible": "1"
+          }
+        },
         b: { content: "22" },
         c: { content: "" },
         d: {
@@ -294,6 +303,15 @@ window.OBC.SectionModules.sect03 = (function () {
       rowId: "3.27",
       label: "",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "gross-areas",
+            "data-expandable-rows": "3.28,3.29",
+            "data-default-visible": "1"
+          }
+        },
         b: { content: "27" },
         c: { content: "" },
         d: {
@@ -526,6 +544,15 @@ window.OBC.SectionModules.sect03 = (function () {
       rowId: "3.32",
       label: "",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "mezzanine-areas",
+            "data-expandable-rows": "3.33,3.34",
+            "data-default-visible": "1"
+          }
+        },
         b: { content: "32" },
         c: { content: "" },
         d: {
