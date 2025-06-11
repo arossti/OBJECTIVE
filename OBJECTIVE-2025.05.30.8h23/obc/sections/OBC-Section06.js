@@ -98,16 +98,27 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 59: Occupant Load Row 1
+    // Row 59: Occupant Load Row 1 - EXPANDABLE TRIGGER ROW
     "6.59": {
       id: "6.59",
       rowId: "6.59",
       label: "Occupant Load 1",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "occupant-loads",
+            "data-expandable-rows": "6.60,6.61",
+            "data-default-visible": "1"  // Shows only the trigger row initially
+          }
+        },
+        b: { content: "59" },
+        c: { content: "" },
         d: {
           fieldId: "d_59",
           type: "editable",
-          value: "Floor/Area",
+          value: "Ground Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -123,24 +134,30 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_59",
           type: "num-editable",
-          value: "-",
+          value: "50",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         i: {
           fieldId: "i_59",
           type: "editable",
-          value: "-",
+          value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_59",
           type: "editable",
-          value: "-",
+          value: "Yes",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        g: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_59",
           type: "editable",
@@ -157,10 +174,12 @@ window.OBC.SectionModules.sect06 = (function () {
       rowId: "6.60",
       label: "Occupant Load 2",
       cells: {
+        b: { content: "60" },
+        c: { content: "" },
         d: {
           fieldId: "d_60",
           type: "editable",
-          value: "Floor/Area",
+          value: "Second Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -176,24 +195,30 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_60",
           type: "num-editable",
-          value: "-",
+          value: "30",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         i: {
           fieldId: "i_60",
           type: "editable",
-          value: "-",
+          value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_60",
           type: "editable",
-          value: "-",
+          value: "No",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        g: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_60",
           type: "editable",
@@ -210,10 +235,12 @@ window.OBC.SectionModules.sect06 = (function () {
       rowId: "6.61",
       label: "Occupant Load 3",
       cells: {
+        b: { content: "61" },
+        c: { content: "" },
         d: {
           fieldId: "d_61",
           type: "editable",
-          value: "Floor/Area",
+          value: "Basement",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -229,24 +256,30 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_61",
           type: "num-editable",
-          value: "-",
+          value: "15",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         i: {
           fieldId: "i_61",
           type: "editable",
-          value: "-",
+          value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_61",
           type: "editable",
-          value: "-",
+          value: "Yes",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        g: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_61",
           type: "editable",
@@ -267,7 +300,7 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_62",
           type: "calculated",
-          value: "0",
+          value: "95",
           section: SECTION_CONFIG.name,
           classes: ["calculated-value"]
         },
@@ -430,10 +463,15 @@ window.OBC.SectionModules.sect06 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Column A - empty spacer
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
         {}, // Column B - auto-populated
       ],
     };
+
+    // Handle column A if defined (for expandable rows)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
 
     const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
     
