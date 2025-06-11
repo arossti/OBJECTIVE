@@ -138,17 +138,21 @@ window.OBC.SectionModules.sect08 = (function () {
       rowId: "8.79",
       label: "Plumbing Row 1",
       cells: {
-        d: {
-          fieldId: "d_79",
-          type: "editable",
-          value: "Floor/Area",
-          section: SECTION_CONFIG.name,
-          classes: ["user-input", "expandable-row-trigger"],
+        a: {
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "plumbing-fixtures",
             "data-expandable-rows": "8.80,8.81",
             "data-default-visible": "1"
           }
+        },
+        d: {
+          fieldId: "d_79",
+          type: "editable",
+          value: "Floor/Area",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"]
         },
         g: {
           fieldId: "g_79",
@@ -209,10 +213,6 @@ window.OBC.SectionModules.sect08 = (function () {
       id: "8.80",
       rowId: "8.80",
       label: "Plumbing Row 2",
-      classes: ["expandable-row"],
-      attributes: {
-        "data-expandable-group": "plumbing-fixtures"
-      },
       cells: {
         d: {
           fieldId: "d_80",
@@ -280,10 +280,6 @@ window.OBC.SectionModules.sect08 = (function () {
       id: "8.81",
       rowId: "8.81",
       label: "Plumbing Row 3",
-      classes: ["expandable-row"],
-      attributes: {
-        "data-expandable-group": "plumbing-fixtures"
-      },
       cells: {
         d: {
           fieldId: "d_81",
@@ -408,23 +404,74 @@ window.OBC.SectionModules.sect08 = (function () {
   }
 
   function createLayoutRow(row) {
+    // Create standard row structure
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Column A - empty spacer
-        {}, // Column B - auto-populated
+        {}, // Empty column A (will be populated if row has 'a' cell)
+        {}, // ID column B (auto-populated)
       ],
     };
 
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-    
+    // Handle column A if defined (CRITICAL: This enables expandable row triggers)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
+
+    // Add cells C through O based on the row definition (matching Excel structure)
+    // Skip "b" since Column B is auto-populated by FieldManager
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
+    // For each column, add the cell definition if it exists in the row
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
+        // Create a simplified cell definition for the renderer
+        // without the extra field properties
         const cell = { ...row.cells[col] };
+
+        // Special handling for column C to support both label patterns
+        if (col === "c") {
+          // If using content+type pattern, convert to label pattern
+          if (cell.type === "label" && cell.content && !cell.label) {
+            cell.label = cell.content;
+            delete cell.type; // Not needed for rendering
+            delete cell.content; // Not needed once we have label
+          }
+          // If neither label nor content exists, use row's label as fallback
+          else if (!cell.label && !cell.content && row.label) {
+            cell.label = row.label;
+          }
+        }
+
+        // Remove field-specific properties that aren't needed for rendering
+        delete cell.getOptions;
         delete cell.section;
+        delete cell.dependencies;
+
         rowDef.cells.push(cell);
       } else {
-        rowDef.cells.push({});
+        // Add empty cell if not defined
+        // Special handling for column C - use row's label if available
+        if (col === "c" && !row.cells?.c && row.label) {
+          rowDef.cells.push({ label: row.label });
+        } else {
+          // Otherwise add empty cell
+          rowDef.cells.push({});
+        }
       }
     });
 

@@ -179,9 +179,8 @@ window.OBC.SectionModules.sect04 = (function () {
       rowId: "4.40",
       label: "BUILDING CLASSIFICATION",
       cells: {
-        b: { label: "3.1" },
-        c: { 
-          label: "BUILDING CLASSIFICATION",
+        a: {
+          content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "building-classifications",
@@ -189,6 +188,8 @@ window.OBC.SectionModules.sect04 = (function () {
             "data-default-visible": "1"
           }
         },
+        b: { label: "3.1" },
+        c: { label: "BUILDING CLASSIFICATION" },
         d: { 
           fieldId: "d_40", 
           type: "dropdown", 
@@ -216,10 +217,6 @@ window.OBC.SectionModules.sect04 = (function () {
       id: "4.41",
       rowId: "4.41",
       label: "Size and Construction Relative to Occupancy",
-      classes: ["expandable-row"],
-      attributes: {
-        "data-expandable-group": "building-classifications"
-      },
       cells: {
         c: { content: "(SIZE AND CONSTRUCTION RELATIVE TO OCCUPANCY)" },
         d: { 
@@ -248,10 +245,6 @@ window.OBC.SectionModules.sect04 = (function () {
       id: "4.42",
       rowId: "4.42",
       label: "Building Classification Additional",
-      classes: ["expandable-row"],
-      attributes: {
-        "data-expandable-group": "building-classifications"
-      },
       cells: {
         d: { 
           fieldId: "d_42", 
@@ -279,10 +272,6 @@ window.OBC.SectionModules.sect04 = (function () {
       id: "4.43",
       rowId: "4.43",
       label: "Building Classification Additional",
-      classes: ["expandable-row"],
-      attributes: {
-        "data-expandable-group": "building-classifications"
-      },
       cells: {
         d: { 
           fieldId: "d_43", 
@@ -310,10 +299,6 @@ window.OBC.SectionModules.sect04 = (function () {
       id: "4.44",
       rowId: "4.44",
       label: "Building Classification Additional",
-      classes: ["expandable-row"],
-      attributes: {
-        "data-expandable-group": "building-classifications"
-      },
       cells: {
         d: { 
           fieldId: "d_44", 
@@ -680,10 +665,15 @@ window.OBC.SectionModules.sect04 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Empty column A
+        {}, // Empty column A (will be populated if row has 'a' cell)
         {}, // ID column B (auto-populated)
       ],
     };
+
+    // Handle column A if defined (CRITICAL: This enables expandable row triggers)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
 
     // Add cells C through O based on the row definition (matching Excel structure)
     // Skip "b" since Column B is auto-populated by FieldManager
