@@ -118,23 +118,34 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 79: Plumbing Requirements Row 1
+    // Row 79: Plumbing Requirements Row 1 - EXPANDABLE TRIGGER ROW
     "8.79": {
       id: "8.79",
       rowId: "8.79",
       label: "Plumbing Row 1",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "plumbing-fixtures",
+            "data-expandable-rows": "8.80,8.81",
+            "data-default-visible": "1"  // Shows only the trigger row initially
+          }
+        },
+        b: { content: "79" },
+        c: { content: "" },
         d: {
           fieldId: "d_79",
           type: "editable",
-          value: "Floor/Area",
+          value: "Ground Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         g: {
           fieldId: "g_79",
           type: "num-editable",
-          value: "0",
+          value: "50",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -150,31 +161,35 @@ window.OBC.SectionModules.sect08 = (function () {
         i: {
           fieldId: "i_79",
           type: "num-editable",
-          value: "0",
+          value: "3",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_79",
           type: "num-editable",
-          value: "0",
+          value: "4",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         k: {
           fieldId: "k_79",
           type: "editable",
-          value: "/ ",
+          value: "1 / 1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         l: {
           fieldId: "l_79",
           type: "editable",
-          value: "/ ",
+          value: "1 / 1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_79",
           type: "editable",
@@ -191,17 +206,19 @@ window.OBC.SectionModules.sect08 = (function () {
       rowId: "8.80",
       label: "Plumbing Row 2",
       cells: {
+        b: { content: "80" },
+        c: { content: "" },
         d: {
           fieldId: "d_80",
           type: "editable",
-          value: "Floor/Area",
+          value: "Second Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         g: {
           fieldId: "g_80",
           type: "num-editable",
-          value: "0",
+          value: "30",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -217,31 +234,35 @@ window.OBC.SectionModules.sect08 = (function () {
         i: {
           fieldId: "i_80",
           type: "num-editable",
-          value: "0",
+          value: "2",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_80",
           type: "num-editable",
-          value: "0",
+          value: "2",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         k: {
           fieldId: "k_80",
           type: "editable",
-          value: "/ ",
+          value: "1 / 1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         l: {
           fieldId: "l_80",
           type: "editable",
-          value: "/ ",
+          value: "0 / 0",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_80",
           type: "editable",
@@ -258,17 +279,19 @@ window.OBC.SectionModules.sect08 = (function () {
       rowId: "8.81",
       label: "Plumbing Row 3",
       cells: {
+        b: { content: "81" },
+        c: { content: "" },
         d: {
           fieldId: "d_81",
           type: "editable",
-          value: "Floor/Area",
+          value: "Basement",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         g: {
           fieldId: "g_81",
           type: "num-editable",
-          value: "0",
+          value: "15",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -284,31 +307,35 @@ window.OBC.SectionModules.sect08 = (function () {
         i: {
           fieldId: "i_81",
           type: "num-editable",
-          value: "0",
+          value: "1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_81",
           type: "num-editable",
-          value: "0",
+          value: "1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         k: {
           fieldId: "k_81",
           type: "editable",
-          value: "/ ",
+          value: "0 / 0",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         l: {
           fieldId: "l_81",
           type: "editable",
-          value: "/ ",
+          value: "0 / 0",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_81",
           type: "editable",
@@ -384,10 +411,15 @@ window.OBC.SectionModules.sect08 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Column A - empty spacer
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
         {}, // Column B - auto-populated
       ],
     };
+
+    // Handle column A if defined (for expandable rows)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
 
     const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
     
