@@ -205,7 +205,7 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 **🏗️ ARCHITECTURAL ACHIEVEMENTS**:
 - **Comprehensive Template System**: Created production-ready template for rapid section development
 - **Universal Patterns**: Standardized field types (`num-editable`, `dropdown`, `calculated`)
-- **Global Input Handling**: All sections use `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`
+- **Global Input Handling**: All sections use `window.OBC.StateManager.initializeGlobalInputHandlers()`
 - **Excel Field Mapping**: Perfect correspondence with OBC_2024_PART3.csv structure
 - **FieldManager Integration**: Complete section mapping and automatic rendering
 - **Layout Optimization**: Section 04 space optimization patterns ready for application
@@ -1249,6 +1249,7 @@ window.OBC.sectXX.initialized = false;
 window.OBC.sectXX.userInteracted = false;
 
 // Section XX: [SECTION NAME] Module
+window.OBC.SectionModules = window.OBC.SectionModules || {};
 window.OBC.SectionModules.sectXX = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
@@ -1486,8 +1487,8 @@ window.OBC.SectionModules.sectXX = (function () {
 
   function getFieldValue(fieldId) {
     // Try StateManager first, then DOM fallback
-    if (window.TEUI?.StateManager?.getValue) {
-      return window.TEUI.StateManager.getValue(fieldId);
+    if (window.OBC?.StateManager?.getValue) {
+      return window.OBC.StateManager.getValue(fieldId);
     }
     
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -1518,8 +1519,8 @@ window.OBC.SectionModules.sectXX = (function () {
 
   function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
     // Use global formatNumber function
-    const formattedValue = window.TEUI.formatNumber ? 
-      window.TEUI.formatNumber(rawValue, formatType) : 
+    const formattedValue = window.OBC.formatNumber ? 
+      window.OBC.formatNumber(rawValue, formatType) : 
       rawValue.toString();
 
     // Update DOM
@@ -1529,8 +1530,8 @@ window.OBC.SectionModules.sectXX = (function () {
     }
 
     // Update StateManager
-    if (window.TEUI?.StateManager?.setValue) {
-      window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+    if (window.OBC?.StateManager?.setValue) {
+      window.OBC.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
     }
   }
 
@@ -1554,19 +1555,16 @@ window.OBC.SectionModules.sectXX = (function () {
     console.log("Initializing Section XX event handlers");
     
     // ✅ REQUIRED: Use global input handler for graceful behavior
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
     
     // ✅ OPTIONAL: Add calculation listeners (if needed)
     if (SECTION_CONFIG.hasCalculations) {
       const calculationTriggers = ['d_39', 'd_40']; // Replace with actual field IDs
       calculationTriggers.forEach(fieldId => {
-        if (window.TEUI.StateManager?.addListener) {
-          window.TEUI.StateManager.addListener(fieldId, performCalculations);
-        }
-        if (window.TEUI.OBCStateManager?.addListener) {
-          window.TEUI.OBCStateManager.addListener(fieldId, performCalculations);
+        if (window.OBC.StateManager?.addListener) {
+          window.OBC.StateManager.addListener(fieldId, performCalculations);
         }
       });
     }
@@ -1594,7 +1592,7 @@ window.OBC.SectionModules.sectXX = (function () {
     }
     
     // Mark as initialized
-    window.TEUI.sectXX.initialized = true;
+    window.OBC.sectXX.initialized = true;
   }
 
   //==========================================================================
@@ -1940,7 +1938,7 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 
 **Solution Implemented**:
 - Removed Section 03's custom `handleFieldBlur` function
-- Implemented global input handler usage: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`
+- Implemented global input handler usage: `window.OBC.StateManager.initializeGlobalInputHandlers()`
 - Added change detection logic that only commits to "user-modified" state if actual changes were made
 - Preserved Section 03's custom numeric formatting with new `formatSection03Field()` helper function
 
@@ -1961,8 +1959,8 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 ### Next Development Priorities
 
 #### 🚨 **MANDATORY PATTERNS FOR ALL FUTURE SECTIONS:**
-- **Global Input Handling**: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()` - NO custom blur handlers
-- **Number Formatting**: `window.TEUI.formatNumber(value, "number-2dp-comma")` - NO custom toLocaleString logic  
+- **Global Input Handling**: `window.OBC.StateManager.initializeGlobalInputHandlers()` - NO custom blur handlers
+- **Number Formatting**: `window.OBC.formatNumber(value, "number-2dp-comma")` - NO custom toLocaleString logic  
 - **Field IDs**: Excel coordinates (d_22, e_22) regardless of DOM structure
 - **Row IDs**: Section.ExcelRow format (4.20, 5.15, etc.)
 
