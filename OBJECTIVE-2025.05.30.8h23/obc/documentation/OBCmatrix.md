@@ -1971,3 +1971,222 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 3. **⚡ Performance Optimization**: Universal alignment system and global input handling enable faster rendering and simpler maintenance
 4. **🎨 Visual Polish**: Final styling touches and responsive design improvements
 5. **🌐 Universal Input Handling**: Apply the working OBC-StateManager global handler to all remaining sections for consistency 
+
+## 🔄 Universal Expandable Rows System - Copy/Paste Implementation Guide
+
+**Status: PRODUCTION READY** ✅
+
+The OBC Matrix features a universal expandable rows system that allows users to dynamically show/hide additional form rows using +/- buttons. This system works across all sections and automatically handles state persistence, button visibility, and integration with FieldManager.
+
+### 🎯 **System Overview**
+
+**Key Features:**
+- **Universal Implementation**: Single codebase handles all expandable row groups
+- **Automatic Column A Visibility**: FieldManager automatically shows column A when expandable triggers are present
+- **State Persistence**: User preferences saved to localStorage and restored on page load
+- **Dynamic Button Management**: + and − buttons automatically show/hide based on current state
+- **Calculation Compatibility**: Hidden rows maintain their field values and participate in calculations
+
+**Current Working Examples:**
+- **S02**: `occupancy-classifications` (rows 2.15-2.18, default shows 1)
+- **S03**: `building-areas` (rows 3.23-3.24, default shows 3), `gross-areas` (rows 3.28-3.29, default shows 1), `mezzanine-areas` (rows 3.33-3.34, default shows 1)
+
+### 📋 **Copy/Paste Implementation Pattern**
+
+#### **Step 1: Define the Trigger Row (Always Visible)**
+
+```javascript
+// The first row in the group - always visible with +/- controls
+"X.YY": {
+  id: "X.YY",
+  rowId: "X.YY",
+  label: "",
+  cells: {
+    a: { 
+      content: "", // Will be populated by ExpandableRows utility
+      classes: ["expandable-row-trigger"],
+      attributes: {
+        "data-expandable-group": "your-group-name",           // Unique group identifier
+        "data-expandable-rows": "X.YY+1,X.YY+2,X.YY+3",     // Comma-separated list of expandable row IDs
+        "data-default-visible": "1"                          // Number of rows visible by default (trigger + N expandable)
+      }
+    },
+    b: { content: "YY" },
+    c: { content: "Row Label" },
+    d: {
+      fieldId: "d_YY",
+      type: "dropdown", // or other field type
+      // ... field definition
+    },
+    // ... rest of your row definition
+  },
+},
+```
+
+#### **Step 2: Define the Expandable Rows (Initially Hidden)**
+
+```javascript
+// Additional rows that can be shown/hidden
+"X.YY+1": {
+  id: "X.YY+1",
+  rowId: "X.YY+1",
+  label: "",
+  cells: {
+    // NO 'a' cell needed - these rows don't have +/- controls
+    b: { content: "YY+1" },
+    c: { content: "" },
+    d: {
+      fieldId: "d_YY+1",
+      type: "dropdown", // Same structure as trigger row
+      // ... field definition
+    },
+    // ... rest of your row definition
+  },
+},
+
+"X.YY+2": {
+  id: "X.YY+2",
+  rowId: "X.YY+2",
+  label: "",
+  cells: {
+    b: { content: "YY+2" },
+    c: { content: "" },
+    d: {
+      fieldId: "d_YY+2",
+      type: "dropdown",
+      // ... field definition
+    },
+    // ... rest of your row definition
+  },
+},
+```
+
+### 🔧 **Configuration Parameters**
+
+#### **Required Attributes for Trigger Row:**
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-expandable-group` | Unique identifier for this group of rows | `"building-systems"` |
+| `data-expandable-rows` | Comma-separated list of expandable row IDs | `"4.41,4.42,4.43,4.44"` |
+| `data-default-visible` | Number of rows visible by default | `"1"` (shows trigger + 0 expandable), `"2"` (shows trigger + 1 expandable) |
+
+#### **Automatic Behaviors:**
+
+- **Column A Visibility**: FieldManager automatically makes column A visible when `expandable-row-trigger` class is detected
+- **Button Generation**: System automatically creates styled + and − buttons in column A
+- **State Management**: localStorage automatically saves/restores visible row count per group
+- **CSS Styling**: Universal CSS automatically applied for button appearance and hover effects
+
+### 🎨 **Visual Styling (Automatic)**
+
+The system automatically adds CSS for:
+
+```css
+/* Green + button for adding rows */
+.expandable-add-btn {
+  border-color: #28a745 !important;
+  color: #28a745 !important;
+}
+
+/* Red − button for removing rows */
+.expandable-remove-btn {
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+}
+
+/* Column A width optimization */
+.expandable-row-trigger {
+  width: 70px !important;
+  text-align: center !important;
+}
+```
+
+### 📊 **Real Implementation Examples**
+
+#### **Example 1: S02 Occupancy Classifications**
+
+```javascript
+// Trigger row (always visible)
+"2.14": {
+  id: "2.14",
+  rowId: "2.14",
+  label: "",
+  cells: {
+    a: { 
+      content: "",
+      classes: ["expandable-row-trigger"],
+      attributes: {
+        "data-expandable-group": "occupancy-classifications",
+        "data-expandable-rows": "2.15,2.16,2.17,2.18",
+        "data-default-visible": "1"  // Shows only the trigger row initially
+      }
+    },
+    b: { content: "14" },
+    c: { content: "" },
+    d: {
+      fieldId: "d_14",
+      type: "dropdown",
+      dropdownId: "dd_d_14",
+      value: "A2",
+      section: "buildingOccupancy",
+      options: occupancyOptions,
+      classes: ["dropdown-md"],
+    },
+    // ... rest of cells
+  },
+},
+
+// Expandable rows (hidden by default)
+"2.15": { /* Similar structure without 'a' cell */ },
+"2.16": { /* Similar structure without 'a' cell */ },
+"2.17": { /* Similar structure without 'a' cell */ },
+"2.18": { /* Similar structure without 'a' cell */ },
+```
+
+#### **Example 2: S03 Building Areas**
+
+```javascript
+// Trigger row (shows 3 rows by default: trigger + 2 expandable)
+"3.22": {
+  id: "3.22",
+  rowId: "3.22",
+  label: "",
+  cells: {
+    a: { 
+      content: "",
+      classes: ["expandable-row-trigger"],
+      attributes: {
+        "data-expandable-group": "building-areas",
+        "data-expandable-rows": "3.23,3.24",
+        "data-default-visible": "3"  // Shows trigger + both expandable rows
+      }
+    },
+    // ... rest of row definition
+  },
+},
+```
+
+### 🚀 **Quick Deployment Checklist**
+
+**For each new expandable row group:**
+
+1. **✅ Define group name**: Choose unique `data-expandable-group` identifier
+2. **✅ Create trigger row**: Add `a` cell with `expandable-row-trigger` class and attributes
+3. **✅ List expandable rows**: Comma-separated IDs in `data-expandable-rows`
+4. **✅ Set default visibility**: Number in `data-default-visible` (trigger row counts as 1)
+5. **✅ Define expandable rows**: Standard row definitions without `a` cell
+6. **✅ Test functionality**: Load page, verify +/- buttons work, state persists
+
+**No additional JavaScript required** - the universal system handles everything automatically!
+
+### 🔄 **Ready for Deployment**
+
+**Next Implementation Targets:**
+- **S04**: 4.40 (trigger) with 4.41-4.44 (expandable)
+- **S06**: 6.59-6.69 (need default numbers for visibility)
+- **S08**: 8.79-8.81
+- **S09**: 9.88-9.89
+- **S10**: 10.90-10.92
+
+**Implementation Time**: ~5-10 minutes per group using this copy/paste pattern.
