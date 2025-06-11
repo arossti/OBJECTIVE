@@ -14,49 +14,71 @@ window.OBC.ExpandableRows = (function() {
   const expandableGroups = new Map();
   
   /**
-   * Initialize expandable rows for a section
-   * Automatically detects rows with 'expandable-row-trigger' class
+   * Hook into FieldManager to insert expandable controls during cell generation
+   * This function will be called by FieldManager when processing column A cells
    */
-  function initializeExpandableRows(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (!section) return;
-    
-    // Find all expandable row triggers in this section
-    const triggers = section.querySelectorAll('.expandable-row-trigger');
-    
-    triggers.forEach(trigger => {
-      const row = trigger.closest('tr');
-      if (!row) return;
-      
-      const groupId = trigger.dataset.expandableGroup;
-      if (!groupId) {
-        console.warn('Expandable row trigger missing data-expandable-group attribute:', trigger);
-        return;
+  function processExpandableTriggerCell(cellElement, cellDef, rowId, sectionId) {
+    // Check if this cell should have expandable controls
+    if (cellDef.classes && cellDef.classes.includes('expandable-row-trigger') && cellDef.attributes) {
+      const groupId = cellDef.attributes['data-expandable-group'];
+      if (groupId) {
+        console.log(`🔍 PROCESSING EXPANDABLE TRIGGER: ${groupId} in ${sectionId} for row ${rowId}`);
+        
+        // Initialize group if not already done
+        if (!expandableGroups.has(groupId)) {
+          initializeExpandableGroup(groupId, sectionId, cellDef.attributes);
+        }
+        
+        // Insert the expandable controls directly into the cell
+        const controlsHtml = `
+          <div class="expandable-controls" data-group="${groupId}">
+            <button class="btn btn-sm btn-outline-secondary expandable-add-btn" 
+                    onclick="window.OBC.ExpandableRows.addRow('${groupId}')" 
+                    title="Add additional row">
+                    +
+            </button>
+            <button class="btn btn-sm btn-outline-secondary expandable-remove-btn" 
+                    onclick="window.OBC.ExpandableRows.removeRow('${groupId}')" 
+                    title="Remove last row" 
+                    style="display: none;">
+                    −
+            </button>
+          </div>
+        `;
+        
+        cellElement.innerHTML = controlsHtml;
+        
+        // Add CSS if not already added
+        addExpandableRowsCSS();
+        
+        // Schedule visibility update after DOM is ready
+        setTimeout(() => {
+          initializeGroupVisibility(groupId);
+        }, 100);
+        
+        console.log(`✅ EXPANDABLE CONTROLS INSERTED for ${groupId}`);
+        return true;
       }
-      
-      // Initialize this group if not already done
-      if (!expandableGroups.has(groupId)) {
-        initializeExpandableGroup(groupId, sectionId);
-      }
-    });
+    }
+    return false;
   }
   
   /**
    * Initialize a specific expandable group
    */
-  function initializeExpandableGroup(groupId, sectionId) {
-    // Get configuration from data attributes
-    const triggerElement = document.querySelector(`[data-expandable-group="${groupId}"]`);
-    if (!triggerElement) return;
+  function initializeExpandableGroup(groupId, sectionId, attributes) {
+    console.log(`🔍 INITIALIZING GROUP: ${groupId} in section ${sectionId}`);
     
     const config = {
       groupId: groupId,
       sectionId: sectionId,
-      expandableRows: (triggerElement.dataset.expandableRows || '').split(',').filter(id => id.trim()),
-      defaultVisible: parseInt(triggerElement.dataset.defaultVisible || '1', 10),
+      expandableRows: (attributes['data-expandable-rows'] || '').split(',').filter(id => id.trim()),
+      defaultVisible: parseInt(attributes['data-default-visible'] || '1', 10),
       maxRows: 0, // Will be calculated
       currentVisible: 0
     };
+    
+    console.log(`🔍 GROUP INIT: Config for ${groupId}:`, config);
     
     // Calculate max rows (default + expandable)
     config.maxRows = config.defaultVisible + config.expandableRows.length;
@@ -64,43 +86,12 @@ window.OBC.ExpandableRows = (function() {
     // Load saved state or use default
     config.currentVisible = loadGroupState(groupId) || config.defaultVisible;
     
+    console.log(`🔍 GROUP INIT: Final config for ${groupId}:`, config);
+    
     // Store configuration
     expandableGroups.set(groupId, config);
     
-    // Create and insert controls
-    createExpandableControls(triggerElement, groupId);
-    
-    // Initialize visibility
-    initializeGroupVisibility(groupId);
-    
-    console.log(`Initialized expandable group: ${groupId}`, config);
-  }
-  
-  /**
-   * Create add/remove controls for an expandable group
-   */
-  function createExpandableControls(triggerElement, groupId) {
-    const controlsHtml = `
-      <div class="expandable-controls" data-group="${groupId}">
-        <button class="btn btn-sm btn-outline-secondary expandable-add-btn" 
-                onclick="window.OBC.ExpandableRows.addRow('${groupId}')" 
-                title="Add additional row">
-                +
-        </button>
-        <button class="btn btn-sm btn-outline-secondary expandable-remove-btn" 
-                onclick="window.OBC.ExpandableRows.removeRow('${groupId}')" 
-                title="Remove last row" 
-                style="display: none;">
-                −
-        </button>
-      </div>
-    `;
-    
-    // Replace the trigger element content
-    triggerElement.innerHTML = controlsHtml;
-    
-    // Add CSS if not already added
-    addExpandableRowsCSS();
+    console.log(`✅ GROUP INIT: Successfully initialized expandable group: ${groupId}`, config);
   }
   
   /**
@@ -198,11 +189,14 @@ window.OBC.ExpandableRows = (function() {
     const config = expandableGroups.get(groupId);
     if (!config) return;
     
+    console.log(`🔍 INITIALIZING VISIBILITY for ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
+    
     // Hide all expandable rows initially
     config.expandableRows.forEach(rowId => {
       const rowElement = document.querySelector(`tr[data-id="${rowId}"]`);
       if (rowElement) {
         rowElement.style.display = 'none';
+        console.log(`🔍 Hidden row ${rowId}`);
       }
     });
     
@@ -218,6 +212,7 @@ window.OBC.ExpandableRows = (function() {
         if (rowElement) {
           rowElement.style.display = '';
           config.currentVisible++;
+          console.log(`🔍 Showed row ${rowId} (${config.currentVisible}/${config.maxRows})`);
         }
       }
     }
@@ -233,6 +228,8 @@ window.OBC.ExpandableRows = (function() {
     const config = expandableGroups.get(groupId);
     if (!config || config.currentVisible >= config.maxRows) return;
     
+    console.log(`🔍 ADDING ROW to ${groupId}: current=${config.currentVisible}, max=${config.maxRows}`);
+    
     // Show next hidden row
     const nextRowIndex = config.currentVisible - config.defaultVisible;
     const rowId = config.expandableRows[nextRowIndex];
@@ -243,6 +240,7 @@ window.OBC.ExpandableRows = (function() {
       config.currentVisible++;
       updateButtonVisibility(groupId);
       saveGroupState(groupId, config.currentVisible);
+      console.log(`✅ Added row ${rowId} (${config.currentVisible}/${config.maxRows})`);
     }
   }
   
@@ -252,6 +250,8 @@ window.OBC.ExpandableRows = (function() {
   function removeRow(groupId) {
     const config = expandableGroups.get(groupId);
     if (!config || config.currentVisible <= config.defaultVisible) return;
+    
+    console.log(`🔍 REMOVING ROW from ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
     
     // Hide last visible row
     const lastRowIndex = config.currentVisible - config.defaultVisible - 1;
@@ -263,6 +263,7 @@ window.OBC.ExpandableRows = (function() {
       config.currentVisible--;
       updateButtonVisibility(groupId);
       saveGroupState(groupId, config.currentVisible);
+      console.log(`✅ Removed row ${rowId} (${config.currentVisible}/${config.maxRows})`);
     }
   }
   
@@ -283,6 +284,8 @@ window.OBC.ExpandableRows = (function() {
     if (removeBtn) {
       removeBtn.style.display = config.currentVisible > config.defaultVisible ? 'inline-flex' : 'none';
     }
+    
+    console.log(`🔍 BUTTON VISIBILITY for ${groupId}: add=${config.currentVisible < config.maxRows ? 'visible' : 'hidden'}, remove=${config.currentVisible > config.defaultVisible ? 'visible' : 'hidden'}`);
   }
   
   /**
@@ -317,10 +320,6 @@ window.OBC.ExpandableRows = (function() {
     if (!config) return [];
     
     // Return IDs of all rows (default + expandable)
-    const allRows = [];
-    
-    // Add default rows (these would need to be specified in config)
-    // For now, return expandable rows - sections can extend this as needed
     return config.expandableRows;
   }
   
@@ -334,7 +333,7 @@ window.OBC.ExpandableRows = (function() {
   
   // Public API
   return {
-    initializeExpandableRows: initializeExpandableRows,
+    processExpandableTriggerCell: processExpandableTriggerCell,
     addRow: addRow,
     removeRow: removeRow,
     getAllRowsInGroup: getAllRowsInGroup,
@@ -346,19 +345,7 @@ window.OBC.ExpandableRows = (function() {
   };
 })();
 
-// Auto-initialize when DOM is ready
+// Initialize CSS when loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Wait for sections to render, then initialize expandable rows
-  document.addEventListener('obc-rendering-complete', function() {
-    console.log('Initializing expandable rows for all sections...');
-    
-    // Initialize for all sections that have expandable rows
-    const allSections = ['buildingInfo', 'buildingOccupancy', 'buildingAreas', 'firefightingSystems', 
-                         'structuralRequirements', 'occupantSafety', 'fireResistance', 'plumbingFixtures', 
-                         'complianceDesign', 'notes'];
-    
-    allSections.forEach(sectionId => {
-      window.OBC.ExpandableRows.initializeExpandableRows(sectionId);
-    });
-  });
+  console.log('🔍 EXPANDABLE ROWS: DOM ready, system loaded');
 }); 

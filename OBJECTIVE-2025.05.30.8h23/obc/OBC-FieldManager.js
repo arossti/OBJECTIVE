@@ -468,15 +468,30 @@ OBC.FieldManager = (function () {
 
           // Add specific classes
           if (index === 0) {
-            // Column A - populate with content if provided
-            if (cellDef.content) {
-              cellElement.innerHTML = cellDef.content;
-            }
-            // Apply any custom classes to column A
+            // Column A - apply classes and attributes first
             if (cellDef.classes && Array.isArray(cellDef.classes)) {
               cellDef.classes.forEach((className) => {
                 cellElement.classList.add(className);
               });
+            }
+            if (cellDef.attributes && typeof cellDef.attributes === "object") {
+              Object.entries(cellDef.attributes).forEach(([key, value]) => {
+                cellElement.setAttribute(key, value);
+              });
+            }
+            
+            // Then check for expandable row triggers
+            let isExpandableTrigger = false;
+            if (window.OBC && window.OBC.ExpandableRows && window.OBC.ExpandableRows.processExpandableTriggerCell) {
+              isExpandableTrigger = window.OBC.ExpandableRows.processExpandableTriggerCell(cellElement, cellDef, rowDef.id, sectionId);
+            }
+            
+            // Only process normal content if this isn't an expandable trigger
+            if (!isExpandableTrigger) {
+              // Column A - populate with content if provided
+              if (cellDef.content) {
+                cellElement.innerHTML = cellDef.content;
+              }
             }
           } else if (index === 1) {
             // ID column
