@@ -284,24 +284,8 @@ window.OBC.StateManager = (function () {
           selectChild.value = value;
           element = selectChild; // Use the select for CSS class updates
         } else {
-          // Check if this is a numeric field that might already have formatting
-          const isNumericField = element.hasAttribute('data-type') && 
-                                element.getAttribute('data-type') === 'numeric';
-          
-          if (isNumericField) {
-            // For numeric fields, only update if the current content is unformatted
-            const currentText = element.textContent.trim();
-            const hasFormatting = currentText.includes(',') && currentText.includes('.');
-            
-            if (!hasFormatting) {
-              // No formatting present, safe to update with raw value
-              element.textContent = value;
-            }
-            // If formatting is present, preserve it (don't override)
-          } else {
-            // Non-numeric fields, update normally
-            element.textContent = value;
-          }
+          // For content elements, update the display value
+          element.textContent = value;
         }
       }
       
@@ -477,32 +461,34 @@ window.OBC.StateManager = (function () {
       return;
     }
     
-    // Handle numeric formatting if needed
+    // Handle numeric formatting for user input fields
     let numValue = window.OBC.parseNumeric(valueStr, NaN);
     let displayValue = valueStr;
     
     // Apply formatting for numeric fields
     if (!isNaN(numValue)) {
-      // Check if field is explicitly marked as numeric
-      const isNumericField = fieldElement.hasAttribute('data-type') && 
-                            fieldElement.getAttribute('data-type') === 'numeric';
+      // Check if this is a user input field (most numeric fields in OBC Matrix)
+      const isUserInputField = fieldElement.classList.contains('user-input') || 
+                              fieldElement.hasAttribute('contenteditable');
       
-      // Apply formatting based on field type
-      if (isNumericField) {
-        displayValue = window.OBC.formatNumber(numValue, "number-2dp-comma");
-      } else if (currentFieldId.includes('percent')) {
-        displayValue = window.OBC.formatNumber(numValue, "percent");
-      } else {
-        // Default formatting for numbers
-        displayValue = window.OBC.formatNumber(numValue, "number");
+      if (isUserInputField) {
+        // Format based on field ID patterns or magnitude
+        if (currentFieldId.includes('percent')) {
+          displayValue = window.OBC.formatNumber(numValue, "percent");
+        } else if (numValue >= 1000) {
+          // Large numbers get comma separation
+          displayValue = window.OBC.formatNumber(numValue, "number-2dp-comma");
+        } else {
+          // Smaller numbers get standard 2 decimal places
+          displayValue = window.OBC.formatNumber(numValue, "number-2dp");
+        }
       }
     }
     
-    // Update display with formatting first
+    // Update display with formatting
     fieldElement.textContent = displayValue;
     
-    // Store the RAW value in OBC StateManager (for calculations)
-    // updateUI now preserves existing formatting, so this won't override
+    // Store the original RAW string value for calculations (preserve user intent)
     setValue(currentFieldId, valueStr, VALUE_STATES.USER_MODIFIED);
   }
 
@@ -511,10 +497,17 @@ window.OBC.StateManager = (function () {
    * Call this after sections are rendered
    */
   function initializeGlobalInputHandlers() {
+    // Prevent redundant initialization during page load
+    if (window.obcGlobalHandlersInitialized) {
+      console.log("OBC StateManager: Global handlers already initialized, skipping");
+      return;
+    }
+    
     console.log("OBC StateManager: Initializing global input handlers...");
     
     // Find all editable fields across all sections
     const editableFields = document.querySelectorAll('.editable[data-field-id]');
+    let newHandlersCount = 0;
     
     editableFields.forEach((field) => {
       if (!field.hasOBCGlobalListeners) {
@@ -549,10 +542,12 @@ window.OBC.StateManager = (function () {
         });
         
         field.hasOBCGlobalListeners = true; // Mark as listener attached
+        newHandlersCount++;
       }
     });
     
-    console.log(`OBC StateManager: Initialized handlers for ${editableFields.length} editable fields`);
+    window.obcGlobalHandlersInitialized = true; // Mark as globally initialized
+    console.log(`OBC StateManager: Initialized handlers for ${newHandlersCount} new editable fields (${editableFields.length} total)`);
   }
 
   // Public API

@@ -1,246 +1,103 @@
-OBC-Section04.js:801 ✅ Section 04 module loaded: Firefighting & Life Safety Systems
+ ✅ Section 04 module loaded: Firefighting & Life Safety Systems
  OBC StateManager: Initializing...
  OBC StateManager: No saved state found, starting fresh
- 🔍 EXPANDABLE ROWS: DOM ready, system loaded
  Section 01 rendered - Building Information (OBC Matrix)
  Initializing Section 01 event handlers
  OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 8 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: occupancy-classifications in buildingOccupancy for row 2.14
- 🔍 INITIALIZING GROUP: occupancy-classifications in section buildingOccupancy
- 🔍 GROUP INIT: Config for occupancy-classifications: {groupId: 'occupancy-classifications', sectionId: 'buildingOccupancy', expandableRows: Array(4), defaultVisible: 1, maxRows: 0, …}
- 🔍 GROUP INIT: Final config for occupancy-classifications: {groupId: 'occupancy-classifications', sectionId: 'buildingOccupancy', expandableRows: Array(4), defaultVisible: 1, maxRows: 5, …}
- ✅ GROUP INIT: Successfully initialized expandable group: occupancy-classifications {groupId: 'occupancy-classifications', sectionId: 'buildingOccupancy', expandableRows: Array(4), defaultVisible: 1, maxRows: 5, …}
- ✅ EXPANDABLE CONTROLS INSERTED for occupancy-classifications
+ OBC StateManager: Initialized handlers for 8 new editable fields (8 total)
+ 🔍 GROUP occupancy-classifications replacing placeholder with full config
  Section 02 rendered - Building Occupancy (OBC Matrix)
  Initializing Section 02 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 24 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: building-areas in buildingAreas for row 3.22
- 🔍 INITIALIZING GROUP: building-areas in section buildingAreas
- 🔍 GROUP INIT: Config for building-areas: {groupId: 'building-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 0, …}
- 🔍 GROUP INIT: Final config for building-areas: {groupId: 'building-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ GROUP INIT: Successfully initialized expandable group: building-areas {groupId: 'building-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ EXPANDABLE CONTROLS INSERTED for building-areas
- 🔍 PROCESSING EXPANDABLE TRIGGER: gross-areas in buildingAreas for row 3.27
- 🔍 INITIALIZING GROUP: gross-areas in section buildingAreas
- 🔍 GROUP INIT: Config for gross-areas: {groupId: 'gross-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 0, …}
- 🔍 GROUP INIT: Final config for gross-areas: {groupId: 'gross-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ GROUP INIT: Successfully initialized expandable group: gross-areas {groupId: 'gross-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ EXPANDABLE CONTROLS INSERTED for gross-areas
- 🔍 PROCESSING EXPANDABLE TRIGGER: mezzanine-areas in buildingAreas for row 3.32
- 🔍 INITIALIZING GROUP: mezzanine-areas in section buildingAreas
- 🔍 GROUP INIT: Config for mezzanine-areas: {groupId: 'mezzanine-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 0, …}
- 🔍 GROUP INIT: Final config for mezzanine-areas: {groupId: 'mezzanine-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ GROUP INIT: Successfully initialized expandable group: mezzanine-areas {groupId: 'mezzanine-areas', sectionId: 'buildingAreas', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ EXPANDABLE CONTROLS INSERTED for mezzanine-areas
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 69 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: building-classifications in firefightingSystems for row 4.40
- 🔍 INITIALIZING GROUP: building-classifications in section firefightingSystems
- 🔍 GROUP INIT: Config for building-classifications: {groupId: 'building-classifications', sectionId: 'firefightingSystems', expandableRows: Array(4), defaultVisible: 1, maxRows: 0, …}
- 🔍 GROUP INIT: Final config for building-classifications: {groupId: 'building-classifications', sectionId: 'firefightingSystems', expandableRows: Array(4), defaultVisible: 1, maxRows: 5, …}
- ✅ GROUP INIT: Successfully initialized expandable group: building-classifications {groupId: 'building-classifications', sectionId: 'firefightingSystems', expandableRows: Array(4), defaultVisible: 1, maxRows: 5, …}
- ✅ EXPANDABLE CONTROLS INSERTED for building-classifications
+ OBC StateManager: Global handlers already initialized, skipping
+ 🔍 GROUP building-areas replacing placeholder with full config
+ 🔍 GROUP gross-areas replacing placeholder with full config
+ 🔍 GROUP mezzanine-areas replacing placeholder with full config
+ OBC StateManager: Global handlers already initialized, skipping
+ 🔍 GROUP building-classifications replacing placeholder with full config
  Initializing Section 04: Firefighting & Life Safety Systems
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 70 editable fields
+ OBC StateManager: Global handlers already initialized, skipping
  ✅ Section 04 initialized with global input handling
  Section 04 rendered - Firefighting & Life Safety Systems
  Initializing Section 05 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 77 editable fields
+ OBC StateManager: Global handlers already initialized, skipping
  Section 05 rendered
  Initializing Section 05 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 77 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: occupant-loads in occupantSafety for row 6.59
- 🔍 INITIALIZING GROUP: occupant-loads in section occupantSafety
- 🔍 GROUP INIT: Config for occupant-loads: {groupId: 'occupant-loads', sectionId: 'occupantSafety', expandableRows: Array(2), defaultVisible: 1, maxRows: 0, …}
- 🔍 GROUP INIT: Final config for occupant-loads: {groupId: 'occupant-loads', sectionId: 'occupantSafety', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
- ✅ GROUP INIT: Successfully initialized expandable group: occupant-loads {groupId: 'occupant-loads', sectionId: 'occupantSafety', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
-OBC-ExpandableRows.js:59 ✅ EXPANDABLE CONTROLS INSERTED for occupant-loads
-OBC-Section06.js:613 Initializing Section 06 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 92 editable fields
-OBC-Section06.js:629 Section 06 rendered
-OBC-Section06.js:613 Initializing Section 06 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 92 editable fields
-OBC-Section07.js:493 Initializing Section 07 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 107 editable fields
-OBC-Section07.js:501 Section 07 rendered
-OBC-Section07.js:493 Initializing Section 07 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 107 editable fields
-OBC-ExpandableRows.js:25 🔍 PROCESSING EXPANDABLE TRIGGER: plumbing-fixtures in plumbingFixtures for row 8.79
-OBC-ExpandableRows.js:70 🔍 INITIALIZING GROUP: plumbing-fixtures in section plumbingFixtures
-OBC-ExpandableRows.js:81 🔍 GROUP INIT: Config for plumbing-fixtures: {groupId: 'plumbing-fixtures', sectionId: 'plumbingFixtures', expandableRows: Array(2), defaultVisible: 1, maxRows: 0, …}
-OBC-ExpandableRows.js:89 🔍 GROUP INIT: Final config for plumbing-fixtures: {groupId: 'plumbing-fixtures', sectionId: 'plumbingFixtures', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
-OBC-ExpandableRows.js:94 ✅ GROUP INIT: Successfully initialized expandable group: plumbing-fixtures {groupId: 'plumbing-fixtures', sectionId: 'plumbingFixtures', expandableRows: Array(2), defaultVisible: 1, maxRows: 3, …}
-OBC-ExpandableRows.js:59 ✅ EXPANDABLE CONTROLS INSERTED for plumbing-fixtures
-OBC-Section08.js:486 Initializing Section 08 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 130 editable fields
-OBC-Section08.js:494 Section 08 rendered
-OBC-Section08.js:486 Initializing Section 08 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 130 editable fields
-OBC-Section09.js:384 Initializing Section 09 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 142 editable fields
-OBC-Section09.js:392 Section 09 rendered
-OBC-Section09.js:384 Initializing Section 09 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 142 editable fields
-OBC-Section10.js:231 Initializing Section 10 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
-OBC-Section10.js:239 Section 10 rendered
-OBC-Section10.js:231 Initializing Section 10 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
- Core TEUI modules (FieldManager) not found!
-(anonymous) @ OBC-Navigation.js:933Understand this errorAI
- Initializing Section 04: Firefighting & Life Safety Systems
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
- ✅ Section 04 initialized with global input handling
- Section 01 rendered - Building Information (OBC Matrix)
- 🔍 PROCESSING EXPANDABLE TRIGGER: occupancy-classifications in buildingOccupancy for row 2.14
- ✅ EXPANDABLE CONTROLS INSERTED for occupancy-classifications
- Section 02 rendered - Building Occupancy (OBC Matrix)
- 🔍 PROCESSING EXPANDABLE TRIGGER: building-areas in buildingAreas for row 3.22
- ✅ EXPANDABLE CONTROLS INSERTED for building-areas
- 🔍 PROCESSING EXPANDABLE TRIGGER: gross-areas in buildingAreas for row 3.27
- ✅ EXPANDABLE CONTROLS INSERTED for gross-areas
- 🔍 PROCESSING EXPANDABLE TRIGGER: mezzanine-areas in buildingAreas for row 3.32
- ✅ EXPANDABLE CONTROLS INSERTED for mezzanine-areas
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: building-classifications in firefightingSystems for row 4.40
- ✅ EXPANDABLE CONTROLS INSERTED for building-classifications
- Initializing Section 04: Firefighting & Life Safety Systems
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
- ✅ Section 04 initialized with global input handling
- Section 04 rendered - Firefighting & Life Safety Systems
- Initializing Section 05 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
- Section 05 rendered
- Initializing Section 05 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: occupant-loads in occupantSafety for row 6.59
- ✅ EXPANDABLE CONTROLS INSERTED for occupant-loads
+ OBC StateManager: Global handlers already initialized, skipping
+ 🔍 GROUP occupant-loads replacing placeholder with full config
  Initializing Section 06 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
+ OBC StateManager: Global handlers already initialized, skipping
  Section 06 rendered
  Initializing Section 06 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
+ OBC StateManager: Global handlers already initialized, skipping
  Initializing Section 07 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
+ OBC StateManager: Global handlers already initialized, skipping
  Section 07 rendered
  Initializing Section 07 event handlers
- OBC StateManager: Initializing global input handlers...
- OBC StateManager: Initialized handlers for 145 editable fields
- 🔍 PROCESSING EXPANDABLE TRIGGER: plumbing-fixtures in plumbingFixtures for row 8.79
- ✅ EXPANDABLE CONTROLS INSERTED for plumbing-fixtures
- Initializing Section 08 event handlers
- OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
+ OBC StateManager: Global handlers already initialized, skipping
+OBC-ExpandableRows.js:80 🔍 GROUP plumbing-fixtures replacing placeholder with full config
+OBC-Section08.js:486 Initializing Section 08 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
 OBC-Section08.js:494 Section 08 rendered
 OBC-Section08.js:486 Initializing Section 08 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
-OBC-Section09.js:384 Initializing Section 09 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
-OBC-Section09.js:392 Section 09 rendered
-OBC-Section09.js:384 Initializing Section 09 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-ExpandableRows.js:80 🔍 GROUP alternative-solutions replacing placeholder with full config
+OBC-Section09.js:435 Initializing Section 09 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section09.js:443 Section 09 rendered
+OBC-Section09.js:435 Initializing Section 09 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
 OBC-Section10.js:231 Initializing Section 10 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
 OBC-Section10.js:239 Section 10 rendered
 OBC-Section10.js:231 Initializing Section 10 event handlers
-OBC-StateManager.js:514 OBC StateManager: Initializing global input handlers...
-OBC-StateManager.js:555 OBC StateManager: Initialized handlers for 145 editable fields
-indexobc.html:543 OBC Matrix FieldManager initialized
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Navigation.js:899 OBC Navigation: Starting core initialization...
+OBC-Section01.js:535 Section 01 rendered - Building Information (OBC Matrix)
+OBC-Section02.js:704 Section 02 rendered - Building Occupancy (OBC Matrix)
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section04.js:742 Initializing Section 04: Firefighting & Life Safety Systems
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section04.js:761 ✅ Section 04 initialized with global input handling
+OBC-Section04.js:765 Section 04 rendered - Firefighting & Life Safety Systems
+OBC-Section05.js:339 Initializing Section 05 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section05.js:347 Section 05 rendered
+OBC-Section05.js:339 Initializing Section 05 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section06.js:613 Initializing Section 06 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section06.js:629 Section 06 rendered
+OBC-Section06.js:613 Initializing Section 06 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section07.js:493 Initializing Section 07 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section07.js:501 Section 07 rendered
+OBC-Section07.js:493 Initializing Section 07 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section08.js:486 Initializing Section 08 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section08.js:494 Section 08 rendered
+OBC-Section08.js:486 Initializing Section 08 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section09.js:435 Initializing Section 09 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section09.js:443 Section 09 rendered
+OBC-Section09.js:435 Initializing Section 09 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section10.js:231 Initializing Section 10 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section10.js:239 Section 10 rendered
+OBC-Section10.js:231 Initializing Section 10 event handlers
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
 OBC-StateManager.js:137 OBC StateManager: Initializing...
 OBC-StateManager.js:145 OBC StateManager: No saved state found, starting fresh
-indexobc.html:551 OBC StateManager initialized with auto-restore from localStorage
-indexobc.html:559 OBC Matrix initialization complete
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for occupancy-classifications: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.15
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.16
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.17
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.18
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for occupancy-classifications: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for building-areas: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.23
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.24
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for building-areas: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for gross-areas: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.28
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.29
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for gross-areas: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for mezzanine-areas: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.33
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.34
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for mezzanine-areas: add=visible, remove=hidden
- 🔍 INITIALIZING VISIBILITY for building-classifications: current=1, default=1
- 🔍 Hidden row 4.41
- 🔍 Hidden row 4.42
- 🔍 Hidden row 4.43
- 🔍 Hidden row 4.44
- 🔍 BUTTON VISIBILITY for building-classifications: add=visible, remove=hidden
- 🔍 INITIALIZING VISIBILITY for occupant-loads: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 6.60
-OBC-ExpandableRows.js:199 🔍 Hidden row 6.61
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for occupant-loads: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for plumbing-fixtures: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 8.80
-OBC-ExpandableRows.js:199 🔍 Hidden row 8.81
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for plumbing-fixtures: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for occupancy-classifications: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.15
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.16
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.17
-OBC-ExpandableRows.js:199 🔍 Hidden row 2.18
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for occupancy-classifications: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for building-areas: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.23
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.24
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for building-areas: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for gross-areas: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.28
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.29
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for gross-areas: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for mezzanine-areas: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.33
-OBC-ExpandableRows.js:199 🔍 Hidden row 3.34
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for mezzanine-areas: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for building-classifications: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 4.41
-OBC-ExpandableRows.js:199 🔍 Hidden row 4.42
-OBC-ExpandableRows.js:199 🔍 Hidden row 4.43
-OBC-ExpandableRows.js:199 🔍 Hidden row 4.44
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for building-classifications: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for occupant-loads: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 6.60
-OBC-ExpandableRows.js:199 🔍 Hidden row 6.61
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for occupant-loads: add=visible, remove=hidden
-OBC-ExpandableRows.js:192 🔍 INITIALIZING VISIBILITY for plumbing-fixtures: current=1, default=1
-OBC-ExpandableRows.js:199 🔍 Hidden row 8.80
-OBC-ExpandableRows.js:199 🔍 Hidden row 8.81
-OBC-ExpandableRows.js:288 🔍 BUTTON VISIBILITY for plumbing-fixtures: add=visible, remove=hidden
-indexobc.html:592 Initializing notes panel...
-indexobc.html:598 Found elements: {notesToggleBtn: button#notes-toggle-btn.btn.btn-sm.btn-link.text-white.me-2.d-flex.align-items-center.justify-conte…, closeNotesBtn: button#close-notes-panel.btn.btn-sm.btn-outline-secondary, notesPanel: div#global-notes-panel.notes-panel, notesTextarea: textarea#global-notes-textarea.form-control}
-indexobc.html:625 Added click listener to notes toggle button
+OBC-Navigation.js:925 OBC Matrix initialization complete - FieldManager loaded
+OBC-Section04.js:742 Initializing Section 04: Firefighting & Life Safety Systems
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Section04.js:761 ✅ Section 04 initialized with global input handling
+indexobc.html:548 OBC Matrix HTML script ready - waiting for Navigation script to handle core initialization
+OBC-StateManager.js:502 OBC StateManager: Global handlers already initialized, skipping
+OBC-Navigation.js:918 OBC Matrix: Initial load complete, all systems ready
+indexobc.html:581 Initializing notes panel...
+indexobc.html:587 Found elements: Object
+indexobc.html:614 Added click listener to notes toggle button

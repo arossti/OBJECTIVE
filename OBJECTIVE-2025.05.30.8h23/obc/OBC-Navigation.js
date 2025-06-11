@@ -27,12 +27,12 @@ function initializeUIHandlers() {
   if (resetImportedBtn) {
     resetImportedBtn.addEventListener("click", function () {
       if (
-        window.TEUI &&
-        window.TEUI.OBCStateManager &&
-        typeof window.TEUI.OBCStateManager.resetFields === "function"
+        window.OBC &&
+        window.OBC.StateManager &&
+        typeof window.OBC.StateManager.resetFields === "function"
       ) {
         if (confirm("Are you sure you want to reset? This will clear user-modified values but keep imported data.")) {
-          window.TEUI.OBCStateManager.resetFields();
+          window.OBC.StateManager.resetFields();
           console.log("OBC Matrix: Fields reset successfully");
         }
       } else {
@@ -46,8 +46,8 @@ function initializeUIHandlers() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Ensure TEUI namespace exists
-  window.TEUI = window.TEUI || {};
+  // Ensure OBC namespace exists
+  window.OBC = window.OBC || {};
 
   // Get DOM elements
   const body = document.body;
@@ -895,41 +895,35 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(updateStickyElementHeights, 300);
 
   // Initialize core components after DOM is loaded
-  if (window.TEUI && window.TEUI.FieldManager) {
+  if (window.OBC && window.OBC.FieldManager) {
+    console.log("OBC Navigation: Starting core initialization...");
+    
+    // Mark initial load in progress to optimize performance
+    window.obcInitialLoadInProgress = true;
+    
     // Initialize FieldManager (core requirement for OBC Matrix)
-    window.TEUI.FieldManager.renderAllSections(); // FieldManager handles initial rendering
+    window.OBC.FieldManager.renderAllSections(); // FieldManager handles initial rendering
     
     // Initialize OBC StateManager and global input handlers
-    if (window.TEUI.OBCStateManager) {
-      window.TEUI.OBCStateManager.initialize();
+    if (window.OBC.StateManager) {
+      window.OBC.StateManager.initialize();
       
-      // Initialize global input handlers after sections are rendered
+      // Initialize global input handlers after a brief delay for rendering
       setTimeout(() => {
-        window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
-      }, 500); // Give sections time to fully render
+        window.OBC.StateManager.initializeGlobalInputHandlers();
+        
+        // Mark initial load as complete
+        window.obcInitialLoadInProgress = false;
+        
+        console.log("OBC Matrix: Initial load complete, all systems ready");
+      }, 100); // Reduced delay for faster startup
     }
     
-    // Initialize optional modules only if they exist
-    if (window.TEUI.StateManager) {
-      window.TEUI.StateManager.initialize();
-    }
-    if (window.TEUI.SectionIntegrator) {
-      window.TEUI.SectionIntegrator.initialize();
-    }
-    // Initialize Reference components (Manager depends on Values, Toggle is independent UI)
-    if (window.TEUI.ReferenceValues) {
-      // Manager depends on this data
-      if (window.TEUI.ReferenceManager) {
-        window.TEUI.ReferenceManager.initialize();
-      }
-    }
-    if (window.TEUI.ReferenceToggle) {
-      window.TEUI.ReferenceToggle.initialize();
-    }
     // Initialize other UI handlers
     initializeUIHandlers();
+    
     console.log("OBC Matrix initialization complete - FieldManager loaded");
   } else {
-    console.error("Core TEUI modules (FieldManager) not found!");
+    console.error("Core OBC modules (FieldManager) not found!");
   }
 });

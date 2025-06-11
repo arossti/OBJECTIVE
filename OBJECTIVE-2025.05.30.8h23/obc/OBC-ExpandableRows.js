@@ -24,8 +24,10 @@ window.OBC.ExpandableRows = (function() {
       if (groupId) {
         // console.log(`🔍 PROCESSING EXPANDABLE TRIGGER: ${groupId} in ${sectionId} for row ${rowId}`);
         
-        // Initialize group if not already done
+        // Initialize group if not already done - FIX RECURSION
         if (!expandableGroups.has(groupId)) {
+          // Mark group as being initialized to prevent recursion
+          expandableGroups.set(groupId, { initializing: true });
           initializeExpandableGroup(groupId, sectionId, cellDef.attributes);
         }
         
@@ -51,10 +53,7 @@ window.OBC.ExpandableRows = (function() {
         // Add CSS if not already added
         addExpandableRowsCSS();
         
-        // Schedule visibility update after DOM is ready
-        setTimeout(() => {
-          initializeGroupVisibility(groupId);
-        }, 100);
+        // Visibility initialization now handled by initializeExpandableGroup after config is complete
         
         // console.log(`✅ EXPANDABLE CONTROLS INSERTED for ${groupId}`);
         return true;
@@ -68,6 +67,18 @@ window.OBC.ExpandableRows = (function() {
    */
   function initializeExpandableGroup(groupId, sectionId, attributes) {
     // console.log(`🔍 INITIALIZING GROUP: ${groupId} in section ${sectionId}`);
+    
+    // Check if group is already fully initialized (prevent recursion)
+    const existing = expandableGroups.get(groupId);
+    if (existing && existing.expandableRows) {
+      console.log(`🔍 GROUP ${groupId} already fully initialized, skipping duplicate`);
+      return;
+    }
+    
+    // If it's just the placeholder, continue with initialization
+    if (existing && existing.initializing) {
+      console.log(`🔍 GROUP ${groupId} replacing placeholder with full config`);
+    }
     
     const config = {
       groupId: groupId,
@@ -88,10 +99,15 @@ window.OBC.ExpandableRows = (function() {
     
     // console.log(`🔍 GROUP INIT: Final config for ${groupId}:`, config);
     
-    // Store configuration
+    // Store final configuration (replaces initializing placeholder)
     expandableGroups.set(groupId, config);
     
     // console.log(`✅ GROUP INIT: Successfully initialized expandable group: ${groupId}`, config);
+    
+    // Schedule visibility initialization now that config is complete
+    setTimeout(() => {
+      initializeGroupVisibility(groupId);
+    }, 150);
   }
   
   /**
@@ -189,7 +205,13 @@ window.OBC.ExpandableRows = (function() {
     const config = expandableGroups.get(groupId);
     if (!config) return;
     
-    // console.log(`🔍 INITIALIZING VISIBILITY for ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
+    // Safety check: ensure config is fully initialized (not just placeholder)
+    if (config.initializing || !config.expandableRows) {
+      console.log(`🔍 VISIBILITY INIT SKIPPED: ${groupId} config not ready`);
+      return;
+    }
+    
+    // console.log(`🔍 INITIALIZING VISIBILITY for ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}, expandableRows:`, config.expandableRows);
     
     // Hide all expandable rows initially
     config.expandableRows.forEach(rowId => {
@@ -197,12 +219,16 @@ window.OBC.ExpandableRows = (function() {
       if (rowElement) {
         rowElement.style.display = 'none';
         // console.log(`🔍 Hidden row ${rowId}`);
+      } else {
+        console.warn(`🔍 Row ${rowId} not found in DOM`);
       }
     });
     
-    // Show the appropriate number of rows
+    // Show the appropriate number of rows based on saved state
     const targetVisible = config.currentVisible;
     config.currentVisible = config.defaultVisible; // Reset to base
+    
+    // console.log(`🔍 Will show ${targetVisible} rows total (default: ${config.defaultVisible})`);
     
     for (let i = config.defaultVisible; i < targetVisible; i++) {
       const rowIndex = i - config.defaultVisible;
