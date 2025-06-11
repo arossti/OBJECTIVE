@@ -22,7 +22,7 @@ window.OBC.ExpandableRows = (function() {
     if (cellDef.classes && cellDef.classes.includes('expandable-row-trigger') && cellDef.attributes) {
       const groupId = cellDef.attributes['data-expandable-group'];
       if (groupId) {
-        console.log(`🔍 PROCESSING EXPANDABLE TRIGGER: ${groupId} in ${sectionId} for row ${rowId}`);
+        // console.log(`🔍 PROCESSING EXPANDABLE TRIGGER: ${groupId} in ${sectionId} for row ${rowId}`);
         
         // Initialize group if not already done
         if (!expandableGroups.has(groupId)) {
@@ -56,7 +56,7 @@ window.OBC.ExpandableRows = (function() {
           initializeGroupVisibility(groupId);
         }, 100);
         
-        console.log(`✅ EXPANDABLE CONTROLS INSERTED for ${groupId}`);
+        // console.log(`✅ EXPANDABLE CONTROLS INSERTED for ${groupId}`);
         return true;
       }
     }
@@ -67,7 +67,7 @@ window.OBC.ExpandableRows = (function() {
    * Initialize a specific expandable group
    */
   function initializeExpandableGroup(groupId, sectionId, attributes) {
-    console.log(`🔍 INITIALIZING GROUP: ${groupId} in section ${sectionId}`);
+    // console.log(`🔍 INITIALIZING GROUP: ${groupId} in section ${sectionId}`);
     
     const config = {
       groupId: groupId,
@@ -78,7 +78,7 @@ window.OBC.ExpandableRows = (function() {
       currentVisible: 0
     };
     
-    console.log(`🔍 GROUP INIT: Config for ${groupId}:`, config);
+    // console.log(`🔍 GROUP INIT: Config for ${groupId}:`, config);
     
     // Calculate max rows (default + expandable)
     config.maxRows = config.defaultVisible + config.expandableRows.length;
@@ -86,12 +86,12 @@ window.OBC.ExpandableRows = (function() {
     // Load saved state or use default
     config.currentVisible = loadGroupState(groupId) || config.defaultVisible;
     
-    console.log(`🔍 GROUP INIT: Final config for ${groupId}:`, config);
+    // console.log(`🔍 GROUP INIT: Final config for ${groupId}:`, config);
     
     // Store configuration
     expandableGroups.set(groupId, config);
     
-    console.log(`✅ GROUP INIT: Successfully initialized expandable group: ${groupId}`, config);
+    // console.log(`✅ GROUP INIT: Successfully initialized expandable group: ${groupId}`, config);
   }
   
   /**
@@ -189,14 +189,14 @@ window.OBC.ExpandableRows = (function() {
     const config = expandableGroups.get(groupId);
     if (!config) return;
     
-    console.log(`🔍 INITIALIZING VISIBILITY for ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
+    // console.log(`🔍 INITIALIZING VISIBILITY for ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
     
     // Hide all expandable rows initially
     config.expandableRows.forEach(rowId => {
       const rowElement = document.querySelector(`tr[data-id="${rowId}"]`);
       if (rowElement) {
         rowElement.style.display = 'none';
-        console.log(`🔍 Hidden row ${rowId}`);
+        // console.log(`🔍 Hidden row ${rowId}`);
       }
     });
     
@@ -212,7 +212,7 @@ window.OBC.ExpandableRows = (function() {
         if (rowElement) {
           rowElement.style.display = '';
           config.currentVisible++;
-          console.log(`🔍 Showed row ${rowId} (${config.currentVisible}/${config.maxRows})`);
+          // console.log(`🔍 Showed row ${rowId} (${config.currentVisible}/${config.maxRows})`);
         }
       }
     }
@@ -228,7 +228,7 @@ window.OBC.ExpandableRows = (function() {
     const config = expandableGroups.get(groupId);
     if (!config || config.currentVisible >= config.maxRows) return;
     
-    console.log(`🔍 ADDING ROW to ${groupId}: current=${config.currentVisible}, max=${config.maxRows}`);
+    // console.log(`🔍 ADDING ROW to ${groupId}: current=${config.currentVisible}, max=${config.maxRows}`);
     
     // Show next hidden row
     const nextRowIndex = config.currentVisible - config.defaultVisible;
@@ -240,7 +240,7 @@ window.OBC.ExpandableRows = (function() {
       config.currentVisible++;
       updateButtonVisibility(groupId);
       saveGroupState(groupId, config.currentVisible);
-      console.log(`✅ Added row ${rowId} (${config.currentVisible}/${config.maxRows})`);
+      // console.log(`✅ Added row ${rowId} (${config.currentVisible}/${config.maxRows})`);
     }
   }
   
@@ -251,7 +251,7 @@ window.OBC.ExpandableRows = (function() {
     const config = expandableGroups.get(groupId);
     if (!config || config.currentVisible <= config.defaultVisible) return;
     
-    console.log(`🔍 REMOVING ROW from ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
+    // console.log(`🔍 REMOVING ROW from ${groupId}: current=${config.currentVisible}, default=${config.defaultVisible}`);
     
     // Hide last visible row
     const lastRowIndex = config.currentVisible - config.defaultVisible - 1;
@@ -263,7 +263,7 @@ window.OBC.ExpandableRows = (function() {
       config.currentVisible--;
       updateButtonVisibility(groupId);
       saveGroupState(groupId, config.currentVisible);
-      console.log(`✅ Removed row ${rowId} (${config.currentVisible}/${config.maxRows})`);
+      // console.log(`✅ Removed row ${rowId} (${config.currentVisible}/${config.maxRows})`);
     }
   }
   
@@ -285,7 +285,7 @@ window.OBC.ExpandableRows = (function() {
       removeBtn.style.display = config.currentVisible > config.defaultVisible ? 'inline-flex' : 'none';
     }
     
-    console.log(`🔍 BUTTON VISIBILITY for ${groupId}: add=${config.currentVisible < config.maxRows ? 'visible' : 'hidden'}, remove=${config.currentVisible > config.defaultVisible ? 'visible' : 'hidden'}`);
+    // console.log(`🔍 BUTTON VISIBILITY for ${groupId}: add=${config.currentVisible < config.maxRows ? 'visible' : 'hidden'}, remove=${config.currentVisible > config.defaultVisible ? 'visible' : 'hidden'}`);
   }
   
   /**
@@ -347,5 +347,5 @@ window.OBC.ExpandableRows = (function() {
 
 // Initialize CSS when loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🔍 EXPANDABLE ROWS: DOM ready, system loaded');
+  // console.log('🔍 EXPANDABLE ROWS: DOM ready, system loaded');
 }); 
