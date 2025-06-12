@@ -853,6 +853,37 @@ window.OBC.SectionModules.sect04 = (function () {
     if (!window.OBC.sect04?.initialized) {
       initializeEventHandlers();
     }
+    
+    // Load and initialize classification filtering after Section 04 is fully rendered
+    loadClassificationFilter();
+  }
+
+  function loadClassificationFilter() {
+    // Load ClassificationFilter script dynamically
+    if (!window.OBC.ClassificationFilter) {
+      const script = document.createElement('script');
+      script.src = 'OBC-ClassificationFilter.js';
+      script.onload = function() {
+        console.log("🔍 CLASSIFICATION FILTER: Script loaded, initializing...");
+        // Initialize after a brief delay to ensure DOM is ready
+        setTimeout(() => {
+          if (window.OBC.ClassificationFilter) {
+            window.OBC.ClassificationFilter.initialize();
+          }
+        }, 100);
+      };
+      script.onerror = function() {
+        console.error("❌ Failed to load ClassificationFilter script");
+      };
+      document.head.appendChild(script);
+    } else {
+      // Already loaded, just initialize
+      setTimeout(() => {
+        if (window.OBC.ClassificationFilter) {
+          window.OBC.ClassificationFilter.initialize();
+        }
+      }, 100);
+    }
   }
 
   //==========================================================================

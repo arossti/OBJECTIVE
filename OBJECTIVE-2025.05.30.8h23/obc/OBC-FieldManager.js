@@ -1320,6 +1320,58 @@ OBC.FieldManager = (function () {
     }
   }
 
+  /**
+   * Update dropdown options dynamically (for classification filtering)
+   * @param {string} fieldId - Field ID to update
+   * @param {Array} newOptions - New options array
+   */
+  function updateDropdownOptions(fieldId, newOptions) {
+    // Try dropdown ID first (dd_fieldId), then fallback to field ID
+    const dropdownId = `dd_${fieldId}`;
+    let element = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
+    
+    if (!element) {
+      element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    }
+    
+    if (!element || element.tagName !== "SELECT") {
+      console.warn(`updateDropdownOptions: No select element found for ${fieldId} (tried ${dropdownId} and ${fieldId})`);
+      return;
+    }
+
+    // Store current selection
+    const currentValue = element.value;
+    
+    // Clear existing options
+    element.innerHTML = "";
+    
+    // Add new options
+    newOptions.forEach(option => {
+      const optionEl = document.createElement("option");
+      const value = typeof option === "object" ? option.value : option;
+      const text = typeof option === "object" ? option.name || option.value : option;
+      
+      optionEl.value = value;
+      optionEl.textContent = text;
+      element.appendChild(optionEl);
+    });
+    
+    // Restore selection if still valid
+    const isCurrentValueValid = newOptions.some(option => {
+      const value = typeof option === "object" ? option.value : option;
+      return value === currentValue;
+    });
+    
+    if (isCurrentValueValid) {
+      element.value = currentValue;
+    } else {
+      // Reset to default if current value is no longer valid
+      element.value = "-";
+    }
+    
+    console.log(`✅ Updated dropdown ${fieldId} with ${newOptions.length} options`);
+  }
+
   // Public API
   return {
     // Initialization
@@ -1359,6 +1411,7 @@ OBC.FieldManager = (function () {
     initializeSliders,
     initializeDropdown,
     updateDependentDropdowns,
+    updateDropdownOptions,
     initializeSectionEventHandlers,
     updateFieldDisplay,
   };
