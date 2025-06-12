@@ -708,28 +708,30 @@ option,
 
 /* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
 
-/* =============== SECTION 03 LAYOUT OPTIMIZATION =============== */
+/* =============== SECTION 04 LAYOUT OPTIMIZATION =============== */
 
-/* Section 03: Standard layout - shorter labels in Column C, longer user inputs in Column D */
-/* Section 03: Intelligent content-based column system */
+/* Section 04: Building Areas - Expandable structure with EXISTING/NEW/TOTAL columns */
+/* Section 04: Intelligent content-based column system */
 #buildingAreas .data-table {
     table-layout: auto; /* Content-based but controlled */
     width: 100%;
 }
 
-/* Section 03: Hide completely empty columns to improve density */
+/* Section 04: Hide completely empty columns to improve density */
+#buildingAreas .data-table td:nth-child(5),  /* Column E - empty */
 #buildingAreas .data-table td:nth-child(6),  /* Column F - empty */
 #buildingAreas .data-table td:nth-child(7),  /* Column G - empty */
 #buildingAreas .data-table td:nth-child(8),  /* Column H - empty */
 #buildingAreas .data-table td:nth-child(13), /* Column M - empty */
 #buildingAreas .data-table td:nth-child(14)  /* Column N - empty */
 {
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
+    width: 0 !important;     /* Completely hide empty columns */
+    padding: 0 !important;   /* Remove all padding */
+    border: none !important; /* Remove borders */
     overflow: hidden !important;
 }
 
-/* Section 03: Controlled width for content columns */
+/* Section 04: Controlled width for content columns */
 #buildingAreas .data-table td:nth-child(1) { width: 70px !important; }   /* Column A - expandable buttons */
 #buildingAreas .data-table td:nth-child(2) { width: 40px !important; }   /* Column B - row numbers */
 #buildingAreas .data-table td:nth-child(3) { width: 160px !important; }  /* Column C - section labels */
@@ -740,14 +742,13 @@ option,
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
-#buildingAreas .data-table td:nth-child(5) { width: 1px !important; }    /* Column E - force minimal */
 #buildingAreas .data-table td:nth-child(9) { width: 80px !important; }   /* Column I - EXISTING */
 #buildingAreas .data-table td:nth-child(10) { width: 80px !important; }  /* Column J - NEW */
 #buildingAreas .data-table td:nth-child(11) { width: 80px !important; }  /* Column K - TOTAL */
 #buildingAreas .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
 #buildingAreas .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
 
-/* Section 03: Ensure text inputs don't expand beyond container */
+/* Section 04: Ensure text inputs don't expand beyond container */
 #buildingAreas .data-table td:nth-child(4) input,
 #buildingAreas .data-table td:nth-child(4) [contenteditable] {
     width: 100% !important;
@@ -756,7 +757,7 @@ option,
     text-overflow: ellipsis !important;
 }
 
-/* Section 03: Numeric columns right-aligned */
+/* Section 04: Numeric columns right-aligned */
 #buildingAreas .data-table td:nth-child(9),  /* EXISTING */
 #buildingAreas .data-table td:nth-child(10), /* NEW */
 #buildingAreas .data-table td:nth-child(11)  /* TOTAL */
@@ -764,14 +765,14 @@ option,
     text-align: right !important;
 }
 
-/* Section 03: Notes column wrapping */
+/* Section 04: Notes column wrapping */
 #buildingAreas .data-table td:nth-child(15) {
     white-space: normal !important;
     word-wrap: break-word !important;
     vertical-align: top !important;
 }
 
-/* =============== END SECTION 03 LAYOUT OPTIMIZATION =============== */
+/* =============== END SECTION 04 LAYOUT OPTIMIZATION =============== */
 
 /* =============== SECTION 01 LAYOUT OPTIMIZATION =============== */
 
