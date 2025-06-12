@@ -164,8 +164,7 @@ window.OBC.SectionModules.sect04 = (function () {
             { value: "-", name: "Select..." },
             { value: "1", name: "1" },
             { value: "2", name: "2" },
-            { value: "3", name: "3" },
-            { value: "4+", name: "4+" }
+            { value: "3", name: "3" }
           ]
         },
         e: { label: "STREET(S)" },
@@ -415,7 +414,7 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { label: "4h" },
         c: { label: "SPRINKLER", classes: ["section-subheader"] },
-        d: { content: "SPRINKLER STUFF", classes: ["section-subheader"] },
+        d: { content: "WATER SYSTEMS", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },

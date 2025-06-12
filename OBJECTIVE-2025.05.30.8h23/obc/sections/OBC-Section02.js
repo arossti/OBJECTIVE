@@ -48,21 +48,21 @@ window.OBC.SectionModules.sect02 = (function () {
     header: {
       id: "2.00",
       rowId: "2.00",
-      label: "Building Occupancy Header",
+      label: "Building Occupancy",
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
         c: { content: "", classes: ["section-subheader"] },
         d: { content: "O.Reg. 163/24 | LAST CODE AMENDMENT | O.Reg. 447/24", classes: ["section-subheader"] },
-        e: { content: "E", classes: ["section-subheader"] },
-        f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] },
-        h: { content: "H", classes: ["section-subheader"] },
-        i: { content: "I", classes: ["section-subheader"] },
-        j: { content: "J", classes: ["section-subheader"] },
-        k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC Reference", classes: ["section-subheader"] },
-        m: { content: "M", classes: ["section-subheader"] },
-        n: { content: "N", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "OBC [A] 1.3.3.2.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
         o: {
           content: "Notes",
           classes: ["section-subheader", "notes-column"],
@@ -89,15 +89,15 @@ window.OBC.SectionModules.sect02 = (function () {
             { value: "-", name: "Select Project Type" },
             { value: "New Construction", name: "New Construction" },
             { value: "Addition", name: "Addition" },
-            { value: "Alteration", name: "Alteration" },
+            { value: "Renovation", name: "Renovation" },
+            { value: "Addition & Renovation", name: "Addition & Renovation" },
             { value: "Change of Use", name: "Change of Use" },
-            { value: "Repair", name: "Repair" },
           ],
         },
         e: {
           fieldId: "e_11",
           type: "editable",
-          value: "[Provide further description below.]",
+          value: "Enter description... ie. 'New 1000 sq. ft. restaurant with 200 sq. ft. kitchen'",
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -108,7 +108,7 @@ window.OBC.SectionModules.sect02 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: { content: "[A] 1.3.3.2.", classes: ["obc-reference"] },
+        l: { content: "", classes: ["obc-reference"] },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -121,34 +121,6 @@ window.OBC.SectionModules.sect02 = (function () {
       },
     },
 
-    // Row 2.12: Empty row for spacing
-    "2.12": {
-      id: "2.12",
-      rowId: "2.12",
-      label: "",
-      cells: {
-        b: { content: "12" },
-        c: { content: "" },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_12",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingOccupancy",
-          classes: ["no-wrap", "notes-column"],
-        },
-      },
-    },
 
     // Row 2.13: 3.02 Major Occupancy Classification Header
     "2.13": {
@@ -166,7 +138,7 @@ window.OBC.SectionModules.sect02 = (function () {
         i: { content: "", classes: ["section-subheader"] },
         j: { content: "", classes: ["section-subheader"] },
         k: { content: "", classes: ["section-subheader"] },
-        l: { content: "3.1.2.", classes: ["section-subheader", "obc-reference"] },
+        l: { content: "OBC 3.1.2.", classes: ["section-subheader", "obc-reference"] },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
         o: { content: "", classes: ["section-subheader", "notes-column"] },
@@ -202,7 +174,7 @@ window.OBC.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_14",
           type: "editable",
-          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
+          value: 'Provide Description of Use, ie. "Restaurant"', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -442,35 +414,6 @@ window.OBC.SectionModules.sect02 = (function () {
         n: { content: "" },
         o: {
           fieldId: "o_19",
-          type: "editable",
-          value: "enter notes here...",
-          section: "buildingOccupancy",
-          classes: ["no-wrap", "notes-column"],
-        },
-      },
-    },
-
-    // Row 2.20: Empty row
-    "2.20": {
-      id: "2.20",
-      rowId: "2.20",
-      label: "",
-      cells: {
-        b: { content: "19" },
-        c: { content: "" },
-        d: { content: "" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
-        o: {
-          fieldId: "o_20",
           type: "editable",
           value: "enter notes here...",
           section: "buildingOccupancy",
