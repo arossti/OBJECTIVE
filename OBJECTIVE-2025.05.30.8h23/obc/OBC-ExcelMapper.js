@@ -529,5 +529,5 @@ class ExcelMapper {
 }
 
 // Create and export instance
-window.TEUI = window.TEUI || {};
-window.TEUI.ExcelMapper = new ExcelMapper();
+window.OBC = window.OBC || {};
+window.OBC.ExcelMapper = new ExcelMapper();

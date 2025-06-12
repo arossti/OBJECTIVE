@@ -32,24 +32,10 @@ window.OBC.SectionModules.sect08 = (function () {
   //==========================================================================
   
   const dropdownOptions = {
+    // TODO: Add OBC sentence options from CSV
     obcSentences: [
       { value: "-", name: "Select..." },
-      { value: "3.7.4.1.(1)", name: "3.7.4.1.(1) - Assembly" },
-      { value: "3.7.4.2.(1)", name: "3.7.4.2.(1) - Business & Personal Services" },
-      { value: "3.7.4.3.(1)", name: "3.7.4.3.(1) - Care Occupancy" },
-      { value: "3.7.4.4.(1)", name: "3.7.4.4.(1) - Detention" },
-      { value: "3.7.4.5.(1)", name: "3.7.4.5.(1) - Industrial" },
-      { value: "3.7.4.6.(1)", name: "3.7.4.6.(1) - Mercantile" },
-      { value: "3.7.4.7.(1)", name: "3.7.4.7.(1) - Residential" },
-      { value: "3.7.4.8.(1)", name: "3.7.4.8.(1) - Treatment" },
-      { value: "Table 3.7.4.1.A", name: "Table 3.7.4.1.A - Assembly Occupancies" },
-      { value: "Table 3.7.4.2.A", name: "Table 3.7.4.2.A - Business & Personal Services" },
-      { value: "Table 3.7.4.3.A", name: "Table 3.7.4.3.A - Care Occupancies" },
-      { value: "Table 3.7.4.4.A", name: "Table 3.7.4.4.A - Detention Occupancies" },
-      { value: "Table 3.7.4.5.A", name: "Table 3.7.4.5.A - Industrial Occupancies" },
-      { value: "Table 3.7.4.6.A", name: "Table 3.7.4.6.A - Mercantile Occupancies" },
-      { value: "Table 3.7.4.7.A", name: "Table 3.7.4.7.A - Residential Occupancies" },
-      { value: "Table 3.7.4.8.A", name: "Table 3.7.4.8.A - Treatment Occupancies" }
+      // // Add OBC sentence options later
     ]
   };
 
@@ -132,32 +118,34 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 79: Plumbing Requirements Row 1 (Trigger Row)
+    // Row 79: Plumbing Requirements Row 1 - EXPANDABLE TRIGGER ROW
     "8.79": {
       id: "8.79",
       rowId: "8.79",
       label: "Plumbing Row 1",
       cells: {
-        a: {
+        a: { 
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "plumbing-fixtures",
             "data-expandable-rows": "8.80,8.81",
-            "data-default-visible": "1"
+            "data-default-visible": "1"  // Shows only the trigger row initially
           }
         },
+        b: { content: "79" },
+        c: { content: "" },
         d: {
           fieldId: "d_79",
           type: "editable",
-          value: "Floor/Area",
+          value: "Ground Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         g: {
           fieldId: "g_79",
           type: "num-editable",
-          value: "0",
+          value: "50",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -173,31 +161,35 @@ window.OBC.SectionModules.sect08 = (function () {
         i: {
           fieldId: "i_79",
           type: "num-editable",
-          value: "0",
+          value: "3",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_79",
           type: "num-editable",
-          value: "0",
+          value: "4",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         k: {
           fieldId: "k_79",
           type: "editable",
-          value: "/ ",
+          value: "1 / 1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         l: {
           fieldId: "l_79",
           type: "editable",
-          value: "/ ",
+          value: "1 / 1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_79",
           type: "editable",
@@ -208,23 +200,25 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 80: Plumbing Requirements Row 2 (Expandable)
+    // Row 80: Plumbing Requirements Row 2
     "8.80": {
       id: "8.80",
       rowId: "8.80",
       label: "Plumbing Row 2",
       cells: {
+        b: { content: "80" },
+        c: { content: "" },
         d: {
           fieldId: "d_80",
           type: "editable",
-          value: "Floor/Area",
+          value: "Second Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         g: {
           fieldId: "g_80",
           type: "num-editable",
-          value: "0",
+          value: "30",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -240,31 +234,35 @@ window.OBC.SectionModules.sect08 = (function () {
         i: {
           fieldId: "i_80",
           type: "num-editable",
-          value: "0",
+          value: "2",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_80",
           type: "num-editable",
-          value: "0",
+          value: "2",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         k: {
           fieldId: "k_80",
           type: "editable",
-          value: "/ ",
+          value: "1 / 1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         l: {
           fieldId: "l_80",
           type: "editable",
-          value: "/ ",
+          value: "0 / 0",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_80",
           type: "editable",
@@ -275,23 +273,25 @@ window.OBC.SectionModules.sect08 = (function () {
       }
     },
 
-    // Row 81: Plumbing Requirements Row 3 (Expandable)
+    // Row 81: Plumbing Requirements Row 3
     "8.81": {
       id: "8.81",
       rowId: "8.81",
       label: "Plumbing Row 3",
       cells: {
+        b: { content: "81" },
+        c: { content: "" },
         d: {
           fieldId: "d_81",
           type: "editable",
-          value: "Floor/Area",
+          value: "Basement",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         g: {
           fieldId: "g_81",
           type: "num-editable",
-          value: "0",
+          value: "15",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -307,31 +307,35 @@ window.OBC.SectionModules.sect08 = (function () {
         i: {
           fieldId: "i_81",
           type: "num-editable",
-          value: "0",
+          value: "1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         j: {
           fieldId: "j_81",
           type: "num-editable",
-          value: "0",
+          value: "1",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         k: {
           fieldId: "k_81",
           type: "editable",
-          value: "/ ",
+          value: "0 / 0",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         l: {
           fieldId: "l_81",
           type: "editable",
-          value: "/ ",
+          value: "0 / 0",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_81",
           type: "editable",
@@ -404,74 +408,28 @@ window.OBC.SectionModules.sect08 = (function () {
   }
 
   function createLayoutRow(row) {
-    // Create standard row structure
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Empty column A (will be populated if row has 'a' cell)
-        {}, // ID column B (auto-populated)
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
+        {}, // Column B - auto-populated
       ],
     };
 
-    // Handle column A if defined (CRITICAL: This enables expandable row triggers)
+    // Handle column A if defined (for expandable rows)
     if (row.cells && row.cells.a) {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    // Add cells C through O based on the row definition (matching Excel structure)
-    // Skip "b" since Column B is auto-populated by FieldManager
-    const columns = [
-      "c",
-      "d",
-      "e",
-      "f",
-      "g",
-      "h",
-      "i",
-      "j",
-      "k",
-      "l",
-      "m",
-      "n",
-      "o",
-    ];
-
-    // For each column, add the cell definition if it exists in the row
+    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
+    
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
-        // Create a simplified cell definition for the renderer
-        // without the extra field properties
         const cell = { ...row.cells[col] };
-
-        // Special handling for column C to support both label patterns
-        if (col === "c") {
-          // If using content+type pattern, convert to label pattern
-          if (cell.type === "label" && cell.content && !cell.label) {
-            cell.label = cell.content;
-            delete cell.type; // Not needed for rendering
-            delete cell.content; // Not needed once we have label
-          }
-          // If neither label nor content exists, use row's label as fallback
-          else if (!cell.label && !cell.content && row.label) {
-            cell.label = row.label;
-          }
-        }
-
-        // Remove field-specific properties that aren't needed for rendering
-        delete cell.getOptions;
         delete cell.section;
-        delete cell.dependencies;
-
         rowDef.cells.push(cell);
       } else {
-        // Add empty cell if not defined
-        // Special handling for column C - use row's label if available
-        if (col === "c" && !row.cells?.c && row.label) {
-          rowDef.cells.push({ label: row.label });
-        } else {
-          // Otherwise add empty cell
-          rowDef.cells.push({});
-        }
+        rowDef.cells.push({});
       }
     });
 

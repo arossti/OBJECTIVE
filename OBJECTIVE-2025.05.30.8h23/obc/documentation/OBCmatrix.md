@@ -205,7 +205,7 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 **🏗️ ARCHITECTURAL ACHIEVEMENTS**:
 - **Comprehensive Template System**: Created production-ready template for rapid section development
 - **Universal Patterns**: Standardized field types (`num-editable`, `dropdown`, `calculated`)
-- **Global Input Handling**: All sections use `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`
+- **Global Input Handling**: All sections use `window.OBC.StateManager.initializeGlobalInputHandlers()`
 - **Excel Field Mapping**: Perfect correspondence with OBC_2024_PART3.csv structure
 - **FieldManager Integration**: Complete section mapping and automatic rendering
 - **Layout Optimization**: Section 04 space optimization patterns ready for application
@@ -1249,6 +1249,7 @@ window.OBC.sectXX.initialized = false;
 window.OBC.sectXX.userInteracted = false;
 
 // Section XX: [SECTION NAME] Module
+window.OBC.SectionModules = window.OBC.SectionModules || {};
 window.OBC.SectionModules.sectXX = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
@@ -1486,8 +1487,8 @@ window.OBC.SectionModules.sectXX = (function () {
 
   function getFieldValue(fieldId) {
     // Try StateManager first, then DOM fallback
-    if (window.TEUI?.StateManager?.getValue) {
-      return window.TEUI.StateManager.getValue(fieldId);
+    if (window.OBC?.StateManager?.getValue) {
+      return window.OBC.StateManager.getValue(fieldId);
     }
     
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -1518,8 +1519,8 @@ window.OBC.SectionModules.sectXX = (function () {
 
   function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
     // Use global formatNumber function
-    const formattedValue = window.TEUI.formatNumber ? 
-      window.TEUI.formatNumber(rawValue, formatType) : 
+    const formattedValue = window.OBC.formatNumber ? 
+      window.OBC.formatNumber(rawValue, formatType) : 
       rawValue.toString();
 
     // Update DOM
@@ -1529,8 +1530,8 @@ window.OBC.SectionModules.sectXX = (function () {
     }
 
     // Update StateManager
-    if (window.TEUI?.StateManager?.setValue) {
-      window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+    if (window.OBC?.StateManager?.setValue) {
+      window.OBC.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
     }
   }
 
@@ -1554,19 +1555,16 @@ window.OBC.SectionModules.sectXX = (function () {
     console.log("Initializing Section XX event handlers");
     
     // ✅ REQUIRED: Use global input handler for graceful behavior
-    if (window.TEUI?.OBCStateManager?.initializeGlobalInputHandlers) {
-      window.TEUI.OBCStateManager.initializeGlobalInputHandlers();
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
     }
     
     // ✅ OPTIONAL: Add calculation listeners (if needed)
     if (SECTION_CONFIG.hasCalculations) {
       const calculationTriggers = ['d_39', 'd_40']; // Replace with actual field IDs
       calculationTriggers.forEach(fieldId => {
-        if (window.TEUI.StateManager?.addListener) {
-          window.TEUI.StateManager.addListener(fieldId, performCalculations);
-        }
-        if (window.TEUI.OBCStateManager?.addListener) {
-          window.TEUI.OBCStateManager.addListener(fieldId, performCalculations);
+        if (window.OBC.StateManager?.addListener) {
+          window.OBC.StateManager.addListener(fieldId, performCalculations);
         }
       });
     }
@@ -1594,7 +1592,7 @@ window.OBC.SectionModules.sectXX = (function () {
     }
     
     // Mark as initialized
-    window.TEUI.sectXX.initialized = true;
+    window.OBC.sectXX.initialized = true;
   }
 
   //==========================================================================
@@ -1940,7 +1938,7 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 
 **Solution Implemented**:
 - Removed Section 03's custom `handleFieldBlur` function
-- Implemented global input handler usage: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()`
+- Implemented global input handler usage: `window.OBC.StateManager.initializeGlobalInputHandlers()`
 - Added change detection logic that only commits to "user-modified" state if actual changes were made
 - Preserved Section 03's custom numeric formatting with new `formatSection03Field()` helper function
 
@@ -1961,8 +1959,8 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 ### Next Development Priorities
 
 #### 🚨 **MANDATORY PATTERNS FOR ALL FUTURE SECTIONS:**
-- **Global Input Handling**: `window.TEUI.OBCStateManager.initializeGlobalInputHandlers()` - NO custom blur handlers
-- **Number Formatting**: `window.TEUI.formatNumber(value, "number-2dp-comma")` - NO custom toLocaleString logic  
+- **Global Input Handling**: `window.OBC.StateManager.initializeGlobalInputHandlers()` - NO custom blur handlers
+- **Number Formatting**: `window.OBC.formatNumber(value, "number-2dp-comma")` - NO custom toLocaleString logic  
 - **Field IDs**: Excel coordinates (d_22, e_22) regardless of DOM structure
 - **Row IDs**: Section.ExcelRow format (4.20, 5.15, etc.)
 
@@ -1972,335 +1970,221 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 4. **🎨 Visual Polish**: Final styling touches and responsive design improvements
 5. **🌐 Universal Input Handling**: Apply the working OBC-StateManager global handler to all remaining sections for consistency 
 
-### ✅ **EXPANDABLE ROWS IMPLEMENTATION PATTERN** (COMPLETE WORKING SYSTEM) 🎯
+## 🔄 Universal Expandable Rows System - Copy/Paste Implementation Guide
 
-**Status**: Successfully implemented and tested across sections S02, S03, S04, S06, S08, S09
+**Status: PRODUCTION READY** ✅
 
-#### **🏗️ Core Architecture: Three-Component System**
+The OBC Matrix features a universal expandable rows system that allows users to dynamically show/hide additional form rows using +/- buttons. This system works across all sections and automatically handles state persistence, button visibility, and integration with FieldManager.
 
-1. **OBC-ExpandableRows.js**: Universal utility that detects trigger cells and manages show/hide logic
-2. **Section Implementation**: Column A cells with specific classes and data attributes  
-3. **FieldManager Integration**: Automatic detection and +/- button insertion during rendering
+### 🎯 **System Overview**
 
-#### **✅ Correct Implementation Pattern**
+**Key Features:**
+- **Universal Implementation**: Single codebase handles all expandable row groups
+- **Automatic Column A Visibility**: FieldManager automatically shows column A when expandable triggers are present
+- **State Persistence**: User preferences saved to localStorage and restored on page load
+- **Dynamic Button Management**: + and − buttons automatically show/hide based on current state
+- **Calculation Compatibility**: Hidden rows maintain their field values and participate in calculations
 
-**Trigger Row Structure:**
+**Current Working Examples:**
+- **S02**: `occupancy-classifications` (rows 2.15-2.18, default shows 1)
+- **S03**: `building-areas` (rows 3.23-3.24, default shows 3), `gross-areas` (rows 3.28-3.29, default shows 1), `mezzanine-areas` (rows 3.33-3.34, default shows 1)
+
+### 📋 **Copy/Paste Implementation Pattern**
+
+#### **Step 1: Define the Trigger Row (Always Visible)**
+
 ```javascript
-// Example: Section 4, Row 4.40 (Building Classifications trigger)
-"4.40": {
-  id: "4.40",
-  rowId: "4.40", 
-  label: "BUILDING CLASSIFICATION",
+// The first row in the group - always visible with +/- controls
+"X.YY": {
+  id: "X.YY",
+  rowId: "X.YY",
+  label: "",
   cells: {
-    a: {
-      content: "", // Will be populated by ExpandableRows utility
-      classes: ["expandable-row-trigger"], // 🎯 KEY: Column A gets the trigger class
-      attributes: {
-        "data-expandable-group": "building-classifications", // Unique group ID
-        "data-expandable-rows": "4.41,4.42,4.43,4.44",     // Rows to show/hide
-        "data-default-visible": "1"                          // How many visible by default
-      }
-    },
-    b: { label: "3.1" },
-    c: { label: "BUILDING CLASSIFICATION" },
-    d: { /* normal dropdown field */ },
-    // ... other cells
-  }
-},
-
-// Expandable rows - no special classes needed
-"4.41": {
-  id: "4.41",
-  rowId: "4.41",
-  label: "Size and Construction",
-  cells: {
-    // Regular row structure - no expandable classes
-    d: { /* dropdown field */ },
-    // ... other cells
-  }
-}
-```
-
-#### **🎯 Critical Success Factors**
-
-1. **Column A Trigger**: The `expandable-row-trigger` class MUST be on Column A cell (`a: { ... }`)
-2. **Unique Group IDs**: Each expandable group needs a unique `data-expandable-group` identifier
-3. **Row ID List**: `data-expandable-rows` must contain comma-separated row IDs to expand
-4. **Default Visible**: `data-default-visible` controls how many rows show initially
-5. **No Expandable Row Classes**: The expandable rows themselves need NO special classes
-
-#### **❌ Common Mistakes (Fixed)**
-
-- ❌ **Wrong**: Adding `expandable-row-trigger` to user input fields (Column D, etc.)
-- ❌ **Wrong**: Adding `expandable-row` classes to expandable rows
-- ❌ **Wrong**: Missing Column A cell definition
-- ❌ **Wrong**: Forgetting data attributes on trigger cell
-
-#### **🔄 How It Works**
-
-1. **FieldManager Renders**: Creates DOM structure for all sections
-2. **ExpandableRows Detection**: `OBC-ExpandableRows.js` scans for `expandable-row-trigger` classes
-3. **Button Insertion**: Automatically inserts +/- buttons into Column A trigger cells
-4. **State Management**: Tracks visibility state and saves to localStorage
-5. **User Interaction**: +/- buttons show/hide expandable rows dynamically
-
-#### **📊 Implementation Status**
-
-| Section | Expandable Feature | Trigger Row | Expandable Rows | Status |
-|---------|-------------------|-------------|-----------------|--------|
-| S02 | Occupancy Classifications | 2.14 | 2.15, 2.16, 2.17, 2.18 | ✅ Working |
-| S03 | Building Areas | 3.22 | 3.23, 3.24 | ✅ Working |
-| S03 | Gross Areas | 3.27 | 3.28, 3.29 | ✅ Working |
-| S03 | Mezzanine Areas | 3.32 | 3.33, 3.34 | ✅ Working |
-| S04 | Building Classifications | 4.40 | 4.41, 4.42, 4.43, 4.44 | ✅ Fixed |
-| S06 | Occupant Loads | 6.59 | 6.60, 6.61 | ✅ Fixed |
-| S08 | Plumbing Fixtures | 8.79 | 8.80, 8.81 | ✅ Fixed |
-| S09 | Alternative Solutions | 9.88 | 9.89 | ✅ Fixed |
-
-#### **🎨 Visual Result**
-
-When working correctly, trigger rows show:
-- **+** button: When additional rows can be shown
-- **−** button: When rows can be hidden (only if above default visible count)
-- **Both buttons**: Sized and styled consistently
-- **Hover effects**: Green for +, red for −
-- **State persistence**: Settings saved in localStorage
-
-#### **🔧 Technical Files**
-
-- **Core Logic**: `OBC-ExpandableRows.js` (universal system)
-- **CSS Styling**: Embedded in `OBC-ExpandableRows.js` (auto-injected)
-- **Section Integration**: Each section's row definitions with Column A triggers
-- **FieldManager**: Automatic detection during `processExpandableTriggerCell()` 
-
-#### **🚀 Usage for New Sections**
-
-To add expandable rows to any section:
-
-1. **Identify rows** that should be expandable (e.g., multiple equipment entries)
-2. **Choose trigger row** (usually the first row of the group)
-3. **Add Column A cell** to trigger row with `expandable-row-trigger` class
-4. **Set data attributes** for group ID, expandable rows, and default visible count
-5. **Test functionality** - +/- buttons should appear automatically
-
-This pattern is now **proven and scalable** for any section requiring dynamic row expansion.
-
-### ✅ **EXPANDABLE ROWS DEPLOYMENT TEMPLATE** (COPY-PASTE READY) 🎯
-
-**Status**: Successfully implemented and tested - Ready for production deployment
-
-This section provides a complete copy-paste template for implementing expandable rows functionality in any web application. The system has been proven to work across multiple sections with zero configuration required.
-
-#### **📋 Complete Implementation Checklist**
-
-**Required Files:**
-- ✅ `OBC-ExpandableRows.js` - Core expandable rows system
-- ✅ Section modules with proper `createLayoutRow()` function
-- ✅ FieldManager integration with `processExpandableTriggerCell()` call
-- ✅ CSS classes for styling (auto-injected)
-
-**Integration Steps:**
-1. ✅ Copy `OBC-ExpandableRows.js` to your project
-2. ✅ Add FieldManager integration (see code below)
-3. ✅ Implement section layout pattern (see template below)
-4. ✅ Test with browser refresh
-
----
-
-#### **🔧 COMPLETE CODE TEMPLATES**
-
-**1. FieldManager Integration Pattern:**
-```javascript
-// In your FieldManager or equivalent rendering system
-// Add this call when processing Column A cells:
-
-if (columnIndex === 0 && cellDef) { // Column A
-  // Apply classes and attributes FIRST
-  if (cellDef.classes) {
-    cellDef.classes.forEach(cls => cellElement.classList.add(cls));
-  }
-  if (cellDef.attributes) {
-    Object.entries(cellDef.attributes).forEach(([key, value]) => {
-      cellElement.setAttribute(key, value);
-    });
-  }
-  
-  // THEN check for expandable triggers
-  const isExpandableTrigger = window.OBC.ExpandableRows.processExpandableTriggerCell(
-    cellElement, cellDef, rowId, sectionId
-  );
-  
-  if (!isExpandableTrigger) {
-    // Normal content for non-trigger cells
-    cellElement.textContent = cellDef.content || '';
-  }
-}
-```
-
-**2. Section Layout Pattern Template:**
-```javascript
-// CRITICAL: Your section must have this createLayoutRow function
-function createLayoutRow(row) {
-  const rowDef = {
-    id: row.id,
-    cells: [
-      {}, // Empty column A (will be populated if row has 'a' cell)
-      {}, // ID column B (auto-populated)
-    ],
-  };
-
-  // ESSENTIAL: Handle column A if defined (enables expandable row triggers)
-  if (row.cells && row.cells.a) {
-    rowDef.cells[0] = { ...row.cells.a };
-  }
-
-  // Add remaining columns C through O...
-  const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-  columns.forEach((col, index) => {
-    rowDef.cells[index + 2] = row.cells[col] || {};
-  });
-
-  return rowDef;
-}
-```
-
-**3. Trigger Row Definition Template:**
-```javascript
-// In your section's sectionRows object:
-"4.40": {  // Trigger row
-  id: "4.40",
-  rowId: "4.40",
-  label: "BUILDING CLASSIFICATION",
-  cells: {
-    a: {  // COLUMN A DEFINITION - ESSENTIAL
+    a: { 
       content: "", // Will be populated by ExpandableRows utility
       classes: ["expandable-row-trigger"],
       attributes: {
-        "data-expandable-group": "building-classifications",
-        "data-expandable-rows": "4.41,4.42,4.43,4.44",
-        "data-default-visible": "1"
+        "data-expandable-group": "your-group-name",           // Unique group identifier
+        "data-expandable-rows": "X.YY+1,X.YY+2,X.YY+3",     // Comma-separated list of expandable row IDs
+        "data-default-visible": "1"                          // Number of rows visible by default (trigger + N expandable)
       }
     },
-    b: { label: "3.1" },
-    c: { label: "BUILDING CLASSIFICATION" },
-    d: { 
-      fieldId: "d_40", 
-      type: "dropdown",
-      // ... rest of field definition
+    b: { content: "YY" },
+    c: { content: "Row Label" },
+    d: {
+      fieldId: "d_YY",
+      type: "dropdown", // or other field type
+      // ... field definition
     },
-    // ... other columns
-  }
-}
+    // ... rest of your row definition
+  },
+},
 ```
 
-**4. Expandable Row Definition Template:**
+#### **Step 2: Define the Expandable Rows (Initially Hidden)**
+
 ```javascript
-// Regular expandable rows (no special classes needed)
-"4.41": {  // Expandable row
-  id: "4.41",
-  rowId: "4.41", 
-  label: "Building Classification 1",
+// Additional rows that can be shown/hidden
+"X.YY+1": {
+  id: "X.YY+1",
+  rowId: "X.YY+1",
+  label: "",
   cells: {
-    // NO Column A definition needed
-    b: { label: "3.1.1" },
-    c: { label: "Classification Type 1" },
-    d: { 
-      fieldId: "d_41",
+    // NO 'a' cell needed - these rows don't have +/- controls
+    b: { content: "YY+1" },
+    c: { content: "" },
+    d: {
+      fieldId: "d_YY+1",
+      type: "dropdown", // Same structure as trigger row
+      // ... field definition
+    },
+    // ... rest of your row definition
+  },
+},
+
+"X.YY+2": {
+  id: "X.YY+2",
+  rowId: "X.YY+2",
+  label: "",
+  cells: {
+    b: { content: "YY+2" },
+    c: { content: "" },
+    d: {
+      fieldId: "d_YY+2",
       type: "dropdown",
       // ... field definition
     },
-    // ... other columns
-  }
+    // ... rest of your row definition
+  },
+},
+```
+
+### 🔧 **Configuration Parameters**
+
+#### **Required Attributes for Trigger Row:**
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `data-expandable-group` | Unique identifier for this group of rows | `"building-systems"` |
+| `data-expandable-rows` | Comma-separated list of expandable row IDs | `"4.41,4.42,4.43,4.44"` |
+| `data-default-visible` | Number of rows visible by default | `"1"` (shows trigger + 0 expandable), `"2"` (shows trigger + 1 expandable) |
+
+#### **Automatic Behaviors:**
+
+- **Column A Visibility**: FieldManager automatically makes column A visible when `expandable-row-trigger` class is detected
+- **Button Generation**: System automatically creates styled + and − buttons in column A
+- **State Management**: localStorage automatically saves/restores visible row count per group
+- **CSS Styling**: Universal CSS automatically applied for button appearance and hover effects
+
+### 🎨 **Visual Styling (Automatic)**
+
+The system automatically adds CSS for:
+
+```css
+/* Green + button for adding rows */
+.expandable-add-btn {
+  border-color: #28a745 !important;
+  color: #28a745 !important;
+}
+
+/* Red − button for removing rows */
+.expandable-remove-btn {
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+}
+
+/* Column A width optimization */
+.expandable-row-trigger {
+  width: 70px !important;
+  text-align: center !important;
 }
 ```
 
----
+### 📊 **Real Implementation Examples**
 
-#### **🎯 CONFIGURATION OPTIONS**
+#### **Example 1: S02 Occupancy Classifications**
 
-**Required Attributes:**
-- `data-expandable-group`: Unique identifier for the group (e.g., "building-classifications")
-- `data-expandable-rows`: Comma-separated list of row IDs to show/hide (e.g., "4.41,4.42,4.43,4.44")
-- `data-default-visible`: Number of rows visible by default (e.g., "1" or "0")
+```javascript
+// Trigger row (always visible)
+"2.14": {
+  id: "2.14",
+  rowId: "2.14",
+  label: "",
+  cells: {
+    a: { 
+      content: "",
+      classes: ["expandable-row-trigger"],
+      attributes: {
+        "data-expandable-group": "occupancy-classifications",
+        "data-expandable-rows": "2.15,2.16,2.17,2.18",
+        "data-default-visible": "1"  // Shows only the trigger row initially
+      }
+    },
+    b: { content: "14" },
+    c: { content: "" },
+    d: {
+      fieldId: "d_14",
+      type: "dropdown",
+      dropdownId: "dd_d_14",
+      value: "A2",
+      section: "buildingOccupancy",
+      options: occupancyOptions,
+      classes: ["dropdown-md"],
+    },
+    // ... rest of cells
+  },
+},
 
-**CSS Classes Applied Automatically:**
-- `.expandable-row-trigger`: Applied to trigger cell
-- `.expandable-row`: Applied to expandable rows
-- `.expandable-controls`: Applied to +/- button container
-
----
-
-#### **🚀 DEPLOYMENT INSTRUCTIONS**
-
-**Step 1: Copy Core File**
-Copy `OBC-ExpandableRows.js` to your project and include it:
-```html
-<script src="path/to/OBC-ExpandableRows.js"></script>
+// Expandable rows (hidden by default)
+"2.15": { /* Similar structure without 'a' cell */ },
+"2.16": { /* Similar structure without 'a' cell */ },
+"2.17": { /* Similar structure without 'a' cell */ },
+"2.18": { /* Similar structure without 'a' cell */ },
 ```
 
-**Step 2: Add FieldManager Integration**
-Add the `processExpandableTriggerCell()` call to your rendering system using the template above.
+#### **Example 2: S03 Building Areas**
 
-**Step 3: Update Section Layout Functions** 
-Ensure each section has a `createLayoutRow()` function that handles Column A cells as shown in the template.
+```javascript
+// Trigger row (shows 3 rows by default: trigger + 2 expandable)
+"3.22": {
+  id: "3.22",
+  rowId: "3.22",
+  label: "",
+  cells: {
+    a: { 
+      content: "",
+      classes: ["expandable-row-trigger"],
+      attributes: {
+        "data-expandable-group": "building-areas",
+        "data-expandable-rows": "3.23,3.24",
+        "data-default-visible": "3"  // Shows trigger + both expandable rows
+      }
+    },
+    // ... rest of row definition
+  },
+},
+```
 
-**Step 4: Define Trigger and Expandable Rows**
-Use the row definition templates above to create your expandable row groups.
+### 🚀 **Quick Deployment Checklist**
 
-**Step 5: Test**
-Refresh your browser. You should see:
-- ✅ Green + button on trigger rows
-- ✅ Red - button when expandable rows are shown
-- ✅ Smooth show/hide transitions
-- ✅ State persistence in localStorage
+**For each new expandable row group:**
 
----
+1. **✅ Define group name**: Choose unique `data-expandable-group` identifier
+2. **✅ Create trigger row**: Add `a` cell with `expandable-row-trigger` class and attributes
+3. **✅ List expandable rows**: Comma-separated IDs in `data-expandable-rows`
+4. **✅ Set default visibility**: Number in `data-default-visible` (trigger row counts as 1)
+5. **✅ Define expandable rows**: Standard row definitions without `a` cell
+6. **✅ Test functionality**: Load page, verify +/- buttons work, state persists
 
-#### **🔧 TROUBLESHOOTING GUIDE**
+**No additional JavaScript required** - the universal system handles everything automatically!
 
-**No +/- buttons appear:**
-1. Check console for "Found 0 expandable-row-trigger elements"
-2. Verify `createLayoutRow()` handles Column A cells
-3. Ensure FieldManager calls `processExpandableTriggerCell()`
+### 🔄 **Ready for Deployment**
 
-**Buttons appear but don't work:**
-1. Check `data-expandable-rows` attribute has correct row IDs
-2. Verify expandable rows exist in section data
-3. Check browser console for JavaScript errors
+**Next Implementation Targets:**
+- **S04**: 4.40 (trigger) with 4.41-4.44 (expandable)
+- **S06**: 6.59-6.69 (need default numbers for visibility)
+- **S08**: 8.79-8.81
+- **S09**: 9.88-9.89
+- **S10**: 10.90-10.92
 
-**Rows don't show/hide:**
-1. Verify row IDs in `data-expandable-rows` match actual row IDs
-2. Check that expandable rows don't have Column A definitions
-3. Ensure trigger row has proper attributes
-
----
-
-#### **✅ PROVEN SUCCESS METRICS**
-
-This system has been successfully deployed across:
-- ✅ **Section 2**: Occupancy classifications (4 expandable rows)
-- ✅ **Section 3**: Building areas with calculations (6 expandable rows)  
-- ✅ **Section 4**: Building classifications (4 expandable rows)
-- ✅ **Section 6**: Occupant loads (2 expandable rows)
-- ✅ **Section 8**: Plumbing fixtures (2 expandable rows)
-- ✅ **Section 9**: Alternative solutions (1 expandable row)
-
-**Zero configuration required** - works immediately after deployment.
-**Automatic state persistence** - user preferences saved to localStorage.
-**Responsive design** - works on desktop, tablet, and mobile.
-
----
-
-#### **🎯 ARCHITECTURE BENEFITS**
-
-1. **Zero Dependencies**: Pure JavaScript, no frameworks required
-2. **Automatic Integration**: FieldManager handles everything automatically  
-3. **State Persistence**: User preferences saved and restored
-4. **Performance Optimized**: Only processes Column A cells with trigger class
-5. **Flexible Configuration**: Works with any number of expandable rows
-6. **CSS Injection**: Styles applied automatically, no external CSS needed
-7. **Error Resilient**: Graceful handling of missing rows or invalid config
-
-This expandable rows system represents a **production-ready, plug-and-play solution** that can be deployed in any web application with minimal integration effort.
-
----
+**Implementation Time**: ~5-10 minutes per group using this copy/paste pattern.

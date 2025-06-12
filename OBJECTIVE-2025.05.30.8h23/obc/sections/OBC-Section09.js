@@ -217,74 +217,114 @@ window.OBC.SectionModules.sect09 = (function () {
       }
     },
 
-    // Row 87: 3.26 Alternative Solutions
+    // Row 87: 3.26 Alternative Solutions - EXPANDABLE TRIGGER ROW
     "9.87": {
       id: "9.87",
       rowId: "9.87",
       label: "ALTERNATIVE SOLUTIONS",
       cells: {
+        a: { 
+          content: "", // Will be populated by ExpandableRows utility
+          classes: ["expandable-row-trigger"],
+          attributes: {
+            "data-expandable-group": "alternative-solutions",
+            "data-expandable-rows": "9.88,9.89",
+            "data-default-visible": "1"  // Shows only the trigger row initially
+          }
+        },
         b: { content: "3.26" },
         c: { content: "ALTERNATIVE SOLUTIONS" },
+        d: {
+          fieldId: "d_87",
+          type: "editable",
+          value: "Enhanced egress lighting system exceeding prescriptive requirements",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"]
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
         l: { content: "[A]1.2.1.1. and [C]2.1." },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_87",
           type: "editable",
-          value: "enter notes here...",
+          value: "Alternative solution providing equivalent safety performance",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"]
         }
       }
     },
 
-    // Row 88: Alternative Solutions Details 1 (Trigger Row)
+    // Row 88: Alternative Solutions Details 1
     "9.88": {
       id: "9.88",
       rowId: "9.88",
       label: "Alternative Solutions Details 1",
       cells: {
-        a: {
-          content: "", // Will be populated by ExpandableRows utility
-          classes: ["expandable-row-trigger"],
-          attributes: {
-            "data-expandable-group": "alternative-solutions",
-            "data-expandable-rows": "9.89",
-            "data-default-visible": "0"
-          }
-        },
+        b: { content: "88" },
+        c: { content: "" },
         d: {
           fieldId: "d_88",
           type: "editable",
-          value: "Alternative solution details...",
+          value: "Performance-based structural fire protection design",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_88",
           type: "editable",
-          value: "enter notes here...",
+          value: "Engineered solution with structural engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"]
         }
       }
     },
 
-    // Row 89: Alternative Solutions Details 2 (Expandable)
+    // Row 89: Alternative Solutions Details 2
     "9.89": {
       id: "9.89",
       rowId: "9.89",
       label: "Alternative Solutions Details 2",
       cells: {
+        b: { content: "89" },
+        c: { content: "" },
         d: {
           fieldId: "d_89",
           type: "editable",
-          value: "Alternative solution details...",
+          value: "Fire separation performance based on advanced modeling analysis",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_89",
           type: "editable",
-          value: "enter notes here...",
+          value: "Engineered solution with professional engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"]
         }
@@ -353,74 +393,28 @@ window.OBC.SectionModules.sect09 = (function () {
   }
 
   function createLayoutRow(row) {
-    // Create standard row structure
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Empty column A (will be populated if row has 'a' cell)
-        {}, // ID column B (auto-populated)
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
+        {}, // Column B - auto-populated
       ],
     };
 
-    // Handle column A if defined (CRITICAL: This enables expandable row triggers)
+    // Handle column A if defined (for expandable rows)
     if (row.cells && row.cells.a) {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    // Add cells C through O based on the row definition (matching Excel structure)
-    // Skip "b" since Column B is auto-populated by FieldManager
-    const columns = [
-      "c",
-      "d",
-      "e",
-      "f",
-      "g",
-      "h",
-      "i",
-      "j",
-      "k",
-      "l",
-      "m",
-      "n",
-      "o",
-    ];
-
-    // For each column, add the cell definition if it exists in the row
+    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
+    
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
-        // Create a simplified cell definition for the renderer
-        // without the extra field properties
         const cell = { ...row.cells[col] };
-
-        // Special handling for column C to support both label patterns
-        if (col === "c") {
-          // If using content+type pattern, convert to label pattern
-          if (cell.type === "label" && cell.content && !cell.label) {
-            cell.label = cell.content;
-            delete cell.type; // Not needed for rendering
-            delete cell.content; // Not needed once we have label
-          }
-          // If neither label nor content exists, use row's label as fallback
-          else if (!cell.label && !cell.content && row.label) {
-            cell.label = row.label;
-          }
-        }
-
-        // Remove field-specific properties that aren't needed for rendering
-        delete cell.getOptions;
         delete cell.section;
-        delete cell.dependencies;
-
         rowDef.cells.push(cell);
       } else {
-        // Add empty cell if not defined
-        // Special handling for column C - use row's label if available
-        if (col === "c" && !row.cells?.c && row.label) {
-          rowDef.cells.push({ label: row.label });
-        } else {
-          // Otherwise add empty cell
-          rowDef.cells.push({});
-        }
+        rowDef.cells.push({});
       }
     });
 

@@ -164,8 +164,7 @@ window.OBC.SectionModules.sect04 = (function () {
             { value: "-", name: "Select..." },
             { value: "1", name: "1" },
             { value: "2", name: "2" },
-            { value: "3", name: "3" },
-            { value: "4+", name: "4+" }
+            { value: "3", name: "3" }
           ]
         },
         e: { label: "STREET(S)" },
@@ -173,19 +172,19 @@ window.OBC.SectionModules.sect04 = (function () {
       }
     },
 
-    // Row 40: 3.10 Building Classification (Trigger Row)
+    // Row 40: 3.10 Building Classification (First) - EXPANDABLE TRIGGER ROW
     "4.40": {
       id: "4.40",
       rowId: "4.40",
       label: "BUILDING CLASSIFICATION",
       cells: {
-        a: {
+        a: { 
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "building-classifications",
             "data-expandable-rows": "4.41,4.42,4.43,4.44",
-            "data-default-visible": "1"
+            "data-default-visible": "1"  // Shows only the trigger row initially
           }
         },
         b: { label: "3.1" },
@@ -198,7 +197,7 @@ window.OBC.SectionModules.sect04 = (function () {
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
-          linkedField: "e_40"
+          linkedField: "e_40" // Field that will show the description
         },
         e: { 
           fieldId: "e_40", 
@@ -208,16 +207,32 @@ window.OBC.SectionModules.sect04 = (function () {
           classes: ["classification-description"],
           readonly: true
         },
-        l: { content: "3.2.2.20-83." }
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "3.2.2.20-83." },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_40",
+          type: "editable",
+          value: "enter notes here...",
+          section: "firefightingSystems",
+          classes: ["no-wrap", "notes-column"],
+        },
       }
     },
 
-    // Row 41: Building Classification - Size and Construction (Expandable)
+    // Row 41: Building Classification - Size and Construction
     "4.41": {
       id: "4.41",
       rowId: "4.41",
       label: "Size and Construction Relative to Occupancy",
       cells: {
+        b: { content: "41" },
         c: { content: "(SIZE AND CONSTRUCTION RELATIVE TO OCCUPANCY)" },
         d: { 
           fieldId: "d_41", 
@@ -236,16 +251,34 @@ window.OBC.SectionModules.sect04 = (function () {
           section: "firefightingSystems",
           classes: ["classification-description"],
           readonly: true
-        }
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_41",
+          type: "editable",
+          value: "enter notes here...",
+          section: "firefightingSystems",
+          classes: ["no-wrap", "notes-column"],
+        },
       }
     },
 
-    // Row 42: Building Classification (Additional - Expandable)
+    // Row 42: Building Classification (Additional)
     "4.42": {
       id: "4.42",
       rowId: "4.42",
       label: "Building Classification Additional",
       cells: {
+        b: { content: "42" },
+        c: { content: "" },
         d: { 
           fieldId: "d_42", 
           type: "dropdown", 
@@ -263,16 +296,34 @@ window.OBC.SectionModules.sect04 = (function () {
           section: "firefightingSystems",
           classes: ["classification-description"],
           readonly: true
-        }
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_42",
+          type: "editable",
+          value: "enter notes here...",
+          section: "firefightingSystems",
+          classes: ["no-wrap", "notes-column"],
+        },
       }
     },
 
-    // Row 43: Building Classification (Additional - Expandable)
+    // Row 43: Building Classification (Additional)
     "4.43": {
       id: "4.43",
       rowId: "4.43",
       label: "Building Classification Additional",
       cells: {
+        b: { content: "43" },
+        c: { content: "" },
         d: { 
           fieldId: "d_43", 
           type: "dropdown", 
@@ -290,16 +341,34 @@ window.OBC.SectionModules.sect04 = (function () {
           section: "firefightingSystems",
           classes: ["classification-description"],
           readonly: true
-        }
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_43",
+          type: "editable",
+          value: "enter notes here...",
+          section: "firefightingSystems",
+          classes: ["no-wrap", "notes-column"],
+        },
       }
     },
 
-    // Row 44: Building Classification (Additional - Expandable)
+    // Row 44: Building Classification (Additional)
     "4.44": {
       id: "4.44",
       rowId: "4.44",
       label: "Building Classification Additional",
       cells: {
+        b: { content: "44" },
+        c: { content: "" },
         d: { 
           fieldId: "d_44", 
           type: "dropdown", 
@@ -317,7 +386,23 @@ window.OBC.SectionModules.sect04 = (function () {
           section: "firefightingSystems",
           classes: ["classification-description"],
           readonly: true
-        }
+        },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: {
+          fieldId: "o_44",
+          type: "editable",
+          value: "enter notes here...",
+          section: "firefightingSystems",
+          classes: ["no-wrap", "notes-column"],
+        },
       }
     },
 
@@ -329,7 +414,7 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { label: "4h" },
         c: { label: "SPRINKLER", classes: ["section-subheader"] },
-        d: { content: "SPRINKLER STUFF", classes: ["section-subheader"] },
+        d: { content: "WATER SYSTEMS", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
@@ -670,7 +755,7 @@ window.OBC.SectionModules.sect04 = (function () {
       ],
     };
 
-    // Handle column A if defined (CRITICAL: This enables expandable row triggers)
+    // Handle column A if defined (for expandable rows)
     if (row.cells && row.cells.a) {
       rowDef.cells[0] = { ...row.cells.a };
     }

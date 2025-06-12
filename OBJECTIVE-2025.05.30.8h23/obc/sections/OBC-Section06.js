@@ -38,43 +38,10 @@ window.OBC.SectionModules.sect06 = (function () {
       { value: "No", name: "No" },
       { value: "N/A", name: "N/A" }
     ],
-    
+    // TODO: Add occupancy type options from CSV
     occupancyTypes: [
       { value: "-", name: "Select..." },
-      // Group A Occupancies
-      { value: "A1", name: "A1 - Auditoriums, Concert Halls, Theatres" },
-      { value: "A2", name: "A2 - Exhibition Halls, Museums, Gymnasiums" },
-      { value: "A3", name: "A3 - Arena-type Buildings" },
-      { value: "A4", name: "A4 - Places of Worship, Public/Community Halls" },
-      // Group B Occupancies
-      { value: "B1", name: "B1 - Detention Occupancies" },
-      { value: "B2", name: "B2 - Treatment Occupancies" },
-      { value: "B3", name: "B3 - Care/Care & Treatment Occupancies" },
-      // Group C Occupancy
-      { value: "C", name: "C - Residential Occupancy" },
-      // Group D Occupancies
-      { value: "D", name: "D - Business & Personal Services Occupancy" },
-      // Group E Occupancies
-      { value: "E", name: "E - Mercantile Occupancy" },
-      // Group F Occupancies
-      { value: "F1", name: "F1 - High Hazard Industrial Occupancy" },
-      { value: "F2", name: "F2 - Medium Hazard Industrial Occupancy" },
-      { value: "F3", name: "F3 - Low Hazard Industrial Occupancy" }
-    ],
-    
-    basedOnOptions: [
-      { value: "-", name: "Select..." },
-      { value: "Floor Area", name: "Floor Area" },
-      { value: "Fixed Seats", name: "Fixed Seats" },
-      { value: "Actual Count", name: "Actual Count" },
-      { value: "Mixed Use", name: "Mixed Use" }
-    ],
-    
-    postedLimitOptions: [
-      { value: "-", name: "Select..." },
-      { value: "Required", name: "Required" },
-      { value: "Not Required", name: "Not Required" },
-      { value: "N/A", name: "N/A" }
+      // // Add occupancy types later
     ]
   };
 
@@ -131,25 +98,27 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 59: Occupant Load Row 1 (Trigger Row)
+    // Row 59: Occupant Load Row 1 - EXPANDABLE TRIGGER ROW
     "6.59": {
       id: "6.59",
       rowId: "6.59",
       label: "Occupant Load 1",
       cells: {
-        a: {
+        a: { 
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "occupant-loads",
             "data-expandable-rows": "6.60,6.61",
-            "data-default-visible": "1"
+            "data-default-visible": "1"  // Shows only the trigger row initially
           }
         },
+        b: { content: "59" },
+        c: { content: "" },
         d: {
           fieldId: "d_59",
           type: "editable",
-          value: "Floor/Area",
+          value: "Ground Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -165,28 +134,30 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_59",
           type: "num-editable",
-          value: "-",
+          value: "50",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         i: {
           fieldId: "i_59",
-          type: "dropdown",
-          dropdownId: "dd_i_59",
-          value: "-",
+          type: "editable",
+          value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.basedOnOptions
+          classes: ["user-input"]
         },
         j: {
           fieldId: "j_59",
-          type: "dropdown",
-          dropdownId: "dd_j_59",
-          value: "-",
+          type: "editable",
+          value: "Yes",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.postedLimitOptions
+          classes: ["user-input"]
         },
+        e: { content: "" },
+        g: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_59",
           type: "editable",
@@ -197,16 +168,18 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 60: Occupant Load Row 2 (Expandable)
+    // Row 60: Occupant Load Row 2  
     "6.60": {
       id: "6.60",
       rowId: "6.60",
       label: "Occupant Load 2",
       cells: {
+        b: { content: "60" },
+        c: { content: "" },
         d: {
           fieldId: "d_60",
           type: "editable",
-          value: "Floor/Area",
+          value: "Second Floor",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -222,28 +195,30 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_60",
           type: "num-editable",
-          value: "-",
+          value: "30",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         i: {
           fieldId: "i_60",
-          type: "dropdown",
-          dropdownId: "dd_i_60",
-          value: "-",
+          type: "editable",
+          value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.basedOnOptions
+          classes: ["user-input"]
         },
         j: {
           fieldId: "j_60",
-          type: "dropdown",
-          dropdownId: "dd_j_60",
-          value: "-",
+          type: "editable",
+          value: "No",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.postedLimitOptions
+          classes: ["user-input"]
         },
+        e: { content: "" },
+        g: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_60",
           type: "editable",
@@ -254,16 +229,18 @@ window.OBC.SectionModules.sect06 = (function () {
       }
     },
 
-    // Row 61: Occupant Load Row 3 (Expandable)
+    // Row 61: Occupant Load Row 3
     "6.61": {
       id: "6.61",
       rowId: "6.61",
       label: "Occupant Load 3",
       cells: {
+        b: { content: "61" },
+        c: { content: "" },
         d: {
           fieldId: "d_61",
           type: "editable",
-          value: "Floor/Area",
+          value: "Basement",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
@@ -279,28 +256,30 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_61",
           type: "num-editable",
-          value: "-",
+          value: "15",
           section: SECTION_CONFIG.name,
           classes: ["user-input"]
         },
         i: {
           fieldId: "i_61",
-          type: "dropdown",
-          dropdownId: "dd_i_61",
-          value: "-",
+          type: "editable",
+          value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.basedOnOptions
+          classes: ["user-input"]
         },
         j: {
           fieldId: "j_61",
-          type: "dropdown",
-          dropdownId: "dd_j_61",
-          value: "-",
+          type: "editable",
+          value: "Yes",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.postedLimitOptions
+          classes: ["user-input"]
         },
+        e: { content: "" },
+        g: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
         o: {
           fieldId: "o_61",
           type: "editable",
@@ -321,7 +300,7 @@ window.OBC.SectionModules.sect06 = (function () {
         h: {
           fieldId: "h_62",
           type: "calculated",
-          value: "0",
+          value: "95",
           section: SECTION_CONFIG.name,
           classes: ["calculated-value"]
         },
@@ -481,74 +460,28 @@ window.OBC.SectionModules.sect06 = (function () {
   }
 
   function createLayoutRow(row) {
-    // Create standard row structure
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Empty column A (will be populated if row has 'a' cell)
-        {}, // ID column B (auto-populated)
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
+        {}, // Column B - auto-populated
       ],
     };
 
-    // Handle column A if defined (CRITICAL: This enables expandable row triggers)
+    // Handle column A if defined (for expandable rows)
     if (row.cells && row.cells.a) {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    // Add cells C through O based on the row definition (matching Excel structure)
-    // Skip "b" since Column B is auto-populated by FieldManager
-    const columns = [
-      "c",
-      "d",
-      "e",
-      "f",
-      "g",
-      "h",
-      "i",
-      "j",
-      "k",
-      "l",
-      "m",
-      "n",
-      "o",
-    ];
-
-    // For each column, add the cell definition if it exists in the row
+    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
+    
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
-        // Create a simplified cell definition for the renderer
-        // without the extra field properties
         const cell = { ...row.cells[col] };
-
-        // Special handling for column C to support both label patterns
-        if (col === "c") {
-          // If using content+type pattern, convert to label pattern
-          if (cell.type === "label" && cell.content && !cell.label) {
-            cell.label = cell.content;
-            delete cell.type; // Not needed for rendering
-            delete cell.content; // Not needed once we have label
-          }
-          // If neither label nor content exists, use row's label as fallback
-          else if (!cell.label && !cell.content && row.label) {
-            cell.label = row.label;
-          }
-        }
-
-        // Remove field-specific properties that aren't needed for rendering
-        delete cell.getOptions;
         delete cell.section;
-        delete cell.dependencies;
-
         rowDef.cells.push(cell);
       } else {
-        // Add empty cell if not defined
-        // Special handling for column C - use row's label if available
-        if (col === "c" && !row.cells?.c && row.label) {
-          rowDef.cells.push({ label: row.label });
-        } else {
-          // Otherwise add empty cell
-          rowDef.cells.push({});
-        }
+        rowDef.cells.push({});
       }
     });
 
