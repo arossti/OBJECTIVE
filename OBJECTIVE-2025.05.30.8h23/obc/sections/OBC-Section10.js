@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect10 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-
+  
   const SECTION_CONFIG = {
     name: "notes",
     excelRowStart: 90,
@@ -61,7 +61,7 @@ window.OBC.SectionModules.sect10 = (function () {
       rowId: "10.90",
       label: "NOTES",
       cells: {
-        a: {
+        a: { 
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
@@ -206,7 +206,7 @@ window.OBC.SectionModules.sect10 = (function () {
 
   function getFields() {
     const fields = {};
-
+    
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
@@ -237,7 +237,7 @@ window.OBC.SectionModules.sect10 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-
+    
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -280,7 +280,7 @@ window.OBC.SectionModules.sect10 = (function () {
       "n",
       "o",
     ];
-
+    
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -300,7 +300,7 @@ window.OBC.SectionModules.sect10 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 10 event handlers
-
+    
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
@@ -323,4 +323,4 @@ window.OBC.SectionModules.sect10 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})();
+})(); 

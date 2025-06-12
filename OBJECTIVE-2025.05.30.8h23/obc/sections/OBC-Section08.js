@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect08 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-
+  
   const SECTION_CONFIG = {
     name: "plumbingFixtures",
     excelRowStart: 77,
@@ -30,7 +30,7 @@ window.OBC.SectionModules.sect08 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-
+  
   const dropdownOptions = {
     // TODO: Add OBC sentence options from CSV
     obcSentences: [
@@ -144,7 +144,7 @@ window.OBC.SectionModules.sect08 = (function () {
       rowId: "8.79",
       label: "Plumbing Row 1",
       cells: {
-        a: {
+        a: { 
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
@@ -373,7 +373,7 @@ window.OBC.SectionModules.sect08 = (function () {
 
   function getFields() {
     const fields = {};
-
+    
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
@@ -399,7 +399,7 @@ window.OBC.SectionModules.sect08 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-
+    
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -414,7 +414,7 @@ window.OBC.SectionModules.sect08 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-
+    
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -457,7 +457,7 @@ window.OBC.SectionModules.sect08 = (function () {
       "n",
       "o",
     ];
-
+    
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -477,7 +477,7 @@ window.OBC.SectionModules.sect08 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 08 event handlers
-
+    
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
@@ -500,4 +500,4 @@ window.OBC.SectionModules.sect08 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})();
+})(); 

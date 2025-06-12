@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-
+  
   const SECTION_CONFIG = {
     name: "structuralRequirements",
     excelRowStart: 53,
@@ -30,7 +30,7 @@ window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-
+  
   const dropdownOptions = {
     importanceCategory: [
       { value: "Low", name: "Low" },
@@ -38,7 +38,7 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "High", name: "High" },
       { value: "Post-disaster", name: "Post-disaster" },
     ],
-
+    
     seismicCategory: [
       { value: "-", name: "Select..." },
       { value: "SC1", name: "SC1" },
@@ -48,7 +48,7 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "SC5", name: "SC5" },
       { value: "SC6", name: "SC6" },
     ],
-
+    
     siteClass: [
       { value: "-", name: "Select..." },
       { value: "A", name: "A - Hard Rock" },
@@ -58,14 +58,14 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "E", name: "E - Soft Soil" },
       { value: "F", name: "F - Other Soils" },
     ],
-
+    
     seismicDesignRequired: [
       { value: "-", name: "Select..." },
       { value: "Required", name: "Required" },
       { value: "Not Required", name: "Not Required" },
       { value: "N/A", name: "N/A" },
     ],
-
+    
     yesNoNA: [
       { value: "-", name: "Select..." },
       { value: "YES", name: "YES" },
@@ -113,7 +113,7 @@ window.OBC.SectionModules.sect05 = (function () {
       cells: {
         b: { content: "3.16" },
         c: { content: "IMPORTANCE CATEGORY" },
-        d: {
+        d: { 
           fieldId: "d_53",
           type: "dropdown",
           dropdownId: "dd_d_53",
@@ -133,7 +133,7 @@ window.OBC.SectionModules.sect05 = (function () {
       },
     },
 
-    // Row 54: 3.17 Seismic Category
+    // Row 54: 3.17 Seismic Category  
     5.54: {
       id: "5.54",
       rowId: "5.54",
@@ -141,7 +141,7 @@ window.OBC.SectionModules.sect05 = (function () {
       cells: {
         b: { content: "3.17" },
         c: { content: "SEISMIC CATEGORY" },
-        d: {
+        d: { 
           fieldId: "d_54",
           type: "dropdown",
           dropdownId: "dd_d_54",
@@ -168,7 +168,7 @@ window.OBC.SectionModules.sect05 = (function () {
       label: "SITE CLASS",
       cells: {
         c: { content: "SITE CLASS" },
-        d: {
+        d: { 
           fieldId: "d_55",
           type: "dropdown",
           dropdownId: "dd_d_55",
@@ -205,7 +205,7 @@ window.OBC.SectionModules.sect05 = (function () {
         c: {
           content: "SEISMIC DESIGN REQUIRED FOR Table 4.1.8.18. items 6 to 22:",
         },
-        i: {
+        i: { 
           fieldId: "i_56",
           type: "dropdown",
           dropdownId: "dd_i_56",
@@ -257,7 +257,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function getFields() {
     const fields = {};
-
+    
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
@@ -283,7 +283,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-
+    
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -298,7 +298,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-
+    
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -336,7 +336,7 @@ window.OBC.SectionModules.sect05 = (function () {
       "n",
       "o",
     ];
-
+    
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -376,4 +376,4 @@ window.OBC.SectionModules.sect05 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})();
+})(); 

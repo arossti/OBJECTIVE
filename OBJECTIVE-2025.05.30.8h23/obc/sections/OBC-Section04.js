@@ -17,7 +17,7 @@ window.OBC.sect04.userInteracted = false;
 // Section 4: Firefighting & Life Safety Systems Module
 window.OBC.SectionModules.sect04 = (function () {
   //==========================================================================
-  // SHARED DROPDOWN OPTIONS
+  // SHARED DROPDOWN OPTIONS 
   //==========================================================================
 
   // Building Classification Options (used by multiple dropdowns)
@@ -443,37 +443,37 @@ window.OBC.SectionModules.sect04 = (function () {
 
   // Define rows with integrated field definitions
   const sectionRows = {
-    // HEADER ROW - 3.04 Building Area
-    header: {
-      id: "4h",
-      rowId: "4h",
-      label: "Fire Stuff",
-      cells: {
-        b: { label: "4h" },
-        c: { label: "FIRE PROTECTION", classes: ["section-subheader"] },
+        // HEADER ROW - 3.04 Building Area
+        header: {
+          id: "4h",
+          rowId: "4h",
+          label: "Fire Stuff",
+          cells: {
+            b: { label: "4h" },
+            c: { label: "FIRE PROTECTION", classes: ["section-subheader"] },
         d: {
           content: "BUILDING CLASSIFICATION",
           classes: ["section-subheader"],
         },
-        e: { content: "E", classes: ["section-subheader"] },
-        f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] },
-        h: { content: "H", classes: ["section-subheader"] },
-        i: { content: "I", classes: ["section-subheader"] },
-        j: { content: "J", classes: ["section-subheader"] },
-        k: { content: "K", classes: ["section-subheader"] },
+            e: { content: "E", classes: ["section-subheader"] },
+            f: { content: "F", classes: ["section-subheader"] },
+            g: { content: "G", classes: ["section-subheader"] },
+            h: { content: "H", classes: ["section-subheader"] },
+            i: { content: "I", classes: ["section-subheader"] },
+            j: { content: "J", classes: ["section-subheader"] },
+            k: { content: "K", classes: ["section-subheader"] },
         l: {
           content: "OBC 3.2.2.10. & 3.2.5.",
           classes: ["section-subheader"],
         },
-        m: { content: "M", classes: ["section-subheader"] },
-        n: { content: "N", classes: ["section-subheader"] },
-        o: {
-          content: "Notes",
-          classes: ["section-subheader", "notes-column"],
+            m: { content: "M", classes: ["section-subheader"] },
+            n: { content: "N", classes: ["section-subheader"] },
+            o: {
+              content: "Notes",
+              classes: ["section-subheader", "notes-column"],
+            },
+          },
         },
-      },
-    },
 
     // Row 39: 3.09 Number of Streets/Firefighter Access
     4.39: {
@@ -483,10 +483,10 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { label: "3.09" },
         c: { label: "NUMBER OF STREETS/FIREFIGHTER ACCESS" },
-        d: {
-          fieldId: "d_39",
-          type: "dropdown",
-          dropdownId: "dd_d_39",
+        d: { 
+          fieldId: "d_39", 
+          type: "dropdown", 
+          dropdownId: "dd_d_39", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -508,7 +508,7 @@ window.OBC.SectionModules.sect04 = (function () {
       rowId: "4.40",
       label: "BUILDING CLASSIFICATION",
       cells: {
-        a: {
+        a: { 
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
@@ -519,19 +519,19 @@ window.OBC.SectionModules.sect04 = (function () {
         },
         b: { label: "3.1" },
         c: { label: "BUILDING CLASSIFICATION" },
-        d: {
-          fieldId: "d_40",
-          type: "dropdown",
-          dropdownId: "dd_d_40",
+        d: { 
+          fieldId: "d_40", 
+          type: "dropdown", 
+          dropdownId: "dd_d_40", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
           linkedField: "e_40", // Field that will show the description
         },
-        e: {
-          fieldId: "e_40",
-          type: "text",
+        e: { 
+          fieldId: "e_40", 
+          type: "text", 
           value: "",
           section: "firefightingSystems",
           classes: ["classification-description"],
@@ -564,19 +564,19 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { content: "41" },
         c: { content: "(SIZE AND CONSTRUCTION RELATIVE TO OCCUPANCY)" },
-        d: {
-          fieldId: "d_41",
-          type: "dropdown",
-          dropdownId: "dd_d_41",
+        d: { 
+          fieldId: "d_41", 
+          type: "dropdown", 
+          dropdownId: "dd_d_41", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
           linkedField: "e_41",
         },
-        e: {
-          fieldId: "e_41",
-          type: "text",
+        e: { 
+          fieldId: "e_41", 
+          type: "text", 
           value: "",
           section: "firefightingSystems",
           classes: ["classification-description"],
@@ -609,19 +609,19 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { content: "42" },
         c: { content: "" },
-        d: {
-          fieldId: "d_42",
-          type: "dropdown",
-          dropdownId: "dd_d_42",
+        d: { 
+          fieldId: "d_42", 
+          type: "dropdown", 
+          dropdownId: "dd_d_42", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
           linkedField: "e_42",
         },
-        e: {
-          fieldId: "e_42",
-          type: "text",
+        e: { 
+          fieldId: "e_42", 
+          type: "text", 
           value: "",
           section: "firefightingSystems",
           classes: ["classification-description"],
@@ -654,19 +654,19 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { content: "43" },
         c: { content: "" },
-        d: {
-          fieldId: "d_43",
-          type: "dropdown",
-          dropdownId: "dd_d_43",
+        d: { 
+          fieldId: "d_43", 
+          type: "dropdown", 
+          dropdownId: "dd_d_43", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
           linkedField: "e_43",
         },
-        e: {
-          fieldId: "e_43",
-          type: "text",
+        e: { 
+          fieldId: "e_43", 
+          type: "text", 
           value: "",
           section: "firefightingSystems",
           classes: ["classification-description"],
@@ -699,19 +699,19 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { content: "44" },
         c: { content: "" },
-        d: {
-          fieldId: "d_44",
-          type: "dropdown",
-          dropdownId: "dd_d_44",
+        d: { 
+          fieldId: "d_44", 
+          type: "dropdown", 
+          dropdownId: "dd_d_44", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
           linkedField: "e_44",
         },
-        e: {
-          fieldId: "e_44",
-          type: "text",
+        e: { 
+          fieldId: "e_44", 
+          type: "text", 
           value: "",
           section: "firefightingSystems",
           classes: ["classification-description"],
@@ -770,10 +770,10 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { label: "3.11" },
         c: { label: "SPRINKLER SYSTEM" },
-        d: {
-          fieldId: "d_45",
-          type: "dropdown",
-          dropdownId: "dd_d_45",
+        d: { 
+          fieldId: "d_45", 
+          type: "dropdown", 
+          dropdownId: "dd_d_45", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -784,10 +784,10 @@ window.OBC.SectionModules.sect04 = (function () {
           ],
         },
         h: { content: "PROVIDED:" },
-        i: {
-          fieldId: "i_45",
-          type: "dropdown",
-          dropdownId: "dd_i_45",
+        i: { 
+          fieldId: "i_45", 
+          type: "dropdown", 
+          dropdownId: "dd_i_45", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -825,7 +825,7 @@ window.OBC.SectionModules.sect04 = (function () {
       },
     },
 
-    // Row 47: 3.12 Standpipe System
+    // Row 47: 3.12 Standpipe System  
     4.47: {
       id: "4.47",
       rowId: "4.47",
@@ -833,10 +833,10 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { label: "3.12" },
         c: { label: "STANDPIPE SYSTEM" },
-        d: {
-          fieldId: "d_47",
-          type: "dropdown",
-          dropdownId: "dd_d_47",
+        d: { 
+          fieldId: "d_47", 
+          type: "dropdown", 
+          dropdownId: "dd_d_47", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -853,16 +853,16 @@ window.OBC.SectionModules.sect04 = (function () {
 
     // Row 48: 3.13 Fire Alarm System
     4.48: {
-      id: "4.48",
+      id: "4.48", 
       rowId: "4.48",
       label: "FIRE ALARM SYSTEM",
       cells: {
         b: { label: "3.13" },
         c: { label: "FIRE ALARM SYSTEM" },
-        d: {
-          fieldId: "d_48",
-          type: "dropdown",
-          dropdownId: "dd_d_48",
+        d: { 
+          fieldId: "d_48", 
+          type: "dropdown", 
+          dropdownId: "dd_d_48", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -874,10 +874,10 @@ window.OBC.SectionModules.sect04 = (function () {
           ],
         },
         h: { label: "TYPE PROVIDED" },
-        i: {
-          fieldId: "i_48",
-          type: "dropdown",
-          dropdownId: "dd_i_48",
+        i: { 
+          fieldId: "i_48", 
+          type: "dropdown", 
+          dropdownId: "dd_i_48", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -901,10 +901,10 @@ window.OBC.SectionModules.sect04 = (function () {
       cells: {
         b: { label: "3.14" },
         c: { label: "WATER SERVICE/SUPPLY IS ADEQUATE" },
-        d: {
-          fieldId: "d_49",
-          type: "dropdown",
-          dropdownId: "dd_d_49",
+        d: { 
+          fieldId: "d_49", 
+          type: "dropdown", 
+          dropdownId: "dd_d_49", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -923,25 +923,25 @@ window.OBC.SectionModules.sect04 = (function () {
     // Row 50: 3.15 Construction Type
     "4.50": {
       id: "4.50",
-      rowId: "4.50",
+      rowId: "4.50", 
       label: "CONSTRUCTION TYPE",
       cells: {
         b: { label: "3.15" },
         c: { label: "CONSTRUCTION TYPE" },
         d: { label: "BASED ON" },
-        e: {
-          fieldId: "e_50",
-          type: "dropdown",
-          dropdownId: "dd_e_50",
+        e: { 
+          fieldId: "e_50", 
+          type: "dropdown", 
+          dropdownId: "dd_e_50", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-lg"],
           options: buildingClassificationOptions,
           linkedField: "f_50", // Field that will show the description
         },
-        f: {
-          fieldId: "f_50",
-          type: "text",
+        f: { 
+          fieldId: "f_50", 
+          type: "text", 
           value: "",
           section: "firefightingSystems",
           classes: ["classification-description"],
@@ -958,10 +958,10 @@ window.OBC.SectionModules.sect04 = (function () {
       label: "Construction Type Restrictions",
       cells: {
         d: { content: "RESTRICTIONS" },
-        e: {
-          fieldId: "e_51",
-          type: "dropdown",
-          dropdownId: "dd_e_51",
+        e: { 
+          fieldId: "e_51", 
+          type: "dropdown", 
+          dropdownId: "dd_e_51", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -988,10 +988,10 @@ window.OBC.SectionModules.sect04 = (function () {
       label: "Actual Construction",
       cells: {
         d: { content: "ACTUAL" },
-        e: {
-          fieldId: "e_52",
-          type: "dropdown",
-          dropdownId: "dd_e_52",
+        e: { 
+          fieldId: "e_52", 
+          type: "dropdown", 
+          dropdownId: "dd_e_52", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -1014,10 +1014,10 @@ window.OBC.SectionModules.sect04 = (function () {
           ],
         },
         h: { content: "HEAVY TIMBER CONSTRUCTION" },
-        j: {
-          fieldId: "j_52",
-          type: "dropdown",
-          dropdownId: "dd_j_52",
+        j: { 
+          fieldId: "j_52", 
+          type: "dropdown", 
+          dropdownId: "dd_j_52", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -1209,7 +1209,7 @@ window.OBC.SectionModules.sect04 = (function () {
         });
       }
     });
-
+    
     window.OBC.sect04.initialized = true;
   }
 

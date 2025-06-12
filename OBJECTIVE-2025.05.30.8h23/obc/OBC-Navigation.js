@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plumbingFixtures: "bi-droplet",
     complianceDesign: "bi-check-circle",
     notes: "bi-card-text",
-
+    
     // Legacy TEUI sections (for compatibility)
     climateCalculations: "bi-thermometer-half",
     actualTargetEnergy: "bi-bullseye",
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tabLabels = {
     // OBC Matrix sections - Short mnemonics for tabs
     buildingInfo: "Info",
-    buildingOccupancy: "Occupancy",
+    buildingOccupancy: "Occupancy", 
     buildingAreas: "Areas",
     firefightingSystems: "Fire",
     structuralRequirements: "Structure",
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plumbingFixtures: "Plumbing",
     complianceDesign: "Compliance",
     notes: "Notes",
-
+    
     // Legacy TEUI sections (for compatibility)
     climateCalculations: "Climate",
     actualTargetEnergy: "Target",
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plumbingFixtures: "Section 8. Plumbing Fixture Requirements",
     complianceDesign: "Section 9. Compliance & Design",
     notes: "Section 10. Notes",
-
+    
     // Legacy TEUI sections (for compatibility)
     climateCalculations: "Climate Calculations",
     actualTargetEnergy: "T.3 Actual vs. Target Energy & Carbon",
@@ -756,7 +756,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Note: ExcelLocationHandler functionality removed
+  // Note: ExcelLocationHandler functionality removed 
   // OBC Matrix is a building code compliance form, not an energy calculator
   // Location/weather data handling is specific to TEUI Calculator
 
@@ -810,17 +810,17 @@ document.addEventListener("DOMContentLoaded", function () {
   if (window.OBC && window.OBC.FieldManager) {
     // Initialize FieldManager (core requirement for OBC Matrix)
     window.OBC.FieldManager.renderAllSections(); // FieldManager handles initial rendering
-
+    
     // Initialize OBC StateManager and global input handlers
     if (window.OBC.StateManager) {
       window.OBC.StateManager.initialize();
-
+      
       // Initialize global input handlers after sections are rendered
       setTimeout(() => {
         window.OBC.StateManager.initializeGlobalInputHandlers();
       }, 100); // Reduced delay for faster startup
     }
-
+    
     // OBC Matrix doesn't use these TEUI-specific modules:
     // - StateManager (has its own OBC.StateManager)
     // - SectionIntegrator (form-based, no complex integrations)
