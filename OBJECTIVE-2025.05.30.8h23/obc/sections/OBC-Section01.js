@@ -451,7 +451,7 @@ window.OBC.SectionModules.sect01 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 01 event handlers");
+    // Initializing Section 01 event handlers
     
     // ✅ MANDATORY: Use global input handler for graceful behavior
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
@@ -532,7 +532,7 @@ window.OBC.SectionModules.sect01 = (function () {
   }
 
   function onSectionRendered() {
-    console.log("Section 01 rendered - Building Information (OBC Matrix)");
+    // Section 01 rendered - Building Information (OBC Matrix)
     
     // Initialize any section-specific functionality after rendering
     if (!window.OBC.sect01.initialized) {

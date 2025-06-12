@@ -504,7 +504,7 @@ window.OBC.StateManager = (function () {
    * Call this after sections are rendered
    */
   function initializeGlobalInputHandlers() {
-    console.log("OBC StateManager: Initializing global input handlers...");
+    // Initializing global input handlers...
     
     // Find all editable fields across all sections
     const editableFields = document.querySelectorAll('.editable[data-field-id]');
@@ -545,7 +545,7 @@ window.OBC.StateManager = (function () {
       }
     });
     
-    console.log(`OBC StateManager: Initialized handlers for ${editableFields.length} editable fields`);
+          // Initialized handlers for editable fields
   }
 
   // Public API

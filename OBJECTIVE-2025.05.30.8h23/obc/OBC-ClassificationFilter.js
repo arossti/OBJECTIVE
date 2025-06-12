@@ -14,7 +14,6 @@
 
 // Create namespace
 window.OBC = window.OBC || {};
-console.log("🔍 CLASSIFICATION FILTER: Module loading...");
 window.OBC.ClassificationFilter = (function() {
 
   //==========================================================================
@@ -177,7 +176,6 @@ window.OBC.ClassificationFilter = (function() {
       }
     });
 
-    console.log("🔍 CLASSIFICATION FILTER: Selected occupancies:", selectedOccupancies);
     return selectedOccupancies;
   }
 
@@ -197,7 +195,6 @@ window.OBC.ClassificationFilter = (function() {
     // Always include universal options
     relevantGroups.add("Universal");
 
-    console.log("🔍 CLASSIFICATION FILTER: Relevant groups:", Array.from(relevantGroups));
     return Array.from(relevantGroups);
   }
 
@@ -219,7 +216,6 @@ window.OBC.ClassificationFilter = (function() {
       }
     });
 
-    console.log("🔍 CLASSIFICATION FILTER: Filtered to", filteredOptions.length, "options");
     return filteredOptions;
   }
 
@@ -239,12 +235,10 @@ window.OBC.ClassificationFilter = (function() {
       // Update dropdown through FieldManager (proper OBC architecture)
       if (window.OBC?.FieldManager?.updateDropdownOptions) {
         window.OBC.FieldManager.updateDropdownOptions(fieldId, filteredOptions);
-        console.log(`🔍 CLASSIFICATION FILTER: Updated ${fieldId} with ${filteredOptions.length} options`);
         
         // Reset selection if current value is no longer valid
         if (!isCurrentValueValid && currentValue !== "-") {
           window.OBC.StateManager.setValue(fieldId, "-", "user-modified");
-          console.log(`🔍 CLASSIFICATION FILTER: Reset ${fieldId} - previous value no longer valid`);
         }
       }
     });
@@ -254,13 +248,10 @@ window.OBC.ClassificationFilter = (function() {
    * Main filtering function triggered by occupancy changes
    */
   function updateClassificationFilters() {
-    console.log("🔍 CLASSIFICATION FILTER: Starting filter update...");
-    
     const selectedOccupancies = getSelectedMajorOccupancies();
     
     if (selectedOccupancies.length === 0) {
       // No occupancies selected - show all classifications
-      console.log("🔍 CLASSIFICATION FILTER: No occupancies selected, showing all classifications");
       updateClassificationDropdowns(ALL_BUILDING_CLASSIFICATIONS);
       return;
     }
@@ -269,8 +260,6 @@ window.OBC.ClassificationFilter = (function() {
     const filteredOptions = getFilteredClassifications(relevantGroups);
     
     updateClassificationDropdowns(filteredOptions);
-    
-    console.log("🔍 CLASSIFICATION FILTER: Filter update complete");
   }
 
   //==========================================================================
@@ -282,8 +271,6 @@ window.OBC.ClassificationFilter = (function() {
    * Sets up StateManager listeners for occupancy changes
    */
   function initialize() {
-    console.log("🔍 CLASSIFICATION FILTER: Initializing dynamic filtering system...");
-    
     if (!window.OBC?.StateManager) {
       console.error("❌ CLASSIFICATION FILTER: StateManager not available");
       return false;
@@ -292,7 +279,6 @@ window.OBC.ClassificationFilter = (function() {
     // Set up listeners for all occupancy dropdowns
     OCCUPANCY_FIELD_IDS.forEach(fieldId => {
       window.OBC.StateManager.addListener(fieldId, function(value) {
-        console.log(`🔍 CLASSIFICATION FILTER: Occupancy change detected - ${fieldId}: ${value}`);
         // Delay slightly to ensure all state updates are complete
         setTimeout(updateClassificationFilters, 50);
       });
@@ -301,7 +287,7 @@ window.OBC.ClassificationFilter = (function() {
     // Run initial filtering
     setTimeout(updateClassificationFilters, 100);
     
-    console.log("✅ CLASSIFICATION FILTER: Initialization complete");
+    console.log("✅ Classification filtering initialized");
     return true;
   }
 
@@ -334,6 +320,4 @@ window.OBC.ClassificationFilter = (function() {
 
 })();
 
-// Note: Initialization handled by Section 04 to ensure proper timing
-
-console.log("✅ OBC Classification Filter module loaded"); 
+// Note: Initialization handled by Section 04 to ensure proper timing 

@@ -824,8 +824,6 @@ window.OBC.SectionModules.sect04 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 04: Firefighting & Life Safety Systems");
-    
     // ✅ MANDATORY: Use global input handler for graceful behavior
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
@@ -843,12 +841,9 @@ window.OBC.SectionModules.sect04 = (function () {
     });
     
     window.OBC.sect04.initialized = true;
-    console.log("✅ Section 04 initialized with global input handling");
   }
 
   function onSectionRendered() {
-    console.log("Section 04 rendered - Firefighting & Life Safety Systems");
-    
     // Initialize event handlers after rendering
     if (!window.OBC.sect04?.initialized) {
       initializeEventHandlers();
@@ -864,7 +859,6 @@ window.OBC.SectionModules.sect04 = (function () {
       const script = document.createElement('script');
       script.src = 'OBC-ClassificationFilter.js';
       script.onload = function() {
-        console.log("🔍 CLASSIFICATION FILTER: Script loaded, initializing...");
         // Initialize after a brief delay to ensure DOM is ready
         setTimeout(() => {
           if (window.OBC.ClassificationFilter) {
@@ -914,4 +908,4 @@ if (document.readyState === 'loading') {
   }
 }
 
-console.log("✅ Section 04 module loaded: Firefighting & Life Safety Systems"); 
+// Section 04 module loaded: Firefighting & Life Safety Systems 

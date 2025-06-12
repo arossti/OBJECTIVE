@@ -1365,11 +1365,9 @@ OBC.FieldManager = (function () {
     if (isCurrentValueValid) {
       element.value = currentValue;
     } else {
-      // Reset to default if current value is no longer valid
-      element.value = "-";
-    }
-    
-    console.log(`✅ Updated dropdown ${fieldId} with ${newOptions.length} options`);
+          // Reset to default if current value is no longer valid
+    element.value = "-";
+  }
   }
 
   // Public API

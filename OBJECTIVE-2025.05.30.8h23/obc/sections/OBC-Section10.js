@@ -279,7 +279,7 @@ window.OBC.SectionModules.sect10 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 10 event handlers");
+    // Initializing Section 10 event handlers
     
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
@@ -287,7 +287,7 @@ window.OBC.SectionModules.sect10 = (function () {
   }
 
   function onSectionRendered() {
-    console.log("Section 10 rendered");
+    // Section 10 rendered
     initializeEventHandlers();
     window.OBC.sect10.initialized = true;
   }

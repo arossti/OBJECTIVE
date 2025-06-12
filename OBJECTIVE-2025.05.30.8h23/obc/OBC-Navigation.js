@@ -719,30 +719,34 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Event listener for disclaimer modal
-  document
-    .getElementById("disclaimerModal")
-    .addEventListener("hidden.bs.modal", function () {
+  const disclaimerModal = document.getElementById("disclaimerModal");
+  if (disclaimerModal) {
+    disclaimerModal.addEventListener("hidden.bs.modal", function () {
       localStorage.setItem("disclaimerSeen", "true");
     });
+  }
 
-  // Setup download button actions
-  document
-    .getElementById("downloadReport")
-    .addEventListener("click", function () {
+  // Setup download button actions with null checks
+  const downloadReportBtn = document.getElementById("downloadReport");
+  if (downloadReportBtn) {
+    downloadReportBtn.addEventListener("click", function () {
       // This will be implemented later
     });
+  }
 
-  document
-    .getElementById("obc-factsheet")
-    .addEventListener("click", function () {
+  const obcFactsheetBtn = document.getElementById("obc-factsheet");
+  if (obcFactsheetBtn) {
+    obcFactsheetBtn.addEventListener("click", function () {
       // This will be implemented later
     });
+  }
 
-  document
-    .getElementById("tedi-factsheet")
-    .addEventListener("click", function () {
+  const tediFactsheetBtn = document.getElementById("tedi-factsheet");
+  if (tediFactsheetBtn) {
+    tediFactsheetBtn.addEventListener("click", function () {
       // This will be implemented later
     });
+  }
 
   // Note: ExcelLocationHandler functionality removed 
   // OBC Matrix is a building code compliance form, not an energy calculator

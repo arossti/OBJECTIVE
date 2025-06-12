@@ -426,7 +426,7 @@ window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 09 event handlers");
+    // Initializing Section 09 event handlers
     
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
@@ -434,7 +434,7 @@ window.OBC.SectionModules.sect09 = (function () {
   }
 
   function onSectionRendered() {
-    console.log("Section 09 rendered");
+    // Section 09 rendered
     initializeEventHandlers();
     window.OBC.sect09.initialized = true;
   }

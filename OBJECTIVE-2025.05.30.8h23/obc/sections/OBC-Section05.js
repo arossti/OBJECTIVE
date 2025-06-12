@@ -336,15 +336,12 @@ window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 05 event handlers");
-    
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
   }
 
   function onSectionRendered() {
-    console.log("Section 05 rendered");
     initializeEventHandlers();
     window.OBC.sect05.initialized = true;
   }

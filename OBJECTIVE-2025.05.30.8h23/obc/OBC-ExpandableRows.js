@@ -77,7 +77,7 @@ window.OBC.ExpandableRows = (function() {
     
     // If it's just the placeholder, continue with initialization
     if (existing && existing.initializing) {
-      console.log(`🔍 GROUP ${groupId} replacing placeholder with full config`);
+      // Continue with initialization
     }
     
     const config = {

@@ -543,7 +543,7 @@ window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
 
   function initializeEventHandlers() {
-    console.log("Initializing Section 06 event handlers");
+    // Initializing Section 06 event handlers
     
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
@@ -559,7 +559,7 @@ window.OBC.SectionModules.sect06 = (function () {
   }
 
   function onSectionRendered() {
-    console.log("Section 06 rendered");
+    // Section 06 rendered
     initializeEventHandlers();
     calculateOccupantLoadTotal(); // Run initial calculation
     window.OBC.sect06.initialized = true;
