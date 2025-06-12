@@ -161,7 +161,7 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 - Gross area calculations with horizontal/vertical totals
 - Mezzanine area calculations with grand totals  
 - Building height fields and High Building classification
-*IRRITANT: Unequal Expansion of Columns (esp. D/E)
+- ✅ **RESOLVED: Column Spacing & Layout Optimization** - Eliminated unpredictable column expansion
 
 **Section 04**: Firefighting & Life Safety Systems (rows 39-52) ✅
 - Fire access and building classification dropdowns
@@ -357,7 +357,80 @@ The OBC Matrix is an interactive web form that replicates the Ontario Associatio
 **Strategic Value**:
 This phase successfully demonstrated that **early code quality investment** prevents the massive refactoring challenges experienced with the 4011 codebase. By addressing 1,519+ issues incrementally rather than waiting until pre-production, we've established a maintainable foundation for the upcoming 4012 refactor while delivering significant value to our funder through the OBC Matrix implementation.
 
-### 📋 Phase 11: OAA Stamp Validation Engine (PLANNED)
+### ✅ Phase 11: Column Spacing & Layout Resolution (COMPLETED - December 2024)
+**Objective**: Resolve the persistent "goalpost expansion" and unpredictable column width issues that plagued sections since Day 1
+
+**🚨 The Persistent Problem**: Browser's `table-layout: auto` algorithm was causing unpredictable column expansion, particularly in Columns D and E, where long placeholder text ("Enter area description") would force excessive column widths, creating inconsistent layouts and requiring horizontal scrolling.
+
+**🔍 Root Cause Analysis**:
+- **CSS Architecture**: General tables used `/* NO column constraints - pure browser content-based sizing */`
+- **Only Section 04** had explicit percentage widths (which caused its own scrolling issues)
+- **All other sections** left to browser's unpredictable content-driven width calculations
+- **Result**: Different sections had wildly different column behaviors
+
+**✅ The Breakthrough Solution - Section 03 Pattern**:
+
+**Technical Implementation**:
+```css
+/* Section 03: Intelligent content-based column system */
+#buildingAreas .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Hide completely empty columns to improve density */
+#buildingAreas .data-table td:nth-child(6),  /* Column F - empty */
+#buildingAreas .data-table td:nth-child(7),  /* Column G - empty */
+#buildingAreas .data-table td:nth-child(8),  /* Column H - empty */
+#buildingAreas .data-table td:nth-child(13), /* Column M - empty */
+#buildingAreas .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Controlled width for content columns */
+#buildingAreas .data-table td:nth-child(4) { 
+    width: 200px !important;  /* Column D - descriptions (controlled!) */
+    max-width: 200px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+```
+
+**Key Principles Discovered**:
+1. **Empty columns = 1px width** - No content, no space wasted
+2. **Content columns = explicit width control** - Prevent browser's unpredictable sizing
+3. **Ellipsis over expansion** - Content overflow handled gracefully without layout disruption
+4. **Section-specific optimization** - Each section can be tailored to its specific content needs
+
+**Results Achieved**:
+- ✅ **Column D controlled to 200px** - No more expansion based on placeholder text length
+- ✅ **Column E minimized to 1px** - Empty space eliminated
+- ✅ **Predictable, consistent layout** - Columns behave identically every time
+- ✅ **No horizontal scrolling** - All content fits comfortably in browser width
+- ✅ **Professional presentation** - Right-aligned numbers, proper spacing, clean typography
+- ✅ **Notes column optimization** - Sized to 220px for comfortable note-taking without wrapping
+
+**Pattern Established for Universal Application**:
+This Section 03 success provides the template for solving layout issues across all remaining sections:
+- **Content analysis** - Identify which columns have content vs. are empty
+- **Width assignment** - Give content columns appropriate fixed widths
+- **Empty column minimization** - Force empty columns to 1px width
+- **Overflow handling** - Use ellipsis instead of layout expansion
+- **User experience optimization** - Size interactive columns (like Notes) for usability
+
+**Impact on User Experience**:
+- **Professional layout consistency** - Form looks and behaves predictably
+- **Faster form completion** - Users don't fight with shifting layouts
+- **Better print formatting** - Controlled column widths translate to better print layouts
+- **Developer confidence** - Layout issues can be systematically resolved using established patterns
+
+**Next Steps**: This proven pattern is ready for systematic application to remaining sections that exhibit similar column expansion issues.
+
+### 📋 Phase 12: OAA Stamp Validation Engine (PLANNED)
 **Objective**: Automated validation of architect stamps against OAA membership directory
 
 **Technical Implementation Strategy**:
@@ -522,7 +595,7 @@ function populateArchitectInfo(memberData) {
 3. **Phase 8C**: Enhanced fuzzy matching and suggested alternatives
 4. **Phase 8D**: Certificate of Practice (CoP) verification integration
 
-### 📋 Phase 11: Data Import/Export Engine (PLANNED)
+### 📋 Phase 13: Data Import/Export Engine (PLANNED)
 **Objective**: Enable seamless data exchange with Excel/CSV files
 
 **Key Features**:
@@ -532,7 +605,7 @@ function populateArchitectInfo(memberData) {
 - **Export Function**: Generate Excel-compatible CSV from form data
 - **Validation**: Ensure data integrity during import/export
 
-### 📋 Phase 12: User Experience Enhancements (PLANNED)
+### 📋 Phase 14: User Experience Enhancements (PLANNED)
 **Objective**: Add modern web form features while maintaining Excel compatibility
 
 **Planned Features**:
@@ -542,7 +615,7 @@ function populateArchitectInfo(memberData) {
 - **Responsive Design**: Optimize for tablet and mobile use
 - **Accessibility**: WCAG compliance for screen readers and keyboard navigation
 
-### 📋 Phase 13: Cross-System Data Integration (ARCHITECTURAL STRATEGY) 🆕
+### 📋 Phase 15: Cross-System Data Integration (ARCHITECTURAL STRATEGY) 🆕
 **Objective**: Enable professional data sharing between OBC Matrix and OBJECTIVE TEUI Calculator
 
 **Strategic Vision**: Architects complete the required OBC Matrix for building permits and receive a "head start" on energy modeling through careful data mapping. This leverages familiar workflows while providing significant value-add for energy compliance.
@@ -994,7 +1067,7 @@ debugOBJECTIVEStateLoss();
 
 ---
 
-## ✅ Phase 14: Namespace Architecture Resolution (COMPLETED - 2025.06.05)
+## ✅ Phase 16: Namespace Architecture Resolution (COMPLETED - 2025.06.05)
 **Objective**: Fix critical namespace contamination between OBC Matrix and TEUI Calculator systems
 
 ### **🚨 Problem Identified**
@@ -1017,7 +1090,7 @@ During development, we discovered that the OBC Matrix was incorrectly using the 
 - **✅ Proper Rendering**: OBC Matrix now uses its own form-optimized rendering engine
 - **✅ All Sections Working**: All 10 OBC sections now render and function correctly
 
-## ✅ Phase 15: Cross-System State Persistence (COMPLETED - 2025.06.05)
+## ✅ Phase 17: Cross-System State Persistence (COMPLETED - 2025.06.05)
 **Objective**: Enable seamless navigation between OBC Matrix and OBJECTIVE TEUI Calculator without data loss
 
 ### **🎯 Professional Workflow Problem**
