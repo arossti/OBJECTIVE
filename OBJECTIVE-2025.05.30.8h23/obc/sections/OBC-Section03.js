@@ -87,21 +87,21 @@ window.OBC.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_22",
           type: "num-editable",
-          value: "1,000.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["user-input"],
         },
         j: {
           fieldId: "j_22",
           type: "num-editable",
-          value: "800.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["user-input"],
         },
         k: {
           fieldId: "k_22",
           type: "calculated",
-          value: "1,800.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["calculated-value"],
         },
@@ -240,21 +240,21 @@ window.OBC.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_25",
           type: "calculated",
-          value: "1,400.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["calculated-value"],
         },
         j: {
           fieldId: "j_25",
           type: "calculated",
-          value: "700.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["calculated-value"],
         },
         k: {
           fieldId: "k_25",
           type: "calculated",
-          value: "2,100.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["calculated-value"],
         },
@@ -328,21 +328,21 @@ window.OBC.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_27",
           type: "num-editable",
-          value: "500.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["user-input"],
         },
         j: {
           fieldId: "j_27",
           type: "num-editable",
-          value: "150.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["user-input"],
         },
         k: {
           fieldId: "k_27",
           type: "calculated",
-          value: "650.00",
+          value: "0.00",
           section: "buildingAreas",
           classes: ["calculated-value"],
         },
@@ -1441,48 +1441,7 @@ window.OBC.SectionModules.sect03 = (function () {
   }
 
   function onSectionRendered() {
-    // Initialize default state values in StateManager
-    if (window.OBC?.StateManager) {
-      const defaultValues = {
-        d_22: "Enter area description",
-        d_23: "Enter area description",
-        d_24: "Enter area description",
-        i_22: "1000.00",
-        j_22: "100.00",
-        i_23: "200.00",
-        j_23: "300.00",
-        i_24: "200.00",
-        j_24: "300.00",
-        // Gross area defaults
-        i_27: "500.00",
-        j_27: "150.00",
-        k_27: "650.00",
-        i_28: "300.00",
-        j_28: "75.00",
-        k_28: "375.00",
-        i_29: "250.00",
-        j_29: "125.00",
-        k_29: "375.00",
-        // Mezzanine area defaults
-        i_32: "50.00",
-        j_32: "25.00",
-        i_33: "30.00",
-        j_33: "15.00",
-        i_34: "20.00",
-        j_34: "10.00",
-        // Building height defaults
-        d_36: "2.0", // Stories above grade
-        d_37: "1.0", // Stories below grade
-        j_36: "6.20", // Metres above grade
-      };
-
-      Object.entries(defaultValues).forEach(([fieldId, defaultValue]) => {
-        // Only set default if no value exists (won't overwrite user-modified values)
-        if (!window.OBC.StateManager.getValue(fieldId)) {
-          window.OBC.StateManager.setValue(fieldId, defaultValue, "default");
-        }
-      });
-    }
+    // StateManager will auto-initialize from field definitions - no redundant defaults needed
 
     // Initialize event handlers
     if (!window.OBC.sect03.initialized) {
