@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-  
+
   const SECTION_CONFIG = {
     name: "complianceDesign",
     excelRowStart: 82,
@@ -30,19 +30,19 @@ window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-  
+
   const dropdownOptions = {
     compliancePaths: [
       { value: "-", name: "Select..." },
       { value: "Prescriptive", name: "Prescriptive" },
       { value: "Performance", name: "Performance" },
-      { value: "Alternative Solution", name: "Alternative Solution" }
+      { value: "Alternative Solution", name: "Alternative Solution" },
     ],
     yesNoOptions: [
       { value: "-", name: "Select..." },
       { value: "Yes", name: "Yes" },
       { value: "No", name: "No" },
-      { value: "N/A", name: "N/A" }
+      { value: "N/A", name: "N/A" },
     ],
     climateZones: [
       { value: "-", name: "Select..." },
@@ -51,8 +51,8 @@ window.OBC.SectionModules.sect09 = (function () {
       { value: "6", name: "6" },
       { value: "7A", name: "7A" },
       { value: "7B", name: "7B" },
-      { value: "8", name: "8" }
-    ]
+      { value: "8", name: "8" },
+    ],
   };
 
   //==========================================================================
@@ -60,7 +60,6 @@ window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    
     // SUBHEADER ROW
     header: {
       id: "9.h",
@@ -74,7 +73,10 @@ window.OBC.SectionModules.sect09 = (function () {
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
         h: { content: "H", classes: ["section-subheader"] },
-        i: { content: "DEGREE DAYS BELOW 18 C:", classes: ["section-subheader"] },
+        i: {
+          content: "DEGREE DAYS BELOW 18 C:",
+          classes: ["section-subheader"],
+        },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
         l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
@@ -85,7 +87,7 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 82: 3.24 Energy Efficiency
-    "9.82": {
+    9.82: {
       id: "9.82",
       rowId: "9.82",
       label: "ENERGY EFFICIENCY",
@@ -99,13 +101,13 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 83: Climate Zone
-    "9.83": {
+    9.83: {
       id: "9.83",
       rowId: "9.83",
       label: "CLIMATE ZONE",
@@ -118,7 +120,7 @@ window.OBC.SectionModules.sect09 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.climateZones
+          options: dropdownOptions.climateZones,
         },
         i: { content: "DEGREE DAYS BELOW 18 C:" },
         j: {
@@ -126,7 +128,7 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "num-editable",
           value: "0",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         l: { content: "SB-1 Table 2" },
         o: {
@@ -134,13 +136,13 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 84: 3.25 Sound Transmission Design
-    "9.84": {
+    9.84: {
       id: "9.84",
       rowId: "9.84",
       label: "SOUND TRANSMISSION DESIGN",
@@ -155,20 +157,20 @@ window.OBC.SectionModules.sect09 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         o: {
           fieldId: "o_84",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 85: Sound Transmission Notes
-    "9.85": {
+    9.85: {
       id: "9.85",
       rowId: "9.85",
       label: "Sound Transmission Notes",
@@ -179,20 +181,20 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         o: {
           fieldId: "o_85",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 86: Option Implemented
-    "9.86": {
+    9.86: {
       id: "9.86",
       rowId: "9.86",
       label: "Option Implemented",
@@ -205,41 +207,42 @@ window.OBC.SectionModules.sect09 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         o: {
           fieldId: "o_86",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 87: 3.26 Alternative Solutions - EXPANDABLE TRIGGER ROW
-    "9.87": {
+    9.87: {
       id: "9.87",
       rowId: "9.87",
       label: "ALTERNATIVE SOLUTIONS",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "alternative-solutions",
             "data-expandable-rows": "9.88,9.89",
-            "data-default-visible": "1"  // Shows only the trigger row initially
-          }
+            "data-default-visible": "1", // Shows only the trigger row initially
+          },
         },
         b: { content: "3.26" },
         c: { content: "ALTERNATIVE SOLUTIONS" },
         d: {
           fieldId: "d_87",
           type: "editable",
-          value: "Enhanced egress lighting system exceeding prescriptive requirements",
+          value:
+            "Enhanced egress lighting system exceeding prescriptive requirements",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: { content: "" },
         f: { content: "" },
@@ -256,13 +259,13 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "Alternative solution providing equivalent safety performance",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 88: Alternative Solutions Details 1
-    "9.88": {
+    9.88: {
       id: "9.88",
       rowId: "9.88",
       label: "Alternative Solutions Details 1",
@@ -274,7 +277,7 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "Performance-based structural fire protection design",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: { content: "" },
         f: { content: "" },
@@ -291,13 +294,13 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "Engineered solution with structural engineer certification",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 89: Alternative Solutions Details 2
-    "9.89": {
+    9.89: {
       id: "9.89",
       rowId: "9.89",
       label: "Alternative Solutions Details 2",
@@ -307,9 +310,10 @@ window.OBC.SectionModules.sect09 = (function () {
         d: {
           fieldId: "d_89",
           type: "editable",
-          value: "Fire separation performance based on advanced modeling analysis",
+          value:
+            "Fire separation performance based on advanced modeling analysis",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: { content: "" },
         f: { content: "" },
@@ -326,9 +330,9 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "Engineered solution with professional engineer certification",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
   };
 
@@ -338,12 +342,12 @@ window.OBC.SectionModules.sect09 = (function () {
 
   function getFields() {
     const fields = {};
-    
+
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
 
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -352,7 +356,8 @@ window.OBC.SectionModules.sect09 = (function () {
             section: cell.section || SECTION_CONFIG.name,
           };
 
-          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.dropdownId)
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
           if (cell.options) fields[cell.fieldId].options = cell.options;
         }
       });
@@ -363,7 +368,7 @@ window.OBC.SectionModules.sect09 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-    
+
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -378,7 +383,7 @@ window.OBC.SectionModules.sect09 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    
+
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -406,8 +411,22 @@ window.OBC.SectionModules.sect09 = (function () {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-    
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -427,7 +446,7 @@ window.OBC.SectionModules.sect09 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 09 event handlers
-    
+
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
@@ -450,4 +469,4 @@ window.OBC.SectionModules.sect09 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})(); 
+})();

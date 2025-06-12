@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-  
+
   const SECTION_CONFIG = {
     name: "occupantSafety",
     excelRowStart: 58,
@@ -30,19 +30,19 @@ window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-  
+
   const dropdownOptions = {
     yesNoOptions: [
       { value: "-", name: "Select..." },
       { value: "Yes", name: "Yes" },
       { value: "No", name: "No" },
-      { value: "N/A", name: "N/A" }
+      { value: "N/A", name: "N/A" },
     ],
     // TODO: Add occupancy type options from CSV
     occupancyTypes: [
       { value: "-", name: "Select..." },
       // // Add occupancy types later
-    ]
+    ],
   };
 
   //==========================================================================
@@ -50,7 +50,6 @@ window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    
     // SUBHEADER ROW
     header: {
       id: "6.h",
@@ -63,7 +62,10 @@ window.OBC.SectionModules.sect06 = (function () {
         e: { content: "OCCUPANCY TYPE", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
-        h: { content: "OCCUPANT LOAD (PERSONS)", classes: ["section-subheader"] },
+        h: {
+          content: "OCCUPANT LOAD (PERSONS)",
+          classes: ["section-subheader"],
+        },
         i: { content: "BASED ON", classes: ["section-subheader"] },
         j: { content: "POSTED LIMIT REQUIRED", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
@@ -75,7 +77,7 @@ window.OBC.SectionModules.sect06 = (function () {
     },
 
     // Row 58: 3.18 Occupant Load Header
-    "6.58": {
+    6.58: {
       id: "6.58",
       rowId: "6.58",
       label: "OCCUPANT LOAD",
@@ -93,25 +95,25 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 59: Occupant Load Row 1 - EXPANDABLE TRIGGER ROW
-    "6.59": {
+    6.59: {
       id: "6.59",
       rowId: "6.59",
       label: "Occupant Load 1",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "occupant-loads",
             "data-expandable-rows": "6.60,6.61",
-            "data-default-visible": "1"  // Shows only the trigger row initially
-          }
+            "data-default-visible": "1", // Shows only the trigger row initially
+          },
         },
         b: { content: "59" },
         c: { content: "" },
@@ -120,7 +122,7 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "Ground Floor",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         f: {
           fieldId: "f_59",
@@ -129,28 +131,28 @@ window.OBC.SectionModules.sect06 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.occupancyTypes
+          options: dropdownOptions.occupancyTypes,
         },
         h: {
           fieldId: "h_59",
           type: "num-editable",
           value: "50",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_59",
           type: "editable",
           value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         j: {
           fieldId: "j_59",
           type: "editable",
           value: "Yes",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: { content: "" },
         g: { content: "" },
@@ -163,12 +165,12 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
-    // Row 60: Occupant Load Row 2  
+    // Row 60: Occupant Load Row 2
     "6.60": {
       id: "6.60",
       rowId: "6.60",
@@ -181,7 +183,7 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "Second Floor",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         f: {
           fieldId: "f_60",
@@ -190,28 +192,28 @@ window.OBC.SectionModules.sect06 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.occupancyTypes
+          options: dropdownOptions.occupancyTypes,
         },
         h: {
           fieldId: "h_60",
           type: "num-editable",
           value: "30",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_60",
           type: "editable",
           value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         j: {
           fieldId: "j_60",
           type: "editable",
           value: "No",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: { content: "" },
         g: { content: "" },
@@ -224,13 +226,13 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 61: Occupant Load Row 3
-    "6.61": {
+    6.61: {
       id: "6.61",
       rowId: "6.61",
       label: "Occupant Load 3",
@@ -242,7 +244,7 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "Basement",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         f: {
           fieldId: "f_61",
@@ -251,28 +253,28 @@ window.OBC.SectionModules.sect06 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.occupancyTypes
+          options: dropdownOptions.occupancyTypes,
         },
         h: {
           fieldId: "h_61",
           type: "num-editable",
           value: "15",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_61",
           type: "editable",
           value: "Area (sq.m) / Factor",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         j: {
           fieldId: "j_61",
           type: "editable",
           value: "Yes",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: { content: "" },
         g: { content: "" },
@@ -285,13 +287,13 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 62: Occupant Load Total
-    "6.62": {
+    6.62: {
       id: "6.62",
       rowId: "6.62",
       label: "TOTAL",
@@ -302,20 +304,20 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "calculated",
           value: "95",
           section: SECTION_CONFIG.name,
-          classes: ["calculated-value"]
+          classes: ["calculated-value"],
         },
         o: {
           fieldId: "o_62",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 63: 3.19 Barrier-Free Design
-    "6.63": {
+    6.63: {
       id: "6.63",
       rowId: "6.63",
       label: "BARRIER-FREE DESIGN",
@@ -329,7 +331,7 @@ window.OBC.SectionModules.sect06 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         e: { content: "[provide explanation here]" }, // TODO: Make this conditional editable
         l: { content: "3.8." },
@@ -338,13 +340,13 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 64: Barrier-Free Entrances
-    "6.64": {
+    6.64: {
       id: "6.64",
       rowId: "6.64",
       label: "BARRIER-FREE ENTRANCES",
@@ -355,22 +357,25 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "num-editable",
           value: "0",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
-        e: { content: "[state quantity to the left and provide an explanation here]" }, // TODO: Make this conditional editable
+        e: {
+          content:
+            "[state quantity to the left and provide an explanation here]",
+        }, // TODO: Make this conditional editable
         l: { content: "3.1.8.2." },
         o: {
           fieldId: "o_64",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 65: 3.20 Hazardous Substances
-    "6.65": {
+    6.65: {
       id: "6.65",
       rowId: "6.65",
       label: "HAZARDOUS SUBSTANCES",
@@ -384,7 +389,7 @@ window.OBC.SectionModules.sect06 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         e: { content: "[provide explanation here]" }, // TODO: Make this conditional editable
         l: { content: "3.3.1.2. & 3.3.1.19." },
@@ -393,9 +398,9 @@ window.OBC.SectionModules.sect06 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
   };
 
@@ -405,12 +410,12 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function getFields() {
     const fields = {};
-    
+
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
 
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -419,7 +424,8 @@ window.OBC.SectionModules.sect06 = (function () {
             section: cell.section || SECTION_CONFIG.name,
           };
 
-          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.dropdownId)
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
           if (cell.options) fields[cell.fieldId].options = cell.options;
         }
       });
@@ -430,7 +436,7 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-    
+
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -445,7 +451,7 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    
+
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -473,8 +479,22 @@ window.OBC.SectionModules.sect06 = (function () {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-    
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -503,21 +523,25 @@ window.OBC.SectionModules.sect06 = (function () {
         value = element.textContent || element.value || "";
       }
     }
-    
-    if (typeof value === 'string') {
-      const parsed = parseFloat(value.replace(/,/g, ''));
+
+    if (typeof value === "string") {
+      const parsed = parseFloat(value.replace(/,/g, ""));
       return isNaN(parsed) ? defaultValue : parsed;
-    } else if (typeof value === 'number') {
+    } else if (typeof value === "number") {
       return isNaN(value) ? defaultValue : value;
     }
-    
+
     return defaultValue;
   }
 
-  function setCalculatedValue(fieldId, rawValue, formatType = "number-0dp-comma") {
-        const formattedValue = window.OBC.formatNumber ?
-      window.OBC.formatNumber(rawValue, formatType) :
-      rawValue.toString();
+  function setCalculatedValue(
+    fieldId,
+    rawValue,
+    formatType = "number-0dp-comma",
+  ) {
+    const formattedValue = window.OBC.formatNumber
+      ? window.OBC.formatNumber(rawValue, formatType)
+      : rawValue.toString();
 
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
@@ -525,7 +549,11 @@ window.OBC.SectionModules.sect06 = (function () {
     }
 
     if (window.OBC?.StateManager?.setValue) {
-      window.OBC.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+      window.OBC.StateManager.setValue(
+        fieldId,
+        rawValue.toString(),
+        "calculated",
+      );
     }
   }
 
@@ -533,7 +561,7 @@ window.OBC.SectionModules.sect06 = (function () {
     const load1 = getNumericValue("h_59");
     const load2 = getNumericValue("h_60");
     const load3 = getNumericValue("h_61");
-    
+
     const total = load1 + load2 + load3;
     setCalculatedValue("h_62", total, "number-0dp-comma");
   }
@@ -544,17 +572,20 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 06 event handlers
-    
+
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
-    
+
     // Add calculation listeners for occupant load totals
-    const calculationTriggers = ['h_59', 'h_60', 'h_61'];
-    calculationTriggers.forEach(fieldId => {
-          if (window.OBC.StateManager?.addListener) {
-      window.OBC.StateManager.addListener(fieldId, calculateOccupantLoadTotal);
-    }
+    const calculationTriggers = ["h_59", "h_60", "h_61"];
+    calculationTriggers.forEach((fieldId) => {
+      if (window.OBC.StateManager?.addListener) {
+        window.OBC.StateManager.addListener(
+          fieldId,
+          calculateOccupantLoadTotal,
+        );
+      }
     });
   }
 
@@ -577,4 +608,4 @@ window.OBC.SectionModules.sect06 = (function () {
     onSectionRendered: onSectionRendered,
     calculateOccupantLoadTotal: calculateOccupantLoadTotal,
   };
-})(); 
+})();

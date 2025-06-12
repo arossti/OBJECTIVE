@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-  
+
   const SECTION_CONFIG = {
     name: "structuralRequirements",
     excelRowStart: 53,
@@ -30,15 +30,15 @@ window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-  
+
   const dropdownOptions = {
     importanceCategory: [
       { value: "Low", name: "Low" },
       { value: "Normal", name: "Normal" },
       { value: "High", name: "High" },
-      { value: "Post-disaster", name: "Post-disaster" }
+      { value: "Post-disaster", name: "Post-disaster" },
     ],
-    
+
     seismicCategory: [
       { value: "-", name: "Select..." },
       { value: "SC1", name: "SC1" },
@@ -46,9 +46,9 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "SC3", name: "SC3" },
       { value: "SC4", name: "SC4" },
       { value: "SC5", name: "SC5" },
-      { value: "SC6", name: "SC6" }
+      { value: "SC6", name: "SC6" },
     ],
-    
+
     siteClass: [
       { value: "-", name: "Select..." },
       { value: "A", name: "A - Hard Rock" },
@@ -56,22 +56,22 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "C", name: "C - Very Dense Soil/Soft Rock" },
       { value: "D", name: "D - Stiff Soil" },
       { value: "E", name: "E - Soft Soil" },
-      { value: "F", name: "F - Other Soils" }
+      { value: "F", name: "F - Other Soils" },
     ],
-    
+
     seismicDesignRequired: [
       { value: "-", name: "Select..." },
       { value: "Required", name: "Required" },
       { value: "Not Required", name: "Not Required" },
-      { value: "N/A", name: "N/A" }
+      { value: "N/A", name: "N/A" },
     ],
-    
+
     yesNoNA: [
       { value: "-", name: "Select..." },
       { value: "YES", name: "YES" },
       { value: "NO", name: "NO" },
-      { value: "N/A", name: "N/A" }
-    ]
+      { value: "N/A", name: "N/A" },
+    ],
   };
 
   //==========================================================================
@@ -79,7 +79,6 @@ window.OBC.SectionModules.sect05 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    
     // SUBHEADER ROW
     header: {
       id: "5.h",
@@ -87,7 +86,10 @@ window.OBC.SectionModules.sect05 = (function () {
       label: "Structural Requirements Header",
       cells: {
         b: { content: "5.h" },
-        c: { content: "STRUCTURAL REQUIREMENTS", classes: ["section-subheader"] },
+        c: {
+          content: "STRUCTURAL REQUIREMENTS",
+          classes: ["section-subheader"],
+        },
         d: { content: "CATEGORY/CLASS", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
@@ -104,21 +106,21 @@ window.OBC.SectionModules.sect05 = (function () {
     },
 
     // Row 53: 3.16 Importance Category
-    "5.53": {
+    5.53: {
       id: "5.53",
       rowId: "5.53",
       label: "IMPORTANCE CATEGORY",
       cells: {
         b: { content: "3.16" },
         c: { content: "IMPORTANCE CATEGORY" },
-        d: { 
+        d: {
           fieldId: "d_53",
           type: "dropdown",
           dropdownId: "dd_d_53",
           value: "Low",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.importanceCategory
+          options: dropdownOptions.importanceCategory,
         },
         l: { content: "4.1.2.1.(3), T4.1.2.1.B" },
         o: {
@@ -126,27 +128,27 @@ window.OBC.SectionModules.sect05 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
-    // Row 54: 3.17 Seismic Category  
-    "5.54": {
+    // Row 54: 3.17 Seismic Category
+    5.54: {
       id: "5.54",
       rowId: "5.54",
       label: "SEISMIC CATEGORY",
       cells: {
         b: { content: "3.17" },
         c: { content: "SEISMIC CATEGORY" },
-        d: { 
+        d: {
           fieldId: "d_54",
           type: "dropdown",
           dropdownId: "dd_d_54",
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.seismicCategory
+          options: dropdownOptions.seismicCategory,
         },
         l: { content: "4.1.8.4.(1)" },
         o: {
@@ -154,26 +156,26 @@ window.OBC.SectionModules.sect05 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 55: Site Class
-    "5.55": {
+    5.55: {
       id: "5.55",
       rowId: "5.55",
       label: "SITE CLASS",
       cells: {
         c: { content: "SITE CLASS" },
-        d: { 
+        d: {
           fieldId: "d_55",
           type: "dropdown",
           dropdownId: "dd_d_55",
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.siteClass
+          options: dropdownOptions.siteClass,
         },
         e: {
           fieldId: "e_55",
@@ -181,7 +183,7 @@ window.OBC.SectionModules.sect05 = (function () {
           value: "Site description...",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
-          placeholder: "Describe site conditions"
+          placeholder: "Describe site conditions",
         },
         l: { content: "T4.1.8.5.-B" },
         o: {
@@ -189,26 +191,28 @@ window.OBC.SectionModules.sect05 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 56: Seismic Design Required
-    "5.56": {
+    5.56: {
       id: "5.56",
       rowId: "5.56",
       label: "SEISMIC DESIGN REQUIRED",
       cells: {
-        c: { content: "SEISMIC DESIGN REQUIRED FOR Table 4.1.8.18. items 6 to 22:" },
-        i: { 
+        c: {
+          content: "SEISMIC DESIGN REQUIRED FOR Table 4.1.8.18. items 6 to 22:",
+        },
+        i: {
           fieldId: "i_56",
           type: "dropdown",
           dropdownId: "dd_i_56",
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.seismicDesignRequired
+          options: dropdownOptions.seismicDesignRequired,
         },
         l: { content: "4.1.8.18.(2)" },
         o: {
@@ -216,13 +220,13 @@ window.OBC.SectionModules.sect05 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 57: Reason for Requirement
-    "5.57": {
+    5.57: {
       id: "5.57",
       rowId: "5.57",
       label: "REASON FOR REQUIREMENT",
@@ -234,16 +238,16 @@ window.OBC.SectionModules.sect05 = (function () {
           value: "Neither SC1 nor SC2...",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
-          placeholder: "Describe reasoning for seismic design requirement"
+          placeholder: "Describe reasoning for seismic design requirement",
         },
         o: {
           fieldId: "o_57",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
   };
 
@@ -253,12 +257,12 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function getFields() {
     const fields = {};
-    
+
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
 
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -267,7 +271,8 @@ window.OBC.SectionModules.sect05 = (function () {
             section: cell.section || SECTION_CONFIG.name,
           };
 
-          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.dropdownId)
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
           if (cell.options) fields[cell.fieldId].options = cell.options;
         }
       });
@@ -278,7 +283,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-    
+
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -293,7 +298,7 @@ window.OBC.SectionModules.sect05 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    
+
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -316,8 +321,22 @@ window.OBC.SectionModules.sect05 = (function () {
       ],
     };
 
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-    
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -357,4 +376,4 @@ window.OBC.SectionModules.sect05 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})(); 
+})();

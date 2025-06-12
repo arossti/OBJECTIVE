@@ -175,7 +175,7 @@ OBC.FieldManager = (function () {
     if (fieldId && allFields[fieldId].getOptions) {
       const parentValue =
         context.parentValue ||
-        (        allFields[fieldId].dependencies &&
+        (allFields[fieldId].dependencies &&
         allFields[fieldId].dependencies.length > 0
           ? OBC.StateManager?.getValue(allFields[fieldId].dependencies[0])
           : null);
@@ -479,13 +479,23 @@ OBC.FieldManager = (function () {
                 cellElement.setAttribute(key, value);
               });
             }
-            
+
             // Then check for expandable row triggers
             let isExpandableTrigger = false;
-            if (window.OBC && window.OBC.ExpandableRows && window.OBC.ExpandableRows.processExpandableTriggerCell) {
-              isExpandableTrigger = window.OBC.ExpandableRows.processExpandableTriggerCell(cellElement, cellDef, rowDef.id, sectionId);
+            if (
+              window.OBC &&
+              window.OBC.ExpandableRows &&
+              window.OBC.ExpandableRows.processExpandableTriggerCell
+            ) {
+              isExpandableTrigger =
+                window.OBC.ExpandableRows.processExpandableTriggerCell(
+                  cellElement,
+                  cellDef,
+                  rowDef.id,
+                  sectionId,
+                );
             }
-            
+
             // Only process normal content if this isn't an expandable trigger
             if (!isExpandableTrigger) {
               // Column A - populate with content if provided
@@ -569,7 +579,11 @@ OBC.FieldManager = (function () {
                 cellElement.textContent = cellDef.value || "0";
                 cellElement.setAttribute("contenteditable", "true");
               } else if (cellDef.type === "num-editable") {
-                cellElement.classList.add("editable", "user-input", "numeric-field");
+                cellElement.classList.add(
+                  "editable",
+                  "user-input",
+                  "numeric-field",
+                );
                 cellElement.textContent = cellDef.value || "0.00";
                 cellElement.setAttribute("contenteditable", "true");
                 cellElement.setAttribute("data-type", "numeric");
@@ -594,16 +608,16 @@ OBC.FieldManager = (function () {
                   inputElement.max = cellDef.max;
                 }
 
-                        // Simple change handler to update state manager
-        inputElement.addEventListener("change", function () {
-          if (window.OBC && window.OBC.StateManager) {
-            window.OBC.StateManager.setValue(
-              fieldId,
-              this.value,
-              "user-modified",
-            );
-          }
-        });
+                // Simple change handler to update state manager
+                inputElement.addEventListener("change", function () {
+                  if (window.OBC && window.OBC.StateManager) {
+                    window.OBC.StateManager.setValue(
+                      fieldId,
+                      this.value,
+                      "user-modified",
+                    );
+                  }
+                });
 
                 cellElement.appendChild(inputElement);
               }
@@ -841,17 +855,17 @@ OBC.FieldManager = (function () {
               valToFormat = valToFormat / 100;
             }
             displayValue = window.OBC.formatNumber(valToFormat, "percent-0dp");
-                      } else if (field.type === "coefficient_slider") {
-              displayValue = window.OBC.formatNumber(
-                parseFloat(value),
-                "number-2dp",
-              );
-            } else if (field.type === "year_slider") {
-              displayValue = window.OBC.formatNumber(
-                parseFloat(value),
-                "integer-nocomma",
-              );
-            }
+          } else if (field.type === "coefficient_slider") {
+            displayValue = window.OBC.formatNumber(
+              parseFloat(value),
+              "number-2dp",
+            );
+          } else if (field.type === "year_slider") {
+            displayValue = window.OBC.formatNumber(
+              parseFloat(value),
+              "integer-nocomma",
+            );
+          }
 
           displaySpan.textContent = displayValue;
 
@@ -871,6 +885,7 @@ OBC.FieldManager = (function () {
             valToFormat <= (field.max || 1) &&
             (field.max || 1) <= 1
           ) {
+            // Value is already in correct range (0-1)
           } else {
             valToFormat = valToFormat / 100;
           }
@@ -1311,7 +1326,8 @@ OBC.FieldManager = (function () {
       }
       case "calculated":
       case "derived":
-      default: { // Includes simple text display fields not covered above
+      default: {
+        // Includes simple text display fields not covered above
         if (element.textContent !== displayValue) {
           element.textContent = displayValue;
         }
@@ -1329,45 +1345,48 @@ OBC.FieldManager = (function () {
     // Try dropdown ID first (dd_fieldId), then fallback to field ID
     const dropdownId = `dd_${fieldId}`;
     let element = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
-    
+
     if (!element) {
       element = document.querySelector(`[data-field-id="${fieldId}"]`);
     }
-    
+
     if (!element || element.tagName !== "SELECT") {
-      console.warn(`updateDropdownOptions: No select element found for ${fieldId} (tried ${dropdownId} and ${fieldId})`);
+      console.warn(
+        `updateDropdownOptions: No select element found for ${fieldId} (tried ${dropdownId} and ${fieldId})`,
+      );
       return;
     }
 
     // Store current selection
     const currentValue = element.value;
-    
+
     // Clear existing options
     element.innerHTML = "";
-    
+
     // Add new options
-    newOptions.forEach(option => {
+    newOptions.forEach((option) => {
       const optionEl = document.createElement("option");
       const value = typeof option === "object" ? option.value : option;
-      const text = typeof option === "object" ? option.name || option.value : option;
-      
+      const text =
+        typeof option === "object" ? option.name || option.value : option;
+
       optionEl.value = value;
       optionEl.textContent = text;
       element.appendChild(optionEl);
     });
-    
+
     // Restore selection if still valid
-    const isCurrentValueValid = newOptions.some(option => {
+    const isCurrentValueValid = newOptions.some((option) => {
       const value = typeof option === "object" ? option.value : option;
       return value === currentValue;
     });
-    
+
     if (isCurrentValueValid) {
       element.value = currentValue;
     } else {
-          // Reset to default if current value is no longer valid
-    element.value = "-";
-  }
+      // Reset to default if current value is no longer valid
+      element.value = "-";
+    }
   }
 
   // Public API

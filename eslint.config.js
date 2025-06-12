@@ -67,6 +67,7 @@ export default [
         ...globals.node,
         // Add project-specific globals
         TEUI: "readonly",
+        OBC: "writable", // OBC Matrix global object
         d3: "readonly",
         XLSX: "readonly",
         bootstrap: "readonly",

@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect10 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-  
+
   const SECTION_CONFIG = {
     name: "notes",
     excelRowStart: 90,
@@ -32,7 +32,6 @@ window.OBC.SectionModules.sect10 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    
     // SUBHEADER ROW
     header: {
       id: "10.h",
@@ -62,23 +61,24 @@ window.OBC.SectionModules.sect10 = (function () {
       rowId: "10.90",
       label: "NOTES",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "project-notes",
             "data-expandable-rows": "10.91,10.92",
-            "data-default-visible": "1"  // Shows only the trigger row initially
-          }
+            "data-default-visible": "1", // Shows only the trigger row initially
+          },
         },
         b: { content: "3.00" },
         c: { content: "NOTES" },
         d: {
           fieldId: "d_90",
           type: "editable",
-          value: "Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
+          value:
+            "Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
           section: SECTION_CONFIG.name,
-          classes: ["user-input", "notes-field"]
+          classes: ["user-input", "notes-field"],
         },
         e: { content: "" },
         f: { content: "" },
@@ -90,12 +90,12 @@ window.OBC.SectionModules.sect10 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: { content: "" }
-      }
+        o: { content: "" },
+      },
     },
 
     // Row 91: Notes Content Line 1
-    "10.91": {
+    10.91: {
       id: "10.91",
       rowId: "10.91",
       label: "Notes Line 1",
@@ -105,9 +105,10 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_91",
           type: "editable",
-          value: "Structural engineer: Jane Smith, P.Eng. Fire safety plan to be completed by occupancy date.",
+          value:
+            "Structural engineer: Jane Smith, P.Eng. Fire safety plan to be completed by occupancy date.",
           section: SECTION_CONFIG.name,
-          classes: ["user-input", "notes-field"]
+          classes: ["user-input", "notes-field"],
         },
         e: { content: "" },
         f: { content: "" },
@@ -119,12 +120,12 @@ window.OBC.SectionModules.sect10 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: { content: "" }
-      }
+        o: { content: "" },
+      },
     },
 
     // Row 92: Notes Content Line 2
-    "10.92": {
+    10.92: {
       id: "10.92",
       rowId: "10.92",
       label: "Notes Line 2",
@@ -134,9 +135,10 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_92",
           type: "editable",
-          value: "HVAC contractor: ABC Mechanical Ltd. All work to comply with applicable CSA standards.",
+          value:
+            "HVAC contractor: ABC Mechanical Ltd. All work to comply with applicable CSA standards.",
           section: SECTION_CONFIG.name,
-          classes: ["user-input", "notes-field"]
+          classes: ["user-input", "notes-field"],
         },
         e: { content: "" },
         f: { content: "" },
@@ -148,50 +150,53 @@ window.OBC.SectionModules.sect10 = (function () {
         l: { content: "" },
         m: { content: "" },
         n: { content: "" },
-        o: { content: "" }
-      }
+        o: { content: "" },
+      },
     },
 
     // Row 93: OBC Reference Footer
-    "10.93": {
+    10.93: {
       id: "10.93",
       rowId: "10.93",
       label: "OBC Reference",
       cells: {
         d: { content: "1" },
-        e: { content: "ALL REFERENCES ARE TO DIVISION B OF THE OBC UNLESS PRECEDED BY [A] FOR DIVISION A AND [C] FOR DIVISION C" }
-      }
+        e: {
+          content:
+            "ALL REFERENCES ARE TO DIVISION B OF THE OBC UNLESS PRECEDED BY [A] FOR DIVISION A AND [C] FOR DIVISION C",
+        },
+      },
     },
 
     // Row 94: Footer Information
-    "10.94": {
+    10.94: {
       id: "10.94",
       rowId: "10.94",
       label: "Footer Information",
       cells: {
         c: { content: "Ontario Building Code Data Matrix, Part 3" },
-        l: { content: "© Ontario Association of Architects" }
-      }
+        l: { content: "© Ontario Association of Architects" },
+      },
     },
 
     // Row 95: Blank Footer Row
-    "10.95": {
+    10.95: {
       id: "10.95",
       rowId: "10.95",
       label: "Footer Spacer",
       cells: {
         // Empty row for spacing
-      }
+      },
     },
 
     // Row 96: Page Number
-    "10.96": {
+    10.96: {
       id: "10.96",
       rowId: "10.96",
       label: "Page Number",
       cells: {
-        c: { content: "96" }
-      }
+        c: { content: "96" },
+      },
     },
   };
 
@@ -201,12 +206,12 @@ window.OBC.SectionModules.sect10 = (function () {
 
   function getFields() {
     const fields = {};
-    
+
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
 
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -215,7 +220,8 @@ window.OBC.SectionModules.sect10 = (function () {
             section: cell.section || SECTION_CONFIG.name,
           };
 
-          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.dropdownId)
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
           if (cell.options) fields[cell.fieldId].options = cell.options;
         }
       });
@@ -231,7 +237,7 @@ window.OBC.SectionModules.sect10 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    
+
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -259,8 +265,22 @@ window.OBC.SectionModules.sect10 = (function () {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-    
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -280,7 +300,7 @@ window.OBC.SectionModules.sect10 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 10 event handlers
-    
+
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
@@ -303,4 +323,4 @@ window.OBC.SectionModules.sect10 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})(); 
+})();

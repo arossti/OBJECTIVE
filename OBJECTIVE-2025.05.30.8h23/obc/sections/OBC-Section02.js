@@ -37,9 +37,15 @@ window.OBC.SectionModules.sect02 = (function () {
     { value: "F2", name: "F2-Medium Hazard Industrial" },
     { value: "F3", name: "F3-Low Hazard Industrial" },
     { value: "G1", name: "G1-High-hazard Agricultural Occupancies" },
-    { value: "G2", name: "G2-Agricultural Occupancies not Elsewhere Classified in Group G" },
+    {
+      value: "G2",
+      name: "G2-Agricultural Occupancies not Elsewhere Classified in Group G",
+    },
     { value: "G3", name: "G3-Greenhouse Agricultural Occupancies" },
-    { value: "G4", name: "G4-Agricultural Occupancies with no Human Occupants" },
+    {
+      value: "G4",
+      name: "G4-Agricultural Occupancies with no Human Occupants",
+    },
   ];
 
   // Define rows with integrated field definitions
@@ -52,7 +58,10 @@ window.OBC.SectionModules.sect02 = (function () {
       cells: {
         b: { content: "B", classes: ["section-subheader"] },
         c: { content: "", classes: ["section-subheader"] },
-        d: { content: "O.Reg. 163/24 | LAST CODE AMENDMENT | O.Reg. 447/24", classes: ["section-subheader"] },
+        d: {
+          content: "O.Reg. 163/24 | LAST CODE AMENDMENT | O.Reg. 447/24",
+          classes: ["section-subheader"],
+        },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
@@ -71,7 +80,7 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.11: 3.01 Project Type
-    "2.11": {
+    2.11: {
       id: "2.11",
       rowId: "2.11",
       label: "PROJECT TYPE",
@@ -97,7 +106,8 @@ window.OBC.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_11",
           type: "editable",
-          value: "Enter description... ie. 'New 1000 sq. ft. restaurant with 200 sq. ft. kitchen'",
+          value:
+            "Enter description... ie. 'New 1000 sq. ft. restaurant with 200 sq. ft. kitchen'",
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -121,15 +131,17 @@ window.OBC.SectionModules.sect02 = (function () {
       },
     },
 
-
     // Row 2.13: 3.02 Major Occupancy Classification Header
-    "2.13": {
+    2.13: {
       id: "2.13",
       rowId: "2.13",
       label: "MAJOR OCCUPANCY CLASSIFICATION",
       cells: {
         b: { label: "3.02", classes: ["section-subheader"] },
-        c: { label: "MAJOR OCCUPANCY CLASSIFICATION", classes: ["section-subheader"] },
+        c: {
+          label: "MAJOR OCCUPANCY CLASSIFICATION",
+          classes: ["section-subheader"],
+        },
         d: { label: "OCCUPANCY TYPE", classes: ["section-subheader"] },
         e: { label: "USE DESCRIPTION", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
@@ -138,7 +150,10 @@ window.OBC.SectionModules.sect02 = (function () {
         i: { content: "", classes: ["section-subheader"] },
         j: { content: "", classes: ["section-subheader"] },
         k: { content: "", classes: ["section-subheader"] },
-        l: { content: "OBC 3.1.2.", classes: ["section-subheader", "obc-reference"] },
+        l: {
+          content: "OBC 3.1.2.",
+          classes: ["section-subheader", "obc-reference"],
+        },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
         o: { content: "", classes: ["section-subheader", "notes-column"] },
@@ -146,19 +161,19 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.14: First occupancy dropdown row (with expand/collapse button)
-    "2.14": {
+    2.14: {
       id: "2.14",
       rowId: "2.14",
       label: "",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "occupancy-classifications",
             "data-expandable-rows": "2.15,2.16,2.17,2.18",
-            "data-default-visible": "1"
-          }
+            "data-default-visible": "1",
+          },
         },
         b: { content: "14" },
         c: { content: "" },
@@ -199,7 +214,7 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.15: Second occupancy dropdown row
-    "2.15": {
+    2.15: {
       id: "2.15",
       rowId: "2.15",
       label: "",
@@ -218,7 +233,7 @@ window.OBC.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_15",
           type: "editable",
-          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
+          value: "Provide Description of Use", //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -243,7 +258,7 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.16: Third occupancy dropdown row
-    "2.16": {
+    2.16: {
       id: "2.16",
       rowId: "2.16",
       label: "",
@@ -262,7 +277,7 @@ window.OBC.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_16",
           type: "editable",
-          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
+          value: "Provide Description of Use", //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -287,7 +302,7 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.17: Fourth occupancy dropdown row
-    "2.17": {
+    2.17: {
       id: "2.17",
       rowId: "2.17",
       label: "",
@@ -306,7 +321,7 @@ window.OBC.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_17",
           type: "editable",
-          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
+          value: "Provide Description of Use", //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -331,7 +346,7 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.18: Fifth occupancy dropdown row
-    "2.18": {
+    2.18: {
       id: "2.18",
       rowId: "2.18",
       label: "",
@@ -350,7 +365,7 @@ window.OBC.SectionModules.sect02 = (function () {
         e: {
           fieldId: "e_18",
           type: "editable",
-          value: 'Provide Description of Use', //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip) 
+          value: "Provide Description of Use", //, ie. "Restaurant", "Medical Office", etc. (to be added as tooltip)
           section: "buildingOccupancy",
           classes: ["no-wrap"],
           colspan: 6, // Span columns E-J
@@ -375,7 +390,7 @@ window.OBC.SectionModules.sect02 = (function () {
     },
 
     // Row 2.19: 3.03 Superimposed Major Occupancies
-    "2.19": {
+    2.19: {
       id: "2.19",
       rowId: "2.19",
       label: "SUPERIMPOSED MAJOR OCCUPANCIES",
@@ -602,24 +617,24 @@ window.OBC.SectionModules.sect02 = (function () {
   //==========================================================================
   // EXPANDABLE OCCUPANCY ROWS - Now handled by universal ExpandableRows utility
   //==========================================================================
-  
+
   // Legacy functions kept for backward compatibility (now use universal system)
   function toggleOccupancyRows() {
     console.log("Legacy toggleOccupancyRows called - using universal system");
     if (window.OBC?.ExpandableRows) {
-      window.OBC.ExpandableRows.addRow('occupancy-classifications');
+      window.OBC.ExpandableRows.addRow("occupancy-classifications");
     }
   }
-  
+
   function addOccupancyRow() {
     if (window.OBC?.ExpandableRows) {
-      window.OBC.ExpandableRows.addRow('occupancy-classifications');
+      window.OBC.ExpandableRows.addRow("occupancy-classifications");
     }
   }
-  
+
   function removeOccupancyRow() {
     if (window.OBC?.ExpandableRows) {
-      window.OBC.ExpandableRows.removeRow('occupancy-classifications');
+      window.OBC.ExpandableRows.removeRow("occupancy-classifications");
     }
   }
 
@@ -634,23 +649,23 @@ window.OBC.SectionModules.sect02 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 02 event handlers
-    
+
     // ✅ MANDATORY: Use global input handler for graceful behavior
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
-    
+
     window.OBC.sect02.initialized = true;
   }
 
   function onSectionRendered() {
     // Section 02 rendered - Building Occupancy (OBC Matrix)
-    
+
     // Initialize any section-specific functionality after rendering
     if (!window.OBC.sect02.initialized) {
       initializeEventHandlers();
     }
-    
+
     // Note: Expandable rows are now handled by the universal ExpandableRows utility
     // which auto-initializes after rendering is complete
   }
@@ -666,12 +681,12 @@ window.OBC.SectionModules.sect02 = (function () {
     getDropdownOptions: getDropdownOptions,
     getLayout: getLayout,
     onSectionRendered: onSectionRendered,
-    
+
     // State management functions
     getFieldValue: getFieldValue,
     getNumericValue: getNumericValue,
     setCalculatedValue: setCalculatedValue,
-    
+
     // Legacy expandable rows functions (now handled by universal system)
     toggleOccupancyRows: toggleOccupancyRows,
     addOccupancyRow: addOccupancyRow,

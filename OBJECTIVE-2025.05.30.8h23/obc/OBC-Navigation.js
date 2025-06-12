@@ -14,7 +14,7 @@ function initializeUIHandlers() {
   var tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]'),
   );
-  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  var _tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
 
@@ -31,14 +31,16 @@ function initializeUIHandlers() {
         window.OBC.StateManager &&
         typeof window.OBC.StateManager.resetFields === "function"
       ) {
-        if (confirm("Are you sure you want to reset? This will clear user-modified values but keep imported data.")) {
+        if (
+          confirm(
+            "Are you sure you want to reset? This will clear user-modified values but keep imported data.",
+          )
+        ) {
           window.OBC.StateManager.resetFields();
           console.log("OBC Matrix: Fields reset successfully");
         }
       } else {
-        console.error(
-          "OBCStateManager or resetFields function not found.",
-        );
+        console.error("OBCStateManager or resetFields function not found.");
         alert("Error: Reset function is not available.");
       }
     });
@@ -51,7 +53,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Get DOM elements
   const body = document.body;
-  const keyValuesSection = document.getElementById("keyValues") || document.getElementById("buildingInfo"); // Support both section types
+  const keyValuesSection =
+    document.getElementById("keyValues") ||
+    document.getElementById("buildingInfo"); // Support both section types
   const expandCollapseBtn = document.getElementById("expand-collapse-all");
   const layoutToggleButton = document.querySelector(".layout-toggle-btn");
   const sections = document.querySelectorAll(".section");
@@ -70,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plumbingFixtures: "bi-droplet",
     complianceDesign: "bi-check-circle",
     notes: "bi-card-text",
-    
+
     // Legacy TEUI sections (for compatibility)
     climateCalculations: "bi-thermometer-half",
     actualTargetEnergy: "bi-bullseye",
@@ -94,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tabLabels = {
     // OBC Matrix sections - Short mnemonics for tabs
     buildingInfo: "Info",
-    buildingOccupancy: "Occupancy", 
+    buildingOccupancy: "Occupancy",
     buildingAreas: "Areas",
     firefightingSystems: "Fire",
     structuralRequirements: "Structure",
@@ -103,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plumbingFixtures: "Plumbing",
     complianceDesign: "Compliance",
     notes: "Notes",
-    
+
     // Legacy TEUI sections (for compatibility)
     climateCalculations: "Climate",
     actualTargetEnergy: "Target",
@@ -135,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
     plumbingFixtures: "Section 8. Plumbing Fixture Requirements",
     complianceDesign: "Section 9. Compliance & Design",
     notes: "Section 10. Notes",
-    
+
     // Legacy TEUI sections (for compatibility)
     climateCalculations: "Climate Calculations",
     actualTargetEnergy: "T.3 Actual vs. Target Energy & Carbon",
@@ -294,7 +298,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.body.classList.contains("horizontal-layout")) {
         // Get the app wrapper or sticky header section
         const appWrapper = document.getElementById("app-wrapper");
-        const stickySection = document.getElementById("keyValues") || document.getElementById("buildingInfo");
+        const _stickySection =
+          document.getElementById("keyValues") ||
+          document.getElementById("buildingInfo");
 
         if (appWrapper) {
           // Scroll to position the app wrapper at the top
@@ -483,7 +489,9 @@ document.addEventListener("DOMContentLoaded", function () {
           header.setAttribute("aria-expanded", "true");
         }
       });
-    } catch (e) {}
+    } catch (_e) {
+      // Ignore localStorage errors
+    }
   }
 
   // Function to restore user preferences from localStorage
@@ -748,7 +756,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Note: ExcelLocationHandler functionality removed 
+  // Note: ExcelLocationHandler functionality removed
   // OBC Matrix is a building code compliance form, not an energy calculator
   // Location/weather data handling is specific to TEUI Calculator
 
@@ -775,7 +783,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Update sticky header height and tab container position
   function updateStickyElementHeights() {
-    const stickySection = document.getElementById("keyValues") || document.getElementById("buildingInfo");
+    const stickySection =
+      document.getElementById("keyValues") ||
+      document.getElementById("buildingInfo");
     const tabContainer = document.querySelector(".tab-container");
 
     if (stickySection && tabContainer) {
@@ -800,17 +810,17 @@ document.addEventListener("DOMContentLoaded", function () {
   if (window.OBC && window.OBC.FieldManager) {
     // Initialize FieldManager (core requirement for OBC Matrix)
     window.OBC.FieldManager.renderAllSections(); // FieldManager handles initial rendering
-    
+
     // Initialize OBC StateManager and global input handlers
     if (window.OBC.StateManager) {
       window.OBC.StateManager.initialize();
-      
+
       // Initialize global input handlers after sections are rendered
       setTimeout(() => {
         window.OBC.StateManager.initializeGlobalInputHandlers();
       }, 100); // Reduced delay for faster startup
     }
-    
+
     // OBC Matrix doesn't use these TEUI-specific modules:
     // - StateManager (has its own OBC.StateManager)
     // - SectionIntegrator (form-based, no complex integrations)

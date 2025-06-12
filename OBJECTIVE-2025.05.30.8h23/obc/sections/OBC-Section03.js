@@ -57,19 +57,19 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.22: Building Area Row 1
-    "3.22": {
+    3.22: {
       id: "3.22",
       rowId: "3.22",
       label: "",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "building-areas",
             "data-expandable-rows": "3.23,3.24",
-            "data-default-visible": "1"
-          }
+            "data-default-visible": "1",
+          },
         },
         b: { content: "22" },
         c: { content: "" },
@@ -119,7 +119,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.23: Building Area Row 2
-    "3.23": {
+    3.23: {
       id: "3.23",
       rowId: "3.23",
       label: "",
@@ -172,7 +172,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.24: Building Area Row 3
-    "3.24": {
+    3.24: {
       id: "3.24",
       rowId: "3.24",
       label: "",
@@ -225,7 +225,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.25: Building Area Total
-    "3.25": {
+    3.25: {
       id: "3.25",
       rowId: "3.25",
       label: "",
@@ -272,7 +272,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.26: Gross Area Header
-    "3.26": {
+    3.26: {
       id: "3.26",
       rowId: "3.26",
       label: "GROSS AREA (m²)",
@@ -298,19 +298,19 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.27: Gross Area Row 1
-    "3.27": {
+    3.27: {
       id: "3.27",
       rowId: "3.27",
       label: "",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "gross-areas",
             "data-expandable-rows": "3.28,3.29",
-            "data-default-visible": "1"
-          }
+            "data-default-visible": "1",
+          },
         },
         b: { content: "27" },
         c: { content: "" },
@@ -360,7 +360,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.28: Gross Area Row 2
-    "3.28": {
+    3.28: {
       id: "3.28",
       rowId: "3.28",
       label: "",
@@ -413,7 +413,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.29: Gross Area Row 3
-    "3.29": {
+    3.29: {
       id: "3.29",
       rowId: "3.29",
       label: "",
@@ -513,7 +513,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.31: Mezzanine Area Header
-    "3.31": {
+    3.31: {
       id: "3.31",
       rowId: "3.31",
       label: "MEZZANINE AREA (m²)",
@@ -539,19 +539,19 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.32: Mezzanine Area Row 1
-    "3.32": {
+    3.32: {
       id: "3.32",
       rowId: "3.32",
       label: "",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "mezzanine-areas",
             "data-expandable-rows": "3.33,3.34",
-            "data-default-visible": "1"
-          }
+            "data-default-visible": "1",
+          },
         },
         b: { content: "32" },
         c: { content: "" },
@@ -609,7 +609,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.33: Mezzanine Area Row 2
-    "3.33": {
+    3.33: {
       id: "3.33",
       rowId: "3.33",
       label: "",
@@ -670,7 +670,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.34: Mezzanine Area Row 3
-    "3.34": {
+    3.34: {
       id: "3.34",
       rowId: "3.34",
       label: "",
@@ -731,7 +731,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.35: Mezzanine Area Total
-    "3.35": {
+    3.35: {
       id: "3.35",
       rowId: "3.35",
       label: "",
@@ -793,7 +793,10 @@ window.OBC.SectionModules.sect03 = (function () {
         i: { content: "", classes: ["section-subheader"] },
         j: { content: "", classes: ["section-subheader"] },
         k: { content: "", classes: ["section-subheader"] },
-        l: { content: "OBC [A] 1.4.1.2. & 3.2.1.1.", classes: ["section-subheader"] },
+        l: {
+          content: "OBC [A] 1.4.1.2. & 3.2.1.1.",
+          classes: ["section-subheader"],
+        },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
         o: {
@@ -804,7 +807,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.36: Building Height
-    "3.36": {
+    3.36: {
       id: "3.36",
       rowId: "3.36",
       label: "",
@@ -845,7 +848,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.37: Building Height Below Grade
-    "3.37": {
+    3.37: {
       id: "3.37",
       rowId: "3.37",
       label: "",
@@ -880,7 +883,7 @@ window.OBC.SectionModules.sect03 = (function () {
     },
 
     // Row 3.38: High Building
-    "3.38": {
+    3.38: {
       id: "3.38",
       rowId: "3.38",
       label: "HIGH BUILDING",
@@ -1087,21 +1090,28 @@ window.OBC.SectionModules.sect03 = (function () {
     if (window.OBC?.StateManager?.getValue) {
       const stateValue = window.OBC.StateManager.getValue(fieldId);
       if (stateValue !== null && stateValue !== undefined) {
-        const numericValue = window.OBC.parseNumeric ? 
-          window.OBC.parseNumeric(stateValue, defaultValue) : 
-          parseFloat(stateValue.toString().replace(/,/g, ''));
+        const numericValue = window.OBC.parseNumeric
+          ? window.OBC.parseNumeric(stateValue, defaultValue)
+          : parseFloat(stateValue.toString().replace(/,/g, ""));
         return isNaN(numericValue) ? defaultValue : numericValue;
       }
     }
-    
+
     // Fallback to DOM
     const value = getFieldValue(fieldId);
-    const cleanValue = value.toString().replace(/,/g, '').replace(/[^\d.-]/g, '');
+    const cleanValue = value
+      .toString()
+      .replace(/,/g, "")
+      .replace(/[^\d.-]/g, "");
     const numericValue = parseFloat(cleanValue);
     return isNaN(numericValue) ? defaultValue : numericValue;
   }
 
-  function setCalculatedValue(fieldId, rawValue, formatType = "number-2dp-comma") {
+  function setCalculatedValue(
+    fieldId,
+    rawValue,
+    formatType = "number-2dp-comma",
+  ) {
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
       // Use TEUI formatNumber if available, otherwise fallback with proper thousands separators
@@ -1111,26 +1121,30 @@ window.OBC.SectionModules.sect03 = (function () {
           formattedValue = window.OBC.formatNumber(rawValue, formatType);
         } else {
           // Ensure thousands separators are included in fallback
-          formattedValue = rawValue.toLocaleString('en-US', {
+          formattedValue = rawValue.toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-            useGrouping: true  // Explicitly enable thousands separators
+            useGrouping: true, // Explicitly enable thousands separators
           });
         }
       } else {
         formattedValue = rawValue;
       }
-      
+
       element.textContent = formattedValue;
-      
+
       // Add calculated value styling and remove user input styling
-      element.classList.add('calculated-value');
-      element.classList.remove('user-input', 'user-modified', 'editing-intent');
-      element.removeAttribute('contenteditable');
-      
+      element.classList.add("calculated-value");
+      element.classList.remove("user-input", "user-modified", "editing-intent");
+      element.removeAttribute("contenteditable");
+
       // Register value with StateManager
       if (window.OBC?.StateManager?.setValue) {
-        window.OBC.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+        window.OBC.StateManager.setValue(
+          fieldId,
+          rawValue.toString(),
+          "calculated",
+        );
       }
     }
   }
@@ -1160,9 +1174,9 @@ window.OBC.SectionModules.sect03 = (function () {
 
     // Row 25 vertical totals (sum of all area rows)
     const i25Total = i22 + i23 + i24; // Sum of EXISTING column
-    const j25Total = j22 + j23 + j24; // Sum of NEW column  
+    const j25Total = j22 + j23 + j24; // Sum of NEW column
     const k25Total = k22Total + k23Total + k24Total; // Sum of TOTAL column
-    
+
     setCalculatedValue("i_25", i25Total);
     setCalculatedValue("j_25", j25Total);
     setCalculatedValue("k_25", k25Total);
@@ -1184,12 +1198,12 @@ window.OBC.SectionModules.sect03 = (function () {
     const j29 = getNumericValue("j_29", 0);
     const k29Total = i29 + j29;
     setCalculatedValue("k_29", k29Total);
-    
+
     // Row 30 gross area totals (sum of rows 27, 28, 29)
     const i30Total = i27 + i28 + i29;
     const j30Total = j27 + j28 + j29;
     const k30Total = k27Total + k28Total + k29Total;
-    
+
     setCalculatedValue("i_30", i30Total);
     setCalculatedValue("j_30", j30Total);
     setCalculatedValue("k_30", k30Total);
@@ -1211,12 +1225,12 @@ window.OBC.SectionModules.sect03 = (function () {
     const j34 = getNumericValue("j_34", 0);
     const k34Total = i34 + j34;
     setCalculatedValue("k_34", k34Total);
-    
+
     // Row 35 mezzanine area totals (sum of rows 32, 33, 34)
     const i35Total = i32 + i33 + i34;
     const j35Total = j32 + j33 + j34;
     const k35Total = k32Total + k33Total + k34Total;
-    
+
     setCalculatedValue("i_35", i35Total);
     setCalculatedValue("j_35", j35Total);
     setCalculatedValue("k_35", k35Total);
@@ -1245,21 +1259,34 @@ window.OBC.SectionModules.sect03 = (function () {
 
   function checkS03State() {
     console.log("=== S03 STATE CHECK ===");
-    console.log("Section 03 module loaded:", !!window.OBC?.SectionModules?.sect03);
+    console.log(
+      "Section 03 module loaded:",
+      !!window.OBC?.SectionModules?.sect03,
+    );
     console.log("StateManager available:", !!window.OBC?.StateManager);
-    
-    const testFields = ['e_22', 'g_22', 'e_23', 'g_23', 'i_22', 'i_23', 'e_24', 'g_24', 'i_24'];
-    testFields.forEach(fieldId => {
+
+    const testFields = [
+      "e_22",
+      "g_22",
+      "e_23",
+      "g_23",
+      "i_22",
+      "i_23",
+      "e_24",
+      "g_24",
+      "i_24",
+    ];
+    testFields.forEach((fieldId) => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       const stateValue = window.OBC?.StateManager?.getValue(fieldId);
       const numericValue = getNumericValue(fieldId);
-      
+
       console.log(`${fieldId}:`);
       console.log(`  DOM: "${element?.textContent || "ELEMENT NOT FOUND"}"`);
       console.log(`  State: ${stateValue || "UNDEFINED"}`);
       console.log(`  Numeric: ${numericValue}`);
     });
-    
+
     console.log("=== END S03 CHECK ===");
     return true;
   }
@@ -1272,50 +1299,67 @@ window.OBC.SectionModules.sect03 = (function () {
   // Custom numeric formatting for Section 03 fields (if needed)
   function formatSection03Field(fieldId, value) {
     // Determine decimal places for different field types
-    const heightStoriesFields = ['d_36', 'd_37']; // 1 decimal place
-    const heightMetresFields = ['j_36']; // 2 decimal places  
+    const heightStoriesFields = ["d_36", "d_37"]; // 1 decimal place
+    const heightMetresFields = ["j_36"]; // 2 decimal places
     const areaFields = [
-      'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
-      'i_27', 'j_27', 'k_27', 'i_28', 'j_28', 'k_28', 'i_29', 'j_29', 'k_29',
-      'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
+      "i_22",
+      "j_22",
+      "i_23",
+      "j_23",
+      "i_24",
+      "j_24",
+      "i_27",
+      "j_27",
+      "k_27",
+      "i_28",
+      "j_28",
+      "k_28",
+      "i_29",
+      "j_29",
+      "k_29",
+      "i_32",
+      "j_32",
+      "i_33",
+      "j_33",
+      "i_34",
+      "j_34",
     ];
 
-        const numValue = window.OBC?.parseNumeric ?
-      window.OBC.parseNumeric(value, NaN) : 
-      parseFloat(value);
+    const numValue = window.OBC?.parseNumeric
+      ? window.OBC.parseNumeric(value, NaN)
+      : parseFloat(value);
 
     if (isNaN(numValue)) return value;
 
     // Apply formatting based on field type
     if (heightStoriesFields.includes(fieldId)) {
       // Stories (1 decimal place, no commas)
-            return window.OBC?.formatNumber ?
-        window.OBC.formatNumber(numValue, "number-1dp") :
-        numValue.toFixed(1);
+      return window.OBC?.formatNumber
+        ? window.OBC.formatNumber(numValue, "number-1dp")
+        : numValue.toFixed(1);
     } else if (heightMetresFields.includes(fieldId)) {
       // Metres (2 decimal places, no commas for small numbers)
-      return window.OBC?.formatNumber ? 
-        window.OBC.formatNumber(numValue, "number-2dp") :
-        numValue.toFixed(2);
+      return window.OBC?.formatNumber
+        ? window.OBC.formatNumber(numValue, "number-2dp")
+        : numValue.toFixed(2);
     } else if (areaFields.includes(fieldId)) {
       // Area fields (2 decimal places with commas)
-      return window.OBC?.formatNumber ? 
-        window.OBC.formatNumber(numValue, "number-2dp-comma") :
-        numValue.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-          useGrouping: true
-        });
+      return window.OBC?.formatNumber
+        ? window.OBC.formatNumber(numValue, "number-2dp-comma")
+        : numValue.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true,
+          });
     } else {
       // Default formatting
-      return window.OBC?.formatNumber ? 
-        window.OBC.formatNumber(numValue, "number-2dp") :
-        numValue.toFixed(2);
+      return window.OBC?.formatNumber
+        ? window.OBC.formatNumber(numValue, "number-2dp")
+        : numValue.toFixed(2);
     }
   }
 
   function initializeEventHandlers() {
-    
     // Use the global input handler from OBC-StateManager.js instead of section-specific handlers
     // This provides proper "graceful" behavior where accidental clicks are forgiven
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
@@ -1325,84 +1369,113 @@ window.OBC.SectionModules.sect03 = (function () {
     // Register StateManager listeners for calculation triggers
     if (window.OBC?.StateManager?.addListener) {
       const calculationTriggers = [
-        'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
-        'i_27', 'j_27', 'i_28', 'j_28', 'i_29', 'j_29',
-        'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
+        "i_22",
+        "j_22",
+        "i_23",
+        "j_23",
+        "i_24",
+        "j_24",
+        "i_27",
+        "j_27",
+        "i_28",
+        "j_28",
+        "i_29",
+        "j_29",
+        "i_32",
+        "j_32",
+        "i_33",
+        "j_33",
+        "i_34",
+        "j_34",
       ];
-      
-      calculationTriggers.forEach(fieldId => {
+
+      calculationTriggers.forEach((fieldId) => {
         window.OBC.StateManager.addListener(fieldId, () => {
-            if (!window.sectionCalculationInProgress) {
-              performAllCalculations();
-            }
-          });
+          if (!window.sectionCalculationInProgress) {
+            performAllCalculations();
+          }
+        });
       });
     }
 
     // ALSO add direct DOM event listeners as backup for immediate responsiveness
     const triggerFields = [
-      'i_22', 'j_22', 'i_23', 'j_23', 'i_24', 'j_24',
-      'i_27', 'j_27', 'i_28', 'j_28', 'i_29', 'j_29', 
-      'i_32', 'j_32', 'i_33', 'j_33', 'i_34', 'j_34'
+      "i_22",
+      "j_22",
+      "i_23",
+      "j_23",
+      "i_24",
+      "j_24",
+      "i_27",
+      "j_27",
+      "i_28",
+      "j_28",
+      "i_29",
+      "j_29",
+      "i_32",
+      "j_32",
+      "i_33",
+      "j_33",
+      "i_34",
+      "j_34",
     ];
 
-    triggerFields.forEach(fieldId => {
+    triggerFields.forEach((fieldId) => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         // Add input event listeners for immediate calculation updates
-        ['blur', 'input', 'change'].forEach(eventType => {
+        ["blur", "input", "change"].forEach((eventType) => {
           element.addEventListener(eventType, () => {
             // Small delay to allow StateManager to update first
             setTimeout(() => {
-            if (!window.sectionCalculationInProgress) {
-              performAllCalculations();
-            }
+              if (!window.sectionCalculationInProgress) {
+                performAllCalculations();
+              }
             }, 50);
           });
-      });
-    }
+        });
+      }
     });
-    
+
     window.OBC.sect03.initialized = true;
   }
 
   function onSectionRendered() {
-    
     // Initialize default state values in StateManager
     if (window.OBC?.StateManager) {
       const defaultValues = {
-        'd_22': 'Enter area description',
-        'd_23': 'Enter area description',
-        'd_24': 'Enter area description', 
-        'i_22': '1000.00',
-        'j_22': '100.00',
-        'i_23': '200.00',
-        'j_23': '300.00',
-        'i_24': '200.00',
-        'j_24': '300.00',
+        d_22: "Enter area description",
+        d_23: "Enter area description",
+        d_24: "Enter area description",
+        i_22: "1000.00",
+        j_22: "100.00",
+        i_23: "200.00",
+        j_23: "300.00",
+        i_24: "200.00",
+        j_24: "300.00",
         // Gross area defaults
-        'i_27': '500.00',
-        'j_27': '150.00', 
-        'k_27': '650.00',
-        'i_28': '300.00',
-        'j_28': '75.00',
-        'k_28': '375.00',
-        'i_29': '250.00',
-        'j_29': '125.00',
-        'k_29': '375.00',
+        i_27: "500.00",
+        j_27: "150.00",
+        k_27: "650.00",
+        i_28: "300.00",
+        j_28: "75.00",
+        k_28: "375.00",
+        i_29: "250.00",
+        j_29: "125.00",
+        k_29: "375.00",
         // Mezzanine area defaults
-        'i_32': '50.00',
-        'j_32': '25.00',
-        'i_33': '30.00',
-        'j_33': '15.00',
-        'i_34': '20.00',
-        'j_34': '10.00',
+        i_32: "50.00",
+        j_32: "25.00",
+        i_33: "30.00",
+        j_33: "15.00",
+        i_34: "20.00",
+        j_34: "10.00",
         // Building height defaults
-        'd_36': '2.0',  // Stories above grade
-        'd_37': '1.0',  // Stories below grade
-        'j_36': '6.20'  // Metres above grade
+        d_36: "2.0", // Stories above grade
+        d_37: "1.0", // Stories below grade
+        j_36: "6.20", // Metres above grade
       };
-      
+
       Object.entries(defaultValues).forEach(([fieldId, defaultValue]) => {
         // Only set default if no value exists (won't overwrite user-modified values)
         if (!window.OBC.StateManager.getValue(fieldId)) {
@@ -1410,7 +1483,7 @@ window.OBC.SectionModules.sect03 = (function () {
         }
       });
     }
-    
+
     // Initialize event handlers
     if (!window.OBC.sect03.initialized) {
       initializeEventHandlers();
@@ -1418,7 +1491,7 @@ window.OBC.SectionModules.sect03 = (function () {
 
     // Perform initial calculations after a brief delay to ensure full initialization
     setTimeout(() => {
-        performAllCalculations();
+      performAllCalculations();
     }, 100);
   }
 
@@ -1431,22 +1504,22 @@ window.OBC.SectionModules.sect03 = (function () {
     getDropdownOptions: getDropdownOptions,
     getLayout: getLayout,
     onSectionRendered: onSectionRendered,
-    
+
     // State management functions
     getFieldValue: getFieldValue,
     getNumericValue: getNumericValue,
     setCalculatedValue: setCalculatedValue,
-    
+
     // Calculation functions
     calculateAreaTotals: calculateAreaTotals,
     calculateGrossAreaTotals: calculateGrossAreaTotals,
     calculateMezzanineAreaTotals: calculateMezzanineAreaTotals,
     performAllCalculations: performAllCalculations,
-    
+
     // Event handling functions
     initializeEventHandlers: initializeEventHandlers,
     formatSection03Field: formatSection03Field,
-    
+
     // Diagnostic functions
     checkS03State: checkS03State,
   };

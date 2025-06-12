@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect07 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-  
+
   const SECTION_CONFIG = {
     name: "fireResistance",
     excelRowStart: 66,
@@ -30,7 +30,7 @@ window.OBC.SectionModules.sect07 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-  
+
   const dropdownOptions = {
     // TODO: Add fire resistance rating options from CSV
     fireRatings: [
@@ -40,14 +40,14 @@ window.OBC.SectionModules.sect07 = (function () {
       { value: "1.5", name: "1.5" },
       { value: "2", name: "2" },
       { value: "3", name: "3" },
-      { value: "4", name: "4" }
+      { value: "4", name: "4" },
     ],
     yesNoOptions: [
       { value: "-", name: "Select..." },
       { value: "Yes", name: "Yes" },
       { value: "No", name: "No" },
-      { value: "N/A", name: "N/A" }
-    ]
+      { value: "N/A", name: "N/A" },
+    ],
   };
 
   //==========================================================================
@@ -55,7 +55,6 @@ window.OBC.SectionModules.sect07 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    
     // SUBHEADER ROW
     header: {
       id: "7.h",
@@ -69,8 +68,14 @@ window.OBC.SectionModules.sect07 = (function () {
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
         h: { content: "RATING (H)", classes: ["section-subheader"] },
-        i: { content: "SUPPORTING ASSEMBLY (H)", classes: ["section-subheader"] },
-        j: { content: "NONCOMBUSTIBLE IN LIEU OF RATING?", classes: ["section-subheader"] },
+        i: {
+          content: "SUPPORTING ASSEMBLY (H)",
+          classes: ["section-subheader"],
+        },
+        j: {
+          content: "NONCOMBUSTIBLE IN LIEU OF RATING?",
+          classes: ["section-subheader"],
+        },
         k: { content: "K", classes: ["section-subheader"] },
         l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
@@ -80,7 +85,7 @@ window.OBC.SectionModules.sect07 = (function () {
     },
 
     // Row 66: 3.21 Required Fire Resistance Ratings
-    "7.66": {
+    7.66: {
       id: "7.66",
       rowId: "7.66",
       label: "REQUIRED FIRE RESISTANCE RATINGS",
@@ -97,13 +102,13 @@ window.OBC.SectionModules.sect07 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 67: Storeys Below Grade
-    "7.67": {
+    7.67: {
       id: "7.67",
       rowId: "7.67",
       label: "STOREYS BELOW GRADE",
@@ -116,7 +121,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         i: {
           fieldId: "i_67",
@@ -125,7 +130,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         j: {
           fieldId: "j_67",
@@ -134,20 +139,20 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         o: {
           fieldId: "o_67",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 68: Floors Over Basement
-    "7.68": {
+    7.68: {
       id: "7.68",
       rowId: "7.68",
       label: "FLOORS OVER BASEMENT",
@@ -160,7 +165,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         i: {
           fieldId: "i_68",
@@ -169,7 +174,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         j: {
           fieldId: "j_68",
@@ -178,20 +183,20 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         o: {
           fieldId: "o_68",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 69: Floors
-    "7.69": {
+    7.69: {
       id: "7.69",
       rowId: "7.69",
       label: "FLOORS",
@@ -204,7 +209,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         i: {
           fieldId: "i_69",
@@ -213,7 +218,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         j: {
           fieldId: "j_69",
@@ -222,16 +227,16 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         o: {
           fieldId: "o_69",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 70: Mezzanine
@@ -248,7 +253,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         i: {
           fieldId: "i_70",
@@ -257,7 +262,7 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         j: {
           fieldId: "j_70",
@@ -266,20 +271,20 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions
+          options: dropdownOptions.yesNoOptions,
         },
         o: {
           fieldId: "o_70",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 71: Roof
-    "7.71": {
+    7.71: {
       id: "7.71",
       rowId: "7.71",
       label: "ROOF",
@@ -291,13 +296,13 @@ window.OBC.SectionModules.sect07 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 72: 3.22 Spatial Separation
-    "7.72": {
+    7.72: {
       id: "7.72",
       rowId: "7.72",
       label: "SPATIAL SEPARATION",
@@ -318,13 +323,13 @@ window.OBC.SectionModules.sect07 = (function () {
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Row 73-76: Spatial Separation Rows
-    "7.73": {
+    7.73: {
       id: "7.73",
       rowId: "7.73",
       label: "Spatial Separation 1",
@@ -334,35 +339,35 @@ window.OBC.SectionModules.sect07 = (function () {
           type: "editable",
           value: "Exposing Face",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         e: {
           fieldId: "e_73",
           type: "num-editable",
           value: "0",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         f: {
           fieldId: "f_73",
           type: "num-editable",
           value: "0",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         g: {
           fieldId: "g_73",
           type: "editable",
           value: "/",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         h: {
           fieldId: "h_73",
           type: "editable",
           value: "/",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_73",
@@ -371,30 +376,30 @@ window.OBC.SectionModules.sect07 = (function () {
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
-          options: dropdownOptions.fireRatings
+          options: dropdownOptions.fireRatings,
         },
         j: {
           fieldId: "j_73",
           type: "editable",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         k: {
           fieldId: "k_73",
           type: "editable",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["user-input"]
+          classes: ["user-input"],
         },
         o: {
           fieldId: "o_73",
           type: "editable",
           value: "enter notes here...",
           section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"]
-        }
-      }
+          classes: ["notes-column", "user-input"],
+        },
+      },
     },
 
     // Additional spatial separation rows (74-76) would follow the same pattern...
@@ -407,12 +412,12 @@ window.OBC.SectionModules.sect07 = (function () {
 
   function getFields() {
     const fields = {};
-    
+
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
 
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -421,7 +426,8 @@ window.OBC.SectionModules.sect07 = (function () {
             section: cell.section || SECTION_CONFIG.name,
           };
 
-          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.dropdownId)
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
           if (cell.options) fields[cell.fieldId].options = cell.options;
         }
       });
@@ -432,7 +438,7 @@ window.OBC.SectionModules.sect07 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-    
+
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -447,7 +453,7 @@ window.OBC.SectionModules.sect07 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    
+
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -470,8 +476,22 @@ window.OBC.SectionModules.sect07 = (function () {
       ],
     };
 
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"];
-    
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -491,7 +511,7 @@ window.OBC.SectionModules.sect07 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 07 event handlers
-    
+
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
@@ -514,4 +534,4 @@ window.OBC.SectionModules.sect07 = (function () {
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
   };
-})(); 
+})();

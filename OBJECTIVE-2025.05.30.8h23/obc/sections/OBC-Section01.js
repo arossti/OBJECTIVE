@@ -53,7 +53,7 @@ window.OBC.SectionModules.sect01 = (function () {
         b: { label: "Name of Practice" },
         c: {
           fieldId: "c_3", // Maps to Excel Column C
-          type: "editable", 
+          type: "editable",
           value: "Enter practice name",
           section: "buildingInfo",
           placeholder: "Enter practice name",
@@ -257,14 +257,15 @@ window.OBC.SectionModules.sect01 = (function () {
     // Row 10: OAA Member Registration (new feature, not part of Excel DOM)
     10: {
       id: "1.10", // Excel Row 10
-      rowId: "1.10", 
+      rowId: "1.10",
       label: "OAA MEMBER REGISTRATION",
       cells: {
         b: { label: "OAA MEMBER REGISTRATION" },
         c: {
           fieldId: "c_10", // Maps to Excel Column C
           type: "editable",
-          value: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
+          value:
+            "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
           section: "buildingInfo",
           placeholder: "Enter OAA member directory URL",
           classes: ["no-wrap"],
@@ -283,7 +284,6 @@ window.OBC.SectionModules.sect01 = (function () {
         n: { content: "" },
       },
     },
-
   };
 
   //==========================================================================
@@ -443,7 +443,7 @@ window.OBC.SectionModules.sect01 = (function () {
   }
 
   //==========================================================================
-  // FLOATING STAMP UPLOAD FUNCTIONALITY  
+  // FLOATING STAMP UPLOAD FUNCTIONALITY
   //==========================================================================
 
   //==========================================================================
@@ -452,22 +452,25 @@ window.OBC.SectionModules.sect01 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 01 event handlers
-    
+
     // ✅ MANDATORY: Use global input handler for graceful behavior
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
-    
+
     window.OBC.sect01.initialized = true;
   }
 
   function addFloatingStampUpload() {
-    const sectionContent = document.querySelector('[data-render-section="buildingInfo"]');
-    if (!sectionContent || document.getElementById('floating-stamp-upload')) return;
+    const sectionContent = document.querySelector(
+      '[data-render-section="buildingInfo"]',
+    );
+    if (!sectionContent || document.getElementById("floating-stamp-upload"))
+      return;
 
     // Create floating stamp upload container
-    const stampContainer = document.createElement('div');
-    stampContainer.id = 'floating-stamp-upload';
+    const stampContainer = document.createElement("div");
+    stampContainer.id = "floating-stamp-upload";
     stampContainer.innerHTML = `
       <div class="stamp-upload-container">
         <div class="stamp-placeholder" id="floating-stamp-placeholder">
@@ -481,7 +484,7 @@ window.OBC.SectionModules.sect01 = (function () {
       </div>
     `;
 
-    // Add CSS for floating positioning  
+    // Add CSS for floating positioning
     stampContainer.style.cssText = `
       position: absolute;
       top: 20px;
@@ -492,7 +495,7 @@ window.OBC.SectionModules.sect01 = (function () {
     `;
 
     // Position relative to section
-    sectionContent.style.position = 'relative';
+    sectionContent.style.position = "relative";
     sectionContent.appendChild(stampContainer);
 
     // Initialize stamp upload functionality on the floating element
@@ -500,40 +503,40 @@ window.OBC.SectionModules.sect01 = (function () {
   }
 
   function initializeFloatingStampUpload() {
-    const placeholder = document.getElementById('floating-stamp-placeholder');
-    const fileInput = document.getElementById('floating-stamp-upload-input');
-    const preview = document.getElementById('floating-stamp-preview');
+    const placeholder = document.getElementById("floating-stamp-placeholder");
+    const fileInput = document.getElementById("floating-stamp-upload-input");
+    const preview = document.getElementById("floating-stamp-preview");
 
     if (!placeholder || !fileInput || !preview) return;
 
-    placeholder.addEventListener('click', () => {
+    placeholder.addEventListener("click", () => {
       fileInput.click();
     });
 
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
           preview.src = e.target.result;
-          preview.style.display = 'block';
-          placeholder.style.display = 'none';
+          preview.style.display = "block";
+          placeholder.style.display = "none";
         };
         reader.readAsDataURL(file);
       }
     });
 
     // Allow reset by clicking on the preview
-    preview.addEventListener('click', () => {
-      preview.style.display = 'none';
-      placeholder.style.display = 'flex';
-      fileInput.value = '';
+    preview.addEventListener("click", () => {
+      preview.style.display = "none";
+      placeholder.style.display = "flex";
+      fileInput.value = "";
     });
   }
 
   function onSectionRendered() {
     // Section 01 rendered - Building Information (OBC Matrix)
-    
+
     // Initialize any section-specific functionality after rendering
     if (!window.OBC.sect01.initialized) {
       initializeEventHandlers();
@@ -545,9 +548,9 @@ window.OBC.SectionModules.sect01 = (function () {
     }, 100);
 
     // Add custom CSS for stamp upload and Section 01 spacing
-    if (!document.getElementById('stamp-upload-styles')) {
-      const style = document.createElement('style');
-      style.id = 'stamp-upload-styles';
+    if (!document.getElementById("stamp-upload-styles")) {
+      const style = document.createElement("style");
+      style.id = "stamp-upload-styles";
       style.textContent = `
         /* Section 01 specific row spacing for stamp panel breathing room */
         [data-render-section="buildingInfo"] .row {
@@ -645,7 +648,7 @@ window.OBC.SectionModules.sect01 = (function () {
     getDropdownOptions: getDropdownOptions,
     getLayout: getLayout,
     onSectionRendered: onSectionRendered,
-    
+
     // State management functions
     getFieldValue: getFieldValue,
     getNumericValue: getNumericValue,
