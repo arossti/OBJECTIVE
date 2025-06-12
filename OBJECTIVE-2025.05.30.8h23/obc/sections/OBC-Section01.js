@@ -30,7 +30,7 @@ window.OBC.SectionModules.sect01 = (function () {
       cells: {
         b: { label: "Field Name", classes: ["section-subheader"] },
         c: { content: "User Edited Details", classes: ["section-subheader"] },
-        d: { content: "SEAL", classes: ["section-subheader"] },
+        d: { content: "", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
@@ -258,9 +258,9 @@ window.OBC.SectionModules.sect01 = (function () {
     10: {
       id: "1.10", // Excel Row 10
       rowId: "1.10",
-      label: "OAA MEMBER REGISTRATION",
+      label: "OAA Member Registration",
       cells: {
-        b: { label: "OAA MEMBER REGISTRATION" },
+        b: { label: "OAA Member Registration" },
         c: {
           fieldId: "c_10", // Maps to Excel Column C
           type: "editable",

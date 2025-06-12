@@ -393,10 +393,10 @@ window.OBC.SectionModules.sect02 = (function () {
     2.19: {
       id: "2.19",
       rowId: "2.19",
-      label: "SUPERIMPOSED MAJOR OCCUPANCIES",
+      label: "Superimposed Major Occupancies",
       cells: {
         b: { label: "3.03" },
-        c: { label: "SUPERIMPOSED MAJOR OCCUPANCIES" },
+        c: { label: "Superimposed Major Occupancies" },
         d: {
           fieldId: "d_19",
           type: "dropdown",

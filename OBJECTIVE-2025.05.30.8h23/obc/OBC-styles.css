@@ -710,6 +710,7 @@ option,
 
 /* =============== SECTION 03 LAYOUT OPTIMIZATION =============== */
 
+/* Section 03: Standard layout - shorter labels in Column C, longer user inputs in Column D */
 /* Section 03: Intelligent content-based column system */
 #buildingAreas .data-table {
     table-layout: auto; /* Content-based but controlled */
@@ -771,6 +772,149 @@ option,
 }
 
 /* =============== END SECTION 03 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 01 LAYOUT OPTIMIZATION =============== */
+
+/* Section 01: Unique layout - longer field labels in Column C, extra generous space for long URLs in Column D */
+/* Section 01: Intelligent content-based column system */
+#buildingInfo .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 01: Hide completely empty columns to maximize input space */
+#buildingInfo .data-table td:nth-child(1),  /* Column A - no expandable rows here */
+#buildingInfo .data-table td:nth-child(5),  /* Column E - empty */
+#buildingInfo .data-table td:nth-child(6),  /* Column F - empty */
+#buildingInfo .data-table td:nth-child(7),  /* Column G - empty */
+#buildingInfo .data-table td:nth-child(8),  /* Column H - empty */
+#buildingInfo .data-table td:nth-child(9),  /* Column I - empty */
+#buildingInfo .data-table td:nth-child(10), /* Column J - empty */
+#buildingInfo .data-table td:nth-child(11), /* Column K - empty */
+#buildingInfo .data-table td:nth-child(12), /* Column L - empty */
+#buildingInfo .data-table td:nth-child(13), /* Column M - empty */
+#buildingInfo .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 0 !important;     /* Completely hide empty columns */
+    padding: 0 !important;   /* Remove all padding */
+    border: none !important; /* Remove borders */
+    overflow: hidden !important;
+}
+
+/* Section 01: Controlled width for content columns - maximize input space */
+#buildingInfo .data-table td:nth-child(2) { width: 40px !important; }   /* Column B - row numbers */
+#buildingInfo .data-table td:nth-child(3) { width: 220px !important; }  /* Column C - field labels */
+#buildingInfo .data-table td:nth-child(4) { 
+    width: auto !important;       /* Column D - expand to fill available space */
+    min-width: 800px !important;  /* Ensure generous minimum width */
+    max-width: none !important;   /* Remove width constraints */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#buildingInfo .data-table td:nth-child(15) { width: 250px !important; } /* Column O - Notes */
+
+/* Section 01: Allow text inputs to fill expanded container */
+#buildingInfo .data-table td:nth-child(4) input,
+#buildingInfo .data-table td:nth-child(4) [contenteditable] {
+    width: 100% !important;
+    max-width: none !important;  /* Remove width constraints to allow full expansion */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 01: CRITICAL - Row 1.10 OAA MEMBER REGISTRATION must show full URL (regulatory requirement) */
+#buildingInfo tr:nth-of-type(10) td:nth-child(4),
+#buildingInfo tr:nth-of-type(10) td:nth-child(4) * {
+    width: auto !important;      /* Use the expanded auto width */
+    min-width: 800px !important; /* Ensure minimum space for full URL */
+    max-width: none !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+}
+
+/* Section 01: Notes column wrapping */
+#buildingInfo .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 01 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 02 LAYOUT OPTIMIZATION =============== */
+
+/* Section 02: Standard layout - shorter labels in Column C, longer user inputs in Column D */
+/* Section 02: Intelligent content-based column system */
+#buildingOccupancy .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 02: Hide completely empty columns to improve density */
+#buildingOccupancy .data-table td:nth-child(1),  /* Column A - no expandable rows here */
+#buildingOccupancy .data-table td:nth-child(6),  /* Column F - empty */
+#buildingOccupancy .data-table td:nth-child(7),  /* Column G - empty */
+#buildingOccupancy .data-table td:nth-child(8),  /* Column H - empty */
+#buildingOccupancy .data-table td:nth-child(9),  /* Column I - empty */
+#buildingOccupancy .data-table td:nth-child(10), /* Column J - empty */
+#buildingOccupancy .data-table td:nth-child(11), /* Column K - empty */
+#buildingOccupancy .data-table td:nth-child(13), /* Column M - empty */
+#buildingOccupancy .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 02: Controlled width for content columns */
+#buildingOccupancy .data-table td:nth-child(2) { width: 40px !important; }   /* Column B - row numbers */
+#buildingOccupancy .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - field labels */
+#buildingOccupancy .data-table td:nth-child(4) { 
+    width: 250px !important;  /* Column D - dropdowns */
+    max-width: 250px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#buildingOccupancy .data-table td:nth-child(5) { 
+    width: 300px !important;  /* Column E - descriptions */
+    max-width: 300px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#buildingOccupancy .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
+#buildingOccupancy .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
+
+/* Section 02: Ensure dropdowns and inputs don't expand beyond container */
+#buildingOccupancy .data-table td:nth-child(4) select,
+#buildingOccupancy .data-table td:nth-child(4) input,
+#buildingOccupancy .data-table td:nth-child(4) [contenteditable] {
+    width: 100% !important;
+    max-width: 240px !important; /* Slightly less than cell width */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 02: Description field handling */
+#buildingOccupancy .data-table td:nth-child(5) input,
+#buildingOccupancy .data-table td:nth-child(5) [contenteditable] {
+    width: 100% !important;
+    max-width: 290px !important; /* Slightly less than cell width */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 02: Notes column wrapping */
+#buildingOccupancy .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
 
 /* =============== Print Styling =============== */
 
