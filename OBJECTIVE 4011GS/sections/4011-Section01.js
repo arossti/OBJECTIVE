@@ -367,7 +367,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     try {
       // CRITICAL: Get Reference TEUI from Section 15 (final Reference calculation)
       const refTEUIFromS15 = window.TEUI.StateManager?.getValue("ref_h_136");
-      const refJ32FromS04 = window.TEUI.StateManager?.getValue("ref_j_32");
+      const _refJ32FromS04 = window.TEUI.StateManager?.getValue("ref_j_32");
       const refK32FromS04 = window.TEUI.StateManager?.getValue("ref_k_32");
 
       // Calculate Reference TEUI (e_10) using Section 15's final Reference calculation
@@ -1105,7 +1105,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   // Add recursion protection flag
   let calculationInProgress = false;
-  let isInitializing = false;
+  let _isInitializing = false;
 
   function updateTitleModeIndicators() {
     if (!window.TEUI || !window.TEUI.StateManager) return;
@@ -1205,7 +1205,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     inputFieldsToWatch.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(
         fieldId,
-        (newValue, oldValue, sourceFieldId) => {
+        (_newValue, _oldValue, _sourceFieldId) => {
           // Debounce for d_51 which can trigger rapid changes
           if (fieldId === "d_51") {
             setTimeout(() => {
@@ -1233,7 +1233,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     calculatedFieldsToWatch.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(
         fieldId,
-        (newValue, oldValue, sourceFieldId) => {
+        (newValue, oldValue, _sourceFieldId) => {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "g_32") {
@@ -1274,7 +1274,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   let isInitialized = false;
 
-  function initializeOnce() {
+  function _initializeOnce() {
     if (isInitialized) return;
     const sectionElement = document.getElementById("keyValues");
     if (sectionElement && window.TEUI?.StateManager) {
