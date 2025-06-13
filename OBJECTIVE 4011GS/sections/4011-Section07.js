@@ -316,7 +316,7 @@ window.TEUI.SectionModules.sect07 = (function () {
         hotWaterEnergyDemand =
           litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
         break;
-      case "By Engineer":
+      case "By Engineer": {
         hotWaterEnergyDemand = engineerValue;
         const waterHeatFactor = 0.0524;
         litersPerPersonDay =
@@ -324,6 +324,7 @@ window.TEUI.SectionModules.sect07 = (function () {
             ? engineerValue / 365 / waterHeatFactor / occupants / 0.4
             : 0;
         break;
+      }
       case "PHPP Method":
         litersPerPersonDay = 62.5;
         hotWaterEnergyDemand =
@@ -903,7 +904,7 @@ window.TEUI.SectionModules.sect07 = (function () {
       case "User Defined":
         litersPerPersonDay = userDefinedValue;
         break;
-      case "By Engineer":
+      case "By Engineer": {
         const engineerValue = getNumericValue("e_50");
         const waterHeatFactor = 0.0524;
         litersPerPersonDay =
@@ -911,6 +912,7 @@ window.TEUI.SectionModules.sect07 = (function () {
             ? engineerValue / 365 / waterHeatFactor / occupants / 0.4
             : 0;
         break;
+      }
       case "PHPP Method":
         litersPerPersonDay = 62.5;
         break;
@@ -1056,7 +1058,7 @@ window.TEUI.SectionModules.sect07 = (function () {
         finalEnergy = netDemand;
         setDualEngineValue("e_51", 0, 0, "current"); // Set gas to 0 for non-gas systems
         break;
-      case "Gas":
+      case "Gas": {
         const afue = getNumericValue("k_52", 0.9); // Use AFUE from k_52
         const recoveryPercent = getNumericValue("d_53") / 100; // Get d_53 as decimal
         const netDemandAfterRecovery_j52 = getNumericValue("j_52"); // Use j_52 as confirmed
@@ -1069,6 +1071,7 @@ window.TEUI.SectionModules.sect07 = (function () {
 
         setDualEngineValue("e_51", gasVolume, gasVolume, "current");
         break;
+      }
       case "Oil":
         // Oil volume calculation now handled by calculateK54() for k_54
         setDualEngineValue("e_51", 0, 0, "current"); // Set gas to 0 for non-gas systems
