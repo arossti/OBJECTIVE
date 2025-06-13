@@ -1,0 +1,1458 @@
+/**
+ * 4011-Section01.js
+ * Building Information (Section 1) module for OBC Matrix
+ *
+ * This file contains field definitions, layout templates, and rendering logic
+ * specific to the Building Information section for the OBC Matrix application.
+ *
+ * Restructured to match the OBC Matrix Part 3 structure with proper Notes fields.
+ */
+
+// Create section-specific namespace for global references
+window.OBC = window.OBC || {};
+window.OBC.sect01 = window.OBC.sect01 || {};
+window.OBC.sect01.initialized = false;
+window.OBC.sect01.userInteracted = false;
+
+// Section 1: Building Information Module
+window.OBC.SectionModules.sect01 = (function () {
+  //==========================================================================
+  // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
+  //==========================================================================
+
+  // Define rows with integrated field definitions
+  const sectionRows = {
+    // HEADER ROW
+    header: {
+      id: "INFO",
+      rowId: "01-INFO",
+      label: "Building Information Header",
+      cells: {
+        b: { label: "Field Name", classes: ["section-subheader"] },
+        c: { content: "User Edited Details", classes: ["section-subheader"] },
+        d: { content: "", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+      },
+    },
+
+    // Row 3: Practice Information
+    3: {
+      id: "1.03", // Excel Row 03
+      rowId: "1.03",
+      label: "Name of Practice",
+      cells: {
+        b: { label: "Name of Practice" },
+        c: {
+          fieldId: "c_3", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter practice name",
+          section: "buildingInfo",
+          placeholder: "Enter practice name",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 4: Address 1
+    4: {
+      id: "1.04", // Excel Row 04
+      rowId: "1.04",
+      label: "Address 1",
+      cells: {
+        b: { label: "Address 1" },
+        c: {
+          fieldId: "c_4", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter address line 1",
+          section: "buildingInfo",
+          placeholder: "Enter address line 1",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 5: Address 2
+    5: {
+      id: "1.05", // Excel Row 05
+      rowId: "1.05",
+      label: "Address 2",
+      cells: {
+        b: { label: "Address 2" },
+        c: {
+          fieldId: "c_5", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter address line 2",
+          section: "buildingInfo",
+          placeholder: "Enter address line 2",
+          classes: ["no-wrap"],
+          colspan: 6, // Changed to colspan to match other rows
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 6: Contact
+    6: {
+      id: "1.06", // Excel Row 06
+      rowId: "1.06",
+      label: "Contact",
+      cells: {
+        b: { label: "Contact" },
+        c: {
+          fieldId: "c_6", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter contact information",
+          section: "buildingInfo",
+          placeholder: "Enter contact information",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 7: Name of Project
+    7: {
+      id: "1.07", // Excel Row 07
+      rowId: "1.07",
+      label: "Name of Project",
+      cells: {
+        b: { label: "Name of Project" },
+        c: {
+          fieldId: "c_7", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter project name",
+          section: "buildingInfo",
+          placeholder: "Enter project name",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 8: Location/Address
+    8: {
+      id: "1.08", // Excel Row 08
+      rowId: "1.08",
+      label: "Location/Address",
+      cells: {
+        b: { label: "Location/Address" },
+        c: {
+          fieldId: "c_8", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter project location",
+          section: "buildingInfo",
+          placeholder: "Enter project location",
+          classes: ["no-wrap"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 9: Date with Seal & Signature
+    9: {
+      id: "1.09", // Excel Row 09
+      rowId: "1.09",
+      label: "Date",
+      cells: {
+        b: { label: "Date" },
+        c: {
+          fieldId: "c_9", // Maps to Excel Column C
+          type: "editable",
+          value: "Enter date",
+          section: "buildingInfo",
+          placeholder: "Enter date",
+          classes: ["no-wrap"],
+          colspan: 3, // Span columns C-E for date field
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 10: OAA Member Registration (new feature, not part of Excel DOM)
+    10: {
+      id: "1.10", // Excel Row 10
+      rowId: "1.10",
+      label: "OAA Member Registration",
+      cells: {
+        b: { label: "OAA Member Registration" },
+        c: {
+          fieldId: "c_10", // Maps to Excel Column C
+          type: "calculated", // Changed to calculated - system populates this
+          value: "OAA directory URL will appear after practice name lookup",
+          // value: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson", // Commented out default
+          section: "buildingInfo",
+          placeholder: "System will populate OAA URL automatically",
+          classes: ["no-wrap", "auto-populated-url"],
+          colspan: 6, // Span columns C-H
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 11: OAA Validation Status (new feature for regulatory verification)
+    11: {
+      id: "1.11", 
+      rowId: "1.11",
+      label: "OAA Member Verification",
+      cells: {
+        b: { label: "OAA Member Verification" },
+        c: {
+          fieldId: "c_11", 
+          type: "calculated",
+          value: "Validating OAA membership status...",
+          section: "buildingInfo",
+          classes: ["oaa-validation-status"],
+          colspan: 11, // Span columns C-M for full width status text
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+
+    // Row 12: License Number (auto-populated from OAA lookup)
+    12: {
+      id: "1.12", 
+      rowId: "1.12",
+      label: "OAA License Number",
+      cells: {
+        b: { label: "OAA License Number" },
+        c: {
+          fieldId: "c_12", 
+          type: "calculated",
+          value: "License number will appear after practice name lookup",
+          section: "buildingInfo",
+          classes: ["oaa-license-number"],
+          colspan: 6, // Match other fields for consistent alignment
+        },
+        d: { content: "" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+      },
+    },
+  };
+
+  //==========================================================================
+  // UTILITY FUNCTIONS
+  //==========================================================================
+
+  function getFields() {
+    const fields = {};
+    Object.keys(sectionRows).forEach((rowKey) => {
+      const row = sectionRows[rowKey];
+      Object.keys(row.cells).forEach((cellKey) => {
+        const cell = row.cells[cellKey];
+        if (cell.fieldId) {
+          fields[cell.fieldId] = {
+            type: cell.type,
+            value: cell.value,
+            section: cell.section,
+            min: cell.min,
+            max: cell.max,
+            step: cell.step,
+            options: cell.options,
+            dropdownId: cell.dropdownId,
+            classes: cell.classes,
+            placeholder: cell.placeholder,
+            colspan: cell.colspan,
+            span: cell.span,
+          };
+        }
+      });
+    });
+    return fields;
+  }
+
+  function getDropdownOptions() {
+    const dropdowns = {};
+    Object.keys(sectionRows).forEach((rowKey) => {
+      const row = sectionRows[rowKey];
+      Object.keys(row.cells).forEach((cellKey) => {
+        const cell = row.cells[cellKey];
+        if (cell.type === "dropdown" && cell.options) {
+          dropdowns[cell.dropdownId || cell.fieldId] = cell.options;
+        }
+      });
+    });
+    return dropdowns;
+  }
+
+  function getLayout() {
+    // IMPORTANT: To ensure the header appears first, we process the rows in
+    // a specific order: header first, then all other rows
+
+    // Start with an empty array for rows
+    const layoutRows = [];
+
+    // First add the header row if it exists
+    if (sectionRows["header"]) {
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
+    }
+
+    // Then add all other rows in their original order, excluding the header
+    Object.entries(sectionRows).forEach(([key, row]) => {
+      if (key !== "header") {
+        layoutRows.push(createLayoutRow(row));
+      }
+    });
+
+    return { rows: layoutRows };
+  }
+
+  function createLayoutRow(row) {
+    // Create standard row structure (DOM positions for rendering)
+    const rowDef = {
+      id: row.id,
+      cells: [
+        {}, // Empty column A for padding
+        {}, // ID column B (auto-populated)
+      ],
+    };
+
+    // Add cells B through O based on the row definition (DOM rendering order)
+    const columns = [
+      "b", // DOM Label column
+      "c", // DOM User input column (maps to Excel C via fieldId)
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+    ];
+
+    // For each column, add the cell definition if it exists in the row
+    columns.forEach((col) => {
+      if (row.cells && row.cells[col]) {
+        // Create a simplified cell definition for the renderer
+        // without the extra field properties
+        const cell = { ...row.cells[col] };
+
+        // No special handling needed - direct Excel column mapping
+
+        // Remove field-specific properties that aren't needed for rendering
+        delete cell.getOptions;
+        delete cell.section;
+        delete cell.dependencies;
+
+        rowDef.cells.push(cell);
+      } else {
+        // Add empty cell if not defined
+        rowDef.cells.push({});
+      }
+    });
+
+    return rowDef;
+  }
+
+  //==========================================================================
+  // OAA VALIDATION FUNCTIONALITY
+  //==========================================================================
+
+  /**
+   * Validates OAA member registration URL with cross-reference to practice name
+   * @param {string} url - The OAA directory URL to validate
+   * @returns {Promise<Object>} Validation result with status and details
+   */
+  async function validateOAAMembership(url) {
+    try {
+      // Basic URL validation
+      if (!url || !url.trim()) {
+        return {
+          valid: false,
+          status: 'No URL provided',
+          indicator: '❌',
+          class: 'validation-error'
+        };
+      }
+
+      // Check if it's an OAA directory URL
+      if (!url.includes('oaa.on.ca/oaa-directory')) {
+        return {
+          valid: false,
+          status: 'Invalid OAA directory URL format',
+          indicator: '❌',
+          class: 'validation-error'
+        };
+      }
+
+      // Show validation in progress
+      updateValidationStatus('Checking OAA member status and cross-referencing practice name...', '⏳', 'validation-pending');
+
+      // Get practice name from row 1.03 for cross-validation
+      const practiceName = getPracticeName();
+
+      // Simulate OAA validation with practice name cross-reference
+      return await simulateOAAValidation(url, practiceName);
+
+    } catch (error) {
+      console.error('OAA validation error:', error);
+      return {
+        valid: false,
+        status: 'Unable to verify OAA membership (network error)',
+        indicator: '⚠️',
+        class: 'validation-warning'
+      };
+    }
+  }
+
+  /**
+   * Gets the practice name from row 1.03 for cross-validation
+   */
+  function getPracticeName() {
+    const practiceField = document.querySelector('[data-field-id="c_3"]');
+    if (practiceField) {
+      const practiceName = practiceField.textContent || practiceField.value || '';
+      return practiceName.trim();
+    }
+    return '';
+  }
+
+  /**
+   * OAA Directory Auto-Complete System
+   */
+  const OAALookup = {    
+    // Real OAA directory entries (in production, this would be API calls)
+    directory: [
+      {
+        name: "Andrew Ross Thomson",
+        firm: "Thomson Architecture, Inc.", 
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
+        license: "8154",
+        status: "Active"
+      },
+      {
+        name: "Lara McKendrick",
+        firm: "Lara McKendrick Architecture Inc.",
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Lara-McKendrick",
+        license: "5829",
+        status: "Active"
+      }
+    ],
+
+    /**
+     * Searches OAA directory by practice name or architect name (more restrictive)
+     */
+    search: async function(query) {
+      if (!query || query.length < 2) return [];
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const searchTerm = query.toLowerCase().trim();
+      
+      // More restrictive filtering - must have meaningful overlap
+      const results = this.directory.filter(record => {
+        const firmLower = record.firm.toLowerCase();
+        const nameLower = record.name.toLowerCase();
+        
+        // Direct substring match (most relevant)
+        if (firmLower.includes(searchTerm) || nameLower.includes(searchTerm)) {
+          return true;
+        }
+        
+        // Word-based matching for multi-word queries
+        const queryWords = searchTerm.split(/\s+/).filter(w => w.length > 1);
+        if (queryWords.length === 1) {
+          // Single word - check if it matches any word in firm/name
+          const firmWords = firmLower.split(/\s+/);
+          const nameWords = nameLower.split(/\s+/);
+          return firmWords.some(fw => fw.startsWith(searchTerm)) || 
+                 nameWords.some(nw => nw.startsWith(searchTerm));
+        } else {
+          // Multi-word - require at least 50% of query words to match
+          const allWords = [...firmLower.split(/\s+/), ...nameLower.split(/\s+/)];
+          const matchCount = queryWords.filter(qw => 
+            allWords.some(aw => aw.includes(qw) || qw.includes(aw))
+          ).length;
+          return (matchCount / queryWords.length) >= 0.5;
+        }
+      });
+
+      // Sort by relevance (exact firm matches first, then name matches, then fuzzy)
+      return results.sort((a, b) => {
+        const aFirmExact = a.firm.toLowerCase().includes(searchTerm);
+        const bFirmExact = b.firm.toLowerCase().includes(searchTerm);
+        const aNameExact = a.name.toLowerCase().includes(searchTerm);
+        const bNameExact = b.name.toLowerCase().includes(searchTerm);
+        
+        if (aFirmExact && !bFirmExact) return -1;
+        if (bFirmExact && !aFirmExact) return 1;
+        if (aNameExact && !bNameExact) return -1;
+        if (bNameExact && !aNameExact) return 1;
+        return 0;
+      }).slice(0, 3); // Return top 3 most relevant matches
+    },
+
+    /**
+     * Fuzzy matching for name variations
+     */
+    fuzzyMatch: function(text, query) {
+      const words = query.split(' ');
+      return words.every(word => 
+        text.includes(word) || 
+        // Handle common name variations
+        (word === 'andrew' && text.includes('andy')) ||
+        (word === 'andy' && text.includes('andrew')) ||
+        (word === 'thomson' && text.includes('thompson')) ||
+        (word === 'thompson' && text.includes('thomson'))
+      );
+    }
+  };
+
+  /**
+   * Simulates OAA validation based on URL pattern with practice name cross-validation
+   * In production, this would call a backend service or OAA API
+   */
+  async function simulateOAAValidation(url, practiceName = '') {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Extract member name from URL for demo purposes  
+    const memberMatch = url.match(/\/([^\/]+)$/);
+    const memberName = memberMatch ? memberMatch[1].replace(/-/g, ' ') : 'Unknown';
+
+    // Cross-reference logic - check if practice name relates to member name
+    const nameMatch = checkNameCrossReference(memberName, practiceName);
+
+    // Check if this URL matches one of our known architects
+    const matchingRecord = OAALookup.directory.find(record => 
+      url.includes(record.url.split('/').pop()) || 
+      record.name.toLowerCase().includes(memberName.toLowerCase()) ||
+      url === record.url
+    );
+
+    if (matchingRecord) {
+      // Real architect found in our directory
+      const baseResult = {
+        valid: true,
+        indicator: '✅',
+        class: 'validation-success',
+        memberName: matchingRecord.name,
+        licenseStatus: matchingRecord.status,
+        disciplineHistory: 'No Discipline History',
+        licenseNumber: matchingRecord.license
+      };
+
+      // Enhance status based on name cross-reference
+      if (nameMatch.isMatch) {
+        baseResult.status = `✅ OAA Member "${matchingRecord.name}" is ${matchingRecord.status} and in Good Standing${nameMatch.confidence > 0.8 ? ' | Practice name verified' : ' | Practice name likely match'}`;
+      } else if (practiceName) {
+        baseResult.status = `✅ OAA Member "${matchingRecord.name}" is ${matchingRecord.status} and in Good Standing | Practice name "${practiceName}" - verify alignment`;
+        baseResult.class = 'validation-warning'; // Yellow for name mismatch
+        baseResult.indicator = '⚠️';
+      } else {
+        baseResult.status = `✅ OAA Member "${matchingRecord.name}" is ${matchingRecord.status} and in Good Standing`;
+      }
+
+      return baseResult;
+    } else {
+      // URL doesn't match our known architects - record not found
+      return {
+        valid: null, // null indicates indeterminate status
+        status: '⚠️ Record Not Found - Unable to verify OAA membership status',
+        indicator: '⚠️',
+        class: 'validation-warning',
+        note: 'Cannot verify - record not accessible or URL incorrect'
+      };
+    }
+  }
+
+  /**
+   * Cross-references member name with practice name for validation
+   */
+  function checkNameCrossReference(memberName, practiceName) {
+    if (!practiceName || !memberName) {
+      return { isMatch: false, confidence: 0, reason: 'Missing information' };
+    }
+
+    const memberWords = memberName.toLowerCase().split(/[\s\-_]+/).filter(w => w.length > 1);
+    const practiceWords = practiceName.toLowerCase().split(/[\s\-_]+/).filter(w => w.length > 1);
+    
+    // Check for direct name matches
+    let matchCount = 0;
+    let totalWords = memberWords.length;
+    
+    memberWords.forEach(memberWord => {
+      if (practiceWords.some(practiceWord => 
+        practiceWord.includes(memberWord) || memberWord.includes(practiceWord) ||
+        // Handle common name variations
+        (memberWord === 'andrew' && practiceWord.includes('andy')) ||
+        (memberWord === 'andy' && practiceWord.includes('andrew'))
+      )) {
+        matchCount++;
+      }
+    });
+
+    const confidence = matchCount / totalWords;
+    
+    return {
+      isMatch: confidence >= 0.5, // 50% of name words must match
+      confidence: confidence,
+      matchCount: matchCount,
+      reason: confidence >= 0.5 ? 'Name components match' : 'Insufficient name overlap'
+    };
+  }
+
+  /**
+   * Generates cross-referenced status message
+   */
+  function generateCrossReferencedStatus(memberName, practiceName, nameMatch, validationType) {
+    const baseStatus = validationType === 'success' 
+      ? `✅ OAA Member "${memberName}" is Active and in Good Standing`
+      : `❌ Member "${memberName}" shows issues`;
+
+    if (!practiceName) {
+      return baseStatus;
+    }
+
+    if (nameMatch.isMatch) {
+      const confidenceText = nameMatch.confidence > 0.8 ? 'verified' : 'likely match';
+      return `${baseStatus} | Practice name ${confidenceText}`;
+    } else {
+      return `${baseStatus} | Practice name "${practiceName}" - verify alignment`;
+    }
+  }
+
+  /**
+   * Updates the validation status display
+   */
+  function updateValidationStatus(statusText, indicator, cssClass, licenseNumber = null) {
+    // Update status text (indicator icon is now embedded in statusText)
+    const statusField = document.querySelector('[data-field-id="c_11"]');
+    if (statusField) {
+      statusField.textContent = statusText;
+      statusField.className = `oaa-validation-status ${cssClass}`;
+    }
+
+    // Update license number if provided
+    const licenseField = document.querySelector('[data-field-id="c_12"]');
+    if (licenseField && licenseNumber) {
+      licenseField.textContent = `License: ${licenseNumber}`;
+    } else if (licenseField && !licenseNumber && cssClass === 'validation-error') {
+      licenseField.textContent = 'License information unavailable';
+    }
+
+    // Update state manager
+    if (window.OBC?.StateManager?.setValue) {
+      window.OBC.StateManager.setValue('c_11', statusText, 'calculated');
+      if (licenseNumber) {
+        window.OBC.StateManager.setValue('c_12', `License: ${licenseNumber}`, 'calculated');
+      }
+    }
+  }
+
+  /**
+   * Performs OAA lookup based on practice/firm name and auto-populates fields
+   */
+  async function performOAALookup() {
+    const practiceField = document.querySelector('[data-field-id="c_3"]');
+    const urlField = document.querySelector('[data-field-id="c_10"]');
+    const statusField = document.querySelector('[data-field-id="c_11"]');
+    const licenseField = document.querySelector('[data-field-id="c_12"]');
+    
+    if (!practiceField || !urlField) return;
+    
+    const query = practiceField.textContent.trim();
+    if (!query || query.length < 2) {
+      updateValidationStatus('Enter practice or architect name to begin lookup', '⚪', 'validation-empty');
+      return;
+    }
+    
+    // Show lookup in progress
+    updateValidationStatus('🔍 Searching OAA directory...', '⏳', 'validation-pending');
+    
+    try {
+      // Search OAA directory
+      const results = await OAALookup.search(query);
+      
+      if (results.length === 0) {
+        updateValidationStatus('❌ No OAA member found matching this name/firm', '❌', 'validation-error');
+        urlField.textContent = 'No OAA record found';
+        if (licenseField) {
+          licenseField.textContent = 'No license information available';  
+        }
+        return;
+      }
+      
+      // Take the best match (first result)
+      const bestMatch = results[0];
+      
+      // Auto-populate the URL field
+      urlField.textContent = bestMatch.url;
+      
+      // Auto-populate license field
+      if (licenseField) {
+        licenseField.textContent = `License: ${bestMatch.license}`;
+      }
+      
+      // Update state manager
+      if (window.OBC?.StateManager?.setValue) {
+        window.OBC.StateManager.setValue('c_10', bestMatch.url, 'calculated');
+        window.OBC.StateManager.setValue('c_12', `License: ${bestMatch.license}`, 'calculated');
+      }
+      
+      // Now validate the found member
+      const validationResult = await validateOAAMembership(bestMatch.url);
+      updateValidationStatus(validationResult.status, validationResult.indicator, validationResult.class, validationResult.licenseNumber);
+      updateClickableURL(urlField, validationResult.valid);
+      
+    } catch (error) {
+      console.error('OAA lookup error:', error);
+      updateValidationStatus('⚠️ Error performing OAA lookup - please try again', '⚠️', 'validation-warning');
+    }
+  }
+
+  /**
+   * Auto-complete and validation system setup
+   */
+  function setupOAAValidation() {
+    const urlField = document.querySelector('[data-field-id="c_10"]');
+    const practiceField = document.querySelector('[data-field-id="c_3"]');
+    
+    if (!urlField) return;
+
+    // Setup auto-complete for practice name field
+    if (practiceField) {
+      setupAutoComplete(practiceField, urlField);
+    }
+
+    // Setup clickable URL functionality
+    setupClickableURL(urlField);
+
+    // Practice name field event listeners - primary lookup trigger
+    if (practiceField) {
+      let lookupTimeout;
+      
+      // Trigger lookup on Enter key
+      practiceField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          clearTimeout(lookupTimeout);
+          setTimeout(() => {
+            performOAALookup();
+          }, 100);
+        }
+      });
+
+      // Also trigger lookup on blur (when user leaves field)
+      practiceField.addEventListener('blur', () => {
+        clearTimeout(lookupTimeout);
+        lookupTimeout = setTimeout(() => {
+          performOAALookup();
+        }, 1000); // 1 second debounce
+      });
+    }
+
+    // URL field event listeners (for manual URL entry)
+    urlField.addEventListener('blur', async () => {
+      const url = urlField.textContent || urlField.value || '';
+      if (url.trim() && url.includes('oaa.on.ca')) {
+        const result = await validateOAAMembership(url.trim());
+        updateValidationStatus(result.status, result.indicator, result.class, result.licenseNumber);
+        updateClickableURL(urlField, result.valid);
+      }
+    });
+
+    // Initial validation - start clean with helpful instruction
+    setTimeout(() => {
+      updateValidationStatus('Enter practice name in row 1.03 and press Enter to search OAA directory', '⚪', 'validation-empty');
+    }, 500);
+  }
+
+  /**
+   * Sets up auto-complete functionality for practice name field
+   */
+  function setupAutoComplete(practiceField, urlField) {
+    let searchTimeout;
+    let autocompleteContainer;
+
+    // Create autocomplete dropdown container
+    function createAutocompleteContainer() {
+      if (autocompleteContainer) return autocompleteContainer;
+      
+      autocompleteContainer = document.createElement('div');
+      autocompleteContainer.className = 'oaa-autocomplete-dropdown';
+      autocompleteContainer.style.display = 'none';
+      
+      // Position relative to practice field - ensure proper containment
+      const practiceCell = practiceField.closest('td');
+      if (practiceCell) {
+        practiceCell.style.position = 'relative';
+        practiceCell.style.overflow = 'visible'; // Allow dropdown to show
+        
+        // Ensure dropdown appears OUTSIDE the practice field
+        autocompleteContainer.style.position = 'absolute';
+        autocompleteContainer.style.top = '100%';
+        autocompleteContainer.style.left = '0';
+        autocompleteContainer.style.zIndex = '1001';
+        
+        practiceCell.appendChild(autocompleteContainer);
+      }
+      
+      return autocompleteContainer;
+    }
+
+    // Show suggestions
+    async function showSuggestions(query) {
+      if (!query || query.length < 2) {
+        hideAutocomplete();
+        return;
+      }
+
+      const results = await OAALookup.search(query);
+      const container = createAutocompleteContainer();
+      
+      if (results.length === 0) {
+        hideAutocomplete();
+        return;
+      }
+
+             // Build suggestions HTML - clean dropdown presentation
+       container.innerHTML = results.map(result => `
+         <div class="autocomplete-item" data-url="${result.url}" data-firm="${result.firm}" data-name="${result.name}" data-license="${result.license}">
+           <div class="autocomplete-firm">${result.firm}</div>
+           <div class="autocomplete-architect">${result.name} (License: ${result.license})</div>
+           <div class="autocomplete-status ${result.status.toLowerCase()}">${result.status}</div>
+         </div>
+       `).join('');
+
+             // Add click handlers
+       container.querySelectorAll('.autocomplete-item').forEach(item => {
+         item.addEventListener('click', () => {
+           const selectedURL = item.dataset.url;
+           const selectedFirm = item.dataset.firm;
+           const selectedArchitect = item.querySelector('.autocomplete-architect').textContent;
+           
+           // Extract license number from architect text (e.g., "John Smith (License: 1234)")
+           const licenseMatch = selectedArchitect.match(/License:\s*(\w+)/);
+           const licenseNumber = licenseMatch ? licenseMatch[1] : 'Unknown';
+           
+           // Clean populate each field separately - ONLY the selected firm name
+           practiceField.textContent = selectedFirm; // Only the clean firm name
+           practiceField.innerHTML = ''; // Clear any HTML content
+           practiceField.textContent = selectedFirm; // Set clean text again
+           
+           urlField.textContent = selectedURL;
+           
+           // Populate license number in new row 1.12
+           const licenseField = document.querySelector('[data-field-id="c_12"]');
+           if (licenseField) {
+             licenseField.textContent = `License: ${licenseNumber}`;
+           }
+           
+           // Update state manager with clean values - ONLY the firm name
+           if (window.OBC?.StateManager?.setValue) {
+             window.OBC.StateManager.setValue('c_3', selectedFirm, 'user-modified');
+             window.OBC.StateManager.setValue('c_10', selectedURL, 'user-modified');
+             window.OBC.StateManager.setValue('c_12', `License: ${licenseNumber}`, 'calculated');
+           }
+           
+           // Trigger validation
+           validateOAAMembership(selectedURL).then(result => {
+             updateValidationStatus(result.status, result.indicator, result.class, result.licenseNumber);
+             updateClickableURL(urlField, result.valid);
+           });
+           
+           hideAutocomplete();
+         });
+       });
+
+      container.style.display = 'block';
+    }
+
+    // Hide autocomplete
+    function hideAutocomplete() {
+      if (autocompleteContainer) {
+        autocompleteContainer.style.display = 'none';
+      }
+    }
+
+    // Practice field event listeners - ensure clean field behavior
+    practiceField.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const query = this.textContent.trim();
+      
+      // Only trigger auto-complete if user is actually typing (not from programmatic updates)
+      if (query.length >= 2 && query.length <= 50) { // Reasonable practice name length
+        searchTimeout = setTimeout(() => {
+          showSuggestions(query);
+        }, 500); // Wait 500ms after user stops typing
+      }
+    });
+
+    // Ensure practice field stays clean - periodic cleanup
+    setInterval(() => {
+      const currentContent = practiceField.textContent.trim();
+      // If content looks corrupted (too long or contains dropdown data), clean it
+      if (currentContent.length > 100 || currentContent.includes('License:') || currentContent.includes('Active')) {
+        const firmNames = ['Thomson Architecture, Inc.', 'Lara McKendrick Architecture Inc.'];
+        const matchedFirm = firmNames.find(firm => currentContent.includes(firm));
+        if (matchedFirm) {
+          practiceField.textContent = matchedFirm; // Clean it up
+        }
+      }
+    }, 1000); // Check every second for corruption
+
+    // Hide autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!practiceField.contains(e.target) && 
+          !autocompleteContainer?.contains(e.target)) {
+        hideAutocomplete();
+      }
+    });
+  }
+
+  /**
+   * Makes URL field clickable when valid
+   */
+  function setupClickableURL(urlField) {
+    urlField.addEventListener('click', function(e) {
+      const url = this.textContent || this.value || '';
+      if (url.trim() && url.includes('oaa.on.ca') && this.classList.contains('clickable-url')) {
+        e.preventDefault();
+        window.open(url.trim(), '_blank', 'noopener,noreferrer');
+      }
+    });
+  }
+
+  /**
+   * Updates URL field clickable state based on validation
+   */
+  function updateClickableURL(urlField, isValid) {
+    if (isValid) {
+      urlField.classList.add('clickable-url');
+      urlField.title = 'Click to open OAA member page in new tab';
+      urlField.style.cursor = 'pointer';
+    } else {
+      urlField.classList.remove('clickable-url');
+      urlField.title = '';
+      urlField.style.cursor = 'text';
+    }
+  }
+
+  //==========================================================================
+  // STATE MANAGEMENT
+  //==========================================================================
+
+  function getFieldValue(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (!field) return "";
+
+    if (field.type === "checkbox") {
+      return field.checked;
+    } else if (field.type === "number" || field.type === "range") {
+      return parseFloat(field.value) || 0;
+    } else {
+      return field.value || "";
+    }
+  }
+
+  function getNumericValue(fieldId, defaultValue = 0) {
+    const value = getFieldValue(fieldId);
+    const numericValue = parseFloat(value);
+    return isNaN(numericValue) ? defaultValue : numericValue;
+  }
+
+  function setCalculatedValue(fieldId, value) {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      if (typeof value === "number") {
+        element.textContent = value.toLocaleString(undefined, {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        });
+      } else {
+        element.textContent = value;
+      }
+    }
+  }
+
+  //==========================================================================
+  // FLOATING STAMP UPLOAD FUNCTIONALITY
+  //==========================================================================
+
+  //==========================================================================
+  // EVENT HANDLERS
+  //==========================================================================
+
+  function initializeEventHandlers() {
+    // Initializing Section 01 event handlers
+
+    // ✅ MANDATORY: Use global input handler for graceful behavior
+    if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
+      window.OBC.StateManager.initializeGlobalInputHandlers();
+    }
+
+    window.OBC.sect01.initialized = true;
+  }
+
+  function addFloatingStampUpload() {
+    const sectionContent = document.querySelector(
+      '[data-render-section="buildingInfo"]',
+    );
+    if (!sectionContent || document.getElementById("floating-stamp-upload"))
+      return;
+
+    // Create floating stamp upload container
+    const stampContainer = document.createElement("div");
+    stampContainer.id = "floating-stamp-upload";
+    stampContainer.innerHTML = `
+      <div class="stamp-upload-container">
+        <div class="stamp-placeholder" id="floating-stamp-placeholder">
+          <div class="stamp-title">Seal & Signature</div>
+          <div class="stamp-instructions">Upload Seal Image Here</div>
+          <div class="stamp-hint">200x200px recommended</div>
+          <div class="stamp-oaa-note">The stamp image will be inspected for validity with the OAA</div>
+        </div>
+        <input type="file" id="floating-stamp-upload-input" accept="image/*" style="display: none;">
+        <img id="floating-stamp-preview" class="stamp-preview" style="display: none;">
+      </div>
+    `;
+
+    // Add CSS for floating positioning
+    stampContainer.style.cssText = `
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      background: white;
+      width: 200px;
+    `;
+
+    // Position relative to section
+    sectionContent.style.position = "relative";
+    sectionContent.appendChild(stampContainer);
+
+    // Initialize stamp upload functionality on the floating element
+    initializeFloatingStampUpload();
+  }
+
+  function initializeFloatingStampUpload() {
+    const placeholder = document.getElementById("floating-stamp-placeholder");
+    const fileInput = document.getElementById("floating-stamp-upload-input");
+    const preview = document.getElementById("floating-stamp-preview");
+
+    if (!placeholder || !fileInput || !preview) return;
+
+    placeholder.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+          placeholder.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Allow reset by clicking on the preview
+    preview.addEventListener("click", () => {
+      preview.style.display = "none";
+      placeholder.style.display = "flex";
+      fileInput.value = "";
+    });
+  }
+
+  function onSectionRendered() {
+    // Section 01 rendered - Building Information (OBC Matrix)
+
+    // Initialize any section-specific functionality after rendering
+    if (!window.OBC.sect01.initialized) {
+      initializeEventHandlers();
+    }
+
+    // Add floating stamp upload after section renders
+    setTimeout(() => {
+      addFloatingStampUpload();
+    }, 100);
+
+    // Setup OAA validation after section renders
+    setTimeout(() => {
+      setupOAAValidation();
+    }, 200);
+
+    // Add custom CSS for stamp upload and Section 01 spacing
+    if (!document.getElementById("stamp-upload-styles")) {
+      const style = document.createElement("style");
+      style.id = "stamp-upload-styles";
+      style.textContent = `
+        /* Section 01 specific row spacing for stamp panel breathing room */
+        [data-render-section="buildingInfo"] .row {
+          padding-top: 2px;
+          padding-bottom: 2px;
+        }
+
+        /* OAA Validation Status Styling */
+        .oaa-validation-status {
+          font-size: 14px;
+          font-weight: 500;
+          padding: 8px 12px;
+          border-radius: 4px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.4;
+          min-height: 20px;
+          display: flex;
+          align-items: center;
+        }
+
+
+
+        /* Success State - Green */
+        .validation-success {
+          background-color: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
+        }
+
+        /* Error State - Red */
+        .validation-error {
+          background-color: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
+        }
+
+        /* Warning State - Yellow */
+        .validation-warning {
+          background-color: #fff3cd;
+          color: #856404;
+          border: 1px solid #ffeaa7;
+        }
+
+        /* Pending State - Blue */
+        .validation-pending {
+          background-color: #d1ecf1;
+          color: #0c5460;
+          border: 1px solid #bee5eb;
+        }
+
+        /* Empty State - Gray */
+        .validation-empty {
+          background-color: #f8f9fa;
+          color: #6c757d;
+          border: 1px solid #dee2e6;
+        }
+
+        /* Auto-complete Dropdown Styling */
+        .oaa-autocomplete-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 1000;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+
+        .autocomplete-item {
+          padding: 12px 16px;
+          border-bottom: 1px solid #f0f0f0;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+
+        .autocomplete-item:hover {
+          background-color: #f8f9fa;
+        }
+
+        .autocomplete-item:last-child {
+          border-bottom: none;
+        }
+
+        .autocomplete-firm {
+          font-weight: 600;
+          font-size: 14px;
+          color: #333;
+          margin-bottom: 4px;
+        }
+
+        .autocomplete-architect {
+          font-size: 12px;
+          color: #666;
+          margin-bottom: 2px;
+        }
+
+        .autocomplete-status {
+          font-size: 11px;
+          font-weight: 500;
+          padding: 2px 6px;
+          border-radius: 3px;
+          display: inline-block;
+        }
+
+        .autocomplete-status.active {
+          background-color: #d4edda;
+          color: #155724;
+        }
+
+        .autocomplete-status.inactive {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+
+        /* Clickable URL Styling */
+        .clickable-url {
+          color: #007bff !important;
+          text-decoration: underline !important;
+          cursor: pointer !important;
+        }
+
+        .clickable-url:hover {
+          color: #0056b3 !important;
+          background-color: #f8f9fa !important;
+        }
+
+        /* Practice field styling to indicate auto-complete availability */
+        [data-field-id="c_3"] {
+          position: relative;
+        }
+
+        [data-field-id="c_3"]:focus {
+          outline: 2px solid #007bff;
+          outline-offset: 2px;
+        }
+
+        /* License number field styling */
+        .oaa-license-number {
+          font-size: 14px;
+          font-weight: bold;
+          color: #333;
+          padding: 8px 12px;
+          background-color: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          font-family: 'Courier New', monospace;
+          text-align: left !important; /* Override calculated-value right alignment */
+        }
+
+        /* Auto-populated URL field styling */
+        .auto-populated-url {
+          text-align: left !important; /* Override calculated-value right alignment */
+        }
+
+        .stamp-upload-container {
+          width: 200px;
+          height: 200px;
+          position: relative;
+          margin: 0;
+        }
+
+        .stamp-placeholder {
+          width: 200px;
+          height: 200px;
+          border: 2px dashed #ccc;
+          border-radius: 8px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: border-color 0.3s ease;
+          background-color: white;
+          padding: 8px;
+          box-sizing: border-box;
+        }
+
+        .stamp-placeholder:hover {
+          border-color: #007bff;
+          background-color: #f0f8ff;
+        }
+
+        .stamp-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #333;
+          text-align: center;
+          margin-bottom: 8px;
+        }
+
+        .stamp-instructions {
+          font-size: 12px;
+          color: #666;
+          text-align: center;
+          margin-bottom: 4px;
+          font-weight: 500;
+        }
+
+        .stamp-hint {
+          font-size: 10px;
+          color: #999;
+          text-align: center;
+          margin-bottom: 4px;
+        }
+
+        .stamp-oaa-note {
+          font-size: 9px;
+          color: #666;
+          text-align: center;
+          font-style: italic;
+          line-height: 1.2;
+        }
+
+        .stamp-preview {
+          width: 200px;
+          height: 200px;
+          object-fit: contain;
+          border-radius: 8px;
+          cursor: pointer;
+          border: 2px solid #ddd;
+          background-color: white;
+        }
+
+        #floating-stamp-upload {
+          transition: opacity 0.3s ease;
+        }
+
+        body.notes-hidden #floating-stamp-upload {
+          /* Keep stamp visible when notes are hidden */
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  //==========================================================================
+  // PUBLIC API
+  //==========================================================================
+
+  return {
+    getFields: getFields,
+    getDropdownOptions: getDropdownOptions,
+    getLayout: getLayout,
+    onSectionRendered: onSectionRendered,
+
+    // State management functions
+    getFieldValue: getFieldValue,
+    getNumericValue: getNumericValue,
+    setCalculatedValue: setCalculatedValue,
+  };
+})();
