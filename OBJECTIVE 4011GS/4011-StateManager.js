@@ -325,7 +325,7 @@ TEUI.StateManager = (function () {
       lastImportedState[fieldId] = value;
     }
 
-    const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
+    const _fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
 
     const oldValue = getValue(fieldId); // Use mode-aware getValue for oldValue as original did.
 
@@ -836,9 +836,9 @@ TEUI.StateManager = (function () {
 
   /**
    * Update TEUI calculations when source values change
-   * @param {string} sourceField - The source field that changed
+   * @param {string} _sourceField - The source field that changed
    */
-  function updateTEUICalculations(sourceField) {
+  function updateTEUICalculations(_sourceField) {
     try {
       // Get raw values from state manager
       const rawActualEnergy = getValue("f_32");
@@ -982,10 +982,10 @@ TEUI.StateManager = (function () {
    * Helper function (moved inside StateManager IIFE)
    * Determines the group for a node based on its ID or field definition.
    * @param {string} nodeId
-   * @param {object | null} fieldDef
+   * @param {object | null} _fieldDef
    * @returns {string} The determined group name.
    */
-  function getNodeGroup(nodeId, fieldDef) {
+  function getNodeGroup(nodeId, _fieldDef) {
     // RESTORED: Fallback to prefix/pattern matching (less reliable, but maybe better coverage?)
     if (nodeId.includes("_1") && nodeId.split("_").length > 1)
       return "1. Key Values"; // Approximate

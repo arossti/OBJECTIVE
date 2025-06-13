@@ -575,13 +575,13 @@
 
     // --- OLD / OTHER METHODS ---
 
-    processBuildingCodeData(workbook) {
+    processBuildingCodeData(_workbook) {
       // Placeholder
       // console.log('Building code data processing not yet implemented');
       return null;
     }
 
-    processScheduleData(workbook) {
+    processScheduleData(_workbook) {
       // Placeholder
       // console.log('Schedule data processing not yet implemented');
       return null;

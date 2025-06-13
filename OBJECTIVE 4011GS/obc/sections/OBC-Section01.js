@@ -743,7 +743,7 @@ window.OBC.SectionModules.sect01 = (function () {
   /**
    * Generates cross-referenced status message
    */
-  function generateCrossReferencedStatus(
+  function _generateCrossReferencedStatus(
     memberName,
     practiceName,
     nameMatch,

@@ -479,12 +479,12 @@ TEUI.SectionIntegrator = (function () {
     window.TEUI.StateManager.registerDependency("h_12", "l_27");
 
     // Add listener to force recalculation when province changes
-    window.TEUI.StateManager.addListener("d_19", function (newValue) {
+    window.TEUI.StateManager.addListener("d_19", function (_newValue) {
       forceEmissionsFactorUpdate();
     });
 
     // Add listener to force recalculation when reporting year changes
-    window.TEUI.StateManager.addListener("h_12", function (newValue) {
+    window.TEUI.StateManager.addListener("h_12", function (_newValue) {
       forceEmissionsFactorUpdate();
     });
 

@@ -637,7 +637,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     // Node hover/click events (add after nodes are created in render)
     if (this.nodeGroups) {
       this.nodeGroups
-        .on("mouseover", (event, d) => {
+        .on("mouseover", (event, _d) => {
           d3.select(event.currentTarget).select("text").style("display", null);
           // Optional: Add tooltip display logic here if needed
         })
@@ -946,7 +946,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     d.fy = event.y;
   }
 
-  dragended(event, d) {
+  dragended(event, _d) {
     if (!event.active) this.simulation.alphaTarget(0);
     // Keep node fixed after dragging? Optional.
     // d.fx = null;
@@ -1304,7 +1304,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     const controlsContainer = document.querySelector(
       "#dependencyDiagram .dependency-graph-controls-wrapper",
     );
-    const infoPanel = document.querySelector(
+    const _infoPanel = document.querySelector(
       "#dependencyDiagram .dependency-graph-info-wrapper",
     );
 

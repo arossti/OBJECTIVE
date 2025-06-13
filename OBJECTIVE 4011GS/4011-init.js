@@ -14,7 +14,7 @@ function initializeUIHandlers() {
   var tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]'),
   );
-  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  var _tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
 
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (document.body.classList.contains("horizontal-layout")) {
         // Get the app wrapper or key values section
         const appWrapper = document.getElementById("app-wrapper");
-        const keyValues = document.getElementById("keyValues");
+        const _keyValues = document.getElementById("keyValues");
 
         if (appWrapper) {
           // Scroll to position the app wrapper at the top

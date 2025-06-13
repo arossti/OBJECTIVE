@@ -310,7 +310,7 @@ TEUI.ExcelLocationHandler = (function () {
       if (Object.prototype.hasOwnProperty.call(locationData, province)) {
         const cityCount = locationData[province].cities.length;
         if (cityCount > 0) {
-          const firstCity = locationData[province].cities[0];
+          const _firstCity = locationData[province].cities[0];
         }
       }
     }
