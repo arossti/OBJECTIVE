@@ -814,8 +814,8 @@ window.OBC.SectionModules.sect01 = (function () {
   async function performOAALookup() {
     const practiceField = document.querySelector('[data-field-id="c_3"]');
     const urlField = document.querySelector('[data-field-id="c_10"]');
-    const _statusField = document.querySelector('[data-field-id="c_11"]');
-    const _licenseField = document.querySelector('[data-field-id="c_12"]');
+    const statusField = document.querySelector('[data-field-id="c_11"]');
+    const licenseField = document.querySelector('[data-field-id="c_12"]');
 
     if (!practiceField || !urlField) return;
 

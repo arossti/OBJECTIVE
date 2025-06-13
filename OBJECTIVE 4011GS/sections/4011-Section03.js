@@ -901,7 +901,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Calculate Base Cooling Setpoint (h_24) based on Occupancy Type (d_12)
    */
   function calculateCoolingSetpoint_h24() {
-    const _occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Direct StateManager access
+    const occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Direct StateManager access
     let coolingSetpoint = 24; // Default for all types currently
 
     // Add specific logic based on occupancy if needed in the future
@@ -941,7 +941,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Update m_24 (Percentage calculation - Placeholder logic)
     // Add the actual calculation logic for m_24 here when known
     // Example placeholder:
-    const _someBaseValueForM24 = 100; // Replace with actual dependency value
+    const someBaseValueForM24 = 100; // Replace with actual dependency value
     const m24Value = Math.round((effectiveSetpointC / 22) * 100); // Example calc
     setFieldValue("m_24", `${m24Value}%`);
   }
@@ -1129,13 +1129,13 @@ window.TEUI.SectionModules.sect03 = (function () {
       );
 
       // Listener for h_24 (Calculated Cooling Setpoint) changes
-      window.TEUI.StateManager.addListener("h_24", function (_newValue) {
+      window.TEUI.StateManager.addListener("h_24", function (newValue) {
         updateCoolingDependents();
         calculateGroundFacing(); // Re-add call needed for GF CDD
       });
 
       // Listener for l_24 (Cooling Override) changes
-      window.TEUI.StateManager.addListener("l_24", function (_newValue) {
+      window.TEUI.StateManager.addListener("l_24", function (newValue) {
         updateCoolingDependents();
         calculateGroundFacing(); // Re-add call needed for GF CDD
       });
@@ -1149,12 +1149,12 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
 
       // Listener for h_21 (Capacitance Setting) changes
-      window.TEUI.StateManager.addListener("h_21", function (_newValue) {
+      window.TEUI.StateManager.addListener("h_21", function (newValue) {
         calculateAll(); // Recalculate everything as GF CDD changes
       });
 
       // Listener for m_19 (Cooling Days) changes
-      window.TEUI.StateManager.addListener("m_19", function (_newValue) {
+      window.TEUI.StateManager.addListener("m_19", function (newValue) {
         calculateAll(); // Recalculate everything as GF HDD and GF CDD change
       });
     } else {
