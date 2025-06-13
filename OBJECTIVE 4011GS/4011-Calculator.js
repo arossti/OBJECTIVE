@@ -42,7 +42,7 @@ TEUI.Calculator = (function () {
     FAHRENHEIT_TO_CELSIUS: function (f) {
       return ((f - 32) * 5) / 9;
     },
-    DEFAULT_CDD_FACTOR: -0.85, // Ground facing CDD factor
+    DEFAULT_CDD_FACTOR: -0.85, // Ground facing CDD factor HALLUCINATION
   };
 
   /**
@@ -75,7 +75,7 @@ TEUI.Calculator = (function () {
     // setupEventListeners(); // Assuming event listeners are set up elsewhere now
 
     // Listen for rendering completion
-    document.addEventListener("teui-rendering-complete", function (event) {
+    document.addEventListener("teui-rendering-complete", function (_event) {
       // Initialize weather handlers when rendering is complete
       // initializeWeatherHandlers(); // Moved to 4011-init.js?
       // Calculate all values immediately after rendering and weather handlers are ready
@@ -85,7 +85,7 @@ TEUI.Calculator = (function () {
   /**
    * Register all calculations with state manager
    */
-  function registerCalculations() {
+  function _registerCalculations() {
     // Register Building Info calculations
     registerBuildingInfoCalculations();
 
@@ -207,7 +207,7 @@ TEUI.Calculator = (function () {
 
     try {
       return formula(stateManager);
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -507,6 +507,7 @@ TEUI.Calculator = (function () {
           console.error(`Error calculating section ${sectionKey}:`, error);
         }
       } else {
+        // Section module not found or doesn't have calculateAll method
       }
     });
   }
@@ -527,8 +528,8 @@ TEUI.Calculator = (function () {
       const parts = line.split(",");
       if (parts.length < 2) return; // Skip invalid lines
 
-      const formulaId = parts[0].trim();
-      const formulaText = parts[1].trim();
+      const _formulaId = parts[0].trim();
+      const _formulaText = parts[1].trim();
 
       // Store in the formula registry for future implementation
       // This would be expanded to actually parse and convert the formula
@@ -537,7 +538,7 @@ TEUI.Calculator = (function () {
   }
 
   // Add to the initialization section
-  function initializeWeatherHandlers() {
+  function _initializeWeatherHandlers() {
     // Listen for city selection changes
     attachCityChangeListener();
 
@@ -615,7 +616,7 @@ TEUI.Calculator = (function () {
     );
 
     futureToggles.forEach((toggle) => {
-      toggle.addEventListener("change", function (e) {
+      toggle.addEventListener("change", function (_e) {
         const city = document.querySelector(
           '[data-dropdown-id="dd_h_19"]',
         )?.value;
@@ -803,6 +804,7 @@ TEUI.Calculator = (function () {
         element.textContent = value || "0";
       });
     } else {
+      // No DOM elements found for this field ID - field may not be rendered yet
     }
 
     // Update in StateManager if available
@@ -921,18 +923,20 @@ TEUI.Calculator = (function () {
     return gfcdd; // Return the calculated value for potential use elsewhere
   }
 
-  function setupEventListeners() {
+  function _setupEventListeners() {
     // Wait for the elements to be available
     const heatingSetpointInput = document.getElementById("in_d_13_1");
     if (heatingSetpointInput) {
       heatingSetpointInput.addEventListener("change", calculateGFHDD);
     } else {
+      // Heating setpoint input not found - element may not be rendered yet
     }
 
     const coolingSetpointInput = document.getElementById("in_d_13_2");
     if (coolingSetpointInput) {
       coolingSetpointInput.addEventListener("change", calculateGFCDD);
     } else {
+      // Cooling setpoint input not found - element may not be rendered yet
     }
   }
 
@@ -982,7 +986,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Move function outside the DOMContentLoaded event handler for proper scope access
-function initializeWeatherDataHandlers() {
+function _initializeWeatherDataHandlers() {
   // Check for the presence of a feedback area
   const feedbackArea = document.getElementById("feedback-area");
   if (feedbackArea) {
@@ -1062,7 +1066,7 @@ function initializeWeatherDataHandlers() {
     }
 
     // Add event listener
-    futureToggle.addEventListener("change", function (e) {
+    futureToggle.addEventListener("change", function (_e) {
       const city = document.querySelector('[data-dropdown-id="dd_h_19"]').value;
       const province = document.querySelector(
         '[data-dropdown-id="dd_d_19"]',
