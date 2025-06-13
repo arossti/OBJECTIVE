@@ -545,7 +545,7 @@
         // Get project name for filename
         const projectName = this.stateManager.getValue("h_14") || "Project";
         // Sanitize project name for filename
-        const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, "_");
+        const safeProjectName = projectName.replace(/[^a-z0-9_\-.]/gi, "_");
         const filename = `TEUIv4011-Standardized-${safeProjectName}.csv`;
 
         console.log(`[CSV Export] Generated filename: ${filename}`);

@@ -100,7 +100,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     if (isNaN(rawValue) || rawValue === null || rawValue === undefined) {
       window.TEUI.StateManager?.setValue(fieldId, "N/A", "calculated");
       const elementNA = document.querySelector(
-        `[data-field-id=\"${fieldId}\"]`,
+        `[data-field-id="${fieldId}"]`,
       );
       if (elementNA) elementNA.textContent = "N/A";
       return; // Stop processing if value is not a valid number
@@ -116,7 +116,7 @@ window.TEUI.SectionModules.sect14 = (function () {
     );
 
     // Update DOM with formatted value
-    const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
       element.textContent = formattedValue;
       element.classList.toggle("negative-value", rawValue < 0);
@@ -1008,7 +1008,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
         const element = document.querySelector(
-          `[data-field-id=\"${fieldId}\"]`,
+          `[data-field-id="${fieldId}"]`,
         );
         if (element) {
           let format = "number"; // Default

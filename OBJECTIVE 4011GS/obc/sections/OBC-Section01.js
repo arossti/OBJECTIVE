@@ -639,7 +639,7 @@ window.OBC.SectionModules.sect01 = (function () {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     // Extract member name from URL for demo purposes
-    const memberMatch = url.match(/\/([^\/]+)$/);
+    const memberMatch = url.match(/\/([^/]+)$/);
     const memberName = memberMatch
       ? memberMatch[1].replace(/-/g, " ")
       : "Unknown";
