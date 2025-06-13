@@ -872,6 +872,7 @@ TEUI.FieldManager = (function () {
             valToFormat <= (field.max || 1) &&
             (field.max || 1) <= 1
           ) {
+            // Value is already in correct format (0-1 range), no conversion needed
           } else {
             valToFormat = valToFormat / 100;
           }

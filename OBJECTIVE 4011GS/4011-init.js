@@ -440,7 +440,9 @@ document.addEventListener("DOMContentLoaded", function () {
           header.setAttribute("aria-expanded", "true");
         }
       });
-    } catch (e) {}
+    } catch (_e) {
+      // Silently ignore errors during header expansion - non-critical feature
+    }
   }
 
   // Function to restore user preferences from localStorage

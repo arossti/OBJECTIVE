@@ -80,6 +80,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         isFinite(rawValue) && rawValue < 0,
       );
     } else {
+      // Element not found - field may not be rendered yet
     }
   }
 
@@ -981,6 +982,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
         // Specific log when d_27 changes
         if (sourceFieldId === "d_27") {
+          // TODO: Add specific logging for d_27 changes if needed
         }
 
         // Fetch CURRENT values from StateManager using helper

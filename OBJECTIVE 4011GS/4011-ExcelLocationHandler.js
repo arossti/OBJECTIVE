@@ -221,6 +221,7 @@ TEUI.ExcelLocationHandler = (function () {
     );
 
     if (provinceDropdowns.length === 0) {
+      // No province dropdowns found - they may not be rendered yet
     }
 
     if (locationData === null) {
@@ -257,6 +258,7 @@ TEUI.ExcelLocationHandler = (function () {
     );
 
     if (cityDropdowns.length === 0) {
+      // No city dropdowns found - they may not be rendered yet
     }
 
     if (locationData === null) {

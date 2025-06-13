@@ -1237,6 +1237,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "g_32") {
+              // Special handling for g_32 field changes (if needed in future)
             }
             runAllCalculations();
           }
