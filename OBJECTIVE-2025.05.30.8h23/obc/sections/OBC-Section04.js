@@ -479,10 +479,10 @@ window.OBC.SectionModules.sect04 = (function () {
     4.39: {
       id: "4.39",
       rowId: "4.39",
-      label: "NUMBER OF STREETS/FIREFIGHTER ACCESS",
+      label: "Number of Streets/Firefighter Access",
       cells: {
         b: { label: "3.09" },
-        c: { label: "NUMBER OF STREETS/FIREFIGHTER ACCESS" },
+        c: { label: "Number of Streets/Firefighter Access" },
         d: { 
           fieldId: "d_39", 
           type: "dropdown", 
@@ -506,7 +506,7 @@ window.OBC.SectionModules.sect04 = (function () {
     "4.40": {
       id: "4.40",
       rowId: "4.40",
-      label: "BUILDING CLASSIFICATION",
+      label: "Building Classification",
       cells: {
         a: { 
           content: "", // Will be populated by ExpandableRows utility
@@ -518,7 +518,7 @@ window.OBC.SectionModules.sect04 = (function () {
           },
         },
         b: { label: "3.1" },
-        c: { label: "BUILDING CLASSIFICATION" },
+        c: { label: "Building Classification" },
         d: { 
           fieldId: "d_40", 
           type: "dropdown", 
@@ -766,10 +766,10 @@ window.OBC.SectionModules.sect04 = (function () {
     4.45: {
       id: "4.45",
       rowId: "4.45",
-      label: "SPRINKLER SYSTEM",
+      label: "Sprinkler System",
       cells: {
         b: { label: "3.11" },
-        c: { label: "SPRINKLER SYSTEM" },
+        c: { label: "Sprinkler System" },
         d: { 
           fieldId: "d_45", 
           type: "dropdown", 
@@ -783,8 +783,10 @@ window.OBC.SectionModules.sect04 = (function () {
             { value: "Not Required", name: "Not Required" },
           ],
         },
-        h: { content: "PROVIDED:" },
-        i: { 
+        e: { content: "Provided for:" },
+        f: { content: "F" },
+        g: { content: "G" },
+        h: { 
           fieldId: "i_45", 
           type: "dropdown", 
           dropdownId: "dd_i_45", 
@@ -811,11 +813,11 @@ window.OBC.SectionModules.sect04 = (function () {
       rowId: "4.46",
       label: "Sprinkler System Description",
       cells: {
-        d: { content: "DESCRIBE" },
-        e: {
+        c: { label: "Sprinkler System Description" },
+        d: {
           fieldId: "e_46",
           type: "editable",
-          value: "Describe Sprinkler System as Required or Not Required",
+          value: "Enter description here...",
           section: "firefightingSystems",
           classes: ["no-wrap", "user-input"],
         },
@@ -829,10 +831,10 @@ window.OBC.SectionModules.sect04 = (function () {
     4.47: {
       id: "4.47",
       rowId: "4.47",
-      label: "STANDPIPE SYSTEM",
+      label: "Standpipe System",
       cells: {
         b: { label: "3.12" },
-        c: { label: "STANDPIPE SYSTEM" },
+        c: { label: "Standpipe System" },
         d: { 
           fieldId: "d_47", 
           type: "dropdown", 
@@ -855,10 +857,10 @@ window.OBC.SectionModules.sect04 = (function () {
     4.48: {
       id: "4.48", 
       rowId: "4.48",
-      label: "FIRE ALARM SYSTEM",
+      label: "Fire Alarm System",
       cells: {
         b: { label: "3.13" },
-        c: { label: "FIRE ALARM SYSTEM" },
+        c: { label: "Fire Alarm System" },
         d: { 
           fieldId: "d_48", 
           type: "dropdown", 
@@ -897,10 +899,10 @@ window.OBC.SectionModules.sect04 = (function () {
     4.49: {
       id: "4.49",
       rowId: "4.49",
-      label: "WATER SERVICE/SUPPLY IS ADEQUATE",
+      label: "Water Service/Supply Adequate",
       cells: {
         b: { label: "3.14" },
-        c: { label: "WATER SERVICE/SUPPLY IS ADEQUATE" },
+        c: { label: "Water Service/Supply Adequate" },
         d: { 
           fieldId: "d_49", 
           type: "dropdown", 
@@ -924,10 +926,10 @@ window.OBC.SectionModules.sect04 = (function () {
     "4.50": {
       id: "4.50",
       rowId: "4.50", 
-      label: "CONSTRUCTION TYPE",
+      label: "Construction Type",
       cells: {
         b: { label: "3.15" },
-        c: { label: "CONSTRUCTION TYPE" },
+        c: { label: "Construction Type" },
         d: { label: "BASED ON" },
         e: { 
           fieldId: "e_50", 
@@ -1180,6 +1182,53 @@ window.OBC.SectionModules.sect04 = (function () {
     }
   }
 
+  // Level 2→3 Filtering: E50 dropdown based on selected values in D40-D44 
+  function updateE50Filter() {
+    // Get selected values from building classification dropdowns (D40-D44)
+    const sourceFieldIds = ["d_40", "d_41", "d_42", "d_43", "d_44"];
+    const selectedValues = [];
+
+    sourceFieldIds.forEach((fieldId) => {
+      const value = window.OBC?.StateManager?.getValue(fieldId);
+      if (value && value !== "-") {
+        selectedValues.push(value);
+      }
+    });
+
+    // If no values selected in D40-D44, show all classification options
+    if (selectedValues.length === 0) {
+      if (window.OBC?.FieldManager?.updateDropdownOptions) {
+        window.OBC.FieldManager.updateDropdownOptions("e_50", buildingClassificationOptions);
+      }
+      return;
+    }
+
+    // Create filtered options: "Select..." + only the classifications selected in D40-D44
+    const filteredOptions = [
+      { value: "-", name: "Select Building Classification", description: "" }
+    ];
+
+    // Add only the selected classification values from D40-D44
+    buildingClassificationOptions.forEach((option) => {
+      if (selectedValues.includes(option.value)) {
+        filteredOptions.push(option);
+      }
+    });
+
+    // Update E50 dropdown through proper OBC architecture
+    if (window.OBC?.FieldManager?.updateDropdownOptions) {
+      window.OBC.FieldManager.updateDropdownOptions("e_50", filteredOptions);
+      
+      // Reset E50 if current value is no longer valid
+      const currentE50Value = window.OBC.StateManager.getValue("e_50") || "-";
+      const isCurrentValueValid = filteredOptions.some(option => option.value === currentE50Value);
+      
+      if (!isCurrentValueValid && currentE50Value !== "-") {
+        window.OBC.StateManager.setValue("e_50", "-", "user-modified");
+      }
+    }
+  }
+
   //==========================================================================
   // EVENT HANDLERS
   //==========================================================================
@@ -1206,9 +1255,24 @@ window.OBC.SectionModules.sect04 = (function () {
       if (dropdown) {
         dropdown.addEventListener("change", function () {
           updateLinkedDescription(fieldId, this.value);
+          
+          // Filter E50 when any building classification dropdown changes (D40-D44)
+          if (["d_40", "d_41", "d_42", "d_43", "d_44"].includes(fieldId)) {
+            setTimeout(updateE50Filter, 50); // Small delay to ensure state is updated
+          }
         });
       }
     });
+
+    // Set up StateManager listeners for E50 filtering (more reliable than DOM events)
+    if (window.OBC?.StateManager) {
+      const sourceFieldIds = ["d_40", "d_41", "d_42", "d_43", "d_44"];
+      sourceFieldIds.forEach((fieldId) => {
+        window.OBC.StateManager.addListener(fieldId, function() {
+          setTimeout(updateE50Filter, 50);
+        });
+      });
+    }
     
     window.OBC.sect04.initialized = true;
   }
@@ -1221,6 +1285,11 @@ window.OBC.SectionModules.sect04 = (function () {
 
     // Load and initialize classification filtering after Section 04 is fully rendered
     loadClassificationFilter();
+
+    // Initialize E50 filtering after a delay to ensure DOM is ready
+    setTimeout(() => {
+      updateE50Filter();
+    }, 200);
   }
 
   function loadClassificationFilter() {
@@ -1261,6 +1330,7 @@ window.OBC.SectionModules.sect04 = (function () {
     onSectionRendered: onSectionRendered,
     initializeEventHandlers: initializeEventHandlers,
     updateLinkedDescription: updateLinkedDescription,
+    updateE50Filter: updateE50Filter,
   };
 })();
 
