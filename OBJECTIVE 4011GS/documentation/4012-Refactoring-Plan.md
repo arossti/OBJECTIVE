@@ -493,9 +493,218 @@ Any section that fails these validations will be **rejected** and must be refact
 
 **⚠️ WARNING**: Do NOT proceed with any section work until mandatory patterns (input handling, number formatting, visual feedback) are fully implemented and tested. The cost of retrofitting non-compliant sections is too high.
 
+## 🎯 JUNE 2025 STRATEGIC WORKPLAN - 17 Days to Demo
+
+**Current Date**: June 13, 2025  
+**Demo Deadline**: June 30, 2025  
+**Available Time**: 17 days  
+**Critical Success Factor**: Functional demo showing complete professional workflow
+
+### 📊 Current Project Status Assessment
+
+**OBJECTIVE 4011GS (Gold Standard)**:
+- ✅ Core calculations working (Excel parity achieved)
+- ⚠️ ESLint/Prettier cleanup 70% complete (interrupted)
+- ❌ Reference/Target state contamination (tuple calculation issue)
+- ❌ 5-row export function incomplete
+
+**OBC Matrix**:
+- ✅ Sections 01-03 complete with advanced features
+- 🔄 Currently working on Section 04
+- ✅ Code quality excellent (1,519 ESLint issues resolved)
+- ✅ Cross-navigation working
+- ❌ Excel import/export mapping not validated
+- ❌ Sections 05-10 incomplete
+
+**Cross-System Integration**:
+- ✅ Navigation buttons functional
+- ⚠️ State persistence partial (OBC Matrix saves/restores, OBJECTIVE rebuilds from scratch)
+- ❌ Data import/export between systems missing
+- ❌ 5-row combined export not implemented
+
+### 🚀 STRATEGIC WORKPLAN: Critical Path to Demo
+
+#### **WEEK 1 (June 13-19): Foundation Completion - 7 Days**
+
+**Priority 1A: Complete OBC Matrix Core (Days 1-4)**
+```
+Goal: Finish sections 04-10 using established patterns
+Why: Regulatory compliance tool must be complete for funder demo
+Effort: 4 days (using copy-paste templates from sections 01-03)
+```
+
+- [ ] **Day 1**: Complete Section 04 (Firefighting Systems)
+- [ ] **Day 2**: Sections 05-06 (Structural, Occupant Safety) 
+- [ ] **Day 3**: Sections 07-08 (Fire Resistance, Plumbing)
+- [ ] **Day 4**: Sections 09-10 (Compliance, Notes)
+
+**Priority 1B: OBC Excel Mapping Validation (Day 5)**
+```
+Goal: Verify d_49 = Excel D49 mapping accuracy
+Why: Must import real regulatory Excel files correctly
+Effort: 1 day focused validation with test files
+```
+
+- [ ] **Day 5**: 
+  - Test real OBC Matrix Excel import
+  - Fix column offset issues (a,b,c DOM vs Excel A,B,C)
+  - Validate all field coordinate mappings
+  - Document any persistent mismatches
+
+**Priority 1C: 4011GS ESLint/Prettier Completion (Days 6-7)**
+```
+Goal: Finish interrupted code quality cleanup
+Why: Professional codebase for demo + sets up tuple work
+Effort: 2 days to complete remaining files
+```
+
+- [ ] **Day 6**: Complete ESLint/Prettier on remaining 4011GS files
+- [ ] **Day 7**: Apply OBC Matrix CSS improvements to 4011GS
+
+#### **WEEK 2 (June 20-26): Core Integration - 7 Days**
+
+**Priority 2A: 5-Row Export Function (Days 8-10)**
+```
+Goal: Complete export with Target, Reference, OBC data
+Why: Critical demo feature showing system integration
+Effort: 3 days for complex multi-system export
+```
+
+- [ ] **Day 8**: Design 5-row CSV structure (Header, Target, Reference, OBC-Header, OBC-Values)
+- [ ] **Day 9**: Implement Target/Reference state extraction from 4011GS
+- [ ] **Day 10**: Implement OBC data extraction and combine with TEUI export
+
+**Priority 2B: Data Bridge Foundation (Days 11-13)**
+```
+Goal: Basic import/export between OBC Matrix ↔ OBJECTIVE
+Why: Professional workflow demo requirement
+Effort: 3 days for core data mapping
+```
+
+- [ ] **Day 11**: Design field mapping schema (OBC gross area → TEUI conditioned area)
+- [ ] **Day 12**: Implement OBC → OBJECTIVE import (building areas, occupancy)
+- [ ] **Day 13**: Implement OBJECTIVE → OBC export (refined data back to compliance)
+
+**Priority 2C: Tuple Calculation Fix (Day 14)**
+```
+Goal: Fix Reference/Target state contamination
+Why: Calculation integrity critical for credibility
+Effort: 1 day focused fix using existing StateManager
+```
+
+- [ ] **Day 14**: 
+  - Implement proper state isolation in calculations
+  - Ensure Reference calculations don't contaminate Target state
+  - Validate calculation chains remain intact
+
+#### **WEEK 3 (June 27-30): Demo Preparation - 4 Days**
+
+**Priority 3A: Integration Testing (Days 15-16)**
+```
+Goal: End-to-end workflow validation
+Why: Demo must work flawlessly
+Effort: 2 days comprehensive testing
+```
+
+- [ ] **Day 15**: Complete workflow testing (OBC → Export → OBJECTIVE → Refine → Export)
+- [ ] **Day 16**: Cross-browser testing, mobile responsiveness, edge case handling
+
+**Priority 3B: Demo Preparation (Days 17-18)**
+```
+Goal: Polished demo ready for presentation
+Why: First impressions matter for funders
+Effort: 2 days polish and preparation
+```
+
+- [ ] **Day 17**: 
+  - Demo script preparation
+  - Sample project data for demonstration
+  - Performance optimization
+  - Warning banner updates if needed
+
+- [ ] **Day 18**: 
+  - Final testing and bug fixes
+  - Demo rehearsal
+  - Backup deployment verification
+  - Documentation updates
+
+### 🚨 RISK MITIGATION STRATEGIES
+
+#### **Scope Protection Measures**
+- **Time Boxing**: Each task has firm daily limits
+- **Feature Deferral**: Advanced features deferred to post-demo
+- **Quality Gates**: ESLint/Prettier compliance maintained but not blocking
+- **Fallback Plans**: Core OBC Matrix + basic TEUI as minimum viable demo
+
+#### **Critical Dependencies**
+- **Excel Mapping**: If Day 5 reveals major issues, defer complex imports to post-demo
+- **Tuple Calculations**: If Day 14 fix is complex, document issue and present workaround
+- **Data Bridge**: Focus on one-way import if bi-directional is too complex
+
+#### **Quality Assurance**
+- **Daily Commits**: All work committed daily with descriptive messages
+- **Branch Strategy**: Work on feature branches, merge to main only when stable
+- **Testing First**: Validate existing functionality before adding new features
+
+### 📋 DEMO SUCCESS CRITERIA
+
+**Minimum Viable Demo (Must Have)**:
+- ✅ Complete OBC Matrix (all 10 sections functional)
+- ✅ Complete OBJECTIVE TEUI calculator
+- ✅ Cross-navigation between systems
+- ✅ Excel export from both systems
+- ✅ Professional code quality (ESLint/Prettier compliant)
+
+**Professional Demo (Should Have)**:
+- ✅ OBC Matrix Excel import functionality
+- ✅ Basic data import from OBC to OBJECTIVE
+- ✅ 5-row combined export showing integrated workflow
+- ✅ Reference/Target calculation separation
+
+**Impressive Demo (Nice to Have)**:
+- ✅ Bi-directional data sync between systems
+- ✅ Advanced audit trail and data provenance
+- ✅ Real-time validation and conflict resolution
+
+### 🎯 POST-DEMO ROADMAP (July 2025+)
+
+**Phase A**: Advanced Integration Features
+**Phase B**: 4.012 Architecture Refactoring  
+**Phase C**: Performance Optimization & Scaling
+**Phase D**: Additional Regulatory Tools
+
+### 📊 SUCCESS METRICS
+
+**Technical Metrics**:
+- All sections render and function correctly
+- Cross-browser compatibility maintained
+- No calculation regressions from current state
+- Professional code quality standards met
+
+**Business Metrics**:
+- Complete regulatory compliance workflow demonstrated
+- Funder requirements satisfied
+- Professional architecture showcased
+- Clear value proposition for building industry
+
+### ⚠️ CRITICAL NOTES
+
+**Do NOT attempt during this sprint**:
+- ❌ Major architectural refactoring (save for post-demo)
+- ❌ New calculation methodologies
+- ❌ Complex UI redesigns
+- ❌ Performance optimization beyond basic cleanup
+
+**Focus ruthlessly on**:
+- ✅ Completing existing features
+- ✅ Connecting existing systems
+- ✅ Polishing existing functionality
+- ✅ Demonstrating professional workflow
+
 ---
 
-_Last Updated: December 19, 2024 - Enhanced with Mandatory Pattern Requirements_
-_Status: Planning Phase - **MANDATORY PATTERNS DEFINED**_
+_Last Updated: June 13, 2025 - Strategic Demo Workplan Added_
+_Status: **ACTIVE SPRINT** - 17 Days to Demo_
+_Next Review: June 20, 2025 (Weekly Sprint Review)_
 
-**🚨 CRITICAL UPDATE**: Document enhanced with mandatory pattern requirements based on OBC Matrix lessons learned. Global input handling, universal number formatting, and graceful visual feedback are now NON-NEGOTIABLE requirements for 4.012 to prevent costly retrofitting. Table layout challenges identified but deferred as research topic.
+**🚨 CRITICAL UPDATE**: Document enhanced with 17-day strategic workplan optimized for June 30th demo deadline. Focus shifted from architectural refactoring to feature completion and system integration. Post-demo roadmap established for major refactoring work.

@@ -17,7 +17,7 @@ window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
   // SECTION CONFIGURATION
   //==========================================================================
-  
+
   const SECTION_CONFIG = {
     name: "occupantSafety",
     excelRowStart: 58,
@@ -30,7 +30,7 @@ window.OBC.SectionModules.sect06 = (function () {
   //==========================================================================
   // DROPDOWN OPTIONS
   //==========================================================================
-  
+
   const dropdownOptions = {
     yesNoOptions: [
       { value: "-", name: "Select..." },
@@ -106,7 +106,7 @@ window.OBC.SectionModules.sect06 = (function () {
       rowId: "6.59",
       label: "Occupant Load 1",
       cells: {
-        a: { 
+        a: {
           content: "", // Will be populated by ExpandableRows utility
           classes: ["expandable-row-trigger"],
           attributes: {
@@ -170,7 +170,7 @@ window.OBC.SectionModules.sect06 = (function () {
       },
     },
 
-    // Row 60: Occupant Load Row 2  
+    // Row 60: Occupant Load Row 2
     "6.60": {
       id: "6.60",
       rowId: "6.60",
@@ -410,7 +410,7 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function getFields() {
     const fields = {};
-    
+
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
       if (rowKey === "header") return;
       if (!row.cells) return;
@@ -436,7 +436,7 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-    
+
     Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
       Object.values(row.cells).forEach((cell) => {
@@ -451,7 +451,7 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    
+
     if (sectionRows["header"]) {
       layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
@@ -494,7 +494,7 @@ window.OBC.SectionModules.sect06 = (function () {
       "n",
       "o",
     ];
-    
+
     columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
@@ -523,14 +523,14 @@ window.OBC.SectionModules.sect06 = (function () {
         value = element.textContent || element.value || "";
       }
     }
-    
+
     if (typeof value === "string") {
       const parsed = parseFloat(value.replace(/,/g, ""));
       return isNaN(parsed) ? defaultValue : parsed;
     } else if (typeof value === "number") {
       return isNaN(value) ? defaultValue : value;
     }
-    
+
     return defaultValue;
   }
 
@@ -561,7 +561,7 @@ window.OBC.SectionModules.sect06 = (function () {
     const load1 = getNumericValue("h_59");
     const load2 = getNumericValue("h_60");
     const load3 = getNumericValue("h_61");
-    
+
     const total = load1 + load2 + load3;
     setCalculatedValue("h_62", total, "number-0dp-comma");
   }
@@ -572,20 +572,20 @@ window.OBC.SectionModules.sect06 = (function () {
 
   function initializeEventHandlers() {
     // Initializing Section 06 event handlers
-    
+
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
-    
+
     // Add calculation listeners for occupant load totals
     const calculationTriggers = ["h_59", "h_60", "h_61"];
     calculationTriggers.forEach((fieldId) => {
-          if (window.OBC.StateManager?.addListener) {
+      if (window.OBC.StateManager?.addListener) {
         window.OBC.StateManager.addListener(
           fieldId,
           calculateOccupantLoadTotal,
         );
-    }
+      }
     });
   }
 
@@ -608,4 +608,4 @@ window.OBC.SectionModules.sect06 = (function () {
     onSectionRendered: onSectionRendered,
     calculateOccupantLoadTotal: calculateOccupantLoadTotal,
   };
-})(); 
+})();

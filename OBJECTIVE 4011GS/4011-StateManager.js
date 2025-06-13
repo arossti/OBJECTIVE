@@ -233,10 +233,10 @@ TEUI.StateManager = (function () {
     calculatedFields.clear();
     dirtyFields.clear();
     listeners.clear();
-    
+
     // Also clear localStorage
     try {
-      localStorage.removeItem('TEUI_Calculator_State');
+      localStorage.removeItem("TEUI_Calculator_State");
       console.log("TEUI StateManager: Cleared state from localStorage");
     } catch (e) {
       console.error("TEUI StateManager: Failed to clear localStorage:", e);
@@ -358,7 +358,10 @@ TEUI.StateManager = (function () {
     notifyListeners(fieldId, value, oldValue, state);
 
     // Auto-save state for user-modified and imported values (not defaults)
-    if (state === VALUE_STATES.USER_MODIFIED || state === VALUE_STATES.IMPORTED) {
+    if (
+      state === VALUE_STATES.USER_MODIFIED ||
+      state === VALUE_STATES.IMPORTED
+    ) {
       // Debounce saves to avoid excessive localStorage writes
       clearTimeout(window.teuiAutoSaveTimeout);
       window.teuiAutoSaveTimeout = setTimeout(() => {

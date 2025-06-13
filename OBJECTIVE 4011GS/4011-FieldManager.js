@@ -1325,7 +1325,8 @@ TEUI.FieldManager = (function () {
       }
       case "calculated":
       case "derived":
-      default: { // Includes simple text display fields not covered above
+      default: {
+        // Includes simple text display fields not covered above
         if (element.textContent !== displayValue) {
           element.textContent = displayValue;
         }
