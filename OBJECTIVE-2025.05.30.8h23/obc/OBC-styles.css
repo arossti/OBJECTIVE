@@ -2251,23 +2251,41 @@ body.viewing-reference-inputs .reference-input-display-locked select {
     white-space: nowrap;
 } */
 
-/* =============== Dropdown Sizing - Accordion Style =============== */
+/* =============== Dropdown Sizing - Smart Hybrid System =============== */
 
-/* All dropdowns use natural accordion sizing - no fixed widths */
+/* Default: Dropdowns without size classes use natural content-based sizing */
+.data-table select.form-select {
+  width: auto; /* Content-based by default */
+  min-width: 80px; /* Minimum for usability */
+}
+
+/* Small dropdowns: Standardized for YES/NO, Select options */
 .dropdown-sm,
-.dropdown-md, 
-.dropdown-lg,
 .dropdown-sm .form-select,
+[data-dropdown-size="sm"] {
+  width: 120px !important;
+  min-width: 120px !important;
+}
+
+/* Medium dropdowns: Standardized for longer options */
+.dropdown-md,
 .dropdown-md .form-select,
-.dropdown-lg .form-select {
-  width: auto !important;
+[data-dropdown-size="md"] {
+  width: 180px !important;
+  min-width: 180px !important;
 }
 
-/* Cells containing dropdowns also use natural sizing */
-[data-dropdown-size="sm"],
-[data-dropdown-size="md"],
+/* Large dropdowns: Standardized for building classifications */
+.dropdown-lg,
+.dropdown-lg .form-select,
 [data-dropdown-size="lg"] {
-  width: auto !important;
+  width: 280px !important;
+  min-width: 280px !important;
 }
 
-/* Note: All elements now use accordion-style natural sizing based on content */
+/* Ensure dropdowns with size classes override content-based sizing */
+.data-table .dropdown-sm select.form-select,
+.data-table .dropdown-md select.form-select,
+.data-table .dropdown-lg select.form-select {
+  width: 100% !important; /* Fill their sized container */
+}
