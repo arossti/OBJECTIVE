@@ -1295,11 +1295,11 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // Recalculate dependent values for application state
       const f27Value = getNumericValue("f_27");
-      const g27Value = calculateG27(f27Value, factor);
+      const g27Value = calculateG27Helper(f27Value, factor);
       setCalculatedValue("g_27", g27Value, "number-2dp-comma");
 
       const j27Value = getNumericValue("j_27");
-      const k27Value = calculateK27(j27Value, factor);
+      const k27Value = calculateK27Helper(j27Value, factor);
       setCalculatedValue("k_27", k27Value, "number-2dp-comma");
 
       updateSubtotals();
@@ -1441,11 +1441,11 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   // Recalculate G27 and K27 with the factor as an argument
-  function calculateG27(f27Value, l27Factor) {
+  function calculateG27Helper(f27Value, l27Factor) {
     return (f27Value * l27Factor) / 1000;
   }
 
-  function calculateK27(j27Value, l27Factor) {
+  function calculateK27Helper(j27Value, l27Factor) {
     return (j27Value * l27Factor) / 1000;
   }
 

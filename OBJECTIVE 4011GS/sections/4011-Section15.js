@@ -1418,6 +1418,15 @@ window.TEUI.SectionModules.sect15 = (function () {
             fieldId === "d_142"
           ) {
             format = "currency";
+          } else if (fieldId === "l_143" && value === "N/A") {
+            element.textContent = "N/A";
+            return; // Skip formatting for N/A
+          } else if (fieldId === "h_144" && value === "N/A") {
+            element.textContent = "N/A";
+            return;
+          } else if (fieldId === "l_144" && value === "N/A") {
+            element.textContent = "N/A";
+            return;
           } else if (
             fieldId === "d_144" ||
             fieldId === "h_144" ||
@@ -1435,15 +1444,6 @@ window.TEUI.SectionModules.sect15 = (function () {
             format = "tons";
           } else if (fieldId === "h_142") {
             format = "number"; // Years, 2 decimals ok
-          } else if (fieldId === "l_143" && value === "N/A") {
-            element.textContent = "N/A";
-            return; // Skip formatting for N/A
-          } else if (fieldId === "h_144" && value === "N/A") {
-            element.textContent = "N/A";
-            return;
-          } else if (fieldId === "l_144" && value === "N/A") {
-            element.textContent = "N/A";
-            return;
           }
 
           // Use formatNumber for display consistency

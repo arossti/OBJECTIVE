@@ -22,27 +22,7 @@ window.TEUI.SectionModules.sect09 = (function () {
   //==========================================================================
   // ADDED: STANDARD HELPER FUNCTIONS (Restored)
   //==========================================================================
-  function getFieldValue(fieldId) {
-    if (
-      window.TEUI &&
-      window.TEUI.StateManager &&
-      typeof window.TEUI.StateManager.getValue === "function"
-    ) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        return String(value); // Ensure it's a string
-      }
-    }
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        return element.value;
-      } else {
-        return element.textContent.trim();
-      }
-    }
-    return null;
-  }
+
 
   function getNumericValue(fieldId, defaultValue = 0) {
     const rawValue = getFieldValue(fieldId);
