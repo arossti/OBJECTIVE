@@ -875,11 +875,13 @@ window.OBC.SectionModules.sect04 = (function () {
             { value: "N/A", name: "N/A" },
           ],
         },
-        h: { label: "TYPE PROVIDED" },
-        i: { 
-          fieldId: "i_48", 
+        e: { content: "Type Provided" },
+        f: { content: "F" },
+        g: { content: "G" },
+        h: { 
+          fieldId: "j_48", 
           type: "dropdown", 
-          dropdownId: "dd_i_48", 
+          dropdownId: "dd_j_48", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
@@ -959,7 +961,7 @@ window.OBC.SectionModules.sect04 = (function () {
       rowId: "4.51",
       label: "Construction Type Restrictions",
       cells: {
-        d: { content: "RESTRICTIONS" },
+        d: { content: "Restrictions" },
         e: { 
           fieldId: "e_51", 
           type: "dropdown", 
@@ -989,7 +991,7 @@ window.OBC.SectionModules.sect04 = (function () {
       rowId: "4.52",
       label: "Actual Construction",
       cells: {
-        d: { content: "ACTUAL" },
+        d: { content: "Actual" },
         e: { 
           fieldId: "e_52", 
           type: "dropdown", 
@@ -1015,11 +1017,11 @@ window.OBC.SectionModules.sect04 = (function () {
             },
           ],
         },
-        h: { content: "HEAVY TIMBER CONSTRUCTION" },
-        j: { 
-          fieldId: "j_52", 
+        h: { content: "Heavy Timber Construction" },
+        i: { 
+          fieldId: "k_52", 
           type: "dropdown", 
-          dropdownId: "dd_j_52", 
+          dropdownId: "dd_k_52", 
           value: "-",
           section: "firefightingSystems",
           classes: ["dropdown-sm"],
