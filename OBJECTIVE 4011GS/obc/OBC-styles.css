@@ -2289,3 +2289,454 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 .data-table .dropdown-lg select.form-select {
   width: 100% !important; /* Fill their sized container */
 }
+
+/* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 05 LAYOUT OPTIMIZATION =============== */
+/* Section 05: Structural Requirements - compact dropdown layout with minimal empty columns */
+
+#structuralRequirements .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 05: Hide completely empty columns to improve density */
+#structuralRequirements .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#structuralRequirements .data-table td:nth-child(6),  /* Column F - empty */
+#structuralRequirements .data-table td:nth-child(7),  /* Column G - empty */
+#structuralRequirements .data-table td:nth-child(8),  /* Column H - empty */
+#structuralRequirements .data-table td:nth-child(10), /* Column J - empty */
+#structuralRequirements .data-table td:nth-child(11), /* Column K - empty */
+#structuralRequirements .data-table td:nth-child(13), /* Column M - empty */
+#structuralRequirements .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 05: Controlled width for content columns */
+#structuralRequirements .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
+#structuralRequirements .data-table td:nth-child(3) { width: 220px !important; }  /* Column C - labels */
+#structuralRequirements .data-table td:nth-child(4) { 
+    width: 180px !important;  /* Column D - dropdowns */
+    max-width: 180px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#structuralRequirements .data-table td:nth-child(5) { 
+    width: 300px !important;  /* Column E - descriptions */
+    max-width: 300px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#structuralRequirements .data-table td:nth-child(9) { width: 120px !important; }  /* Column I - additional fields */
+#structuralRequirements .data-table td:nth-child(12) { width: 150px !important; } /* Column L - OBC references */
+#structuralRequirements .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
+
+/* Section 05: Dropdown and input constraints */
+#structuralRequirements .data-table td:nth-child(4) select,
+#structuralRequirements .data-table td:nth-child(4) [contenteditable] {
+    width: 100% !important;
+    max-width: 170px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 05: Description field handling */
+#structuralRequirements .data-table td:nth-child(5) [contenteditable] {
+    width: 100% !important;
+    max-width: 290px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 05: Notes column wrapping */
+#structuralRequirements .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 05 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 06 LAYOUT OPTIMIZATION =============== */
+/* Section 06: Occupant Safety & Accessibility - focus on occupant load calculations */
+
+#occupantSafety .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 06: Hide completely empty columns to improve density */
+#occupantSafety .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#occupantSafety .data-table td:nth-child(6),  /* Column F - empty */
+#occupantSafety .data-table td:nth-child(7),  /* Column G - empty */
+#occupantSafety .data-table td:nth-child(8),  /* Column H - empty */
+#occupantSafety .data-table td:nth-child(13), /* Column M - empty */
+#occupantSafety .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 06: Controlled width for content columns */
+#occupantSafety .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
+#occupantSafety .data-table td:nth-child(3) { width: 240px !important; }  /* Column C - labels */
+#occupantSafety .data-table td:nth-child(4) { 
+    width: 180px !important;  /* Column D - dropdowns and numeric inputs (increased) */
+    max-width: 180px !important;
+    text-align: right !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#occupantSafety .data-table td:nth-child(5) { 
+    width: 120px !important;  /* Column E - numeric inputs */
+    max-width: 120px !important;
+    text-align: right !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#occupantSafety .data-table td:nth-child(9) { 
+    width: 120px !important;  /* Column I - calculations */
+    max-width: 120px !important;
+    text-align: right !important;
+    font-weight: 700 !important;
+}
+#occupantSafety .data-table td:nth-child(10) { width: 200px !important; } /* Column J - dropdowns (increased for full dropdown text) */
+#occupantSafety .data-table td:nth-child(11) { width: 100px !important; } /* Column K - counts */
+#occupantSafety .data-table td:nth-child(12) { width: 150px !important; } /* Column L - OBC references */
+#occupantSafety .data-table td:nth-child(15) { width: 250px !important; } /* Column O - Notes (increased for better note-taking) */
+
+/* Section 06: Dropdown styling for Columns D and J */
+#occupantSafety .data-table td:nth-child(4) select {  /* Column D dropdowns (rows 6.63, 6.65) */
+    width: 100% !important;
+    max-width: 170px !important;  /* Match Column D width (180px) */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: left !important;  /* Override right-align for dropdowns */
+}
+
+#occupantSafety .data-table td:nth-child(10) select { /* Column J dropdowns */
+    width: 100% !important;
+    max-width: 190px !important;  /* Match Column J width (200px) */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 06: Numeric input styling */
+#occupantSafety .data-table td:nth-child(4) input,
+#occupantSafety .data-table td:nth-child(5) input,
+#occupantSafety .data-table td:nth-child(11) input {
+    width: 100% !important;
+    text-align: right !important;
+    font-family: monospace !important;
+}
+
+/* Section 06: Notes column wrapping */
+#occupantSafety .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 06 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 07 LAYOUT OPTIMIZATION =============== */
+/* Section 07: Fire Resistance & Spatial Separation - rating tables and assembly specifications */
+
+#fireResistance .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 07: Hide completely empty columns to improve density */
+#fireResistance .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#fireResistance .data-table td:nth-child(7),  /* Column G - empty */
+#fireResistance .data-table td:nth-child(8),  /* Column H - empty */
+#fireResistance .data-table td:nth-child(13), /* Column M - empty */
+#fireResistance .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 07: Controlled width for content columns */
+#fireResistance .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
+#fireResistance .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - assembly types */
+#fireResistance .data-table td:nth-child(4) { 
+    width: 100px !important;  /* Column D - ratings */
+    max-width: 100px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(5) { 
+    width: 100px !important;  /* Column E - ratings */
+    max-width: 100px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(6) { 
+    width: 100px !important;  /* Column F - ratings */
+    max-width: 100px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(9) { width: 150px !important; }  /* Column I - dropdowns */
+#fireResistance .data-table td:nth-child(10) { width: 120px !important; } /* Column J - measurements */
+#fireResistance .data-table td:nth-child(11) { width: 150px !important; } /* Column K - dropdowns */
+#fireResistance .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
+#fireResistance .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
+
+/* Section 07: Fire rating center alignment */
+#fireResistance .data-table td:nth-child(4) select,
+#fireResistance .data-table td:nth-child(5) select,
+#fireResistance .data-table td:nth-child(6) select {
+    text-align: center !important;
+    font-weight: 600 !important;
+    color: #d73527 !important; /* Fire red color for ratings */
+}
+
+/* Section 07: Notes column wrapping */
+#fireResistance .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 07 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 08 LAYOUT OPTIMIZATION =============== */
+/* Section 08: Plumbing Fixture Requirements - calculations and fixture counts */
+
+#plumbingFixtures .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 08: Hide completely empty columns to improve density */
+#plumbingFixtures .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#plumbingFixtures .data-table td:nth-child(6),  /* Column F - empty */
+#plumbingFixtures .data-table td:nth-child(7),  /* Column G - empty */
+#plumbingFixtures .data-table td:nth-child(8),  /* Column H - empty */
+#plumbingFixtures .data-table td:nth-child(13), /* Column M - empty */
+#plumbingFixtures .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 08: Controlled width for content columns */
+#plumbingFixtures .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
+#plumbingFixtures .data-table td:nth-child(3) { width: 220px !important; }  /* Column C - fixture types */
+#plumbingFixtures .data-table td:nth-child(4) { 
+    width: 100px !important;  /* Column D - ratios */
+    max-width: 100px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#plumbingFixtures .data-table td:nth-child(5) { 
+    width: 120px !important;  /* Column E - occupant loads */
+    max-width: 120px !important;
+    text-align: right !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#plumbingFixtures .data-table td:nth-child(9) { 
+    width: 100px !important;  /* Column I - calculations */
+    max-width: 100px !important;
+    text-align: right !important;
+    font-weight: 700 !important;
+}
+#plumbingFixtures .data-table td:nth-child(10) { width: 100px !important; } /* Column J - requirements */
+#plumbingFixtures .data-table td:nth-child(11) { width: 100px !important; } /* Column K - provisions */
+#plumbingFixtures .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
+#plumbingFixtures .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
+
+/* Section 08: Numeric input styling */
+#plumbingFixtures .data-table td:nth-child(5) input,
+#plumbingFixtures .data-table td:nth-child(10) input,
+#plumbingFixtures .data-table td:nth-child(11) input {
+    width: 100% !important;
+    text-align: right !important;
+    font-family: monospace !important;
+}
+
+/* Section 08: Notes column wrapping */
+#plumbingFixtures .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 08 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 09 LAYOUT OPTIMIZATION =============== */
+/* Section 09: Compliance & Design - energy efficiency and alternative solutions */
+
+#complianceDesign .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+    border-collapse: separate; /* Ensure proper column spacing */
+}
+
+/* Section 09: Hide completely empty columns to improve density */
+#complianceDesign .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#complianceDesign .data-table td:nth-child(6),  /* Column F - empty */
+#complianceDesign .data-table td:nth-child(7),  /* Column G - empty */
+#complianceDesign .data-table td:nth-child(8),  /* Column H - empty */
+#complianceDesign .data-table td:nth-child(10), /* Column J - empty */
+#complianceDesign .data-table td:nth-child(11), /* Column K - empty */
+#complianceDesign .data-table td:nth-child(13), /* Column M - empty */
+#complianceDesign .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 09: Controlled width for content columns */
+#complianceDesign .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
+#complianceDesign .data-table td:nth-child(3) { 
+    width: 240px !important;  /* Column C - compliance items */
+    max-width: 240px !important;
+}
+#complianceDesign .data-table td:nth-child(4) { 
+    width: 220px !important;  /* Column D - dropdowns (increased for full dropdown text) */
+    max-width: 220px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#complianceDesign .data-table td:nth-child(5) { 
+    width: 120px !important;  /* Column E - values */
+    max-width: 120px !important;
+    text-align: right !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#complianceDesign .data-table td:nth-child(9) { 
+    width: 300px !important;  /* Column I - descriptions */
+    max-width: 300px !important;
+}
+#complianceDesign .data-table td:nth-child(12) { 
+    width: 120px !important; /* Column L - OBC references */
+    max-width: 120px !important;
+}
+#complianceDesign .data-table td:nth-child(15) { 
+    width: 250px !important; /* Column O - Notes (increased for better note-taking) */
+    max-width: 250px !important;
+}
+
+/* Section 09: Dropdown constraints */
+#complianceDesign .data-table td:nth-child(4) select {
+    width: 100% !important;
+    max-width: 215px !important;  /* Match column width (220px) with small buffer */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 09: Description field handling */
+#complianceDesign .data-table td:nth-child(9) [contenteditable] {
+    width: 100% !important;
+    max-width: 295px !important;  /* Match column width (300px) with small buffer */
+    white-space: normal !important;
+    word-wrap: break-word !important;
+}
+
+/* Section 09: Column stability - prevent uneven expansion */
+#complianceDesign .data-table td {
+    flex-shrink: 0 !important; /* Prevent columns from shrinking */
+    box-sizing: border-box !important;
+}
+
+/* Section 09: Notes column wrapping */
+#complianceDesign .data-table td:nth-child(15) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 09 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 10 LAYOUT OPTIMIZATION =============== */
+/* Section 10: Notes - project documentation and footer information */
+
+#notes .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 10: Hide completely empty columns to improve density */
+#notes .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#notes .data-table td:nth-child(2),  /* Column B - empty for notes section */
+#notes .data-table td:nth-child(5),  /* Column E - empty */
+#notes .data-table td:nth-child(6),  /* Column F - empty */
+#notes .data-table td:nth-child(7),  /* Column G - empty */
+#notes .data-table td:nth-child(8),  /* Column H - empty */
+#notes .data-table td:nth-child(9),  /* Column I - empty */
+#notes .data-table td:nth-child(10), /* Column J - empty */
+#notes .data-table td:nth-child(11), /* Column K - empty */
+#notes .data-table td:nth-child(12), /* Column L - empty */
+#notes .data-table td:nth-child(13), /* Column M - empty */
+#notes .data-table td:nth-child(14)  /* Column N - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 10: Controlled width for content columns - maximize note-taking space */
+#notes .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - note categories */
+#notes .data-table td:nth-child(4) { 
+    width: auto !important;       /* Column D - main note content - expand to fill */
+    min-width: 600px !important;  /* Generous minimum for note writing */
+    max-width: none !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+    vertical-align: top !important;
+}
+#notes .data-table td:nth-child(15) { width: 300px !important; } /* Column O - additional notes */
+
+/* Section 10: Note content area optimization */
+#notes .data-table td:nth-child(4) [contenteditable],
+#notes .data-table td:nth-child(15) [contenteditable] {
+    width: 100% !important;
+    min-height: 40px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    line-height: 1.4 !important;
+    padding: 8px !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 4px !important;
+    background-color: #fafafa !important;
+}
+
+/* Section 10: Note content focus styling */
+#notes .data-table td:nth-child(4) [contenteditable]:focus,
+#notes .data-table td:nth-child(15) [contenteditable]:focus {
+    background-color: #fff !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25) !important;
+    outline: none !important;
+}
+
+/* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
