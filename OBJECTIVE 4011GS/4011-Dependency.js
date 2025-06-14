@@ -471,6 +471,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
    * @param {Element} container - The parent container element (outside the SVG wrapper)
    */
   createFilterControls(parentElement) {
+    // DUPLICATE FIX: Clear any existing controls first to prevent double headers
+    const existingControls = parentElement.querySelector(".dependency-graph-controls");
+    if (existingControls) {
+      existingControls.remove();
+    }
+    
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "dependency-graph-controls";
     controlsContainer.style.display = "flex";
@@ -576,6 +582,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
    * @param {Element} container - The parent container element
    */
   createInfoPanel(parentElement) {
+    // DUPLICATE FIX: Clear any existing info panel first to prevent duplicates
+    const existingPanel = parentElement.querySelector(".dependency-info-panel");
+    if (existingPanel) {
+      existingPanel.remove();
+    }
+    
     const infoPanel = document.createElement("div");
     infoPanel.className = "dependency-info-panel alert alert-secondary"; // Use Bootstrap alert
     infoPanel.style.marginBottom = "10px";
