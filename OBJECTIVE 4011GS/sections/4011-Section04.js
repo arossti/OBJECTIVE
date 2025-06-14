@@ -671,7 +671,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       if (!row.cells) return;
 
       // Process each cell in the row
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           // Create field definition with all relevant properties
           fields[cell.fieldId] = {
@@ -889,7 +889,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       }
 
       // Handle changes to the field value
-      field.addEventListener("blur", function (e) {
+      field.addEventListener("blur", function (_e) {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
@@ -925,7 +925,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       // Add paste event handler to clean pasted values immediately
-      field.addEventListener("paste", function (e) {
+      field.addEventListener("paste", function (_e) {
         // Let the paste happen normally
         setTimeout(() => {
           // After paste, clean up the value but don't process calculations yet
