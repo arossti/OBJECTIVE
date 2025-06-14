@@ -172,6 +172,10 @@ TEUI.StateManager = (function () {
   let calculationInProgress = false; // Flag to prevent recursive calculations
   let calculationDepth = 0;
   const MAX_CALCULATION_DEPTH = 5;
+  
+  // CRITICAL: StateManager-level recursion protection for setValue->listener->setValue loops
+  let setValueOperationInProgress = false; // Flag to prevent setValue recursion
+  const activeSetValueOperations = new Set(); // Track active setValue operations by fieldId
 
   // Track warnings to avoid spam during IT-DEPENDS migration
   const warnedMissingCalculations = new Set();
@@ -321,95 +325,114 @@ TEUI.StateManager = (function () {
    * @returns {boolean} True if the value changed
    */
   function setValue(fieldId, value, state = VALUE_STATES.USER_MODIFIED) {
-    // Check if we're in Reference Mode and this is an independently editable field
-    if (
-      window.TEUI &&
-      TEUI.ReferenceToggle &&
-      TEUI.ReferenceToggle.isReferenceMode() &&
-      state === VALUE_STATES.USER_MODIFIED
-    ) {
-      // Check if this field is independently editable in Reference Mode
-      if (window.TEUI?.AppendixE?.getFieldBehavior) {
-        const currentStandard = getValue("d_13") || "OBC SB10 5.5-6 Z6";
-        const behavior = window.TEUI.AppendixE.getFieldBehavior(
-          fieldId,
-          currentStandard,
-        );
-        if (behavior === "Independently User-Editable in Reference Mode") {
-          // Store in separate reference state and update activeReferenceDataSet
-          const oldValue = independentReferenceState[fieldId] || null;
-          independentReferenceState[fieldId] = value;
-          activeReferenceDataSet[fieldId] = value; // Keep in sync
-
-          console.log(
-            `[StateManager] Set independent Reference value for ${fieldId}: ${value}`,
-          );
-          notifyListeners(fieldId, value, oldValue, "reference-user-modified");
-          return true;
-        }
-      }
-    }
-
-    // << NEW: Check if application state updates are muted >>
-    if (
-      isApplicationStateMuted &&
-      state !== VALUE_STATES.CALCULATED &&
-      state !== VALUE_STATES.DERIVED
-    ) {
-      // if (fieldId === 'k_120') { // Intentionally commented out
-      //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
-      // }
-      // if (fieldId === 'g_67') { // Intentionally commented out
-      //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
-      // }
-      return false; // Prevent update to this.fields (application state)
-    }
-
-    // << NEW: Store value if it's from an import >>
-    if (state === VALUE_STATES.IMPORTED) {
-      lastImportedState[fieldId] = value;
-    }
-
-    // if (fieldId === 'k_120') { // Intentionally commented out
-    //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
-    // }
-    // if (fieldId === 'g_67') { // Intentionally commented out
-    //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
-    // }
-
-    const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
-
-    const oldValue = getValue(fieldId); // Use mode-aware getValue for oldValue as original did.
-
-    // If field doesn't exist, create it
-    if (!fields.has(fieldId)) {
-      fields.set(fieldId, {
-        id: fieldId,
-        value: value,
-        state: state,
-      });
-
-      notifyListeners(fieldId, value, null, state);
-      return true;
-    }
-
-    // Update the existing field
-    const field = fields.get(fieldId);
-
-    if (field.value === value && field.state === state) {
+    // CRITICAL: Prevent setValue->listener->setValue recursion loops
+    if (activeSetValueOperations.has(fieldId)) {
+      // console.warn(`[StateManager] Recursion protection: setValue already active for ${fieldId}, skipping...`);
       return false;
     }
 
-    field.value = value;
-    field.state = state;
+    // Add this field to active operations
+    activeSetValueOperations.add(fieldId);
+    setValueOperationInProgress = true;
 
-    if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
-      markDependentsDirty(fieldId);
+    try {
+      // Check if we're in Reference Mode and this is an independently editable field
+      if (
+        window.TEUI &&
+        TEUI.ReferenceToggle &&
+        TEUI.ReferenceToggle.isReferenceMode() &&
+        state === VALUE_STATES.USER_MODIFIED
+      ) {
+        // Check if this field is independently editable in Reference Mode
+        if (window.TEUI?.AppendixE?.getFieldBehavior) {
+          const currentStandard = getValue("d_13") || "OBC SB10 5.5-6 Z6";
+          const behavior = window.TEUI.AppendixE.getFieldBehavior(
+            fieldId,
+            currentStandard,
+          );
+          if (behavior === "Independently User-Editable in Reference Mode") {
+            // Store in separate reference state and update activeReferenceDataSet
+            const oldValue = independentReferenceState[fieldId] || null;
+            independentReferenceState[fieldId] = value;
+            activeReferenceDataSet[fieldId] = value; // Keep in sync
+
+            console.log(
+              `[StateManager] Set independent Reference value for ${fieldId}: ${value}`,
+            );
+            notifyListeners(fieldId, value, oldValue, "reference-user-modified");
+            return true;
+          }
+        }
+      }
+
+      // << NEW: Check if application state updates are muted >>
+      if (
+        isApplicationStateMuted &&
+        state !== VALUE_STATES.CALCULATED &&
+        state !== VALUE_STATES.DERIVED
+      ) {
+        // if (fieldId === 'k_120') { // Intentionally commented out
+        //     console.warn(`[StateManager k_120] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
+        // }
+        // if (fieldId === 'g_67') { // Intentionally commented out
+        //     console.warn(`[StateManager g_67] MUTED setValue for ${fieldId} to \"${value}\", stateType: ${state}`);
+        // }
+        return false; // Prevent update to this.fields (application state)
+      }
+
+      // << NEW: Store value if it's from an import >>
+      if (state === VALUE_STATES.IMPORTED) {
+        lastImportedState[fieldId] = value;
+      }
+
+      // if (fieldId === 'k_120') { // Intentionally commented out
+      //     console.log(`[StateManager k_120] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+      // }
+      // if (fieldId === 'g_67') { // Intentionally commented out
+      //     console.log(`[StateManager g_67] ALLOWED setValue for ${fieldId} to \"${value}\", stateType: ${state}. Muted: ${isApplicationStateMuted}`);
+      // }
+
+      const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
+
+      const oldValue = getValue(fieldId); // Use mode-aware getValue for oldValue as original did.
+
+      // If field doesn't exist, create it
+      if (!fields.has(fieldId)) {
+        fields.set(fieldId, {
+          id: fieldId,
+          value: value,
+          state: state,
+        });
+
+        notifyListeners(fieldId, value, null, state);
+        return true;
+      }
+
+      // Update the existing field
+      const field = fields.get(fieldId);
+
+      if (field.value === value && field.state === state) {
+        return false;
+      }
+
+      field.value = value;
+      field.state = state;
+
+      if (state !== VALUE_STATES.CALCULATED && state !== VALUE_STATES.DERIVED) {
+        markDependentsDirty(fieldId);
+      }
+
+      notifyListeners(fieldId, value, oldValue, state);
+
+      return true;
+    } finally {
+      // CRITICAL: Always remove the field from active operations
+      activeSetValueOperations.delete(fieldId);
+      // Reset the global flag when no more setValue operations are active
+      if (activeSetValueOperations.size === 0) {
+        setValueOperationInProgress = false;
+      }
     }
-
-    notifyListeners(fieldId, value, oldValue, state);
-
-    return true;
   }
 
   /**
@@ -516,6 +539,18 @@ TEUI.StateManager = (function () {
    * @param {string} state - Value state
    */
   function notifyListeners(fieldId, newValue, oldValue, state) {
+    // CRITICAL: Prevent infinite recursion loops
+    if (window.sectionCalculationInProgress) {
+      return;
+    }
+
+    // CRITICAL: Additional protection for specific problematic fields
+    // These fields are causing Section 12 <-> Section 13 recursion loops
+    if (setValueOperationInProgress && (fieldId === 'f_115' || fieldId === 'h_115' || fieldId === 'l_115')) {
+      // console.warn(`[StateManager] Preventing listener notification for ${fieldId} during setValue operation`);
+      return;
+    }
+
     // Original loop for other fieldIds
     if (!listeners.has(fieldId)) {
       return;

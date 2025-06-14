@@ -19,6 +19,7 @@ window.TEUI.SectionModules.sect04 = (function () {
   // Recursion protection flags
   let referenceCalculationInProgress = false;
   let targetCalculationInProgress = false;
+  let targetModelRecursionProtection = false; // CRITICAL: Prevent calculateTargetModel recursion
 
   //==========================================================================
   // HELPER FUNCTIONS
@@ -1464,8 +1465,10 @@ window.TEUI.SectionModules.sect04 = (function () {
         }
       }
 
-      // CRITICAL FIX: Always calculate Reference model after updating grid intensity
-      calculateReferenceModel();
+      // CRITICAL FIX: Only calculate Reference model if not already calculating to prevent recursion
+      if (!referenceCalculationInProgress) {
+        calculateReferenceModel();
+      }
 
       // Update UI in Reference Mode if active
       if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
@@ -1475,8 +1478,10 @@ window.TEUI.SectionModules.sect04 = (function () {
       // Update application state
       setCalculatedValue("l_27", factor, "integer");
 
-      // CRITICAL FIX: Always calculate Application model after updating grid intensity
-      calculateTargetModel();
+      // CRITICAL FIX: Only calculate Application model if not already calculating to prevent recursion
+      if (!targetModelRecursionProtection) {
+        calculateTargetModel();
+      }
 
       // Update UI in Application Mode if active
       if (!window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
@@ -2653,37 +2658,49 @@ window.TEUI.SectionModules.sect04 = (function () {
    * TARGET MODEL ENGINE: Calculate all Target/Application values
    */
   function calculateTargetModel() {
-    // Update electricity emission factor
-    updateElectricityEmissionFactor();
+    // CRITICAL: Prevent recursion loops with updateElectricityEmissionFactor
+    if (targetModelRecursionProtection) {
+      // console.warn('[S04] calculateTargetModel recursion protection active, skipping...');
+      return;
+    }
 
-    // Calculate all rows
-    const f27Value = calculateF27();
-    setCalculatedValue("f_27", f27Value, "number-2dp-comma");
-    const g27Value = calculateG27();
-    setCalculatedValue("g_27", g27Value, "number-2dp-comma");
+    try {
+      targetModelRecursionProtection = true;
 
-    const f28Value = calculateF28();
-    setCalculatedValue("f_28", f28Value, "number-2dp-comma");
-    const g28Value = calculateG28();
-    setCalculatedValue("g_28", g28Value, "number-2dp-comma");
+      // Update electricity emission factor only if not in recursion
+      updateElectricityEmissionFactor();
 
-    const f29Value = calculateF29();
-    setCalculatedValue("f_29", f29Value, "number-2dp-comma");
-    const g29Value = calculateG29();
-    setCalculatedValue("g_29", g29Value, "number-2dp-comma");
+      // Calculate all rows
+      const f27Value = calculateF27();
+      setCalculatedValue("f_27", f27Value, "number-2dp-comma");
+      const g27Value = calculateG27();
+      setCalculatedValue("g_27", g27Value, "number-2dp-comma");
 
-    const f30Value = calculateF30();
-    setCalculatedValue("f_30", f30Value, "number-2dp-comma");
-    const g30Value = calculateG30();
-    setCalculatedValue("g_30", g30Value, "number-2dp-comma");
+      const f28Value = calculateF28();
+      setCalculatedValue("f_28", f28Value, "number-2dp-comma");
+      const g28Value = calculateG28();
+      setCalculatedValue("g_28", g28Value, "number-2dp-comma");
 
-    const f31Value = calculateF31();
-    setCalculatedValue("f_31", f31Value, "number-2dp-comma");
-    const g31Value = calculateG31();
-    setCalculatedValue("g_31", g31Value, "number-2dp-comma");
+      const f29Value = calculateF29();
+      setCalculatedValue("f_29", f29Value, "number-2dp-comma");
+      const g29Value = calculateG29();
+      setCalculatedValue("g_29", g29Value, "number-2dp-comma");
 
-    // Update subtotals
-    updateSubtotals();
+      const f30Value = calculateF30();
+      setCalculatedValue("f_30", f30Value, "number-2dp-comma");
+      const g30Value = calculateG30();
+      setCalculatedValue("g_30", g30Value, "number-2dp-comma");
+
+      const f31Value = calculateF31();
+      setCalculatedValue("f_31", f31Value, "number-2dp-comma");
+      const g31Value = calculateG31();
+      setCalculatedValue("g_31", g31Value, "number-2dp-comma");
+
+      // Update subtotals
+      updateSubtotals();
+    } finally {
+      targetModelRecursionProtection = false;
+    }
   }
 
   /**

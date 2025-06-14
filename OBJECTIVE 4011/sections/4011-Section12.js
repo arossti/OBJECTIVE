@@ -1452,6 +1452,11 @@ window.TEUI.SectionModules.sect12 = (function () {
    * Always runs both engines regardless of UI mode
    */
   function calculateAll() {
+    // CRITICAL: Prevent infinite recursion loops
+    if (window.sectionCalculationInProgress) {
+      return;
+    }
+
     // console.log("[Section12] Running dual-engine calculations..."); // Comment out
 
     calculateApplicationModel();
