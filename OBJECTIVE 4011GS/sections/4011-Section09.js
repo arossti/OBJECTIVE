@@ -2212,9 +2212,9 @@ document.addEventListener("teui-section-rendered", function (event) {
   if (event.detail?.sectionId === "occupantInternalGains") {
     // PERFORMANCE FIX: Execute initialization immediately to avoid requestAnimationFrame violations
     // Heavy initialization work should not be in animation frames (causes 99-116ms violations)
-    if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
-      window.TEUI.SectionModules.sect09.onSectionRendered();
-    }
+      if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
+        window.TEUI.SectionModules.sect09.onSectionRendered();
+      }
   }
 });
 

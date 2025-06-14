@@ -543,12 +543,14 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     dagreButton.onclick = () => this.switchLayout("dagre");
     this.dagreButton = dagreButton; // Store ref
 
-    // Reset button
+    // TODO: Reset button - RAINY DAY PROJECT
+    // Reset should: rebuild the entire graph AND fit it to view
+    // Button visible but functionality disabled to maintain layout
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset View";
-    resetButton.className = "btn btn-outline-secondary btn-sm"; // Bootstrap button
-    resetButton.onclick = () => this.resetView(); // FIX: Add missing event handler
-    this.resetButton = resetButton; // Store reference
+    resetButton.className = "btn btn-outline-secondary btn-sm";
+    // resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
+    this.resetButton = resetButton;
 
     // Fullscreen button
     const fullscreenButton = document.createElement("button");
@@ -568,7 +570,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     layoutContainer.appendChild(forceButton);
     layoutContainer.appendChild(dagreButton);
-    layoutContainer.appendChild(resetButton);
+    layoutContainer.appendChild(resetButton); // Button visible but non-functional
     layoutContainer.appendChild(legendToggleButton);
     layoutContainer.appendChild(fullscreenButton);
     controlsContainer.appendChild(layoutContainer);
@@ -637,9 +639,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       });
     }
 
-    // Reset button event
+    // Reset button event - disabled functionality but button remains visible
     if (this.resetButton) {
-      this.resetButton.onclick = () => this.resetView();
+      // this.resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
     }
 
     // Fullscreen button event
@@ -1453,11 +1455,10 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                   dagreButton.onclick = () => this.switchLayout("dagre");
                 }
 
-                const resetButton = floatingControls.querySelector(
-                  "button:nth-child(3)",
-                );
+                // Reset button in fullscreen - visible but non-functional
+                const resetButton = floatingControls.querySelector("button:nth-child(3)");
                 if (resetButton) {
-                  resetButton.onclick = () => this.resetView();
+                  // resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
                 }
 
                 const legendButton = floatingControls.querySelector(
@@ -1701,56 +1702,56 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         // Step 2: Calculate dimensions and scale in second frame
         requestAnimationFrame(() => {
           try {
-            // Add some padding
-            const padding = 50;
-            minX -= padding;
-            minY -= padding;
-            maxX += padding;
-            maxY += padding;
+        // Add some padding
+        const padding = 50;
+        minX -= padding;
+        minY -= padding;
+        maxX += padding;
+        maxY += padding;
 
-            // Calculate the scale needed to fit the graph
-            const graphWidth = maxX - minX;
-            const graphHeight = maxY - minY;
-            const containerWidth = this.width;
-            const containerHeight = this.height;
+        // Calculate the scale needed to fit the graph
+        const graphWidth = maxX - minX;
+        const graphHeight = maxY - minY;
+        const containerWidth = this.width;
+        const containerHeight = this.height;
 
-            if (
-              graphWidth <= 0 ||
-              graphHeight <= 0 ||
-              containerWidth <= 0 ||
-              containerHeight <= 0
-            ) {
-              console.warn(
-                "[DependencyGraph] Invalid dimensions for fitting graph",
-                {
-                  graph: { width: graphWidth, height: graphHeight },
-                  container: { width: containerWidth, height: containerHeight },
-                },
-              );
-              return;
-            }
+        if (
+          graphWidth <= 0 ||
+          graphHeight <= 0 ||
+          containerWidth <= 0 ||
+          containerHeight <= 0
+        ) {
+          console.warn(
+            "[DependencyGraph] Invalid dimensions for fitting graph",
+            {
+              graph: { width: graphWidth, height: graphHeight },
+              container: { width: containerWidth, height: containerHeight },
+            },
+          );
+          return;
+        }
 
-            const scaleX = containerWidth / graphWidth;
-            const scaleY = containerHeight / graphHeight;
-            const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
+        const scaleX = containerWidth / graphWidth;
+        const scaleY = containerHeight / graphHeight;
+        const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to avoid excessive scaling
 
-            // Calculate the translation needed to center the graph
-            const centerX = (minX + maxX) / 2;
-            const centerY = (minY + maxY) / 2;
+        // Calculate the translation needed to center the graph
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
 
-            const translateX = containerWidth / 2 - centerX * scale;
-            const translateY = containerHeight / 2 - centerY * scale;
+        const translateX = containerWidth / 2 - centerX * scale;
+        const translateY = containerHeight / 2 - centerY * scale;
 
             // Step 3: Apply transform in third frame (allows D3 to optimize)
             requestAnimationFrame(() => {
               try {
-                this.svg
-                  .transition()
-                  .duration(750)
-                  .call(
-                    d3.zoom().transform,
-                    d3.zoomIdentity.translate(translateX, translateY).scale(scale),
-                  );
+        this.svg
+          .transition()
+          .duration(750)
+          .call(
+            d3.zoom().transform,
+            d3.zoomIdentity.translate(translateX, translateY).scale(scale),
+          );
 
                 // console.log(
                 //   "[DependencyGraph] Fitted graph to container with scale",
@@ -1763,12 +1764,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                 );
               }
             });
-          } catch (error) {
-            console.error(
+      } catch (error) {
+        console.error(
               "[DependencyGraph] Error calculating graph dimensions",
-              error,
-            );
-          }
+          error,
+        );
+      }
         });
       } catch (error) {
         console.error(
@@ -2000,14 +2001,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // console.log(
   //   "[DependencyGraph] DOMContentLoaded, attempting initialization...",
   // );
-  // Check if the specific container exists, which implies the tab might be visible
-  if (document.querySelector("#dependencyDiagram .section-content")) {
-    // PERFORMANCE FIX: Defer dependency graph initialization to avoid blocking main thread
-    // This prevents the 519ms violation during page load
+    // Check if the specific container exists, which implies the tab might be visible
+    if (document.querySelector("#dependencyDiagram .section-content")) {
+    // PERFORMANCE FIX: Defer dependency graph initialization to prevent setTimeout violations (542ms)
+    // Heavy graph initialization needs significant delay to avoid blocking
     setTimeout(() => {
       initializeDependencyGraph();
-    }, 200); // Small delay allows main UI to stabilize first
-  }
+    }, 800); // Longer delay prevents setTimeout performance violations
+    }
 });
 
 // Also listen for tab visibility changes (assuming Bootstrap tabs)

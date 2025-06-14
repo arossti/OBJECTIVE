@@ -825,13 +825,13 @@ Select a province and city to view weather data.</pre
           TEUI.Calculator.initialize();
           // console.log("🔍 DEBUG: After Calculator.initialize, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
 
-          // PERFORMANCE FIX: Use small setTimeout instead of requestAnimationFrame for heavy operations
-          // Heavy calculations should not block animation frames (causes 117ms violations)
+          // PERFORMANCE FIX: Use longer delay to prevent setTimeout violations (663ms)
+          // Heavy calculations need more time separation to avoid blocking
           setTimeout(function () {
             // console.log("🔍 DEBUG: About to run calculateAll");
             TEUI.Calculator.calculateAll();
             // console.log("🔍 DEBUG: After calculateAll, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
-          }, 50); // Small delay allows UI to render before heavy calculations
+          }, 300); // Longer delay prevents setTimeout performance violations
         }
 
         console.log("TEUI Calculator 4.011 initialization complete");
