@@ -673,8 +673,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       window.TEUI.StateManager.registerDependency("d_15", "d_16"); // d_16 depends on the standard selected
       window.TEUI.StateManager.registerDependency("i_41", "d_16"); // d_16 depends on i_41 when standard is 'Self Reported' or default
       window.TEUI.StateManager.registerDependency("i_39", "d_16"); // d_16 depends on i_39 when standard is 'TGS4'
-    } catch (error) {
-      // console.warn("Error registering calculations:", error);
+    } catch (_error) {
+      // console.warn("Error registering calculations:", _error);
     }
   }
 
@@ -693,8 +693,8 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // Pass the value directly (already formatted correctly in the calculation function)
       setCalculatedValue("d_16", targetValue);
-    } catch (error) {
-      // console.warn("Error calculating values:", error);
+    } catch (_error) {
+      // console.warn("Error calculating values:", _error);
     }
   }
 
@@ -1046,8 +1046,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (!slider.dataset.originalArea) {
         slider.dataset.originalArea = originalAreaStr;
       }
-    } catch (error) {
-      // console.warn("Error handling area slider input:", error);
+    } catch (_error) {
+      // console.warn("Error handling area slider input:", _error);
     }
   }
 
@@ -1100,8 +1100,8 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // Clear the stored original area value
       delete slider.dataset.originalArea;
-    } catch (error) {
-      // console.warn("Error handling area slider change:", error);
+    } catch (_error) {
+      // console.warn("Error handling area slider change:", _error);
     }
   }
 
