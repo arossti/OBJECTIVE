@@ -1734,10 +1734,10 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             d3.zoomIdentity.translate(translateX, translateY).scale(scale),
           );
 
-        console.log(
-          "[DependencyGraph] Fitted graph to container with scale",
-          scale,
-        );
+        // console.log(
+        //   "[DependencyGraph] Fitted graph to container with scale",
+        //   scale,
+        // );
       } catch (error) {
         console.error(
           "[DependencyGraph] Error fitting graph to container",
@@ -1885,7 +1885,7 @@ function initializeDependencyGraph() {
  * Creates the graph instance, loads data, creates UI elements, and renders.
  */
 function initializeGraphInstanceAndUI() {
-  console.log("[DependencyGraph] Initializing graph instance and UI...");
+  // console.log("[DependencyGraph] Initializing graph instance and UI...");
   const graphContainer = document.querySelector(
     "#dependencyDiagram .section-content .dependency-graph-container",
   );
@@ -1933,14 +1933,14 @@ function initializeGraphInstanceAndUI() {
           teuiDependencyGraphInstance.dagreButton.classList.add("active");
         if (teuiDependencyGraphInstance.forceButton)
           teuiDependencyGraphInstance.forceButton.classList.remove("active");
-        console.log("[DependencyGraph] Applied Dagre layout on init.");
+        // console.log("[DependencyGraph] Applied Dagre layout on init.");
       } else {
         // Fallback to force layout
         if (teuiDependencyGraphInstance.forceButton)
           teuiDependencyGraphInstance.forceButton.classList.add("active");
         if (teuiDependencyGraphInstance.dagreButton)
           teuiDependencyGraphInstance.dagreButton.classList.remove("active");
-        console.log("[DependencyGraph] Using Force layout on init.");
+        // console.log("[DependencyGraph] Using Force layout on init.");
       }
 
       // Create the legend but keep it hidden
@@ -1965,9 +1965,9 @@ function initializeGraphInstanceAndUI() {
 // Attempt initialization when the DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   // PERFORMANCE FIX: Use immediate execution with readiness check instead of arbitrary delay
-  console.log(
-    "[DependencyGraph] DOMContentLoaded, attempting initialization...",
-  );
+  // console.log(
+  //   "[DependencyGraph] DOMContentLoaded, attempting initialization...",
+  // );
   // Check if the specific container exists, which implies the tab might be visible
   if (document.querySelector("#dependencyDiagram .section-content")) {
     // Use requestAnimationFrame for smooth initialization timing
@@ -1980,7 +1980,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Also listen for tab visibility changes (assuming Bootstrap tabs)
 document.addEventListener("shown.bs.tab", function (event) {
   if (event.target.getAttribute("data-bs-target") === "#dependencyDiagram") {
-    console.log("[DependencyGraph] Tab shown, ensuring initialization...");
+    // console.log("[DependencyGraph] Tab shown, ensuring initialization...");
     if (!teuiDependencyGraphInstance) {
       // Initialize if not already done
       initializeDependencyGraph();
@@ -2000,4 +2000,4 @@ window.TEUI.DependencyGraphUtils = {
   getInstance: () => teuiDependencyGraphInstance,
 };
 
-console.log("[4011-Dependency.js] Module loaded.");
+// console.log("[4011-Dependency.js] Module loaded.");

@@ -933,7 +933,7 @@ TEUI.StateManager = (function () {
    * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
    */
   function exportDependencyGraph() {
-    console.log("[StateManager] Exporting dependency graph data...");
+    // console.log("[StateManager] Exporting dependency graph data...");
     const nodes = new Map(); // Use a Map to easily track unique nodes
     const links = [];
 
@@ -972,9 +972,9 @@ TEUI.StateManager = (function () {
     }
 
     const nodesArray = Array.from(nodes.values());
-    console.log(
-      `[StateManager] Exported ${nodesArray.length} nodes and ${links.length} links.`,
-    );
+    // console.log(
+    //   `[StateManager] Exported ${nodesArray.length} nodes and ${links.length} links.`,
+    // );
     return { nodes: nodesArray, links: links };
   }
 

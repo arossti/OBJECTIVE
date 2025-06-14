@@ -848,9 +848,9 @@ window.TEUI.SectionModules.sect02 = (function () {
           "OBC SB10 5.5-6 Z6",
           "default",
         );
-        console.log(
-          "[Section02] Set default reference standard: OBC SB10 5.5-6 Z6",
-        );
+        // console.log(
+        //   "[Section02] Set default reference standard: OBC SB10 5.5-6 Z6",
+        // );
       }
     }
 
