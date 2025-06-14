@@ -64,9 +64,9 @@ window.TEUI.SectionModules.sect17 = (function () {
         );
       }
     } else {
-      // console.warn(
-      //   "[sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale.",
-      // );
+      console.warn(
+        "[sect17] Could not find initializeGraphInstanceAndUI or initializeDependencyGraph function in window.TEUI to refresh a D3 graph. Graph may be stale.",
+      );
     }
   }
 

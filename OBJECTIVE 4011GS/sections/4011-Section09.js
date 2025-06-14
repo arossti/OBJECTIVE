@@ -2210,13 +2210,10 @@ window.TEUI.SectionModules.sect09 = (function () {
 // Initialize when the section is rendered - THIS IS THE PRIMARY INITIALIZATION POINT
 document.addEventListener("teui-section-rendered", function (event) {
   if (event.detail?.sectionId === "occupantInternalGains") {
-    // PERFORMANCE FIX: Use immediate execution instead of arbitrary setTimeout delay
-    // Check readiness synchronously and execute immediately if ready
+    // PERFORMANCE FIX: Execute initialization immediately to avoid requestAnimationFrame violations
+    // Heavy initialization work should not be in animation frames (causes 99-116ms violations)
     if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
-      // Use requestAnimationFrame for smooth UI updates instead of setTimeout
-      requestAnimationFrame(() => {
-        window.TEUI.SectionModules.sect09.onSectionRendered();
-      });
+      window.TEUI.SectionModules.sect09.onSectionRendered();
     }
   }
 });
