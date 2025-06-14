@@ -1668,8 +1668,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     )
       return;
 
-    // Wait a moment for the layout to stabilize
-    setTimeout(() => {
+    // PERFORMANCE FIX: Use requestAnimationFrame instead of setTimeout for better performance
+    // This ensures the operation runs at the optimal time for the browser's render cycle
+    requestAnimationFrame(() => {
       try {
         // Get the current bounds of the nodes
         let minX = Infinity,
@@ -1743,7 +1744,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
           error,
         );
       }
-    }, 500); // Give time for layout to stabilize
+    }); // PERFORMANCE FIX: No arbitrary delay - runs at optimal browser timing
   }
 
   // Update fullscreen info panel method
@@ -1963,16 +1964,17 @@ function initializeGraphInstanceAndUI() {
 
 // Attempt initialization when the DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Use a small delay to ensure other modules might have initialized
-  setTimeout(() => {
-    console.log(
-      "[DependencyGraph] DOMContentLoaded, attempting initialization...",
-    );
-    // Check if the specific container exists, which implies the tab might be visible
-    if (document.querySelector("#dependencyDiagram .section-content")) {
+  // PERFORMANCE FIX: Use immediate execution with readiness check instead of arbitrary delay
+  console.log(
+    "[DependencyGraph] DOMContentLoaded, attempting initialization...",
+  );
+  // Check if the specific container exists, which implies the tab might be visible
+  if (document.querySelector("#dependencyDiagram .section-content")) {
+    // Use requestAnimationFrame for smooth initialization timing
+    requestAnimationFrame(() => {
       initializeDependencyGraph();
-    }
-  }, 500);
+    });
+  }
 });
 
 // Also listen for tab visibility changes (assuming Bootstrap tabs)
