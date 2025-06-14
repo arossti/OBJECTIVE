@@ -233,10 +233,10 @@ TEUI.StateManager = (function () {
     calculatedFields.clear();
     dirtyFields.clear();
     listeners.clear();
-    
+
     // Also clear localStorage
     try {
-      localStorage.removeItem('TEUI_Calculator_State');
+      localStorage.removeItem("TEUI_Calculator_State");
       console.log("TEUI StateManager: Cleared state from localStorage");
     } catch (e) {
       console.error("TEUI StateManager: Failed to clear localStorage:", e);
@@ -325,7 +325,7 @@ TEUI.StateManager = (function () {
       lastImportedState[fieldId] = value;
     }
 
-    const fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
+    const _fieldDefinition = fields[fieldId]; // This line was in the original, but seems unused. Let's keep it for now to minimize changes from the original revert point.
 
     const oldValue = getValue(fieldId); // Use mode-aware getValue for oldValue as original did.
 
@@ -358,7 +358,10 @@ TEUI.StateManager = (function () {
     notifyListeners(fieldId, value, oldValue, state);
 
     // Auto-save state for user-modified and imported values (not defaults)
-    if (state === VALUE_STATES.USER_MODIFIED || state === VALUE_STATES.IMPORTED) {
+    if (
+      state === VALUE_STATES.USER_MODIFIED ||
+      state === VALUE_STATES.IMPORTED
+    ) {
       // Debounce saves to avoid excessive localStorage writes
       clearTimeout(window.teuiAutoSaveTimeout);
       window.teuiAutoSaveTimeout = setTimeout(() => {
@@ -833,9 +836,9 @@ TEUI.StateManager = (function () {
 
   /**
    * Update TEUI calculations when source values change
-   * @param {string} sourceField - The source field that changed
+   * @param {string} _sourceField - The source field that changed
    */
-  function updateTEUICalculations(sourceField) {
+  function updateTEUICalculations(_sourceField) {
     try {
       // Get raw values from state manager
       const rawActualEnergy = getValue("f_32");
@@ -930,7 +933,7 @@ TEUI.StateManager = (function () {
    * @returns {object} Object containing nodes and links, e.g., { nodes: [], links: [] }
    */
   function exportDependencyGraph() {
-    console.log("[StateManager] Exporting dependency graph data...");
+    // console.log("[StateManager] Exporting dependency graph data...");
     const nodes = new Map(); // Use a Map to easily track unique nodes
     const links = [];
 
@@ -969,9 +972,9 @@ TEUI.StateManager = (function () {
     }
 
     const nodesArray = Array.from(nodes.values());
-    console.log(
-      `[StateManager] Exported ${nodesArray.length} nodes and ${links.length} links.`,
-    );
+    // console.log(
+    //   `[StateManager] Exported ${nodesArray.length} nodes and ${links.length} links.`,
+    // );
     return { nodes: nodesArray, links: links };
   }
 
@@ -979,10 +982,10 @@ TEUI.StateManager = (function () {
    * Helper function (moved inside StateManager IIFE)
    * Determines the group for a node based on its ID or field definition.
    * @param {string} nodeId
-   * @param {object | null} fieldDef
+   * @param {object | null} _fieldDef
    * @returns {string} The determined group name.
    */
-  function getNodeGroup(nodeId, fieldDef) {
+  function getNodeGroup(nodeId, _fieldDef) {
     // RESTORED: Fallback to prefix/pattern matching (less reliable, but maybe better coverage?)
     if (nodeId.includes("_1") && nodeId.split("_").length > 1)
       return "1. Key Values"; // Approximate

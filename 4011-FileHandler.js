@@ -545,7 +545,7 @@
         // Get project name for filename
         const projectName = this.stateManager.getValue("h_14") || "Project";
         // Sanitize project name for filename
-        const safeProjectName = projectName.replace(/[^a-z0-9_\-\.]/gi, "_");
+        const safeProjectName = projectName.replace(/[^a-z0-9_\-.]/gi, "_");
         const filename = `TEUIv4011-Standardized-${safeProjectName}.csv`;
 
         console.log(`[CSV Export] Generated filename: ${filename}`);
@@ -575,13 +575,13 @@
 
     // --- OLD / OTHER METHODS ---
 
-    processBuildingCodeData(workbook) {
+    processBuildingCodeData(_workbook) {
       // Placeholder
       // console.log('Building code data processing not yet implemented');
       return null;
     }
 
-    processScheduleData(workbook) {
+    processScheduleData(_workbook) {
       // Placeholder
       // console.log('Schedule data processing not yet implemented');
       return null;

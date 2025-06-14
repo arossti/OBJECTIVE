@@ -471,6 +471,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
    * @param {Element} container - The parent container element (outside the SVG wrapper)
    */
   createFilterControls(parentElement) {
+    // DUPLICATE FIX: Clear any existing controls first to prevent double headers
+    const existingControls = parentElement.querySelector(".dependency-graph-controls");
+    if (existingControls) {
+      existingControls.remove();
+    }
+    
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "dependency-graph-controls";
     controlsContainer.style.display = "flex";
@@ -537,11 +543,14 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     dagreButton.onclick = () => this.switchLayout("dagre");
     this.dagreButton = dagreButton; // Store ref
 
-    // Reset button
+    // TODO: Reset button - RAINY DAY PROJECT
+    // Reset should: rebuild the entire graph AND fit it to view
+    // Button visible but functionality disabled to maintain layout
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset View";
-    resetButton.className = "btn btn-outline-secondary btn-sm"; // Bootstrap button
-    this.resetButton = resetButton; // Store reference
+    resetButton.className = "btn btn-outline-secondary btn-sm";
+    // resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
+    this.resetButton = resetButton;
 
     // Fullscreen button
     const fullscreenButton = document.createElement("button");
@@ -561,7 +570,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
 
     layoutContainer.appendChild(forceButton);
     layoutContainer.appendChild(dagreButton);
-    layoutContainer.appendChild(resetButton);
+    layoutContainer.appendChild(resetButton); // Button visible but non-functional
     layoutContainer.appendChild(legendToggleButton);
     layoutContainer.appendChild(fullscreenButton);
     controlsContainer.appendChild(layoutContainer);
@@ -575,6 +584,12 @@ window.TEUI.DependencyGraph = class DependencyGraph {
    * @param {Element} container - The parent container element
    */
   createInfoPanel(parentElement) {
+    // DUPLICATE FIX: Clear any existing info panel first to prevent duplicates
+    const existingPanel = parentElement.querySelector(".dependency-info-panel");
+    if (existingPanel) {
+      existingPanel.remove();
+    }
+    
     const infoPanel = document.createElement("div");
     infoPanel.className = "dependency-info-panel alert alert-secondary"; // Use Bootstrap alert
     infoPanel.style.marginBottom = "10px";
@@ -624,9 +639,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
       });
     }
 
-    // Reset button event
+    // Reset button event - disabled functionality but button remains visible
     if (this.resetButton) {
-      this.resetButton.onclick = () => this.resetView();
+      // this.resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
     }
 
     // Fullscreen button event
@@ -637,7 +652,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     // Node hover/click events (add after nodes are created in render)
     if (this.nodeGroups) {
       this.nodeGroups
-        .on("mouseover", (event, d) => {
+        .on("mouseover", (event, _d) => {
           d3.select(event.currentTarget).select("text").style("display", null);
           // Optional: Add tooltip display logic here if needed
         })
@@ -946,7 +961,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     d.fy = event.y;
   }
 
-  dragended(event, d) {
+  dragended(event, _d) {
     if (!event.active) this.simulation.alphaTarget(0);
     // Keep node fixed after dragging? Optional.
     // d.fx = null;
@@ -1304,7 +1319,7 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     const controlsContainer = document.querySelector(
       "#dependencyDiagram .dependency-graph-controls-wrapper",
     );
-    const infoPanel = document.querySelector(
+    const _infoPanel = document.querySelector(
       "#dependencyDiagram .dependency-graph-info-wrapper",
     );
 
@@ -1440,11 +1455,10 @@ window.TEUI.DependencyGraph = class DependencyGraph {
                   dagreButton.onclick = () => this.switchLayout("dagre");
                 }
 
-                const resetButton = floatingControls.querySelector(
-                  "button:nth-child(3)",
-                );
+                // Reset button in fullscreen - visible but non-functional
+                const resetButton = floatingControls.querySelector("button:nth-child(3)");
                 if (resetButton) {
-                  resetButton.onclick = () => this.resetView();
+                  // resetButton.onclick = () => this.resetView(); // DISABLED - broken functionality
                 }
 
                 const legendButton = floatingControls.querySelector(
@@ -1668,8 +1682,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
     )
       return;
 
-    // Wait a moment for the layout to stabilize
-    setTimeout(() => {
+    // PERFORMANCE FIX: Split heavy operation across multiple frames to avoid violations
+    // Step 1: Calculate bounds in first frame (lightweight)
+    requestAnimationFrame(() => {
       try {
         // Get the current bounds of the nodes
         let minX = Infinity,
@@ -1684,6 +1699,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
           if (node.y > maxY) maxY = node.y;
         });
 
+        // Step 2: Calculate dimensions and scale in second frame
+        requestAnimationFrame(() => {
+          try {
         // Add some padding
         const padding = 50;
         minX -= padding;
@@ -1724,7 +1742,9 @@ window.TEUI.DependencyGraph = class DependencyGraph {
         const translateX = containerWidth / 2 - centerX * scale;
         const translateY = containerHeight / 2 - centerY * scale;
 
-        // Apply the transform
+            // Step 3: Apply transform in third frame (allows D3 to optimize)
+            requestAnimationFrame(() => {
+              try {
         this.svg
           .transition()
           .duration(750)
@@ -1733,17 +1753,31 @@ window.TEUI.DependencyGraph = class DependencyGraph {
             d3.zoomIdentity.translate(translateX, translateY).scale(scale),
           );
 
-        console.log(
-          "[DependencyGraph] Fitted graph to container with scale",
-          scale,
-        );
+                // console.log(
+                //   "[DependencyGraph] Fitted graph to container with scale",
+                //   scale,
+                // );
+              } catch (error) {
+                console.error(
+                  "[DependencyGraph] Error applying graph transform",
+                  error,
+                );
+              }
+            });
       } catch (error) {
         console.error(
-          "[DependencyGraph] Error fitting graph to container",
+              "[DependencyGraph] Error calculating graph dimensions",
           error,
         );
       }
-    }, 500); // Give time for layout to stabilize
+        });
+      } catch (error) {
+        console.error(
+          "[DependencyGraph] Error calculating graph bounds",
+          error,
+        );
+      }
+    });
   }
 
   // Update fullscreen info panel method
@@ -1884,7 +1918,7 @@ function initializeDependencyGraph() {
  * Creates the graph instance, loads data, creates UI elements, and renders.
  */
 function initializeGraphInstanceAndUI() {
-  console.log("[DependencyGraph] Initializing graph instance and UI...");
+  // console.log("[DependencyGraph] Initializing graph instance and UI...");
   const graphContainer = document.querySelector(
     "#dependencyDiagram .section-content .dependency-graph-container",
   );
@@ -1932,14 +1966,14 @@ function initializeGraphInstanceAndUI() {
           teuiDependencyGraphInstance.dagreButton.classList.add("active");
         if (teuiDependencyGraphInstance.forceButton)
           teuiDependencyGraphInstance.forceButton.classList.remove("active");
-        console.log("[DependencyGraph] Applied Dagre layout on init.");
+        // console.log("[DependencyGraph] Applied Dagre layout on init.");
       } else {
         // Fallback to force layout
         if (teuiDependencyGraphInstance.forceButton)
           teuiDependencyGraphInstance.forceButton.classList.add("active");
         if (teuiDependencyGraphInstance.dagreButton)
           teuiDependencyGraphInstance.dagreButton.classList.remove("active");
-        console.log("[DependencyGraph] Using Force layout on init.");
+        // console.log("[DependencyGraph] Using Force layout on init.");
       }
 
       // Create the legend but keep it hidden
@@ -1963,22 +1997,24 @@ function initializeGraphInstanceAndUI() {
 
 // Attempt initialization when the DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Use a small delay to ensure other modules might have initialized
-  setTimeout(() => {
-    console.log(
-      "[DependencyGraph] DOMContentLoaded, attempting initialization...",
-    );
+  // PERFORMANCE FIX: Use immediate execution with readiness check instead of arbitrary delay
+  // console.log(
+  //   "[DependencyGraph] DOMContentLoaded, attempting initialization...",
+  // );
     // Check if the specific container exists, which implies the tab might be visible
     if (document.querySelector("#dependencyDiagram .section-content")) {
+    // PERFORMANCE FIX: Defer dependency graph initialization to prevent setTimeout violations (542ms)
+    // Heavy graph initialization needs significant delay to avoid blocking
+    setTimeout(() => {
       initializeDependencyGraph();
+    }, 800); // Longer delay prevents setTimeout performance violations
     }
-  }, 500);
 });
 
 // Also listen for tab visibility changes (assuming Bootstrap tabs)
 document.addEventListener("shown.bs.tab", function (event) {
   if (event.target.getAttribute("data-bs-target") === "#dependencyDiagram") {
-    console.log("[DependencyGraph] Tab shown, ensuring initialization...");
+    // console.log("[DependencyGraph] Tab shown, ensuring initialization...");
     if (!teuiDependencyGraphInstance) {
       // Initialize if not already done
       initializeDependencyGraph();
@@ -1998,4 +2034,9 @@ window.TEUI.DependencyGraphUtils = {
   getInstance: () => teuiDependencyGraphInstance,
 };
 
-console.log("[4011-Dependency.js] Module loaded.");
+// SECTION17 FIX: Expose the main initialization functions to global TEUI namespace
+// These are the exact functions Section17 is looking for
+window.TEUI.initializeDependencyGraph = initializeDependencyGraph;
+window.TEUI.initializeGraphInstanceAndUI = initializeGraphInstanceAndUI;
+
+// console.log("[4011-Dependency.js] Module loaded.");

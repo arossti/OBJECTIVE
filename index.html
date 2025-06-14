@@ -718,7 +718,7 @@ Select a province and city to view weather data.</pre
       // Cross-system navigation with state preservation
       function saveStateAndNavigate(url) {
         if (TEUI && TEUI.StateManager) {
-          console.log("🔍 DEBUG: Field count before save:", TEUI.StateManager.getDebugInfo().fieldCount);
+          // console.log("🔍 DEBUG: Field count before save:", TEUI.StateManager.getDebugInfo().fieldCount);
           
           // Force immediate save before navigation
           TEUI.StateManager.saveState();
@@ -726,7 +726,7 @@ Select a province and city to view weather data.</pre
           
           // Check what was actually saved
           const saved = localStorage.getItem('TEUI_Calculator_State');
-          console.log("🔍 DEBUG: What was saved to localStorage:", saved ? "State preserved" : "Nothing saved");
+          // console.log("🔍 DEBUG: What was saved to localStorage:", saved ? "State preserved" : "Nothing saved");
         }
         
         // Navigate after a brief delay to ensure save completes
@@ -753,23 +753,23 @@ Select a province and city to view weather data.</pre
         // Initialize state manager
         if (TEUI.StateManager) {
           // First, verify StateManager has the required functions
-          console.log("🔍 DEBUG: StateManager functions available:", {
-            saveState: typeof TEUI.StateManager.saveState,
-            loadState: typeof TEUI.StateManager.loadState,
-            clear: typeof TEUI.StateManager.clear
-          });
+          // console.log("🔍 DEBUG: StateManager functions available:", {
+          //   saveState: typeof TEUI.StateManager.saveState,
+          //   loadState: typeof TEUI.StateManager.loadState,
+          //   clear: typeof TEUI.StateManager.clear
+          // });
           
           // Check what's in localStorage before initialization
           const saved = localStorage.getItem('TEUI_Calculator_State');
-          console.log("🔍 DEBUG: localStorage content before initialize:", saved ? "State found" : "No saved state");
+          // console.log("🔍 DEBUG: localStorage content before initialize:", saved ? "State found" : "No saved state");
           
           if (saved) {
             const parsedState = JSON.parse(saved);
-            console.log("🔍 DEBUG: Saved state details:", {
-              fieldCount: Object.keys(parsedState).length,
-              sampleFields: Object.keys(parsedState).slice(0, 5),
-              sampleValues: Object.entries(parsedState).slice(0, 3)
-            });
+            // console.log("🔍 DEBUG: Saved state details:", {
+            //   fieldCount: Object.keys(parsedState).length,
+            //   sampleFields: Object.keys(parsedState).slice(0, 5),
+            //   sampleValues: Object.entries(parsedState).slice(0, 3)
+            // });
           }
           
           // Initialize now loads state automatically during initialization
@@ -777,7 +777,7 @@ Select a province and city to view weather data.</pre
           
           // Check if state was preserved and loaded
           const debugInfo = TEUI.StateManager.getDebugInfo();
-          console.log("🔍 DEBUG: StateManager field count after initialize:", debugInfo.fieldCount);
+          // console.log("🔍 DEBUG: StateManager field count after initialize:", debugInfo.fieldCount);
           
           // Check if user-modified fields are actually loaded
           const allKeys = TEUI.StateManager.getAllKeys();
@@ -798,20 +798,20 @@ Select a province and city to view weather data.</pre
             }
           });
           
-          console.log("🔍 DEBUG: Field states after initialize:", {
-            'user-modified': userModifiedCount,
-            'imported': importedCount,
-            'default': defaultCount,
-            'calculated': calculatedCount,
-            'total': allKeys.length
-          });
+          // console.log("🔍 DEBUG: Field states after initialize:", {
+          //   'user-modified': userModifiedCount,
+          //   'imported': importedCount,
+          //   'default': defaultCount,
+          //   'calculated': calculatedCount,
+          //   'total': allKeys.length
+          // });
         }
 
         // Initialize FieldManager to generate content for all sections
         if (TEUI.FieldManager) {
-          console.log("🔍 DEBUG: About to render all sections");
+          // console.log("🔍 DEBUG: About to render all sections");
           TEUI.FieldManager.renderAllSections();
-          console.log("🔍 DEBUG: After renderAllSections, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
+          // console.log("🔍 DEBUG: After renderAllSections, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
         }
 
         // Initialize Component Bridge
@@ -821,16 +821,17 @@ Select a province and city to view weather data.</pre
 
         // Initialize Calculator
         if (TEUI.Calculator) {
-          console.log("🔍 DEBUG: About to initialize Calculator");
+          // console.log("🔍 DEBUG: About to initialize Calculator");
           TEUI.Calculator.initialize();
-          console.log("🔍 DEBUG: After Calculator.initialize, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
+          // console.log("🔍 DEBUG: After Calculator.initialize, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
 
-          // Calculate all values after initialization
+          // PERFORMANCE FIX: Use longer delay to prevent setTimeout violations (663ms)
+          // Heavy calculations need more time separation to avoid blocking
           setTimeout(function () {
-            console.log("🔍 DEBUG: About to run calculateAll");
+            // console.log("🔍 DEBUG: About to run calculateAll");
             TEUI.Calculator.calculateAll();
-            console.log("🔍 DEBUG: After calculateAll, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
-          }, 500);
+            // console.log("🔍 DEBUG: After calculateAll, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
+          }, 300); // Longer delay prevents setTimeout performance violations
         }
 
         console.log("TEUI Calculator 4.011 initialization complete");

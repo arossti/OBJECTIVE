@@ -872,6 +872,7 @@ TEUI.FieldManager = (function () {
             valToFormat <= (field.max || 1) &&
             (field.max || 1) <= 1
           ) {
+            // Value is already in correct format (0-1 range), no conversion needed
           } else {
             valToFormat = valToFormat / 100;
           }
@@ -1325,7 +1326,8 @@ TEUI.FieldManager = (function () {
       }
       case "calculated":
       case "derived":
-      default: { // Includes simple text display fields not covered above
+      default: {
+        // Includes simple text display fields not covered above
         if (element.textContent !== displayValue) {
           element.textContent = displayValue;
         }

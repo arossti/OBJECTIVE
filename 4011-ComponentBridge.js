@@ -115,7 +115,7 @@ TEUI.ComponentBridge = (function () {
     let innerHTML = "";
 
     switch (field.type) {
-      case "dropdown":
+      case "dropdown": {
         // Use direct DOM-based dropdown ID
         const dropdownId = field.dropdownId || `dd_${fieldId}`;
         let dropdownOptions = [];
@@ -144,15 +144,17 @@ TEUI.ComponentBridge = (function () {
           field.defaultValue,
         );
         break;
+      }
 
       case "percentage":
       case "coefficient":
-      case "year_slider":
+      case "year_slider": {
         const min = field.min || (field.type === "percentage" ? 0 : 0);
         const max = field.max || (field.type === "percentage" ? 100 : 1);
         const value = field.defaultValue;
         innerHTML = createSliderHTML(fieldId, value, min, max, field.type);
         break;
+      }
 
       case "text":
         innerHTML = createTextInputHTML(fieldId, field.defaultValue);

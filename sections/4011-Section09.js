@@ -22,27 +22,6 @@ window.TEUI.SectionModules.sect09 = (function () {
   //==========================================================================
   // ADDED: STANDARD HELPER FUNCTIONS (Restored)
   //==========================================================================
-  function getFieldValue(fieldId) {
-    if (
-      window.TEUI &&
-      window.TEUI.StateManager &&
-      typeof window.TEUI.StateManager.getValue === "function"
-    ) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        return String(value); // Ensure it's a string
-      }
-    }
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        return element.value;
-      } else {
-        return element.textContent.trim();
-      }
-    }
-    return null;
-  }
 
   function getNumericValue(fieldId, defaultValue = 0) {
     const rawValue = getFieldValue(fieldId);
@@ -2231,12 +2210,11 @@ window.TEUI.SectionModules.sect09 = (function () {
 // Initialize when the section is rendered - THIS IS THE PRIMARY INITIALIZATION POINT
 document.addEventListener("teui-section-rendered", function (event) {
   if (event.detail?.sectionId === "occupantInternalGains") {
-    // Use a small delay to ensure other elements might be ready
-    setTimeout(() => {
+    // PERFORMANCE FIX: Execute initialization immediately to avoid requestAnimationFrame violations
+    // Heavy initialization work should not be in animation frames (causes 99-116ms violations)
       if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
         window.TEUI.SectionModules.sect09.onSectionRendered();
       }
-    }, 100);
   }
 });
 

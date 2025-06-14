@@ -221,6 +221,7 @@ TEUI.ExcelLocationHandler = (function () {
     );
 
     if (provinceDropdowns.length === 0) {
+      // No province dropdowns found - they may not be rendered yet
     }
 
     if (locationData === null) {
@@ -257,6 +258,7 @@ TEUI.ExcelLocationHandler = (function () {
     );
 
     if (cityDropdowns.length === 0) {
+      // No city dropdowns found - they may not be rendered yet
     }
 
     if (locationData === null) {
@@ -305,10 +307,10 @@ TEUI.ExcelLocationHandler = (function () {
     }
 
     for (const province in locationData) {
-      if (locationData.hasOwnProperty(province)) {
+      if (Object.prototype.hasOwnProperty.call(locationData, province)) {
         const cityCount = locationData[province].cities.length;
         if (cityCount > 0) {
-          const firstCity = locationData[province].cities[0];
+          const _firstCity = locationData[province].cities[0];
         }
       }
     }

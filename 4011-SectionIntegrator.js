@@ -479,12 +479,12 @@ TEUI.SectionIntegrator = (function () {
     window.TEUI.StateManager.registerDependency("h_12", "l_27");
 
     // Add listener to force recalculation when province changes
-    window.TEUI.StateManager.addListener("d_19", function (newValue) {
+    window.TEUI.StateManager.addListener("d_19", function (_newValue) {
       forceEmissionsFactorUpdate();
     });
 
     // Add listener to force recalculation when reporting year changes
-    window.TEUI.StateManager.addListener("h_12", function (newValue) {
+    window.TEUI.StateManager.addListener("h_12", function (_newValue) {
       forceEmissionsFactorUpdate();
     });
 
@@ -561,30 +561,6 @@ TEUI.SectionIntegrator = (function () {
         window.recalculateRadiantGains();
       }
     };
-  }
-
-  /**
-   * Initialize the TEDI & TELI integration between Section14, Section15, and other sections
-   */
-  function initializeTEDITELIIntegration() {
-    if (!window.TEUI.StateManager) {
-      console.error("StateManager not available for TEDI/TELI integration");
-      return;
-    }
-
-    // Register critical cross-section dependencies
-    registerTEDITELIDependencies();
-
-    // Set up listeners for area changes to trigger TEDI/TELI recalculation
-    setupTEDITELIListeners();
-
-    // Create a global function for forcing TEDI/TELI recalculation from any section
-    window.TEUI.updateTEDITELIValues = function () {
-      forceTEDITELIUpdate();
-    };
-
-    // Initial calculation to ensure consistency
-    forceTEDITELIUpdate();
   }
 
   /**

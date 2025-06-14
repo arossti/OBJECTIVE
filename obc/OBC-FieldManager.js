@@ -479,7 +479,7 @@ OBC.FieldManager = (function () {
                 cellElement.setAttribute(key, value);
               });
             }
-            
+
             // Then check for expandable row triggers
             let isExpandableTrigger = false;
             if (
@@ -495,7 +495,7 @@ OBC.FieldManager = (function () {
                   sectionId,
                 );
             }
-            
+
             // Only process normal content if this isn't an expandable trigger
             if (!isExpandableTrigger) {
               // Column A - populate with content if provided
@@ -608,16 +608,16 @@ OBC.FieldManager = (function () {
                   inputElement.max = cellDef.max;
                 }
 
-                        // Simple change handler to update state manager
-        inputElement.addEventListener("change", function () {
-          if (window.OBC && window.OBC.StateManager) {
-            window.OBC.StateManager.setValue(
-              fieldId,
-              this.value,
-              "user-modified",
-            );
-          }
-        });
+                // Simple change handler to update state manager
+                inputElement.addEventListener("change", function () {
+                  if (window.OBC && window.OBC.StateManager) {
+                    window.OBC.StateManager.setValue(
+                      fieldId,
+                      this.value,
+                      "user-modified",
+                    );
+                  }
+                });
 
                 cellElement.appendChild(inputElement);
               }
@@ -855,17 +855,17 @@ OBC.FieldManager = (function () {
               valToFormat = valToFormat / 100;
             }
             displayValue = window.OBC.formatNumber(valToFormat, "percent-0dp");
-                      } else if (field.type === "coefficient_slider") {
-              displayValue = window.OBC.formatNumber(
-                parseFloat(value),
-                "number-2dp",
-              );
-            } else if (field.type === "year_slider") {
-              displayValue = window.OBC.formatNumber(
-                parseFloat(value),
-                "integer-nocomma",
-              );
-            }
+          } else if (field.type === "coefficient_slider") {
+            displayValue = window.OBC.formatNumber(
+              parseFloat(value),
+              "number-2dp",
+            );
+          } else if (field.type === "year_slider") {
+            displayValue = window.OBC.formatNumber(
+              parseFloat(value),
+              "integer-nocomma",
+            );
+          }
 
           displaySpan.textContent = displayValue;
 

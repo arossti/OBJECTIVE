@@ -143,7 +143,7 @@ TEUI.ReferenceToggle = (function () {
     }
 
     for (const fieldId in allFieldDefs) {
-      if (allFieldDefs.hasOwnProperty(fieldId)) {
+      if (Object.prototype.hasOwnProperty.call(allFieldDefs, fieldId)) {
         const fieldDef = allFieldDefs[fieldId];
         if (fieldDef && inputFieldTypes.includes(fieldDef.type)) {
           let displayValue;
@@ -335,7 +335,7 @@ TEUI.ReferenceToggle = (function () {
         const allFieldDefs = TEUI.FieldManager.getAllFields();
         if (allFieldDefs && TEUI.FieldManager && TEUI.StateManager) {
           for (const fieldId in allFieldDefs) {
-            if (allFieldDefs.hasOwnProperty(fieldId)) {
+            if (Object.prototype.hasOwnProperty.call(allFieldDefs, fieldId)) {
               const fieldDef = allFieldDefs[fieldId];
               if (fieldDef && inputFieldTypes.includes(fieldDef.type)) {
                 const displayValue = cachedReferenceResults
@@ -373,7 +373,7 @@ TEUI.ReferenceToggle = (function () {
 
   function getCompareValue(fieldId) {
     return cachedReferenceResults &&
-      cachedReferenceResults.hasOwnProperty(fieldId)
+      Object.prototype.hasOwnProperty.call(cachedReferenceResults, fieldId)
       ? cachedReferenceResults[fieldId]
       : null;
   }

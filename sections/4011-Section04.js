@@ -80,6 +80,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         isFinite(rawValue) && rawValue < 0,
       );
     } else {
+      // Element not found - field may not be rendered yet
     }
   }
 
@@ -670,7 +671,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       if (!row.cells) return;
 
       // Process each cell in the row
-      Object.entries(row.cells).forEach(([colKey, cell]) => {
+      Object.entries(row.cells).forEach(([_colKey, cell]) => {
         if (cell.fieldId && cell.type) {
           // Create field definition with all relevant properties
           fields[cell.fieldId] = {
@@ -888,7 +889,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       }
 
       // Handle changes to the field value
-      field.addEventListener("blur", function (e) {
+      field.addEventListener("blur", function (_e) {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
@@ -924,7 +925,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       // Add paste event handler to clean pasted values immediately
-      field.addEventListener("paste", function (e) {
+      field.addEventListener("paste", function (_e) {
         // Let the paste happen normally
         setTimeout(() => {
           // After paste, clean up the value but don't process calculations yet
@@ -981,6 +982,7 @@ window.TEUI.SectionModules.sect04 = (function () {
 
         // Specific log when d_27 changes
         if (sourceFieldId === "d_27") {
+          // TODO: Add specific logging for d_27 changes if needed
         }
 
         // Fetch CURRENT values from StateManager using helper
@@ -1078,25 +1080,32 @@ window.TEUI.SectionModules.sect04 = (function () {
         let calculateSubtotalsAfter = true;
         // Determine which calculation pair to run based on the source
         switch (sourceFieldId) {
-          case "d_28": // Gas
+          case "d_28": {
+            // Gas
             const f28Value = calculateF28();
             setCalculatedValue("f_28", f28Value, "number-2dp-comma");
             const g28Value = calculateG28();
             setCalculatedValue("g_28", g28Value, "number-2dp-comma");
             break;
-          case "d_29": // Propane
+          }
+          case "d_29": {
+            // Propane
             const f29Value = calculateF29();
             setCalculatedValue("f_29", f29Value, "number-2dp-comma");
             const g29Value = calculateG29();
             setCalculatedValue("g_29", g29Value, "number-2dp-comma");
             break;
-          case "d_30": // Oil
+          }
+          case "d_30": {
+            // Oil
             const f30Value = calculateF30();
             setCalculatedValue("f_30", f30Value, "number-2dp-comma");
             const g30Value = calculateG30();
             setCalculatedValue("g_30", g30Value, "number-2dp-comma");
             break;
-          case "d_31": // Wood
+          }
+          case "d_31": {
+            // Wood
             const f31Value = calculateF31();
             setCalculatedValue("f_31", f31Value, "number-2dp-comma");
             const h31Value = calculateH31();
@@ -1113,6 +1122,7 @@ window.TEUI.SectionModules.sect04 = (function () {
             calculateSubtotalsAfter = false;
 
             break;
+          }
         }
 
         // Update subtotals after any actual fuel input change, unless it was d_31
@@ -1293,11 +1303,11 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // Recalculate dependent values for application state
       const f27Value = getNumericValue("f_27");
-      const g27Value = calculateG27(f27Value, factor);
+      const g27Value = calculateG27Helper(f27Value, factor);
       setCalculatedValue("g_27", g27Value, "number-2dp-comma");
 
       const j27Value = getNumericValue("j_27");
-      const k27Value = calculateK27(j27Value, factor);
+      const k27Value = calculateK27Helper(j27Value, factor);
       setCalculatedValue("k_27", k27Value, "number-2dp-comma");
 
       updateSubtotals();
@@ -1439,11 +1449,11 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   // Recalculate G27 and K27 with the factor as an argument
-  function calculateG27(f27Value, l27Factor) {
+  function calculateG27Helper(f27Value, l27Factor) {
     return (f27Value * l27Factor) / 1000;
   }
 
-  function calculateK27(j27Value, l27Factor) {
+  function calculateK27Helper(j27Value, l27Factor) {
     return (j27Value * l27Factor) / 1000;
   }
 

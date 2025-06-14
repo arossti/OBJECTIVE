@@ -111,7 +111,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     );
 
     // Update DOM with formatted value
-    const element = document.querySelector(`[data-field-id=\"${fieldId}\"]`);
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
       element.textContent = formattedValue;
       // Add/remove classes based on value if needed (e.g., for negatives)
@@ -1342,7 +1342,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         setCalculatedValue("l_143", actualTEUI_l143);
       } else {
         sm?.setValue("l_143", "N/A", "calculated");
-        const element = document.querySelector(`[data-field-id=\"l_143\"]`);
+        const element = document.querySelector(`[data-field-id="l_143"]`);
         if (element) element.textContent = "N/A";
       }
 
@@ -1359,7 +1359,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         setCalculatedValue("h_144", targetVsActual_h144, "percent");
       } else {
         sm?.setValue("h_144", "N/A", "calculated");
-        const element = document.querySelector(`[data-field-id=\"h_144\"]`);
+        const element = document.querySelector(`[data-field-id="h_144"]`);
         if (element) element.textContent = "N/A";
       }
 
@@ -1370,7 +1370,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         setCalculatedValue("l_144", actualVsTarget_l144, "percent");
       } else {
         sm?.setValue("l_144", "N/A", "calculated");
-        const element = document.querySelector(`[data-field-id=\"l_144\"]`);
+        const element = document.querySelector(`[data-field-id="l_144"]`);
         if (element) element.textContent = "N/A";
       }
 
@@ -1405,9 +1405,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     Object.keys(fields).forEach((fieldId) => {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
-        const element = document.querySelector(
-          `[data-field-id=\"${fieldId}\"]`,
-        );
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // Find the field definition to know the format
           let format = "number"; // Default format
@@ -1420,6 +1418,15 @@ window.TEUI.SectionModules.sect15 = (function () {
             fieldId === "d_142"
           ) {
             format = "currency";
+          } else if (fieldId === "l_143" && value === "N/A") {
+            element.textContent = "N/A";
+            return; // Skip formatting for N/A
+          } else if (fieldId === "h_144" && value === "N/A") {
+            element.textContent = "N/A";
+            return;
+          } else if (fieldId === "l_144" && value === "N/A") {
+            element.textContent = "N/A";
+            return;
           } else if (
             fieldId === "d_144" ||
             fieldId === "h_144" ||
@@ -1437,15 +1444,6 @@ window.TEUI.SectionModules.sect15 = (function () {
             format = "tons";
           } else if (fieldId === "h_142") {
             format = "number"; // Years, 2 decimals ok
-          } else if (fieldId === "l_143" && value === "N/A") {
-            element.textContent = "N/A";
-            return; // Skip formatting for N/A
-          } else if (fieldId === "h_144" && value === "N/A") {
-            element.textContent = "N/A";
-            return;
-          } else if (fieldId === "l_144" && value === "N/A") {
-            element.textContent = "N/A";
-            return;
           }
 
           // Use formatNumber for display consistency

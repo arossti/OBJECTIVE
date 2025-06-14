@@ -367,6 +367,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     try {
       // CRITICAL: Get Reference TEUI from Section 15 (final Reference calculation)
       const refTEUIFromS15 = window.TEUI.StateManager?.getValue("ref_h_136");
+      // ⚠️ WARNING: ESLint flags refJ32FromS04 as unused, but this variable is CALCULATION-CRITICAL
+      // DO NOT prefix with underscore or remove - causes calculation regression (June 13, 2025)
       const refJ32FromS04 = window.TEUI.StateManager?.getValue("ref_j_32");
       const refK32FromS04 = window.TEUI.StateManager?.getValue("ref_k_32");
 
@@ -1105,6 +1107,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   // Add recursion protection flag
   let calculationInProgress = false;
+  // ⚠️ WARNING: ESLint flags isInitializing as unused, but may be needed for future initialization logic
+  // DO NOT remove - preserved for development (June 13, 2025)
   let isInitializing = false;
 
   function updateTitleModeIndicators() {
@@ -1205,6 +1209,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     inputFieldsToWatch.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(
         fieldId,
+        // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
+        // DO NOT prefix with underscore - causes calculation regression (June 13, 2025)
         (newValue, oldValue, sourceFieldId) => {
           // Debounce for d_51 which can trigger rapid changes
           if (fieldId === "d_51") {
@@ -1233,10 +1239,13 @@ window.TEUI.SectionModules.sect01 = (function () {
     calculatedFieldsToWatch.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(
         fieldId,
+        // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
+        // DO NOT prefix with underscore - causes calculation regression (June 13, 2025)
         (newValue, oldValue, sourceFieldId) => {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "g_32") {
+              // Special handling for g_32 field changes (if needed in future)
             }
             runAllCalculations();
           }
