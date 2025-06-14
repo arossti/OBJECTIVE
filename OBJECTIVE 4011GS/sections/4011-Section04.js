@@ -1080,28 +1080,32 @@ window.TEUI.SectionModules.sect04 = (function () {
         let calculateSubtotalsAfter = true;
         // Determine which calculation pair to run based on the source
         switch (sourceFieldId) {
-          case "d_28": { // Gas
+          case "d_28": {
+            // Gas
             const f28Value = calculateF28();
             setCalculatedValue("f_28", f28Value, "number-2dp-comma");
             const g28Value = calculateG28();
             setCalculatedValue("g_28", g28Value, "number-2dp-comma");
             break;
           }
-          case "d_29": { // Propane
+          case "d_29": {
+            // Propane
             const f29Value = calculateF29();
             setCalculatedValue("f_29", f29Value, "number-2dp-comma");
             const g29Value = calculateG29();
             setCalculatedValue("g_29", g29Value, "number-2dp-comma");
             break;
           }
-          case "d_30": { // Oil
+          case "d_30": {
+            // Oil
             const f30Value = calculateF30();
             setCalculatedValue("f_30", f30Value, "number-2dp-comma");
             const g30Value = calculateG30();
             setCalculatedValue("g_30", g30Value, "number-2dp-comma");
             break;
           }
-          case "d_31": { // Wood
+          case "d_31": {
+            // Wood
             const f31Value = calculateF31();
             setCalculatedValue("f_31", f31Value, "number-2dp-comma");
             const h31Value = calculateH31();

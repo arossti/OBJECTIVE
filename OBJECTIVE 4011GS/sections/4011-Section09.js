@@ -23,7 +23,6 @@ window.TEUI.SectionModules.sect09 = (function () {
   // ADDED: STANDARD HELPER FUNCTIONS (Restored)
   //==========================================================================
 
-
   function getNumericValue(fieldId, defaultValue = 0) {
     const rawValue = getFieldValue(fieldId);
     if (window.TEUI && typeof window.TEUI.parseNumeric === "function") {
