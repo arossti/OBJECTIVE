@@ -38,11 +38,10 @@ window.OBC.SectionModules.sect06 = (function () {
       { value: "No", name: "No" },
       { value: "N/A", name: "N/A" },
     ],
-    // TODO: Add occupancy type options from CSV
-    occupancyTypes: [
-      { value: "-", name: "Select..." },
-      // // Add occupancy types later
-    ],
+    // Occupancy types - REMOVED: Now using text inputs instead of dropdowns
+    // occupancyTypes: [
+    //   { value: "-", name: "Select..." },
+    // ],
     // Based On dropdown options for occupant load calculations
     basedOnOptions: [
       { value: "-", name: "Select..." },
@@ -141,12 +140,10 @@ window.OBC.SectionModules.sect06 = (function () {
         },
         f: {
           fieldId: "f_59",
-          type: "dropdown",
-          dropdownId: "dd_f_59",
-          value: "-",
+          type: "editable",
+          value: "Retail",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.occupancyTypes,
+          classes: ["user-input"],
         },
         h: {
           fieldId: "h_59",
@@ -206,12 +203,10 @@ window.OBC.SectionModules.sect06 = (function () {
         },
         f: {
           fieldId: "f_60",
-          type: "dropdown",
-          dropdownId: "dd_f_60",
-          value: "-",
+          type: "editable",
+          value: "Restaurant",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.occupancyTypes,
+          classes: ["user-input"],
         },
         h: {
           fieldId: "h_60",
@@ -271,12 +266,10 @@ window.OBC.SectionModules.sect06 = (function () {
         },
         f: {
           fieldId: "f_61",
-          type: "dropdown",
-          dropdownId: "dd_f_61",
-          value: "-",
+          type: "editable",
+          value: "Storage",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.occupancyTypes,
+          classes: ["user-input"],
         },
         h: {
           fieldId: "h_61",
