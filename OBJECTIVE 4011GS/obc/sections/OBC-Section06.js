@@ -74,8 +74,8 @@ window.OBC.SectionModules.sect06 = (function () {
         c: { content: "OCCUPANT SAFETY", classes: ["section-subheader"] },
         d: { content: "FLOOR LEVEL/AREA", classes: ["section-subheader"] },
         e: { content: "OCCUPANCY TYPE", classes: ["section-subheader"] },
-        f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
         h: {
           content: "OCCUPANT LOAD (PERSONS)",
           classes: ["section-subheader"],
@@ -83,34 +83,10 @@ window.OBC.SectionModules.sect06 = (function () {
         i: { content: "BASED ON", classes: ["section-subheader"] },
         j: { content: "POSTED LIMIT REQUIRED", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
-        m: { content: "M", classes: ["section-subheader"] },
-        n: { content: "N", classes: ["section-subheader"] },
+        l: { content: "OBC 3.1.17. and 3.1.17.1.(2)", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
-      },
-    },
-
-    // Row 58: 3.18 Occupant Load Header
-    6.58: {
-      id: "6.58",
-      rowId: "6.58",
-      label: "OCCUPANT LOAD",
-      cells: {
-        b: { content: "3.18" },
-        c: { content: "OCCUPANT LOAD" },
-        d: { content: "FLOOR LEVEL/AREA" },
-        f: { content: "OCCUPANCY TYPE" },
-        h: { content: "OCCUPANT LOAD (PERSONS)" },
-        i: { content: "BASED ON" },
-        j: { content: "POSTED LIMIT REQUIRED" },
-        l: { content: "3.1.17. and 3.1.17.1.(2)" },
-        o: {
-          fieldId: "o_58",
-          type: "editable",
-          value: "enter notes here...",
-          section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"],
-        },
       },
     },
 
@@ -336,6 +312,32 @@ window.OBC.SectionModules.sect06 = (function () {
       },
     },
 
+    // Row 6.62a: Barrier-Free Design Header
+    "6.62a": {
+      id: "6.62a",
+      rowId: "6.62a",
+      label: "Barrier-Free Design",
+      cells: {
+        b: { content: "3.08", classes: ["section-subheader"] },
+        c: { content: "", classes: ["section-subheader"] },
+        d: { content: "BARRIER-FREE DESIGN", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "OBC 3.8.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+        o: {
+          content: "Notes",
+          classes: ["section-subheader", "notes-column"],
+        },
+      },
+    },
+
     // Row 63: 3.19 Barrier-Free Design
     6.63: {
       id: "6.63",
@@ -343,7 +345,7 @@ window.OBC.SectionModules.sect06 = (function () {
       label: "BARRIER-FREE DESIGN",
       cells: {
         b: { content: "3.19" },
-        c: { content: "BARRIER-FREE DESIGN" },
+        c: { content: "BARRIER-FREE DESIGN", type: "label" },
         d: {
           fieldId: "d_63",
           type: "dropdown",
@@ -371,7 +373,8 @@ window.OBC.SectionModules.sect06 = (function () {
       rowId: "6.64",
       label: "BARRIER-FREE ENTRANCES",
       cells: {
-        c: { content: "BARRIER-FREE ENTRANCES" },
+        b: { content: "" },
+        c: { content: "BARRIER-FREE ENTRANCES", type: "label" },
         d: {
           fieldId: "d_64",
           type: "num-editable",
@@ -401,7 +404,7 @@ window.OBC.SectionModules.sect06 = (function () {
       label: "HAZARDOUS SUBSTANCES",
       cells: {
         b: { content: "3.20" },
-        c: { content: "HAZARDOUS SUBSTANCES" },
+        c: { content: "HAZARDOUS SUBSTANCES", type: "label" },
         d: {
           fieldId: "d_65",
           type: "dropdown",
@@ -490,13 +493,20 @@ window.OBC.SectionModules.sect06 = (function () {
       id: row.id,
       cells: [
         {}, // Column A - empty spacer (will be populated if row has 'a' cell)
-        {}, // Column B - auto-populated
+        {}, // Column B - will be populated from row.cells.b
       ],
     };
 
     // Handle column A if defined (for expandable rows)
     if (row.cells && row.cells.a) {
       rowDef.cells[0] = { ...row.cells.a };
+    }
+
+    // Handle column B if defined 
+    if (row.cells && row.cells.b) {
+      const cell = { ...row.cells.b };
+      delete cell.section;
+      rowDef.cells[1] = cell;
     }
 
     const columns = [
