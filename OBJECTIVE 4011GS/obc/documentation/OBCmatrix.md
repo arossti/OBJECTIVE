@@ -2224,11 +2224,11 @@ Before implementing a new section:
 
 This template provides the structure and patterns proven in the 4011 codebase but refined specifically for OBC Matrix requirements.
 
-## 🧮 **PROVEN CALCULATION PATTERN - Section 03/06 Copy-Paste Template**
+## 🧮 **OBC MATRIX CALCULATION PATTERN - Lightweight App Solution**
 
-**Status: PRODUCTION PROVEN** ✅ **[CRITICAL FOR 4011 → 4012 REFACTOR]**
+**Status: OBC MATRIX SPECIFIC** ⚠️ **[NOT RECOMMENDED FOR 4011 CODEBASE]**
 
-**Background**: After multiple calculation implementation attempts in Section 06, the **Section 03 proven pattern** was successfully applied and immediately resolved all calculation display issues. This pattern should be used for ALL future sections requiring calculations.
+**Background**: After multiple calculation implementation attempts in Section 06, this setTimeout-based pattern was successfully applied for the OBC Matrix project. **CRITICAL WARNING**: This pattern uses setTimeout delays and is only suitable for lightweight, standalone applications like OBC Matrix. **For 4011 codebase, use Section 11's event-driven pattern instead.**
 
 ### 🎯 **The Problem This Solves**
 
@@ -2570,19 +2570,200 @@ function onSectionRendered() {
 4. **Dual data sources** - StateManager for persistence, DOM for immediate feedback
 5. **Proper initialization** - 100ms delay ensures DOM stability
 
-**⚠️ DO NOT MODIFY** the timing values (50ms, 100ms) or event handling structure. These were determined through extensive testing and are critical for reliable operation.
+**⚠️ OBC MATRIX ONLY** - This setTimeout-based pattern is a **lightweight solution for simple applications**. Do NOT use this pattern for:
+- ✅ **4011 codebase** - Use Section 11's event-driven pattern
+- ✅ **Complex calculation dependencies** - Use StateManager listeners  
+- ✅ **Production applications with hundreds of calculations** - Use proper architecture
+- ✅ **Any application requiring scalable performance** - Avoid setTimeout-based solutions
 
-### 🏆 **Ready for 4011 → 4012 Refactor**
+**When setTimeout is acceptable**: Simple, standalone applications like OBC Matrix with minimal calculations and simple dependency chains.
 
-This pattern represents exactly the kind of **"proven, copy-paste solution"** that the 4012 refactor needs. Instead of reinventing calculation logic in each section, this template provides:
+### ⚠️ **NOT Suitable for 4011 → 4012 Refactor**
 
-- ✅ **Immediate success** - works on first implementation
-- ✅ **Universal applicability** - same pattern works for all calculation types  
-- ✅ **Maintenance simplicity** - consistent structure across all sections
-- ✅ **Debugging ease** - known pattern reduces troubleshooting time
-- ✅ **Performance optimization** - proper event handling prevents unnecessary calculations
+While this setTimeout pattern works for OBC Matrix's simple use case, it should **NOT** be used for the 4012 refactor because:
 
-**This is the calculation foundation for the 4012 architecture.**
+- ❌ **setTimeout creates race conditions** when scaled
+- ❌ **Not suitable for complex dependency graphs** 
+- ❌ **Violates StateManager single source of truth principle**
+- ❌ **Cannot handle thousands of calculations efficiently**
+- ❌ **Makes testing and debugging more difficult**
+
+**For 4011 → 4012 refactor: Use the Section 11 event-driven pattern documented above.**
+
+## 🏛️ **PROPER 4011 CALCULATION PATTERN - Section 11 Event-Driven Architecture**
+
+**Status: PRODUCTION PROVEN FOR 4011** ✅ **[RECOMMENDED FOR 4011 → 4012 REFACTOR]**
+
+**Background**: Section 11 demonstrates the superior calculation pattern used in the 4011 codebase. This event-driven approach eliminates race conditions, scales to thousands of calculations, and maintains StateManager as single source of truth.
+
+### 🎯 **Why This Pattern is Superior**
+
+**Architectural Benefits:**
+- **No race conditions** - calculations triggered by StateManager events, not arbitrary timeouts
+- **Scalable** - works with thousands of calculations without performance degradation
+- **Deterministic** - synchronous execution with predictable order
+- **Maintainable** - clear dependency relationships through StateManager listeners
+- **Testable** - no timing-dependent behavior to complicate testing
+
+### 🏗️ **Core Architecture Components**
+
+#### **1. Event-Driven Dependency Management**
+```javascript
+function initializeEventHandlers() {
+  // Listen for changes in dependency fields
+  if (window.TEUI?.StateManager?.addListener) {
+    window.TEUI.StateManager.addListener("d_20", calculateAll); // HDD
+    window.TEUI.StateManager.addListener("d_21", calculateAll); // CDD
+    window.TEUI.StateManager.addListener("h_22", calculateAll); // GF CDD
+  }
+}
+```
+
+#### **2. Immediate Synchronous Calculations**
+```javascript
+function handleFieldBlur(event) {
+  const fieldElement = this;
+  const currentFieldId = fieldElement.getAttribute("data-field-id");
+  
+  // Parse and validate input
+  let numValue = window.TEUI.parseNumeric(valueStr, NaN);
+  
+  // Store in StateManager
+  if (window.TEUI?.StateManager?.setValue) {
+    window.TEUI.StateManager.setValue(currentFieldId, rawValueToStore, "user-modified");
+  }
+  
+  // Calculate immediately - NO setTimeout
+  calculateAll();
+}
+```
+
+#### **3. Component-Based Calculation Architecture**
+```javascript
+function calculateAll() {
+  // Dual-engine calculations run synchronously
+  calculateReferenceModel();
+  calculateTargetModel();
+  
+  // No timing dependencies, no race conditions
+}
+
+function calculateTargetModel() {
+  let totals = { loss: 0, gain: 0, areaD: 0 };
+  
+  // Calculate each component independently
+  componentConfig.forEach((config) => {
+    calculateComponentRow(config.row, config, false);
+    const area = getNumericValue(`d_${config.row}`) || 0;
+    totals.loss += getNumericValue(`i_${config.row}`) || 0;
+    // Aggregate results
+  });
+  
+  // Set totals using proper StateManager integration
+  setCalculatedValue("i_98", totals.loss);
+}
+```
+
+#### **4. Proper StateManager Integration**
+```javascript
+function setCalculatedValue(fieldId, rawValue, format = "number") {
+  // Format for display
+  const formattedValue = formatNumber(rawValue, format);
+  
+  // Update DOM
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  if (element) {
+    element.textContent = formattedValue;
+  }
+  
+  // Store in StateManager - triggers listeners automatically
+  if (window.TEUI?.StateManager?.setValue) {
+    window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+  }
+}
+```
+
+#### **5. Robust Value Retrieval**
+```javascript
+function getNumericValue(fieldId) {
+  // Use global parser if available
+  if (window.TEUI?.parseNumeric) {
+    return window.TEUI.parseNumeric(getFieldValue(fieldId));
+  }
+  
+  // Fallback parser
+  const value = getFieldValue(fieldId);
+  if (value === null || value === undefined) return 0;
+  // ... robust parsing logic
+}
+
+function getFieldValue(fieldId) {
+  // StateManager first (single source of truth)
+  const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+  if (stateValue != null) return stateValue;
+  
+  // DOM fallback
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  return element ? (element.value ?? element.textContent?.trim()) : null;
+}
+```
+
+### 🎯 **Implementation Template for 4011 Sections**
+
+```javascript
+function initializeEventHandlers() {
+  // 1. Register StateManager listeners for dependencies
+  if (window.TEUI?.StateManager?.addListener) {
+    const dependencies = ['d_20', 'd_21', 'h_22']; // Your dependency fields
+    dependencies.forEach(fieldId => {
+      window.TEUI.StateManager.addListener(fieldId, calculateAll);
+    });
+  }
+  
+  // 2. Set up direct field event handlers
+  editableFields.forEach((fieldId) => {
+    const field = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (field?.classList.contains("editable")) {
+      field.addEventListener("blur", handleFieldBlur.bind(field));
+      field.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          field.blur();
+        }
+      });
+    }
+  });
+}
+
+function calculateAll() {
+  // Your section's calculation logic here
+  // - Read values via getNumericValue()
+  // - Perform calculations
+  // - Store results via setCalculatedValue()
+  
+  // Example:
+  const value1 = getNumericValue("d_22");
+  const value2 = getNumericValue("d_23");
+  const total = value1 + value2;
+  setCalculatedValue("i_25", total);
+}
+```
+
+### ⚡ **Benefits for 4011 → 4012 Refactor**
+
+1. **✅ No setTimeout dependencies** - calculations are deterministic
+2. **✅ Proper separation of concerns** - StateManager handles state, sections handle calculations
+3. **✅ Scalable architecture** - works with complex dependency graphs
+4. **✅ Testable** - synchronous functions can be unit tested
+5. **✅ Maintainable** - clear event flow and dependency relationships
+6. **✅ Performance** - no unnecessary delays or timing overhead
+
+### 🚨 **Critical Difference from OBC Matrix Pattern**
+
+**OBC Matrix (setTimeout pattern)**: Suitable for simple, standalone applications with minimal calculations
+**4011 Section 11 pattern**: Required for complex, interdependent calculations with proper state management
+
+**For 4011 → 4012 refactor: Use Section 11 pattern, NOT the OBC Matrix setTimeout approach.**
 
 ## Layout Expansion Debugging & Known Issues
 
