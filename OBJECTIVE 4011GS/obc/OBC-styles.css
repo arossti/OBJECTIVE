@@ -1560,23 +1560,21 @@ table.data-table select.form-select:hover {
     overflow: hidden !important;
 }
 
-/* Section 06: Controlled width for content columns - CONSOLIDATED patterns */
-#occupantSafety .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - CONSOLIDATED: .obc-col-section-ref */
+/* Section 06: Controlled width for content columns - CLEAN: No alignment overrides */
+#occupantSafety .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
 #occupantSafety .data-table td:nth-child(3) { width: 240px !important; }  /* Column C - labels */
 #occupantSafety .data-table td:nth-child(4) { 
     width: 180px !important;  /* Column D - dropdowns and numeric inputs */
     max-width: 180px !important;
-    /* CONSOLIDATED: .obc-numeric-column pattern */
-    text-align: right !important;
+    /* Let universal rules handle alignment based on field type */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
 #occupantSafety .data-table td:nth-child(5) { 
-    width: 120px !important;  /* Column E - numeric inputs */
+    width: 120px !important;  /* Column E - mixed text/numeric inputs */
     max-width: 120px !important;
-    /* CONSOLIDATED: .obc-numeric-column pattern */
-    text-align: right !important;
+    /* Let universal rules handle alignment based on field type */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
@@ -1584,8 +1582,7 @@ table.data-table select.form-select:hover {
 #occupantSafety .data-table td:nth-child(9) { 
     width: 120px !important;  /* Column I - calculations */
     max-width: 120px !important;
-    /* CONSOLIDATED: .obc-numeric-column + bold */
-    text-align: right !important;
+    /* Calculations get right-alignment via .calculated-value class */
     font-weight: 700 !important;
 }
 #occupantSafety .data-table td:nth-child(10) { width: 200px !important; } /* Column J - dropdowns */
@@ -1593,14 +1590,13 @@ table.data-table select.form-select:hover {
 #occupantSafety .data-table td:nth-child(12) { width: 150px !important; } /* Column L - OBC references (variant) */
 #occupantSafety .data-table td:nth-child(15) { width: 250px !important; } /* Column O - CONSOLIDATED: .obc-col-notes-lg */
 
-/* Section 06: Dropdown styling - CONSOLIDATED with .obc-input-constrained */
+/* Section 06: Dropdown styling - width constraints only */
 #occupantSafety .data-table td:nth-child(4) select {  /* Column D dropdowns */
-    /* CONSOLIDATED: .obc-input-constrained + max-width */
+    /* Width constraints only - let universal rules handle alignment */
     width: 100% !important;
     max-width: 170px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    text-align: left !important;  /* Override right-align for dropdowns */
 }
 
 #occupantSafety .data-table td:nth-child(10) select { /* Column J dropdowns */
@@ -1611,14 +1607,12 @@ table.data-table select.form-select:hover {
     text-overflow: ellipsis !important;
 }
 
-/* Section 06: Numeric input styling - CONSOLIDATED */
+/* Section 06: Input styling - let universal rules handle alignment */
 #occupantSafety .data-table td:nth-child(4) input,
 #occupantSafety .data-table td:nth-child(5) input,
 #occupantSafety .data-table td:nth-child(11) input {
-    /* CONSOLIDATED: .obc-input-constrained + numeric styling */
+    /* Width constraint only - let universal rules handle alignment and fonts */
     width: 100% !important;
-    text-align: right !important;
-    font-family: monospace !important;
 }
 
 /* Section 06: Notes column wrapping - CONSOLIDATED with .obc-notes-wrapping */

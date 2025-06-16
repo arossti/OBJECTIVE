@@ -441,6 +441,8 @@ This Section 03 success provides the template for solving layout issues across a
 
 **Solution Implemented**: Smart auto-complete system that searches a curated directory of real OAA members and auto-populates all related fields.
 
+**⚠️ User Experience Update**: Auto-complete dropdown now only appears when user presses **Enter key** in the practice name field (row 1.03). This prevents distracting dropdowns while typing and gives users full control over when to search the OAA directory.
+
 **Technical Architecture**:
 ```javascript
 // Real OAA Directory Integration
@@ -1629,22 +1631,42 @@ The OBJECTIVE workspace contains **two semantically separate applications** that
 
 **Status**: **APPLICATION IS PRODUCTION-READY FOR BASIC TESTING** 🎯
 
-## DOM Structure & Excel Mapping Solutions
+## 🚨 CRITICAL: DOM Structure & Excel Mapping Solutions
+
+### ⚠️ **MANDATORY PRE-IMPORT/EXPORT VERIFICATION**
+
+**🔴 BEFORE FINALIZING THE EXCEL-MAPPER:** All sections MUST be verified for the one-column transposition issue described below. This is **CRITICAL** for import/export functionality.
 
 ### Critical DOM/Table Architecture Fix
 During Section 01 development, we discovered and resolved a critical DOM structure issue that will guide all future section implementations.
 
-**The Problem Identified:**
-- **Inherited 4011 Structure**: DOM included padding column from TEUI 4011 app
-- **Column Offset Issue**: All content was shifted right by one column position
-- **Excel Mapping Failure**: DOM positions didn't align with Excel columns for import/export
+**🚨 THE TRANSPOSITION PROBLEM:**
+```
+DOM RENDERING:     [A: empty] [B: content] [C: content] [D: content] ...
+EXCEL MAPPING:     [A: content] [B: content] [C: content] [D: content] ...
+                   ↑ ONE COLUMN OFFSET! ↑
+```
 
-**The Solution Implemented:**
+**Root Cause Identified:**
+- **Inherited 4011 Structure**: DOM included padding column from TEUI 4011 app  
+- **Column Offset Issue**: All content was shifted right by one DOM position
+- **Excel Mapping Failure**: DOM Column B renders Excel Column A content, DOM Column C renders Excel Column B content, etc.
+- **Import/Export Risk**: Without proper fieldId mapping, data will import/export to wrong columns
+
+**✅ THE SOLUTION IMPLEMENTED:**
 ```javascript
 // ✅ CORRECT: Separation of Concerns Approach
-DOM Structure: Keep renderer-friendly layout (padding + columns)
+DOM Structure: Keep renderer-friendly layout (empty spacer + content columns)
 Excel Mapping: Handle via fieldIds ("c_3" = Excel Column C, Row 3) 
-Import/Export: FileHandler maps fieldIds to Excel coordinates
+Import/Export: FileHandler maps fieldIds to Excel coordinates (NOT DOM positions)
+```
+
+**🎯 FIELD ID MAPPING SYSTEM:**
+```javascript
+// Field IDs match Excel coordinates EXACTLY
+fieldId: "c_3"    // = Excel Column C, Row 3 (regardless of DOM position)
+fieldId: "d_22"   // = Excel Column D, Row 22 (regardless of DOM position)
+fieldId: "o_15"   // = Excel Column O, Row 15 (Notes column)
 ```
 
 **Excel-Aligned Row ID System:**
@@ -2961,7 +2983,7 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 
 **Key Architecture Note**: 
 - **DOM Column A**: Empty spacer for visual padding
-- **DOM Column B**: Renders Excel Column A content
+- **DOM Column B**: Renders Excel Column A content  
 - **DOM Column C**: Renders Excel Column B content
 - **etc.**
 
@@ -2974,6 +2996,78 @@ The browser's table layout algorithm appears to have deep-seated behavior for fo
 - DOM handles visual layout (with spacer column)
 - FieldIds handle data mapping (Excel-aligned)
 - Renderer bridges the gap between visual DOM and data coordinates
+
+---
+
+## 🔍 **PRE-EXCEL-MAPPER VERIFICATION CHECKLIST**
+
+**Status**: **REQUIRED BEFORE IMPORT/EXPORT FINALIZATION** ⚠️
+
+### **ALL SECTIONS VERIFICATION REQUIREMENTS:**
+
+Before the excel-mapper is created/finalized, **EVERY SECTION** must be audited for:
+
+#### **1. Field ID Verification (CRITICAL)**
+```javascript
+// ✅ CORRECT: Excel coordinate mapping
+fieldId: "c_3"    // Excel Column C, Row 3
+fieldId: "d_22"   // Excel Column D, Row 22
+fieldId: "o_15"   // Excel Column O, Row 15
+
+// ❌ INCORRECT: DOM-based mapping (will break import/export)
+fieldId: "col_2_row_3"    // DOM-centric naming
+fieldId: "input_22"       // Generic naming
+```
+
+#### **2. Column Transposition Audit**
+For each section, verify:
+- **DOM Column B** renders **Excel Column A** content
+- **DOM Column C** renders **Excel Column B** content  
+- **DOM Column D** renders **Excel Column C** content
+- **etc.**
+
+#### **3. Section-by-Section Checklist**
+
+**Verified Sections:** ✅
+- **Section 01**: Building Information - VERIFIED ✅
+- **Section 02**: Building Occupancy - VERIFIED ✅ (2024-12-19)
+- **Section 03**: Building Areas - VERIFIED ✅
+
+**Pending Verification:** ⚠️  
+- **Section 04**: Firefighting & Life Safety Systems
+- **Section 05**: Structural Requirements
+- **Section 06**: Occupant Safety & Accessibility
+- **Section 07**: Fire Resistance & Spatial Separation
+- **Section 08**: Plumbing Fixture Requirements
+- **Section 09**: Compliance & Design
+- **Section 10**: Notes
+
+#### **Section 02 Verification Details (2024-12-19)**
+**Field ID Mapping Confirmed:**
+- `d_11` → Excel Column D, Row 11 ✅
+- `e_11` → Excel Column E, Row 11 ✅  
+- `o_14` → Excel Column O, Row 14 ✅
+- All field IDs follow exact Excel coordinate format
+
+**DOM Structure Confirmed:**
+- Column A: Expandable row controls (DOM Position 0)
+- Column B: Auto-populated row numbers (DOM Position 1)  
+- Columns C-O: Content cells (DOM Positions 2-15)
+- **NO OFFSET ISSUE** - proper separation of concerns implemented
+
+#### **4. Excel Import/Export Test Plan**
+Once all sections are verified:
+1. **Create test CSV** with known data in specific Excel coordinates
+2. **Import test** - verify data appears in correct form fields
+3. **Modify data** in form fields  
+4. **Export test** - verify data exports to correct Excel coordinates
+5. **Round-trip test** - import → modify → export → import again
+
+#### **5. Critical Success Criteria**
+- ✅ **Field IDs match Excel coordinates exactly**
+- ✅ **No DOM position dependencies in import/export logic**
+- ✅ **Data round-trip integrity maintained**
+- ✅ **All 96 Excel rows properly mapped across 10 sections**
 
 ### ✅ Input State Management Fix - RESOLVED
 
