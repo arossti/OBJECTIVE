@@ -535,8 +535,15 @@ window.OBC.SectionModules.sect01 = (function () {
       {
         name: "Lara McKendrick",
         firm: "Lara McKendrick Architecture Inc.",
-        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Lara-McKendrick",
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Lara-J-McKendrick-1",
         license: "5829",
+        status: "Active",
+      },
+      {
+        name: "David Vincent Thompson",
+        firm: "Independent Practice", // Real firm name not publicly available
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/David-VincentThompson",
+        license: "License number not publicly available", // OAA doesn't show license numbers on public pages
         status: "Active",
       },
     ],
@@ -552,40 +559,53 @@ window.OBC.SectionModules.sect01 = (function () {
 
       const searchTerm = query.toLowerCase().trim();
 
-      // More restrictive filtering - must have meaningful overlap
+      // PRECISION-FIRST filtering - prevent false positives like "Tardis" → "Thomson"
       const results = this.directory.filter((record) => {
         const firmLower = record.firm.toLowerCase();
         const nameLower = record.name.toLowerCase();
 
-        // Direct substring match (most relevant)
+        // Tier 1: EXACT substring match (highest confidence)
         if (firmLower.includes(searchTerm) || nameLower.includes(searchTerm)) {
           return true;
         }
 
-        // Word-based matching for multi-word queries
-        const queryWords = searchTerm.split(/\s+/).filter((w) => w.length > 1);
+        // Tier 2: EXACT word matches (high confidence)
+        const queryWords = searchTerm.split(/\s+/).filter((w) => w.length > 2); // Require min 3 chars
+        if (queryWords.length === 0) return false; // Reject very short queries
+        
+        const firmWords = firmLower.split(/\s+/);
+        const nameWords = nameLower.split(/\s+/);
+        const allWords = [...firmWords, ...nameWords];
+
         if (queryWords.length === 1) {
-          // Single word - check if it matches any word in firm/name
-          const firmWords = firmLower.split(/\s+/);
-          const nameWords = nameLower.split(/\s+/);
-          return (
-            firmWords.some((fw) => fw.startsWith(searchTerm)) ||
-            nameWords.some((nw) => nw.startsWith(searchTerm))
-          );
+          // Single word - must START with the query (prevent "tard" matching "thomson")
+          return allWords.some((word) => word.startsWith(queryWords[0]));
         } else {
-          // Multi-word - require at least 50% of query words to match
-          const allWords = [
-            ...firmLower.split(/\s+/),
-            ...nameLower.split(/\s+/),
-          ];
-          const matchCount = queryWords.filter((qw) =>
-            allWords.some((aw) => aw.includes(qw) || qw.includes(aw)),
-          ).length;
-          return matchCount / queryWords.length >= 0.5;
+          // Multi-word - require EXACT word matches, not substring includes
+          const exactMatches = queryWords.filter((queryWord) =>
+            allWords.some((recordWord) => 
+              // Exact match OR legitimate architectural abbreviations
+              recordWord === queryWord ||
+              recordWord.startsWith(queryWord) ||
+              this.isLegitimateVariation(queryWord, recordWord)
+            )
+          );
+          
+          // Require at least 70% exact matches (stricter than previous 50%)
+          return exactMatches.length / queryWords.length >= 0.7;
         }
       });
 
-      // Sort by relevance (exact firm matches first, then name matches, then fuzzy)
+      // Debug logging for search precision
+      if (results.length === 0) {
+        console.log(`🔍 OAA Search: "${query}" - No matches found (precision-first filtering)`);
+      } else {
+        console.log(`🔍 OAA Search: "${query}" - Found ${results.length} precise matches:`, 
+          results.map(r => `${r.firm} (${r.name})`));
+        console.warn(`⚠️ DEMO DATA: Results may not reflect current OAA directory. Production system requires real OAA API integration.`);
+      }
+
+      // Sort by relevance (exact firm matches first, then name matches)
       return results
         .sort((a, b) => {
           const aFirmExact = a.firm.toLowerCase().includes(searchTerm);
@@ -603,19 +623,53 @@ window.OBC.SectionModules.sect01 = (function () {
     },
 
     /**
-     * Fuzzy matching for name variations
+     * Checks for legitimate architectural name/firm variations ONLY
+     * Very restrictive to prevent false positives like "Tardis" → "Thomson"
+     */
+    isLegitimateVariation: function (queryWord, recordWord) {
+      // Known name variations (architect names)
+      const nameVariations = {
+        "andrew": ["andy"],
+        "andy": ["andrew"],
+        "thomson": ["thompson"],
+        "thompson": ["thomson"],
+        "mike": ["michael"],
+        "michael": ["mike"],
+        "rob": ["robert"],
+        "robert": ["rob"],
+        "dave": ["david"],
+        "david": ["dave"],
+      };
+      
+      // Known firm type abbreviations
+      const firmAbbreviations = {
+        "architecture": ["arch", "architects"],
+        "architects": ["arch", "architecture"],
+        "inc": ["incorporated"],
+        "incorporated": ["inc"],
+        "ltd": ["limited"],
+        "limited": ["ltd"],
+      };
+      
+      // Check name variations
+      if (nameVariations[queryWord]) {
+        return nameVariations[queryWord].includes(recordWord);
+      }
+      
+      // Check firm abbreviations
+      if (firmAbbreviations[queryWord]) {
+        return firmAbbreviations[queryWord].includes(recordWord);
+      }
+      
+      return false; // No legitimate variation found
+    },
+
+    /**
+     * Legacy fuzzy matching - DEPRECATED in favor of precision-first approach
      */
     fuzzyMatch: function (text, query) {
-      const words = query.split(" ");
-      return words.every(
-        (word) =>
-          text.includes(word) ||
-          // Handle common name variations
-          (word === "andrew" && text.includes("andy")) ||
-          (word === "andy" && text.includes("andrew")) ||
-          (word === "thomson" && text.includes("thompson")) ||
-          (word === "thompson" && text.includes("thomson")),
-      );
+      // This function is now deprecated - precision-first matching used instead
+      return false;
     },
   };
 
@@ -865,8 +919,15 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Now validate the found member
       const validationResult = await validateOAAMembership(bestMatch.url);
+      
+      // Add demo data disclaimer to the validation status
+      let statusWithDisclaimer = validationResult.status;
+      if (validationResult.valid) {
+        statusWithDisclaimer += " | ⚠️ Demo data - verify details with official OAA directory";
+      }
+      
       updateValidationStatus(
-        validationResult.status,
+        statusWithDisclaimer,
         validationResult.indicator,
         validationResult.class,
         validationResult.licenseNumber,
@@ -884,10 +945,16 @@ window.OBC.SectionModules.sect01 = (function () {
 
   /**
    * Auto-complete and validation system setup
+   * Includes protection against multiple initializations
    */
   function setupOAAValidation() {
     const urlField = document.querySelector('[data-field-id="c_10"]');
     const practiceField = document.querySelector('[data-field-id="c_3"]');
+    
+    // Prevent multiple initializations
+    if (urlField && urlField._oaaValidationInitialized) {
+      return; // Already initialized
+    }
 
     if (!urlField) return;
 
@@ -940,15 +1007,21 @@ window.OBC.SectionModules.sect01 = (function () {
     // Initial validation - start clean with helpful instruction
     setTimeout(() => {
       updateValidationStatus(
-        "Enter practice name in row 1.03 and press Enter to search OAA directory",
+        "Enter practice name in row 1.03 and press Enter to search OAA directory and view auto-complete options",
         "⚪",
         "validation-empty",
       );
     }, 500);
+    
+    // Mark as initialized to prevent duplicate setup
+    if (urlField) {
+      urlField._oaaValidationInitialized = true;
+    }
   }
 
   /**
    * Sets up auto-complete functionality for practice name field
+   * Auto-complete dropdown now only triggers on Enter key press (not while typing)
    */
   function setupAutoComplete(practiceField, urlField) {
     let searchTimeout;
@@ -995,8 +1068,8 @@ window.OBC.SectionModules.sect01 = (function () {
         return;
       }
 
-      // Build suggestions HTML - clean dropdown presentation
-      container.innerHTML = results
+      // Build suggestions HTML - clean dropdown presentation with demo data warning
+      const suggestionsHTML = results
         .map(
           (result) => `
          <div class="autocomplete-item" data-url="${result.url}" data-firm="${result.firm}" data-name="${result.name}" data-license="${result.license}">
@@ -1007,6 +1080,10 @@ window.OBC.SectionModules.sect01 = (function () {
        `,
         )
         .join("");
+      
+      // Add demo data disclaimer
+      container.innerHTML = suggestionsHTML + 
+        `<div class="autocomplete-disclaimer">⚠️ Demo data - verify with official OAA directory</div>`;
 
       // Add click handlers
       container.querySelectorAll(".autocomplete-item").forEach((item) => {
@@ -1018,7 +1095,7 @@ window.OBC.SectionModules.sect01 = (function () {
           ).textContent;
 
           // Extract license number from architect text (e.g., "John Smith (License: 1234)")
-          const licenseMatch = selectedArchitect.match(/License:\s*(\w+)/);
+          const licenseMatch = selectedArchitect.match(/License:\s*(.+?)\)/);
           const licenseNumber = licenseMatch ? licenseMatch[1] : "Unknown";
 
           // Clean populate each field separately - ONLY the selected firm name
@@ -1078,17 +1155,18 @@ window.OBC.SectionModules.sect01 = (function () {
       }
     }
 
-    // Practice field event listeners - ensure clean field behavior
-    practiceField.addEventListener("input", function () {
-      clearTimeout(searchTimeout);
-      const query = this.textContent.trim();
-
-      // Only trigger auto-complete if user is actually typing (not from programmatic updates)
-      if (query.length >= 2 && query.length <= 50) {
-        // Reasonable practice name length
-        searchTimeout = setTimeout(() => {
+    // Practice field event listeners - DISABLED auto-complete on typing
+    // Auto-complete dropdown is now DISABLED - search only triggers on Enter key
+    // (as configured in setupOAAValidation function)
+    
+    // Optional: Add keypress listener for auto-complete on Enter (same as OAA lookup)
+    practiceField.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        clearTimeout(searchTimeout);
+        const query = this.textContent.trim();
+        if (query.length >= 2 && query.length <= 50) {
           showSuggestions(query);
-        }, 500); // Wait 500ms after user stops typing
+        }
       }
     });
 
@@ -1104,6 +1182,7 @@ window.OBC.SectionModules.sect01 = (function () {
         const firmNames = [
           "Thomson Architecture, Inc.",
           "Lara McKendrick Architecture Inc.",
+          "Independent Practice",
         ];
         const matchedFirm = firmNames.find((firm) =>
           currentContent.includes(firm),
@@ -1127,9 +1206,16 @@ window.OBC.SectionModules.sect01 = (function () {
 
   /**
    * Makes URL field clickable when valid
+   * Prevents multiple event listeners by removing existing ones first
    */
   function setupClickableURL(urlField) {
-    urlField.addEventListener("click", function (e) {
+    // Remove any existing click listener to prevent multiple tabs
+    if (urlField._oaaClickHandler) {
+      urlField.removeEventListener("click", urlField._oaaClickHandler);
+    }
+    
+    // Create the click handler function
+    const clickHandler = function (e) {
       const url = this.textContent || this.value || "";
       if (
         url.trim() &&
@@ -1139,7 +1225,13 @@ window.OBC.SectionModules.sect01 = (function () {
         e.preventDefault();
         window.open(url.trim(), "_blank", "noopener,noreferrer");
       }
-    });
+    };
+    
+    // Store reference to handler for future removal
+    urlField._oaaClickHandler = clickHandler;
+    
+    // Add the click listener
+    urlField.addEventListener("click", clickHandler);
   }
 
   /**
@@ -1426,6 +1518,16 @@ window.OBC.SectionModules.sect01 = (function () {
         .autocomplete-status.inactive {
           background-color: #f8d7da;
           color: #721c24;
+        }
+
+        .autocomplete-disclaimer {
+          background-color: #fff3cd;
+          color: #856404;
+          font-size: 11px;
+          padding: 8px 16px;
+          text-align: center;
+          border-top: 1px solid #ffeaa7;
+          font-style: italic;
         }
 
         /* Clickable URL Styling */
