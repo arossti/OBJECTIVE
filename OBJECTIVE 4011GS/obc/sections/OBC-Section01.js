@@ -28,9 +28,8 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "01-INFO",
       label: "Building Information Header",
       cells: {
-        b: { label: "Field Name", classes: ["section-subheader"] },
-        c: { content: "User Edited Details", classes: ["section-subheader"] },
-        d: { content: "", classes: ["section-subheader"] },
+        c: { content: "Field Name", classes: ["section-subheader"] },
+        d: { content: "User Edited Details", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
@@ -50,17 +49,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.03",
       label: "Name of Practice",
       cells: {
-        b: { label: "Name of Practice" },
-        c: {
+        c: { label: "Name of Practice" },
+        d: {
           fieldId: "c_3", // Maps to Excel Column C
           type: "editable",
           value: "Enter practice name",
           section: "buildingInfo",
           placeholder: "Enter practice name",
           classes: ["no-wrap"],
-          colspan: 6, // Span columns C-H
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -80,17 +78,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.04",
       label: "Address 1",
       cells: {
-        b: { label: "Address 1" },
-        c: {
+        c: { label: "Address 1" },
+        d: {
           fieldId: "c_4", // Maps to Excel Column C
           type: "editable",
           value: "Enter address line 1",
           section: "buildingInfo",
           placeholder: "Enter address line 1",
           classes: ["no-wrap"],
-          colspan: 6, // Span columns C-H
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -110,17 +107,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.05",
       label: "Address 2",
       cells: {
-        b: { label: "Address 2" },
-        c: {
+        c: { label: "Address 2" },
+        d: {
           fieldId: "c_5", // Maps to Excel Column C
           type: "editable",
           value: "Enter address line 2",
           section: "buildingInfo",
           placeholder: "Enter address line 2",
           classes: ["no-wrap"],
-          colspan: 6, // Changed to colspan to match other rows
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -140,17 +136,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.06",
       label: "Contact",
       cells: {
-        b: { label: "Contact" },
-        c: {
+        c: { label: "Contact" },
+        d: {
           fieldId: "c_6", // Maps to Excel Column C
           type: "editable",
           value: "Enter contact information",
           section: "buildingInfo",
           placeholder: "Enter contact information",
           classes: ["no-wrap"],
-          colspan: 6, // Span columns C-H
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -170,17 +165,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.07",
       label: "Name of Project",
       cells: {
-        b: { label: "Name of Project" },
-        c: {
+        c: { label: "Name of Project" },
+        d: {
           fieldId: "c_7", // Maps to Excel Column C
           type: "editable",
           value: "Enter project name",
           section: "buildingInfo",
           placeholder: "Enter project name",
           classes: ["no-wrap"],
-          colspan: 6, // Span columns C-H
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -200,17 +194,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.08",
       label: "Location/Address",
       cells: {
-        b: { label: "Location/Address" },
-        c: {
+        c: { label: "Location/Address" },
+        d: {
           fieldId: "c_8", // Maps to Excel Column C
           type: "editable",
           value: "Enter project location",
           section: "buildingInfo",
           placeholder: "Enter project location",
           classes: ["no-wrap"],
-          colspan: 6, // Span columns C-H
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -230,17 +223,16 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.09",
       label: "Date",
       cells: {
-        b: { label: "Date" },
-        c: {
+        c: { label: "Date" },
+        d: {
           fieldId: "c_9", // Maps to Excel Column C
           type: "editable",
           value: "Enter date",
           section: "buildingInfo",
           placeholder: "Enter date",
           classes: ["no-wrap"],
-          colspan: 3, // Span columns C-E for date field
+          colspan: 3, // Span columns D-F for date field
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -260,8 +252,8 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.10",
       label: "OAA Member Registration",
       cells: {
-        b: { label: "OAA Member Registration" },
-        c: {
+        c: { label: "OAA Member Registration" },
+        d: {
           fieldId: "c_10", // Maps to Excel Column C
           type: "calculated", // Changed to calculated - system populates this
           value: "OAA directory URL will appear after practice name lookup",
@@ -269,9 +261,8 @@ window.OBC.SectionModules.sect01 = (function () {
           section: "buildingInfo",
           placeholder: "System will populate OAA URL automatically",
           classes: ["no-wrap", "auto-populated-url"],
-          colspan: 6, // Span columns C-H
+          colspan: 6, // Span columns D-I
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -291,16 +282,15 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.11",
       label: "OAA Member Verification",
       cells: {
-        b: { label: "OAA Member Verification" },
-        c: {
+        c: { label: "OAA Member Verification" },
+        d: {
           fieldId: "c_11",
           type: "calculated",
           value: "Validating OAA membership status...",
           section: "buildingInfo",
           classes: ["oaa-validation-status"],
-          colspan: 11, // Span columns C-M for full width status text
+          colspan: 11, // Span columns D-N for full width status text
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -320,16 +310,15 @@ window.OBC.SectionModules.sect01 = (function () {
       rowId: "1.12",
       label: "OAA License Number",
       cells: {
-        b: { label: "OAA License Number" },
-        c: {
+        c: { label: "OAA License Number" },
+        d: {
           fieldId: "c_12",
           type: "calculated",
           value: "License number will appear after practice name lookup",
           section: "buildingInfo",
           classes: ["oaa-license-number"],
-          colspan: 6, // Match other fields for consistent alignment
+          colspan: 6, // Span columns D-I for consistent alignment
         },
-        d: { content: "" },
         e: { content: "" },
         f: { content: "" },
         g: { content: "" },
@@ -421,11 +410,11 @@ window.OBC.SectionModules.sect01 = (function () {
       ],
     };
 
-    // Add cells B through O based on the row definition (DOM rendering order)
+    // Add cells C through O based on the row definition (DOM rendering order)
+    // Skip "b" since Column B is auto-populated by FieldManager
     const columns = [
-      "b", // DOM Label column
-      "c", // DOM User input column (maps to Excel C via fieldId)
-      "d",
+      "c", // DOM Label column (Excel Column B)
+      "d", // DOM User input column (maps to Excel C via fieldId)
       "e",
       "f",
       "g",
