@@ -2,8 +2,9 @@
  * OBC-Section08.js
  * Plumbing Fixture Requirements (Section 8) module for OBC Matrix
  *
- * Based on OBC Matrix Part 3 structure covering rows 77-81
- * Includes Plumbing Fixture Requirements
+ * Based on OBC Matrix Part 3 structure covering rows 79-81
+ * Consolidated header structure - removed redundant rows 77-78
+ * Added footer row 8.81f with ratio information for cleaner layout
  */
 
 // Create section-specific namespace for global references
@@ -20,8 +21,8 @@ window.OBC.SectionModules.sect08 = (function () {
 
   const SECTION_CONFIG = {
     name: "plumbingFixtures",
-    excelRowStart: 77,
-    excelRowEnd: 81,
+    excelRowStart: 79, // Now starts at row 79 (first data row)
+    excelRowEnd: 81,   // Ends at row 81 (plus footer 8.81f)
     hasCalculations: false,
     hasDropdowns: true,
     needsCSS: false,
@@ -44,28 +45,31 @@ window.OBC.SectionModules.sect08 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    // SUBHEADER ROW
+    // ENHANCED SUBHEADER ROW - Consolidates all necessary headers
     header: {
       id: "8.h",
-      rowId: "8.h",
+      rowId: "8.h", 
       label: "Plumbing Fixtures Header",
       cells: {
-        b: { content: "8.h" },
+        b: { content: "3.23" },
         c: {
           content: "PLUMBING FIXTURE REQUIREMENTS",
           classes: ["section-subheader"],
         },
-        d: { content: "RATIO:", classes: ["section-subheader"] },
-        e: {
-          content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE",
-          classes: ["section-subheader"],
+        d: { 
+          content: "FLOOR LEVEL OR AREA", 
+          classes: ["section-subheader"] 
         },
-        f: { content: "F", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
         g: {
           content: "OCCUPANT LOAD (PERSONS)",
           classes: ["section-subheader"],
         },
-        h: { content: "OBC SENTENCE", classes: ["section-subheader"] },
+        h: { 
+          content: "OBC SENTENCE", 
+          classes: ["section-subheader"] 
+        },
         i: {
           content: "WATER CLOSETS REQUIRED",
           classes: ["section-subheader"],
@@ -82,59 +86,12 @@ window.OBC.SectionModules.sect08 = (function () {
           content: "UNIVERSAL WASHROOMS REQUIRED / PROVIDED",
           classes: ["section-subheader"],
         },
-        m: { content: "M", classes: ["section-subheader"] },
-        n: { content: "N", classes: ["section-subheader"] },
+        m: { 
+          content: "3.7.4., 3.8.2.3., Tables 3.8.2.3.A, and 3.8.2.3.B", 
+          classes: ["section-subheader"] 
+        },
+        n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
-      },
-    },
-
-    // Row 77: 3.23 Plumbing Fixture Requirements
-    8.77: {
-      id: "8.77",
-      rowId: "8.77",
-      label: "PLUMBING FIXTURE REQUIREMENTS",
-      cells: {
-        b: { content: "3.23" },
-        c: { content: "PLUMBING FIXTURE REQUIREMENTS" },
-        d: { content: "RATIO:" },
-        e: { content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE" },
-        g: { content: "OCCUPANT LOAD (PERSONS)" },
-        h: { content: "OBC SENTENCE" },
-        i: { content: "WATER CLOSETS REQUIRED" },
-        j: { content: "WATER CLOSETS PROVIDED" },
-        k: { content: "BARRIER-FREE WATER CLOSETS REQUIRED / PROVIDED" },
-        l: { content: "UNIVERSAL WASHROOMS REQUIRED / PROVIDED" },
-        m: { content: "3.7.4., 3.8.2.3., Tables 3.8.2.3.A, and 3.8.2.3.B" },
-        o: {
-          fieldId: "o_77",
-          type: "editable",
-          value: "enter notes here...",
-          section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"],
-        },
-      },
-    },
-
-    // Row 78: Plumbing Requirements Header
-    8.78: {
-      id: "8.78",
-      rowId: "8.78",
-      label: "Plumbing Requirements Data",
-      cells: {
-        d: { content: "FLOOR LEVEL OR AREA" },
-        g: { content: "OCCUPANT LOAD (PERSONS)" },
-        h: { content: "OBC SENTENCE" },
-        i: { content: "WATER CLOSETS REQUIRED" },
-        j: { content: "WATER CLOSETS PROVIDED" },
-        k: { content: "BARRIER-FREE WATER CLOSETS REQUIRED / PROVIDED" },
-        l: { content: "UNIVERSAL WASHROOMS REQUIRED / PROVIDED" },
-        o: {
-          fieldId: "o_78",
-          type: "editable",
-          value: "enter notes here...",
-          section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"],
-        },
       },
     },
 
@@ -363,6 +320,29 @@ window.OBC.SectionModules.sect08 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
+      },
+    },
+
+    // Footer Row: Ratio Information (moved from redundant headers)
+    "8.81f": {
+      id: "8.81f",
+      rowId: "8.81f",
+      label: "Ratio Footer",
+      cells: {
+        b: { content: "" },
+        c: { content: "RATIO:" },
+        d: { content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE" },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" },
       },
     },
   };
