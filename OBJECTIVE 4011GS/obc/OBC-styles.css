@@ -1640,7 +1640,6 @@ table.data-table select.form-select:hover {
 /* Section 07: Hide completely empty columns to improve density */
 #fireResistance .data-table td:nth-child(3),  /* Column C - empty (no content) */
 #fireResistance .data-table td:nth-child(7),  /* Column G - empty */
-#fireResistance .data-table td:nth-child(8),  /* Column H - empty */
 #fireResistance .data-table td:nth-child(13), /* Column M - empty */
 #fireResistance .data-table td:nth-child(14)  /* Column N - empty */
 {
@@ -1684,21 +1683,28 @@ table.data-table select.form-select:hover {
     white-space: nowrap !important;
 }
 #fireResistance .data-table td:nth-child(8) { 
-    width: 120px !important;  /* Column H - % UPO (text/numeric mix) */
+    width: 120px !important;  /* Column H - fire rating dropdowns (RATING H) */
     max-width: 120px !important;
     text-align: center !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(9) { width: 150px !important; }  /* Column I - fire rating dropdowns */
+#fireResistance .data-table td:nth-child(9) { 
+    width: 150px !important;  /* Column I - supporting assembly dropdowns (normal styling) */
+    max-width: 150px !important;
+    text-align: center !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
 #fireResistance .data-table td:nth-child(10) { width: 250px !important; } /* Column J - construction type dropdowns (long text) */
 #fireResistance .data-table td:nth-child(11) { width: 200px !important; } /* Column K - cladding type dropdowns */
 #fireResistance .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
 #fireResistance .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
 
-/* Section 07: Fire rating center alignment (Column I) */
-#fireResistance .data-table td:nth-child(9) select { /* Column I - Fire ratings */
+/* Section 07: Fire rating center alignment (Column H) */
+#fireResistance .data-table td:nth-child(8) select { /* Column H - Fire ratings only */
     text-align: center !important;
     font-weight: 600 !important;
     color: #d73527 !important; /* Fire red color for ratings */

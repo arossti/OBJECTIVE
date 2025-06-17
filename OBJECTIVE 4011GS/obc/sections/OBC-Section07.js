@@ -68,16 +68,16 @@ window.OBC.SectionModules.sect07 = (function () {
   const sectionRows = {
     // SUBHEADER ROW
     header: {
-      id: "7.h",
-      rowId: "7.h",
+      id: "7.66",
+      rowId: "7.66",
       label: "Fire Resistance Header",
       cells: {
         b: { content: "7.h" },
         c: { content: "FIRE RESISTANCE", classes: ["section-subheader"] },
         d: { content: "HORIZONTAL ASSEMBLY", classes: ["section-subheader"] },
-        e: { content: "E", classes: ["section-subheader"] },
-        f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
         h: { content: "RATING (H)", classes: ["section-subheader"] },
         i: {
           content: "SUPPORTING ASSEMBLY (H)",
@@ -87,34 +87,11 @@ window.OBC.SectionModules.sect07 = (function () {
           content: "NONCOMBUSTIBLE IN LIEU OF RATING?",
           classes: ["section-subheader"],
         },
-        k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
-        m: { content: "M", classes: ["section-subheader"] },
-        n: { content: "N", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "OBC 3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
-      },
-    },
-
-    // Row 66: 3.21 Required Fire Resistance Ratings
-    7.66: {
-      id: "7.66",
-      rowId: "7.66",
-      label: "REQUIRED FIRE RESISTANCE RATINGS",
-      cells: {
-        b: { content: "3.21" },
-        c: { content: "REQUIRED FIRE RESISTANCE RATINGS" },
-        d: { content: "HORIZONTAL ASSEMBLY" },
-        h: { content: "RATING (H)" },
-        i: { content: "SUPPORTING ASSEMBLY (H)" },
-        j: { content: "NONCOMBUSTIBLE IN LIEU OF RATING?" },
-        l: { content: "3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15." },
-        o: {
-          fieldId: "o_66",
-          type: "editable",
-          value: "enter notes here...",
-          section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"],
-        },
       },
     },
 
