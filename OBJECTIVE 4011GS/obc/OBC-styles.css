@@ -1638,7 +1638,6 @@ table.data-table select.form-select:hover {
 /* #fireResistance .data-table - now uses consolidated .obc-data-table pattern */
 
 /* Section 07: Hide completely empty columns to improve density */
-#fireResistance .data-table td:nth-child(1),  /* Column A - no expandable rows */
 #fireResistance .data-table td:nth-child(7),  /* Column G - empty */
 #fireResistance .data-table td:nth-child(8),  /* Column H - empty */
 #fireResistance .data-table td:nth-child(13), /* Column M - empty */
@@ -1650,6 +1649,7 @@ table.data-table select.form-select:hover {
 }
 
 /* Section 07: Controlled width for content columns */
+#fireResistance .data-table td:nth-child(1) { width: 70px !important; }   /* Column A - expandable buttons */
 #fireResistance .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
 #fireResistance .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - assembly types */
 #fireResistance .data-table td:nth-child(4) { 
@@ -1676,9 +1676,9 @@ table.data-table select.form-select:hover {
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(9) { width: 150px !important; }  /* Column I - dropdowns */
-#fireResistance .data-table td:nth-child(10) { width: 120px !important; } /* Column J - measurements */
-#fireResistance .data-table td:nth-child(11) { width: 150px !important; } /* Column K - dropdowns */
+#fireResistance .data-table td:nth-child(9) { width: 150px !important; }  /* Column I - fire rating dropdowns */
+#fireResistance .data-table td:nth-child(10) { width: 250px !important; } /* Column J - construction type dropdowns (long text) */
+#fireResistance .data-table td:nth-child(11) { width: 200px !important; } /* Column K - cladding type dropdowns */
 #fireResistance .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
 #fireResistance .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
 
@@ -1689,6 +1689,21 @@ table.data-table select.form-select:hover {
     text-align: center !important;
     font-weight: 600 !important;
     color: #d73527 !important; /* Fire red color for ratings */
+}
+
+/* Section 07: Construction and Cladding type dropdown styling */
+#fireResistance .data-table td:nth-child(10) select { /* Column J - Construction Type */
+    width: 100% !important;
+    max-width: 245px !important; /* Match column width (250px) with buffer */
+    overflow: visible !important; /* Allow dropdown content to show fully */
+    text-overflow: clip !important; /* Don't truncate dropdown text */
+}
+
+#fireResistance .data-table td:nth-child(11) select { /* Column K - Cladding Type */
+    width: 100% !important;
+    max-width: 195px !important; /* Match column width (200px) with buffer */
+    overflow: visible !important; /* Allow dropdown content to show fully */
+    text-overflow: clip !important; /* Don't truncate dropdown text */
 }
 
 /* Section 07: Notes column wrapping */
