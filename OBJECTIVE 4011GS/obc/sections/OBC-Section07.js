@@ -745,10 +745,22 @@ window.OBC.SectionModules.sect07 = (function () {
     const rowDef = {
       id: row.id,
       cells: [
-        {}, // Column A - empty spacer
-        {}, // Column B - auto-populated
+        {}, // Column A - empty spacer (will be populated if row has 'a' cell)
+        {}, // Column B - will be populated from row.cells.b
       ],
     };
+
+    // Handle column A if defined (for expandable rows)
+    if (row.cells && row.cells.a) {
+      rowDef.cells[0] = { ...row.cells.a };
+    }
+
+    // Handle column B if defined 
+    if (row.cells && row.cells.b) {
+      const cell = { ...row.cells.b };
+      delete cell.section;
+      rowDef.cells[1] = cell;
+    }
 
     const columns = [
       "c",

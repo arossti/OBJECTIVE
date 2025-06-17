@@ -1638,6 +1638,7 @@ table.data-table select.form-select:hover {
 /* #fireResistance .data-table - now uses consolidated .obc-data-table pattern */
 
 /* Section 07: Hide completely empty columns to improve density */
+#fireResistance .data-table td:nth-child(3),  /* Column C - empty (no content) */
 #fireResistance .data-table td:nth-child(7),  /* Column G - empty */
 #fireResistance .data-table td:nth-child(8),  /* Column H - empty */
 #fireResistance .data-table td:nth-child(13), /* Column M - empty */
@@ -1651,26 +1652,40 @@ table.data-table select.form-select:hover {
 /* Section 07: Controlled width for content columns */
 #fireResistance .data-table td:nth-child(1) { width: 70px !important; }   /* Column A - expandable buttons */
 #fireResistance .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
-#fireResistance .data-table td:nth-child(3) { width: 200px !important; }  /* Column C - assembly types */
 #fireResistance .data-table td:nth-child(4) { 
-    width: 100px !important;  /* Column D - ratings */
-    max-width: 100px !important;
-    text-align: center !important;
+    width: 150px !important;  /* Column D - exposing face descriptions */
+    max-width: 150px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
 #fireResistance .data-table td:nth-child(5) { 
-    width: 100px !important;  /* Column E - ratings */
+    width: 100px !important;  /* Column E - EBF area (numeric) */
+    max-width: 100px !important;
+    text-align: right !important; /* RIGHT-ALIGN NUMERIC */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(6) { 
+    width: 100px !important;  /* Column F - L.D. (numeric) */
+    max-width: 100px !important;
+    text-align: right !important; /* RIGHT-ALIGN NUMERIC */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#fireResistance .data-table td:nth-child(7) { 
+    width: 100px !important;  /* Column G - L/H ratio (text/numeric mix) */
     max-width: 100px !important;
     text-align: center !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
-#fireResistance .data-table td:nth-child(6) { 
-    width: 100px !important;  /* Column F - ratings */
-    max-width: 100px !important;
+#fireResistance .data-table td:nth-child(8) { 
+    width: 120px !important;  /* Column H - % UPO (text/numeric mix) */
+    max-width: 120px !important;
     text-align: center !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -1682,10 +1697,8 @@ table.data-table select.form-select:hover {
 #fireResistance .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
 #fireResistance .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
 
-/* Section 07: Fire rating center alignment */
-#fireResistance .data-table td:nth-child(4) select,
-#fireResistance .data-table td:nth-child(5) select,
-#fireResistance .data-table td:nth-child(6) select {
+/* Section 07: Fire rating center alignment (Column I) */
+#fireResistance .data-table td:nth-child(9) select { /* Column I - Fire ratings */
     text-align: center !important;
     font-weight: 600 !important;
     color: #d73527 !important; /* Fire red color for ratings */
