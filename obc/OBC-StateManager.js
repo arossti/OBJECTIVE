@@ -140,16 +140,12 @@ window.OBC.StateManager = (function () {
    * Initialize the state manager
    */
   function initialize() {
-    console.log("OBC StateManager: Initializing...");
     fields.clear();
     listeners.clear();
     importedState = {};
 
     // Try to load saved state from localStorage
-    const hasRestoredState = loadState();
-    if (!hasRestoredState) {
-      console.log("OBC StateManager: No saved state found, starting fresh");
-    }
+    loadState();
   }
 
   /**
@@ -296,10 +292,15 @@ window.OBC.StateManager = (function () {
           selectChild.value = value;
           element = selectChild; // Use the select for CSS class updates
         } else {
+          // Fields that should NOT be formatted as numbers (even if they contain digits)
+          const textOnlyFields = ["c_12"]; // License numbers should remain as text
+
           // Check if this value should be formatted as a number
           const numericValue = window.OBC.parseNumeric(value, NaN);
+          const shouldFormatAsNumber =
+            !isNaN(numericValue) && !textOnlyFields.includes(fieldId);
 
-          if (!isNaN(numericValue)) {
+          if (shouldFormatAsNumber) {
             // This is a numeric value - apply proper formatting for display
             const formattedValue = window.OBC.formatNumber(
               numericValue,
@@ -307,7 +308,7 @@ window.OBC.StateManager = (function () {
             );
             element.textContent = formattedValue;
           } else {
-            // Non-numeric value, update normally
+            // Non-numeric value or text-only field, update normally
             element.textContent = value;
           }
         }
@@ -400,7 +401,6 @@ window.OBC.StateManager = (function () {
         timestamp: Date.now(),
       };
       localStorage.setItem("OBC_Matrix_State", JSON.stringify(stateData));
-      console.log("OBC StateManager: State saved to localStorage");
     } catch (e) {
       console.error(
         "OBC StateManager: Failed to save state to localStorage:",
@@ -441,9 +441,6 @@ window.OBC.StateManager = (function () {
         // Restore imported state
         importedState = stateData.importedState || {};
 
-        console.log(
-          `OBC StateManager: Restored state with ${fields.size} fields from localStorage`,
-        );
         return true;
       }
     } catch (e) {
@@ -497,8 +494,11 @@ window.OBC.StateManager = (function () {
     let numValue = window.OBC.parseNumeric(valueStr, NaN);
     let displayValue = valueStr;
 
-    // Apply formatting for numeric fields
-    if (!isNaN(numValue)) {
+    // Fields that should NOT be formatted as numbers (even if they contain digits)
+    const textOnlyFields = ["c_12"]; // License numbers should remain as text
+
+    // Apply formatting for numeric fields (excluding text-only fields)
+    if (!isNaN(numValue) && !textOnlyFields.includes(currentFieldId)) {
       // Check if field is explicitly marked as numeric
       const isNumericField =
         fieldElement.hasAttribute("data-type") &&

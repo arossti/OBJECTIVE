@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     occupantSafety: "bi-people",
     fireResistance: "bi-shield",
     plumbingFixtures: "bi-droplet",
-    complianceDesign: "bi-check-circle",
+    energySoundComply: "bi-check-circle",
     notes: "bi-card-text",
 
     // Legacy TEUI sections (for compatibility)
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
     occupantSafety: "Safety",
     fireResistance: "Resistance",
     plumbingFixtures: "Plumbing",
-    complianceDesign: "Compliance",
+    energySoundComply: "Compliance",
     notes: "Notes",
 
     // Legacy TEUI sections (for compatibility)
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
     occupantSafety: "Section 6. Occupant Safety & Accessibility",
     fireResistance: "Section 7. Fire Resistance & Spatial Separation",
     plumbingFixtures: "Section 8. Plumbing Fixture Requirements",
-    complianceDesign: "Section 9. Compliance & Design",
+    energySoundComply: "Section 9. Energy, Sound and Alternative Solutions",
     notes: "Section 10. Notes",
 
     // Legacy TEUI sections (for compatibility)
@@ -242,14 +242,14 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         activateTab(section.id);
 
-        // Scroll to position the app wrapper at the top
-        const appWrapper = document.getElementById("app-wrapper");
+        // Scroll to position the matrix container at the top
+        const matrixContainer = document.getElementById("matrix-container");
         if (
-          appWrapper &&
+          matrixContainer &&
           document.body.classList.contains("horizontal-layout")
         ) {
           window.scrollTo({
-            top: appWrapper.offsetTop,
+            top: matrixContainer.offsetTop,
             behavior: "auto",
           });
 
@@ -296,16 +296,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // If in horizontal layout, scroll to position sticky section at top of viewport
       if (document.body.classList.contains("horizontal-layout")) {
-        // Get the app wrapper or sticky header section
-        const appWrapper = document.getElementById("app-wrapper");
+        // Get the matrix container or sticky header section
+        const matrixContainer = document.getElementById("matrix-container");
         const _stickySection =
           document.getElementById("keyValues") ||
           document.getElementById("buildingInfo");
 
-        if (appWrapper) {
-          // Scroll to position the app wrapper at the top
+        if (matrixContainer) {
+          // Scroll to position the matrix container at the top
           window.scrollTo({
-            top: appWrapper.offsetTop,
+            top: matrixContainer.offsetTop,
             behavior: "auto", // Use auto for immediate positioning
           });
 
@@ -393,12 +393,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Very simple scroll function - just scroll app wrapper to top when switching to horizontal layout
-  function scrollAppWrapperToTop() {
-    const appWrapper = document.getElementById("app-wrapper");
-    if (appWrapper) {
+  // Very simple scroll function - just scroll matrix container to top when switching to horizontal layout
+  function scrollMatrixContainerToTop() {
+    const matrixContainer = document.getElementById("matrix-container");
+    if (matrixContainer) {
       window.scrollTo({
-        top: appWrapper.offsetTop,
+        top: matrixContainer.offsetTop,
         behavior: "auto",
       });
     }
@@ -440,8 +440,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Update sticky element heights
         updateStickyElementHeights();
 
-        // Simply scroll to top of app wrapper
-        setTimeout(scrollAppWrapperToTop, 50);
+        // Scroll to top using requestAnimationFrame for better performance
+        requestAnimationFrame(scrollMatrixContainerToTop);
       }
 
       // Save layout preference
@@ -803,22 +803,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Call updateStickyElementHeights after DOM is loaded
-  setTimeout(updateStickyElementHeights, 300);
+  // Use requestAnimationFrame for better performance and timing
+  requestAnimationFrame(updateStickyElementHeights);
 
   // Initialize core components after DOM is loaded
   if (window.OBC && window.OBC.FieldManager) {
     // Initialize FieldManager (core requirement for OBC Matrix)
     window.OBC.FieldManager.renderAllSections(); // FieldManager handles initial rendering
 
-    // Initialize OBC StateManager and global input handlers
+    // Initialize global input handlers after sections are rendered
+    // Note: StateManager auto-initializes via its own DOMContentLoaded listener
     if (window.OBC.StateManager) {
-      window.OBC.StateManager.initialize();
-
-      // Initialize global input handlers after sections are rendered
-      setTimeout(() => {
+      // Use requestAnimationFrame instead of setTimeout for better performance
+      requestAnimationFrame(() => {
         window.OBC.StateManager.initializeGlobalInputHandlers();
-      }, 100); // Reduced delay for faster startup
+      });
     }
 
     // OBC Matrix doesn't use these TEUI-specific modules:
@@ -827,7 +826,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // - ReferenceValues/ReferenceManager/ReferenceToggle (building code matrix, not energy calculator)
     // Initialize other UI handlers
     initializeUIHandlers();
-    console.log("OBC Matrix initialization complete - FieldManager loaded");
   } else {
     console.error("Core OBC modules (FieldManager) not found!");
   }

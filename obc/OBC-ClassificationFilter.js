@@ -699,15 +699,14 @@ window.OBC.ClassificationFilter = (function () {
     // Set up listeners for all occupancy dropdowns
     OCCUPANCY_FIELD_IDS.forEach((fieldId) => {
       window.OBC.StateManager.addListener(fieldId, function (_value) {
-        // Delay slightly to ensure all state updates are complete
-        setTimeout(updateClassificationFilters, 50);
+        // Use requestAnimationFrame for better performance than setTimeout
+        requestAnimationFrame(updateClassificationFilters);
       });
     });
 
-    // Run initial filtering
-    setTimeout(updateClassificationFilters, 100);
+    // Run initial filtering using requestAnimationFrame
+    requestAnimationFrame(updateClassificationFilters);
 
-    console.log("✅ Classification filtering initialized");
     return true;
   }
 

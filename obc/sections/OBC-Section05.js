@@ -39,6 +39,39 @@ window.OBC.SectionModules.sect05 = (function () {
       { value: "Post-disaster", name: "Post-disaster" },
     ],
 
+    // Conditional importance category modifiers based on main selection
+    // Based on Lookups.csv: Tbl_ImpLow and Tbl_ImpHigh tables
+    importanceCategoryModifiers: {
+      Low: [
+        { value: "-", name: "Select..." },
+        { value: "Low Human Occupancy", name: "Low Human Occupancy" },
+        { value: "Post-disaster Shelter", name: "Post-disaster Shelter" },
+      ],
+      Normal: [
+        { value: "-", name: "Select..." },
+        { value: "Minor Storage Building", name: "Minor Storage Building" },
+        {
+          value: "Explosive or Hazardous Substances",
+          name: "Explosive or Hazardous Substances",
+        },
+      ],
+      High: [
+        { value: "-", name: "Select..." },
+        {
+          value: "Explosive or Hazardous Substances",
+          name: "Explosive or Hazardous Substances",
+        },
+      ],
+      "Post-disaster": [
+        { value: "-", name: "Select..." },
+        { value: "Post-disaster Shelter", name: "Post-disaster Shelter" },
+        {
+          value: "Explosive or Hazardous Substances",
+          name: "Explosive or Hazardous Substances",
+        },
+      ],
+    },
+
     seismicCategory: [
       { value: "-", name: "Select..." },
       { value: "SC1", name: "SC1" },
@@ -112,7 +145,7 @@ window.OBC.SectionModules.sect05 = (function () {
       label: "IMPORTANCE CATEGORY",
       cells: {
         b: { content: "3.16" },
-        c: { content: "IMPORTANCE CATEGORY" },
+        c: { label: "IMPORTANCE CATEGORY" },
         d: {
           fieldId: "d_53",
           type: "dropdown",
@@ -121,6 +154,15 @@ window.OBC.SectionModules.sect05 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
           options: dropdownOptions.importanceCategory,
+        },
+        e: {
+          fieldId: "i_53", // Excel mapping: Column I, Row 53
+          type: "dropdown",
+          dropdownId: "dd_i_53", // Excel namespace: dd_i_53
+          value: "-",
+          section: SECTION_CONFIG.name,
+          classes: ["dropdown-sm"],
+          options: dropdownOptions.importanceCategoryModifiers["Low"], // Default to Low options
         },
         l: { content: "4.1.2.1.(3), T4.1.2.1.B" },
         o: {
@@ -133,23 +175,15 @@ window.OBC.SectionModules.sect05 = (function () {
       },
     },
 
-    // Row 54: 3.17 Seismic Category
+    // Row 54: 3.17 Seismic Category (NO dropdown - per Excel)
     5.54: {
       id: "5.54",
       rowId: "5.54",
       label: "SEISMIC CATEGORY",
       cells: {
         b: { content: "3.17" },
-        c: { content: "SEISMIC CATEGORY" },
-        d: {
-          fieldId: "d_54",
-          type: "dropdown",
-          dropdownId: "dd_d_54",
-          value: "-",
-          section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.seismicCategory,
-        },
+        c: { label: "SEISMIC CATEGORY" },
+        d: { content: "-" }, // Static text, no dropdown per Excel
         l: { content: "4.1.8.4.(1)" },
         o: {
           fieldId: "o_54",
@@ -161,22 +195,15 @@ window.OBC.SectionModules.sect05 = (function () {
       },
     },
 
-    // Row 55: Site Class
+    // Row 55: Site Class (NO dropdown - per Excel)
     5.55: {
       id: "5.55",
       rowId: "5.55",
       label: "SITE CLASS",
       cells: {
-        c: { content: "SITE CLASS" },
-        d: {
-          fieldId: "d_55",
-          type: "dropdown",
-          dropdownId: "dd_d_55",
-          value: "-",
-          section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.siteClass,
-        },
+        b: { content: "55" },
+        c: { label: "SITE CLASS" },
+        d: { content: "-" }, // Static text, no dropdown per Excel
         e: {
           fieldId: "e_55",
           type: "editable",
@@ -202,8 +229,9 @@ window.OBC.SectionModules.sect05 = (function () {
       rowId: "5.56",
       label: "SEISMIC DESIGN REQUIRED",
       cells: {
+        b: { content: "56" },
         c: {
-          content: "SEISMIC DESIGN REQUIRED FOR Table 4.1.8.18. items 6 to 22:",
+          label: "SEISMIC DESIGN REQUIRED FOR Table 4.1.8.18. items 6 to 22:",
         },
         i: {
           fieldId: "i_56",
@@ -231,7 +259,8 @@ window.OBC.SectionModules.sect05 = (function () {
       rowId: "5.57",
       label: "REASON FOR REQUIREMENT",
       cells: {
-        d: { content: "REASON FOR REQUIREMENT" },
+        b: { content: "57" },
+        c: { label: "REASON FOR REQUIREMENT" }, // ✅ FIXED: Moved to column C
         e: {
           fieldId: "e_57",
           type: "editable",
@@ -293,6 +322,10 @@ window.OBC.SectionModules.sect05 = (function () {
       });
     });
 
+    // Add conditional dropdown options for importance category modifiers
+    // Note: These will be dynamically updated based on the main category selection
+    options["dd_i_53"] = dropdownOptions.importanceCategoryModifiers["Low"];
+
     return options;
   }
 
@@ -351,6 +384,44 @@ window.OBC.SectionModules.sect05 = (function () {
   }
 
   //==========================================================================
+  // CONDITIONAL DROPDOWN LOGIC
+  //==========================================================================
+
+  function updateImportanceCategoryModifier(importanceCategory) {
+    const modifierDropdown = document.querySelector(
+      '[data-dropdown-id="dd_i_53"]',
+    );
+    if (!modifierDropdown) {
+      console.error("Section 05: Modifier dropdown not found");
+      return;
+    }
+
+    // Get the appropriate options based on the selected importance category
+    const options =
+      dropdownOptions.importanceCategoryModifiers[importanceCategory] ||
+      dropdownOptions.importanceCategoryModifiers["Low"];
+
+    // Clear existing options
+    modifierDropdown.innerHTML = "";
+
+    // Add new options
+    options.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option.value;
+      optionElement.textContent = option.name;
+      modifierDropdown.appendChild(optionElement);
+    });
+
+    // Reset to default selection
+    modifierDropdown.value = "-";
+
+    // Update state manager with correct Excel field mapping
+    if (window.OBC?.StateManager?.setValue) {
+      window.OBC.StateManager.setValue("i_53", "-", "user-modified"); // Excel Column I, Row 53
+    }
+  }
+
+  //==========================================================================
   // EVENT HANDLING (OBC MATRIX PATTERN)
   //==========================================================================
 
@@ -358,10 +429,33 @@ window.OBC.SectionModules.sect05 = (function () {
     if (window.OBC?.StateManager?.initializeGlobalInputHandlers) {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
+
+    // Add conditional dropdown handling for importance category
+    const importanceCategoryDropdown = document.querySelector(
+      '[data-dropdown-id="dd_d_53"]',
+    );
+    if (importanceCategoryDropdown) {
+      importanceCategoryDropdown.addEventListener("change", function (e) {
+        updateImportanceCategoryModifier(e.target.value);
+      });
+    }
   }
 
   function onSectionRendered() {
     initializeEventHandlers();
+
+    // Initialize the conditional dropdown with the default importance category value
+    setTimeout(() => {
+      const importanceCategoryDropdown = document.querySelector(
+        '[data-dropdown-id="dd_d_53"]',
+      );
+      if (importanceCategoryDropdown) {
+        updateImportanceCategoryModifier(
+          importanceCategoryDropdown.value || "Low",
+        );
+      }
+    }, 100); // Small delay to ensure DOM is ready
+
     window.OBC.sect05.initialized = true;
   }
 
@@ -375,5 +469,6 @@ window.OBC.SectionModules.sect05 = (function () {
     getLayout: getLayout,
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+    updateImportanceCategoryModifier: updateImportanceCategoryModifier,
   };
 })();

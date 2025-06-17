@@ -25,7 +25,7 @@ OBC.FieldManager = (function () {
     occupantSafety: "sect06",
     fireResistance: "sect07",
     plumbingFixtures: "sect08",
-    complianceDesign: "sect09",
+    energySoundComply: "sect09",
     notes: "sect10",
   };
 

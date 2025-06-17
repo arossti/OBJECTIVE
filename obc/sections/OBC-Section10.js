@@ -38,7 +38,7 @@ window.OBC.SectionModules.sect10 = (function () {
       rowId: "10.h",
       label: "Notes Header",
       cells: {
-        b: { content: "10.h" },
+        b: { content: "10.h", classes: ["section-subheader"] },
         c: { content: "NOTES", classes: ["section-subheader"] },
         d: { content: "D", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
@@ -66,7 +66,7 @@ window.OBC.SectionModules.sect10 = (function () {
           classes: ["expandable-row-trigger"],
           attributes: {
             "data-expandable-group": "project-notes",
-            "data-expandable-rows": "10.91,10.92",
+            "data-expandable-rows": "10.91,10.92,10.93,10.94,10.95",
             "data-default-visible": "1", // Shows only the trigger row initially
           },
         },
@@ -76,7 +76,7 @@ window.OBC.SectionModules.sect10 = (function () {
           fieldId: "d_90",
           type: "editable",
           value:
-            "Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
+            "ie. Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -106,7 +106,7 @@ window.OBC.SectionModules.sect10 = (function () {
           fieldId: "d_91",
           type: "editable",
           value:
-            "Structural engineer: Jane Smith, P.Eng. Fire safety plan to be completed by occupancy date.",
+            "ie. HCRA, Tarion and ONHWPA requirements in effect for All Residential Occupancies",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -136,7 +136,7 @@ window.OBC.SectionModules.sect10 = (function () {
           fieldId: "d_92",
           type: "editable",
           value:
-            "HVAC contractor: ABC Mechanical Ltd. All work to comply with applicable CSA standards.",
+            "ie. CSA Standard CSA S-478 Durability In Buildings is applicable",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -154,48 +154,110 @@ window.OBC.SectionModules.sect10 = (function () {
       },
     },
 
-    // Row 93: OBC Reference Footer
+    // Row 93: Notes Content Line 3
     10.93: {
       id: "10.93",
       rowId: "10.93",
-      label: "OBC Reference",
+      label: "Notes Line 3",
       cells: {
-        d: { content: "1" },
-        e: {
-          content:
-            "ALL REFERENCES ARE TO DIVISION B OF THE OBC UNLESS PRECEDED BY [A] FOR DIVISION A AND [C] FOR DIVISION C",
+        b: { content: "93" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_93",
+          type: "editable",
+          value:
+            "ie. All Doors and Windows shall be Designed and Installed per CSA requirements ie. AAMA/WDMA/CSA 101/I.S.2/A440",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input", "notes-field"],
         },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" },
       },
     },
 
-    // Row 94: Footer Information
+    // Row 94: Notes Content Line 4
     10.94: {
       id: "10.94",
       rowId: "10.94",
-      label: "Footer Information",
+      label: "Notes Line 4",
       cells: {
-        c: { content: "Ontario Building Code Data Matrix, Part 3" },
-        l: { content: "© Ontario Association of Architects" },
+        b: { content: "94" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_94",
+          type: "editable",
+          value:
+            "ie. AHJ Attests that they have reviewed professional design at requirements of OAA/PEO Table @https://www.peo.on.ca/sites/default/files/2019-09/PEO-OAA%20Joint%20Bulletin.pdf and have checked that the Designers carry the requisite qualifications",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input", "notes-field"],
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" },
       },
     },
 
-    // Row 95: Blank Footer Row
+    // Row 95: Notes Content Line 5
     10.95: {
       id: "10.95",
       rowId: "10.95",
-      label: "Footer Spacer",
+      label: "Notes Line 5",
       cells: {
-        // Empty row for spacing
+        b: { content: "95" },
+        c: { content: "" },
+        d: {
+          fieldId: "d_95",
+          type: "editable",
+          value:
+            "ie. Landscape architect: GHI Landscape Design. Tree preservation plan approved by City.",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input", "notes-field"],
+        },
+        e: { content: "" },
+        f: { content: "" },
+        g: { content: "" },
+        h: { content: "" },
+        i: { content: "" },
+        j: { content: "" },
+        k: { content: "" },
+        l: { content: "" },
+        m: { content: "" },
+        n: { content: "" },
+        o: { content: "" },
       },
     },
 
-    // Row 96: Page Number
-    10.96: {
-      id: "10.96",
-      rowId: "10.96",
-      label: "Page Number",
+    // Row 96f: Combined Footer with OBC Reference and Copyright
+    "10.96f": {
+      id: "10.96f",
+      rowId: "10.96f",
+      label: "Combined Footer",
       cells: {
-        c: { content: "96" },
+        d: {
+          content:
+            "ALL REFERENCES ARE TO DIVISION B OF THE OBC UNLESS PRECEDED BY [A] FOR DIVISION A AND [C] FOR DIVISION C\n© Ontario Association of Architects",
+          classes: ["footer-note-wide"],
+          attributes: {
+            colspan: "6",
+          },
+        },
       },
     },
   };

@@ -1265,7 +1265,7 @@ window.OBC.SectionModules.sect04 = (function () {
 
           // Filter E50 when any building classification dropdown changes (D40-D44)
           if (["d_40", "d_41", "d_42", "d_43", "d_44"].includes(fieldId)) {
-            setTimeout(updateE50Filter, 50); // Small delay to ensure state is updated
+            requestAnimationFrame(updateE50Filter); // Better performance than setTimeout
           }
         });
       }
@@ -1276,7 +1276,7 @@ window.OBC.SectionModules.sect04 = (function () {
       const sourceFieldIds = ["d_40", "d_41", "d_42", "d_43", "d_44"];
       sourceFieldIds.forEach((fieldId) => {
         window.OBC.StateManager.addListener(fieldId, function () {
-          setTimeout(updateE50Filter, 50);
+          requestAnimationFrame(updateE50Filter);
         });
       });
     }
@@ -1293,10 +1293,10 @@ window.OBC.SectionModules.sect04 = (function () {
     // Load and initialize classification filtering after Section 04 is fully rendered
     loadClassificationFilter();
 
-    // Initialize E50 filtering after a delay to ensure DOM is ready
-    setTimeout(() => {
+    // Initialize E50 filtering using requestAnimationFrame for better timing
+    requestAnimationFrame(() => {
       updateE50Filter();
-    }, 200);
+    });
   }
 
   function loadClassificationFilter() {

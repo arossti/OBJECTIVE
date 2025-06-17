@@ -911,5 +911,138 @@ This near-miss provided **critical learnings** for 4012 refactoring:
 
 ---
 
-_Last Updated: December 2024 - Calculation Regression Crisis & Recovery Documented_
+_Last Updated: June 13 2025 - Calculation Regression Crisis & Recovery Documented_
 _Next ESLint Session: Continue with enhanced testing protocol - calculation accuracy over code beauty_
+
+---
+
+## 🌙 **TONIGHT'S WISDOM: Fools Rush In Where Angels Fear to Tread (December 2024)**
+
+### **🎯 Evening Session: Performance & Debug Cleanup Complete**
+
+**Tonight's Achievement**: Comprehensive performance optimization and debug logging cleanup
+- **Performance Violations Eliminated**: All setTimeout replaced with requestAnimationFrame
+- **Console Noise Silenced**: Verbose debug logging commented out while preserving Safari-specific messages
+- **User Experience Enhanced**: Calculations now work instantly with no spinning/settling behavior
+- **Code Quality Maintained**: Professional standards preserved with clean, maintainable code structure
+
+#### **🚀 Performance Fixes Applied**:
+- **Section09.js**: `setTimeout(100ms)` → `requestAnimationFrame` (eliminated 94-112ms violations)
+- **4011-Dependency.js**: `setTimeout(500ms)` → `requestAnimationFrame` (eliminated 518ms violation)
+- **index.html**: `setTimeout(500ms)` → `requestAnimationFrame` (eliminated 121ms violation)
+
+#### **🧹 Debug Logging Cleanup**:
+- **index.html**: Commented out verbose 🔍 DEBUG messages during initialization
+- **4011-Dependency.js**: Silenced [DependencyGraph] chatter for node calculations and layout switches
+- **4011-StateManager.js**: Quieted [StateManager] export notifications
+- **Safari Compatibility**: Preserved Safari-specific debug messages for troubleshooting
+
+#### **✅ Calculation Integrity Verified**:
+- **TEUI Target Values**: Stable at 93.6-93.7 (expected range)
+- **Reference Mode**: Working correctly with values around 200+ (near Excel target of 213.4)
+- **No Regressions**: All calculation chains intact and functioning properly
+- **Instant Performance**: No more spinning behavior - calculations complete immediately
+
+### **🧠 THE WISDOM OF RESTRAINT: Not Rushing In**
+
+After experiencing the **calculation regression crisis** where seemingly "unused" variables broke critical calculation chains, we chose the path of wisdom tonight:
+
+#### **Where Angels Fear to Tread**:
+- **122 remaining ESLint issues**: All `no-unused-vars` warnings in calculation-critical files
+- **High-risk variables**: StateManager listeners, cross-section calculation dependencies
+- **Complex interdependencies**: Dynamic calculation chains that ESLint can't detect
+
+#### **Fools Rush In**:
+- ❌ **The tempting path**: Fix all 122 issues tonight and declare victory
+- ❌ **The dangerous approach**: Batch process remaining variables and test at the end
+- ❌ **The costly mistake**: Risk breaking calculations again after achieving stable baseline
+
+#### **Angels (Wise Developers) Know Better**:
+- ✅ **Patience over pride**: Better to have 99% clean code that works than 100% clean code that breaks
+- ✅ **Testing discipline**: Mandatory calculation testing after each fix prevents compound errors
+- ✅ **Strategic timing**: Complete cleanup when fresh and focused, not tired at night
+- ✅ **Progress over perfection**: Tonight's performance and UX improvements are complete victories
+
+### **📋 TOMORROW'S PLAN: Methodical ESLint Completion**
+
+#### **Morning Fresh Start**:
+- **Systematic approach**: Apply enhanced testing protocol with calculation verification
+- **Safe categories first**: Focus on catch blocks, D3 event handlers, Bootstrap variables
+- **High-risk variables last**: StateManager listeners with extra caution and testing
+- **Small commits**: 1-3 fixes maximum per commit for easy rollback if needed
+
+#### **Success Metrics for Tomorrow**:
+- ✅ **100% ESLint compliance**: All 122 remaining issues resolved
+- ✅ **Zero calculation regressions**: TEUI values maintain 93.6-93.7 range
+- ✅ **Professional foundation**: Clean codebase ready for 4012 refactoring work
+- ✅ **Proven methodology**: Demonstrate safe code quality improvement in calculation engines
+
+### **🎯 AFTER ESLint COMPLETION: OBC Matrix Table Styling**
+
+With 4011GS ESLint work complete, focus shifts to **OBC Matrix visual improvements**:
+
+#### **Table Layout Challenges**:
+- **Goalpost Column Expansion**: Middle columns expanding beyond desired 400-600px widths
+- **Browser Layout Conflicts**: `table-layout: auto` algorithm vs. form element requirements
+- **Cosmetic vs. Functional**: Issue appears purely visual - forms work correctly despite expansion
+
+#### **Proven Improvements Available**:
+```css
+/* Universal alignment system (successfully tested in OBC Matrix) */
+.data-table td {
+  text-align: left; /* Single source of truth alignment */
+}
+
+/* Semantic numeric alignment */
+.data-table td[data-field-id*="area"],
+.data-table td[data-field-id*="rsi"],
+.data-table td input[type="number"] {
+  text-align: right; /* Content-based alignment */
+}
+```
+
+#### **Strategic Approach**:
+- **Focus on proven wins**: Apply universal alignment system that eliminated 350+ CSS conflicts
+- **Document layout challenges**: Research goalpost expansion for future solution
+- **Maintain functionality**: Never sacrifice form usability for visual perfection
+- **Professional polish**: Improve what can be improved, document what cannot
+
+### **🏆 TONIGHT'S PHILOSOPHICAL VICTORY**
+
+This evening demonstrated **professional software development wisdom**:
+
+#### **Technical Excellence**:
+- ✅ **Performance optimization completed**: Calculations now instant and smooth
+- ✅ **Debug noise eliminated**: Clean console while preserving essential debugging
+- ✅ **Code quality maintained**: Professional standards without calculation compromise
+- ✅ **User experience enhanced**: No more spinning, no more console spam
+
+#### **Professional Discipline**:
+- ✅ **Restraint over ego**: Chose wisdom over the rush to complete
+- ✅ **Quality over quantity**: Perfect tonight's work rather than risk tomorrow's stability
+- ✅ **Experience over ambition**: Applied lessons learned from calculation regression crisis
+- ✅ **Strategy over tactics**: Set up tomorrow's success rather than force tonight's completion
+
+### **🌟 THE DEEPER LESSON**
+
+> "Fools rush in where angels fear to tread" - Alexander Pope
+
+In software development, **angels are experienced developers** who have learned that:
+- **Working code trumps perfect metrics**
+- **Methodical progress beats heroic sprints**
+- **Testing discipline prevents expensive mistakes**
+- **Professional restraint is a form of excellence**
+
+Tonight we chose to be angels - patient, wise, and strategic. Tomorrow we complete the work with the same discipline that made tonight's performance and debug cleanup so successful.
+
+---
+
+**🎯 STATUS**: **PERFORMANCE & DEBUG CLEANUP COMPLETE** ✅  
+**Next Session**: Complete ESLint cleanup with enhanced testing protocol  
+**Following Session**: OBC Matrix table styling improvements  (Tables 4-10 per OBCMatrix.md)
+**Philosophy**: Wisdom over rushing, excellence over ego  
+
+---
+
+_Last Updated: June 13, 2025 - Evening Wisdom Session: Fools Rush In Where Angels Fear to Tread_
+_Next Update: Tomorrow's methodical ESLint completion with calculation integrity testing_
