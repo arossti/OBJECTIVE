@@ -5,6 +5,7 @@
 Welcome! You're continuing work on the TEUI 4.012 framework. Here's what you need to know to get started immediately.
 
 ## Current State
+
 - **Branch**: `4012-FRAMEWORK`
 - **Location**: `/4012-framework/`
 - **Sections Complete**: 01 (Key Values), 02 (Building Info), 03 (Climate)
@@ -13,30 +14,33 @@ Welcome! You're continuing work on the TEUI 4.012 framework. Here's what you nee
 ## Key Architecture Decisions
 
 ### 1. No ES6 Modules
+
 ```javascript
 // ❌ DON'T DO THIS
-import { something } from './module.js';
+import { something } from "./module.js";
 
 // ✅ DO THIS
-(function() {
-    'use strict';
-    window.TEUI = window.TEUI || {};
-    // ... your code
+(function () {
+  "use strict";
+  window.TEUI = window.TEUI || {};
+  // ... your code
 })();
 ```
 
 ### 2. Tuple Pattern for Calculations
+
 ```javascript
 // All calculations return both target and reference
 function calculateSomething(inputs) {
-    return {
-        target: targetValue,
-        reference: referenceValue
-    };
+  return {
+    target: targetValue,
+    reference: referenceValue,
+  };
 }
 ```
 
 ### 3. Grid Layout (14 columns A-N)
+
 ```javascript
 cells: {
     a: { content: '1' },           // Row number
@@ -66,16 +70,19 @@ ls ../sections/4011-Section*.js
 ## To Implement Section 04
 
 1. **Copy the pattern**:
+
    ```bash
    cp sections/4012-S03.js sections/4012-S04.js
    ```
 
 2. **Get field definitions from original**:
+
    ```bash
    grep -A 5 -B 5 "fieldId:" ../sections/4011-Section04.js
    ```
 
 3. **Key fields to implement**:
+
    - Energy use by fuel type
    - TEUI calculations
    - Comparison charts
@@ -110,6 +117,7 @@ ls ../sections/4011-Section*.js
 ## Your Mission
 
 Implement Section 04 following the established patterns. Focus on:
+
 1. Accurate field extraction
 2. Proper grid layout
 3. Calculation implementation
@@ -119,4 +127,4 @@ Good luck! The framework is well-structured and you have great examples to follo
 
 ---
 
-*Remember: When in doubt, check how S01, S02, or S03 did it!* 
+_Remember: When in doubt, check how S01, S02, or S03 did it!_

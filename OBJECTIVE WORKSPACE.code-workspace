@@ -1,10 +1,10 @@
 {
   "folders": [
     {
-      "path": "."
-    }
+      "path": ".",
+    },
   ],
   "settings": {
-    "window.title": "OBJECTIVE WORKSPACE"
-  }
-} 
+    "window.title": "OBJECTIVE WORKSPACE",
+  },
+}

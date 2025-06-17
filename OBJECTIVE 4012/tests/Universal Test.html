@@ -1,271 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TEUI 4.012 Test</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .test-section {
-            background: white;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-        }
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .status.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .test-result {
-            margin: 5px 0;
-            padding: 5px 10px;
-            background-color: #f8f9fa;
-            border-left: 3px solid #dee2e6;
-        }
-        .test-result.pass {
-            border-left-color: #28a745;
-        }
-        .test-result.fail {
-            border-left-color: #dc3545;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .test-section {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .test-result {
+        margin: 5px 0;
+        padding: 5px 10px;
+        background-color: #f8f9fa;
+        border-left: 3px solid #dee2e6;
+      }
+      .test-result.pass {
+        border-left-color: #28a745;
+      }
+      .test-result.fail {
+        border-left-color: #dc3545;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>TEUI 4.012 Framework Test</h1>
-    
+
     <div class="test-section">
-        <h2>Framework Status</h2>
-        <div id="frameworkStatus" class="status">Checking framework...</div>
+      <h2>Framework Status</h2>
+      <div id="frameworkStatus" class="status">Checking framework...</div>
     </div>
-    
+
     <div class="test-section">
-        <h2>Component Tests</h2>
-        <div id="testResults"></div>
+      <h2>Component Tests</h2>
+      <div id="testResults"></div>
     </div>
-    
+
     <div class="test-section">
-        <h2>Climate Calculation Test</h2>
-        <button onclick="testClimateCalculations()">Run Climate Tests</button>
-        <div id="climateResults"></div>
+      <h2>Climate Calculation Test</h2>
+      <button onclick="testClimateCalculations()">Run Climate Tests</button>
+      <div id="climateResults"></div>
     </div>
-    
+
     <div class="test-section">
-        <h2>Manual Tests</h2>
-        <button onclick="window.open('index.html', '_blank')">Open Main App</button>
-        <button onclick="testDataAccess()">Test Climate Data Access</button>
+      <h2>Manual Tests</h2>
+      <button onclick="window.open('index.html', '_blank')">
+        Open Main App
+      </button>
+      <button onclick="testDataAccess()">Test Climate Data Access</button>
     </div>
 
     <!-- Load framework files -->
     <script>
-        // Initialize TEUI namespace
-        window.TEUI = window.TEUI || {};
-        
-        // Add utilities
-        window.TEUI.parseNumeric = function(value, defaultValue) {
-            if (value === null || value === undefined || value === '') {
-                return defaultValue !== undefined ? defaultValue : null;
-            }
-            const str = value.toString().replace(/,/g, '');
-            const num = parseFloat(str);
-            return isNaN(num) ? (defaultValue !== undefined ? defaultValue : null) : num;
-        };
-        
-        window.TEUI.formatNumber = function(value, formatType) {
-            if (value === null || value === undefined || isNaN(value)) return 'N/A';
-            const num = parseFloat(value);
-            
-            switch(formatType) {
-                case 'integer-comma':
-                    return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                case 'integer-nocomma':
-                    return num.toFixed(0);
-                case 'number-1dp':
-                    return num.toFixed(1);
-                case 'number-2dp':
-                    return num.toFixed(2);
-                case 'number-3dp':
-                    return num.toFixed(3);
-                case 'percent-0dp':
-                    return num.toFixed(0) + '%';
-                default:
-                    return num.toString();
-            }
-        };
+      // Initialize TEUI namespace
+      window.TEUI = window.TEUI || {};
+
+      // Add utilities
+      window.TEUI.parseNumeric = function (value, defaultValue) {
+        if (value === null || value === undefined || value === "") {
+          return defaultValue !== undefined ? defaultValue : null;
+        }
+        const str = value.toString().replace(/,/g, "");
+        const num = parseFloat(str);
+        return isNaN(num) ? (defaultValue !== undefined ? defaultValue : null) : num;
+      };
+
+      window.TEUI.formatNumber = function (value, formatType) {
+        if (value === null || value === undefined || isNaN(value)) return "N/A";
+        const num = parseFloat(value);
+
+        switch (formatType) {
+          case "integer-comma":
+            return num.toLocaleString("en-US", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            });
+          case "integer-nocomma":
+            return num.toFixed(0);
+          case "number-1dp":
+            return num.toFixed(1);
+          case "number-2dp":
+            return num.toFixed(2);
+          case "number-3dp":
+            return num.toFixed(3);
+          case "percent-0dp":
+            return num.toFixed(0) + "%";
+          default:
+            return num.toString();
+        }
+      };
     </script>
-    
+
     <script src="core/state/4012-DualState.js"></script>
     <script src="core/data/4012-ClimateValues.js"></script>
     <script src="core/calculations/4012-climate.js"></script>
-    
+
     <script>
-        // Test functions
-        function checkFramework() {
-            const status = document.getElementById('frameworkStatus');
-            const results = document.getElementById('testResults');
-            
-            const tests = [
-                {
-                    name: 'TEUI namespace exists',
-                    test: () => window.TEUI !== undefined
-                },
-                {
-                    name: 'v4012 namespace exists',
-                    test: () => window.TEUI.v4012 !== undefined
-                },
-                {
-                    name: 'DualState loaded',
-                    test: () => window.TEUI.v4012.DualState !== undefined
-                },
-                {
-                    name: 'Climate data loaded',
-                    test: () => window.TEUI.v4012.ClimateData !== undefined
-                },
-                {
-                    name: 'Climate calculations loaded',
-                    test: () => window.TEUI.v4012.Climate !== undefined
-                },
-                {
-                    name: 'Ontario climate data exists',
-                    test: () => window.TEUI.v4012.ClimateData?.ON !== undefined
-                },
-                {
-                    name: 'Alexandria data exists',
-                    test: () => window.TEUI.v4012.ClimateData?.ON?.Alexandria !== undefined
-                }
-            ];
-            
-            let allPassed = true;
-            results.innerHTML = '';
-            
-            tests.forEach(test => {
-                const passed = test.test();
-                allPassed = allPassed && passed;
-                
-                const result = document.createElement('div');
-                result.className = `test-result ${passed ? 'pass' : 'fail'}`;
-                result.textContent = `${passed ? '✓' : '✗'} ${test.name}`;
-                results.appendChild(result);
-            });
-            
-            if (allPassed) {
-                status.className = 'status success';
-                status.textContent = '✓ All framework components loaded successfully!';
-            } else {
-                status.className = 'status error';
-                status.textContent = '✗ Some framework components failed to load';
-            }
-        }
-        
-        function testClimateCalculations() {
-            const results = document.getElementById('climateResults');
-            results.innerHTML = '<h3>Running climate calculations...</h3>';
-            
-            try {
-                // Test inputs
-                const inputs = {
-                    target: {
-                        d_12: 'A-Assembly',
-                        d_13: 'NECB2020',
-                        d_20: 4600,  // HDD
-                        d_21: 196,   // CDD
-                        d_23: -24,   // Coldest temp
-                        d_24: 30,    // Hottest temp
-                        h_21: 'Capacitance',
-                        h_23: 18,    // Heating setpoint
-                        h_24: 24,    // Cooling setpoint
-                        l_24: 24,    // Cooling override
-                        m_19: 120    // Days cooling
-                    },
-                    reference: {
-                        d_12: 'A-Assembly',
-                        d_13: 'NECB2020',
-                        d_20: 4600,
-                        d_21: 196,
-                        d_23: -24,
-                        d_24: 30,
-                        h_21: 'Static',
-                        h_23: 18,
-                        h_24: 24,
-                        l_24: 24,
-                        m_19: 120
-                    }
-                };
-                
-                // Run calculations
-                const climateResults = window.TEUI.v4012.Climate.calculateAllClimate(inputs);
-                
-                // Display results
-                let html = '<h4>Calculation Results:</h4>';
-                html += '<table style="width: 100%; border-collapse: collapse;">';
-                html += '<tr><th style="border: 1px solid #ddd; padding: 8px;">Field</th>';
-                html += '<th style="border: 1px solid #ddd; padding: 8px;">Target</th>';
-                html += '<th style="border: 1px solid #ddd; padding: 8px;">Reference</th></tr>';
-                
-                Object.entries(climateResults).forEach(([field, values]) => {
-                    html += `<tr>`;
-                    html += `<td style="border: 1px solid #ddd; padding: 8px;">${field}</td>`;
-                    html += `<td style="border: 1px solid #ddd; padding: 8px;">${JSON.stringify(values.target)}</td>`;
-                    html += `<td style="border: 1px solid #ddd; padding: 8px;">${JSON.stringify(values.reference)}</td>`;
-                    html += `</tr>`;
-                });
-                
-                html += '</table>';
-                
-                results.innerHTML = html;
-                
-            } catch (error) {
-                results.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
-            }
-        }
-        
-        function testDataAccess() {
-            const results = document.getElementById('climateResults');
-            
-            try {
-                const data = window.TEUI.v4012.Climate.getClimateData('ON', 'Alexandria', 'Present');
-                results.innerHTML = `<h4>Alexandria Climate Data:</h4><pre>${JSON.stringify(data, null, 2)}</pre>`;
-            } catch (error) {
-                results.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
-            }
-        }
-        
-        // Run tests when page loads
-        window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(checkFramework, 100); // Small delay to ensure all scripts loaded
+      // Test functions
+      function checkFramework() {
+        const status = document.getElementById("frameworkStatus");
+        const results = document.getElementById("testResults");
+
+        const tests = [
+          {
+            name: "TEUI namespace exists",
+            test: () => window.TEUI !== undefined,
+          },
+          {
+            name: "v4012 namespace exists",
+            test: () => window.TEUI.v4012 !== undefined,
+          },
+          {
+            name: "DualState loaded",
+            test: () => window.TEUI.v4012.DualState !== undefined,
+          },
+          {
+            name: "Climate data loaded",
+            test: () => window.TEUI.v4012.ClimateData !== undefined,
+          },
+          {
+            name: "Climate calculations loaded",
+            test: () => window.TEUI.v4012.Climate !== undefined,
+          },
+          {
+            name: "Ontario climate data exists",
+            test: () => window.TEUI.v4012.ClimateData?.ON !== undefined,
+          },
+          {
+            name: "Alexandria data exists",
+            test: () => window.TEUI.v4012.ClimateData?.ON?.Alexandria !== undefined,
+          },
+        ];
+
+        let allPassed = true;
+        results.innerHTML = "";
+
+        tests.forEach((test) => {
+          const passed = test.test();
+          allPassed = allPassed && passed;
+
+          const result = document.createElement("div");
+          result.className = `test-result ${passed ? "pass" : "fail"}`;
+          result.textContent = `${passed ? "✓" : "✗"} ${test.name}`;
+          results.appendChild(result);
         });
+
+        if (allPassed) {
+          status.className = "status success";
+          status.textContent = "✓ All framework components loaded successfully!";
+        } else {
+          status.className = "status error";
+          status.textContent = "✗ Some framework components failed to load";
+        }
+      }
+
+      function testClimateCalculations() {
+        const results = document.getElementById("climateResults");
+        results.innerHTML = "<h3>Running climate calculations...</h3>";
+
+        try {
+          // Test inputs
+          const inputs = {
+            target: {
+              d_12: "A-Assembly",
+              d_13: "NECB2020",
+              d_20: 4600, // HDD
+              d_21: 196, // CDD
+              d_23: -24, // Coldest temp
+              d_24: 30, // Hottest temp
+              h_21: "Capacitance",
+              h_23: 18, // Heating setpoint
+              h_24: 24, // Cooling setpoint
+              l_24: 24, // Cooling override
+              m_19: 120, // Days cooling
+            },
+            reference: {
+              d_12: "A-Assembly",
+              d_13: "NECB2020",
+              d_20: 4600,
+              d_21: 196,
+              d_23: -24,
+              d_24: 30,
+              h_21: "Static",
+              h_23: 18,
+              h_24: 24,
+              l_24: 24,
+              m_19: 120,
+            },
+          };
+
+          // Run calculations
+          const climateResults =
+            window.TEUI.v4012.Climate.calculateAllClimate(inputs);
+
+          // Display results
+          let html = "<h4>Calculation Results:</h4>";
+          html += '<table style="width: 100%; border-collapse: collapse;">';
+          html += '<tr><th style="border: 1px solid #ddd; padding: 8px;">Field</th>';
+          html += '<th style="border: 1px solid #ddd; padding: 8px;">Target</th>';
+          html +=
+            '<th style="border: 1px solid #ddd; padding: 8px;">Reference</th></tr>';
+
+          Object.entries(climateResults).forEach(([field, values]) => {
+            html += `<tr>`;
+            html += `<td style="border: 1px solid #ddd; padding: 8px;">${field}</td>`;
+            html += `<td style="border: 1px solid #ddd; padding: 8px;">${JSON.stringify(values.target)}</td>`;
+            html += `<td style="border: 1px solid #ddd; padding: 8px;">${JSON.stringify(values.reference)}</td>`;
+            html += `</tr>`;
+          });
+
+          html += "</table>";
+
+          results.innerHTML = html;
+        } catch (error) {
+          results.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+        }
+      }
+
+      function testDataAccess() {
+        const results = document.getElementById("climateResults");
+
+        try {
+          const data = window.TEUI.v4012.Climate.getClimateData(
+            "ON",
+            "Alexandria",
+            "Present",
+          );
+          results.innerHTML = `<h4>Alexandria Climate Data:</h4><pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } catch (error) {
+          results.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+        }
+      }
+
+      // Run tests when page loads
+      window.addEventListener("DOMContentLoaded", function () {
+        setTimeout(checkFramework, 100); // Small delay to ensure all scripts loaded
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>
