@@ -78,9 +78,9 @@ window.OBC.SectionModules.sect07 = (function () {
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
-        h: { content: "RATING (H)", classes: ["section-subheader"] },
+        h: { content: "RATING (Hrs)", classes: ["section-subheader"] },
         i: {
-          content: "SUPPORTING ASSEMBLY (H)",
+          content: "SUPPORTING ASSEMBLY (Hrs)",
           classes: ["section-subheader"],
         },
         j: {
@@ -99,9 +99,9 @@ window.OBC.SectionModules.sect07 = (function () {
     7.67: {
       id: "7.67",
       rowId: "7.67",
-      label: "STOREYS BELOW GRADE",
+      label: "Storeys Below Grade",
       cells: {
-        d: { content: "STOREYS BELOW GRADE" },
+        d: { content: "Storeys Below Grade" },
         h: {
           fieldId: "h_67",
           type: "dropdown",
@@ -143,9 +143,9 @@ window.OBC.SectionModules.sect07 = (function () {
     7.68: {
       id: "7.68",
       rowId: "7.68",
-      label: "FLOORS OVER BASEMENT",
+      label: "Floors Over Basement",
       cells: {
-        d: { content: "FLOORS OVER BASEMENT" },
+        d: { content: "Floors Over Basement" },
         h: {
           fieldId: "h_68",
           type: "dropdown",
@@ -187,9 +187,9 @@ window.OBC.SectionModules.sect07 = (function () {
     7.69: {
       id: "7.69",
       rowId: "7.69",
-      label: "FLOORS",
+      label: "Floors",
       cells: {
-        d: { content: "FLOORS" },
+        d: { content: "Floors" },
         h: {
           fieldId: "h_69",
           type: "dropdown",
@@ -231,9 +231,9 @@ window.OBC.SectionModules.sect07 = (function () {
     "7.70": {
       id: "7.70",
       rowId: "7.70",
-      label: "MEZZANINE",
+      label: "Mezzanine",
       cells: {
-        d: { content: "MEZZANINE" },
+        d: { content: "Mezzanine" },
         h: {
           fieldId: "h_70",
           type: "dropdown",
@@ -275,9 +275,9 @@ window.OBC.SectionModules.sect07 = (function () {
     7.71: {
       id: "7.71",
       rowId: "7.71",
-      label: "ROOF",
+      label: "Roof",
       cells: {
-        d: { content: "ROOF" },
+        d: { content: "Roof" },
         j: { content: "N/A" },
         o: {
           fieldId: "o_71",

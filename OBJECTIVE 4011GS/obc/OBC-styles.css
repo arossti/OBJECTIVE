@@ -1652,11 +1652,12 @@ table.data-table select.form-select:hover {
 #fireResistance .data-table td:nth-child(1) { width: 70px !important; }   /* Column A - expandable buttons */
 #fireResistance .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
 #fireResistance .data-table td:nth-child(4) { 
-    width: 150px !important;  /* Column D - exposing face descriptions */
-    max-width: 150px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+    width: 250px !important;  /* Column D - exposing face descriptions (increased for full text) */
+    max-width: 250px !important;
+    white-space: normal !important;  /* Allow text wrapping instead of ellipsis */
+    word-wrap: break-word !important;
+    overflow: visible !important;    /* No ellipsis - show full text */
+    vertical-align: top !important;  /* Top-align for multi-line text */
 }
 #fireResistance .data-table td:nth-child(5) { 
     width: 100px !important;  /* Column E - EBF area (numeric) */
@@ -1683,11 +1684,10 @@ table.data-table select.form-select:hover {
     white-space: nowrap !important;
 }
 #fireResistance .data-table td:nth-child(8) { 
-    width: 120px !important;  /* Column H - fire rating dropdowns (RATING H) */
-    max-width: 120px !important;
+    width: 160px !important;  /* Column H - fire rating dropdowns (RATING H) - increased for dropdown */
+    max-width: 160px !important;
     text-align: center !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    overflow: visible !important;     /* Allow dropdown to show fully */
     white-space: nowrap !important;
 }
 #fireResistance .data-table td:nth-child(9) { 
@@ -1705,9 +1705,12 @@ table.data-table select.form-select:hover {
 
 /* Section 07: Fire rating center alignment (Column H) */
 #fireResistance .data-table td:nth-child(8) select { /* Column H - Fire ratings only */
+    width: 100% !important;
+    max-width: 155px !important;  /* Match column width (160px) with buffer */
     text-align: center !important;
     font-weight: 600 !important;
     color: #d73527 !important; /* Fire red color for ratings */
+    overflow: visible !important; /* Allow dropdown content to show fully */
 }
 
 /* Section 07: Construction and Cladding type dropdown styling */
