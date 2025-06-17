@@ -536,7 +536,7 @@ option,
   
   /* Clean interactions */
   outline: none !important;
-  transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important;
+  /* transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important; */ /* REMOVED: TEUI-style animations unnecessary for forms */
   cursor: text !important;
   
   /* Default sizing */
@@ -643,13 +643,13 @@ option,
   font-weight: 600 !important; /* Bold while editing */
 }
 
-/* Smooth transition between states */
+/* Smooth transition between states - REMOVED: TEUI-style animations unnecessary for forms */
 .data-table td[contenteditable="true"].user-input,
 .data-table td input[type="number"].user-input,
 .data-table td.editable[contenteditable="true"],
 .data-table td .user-input[contenteditable="true"] {
-  transition: color 0.3s ease, font-style 0.3s ease, font-weight 0.3s ease, 
-              border-bottom-color 0.2s ease, background-color 0.2s ease !important;
+  /* transition: color 0.3s ease, font-style 0.3s ease, font-weight 0.3s ease, 
+              border-bottom-color 0.2s ease, background-color 0.2s ease !important; */ /* REMOVED: TEUI confidence feedback animations */
 }
 
 /* =============== END MINIMAL INPUT FIELD STYLING =============== */

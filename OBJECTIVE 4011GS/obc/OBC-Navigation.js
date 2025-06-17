@@ -440,8 +440,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Update sticky element heights
         updateStickyElementHeights();
 
-        // Simply scroll to top of app wrapper
-        setTimeout(scrollAppWrapperToTop, 50);
+        // Scroll to top using requestAnimationFrame for better performance
+        requestAnimationFrame(scrollAppWrapperToTop);
       }
 
       // Save layout preference
@@ -803,22 +803,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Call updateStickyElementHeights after DOM is loaded
-  setTimeout(updateStickyElementHeights, 300);
+  // Use requestAnimationFrame for better performance and timing
+  requestAnimationFrame(updateStickyElementHeights);
 
   // Initialize core components after DOM is loaded
   if (window.OBC && window.OBC.FieldManager) {
     // Initialize FieldManager (core requirement for OBC Matrix)
     window.OBC.FieldManager.renderAllSections(); // FieldManager handles initial rendering
 
-    // Initialize OBC StateManager and global input handlers
+    // Initialize global input handlers after sections are rendered
+    // Note: StateManager auto-initializes via its own DOMContentLoaded listener
     if (window.OBC.StateManager) {
-      window.OBC.StateManager.initialize();
-
-      // Initialize global input handlers after sections are rendered
-      setTimeout(() => {
+      // Use requestAnimationFrame instead of setTimeout for better performance
+      requestAnimationFrame(() => {
         window.OBC.StateManager.initializeGlobalInputHandlers();
-      }, 100); // Reduced delay for faster startup
+      });
     }
 
     // OBC Matrix doesn't use these TEUI-specific modules:

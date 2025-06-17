@@ -1,7 +1,5 @@
-OBC-StateManager.js:143 OBC StateManager: Initializing...
-OBC-StateManager.js:151 OBC StateManager: No saved state found, starting fresh
-OBC-StateManager.js:143 OBC StateManager: Initializing...
-OBC-StateManager.js:151 OBC StateManager: No saved state found, starting fresh
-OBC-Navigation.js:830 OBC Matrix initialization complete - FieldManager loaded
-[Violation] Forced reflow while executing JavaScript took 87ms
-3OBC-ClassificationFilter.js:710 ✅ Classification filtering initialized
+[Log] OBC StateManager: Initializing... (OBC-StateManager.js, line 143)
+[Log] OBC StateManager: No saved state found, starting fresh (OBC-StateManager.js, line 151)
+[Log] OBC Matrix initialization complete - FieldManager loaded (OBC-Navigation.js, line 829)
+[Log] ✅ Classification filtering initialized (OBC-ClassificationFilter.js, line 710, x3)
+[Log] OBC StateManager: State saved to localStorage (OBC-StateManager.js, line 407, x3)
