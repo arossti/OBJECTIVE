@@ -62,12 +62,12 @@ window.OBC.SectionModules.sect09 = (function () {
   const sectionRows = {
     // SUBHEADER ROW
     header: {
-      id: "9.h",
-      rowId: "9.h",
+      id: "9.82h",
+      rowId: "9.82h",
       label: "Compliance & Design Header",
       cells: {
         b: { content: "9.h" },
-        c: { content: "COMPLIANCE & DESIGN", classes: ["section-subheader"] },
+        c: { label: "Energy, Sound and Alternative Solutions", classes: ["section-subheader"] },
         d: { content: "COMPLIANCE PATH:", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
@@ -79,7 +79,7 @@ window.OBC.SectionModules.sect09 = (function () {
         },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
+        l: { content: "OBC 12.2.1.2.", classes: ["section-subheader"] },
         m: { content: "M", classes: ["section-subheader"] },
         n: { content: "N", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
@@ -141,15 +141,38 @@ window.OBC.SectionModules.sect09 = (function () {
       },
     },
 
-    // Row 84: 3.25 Sound Transmission Design
-    9.84: {
+    // Row 84h: Sound Transmission Design Header
+    "9.84h": {
+      id: "9.84h",
+      rowId: "9.84h",
+      label: "Sound Transmission Design Header",
+      cells: {
+        b: { content: "3.25" },
+        c: { label: "SOUND TRANSMISSION DESIGN", classes: ["section-subheader"] },
+        d: { content: "IS THERE MORE THAN 1 DWELLING UNIT IN THE BUILDING?:", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+        o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
+      },
+    },
+
+    // Row 84: Sound Transmission Design
+    "9.84": {
       id: "9.84",
       rowId: "9.84",
       label: "SOUND TRANSMISSION DESIGN",
       cells: {
-        b: { content: "3.25" },
-        c: { content: "SOUND TRANSMISSION DESIGN" },
-        d: { content: "IS THERE MORE THAN 1 DWELLING UNIT IN THE BUILDING?:" },
+        b: { content: "" },
+        c: { content: "Sound Transmission Design" },
+        d: { content: "" },
         e: {
           fieldId: "e_84",
           type: "dropdown",
@@ -194,7 +217,7 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 86: Option Implemented
-    9.86: {
+    "9.86": {
       id: "9.86",
       rowId: "9.86",
       label: "Option Implemented",
@@ -219,8 +242,31 @@ window.OBC.SectionModules.sect09 = (function () {
       },
     },
 
-    // Row 87: 3.26 Alternative Solutions - EXPANDABLE TRIGGER ROW
-    9.87: {
+    // Row 86h: Alternative Solutions Header
+    "9.86h": {
+      id: "9.86h",
+      rowId: "9.86h",
+      label: "Alternative Solutions Header",
+      cells: {
+        b: { content: "3.26" },
+        c: { label: "ALTERNATIVE SOLUTIONS", classes: ["section-subheader"] },
+        d: { content: "", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "[A]1.2.1.1. and [C]2.1.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+        o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
+      },
+    },
+
+    // Row 87: Alternative Solutions - EXPANDABLE TRIGGER ROW
+    "9.87": {
       id: "9.87",
       rowId: "9.87",
       label: "ALTERNATIVE SOLUTIONS",
@@ -234,8 +280,8 @@ window.OBC.SectionModules.sect09 = (function () {
             "data-default-visible": "1", // Shows only the trigger row initially
           },
         },
-        b: { content: "3.26" },
-        c: { content: "ALTERNATIVE SOLUTIONS" },
+        b: { content: "" },
+        c: { content: "" },
         d: {
           fieldId: "d_87",
           type: "editable",
@@ -251,7 +297,7 @@ window.OBC.SectionModules.sect09 = (function () {
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
-        l: { content: "[A]1.2.1.1. and [C]2.1." },
+        l: { content: "" },
         m: { content: "" },
         n: { content: "" },
         o: {
@@ -344,7 +390,7 @@ window.OBC.SectionModules.sect09 = (function () {
     const fields = {};
 
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
-      if (rowKey === "header") return;
+      if (rowKey === "header" || rowKey === "9.84h" || rowKey === "9.86h") return; // Exclude headers and subheaders
       if (!row.cells) return;
 
       Object.entries(row.cells).forEach(([_colKey, cell]) => {
