@@ -206,7 +206,7 @@ window.OBC.SectionModules.sect09 = (function () {
       rowId: "9.85",
       label: "Sound Transmission Notes",
       cells: {
-        c: { label: "NOTES:" },
+        c: { label: "Notes on Sound Transmission Design" },
         d: {
           fieldId: "e_85",
           type: "editable",
@@ -230,8 +230,8 @@ window.OBC.SectionModules.sect09 = (function () {
       rowId: "9.86",
       label: "Option Implemented",
       cells: {
-        d: { content: "OPTION IMPLEMENTED:" },
-        e: {
+        c: { label: "Option Implemented" },
+        d: {
           fieldId: "e_86",
           type: "dropdown",
           dropdownId: "dd_f_86",
@@ -257,7 +257,7 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "Alternative Solutions Header",
       cells: {
         b: { content: "3.26" },
-        c: { label: "ALTERNATIVE SOLUTIONS", classes: ["section-subheader"] },
+        c: { label: "Alternative Solutions", classes: ["section-subheader"] },
         d: { content: "", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
@@ -289,12 +289,12 @@ window.OBC.SectionModules.sect09 = (function () {
           },
         },
         b: { content: "" },
-        c: { content: "" },
+        c: { label: "Alternative Solution 1" },
         d: {
           fieldId: "d_87",
           type: "editable",
           value:
-            "Enhanced egress lighting system exceeding prescriptive requirements",
+            "ie. Enhanced egress lighting system exceeding prescriptive requirements",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
@@ -311,7 +311,7 @@ window.OBC.SectionModules.sect09 = (function () {
         o: {
           fieldId: "o_87",
           type: "editable",
-          value: "Alternative solution providing equivalent safety performance",
+          value: "ie. Alternative solution providing equivalent safety performance",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
@@ -325,11 +325,11 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "Alternative Solutions Details 1",
       cells: {
         b: { content: "88" },
-        c: { content: "" },
+        c: { label: "Alternative Solution 2" },
         d: {
           fieldId: "d_88",
           type: "editable",
-          value: "Performance-based structural fire protection design",
+          value: "ie. Performance-based structural fire protection design",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
@@ -346,7 +346,7 @@ window.OBC.SectionModules.sect09 = (function () {
         o: {
           fieldId: "o_88",
           type: "editable",
-          value: "Engineered solution with structural engineer certification",
+          value: "ie. Engineered solution with structural engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
@@ -360,12 +360,12 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "Alternative Solutions Details 2",
       cells: {
         b: { content: "89" },
-        c: { content: "" },
+        c: { label: "Alternative Solution 3" },
         d: {
           fieldId: "d_89",
           type: "editable",
           value:
-            "Fire separation performance based on advanced modeling analysis",
+            "ie. Fire separation performance based on advanced modeling analysis",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
@@ -382,7 +382,7 @@ window.OBC.SectionModules.sect09 = (function () {
         o: {
           fieldId: "o_89",
           type: "editable",
-          value: "Engineered solution with professional engineer certification",
+          value: "ie. Engineered solution with professional engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
