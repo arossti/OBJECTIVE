@@ -1766,11 +1766,9 @@ table.data-table select.form-select:hover {
 /* Section 08: Hide completely empty columns to improve density */
 #plumbingFixtures .data-table td:nth-child(1),  /* Column A - no expandable rows */
 #plumbingFixtures .data-table td:nth-child(3),  /* Column C - empty in data rows */
-#plumbingFixtures .data-table td:nth-child(5),  /* Column E - empty in data rows ✅ ADDED */
+#plumbingFixtures .data-table td:nth-child(5),  /* Column E - empty in data rows */
 #plumbingFixtures .data-table td:nth-child(6),  /* Column F - empty */
-#plumbingFixtures .data-table td:nth-child(7),  /* Column G - empty */
-#plumbingFixtures .data-table td:nth-child(8),  /* Column H - empty */
-#plumbingFixtures .data-table td:nth-child(13), /* Column M - empty */
+#plumbingFixtures .data-table td:nth-child(8),  /* Column H - empty (OBC moved to M) */
 #plumbingFixtures .data-table td:nth-child(14)  /* Column N - empty */
 {
     width: 1px !important; /* Minimal width for empty columns */
@@ -1795,11 +1793,7 @@ table.data-table select.form-select:hover {
     max-width: 120px !important;
     text-align: right !important;
 }
-#plumbingFixtures .data-table td:nth-child(8) { 
-    width: 180px !important;  /* Column H - OBC sentences (Excel Col G) */
-    max-width: 180px !important;
-    text-align: left !important;
-}
+
 #plumbingFixtures .data-table td:nth-child(9) { 
     width: 100px !important;  /* Column I - water closets required */
     max-width: 100px !important;
@@ -1809,7 +1803,11 @@ table.data-table select.form-select:hover {
 #plumbingFixtures .data-table td:nth-child(10) { width: 100px !important; } /* Column J - water closets provided */
 #plumbingFixtures .data-table td:nth-child(11) { width: 200px !important; } /* Column K - barrier-free required/provided */
 #plumbingFixtures .data-table td:nth-child(12) { width: 200px !important; } /* Column L - universal washrooms */
-#plumbingFixtures .data-table td:nth-child(13) { width: 150px !important; } /* Column M - OBC references */
+#plumbingFixtures .data-table td:nth-child(13) { 
+    width: 200px !important;  /* Column M - OBC references (Excel Col G) */
+    max-width: 200px !important;
+    text-align: left !important;
+}
 #plumbingFixtures .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
 
 /* Section 08: Numeric input styling */
@@ -1824,7 +1822,7 @@ table.data-table select.form-select:hover {
 }
 
 /* Section 08: Text input styling for OBC sentences */
-#plumbingFixtures .data-table td:nth-child(8) input { /* Column H - OBC sentences (Excel G) */
+#plumbingFixtures .data-table td:nth-child(13) input { /* Column M - OBC sentences (Excel G) */
     width: 100% !important;
     text-align: left !important;
 }
@@ -1836,7 +1834,18 @@ table.data-table select.form-select:hover {
     vertical-align: top !important;
 }
 
-
+/* Section 08: Footer ratio note - ensure full display */
+#plumbingFixtures .data-table td.footer-note-wide {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: none !important;
+    width: auto !important;
+    font-style: italic !important;
+    color: #666 !important;
+    background-color: #f8f9fa !important;
+    padding: 8px 12px !important;
+}
 
 /* =============== END SECTION 08 LAYOUT OPTIMIZATION =============== */
 

@@ -64,7 +64,7 @@ window.OBC.SectionModules.sect08 = (function () {
           classes: ["section-subheader"],
         },
         h: { 
-          content: "OBC SENTENCE", 
+          content: "", 
           classes: ["section-subheader"] 
         },
         i: {
@@ -84,7 +84,7 @@ window.OBC.SectionModules.sect08 = (function () {
           classes: ["section-subheader"],
         },
         m: { 
-          content: "3.7.4., 3.8.2.3., Tables 3.8.2.3.A, and 3.8.2.3.B", 
+          content: "OBC 3.7.4., 3.8.2.3., Tables 3.8.2.3.A & 3.8.2.3.B", 
           classes: ["section-subheader"] 
         },
         n: { content: "", classes: ["section-subheader"] },
@@ -123,13 +123,7 @@ window.OBC.SectionModules.sect08 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        h: {
-          fieldId: "g_79", // ✅ CORRECT: Excel Column G mapping
-          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
-          value: "OBC Reference...",
-          section: SECTION_CONFIG.name,
-          classes: ["user-input"],
-        },
+        h: { content: "" },
         i: {
           fieldId: "i_79",
           type: "num-editable",
@@ -160,7 +154,13 @@ window.OBC.SectionModules.sect08 = (function () {
         },
         e: { content: "" },
         f: { content: "" },
-        m: { content: "" },
+        m: {
+          fieldId: "g_79", // ✅ CORRECT: Excel Column G mapping
+          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
+          value: "OBC Reference...",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"],
+        },
         n: { content: "" },
         o: {
           fieldId: "o_79",
@@ -194,13 +194,7 @@ window.OBC.SectionModules.sect08 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        h: {
-          fieldId: "g_80", // ✅ CORRECT: Excel Column G mapping
-          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
-          value: "OBC Reference...",
-          section: SECTION_CONFIG.name,
-          classes: ["user-input"],
-        },
+        h: { content: "" },
         i: {
           fieldId: "i_80",
           type: "num-editable",
@@ -231,7 +225,13 @@ window.OBC.SectionModules.sect08 = (function () {
         },
         e: { content: "" },
         f: { content: "" },
-        m: { content: "" },
+        m: {
+          fieldId: "g_80", // ✅ CORRECT: Excel Column G mapping
+          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
+          value: "OBC Reference...",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"],
+        },
         n: { content: "" },
         o: {
           fieldId: "o_80",
@@ -265,13 +265,7 @@ window.OBC.SectionModules.sect08 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        h: {
-          fieldId: "g_81", // ✅ CORRECT: Excel Column G mapping
-          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
-          value: "OBC Reference...",
-          section: SECTION_CONFIG.name,
-          classes: ["user-input"],
-        },
+        h: { content: "" },
         i: {
           fieldId: "i_81",
           type: "num-editable",
@@ -302,7 +296,13 @@ window.OBC.SectionModules.sect08 = (function () {
         },
         e: { content: "" },
         f: { content: "" },
-        m: { content: "" },
+        m: {
+          fieldId: "g_81", // ✅ CORRECT: Excel Column G mapping
+          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
+          value: "OBC Reference...",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input"],
+        },
         n: { content: "" },
         o: {
           fieldId: "o_81",
@@ -324,7 +324,8 @@ window.OBC.SectionModules.sect08 = (function () {
         c: { content: "RATIO:" },
         d: { 
           content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE",
-          colspan: 4  // ✅ SPAN ACROSS MULTIPLE COLUMNS for legibility
+          colspan: 6,  // ✅ SPAN ACROSS MORE COLUMNS for full legibility
+          classes: ["footer-note-wide"]  // ✅ Special class for styling
         },
         // Skip e, f, g, h since they're covered by colspan
         i: { content: "" },
