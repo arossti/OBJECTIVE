@@ -1548,6 +1548,7 @@ table.data-table select.form-select:hover {
 
 /* Section 06: Hide empty columns - CONSOLIDATED with .obc-empty-column pattern */
 #occupantSafety .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#occupantSafety .data-table td:nth-child(3),  /* Column C - empty (content removed) */
 #occupantSafety .data-table td:nth-child(6),  /* Column F - empty */
 #occupantSafety .data-table td:nth-child(7),  /* Column G - empty */
 #occupantSafety .data-table td:nth-child(8),  /* Column H - empty */
@@ -1560,49 +1561,55 @@ table.data-table select.form-select:hover {
     overflow: hidden !important;
 }
 
-/* Section 06: Controlled width for content columns - CLEAN: No alignment overrides */
+/* Section 06: Controlled width for content columns - OPTIMIZED: Reduce total table width to prevent dropdown clipping */
 #occupantSafety .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
-#occupantSafety .data-table td:nth-child(3) { width: 240px !important; }  /* Column C - labels */
 #occupantSafety .data-table td:nth-child(4) { 
-    width: 180px !important;  /* Column D - dropdowns and numeric inputs */
-    max-width: 180px !important;
+    width: 150px !important;  /* Column D - dropdowns and numeric inputs (reduced from 180px) */
+    max-width: 150px !important;
     /* Let universal rules handle alignment based on field type */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
 #occupantSafety .data-table td:nth-child(5) { 
-    width: 120px !important;  /* Column E - mixed text/numeric inputs */
-    max-width: 120px !important;
+    width: 165px !important;  /* Column E - mixed text/numeric inputs (matched to Column C) */
+    max-width: 165px !important;
     /* Let universal rules handle alignment based on field type */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
 #occupantSafety .data-table td:nth-child(9) { 
-    width: 120px !important;  /* Column I - calculations */
-    max-width: 120px !important;
+    width: 210px !important;  /* Column I - "Based On" dropdowns (sweet spot for dropdown content) */
+    max-width: 210px !important;
     /* Calculations get right-alignment via .calculated-value class */
     font-weight: 700 !important;
 }
-#occupantSafety .data-table td:nth-child(10) { width: 200px !important; } /* Column J - dropdowns */
+#occupantSafety .data-table td:nth-child(10) { width: 180px !important; } /* Column J - dropdowns (reduced from 200px) */
 #occupantSafety .data-table td:nth-child(11) { width: 100px !important; } /* Column K - counts */
 #occupantSafety .data-table td:nth-child(12) { width: 150px !important; } /* Column L - OBC references (variant) */
-#occupantSafety .data-table td:nth-child(15) { width: 250px !important; } /* Column O - CONSOLIDATED: .obc-col-notes-lg */
+#occupantSafety .data-table td:nth-child(15) { width: 220px !important; } /* Column O - notes (reduced from 250px) */
 
 /* Section 06: Dropdown styling - width constraints only */
 #occupantSafety .data-table td:nth-child(4) select {  /* Column D dropdowns */
     /* Width constraints only - let universal rules handle alignment */
     width: 100% !important;
-    max-width: 170px !important;
+    max-width: 140px !important;  /* Reduced to match new column width (150px) */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+}
+
+#occupantSafety .data-table td:nth-child(9) select { /* Column I - "Based On" dropdowns */
+    width: 100% !important;
+    max-width: 205px !important;  /* Sweet spot to match column width (210px) */
+    overflow: visible !important;  /* Allow dropdown content to show fully */
+    text-overflow: clip !important; /* Don't truncate dropdown text */
 }
 
 #occupantSafety .data-table td:nth-child(10) select { /* Column J dropdowns */
     /* CONSOLIDATED: .obc-input-constrained + max-width */
     width: 100% !important;
-    max-width: 190px !important;
+    max-width: 170px !important;  /* Reduced to match new column width (180px) */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
