@@ -60,42 +60,33 @@ window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
 
   const sectionRows = {
-    // SUBHEADER ROW
-    header: {
-      id: "9.h",
-      rowId: "9.h",
-      label: "Compliance & Design Header",
-      cells: {
-        b: { content: "9.h" },
-        c: { content: "COMPLIANCE & DESIGN", classes: ["section-subheader"] },
-        d: { content: "COMPLIANCE PATH:", classes: ["section-subheader"] },
-        e: { content: "E", classes: ["section-subheader"] },
-        f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] },
-        h: { content: "H", classes: ["section-subheader"] },
-        i: {
-          content: "DEGREE DAYS BELOW 18 C:",
-          classes: ["section-subheader"],
-        },
-        j: { content: "J", classes: ["section-subheader"] },
-        k: { content: "K", classes: ["section-subheader"] },
-        l: { content: "OBC REFERENCE", classes: ["section-subheader"] },
-        m: { content: "M", classes: ["section-subheader"] },
-        n: { content: "N", classes: ["section-subheader"] },
-        o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
-      },
-    },
-
-    // Row 82: 3.24 Energy Efficiency
-    9.82: {
+    // Row 82: 3.24 Energy Efficiency Header
+    "9.82": {
       id: "9.82",
       rowId: "9.82",
       label: "ENERGY EFFICIENCY",
       cells: {
         b: { content: "3.24" },
-        c: { content: "ENERGY EFFICIENCY" },
-        d: { content: "COMPLIANCE PATH:" },
-        l: { content: "12.2.1.2." },
+        c: { content: "ENERGY EFFICIENCY", classes: ["section-subheader"] },
+        d: { content: "COMPLIANCE PATH:", classes: ["section-subheader"] },
+        e: {
+          fieldId: "e_82",
+          type: "dropdown",
+          dropdownId: "dd_e_82",
+          value: "-",
+          section: SECTION_CONFIG.name,
+          classes: ["dropdown-md"],
+          options: dropdownOptions.compliancePaths,
+        },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "12.2.1.2.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
         o: {
           fieldId: "o_82",
           type: "editable",
@@ -106,13 +97,15 @@ window.OBC.SectionModules.sect09 = (function () {
       },
     },
 
-    // Row 83: Climate Zone
-    9.83: {
+    // Row 83: Climate Zone Information
+    "9.83": {
       id: "9.83",
       rowId: "9.83",
-      label: "CLIMATE ZONE",
+      label: "Climate Zone",
       cells: {
-        d: { content: "CLIMATE ZONE:" },
+        b: { content: "" },
+        c: { content: "" },
+        d: { content: "CLIMATE ZONE:", classes: ["section-subheader"] },
         e: {
           fieldId: "e_83",
           type: "dropdown",
@@ -122,7 +115,10 @@ window.OBC.SectionModules.sect09 = (function () {
           classes: ["dropdown-sm"],
           options: dropdownOptions.climateZones,
         },
-        i: { content: "DEGREE DAYS BELOW 18 C:" },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "DEGREE DAYS BELOW 18 C:", classes: ["section-subheader"] },
         j: {
           fieldId: "j_83",
           type: "num-editable",
@@ -130,7 +126,10 @@ window.OBC.SectionModules.sect09 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        l: { content: "SB-1 Table 2" },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "SB-1 Table 2", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
         o: {
           fieldId: "o_83",
           type: "editable",
@@ -141,45 +140,50 @@ window.OBC.SectionModules.sect09 = (function () {
       },
     },
 
-    // Row 84: 3.25 Sound Transmission Design
-    9.84: {
+    // Row 84: 3.25 Sound Transmission Design Header
+    "9.84": {
       id: "9.84",
       rowId: "9.84",
       label: "SOUND TRANSMISSION DESIGN",
       cells: {
         b: { content: "3.25" },
-        c: { content: "SOUND TRANSMISSION DESIGN" },
-        d: { content: "IS THERE MORE THAN 1 DWELLING UNIT IN THE BUILDING?:" },
-        e: {
-          fieldId: "e_84",
+        c: { content: "SOUND TRANSMISSION DESIGN", classes: ["section-subheader"] },
+        d: { content: "IS THERE MORE THAN 1 DWELLING UNIT IN THE BUILDING?:", classes: ["section-subheader"] },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: {
+          fieldId: "h_84",
           type: "dropdown",
-          dropdownId: "dd_e_84",
+          dropdownId: "dd_h_84",
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
           options: dropdownOptions.yesNoOptions,
         },
-        o: {
-          fieldId: "o_84",
-          type: "editable",
-          value: "enter notes here...",
-          section: SECTION_CONFIG.name,
-          classes: ["notes-column", "user-input"],
-        },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
+        o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
       },
     },
 
     // Row 85: Sound Transmission Notes
-    9.85: {
+    "9.85": {
       id: "9.85",
       rowId: "9.85",
       label: "Sound Transmission Notes",
       cells: {
+        b: { content: "" },
+        c: { content: "" },
         d: { content: "NOTES:" },
         e: {
           fieldId: "e_85",
           type: "editable",
-          value: "enter notes here...",
+          value: "enter sound transmission design notes here...",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
@@ -194,11 +198,13 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 86: Option Implemented
-    9.86: {
+    "9.86": {
       id: "9.86",
       rowId: "9.86",
       label: "Option Implemented",
       cells: {
+        b: { content: "" },
+        c: { content: "" },
         d: { content: "OPTION IMPLEMENTED:" },
         e: {
           fieldId: "e_86",
@@ -219,8 +225,8 @@ window.OBC.SectionModules.sect09 = (function () {
       },
     },
 
-    // Row 87: 3.26 Alternative Solutions - EXPANDABLE TRIGGER ROW
-    9.87: {
+    // Row 87: 3.26 Alternative Solutions Header
+    "9.87": {
       id: "9.87",
       rowId: "9.87",
       label: "ALTERNATIVE SOLUTIONS",
@@ -235,25 +241,24 @@ window.OBC.SectionModules.sect09 = (function () {
           },
         },
         b: { content: "3.26" },
-        c: { content: "ALTERNATIVE SOLUTIONS" },
+        c: { content: "ALTERNATIVE SOLUTIONS", classes: ["section-subheader"] },
         d: {
           fieldId: "d_87",
           type: "editable",
-          value:
-            "Enhanced egress lighting system exceeding prescriptive requirements",
+          value: "Enhanced egress lighting system exceeding prescriptive requirements",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "[A]1.2.1.1. and [C]2.1." },
-        m: { content: "" },
-        n: { content: "" },
+        e: { content: "", classes: ["section-subheader"] },
+        f: { content: "", classes: ["section-subheader"] },
+        g: { content: "", classes: ["section-subheader"] },
+        h: { content: "", classes: ["section-subheader"] },
+        i: { content: "", classes: ["section-subheader"] },
+        j: { content: "", classes: ["section-subheader"] },
+        k: { content: "", classes: ["section-subheader"] },
+        l: { content: "[A]1.2.1.1. and [C]2.1.", classes: ["section-subheader"] },
+        m: { content: "", classes: ["section-subheader"] },
+        n: { content: "", classes: ["section-subheader"] },
         o: {
           fieldId: "o_87",
           type: "editable",
@@ -265,12 +270,12 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 88: Alternative Solutions Details 1
-    9.88: {
+    "9.88": {
       id: "9.88",
       rowId: "9.88",
       label: "Alternative Solutions Details 1",
       cells: {
-        b: { content: "88" },
+        b: { content: "" },
         c: { content: "" },
         d: {
           fieldId: "d_88",
@@ -279,16 +284,6 @@ window.OBC.SectionModules.sect09 = (function () {
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
         o: {
           fieldId: "o_88",
           type: "editable",
@@ -300,31 +295,20 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 89: Alternative Solutions Details 2
-    9.89: {
+    "9.89": {
       id: "9.89",
       rowId: "9.89",
       label: "Alternative Solutions Details 2",
       cells: {
-        b: { content: "89" },
+        b: { content: "" },
         c: { content: "" },
         d: {
           fieldId: "d_89",
           type: "editable",
-          value:
-            "Fire separation performance based on advanced modeling analysis",
+          value: "Fire separation performance based on advanced modeling analysis",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
-        i: { content: "" },
-        j: { content: "" },
-        k: { content: "" },
-        l: { content: "" },
-        m: { content: "" },
-        n: { content: "" },
         o: {
           fieldId: "o_89",
           type: "editable",
@@ -384,14 +368,9 @@ window.OBC.SectionModules.sect09 = (function () {
   function getLayout() {
     const layoutRows = [];
 
-    if (sectionRows["header"]) {
-      layoutRows.push(createLayoutRow(sectionRows["header"]));
-    }
-
+    // Process all rows in their natural order (same as Section 03 pattern)
     Object.entries(sectionRows).forEach(([key, row]) => {
-      if (key !== "header") {
-        layoutRows.push(createLayoutRow(row));
-      }
+      layoutRows.push(createLayoutRow(row));
     });
 
     return { rows: layoutRows };
