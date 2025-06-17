@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     occupantSafety: "bi-people",
     fireResistance: "bi-shield",
     plumbingFixtures: "bi-droplet",
-    complianceDesign: "bi-check-circle",
+    energySoundComply: "bi-check-circle",
     notes: "bi-card-text",
 
     // Legacy TEUI sections (for compatibility)
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
     occupantSafety: "Safety",
     fireResistance: "Resistance",
     plumbingFixtures: "Plumbing",
-    complianceDesign: "Compliance",
+    energySoundComply: "Compliance",
     notes: "Notes",
 
     // Legacy TEUI sections (for compatibility)
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
     occupantSafety: "Section 6. Occupant Safety & Accessibility",
     fireResistance: "Section 7. Fire Resistance & Spatial Separation",
     plumbingFixtures: "Section 8. Plumbing Fixture Requirements",
-    complianceDesign: "Section 9. Compliance & Design",
+    energySoundComply: "Section 9. Energy, Sound and Alternative Solutions",
     notes: "Section 10. Notes",
 
     // Legacy TEUI sections (for compatibility)

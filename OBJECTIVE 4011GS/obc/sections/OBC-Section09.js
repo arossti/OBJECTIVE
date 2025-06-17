@@ -19,7 +19,7 @@ window.OBC.SectionModules.sect09 = (function () {
   //==========================================================================
 
   const SECTION_CONFIG = {
-    name: "complianceDesign",
+    name: "energySoundComply",
     excelRowStart: 82,
     excelRowEnd: 89,
     hasCalculations: false,
@@ -43,6 +43,14 @@ window.OBC.SectionModules.sect09 = (function () {
       { value: "Yes", name: "Yes" },
       { value: "No", name: "No" },
       { value: "N/A", name: "N/A" },
+    ],
+    stcRatingOptions: [
+      { value: "-", name: "Select..." },
+      { value: "STC50_SB3_9111", name: "Min. STC rating of 50 based on SB-3 and 9.11.1.4" },
+      { value: "STC50_ASTM_E90_9111", name: "Min. STC rating of 50 tested to ASTM E90 and 9.11.1.4" },
+      { value: "STC47_ASTM_E336_5812", name: "Min. STC rating of 47 measured to ASTM E336 as per 5.8.1.2.(2)(a)" },
+      { value: "STC47_5814_detailed", name: "Min. STC rating of 47 in accordance with 5.8.1.4 (detailed method)" },
+      { value: "STC47_5814_simplified", name: "Min. STC rating of 47 in accordance with 5.8.1.4 / .5 (simplified method)" },
     ],
     climateZones: [
       { value: "-", name: "Select..." },
@@ -226,11 +234,11 @@ window.OBC.SectionModules.sect09 = (function () {
         e: {
           fieldId: "e_86",
           type: "dropdown",
-          dropdownId: "dd_e_86",
+          dropdownId: "dd_f_86",
           value: "-",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.yesNoOptions,
+          classes: ["dropdown-lg"],
+          options: dropdownOptions.stcRatingOptions,
         },
         o: {
           fieldId: "o_86",
