@@ -1765,6 +1765,8 @@ table.data-table select.form-select:hover {
 
 /* Section 08: Hide completely empty columns to improve density */
 #plumbingFixtures .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#plumbingFixtures .data-table td:nth-child(3),  /* Column C - empty in data rows */
+#plumbingFixtures .data-table td:nth-child(5),  /* Column E - empty in data rows ✅ ADDED */
 #plumbingFixtures .data-table td:nth-child(6),  /* Column F - empty */
 #plumbingFixtures .data-table td:nth-child(7),  /* Column G - empty */
 #plumbingFixtures .data-table td:nth-child(8),  /* Column H - empty */
@@ -1778,41 +1780,53 @@ table.data-table select.form-select:hover {
 
 /* Section 08: Controlled width for content columns */
 #plumbingFixtures .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - section refs */
-#plumbingFixtures .data-table td:nth-child(3) { width: 220px !important; }  /* Column C - fixture types */
+/* Column C - now collapsed (was fixture types, moved to subheader) */
+/* Column E - now collapsed (empty in data rows) */
 #plumbingFixtures .data-table td:nth-child(4) { 
-    width: 100px !important;  /* Column D - ratios */
-    max-width: 100px !important;
-    text-align: center !important;
+    width: 220px !important;  /* Column D - floor levels (expanded to use C+E space) */
+    max-width: 220px !important;
+    text-align: left !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
-#plumbingFixtures .data-table td:nth-child(5) { 
-    width: 120px !important;  /* Column E - occupant loads */
+#plumbingFixtures .data-table td:nth-child(7) { 
+    width: 120px !important;  /* Column G - occupant loads (Excel Col F) */
     max-width: 120px !important;
     text-align: right !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+}
+#plumbingFixtures .data-table td:nth-child(8) { 
+    width: 180px !important;  /* Column H - OBC sentences (Excel Col G) */
+    max-width: 180px !important;
+    text-align: left !important;
 }
 #plumbingFixtures .data-table td:nth-child(9) { 
-    width: 100px !important;  /* Column I - calculations */
+    width: 100px !important;  /* Column I - water closets required */
     max-width: 100px !important;
     text-align: right !important;
     font-weight: 700 !important;
 }
-#plumbingFixtures .data-table td:nth-child(10) { width: 100px !important; } /* Column J - requirements */
-#plumbingFixtures .data-table td:nth-child(11) { width: 100px !important; } /* Column K - provisions */
-#plumbingFixtures .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
-#plumbingFixtures .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
+#plumbingFixtures .data-table td:nth-child(10) { width: 100px !important; } /* Column J - water closets provided */
+#plumbingFixtures .data-table td:nth-child(11) { width: 200px !important; } /* Column K - barrier-free required/provided */
+#plumbingFixtures .data-table td:nth-child(12) { width: 200px !important; } /* Column L - universal washrooms */
+#plumbingFixtures .data-table td:nth-child(13) { width: 150px !important; } /* Column M - OBC references */
+#plumbingFixtures .data-table td:nth-child(15) { width: 220px !important; } /* Column O - Notes */
 
 /* Section 08: Numeric input styling */
-#plumbingFixtures .data-table td:nth-child(5) input,
-#plumbingFixtures .data-table td:nth-child(10) input,
-#plumbingFixtures .data-table td:nth-child(11) input {
+#plumbingFixtures .data-table td:nth-child(7) input,  /* Column G - occupant loads (Excel F) */
+#plumbingFixtures .data-table td:nth-child(9) input,  /* Column I - water closets required (Excel H) */
+#plumbingFixtures .data-table td:nth-child(10) input, /* Column J - water closets provided (Excel I) */
+#plumbingFixtures .data-table td:nth-child(11) input, /* Column K - barrier-free counts (Excel J) */
+#plumbingFixtures .data-table td:nth-child(12) input { /* Column L - universal washroom counts (Excel K) */
     width: 100% !important;
     text-align: right !important;
     font-family: monospace !important;
+}
+
+/* Section 08: Text input styling for OBC sentences */
+#plumbingFixtures .data-table td:nth-child(8) input { /* Column H - OBC sentences (Excel G) */
+    width: 100% !important;
+    text-align: left !important;
 }
 
 /* Section 08: Notes column wrapping */
@@ -1821,6 +1835,8 @@ table.data-table select.form-select:hover {
     word-wrap: break-word !important;
     vertical-align: top !important;
 }
+
+
 
 /* =============== END SECTION 08 LAYOUT OPTIMIZATION =============== */
 

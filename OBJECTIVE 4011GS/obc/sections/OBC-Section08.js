@@ -3,8 +3,9 @@
  * Plumbing Fixture Requirements (Section 8) module for OBC Matrix
  *
  * Based on OBC Matrix Part 3 structure covering rows 79-81
- * Consolidated header structure - removed redundant rows 77-78
+ * Consolidated header structure - removed redundant rows 77-78  
  * Added footer row 8.81f with ratio information for cleaner layout
+ * Uses text inputs only - no dropdowns per user requirements
  */
 
 // Create section-specific namespace for global references
@@ -24,20 +25,16 @@ window.OBC.SectionModules.sect08 = (function () {
     excelRowStart: 79, // Now starts at row 79 (first data row)
     excelRowEnd: 81,   // Ends at row 81 (plus footer 8.81f)
     hasCalculations: false,
-    hasDropdowns: true,
-    needsCSS: false,
+    hasDropdowns: false,   // ✅ CORRECT: No dropdowns in Section 08
+    needsCSS: true,    // ✅ ENABLE: Column layout optimization needed
   };
 
   //==========================================================================
-  // DROPDOWN OPTIONS
+  // DROPDOWN OPTIONS (None needed for Section 08)
   //==========================================================================
 
   const dropdownOptions = {
-    // TODO: Add OBC sentence options from CSV
-    obcSentences: [
-      { value: "-", name: "Select..." },
-      // // Add OBC sentence options later
-    ],
+    // No dropdowns in Section 08
   };
 
   //==========================================================================
@@ -120,20 +117,18 @@ window.OBC.SectionModules.sect08 = (function () {
           classes: ["user-input"],
         },
         g: {
-          fieldId: "g_79",
+          fieldId: "f_79", // ✅ CORRECT: Excel Column F mapping for occupant loads
           type: "num-editable",
           value: "50",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
         h: {
-          fieldId: "h_79",
-          type: "dropdown",
-          dropdownId: "dd_h_79",
-          value: "-",
+          fieldId: "g_79", // ✅ CORRECT: Excel Column G mapping
+          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
+          value: "enter OBC sentence reference...",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.obcSentences,
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_79",
@@ -193,20 +188,18 @@ window.OBC.SectionModules.sect08 = (function () {
           classes: ["user-input"],
         },
         g: {
-          fieldId: "g_80",
+          fieldId: "f_80", // ✅ CORRECT: Excel Column F mapping for occupant loads
           type: "num-editable",
           value: "30",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
         h: {
-          fieldId: "h_80",
-          type: "dropdown",
-          dropdownId: "dd_h_80",
-          value: "-",
+          fieldId: "g_80", // ✅ CORRECT: Excel Column G mapping
+          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
+          value: "enter OBC sentence reference...",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.obcSentences,
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_80",
@@ -266,20 +259,18 @@ window.OBC.SectionModules.sect08 = (function () {
           classes: ["user-input"],
         },
         g: {
-          fieldId: "g_81",
+          fieldId: "f_81", // ✅ CORRECT: Excel Column F mapping for occupant loads
           type: "num-editable",
           value: "15",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
         h: {
-          fieldId: "h_81",
-          type: "dropdown",
-          dropdownId: "dd_h_81",
-          value: "-",
+          fieldId: "g_81", // ✅ CORRECT: Excel Column G mapping
+          type: "editable", // ✅ CORRECT: Manual text input, not dropdown
+          value: "enter OBC sentence reference...",
           section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.obcSentences,
+          classes: ["user-input"],
         },
         i: {
           fieldId: "i_81",
@@ -331,11 +322,11 @@ window.OBC.SectionModules.sect08 = (function () {
       cells: {
         b: { content: "" },
         c: { content: "RATIO:" },
-        d: { content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE" },
-        e: { content: "" },
-        f: { content: "" },
-        g: { content: "" },
-        h: { content: "" },
+        d: { 
+          content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE",
+          colspan: 4  // ✅ SPAN ACROSS MULTIPLE COLUMNS for legibility
+        },
+        // Skip e, f, g, h since they're covered by colspan
         i: { content: "" },
         j: { content: "" },
         k: { content: "" },
@@ -442,6 +433,13 @@ window.OBC.SectionModules.sect08 = (function () {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         delete cell.section;
+        
+        // ✅ HANDLE COLSPAN: Apply colspan attribute if specified
+        if (cell.colspan) {
+          cell.colSpan = cell.colspan; // HTML uses camelCase
+          delete cell.colspan; // Remove the lowercase version
+        }
+        
         rowDef.cells.push(cell);
       } else {
         rowDef.cells.push({});
