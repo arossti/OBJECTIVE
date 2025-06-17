@@ -17,6 +17,101 @@ window.OBC.sect01.userInteracted = false;
 // Section 1: Building Information Module
 window.OBC.SectionModules.sect01 = (function () {
   //==========================================================================
+  // OAA MODE MANAGEMENT
+  //==========================================================================
+  
+  // Mode state management
+  let oaaMode = localStorage.getItem('oaa_mode') || 'smart'; // 'smart' or 'manual'
+  
+  function getOAAMode() {
+    return oaaMode;
+  }
+  
+  function setOAAMode(mode) {
+    oaaMode = mode;
+    localStorage.setItem('oaa_mode', mode);
+    updateFieldsForMode(mode);
+    updateModeToggleUI(mode);
+    
+    // Clear smart mode functionality when switching to manual
+    if (mode === 'manual') {
+      clearSmartModeData();
+    }
+    
+
+  }
+  
+  function clearSmartModeData() {
+    // Reset fields to default placeholder text (like other editable fields)
+    const fieldsToReset = [
+      { fieldId: 'c_10', defaultText: 'Enter OAA directory URL manually' },
+      { fieldId: 'c_11', defaultText: 'In Good Standing' },
+      { fieldId: 'c_12', defaultText: 'Enter license number manually' }
+    ];
+    
+          fieldsToReset.forEach(({ fieldId, defaultText }) => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          element.textContent = defaultText;
+          // Remove all smart mode classes and let graceful input system take over
+          element.classList.remove('validation-success', 'validation-error', 'validation-warning', 'validation-pending', 'auto-populated-text', 'auto-populated-url', 'oaa-validation-status', 'oaa-license-number');
+          element.classList.add('editable', 'user-input');
+          // Remove manual-entry class to use standard graceful input styling
+          element.classList.remove('manual-entry');
+        }
+        
+        // Reset in StateManager to default state (not user-modified)
+        if (window.OBC?.StateManager?.setValue) {
+          window.OBC.StateManager.setValue(fieldId, defaultText, "default");
+        }
+      });
+  }
+  
+  function updateFieldsForMode(mode) {
+    const smartFields = ['c_10', 'c_11', 'c_12'];
+    
+    smartFields.forEach(fieldId => {
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        if (mode === 'manual') {
+          // Make fields editable with standard graceful input behavior
+          element.contentEditable = true;
+          element.classList.add('editable', 'user-input');
+          element.classList.remove('auto-populated-text', 'auto-populated-url', 'oaa-validation-status', 'oaa-license-number', 'manual-entry');
+          element.title = 'Click to edit - Manual entry mode';
+        } else {
+          // Make fields auto-populated in smart mode (text-based, not numeric calculations)
+          element.contentEditable = false;
+          element.classList.remove('editable', 'user-input', 'manual-entry');
+          element.classList.add('auto-populated-text'); // Use text-based styling, not calculated-value
+          element.title = 'Auto-populated by OAA lookup system';
+        }
+      }
+    });
+  }
+  
+  function updateModeToggleUI(mode) {
+    const toggle = document.querySelector('.oaa-mode-toggle');
+    if (toggle) {
+      const smartBtn = toggle.querySelector('.mode-smart');
+      const manualBtn = toggle.querySelector('.mode-manual');
+      const indicator = toggle.querySelector('.mode-indicator');
+      
+      if (smartBtn && manualBtn && indicator) {
+        if (mode === 'smart') {
+          smartBtn.classList.add('active');
+          manualBtn.classList.remove('active');
+          indicator.textContent = '🤖 Auto-complete and validation enabled';
+        } else {
+          smartBtn.classList.remove('active');
+          manualBtn.classList.add('active');
+          indicator.textContent = '✏️ Simple text entry mode';
+        }
+      }
+    }
+  }
+
+  //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
 
@@ -246,7 +341,7 @@ window.OBC.SectionModules.sect01 = (function () {
       },
     },
 
-    // Row 10: OAA Member Registration (new feature, not part of Excel DOM)
+    // Row 10: OAA Member Registration
     10: {
       id: "1.10", // Excel Row 10
       rowId: "1.10",
@@ -255,12 +350,11 @@ window.OBC.SectionModules.sect01 = (function () {
         c: { label: "OAA Member Registration" },
         d: {
           fieldId: "c_10", // Maps to Excel Column C
-          type: "calculated", // Changed to calculated - system populates this
-          value: "OAA directory URL will appear after practice name lookup",
-          // value: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson", // Commented out default
+          type: "editable", // Always editable - mode switching handled by updateFieldsForMode
+          value: "Enter OAA directory URL manually",
           section: "buildingInfo",
-          placeholder: "System will populate OAA URL automatically",
-          classes: ["no-wrap", "auto-populated-url"],
+          placeholder: "Enter OAA directory URL manually",
+          classes: ["no-wrap"],
           colspan: 6, // Span columns D-I
         },
         e: { content: "" },
@@ -276,19 +370,20 @@ window.OBC.SectionModules.sect01 = (function () {
       },
     },
 
-    // Row 11: OAA Validation Status (new feature for regulatory verification)
+    // Row 11: OAA Member Status
     11: {
       id: "1.11",
       rowId: "1.11",
-      label: "OAA Member Verification",
+      label: "OAA Member Status",
       cells: {
-        c: { label: "OAA Member Verification" },
+        c: { label: "OAA Member Status" },
         d: {
           fieldId: "c_11",
-          type: "calculated",
-          value: "Validating OAA membership status...",
+          type: "editable", // Always editable - mode switching handled by updateFieldsForMode
+          value: "In Good Standing",
           section: "buildingInfo",
-          classes: ["oaa-validation-status"],
+          placeholder: "In Good Standing",
+          classes: ["no-wrap"],
           colspan: 11, // Span columns D-N for full width status text
         },
         e: { content: "" },
@@ -304,7 +399,7 @@ window.OBC.SectionModules.sect01 = (function () {
       },
     },
 
-    // Row 12: License Number (auto-populated from OAA lookup)
+    // Row 12: License Number
     12: {
       id: "1.12",
       rowId: "1.12",
@@ -313,10 +408,11 @@ window.OBC.SectionModules.sect01 = (function () {
         c: { label: "OAA License Number" },
         d: {
           fieldId: "c_12",
-          type: "calculated",
-          value: "License number will appear after practice name lookup",
+          type: "editable", // Always editable - mode switching handled by updateFieldsForMode
+          value: "Enter license number manually",
           section: "buildingInfo",
-          classes: ["oaa-license-number"],
+          placeholder: "Enter license number manually",
+          classes: ["no-wrap"],
           colspan: 6, // Span columns D-I for consistent alignment
         },
         e: { content: "" },
@@ -596,14 +692,7 @@ window.OBC.SectionModules.sect01 = (function () {
         }
       });
 
-      // Debug logging for search precision
-      if (results.length === 0) {
-        console.log(`🔍 OAA Search: "${query}" - No matches found (precision-first filtering)`);
-      } else {
-        console.log(`🔍 OAA Search: "${query}" - Found ${results.length} precise matches:`, 
-          results.map(r => `${r.firm} (${r.name})`));
-        console.warn(`⚠️ DEMO DATA: Results may not reflect current OAA directory. Production system requires real OAA API integration.`);
-      }
+
 
       // Sort by relevance (exact firm matches first, then name matches)
       return results
@@ -838,14 +927,14 @@ window.OBC.SectionModules.sect01 = (function () {
       licenseField.textContent = "License information unavailable";
     }
 
-    // Update state manager
+    // Update state manager (these are auto-populated text, not calculations)
     if (window.OBC?.StateManager?.setValue) {
-      window.OBC.StateManager.setValue("c_11", statusText, "calculated");
+      window.OBC.StateManager.setValue("c_11", statusText, "auto-populated");
       if (licenseNumber) {
         window.OBC.StateManager.setValue(
           "c_12",
           `License: ${licenseNumber}`,
-          "calculated",
+          "auto-populated",
         );
       }
     }
@@ -909,11 +998,11 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Update state manager
       if (window.OBC?.StateManager?.setValue) {
-        window.OBC.StateManager.setValue("c_10", bestMatch.url, "calculated");
+        window.OBC.StateManager.setValue("c_10", bestMatch.url, "auto-populated");
         window.OBC.StateManager.setValue(
           "c_12",
           `License: ${bestMatch.license}`,
-          "calculated",
+          "auto-populated",
         );
       }
 
@@ -948,6 +1037,11 @@ window.OBC.SectionModules.sect01 = (function () {
    * Includes protection against multiple initializations
    */
   function setupOAAValidation() {
+    // Only setup smart mode functionality if in smart mode
+    if (getOAAMode() !== 'smart') {
+      return;
+    }
+    
     const urlField = document.querySelector('[data-field-id="c_10"]');
     const practiceField = document.querySelector('[data-field-id="c_3"]');
     
@@ -972,7 +1066,7 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Trigger lookup on Enter key
       practiceField.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && getOAAMode() === 'smart') {
           clearTimeout(lookupTimeout);
           setTimeout(() => {
             performOAALookup();
@@ -982,41 +1076,93 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Also trigger lookup on blur (when user leaves field)
       practiceField.addEventListener("blur", () => {
-        clearTimeout(lookupTimeout);
-        lookupTimeout = setTimeout(() => {
-          performOAALookup();
-        }, 1000); // 1 second debounce
+        if (getOAAMode() === 'smart') {
+          clearTimeout(lookupTimeout);
+          lookupTimeout = setTimeout(() => {
+            performOAALookup();
+          }, 1000); // 1 second debounce
+        }
       });
     }
 
     // URL field event listeners (for manual URL entry)
     urlField.addEventListener("blur", async () => {
-      const url = urlField.textContent || urlField.value || "";
-      if (url.trim() && url.includes("oaa.on.ca")) {
-        const result = await validateOAAMembership(url.trim());
-        updateValidationStatus(
-          result.status,
-          result.indicator,
-          result.class,
-          result.licenseNumber,
-        );
-        updateClickableURL(urlField, result.valid);
+      if (getOAAMode() === 'smart') {
+        const url = urlField.textContent || urlField.value || "";
+        if (url.trim() && url.includes("oaa.on.ca")) {
+          const result = await validateOAAMembership(url.trim());
+          updateValidationStatus(
+            result.status,
+            result.indicator,
+            result.class,
+            result.licenseNumber,
+          );
+          updateClickableURL(urlField, result.valid);
+        }
       }
     });
 
     // Initial validation - start clean with helpful instruction
     setTimeout(() => {
-      updateValidationStatus(
-        "Enter practice name in row 1.03 and press Enter to search OAA directory and view auto-complete options",
-        "⚪",
-        "validation-empty",
-      );
+      if (getOAAMode() === 'smart') {
+        updateValidationStatus(
+          "Enter practice name in row 1.03 and press Enter to search OAA directory and view auto-complete options",
+          "⚪",
+          "validation-empty",
+        );
+      }
     }, 500);
     
     // Mark as initialized to prevent duplicate setup
     if (urlField) {
       urlField._oaaValidationInitialized = true;
     }
+  }
+
+  function addModeToggleToHeader() {
+    // Check if toggle already exists
+    if (document.querySelector('.oaa-mode-toggle')) {
+      return true; // Already exists
+    }
+
+    // Find the Section 01 title span
+    const titleSpan = document.querySelector('#section-01-title');
+    if (!titleSpan) {
+      return false;
+    }
+
+    // Create the toggle container
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'oaa-mode-toggle';
+    toggleContainer.innerHTML = `
+      <div class="toggle-wrapper">
+        <span class="toggle-label">OAA Mode:</span>
+        <button class="mode-btn mode-smart ${getOAAMode() === 'smart' ? 'active' : ''}" data-mode="smart">🤖 Smart</button>
+        <button class="mode-btn mode-manual ${getOAAMode() === 'manual' ? 'active' : ''}" data-mode="manual">✏️ Manual</button>
+        <div class="mode-indicator">${getOAAMode() === 'smart' ? '🤖 Auto-complete and validation enabled' : '✏️ Simple text entry mode'}</div>
+      </div>
+    `;
+
+    // Insert the toggle right after the title span
+    titleSpan.insertAdjacentElement('afterend', toggleContainer);
+    return true;
+  }
+
+  function setupModeToggle() {
+    // Setup event listeners for mode toggle buttons
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('mode-btn')) {
+        const newMode = e.target.getAttribute('data-mode');
+        if (newMode && newMode !== getOAAMode()) {
+          setOAAMode(newMode);
+          
+          // Re-initialize appropriate functionality
+          if (newMode === 'smart') {
+            setupOAAValidation();
+          }
+        }
+      }
+    });
   }
 
   /**
@@ -1302,6 +1448,9 @@ window.OBC.SectionModules.sect01 = (function () {
       window.OBC.StateManager.initializeGlobalInputHandlers();
     }
 
+    // Setup mode toggle functionality
+    setupModeToggle();
+
     window.OBC.sect01.initialized = true;
   }
 
@@ -1379,24 +1528,26 @@ window.OBC.SectionModules.sect01 = (function () {
   }
 
   function onSectionRendered() {
-    // Section 01 rendered - Building Information (OBC Matrix)
-
     // Initialize any section-specific functionality after rendering
     if (!window.OBC.sect01.initialized) {
       initializeEventHandlers();
     }
 
     // Add floating stamp upload after section renders
-    setTimeout(() => {
-      addFloatingStampUpload();
-    }, 100);
+    addFloatingStampUpload();
 
-    // Setup OAA validation after section renders
-    setTimeout(() => {
-      setupOAAValidation();
-    }, 200);
+    // Add mode toggle to header and setup fields based on current mode
+    if (addModeToggleToHeader()) {
+      updateFieldsForMode(getOAAMode());
+      updateModeToggleUI(getOAAMode());
+      
+      // Only setup OAA validation in smart mode
+      if (getOAAMode() === 'smart') {
+        setupOAAValidation();
+      }
+    }
 
-    // Add custom CSS for stamp upload and Section 01 spacing
+    // Add custom CSS for stamp upload, Section 01 spacing, and OAA Mode Toggle
     if (!document.getElementById("stamp-upload-styles")) {
       const style = document.createElement("style");
       style.id = "stamp-upload-styles";
@@ -1405,6 +1556,98 @@ window.OBC.SectionModules.sect01 = (function () {
         [data-render-section="buildingInfo"] .row {
           padding-top: 2px;
           padding-bottom: 2px;
+        }
+
+        /* OAA Mode Toggle Styling - Inline with Title */
+        .oaa-mode-toggle {
+          display: inline-flex;
+          align-items: center;
+          margin-left: 20px;
+          padding: 6px 10px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          vertical-align: middle;
+        }
+        
+        .toggle-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: nowrap;
+        }
+        
+        .toggle-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: white;
+          margin-right: 6px;
+          white-space: nowrap;
+        }
+        
+        .mode-btn {
+          padding: 3px 8px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
+          cursor: pointer;
+          font-size: 10px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        
+        .mode-btn:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .mode-btn.active {
+          background: #007bff;
+          color: white;
+          border-color: #007bff;
+        }
+        
+        .mode-indicator {
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.8);
+          font-style: italic;
+          margin-left: 6px;
+          white-space: nowrap;
+        }
+        
+        /* Ensure section header has proper flex layout for inline toggle */
+        #buildingInfo .section-header {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        
+        /* Make sure title and toggle stay on same line */
+        #section-01-title {
+          flex-shrink: 0;
+        }
+
+
+
+        /* Auto-populated text styling (left-aligned, not numeric) */
+        .auto-populated-text {
+          font-weight: 500;
+          color: var(--calculated-value-color);
+          text-align: left !important; /* Override universal right-alignment for calculated values */
+          background-color: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          padding: 8px 12px;
+        }
+
+        /* Ensure OAA fields remain left-aligned even when auto-populated */
+        [data-field-id="c_10"],
+        [data-field-id="c_11"], 
+        [data-field-id="c_12"] {
+          text-align: left !important; /* Force left alignment for all OAA fields */
         }
 
         /* OAA Validation Status Styling */
@@ -1421,8 +1664,6 @@ window.OBC.SectionModules.sect01 = (function () {
           display: flex;
           align-items: center;
         }
-
-
 
         /* Success State - Green */
         .validation-success {
@@ -1665,5 +1906,9 @@ window.OBC.SectionModules.sect01 = (function () {
     getFieldValue: getFieldValue,
     getNumericValue: getNumericValue,
     setCalculatedValue: setCalculatedValue,
+
+    // OAA Mode management functions
+    getOAAMode: getOAAMode,
+    setOAAMode: setOAAMode,
   };
 })();
