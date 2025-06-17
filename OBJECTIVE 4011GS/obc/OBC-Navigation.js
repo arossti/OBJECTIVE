@@ -242,14 +242,14 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         activateTab(section.id);
 
-        // Scroll to position the app wrapper at the top
-        const appWrapper = document.getElementById("app-wrapper");
+        // Scroll to position the matrix container at the top
+        const matrixContainer = document.getElementById("matrix-container");
         if (
-          appWrapper &&
+          matrixContainer &&
           document.body.classList.contains("horizontal-layout")
         ) {
           window.scrollTo({
-            top: appWrapper.offsetTop,
+            top: matrixContainer.offsetTop,
             behavior: "auto",
           });
 
@@ -296,16 +296,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // If in horizontal layout, scroll to position sticky section at top of viewport
       if (document.body.classList.contains("horizontal-layout")) {
-        // Get the app wrapper or sticky header section
-        const appWrapper = document.getElementById("app-wrapper");
+        // Get the matrix container or sticky header section
+        const matrixContainer = document.getElementById("matrix-container");
         const _stickySection =
           document.getElementById("keyValues") ||
           document.getElementById("buildingInfo");
 
-        if (appWrapper) {
-          // Scroll to position the app wrapper at the top
+        if (matrixContainer) {
+          // Scroll to position the matrix container at the top
           window.scrollTo({
-            top: appWrapper.offsetTop,
+            top: matrixContainer.offsetTop,
             behavior: "auto", // Use auto for immediate positioning
           });
 
@@ -393,12 +393,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Very simple scroll function - just scroll app wrapper to top when switching to horizontal layout
-  function scrollAppWrapperToTop() {
-    const appWrapper = document.getElementById("app-wrapper");
-    if (appWrapper) {
+  // Very simple scroll function - just scroll matrix container to top when switching to horizontal layout
+  function scrollMatrixContainerToTop() {
+    const matrixContainer = document.getElementById("matrix-container");
+    if (matrixContainer) {
       window.scrollTo({
-        top: appWrapper.offsetTop,
+        top: matrixContainer.offsetTop,
         behavior: "auto",
       });
     }
@@ -441,7 +441,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updateStickyElementHeights();
 
         // Scroll to top using requestAnimationFrame for better performance
-        requestAnimationFrame(scrollAppWrapperToTop);
+        requestAnimationFrame(scrollMatrixContainerToTop);
       }
 
       // Save layout preference
