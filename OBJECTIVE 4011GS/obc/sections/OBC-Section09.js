@@ -1,6 +1,6 @@
 /**
  * OBC-Section09.js
- * Compliance & Design (Section 9) module for OBC Matrix
+ * Energy, Sound and Alternative Solutions (Section 9) module for OBC Matrix
  *
  * Based on OBC Matrix Part 3 structure covering rows 82-89
  * Includes Energy Efficiency, Sound Transmission Design, and Alternative Solutions
@@ -67,16 +67,13 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "Compliance & Design Header",
       cells: {
         b: { content: "9.h" },
-        c: { label: "Energy, Sound and Alternative Solutions", classes: ["section-subheader"] },
-        d: { content: "COMPLIANCE PATH:", classes: ["section-subheader"] },
+        c: { label: "Energy Efficiency", classes: ["section-subheader"] },
+        d: { content: "D", classes: ["section-subheader"] },
         e: { content: "E", classes: ["section-subheader"] },
         f: { content: "F", classes: ["section-subheader"] },
         g: { content: "G", classes: ["section-subheader"] },
         h: { content: "H", classes: ["section-subheader"] },
-        i: {
-          content: "DEGREE DAYS BELOW 18 C:",
-          classes: ["section-subheader"],
-        },
+        i: { content: "I", classes: ["section-subheader"] },
         j: { content: "J", classes: ["section-subheader"] },
         k: { content: "K", classes: ["section-subheader"] },
         l: { content: "OBC 12.2.1.2.", classes: ["section-subheader"] },
@@ -90,11 +87,17 @@ window.OBC.SectionModules.sect09 = (function () {
     9.82: {
       id: "9.82",
       rowId: "9.82",
-      label: "ENERGY EFFICIENCY",
+      label: "Compliance Path",
       cells: {
         b: { content: "3.24" },
-        c: { content: "ENERGY EFFICIENCY" },
-        d: { content: "COMPLIANCE PATH:" },
+        c: { label: "Compliance Path" },
+        d: {
+          fieldId: "e_82",
+          type: "editable",
+          value: "ie. OBC SB12 3.1.1.2.C4",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input", "span3"],
+        },
         l: { content: "12.2.1.2." },
         o: {
           fieldId: "o_82",
@@ -112,23 +115,21 @@ window.OBC.SectionModules.sect09 = (function () {
       rowId: "9.83",
       label: "CLIMATE ZONE",
       cells: {
-        d: { content: "CLIMATE ZONE:" },
-        e: {
-          fieldId: "e_83",
-          type: "dropdown",
-          dropdownId: "dd_e_83",
-          value: "-",
-          section: SECTION_CONFIG.name,
-          classes: ["dropdown-sm"],
-          options: dropdownOptions.climateZones,
-        },
-        i: { content: "DEGREE DAYS BELOW 18 C:" },
-        j: {
-          fieldId: "j_83",
-          type: "num-editable",
-          value: "0",
+        c: { label: "Climate Zone" },
+        d: {
+          fieldId: "f_83",
+          type: "editable",
+          value: "ZONE 4",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
+        },
+        e: { content: "HDD (18ºC):" },
+        f: {
+          fieldId: "k_83",
+          type: "editable",
+          value: "5555",
+          section: SECTION_CONFIG.name,
+          classes: ["user-input", "span4" ],
         },
         l: { content: "SB-1 Table 2" },
         o: {
@@ -148,8 +149,8 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "Sound Transmission Design Header",
       cells: {
         b: { content: "3.25" },
-        c: { label: "SOUND TRANSMISSION DESIGN", classes: ["section-subheader"] },
-        d: { content: "IS THERE MORE THAN 1 DWELLING UNIT IN THE BUILDING?:", classes: ["section-subheader"] },
+        c: { label: "Sound Transmission Design", classes: ["section-subheader"] },
+        d: { content: "Options:", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
@@ -171,12 +172,11 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "SOUND TRANSMISSION DESIGN",
       cells: {
         b: { content: "" },
-        c: { content: "Sound Transmission Design" },
-        d: { content: "" },
-        e: {
-          fieldId: "e_84",
+        c: { label: "More than one dwelling unit above another?" },
+        d: {
+          fieldId: "i_84",
           type: "dropdown",
-          dropdownId: "dd_e_84",
+          dropdownId: "dd_i_84",
           value: "-",
           section: SECTION_CONFIG.name,
           classes: ["dropdown-sm"],
@@ -198,8 +198,8 @@ window.OBC.SectionModules.sect09 = (function () {
       rowId: "9.85",
       label: "Sound Transmission Notes",
       cells: {
-        d: { content: "NOTES:" },
-        e: {
+        c: { label: "NOTES:" },
+        d: {
           fieldId: "e_85",
           type: "editable",
           value: "enter notes here...",
