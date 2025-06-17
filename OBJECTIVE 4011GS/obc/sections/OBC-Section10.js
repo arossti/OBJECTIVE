@@ -75,7 +75,8 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_90",
           type: "editable",
-          value: "ie. Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
+          value:
+            "ie. Building permit application submitted 2024-06-01. Planning approval required for zoning compliance.",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -94,7 +95,7 @@ window.OBC.SectionModules.sect10 = (function () {
     },
 
     // Row 91: Notes Content Line 1
-    "10.91": {
+    10.91: {
       id: "10.91",
       rowId: "10.91",
       label: "Notes Line 1",
@@ -104,7 +105,8 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_91",
           type: "editable",
-          value: "ie. HCRA, Tarion and ONHWPA requirements in effect for All Residential Occupancies",
+          value:
+            "ie. HCRA, Tarion and ONHWPA requirements in effect for All Residential Occupancies",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -123,7 +125,7 @@ window.OBC.SectionModules.sect10 = (function () {
     },
 
     // Row 92: Notes Content Line 2
-    "10.92": {
+    10.92: {
       id: "10.92",
       rowId: "10.92",
       label: "Notes Line 2",
@@ -133,7 +135,8 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_92",
           type: "editable",
-          value: "ie. CSA Standard CSA S-478 Durability In Buildings is applicable",
+          value:
+            "ie. CSA Standard CSA S-478 Durability In Buildings is applicable",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -152,7 +155,7 @@ window.OBC.SectionModules.sect10 = (function () {
     },
 
     // Row 93: Notes Content Line 3
-    "10.93": {
+    10.93: {
       id: "10.93",
       rowId: "10.93",
       label: "Notes Line 3",
@@ -162,7 +165,8 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_93",
           type: "editable",
-          value: "ie. All Doors and Windows shall be Designed and Installed per CSA requirements ie. AAMA/WDMA/CSA 101/I.S.2/A440",
+          value:
+            "ie. All Doors and Windows shall be Designed and Installed per CSA requirements ie. AAMA/WDMA/CSA 101/I.S.2/A440",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -181,7 +185,7 @@ window.OBC.SectionModules.sect10 = (function () {
     },
 
     // Row 94: Notes Content Line 4
-    "10.94": {
+    10.94: {
       id: "10.94",
       rowId: "10.94",
       label: "Notes Line 4",
@@ -191,7 +195,8 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_94",
           type: "editable",
-          value: "ie. AHJ Attests that they have reviewed professional design at requirements of OAA/PEO Table @https://www.peo.on.ca/sites/default/files/2019-09/PEO-OAA%20Joint%20Bulletin.pdf and have checked that the Designers carry the requisite qualifications",
+          value:
+            "ie. AHJ Attests that they have reviewed professional design at requirements of OAA/PEO Table @https://www.peo.on.ca/sites/default/files/2019-09/PEO-OAA%20Joint%20Bulletin.pdf and have checked that the Designers carry the requisite qualifications",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -210,7 +215,7 @@ window.OBC.SectionModules.sect10 = (function () {
     },
 
     // Row 95: Notes Content Line 5
-    "10.95": {
+    10.95: {
       id: "10.95",
       rowId: "10.95",
       label: "Notes Line 5",
@@ -220,7 +225,8 @@ window.OBC.SectionModules.sect10 = (function () {
         d: {
           fieldId: "d_95",
           type: "editable",
-          value: "ie. Landscape architect: GHI Landscape Design. Tree preservation plan approved by City.",
+          value:
+            "ie. Landscape architect: GHI Landscape Design. Tree preservation plan approved by City.",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "notes-field"],
         },
@@ -244,12 +250,13 @@ window.OBC.SectionModules.sect10 = (function () {
       rowId: "10.96f",
       label: "Combined Footer",
       cells: {
-        d: { 
-          content: "ALL REFERENCES ARE TO DIVISION B OF THE OBC UNLESS PRECEDED BY [A] FOR DIVISION A AND [C] FOR DIVISION C\n© Ontario Association of Architects",
+        d: {
+          content:
+            "ALL REFERENCES ARE TO DIVISION B OF THE OBC UNLESS PRECEDED BY [A] FOR DIVISION A AND [C] FOR DIVISION C\n© Ontario Association of Architects",
           classes: ["footer-note-wide"],
           attributes: {
-            colspan: "6"
-          }
+            colspan: "6",
+          },
         },
       },
     },

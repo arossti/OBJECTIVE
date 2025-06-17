@@ -46,11 +46,26 @@ window.OBC.SectionModules.sect09 = (function () {
     ],
     stcRatingOptions: [
       { value: "-", name: "Select..." },
-      { value: "STC50_SB3_9111", name: "Min. STC rating of 50 based on SB-3 and 9.11.1.4" },
-      { value: "STC50_ASTM_E90_9111", name: "Min. STC rating of 50 tested to ASTM E90 and 9.11.1.4" },
-      { value: "STC47_ASTM_E336_5812", name: "Min. STC rating of 47 measured to ASTM E336 as per 5.8.1.2.(2)(a)" },
-      { value: "STC47_5814_detailed", name: "Min. STC rating of 47 in accordance with 5.8.1.4 (detailed method)" },
-      { value: "STC47_5814_simplified", name: "Min. STC rating of 47 in accordance with 5.8.1.4 / .5 (simplified method)" },
+      {
+        value: "STC50_SB3_9111",
+        name: "Min. STC rating of 50 based on SB-3 and 9.11.1.4",
+      },
+      {
+        value: "STC50_ASTM_E90_9111",
+        name: "Min. STC rating of 50 tested to ASTM E90 and 9.11.1.4",
+      },
+      {
+        value: "STC47_ASTM_E336_5812",
+        name: "Min. STC rating of 47 measured to ASTM E336 as per 5.8.1.2.(2)(a)",
+      },
+      {
+        value: "STC47_5814_detailed",
+        name: "Min. STC rating of 47 in accordance with 5.8.1.4 (detailed method)",
+      },
+      {
+        value: "STC47_5814_simplified",
+        name: "Min. STC rating of 47 in accordance with 5.8.1.4 / .5 (simplified method)",
+      },
     ],
     climateZones: [
       { value: "-", name: "Select..." },
@@ -137,7 +152,7 @@ window.OBC.SectionModules.sect09 = (function () {
           type: "editable",
           value: "5555",
           section: SECTION_CONFIG.name,
-          classes: ["user-input", "span4" ],
+          classes: ["user-input", "span4"],
         },
         l: { content: "SB-1 Table 2" },
         o: {
@@ -157,7 +172,10 @@ window.OBC.SectionModules.sect09 = (function () {
       label: "Sound Transmission Design Header",
       cells: {
         b: { content: "3.25" },
-        c: { label: "Sound Transmission Design", classes: ["section-subheader"] },
+        c: {
+          label: "Sound Transmission Design",
+          classes: ["section-subheader"],
+        },
         d: { content: "Options:", classes: ["section-subheader"] },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
@@ -174,7 +192,7 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 84: Sound Transmission Design
-    "9.84": {
+    9.84: {
       id: "9.84",
       rowId: "9.84",
       label: "SOUND TRANSMISSION DESIGN",
@@ -225,14 +243,14 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 86: Option Implemented
-    "9.86": {
+    9.86: {
       id: "9.86",
       rowId: "9.86",
       label: "Option Implemented",
       cells: {
         c: { label: "Option Implemented" },
         d: {
-          fieldId: "e_86",
+          fieldId: "f_86",
           type: "dropdown",
           dropdownId: "dd_f_86",
           value: "-",
@@ -266,7 +284,10 @@ window.OBC.SectionModules.sect09 = (function () {
         i: { content: "", classes: ["section-subheader"] },
         j: { content: "", classes: ["section-subheader"] },
         k: { content: "", classes: ["section-subheader"] },
-        l: { content: "[A]1.2.1.1. and [C]2.1.", classes: ["section-subheader"] },
+        l: {
+          content: "[A]1.2.1.1. and [C]2.1.",
+          classes: ["section-subheader"],
+        },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
@@ -274,7 +295,7 @@ window.OBC.SectionModules.sect09 = (function () {
     },
 
     // Row 87: Alternative Solutions - EXPANDABLE TRIGGER ROW
-    "9.87": {
+    9.87: {
       id: "9.87",
       rowId: "9.87",
       label: "ALTERNATIVE SOLUTIONS",
@@ -311,7 +332,8 @@ window.OBC.SectionModules.sect09 = (function () {
         o: {
           fieldId: "o_87",
           type: "editable",
-          value: "ie. Alternative solution providing equivalent safety performance",
+          value:
+            "ie. Alternative solution providing equivalent safety performance",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
@@ -346,7 +368,8 @@ window.OBC.SectionModules.sect09 = (function () {
         o: {
           fieldId: "o_88",
           type: "editable",
-          value: "ie. Engineered solution with structural engineer certification",
+          value:
+            "ie. Engineered solution with structural engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
@@ -382,7 +405,8 @@ window.OBC.SectionModules.sect09 = (function () {
         o: {
           fieldId: "o_89",
           type: "editable",
-          value: "ie. Engineered solution with professional engineer certification",
+          value:
+            "ie. Engineered solution with professional engineer certification",
           section: SECTION_CONFIG.name,
           classes: ["notes-column", "user-input"],
         },
@@ -398,7 +422,8 @@ window.OBC.SectionModules.sect09 = (function () {
     const fields = {};
 
     Object.entries(sectionRows).forEach(([rowKey, row]) => {
-      if (rowKey === "header" || rowKey === "9.84h" || rowKey === "9.86h") return; // Exclude headers and subheaders
+      if (rowKey === "header" || rowKey === "9.84h" || rowKey === "9.86h")
+        return; // Exclude headers and subheaders
       if (!row.cells) return;
 
       Object.entries(row.cells).forEach(([_colKey, cell]) => {

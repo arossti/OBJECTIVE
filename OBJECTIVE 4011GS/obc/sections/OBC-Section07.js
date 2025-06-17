@@ -52,7 +52,10 @@ window.OBC.SectionModules.sect07 = (function () {
       { value: "-", name: "Select..." },
       { value: "Combustible Permitted", name: "Combustible Permitted" },
       { value: "Noncombustible Req'd", name: "Noncombustible Req'd" },
-      { value: "Encapsulated Mass Timber Permitted", name: "Encapsulated Mass Timber Permitted" },
+      {
+        value: "Encapsulated Mass Timber Permitted",
+        name: "Encapsulated Mass Timber Permitted",
+      },
     ],
     claddingTypeOptions: [
       { value: "-", name: "Select..." },
@@ -88,7 +91,10 @@ window.OBC.SectionModules.sect07 = (function () {
           classes: ["section-subheader"],
         },
         k: { content: "", classes: ["section-subheader"] },
-        l: { content: "OBC 3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15.", classes: ["section-subheader"] },
+        l: {
+          content: "OBC 3.2.2.20-83., 3.2.1.2., 3.2.1.4., 3.2.2.15.",
+          classes: ["section-subheader"],
+        },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
@@ -290,7 +296,7 @@ window.OBC.SectionModules.sect07 = (function () {
     },
 
     // Row 72: 3.22 Spatial Separation - INTERMEDIATE HEADER ROW
-    "7.72": {
+    7.72: {
       id: "7.72",
       rowId: "7.72",
       label: "Spatial Separation",
@@ -301,7 +307,10 @@ window.OBC.SectionModules.sect07 = (function () {
         e: { content: "EBF AREA (m²)", classes: ["section-subheader"] },
         f: { content: "L.D. (m)", classes: ["section-subheader"] },
         g: { content: "L/H OR H/L", classes: ["section-subheader"] },
-        h: { content: "% UPO PERMITTED / ACTUAL", classes: ["section-subheader"] },
+        h: {
+          content: "% UPO PERMITTED / ACTUAL",
+          classes: ["section-subheader"],
+        },
         i: { content: "REQUIRED FRR (H)", classes: ["section-subheader"] },
         j: { content: "CONSTRUCTION TYPE", classes: ["section-subheader"] },
         k: { content: "CLADDING TYPE", classes: ["section-subheader"] },
@@ -316,7 +325,7 @@ window.OBC.SectionModules.sect07 = (function () {
     },
 
     // Row 73: Spatial Separation Row 1 - EXPANDABLE TRIGGER ROW
-    "7.73": {
+    7.73: {
       id: "7.73",
       rowId: "7.73",
       label: "Spatial Separation 1",
@@ -408,7 +417,7 @@ window.OBC.SectionModules.sect07 = (function () {
     },
 
     // Row 74: Spatial Separation Row 2 - EXPANDABLE ROW
-    "7.74": {
+    7.74: {
       id: "7.74",
       rowId: "7.74",
       label: "Spatial Separation 2",
@@ -491,7 +500,7 @@ window.OBC.SectionModules.sect07 = (function () {
     },
 
     // Row 75: Spatial Separation Row 3 - EXPANDABLE ROW
-    "7.75": {
+    7.75: {
       id: "7.75",
       rowId: "7.75",
       label: "Spatial Separation 3",
@@ -574,7 +583,7 @@ window.OBC.SectionModules.sect07 = (function () {
     },
 
     // Row 76: Spatial Separation Row 4 - EXPANDABLE ROW
-    "7.76": {
+    7.76: {
       id: "7.76",
       rowId: "7.76",
       label: "Spatial Separation 4",
@@ -732,7 +741,7 @@ window.OBC.SectionModules.sect07 = (function () {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    // Handle column B if defined 
+    // Handle column B if defined
     if (row.cells && row.cells.b) {
       const cell = { ...row.cells.b };
       delete cell.section;

@@ -76,11 +76,17 @@ window.OBC.SectionModules.sect06 = (function () {
         e: { content: "FLOOR LEVEL/AREA", classes: ["section-subheader"] },
         f: { content: "OCCUPANCY TYPE", classes: ["section-subheader"] },
         g: { content: "", classes: ["section-subheader"] },
-        h: { content: "OCCUPANT LOAD (PERSONS)", classes: ["section-subheader"], },
+        h: {
+          content: "OCCUPANT LOAD (PERSONS)",
+          classes: ["section-subheader"],
+        },
         i: { content: "BASED ON", classes: ["section-subheader"] },
         j: { content: "POSTED LIMIT REQUIRED", classes: ["section-subheader"] },
         k: { content: "", classes: ["section-subheader"] },
-        l: { content: "OBC 3.1.17. and 3.1.17.1.(2)", classes: ["section-subheader"] },
+        l: {
+          content: "OBC 3.1.17. and 3.1.17.1.(2)",
+          classes: ["section-subheader"],
+        },
         m: { content: "", classes: ["section-subheader"] },
         n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
@@ -384,7 +390,8 @@ window.OBC.SectionModules.sect06 = (function () {
         f: {
           fieldId: "f_64",
           type: "editable",
-          value: "state quantity to the left and provide an explanation here...",
+          value:
+            "state quantity to the left and provide an explanation here...",
           section: SECTION_CONFIG.name,
           classes: ["user-input", "span3"],
         },
@@ -509,7 +516,7 @@ window.OBC.SectionModules.sect06 = (function () {
       rowDef.cells[0] = { ...row.cells.a };
     }
 
-    // Handle column B if defined 
+    // Handle column B if defined
     if (row.cells && row.cells.b) {
       const cell = { ...row.cells.b };
       delete cell.section;
@@ -564,7 +571,7 @@ window.OBC.SectionModules.sect06 = (function () {
     // Fallback to DOM (COPY FROM SECTION 03)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (!element) return defaultValue;
-    
+
     let value = "";
     if (element.type === "checkbox") {
       return element.checked;
@@ -575,7 +582,7 @@ window.OBC.SectionModules.sect06 = (function () {
     } else {
       value = element.textContent || "";
     }
-    
+
     const cleanValue = value
       .toString()
       .replace(/,/g, "")
@@ -714,7 +721,7 @@ window.OBC.SectionModules.sect06 = (function () {
     getLayout: getLayout,
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
-    
+
     // Calculation functions (COPY FROM SECTION 03)
     calculateOccupantLoadTotal: calculateOccupantLoadTotal,
     getNumericValue: getNumericValue,

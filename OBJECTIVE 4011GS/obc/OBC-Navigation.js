@@ -826,7 +826,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // - ReferenceValues/ReferenceManager/ReferenceToggle (building code matrix, not energy calculator)
     // Initialize other UI handlers
     initializeUIHandlers();
-    console.log("OBC Matrix initialization complete - FieldManager loaded");
   } else {
     console.error("Core OBC modules (FieldManager) not found!");
   }

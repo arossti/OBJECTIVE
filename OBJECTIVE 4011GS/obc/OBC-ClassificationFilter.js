@@ -707,7 +707,6 @@ window.OBC.ClassificationFilter = (function () {
     // Run initial filtering using requestAnimationFrame
     requestAnimationFrame(updateClassificationFilters);
 
-    console.log("✅ Classification filtering initialized");
     return true;
   }
 

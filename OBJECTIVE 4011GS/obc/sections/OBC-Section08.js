@@ -3,7 +3,7 @@
  * Plumbing Fixture Requirements (Section 8) module for OBC Matrix
  *
  * Based on OBC Matrix Part 3 structure covering rows 79-81
- * Consolidated header structure - removed redundant rows 77-78  
+ * Consolidated header structure - removed redundant rows 77-78
  * Added footer row 8.81f with ratio information for cleaner layout
  * Uses text inputs only - no dropdowns per user requirements
  */
@@ -23,17 +23,17 @@ window.OBC.SectionModules.sect08 = (function () {
   const SECTION_CONFIG = {
     name: "plumbingFixtures",
     excelRowStart: 79, // Now starts at row 79 (first data row)
-    excelRowEnd: 81,   // Ends at row 81 (plus footer 8.81f)
+    excelRowEnd: 81, // Ends at row 81 (plus footer 8.81f)
     hasCalculations: false,
-    hasDropdowns: false,   // ✅ CORRECT: No dropdowns in Section 08
-    needsCSS: true,    // ✅ ENABLE: Column layout optimization needed
+    hasDropdowns: false, // ✅ CORRECT: No dropdowns in Section 08
+    needsCSS: true, // ✅ ENABLE: Column layout optimization needed
   };
 
   //==========================================================================
   // DROPDOWN OPTIONS (None needed for Section 08)
   //==========================================================================
 
-  const dropdownOptions = {
+  const _dropdownOptions = {
     // No dropdowns in Section 08
   };
 
@@ -45,7 +45,7 @@ window.OBC.SectionModules.sect08 = (function () {
     // ENHANCED SUBHEADER ROW - Consolidates all necessary headers
     header: {
       id: "8.h",
-      rowId: "8.h", 
+      rowId: "8.h",
       label: "Plumbing Fixtures Header",
       cells: {
         b: { content: "3.23" },
@@ -53,9 +53,9 @@ window.OBC.SectionModules.sect08 = (function () {
           content: "PLUMBING FIXTURE REQUIREMENTS",
           classes: ["section-subheader"],
         },
-        d: { 
-          content: "FLOOR LEVEL OR AREA", 
-          classes: ["section-subheader"] 
+        d: {
+          content: "FLOOR LEVEL OR AREA",
+          classes: ["section-subheader"],
         },
         e: { content: "", classes: ["section-subheader"] },
         f: { content: "", classes: ["section-subheader"] },
@@ -63,9 +63,9 @@ window.OBC.SectionModules.sect08 = (function () {
           content: "OCCUPANT LOAD (PERSONS)",
           classes: ["section-subheader"],
         },
-        h: { 
-          content: "", 
-          classes: ["section-subheader"] 
+        h: {
+          content: "",
+          classes: ["section-subheader"],
         },
         i: {
           content: "WATER CLOSETS REQUIRED",
@@ -83,9 +83,9 @@ window.OBC.SectionModules.sect08 = (function () {
           content: "UNIVERSAL WASHROOMS REQUIRED / PROVIDED",
           classes: ["section-subheader"],
         },
-        m: { 
-          content: "OBC 3.7.4., 3.8.2.3., Tables 3.8.2.3.A & 3.8.2.3.B", 
-          classes: ["section-subheader"] 
+        m: {
+          content: "OBC 3.7.4., 3.8.2.3., Tables 3.8.2.3.A & 3.8.2.3.B",
+          classes: ["section-subheader"],
         },
         n: { content: "", classes: ["section-subheader"] },
         o: { content: "Notes", classes: ["section-subheader", "notes-column"] },
@@ -322,10 +322,10 @@ window.OBC.SectionModules.sect08 = (function () {
       cells: {
         b: { content: "" },
         c: { content: "RATIO:" },
-        d: { 
+        d: {
           content: "MALE:FEMALE = 50:50 EXCEPT AS NOTED OTHERWISE",
-          colspan: 6,  // ✅ SPAN ACROSS MORE COLUMNS for full legibility
-          classes: ["footer-note-wide"]  // ✅ Special class for styling
+          colspan: 6, // ✅ SPAN ACROSS MORE COLUMNS for full legibility
+          classes: ["footer-note-wide"], // ✅ Special class for styling
         },
         // Skip e, f, g, h since they're covered by colspan
         i: { content: "" },
@@ -434,13 +434,13 @@ window.OBC.SectionModules.sect08 = (function () {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         delete cell.section;
-        
+
         // ✅ HANDLE COLSPAN: Apply colspan attribute if specified
         if (cell.colspan) {
           cell.colSpan = cell.colspan; // HTML uses camelCase
           delete cell.colspan; // Remove the lowercase version
         }
-        
+
         rowDef.cells.push(cell);
       } else {
         rowDef.cells.push({});

@@ -19,93 +19,106 @@ window.OBC.SectionModules.sect01 = (function () {
   //==========================================================================
   // OAA MODE MANAGEMENT
   //==========================================================================
-  
+
   // Mode state management
-  let oaaMode = localStorage.getItem('oaa_mode') || 'smart'; // 'smart' or 'manual'
-  
+  let oaaMode = localStorage.getItem("oaa_mode") || "smart"; // 'smart' or 'manual'
+
   function getOAAMode() {
     return oaaMode;
   }
-  
+
   function setOAAMode(mode) {
     oaaMode = mode;
-    localStorage.setItem('oaa_mode', mode);
+    localStorage.setItem("oaa_mode", mode);
     updateFieldsForMode(mode);
     updateModeToggleUI(mode);
-    
+
     // Clear smart mode functionality when switching to manual
-    if (mode === 'manual') {
+    if (mode === "manual") {
       clearSmartModeData();
     }
-    
-
   }
-  
+
   function clearSmartModeData() {
     // Reset fields to default placeholder text (like other editable fields)
     const fieldsToReset = [
-      { fieldId: 'c_10', defaultText: 'Enter OAA directory URL manually' },
-      { fieldId: 'c_11', defaultText: 'In Good Standing' },
-      { fieldId: 'c_12', defaultText: 'Enter license number manually' }
+      { fieldId: "c_10", defaultText: "Enter OAA directory URL manually" },
+      { fieldId: "c_11", defaultText: "In Good Standing" },
+      { fieldId: "c_12", defaultText: "Enter license number manually" },
     ];
-    
-          fieldsToReset.forEach(({ fieldId, defaultText }) => {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-          element.textContent = defaultText;
-          // Remove all smart mode classes and let graceful input system take over
-          element.classList.remove('validation-success', 'validation-error', 'validation-warning', 'validation-pending', 'auto-populated-text', 'auto-populated-url', 'oaa-validation-status', 'oaa-license-number');
-          element.classList.add('editable', 'user-input');
-          // Remove manual-entry class to use standard graceful input styling
-          element.classList.remove('manual-entry');
-        }
-        
-        // Reset in StateManager to default state (not user-modified)
-        if (window.OBC?.StateManager?.setValue) {
-          window.OBC.StateManager.setValue(fieldId, defaultText, "default");
-        }
-      });
-  }
-  
-  function updateFieldsForMode(mode) {
-    const smartFields = ['c_10', 'c_11', 'c_12'];
-    
-    smartFields.forEach(fieldId => {
+
+    fieldsToReset.forEach(({ fieldId, defaultText }) => {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
-        if (mode === 'manual') {
+        element.textContent = defaultText;
+        // Remove all smart mode classes and let graceful input system take over
+        element.classList.remove(
+          "validation-success",
+          "validation-error",
+          "validation-warning",
+          "validation-pending",
+          "auto-populated-text",
+          "auto-populated-url",
+          "oaa-validation-status",
+          "oaa-license-number",
+        );
+        element.classList.add("editable", "user-input");
+        // Remove manual-entry class to use standard graceful input styling
+        element.classList.remove("manual-entry");
+      }
+
+      // Reset in StateManager to default state (not user-modified)
+      if (window.OBC?.StateManager?.setValue) {
+        window.OBC.StateManager.setValue(fieldId, defaultText, "default");
+      }
+    });
+  }
+
+  function updateFieldsForMode(mode) {
+    const smartFields = ["c_10", "c_11", "c_12"];
+
+    smartFields.forEach((fieldId) => {
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        if (mode === "manual") {
           // Make fields editable with standard graceful input behavior
           element.contentEditable = true;
-          element.classList.add('editable', 'user-input');
-          element.classList.remove('auto-populated-text', 'auto-populated-url', 'oaa-validation-status', 'oaa-license-number', 'manual-entry');
-          element.title = 'Click to edit - Manual entry mode';
+          element.classList.add("editable", "user-input");
+          element.classList.remove(
+            "auto-populated-text",
+            "auto-populated-url",
+            "oaa-validation-status",
+            "oaa-license-number",
+            "manual-entry",
+          );
+          element.title = "Click to edit - Manual entry mode";
         } else {
           // Make fields auto-populated in smart mode (text-based, not numeric calculations)
           element.contentEditable = false;
-          element.classList.remove('editable', 'user-input', 'manual-entry');
-          element.classList.add('auto-populated-text'); // Use text-based styling, not calculated-value
-          element.title = 'Auto-populated by OAA lookup system';
+          element.classList.remove("editable", "user-input", "manual-entry");
+          element.classList.add("auto-populated-text"); // Use text-based styling, not calculated-value
+          element.title = "Auto-populated by OAA lookup system";
         }
       }
     });
   }
-  
+
   function updateModeToggleUI(mode) {
-    const toggle = document.querySelector('.oaa-mode-toggle');
+    const toggle = document.querySelector(".oaa-mode-toggle");
     if (toggle) {
-      const smartBtn = toggle.querySelector('.mode-smart');
-      const manualBtn = toggle.querySelector('.mode-manual');
-      const indicator = toggle.querySelector('.mode-indicator');
-      
+      const smartBtn = toggle.querySelector(".mode-smart");
+      const manualBtn = toggle.querySelector(".mode-manual");
+      const indicator = toggle.querySelector(".mode-indicator");
+
       if (smartBtn && manualBtn && indicator) {
-        if (mode === 'smart') {
-          smartBtn.classList.add('active');
-          manualBtn.classList.remove('active');
-          indicator.textContent = '🤖 Auto-complete and validation enabled';
+        if (mode === "smart") {
+          smartBtn.classList.add("active");
+          manualBtn.classList.remove("active");
+          indicator.textContent = "🤖 Auto-complete and validation enabled";
         } else {
-          smartBtn.classList.remove('active');
-          manualBtn.classList.add('active');
-          indicator.textContent = '✏️ Simple text entry mode';
+          smartBtn.classList.remove("active");
+          manualBtn.classList.add("active");
+          indicator.textContent = "✏️ Simple text entry mode";
         }
       }
     }
@@ -668,7 +681,7 @@ window.OBC.SectionModules.sect01 = (function () {
         // Tier 2: EXACT word matches (high confidence)
         const queryWords = searchTerm.split(/\s+/).filter((w) => w.length > 2); // Require min 3 chars
         if (queryWords.length === 0) return false; // Reject very short queries
-        
+
         const firmWords = firmLower.split(/\s+/);
         const nameWords = nameLower.split(/\s+/);
         const allWords = [...firmWords, ...nameWords];
@@ -679,20 +692,19 @@ window.OBC.SectionModules.sect01 = (function () {
         } else {
           // Multi-word - require EXACT word matches, not substring includes
           const exactMatches = queryWords.filter((queryWord) =>
-            allWords.some((recordWord) => 
-              // Exact match OR legitimate architectural abbreviations
-              recordWord === queryWord ||
-              recordWord.startsWith(queryWord) ||
-              this.isLegitimateVariation(queryWord, recordWord)
-            )
+            allWords.some(
+              (recordWord) =>
+                // Exact match OR legitimate architectural abbreviations
+                recordWord === queryWord ||
+                recordWord.startsWith(queryWord) ||
+                this.isLegitimateVariation(queryWord, recordWord),
+            ),
           );
-          
+
           // Require at least 70% exact matches (stricter than previous 50%)
           return exactMatches.length / queryWords.length >= 0.7;
         }
       });
-
-
 
       // Sort by relevance (exact firm matches first, then name matches)
       return results
@@ -718,45 +730,45 @@ window.OBC.SectionModules.sect01 = (function () {
     isLegitimateVariation: function (queryWord, recordWord) {
       // Known name variations (architect names)
       const nameVariations = {
-        "andrew": ["andy"],
-        "andy": ["andrew"],
-        "thomson": ["thompson"],
-        "thompson": ["thomson"],
-        "mike": ["michael"],
-        "michael": ["mike"],
-        "rob": ["robert"],
-        "robert": ["rob"],
-        "dave": ["david"],
-        "david": ["dave"],
+        andrew: ["andy"],
+        andy: ["andrew"],
+        thomson: ["thompson"],
+        thompson: ["thomson"],
+        mike: ["michael"],
+        michael: ["mike"],
+        rob: ["robert"],
+        robert: ["rob"],
+        dave: ["david"],
+        david: ["dave"],
       };
-      
+
       // Known firm type abbreviations
       const firmAbbreviations = {
-        "architecture": ["arch", "architects"],
-        "architects": ["arch", "architecture"],
-        "inc": ["incorporated"],
-        "incorporated": ["inc"],
-        "ltd": ["limited"],
-        "limited": ["ltd"],
+        architecture: ["arch", "architects"],
+        architects: ["arch", "architecture"],
+        inc: ["incorporated"],
+        incorporated: ["inc"],
+        ltd: ["limited"],
+        limited: ["ltd"],
       };
-      
+
       // Check name variations
       if (nameVariations[queryWord]) {
         return nameVariations[queryWord].includes(recordWord);
       }
-      
+
       // Check firm abbreviations
       if (firmAbbreviations[queryWord]) {
         return firmAbbreviations[queryWord].includes(recordWord);
       }
-      
+
       return false; // No legitimate variation found
     },
 
     /**
      * Legacy fuzzy matching - DEPRECATED in favor of precision-first approach
      */
-    fuzzyMatch: function (text, query) {
+    fuzzyMatch: function (_text, _query) {
       // This function is now deprecated - precision-first matching used instead
       return false;
     },
@@ -946,7 +958,7 @@ window.OBC.SectionModules.sect01 = (function () {
   async function performOAALookup() {
     const practiceField = document.querySelector('[data-field-id="c_3"]');
     const urlField = document.querySelector('[data-field-id="c_10"]');
-    const statusField = document.querySelector('[data-field-id="c_11"]');
+    const _statusField = document.querySelector('[data-field-id="c_11"]');
     const licenseField = document.querySelector('[data-field-id="c_12"]');
 
     if (!practiceField || !urlField) return;
@@ -998,7 +1010,11 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Update state manager
       if (window.OBC?.StateManager?.setValue) {
-        window.OBC.StateManager.setValue("c_10", bestMatch.url, "auto-populated");
+        window.OBC.StateManager.setValue(
+          "c_10",
+          bestMatch.url,
+          "auto-populated",
+        );
         window.OBC.StateManager.setValue(
           "c_12",
           `License: ${bestMatch.license}`,
@@ -1008,13 +1024,14 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Now validate the found member
       const validationResult = await validateOAAMembership(bestMatch.url);
-      
+
       // Add demo data disclaimer to the validation status
       let statusWithDisclaimer = validationResult.status;
       if (validationResult.valid) {
-        statusWithDisclaimer += " | ⚠️ Demo data - verify details with official OAA directory";
+        statusWithDisclaimer +=
+          " | ⚠️ Demo data - verify details with official OAA directory";
       }
-      
+
       updateValidationStatus(
         statusWithDisclaimer,
         validationResult.indicator,
@@ -1038,13 +1055,13 @@ window.OBC.SectionModules.sect01 = (function () {
    */
   function setupOAAValidation() {
     // Only setup smart mode functionality if in smart mode
-    if (getOAAMode() !== 'smart') {
+    if (getOAAMode() !== "smart") {
       return;
     }
-    
+
     const urlField = document.querySelector('[data-field-id="c_10"]');
     const practiceField = document.querySelector('[data-field-id="c_3"]');
-    
+
     // Prevent multiple initializations
     if (urlField && urlField._oaaValidationInitialized) {
       return; // Already initialized
@@ -1066,7 +1083,7 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Trigger lookup on Enter key
       practiceField.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && getOAAMode() === 'smart') {
+        if (e.key === "Enter" && getOAAMode() === "smart") {
           clearTimeout(lookupTimeout);
           setTimeout(() => {
             performOAALookup();
@@ -1076,7 +1093,7 @@ window.OBC.SectionModules.sect01 = (function () {
 
       // Also trigger lookup on blur (when user leaves field)
       practiceField.addEventListener("blur", () => {
-        if (getOAAMode() === 'smart') {
+        if (getOAAMode() === "smart") {
           clearTimeout(lookupTimeout);
           lookupTimeout = setTimeout(() => {
             performOAALookup();
@@ -1087,7 +1104,7 @@ window.OBC.SectionModules.sect01 = (function () {
 
     // URL field event listeners (for manual URL entry)
     urlField.addEventListener("blur", async () => {
-      if (getOAAMode() === 'smart') {
+      if (getOAAMode() === "smart") {
         const url = urlField.textContent || urlField.value || "";
         if (url.trim() && url.includes("oaa.on.ca")) {
           const result = await validateOAAMembership(url.trim());
@@ -1104,7 +1121,7 @@ window.OBC.SectionModules.sect01 = (function () {
 
     // Initial validation - start clean with helpful instruction
     setTimeout(() => {
-      if (getOAAMode() === 'smart') {
+      if (getOAAMode() === "smart") {
         updateValidationStatus(
           "Enter practice name in row 1.03 and press Enter to search OAA directory and view auto-complete options",
           "⚪",
@@ -1112,7 +1129,7 @@ window.OBC.SectionModules.sect01 = (function () {
         );
       }
     }, 500);
-    
+
     // Mark as initialized to prevent duplicate setup
     if (urlField) {
       urlField._oaaValidationInitialized = true;
@@ -1121,43 +1138,43 @@ window.OBC.SectionModules.sect01 = (function () {
 
   function addModeToggleToHeader() {
     // Check if toggle already exists
-    if (document.querySelector('.oaa-mode-toggle')) {
+    if (document.querySelector(".oaa-mode-toggle")) {
       return true; // Already exists
     }
 
     // Find the Section 01 title span
-    const titleSpan = document.querySelector('#section-01-title');
+    const titleSpan = document.querySelector("#section-01-title");
     if (!titleSpan) {
       return false;
     }
 
     // Create the toggle container
-    const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'oaa-mode-toggle';
+    const toggleContainer = document.createElement("div");
+    toggleContainer.className = "oaa-mode-toggle";
     toggleContainer.innerHTML = `
       <div class="toggle-wrapper">
         <span class="toggle-label">OAA Mode:</span>
-        <button class="mode-btn mode-smart ${getOAAMode() === 'smart' ? 'active' : ''}" data-mode="smart">🤖 Smart</button>
-        <button class="mode-btn mode-manual ${getOAAMode() === 'manual' ? 'active' : ''}" data-mode="manual">✏️ Manual</button>
-        <div class="mode-indicator">${getOAAMode() === 'smart' ? '🤖 Auto-complete and validation enabled' : '✏️ Simple text entry mode'}</div>
+        <button class="mode-btn mode-smart ${getOAAMode() === "smart" ? "active" : ""}" data-mode="smart">🤖 Smart</button>
+        <button class="mode-btn mode-manual ${getOAAMode() === "manual" ? "active" : ""}" data-mode="manual">✏️ Manual</button>
+        <div class="mode-indicator">${getOAAMode() === "smart" ? "🤖 Auto-complete and validation enabled" : "✏️ Simple text entry mode"}</div>
       </div>
     `;
 
     // Insert the toggle right after the title span
-    titleSpan.insertAdjacentElement('afterend', toggleContainer);
+    titleSpan.insertAdjacentElement("afterend", toggleContainer);
     return true;
   }
 
   function setupModeToggle() {
     // Setup event listeners for mode toggle buttons
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('mode-btn')) {
-        const newMode = e.target.getAttribute('data-mode');
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("mode-btn")) {
+        const newMode = e.target.getAttribute("data-mode");
         if (newMode && newMode !== getOAAMode()) {
           setOAAMode(newMode);
-          
+
           // Re-initialize appropriate functionality
-          if (newMode === 'smart') {
+          if (newMode === "smart") {
             setupOAAValidation();
           }
         }
@@ -1226,9 +1243,10 @@ window.OBC.SectionModules.sect01 = (function () {
        `,
         )
         .join("");
-      
+
       // Add demo data disclaimer
-      container.innerHTML = suggestionsHTML + 
+      container.innerHTML =
+        suggestionsHTML +
         `<div class="autocomplete-disclaimer">⚠️ Demo data - verify with official OAA directory</div>`;
 
       // Add click handlers
@@ -1304,7 +1322,7 @@ window.OBC.SectionModules.sect01 = (function () {
     // Practice field event listeners - DISABLED auto-complete on typing
     // Auto-complete dropdown is now DISABLED - search only triggers on Enter key
     // (as configured in setupOAAValidation function)
-    
+
     // Optional: Add keypress listener for auto-complete on Enter (same as OAA lookup)
     practiceField.addEventListener("keypress", function (e) {
       if (e.key === "Enter") {
@@ -1359,7 +1377,7 @@ window.OBC.SectionModules.sect01 = (function () {
     if (urlField._oaaClickHandler) {
       urlField.removeEventListener("click", urlField._oaaClickHandler);
     }
-    
+
     // Create the click handler function
     const clickHandler = function (e) {
       const url = this.textContent || this.value || "";
@@ -1372,10 +1390,10 @@ window.OBC.SectionModules.sect01 = (function () {
         window.open(url.trim(), "_blank", "noopener,noreferrer");
       }
     };
-    
+
     // Store reference to handler for future removal
     urlField._oaaClickHandler = clickHandler;
-    
+
     // Add the click listener
     urlField.addEventListener("click", clickHandler);
   }
@@ -1540,9 +1558,9 @@ window.OBC.SectionModules.sect01 = (function () {
     if (addModeToggleToHeader()) {
       updateFieldsForMode(getOAAMode());
       updateModeToggleUI(getOAAMode());
-      
+
       // Only setup OAA validation in smart mode
-      if (getOAAMode() === 'smart') {
+      if (getOAAMode() === "smart") {
         setupOAAValidation();
       }
     }
