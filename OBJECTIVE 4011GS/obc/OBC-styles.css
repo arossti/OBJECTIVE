@@ -1703,14 +1703,22 @@ table.data-table select.form-select:hover {
 #fireResistance .data-table td:nth-child(12) { width: 120px !important; } /* Column L - OBC references */
 #fireResistance .data-table td:nth-child(15) { width: 200px !important; } /* Column O - Notes */
 
-/* Section 07: Fire rating center alignment (Column H) */
-#fireResistance .data-table td:nth-child(8) select { /* Column H - Fire ratings only */
+/* Section 07: Fire rating center alignment (Columns H & I) */
+#fireResistance .data-table td:nth-child(8) select, /* Column H - Fire ratings */
+#fireResistance .data-table td:nth-child(9) select { /* Column I - Supporting assembly fire ratings */
     width: 100% !important;
-    max-width: 155px !important;  /* Match column width (160px) with buffer */
     text-align: center !important;
     font-weight: 600 !important;
-    color: #d73527 !important; /* Fire red color for ratings */
+    color: #d73527 !important; /* Fire red color for both fire rating columns */
     overflow: visible !important; /* Allow dropdown content to show fully */
+}
+
+/* Specific width constraints for each column */
+#fireResistance .data-table td:nth-child(8) select { /* Column H */
+    max-width: 155px !important;  /* Match column width (160px) with buffer */
+}
+#fireResistance .data-table td:nth-child(9) select { /* Column I */
+    max-width: 145px !important;  /* Match column width (150px) with buffer */
 }
 
 /* Section 07: Construction and Cladding type dropdown styling */
@@ -1726,6 +1734,16 @@ table.data-table select.form-select:hover {
     max-width: 195px !important; /* Match column width (200px) with buffer */
     overflow: visible !important; /* Allow dropdown content to show fully */
     text-overflow: clip !important; /* Don't truncate dropdown text */
+}
+
+/* Section 07: Header text wrapping for long column titles */
+#fireResistance .data-table td.section-subheader {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+    padding: 8px 4px !important; /* More padding for readability */
 }
 
 /* Section 07: Notes column wrapping */
