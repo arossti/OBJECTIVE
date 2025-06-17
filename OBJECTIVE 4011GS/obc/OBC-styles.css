@@ -1988,6 +1988,22 @@ table.data-table select.form-select:hover {
     outline: none !important;
 }
 
+/* Section 10: Footer note styling - ensure full display with line breaks */
+#notes .data-table td.footer-note-wide {
+  white-space: pre-line !important;  /* Preserve line breaks from \n */
+  overflow: visible !important;
+  text-overflow: unset !important;
+  max-width: none !important;
+  width: auto !important;
+  font-style: italic !important;
+  color: #666 !important;
+  background-color: #f8f9fa !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #ddd !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
 /* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
 
 /* =============== CONSOLIDATED LAYOUT UTILITIES =============== */
