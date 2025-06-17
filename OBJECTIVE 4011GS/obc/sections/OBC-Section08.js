@@ -126,7 +126,7 @@ window.OBC.SectionModules.sect08 = (function () {
         h: {
           fieldId: "g_79", // ✅ CORRECT: Excel Column G mapping
           type: "editable", // ✅ CORRECT: Manual text input, not dropdown
-          value: "enter OBC sentence reference...",
+          value: "OBC Reference...",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
@@ -197,7 +197,7 @@ window.OBC.SectionModules.sect08 = (function () {
         h: {
           fieldId: "g_80", // ✅ CORRECT: Excel Column G mapping
           type: "editable", // ✅ CORRECT: Manual text input, not dropdown
-          value: "enter OBC sentence reference...",
+          value: "OBC Reference...",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
@@ -268,7 +268,7 @@ window.OBC.SectionModules.sect08 = (function () {
         h: {
           fieldId: "g_81", // ✅ CORRECT: Excel Column G mapping
           type: "editable", // ✅ CORRECT: Manual text input, not dropdown
-          value: "enter OBC sentence reference...",
+          value: "OBC Reference...",
           section: SECTION_CONFIG.name,
           classes: ["user-input"],
         },
