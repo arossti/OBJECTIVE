@@ -16,27 +16,27 @@
 - **Git branch ready**: `solstice-v4012-refactor` with clean commits
 - **Zero contamination risk**: Only RF directory is editable
 
-### **🎯 NEXT SESSION: Pattern Extraction (2-3 hours)**
-1. **Extract OBC Matrix Global Input Handling**
-   - Copy `initializeGlobalInputHandlers()` pattern
-   - Extract `.editing-intent` and `.user-modified` CSS classes
-   - Document the Enter key fix implementation
+### **🎯 NEXT SESSION: Tuple Architecture Core (2-3 hours) - CRITICAL PATH**
+1. **Implement DualState Class (PRIORITY 1)**
+   - Create `4012-DualState.js` with clean separation of target/reference
+   - Pure state management without cross-contamination
+   - Bridge to existing StateManager for backward compatibility
    
-2. **Extract Smart Visual Feedback System**
-   - Grey→blue→grey/permanent blue state transitions
-   - Change detection logic to prevent accidental commits
-   - CSS transition animations
+2. **Convert Section 03 to Tuple-Based Calculations (PRIORITY 2)**
+   - Implement `calculateClimate(inputs) → {target, reference}` pattern
+   - Eliminate dual-engine complexity and state mixing
+   - Validate both calculation paths match Excel exactly
 
-3. **Extract Universal Number Formatting**
-   - `window.TEUI.formatNumber()` implementation
-   - Semantic field type detection (area, rsi, percent, etc.)
-   - Consistent decimal places and separators
+3. **Validate Reference Modeling Reliability (PRIORITY 3)**
+   - Test target/reference independence (no cross-contamination)
+   - Verify Reference Mode toggle works with tuple architecture
+   - Ensure state changes don't affect opposite calculation mode
 
 ### **🏆 SESSION SUCCESS CRITERIA**
-- OBC Matrix patterns documented and extracted
-- Global input handling working in Section 01
-- Smart visual feedback functional (grey→blue transitions)
-- Foundation ready for tuple architecture implementation
+- Tuple-based calculation architecture proven with Section 03
+- Zero state contamination between target and reference modes
+- Excel calculation parity maintained in both modes
+- Foundation architecture ready for scaling to all sections
 
 ---
 
@@ -99,88 +99,90 @@ function calculateTEUI(inputs) {
 
 ## 📋 **PHASE-BY-PHASE ROADMAP**
 
-### **🚨 PHASE 1: FOUNDATION SETUP (Day 1 - June 18)**
+### **🚨 PHASE 1: FOUNDATION SETUP ✅ COMPLETED (Day 1 - June 21)**
 
-#### **Morning Session (2-3 hours):**
-1. **Environment Creation**
-   ```bash
-   # Create working copy - DO NOT EDIT 4011GS DIRECTLY
-   cp -r "OBJECTIVE 4011GS" "OBJECTIVE 4012-REFACTOR"
-   cd "OBJECTIVE 4012-REFACTOR"
-   git checkout -b solstice-v4012-refactor
-   ```
+#### **✅ Completed:**
+- **Environment Creation**: OBJECTIVE 4011RF working directory created
+- **Git Branch**: `solstice-v4012-refactor` established  
+- **Gold Standard Protection**: Archived safely in `ARCHIVE/GOLD-STANDARDS/`
+- **Workspace Safety**: Zero contamination risk established
 
-2. **Extract Mandatory Patterns from OBC Matrix**
-   - **Global Input Handling**: Copy `initializeGlobalInputHandlers()` pattern
-   - **Smart Visual Feedback**: Extract `.editing-intent` and `.user-modified` CSS
-   - **Universal Number Formatting**: Copy `window.TEUI.formatNumber()` implementation
-   - **CSS Alignment System**: Extract semantic alignment rules
+### **🏗️ PHASE 2: TUPLE ARCHITECTURE CORE - CRITICAL PATH (Next Session)**
 
-#### **Afternoon Session (2-3 hours):**
-3. **Implement Core v4.012 Architecture**
-   - **DualState Class**: Simplified state management
-   - **Tuple Calculation Template**: Pure function returning `{target, reference}`
-   - **State Integration**: Bridge between new DualState and existing StateManager
+#### **Morning Session (2-3 hours) - THE BREAKTHROUGH:**
+1. **DualState Class Implementation**
+   - Create `4012-DualState.js` with pure target/reference separation
+   - Eliminate state contamination at the architectural level
+   - Bridge integration with existing StateManager
 
-### **🔧 PHASE 2: MANDATORY PATTERN INTEGRATION (Day 2 - June 19)**
+2. **Section 03 Tuple Conversion**
+   - Implement `calculateClimate(inputs) → {target, reference}` pattern
+   - Replace dual-engine complexity with pure functions
+   - Validate Excel parity in both calculation modes
+
+#### **Afternoon Session (2-3 hours) - VALIDATION:**
+3. **Reference Modeling Reliability Testing**
+   - Verify zero cross-contamination between modes
+   - Test Reference Mode toggle with tuple architecture
+   - Validate state independence under all conditions
+
+### **🔧 PHASE 3: ARCHITECTURE SCALING (Day 2)**
 
 #### **Critical Success Factors:**
-- **⚠️ NO SECTION WORK** until global patterns are working and tested
-- **Validation Required**: Each pattern must work in isolation before proceeding
-- **Immediate Testing**: Apply patterns to Section 01 as proof-of-concept
+- **⚠️ Tuple architecture must be proven** before scaling to other sections
+- **Reference modeling must be bulletproof** - zero contamination tolerance
+- **Excel parity maintained** in both target and reference modes
 
-#### **Pattern Implementation Priority:**
-1. **Global Input Handling** → Test on Section 01 → Validate Enter key fix
-2. **Smart Visual Feedback** → Test grey→blue→grey behavior → Validate state awareness
-3. **Universal Number Formatting** → Test all number types → Validate consistency
-4. **CSS Alignment System** → Test across sections → Validate layout integrity
+#### **Tuple Architecture Scaling:**
+1. **Additional Section Conversion**
+   - Apply proven tuple pattern to Section 04 (Building Details)
+   - Validate architecture scales cleanly to different calculation types
+   - Establish section conversion template for future work
 
-### **🏗️ PHASE 3: TUPLE ARCHITECTURE FOUNDATION (Day 3 - June 20)**
+2. **Reference Mode Integration Testing**
+   - Comprehensive testing of Reference Mode with multiple sections
+   - Validate mode switching doesn't cause state contamination
+   - Performance testing under tuple architecture
 
-#### **Core Architecture Implementation:**
-1. **DualState System**
-   ```javascript
-   class DualState {
-     constructor() {
-       this.inputs = { target: {}, reference: {} };
-       this.outputs = { target: {}, reference: {} };
-     }
-     
-     setInput(field, value, model = "target") {
-       this.inputs[model][field] = value;
-       this.recalculate(field);
-     }
-   }
-   ```
-
-2. **Tuple Calculation Engine**
-   - Convert Section 03 (Climate) as proof-of-concept
-   - Implement pure function pattern: `calculateClimate(inputs) → {target, reference}`
-   - Validate both calculation paths produce correct results
-
-3. **State Bridge Integration**
-   - Connect DualState to existing StateManager
-   - Preserve existing field IDs and dependencies
-   - Ensure seamless data flow
-
-### **✅ PHASE 4: VALIDATION & MILESTONE (Day 4 - June 21)**
+### **✅ PHASE 4: VALIDATION & SOLSTICE MILESTONE (Day 3 - June 21)**
 
 #### **Success Criteria (Solstice Milestone):**
-- **✅ Global Patterns Working**: All mandatory patterns implemented and tested
-- **✅ Tuple Architecture Proven**: Section 03 calculating both target and reference
-- **✅ Excel Parity Maintained**: No regression in calculation accuracy
-- **✅ UI/UX Preserved**: All interface behaviors working correctly
-- **✅ Foundation Ready**: Architecture prepared for full section migration
+- **✅ Tuple Architecture Proven**: Section 03 (and optionally 04) calculating both target and reference
+- **✅ Zero State Contamination**: Reference modeling 100% reliable with no cross-contamination
+- **✅ Excel Parity Maintained**: No regression in calculation accuracy in either mode
+- **✅ Reference Mode Integration**: Toggle working perfectly with tuple architecture
+- **✅ Foundation Scalable**: Architecture template ready for all remaining sections
 
-#### **Validation Checklist:**
-- [ ] Enter key prevents newlines across all sections
-- [ ] Smart visual feedback working (grey→blue→grey/permanent blue)
-- [ ] Number formatting consistent across all field types
-- [ ] CSS alignment clean with no conflicts
-- [ ] Section 03 dual calculations matching Excel exactly
+#### **Critical Validation Checklist:**
+- [ ] Section 03 tuple calculations matching Excel exactly (both modes)
+- [ ] Reference Mode toggle causes zero state contamination  
+- [ ] DualState class isolating target/reference completely
 - [ ] No performance regressions in calculation speed
-- [ ] Reference Mode toggle working correctly
-- [ ] StateManager integration seamless
+- [ ] StateManager bridge integration seamless
+- [ ] Architecture template documented for section scaling
+
+### **🎨 PHASE 5: VISUAL REFINEMENTS - NICE-TO-HAVES (After Core Architecture)**
+
+#### **OBC Matrix Pattern Integration (Optional Enhancement):**
+1. **Global Input Handling**
+   - Extract `initializeGlobalInputHandlers()` pattern from OBC Matrix
+   - Implement Enter key fix and `.editing-intent` CSS classes
+   - Reduce section-specific input handling duplication
+
+2. **Smart Visual Feedback System**
+   - Grey→blue→grey/permanent blue state transitions
+   - Change detection logic and CSS transition animations
+   - Enhanced user experience for field modification awareness
+
+3. **Universal Number Formatting**
+   - Extract `window.TEUI.formatNumber()` implementation
+   - Semantic field type detection (area, rsi, percent, etc.)
+   - Consistent decimal places and separators across all sections
+
+#### **Priority Note:**
+- **These are enhancements AFTER core architecture is proven**
+- **Visual refinements should not delay the tuple architecture work**
+- **Focus on calculation reliability first, polish second**
 
 ---
 
@@ -248,27 +250,24 @@ function calculateTEUI(inputs) {
   - `solstice-v4012-refactor` branch established
   - Gold standard archived safely in `ARCHIVE/GOLD-STANDARDS/`
   - Workspace cleaned and committed (256 files)
-- [ ] **OBC Matrix patterns extracted and documented** → **NEXT SESSION**
-- [ ] **Global input handling implemented and tested** → **NEXT SESSION**  
-- [ ] **Initial v4.012 architecture scaffolding in place** → **NEXT SESSION**
 
-### **Day 2 (June 19) - Mandatory Patterns**
-- [ ] All four mandatory patterns implemented
-- [ ] Section 01 serving as validation testbed
-- [ ] No regressions in existing functionality
-- [ ] Pattern compliance validation checklist created
+### **Day 2 (Next Session) - TUPLE ARCHITECTURE CORE - CRITICAL PATH**
+- [ ] **DualState class implemented** → Eliminate state contamination at architectural level
+- [ ] **Section 03 converted to tuple calculations** → `calculateClimate(inputs) → {target, reference}`
+- [ ] **Reference modeling reliability proven** → Zero cross-contamination validated
+- [ ] **Excel parity maintained in both modes** → No calculation regressions
 
-### **Day 3 (June 20) - Tuple Architecture**
-- [ ] DualState class implemented and integrated
-- [ ] Section 03 converted to tuple-based calculations
-- [ ] Both target and reference calculations working
-- [ ] State bridge connecting old and new systems
+### **Day 3 - Architecture Scaling & Solstice Milestone**
+- [ ] **Additional section converted** (Section 04) using tuple template
+- [ ] **Reference Mode integration tested** across multiple sections
+- [ ] **Architecture template documented** for scaling to remaining sections
+- [ ] **All critical validation criteria met** → Foundation ready for production scaling
 
-### **Day 4 (June 21) - Solstice Milestone**
-- [ ] All success criteria met
-- [ ] Validation checklist 100% complete
-- [ ] Architecture ready for full migration
-- [ ] Documentation updated for next phase
+### **Future (Post-Solstice) - Visual Refinements (Nice-to-Haves)**
+- [ ] **OBC Matrix patterns extracted** → Global input handling, visual feedback
+- [ ] **Number formatting standardized** → Consistent display across all sections  
+- [ ] **CSS refinements applied** → Enhanced visual polish and user experience
+- [ ] **Performance optimizations** → Sub-100ms calculation targets
 
 ---
 
