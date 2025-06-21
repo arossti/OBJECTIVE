@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>S03 Climate Calculations - Optimized with Reference Mode</title>
+    <title>S03 Climate Calculations - REFERENCE MODE</title>
 
     <!-- Link to production 4011RF styles for reference mode consistency -->
     <link rel="stylesheet" href="../../OBJECTIVE 4011RF/4011-styles.css" />
@@ -799,20 +799,17 @@
       <div class="section-header">
         <h2 class="section-title">
           SECTION 3. Climate Calculations
-          <span id="stateIndicator" class="state-indicator target"
-            >TARGET MODE</span
+          <span id="stateIndicator" class="state-indicator reference"
+            >REFERENCE MODE</span
           >
         </h2>
         <div style="display: flex; gap: 20px; align-items: center">
-          <div class="reference-toggle">
-            <label for="referenceToggle">Show Reference</label>
-            <div id="referenceToggle" class="toggle-switch">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
           <button id="showWeatherDataBtn" class="weather-data-btn">
             More Weather Data
           </button>
+          <a href="4012 S03 Target.html" style="padding: 8px 16px; background-color: #1976d2; color: white; text-decoration: none; border-radius: 4px; font-weight: 500;">
+            Switch to Target Mode
+          </a>
         </div>
       </div>
 
@@ -1407,7 +1404,7 @@
             this.capacitanceSelect = document.getElementById("capacitanceSelect");
             this.capacitanceSlider = document.getElementById("capacitance_slider");
             this.capacitanceValue = document.getElementById("capacitance_value");
-            this.referenceToggle = document.getElementById("referenceToggle");
+            // referenceToggle removed - this is Reference-only mode
             this.stateIndicator = document.getElementById("stateIndicator");
             this.sectionContent = document.querySelector(".section-content");
             this.debugInfo = document.getElementById("debugInfo");
@@ -1582,74 +1579,9 @@
             DOMElements.init();
             this.setupEventListeners();
             this.setupEditableFields();
-            this.setupReferenceToggle();
           },
 
-          setupReferenceToggle: function () {
-            const toggle = DOMElements.referenceToggle;
-            const indicator = DOMElements.stateIndicator;
 
-            toggle.addEventListener("click", function () {
-              const isActive = toggle.classList.contains("active");
-
-              if (!isActive) {
-                // Switching to reference mode - USE PRODUCTION STYLING
-                toggle.classList.add("active");
-                document.body.classList.add("viewing-reference-inputs");
-                indicator.textContent = "REFERENCE MODE";
-                indicator.classList.remove("target");
-                indicator.classList.add("reference");
-
-                // Add reference-input-display-locked class to specific fields that should be locked
-                UIController.applyReferenceModeLocking();
-
-                // Copy current target state to reference before switching
-                DualState.copyTargetToReference();
-                DualState.switchMode("reference");
-              } else {
-                // Switching to target mode - USE PRODUCTION STYLING
-                toggle.classList.remove("active");
-                document.body.classList.remove("viewing-reference-inputs");
-                indicator.textContent = "TARGET MODE";
-                indicator.classList.remove("reference");
-                indicator.classList.add("target");
-
-                // Remove reference-input-display-locked class from all fields
-                UIController.removeReferenceModeLocking();
-
-                DualState.switchMode("target");
-              }
-            });
-          },
-
-          // NEW: Apply reference mode locking using production classes
-          applyReferenceModeLocking: function () {
-            // Lock most input fields in reference mode (keeping timeframe exempt)
-            const fieldsToLock = [
-              'provinceSelect', 'citySelect', 'capacitanceSelect', 
-              'capacitanceSlider', 'daysCooling', 'elevation'
-            ];
-            
-            fieldsToLock.forEach(fieldName => {
-              const element = DOMElements[fieldName];
-              if (element) {
-                if (element.parentElement) {
-                  element.parentElement.classList.add('reference-input-display-locked');
-                }
-                if (element.classList.contains('user-input')) {
-                  element.classList.add('reference-input-display-locked');
-                }
-              }
-            });
-          },
-
-          // NEW: Remove reference mode locking
-          removeReferenceModeLocking: function () {
-            // Remove locking from all elements
-            document.querySelectorAll('.reference-input-display-locked').forEach(element => {
-              element.classList.remove('reference-input-display-locked');
-            });
-          },
 
           setupEventListeners: function () {
             const elements = DOMElements;
@@ -1819,7 +1751,7 @@
 
             logDebug("Populated province dropdown with options:", provinces);
 
-            const defaultProvince = DualState.getValue("d_19") || "ON";
+            const defaultProvince = DualState.getValue("d_19") || "BC";
             provinceSelect.value = defaultProvince;
 
             if (provinceSelect.value) {
@@ -1862,8 +1794,10 @@
             }
 
             let cityToSelect = "";
-            if (provinceValue === "ON" && cities.includes("Alexandria")) {
-              cityToSelect = "Alexandria";
+            if (provinceValue === "BC" && cities.includes("Vancouver")) {
+              cityToSelect = "Vancouver";
+            } else if (provinceValue === "QC" && cities.includes("Montreal")) {
+              cityToSelect = "Montreal";  
             } else if (cities.length > 0) {
               cityToSelect = cities[0];
             }
@@ -2194,11 +2128,18 @@
             UIController.populateProvinceDropdown();
             setupStateObservers();
 
-            // Initialize temperature setpoints using tuple architecture
+            // Initialize temperature setpoints and timeframe
             DualState.setValue("h_23", 18, "init");
             DualState.setValue("h_24", 24, "init");
+            DualState.setValue("h_20", "Present", "init");
 
-            logDebug("Application initialized successfully with tuple architecture");
+            // Trigger city dropdown population after province is set
+            const currentProvince = DualState.getValue("d_19");
+            if (currentProvince) {
+              UIController.updateCityDropdown(currentProvince);
+            }
+
+            logDebug("Application initialized successfully - REFERENCE MODE");
           });
         }
 

@@ -3,10 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>S03 Climate Calculations - Optimized with Reference Mode</title>
+    <title>S03 Climate Calculations - TARGET MODE</title>
 
-    <!-- Link to 4012-styles.css for dropdown and slider styles -->
-    <link rel="stylesheet" href="../4012-styles.css" />
+    <!-- Link to production 4011RF styles for reference mode consistency -->
+    <link rel="stylesheet" href="../../OBJECTIVE 4011RF/4011-styles.css" />
+    
+    <!-- Import tuple architecture from 4012 core -->
+    <script src="../core/state/4012-DualState.js"></script>
+    <script src="../core/data/4012-ClimateValues.js"></script>
 
     <style>
       body {
@@ -230,24 +234,8 @@
         font-size: 12px;
       }
 
-      /* Reference mode styles */
-      .reference-mode .user-input:not(.reference-exempt),
-      .reference-mode .dropdown-select:not(.reference-exempt),
-      .reference-mode .slider:not(.reference-exempt) {
-        background-color: #ffebee !important;
-        color: #b71c1c !important;
-        font-weight: bold !important;
-        font-style: italic !important;
-        pointer-events: none !important;
-        opacity: 0.8;
-      }
-
-      .reference-mode .dropdown-container:not(.reference-exempt) select {
-        background-color: #ffebee !important;
-        color: #b71c1c !important;
-        font-weight: bold !important;
-        font-style: italic !important;
-      }
+      /* Reference mode styles now handled by production 4011-styles.css */
+      /* Using body.viewing-reference-inputs and .reference-input-display-locked classes */
 
       /* Exempt the timeframe dropdown from reference mode lockdown */
       #timeframeSelect {
@@ -792,17 +780,7 @@
         font-weight: normal;
       }
 
-      /* Reference mode overrides */
-      .reference-mode .cell-ue:not(.reference-exempt),
-      .reference-mode .cell-dd select:not(.reference-exempt),
-      .reference-mode .cell-sl .slider:not(.reference-exempt) {
-        background-color: #ffebee !important;
-        color: #b71c1c !important;
-        font-weight: bold !important;
-        font-style: italic !important;
-        pointer-events: none !important;
-        opacity: 0.8;
-      }
+      /* Reference mode overrides now handled by production styles */
 
       /* Global font family - ensure sans-serif everywhere */
       body,
@@ -826,15 +804,12 @@
           >
         </h2>
         <div style="display: flex; gap: 20px; align-items: center">
-          <div class="reference-toggle">
-            <label for="referenceToggle">Show Reference</label>
-            <div id="referenceToggle" class="toggle-switch">
-              <div class="toggle-slider"></div>
-            </div>
-          </div>
           <button id="showWeatherDataBtn" class="weather-data-btn">
             More Weather Data
           </button>
+          <a href="4012 S03 Reference.html" style="padding: 8px 16px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 4px; font-weight: 500;">
+            Switch to Reference Mode
+          </a>
         </div>
       </div>
 
@@ -1288,124 +1263,90 @@
           },
         };
 
-        // Dual State Management - Target and Reference states
+        // TUPLE ARCHITECTURE: Use core 4012-DualState.js for sophisticated state management
+        const CoreDualState = window.TEUI.v4012.DualState;
+        
+        // Compatibility adapter to bridge test file API with core tuple architecture
         const DualState = {
-          // Current mode: 'target' or 'reference'
+          // Current mode tracking
           currentMode: "target",
-
-          // Separate states for Target and Reference
-          states: {
-            target: {
-              d_19: "ON",
-              h_19: "",
-              d_20: 0,
-              d_21: 0,
-              h_20: "Present",
-              h_21: "Capacitance",
-              i_21: 50,
-              d_22: 1960,
-              h_22: 0,
-              l_22: 0,
-              d_23: 0,
-              e_23: 32,
-              h_23: 18,
-              i_23: 64,
-              m_23: "0%",
-              d_24: 0,
-              e_24: 32,
-              h_24: 24,
-              i_24: 75,
-              l_24: 24,
-              m_24: "109%",
-              j_19: 4.0,
-              j_20: "HDD Ref Lookup",
-              j_21: "CDD Ref Lookup",
-              m_19: 120,
-            },
-            reference: {
-              // Reference state starts as a copy of target
-              d_19: "ON",
-              h_19: "",
-              d_20: 0,
-              d_21: 0,
-              h_20: "Present", // Can be different from target
-              h_21: "Capacitance",
-              i_21: 50,
-              d_22: 1960,
-              h_22: 0,
-              l_22: 0,
-              d_23: 0,
-              e_23: 32,
-              h_23: 18,
-              i_23: 64,
-              m_23: "0%",
-              d_24: 0,
-              e_24: 32,
-              h_24: 24,
-              i_24: 75,
-              l_24: 24,
-              m_24: "109%",
-              j_19: 4.0,
-              j_20: "HDD Ref Lookup",
-              j_21: "CDD Ref Lookup",
-              m_19: 120,
-            },
+          
+          // Initialize default values
+          initialize: function() {
+            // Set initial climate data
+            this.setInput("d_19", "ON", "climate"); // Province
+            this.setInput("h_20", "Present", "climate"); // Timeframe
+            this.setInput("h_21", "Capacitance", "target"); // Capacitance setting
+            this.setInput("i_21", 50, "target"); // Capacitance percentage
+            this.setInput("m_19", 120, "target"); // Days cooling
+            this.setInput("h_23", 18, "target"); // Heating setpoint
+            this.setInput("h_24", 24, "target"); // Cooling setpoint
+            this.setInput("l_24", 24, "target"); // Cooling override
           },
 
-          // Get current state object
-          getCurrentState: function () {
-            return this.states[this.currentMode];
-          },
-
-          // Set value in current state
-          setValue: function (fieldId, value, source) {
-            const state = this.getCurrentState();
-            state[fieldId] = value;
-
-            // If in target mode and field is shared, update reference too
-            if (this.currentMode === "target" && this.isSharedField(fieldId)) {
-              this.states.reference[fieldId] = value;
+          // Adapter methods for tuple architecture
+          setValue: function (fieldId, value, source = "user") {
+            // Determine field category for proper tuple storage
+            let category = "target";
+            if (this.currentMode === "reference") {
+              category = "reference";
             }
-
+            
+            // Shared fields (province, city) go in geometry or climate
+            if (this.isSharedField(fieldId)) {
+              category = "climate";
+            }
+            
+            CoreDualState.setInput(fieldId, value, category);
             this.notifyListeners(fieldId, value, source);
             return value;
           },
 
-          // Get value from current state
           getValue: function (fieldId) {
-            return this.getCurrentState()[fieldId];
+            // Get from current mode context
+            return CoreDualState.getValueAdvanced(fieldId, this.currentMode, "input") || 
+                   CoreDualState.getValueAdvanced(fieldId, this.currentMode, "output") ||
+                   0;
           },
 
-          // Check if field is shared between target and reference
+          // Core tuple architecture integration
+          setInput: function(fieldId, value, category = "target") {
+            return CoreDualState.setInput(fieldId, value, category);
+          },
+
+          getInput: function(fieldId, model = "target") {
+            return CoreDualState.getValueAdvanced(fieldId, model, "input");
+          },
+
+          getOutput: function(fieldId, model = "target") {
+            return CoreDualState.getValueAdvanced(fieldId, model, "output");
+          },
+
+          // Get both target and reference as tuple
+          getTuple: function(fieldId) {
+            return CoreDualState.getTuple(fieldId, "input");
+          },
+
           isSharedField: function (fieldId) {
             // Province, City, and other location-specific fields are shared
             const sharedFields = ["d_19", "h_19", "l_22"];
             return sharedFields.includes(fieldId);
           },
 
-          // Switch between target and reference mode
           switchMode: function (mode) {
             if (mode === this.currentMode) return;
-
             this.currentMode = mode;
-            logDebug(`Switched to ${mode} mode`);
-
-            // Update all UI elements to reflect new mode
+            logDebug(`Switched to ${mode} mode - using tuple architecture`);
             this.refreshAllUI();
           },
 
-          // Copy target state to reference (for initialization)
           copyTargetToReference: function () {
-            // Copy all values except timeframe
-            Object.keys(this.states.target).forEach((key) => {
-              if (key !== "h_20") {
-                // Don't copy timeframe
-                this.states.reference[key] = this.states.target[key];
-              }
-            });
+            // With tuple architecture, this is handled automatically
+            // Target and reference states are cleanly separated
+            logDebug("copyTargetToReference: Tuple architecture handles this automatically");
           },
 
-          // Observer pattern
+          // Observer pattern compatibility
           listeners: {},
 
           addListener: function (fieldId, callback) {
@@ -1413,6 +1354,9 @@
               this.listeners[fieldId] = [];
             }
             this.listeners[fieldId].push(callback);
+            
+            // Also register with core DualState
+            CoreDualState.addListener(fieldId, callback);
           },
 
           notifyListeners: function (fieldId, value, source) {
@@ -1427,11 +1371,11 @@
             }
           },
 
-          // Refresh all UI elements with current state
           refreshAllUI: function () {
-            const state = this.getCurrentState();
-            Object.keys(state).forEach((fieldId) => {
-              updateUIFromState(fieldId, state[fieldId]);
+            // Update UI to reflect current mode state
+            Object.keys(this.listeners).forEach((fieldId) => {
+              const value = this.getValue(fieldId);
+              updateUIFromState(fieldId, value);
             });
           },
         };
@@ -1460,7 +1404,7 @@
             this.capacitanceSelect = document.getElementById("capacitanceSelect");
             this.capacitanceSlider = document.getElementById("capacitance_slider");
             this.capacitanceValue = document.getElementById("capacitance_value");
-            this.referenceToggle = document.getElementById("referenceToggle");
+            // referenceToggle removed - this is Target-only mode
             this.stateIndicator = document.getElementById("stateIndicator");
             this.sectionContent = document.querySelector(".section-content");
             this.debugInfo = document.getElementById("debugInfo");
@@ -1635,39 +1579,6 @@
             DOMElements.init();
             this.setupEventListeners();
             this.setupEditableFields();
-            this.setupReferenceToggle();
-          },
-
-          setupReferenceToggle: function () {
-            const toggle = DOMElements.referenceToggle;
-            const indicator = DOMElements.stateIndicator;
-            const content = DOMElements.sectionContent;
-
-            toggle.addEventListener("click", function () {
-              const isActive = toggle.classList.contains("active");
-
-              if (!isActive) {
-                // Switching to reference mode
-                toggle.classList.add("active");
-                content.classList.add("reference-mode");
-                indicator.textContent = "REFERENCE MODE";
-                indicator.classList.remove("target");
-                indicator.classList.add("reference");
-
-                // Copy current target state to reference before switching
-                DualState.copyTargetToReference();
-                DualState.switchMode("reference");
-              } else {
-                // Switching to target mode
-                toggle.classList.remove("active");
-                content.classList.remove("reference-mode");
-                indicator.textContent = "TARGET MODE";
-                indicator.classList.remove("reference");
-                indicator.classList.add("target");
-
-                DualState.switchMode("target");
-              }
-            });
           },
 
           setupEventListeners: function () {
@@ -2206,15 +2117,25 @@
         // Application initialization
         function initializeApplication() {
           ClimateDataService.ensureAvailable(function () {
+            // Initialize tuple architecture first
+            DualState.initialize();
+            
             UIController.initialize();
             UIController.populateProvinceDropdown();
             setupStateObservers();
 
-            // Initialize temperature setpoints
+            // Initialize temperature setpoints and timeframe
             DualState.setValue("h_23", 18, "init");
             DualState.setValue("h_24", 24, "init");
+            DualState.setValue("h_20", "Present", "init");
 
-            logDebug("Application initialized successfully");
+            // Trigger city dropdown population after province is set
+            const currentProvince = DualState.getValue("d_19");
+            if (currentProvince) {
+              UIController.updateCityDropdown(currentProvince);
+            }
+
+            logDebug("Application initialized successfully - TARGET MODE");
           });
         }
 
