@@ -1046,3 +1046,143 @@ Tonight we chose to be angels - patient, wise, and strategic. Tomorrow we comple
 
 _Last Updated: June 13, 2025 - Evening Wisdom Session: Fools Rush In Where Angels Fear to Tread_
 _Next Update: Tomorrow's methodical ESLint completion with calculation integrity testing_
+
+---
+
+## 🎯 **STRATEGIC DECISION: Performance Violations Deferred to Refactor (June 21, 2025)**
+
+### **📊 Performance Violation Analysis**
+
+**Current State**: Three console performance violations persist in 4011GS:
+1. **661ms setTimeout violation** - `index.html:829` - `TEUI.Calculator.calculateAll()`
+2. **60ms setTimeout violation** - `4011-SectionIntegrator.js:650` - `forceVolumeMetricsUpdate()`
+3. **112ms forced reflow** - General layout thrashing during calculations
+
+### **🔍 Root Cause Analysis**
+
+#### **Architectural Symptoms, Not Bugs**:
+- **Sequential Processing**: All 18 sections calculated in single setTimeout block
+- **Cross-Section Complexity**: Complex integration chains between sections
+- **Mixed Calculation/Display**: DOM manipulation during mathematical operations
+- **Timing Dependencies**: Calculations dependent on DOM layout completion
+
+#### **Why These Exist**:
+```javascript
+// Current Architecture: Sequential section processing
+setTimeout(() => TEUI.Calculator.calculateAll(), 300); // 661ms violation
+forceVolumeMetricsUpdate() → sect12.calculateAll() → updateTEDITELI() // 60ms violation
+```
+
+### **🎭 Strategic Decision: Defer to v4.012 Refactor**
+
+#### **✅ DECISION: Skip Performance Fixes**
+
+**Rationale**: These violations are **architectural symptoms** that the tuple-based refactor will **naturally eliminate**:
+
+#### **How v4.012 Resolves Performance Issues**:
+
+```javascript
+// v4.012: Pure function tuple calculations
+const results = calculateTEUI(inputs); // {target, reference} - instant calculation
+updateDisplay(results); // Separate rendering step - no layout thrashing
+
+// Current: Complex cross-section integrations  
+forceVolumeMetricsUpdate() → sect12.calculateAll() → updateTEDITELI()
+
+// v4.012: Single calculation engine
+const allResults = calculateAllSections(inputs); // Pure functions, no cross-calls
+```
+
+#### **Natural Performance Benefits**:
+- **Instant Calculations**: Pure functions eliminate setTimeout delays
+- **No Cross-Dependencies**: Single calculation engine eliminates integration chains
+- **Separated Concerns**: Calculation isolated from DOM manipulation
+- **Batch DOM Updates**: All UI changes in single pass, no layout thrashing
+
+### **📈 Strategic ROI Analysis**
+
+#### **Option A: Fix Now (REJECTED)**
+- **Effort**: 2-3 hours implementation + testing
+- **Benefit**: Clean console for 1-2 weeks
+- **Risk**: Changes get obsoleted during refactor
+- **Strategic Value**: **LOW** - Symptom treatment
+
+#### **Option B: Defer to Refactor (SELECTED)**
+- **Effort**: 0 hours now, naturally resolved during refactor  
+- **Benefit**: Focus time on architectural improvements
+- **Risk**: Console warnings persist briefly
+- **Strategic Value**: **HIGH** - Root cause resolution
+
+### **🧭 Refactor Validation Metrics**
+
+**Use Performance Violations as Success Criteria**:
+
+#### **Pre-Refactor Baseline (Current)**:
+```javascript
+console.violations = [
+  "661ms calculateAll - Sequential section processing",
+  "60ms SectionIntegrator - Cross-section complexity", 
+  "112ms reflow - Layout thrashing"
+];
+```
+
+#### **Post-Refactor Success Criteria**:
+```javascript
+console.violations = []; // Clean performance profile validates architecture
+calculation.time < 50ms; // Instant tuple calculations
+display.separation = true; // Calculation/display concerns separated
+```
+
+### **🎯 Architectural Requirements Derived**
+
+**The violations tell us exactly what v4.012 must deliver**:
+
+1. **661ms violation** → Design instant tuple calculations
+2. **Cross-section complexity** → Create unified calculation engine
+3. **Layout thrashing** → Implement calculation/display separation
+
+### **📋 Implementation Strategy**
+
+#### **Immediate Actions**:
+- ✅ **Document violations** as refactor requirements
+- ✅ **Focus refactor energy** on root architectural causes
+- ✅ **Use violations** as validation criteria for refactor success
+
+#### **Refactor Priorities**:
+1. **Pure Function Architecture**: Eliminate setTimeout dependencies
+2. **Unified Calculation Engine**: Replace cross-section integrations
+3. **Separated Concerns**: Calculation logic independent of DOM
+
+### **⚠️ Critical Success Factors**
+
+#### **Validation Protocol**:
+- **Before Refactor**: Document current violation timing and locations
+- **During Refactor**: Monitor for performance regression
+- **After Refactor**: Verify clean console as architecture validation
+
+#### **Risk Mitigation**:
+- **Baseline Documentation**: Current violations serve as regression detection
+- **Progressive Testing**: Validate performance at each refactor milestone
+- **Rollback Criteria**: Any performance regression triggers immediate investigation
+
+### **🏆 Strategic Value**
+
+**This decision demonstrates professional software development**:
+- ✅ **Strategic Thinking**: Fix architecture, not symptoms
+- ✅ **Resource Optimization**: Focus effort on high-value architectural work
+- ✅ **Technical Debt Management**: Address root causes systematically
+- ✅ **Validation Framework**: Use current issues as success metrics
+
+**The console warnings are temporary pain that validate the refactor direction. We're fixing the architecture that causes these issues, not just silencing the symptoms.**
+
+---
+
+**🎯 STATUS**: **PERFORMANCE VIOLATIONS STRATEGICALLY DEFERRED** ✅  
+**Refactor Requirement**: Eliminate violations through architectural improvements  
+**Success Criteria**: Clean console performance profile validates tuple architecture  
+**Timeline**: Natural resolution during v4.012 implementation phases  
+
+---
+
+_Last Updated: June 21, 2025 - Strategic Performance Deferral Decision Documented_
+_Next Review: Post-refactor validation of performance improvements_
