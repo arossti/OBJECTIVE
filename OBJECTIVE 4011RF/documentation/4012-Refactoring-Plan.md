@@ -2,39 +2,152 @@
 
 ---
 
-## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (June 21, 2025)**
+## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (June 22, 2025)**
 
-**Current Status:** ✅ Foundation Setup Complete - Ready for Tuple Architecture Core  
-**Milestone Target:** June 21, 2025 (Summer Solstice)  
-**Strategic Objective:** Implement tuple-based dual calculations while preserving proven UI/UX
+**Current Status:** ✅ Foundation Setup Complete - Ready for File Separation Architecture  
+**Milestone Target:** June 22, 2025 (Summer Solstice + 1)  
+**Strategic Objective:** Implement bulletproof reference modeling through complete file separation
 
-### **🎯 NEXT SESSION: Tuple Architecture Core (2-3 hours) - CRITICAL PATH**
-1. **Implement DualState Class (PRIORITY 1)**
-   - Create `4012-DualState.js` with clean separation of target/reference
-   - Pure state management without cross-contamination
-   - Bridge to existing StateManager for backward compatibility
+### **🎯 NEXT SESSION: File Separation Architecture (2-3 hours) - CRITICAL PATH**
+1. **Implement 4012stateDual.js (PRIORITY 1)**
+   - Create single dual state manager with clean target/reference separation
+   - Methods: `setTarget()`, `setReference()`, `getTarget()`, `getReference()`
+   - Zero cross-contamination between states by design
    
-2. **Convert Section 03 to Tuple-Based Calculations (PRIORITY 2)**
-   - Implement `calculateClimate(inputs) → {target, reference}` pattern
-   - Eliminate dual-engine complexity and state mixing
-   - Validate both calculation paths match Excel exactly
+2. **Create Separated Section Files (PRIORITY 2)**
+   - Build `4012s03_T.js` (Target mode - completely independent)
+   - Build `4012s03_R.js` (Reference mode - completely independent)
+   - Each file ONLY knows about its assigned state
+   - Toggle system loads appropriate file set
 
-3. **Validate Reference Modeling Reliability (PRIORITY 3)**
-   - Test target/reference independence (no cross-contamination)
-   - Verify Reference Mode toggle works with tuple architecture
-   - Ensure state changes don't affect opposite calculation mode
+3. **Validate Complete Independence (PRIORITY 3)**
+   - Test Target vs Reference modes with zero sync battles
+   - Verify province→city→weather lookup reliability
+   - Ensure S01 Dashboard can read both states for totals
 
 ### **🏆 SESSION SUCCESS CRITERIA**
-- Tuple-based calculation architecture proven with Section 03
-- Zero state contamination between target and reference modes
-- Excel calculation parity maintained in both modes
-- Foundation architecture ready for scaling to all sections
+- Target and Reference modes operate as completely separate applications
+- Zero UI synchronization issues between modes
+- S01 Dashboard successfully aggregates both T and R states
+- Architecture template ready for scaling to all 18 sections
 
 ### **📝 PROGRESS TRACKING**
-- ✅ **Day 1 (June 21)**: Foundation Setup COMPLETED
-- 🎯 **Day 2 (Next Session)**: TUPLE ARCHITECTURE CORE - CRITICAL PATH
-- 📅 **Day 3**: Architecture Scaling & Solstice Milestone
+- ✅ **June 21**: Foundation Setup & Architecture Pivot COMPLETED
+- 🎯 **June 22**: FILE SEPARATION ARCHITECTURE - CRITICAL PATH
+- 📅 **June 23**: Architecture Scaling & Testing
 - 🎨 **Future**: Visual Refinements (Nice-to-Haves)
+
+---
+
+## 🏗️ **FILE SEPARATION ARCHITECTURE (v4.012)**
+
+### **🎯 Core Philosophy: Complete Independence**
+
+After extensive testing of tuple-based shared UI approaches, we've adopted **complete file separation** for bulletproof reliability:
+
+**Target Mode** = Completely separate application files  
+**Reference Mode** = Completely separate application files  
+**Dashboard S01** = Single state-agnostic reader for both modes
+
+### **📁 File Structure**
+```
+4012stateDual.js         // Single dual state manager
+4012s01.js              // Dashboard - reads both T & R states  
+4012s03_T.js            // Target section (complete independence)
+4012s03_R.js            // Reference section (complete independence)
+4012s04_T.js            // Target section files...
+4012s04_R.js            // Reference section files...
+[...all 18 sections have _T and _R versions]
+```
+
+### **🔄 Toggle System**
+```javascript
+// Top button row controls file loading
+function switchToTarget() {
+  unloadReferenceFiles();    // Remove all _R.js files
+  loadTargetFiles();         // Load all _T.js files  
+  document.body.className = 'target-mode';
+}
+
+function switchToReference() {
+  unloadTargetFiles();       // Remove all _T.js files
+  loadReferenceFiles();      // Load all _R.js files
+  document.body.className = 'reference-mode';
+}
+```
+
+### **🎛️ State Management**
+```javascript
+// 4012stateDual.js - Single source of truth
+window.TEUI.v4012.StateDual = {
+  targetState: {},     // Completely isolated target values
+  referenceState: {},  // Completely isolated reference values
+  
+  // Target methods (only touch targetState)
+  setTarget(fieldId, value) { this.targetState[fieldId] = value; },
+  getTarget(fieldId) { return this.targetState[fieldId]; },
+  
+  // Reference methods (only touch referenceState)  
+  setReference(fieldId, value) { this.referenceState[fieldId] = value; },
+  getReference(fieldId) { return this.referenceState[fieldId]; }
+};
+```
+
+### **🎯 Section Implementation**
+```javascript
+// 4012s03_T.js - Target climate section (ONLY knows Target)
+function updateClimateData() {
+  const province = StateDual.getTarget("d_19");  // Only reads target
+  const city = StateDual.getTarget("h_19");      // No reference contamination
+  const cityData = ClimateDataService.getCityData(province, city);
+  StateDual.setTarget("d_20", cityData.HDD18);   // Only sets target
+}
+
+// 4012s03_R.js - Reference climate section (ONLY knows Reference)  
+function updateClimateData() {
+  const province = StateDual.getReference("d_19");  // Only reads reference
+  const city = StateDual.getReference("h_19");      // No target contamination
+  const cityData = ClimateDataService.getCityData(province, city);
+  StateDual.setReference("d_20", cityData.HDD18);   // Only sets reference
+}
+```
+
+### **📊 S01 Dashboard: The One Exception**
+```javascript
+// 4012s01.js - State-agnostic dashboard reads BOTH states
+function updateDashboardTotals() {
+  const targetTEUI = StateDual.getTarget("final_teui");     // Read target total
+  const referenceTEUI = StateDual.getReference("final_teui"); // Read reference total
+  
+  document.getElementById("target-summary").textContent = targetTEUI;
+  document.getElementById("reference-summary").textContent = referenceTEUI;
+  document.getElementById("teui-delta").textContent = targetTEUI - referenceTEUI;
+}
+```
+
+### **✅ Benefits of File Separation**
+- ✅ **Zero Sync Battles**: Impossible to mix target/reference states
+- ✅ **Bulletproof Reliability**: Each mode is completely independent application
+- ✅ **Clear Mental Model**: Target = T files, Reference = R files
+- ✅ **Easy Debugging**: Issues isolated to specific mode files
+- ✅ **CTO Vision Preserved**: Single state manager + dual applications
+- ✅ **4011RF Integration**: Leverages existing patterns and styling
+
+### **🧭 Migration Strategy**
+1. **Start with S03**: Prove pattern with climate data section
+2. **Validate with S01**: Confirm dashboard can read both states
+3. **Scale to all sections**: Apply _T/_R pattern systematically
+4. **Preserve 4011RF**: Keep original as working backup
+
+### **📖 ARCHITECTURE EVOLUTION: Why File Separation**
+
+**Previous Approach (June 21)**: Tuple-based shared UI with single dropdowns controlling dual states
+**Issue Discovered**: Constant UI synchronization battles - province changes in Reference mode would look up cities in Target province, creating "Vancouver in ON" type errors
+
+**New Approach (June 22)**: Complete file separation where Target and Reference are essentially different applications
+**Key Insight**: The CTO's vision of "single core files + dual states" is preserved through 4012stateDual.js, but UI/logic separation eliminates sync battles entirely
+
+**S01 Dashboard Exception**: Only S01 needs to read both states for summary totals, making it the sole "state-agnostic" component. All other sections (S03-S18) are purely single-state.
 
 ---
 
@@ -502,36 +615,36 @@ Any section that fails these validations will be **rejected** and must be refact
 
 ### **🚀 IMMEDIATE NEXT SESSION (2-3 hours):**
 
-1. **Implement DualState Class** (60-90 minutes):
-   - Create `OBJECTIVE 4011RF/core/state/4012-DualState.js`
-   - Implement clean target/reference separation: `{inputs: {target: {}, reference: {}}, outputs: {target: {}, reference: {}}}`
-   - Build bridge integration with existing StateManager
-   - Validate zero cross-contamination between modes
+1. **Implement 4012stateDual.js** (60-90 minutes):
+   - Create `OBJECTIVE 4011RF/core/state/4012stateDual.js`
+   - Implement simple target/reference separation: `{targetState: {}, referenceState: {}}`
+   - Build methods: `setTarget()`, `getTarget()`, `setReference()`, `getReference()`
+   - Validate zero cross-contamination by design
 
-2. **Convert Section 03 to Tuple Architecture** (60-90 minutes):
-   - Implement `calculateClimate(inputs) → {target, reference}` pattern in Section 03
-   - Replace existing dual-engine complexity with pure function approach
-   - Validate both calculation paths match Excel exactly
-   - Test Reference Mode toggle with tuple architecture
+2. **Create Section 03 File Separation** (60-90 minutes):
+   - Build `4012s03_T.js` - Target climate section (completely independent)
+   - Build `4012s03_R.js` - Reference climate section (completely independent)
+   - Implement toggle system to load appropriate file set
+   - Test province→city→weather lookup reliability in both modes
 
-3. **Validate Reference Modeling Reliability** (30-60 minutes):
-   - Comprehensive testing of target/reference independence
-   - Verify state changes don't contaminate opposite calculation mode
-   - Confirm Reference Mode toggle works flawlessly
-   - Document tuple architecture template for scaling
+3. **Validate Complete Independence** (30-60 minutes):
+   - Test Target and Reference modes operate as separate applications
+   - Verify zero UI synchronization battles between modes
+   - Confirm S01 Dashboard can read both T and R states for totals
+   - Document file separation template for scaling
 
 ### **📋 Success Criteria for This Session:**
-- [ ] Section 03 calculating both target and reference using tuple architecture
-- [ ] Zero state contamination demonstrated between modes
-- [ ] Excel parity maintained in both target and reference calculations
-- [ ] Architecture template ready for scaling to remaining sections
+- [ ] Section 03 operating in completely independent Target/Reference file modes
+- [ ] Zero synchronization issues between Target and Reference modes
+- [ ] Excel parity maintained in both Target and Reference calculations
+- [ ] S01 Dashboard successfully aggregating both T and R state totals
 
-### **🎨 Future Sessions (After Core Architecture Proven):**
+### **🎨 Future Sessions (After File Separation Proven):**
 - **Visual Refinements**: Extract OBC Matrix patterns (global input handling, visual feedback)
-- **Section Scaling**: Apply tuple template to remaining 17 sections
+- **Section Scaling**: Apply _T/_R file template to remaining 17 sections
 - **Performance Optimization**: Achieve sub-100ms calculation targets
 
-**🎯 Focus**: Architecture first, polish second. Get reference modeling bulletproof before visual enhancements.
+**🎯 Focus**: Complete independence first, shared UI second. Get reference modeling bulletproof through separation.
 
 ## 🎯 JUNE 2025 STRATEGIC WORKPLAN - 17 Days to Demo
 
