@@ -1289,27 +1289,38 @@
 
           // Adapter methods for tuple architecture
           setValue: function (fieldId, value, source = "user") {
-            // Determine field category for proper tuple storage
-            let category = "target";
-            if (this.currentMode === "reference") {
-              category = "reference";
-            }
-            
-            // Shared fields (province, city) go in geometry or climate
-            if (this.isSharedField(fieldId)) {
-              category = "climate";
-            }
+            // STRICT STATE SEPARATION - Values go to current mode state ONLY
+            const category = this.currentMode === "reference" ? "reference" : "target";
             
             CoreDualState.setInput(fieldId, value, category);
             this.notifyListeners(fieldId, value, source);
+            
+            logDebug(`setValue: ${fieldId} = ${value} in ${category.toUpperCase()} state`);
             return value;
           },
 
           getValue: function (fieldId) {
-            // Get from current mode context
-            return CoreDualState.getValueAdvanced(fieldId, this.currentMode, "input") || 
-                   CoreDualState.getValueAdvanced(fieldId, this.currentMode, "output") ||
+            // Get from current mode context, default to target if currentMode not set
+            const mode = this.currentMode || "target";
+            return CoreDualState.getValueAdvanced(fieldId, mode, "input") || 
+                   CoreDualState.getValueAdvanced(fieldId, mode, "output") ||
                    0;
+          },
+
+          // Debug helper to check state values
+          debugState: function(fieldId) {
+            const targetInput = CoreDualState.getValueAdvanced(fieldId, "target", "input");
+            const targetOutput = CoreDualState.getValueAdvanced(fieldId, "target", "output");
+            const refInput = CoreDualState.getValueAdvanced(fieldId, "reference", "input");
+            const refOutput = CoreDualState.getValueAdvanced(fieldId, "reference", "output");
+            
+            logDebug(`Debug ${fieldId}:`, {
+              target: { input: targetInput, output: targetOutput },
+              reference: { input: refInput, output: refOutput },
+              currentMode: this.currentMode
+            });
+            
+            return { target: { input: targetInput, output: targetOutput }, reference: { input: refInput, output: refOutput } };
           },
 
           // Core tuple architecture integration
@@ -1331,9 +1342,9 @@
           },
 
           isSharedField: function (fieldId) {
-            // Province, City, and other location-specific fields are shared
-            const sharedFields = ["d_19", "h_19", "l_22"];
-            return sharedFields.includes(fieldId);
+            // NO SHARED FIELDS - Complete state separation for tuple architecture
+            // Province and City must be independent between Target and Reference
+            return false;
           },
 
           switchMode: function (mode) {
@@ -1600,12 +1611,34 @@
                 indicator.classList.remove("target");
                 indicator.classList.add("reference");
 
-                // Add reference-input-display-locked class to specific fields that should be locked
-                UIController.applyReferenceModeLocking();
-
-                // Copy current target state to reference before switching
-                DualState.copyTargetToReference();
+                // NO FIELD LOCKING - Allow complete state separation for tuple architecture testing
+                // Users can now set different provinces/cities in each mode
+                
+                // Copy current target state to reference before switching (optional for testing)
+                // DualState.copyTargetToReference(); // Disabled for independent state testing
                 DualState.switchMode("reference");
+                
+                // Update ALL dropdowns to show reference mode values
+                const referenceTimeframe = window.TEUI.v4012.DualState.getValueAdvanced("h_20", "reference", "input") || "Present";
+                const referenceProvince = window.TEUI.v4012.DualState.getValueAdvanced("d_19", "reference", "input") || "ON";
+                const referenceCity = window.TEUI.v4012.DualState.getValueAdvanced("h_19", "reference", "input") || "";
+                
+                const timeframeSelect = document.getElementById("timeframeSelect");
+                if (timeframeSelect) {
+                  timeframeSelect.value = referenceTimeframe;
+                }
+                
+                const provinceSelect = document.getElementById("provinceSelect");
+                if (provinceSelect) {
+                  provinceSelect.value = referenceProvince;
+                  // Update city dropdown for reference province
+                  UIController.updateCityDropdownForState(referenceProvince, referenceCity);
+                }
+                
+                // Refresh climate data display for reference mode
+                UIController.updateClimateData();
+                
+                logDebug("Switched to REFERENCE mode - timeframe:", referenceTimeframe);
               } else {
                 // Switching to target mode - USE PRODUCTION STYLING
                 toggle.classList.remove("active");
@@ -1614,81 +1647,91 @@
                 indicator.classList.remove("reference");
                 indicator.classList.add("target");
 
-                // Remove reference-input-display-locked class from all fields
-                UIController.removeReferenceModeLocking();
-
+                // NO FIELD LOCKING - Complete state separation enabled
+                
                 DualState.switchMode("target");
+                
+                // Update ALL dropdowns to show target mode values
+                const targetTimeframe = window.TEUI.v4012.DualState.getValueAdvanced("h_20", "target", "input") || "Present";
+                const targetProvince = window.TEUI.v4012.DualState.getValueAdvanced("d_19", "target", "input") || "ON";
+                const targetCity = window.TEUI.v4012.DualState.getValueAdvanced("h_19", "target", "input") || "";
+                
+                const timeframeSelect = document.getElementById("timeframeSelect");
+                if (timeframeSelect) {
+                  timeframeSelect.value = targetTimeframe;
+                }
+                
+                const provinceSelect = document.getElementById("provinceSelect");
+                if (provinceSelect) {
+                  provinceSelect.value = targetProvince;
+                  // Update city dropdown for target province
+                  UIController.updateCityDropdownForState(targetProvince, targetCity);
+                }
+                
+                // Refresh climate data display for target mode
+                UIController.updateClimateData();
+                
+                logDebug("Switched to TARGET mode - timeframe:", targetTimeframe);
               }
             });
           },
 
-          // NEW: Apply reference mode locking using production classes
-          applyReferenceModeLocking: function () {
-            // Lock most input fields in reference mode (keeping timeframe exempt)
-            const fieldsToLock = [
-              'provinceSelect', 'citySelect', 'capacitanceSelect', 
-              'capacitanceSlider', 'daysCooling', 'elevation'
-            ];
-            
-            fieldsToLock.forEach(fieldName => {
-              const element = DOMElements[fieldName];
-              if (element) {
-                if (element.parentElement) {
-                  element.parentElement.classList.add('reference-input-display-locked');
-                }
-                if (element.classList.contains('user-input')) {
-                  element.classList.add('reference-input-display-locked');
-                }
-              }
-            });
-          },
-
-          // NEW: Remove reference mode locking
-          removeReferenceModeLocking: function () {
-            // Remove locking from all elements
-            document.querySelectorAll('.reference-input-display-locked').forEach(element => {
-              element.classList.remove('reference-input-display-locked');
-            });
-          },
+          // REMOVED: Field locking functions - no longer needed for tuple architecture testing
+          // Users can now set completely different provinces/cities in target vs reference modes
 
           setupEventListeners: function () {
             const elements = DOMElements;
 
-            // Province dropdown
+            // Province dropdown - now sets value in appropriate state
             elements.provinceSelect.addEventListener("change", function () {
               const provinceValue = this.value;
-              logDebug("Province changed to:", provinceValue);
-              DualState.setValue("d_19", provinceValue, "user");
+              const isViewingReference = document.body.classList.contains('viewing-reference-inputs');
+              
+              if (isViewingReference) {
+                window.TEUI.v4012.DualState.setInput("d_19", provinceValue, "reference");
+                logDebug("Province changed to:", provinceValue, "for REFERENCE mode");
+                // Update city dropdown for reference state
+                UIController.updateCityDropdownForState(provinceValue, "");
+              } else {
+                window.TEUI.v4012.DualState.setInput("d_19", provinceValue, "target");
+                logDebug("Province changed to:", provinceValue, "for TARGET mode");
+                // Update city dropdown for target state
+                UIController.updateCityDropdownForState(provinceValue, "");
+              }
             });
 
-            // Province change should update city options
-            DualState.addListener("d_19", function (value) {
-              UIController.updateCityDropdown(value);
-            });
-
-            // City dropdown
+            // City dropdown - now sets value in appropriate state
             elements.citySelect.addEventListener("change", function () {
               const cityValue = this.value;
-              logDebug("City changed to:", cityValue);
-              DualState.setValue("h_19", cityValue, "user");
-            });
-
-            // City change should update climate data
-            DualState.addListener("h_19", function (value) {
-              if (value) {
-                UIController.updateClimateData();
+              const isViewingReference = document.body.classList.contains('viewing-reference-inputs');
+              
+              if (isViewingReference) {
+                window.TEUI.v4012.DualState.setInput("h_19", cityValue, "reference");
+                logDebug("City changed to:", cityValue, "for REFERENCE mode");
+              } else {
+                window.TEUI.v4012.DualState.setInput("h_19", cityValue, "target");
+                logDebug("City changed to:", cityValue, "for TARGET mode");
               }
+              
+              // Update climate data immediately after city change
+              UIController.updateClimateData();
             });
 
             // Timeframe dropdown (exempt from reference lockdown)
             elements.timeframeSelect.addEventListener("change", function () {
               const timeframeValue = this.value;
-              logDebug("Timeframe changed to:", timeframeValue);
-              DualState.setValue("h_20", timeframeValue, "user");
-            });
-
-            // Timeframe change should update climate data
-            DualState.addListener("h_20", function () {
+              const isViewingReference = document.body.classList.contains('viewing-reference-inputs');
+              
+              // Set timeframe for the appropriate state based on current mode
+              if (isViewingReference) {
+                window.TEUI.v4012.DualState.setInput("h_20", timeframeValue, "reference");
+                logDebug("Timeframe changed to:", timeframeValue, "for REFERENCE mode");
+              } else {
+                window.TEUI.v4012.DualState.setInput("h_20", timeframeValue, "target");
+                logDebug("Timeframe changed to:", timeframeValue, "for TARGET mode");
+              }
+              
+              // Update climate data immediately after timeframe change
               UIController.updateClimateData();
             });
 
@@ -1819,15 +1862,19 @@
 
             logDebug("Populated province dropdown with options:", provinces);
 
-            const defaultProvince = DualState.getValue("d_19") || "ON";
-            provinceSelect.value = defaultProvince;
+            // Get the target state province (since we start in target mode)
+            const targetProvince = window.TEUI.v4012.DualState.getValueAdvanced("d_19", "target", "input") || "ON";
+            provinceSelect.value = targetProvince;
 
-            if (provinceSelect.value) {
-              DualState.setValue("d_19", provinceSelect.value, "init");
-            }
+            logDebug("Province dropdown initialized to target state:", targetProvince);
           },
 
           updateCityDropdown: function (provinceValue) {
+            // Legacy method - redirects to state-aware version
+            this.updateCityDropdownForState(provinceValue, "");
+          },
+
+          updateCityDropdownForState: function (provinceValue, preferredCity) {
             const citySelect = DOMElements.citySelect;
             const dropdownContainer = citySelect.parentElement;
 
@@ -1861,137 +1908,189 @@
               dropdownContainer.style.display = "";
             }
 
+            // STRICT LOGIC: Use preferred city if available, otherwise first available city
             let cityToSelect = "";
-            if (provinceValue === "ON" && cities.includes("Alexandria")) {
-              cityToSelect = "Alexandria";
+            if (preferredCity && cities.includes(preferredCity)) {
+              cityToSelect = preferredCity;
             } else if (cities.length > 0) {
-              cityToSelect = cities[0];
+              cityToSelect = cities[0]; // Always use first available city
             }
 
             citySelect.value = cityToSelect;
-            logDebug("Default city selected:", cityToSelect);
+            logDebug("City selected for state:", cityToSelect, "in province:", provinceValue);
 
-            DualState.setValue("h_19", cityToSelect, "init");
+            // Set the city value in the appropriate state
+            const isViewingReference = document.body.classList.contains('viewing-reference-inputs');
+            if (isViewingReference) {
+              window.TEUI.v4012.DualState.setInput("h_19", cityToSelect, "reference");
+              logDebug("Set city in REFERENCE state:", cityToSelect);
+            } else {
+              window.TEUI.v4012.DualState.setInput("h_19", cityToSelect, "target");
+              logDebug("Set city in TARGET state:", cityToSelect);
+            }
           },
 
           updateClimateData: function () {
-            const province = DualState.getValue("d_19");
-            const city = DualState.getValue("h_19");
-            const timeframe = DualState.getValue("h_20");
+            // Get province, city, and timeframe for BOTH target and reference states independently
+            const targetProvince = window.TEUI.v4012.DualState.getValueAdvanced("d_19", "target", "input") || "ON";
+            const targetCity = window.TEUI.v4012.DualState.getValueAdvanced("h_19", "target", "input") || "";
+            const targetTimeframe = window.TEUI.v4012.DualState.getValueAdvanced("h_20", "target", "input") || "Present";
+            
+            const referenceProvince = window.TEUI.v4012.DualState.getValueAdvanced("d_19", "reference", "input") || "ON";
+            const referenceCity = window.TEUI.v4012.DualState.getValueAdvanced("h_19", "reference", "input") || "";
+            const referenceTimeframe = window.TEUI.v4012.DualState.getValueAdvanced("h_20", "reference", "input") || "Present";
 
-            if (!province || !city) {
-              logDebug("Cannot update climate data - missing province or city");
+            logDebug("Climate data update - Current state values:", {
+              target: { province: targetProvince, city: targetCity, timeframe: targetTimeframe },
+              reference: { province: referenceProvince, city: referenceCity, timeframe: referenceTimeframe }
+            });
+
+            // Determine which state we're currently viewing
+            const isViewingReference = document.body.classList.contains('viewing-reference-inputs');
+            const currentProvince = isViewingReference ? referenceProvince : targetProvince;
+            const currentCity = isViewingReference ? referenceCity : targetCity;
+
+            if (!currentProvince || !currentCity) {
+              logDebug("Cannot update climate data - missing province or city for current mode:", {
+                currentMode: isViewingReference ? "REFERENCE" : "TARGET",
+                currentProvince,
+                currentCity
+              });
               return;
             }
 
-            const cityData = ClimateDataService.getCityData(province, city);
-            if (!cityData) {
-              logDebug("No climate data found for:", { province, city });
+            // Get climate data for BOTH states (they might be different cities!)
+            logDebug("CLIMATE LOOKUP ATTEMPT:", {
+              target: `${targetCity} in ${targetProvince}`,
+              reference: `${referenceCity} in ${referenceProvince}`
+            });
+            
+            const targetCityData = ClimateDataService.getCityData(targetProvince, targetCity);
+            const referenceCityData = ClimateDataService.getCityData(referenceProvince, referenceCity);
+            
+            if (!targetCityData) {
+              logDebug("❌ TARGET climate data NOT FOUND:", { 
+                province: targetProvince, 
+                city: targetCity,
+                availableCities: ClimateDataService.getCitiesForProvince(targetProvince)
+              });
               return;
             }
+            
+            if (!referenceCityData) {
+              logDebug("❌ REFERENCE climate data NOT FOUND:", { 
+                province: referenceProvince, 
+                city: referenceCity,
+                availableCities: ClimateDataService.getCitiesForProvince(referenceProvince)
+              });
+              return;
+            }
+            
+            logDebug("✅ CLIMATE DATA FOUND:", {
+              target: `${targetCity}, ${targetProvince} - HDD:${targetCityData.HDD18}`,
+              reference: `${referenceCity}, ${referenceProvince} - HDD:${referenceCityData.HDD18}`
+            });
 
-            // Update HDD18
-            const hddValue =
-              timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+            // Helper function to get climate value based on timeframe and city data
+            const getClimateValue = (cityData, presentField, futureField, timeframe) => {
+              if (timeframe === "Future") {
+                return cityData[futureField] !== null && cityData[futureField] !== undefined && cityData[futureField] !== 666
+                  ? cityData[futureField]
+                  : cityData[presentField]; // Fallback to present if future not available
+              }
+              return cityData[presentField];
+            };
+
+            // Calculate HDD18 for both target and reference states (using their respective city data!)
+            const targetHddValue = getClimateValue(targetCityData, "HDD18", "HDD18_2021_2050", targetTimeframe);
+            const referenceHddValue = getClimateValue(referenceCityData, "HDD18", "HDD18_2021_2050", referenceTimeframe);
+            
+            // Set climate values in tuple architecture
+            window.TEUI.v4012.DualState.setInput("l_21", targetHddValue, "target");
+            window.TEUI.v4012.DualState.setInput("l_21", referenceHddValue, "reference");
+            window.TEUI.v4012.DualState.setInput("d_20", targetHddValue, "target");  
+            window.TEUI.v4012.DualState.setInput("d_20", referenceHddValue, "reference");
+            
+            // Calculate CDD24 for both target and reference states (using their respective city data!)
+            const targetCddValue = getClimateValue(targetCityData, "CDD24", "CDD24_2021_2050", targetTimeframe);
+            const referenceCddValue = getClimateValue(referenceCityData, "CDD24", "CDD24_2021_2050", referenceTimeframe);
+            
+            window.TEUI.v4012.DualState.setInput("l_23", targetCddValue, "target");
+            window.TEUI.v4012.DualState.setInput("l_23", referenceCddValue, "reference");
+            window.TEUI.v4012.DualState.setInput("d_21", targetCddValue, "target");
+            window.TEUI.v4012.DualState.setInput("d_21", referenceCddValue, "reference");
+
+            // Use the values for the currently active state for display
+            const currentHddValue = isViewingReference ? referenceHddValue : targetHddValue;
+            const currentCddValue = isViewingReference ? referenceCddValue : targetCddValue;
+            const currentTimeframe = isViewingReference ? referenceTimeframe : targetTimeframe;
+
+            // Update HDD display elements
             const hddElement = document.getElementById("l_21");
             if (hddElement) {
-              if (hddValue === null || hddValue === undefined || hddValue === 666) {
+              if (currentHddValue === null || currentHddValue === undefined || currentHddValue === 666) {
                 hddElement.textContent = "N/A";
                 hddElement.className = "cell-missing";
               } else {
-                hddElement.textContent = hddValue;
-                hddElement.className = "cell-dv"; // Regular calculated value styling
+                hddElement.textContent = currentHddValue;
+                hddElement.className = "cell-dv external-lookup";
               }
-              DualState.setValue("l_21", hddValue);
             }
 
-            // Also update the main HDD display
             const mainHddElement = document.getElementById("hdd");
             if (mainHddElement) {
-              if (hddValue === null || hddValue === undefined || hddValue === 666) {
+              if (currentHddValue === null || currentHddValue === undefined || currentHddValue === 666) {
                 mainHddElement.textContent = "N/A";
                 mainHddElement.className = "cell-missing";
               } else {
-                mainHddElement.textContent = hddValue;
-                mainHddElement.className = "cell-dv"; // Regular calculated value styling
+                mainHddElement.textContent = currentHddValue;
+                mainHddElement.className = "cell-dv external-lookup";
               }
-              DualState.setValue("d_20", hddValue);
             }
 
-            // Update CDD24
-            const cddValue =
-              timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+            // Update CDD display elements
             const cddElement = document.getElementById("l_23");
             if (cddElement) {
-              if (cddValue === null || cddValue === undefined || cddValue === 666) {
+              if (currentCddValue === null || currentCddValue === undefined || currentCddValue === 666) {
                 cddElement.textContent = "N/A";
                 cddElement.className = "cell-missing";
-
-                // Check if we're using a fallback
-                if (
-                  timeframe === "Future" &&
-                  cityData.CDD24 !== null &&
-                  cityData.CDD24 !== undefined &&
-                  cityData.CDD24 !== 666
-                ) {
-                  console.warn(
-                    `Future CDD not available for ${city}, ${province}. Using present value as fallback.`,
-                  );
-                  cddElement.textContent = cityData.CDD24;
-                  cddElement.className = "cell-dv"; // Regular calculated value styling
-                  DualState.setValue("l_23", cityData.CDD24);
-                }
               } else {
-                cddElement.textContent = cddValue;
-                cddElement.className = "cell-dv"; // Regular calculated value styling
-                DualState.setValue("l_23", cddValue);
+                cddElement.textContent = currentCddValue;
+                cddElement.className = "cell-dv external-lookup";
               }
             }
 
-            // Also update the main CDD display
             const mainCddElement = document.getElementById("cdd");
             if (mainCddElement) {
-              if (cddValue === null || cddValue === undefined || cddValue === 666) {
+              if (currentCddValue === null || currentCddValue === undefined || currentCddValue === 666) {
                 mainCddElement.textContent = "N/A";
                 mainCddElement.className = "cell-missing";
-
-                // Check if we're using a fallback
-                if (
-                  timeframe === "Future" &&
-                  cityData.CDD24 !== null &&
-                  cityData.CDD24 !== undefined &&
-                  cityData.CDD24 !== 666
-                ) {
-                  mainCddElement.textContent = cityData.CDD24;
-                  mainCddElement.className = "cell-dv"; // Regular calculated value styling
-                  DualState.setValue("d_21", cityData.CDD24);
-                }
               } else {
-                mainCddElement.textContent = cddValue;
-                mainCddElement.className = "cell-dv"; // Regular calculated value styling
-                DualState.setValue("d_21", cddValue);
+                mainCddElement.textContent = currentCddValue;
+                mainCddElement.className = "cell-dv external-lookup";
               }
             }
 
-            // Update other climate values
+            // Update other climate values using the currently viewed state's city data
+            const currentCityData = isViewingReference ? referenceCityData : targetCityData;
             const updates = [
               {
                 id: "l_24",
-                value: cityData.HDD18,
+                value: currentCityData.HDD18,
                 label: "Ground Facing GF HDD",
               },
-              { id: "l_25", value: cityData.CDD24, label: "GF CDD" },
+              { id: "l_25", value: currentCityData.CDD24, label: "GF CDD" },
               {
                 id: "l_31",
-                value: cityData.January_2_5,
+                value: currentCityData.January_2_5,
                 label: "Coldest Days",
               },
               {
                 id: "l_32",
-                value: cityData.July_2_5_Tdb,
+                value: currentCityData.July_2_5_Tdb,
                 label: "Hottest Days",
               },
-              { id: "l_13", value: cityData.Elevation_ASL, label: "Elevation" },
+              { id: "l_13", value: currentCityData["Elev ASL (m)"], label: "Elevation" },
             ];
 
             updates.forEach((update) => {
@@ -2006,10 +2105,19 @@
                   element.className = "cell-missing";
                 } else {
                   element.textContent = update.value;
-                  element.className = "cell-dv";
+                  element.className = "cell-dv external-lookup";
                 }
-                DualState.setValue(update.id, update.value);
+                
+                // Set in both states for compatibility
+                window.TEUI.v4012.DualState.setInput(update.id, update.value, "target");
+                window.TEUI.v4012.DualState.setInput(update.id, update.value, "reference");
               }
+            });
+
+            logDebug("Climate data updated for tuple architecture:", {
+              target: { province: targetProvince, city: targetCity, timeframe: targetTimeframe, hdd: targetHddValue, cdd: targetCddValue },
+              reference: { province: referenceProvince, city: referenceCity, timeframe: referenceTimeframe, hdd: referenceHddValue, cdd: referenceCddValue },
+              currentlyViewing: isViewingReference ? "REFERENCE" : "TARGET"
             });
 
             // Update calculations
@@ -2017,8 +2125,14 @@
           },
 
           showWeatherDataModal: function () {
-            const provinceValue = DualState.getValue("d_19");
-            const cityValue = DualState.getValue("h_19");
+            // Get province/city from the currently active state
+            const isViewingReference = document.body.classList.contains('viewing-reference-inputs');
+            const provinceValue = isViewingReference 
+              ? window.TEUI.v4012.DualState.getValueAdvanced("d_19", "reference", "input")
+              : window.TEUI.v4012.DualState.getValueAdvanced("d_19", "target", "input");
+            const cityValue = isViewingReference
+              ? window.TEUI.v4012.DualState.getValueAdvanced("h_19", "reference", "input")  
+              : window.TEUI.v4012.DualState.getValueAdvanced("h_19", "target", "input");
 
             if (!provinceValue || !cityValue) {
               alert("Please select a province and city first.");
@@ -2035,7 +2149,8 @@
             const weatherDataModalTitle = document.getElementById(
               "weatherDataModalTitle",
             );
-            weatherDataModalTitle.textContent = `Weather Data for ${cityValue}, ${ClimateDataService.getProvinceFullName(provinceValue)}`;
+            const modeLabel = isViewingReference ? "REFERENCE" : "TARGET";
+            weatherDataModalTitle.textContent = `Weather Data (${modeLabel} Mode): ${cityValue}, ${ClimateDataService.getProvinceFullName(provinceValue)}`;
 
             const weatherDataContent = document.getElementById("weatherDataContent");
             let formattedData = "";
@@ -2187,18 +2302,59 @@
         // Application initialization
         function initializeApplication() {
           ClimateDataService.ensureAvailable(function () {
-            // Initialize tuple architecture first
+            // 1. Initialize tuple architecture first
             DualState.initialize();
             
+            // 2. Set tuple architecture states BEFORE UI initialization
+            // TARGET: Toronto, ON, Present climate (SIMPLE DEFAULT)
+            window.TEUI.v4012.DualState.setInput("d_19", "ON", "target");
+            window.TEUI.v4012.DualState.setInput("h_19", "Toronto", "target");
+            window.TEUI.v4012.DualState.setInput("h_20", "Present", "target");
+            
+            // REFERENCE: Vancouver, BC, Present climate  
+            window.TEUI.v4012.DualState.setInput("d_19", "BC", "reference");
+            window.TEUI.v4012.DualState.setInput("h_19", "Vancouver", "reference");
+            window.TEUI.v4012.DualState.setInput("h_20", "Present", "reference");
+            
+            // 3. Initialize UI and populate dropdowns to reflect target state
             UIController.initialize();
             UIController.populateProvinceDropdown();
             setupStateObservers();
+            
+            // 4. Set dropdown values to show target mode (Toronto, ON, Present)
+            const timeframeSelect = document.getElementById("timeframeSelect");
+            const provinceSelect = document.getElementById("provinceSelect");
+            
+            if (timeframeSelect) {
+              timeframeSelect.value = "Present";
+            }
+            
+            if (provinceSelect) {
+              provinceSelect.value = "ON";
+              // Force city dropdown population for Toronto
+              UIController.updateCityDropdownForState("ON", "Toronto");
+            }
 
-            // Initialize temperature setpoints using tuple architecture
+            // 5. Initialize temperature setpoints
             DualState.setValue("h_23", 18, "init");
             DualState.setValue("h_24", 24, "init");
+            
+            // 6. Update climate data to populate HDD/CDD values
+            setTimeout(() => {
+              // Debug state before climate update
+              logDebug("About to update climate data. Current DualState values:");
+              DualState.debugState("d_19"); // Province
+              DualState.debugState("h_19"); // City
+              DualState.debugState("h_20"); // Timeframe
+              
+              UIController.updateClimateData();
+            }, 200);
 
-            logDebug("Application initialized successfully with tuple architecture");
+            logDebug("Application initialized with TRUE TUPLE ARCHITECTURE:", {
+              target: "Toronto, ON - Present Climate",
+              reference: "Vancouver, BC - Present Climate", 
+              note: "Complete state separation enabled - STRICT Province->City->Weather lookup"
+            });
           });
         }
 
