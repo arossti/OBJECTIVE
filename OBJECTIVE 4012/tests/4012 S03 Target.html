@@ -1270,7 +1270,8 @@
           setValue: function(fieldId, value, source = "user") {
             this.state[fieldId] = value;
             this.notifyListeners(fieldId, value);
-            logDebug(`TARGET setValue: ${fieldId} = ${value} (${source})`);
+            this.saveState(); // Auto-save on every change
+            logDebug(`TARGET setValue: ${fieldId} = ${value} (${source}) - SAVED`);
           },
 
           getValue: function(fieldId) {
@@ -1291,7 +1292,26 @@
           },
 
           initialize: function() {
-            logDebug("TARGET STATE: Initializing completely isolated state");
+            logDebug("TARGET STATE: Initializing with persistence");
+            
+            // Load saved state from localStorage
+            const savedState = localStorage.getItem('TARGET_STATE');
+            
+            if (savedState) {
+              try {
+                this.state = JSON.parse(savedState);
+                logDebug("TARGET STATE: Restored from localStorage", this.state);
+              } catch (e) {
+                logDebug("TARGET STATE: Error loading saved state, using defaults");
+                this.setDefaults();
+              }
+            } else {
+              logDebug("TARGET STATE: No saved state, using defaults");
+              this.setDefaults();
+            }
+          },
+
+          setDefaults: function() {
             // Target mode defaults - completely separate from any other file
             this.state = {
               'd_19': 'ON',         // Province
@@ -1303,6 +1323,15 @@
               'm_19': 120,          // Days cooling
               'i_21': 50            // Capacitance percentage
             };
+          },
+
+          saveState: function() {
+            try {
+              localStorage.setItem('TARGET_STATE', JSON.stringify(this.state));
+              logDebug("TARGET STATE: Saved to localStorage");
+            } catch (e) {
+              logDebug("TARGET STATE: Error saving to localStorage", e);
+            }
           }
         };
 
