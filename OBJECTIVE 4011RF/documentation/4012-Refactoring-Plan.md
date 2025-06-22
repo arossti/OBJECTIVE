@@ -735,32 +735,71 @@ Any section that fails these validations will be **rejected** and must be refact
 
 **Status**: ✅ Foundation setup completed, environment ready, code professionally cleaned
 
-### **🚀 NEXT SESSION: Scale Proven Unified Architecture (2-3 hours):**
+### **🚀 NEXT SESSION: Complete Climate Foundation + Scale Architecture (3-4 hours):**
 
-1. **Apply Unified Pattern to S04** (60-90 minutes):
+1. **PRIORITY 1: Complete 4012-ClimateValues.js** (90-120 minutes):
+   - Build automation script to process complete CANADA.csv into JavaScript format
+   - Handle null value conventions: `666` for missing future CDD, `null` for missing RH
+   - Include ALL Canadian weather locations (not just current subset)
+   - Add robust data validation and missing value handling functions
+   - **Goal**: S03 climate data 100% complete before pattern scaling
+
+2. **Apply Unified Pattern to S04** (60-90 minutes):
    - Copy proven `TargetState` + `ReferenceState` + `ModeManager` pattern from S03 unified test
    - Implement section-specific defaults for building envelope data
    - Add toggle switch and reset button to S04 UI
    - Test state persistence and zero contamination in building context
 
-2. **Apply Unified Pattern to S05-S06** (60-90 minutes):
-   - Scale proven architecture to additional sections systematically
+3. **Validate Complete S03 + Begin S05-S06** (60-90 minutes):
+   - Test S03 with complete climate data across all Canadian locations
+   - Apply unified architecture to S05-S06 sections systematically
    - Establish localStorage naming conventions: `S04_TARGET_STATE`, `S05_TARGET_STATE`, etc.
    - Validate toggle behavior works consistently across multiple sections
-   - Test cross-section independence (S03 Reference ≠ S04 Reference states)
-
-3. **Document Scalable Implementation Guide** (30-60 minutes):
-   - Create step-by-step conversion guide from current 4011RF section files to unified pattern
-   - Document localStorage key patterns and state defaults for each section type
-   - Establish reset functionality integration across all sections
-   - Prepare systematic roadmap for S07-S18 implementation
 
 ### **📋 Success Criteria for This Session:**
 - [ ] ✅ S03 Pattern proven (COMPLETED): Zero contamination, perfect persistence, elegant toggle
+- [ ] ✅ Complete climate data: All Canadian locations available in 4012-ClimateValues.js
+- [ ] ✅ Robust null handling: 666/null conventions properly implemented for missing data
 - [ ] S04-S06 converted to unified architecture with isolated states and localStorage persistence
-- [ ] Toggle functionality working consistently across multiple sections
-- [ ] Reset button clearing all section states and returning to clean defaults
-- [ ] Documentation guide ready for systematic scaling to remaining 13 sections
+- [ ] Toggle functionality working consistently across multiple sections  
+- [ ] S03 fully functional with complete Canadian weather data before core integration
+
+### **🤖 Climate Data Automation Approach:**
+
+#### **Automation Script Strategy:**
+```javascript
+// Proposed automation approach for local machine:
+// 1. Read CANADA.csv file
+// 2. Parse and validate each location record
+// 3. Apply null value conventions (666 for missing future CDD, null for missing RH)
+// 4. Generate properly formatted JavaScript object structure
+// 5. Output complete 4012-ClimateValues.js file
+
+const processClimateData = {
+  nullHandling: {
+    futureCDD: "666",     // Internal notation for missing future cooling data
+    humidityRH: null,     // Standard null for relative humidity gaps
+    elevation: 0,         // Default elevation where missing
+    windSpeed: null       // Null for missing wind data
+  },
+  validation: {
+    requiredFields: ["Location", "HDD18", "CDD24", "January_2_5", "July_2_5_Tdb"],
+    numericFields: ["HDD18", "CDD24", "January_2_5", "July_2_5_Tdb", "Elev_ASL"],
+    ranges: {
+      HDD18: [0, 15000],   // Reasonable HDD range for Canada
+      CDD24: [0, 2000],    // Reasonable CDD range  
+      temperature: [-50, 50] // Reasonable temperature range
+    }
+  }
+};
+```
+
+#### **Benefits of Automation:**
+- ✅ **Complete coverage**: All Canadian locations included, not just subset
+- ✅ **Consistent formatting**: Standardized JavaScript object structure  
+- ✅ **Error handling**: Validation and null value processing built-in
+- ✅ **Maintainable**: Easy to update when CANADA.csv gets updated
+- ✅ **Quality assurance**: Automated validation catches data issues
 
 ### **🎨 Future Sessions (After Unified Architecture Scaled):**
 - **Visual Refinements**: Extract OBC Matrix patterns (global input handling, visual feedback)
