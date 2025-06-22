@@ -804,7 +804,7 @@
         </h2>
         <div style="display: flex; gap: 20px; align-items: center">
           <div class="reference-toggle">
-            <label for="referenceToggle">Show Reference</label>
+            <label id="toggleLabel" for="referenceToggle">Show Reference</label>
             <div id="referenceToggle" class="toggle-switch">
               <div class="toggle-slider"></div>
             </div>
@@ -1409,6 +1409,13 @@
           initialize: function() {
             TargetState.initialize();
             ReferenceState.initialize();
+            
+            // Set initial toggle label for target mode
+            const toggleLabel = document.getElementById("toggleLabel");
+            if (toggleLabel) {
+              toggleLabel.textContent = "Show Reference";
+            }
+            
             logDebug("MODE MANAGER: Both states initialized");
           },
 
@@ -1423,6 +1430,12 @@
             if (indicator) {
               indicator.textContent = mode.toUpperCase() + " MODE";
               indicator.className = `state-indicator ${mode}`;
+            }
+            
+            // Update toggle label to show the opposite mode
+            const toggleLabel = document.getElementById("toggleLabel");
+            if (toggleLabel) {
+              toggleLabel.textContent = mode === "target" ? "Show Reference" : "Show Target";
             }
             
             // Update body class for CSS styling
