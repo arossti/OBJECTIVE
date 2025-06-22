@@ -8,8 +8,7 @@
     <!-- Link to production 4011RF styles for reference mode consistency -->
     <link rel="stylesheet" href="../../OBJECTIVE 4011RF/4011-styles.css" />
     
-    <!-- Import tuple architecture from 4012 core -->
-    <script src="../core/state/4012-DualState.js"></script>
+    <!-- Import climate data only -->
     <script src="../core/data/4012-ClimateValues.js"></script>
 
     <style>
@@ -1263,121 +1262,48 @@
           },
         };
 
-        // TUPLE ARCHITECTURE: Use core 4012-DualState.js for sophisticated state management
-        const CoreDualState = window.TEUI.v4012.DualState;
-        
-        // Compatibility adapter to bridge test file API with core tuple architecture
+        // REFERENCE-ONLY State Management (completely isolated - no shared globals)
         const DualState = {
-          // Current mode tracking
-          currentMode: "target",
-          
-          // Initialize default values
-          initialize: function() {
-            // Set initial climate data
-            this.setInput("d_19", "ON", "climate"); // Province
-            this.setInput("h_20", "Present", "climate"); // Timeframe
-            this.setInput("h_21", "Capacitance", "target"); // Capacitance setting
-            this.setInput("i_21", 50, "target"); // Capacitance percentage
-            this.setInput("m_19", 120, "target"); // Days cooling
-            this.setInput("h_23", 18, "target"); // Heating setpoint
-            this.setInput("h_24", 24, "target"); // Cooling setpoint
-            this.setInput("l_24", 24, "target"); // Cooling override
-          },
-
-          // Adapter methods for tuple architecture
-          setValue: function (fieldId, value, source = "user") {
-            // Determine field category for proper tuple storage
-            let category = "target";
-            if (this.currentMode === "reference") {
-              category = "reference";
-            }
-            
-            // Shared fields (province, city) go in geometry or climate
-            if (this.isSharedField(fieldId)) {
-              category = "climate";
-            }
-            
-            CoreDualState.setInput(fieldId, value, category);
-            this.notifyListeners(fieldId, value, source);
-            return value;
-          },
-
-          getValue: function (fieldId) {
-            // Get from current mode context
-            return CoreDualState.getValueAdvanced(fieldId, this.currentMode, "input") || 
-                   CoreDualState.getValueAdvanced(fieldId, this.currentMode, "output") ||
-                   0;
-          },
-
-          // Core tuple architecture integration
-          setInput: function(fieldId, value, category = "target") {
-            return CoreDualState.setInput(fieldId, value, category);
-          },
-
-          getInput: function(fieldId, model = "target") {
-            return CoreDualState.getValueAdvanced(fieldId, model, "input");
-          },
-
-          getOutput: function(fieldId, model = "target") {
-            return CoreDualState.getValueAdvanced(fieldId, model, "output");
-          },
-
-          // Get both target and reference as tuple
-          getTuple: function(fieldId) {
-            return CoreDualState.getTuple(fieldId, "input");
-          },
-
-          isSharedField: function (fieldId) {
-            // Province, City, and other location-specific fields are shared
-            const sharedFields = ["d_19", "h_19", "l_22"];
-            return sharedFields.includes(fieldId);
-          },
-
-          switchMode: function (mode) {
-            if (mode === this.currentMode) return;
-            this.currentMode = mode;
-            logDebug(`Switched to ${mode} mode - using tuple architecture`);
-            this.refreshAllUI();
-          },
-
-          copyTargetToReference: function () {
-            // With tuple architecture, this is handled automatically
-            // Target and reference states are cleanly separated
-            logDebug("copyTargetToReference: Tuple architecture handles this automatically");
-          },
-
-          // Observer pattern compatibility
+          state: {},
           listeners: {},
 
-          addListener: function (fieldId, callback) {
+          setValue: function(fieldId, value, source = "user") {
+            this.state[fieldId] = value;
+            this.notifyListeners(fieldId, value);
+            logDebug(`REFERENCE setValue: ${fieldId} = ${value} (${source})`);
+          },
+
+          getValue: function(fieldId) {
+            return this.state[fieldId];
+          },
+
+          addListener: function(fieldId, callback) {
             if (!this.listeners[fieldId]) {
               this.listeners[fieldId] = [];
             }
             this.listeners[fieldId].push(callback);
-            
-            // Also register with core DualState
-            CoreDualState.addListener(fieldId, callback);
           },
 
-          notifyListeners: function (fieldId, value, source) {
+          notifyListeners: function(fieldId, value) {
             if (this.listeners[fieldId]) {
-              this.listeners[fieldId].forEach((callback) => {
-                try {
-                  callback(value, fieldId, source);
-                } catch (e) {
-                  console.error(`Error in listener for ${fieldId}:`, e);
-                }
-              });
+              this.listeners[fieldId].forEach(callback => callback(value));
             }
           },
 
-          refreshAllUI: function () {
-            // Update UI to reflect current mode state
-            Object.keys(this.listeners).forEach((fieldId) => {
-              const value = this.getValue(fieldId);
-              updateUIFromState(fieldId, value);
-            });
-          },
+          initialize: function() {
+            logDebug("REFERENCE STATE: Initializing completely isolated state");
+            // Reference mode defaults - completely separate from any other file
+            this.state = {
+              'd_19': 'BC',         // Province (different from Target)
+              'h_19': 'Vancouver',  // City (different from Target)
+              'h_20': 'Present',    // Timeframe
+              'h_21': 'Capacitance', // Capacitance setting
+              'h_23': 18,           // Heating setpoint
+              'h_24': 24,           // Cooling setpoint
+              'm_19': 120,          // Days cooling
+              'i_21': 50            // Capacitance percentage
+            };
+          }
         };
 
         // DOM element cache
