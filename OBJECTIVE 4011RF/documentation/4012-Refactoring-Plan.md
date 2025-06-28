@@ -332,6 +332,164 @@ const DualState = ModeManager;
 
 ---
 
+## **🚨 MANDATORY: UI Refresh Pattern Validation (CRITICAL FOR S04-S18)**
+
+### **📋 LEARNED FROM S03: Cross-State Contamination Prevention**
+
+**CRITICAL LESSON**: The capacitance slider contamination bug in S03 revealed a **systematic pattern gap** that must be prevented in all remaining sections.
+
+#### **🔍 The Pattern Gap That Caused Contamination**
+
+**✅ What Worked (Dropdowns)**:
+```javascript
+// These were EXPLICITLY refreshed from state on mode switch
+refreshUI: function() {
+  const currentState = this.getCurrentState();
+  
+  // Province dropdown - CORRECTLY refreshed
+  if (provinceSelect && currentState.getValue("d_19")) {
+    provinceSelect.value = currentState.getValue("d_19");
+  }
+  
+  // City dropdown - CORRECTLY refreshed  
+  if (citySelect && currentState.getValue("h_19")) {
+    citySelect.value = currentState.getValue("h_19");
+  }
+}
+```
+
+**❌ What Failed (Slider)**:
+```javascript
+// Capacitance slider - NOT refreshed from state!
+// MISSING: capacitanceSlider.value = currentState.getValue("i_21");
+// MISSING: capacitanceValue.textContent = currentState.getValue("i_21") + "%";
+// RESULT: Cross-state contamination when toggling between Target/Reference
+```
+
+#### **🎯 ROOT CAUSE**: Incomplete UI synchronization pattern, NOT architecture failure
+
+**The state isolation worked perfectly** - the contamination was purely a UI refresh oversight.
+
+### **🛡️ MANDATORY UI REFRESH CHECKLIST FOR S04-S18**
+
+**❌ ZERO TOLERANCE**: Any section with incomplete UI refresh will be **REJECTED** and must be refactored.
+
+#### **🔧 Universal UI Refresh Pattern (MANDATORY)**
+```javascript
+refreshUI: function() {
+  const currentState = this.getCurrentState();
+  
+  // RULE: EVERY interactive element must be refreshed from current state
+  
+  // ✅ Dropdowns
+  if (element && currentState.getValue("field_id")) {
+    element.value = currentState.getValue("field_id");
+  }
+  
+  // ✅ Sliders  
+  if (slider && currentState.getValue("field_id")) {
+    slider.value = currentState.getValue("field_id");
+    display.textContent = currentState.getValue("field_id") + "%";
+  }
+  
+  // ✅ Contenteditable spans
+  if (element && currentState.getValue("field_id")) {
+    element.textContent = currentState.getValue("field_id");
+  }
+  
+  // ✅ Radio buttons
+  if (element && currentState.getValue("field_id")) {
+    element.checked = currentState.getValue("field_id");
+  }
+  
+  // ✅ Checkboxes
+  if (element && currentState.getValue("field_id")) {
+    element.checked = currentState.getValue("field_id");
+  }
+  
+  // ✅ Text inputs
+  if (element && currentState.getValue("field_id")) {
+    element.value = currentState.getValue("field_id");
+  }
+}
+```
+
+### **📋 SYSTEMATIC VALIDATION CHECKLIST**
+
+**For EVERY section (S04-S18), complete this validation BEFORE marking section as done:**
+
+#### **🔍 Step 1: Interactive Element Inventory**
+- [ ] **List ALL interactive elements**: dropdowns, sliders, text inputs, radio buttons, checkboxes, contenteditable spans
+- [ ] **Document field IDs**: Every interactive element must have a `data-field-id` 
+- [ ] **Verify state management**: Each element must call `DualState.setValue()` on user interaction
+
+#### **🔍 Step 2: Event Handler Verification**
+- [ ] **Province/location dropdowns**: Call `DualState.setValue(fieldId, value, "user")`
+- [ ] **Sliders**: Call `DualState.setValue(fieldId, value, "user")` AND update display element
+- [ ] **Text inputs**: Call `DualState.setValue(fieldId, value, "user")` on blur/change
+- [ ] **Radio/checkboxes**: Call `DualState.setValue(fieldId, checked, "user")` on change
+- [ ] **Contenteditable**: Call `DualState.setValue(fieldId, value, "user")` on blur
+
+#### **🔍 Step 3: UI Refresh Implementation**
+- [ ] **refreshUI() method exists**: Must be called on mode switch
+- [ ] **ALL interactive elements refreshed**: Each element gets value from `currentState.getValue(fieldId)`
+- [ ] **Display consistency**: Sliders update both input value AND display text
+- [ ] **Error handling**: Check for element existence before setting values
+
+#### **🔍 Step 4: State Isolation Testing (MANDATORY)**
+- [ ] **Target Mode**: Set unique values in Target mode (e.g., Province: ON, Slider: 30%)
+- [ ] **Reference Mode**: Toggle to Reference, set DIFFERENT values (e.g., Province: BC, Slider: 80%)  
+- [ ] **Back to Target**: Toggle back - should show ORIGINAL Target values (ON, 30%)
+- [ ] **Back to Reference**: Toggle back - should show MODIFIED Reference values (BC, 80%)
+- [ ] **Cross-contamination verification**: Target values NEVER change when Reference is modified
+
+#### **🔍 Step 5: Documentation**
+- [ ] **Interactive elements documented**: List all elements that require refresh
+- [ ] **Default values different**: Target and Reference have different defaults for testing
+- [ ] **Edge cases noted**: Any special handling requirements documented
+
+### **🚨 REJECTION CRITERIA**
+
+**Any section failing these tests will be IMMEDIATELY REJECTED:**
+
+❌ **Cross-state contamination**: Target values change when Reference mode is modified  
+❌ **Incomplete refresh**: Any interactive element not restored from state on mode switch  
+❌ **Missing event handlers**: Interactive elements that don't save to state  
+❌ **Display inconsistency**: Sliders where position and percentage don't match state  
+
+### **✅ APPROVAL CRITERIA**
+
+**Sections are approved ONLY when:**
+
+✅ **Perfect state isolation**: Zero contamination between Target and Reference modes  
+✅ **Complete UI refresh**: ALL interactive elements restore from state  
+✅ **Consistent behavior**: Every element type follows the same pattern  
+✅ **Thorough testing**: All edge cases and interactions validated  
+
+### **🎯 SUCCESS PATTERN FOR REMAINING SECTIONS**
+
+**This systematic approach ensures:**
+- ✅ **Zero contamination bugs** across all 14 remaining sections
+- ✅ **Consistent architecture** following proven S03 pattern
+- ✅ **Thorough validation** preventing regression issues
+- ✅ **Professional quality** ready for production deployment
+
+### **📋 IMPLEMENTATION TIMELINE**
+
+**For each section S04-S18:**
+1. **Implementation**: Apply proven TargetState + ReferenceState + ModeManager pattern
+2. **Validation**: Complete mandatory checklist (30 minutes per section)
+3. **Testing**: Systematic state isolation verification (15 minutes per section)
+4. **Documentation**: Update section status and any special notes (5 minutes per section)
+
+**Total per section**: ~50 minutes validation overhead to prevent contamination bugs
+
+**ROI**: 50 minutes prevention vs. 2+ hours debugging contamination issues = **150% time savings**
+
+**🏆 RESULT**: Perfect Target/Reference separation with elegant single-file architecture.
+
+---
+
 ## **🎯 ENHANCED PRIORITIES: Number Formatting & CSS Consolidation**
 
 ### **📊 Priority 1: Enhanced 4012-DualState.js with OBC Matrix Integration**
