@@ -4,50 +4,53 @@
 
 ## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (June 22, 2025)**
 
-**Current Status:** ✅ Foundation Setup Complete - Ready for File Separation Architecture  
+**Current Status:** ✅ Foundation Setup Complete + **BREAKTHROUGH ARCHITECTURE PROVEN**  
 **Milestone Target:** June 22, 2025 (Summer Solstice + 1)  
-**Strategic Objective:** Implement bulletproof reference modeling through complete file separation
+**Strategic Objective:** Scale proven unified state architecture with enhanced number formatting & CSS consolidation
 
-### **🎯 NEXT SESSION: File Separation Architecture (2-3 hours) - CRITICAL PATH**
-1. **Implement 4012stateDual.js (PRIORITY 1)**
-   - Create single dual state manager with clean target/reference separation
-   - Methods: `setTarget()`, `setReference()`, `getTarget()`, `getReference()`
-   - Zero cross-contamination between states by design
+### **🎯 NEXT SESSION: Enhanced DualState + CSS Consolidation (2-3 hours) - CRITICAL PATH**
+1. **Enhance 4012-DualState.js (PRIORITY 1)**
+   - Add enhanced state management with import/export value precedence  
+   - Integrate OBC Matrix universal number formatting system
+   - Implement source tracking: user-modified > imported > default
+   - Methods: `setValue(fieldId, value, source)`, `importValues(data)`, `getValue(fieldId)`
    
-2. **Create Separated Section Files (PRIORITY 2)**
-   - Build `4012s03_T.js` (Target mode - completely independent)
-   - Build `4012s03_R.js` (Reference mode - completely independent)
-   - Each file ONLY knows about its assigned state
-   - Toggle system loads appropriate file set
+2. **CSS Universal Alignment System (PRIORITY 2)**
+   - Extract OBC Matrix universal CSS alignment rules
+   - Replace hundreds of conflicting 4011RF alignment rules
+   - Implement semantic alignment: left for text, right for numbers
+   - Remove competing `!important` declarations
 
-3. **Validate Complete Independence (PRIORITY 3)**
-   - Test Target vs Reference modes with zero sync battles
-   - Verify province→city→weather lookup reliability
-   - Ensure S01 Dashboard can read both states for totals
+3. **Scale S03 Pattern to S04-S06 (PRIORITY 3)**
+   - Apply proven TargetState + ReferenceState + ModeManager pattern
+   - Test import precedence: user modifications trump Excel imports
+   - Validate localStorage persistence and cross-section coordination
 
 ### **🏆 SESSION SUCCESS CRITERIA**
-- Target and Reference modes operate as completely separate applications
-- Zero UI synchronization issues between modes
-- S01 Dashboard successfully aggregates both T and R states
-- Architecture template ready for scaling to all 18 sections
+- Enhanced DualState with professional import/export handling
+- Universal CSS alignment system eliminating style conflicts
+- S04-S06 converted to proven unified architecture pattern
+- Number formatting consistent with OBC Matrix standards
 
 ### **📝 PROGRESS TRACKING**
-- ✅ **June 21**: Foundation Setup & Architecture Pivot COMPLETED
-- 🎯 **June 22**: FILE SEPARATION ARCHITECTURE - CRITICAL PATH
-- 📅 **June 23**: Architecture Scaling & Testing
-- 🎨 **Future**: Visual Refinements (Nice-to-Haves)
+- ✅ **June 21**: Foundation Setup & Architecture Breakthrough COMPLETED
+- 🎯 **June 22**: ENHANCED DUALSTATE + CSS CONSOLIDATION - CRITICAL PATH
+- 📅 **June 23**: Architecture Scaling Across All Sections
+- 🎨 **Future**: Performance optimization & visual refinements
 
 ---
 
-## 🏗️ **FILE SEPARATION ARCHITECTURE (v4.012)**
+## ~~🏗️ **FILE SEPARATION ARCHITECTURE (v4.012)**~~ **OBSOLETE - SUPERSEDED BY UNIFIED ARCHITECTURE**
 
-### **🎯 Core Philosophy: Complete Independence**
+### ~~**🎯 Core Philosophy: Complete Independence**~~ **OUTDATED APPROACH**
 
-After extensive testing of tuple-based shared UI approaches, we've adopted **complete file separation** for bulletproof reliability:
+~~After extensive testing of tuple-based shared UI approaches, we've adopted **complete file separation** for bulletproof reliability:~~
 
-**Target Mode** = Completely separate application files  
-**Reference Mode** = Completely separate application files  
-**Dashboard S01** = Single state-agnostic reader for both modes
+~~**Target Mode** = Completely separate application files~~  
+~~**Reference Mode** = Completely separate application files~~  
+~~**Dashboard S01** = Single state-agnostic reader for both modes~~
+
+**🚨 ARCHITECTURE PIVOT**: Testing proved unified single-file approach with isolated state objects is **superior** to file separation. See updated architecture below.
 
 ## 🏗️ **PERFECTED UNIFIED ARCHITECTURE (v4.012) - BREAKTHROUGH CONFIRMED ✅**
 
@@ -72,47 +75,79 @@ After extensive testing of tuple-based shared UI approaches, we've adopted **com
 [...all 18 sections as single elegant files]
 ```
 
-### **🏗️ Proven State Architecture Pattern**
+### **🏗️ Enhanced State Architecture Pattern (WITH IMPORT/EXPORT PRECEDENCE)**
 ```javascript
-// Each section contains this PROVEN architecture:
+// Each section contains this ENHANCED PROVEN architecture:
 
-// Target State - Completely isolated with persistence
+// Target State - Completely isolated with persistence and source tracking
 const TargetState = {
   state: {},
-  setValue: (fieldId, value) => {
+  sources: {}, // Track where each value came from
+  
+  setValue: (fieldId, value, source = 'user-modified') => {
     this.state[fieldId] = value;
-    localStorage.setItem('SECTION_TARGET_STATE', JSON.stringify(this.state));
+    this.sources[fieldId] = source;
+    this.persist();
   },
-  getValue: (fieldId) => this.state[fieldId],
-  setDefaults: () => { /* section-specific defaults */ }
+  
+  getValue: (fieldId) => {
+    // Return value with source precedence: user-modified > imported > default
+    return this.state[fieldId];
+  },
+  
+  importValues: (importedData) => {
+    // Bulk import that respects existing user modifications
+    Object.entries(importedData).forEach(([fieldId, value]) => {
+      if (this.sources[fieldId] !== 'user-modified') {
+        // Only overwrite if not user-modified
+        this.setValue(fieldId, value, 'imported');
+      }
+    });
+  },
+  
+  persist: () => {
+    localStorage.setItem('SECTION_TARGET_STATE', JSON.stringify({
+      values: this.state,
+      sources: this.sources
+    }));
+  },
+  
+  setDefaults: () => { /* section-specific defaults with 'default' source */ }
 };
 
-// Reference State - Completely isolated with persistence  
+// Reference State - Completely isolated with same enhanced pattern
 const ReferenceState = {
   state: {},
-  setValue: (fieldId, value) => {
-    this.state[fieldId] = value;
-    localStorage.setItem('SECTION_REFERENCE_STATE', JSON.stringify(this.state));
-  },
-  getValue: (fieldId) => this.state[fieldId],
+  sources: {},
+  setValue: (fieldId, value, source = 'user-modified') => { /* same pattern */ },
+  getValue: (fieldId) => { /* same pattern */ },
+  importValues: (importedData) => { /* same pattern */ },
+  persist: () => { /* localStorage with SECTION_REFERENCE_STATE key */ },
   setDefaults: () => { /* different defaults from Target */ }
 };
 
-// Mode Manager - Handles switching and UI refresh
+// Mode Manager - Enhanced with import coordination
 const ModeManager = {
   currentMode: "target",
   switchMode: (mode) => {
     this.currentMode = mode;
     this.refreshUI(); // Update dropdowns to show current mode's values
-    // Apply CSS styling for reference mode if needed
   },
   getCurrentState: () => this.currentMode === "target" ? TargetState : ReferenceState,
-  setValue: (fieldId, value) => this.getCurrentState().setValue(fieldId, value),
+  setValue: (fieldId, value, source) => this.getCurrentState().setValue(fieldId, value, source),
   getValue: (fieldId) => this.getCurrentState().getValue(fieldId),
+  
+  // Enhanced import that routes to both states appropriately
+  importFromExcel: (parsedExcelData) => {
+    TargetState.importValues(parsedExcelData.targetData);
+    ReferenceState.importValues(parsedExcelData.referenceData);
+    this.refreshUI();
+  },
+  
   resetAllStates: () => {
     localStorage.removeItem('SECTION_TARGET_STATE');
     localStorage.removeItem('SECTION_REFERENCE_STATE');
-    TargetState.setDefaults();
+    TargetState.setDefaults(); 
     ReferenceState.setDefaults();
     this.refreshUI();
   }
@@ -148,7 +183,7 @@ toggle.addEventListener("click", function () {
 });
 ```
 
-### **🎯 Section Implementation (Unified Pattern)**
+### **🎯 Section Implementation (Enhanced Pattern)**
 ```javascript
 // Single updateClimateData function works for BOTH modes
 function updateClimateData() {
@@ -156,9 +191,29 @@ function updateClimateData() {
   const province = DualState.getValue("d_19");  // Gets from current mode
   const city = DualState.getValue("h_19");      // Gets from current mode
   const cityData = ClimateDataService.getCityData(province, city);
-  DualState.setValue("d_20", cityData.HDD18);   // Sets in current mode
+  DualState.setValue("d_20", cityData.HDD18, 'calculated');   // Sets in current mode with source
   
   // Zero duplication, zero contamination, works perfectly for both modes
+}
+
+// Enhanced Excel import handling
+function handleExcelImport(file) {
+  const parsedData = parseExcelFile(file);
+  
+  const excelData = {
+    targetData: extractTargetValues(parsedData),    // User's design values
+    referenceData: extractReferenceValues(parsedData) // Code minimum values
+  };
+  
+  // Import preserves user modifications, updates only imported/default values
+  DualState.importFromExcel(excelData);
+}
+
+// User input handling with proper source tracking
+function handleUserEdit(fieldId, newValue) {
+  // User input always trumps imported values
+  DualState.setValue(fieldId, newValue, 'user-modified');
+  calculateAll(); // Trigger recalculation
 }
 ```
 
@@ -176,7 +231,7 @@ function updateDashboardTotals() {
 }
 ```
 
-### **✅ Benefits of Unified Architecture**
+### **✅ Enhanced Benefits of Unified Architecture**
 - ✅ **Zero State Contamination**: Physically impossible by isolated state design
 - ✅ **Elegant Single Files**: No code duplication across T/R versions
 - ✅ **Instant Toggle Experience**: No page reloads, seamless switching
@@ -185,6 +240,10 @@ function updateDashboardTotals() {
 - ✅ **Scalable Pattern**: Proven architecture for all 18 sections
 - ✅ **Maintainable**: Single codebase per section, clear separation of concerns
 - ✅ **Production Ready**: Uses existing 4011-styles.css governance
+- ✅ **Smart Import Handling**: Excel imports respect user modifications automatically
+- ✅ **Value Precedence**: User-modified > imported > default hierarchy enforced
+- ✅ **Source Tracking**: Always know where each value originated from
+- ✅ **Professional Data Management**: No accidental loss of user work on import
 
 ### **🧭 Migration Strategy (Updated)**
 1. ✅ **S03 Pattern Proven**: Unified toggle approach 100% functional
@@ -270,6 +329,111 @@ const DualState = ModeManager;
 - **Reset functionality** clears everything cleanly
 
 **🏆 RESULT**: Perfect Target/Reference separation with elegant single-file architecture.
+
+---
+
+## **🎯 ENHANCED PRIORITIES: Number Formatting & CSS Consolidation**
+
+### **📊 Priority 1: Enhanced 4012-DualState.js with OBC Matrix Integration**
+
+#### **Universal Number Formatting System (CRITICAL)**
+```javascript
+// Integrate proven OBC Matrix formatNumber into DualState
+const formatNumber = (value, formatType) => {
+  const num = parseFloat(value);
+  if (isNaN(num)) return "0.00";
+  
+  switch (formatType) {
+    case 'area': return num.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    case 'rsi': return num.toFixed(2);
+    case 'uvalue': return num.toFixed(3);
+    case 'percent': return (num * 100).toFixed(0) + '%';
+    case 'temperature': return num.toFixed(1);
+    case 'cost': return '$' + num.toLocaleString('en-CA', { minimumFractionDigits: 2 });
+    case 'integer': return Math.round(num).toLocaleString('en-CA');
+    default: return num.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+};
+
+// Enhanced state with automatic formatting
+setValue: (fieldId, value, source = 'user-modified', formatType = 'default') => {
+  this.state[fieldId] = value;
+  this.sources[fieldId] = source;
+  this.displayValues[fieldId] = formatNumber(value, formatType);
+  this.persist();
+}
+```
+
+#### **Benefits of Enhanced Number Formatting**:
+- ✅ **Consistent Display**: All numbers formatted to professional standards
+- ✅ **Semantic Formatting**: Area, RSI, temperature, cost formatted appropriately  
+- ✅ **Global Standard**: Same formatting across all 18 sections
+- ✅ **User Experience**: Readable numbers with proper separators and decimals
+
+### **📊 Priority 2: Universal CSS Alignment System (PROVEN SOLUTION)**
+
+#### **Replace Hundreds of Conflicting Rules with Universal Pattern**:
+```css
+/* UNIVERSAL RULE 1: All table text left-aligned by default */
+.data-table td {
+  text-align: left;
+}
+
+/* UNIVERSAL RULE 2: Semantic numeric content right-aligned */
+.data-table td[data-field-id*="area"],
+.data-table td[data-field-id*="rsi"], 
+.data-table td[data-field-id*="uvalue"],
+.data-table td[data-field-id*="cost"],
+.data-table td[data-field-id*="percent"],
+.data-table td[data-field-id*="efficiency"],
+.data-table td[data-field-id*="temperature"],
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td.reference-value,
+.data-table td input[type="number"] {
+  text-align: right;
+}
+```
+
+#### **Massive Benefits Expected for 4011RF**:
+- ✅ **Eliminate 350+ conflicting alignment rules** (proven in OBC Matrix)
+- ✅ **End `!important` declaration wars** between competing styles
+- ✅ **Semantic alignment** based on data type, not arbitrary column position
+- ✅ **Future-proof**: New sections automatically inherit correct alignment
+- ✅ **Performance**: Faster CSS parsing with fewer complex selectors
+
+### **📊 Priority 3: Smart State-Aware Visual Feedback (BREAKTHROUGH UX)**
+
+#### **Perfect Input Behavior from OBC Matrix**:
+```css
+/* Grey italic placeholder for default state */
+.user-input:not(.user-modified) {
+  color: #999;
+  font-style: italic;
+}
+
+/* Blue confident text while actively editing */
+.user-input.editing-intent {
+  color: #0066cc;
+  font-style: normal;
+  background-color: #e6f2ff;
+}
+
+/* Blue confident text for committed user values */
+.user-input.user-modified {
+  color: #0066cc;
+  font-style: normal;
+  font-weight: 500;
+}
+```
+
+#### **Perfect UX Flow**:
+1. **Default State**: Grey italic placeholder text
+2. **Click In**: Instantly switches to blue confident text (`.editing-intent`)
+3. **No Changes + Click Away**: Gracefully reverts to grey placeholder
+4. **Make Changes + Click Away**: Permanently commits to blue confident text (`.user-modified`)
+
+**🎯 Result**: Users immediately understand field states without training, accidental clicks have no consequences, clear visual distinction between placeholder and user-entered content.
 
 ---
 
@@ -656,20 +820,23 @@ Replace ALL alignment complexity with just **2 clean rules**:
 - [ ] Performance comparison with 4.011
 - [ ] Cross-browser final check
 
-## Success Criteria
+## Enhanced Success Criteria (Updated for Breakthrough Architecture)
 
 1. All calculations match Excel results
 2. No regression in functionality from 4.011
 3. Improved code maintainability
-4. Successful integration of S03 internalized climate data
-5. Working Tuple calculations for Target/Reference states
+4. ✅ **COMPLETED**: Proven unified architecture with isolated state objects
+5. **✅ MANDATORY**: Enhanced import/export with value precedence (user-modified > imported > default)
 6. Performance equal or better than 4.011
 7. Cross-browser compatibility maintained
 8. **✅ MANDATORY**: Universal graceful input behavior across all 18 sections
 9. **✅ MANDATORY**: Zero section-specific input handlers (global system only)
-10. **✅ MANDATORY**: Consistent number formatting using global utilities
+10. **✅ MANDATORY**: OBC Matrix number formatting integrated across all sections
 11. **✅ MANDATORY**: Perfect visual state management (grey→blue→grey/permanent blue)
-12. **📋 GOAL**: Improved CSS alignment consistency (goalpost expansion remains research topic)
+12. **✅ MANDATORY**: Universal CSS alignment system eliminating style conflicts
+13. **✅ MANDATORY**: Source tracking for all values (user-modified, imported, calculated, default)
+14. **✅ MANDATORY**: Smart import handling that preserves user work automatically
+15. **📋 GOAL**: Sub-100ms calculation performance with enhanced state architecture
 
 ## Quality Assurance & Pattern Validation
 
@@ -735,79 +902,86 @@ Any section that fails these validations will be **rejected** and must be refact
 
 **Status**: ✅ Foundation setup completed, environment ready, code professionally cleaned
 
-### **🚀 NEXT SESSION: Complete Climate Foundation + Scale Architecture (3-4 hours):**
+### **🚀 NEXT SESSION: Enhanced DualState + CSS Consolidation (3-4 hours):**
 
-1. **PRIORITY 1: Complete 4012-ClimateValues.js** (90-120 minutes):
-   - Build automation script to process complete CANADA.csv into JavaScript format
-   - Handle null value conventions: `666` for missing future CDD, `null` for missing RH
-   - Include ALL Canadian weather locations (not just current subset)
-   - Add robust data validation and missing value handling functions
-   - **Goal**: S03 climate data 100% complete before pattern scaling
+1. **PRIORITY 1: Enhanced 4012-DualState.js** (90-120 minutes):
+   - Integrate proven OBC Matrix universal number formatting system
+   - Add import/export value precedence: user-modified > imported > default
+   - Implement source tracking in state objects with localStorage persistence
+   - Methods: `setValue(fieldId, value, source, formatType)`, `importValues(data)`, `getValue(fieldId)`
+   - **Goal**: Professional data management with smart import handling
 
-2. **Apply Unified Pattern to S04** (60-90 minutes):
-   - Copy proven `TargetState` + `ReferenceState` + `ModeManager` pattern from S03 unified test
-   - Implement section-specific defaults for building envelope data
-   - Add toggle switch and reset button to S04 UI
-   - Test state persistence and zero contamination in building context
+2. **PRIORITY 2: Universal CSS Alignment System** (60-90 minutes):
+   - Extract proven OBC Matrix CSS alignment rules
+   - Replace hundreds of conflicting 4011RF `text-align` rules with semantic system
+   - Implement: left for text, right for numbers based on data-field-id patterns
+   - Remove competing `!important` declarations across all sections
+   - **Goal**: End CSS alignment conflicts permanently
 
-3. **Validate Complete S03 + Begin S05-S06** (60-90 minutes):
-   - Test S03 with complete climate data across all Canadian locations
-   - Apply unified architecture to S05-S06 sections systematically
-   - Establish localStorage naming conventions: `S04_TARGET_STATE`, `S05_TARGET_STATE`, etc.
-   - Validate toggle behavior works consistently across multiple sections
+3. **PRIORITY 3: Apply Enhanced Pattern to S04-S06** (60-90 minutes):
+   - Scale proven enhanced TargetState + ReferenceState + ModeManager pattern
+   - Test import precedence: user modifications survive Excel imports
+   - Add smart visual feedback: grey→blue→grey/permanent blue behavior
+   - Validate localStorage persistence and number formatting consistency
 
 ### **📋 Success Criteria for This Session:**
 - [ ] ✅ S03 Pattern proven (COMPLETED): Zero contamination, perfect persistence, elegant toggle
-- [ ] ✅ Complete climate data: All Canadian locations available in 4012-ClimateValues.js
-- [ ] ✅ Robust null handling: 666/null conventions properly implemented for missing data
-- [ ] S04-S06 converted to unified architecture with isolated states and localStorage persistence
-- [ ] Toggle functionality working consistently across multiple sections  
-- [ ] S03 fully functional with complete Canadian weather data before core integration
+- [ ] Enhanced 4012-DualState.js with professional import/export value precedence system
+- [ ] Universal CSS alignment system eliminating hundreds of conflicting style rules
+- [ ] OBC Matrix number formatting integrated for consistent display across all sections
+- [ ] S04-S06 converted to enhanced architecture with smart import handling
+- [ ] Perfect visual feedback: grey→blue→grey/permanent blue behavior working
+- [ ] User modifications survive Excel imports automatically (precedence system validated)
 
-### **🤖 Climate Data Automation Approach:**
+### **🏗️ Enhanced DualState Implementation Pattern:**
 
-#### **Automation Script Strategy:**
+#### **Professional State Management Strategy:**
 ```javascript
-// Proposed automation approach for local machine:
-// 1. Read CANADA.csv file
-// 2. Parse and validate each location record
-// 3. Apply null value conventions (666 for missing future CDD, null for missing RH)
-// 4. Generate properly formatted JavaScript object structure
-// 5. Output complete 4012-ClimateValues.js file
+// Enhanced DualState with OBC Matrix integration:
+// 1. Source tracking for import precedence
+// 2. Universal number formatting integration
+// 3. Smart visual feedback CSS classes
+// 4. Professional data conflict resolution
 
-const processClimateData = {
-  nullHandling: {
-    futureCDD: "666",     // Internal notation for missing future cooling data
-    humidityRH: null,     // Standard null for relative humidity gaps
-    elevation: 0,         // Default elevation where missing
-    windSpeed: null       // Null for missing wind data
+const enhancedStatePattern = {
+  sourceHierarchy: {
+    "user-modified": 1,   // Highest priority - user input trumps everything
+    "imported": 2,        // Medium priority - from Excel files
+    "calculated": 3,      // System calculations
+    "default": 4          // Lowest priority - system defaults
   },
-  validation: {
-    requiredFields: ["Location", "HDD18", "CDD24", "January_2_5", "July_2_5_Tdb"],
-    numericFields: ["HDD18", "CDD24", "January_2_5", "July_2_5_Tdb", "Elev_ASL"],
-    ranges: {
-      HDD18: [0, 15000],   // Reasonable HDD range for Canada
-      CDD24: [0, 2000],    // Reasonable CDD range  
-      temperature: [-50, 50] // Reasonable temperature range
-    }
+  formatting: {
+    area: "number-2dp-comma",     // "1,234.56 m²"
+    rsi: "number-2dp",            // "2.75"
+    uvalue: "number-3dp",         // "0.123"
+    percent: "percent-0dp",       // "85%"
+    temperature: "number-1dp",    // "22.5"
+    cost: "currency-2dp"          // "$1,234.56"
+  },
+  visualFeedback: {
+    defaultState: "grey italic placeholder",
+    editingIntent: "blue confident text (temporary)", 
+    userModified: "blue confident text (permanent)"
   }
 };
 ```
 
-#### **Benefits of Automation:**
-- ✅ **Complete coverage**: All Canadian locations included, not just subset
-- ✅ **Consistent formatting**: Standardized JavaScript object structure  
-- ✅ **Error handling**: Validation and null value processing built-in
-- ✅ **Maintainable**: Easy to update when CANADA.csv gets updated
-- ✅ **Quality assurance**: Automated validation catches data issues
+#### **Benefits of Enhanced Pattern:**
+- ✅ **Professional data management**: Excel imports never overwrite user work
+- ✅ **Consistent formatting**: Same number display standards across all sections
+- ✅ **Perfect UX**: Visual feedback that users understand intuitively
+- ✅ **Source transparency**: Always know where each value came from
+- ✅ **Conflict resolution**: Smart handling of competing data sources
 
-### **🎨 Future Sessions (After Unified Architecture Scaled):**
-- **Visual Refinements**: Extract OBC Matrix patterns (global input handling, visual feedback)
-- **Systematic Scaling**: Apply proven unified pattern to remaining 13 sections (S07-S18)
-- **Dashboard Enhancement**: Update S01 to read from localStorage across all sections
-- **Performance Optimization**: Achieve sub-100ms calculation targets with isolated states
+### **🎨 Future Sessions (After Enhanced Architecture Foundation):**
+- **Climate Data Completion**: Complete 4012-ClimateValues.js with full Canadian weather locations
+- **Systematic Section Scaling**: Apply enhanced pattern to remaining 13 sections (S07-S18)
+- **Dashboard Enhancement**: Update S01 to read from localStorage across all sections with enhanced formatting
+- **Performance Optimization**: Achieve sub-100ms calculation targets with pure functional calculations
+- **Advanced Import/Export**: Cross-section data coordination and validation
+- **Mobile Responsiveness**: Apply CSS improvements for responsive design
 
-**🎯 Focus**: Scale proven unified pattern systematically. Elegant single files + isolated states = bulletproof reliability.
+**🎯 Focus**: Foundation first - enhanced state management + CSS consolidation enables rapid section scaling.
 
 ## 🎯 JUNE 2025 STRATEGIC WORKPLAN - 17 Days to Demo
 
