@@ -990,8 +990,9 @@ input[type=number].form-control {
   /* Typography */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
   font-size: inherit !important;
-  color: var(--user-input-color) !important; /* Default blue - will be overridden by state classes */
-  font-weight: 500 !important;
+  color: #6c757d !important; /* Default grey italic - blue applied by state classes when appropriate */
+  font-style: italic !important; /* Default italic for empty/placeholder state */
+  font-weight: 400 !important; /* Lighter weight for default state */
   
   /* Clean interactions */
   outline: none !important;
@@ -1069,14 +1070,7 @@ input[type=number].form-control {
   border-radius: 0 !important;
 }
 
-/* Default/placeholder text styling - muted grey italic (only for truly empty fields) */
-.data-table td[contenteditable="true"].user-input:not(.user-modified):empty,
-.data-table td input[type="number"].user-input:not(.user-modified)[value=""],
-.data-table td.editable[contenteditable="true"]:not(.user-modified):empty,
-.data-table td .user-input[contenteditable="true"]:not(.user-modified):empty {
-  color: #6c757d !important; /* Muted grey for default/placeholder text */
-  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
-}
+/* Default/placeholder text styling - now handled by base styling above */
 
 /* Immediate styling for fields with content (before JavaScript runs) */
 .data-table td[contenteditable="true"].user-input:not(:empty),
@@ -1117,7 +1111,8 @@ input[type=number].form-control {
     width: 100%;
 }
 
-/* Section 10: Hide completely empty columns to improve density */
+/* Section 10: Surgical anti-goalpost fix - minimal constraints, natural flexibility */
+/* Hide empty columns to improve density */
 #envelopeRadiantGains .data-table td:nth-child(1),  /* Column A - no expandable rows */
 #envelopeRadiantGains .data-table td:nth-child(15)  /* Column O - empty */
 {
@@ -1126,82 +1121,150 @@ input[type=number].form-control {
     overflow: hidden !important;
 }
 
-/* Section 10: Flexible width for content columns - use available space intelligently */
-#envelopeRadiantGains .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - ID numbers */
-#envelopeRadiantGains .data-table td:nth-child(3) { width: 180px !important; }  /* Column C - RG-Units labels */
+/* Section 10: Only constrain the goalpost culprit - let everything else size naturally */
 #envelopeRadiantGains .data-table td:nth-child(4) { 
-    width: 120px !important;  /* Column D - Area m² inputs */
-    max-width: 120px !important;
+    width: 100px !important;  /* Column D - Area inputs (constrain only the culprit) */
+    max-width: 100px !important;
     text-align: right !important; /* Right-align numeric inputs */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
 }
-#envelopeRadiantGains .data-table td:nth-child(5) { width: 140px !important; }  /* Column E - Orientation dropdowns */
-#envelopeRadiantGains .data-table td:nth-child(6) { min-width: 140px !important; } /* Column F - SHGC values with slider-md */
+/* Section 10: Natural sizing with essential styling only */
 #envelopeRadiantGains .data-table td:nth-child(7) { 
-    min-width: 140px !important; /* Column G - Winter shading % - expandable with slider-md */
-    text-align: center !important;
+    text-align: center !important; /* Center-align percentage sliders */
 }
 #envelopeRadiantGains .data-table td:nth-child(8) { 
-    min-width: 140px !important; /* Column H - Summer shading % - expandable with slider-md */
-    text-align: center !important;
+    text-align: center !important; /* Center-align percentage sliders */
 }
 #envelopeRadiantGains .data-table td:nth-child(9) { 
-    min-width: 120px !important; /* Column I - HTG GAIN kWh/yr - flex to content */
     text-align: right !important;
     font-weight: 700 !important; /* Bold for calculated values */
 }
 #envelopeRadiantGains .data-table td:nth-child(10) { 
-    min-width: 100px !important; /* Column J - HTG GAIN % - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(11) { 
-    min-width: 120px !important; /* Column K - COOL GAIN kWh/yr - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(12) { 
-    min-width: 100px !important; /* Column L - COOL GAIN % - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(13) { 
-    min-width: 120px !important; /* Column M - G-FACTOR kWh/m²yr - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(14) { 
-    min-width: 200px !important; /* Column N - Notes/descriptions - flex to available space */
     white-space: normal !important;
     word-wrap: break-word !important;
     vertical-align: top !important;
 }
 
-/* Section 10: Input field constraints */
+/* Section 10: Minimal input styling - keep sm/md/lg sizing classes */
 #envelopeRadiantGains .data-table td:nth-child(4) input,
 #envelopeRadiantGains .data-table td:nth-child(4) [contenteditable] {
-    width: 100% !important;
-    max-width: 110px !important; /* Match column width with buffer */
+    max-width: 90px !important;  /* Only constrain Area inputs (goalpost culprit) */
     text-align: right !important; /* Right-align numeric inputs */
 }
 
-/* Section 10: Dropdown constraints */
-#envelopeRadiantGains .data-table td:nth-child(5) select {
-    width: 100% !important;
-    max-width: 135px !important; /* Match column width with buffer */
-}
-
-/* Section 10: Apply medium slider sizing to SHGC and shading percentage columns */
+/* Section 10: Keep slider-md sizing for sliders (proven to work) */
 #envelopeRadiantGains .data-table td:nth-child(6) .slider-container,
 #envelopeRadiantGains .data-table td:nth-child(7) .slider-container,
 #envelopeRadiantGains .data-table td:nth-child(8) .slider-container,
 #envelopeRadiantGains .data-table td:nth-child(6) [data-type="percentage"],
 #envelopeRadiantGains .data-table td:nth-child(7) [data-type="percentage"],
 #envelopeRadiantGains .data-table td:nth-child(8) [data-type="percentage"] {
-    width: 140px !important; /* Use slider-md sizing */
+    width: 140px !important; /* slider-md sizing - proven to work */
     min-width: 140px !important;
 }
 
 /* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
+
+/* =============== SECTION 02 LAYOUT OPTIMIZATION =============== */
+/* Section 02: Building Occupancy - OBC Matrix optimized layout with flexible compression */
+
+#buildingOccupancy .data-table {
+    table-layout: auto; /* Content-based with intelligent flexibility */
+    width: 100%;
+}
+
+/* Section 02: Hide empty columns - OBC Matrix density optimization */
+#buildingOccupancy .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#buildingOccupancy .data-table td:nth-child(6),  /* Column F - empty */
+#buildingOccupancy .data-table td:nth-child(7),  /* Column G - empty */
+#buildingOccupancy .data-table td:nth-child(8),  /* Column H - empty */
+#buildingOccupancy .data-table td:nth-child(9),  /* Column I - empty */
+#buildingOccupancy .data-table td:nth-child(10), /* Column J - empty */
+#buildingOccupancy .data-table td:nth-child(11), /* Column K - empty */
+#buildingOccupancy .data-table td:nth-child(13), /* Column M - empty */
+#buildingOccupancy .data-table td:nth-child(14)  /* Column N - empty */
+{
+    display: none; /* Complete removal for cleaner layout */
+}
+
+/* Section 02: Flexible width with intelligent compression and expansion */
+#buildingOccupancy .data-table td:nth-child(2) { 
+    width: 50px !important;    /* Column B - row numbers (fixed) */
+    min-width: 50px !important;
+}
+#buildingOccupancy .data-table td:nth-child(3) { 
+    width: 220px !important;   /* Column C - field labels (fixed for readability) */
+    min-width: 180px !important;
+}
+#buildingOccupancy .data-table td:nth-child(4) { 
+    width: auto !important;    /* Column D - dropdowns (flexible, use available space) */
+    min-width: 200px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#buildingOccupancy .data-table td:nth-child(5) { 
+    width: auto !important;    /* Column E - descriptions (flexible, use remaining space) */
+    min-width: 250px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+#buildingOccupancy .data-table td:nth-child(12) { 
+    width: 140px !important;   /* Column L - OBC references (fixed for regulatory text) */
+    min-width: 120px !important;
+}
+#buildingOccupancy .data-table td:nth-child(15) { 
+    width: auto !important;    /* Column O - Notes (flexible) */
+    min-width: 180px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* Section 02: Apply dropdown sizing classes for building classifications */
+#buildingOccupancy .data-table td:nth-child(4) {
+    /* Building occupancy classifications need dropdown-lg */
+}
+
+/* Section 02: Input constraint optimization - remove max-width for flexibility */
+#buildingOccupancy .data-table td:nth-child(4) select,
+#buildingOccupancy .data-table td:nth-child(4) input,
+#buildingOccupancy .data-table td:nth-child(4) [contenteditable] {
+    width: 100% !important;
+    /* Removed max-width - let column flexibility handle sizing */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Section 02: Description field optimization */
+#buildingOccupancy .data-table td:nth-child(5) input,
+#buildingOccupancy .data-table td:nth-child(5) [contenteditable] {
+    width: 100% !important;
+    /* Removed max-width - let column flexibility handle sizing */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
 
 /* =============== 4011RF ELEGANT STYLING ENHANCEMENT =============== */
 
