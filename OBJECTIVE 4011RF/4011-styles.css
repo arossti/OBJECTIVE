@@ -223,93 +223,48 @@ body {
   display: none;
 }
 
-/* =============== Data Tables =============== */
+/* =============== UNIVERSAL DATA TABLE BASE (OBC MATRIX PATTERN) =============== */
 
+/* Base table layout - content-based but controlled */
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--base-font-size);
-  table-layout: auto; /* Changed from fixed to auto */
+  table-layout: auto; /* Content-based sizing like OBC Matrix */
 }
 
-/* Table cells with no wrapping */
+/* Universal table cell defaults */
 .data-table td,
 .data-table th {
   padding: var(--cell-padding);
-  text-align: left; /* Default alignment */
   border-bottom: 1px solid #eeeeee;
   line-height: 1.2;
-  white-space: nowrap; /* Prevent wrapping */
-  overflow: hidden; /* Changed from visible */
-  text-overflow: ellipsis; /* Added */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+/* =============== UNIVERSAL ALIGNMENT RULES (OBC MATRIX PATTERN) =============== */
+
+/* UNIVERSAL: All table content left-aligned by default */
+.data-table td {
+  text-align: left;
+}
+
+/* UNIVERSAL: Numeric fields right-aligned (accounting style) */
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td input[type="number"],
+.data-table td[data-type="numeric"],
+.data-table td.numeric-field {
+  text-align: right;
 }
 
 /* Ensure cells have minimum vertical padding for focus glow */
 .data-table td {
-  padding-top: 4px !important; /* Reduced back to 4px */
-  padding-bottom: 4px !important; /* Reduced back to 4px */
-}
-
-/* Right-align numeric columns (D-M) */
-.data-table td.col-d,
-.data-table td.col-f,
-.data-table td.col-h,
-.data-table td.col-j,
-.data-table td.col-k,
-.data-table td.col-l {
-  text-align: right;
-}
-
-/* Force specific text columns (Units, secondary labels) to left-align */
-.data-table
-  td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell),
-.data-table
-  td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell),
-.data-table
-  td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell),
-.data-table
-  td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(
-    .user-input
-  ):not(.number-input-cell) {
-  text-align: left; /* Only apply left-align if the cell doesn't contain a calculated/derived/input value */
-}
-
-/* Ensure Calculated/Derived/User Input values are RIGHT-aligned, overriding column defaults */
-.data-table td.col-e.calculated-value,
-.data-table td.col-g.calculated-value,
-.data-table td.col-i.calculated-value,
-.data-table td.col-m.calculated-value,
-.data-table td.col-e .calculated-value, /* Target inner elements too */
-.data-table td.col-g .calculated-value,
-.data-table td.col-i .calculated-value,
-.data-table td.col-m .calculated-value,
-.data-table td.col-e.derived-value,
-.data-table td.col-g.derived-value,
-.data-table td.col-i.derived-value,
-.data-table td.col-m.derived-value,
-.data-table td.col-e .derived-value,
-.data-table td.col-g .derived-value,
-.data-table td.col-i .derived-value,
-.data-table td.col-m .derived-value,
-.data-table td.col-e.user-input,
-.data-table td.col-g.user-input,
-.data-table td.col-i.user-input,
-.data-table td.col-m.user-input,
-.data-table td.col-e .user-input,
-.data-table td.col-g .user-input,
-.data-table td.col-i .user-input,
-.data-table td.col-m .user-input,
-.data-table td.col-e.number-input-cell,
-.data-table td.col-g.number-input-cell,
-.data-table td.col-i.number-input-cell,
-.data-table td.col-m.number-input-cell {
-  text-align: right !important; /* Use !important to ensure override */
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
 }
 
 /* Calculated/Derived values styling (keep base style) */
@@ -976,7 +931,8 @@ input[type=number].form-control {
   /* Typography */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
   font-size: inherit !important;
-  color: var(--user-input-color) !important;
+  color: #6c757d !important; /* Default grey for unmodified fields */
+  font-style: italic !important; /* Default italic for unmodified fields */
   font-weight: 500 !important;
   
   /* Clean interactions */
@@ -1083,6 +1039,93 @@ input[type=number].form-control {
   font-style: normal !important; /* Remove italic while editing */
   font-weight: 600 !important; /* Bold while editing */
 }
+
+/* =============== SECTION-SPECIFIC LAYOUT OPTIMIZATIONS (OBC MATRIX PATTERN) =============== */
+
+/* =============== SECTION 10 LAYOUT OPTIMIZATION =============== */
+/* Section 10: Radiant Gains - window areas, orientations, and heat gain calculations */
+
+#envelopeRadiantGains .data-table {
+    table-layout: auto; /* Content-based but controlled */
+    width: 100%;
+}
+
+/* Section 10: Hide completely empty columns to improve density */
+#envelopeRadiantGains .data-table td:nth-child(1),  /* Column A - no expandable rows */
+#envelopeRadiantGains .data-table td:nth-child(15)  /* Column O - empty */
+{
+    width: 1px !important; /* Minimal width for empty columns */
+    padding: 2px 1px !important; /* Minimal padding */
+    overflow: hidden !important;
+}
+
+/* Section 10: Controlled width for content columns */
+#envelopeRadiantGains .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - ID numbers */
+#envelopeRadiantGains .data-table td:nth-child(3) { width: 180px !important; }  /* Column C - RG-Units labels */
+#envelopeRadiantGains .data-table td:nth-child(4) { 
+    width: 120px !important;  /* Column D - Area m² inputs */
+    max-width: 120px !important;
+    text-align: right !important; /* Right-align numeric inputs */
+}
+#envelopeRadiantGains .data-table td:nth-child(5) { width: 140px !important; }  /* Column E - Orientation dropdowns */
+#envelopeRadiantGains .data-table td:nth-child(6) { width: 80px !important; }   /* Column F - SHGC values */
+#envelopeRadiantGains .data-table td:nth-child(7) { 
+    width: 100px !important; /* Column G - Winter shading % */
+    text-align: center !important;
+}
+#envelopeRadiantGains .data-table td:nth-child(8) { 
+    width: 100px !important; /* Column H - Summer shading % */
+    text-align: center !important;
+}
+#envelopeRadiantGains .data-table td:nth-child(9) { 
+    width: 120px !important; /* Column I - HTG GAIN kWh/yr */
+    text-align: right !important;
+    font-weight: 700 !important; /* Bold for calculated values */
+}
+#envelopeRadiantGains .data-table td:nth-child(10) { 
+    width: 100px !important; /* Column J - HTG GAIN % */
+    text-align: right !important;
+    font-weight: 700 !important;
+}
+#envelopeRadiantGains .data-table td:nth-child(11) { 
+    width: 120px !important; /* Column K - COOL GAIN kWh/yr */
+    text-align: right !important;
+    font-weight: 700 !important;
+}
+#envelopeRadiantGains .data-table td:nth-child(12) { 
+    width: 100px !important; /* Column L - COOL GAIN % */
+    text-align: right !important;
+    font-weight: 700 !important;
+}
+#envelopeRadiantGains .data-table td:nth-child(13) { 
+    width: 120px !important; /* Column M - G-FACTOR kWh/m²yr */
+    text-align: right !important;
+    font-weight: 700 !important;
+}
+#envelopeRadiantGains .data-table td:nth-child(14) { width: 200px !important; } /* Column N - Notes/descriptions */
+
+/* Section 10: Input field constraints */
+#envelopeRadiantGains .data-table td:nth-child(4) input,
+#envelopeRadiantGains .data-table td:nth-child(4) [contenteditable] {
+    width: 100% !important;
+    max-width: 110px !important; /* Match column width with buffer */
+    text-align: right !important; /* Right-align numeric inputs */
+}
+
+/* Section 10: Dropdown constraints */
+#envelopeRadiantGains .data-table td:nth-child(5) select {
+    width: 100% !important;
+    max-width: 135px !important; /* Match column width with buffer */
+}
+
+/* Section 10: Notes column wrapping */
+#envelopeRadiantGains .data-table td:nth-child(14) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
+
+/* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
 
 /* =============== 4011RF ELEGANT STYLING ENHANCEMENT =============== */
 
