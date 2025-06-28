@@ -1408,73 +1408,26 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   // --- End New Calculation Functions ---
 
+
+
   /**
-   * Setup Target/Reference toggle UI in section header
+   * Setup S03-specific weather data button
    */
-  function setupToggleUI() {
+  function setupS03WeatherButton() {
     const sectionHeader = document.querySelector("#climateCalculations .section-header");
     if (!sectionHeader) {
-      console.warn("S03: Section header not found for toggle UI");
+      console.warn("S03: Section header not found for weather button");
       return;
     }
 
-    // Check if toggle already exists
-    if (sectionHeader.querySelector(".reference-toggle")) {
+    // Check if button already exists
+    if (sectionHeader.querySelector("#s03WeatherDataBtn")) {
       return;
     }
 
-    // Create toggle container
-    const toggleContainer = document.createElement("div");
-    toggleContainer.style.cssText = "display: flex; align-items: center; gap: 20px; margin-left: auto;";
-
-    // Create state indicator
-    const stateIndicator = document.createElement("span");
-    stateIndicator.className = "state-indicator target";
-    stateIndicator.textContent = "TARGET MODE";
-    stateIndicator.style.cssText = `
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      background-color: #e3f2fd;
-      color: #1976d2;
-    `;
-
-    // Create toggle
-    const toggleDiv = document.createElement("div");
-    toggleDiv.className = "reference-toggle";
-    toggleDiv.style.cssText = "display: flex; align-items: center; gap: 10px;";
-
-    const toggleLabel = document.createElement("label");
-    toggleLabel.textContent = "Show Reference";
-    toggleLabel.style.cssText = "font-weight: 500; color: #fff; margin: 0;";
-
-    const toggleSwitch = document.createElement("div");
-    toggleSwitch.className = "toggle-switch";
-    toggleSwitch.style.cssText = `
-      position: relative;
-      width: 50px;
-      height: 24px;
-      background-color: #ccc;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    `;
-
-    const toggleSlider = document.createElement("div");
-    toggleSlider.className = "toggle-slider";
-    toggleSlider.style.cssText = `
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 20px;
-      height: 20px;
-      background-color: white;
-      border-radius: 50%;
-      transition: transform 0.3s;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    `;
+    // Create Weather Data button container
+    const buttonContainer = document.createElement("div");
+    buttonContainer.style.cssText = "margin-left: auto;";
 
     // Create Weather Data button
     const weatherButton = document.createElement("button");
@@ -1491,72 +1444,15 @@ window.TEUI.SectionModules.sect03 = (function () {
       font-size: 12px;
     `;
 
-    // Create reset button
-    const resetButton = document.createElement("button");
-    resetButton.textContent = "Reset States";
-    resetButton.style.cssText = `
-      padding: 6px 12px;
-      background-color: #f44336;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-weight: 500;
-      cursor: pointer;
-      font-size: 12px;
-    `;
-
-    // Add toggle functionality
-    toggleSwitch.addEventListener("click", function() {
-      const isActive = toggleSwitch.classList.contains("active");
-      
-      if (!isActive) {
-        // Switching to reference mode
-        toggleSwitch.classList.add("active");
-        toggleSwitch.style.backgroundColor = "#2196f3";
-        toggleSlider.style.transform = "translateX(26px)";
-        toggleLabel.textContent = "Show Target";
-        stateIndicator.textContent = "REFERENCE MODE";
-        stateIndicator.style.backgroundColor = "#ffebee";
-        stateIndicator.style.color = "#c62828";
-        ModeManager.switchMode("reference");
-      } else {
-        // Switching back to target mode
-        toggleSwitch.classList.remove("active");
-        toggleSwitch.style.backgroundColor = "#ccc";
-        toggleSlider.style.transform = "translateX(0px)";
-        toggleLabel.textContent = "Show Reference";
-        stateIndicator.textContent = "TARGET MODE";
-        stateIndicator.style.backgroundColor = "#e3f2fd";
-        stateIndicator.style.color = "#1976d2";
-        ModeManager.switchMode("target");
-      }
-    });
-
     // Add weather data functionality
     weatherButton.addEventListener("click", function() {
       showWeatherData();
     });
 
-    // Add reset functionality
-    resetButton.addEventListener("click", function() {
-      if (confirm("Are you sure you want to reset all S03 states to defaults?")) {
-        ModeManager.resetAllStates();
-      }
-    });
+    buttonContainer.appendChild(weatherButton);
+    sectionHeader.appendChild(buttonContainer);
 
-    // Assemble elements
-    toggleSwitch.appendChild(toggleSlider);
-    toggleDiv.appendChild(toggleLabel);
-    toggleDiv.appendChild(toggleSwitch);
-    
-    toggleContainer.appendChild(stateIndicator);
-    toggleContainer.appendChild(toggleDiv);
-    toggleContainer.appendChild(weatherButton);
-    toggleContainer.appendChild(resetButton);
-    
-    sectionHeader.appendChild(toggleContainer);
-
-    console.log("S03: Toggle UI setup complete");
+    console.log("S03: Weather data button setup complete");
   }
 
   /**
@@ -1807,8 +1703,15 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Initialize DualState system first
     ModeManager.initialize();
 
-    // Setup the toggle UI
-    setupToggleUI();
+    // Expose ModeManager globally for external access (e.g., global toggle)
+    if (window.TEUI) {
+      window.TEUI.ModeManager = ModeManager;
+      window.TEUI.DualState = DualState;
+      console.log("S03: DualState functionality exposed globally");
+    }
+
+    // Setup S03-specific weather data button
+    setupS03WeatherButton();
 
     // Ensure ClimateData is available before proceeding
     ClimateDataService.ensureAvailable(function() {
@@ -1851,6 +1754,5 @@ window.TEUI.SectionModules.sect03 = (function () {
     ModeManager: ModeManager,
     TargetState: TargetState,
     ReferenceState: ReferenceState,
-    setupToggleUI: setupToggleUI,
   };
 })();
