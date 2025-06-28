@@ -959,16 +959,183 @@ input[type=number].form-control {
 }
 /* --- End Hover Style --- */
 
-/* --- Style input elements --- */
+/* =============== ELEGANT USER INPUT STYLING (COMPLETE OBC MATRIX PATTERN) =============== */
 
-/* Base style for user-input class (text color) */
-.user-input {
-  font-weight: 500;
-  color: var(--user-input-color); /* Removed !important */
+/* Base styling for editable fields - minimal and clean */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  /* Minimal borders - preserve table structure */
   border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+  
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: inherit !important;
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+  
+  /* Clean interactions */
   outline: none !important;
-  background-color: transparent !important; /* Ensure no background */
+  cursor: text !important;
+  
+  /* Default sizing */
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
+
+/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td:has(.editable[contenteditable="true"]),
+.data-table td.user-input[contenteditable="true"] {
+  /* Keep the table's natural row border */
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Hover state - very subtle background hint + enhanced border */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  background-color: rgba(13, 110, 253, 0.03) !important;
+}
+
+/* Enhanced border for hover state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:hover),
+.data-table td:has(input[type="number"].user-input:hover),
+.data-table td:has(.editable[contenteditable="true"]:hover),
+.data-table td.user-input[contenteditable="true"]:hover {
+  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
+}
+
+/* Focus state - subtle background + enhanced border */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+/* Enhanced border for focus state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:focus),
+.data-table td:has(input[type="number"].user-input:focus),
+.data-table td:has(.editable[contenteditable="true"]:focus),
+.data-table td.user-input[contenteditable="true"]:focus {
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Parent cell styling - minimal */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.editable,
+.data-table td:has(.user-input[contenteditable="true"]) {
+  padding: 4px 8px !important;
+  vertical-align: middle !important;
+}
+
+/* Override conflicting cell hover styles */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td.editable:hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: transparent !important;
+}
+
+/* Remove conflicting TD focus styles */
+.data-table td.editable.editing,
+.data-table td.user-input.editing,
+.data-table td:has([contenteditable="true"].editing),
+.data-table td:has(input[type="number"]:focus) {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Default/placeholder text styling - muted grey italic */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* =============== 4011RF ELEGANT STYLING ENHANCEMENT =============== */
+
+/* Auto-apply elegant styling to 4011RF fields when they gain/lose focus and on value changes */
+/* This enhances the existing 4011RF system to work with the elegant OBC Matrix styling */
+
+/* =============== END ELEGANT USER INPUT STYLING =============== */
+
+/*
+  Enhancement Script for 4011RF Elegant Input Styling
+  
+  Add this to any 4011RF HTML file to enable elegant styling:
+  
+  <script>
+  // 4011RF Elegant Styling Enhancement
+  document.addEventListener('DOMContentLoaded', function() {
+    // Find all user-input fields in the 4011RF system
+    const editableFields = document.querySelectorAll('[contenteditable="true"].user-input, input.user-input');
+    
+    editableFields.forEach(field => {
+      // Store original value for change detection
+      const originalValue = field.textContent || field.value || '';
+      
+      // Add focus handler for editing-intent styling
+      field.addEventListener('focus', function() {
+        this.classList.add('editing-intent');
+        this.dataset.originalValue = this.textContent || this.value || '';
+      });
+      
+      // Add blur handler for user-modified styling
+      field.addEventListener('blur', function() {
+        this.classList.remove('editing-intent');
+        
+        const currentValue = this.textContent || this.value || '';
+        const originalValue = this.dataset.originalValue || '';
+        
+        // If value changed, mark as user-modified
+        if (currentValue !== originalValue && currentValue.trim() !== '') {
+          this.classList.add('user-modified');
+        } else if (currentValue.trim() === '') {
+          // If cleared, remove user-modified (back to default)
+          this.classList.remove('user-modified');
+        }
+      });
+      
+      // Set initial state based on whether field has content
+      if (originalValue.trim() !== '') {
+        field.classList.add('user-modified');
+      }
+    });
+  });
+  </script>
+*/
 
 /* Force blue color on focused number inputs */
 .data-table td input[type="number"].user-input:focus {
