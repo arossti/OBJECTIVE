@@ -1993,37 +1993,62 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   font-weight: 600 !important; /* Bold while editing */
 }
 
-/* Base user input styling with hover effects */
+/* Base user input styling - minimal and clean */
 .data-table td[contenteditable="true"].user-input,
 .data-table td input[type="number"].user-input,
 .data-table td.editable[contenteditable="true"],
 .data-table td .user-input[contenteditable="true"] {
-  border-bottom: 2px solid transparent;
-  transition: border-bottom-color 0.2s ease, background-color 0.2s ease;
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  outline: none !important;
 }
 
-/* Hover effects on the input fields themselves */
+/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.user-input[contenteditable="true"] {
+  /* Keep the table's natural row border */
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Hover state - very subtle background hint */
 .data-table td[contenteditable="true"].user-input:hover,
 .data-table td input[type="number"].user-input:hover,
 .data-table td.editable[contenteditable="true"]:hover,
 .data-table td .user-input[contenteditable="true"]:hover {
-  border-bottom-color: var(--user-input-color);
+  background-color: rgba(13, 110, 253, 0.03) !important;
 }
 
-/* Focus effects on the input fields themselves */
+/* Enhanced border for hover state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:hover),
+.data-table td:has(input[type="number"].user-input:hover),
+.data-table td:has(.editable[contenteditable="true"]:hover),
+.data-table td.user-input[contenteditable="true"]:hover {
+  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
+}
+
+/* Focus state - subtle background */
 .data-table td[contenteditable="true"].user-input:focus,
 .data-table td input[type="number"].user-input:focus,
 .data-table td.editable[contenteditable="true"]:focus,
 .data-table td .user-input[contenteditable="true"]:focus {
-  border-bottom-color: var(--user-input-color);
-  background-color: rgba(var(--user-input-color-rgb), 0.05);
+  background-color: rgba(13, 110, 253, 0.05) !important;
 }
 
-/* Cell-level hover effects */
+/* Enhanced border for focus state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:focus),
+.data-table td:has(input[type="number"].user-input:focus),
+.data-table td:has(.editable[contenteditable="true"]:focus),
+.data-table td.user-input[contenteditable="true"]:focus {
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Override conflicting cell hover styles */
 .data-table td:has([contenteditable="true"].user-input):hover,
 .data-table td:has(input[type="number"].user-input):hover,
 .data-table td:has(.user-input[contenteditable="true"]):hover {
-  background-color: rgba(var(--user-input-color-rgb), 0.03);
+  background-color: transparent !important;
 }
 
 /* =============== END ELEGANT USER INPUT BEHAVIOR =============== */
