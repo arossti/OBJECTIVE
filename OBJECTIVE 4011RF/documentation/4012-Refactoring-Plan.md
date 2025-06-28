@@ -2,11 +2,84 @@
 
 ---
 
-## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (December 2024)**
+## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (June 28, 2024)**
 
-**Current Status:** ✅ Foundation Setup Complete + **SYSTEMATIC CLEANUP ACHIEVED** ✅  
-**Milestone Target:** Clean, consolidated CSS foundation for all sections  
+**Current Status:** ✅ NUCLEAR CLEANUP BREAKTHROUGH ACHIEVED ✅  
+**Milestone Target:** Section-by-section table cleanup CSS optimization  
 **Strategic Objective:** Scale proven OBC Matrix approach with systematic section optimization
+
+## 🎉 **BREAKTHROUGH: NUCLEAR CSS CLEANUP COMPLETED (June 28, 2024 3:46pm)**
+
+### **🚨 CRITICAL SUCCESS: Nuclear Approach Eliminates CSS Chaos**
+
+**Problem Solved**: Universal CSS alignment issues across all sections - left-justified numbers, competing style rules, elegant input behavior broken
+
+**Solution Applied**: **NUCLEAR CLEANUP** - deleted conflicting rules instead of patching them
+
+#### **✅ NUCLEAR CLEANUP ACHIEVEMENTS**:
+
+**🧹 UNIVERSAL ALIGNMENT SYSTEM IMPLEMENTED**:
+- **NUMBERS → RIGHT**: All numeric content (input[type="number"], contenteditable, calculated values)
+- **TEXT → LEFT**: All text content (select, data-type="text", section headers)  
+- **SLIDERS → CENTER**: Visual balance for percentage controls
+- **ELIMINATED**: 100+ conflicting CSS rules that were fighting each other
+
+**🎨 ELEGANT INPUT BEHAVIOR RESTORED (OBC Matrix Pattern)**:
+- **Grey italic defaults** on page load (using correct `#6c757d` color)
+- **Blue confident values** when user-modified  
+- **Blue hover underlines** (exact OBC Matrix style with proper border-bottom effects)
+- **Proper focus states** with subtle backgrounds
+- **Event delegation system** for all user inputs
+
+**🔧 ROOT CAUSE FIXES**:
+- **Removed aggressive auto-marking** of fields as 'user-modified' on page load
+- **Clean CSS without `!important` bandaids** - proper cascade respect
+- **Tables define structure, CSS handles formatting** - clean separation
+- **Calculated values properly right-aligned** - universal backup rules
+
+#### **🏆 KEY COMMITS DELIVERED (June 28, 2024)**:
+1. **`css-nuclear-cleanup` branch created** - systematic cleanup approach
+2. **Universal alignment rules implemented** - numbers right, text left, sliders center
+3. **OBC Matrix elegant behavior ported** - exact hover/focus patterns
+4. **Calculated values fixed** - missing CSS declarations completed
+5. **MERGED to `solstice-v4012-refactor`** - all fixes now in main working branch
+
+### **📋 NEXT PHASE: Section-by-Section Optimization (Starting Tonight)**
+
+**Current Progress**:
+- ✅ **S02**: Building Occupancy - COMPLETED
+- ✅ **S10**: Radiant Heat Gains - COMPLETED  
+- ✅ **S11**: Building Envelope - PARTIAL (alignment fixed, structure needs work)
+- 🎯 **S03**: Climate Data - **UP NEXT FOR TONIGHT**
+
+**Priority Order**: S03 → S04 → S05 → S06 → S07 → S08 → S09 → S12 → S13 → S14 → S15  
+**Skip**: S01 (unique dashboard, already optimized)
+
+### **🌙 LATE NIGHT WORK SESSION PLAN (June 28, 2024 - Tonight)**
+
+**Objective**: Section-by-section CSS cleanup starting with S03 Climate Data  
+**Approach**: Apply proven surgical optimization pattern from S02/S10  
+**Timeline**: Focus on 2-3 sections per session for quality control
+
+#### **📋 S03 Climate Data Optimization Checklist**:
+- [ ] **Hide empty columns** for density improvement (following S02 pattern)
+- [ ] **Apply sizing classes** (dropdown-sm/md/lg) to climate location dropdowns
+- [ ] **Natural table layout** with targeted constraints for goalpost prevention  
+- [ ] **Test responsive behavior** - equal expansion, no overflow issues
+- [ ] **Validate universal alignment** works correctly with climate data fields
+
+#### **🎯 Session Success Criteria (Tonight)**:
+- [ ] S03 exhibits clean OBC Matrix behavior - fixed dropdowns, flexible columns
+- [ ] Universal alignment system works flawlessly (numbers right, text left)
+- [ ] Elegant input behavior preserved (grey italic → blue confident)
+- [ ] Blue hover underlines working on all editable fields
+- [ ] No CSS conflicts or regression in other sections
+
+### **📊 PROGRESS TRACKING**:
+- ✅ **June 28, 2024**: **NUCLEAR CLEANUP COMPLETED** - Universal fixes across all sections
+- 🎯 **Tonight**: Section-by-Section Optimization (S03 Climate Data)  
+- 📅 **Next Session**: Continue S04-S06 systematic optimization
+- 🏗️ **Future**: Enhanced DualState with Import/Export Precedence
 
 ### **✅ COMPLETED DECEMBER 2024: Systematic CSS & JavaScript Cleanup**
 
