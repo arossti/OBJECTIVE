@@ -529,13 +529,72 @@ td[colspan="2"] .form-select {
   min-width: 180px;
 }
 
-/* Sliders */
+/* =============== SLIDER SIZING SYSTEM (OBC MATRIX PATTERN) =============== */
+
+/* Small sliders: Compact percentage controls */
+.slider-sm,
+.slider-sm .slider-container,
+[data-slider-size="sm"] {
+  width: 100px !important;
+  min-width: 100px !important;
+}
+
+/* Medium sliders: Standard percentage controls */
+.slider-md,
+.slider-md .slider-container,
+[data-slider-size="md"] {
+  width: 140px !important;
+  min-width: 140px !important;
+}
+
+/* Large sliders: Extended controls with more room */
+.slider-lg,
+.slider-lg .slider-container,
+[data-slider-size="lg"] {
+  width: 180px !important;
+  min-width: 180px !important;
+}
+
+/* Base slider styling */
 [data-type="percentage"],
 [data-type="coefficient"],
 [data-type="year_slider"] {
   cursor: pointer;
   color: var(--user-input-color);
   font-weight: 500;
+}
+
+/* =============== DROPDOWN SIZING SYSTEM (OBC MATRIX PATTERN) =============== */
+
+/* Small dropdowns: Standardized for YES/NO, Select options */
+.dropdown-sm,
+.dropdown-sm .form-select,
+[data-dropdown-size="sm"] {
+  width: 120px !important;
+  min-width: 120px !important;
+}
+
+/* Medium dropdowns: Standardized for longer options */
+.dropdown-md,
+.dropdown-md .form-select,
+[data-dropdown-size="md"] {
+  width: 180px !important;
+  min-width: 180px !important;
+}
+
+/* Large dropdowns: Standardized for building classifications */
+.dropdown-lg,
+.dropdown-lg .form-select,
+[data-dropdown-size="lg"] {
+  width: 280px !important;
+  min-width: 280px !important;
+}
+
+/* Ensure dropdowns with size classes override content-based sizing */
+.data-table .dropdown-sm select.form-select,
+.data-table .dropdown-md select.form-select,
+.data-table .dropdown-lg select.form-select {
+  width: 100% !important; /* Fill their sized container */
 }
 
 /* =============== Print Styling =============== */
@@ -931,8 +990,7 @@ input[type=number].form-control {
   /* Typography */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
   font-size: inherit !important;
-  color: #6c757d !important; /* Default grey for unmodified fields */
-  font-style: italic !important; /* Default italic for unmodified fields */
+  color: var(--user-input-color) !important; /* Default blue - will be overridden by state classes */
   font-weight: 500 !important;
   
   /* Clean interactions */
@@ -1011,13 +1069,22 @@ input[type=number].form-control {
   border-radius: 0 !important;
 }
 
-/* Default/placeholder text styling - muted grey italic */
-.data-table td[contenteditable="true"].user-input:not(.user-modified),
-.data-table td input[type="number"].user-input:not(.user-modified),
-.data-table td.editable[contenteditable="true"]:not(.user-modified),
-.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+/* Default/placeholder text styling - muted grey italic (only for truly empty fields) */
+.data-table td[contenteditable="true"].user-input:not(.user-modified):empty,
+.data-table td input[type="number"].user-input:not(.user-modified)[value=""],
+.data-table td.editable[contenteditable="true"]:not(.user-modified):empty,
+.data-table td .user-input[contenteditable="true"]:not(.user-modified):empty {
   color: #6c757d !important; /* Muted grey for default/placeholder text */
   font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* Immediate styling for fields with content (before JavaScript runs) */
+.data-table td[contenteditable="true"].user-input:not(:empty),
+.data-table td input[type="number"].user-input:not([value=""]),
+.data-table td.editable[contenteditable="true"]:not(:empty) {
+  color: var(--user-input-color) !important; /* Blue for fields with content */
+  font-style: normal !important;
+  font-weight: 600 !important;
 }
 
 /* User-modified text styling - blue and confident */
@@ -1059,7 +1126,7 @@ input[type=number].form-control {
     overflow: hidden !important;
 }
 
-/* Section 10: Controlled width for content columns */
+/* Section 10: Flexible width for content columns - use available space intelligently */
 #envelopeRadiantGains .data-table td:nth-child(2) { width: 60px !important; }   /* Column B - ID numbers */
 #envelopeRadiantGains .data-table td:nth-child(3) { width: 180px !important; }  /* Column C - RG-Units labels */
 #envelopeRadiantGains .data-table td:nth-child(4) { 
@@ -1068,41 +1135,46 @@ input[type=number].form-control {
     text-align: right !important; /* Right-align numeric inputs */
 }
 #envelopeRadiantGains .data-table td:nth-child(5) { width: 140px !important; }  /* Column E - Orientation dropdowns */
-#envelopeRadiantGains .data-table td:nth-child(6) { width: 80px !important; }   /* Column F - SHGC values */
+#envelopeRadiantGains .data-table td:nth-child(6) { min-width: 140px !important; } /* Column F - SHGC values with slider-md */
 #envelopeRadiantGains .data-table td:nth-child(7) { 
-    width: 100px !important; /* Column G - Winter shading % */
+    min-width: 140px !important; /* Column G - Winter shading % - expandable with slider-md */
     text-align: center !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(8) { 
-    width: 100px !important; /* Column H - Summer shading % */
+    min-width: 140px !important; /* Column H - Summer shading % - expandable with slider-md */
     text-align: center !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(9) { 
-    width: 120px !important; /* Column I - HTG GAIN kWh/yr */
+    min-width: 120px !important; /* Column I - HTG GAIN kWh/yr - flex to content */
     text-align: right !important;
     font-weight: 700 !important; /* Bold for calculated values */
 }
 #envelopeRadiantGains .data-table td:nth-child(10) { 
-    width: 100px !important; /* Column J - HTG GAIN % */
+    min-width: 100px !important; /* Column J - HTG GAIN % - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(11) { 
-    width: 120px !important; /* Column K - COOL GAIN kWh/yr */
+    min-width: 120px !important; /* Column K - COOL GAIN kWh/yr - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(12) { 
-    width: 100px !important; /* Column L - COOL GAIN % */
+    min-width: 100px !important; /* Column L - COOL GAIN % - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(13) { 
-    width: 120px !important; /* Column M - G-FACTOR kWh/m²yr */
+    min-width: 120px !important; /* Column M - G-FACTOR kWh/m²yr - flex to content */
     text-align: right !important;
     font-weight: 700 !important;
 }
-#envelopeRadiantGains .data-table td:nth-child(14) { width: 200px !important; } /* Column N - Notes/descriptions */
+#envelopeRadiantGains .data-table td:nth-child(14) { 
+    min-width: 200px !important; /* Column N - Notes/descriptions - flex to available space */
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    vertical-align: top !important;
+}
 
 /* Section 10: Input field constraints */
 #envelopeRadiantGains .data-table td:nth-child(4) input,
@@ -1118,11 +1190,15 @@ input[type=number].form-control {
     max-width: 135px !important; /* Match column width with buffer */
 }
 
-/* Section 10: Notes column wrapping */
-#envelopeRadiantGains .data-table td:nth-child(14) {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
+/* Section 10: Apply medium slider sizing to SHGC and shading percentage columns */
+#envelopeRadiantGains .data-table td:nth-child(6) .slider-container,
+#envelopeRadiantGains .data-table td:nth-child(7) .slider-container,
+#envelopeRadiantGains .data-table td:nth-child(8) .slider-container,
+#envelopeRadiantGains .data-table td:nth-child(6) [data-type="percentage"],
+#envelopeRadiantGains .data-table td:nth-child(7) [data-type="percentage"],
+#envelopeRadiantGains .data-table td:nth-child(8) [data-type="percentage"] {
+    width: 140px !important; /* Use slider-md sizing */
+    min-width: 140px !important;
 }
 
 /* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
