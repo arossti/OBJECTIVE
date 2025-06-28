@@ -869,28 +869,26 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Initialize other UI handlers
     initializeUIHandlers();
+    
+    // Initialize elegant user input behavior
+    initializeElegantInputBehavior();
   } else {
     console.error("Core TEUI modules (StateManager, FieldManager) not found!");
   }
 
-  // =============== ELEGANT STYLING ENHANCEMENT FOR 4011RF ===============
-  // Use EVENT DELEGATION for elegant input styling - handles conditional fields automatically
-  function initializeElegantStyling() {
-    // Use event delegation on document to catch ALL user inputs (including conditional ones)
+  // =============== ELEGANT USER INPUT BEHAVIOR ===============
+  function initializeElegantInputBehavior() {
+    // Event delegation catches ALL user inputs (including conditional ones)
     document.addEventListener('focus', function(e) {
       const field = e.target;
-      
-      // Check if this is a user input field
       if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
         field.classList.add('editing-intent');
         field.dataset.originalValue = field.textContent || field.value || '';
       }
-    }, true); // Use capture to ensure we catch all focus events
-    
+    }, true);
+
     document.addEventListener('blur', function(e) {
       const field = e.target;
-      
-      // Check if this is a user input field
       if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
         field.classList.remove('editing-intent');
         
@@ -901,20 +899,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentValue !== originalValue && currentValue.trim() !== '') {
           field.classList.add('user-modified');
         } else if (currentValue.trim() === '') {
-          // If cleared, remove user-modified (back to default)
+          // If cleared, remove user-modified (back to default grey italic)
           field.classList.remove('user-modified');
         }
       }
-    }, true); // Use capture to ensure we catch all blur events
+    }, true);
+
+    // ROOT CAUSE FIX: No auto-marking on page load - clean slate
+    // Fields start grey italic and only turn blue on actual interaction
   }
-  
-  // Function to refresh styling for conditionally enabled fields
-  window.TEUI.refreshElegantStyling = function() {
-    // This function can be called when fields are conditionally enabled
-    // The event delegation approach means no re-initialization needed
-    console.log('Elegant styling ready for all fields (including conditional)');
-  };
-  
-  // Initialize elegant styling immediately - event delegation doesn't need delays
-  initializeElegantStyling();
 });

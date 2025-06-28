@@ -224,48 +224,93 @@ body {
   display: none;
 }
 
-/* =============== UNIVERSAL DATA TABLE BASE (OBC MATRIX PATTERN) =============== */
+/* =============== Data Tables =============== */
 
-/* Base table layout - content-based but controlled */
 .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--base-font-size);
-  table-layout: auto; /* Content-based sizing like OBC Matrix */
+  table-layout: auto; /* Changed from fixed to auto */
 }
 
-/* Universal table cell defaults */
+/* Table cells with no wrapping */
 .data-table td,
 .data-table th {
   padding: var(--cell-padding);
+  text-align: left; /* Default alignment */
   border-bottom: 1px solid #eeeeee;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-}
-
-/* =============== UNIVERSAL ALIGNMENT RULES (OBC MATRIX PATTERN) =============== */
-
-/* UNIVERSAL: All table content left-aligned by default */
-.data-table td {
-  text-align: left;
-}
-
-/* UNIVERSAL: Numeric fields right-aligned (accounting style) */
-.data-table td.calculated-value,
-.data-table td.derived-value,
-.data-table td input[type="number"],
-.data-table td[data-type="numeric"],
-.data-table td.numeric-field {
-  text-align: right;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Changed from visible */
+  text-overflow: ellipsis; /* Added */
 }
 
 /* Ensure cells have minimum vertical padding for focus glow */
 .data-table td {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
+  padding-top: 4px !important; /* Reduced back to 4px */
+  padding-bottom: 4px !important; /* Reduced back to 4px */
+}
+
+/* Right-align numeric columns (D-M) */
+.data-table td.col-d,
+.data-table td.col-f,
+.data-table td.col-h,
+.data-table td.col-j,
+.data-table td.col-k,
+.data-table td.col-l {
+  text-align: right;
+}
+
+/* Force specific text columns (Units, secondary labels) to left-align */
+.data-table
+  td.col-e:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-g:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-i:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell),
+.data-table
+  td.col-m:not(:has(.calculated-value)):not(:has(.derived-value)):not(
+    .user-input
+  ):not(.number-input-cell) {
+  text-align: left; /* Only apply left-align if the cell doesn't contain a calculated/derived/input value */
+}
+
+/* Ensure Calculated/Derived/User Input values are RIGHT-aligned, overriding column defaults */
+.data-table td.col-e.calculated-value,
+.data-table td.col-g.calculated-value,
+.data-table td.col-i.calculated-value,
+.data-table td.col-m.calculated-value,
+.data-table td.col-e .calculated-value, /* Target inner elements too */
+.data-table td.col-g .calculated-value,
+.data-table td.col-i .calculated-value,
+.data-table td.col-m .calculated-value,
+.data-table td.col-e.derived-value,
+.data-table td.col-g.derived-value,
+.data-table td.col-i.derived-value,
+.data-table td.col-m.derived-value,
+.data-table td.col-e .derived-value,
+.data-table td.col-g .derived-value,
+.data-table td.col-i .derived-value,
+.data-table td.col-m .derived-value,
+.data-table td.col-e.user-input,
+.data-table td.col-g.user-input,
+.data-table td.col-i.user-input,
+.data-table td.col-m.user-input,
+.data-table td.col-e .user-input,
+.data-table td.col-g .user-input,
+.data-table td.col-i .user-input,
+.data-table td.col-m .user-input,
+.data-table td.col-e.number-input-cell,
+.data-table td.col-g.number-input-cell,
+.data-table td.col-i.number-input-cell,
+.data-table td.col-m.number-input-cell {
+  text-align: right !important;
 }
 
 /* Calculated/Derived values styling (keep base style) */
@@ -530,33 +575,7 @@ td[colspan="2"] .form-select {
   min-width: 180px;
 }
 
-/* =============== SLIDER SIZING SYSTEM (OBC MATRIX PATTERN) =============== */
-
-/* Small sliders: Compact percentage controls */
-.slider-sm,
-.slider-sm .slider-container,
-[data-slider-size="sm"] {
-  width: 100px !important;
-  min-width: 100px !important;
-}
-
-/* Medium sliders: Standard percentage controls */
-.slider-md,
-.slider-md .slider-container,
-[data-slider-size="md"] {
-  width: 140px !important;
-  min-width: 140px !important;
-}
-
-/* Large sliders: Extended controls with more room */
-.slider-lg,
-.slider-lg .slider-container,
-[data-slider-size="lg"] {
-  width: 180px !important;
-  min-width: 180px !important;
-}
-
-/* Base slider styling */
+/* Sliders */
 [data-type="percentage"],
 [data-type="coefficient"],
 [data-type="year_slider"] {
@@ -564,34 +583,6 @@ td[colspan="2"] .form-select {
   color: var(--user-input-color);
   font-weight: 500;
 }
-
-/* =============== DROPDOWN SIZING SYSTEM (OBC MATRIX PATTERN) =============== */
-
-/* Small dropdowns: Standardized for YES/NO, Select options */
-.dropdown-sm,
-.dropdown-sm .form-select,
-[data-dropdown-size="sm"] {
-  width: 120px !important;
-  min-width: 120px !important;
-}
-
-/* Medium dropdowns: Standardized for longer options */
-.dropdown-md,
-.dropdown-md .form-select,
-[data-dropdown-size="md"] {
-  width: 180px !important;
-  min-width: 180px !important;
-}
-
-/* Large dropdowns: Standardized for building classifications */
-.dropdown-lg,
-.dropdown-lg .form-select,
-[data-dropdown-size="lg"] {
-  width: 280px !important;
-  min-width: 280px !important;
-}
-
-/* Clean sizing for dropdowns - let size classes work naturally */
 
 /* =============== Print Styling =============== */
 
@@ -969,295 +960,16 @@ input[type=number].form-control {
 }
 /* --- End Hover Style --- */
 
-/* =============== ELEGANT USER INPUT STYLING (COMPLETE OBC MATRIX PATTERN) =============== */
+/* --- Style input elements --- */
 
-/* Base styling for editable fields - minimal and clean */
-.data-table td[contenteditable="true"].user-input,
-.data-table td input[type="number"].user-input,
-.data-table td.editable[contenteditable="true"],
-.data-table td .user-input[contenteditable="true"] {
-  /* Minimal borders - preserve table structure */
+/* Base style for user-input class (text color) */
+.user-input {
+  font-weight: 500;
+  color: var(--user-input-color); /* Removed !important */
   border: none !important;
-  border-radius: 0 !important;
-  background-color: transparent !important;
-  padding: 4px 8px !important;
-  margin: 0 !important;
-  
-  /* Typography */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-  font-size: inherit !important;
-  color: #6c757d !important; /* Default grey italic - blue applied by state classes when appropriate */
-  font-style: italic !important; /* Default italic for empty/placeholder state */
-  font-weight: 400 !important; /* Lighter weight for default state */
-  
-  /* Clean interactions */
   outline: none !important;
-  cursor: text !important;
-  
-  /* Default sizing - removed width 100% to allow fixed-width controls */
-  box-sizing: border-box !important;
+  background-color: transparent !important; /* Ensure no background */
 }
-
-/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
-.data-table td:has([contenteditable="true"].user-input),
-.data-table td:has(input[type="number"].user-input),
-.data-table td:has(.editable[contenteditable="true"]),
-.data-table td.user-input[contenteditable="true"] {
-  /* Keep the table's natural row border */
-  border-bottom: 1px solid #eeeeee !important;
-}
-
-/* Hover state - very subtle background hint + enhanced border */
-.data-table td[contenteditable="true"].user-input:hover,
-.data-table td input[type="number"].user-input:hover,
-.data-table td.editable[contenteditable="true"]:hover,
-.data-table td .user-input[contenteditable="true"]:hover {
-  background-color: rgba(13, 110, 253, 0.03) !important;
-}
-
-/* Enhanced border for hover state on parent cell */
-.data-table td:has([contenteditable="true"].user-input:hover),
-.data-table td:has(input[type="number"].user-input:hover),
-.data-table td:has(.editable[contenteditable="true"]:hover),
-.data-table td.user-input[contenteditable="true"]:hover {
-  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
-}
-
-/* Focus state - subtle background + enhanced border */
-.data-table td[contenteditable="true"].user-input:focus,
-.data-table td input[type="number"].user-input:focus,
-.data-table td.editable[contenteditable="true"]:focus,
-.data-table td .user-input[contenteditable="true"]:focus {
-  background-color: rgba(13, 110, 253, 0.05) !important;
-}
-
-/* Enhanced border for focus state on parent cell */
-.data-table td:has([contenteditable="true"].user-input:focus),
-.data-table td:has(input[type="number"].user-input:focus),
-.data-table td:has(.editable[contenteditable="true"]:focus),
-.data-table td.user-input[contenteditable="true"]:focus {
-  border-bottom-color: #0d6efd !important;
-}
-
-/* Parent cell styling - minimal */
-.data-table td:has([contenteditable="true"].user-input),
-.data-table td:has(input[type="number"].user-input),
-.data-table td.editable,
-.data-table td:has(.user-input[contenteditable="true"]) {
-  padding: 4px 8px !important;
-  vertical-align: middle !important;
-}
-
-/* Override conflicting cell hover styles */
-.data-table td:has([contenteditable="true"].user-input):hover,
-.data-table td:has(input[type="number"].user-input):hover,
-.data-table td.editable:hover,
-.data-table td:has(.user-input[contenteditable="true"]):hover {
-  background-color: transparent !important;
-}
-
-/* Remove conflicting TD focus styles */
-.data-table td.editable.editing,
-.data-table td.user-input.editing,
-.data-table td:has([contenteditable="true"].editing),
-.data-table td:has(input[type="number"]:focus) {
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-
-/* Default/placeholder text styling - now handled by base styling above */
-
-/* Styling for fields with actual content - only when explicitly marked as user-modified */
-
-/* User-modified text styling - blue and confident */
-.data-table td[contenteditable="true"].user-input.user-modified,
-.data-table td input[type="number"].user-input.user-modified,
-.data-table td.editable[contenteditable="true"].user-modified,
-.data-table td .user-input[contenteditable="true"].user-modified {
-  color: var(--user-input-color) !important; /* Blue for user-entered values */
-  font-style: normal !important; /* Remove italic for user values */
-  font-weight: 600 !important; /* Slightly bolder to show confidence */
-}
-
-/* Temporary editing intent styling - blue while actively editing (before commit) */
-.data-table td[contenteditable="true"].user-input.editing-intent,
-.data-table td input[type="number"].user-input.editing-intent,
-.data-table td.editable[contenteditable="true"].editing-intent,
-.data-table td .user-input[contenteditable="true"].editing-intent {
-  color: var(--user-input-color) !important; /* Blue while editing */
-  font-style: normal !important; /* Remove italic while editing */
-  font-weight: 600 !important; /* Bold while editing */
-}
-
-/* =============== SECTION-SPECIFIC LAYOUT OPTIMIZATIONS (OBC MATRIX PATTERN) =============== */
-
-/* =============== SECTION 10 LAYOUT OPTIMIZATION =============== */
-/* Section 10: Radiant Gains - window areas, orientations, and heat gain calculations */
-
-#envelopeRadiantGains .data-table {
-    table-layout: auto; /* Content-based but controlled */
-    width: 100%;
-}
-
-/* Section 10: Surgical anti-goalpost fix - minimal constraints, natural flexibility */
-/* Hide empty columns to improve density */
-#envelopeRadiantGains .data-table td:nth-child(1),  /* Column A - no expandable rows */
-#envelopeRadiantGains .data-table td:nth-child(15)  /* Column O - empty */
-{
-    width: 1px !important; /* Minimal width for empty columns */
-    padding: 2px 1px !important; /* Minimal padding */
-    overflow: hidden !important;
-}
-
-/* Section 10: Only constrain the goalpost culprit - let everything else size naturally */
-#envelopeRadiantGains .data-table td:nth-child(4) { 
-    width: 100px !important;  /* Column D - Area inputs (constrain only the culprit) */
-    max-width: 100px !important;
-    /* text-align now handled by universal alignment system */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-}
-/* Section 10: Essential styling only - alignment handled globally */
-#envelopeRadiantGains .data-table td:nth-child(9) { 
-    font-weight: 700 !important; /* Bold for calculated values */
-}
-#envelopeRadiantGains .data-table td:nth-child(10) { 
-    font-weight: 700 !important;
-}
-#envelopeRadiantGains .data-table td:nth-child(11) { 
-    font-weight: 700 !important;
-}
-#envelopeRadiantGains .data-table td:nth-child(12) { 
-    font-weight: 700 !important;
-}
-#envelopeRadiantGains .data-table td:nth-child(13) { 
-    font-weight: 700 !important;
-}
-#envelopeRadiantGains .data-table td:nth-child(14) { 
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
-}
-
-/* Section 10: Minimal input styling - keep sm/md/lg sizing classes */
-#envelopeRadiantGains .data-table td:nth-child(4) input,
-#envelopeRadiantGains .data-table td:nth-child(4) [contenteditable] {
-    max-width: 90px !important;  /* Only constrain Area inputs (goalpost culprit) */
-    /* text-align now handled by universal alignment system */
-}
-
-/* Section 10: Keep slider-md sizing for sliders (proven to work) */
-#envelopeRadiantGains .data-table td:nth-child(6) .slider-container,
-#envelopeRadiantGains .data-table td:nth-child(7) .slider-container,
-#envelopeRadiantGains .data-table td:nth-child(8) .slider-container,
-#envelopeRadiantGains .data-table td:nth-child(6) [data-type="percentage"],
-#envelopeRadiantGains .data-table td:nth-child(7) [data-type="percentage"],
-#envelopeRadiantGains .data-table td:nth-child(8) [data-type="percentage"] {
-    width: 140px !important; /* slider-md sizing - proven to work */
-    min-width: 140px !important;
-    /* text-align now handled by universal alignment system */
-}
-
-/* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
-
-/* =============== SECTION 02 LAYOUT OPTIMIZATION =============== */
-/* Section 02: Building Occupancy - Surgical anti-goalpost fix (same pattern as S10) */
-
-#buildingOccupancy .data-table {
-    table-layout: auto; /* Content-based with natural flexibility */
-    width: 100%;
-}
-
-/* Section 02: Hide empty columns for density */
-#buildingOccupancy .data-table td:nth-child(1),  /* Column A - no expandable rows */
-#buildingOccupancy .data-table td:nth-child(6),  /* Column F - empty */
-#buildingOccupancy .data-table td:nth-child(7),  /* Column G - empty */
-#buildingOccupancy .data-table td:nth-child(8),  /* Column H - empty */
-#buildingOccupancy .data-table td:nth-child(9),  /* Column I - empty */
-#buildingOccupancy .data-table td:nth-child(10), /* Column J - empty */
-#buildingOccupancy .data-table td:nth-child(11), /* Column K - empty */
-#buildingOccupancy .data-table td:nth-child(13), /* Column M - empty */
-#buildingOccupancy .data-table td:nth-child(14)  /* Column N - empty */
-{
-    display: none; /* Complete removal for cleaner layout */
-}
-
-/* Section 02: Natural sizing with essential styling only */
-#buildingOccupancy .data-table td:nth-child(15) { 
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    vertical-align: top !important;
-}
-
-/* Section 02: Apply dropdown-lg sizing for building classifications */
-#buildingOccupancy .data-table td:nth-child(4) select,
-#buildingOccupancy .data-table td:nth-child(4) .form-select {
-    width: 280px !important; /* Use dropdown-lg sizing for long building classifications */
-    min-width: 280px !important;
-}
-
-/* Section 02: Apply same proven approach as S10 - slider size drives column size */
-#buildingOccupancy .data-table td[data-field-id="d_1"],
-#buildingOccupancy .data-table td[data-field-id="d_2"] {
-    width: 140px; /* Match slider-md size - clean consolidation, not override */
-    /* text-align now handled by universal alignment system */
-}
-
-/* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
-
-/* =============== 4011RF ELEGANT STYLING ENHANCEMENT =============== */
-
-/* Auto-apply elegant styling to 4011RF fields when they gain/lose focus and on value changes */
-/* This enhances the existing 4011RF system to work with the elegant OBC Matrix styling */
-
-/* =============== END ELEGANT USER INPUT STYLING =============== */
-
-/*
-  Enhancement Script for 4011RF Elegant Input Styling
-  
-  Add this to any 4011RF HTML file to enable elegant styling:
-  
-  <script>
-  // 4011RF Elegant Styling Enhancement
-  document.addEventListener('DOMContentLoaded', function() {
-    // Find all user-input fields in the 4011RF system
-    const editableFields = document.querySelectorAll('[contenteditable="true"].user-input, input.user-input');
-    
-    editableFields.forEach(field => {
-      // Store original value for change detection
-      const originalValue = field.textContent || field.value || '';
-      
-      // Add focus handler for editing-intent styling
-      field.addEventListener('focus', function() {
-        this.classList.add('editing-intent');
-        this.dataset.originalValue = this.textContent || this.value || '';
-      });
-      
-      // Add blur handler for user-modified styling
-      field.addEventListener('blur', function() {
-        this.classList.remove('editing-intent');
-        
-        const currentValue = this.textContent || this.value || '';
-        const originalValue = this.dataset.originalValue || '';
-        
-        // If value changed, mark as user-modified
-        if (currentValue !== originalValue && currentValue.trim() !== '') {
-          this.classList.add('user-modified');
-        } else if (currentValue.trim() === '') {
-          // If cleared, remove user-modified (back to default)
-          this.classList.remove('user-modified');
-        }
-      });
-      
-      // Set initial state based on whether field has content
-      if (originalValue.trim() !== '') {
-        field.classList.add('user-modified');
-      }
-    });
-  });
-  </script>
-*/
 
 /* Force blue color on focused number inputs */
 .data-table td input[type="number"].user-input:focus {
@@ -1269,9 +981,10 @@ input[type=number].form-control {
   background-color: transparent !important;
 }
 
-/* Clean numeric input styling - removed width 100% to allow fixed-width controls */
+/* Remove all the recent numeric input styling we added */
 .data-table td input[type="number"].form-control,
 .data-table td input[type="number"].user-input {
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1301,9 +1014,13 @@ input[type=number].form-control {
   border: none !important;
 }
 
-/* Blue color only for user-modified inputs - base styling handles defaults */
+/* Keep the blue color for user input */
+.data-table td input[type="number"].user-input {
+  color: var(--user-input-color) !important;
+  font-weight: 500 !important;
+}
 
-/* text-align now handled by universal alignment system at end of file */
+/* Removed conflicting alignment rule - now handled by universal rules */
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
 .data-table tr td.section-subheader,
@@ -1325,19 +1042,15 @@ input[type=number].form-control {
   background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
 }
 
-/* Styling for first-column subheader labels (typically in columns A-C) - Left align */
-.data-table tr:has(td.section-subheader) td:nth-child(1),
-.data-table tr:has(td.section-subheader) td:nth-child(2),
-.data-table tr:has(td.section-subheader) td:nth-child(3) {
-  text-align: left !important; /* Keep important here as it overrides the general center align */
-}
+/* Removed conflicting alignment rule - now handled by universal rules */
 
-/* Section 02 text fields now handled by universal alignment system */
+/* Removed conflicting Section 02 alignment rules - now handled by universal rules */
 
-/* Clean dropdown styling - removed width 100% to allow fixed-width controls */
+/* Make the dropdown styling more specific */
 .data-table td select.form-select,
 .data-table td select.form-control,
 table.data-table select.form-select {
+  width: 100%;
   min-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1375,17 +1088,7 @@ table.data-table select.form-select:hover {
 }
 
 /* --- Utility Classes --- */
-.text-left {
-  text-align: left !important; /* Added important to override column defaults */
-}
-
-.text-center {
-  text-align: center !important;
-}
-
-.text-right {
-  text-align: right !important;
-}
+/* Removed conflicting alignment utility classes - now handled by universal rules */
 
 /* Style for disabled/non-applicable input fields */
 .disabled-input {
@@ -1396,65 +1099,7 @@ table.data-table select.form-select:hover {
 }
 /* --- End Utility Classes --- */
 
-.text-left-indicator {
-  text-align: left !important; /* Force left alignment for specific indicator columns */
-}
-
-/* =============== SECTION 11: TRANSMISSION LOSSES (OBC MATRIX PATTERN) =============== */
-
-/* Apply consistent table layout with proper column constraints */
-#envelopeTransmissionLosses .data-table,
-section[data-section-id="envelopeTransmissionLosses"] .data-table {
-  table-layout: fixed;
-}
-
-/* Column A: No expandable rows in S11 */
-#envelopeTransmissionLosses .data-table td:nth-child(1),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(1) {
-  width: 40px;
-  min-width: 40px;
-}
-
-/* Columns B and C: Fixed-width ID and description */
-#envelopeTransmissionLosses .data-table td:nth-child(2),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(2) {
-  width: 60px;
-  min-width: 60px;
-}
-
-#envelopeTransmissionLosses .data-table td:nth-child(3),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(3) {
-  width: 280px;
-  min-width: 200px;
-}
-
-/* Columns D-N: Equal distribution of remaining space (anti-goalpost) */
-#envelopeTransmissionLosses .data-table td:nth-child(4),  /* D: Areas */
-#envelopeTransmissionLosses .data-table td:nth-child(5),  /* E: Rimp */
-#envelopeTransmissionLosses .data-table td:nth-child(6),  /* F: RSI */
-#envelopeTransmissionLosses .data-table td:nth-child(7),  /* G: U-Value */
-#envelopeTransmissionLosses .data-table td:nth-child(8),  /* H: % of Ae & Ag */
-#envelopeTransmissionLosses .data-table td:nth-child(9),  /* I: Heatloss */
-#envelopeTransmissionLosses .data-table td:nth-child(10), /* J: Heatloss % */
-#envelopeTransmissionLosses .data-table td:nth-child(11), /* K: Heatgain */
-#envelopeTransmissionLosses .data-table td:nth-child(12), /* L: Heatgain % */
-#envelopeTransmissionLosses .data-table td:nth-child(13), /* M: Reference */
-#envelopeTransmissionLosses .data-table td:nth-child(14), /* N: Status */
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(4),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(5),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(6),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(7),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(8),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(9),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(10),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(11),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(12),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(13),
-section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(14) {
-  width: auto; /* Equal distribution */
-  min-width: 80px; /* Minimum readable width */
-  max-width: none; /* No goalpost expansion */
-}
+/* Removed conflicting text-left-indicator - now handled by universal rules */
 
 /* --- Section 11 Visual Indicators --- */
 
@@ -1884,7 +1529,6 @@ body.viewing-reference-inputs .reference-input-display-locked {
   font-weight: bold !important;
   font-style: italic !important;
   cursor: default !important;
-  pointer-events: none !important;
 }
 
 /* --- START SUPER TARGETED OVERRIDES FOR INPUTS --- */
@@ -2148,32 +1792,6 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   stroke-width: 2.5px; /* Thicker border in fullscreen */
 }
 
-/* Make links more visible in fullscreen */
-.dependency-graph-svg-wrapper:fullscreen .link,
-.dependency-graph-svg-wrapper:-webkit-full-screen .link,
-.dependency-graph-svg-wrapper:-moz-full-screen .link,
-.dependency-graph-svg-wrapper:-ms-fullscreen .link {
-  stroke-width: 2px; /* Thicker links in fullscreen */
-  stroke-opacity: 0.7; /* More opaque links in fullscreen */
-}
-
-/* Improve visibility of influential nodes in fullscreen */
-.dependency-graph-svg-wrapper:fullscreen .node circle:not(.node-background),
-.dependency-graph-svg-wrapper:-webkit-full-screen
-  .node
-  circle:not(.node-background),
-.dependency-graph-svg-wrapper:-moz-full-screen
-  .node
-  circle:not(.node-background),
-.dependency-graph-svg-wrapper:-ms-fullscreen
-  .node
-  circle:not(.node-background) {
-  filter: drop-shadow(
-    0px 3px 5px rgba(0, 0, 0, 0.3)
-  ); /* Stronger shadow in fullscreen */
-  stroke-width: 2.5px; /* Thicker border in fullscreen */
-}
-
 /* Special styling for influential nodes (stronger glow in fullscreen) */
 .dependency-graph-svg-wrapper:fullscreen
   .node
@@ -2307,6 +1925,42 @@ body.viewing-reference-inputs .reference-input-display-locked select {
     white-space: nowrap;
 } */
 
+/* =============== CONTENT ALIGNMENT: CLEAN UNIVERSAL RULES =============== */
+/* ROOT CAUSE FIX: Simple rules without aggressive overrides */
+
+/* UNIVERSAL RULE 1: ALL NUMERIC CONTENT → RIGHT ALIGNED */
+.data-table input[type="number"],
+.data-table [contenteditable]:not([data-type="text"]),
+.data-table .calculated-value,
+.data-table .derived-value,
+.data-table .numeric-field {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* UNIVERSAL RULE 2: ALL TEXT CONTENT → LEFT ALIGNED */
+.data-table select,
+.data-table [data-type="text"],
+.data-table .section-subheader {
+  text-align: left;
+}
+
+/* UNIVERSAL RULE 3: SLIDERS → CENTER ALIGNED (Visual Balance) */
+.data-table [data-type="percentage"],
+.data-table [data-type="coefficient"],
+.data-table [data-type="year_slider"],
+.data-table .slider-container {
+  text-align: center;
+}
+
+/* UNIVERSAL BACKUP: Ensure ALL calculated/derived values are right-aligned */
+.calculated-value,
+.derived-value {
+  text-align: right !important;
+}
+
+/* END CLEAN RULES - Proper CSS cascade without conflicts */
+
 /* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
 /* EXACT COPY from working OBC Matrix styles */
 
@@ -2339,94 +1993,62 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   font-weight: 600 !important; /* Bold while editing */
 }
 
-/* Base user input styling with hover effects */
+/* Base user input styling - minimal and clean */
 .data-table td[contenteditable="true"].user-input,
 .data-table td input[type="number"].user-input,
 .data-table td.editable[contenteditable="true"],
 .data-table td .user-input[contenteditable="true"] {
-  border-bottom: 2px solid transparent;
-  transition: border-bottom-color 0.2s ease, background-color 0.2s ease;
+  border: none !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  outline: none !important;
 }
 
-/* Hover effects on the input fields themselves */
+/* CRITICAL: Preserve table row dividers - don't override parent td border-bottom */
+.data-table td:has([contenteditable="true"].user-input),
+.data-table td:has(input[type="number"].user-input),
+.data-table td.user-input[contenteditable="true"] {
+  /* Keep the table's natural row border */
+  border-bottom: 1px solid #eeeeee !important;
+}
+
+/* Hover state - very subtle background hint */
 .data-table td[contenteditable="true"].user-input:hover,
 .data-table td input[type="number"].user-input:hover,
 .data-table td.editable[contenteditable="true"]:hover,
 .data-table td .user-input[contenteditable="true"]:hover {
-  border-bottom-color: var(--user-input-color);
+  background-color: rgba(13, 110, 253, 0.03) !important;
 }
 
-/* Focus effects on the input fields themselves */
+/* Enhanced border for hover state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:hover),
+.data-table td:has(input[type="number"].user-input:hover),
+.data-table td:has(.editable[contenteditable="true"]:hover),
+.data-table td.user-input[contenteditable="true"]:hover {
+  border-bottom-color: rgba(13, 110, 253, 0.4) !important;
+}
+
+/* Focus state - subtle background */
 .data-table td[contenteditable="true"].user-input:focus,
 .data-table td input[type="number"].user-input:focus,
 .data-table td.editable[contenteditable="true"]:focus,
 .data-table td .user-input[contenteditable="true"]:focus {
-  border-bottom-color: var(--user-input-color);
-  background-color: rgba(var(--user-input-color-rgb), 0.05);
+  background-color: rgba(13, 110, 253, 0.05) !important;
 }
 
-/* Cell-level hover effects */
+/* Enhanced border for focus state on parent cell */
+.data-table td:has([contenteditable="true"].user-input:focus),
+.data-table td:has(input[type="number"].user-input:focus),
+.data-table td:has(.editable[contenteditable="true"]:focus),
+.data-table td.user-input[contenteditable="true"]:focus {
+  border-bottom-color: #0d6efd !important;
+}
+
+/* Override conflicting cell hover styles */
 .data-table td:has([contenteditable="true"].user-input):hover,
 .data-table td:has(input[type="number"].user-input):hover,
 .data-table td:has(.user-input[contenteditable="true"]):hover {
-  background-color: rgba(var(--user-input-color-rgb), 0.03);
+  background-color: transparent !important;
 }
 
 /* =============== END ELEGANT USER INPUT BEHAVIOR =============== */
-
-/* =============== UNIVERSAL ALIGNMENT SYSTEM (OBC Matrix Pattern) =============== */
-/* COMPREHENSIVE system: RIGHT for ALL numbers, LEFT for text - WORKS FOR ALL SECTIONS */
-
-/* RULE 1: RIGHT-ALIGN ALL NUMERIC CONTENT (Comprehensive Coverage with Maximum Specificity) */
-.data-table td input[type="number"],
-.data-table td [contenteditable],
-.data-table td [contenteditable].user-input,
-.data-table td [contenteditable][data-field-id],
-.data-table td input:not([type="text"]):not([type="email"]):not([type="password"]):not([type="search"]),
-.data-table td .calculated-value,
-.data-table td .derived-value,
-.data-table td.calculated-value,
-.data-table td.derived-value,
-.data-table td.numeric-field,
-/* HIGH SPECIFICITY OVERRIDES - Beat ALL section-specific rules */
-section .data-table td input[type="number"],
-section .data-table td [contenteditable],
-section .data-table td [contenteditable].user-input,
-section .data-table td [contenteditable][data-field-id],
-div .data-table td input[type="number"],
-div .data-table td [contenteditable],
-div .data-table td [contenteditable].user-input,
-div .data-table td [contenteditable][data-field-id] {
-  text-align: right !important; /* RIGHT-ALIGN ALL NUMERIC - Universal Override */
-  font-family: var(--font-mono) !important;
-}
-
-/* RULE 2: CENTER-ALIGN SLIDERS AND INTERACTIVE CONTROLS */
-.data-table td [data-type="percentage"],
-.data-table td [data-type="coefficient"], 
-.data-table td [data-type="year_slider"],
-.data-table td .slider-container,
-.data-table td .slider,
-section .data-table td [data-type="percentage"],
-section .data-table td [data-type="coefficient"],
-section .data-table td [data-type="year_slider"],
-section .data-table td .slider-container {
-  text-align: center !important; /* CENTER-ALIGN SLIDERS - Visual balance */
-}
-
-/* RULE 3: LEFT-ALIGN ALL TEXT CONTENT */
-.data-table td[data-type="text"],
-.data-table td[data-type="dropdown"],
-.data-table td.section-subheader,
-.data-table td select,
-.data-table td select.form-select {
-  text-align: left !important; /* LEFT-ALIGN ALL TEXT */
-}
-
-/* UNIVERSAL BACKUP: Ensure ALL calculated/derived values are right-aligned */
-.calculated-value,
-.derived-value {
-  text-align: right !important;
-}
-
-/* =============== END UNIVERSAL ALIGNMENT SYSTEM =============== */
