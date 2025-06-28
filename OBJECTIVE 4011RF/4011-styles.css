@@ -307,10 +307,7 @@ body {
 .data-table td.col-m .user-input,
 .data-table td.col-e.number-input-cell,
 .data-table td.col-g.number-input-cell,
-.data-table td.col-i.number-input-cell,
-.data-table td.col-m.number-input-cell {
-  text-align: right !important; /* Use !important to ensure override */
-}
+/* Removed conflicting alignment rule - now handled by universal rules */
 
 /* Calculated/Derived values styling (keep base style) */
 .calculated-value {
@@ -1019,11 +1016,7 @@ input[type=number].form-control {
   font-weight: 500 !important;
 }
 
-/* Ensure text alignment is preserved */
-.data-table td input[type="number"].form-control,
-.data-table td input[type="number"].user-input {
-  text-align: right !important; /* Most numeric cells are right-aligned */
-}
+/* Removed conflicting alignment rule - now handled by universal rules */
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
 .data-table tr td.section-subheader,
@@ -1045,24 +1038,9 @@ input[type=number].form-control {
   background-color: #eaeaea; /* Ensure empty cells also get background - removed !important */
 }
 
-/* Styling for first-column subheader labels (typically in columns A-C) - Left align */
-.data-table tr:has(td.section-subheader) td:nth-child(1),
-.data-table tr:has(td.section-subheader) td:nth-child(2),
-.data-table tr:has(td.section-subheader) td:nth-child(3) {
-  text-align: left !important; /* Keep important here as it overrides the general center align */
-}
+/* Removed conflicting alignment rule - now handled by universal rules */
 
-/* --- Section 02 Specific Overrides --- */
-
-/* Force left alignment for specific text-based input/derived fields in Section 02 */
-#buildingInfo td[data-field-id="d_16"],
-#buildingInfo td[data-field-id="h_14"],
-#buildingInfo td[data-field-id="i_16"],
-#buildingInfo td[data-field-id="i_17"] {
-  text-align: left !important; /* !important needed to override global !important rule */
-}
-
-/* --- End Section 02 Overrides --- */
+/* Removed conflicting Section 02 alignment rules - now handled by universal rules */
 
 /* Make the dropdown styling more specific */
 .data-table td select.form-select,
@@ -1106,17 +1084,7 @@ table.data-table select.form-select:hover {
 }
 
 /* --- Utility Classes --- */
-.text-left {
-  text-align: left !important; /* Added important to override column defaults */
-}
-
-.text-center {
-  text-align: center !important;
-}
-
-.text-right {
-  text-align: right !important;
-}
+/* Removed conflicting alignment utility classes - now handled by universal rules */
 
 /* Style for disabled/non-applicable input fields */
 .disabled-input {
@@ -1127,9 +1095,7 @@ table.data-table select.form-select:hover {
 }
 /* --- End Utility Classes --- */
 
-.text-left-indicator {
-  text-align: left !important; /* Force left alignment for specific indicator columns */
-}
+/* Removed conflicting text-left-indicator - now handled by universal rules */
 
 /* --- Section 11 Visual Indicators --- */
 
@@ -1559,7 +1525,6 @@ body.viewing-reference-inputs .reference-input-display-locked {
   font-weight: bold !important;
   font-style: italic !important;
   cursor: default !important;
-  pointer-events: none !important;
 }
 
 /* --- START SUPER TARGETED OVERRIDES FOR INPUTS --- */
@@ -1955,3 +1920,35 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 /* .controls-container .btn {
     white-space: nowrap;
 } */
+
+/* =============== CONTENT ALIGNMENT: NUCLEAR CLEANUP =============== */
+/* SIMPLE RULE: Numbers Right, Text Left - NO EXCEPTIONS, NO CONFLICTS */
+
+/* Remove all existing conflicting alignment rules - Tables define structure, CSS defines content */
+
+/* UNIVERSAL RULE 1: ALL NUMERIC CONTENT → RIGHT ALIGNED */
+.data-table input[type="number"],
+.data-table [contenteditable]:not([data-type="text"]),
+.data-table .calculated-value,
+.data-table .derived-value,
+.data-table .numeric-field {
+  text-align: right !important;
+  font-family: var(--font-mono) !important;
+}
+
+/* UNIVERSAL RULE 2: ALL TEXT CONTENT → LEFT ALIGNED */
+.data-table select,
+.data-table [data-type="text"],
+.data-table .section-subheader {
+  text-align: left !important;
+}
+
+/* UNIVERSAL RULE 3: SLIDERS → CENTER ALIGNED (Visual Balance) */
+.data-table [data-type="percentage"],
+.data-table [data-type="coefficient"],
+.data-table [data-type="year_slider"],
+.data-table .slider-container {
+  text-align: center !important;
+}
+
+/* END NUCLEAR CLEANUP - All content formatting now handled by these 3 universal rules */
