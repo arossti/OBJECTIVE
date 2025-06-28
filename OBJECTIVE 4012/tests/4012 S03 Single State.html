@@ -943,10 +943,12 @@
             // Slider
             elements.capacitanceSlider.addEventListener("input", function () {
               const sliderValue = this.value;
-              elements.capacitanceValue.textContent = sliderValue + "%";
+              if (elements.capacitanceValue) {
+                elements.capacitanceValue.textContent = sliderValue + "%";
+              }
 
               // Update state
-              AppState.setValue("i_21", sliderValue, "user");
+              AppState.setValue("i_21", parseInt(sliderValue), "user");
             });
 
             // Slider change should recalculate
@@ -1311,6 +1313,10 @@
             element.value = value;
           } else if (element.tagName === "INPUT" && element.type === "range") {
             element.value = value;
+            // Also update the slider display value for i_21 (capacitance percentage)
+            if (fieldId === "i_21" && DOMElements.capacitanceValue) {
+              DOMElements.capacitanceValue.textContent = value + "%";
+            }
           } else if (element.isContentEditable) {
             // Only update if not currently being edited
             if (!element.classList.contains("editing")) {
@@ -1333,6 +1339,9 @@
                 if (fieldId === "j_19") {
                   // Climate zone has 1 decimal place
                   displayValue = value.toFixed(1);
+                } else if (fieldId === "i_21") {
+                  // Capacitance percentage - handled separately above
+                  displayValue = value + "%";
                 } else {
                   // Integer values
                   displayValue = Math.round(value);
