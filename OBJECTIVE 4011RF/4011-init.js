@@ -876,12 +876,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // =============== ELEGANT STYLING ENHANCEMENT FOR 4011RF ===============
   // Initialize elegant input styling to match OBC Matrix behavior
   function initializeElegantStyling() {
-    console.log("4011RF: Initializing elegant input styling...");
-    
     // Find all user-input fields in the 4011RF system
     const editableFields = document.querySelectorAll('[contenteditable="true"].user-input, input.user-input');
-    
-    console.log(`Found ${editableFields.length} user-input fields`);
     
     editableFields.forEach(field => {
       // Store original value for change detection
@@ -891,7 +887,6 @@ document.addEventListener("DOMContentLoaded", function () {
       field.addEventListener('focus', function() {
         this.classList.add('editing-intent');
         this.dataset.originalValue = this.textContent || this.value || '';
-        console.log(`Focus: Added editing-intent to field`, this);
       });
       
       // Add blur handler for user-modified styling
@@ -904,22 +899,16 @@ document.addEventListener("DOMContentLoaded", function () {
         // If value changed, mark as user-modified
         if (currentValue !== originalValue && currentValue.trim() !== '') {
           this.classList.add('user-modified');
-          console.log(`Blur: Added user-modified to field`, this);
         } else if (currentValue.trim() === '') {
           // If cleared, remove user-modified (back to default)
           this.classList.remove('user-modified');
-          console.log(`Blur: Removed user-modified from cleared field`, this);
         }
       });
       
-      // Set initial state based on whether field has content
-      if (originalValue.trim() !== '') {
-        field.classList.add('user-modified');
-        console.log(`Initial: Added user-modified to field with content`, field);
-      }
+      // DON'T auto-mark fields as user-modified just because they have content
+      // Only mark as user-modified when user actually changes values through interaction
+      // This allows grey italic defaults to show properly
     });
-    
-    console.log("4011RF: Elegant styling initialization complete");
   }
   
   // Initialize elegant styling after a short delay to ensure all sections are rendered
