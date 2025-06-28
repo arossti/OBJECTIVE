@@ -827,7 +827,73 @@ window.TEUI.SectionModules.sect02 = (function () {
           }
         },
       );
+
+      // Add listener for occupancy changes (d_12) to update critical flag
+      window.TEUI.StateManager.addListener(
+        "d_12",
+        function (newOccupancyValue) {
+          // Update critical occupancy flag in Section 2 when occupancy changes
+          updateCriticalOccupancyFlag();
+        },
+      );
     }
+  }
+
+  /**
+   * Update the critical occupancy flag display in Section 2 header
+   */
+  function updateCriticalOccupancyFlag() {
+    const occupancyType = window.TEUI.StateManager?.getValue("d_12") || "";
+    const sectionHeader = document.querySelector(
+      "#buildingInfo .section-header",
+    ); // Target the Section 2 header
+    if (!sectionHeader) {
+      console.warn("Section 2 header not found for critical flag.");
+      return false;
+    }
+
+    let flagSpan = sectionHeader.querySelector(
+      ".critical-occupancy-header-flag",
+    );
+    let isCritical = occupancyType.includes("Care");
+
+    if (isCritical) {
+      if (!flagSpan) {
+        // Create the span if it doesn't exist
+        flagSpan = document.createElement("span");
+        flagSpan.className = "critical-occupancy-header-flag";
+        flagSpan.style.cssText = `
+          color: #dc3545;
+          font-weight: 600;
+          margin-left: 15px;
+          font-size: 14px;
+          background-color: rgba(220, 53, 69, 0.1);
+          padding: 2px 8px;
+          border-radius: 4px;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+        `;
+        
+        // Insert immediately after the section title text
+        const sectionTitleText = sectionHeader.textContent.trim();
+        if (sectionTitleText.includes("SECTION 2. Building Information")) {
+          // Find the text node or icon and insert after it
+          const iconSpan = sectionHeader.querySelector('.section-icon');
+          if (iconSpan && iconSpan.nextSibling) {
+            // Insert after icon and title text
+            iconSpan.parentNode.insertBefore(flagSpan, iconSpan.nextSibling.nextSibling || null);
+          } else {
+            // Fallback: insert at beginning
+            sectionHeader.insertBefore(flagSpan, sectionHeader.firstChild.nextSibling);
+          }
+        }
+      }
+      flagSpan.textContent = "Critical Occupancy";
+    } else {
+      // If not critical, remove the span if it exists
+      flagSpan?.remove();
+    }
+
+    return isCritical; // Return the status for other functions
   }
 
   /**
@@ -859,6 +925,9 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Sync cost field displays with proper CAD formatting
     syncCostFieldDisplays();
+
+    // Initialize critical occupancy flag
+    updateCriticalOccupancyFlag();
   }
 
   /**

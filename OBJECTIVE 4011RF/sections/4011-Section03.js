@@ -1,54 +1,421 @@
 /**
- * 4011-Section03.js
+ * 4011-Section03.js - ENHANCED WITH DUALSTATE ARCHITECTURE
  * Climate Calculations (Section 3) module for TEUI Calculator 4.011
  *
- * Fully consolidated version matching Section04's template approach.
- * Field definitions are integrated directly into the layout structure.
- * FIX: Header row now properly appears at the top of the section.
+ * BREAKTHROUGH: Integrated proven Target/Reference state isolation
+ * Using ClimateValues JSON for data lookup (no Excel import needed)
  */
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
-// --- Global Utility Functions (if needed) ---
-
-// REMOVED: Redundant global formatNumber definition. Rely on the one in StateManager.js
-/*
-window.TEUI.formatNumber = function(value) { ... }; // Removed this block
-*/
-
-// Section 3: Climate Calculations Module
+// Section 3: Climate Calculations Module with DualState Architecture
 window.TEUI.SectionModules.sect03 = (function () {
+  
   //==========================================================================
-  // ADDED: HELPER FUNCTIONS (Standard Implementation like S04)
+  // DUALSTATE ARCHITECTURE - PROVEN PATTERN FROM TEST FILE
+  //==========================================================================
+  
+  // Target State Management (isolated + persistent)
+  const TargetState = {
+    state: {},
+    listeners: {},
+
+    setValue: function(fieldId, value, source = "user") {
+      this.state[fieldId] = value;
+      this.notifyListeners(fieldId, value);
+      this.saveState();
+      console.log(`TARGET setValue: ${fieldId} = ${value} (${source})`);
+    },
+
+    getValue: function(fieldId) {
+      return this.state[fieldId];
+    },
+
+    addListener: function(fieldId, callback) {
+      if (!this.listeners[fieldId]) {
+        this.listeners[fieldId] = [];
+      }
+      this.listeners[fieldId].push(callback);
+    },
+
+    notifyListeners: function(fieldId, value) {
+      if (this.listeners[fieldId]) {
+        this.listeners[fieldId].forEach(callback => callback(value));
+      }
+    },
+
+    initialize: function() {
+      const savedState = localStorage.getItem('S03_TARGET_STATE');
+      if (savedState) {
+        try {
+          this.state = JSON.parse(savedState);
+          console.log("S03 TARGET STATE: Restored from localStorage", this.state);
+        } catch (e) {
+          this.setDefaults();
+        }
+      } else {
+        this.setDefaults();
+      }
+    },
+
+    setDefaults: function() {
+      this.state = {
+        'd_19': 'ON',         // Province
+        'h_19': 'Alexandria', // City 
+        'h_20': 'Present',    // Timeframe
+        'h_21': 'Capacitance',// Capacitance setting
+        'h_23': 18,           // Heating setpoint
+        'h_24': 24,           // Cooling setpoint
+        'm_19': 120,          // Cooling days
+        'l_22': 80,           // Elevation
+        'l_24': 24,           // Cooling override
+        'i_21': 50            // Capacitance percentage
+      };
+      console.log("S03 TARGET STATE: Set to defaults");
+    },
+
+    saveState: function() {
+      try {
+        localStorage.setItem('S03_TARGET_STATE', JSON.stringify(this.state));
+      } catch (e) {
+        console.log("S03 TARGET STATE: Error saving", e);
+      }
+    }
+  };
+
+  // Reference State Management (isolated + persistent)
+  const ReferenceState = {
+    state: {},
+    listeners: {},
+
+    setValue: function(fieldId, value, source = "user") {
+      this.state[fieldId] = value;
+      this.notifyListeners(fieldId, value);
+      this.saveState();
+      console.log(`REFERENCE setValue: ${fieldId} = ${value} (${source})`);
+    },
+
+    getValue: function(fieldId) {
+      return this.state[fieldId];
+    },
+
+    addListener: function(fieldId, callback) {
+      if (!this.listeners[fieldId]) {
+        this.listeners[fieldId] = [];
+      }
+      this.listeners[fieldId].push(callback);
+    },
+
+    notifyListeners: function(fieldId, value) {
+      if (this.listeners[fieldId]) {
+        this.listeners[fieldId].forEach(callback => callback(value));
+      }
+    },
+
+    initialize: function() {
+      const savedState = localStorage.getItem('S03_REFERENCE_STATE');
+      if (savedState) {
+        try {
+          this.state = JSON.parse(savedState);
+          console.log("S03 REFERENCE STATE: Restored from localStorage", this.state);
+        } catch (e) {
+          this.setDefaults();
+        }
+      } else {
+        this.setDefaults();
+      }
+    },
+
+    setDefaults: function() {
+      this.state = {
+        'd_19': 'BC',         // Different province for testing
+        'h_19': 'Vancouver',  // Different city for testing
+        'h_20': 'Present',    // Timeframe
+        'h_21': 'Capacitance',// Capacitance setting
+        'h_23': 18,           // Heating setpoint
+        'h_24': 24,           // Cooling setpoint
+        'm_19': 120,          // Cooling days
+        'l_22': 80,           // Elevation
+        'l_24': 24,           // Cooling override
+        'i_21': 75            // DIFFERENT capacitance for testing isolation
+      };
+      console.log("S03 REFERENCE STATE: Set to defaults (different from Target for testing)");
+    },
+
+    saveState: function() {
+      try {
+        localStorage.setItem('S03_REFERENCE_STATE', JSON.stringify(this.state));
+      } catch (e) {
+        console.log("S03 REFERENCE STATE: Error saving", e);
+      }
+    }
+  };
+
+  // Mode Manager: Handles switching between Target and Reference
+  const ModeManager = {
+    currentMode: "target",
+
+    initialize: function() {
+      TargetState.initialize();
+      ReferenceState.initialize();
+      console.log("S03 MODE MANAGER: Both states initialized");
+    },
+
+    switchMode: function(mode) {
+      if (this.currentMode === mode) return;
+      
+      this.currentMode = mode;
+      console.log(`S03 MODE MANAGER: Switched to ${mode.toUpperCase()} mode`);
+      
+      // Update UI state indicator if it exists
+      const indicator = document.querySelector("#climateCalculations .state-indicator");
+      if (indicator) {
+        indicator.textContent = mode.toUpperCase() + " MODE";
+        indicator.className = `state-indicator ${mode}`;
+      }
+      
+      // Update body class for CSS styling
+      if (mode === "reference") {
+        document.body.classList.add("viewing-reference-inputs");
+      } else {
+        document.body.classList.remove("viewing-reference-inputs");
+      }
+      
+      // Refresh UI to show current mode's values
+      this.refreshUI();
+    },
+
+    refreshUI: function() {
+      const currentState = this.getCurrentState();
+      
+      // Update province dropdown
+      const provinceSelect = document.querySelector('[data-dropdown-id="dd_d_19"]');
+      if (provinceSelect && currentState.getValue("d_19")) {
+        provinceSelect.value = currentState.getValue("d_19");
+        // Trigger city dropdown update
+        handleProvinceChange({ target: provinceSelect });
+      }
+      
+      // Update city dropdown  
+      const citySelect = document.querySelector('[data-dropdown-id="dd_h_19"]');
+      if (citySelect && currentState.getValue("h_19")) {
+        citySelect.value = currentState.getValue("h_19");
+      }
+      
+      // Update timeframe dropdown
+      const timeframeSelect = document.querySelector('[data-dropdown-id="dd_h_20"]');
+      if (timeframeSelect && currentState.getValue("h_20")) {
+        timeframeSelect.value = currentState.getValue("h_20");
+      }
+      
+      // Update capacitance dropdown
+      const capacitanceSelect = document.querySelector('[data-dropdown-id="dd_h_21"]');
+      if (capacitanceSelect && currentState.getValue("h_21")) {
+        capacitanceSelect.value = currentState.getValue("h_21");
+      }
+      
+      // CRITICAL: Update percentage slider from isolated state
+      const percentageSlider = document.querySelector('[data-field-id="i_21"]');
+      const percentageValue = currentState.getValue("i_21") || 50;
+      if (percentageSlider && percentageSlider.type === "range") {
+        percentageSlider.value = percentageValue;
+        // Update display if it exists
+        const display = document.querySelector('[data-field-id="i_21"] + .slider-value');
+        if (display) {
+          display.textContent = percentageValue + "%";
+        }
+      } else if (percentageSlider) {
+        percentageSlider.textContent = percentageValue + "%";
+      }
+      
+      // Update all other editable fields from current state
+      const editableFields = document.querySelectorAll("#climateCalculations [data-field-id]");
+      editableFields.forEach(field => {
+        const fieldId = field.getAttribute("data-field-id");
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue !== undefined && stateValue !== null) {
+          if (field.isContentEditable) {
+            field.textContent = stateValue;
+          } else if (field.tagName === "SELECT") {
+            field.value = stateValue;
+          } else if (field.tagName === "SPAN") {
+            field.textContent = stateValue;
+          }
+        }
+      });
+      
+      // Update climate data and calculations for current selections
+      updateWeatherData();
+      
+      console.log(`S03 MODE MANAGER: UI refreshed for ${this.currentMode} mode`);
+    },
+
+    getCurrentState: function() {
+      return this.currentMode === "target" ? TargetState : ReferenceState;
+    },
+
+    setValue: function(fieldId, value, source = "user") {
+      this.getCurrentState().setValue(fieldId, value, source);
+      
+      // Also update legacy StateManager for compatibility
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      }
+    },
+
+    getValue: function(fieldId) {
+      return this.getCurrentState().getValue(fieldId);
+    },
+
+    addListener: function(fieldId, callback) {
+      // Add listener to both states so UI updates work in both modes
+      TargetState.addListener(fieldId, callback);
+      ReferenceState.addListener(fieldId, callback);
+    },
+
+    resetAllStates: function() {
+      // Clear localStorage
+      localStorage.removeItem('S03_TARGET_STATE');
+      localStorage.removeItem('S03_REFERENCE_STATE');
+      
+      // Reset to defaults
+      TargetState.setDefaults();
+      ReferenceState.setDefaults();
+      
+      // Save clean defaults
+      TargetState.saveState();
+      ReferenceState.saveState();
+      
+      // Refresh UI
+      this.refreshUI();
+      
+      console.log("S03 MODE MANAGER: All states reset to clean defaults");
+      alert("Section 3 states have been reset to defaults!");
+    }
+  };
+
+  // Compatibility alias for existing code
+  const DualState = ModeManager;
+
+  //==========================================================================
+  // CLIMATE DATA SERVICE - Direct ClimateValues.js Access
   //==========================================================================
 
   /**
-   * Safely parses a numeric value from StateManager, using the global parseNumeric.
-   * @param {string} fieldId - The ID of the field to retrieve the value for.
-   * @returns {number} The parsed numeric value, or 0 if parsing fails.
+   * ClimateDataService - Direct access to ClimateValues.js data
+   * Copied verbatim from 4012 S03 Unified Toggle Test.html
+   */
+  const ClimateDataService = {
+    ensureAvailable: function (callback, maxRetries = 10) {
+      let attempts = 0;
+
+      const checkData = () => {
+        attempts++;
+        console.log(`S03: Checking climate data availability (attempt ${attempts}/${maxRetries})`);
+
+        if (
+          window.TEUI?.ClimateData &&
+          Object.keys(window.TEUI.ClimateData).length > 0
+        ) {
+          console.log("S03: Climate data available", Object.keys(window.TEUI.ClimateData));
+          callback(window.TEUI.ClimateData);
+          return;
+        }
+
+        if (attempts >= maxRetries) {
+          console.error("S03: Error - Climate data not available after max retries");
+          return;
+        }
+
+        const delay = Math.min(100 * Math.pow(2, attempts), 2000);
+        console.log(`S03: Will retry in ${delay}ms`);
+        setTimeout(checkData, delay);
+      };
+
+      checkData();
+    },
+
+    getProvinces: function () {
+      if (!window.TEUI?.ClimateData) return [];
+      return Object.keys(window.TEUI.ClimateData).sort();
+    },
+
+    getCitiesForProvince: function (province) {
+      if (!window.TEUI?.ClimateData || !window.TEUI.ClimateData[province])
+        return [];
+      return Object.keys(window.TEUI.ClimateData[province]).sort();
+    },
+
+    getCityData: function (province, city) {
+      if (
+        !window.TEUI?.ClimateData ||
+        !window.TEUI.ClimateData[province] ||
+        !window.TEUI.ClimateData[province][city]
+      ) {
+        return null;
+      }
+      return window.TEUI.ClimateData[province][city];
+    },
+
+    getProvinceFullName: function (abbr) {
+      const provinceNames = {
+        AB: "Alberta",
+        BC: "British Columbia",
+        MB: "Manitoba",
+        NB: "New Brunswick",
+        NL: "Newfoundland and Labrador",
+        NS: "Nova Scotia",
+        NT: "Northwest Territories",
+        NU: "Nunavut",
+        ON: "Ontario",
+        PE: "Prince Edward Island",
+        QC: "Québec",
+        SK: "Saskatchewan",
+        YT: "Yukon",
+      };
+      return provinceNames[abbr] || abbr;
+    },
+  };
+
+  //==========================================================================
+  // ORIGINAL HELPER FUNCTIONS (Enhanced for DualState)
+  //==========================================================================
+
+  /**
+   * Enhanced getNumericValue to use DualState first, then fallback to StateManager
    */
   function getNumericValue(fieldId) {
-    // Always use global parseNumeric and StateManager
-    // Ensure window.TEUI and window.TEUI.parseNumeric exist
+    // Try DualState first
+    const dualStateValue = DualState.getValue(fieldId);
+    if (dualStateValue !== null && dualStateValue !== undefined) {
+      return window.TEUI?.parseNumeric?.(dualStateValue) || 0;
+    }
+    
+    // Fallback to legacy StateManager
     const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     return window.TEUI?.parseNumeric?.(rawValue) || 0;
   }
 
   /**
-   * Helper to get field value, preferring StateManager but falling back to DOM.
-   * @param {string} fieldId
-   * @returns {string | null} Value as string or null if not found.
+   * Enhanced getFieldValue to use DualState first
    */
   function getFieldValue(fieldId) {
+    // Try DualState first
+    const dualStateValue = DualState.getValue(fieldId);
+    if (dualStateValue !== null && dualStateValue !== undefined) {
+      return dualStateValue.toString();
+    }
+    
+    // Fallback to legacy StateManager and DOM
     if (window.TEUI?.StateManager?.getValue) {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
         return value.toString();
       }
     }
-    // Fallback to DOM - useful for dropdowns or elements not strictly state-managed?
+    
     const element = document.querySelector(
       `[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`,
     );
@@ -100,11 +467,10 @@ window.TEUI.SectionModules.sect03 = (function () {
           section: "climateCalculations",
           options: [{ value: "", name: "Select Province" }],
           getOptions: function () {
-            const locationData =
-              TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-            return Object.keys(locationData).map((province) => ({
+            const provinces = ClimateDataService.getProvinces();
+            return provinces.map((province) => ({
               value: province,
-              name: locationData[province].name || province,
+              name: ClimateDataService.getProvinceFullName(province),
             }));
           },
         },
@@ -121,16 +487,14 @@ window.TEUI.SectionModules.sect03 = (function () {
           getOptions: function (provinceValue) {
             if (!provinceValue) {
               provinceValue =
-                TEUI.StateManager?.getValue?.("d_19") ||
+                DualState.getValue("d_19") ||
                 document.querySelector('[data-dropdown-id="dd_d_19"]')?.value;
             }
 
-            const locationData =
-              TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-            const provinceData = locationData[provinceValue] || {};
-            return (provinceData.cities || []).map((city) => ({
-              value: city.name,
-              name: city.name,
+            const cities = ClimateDataService.getCitiesForProvince(provinceValue);
+            return cities.map((city) => ({
+              value: city,
+              name: city,
             }));
           },
         },
@@ -548,20 +912,14 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Helper: Set field value in DOM and StateManager if available
-   * REFACTORED: Uses the global window.TEUI.formatNumber standard helper.
+   * Enhanced setFieldValue - Uses DualState for Target/Reference isolation
    */
   function setFieldValue(fieldId, value, state = "calculated") {
     const rawValue =
       value !== null && value !== undefined ? value.toString() : null;
 
-    // Set raw value in state manager
-    if (window.TEUI?.StateManager?.setValue) {
-      window.TEUI.StateManager.setValue(fieldId, rawValue, state);
-    } else {
-      console.error("StateManager not available to set value for", fieldId);
-      return; // Cannot proceed without StateManager
-    }
+    // Set raw value in DualState (automatically handles current mode)
+    DualState.setValue(fieldId, rawValue, state);
 
     // Also update DOM with formatting
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -612,111 +970,143 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Handle province selection change
+   * Handle province selection change - Using ClimateDataService
    */
   function handleProvinceChange(e) {
     const provinceValue = e?.target?.value;
     if (!provinceValue) return;
 
-    // console.log('Section03: Province selected:', provinceValue);
+    console.log('Section03: Province selected:', provinceValue);
 
-    // Set province value in StateManager for cross-section communication
-    if (TEUI.StateManager) {
-      // console.log('Section03: Updating StateManager with province:', provinceValue);
-      TEUI.StateManager.setValue("d_19", provinceValue, "user-modified");
-      // Also update the dropdown ID used by some listeners
-      TEUI.StateManager.setValue("dd_d_19", provinceValue, "user-modified");
-    }
+    // Set province value in DualState (automatically handles current mode)
+    DualState.setValue("d_19", provinceValue, "user");
 
-    // Find city dropdown
-    const cityDropdown = getElement([
-      '[data-dropdown-id="dd_h_19"]',
-      'select[id="dd_h_19"]',
-      'select[name="h_19"]',
-    ]);
+    // Update city dropdown for this province
+    updateCityDropdown(provinceValue);
+  }
 
+  /**
+   * Update city dropdown based on selected province - Using ClimateDataService
+   */
+  function updateCityDropdown(provinceValue) {
+    const cityDropdown = getElement(['[data-dropdown-id="dd_h_19"]']);
     if (!cityDropdown) return;
 
-    // Clear and populate city dropdown
+    // Clear existing options
     cityDropdown.innerHTML = '<option value="">Select City</option>';
-    cityDropdown.disabled = false;
 
-    // Get cities from location data
-    const locationData = TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-    const cities = locationData[provinceValue]?.cities || [];
+    if (!provinceValue) {
+      cityDropdown.disabled = true;
+      return;
+    }
+
+    // Get cities from ClimateDataService
+    const cities = ClimateDataService.getCitiesForProvince(provinceValue);
+    
+    if (cities.length === 0) {
+      console.log("No cities found for province:", provinceValue);
+      cityDropdown.disabled = true;
+      return;
+    }
 
     // Add city options
     cities.forEach((city) => {
       const option = document.createElement("option");
-      option.value = city.name;
-      option.textContent = city.name;
+      option.value = city;
+      option.textContent = city;
       cityDropdown.appendChild(option);
     });
+
+    cityDropdown.disabled = false;
+
+    // Auto-select city from current state if it exists in this province
+    const currentCity = DualState.getValue("h_19");
+    if (currentCity && cities.includes(currentCity)) {
+      cityDropdown.value = currentCity;
+      DualState.setValue("h_19", currentCity, "init");
+    } else if (provinceValue === "ON" && cities.includes("Alexandria")) {
+      // Default to Alexandria for Ontario
+      cityDropdown.value = "Alexandria";
+      DualState.setValue("h_19", "Alexandria", "init");
+    } else if (cities.length > 0) {
+      // Default to first city
+      cityDropdown.value = cities[0];
+      DualState.setValue("h_19", cities[0], "init");
+    }
+
+    console.log("City dropdown updated for", provinceValue, "- selected:", cityDropdown.value);
   }
 
   /**
-   * Update weather data based on selected city/province
+   * Update weather data based on selected city/province - Using ClimateDataService
    */
   function updateWeatherData() {
-    // Get province and city values
-    const provinceValue =
-      window.TEUI.StateManager?.getValue("d_19") ||
-      getElement(['[data-dropdown-id="dd_d_19"]'])?.value; // Wrap selector in []
-    const cityValue =
-      window.TEUI.StateManager?.getValue("h_19") ||
-      getElement(['[data-dropdown-id="dd_h_19"]'])?.value; // Wrap selector in []
-    const isFuture =
-      (window.TEUI.StateManager?.getValue("h_20") ||
-        getElement(['[data-dropdown-id="dd_h_20"]'])?.value) === "Future"; // Wrap selector in []
+    // Get province and city values from DualState (automatically uses current mode)
+    const provinceValue = DualState.getValue("d_19") ||
+      getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
+    const cityValue = DualState.getValue("h_19") ||
+      getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
+    const timeframe = DualState.getValue("h_20") ||
+      getElement(['[data-dropdown-id="dd_h_20"]'])?.value || "Present";
 
-    if (!provinceValue || !cityValue) return;
-
-    // Get city data
-    const locationData = TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-    // Find the specific city's data object
-    const cityObject = locationData[provinceValue]?.cities?.find(
-      (c) => c.name === cityValue,
-    );
-    const cityData = cityObject?.data;
-
-    if (!cityData) {
-      console.warn(
-        `Weather data not found for ${cityValue}, ${provinceValue}. Using defaults.`,
-      );
-      // Optionally set default values here if needed
+    if (!provinceValue || !cityValue) {
+      console.log("S03: Cannot update weather data - missing province or city");
       return;
     }
 
-    // Update climate data fields
-    const hddValue = isFuture ? cityData.HDD18_2021_2050 : cityData.HDD18;
-    setFieldValue("d_20", hddValue || "4600", "derived");
+    // Get city data using ClimateDataService
+    const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
 
-    // CDD value
-    const cddValue = isFuture ? cityData.CDD24_2021_2050 : cityData.CDD24;
-    setFieldValue("d_21", cddValue || "196", "derived");
+    if (!cityData) {
+      console.warn(`S03: No climate data found for ${cityValue}, ${provinceValue}`);
+      return;
+    }
 
-    // Coldest days - Use the pre-selected temp from ExcelLocationHandler
-    const coldestTemp = cityData.January_Design_Temp || "-24"; // Use the value processed during import
-    setFieldValue("d_23", coldestTemp, "derived");
+    // Update HDD value - choosing based on timeframe
+    const hddValue = timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+    if (hddValue !== null && hddValue !== undefined && hddValue !== 666) {
+      setFieldValue("d_20", hddValue, "derived");
+    } else {
+      setFieldValue("d_20", "N/A", "derived");
+    }
 
-    // Hottest days - Using July 2.5% Tdb.
-    let hottestTempKey = isFuture ? "Future_July_2_5_Tdb" : "July_2_5_Tdb";
-    const hottestTemp = cityData[hottestTempKey] || "30"; // Fallback logic
-    setFieldValue("d_24", hottestTemp, "derived");
+    // Update CDD value - choosing based on timeframe
+    const cddValue = timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+    if (cddValue !== null && cddValue !== undefined && cddValue !== 666) {
+      setFieldValue("d_21", cddValue, "derived");
+    } else {
+      // Check if fallback to present value is possible
+      if (timeframe === "Future" && cityData.CDD24 !== null && cityData.CDD24 !== undefined && cityData.CDD24 !== 666) {
+        console.warn(`S03: Future CDD not available for ${cityValue}, ${provinceValue}. Using present value as fallback.`);
+        setFieldValue("d_21", cityData.CDD24, "derived");
+      } else {
+        setFieldValue("d_21", "N/A", "derived");
+      }
+    }
 
-    // Elevation
-    const elevation = cityData["Elevation_ASL"] || "80"; // Corrected key
-    setFieldValue("l_22", elevation, "derived");
+    // Update other climate values from cityData
+    const climateUpdates = [
+      { fieldId: "d_23", value: cityData.January_2_5, label: "Coldest Days" },
+      { fieldId: "d_24", value: cityData.July_2_5_Tdb, label: "Hottest Days" },
+      { fieldId: "l_22", value: cityData.Elevation_ASL, label: "Elevation" },
+    ];
 
-    // Run calculations
+    climateUpdates.forEach((update) => {
+      if (update.value !== null && update.value !== undefined && update.value !== 666) {
+        setFieldValue(update.fieldId, update.value, "derived");
+      } else {
+        setFieldValue(update.fieldId, "N/A", "derived");
+      }
+    });
+
+    // Update climate zone based on HDD
+    const climateZone = determineClimateZone(hddValue);
+    setFieldValue("j_19", climateZone, "calculated");
+
+    // Run all calculations after weather data update
     calculateAll();
 
-    // Update feedback area
-    const feedback = document.getElementById("feedback-area");
-    if (feedback) {
-      feedback.textContent = `Weather data: ${cityValue}, ${provinceValue} (${isFuture ? "Future" : "Present"})`;
-      feedback.style.color = "#0dcaf0";
-    }
+    console.log(`S03: Weather data updated for ${cityValue}, ${provinceValue} (${timeframe})`);
   }
 
   /**
@@ -738,22 +1128,21 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Display weather data in modal
+   * Display weather data in modal - Using ClimateDataService
    */
   function showWeatherData() {
-    const provinceValue = getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
-    const cityValue = getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
+    const provinceValue = DualState.getValue("d_19") ||
+      getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
+    const cityValue = DualState.getValue("h_19") ||
+      getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
 
     if (!provinceValue || !cityValue) {
       alert("Please select a province and city first.");
       return;
     }
 
-    // Get city data
-    const locationData = TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-    const cityData = locationData[provinceValue]?.cities?.find(
-      (c) => c.name === cityValue,
-    );
+    // Get city data using ClimateDataService
+    const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
 
     if (!cityData) {
       alert(`City data not found for ${cityValue}, ${provinceValue}`);
@@ -764,10 +1153,21 @@ window.TEUI.SectionModules.sect03 = (function () {
     const modalTitle = document.getElementById("weatherDataModalLabel");
     const modalContent = document.getElementById("weatherDataContent");
 
-    if (modalTitle)
-      modalTitle.textContent = `Weather Data for ${cityValue}, ${provinceValue}`;
-    if (modalContent)
-      modalContent.textContent = JSON.stringify(cityData.data, null, 2);
+    if (modalTitle) {
+      modalTitle.textContent = `Weather Data for ${cityValue}, ${ClimateDataService.getProvinceFullName(provinceValue)}`;
+    }
+    
+    if (modalContent) {
+      // Format the climate data nicely
+      let formattedData = "";
+      Object.entries(cityData).forEach(([key, value]) => {
+        formattedData += `<div style="display: flex; padding: 8px 0; border-bottom: 1px solid #eee;">
+          <div style="flex: 1; font-weight: 500;">${key}</div>
+          <div style="flex: 1; text-align: right;">${value}</div>
+        </div>`;
+      });
+      modalContent.innerHTML = formattedData;
+    }
 
     // Show modal
     const modal = document.getElementById("weatherDataModal");
@@ -969,16 +1369,29 @@ window.TEUI.SectionModules.sect03 = (function () {
         // Create the span if it doesn't exist
         flagSpan = document.createElement("span");
         flagSpan.className = "critical-occupancy-header-flag";
-        flagSpan.style.color = "red";
-        flagSpan.style.marginLeft = "15px"; // Keep spacing
-        // Try to insert it after the status message or append to header
-        const statusMsg = sectionHeader.querySelector(
-          ".section-status-message",
-        );
-        if (statusMsg && statusMsg.parentNode === sectionHeader) {
-          statusMsg.parentNode.insertBefore(flagSpan, statusMsg.nextSibling);
-        } else {
-          sectionHeader.appendChild(flagSpan); // Fallback: append to header
+        flagSpan.style.cssText = `
+          color: #dc3545;
+          font-weight: 600;
+          margin-left: 15px;
+          font-size: 14px;
+          background-color: rgba(220, 53, 69, 0.1);
+          padding: 2px 8px;
+          border-radius: 4px;
+          border: 1px solid rgba(220, 53, 69, 0.3);
+        `;
+        
+        // Insert immediately after the section title text
+        const sectionTitleText = sectionHeader.textContent.trim();
+        if (sectionTitleText.includes("SECTION 3. Climate Calculations")) {
+          // Find the text node or icon and insert after it
+          const iconSpan = sectionHeader.querySelector('.section-icon');
+          if (iconSpan && iconSpan.nextSibling) {
+            // Insert after icon and title text
+            iconSpan.parentNode.insertBefore(flagSpan, iconSpan.nextSibling.nextSibling || null);
+          } else {
+            // Fallback: insert at beginning
+            sectionHeader.insertBefore(flagSpan, sectionHeader.firstChild.nextSibling);
+          }
         }
       }
       flagSpan.textContent = "Critical Occupancy";
@@ -994,6 +1407,157 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   // --- End New Calculation Functions ---
+
+  /**
+   * Setup Target/Reference toggle UI in section header
+   */
+  function setupToggleUI() {
+    const sectionHeader = document.querySelector("#climateCalculations .section-header");
+    if (!sectionHeader) {
+      console.warn("S03: Section header not found for toggle UI");
+      return;
+    }
+
+    // Check if toggle already exists
+    if (sectionHeader.querySelector(".reference-toggle")) {
+      return;
+    }
+
+    // Create toggle container
+    const toggleContainer = document.createElement("div");
+    toggleContainer.style.cssText = "display: flex; align-items: center; gap: 20px; margin-left: auto;";
+
+    // Create state indicator
+    const stateIndicator = document.createElement("span");
+    stateIndicator.className = "state-indicator target";
+    stateIndicator.textContent = "TARGET MODE";
+    stateIndicator.style.cssText = `
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      background-color: #e3f2fd;
+      color: #1976d2;
+    `;
+
+    // Create toggle
+    const toggleDiv = document.createElement("div");
+    toggleDiv.className = "reference-toggle";
+    toggleDiv.style.cssText = "display: flex; align-items: center; gap: 10px;";
+
+    const toggleLabel = document.createElement("label");
+    toggleLabel.textContent = "Show Reference";
+    toggleLabel.style.cssText = "font-weight: 500; color: #fff; margin: 0;";
+
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.className = "toggle-switch";
+    toggleSwitch.style.cssText = `
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background-color: #ccc;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    `;
+
+    const toggleSlider = document.createElement("div");
+    toggleSlider.className = "toggle-slider";
+    toggleSlider.style.cssText = `
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    `;
+
+    // Create Weather Data button
+    const weatherButton = document.createElement("button");
+    weatherButton.textContent = "More Weather Data";
+    weatherButton.id = "s03WeatherDataBtn";
+    weatherButton.style.cssText = `
+      padding: 6px 12px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 12px;
+    `;
+
+    // Create reset button
+    const resetButton = document.createElement("button");
+    resetButton.textContent = "Reset States";
+    resetButton.style.cssText = `
+      padding: 6px 12px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 12px;
+    `;
+
+    // Add toggle functionality
+    toggleSwitch.addEventListener("click", function() {
+      const isActive = toggleSwitch.classList.contains("active");
+      
+      if (!isActive) {
+        // Switching to reference mode
+        toggleSwitch.classList.add("active");
+        toggleSwitch.style.backgroundColor = "#2196f3";
+        toggleSlider.style.transform = "translateX(26px)";
+        toggleLabel.textContent = "Show Target";
+        stateIndicator.textContent = "REFERENCE MODE";
+        stateIndicator.style.backgroundColor = "#ffebee";
+        stateIndicator.style.color = "#c62828";
+        ModeManager.switchMode("reference");
+      } else {
+        // Switching back to target mode
+        toggleSwitch.classList.remove("active");
+        toggleSwitch.style.backgroundColor = "#ccc";
+        toggleSlider.style.transform = "translateX(0px)";
+        toggleLabel.textContent = "Show Reference";
+        stateIndicator.textContent = "TARGET MODE";
+        stateIndicator.style.backgroundColor = "#e3f2fd";
+        stateIndicator.style.color = "#1976d2";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Add weather data functionality
+    weatherButton.addEventListener("click", function() {
+      showWeatherData();
+    });
+
+    // Add reset functionality
+    resetButton.addEventListener("click", function() {
+      if (confirm("Are you sure you want to reset all S03 states to defaults?")) {
+        ModeManager.resetAllStates();
+      }
+    });
+
+    // Assemble elements
+    toggleSwitch.appendChild(toggleSlider);
+    toggleDiv.appendChild(toggleLabel);
+    toggleDiv.appendChild(toggleSwitch);
+    
+    toggleContainer.appendChild(stateIndicator);
+    toggleContainer.appendChild(toggleDiv);
+    toggleContainer.appendChild(weatherButton);
+    toggleContainer.appendChild(resetButton);
+    
+    sectionHeader.appendChild(toggleContainer);
+
+    console.log("S03: Toggle UI setup complete");
+  }
 
   /**
    * Initialize all event handlers
@@ -1023,22 +1587,26 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Add new listener
       newCityDropdown.addEventListener("change", function () {
         const selectedCity = this.value;
-        if (window.TEUI && window.TEUI.StateManager) {
-          window.TEUI.StateManager.setValue(
-            "h_19",
-            selectedCity,
-            "user-modified",
-          );
-        }
+        console.log('Section03: City selected:', selectedCity);
+        DualState.setValue("h_19", selectedCity, "user");
         updateWeatherData();
       });
     }
 
-    // Present/Future toggle
-    const presentFutureToggle = getElement(['[data-dropdown-id="dd_h_20"]']);
-    if (presentFutureToggle) {
-      presentFutureToggle.removeEventListener("change", updateWeatherData);
-      presentFutureToggle.addEventListener("change", updateWeatherData);
+    // Present/Future timeframe dropdown
+    const timeframeDropdown = getElement(['[data-dropdown-id="dd_h_20"]']);
+    if (timeframeDropdown) {
+      // Remove any existing listeners
+      const newTimeframeDropdown = timeframeDropdown.cloneNode(true);
+      timeframeDropdown.parentNode.replaceChild(newTimeframeDropdown, timeframeDropdown);
+
+      // Add new listener
+      newTimeframeDropdown.addEventListener("change", function() {
+        const selectedTimeframe = this.value;
+        console.log('S03: Timeframe selected:', selectedTimeframe);
+        DualState.setValue("h_20", selectedTimeframe, "user");
+        updateWeatherData(); // This will update HDD/CDD values based on Present/Future
+      });
     }
 
     // Weather data buttons
@@ -1091,13 +1659,9 @@ window.TEUI.SectionModules.sect03 = (function () {
 
           let isCritical = newOccupancyValue.includes("Care");
 
-          // Update d_23 (January Design Temp) based on stored data
+          // Update d_23 (January Design Temp) based on stored data - Using ClimateDataService
           if (provinceValue && cityValue) {
-            const locationData =
-              TEUI?.ExcelLocationHandler?.getLocationData?.() || {};
-            const cityData = locationData[provinceValue]?.cities?.find(
-              (c) => c.name === cityValue,
-            )?.data;
+            const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
 
             if (cityData) {
               // Use the stored 1% or 2.5% value based on isCritical
@@ -1202,71 +1766,69 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Called when section is rendered
+   * Populate province dropdown using ClimateDataService
    */
-  function onSectionRendered() {
-    // --- Explicitly register default values ---
-    if (window.TEUI.StateManager) {
-      // Ensure default elevation is in StateManager for other sections to read
-      window.TEUI.StateManager.setValue("l_22", "80", "default");
-    } else {
-      console.warn(
-        "Section 03: StateManager not available for default value registration.",
-      );
+  function populateProvinceDropdown() {
+    const provinceSelect = getElement(['[data-dropdown-id="dd_d_19"]']);
+    if (!provinceSelect) return;
+
+    // Clear existing options except the first one
+    while (provinceSelect.options.length > 1) {
+      provinceSelect.remove(1);
     }
-    // -----------------------------------------
 
-    // --- Set Initial Display Values ---
-    // Manually set initial display for setpoints based on known default d_12="A-Assembly"
-    // This provides immediate visual feedback before StateManager might be fully ready.
-    const initialHeatingEl = getElement(['[data-field-id="h_23"]']);
-    if (initialHeatingEl)
-      initialHeatingEl.textContent = window.TEUI.formatNumber(
-        18,
-        "integer-nocomma",
-      );
-    const initialCoolingEl = getElement(['[data-field-id="h_24"]']);
-    if (initialCoolingEl)
-      initialCoolingEl.textContent = window.TEUI.formatNumber(
-        24,
-        "integer-nocomma",
-      );
-    // The StateManager listeners will calculate and set the correct state later.
-    // -------------------------------------
+    const provinces = ClimateDataService.getProvinces();
+    provinces.forEach((province) => {
+      const option = document.createElement("option");
+      option.value = province;
+      option.textContent = ClimateDataService.getProvinceFullName(province);
+      provinceSelect.appendChild(option);
+    });
 
-    // Ensure ExcelLocationHandler is ready
-    if (TEUI?.ExcelLocationHandler?.getLocationData?.()) {
-      initializeEventHandlers();
-      // Trigger initial data load and calculations
-      if (
-        getElement(['[data-dropdown-id="dd_d_19"]'])?.value &&
-        getElement(['[data-dropdown-id="dd_h_19"]'])?.value
-      ) {
-        updateWeatherData(); // Includes calculateAll() at the end
-      } else {
-        calculateAll(); // Run calculations even if location not selected yet
-      }
-    } else {
-      // ExcelLocationHandler not ready, wait for it
-      document.addEventListener("location-data-ready", function handler() {
-        initializeEventHandlers();
-        // Trigger initial data load and calculations
-        if (
-          getElement(['[data-dropdown-id="dd_d_19"]'])?.value &&
-          getElement(['[data-dropdown-id="dd_h_19"]'])?.value
-        ) {
-          updateWeatherData(); // Includes calculateAll() at the end
-        } else {
-          calculateAll(); // Run calculations even if location not selected yet
-        }
-        // Remove listener after running once
-        document.removeEventListener("location-data-ready", handler);
-      });
+    console.log("S03: Populated province dropdown with options:", provinces);
+
+    // Set default province from current state
+    const defaultProvince = DualState.getValue("d_19") || "ON";
+    provinceSelect.value = defaultProvince;
+
+    if (provinceSelect.value) {
+      DualState.setValue("d_19", provinceSelect.value, "init");
+      // Trigger city dropdown update
+      updateCityDropdown(provinceSelect.value);
     }
   }
 
+  /**
+   * Called when section is rendered - Enhanced for DualState
+   */
+  function onSectionRendered() {
+    console.log("S03: Section rendered - initializing DualState architecture");
+
+    // Initialize DualState system first
+    ModeManager.initialize();
+
+    // Setup the toggle UI
+    setupToggleUI();
+
+    // Ensure ClimateData is available before proceeding
+    ClimateDataService.ensureAvailable(function() {
+      console.log("S03: ClimateData available - initializing dropdowns");
+      
+      // Populate province dropdown
+      populateProvinceDropdown();
+      
+      // Set up event handlers
+      initializeEventHandlers();
+
+      // Initial UI refresh from current state
+      ModeManager.refreshUI();
+
+      console.log("S03: DualState initialization complete");
+    });
+  }
+
   //==========================================================================
-  // PART 5: PUBLIC API
+  // PART 5: PUBLIC API - Enhanced with DualState
   //==========================================================================
 
   return {
@@ -1283,5 +1845,12 @@ window.TEUI.SectionModules.sect03 = (function () {
     updateWeatherData: updateWeatherData,
     showWeatherData: showWeatherData,
     calculateAll: calculateAll,
+
+    // DualState functionality
+    DualState: DualState,
+    ModeManager: ModeManager,
+    TargetState: TargetState,
+    ReferenceState: ReferenceState,
+    setupToggleUI: setupToggleUI,
   };
 })();
