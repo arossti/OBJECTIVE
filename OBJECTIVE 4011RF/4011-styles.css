@@ -590,12 +590,7 @@ td[colspan="2"] .form-select {
   min-width: 280px !important;
 }
 
-/* Ensure dropdowns with size classes override content-based sizing */
-.data-table .dropdown-sm select.form-select,
-.data-table .dropdown-md select.form-select,
-.data-table .dropdown-lg select.form-select {
-  width: 100% !important; /* Fill their sized container */
-}
+/* Clean sizing for dropdowns - let size classes work naturally */
 
 /* =============== Print Styling =============== */
 
@@ -998,8 +993,7 @@ input[type=number].form-control {
   outline: none !important;
   cursor: text !important;
   
-  /* Default sizing */
-  width: 100% !important;
+  /* Default sizing - removed width 100% to allow fixed-width controls */
   box-sizing: border-box !important;
 }
 
@@ -1072,14 +1066,7 @@ input[type=number].form-control {
 
 /* Default/placeholder text styling - now handled by base styling above */
 
-/* Immediate styling for fields with content (before JavaScript runs) */
-.data-table td[contenteditable="true"].user-input:not(:empty),
-.data-table td input[type="number"].user-input:not([value=""]),
-.data-table td.editable[contenteditable="true"]:not(:empty) {
-  color: var(--user-input-color) !important; /* Blue for fields with content */
-  font-style: normal !important;
-  font-weight: 600 !important;
-}
+/* Styling for fields with actual content - only when explicitly marked as user-modified */
 
 /* User-modified text styling - blue and confident */
 .data-table td[contenteditable="true"].user-input.user-modified,
@@ -1184,14 +1171,14 @@ input[type=number].form-control {
 /* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
 
 /* =============== SECTION 02 LAYOUT OPTIMIZATION =============== */
-/* Section 02: Building Occupancy - OBC Matrix optimized layout with flexible compression */
+/* Section 02: Building Occupancy - Surgical anti-goalpost fix (same pattern as S10) */
 
 #buildingOccupancy .data-table {
-    table-layout: auto; /* Content-based with intelligent flexibility */
+    table-layout: auto; /* Content-based with natural flexibility */
     width: 100%;
 }
 
-/* Section 02: Hide empty columns - OBC Matrix density optimization */
+/* Section 02: Hide empty columns for density */
 #buildingOccupancy .data-table td:nth-child(1),  /* Column A - no expandable rows */
 #buildingOccupancy .data-table td:nth-child(6),  /* Column F - empty */
 #buildingOccupancy .data-table td:nth-child(7),  /* Column G - empty */
@@ -1205,63 +1192,25 @@ input[type=number].form-control {
     display: none; /* Complete removal for cleaner layout */
 }
 
-/* Section 02: Flexible width with intelligent compression and expansion */
-#buildingOccupancy .data-table td:nth-child(2) { 
-    width: 50px !important;    /* Column B - row numbers (fixed) */
-    min-width: 50px !important;
-}
-#buildingOccupancy .data-table td:nth-child(3) { 
-    width: 220px !important;   /* Column C - field labels (fixed for readability) */
-    min-width: 180px !important;
-}
-#buildingOccupancy .data-table td:nth-child(4) { 
-    width: auto !important;    /* Column D - dropdowns (flexible, use available space) */
-    min-width: 200px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-}
-#buildingOccupancy .data-table td:nth-child(5) { 
-    width: auto !important;    /* Column E - descriptions (flexible, use remaining space) */
-    min-width: 250px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-}
-#buildingOccupancy .data-table td:nth-child(12) { 
-    width: 140px !important;   /* Column L - OBC references (fixed for regulatory text) */
-    min-width: 120px !important;
-}
+/* Section 02: Natural sizing with essential styling only */
 #buildingOccupancy .data-table td:nth-child(15) { 
-    width: auto !important;    /* Column O - Notes (flexible) */
-    min-width: 180px !important;
     white-space: normal !important;
     word-wrap: break-word !important;
     vertical-align: top !important;
 }
 
-/* Section 02: Apply dropdown sizing classes for building classifications */
-#buildingOccupancy .data-table td:nth-child(4) {
-    /* Building occupancy classifications need dropdown-lg */
-}
-
-/* Section 02: Input constraint optimization - remove max-width for flexibility */
+/* Section 02: Apply dropdown-lg sizing for building classifications */
 #buildingOccupancy .data-table td:nth-child(4) select,
-#buildingOccupancy .data-table td:nth-child(4) input,
-#buildingOccupancy .data-table td:nth-child(4) [contenteditable] {
-    width: 100% !important;
-    /* Removed max-width - let column flexibility handle sizing */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+#buildingOccupancy .data-table td:nth-child(4) .form-select {
+    width: 280px !important; /* Use dropdown-lg sizing for long building classifications */
+    min-width: 280px !important;
 }
 
-/* Section 02: Description field optimization */
-#buildingOccupancy .data-table td:nth-child(5) input,
-#buildingOccupancy .data-table td:nth-child(5) [contenteditable] {
-    width: 100% !important;
-    /* Removed max-width - let column flexibility handle sizing */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+/* Section 02: Apply same proven approach as S10 - slider size drives column size */
+#buildingOccupancy .data-table td[data-field-id="d_1"],
+#buildingOccupancy .data-table td[data-field-id="d_2"] {
+    width: 140px; /* Match slider-md size - clean consolidation, not override */
+    text-align: center !important; /* Center-align sliders */
 }
 
 /* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
@@ -1329,10 +1278,9 @@ input[type=number].form-control {
   background-color: transparent !important;
 }
 
-/* Remove all the recent numeric input styling we added */
+/* Clean numeric input styling - removed width 100% to allow fixed-width controls */
 .data-table td input[type="number"].form-control,
 .data-table td input[type="number"].user-input {
-  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1362,11 +1310,7 @@ input[type=number].form-control {
   border: none !important;
 }
 
-/* Keep the blue color for user input */
-.data-table td input[type="number"].user-input {
-  color: var(--user-input-color) !important;
-  font-weight: 500 !important;
-}
+/* Blue color only for user-modified inputs - base styling handles defaults */
 
 /* Ensure text alignment is preserved */
 .data-table td input[type="number"].form-control,
@@ -1413,11 +1357,10 @@ input[type=number].form-control {
 
 /* --- End Section 02 Overrides --- */
 
-/* Make the dropdown styling more specific */
+/* Clean dropdown styling - removed width 100% to allow fixed-width controls */
 .data-table td select.form-select,
 .data-table td select.form-control,
 table.data-table select.form-select {
-  width: 100%;
   min-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
