@@ -45,6 +45,7 @@
   --hover-bg: #f8f9fa;
   --table-header-bg: #f1f3f4;
   --user-input-color: #0d6efd;
+  --user-input-color-rgb: 13, 110, 253;
   --calculated-value-color: #202124;
   --derived-value-color: #202124;
   --reference-value-color: #8b0000;
@@ -2306,6 +2307,73 @@ body.viewing-reference-inputs .reference-input-display-locked select {
     white-space: nowrap;
 } */
 
+/* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
+/* EXACT COPY from working OBC Matrix styles */
+
+/* Default/placeholder text styling - muted grey */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* Base user input styling with hover effects */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  border-bottom: 2px solid transparent;
+  transition: border-bottom-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Hover effects on the input fields themselves */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  border-bottom-color: var(--user-input-color);
+}
+
+/* Focus effects on the input fields themselves */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  border-bottom-color: var(--user-input-color);
+  background-color: rgba(var(--user-input-color-rgb), 0.05);
+}
+
+/* Cell-level hover effects */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: rgba(var(--user-input-color-rgb), 0.03);
+}
+
+/* =============== END ELEGANT USER INPUT BEHAVIOR =============== */
+
 /* =============== UNIVERSAL ALIGNMENT SYSTEM (OBC Matrix Pattern) =============== */
 /* COMPREHENSIVE system: RIGHT for ALL numbers, LEFT for text - WORKS FOR ALL SECTIONS */
 
@@ -2353,6 +2421,12 @@ section .data-table td .slider-container {
 .data-table td select,
 .data-table td select.form-select {
   text-align: left !important; /* LEFT-ALIGN ALL TEXT */
+}
+
+/* UNIVERSAL BACKUP: Ensure ALL calculated/derived values are right-aligned */
+.calculated-value,
+.derived-value {
+  text-align: right !important;
 }
 
 /* =============== END UNIVERSAL ALIGNMENT SYSTEM =============== */
