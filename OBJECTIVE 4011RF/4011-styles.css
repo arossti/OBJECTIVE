@@ -45,6 +45,7 @@
   --hover-bg: #f8f9fa;
   --table-header-bg: #f1f3f4;
   --user-input-color: #0d6efd;
+  --user-input-color-rgb: 13, 110, 253;
   --calculated-value-color: #202124;
   --derived-value-color: #202124;
   --reference-value-color: #8b0000;
@@ -307,7 +308,10 @@ body {
 .data-table td.col-m .user-input,
 .data-table td.col-e.number-input-cell,
 .data-table td.col-g.number-input-cell,
-/* Removed conflicting alignment rule - now handled by universal rules */
+.data-table td.col-i.number-input-cell,
+.data-table td.col-m.number-input-cell {
+  text-align: right !important;
+}
 
 /* Calculated/Derived values styling (keep base style) */
 .calculated-value {
@@ -1921,10 +1925,8 @@ body.viewing-reference-inputs .reference-input-display-locked select {
     white-space: nowrap;
 } */
 
-/* =============== CONTENT ALIGNMENT: NUCLEAR CLEANUP =============== */
-/* SIMPLE RULE: Numbers Right, Text Left - NO EXCEPTIONS, NO CONFLICTS */
-
-/* Remove all existing conflicting alignment rules - Tables define structure, CSS defines content */
+/* =============== CONTENT ALIGNMENT: CLEAN UNIVERSAL RULES =============== */
+/* ROOT CAUSE FIX: Simple rules without aggressive overrides */
 
 /* UNIVERSAL RULE 1: ALL NUMERIC CONTENT → RIGHT ALIGNED */
 .data-table input[type="number"],
@@ -1932,15 +1934,15 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 .data-table .calculated-value,
 .data-table .derived-value,
 .data-table .numeric-field {
-  text-align: right !important;
-  font-family: var(--font-mono) !important;
+  text-align: right;
+  font-family: var(--font-mono);
 }
 
 /* UNIVERSAL RULE 2: ALL TEXT CONTENT → LEFT ALIGNED */
 .data-table select,
 .data-table [data-type="text"],
 .data-table .section-subheader {
-  text-align: left !important;
+  text-align: left;
 }
 
 /* UNIVERSAL RULE 3: SLIDERS → CENTER ALIGNED (Visual Balance) */
@@ -1948,7 +1950,80 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 .data-table [data-type="coefficient"],
 .data-table [data-type="year_slider"],
 .data-table .slider-container {
-  text-align: center !important;
+  text-align: center;
 }
 
-/* END NUCLEAR CLEANUP - All content formatting now handled by these 3 universal rules */
+/* UNIVERSAL BACKUP: Ensure ALL calculated/derived values are right-aligned */
+.calculated-value,
+.derived-value {
+  text-align: right !important;
+}
+
+/* END CLEAN RULES - Proper CSS cascade without conflicts */
+
+/* =============== ELEGANT USER INPUT BEHAVIOR (OBC Matrix Pattern) =============== */
+/* EXACT COPY from working OBC Matrix styles */
+
+/* Default/placeholder text styling - muted grey */
+.data-table td[contenteditable="true"].user-input:not(.user-modified),
+.data-table td input[type="number"].user-input:not(.user-modified),
+.data-table td.editable[contenteditable="true"]:not(.user-modified),
+.data-table td .user-input[contenteditable="true"]:not(.user-modified) {
+  color: #6c757d !important; /* Muted grey for default/placeholder text */
+  font-style: italic !important; /* Subtle italic to indicate placeholder nature */
+}
+
+/* User-modified text styling - blue and confident */
+.data-table td[contenteditable="true"].user-input.user-modified,
+.data-table td input[type="number"].user-input.user-modified,
+.data-table td.editable[contenteditable="true"].user-modified,
+.data-table td .user-input[contenteditable="true"].user-modified {
+  color: var(--user-input-color) !important; /* Blue for user-entered values */
+  font-style: normal !important; /* Remove italic for user values */
+  font-weight: 600 !important; /* Slightly bolder to show confidence */
+}
+
+/* Temporary editing intent styling - blue while actively editing (before commit) */
+.data-table td[contenteditable="true"].user-input.editing-intent,
+.data-table td input[type="number"].user-input.editing-intent,
+.data-table td.editable[contenteditable="true"].editing-intent,
+.data-table td .user-input[contenteditable="true"].editing-intent {
+  color: var(--user-input-color) !important; /* Blue while editing */
+  font-style: normal !important; /* Remove italic while editing */
+  font-weight: 600 !important; /* Bold while editing */
+}
+
+/* Base user input styling with hover effects */
+.data-table td[contenteditable="true"].user-input,
+.data-table td input[type="number"].user-input,
+.data-table td.editable[contenteditable="true"],
+.data-table td .user-input[contenteditable="true"] {
+  border-bottom: 2px solid transparent;
+  transition: border-bottom-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Hover effects on the input fields themselves */
+.data-table td[contenteditable="true"].user-input:hover,
+.data-table td input[type="number"].user-input:hover,
+.data-table td.editable[contenteditable="true"]:hover,
+.data-table td .user-input[contenteditable="true"]:hover {
+  border-bottom-color: var(--user-input-color);
+}
+
+/* Focus effects on the input fields themselves */
+.data-table td[contenteditable="true"].user-input:focus,
+.data-table td input[type="number"].user-input:focus,
+.data-table td.editable[contenteditable="true"]:focus,
+.data-table td .user-input[contenteditable="true"]:focus {
+  border-bottom-color: var(--user-input-color);
+  background-color: rgba(var(--user-input-color-rgb), 0.05);
+}
+
+/* Cell-level hover effects */
+.data-table td:has([contenteditable="true"].user-input):hover,
+.data-table td:has(input[type="number"].user-input):hover,
+.data-table td:has(.user-input[contenteditable="true"]):hover {
+  background-color: rgba(var(--user-input-color-rgb), 0.03);
+}
+
+/* =============== END ELEGANT USER INPUT BEHAVIOR =============== */
