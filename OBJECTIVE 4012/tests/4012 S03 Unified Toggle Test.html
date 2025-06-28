@@ -170,26 +170,7 @@
         text-align: center;
       }
 
-      /* User input editable fields - MUST be blue bold */
-      .user-input.editable {
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        font-weight: bold;
-        color: #0066cc !important;
-        background-color: #f0f7ff !important;
-        border: 1px solid #0066cc;
-        display: inline-block;
-        min-width: 60px;
-        text-align: center;
-        cursor: text;
-      }
-
-      .user-input.editable:focus {
-        outline: none;
-        border-color: #0066cc;
-        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-      }
+      /* REMOVED: Using external 4011-styles.css elegant input styling instead */
 
       /* Value cells - calculated/derived values */
       .value-cell {
@@ -241,33 +222,7 @@
         /* This will remain active in reference mode */
       }
 
-      /* User input fields */
-      .user-input {
-        padding: 4px 8px;
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        min-width: 60px;
-        text-align: center;
-        transition: all 0.2s;
-      }
-
-      .user-input.editable {
-        cursor: text;
-      }
-
-      .user-input.editable:hover {
-        border-color: #2196f3;
-        background-color: #f0f8ff;
-      }
-
-      .user-input.editable:focus,
-      .user-input.editable.editing {
-        outline: none;
-        border-color: #2196f3;
-        background-color: #fff;
-        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-      }
+      /* REMOVED: Using external 4011-styles.css elegant input styling instead */
 
       /* Dropdown styles */
       .dropdown-container {
@@ -881,7 +836,7 @@
               <td>
                 <span
                   id="daysCooling"
-                  class="cell-ue"
+                  class="cell-ue user-input"
                   data-field-id="m_19"
                   contenteditable="true"
                   >120</span
@@ -1078,7 +1033,7 @@
               <td>
                 <span
                   id="coolingOverride"
-                  class="cell-ue"
+                  class="cell-ue user-input"
                   data-field-id="l_24"
                   contenteditable="true"
                   >24</span
@@ -1886,41 +1841,89 @@
           },
 
           setupEditableFields: function () {
-            const editableFields = document.querySelectorAll(".editable");
+            // Setup both .editable (legacy) and .user-input (new elegant styling) fields
+            const editableFields = document.querySelectorAll(".editable, .user-input[contenteditable]");
 
             editableFields.forEach((field) => {
               const fieldId = field.getAttribute("data-field-id");
               if (!fieldId) return;
 
+              // Remove any existing handlers to avoid duplicates
               field.removeEventListener("blur", handleEditableBlur);
+              field.removeEventListener("focus", handleEditableFocus);
+              field.removeEventListener("keydown", handleEditableKeydown);
+
+              // Add enhanced event handlers
               field.addEventListener("blur", handleEditableBlur);
-
-              field.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  this.blur();
-                }
-              });
-
-              field.addEventListener("focus", function () {
-                this.classList.add("editing");
-              });
-
-              field.addEventListener("focusout", function () {
-                this.classList.remove("editing");
-              });
+              field.addEventListener("focus", handleEditableFocus);
+              field.addEventListener("keydown", handleEditableKeydown);
             });
+
+            function handleEditableFocus() {
+              // Store original value for change detection
+              this.dataset.originalValue = this.textContent.trim();
+              
+              // Add editing-intent class for temporary blue styling
+              this.classList.add("editing-intent");
+              this.classList.remove("user-modified");
+              
+              logDebug(`Field ${this.getAttribute("data-field-id")} focused - editing intent activated`);
+            }
+
+            function handleEditableKeydown(e) {
+              // Prevent newlines in contenteditable fields
+              if (e.key === "Enter") {
+                e.preventDefault();
+                this.blur(); // Trigger save
+                return false;
+              }
+              
+              // Prevent other problematic keys that can cause formatting issues
+              if (e.key === "Tab") {
+                e.preventDefault();
+                this.blur(); // Save and move focus
+                return false;
+              }
+            }
 
             function handleEditableBlur() {
               const fieldId = this.getAttribute("data-field-id");
               if (!fieldId) return;
 
               const newValue = this.textContent.trim();
-              const numericValue = parseFloat(newValue) || 0;
-              DualState.setValue(fieldId, numericValue, "user");
+              const originalValue = this.dataset.originalValue || "";
+              const hasChanged = newValue !== originalValue;
 
-              logDebug(`Editable field ${fieldId} changed to:`, numericValue);
-              CalculationService.calculateAll();
+              // Remove editing-intent class
+              this.classList.remove("editing-intent");
+
+              if (hasChanged && newValue !== "") {
+                // User made changes - apply user-modified styling
+                this.classList.add("user-modified");
+                
+                const numericValue = parseFloat(newValue) || 0;
+                DualState.setValue(fieldId, numericValue, "user");
+                
+                logDebug(`Field ${fieldId} changed to: ${numericValue} (user-modified styling applied)`);
+                CalculationService.calculateAll();
+              } else if (!hasChanged) {
+                // No changes made - revert to default styling if no previous user modification
+                const currentValue = DualState.getValue(fieldId);
+                if (currentValue !== null && currentValue !== undefined) {
+                  // Check if this field has been user-modified before
+                  const hasUserModified = this.classList.contains("user-modified");
+                  if (!hasUserModified) {
+                    // Restore default value and styling
+                    this.textContent = currentValue;
+                    this.classList.remove("user-modified");
+                  }
+                }
+                logDebug(`Field ${fieldId} - no changes, maintaining current state`);
+              } else {
+                // Empty value - remove user-modified styling and restore default
+                this.classList.remove("user-modified");
+                logDebug(`Field ${fieldId} - empty value, reverted to default styling`);
+              }
             }
           },
 

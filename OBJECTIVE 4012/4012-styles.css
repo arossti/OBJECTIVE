@@ -2815,4 +2815,55 @@ body.reference-mode .user-input {
 #buildingInfo .section-cell[colspan="4"] {
   grid-column: span 4;
 }
-/* 4012-styles.css */
+
+/* =============== UNIVERSAL ALIGNMENT SYSTEM (OBC Matrix Pattern) =============== */
+/* Simple TWO-RULE system: RIGHT for numbers, LEFT for text */
+
+/* RULE 1: RIGHT-ALIGN ALL NUMERIC CONTENT */
+.data-table td input[type="number"],
+.data-table td [contenteditable].user-input,
+.data-table td [contenteditable][data-field-id],
+.data-table td [contenteditable][data-field-id^="d_"],
+.data-table td [contenteditable][data-field-id^="f_"],
+.data-table td [contenteditable][data-field-id^="g_"],
+.data-table td [contenteditable][data-field-id^="h_"],
+.data-table td [contenteditable][data-field-id^="i_"],
+.data-table td [contenteditable][data-field-id^="j_"],
+.data-table td [contenteditable][data-field-id^="k_"],
+.data-table td [contenteditable][data-field-id^="l_"],
+.data-table td .calculated-value,
+.data-table td .derived-value,
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.section-cell input[type="number"],
+.section-cell [contenteditable].user-input,
+.section-cell [contenteditable][data-field-id],
+.section-cell [contenteditable][data-field-id^="d_"],
+.section-cell [contenteditable][data-field-id^="f_"],
+.section-cell [contenteditable][data-field-id^="g_"],
+.section-cell [contenteditable][data-field-id^="h_"],
+.section-cell [contenteditable][data-field-id^="i_"],
+.section-cell [contenteditable][data-field-id^="j_"],
+.section-cell [contenteditable][data-field-id^="k_"],
+.section-cell [contenteditable][data-field-id^="l_"],
+.section-cell .calculated-value,
+.section-cell .derived-value,
+.section-cell.calculated-value,
+.section-cell.derived-value {
+  text-align: right !important; /* RIGHT-ALIGN ALL NUMERIC */
+  font-family: var(--font-mono) !important;
+}
+
+/* RULE 2: LEFT-ALIGN ALL TEXT CONTENT */
+.data-table td[data-type="text"],
+.data-table td[data-type="dropdown"],
+.data-table td.section-subheader,
+.data-table td select,
+.section-cell[data-type="text"],
+.section-cell[data-type="dropdown"],
+.section-cell.section-subheader,
+.section-cell select {
+  text-align: left !important; /* LEFT-ALIGN ALL TEXT */
+}
+
+/* =============== END UNIVERSAL ALIGNMENT SYSTEM =============== */

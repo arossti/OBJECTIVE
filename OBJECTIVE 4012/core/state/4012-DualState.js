@@ -336,8 +336,151 @@
     reset() {
       this.clear();
     }
+
+    /**
+     * Enhanced formatNumber function supporting all OBC Matrix and 4011RF formats
+     * @param {*} value - Value to format
+     * @param {string} formatType - Format type (e.g., 'number-2dp', 'percent', 'number-2dp-comma')
+     * @returns {string} Formatted value
+     */
+    formatNumber(value, formatType = "number-2dp") {
+      // Handle null, undefined, or empty values
+      if (value === null || value === undefined || value === "") {
+        return "";
+      }
+
+      // Convert to number
+      let numValue;
+      if (typeof value === "string") {
+        // Remove commas and parse
+        const cleanedValue = value.replace(/,/g, "").trim();
+        if (cleanedValue === "" || cleanedValue.toUpperCase() === "N/A") {
+          return value; // Return original for non-numeric strings
+        }
+        numValue = parseFloat(cleanedValue);
+      } else if (typeof value === "number") {
+        numValue = value;
+      } else {
+        return String(value); // Fallback for other types
+      }
+
+      // Handle NaN
+      if (isNaN(numValue)) {
+        return String(value);
+      }
+
+      try {
+        // Handle aliases
+        if (formatType === "u-value") formatType = "number-3dp";
+        if (formatType === "rsi") formatType = "number-2dp";
+
+        // Handle Integer types first
+        if (formatType === "integer") {
+          return numValue.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+            useGrouping: true,
+          }); // With commas
+        }
+        if (formatType === "integer-nocomma") {
+          return numValue.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+            useGrouping: false,
+          }); // No commas
+        }
+
+        // Parsing complex format types
+        const formatParts = formatType.split("-");
+        let type = formatParts[0]; // 'number', 'percent', 'cad'
+        const dpPart = formatParts[1] || ""; // e.g., '0dp', '2dp', '3dp', '4dp'
+
+        let decimals = 2; // Default decimal places
+        if (dpPart) {
+          const match = dpPart.match(/(\d+)d/);
+          if (match) decimals = parseInt(match[1], 10);
+        }
+
+        // Percentage Formatting
+        if (type === "percent") {
+          // OBC Matrix compatibility: basic "percent" defaults to 0dp
+          const percentDecimals = dpPart ? decimals : 0;
+          return numValue.toLocaleString(undefined, {
+            style: "percent",
+            minimumFractionDigits: percentDecimals,
+            maximumFractionDigits: percentDecimals,
+          });
+        }
+        // CAD Currency Formatting (using toFixed)
+        else if (type === "cad") {
+          if (isNaN(decimals) || decimals < 0) decimals = 2; // Safety check
+          const fixedString = numValue.toFixed(decimals);
+          // Basic comma insertion - might need refinement for edge cases
+          let finalString = fixedString;
+          const useCommas = formatParts.includes("comma");
+          if (useCommas) {
+            const parts = fixedString.split(".");
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            finalString = parts.join(".");
+          }
+          return "$" + finalString;
+        }
+        // Number Formatting (Default)
+        else {
+          // OBC Matrix compatibility: default to no commas unless explicitly requested
+          const shouldUseCommas = formatParts.includes("comma");
+          return numValue.toLocaleString(undefined, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+            useGrouping: shouldUseCommas,
+          });
+        }
+      } catch (e) {
+        console.error(
+          `Error formatting value ${value} with format ${formatType}:`,
+          e,
+        );
+        return String(value); // Fallback to string representation on error
+      }
+    }
+
+    /**
+     * Parse numeric values from strings (with comma handling)
+     * @param {string|number|null|undefined} value - The value to parse
+     * @param {number} [defaultValue=0] - The value to return if parsing fails
+     * @returns {number} The parsed number or the default value
+     */
+    parseNumeric(value, defaultValue = 0) {
+      if (value === null || value === undefined) {
+        return defaultValue;
+      }
+      let numericValue;
+      if (typeof value === "string") {
+        // Remove commas, trim whitespace
+        const cleanedValue = value.replace(/,/g, "").trim();
+        if (cleanedValue === "" || cleanedValue.toUpperCase() === "N/A") {
+          return defaultValue;
+        }
+        numericValue = parseFloat(cleanedValue);
+      } else if (typeof value === "number") {
+        numericValue = value;
+      } else {
+        numericValue = NaN; // Handle other types if needed
+      }
+      // Return defaultValue if parsing resulted in NaN
+      return isNaN(numericValue) ? defaultValue : numericValue;
+    }
   }
 
   // Create singleton instance and expose it
   window.TEUI.v4012.DualState = new DualState();
+
+  // Expose formatting functions globally for easy access
+  window.TEUI.v4012.formatNumber = function(value, formatType = "number-2dp") {
+    return window.TEUI.v4012.DualState.formatNumber(value, formatType);
+  };
+
+  window.TEUI.v4012.parseNumeric = function(value, defaultValue = 0) {
+    return window.TEUI.v4012.DualState.parseNumeric(value, defaultValue);
+  };
 })();

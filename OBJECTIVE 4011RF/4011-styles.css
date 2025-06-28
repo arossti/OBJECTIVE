@@ -1112,36 +1112,25 @@ input[type=number].form-control {
 #envelopeRadiantGains .data-table td:nth-child(4) { 
     width: 100px !important;  /* Column D - Area inputs (constrain only the culprit) */
     max-width: 100px !important;
-    text-align: right !important; /* Right-align numeric inputs */
+    /* text-align now handled by universal alignment system */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
-/* Section 10: Natural sizing with essential styling only */
-#envelopeRadiantGains .data-table td:nth-child(7) { 
-    text-align: center !important; /* Center-align percentage sliders */
-}
-#envelopeRadiantGains .data-table td:nth-child(8) { 
-    text-align: center !important; /* Center-align percentage sliders */
-}
+/* Section 10: Essential styling only - alignment handled globally */
 #envelopeRadiantGains .data-table td:nth-child(9) { 
-    text-align: right !important;
     font-weight: 700 !important; /* Bold for calculated values */
 }
 #envelopeRadiantGains .data-table td:nth-child(10) { 
-    text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(11) { 
-    text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(12) { 
-    text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(13) { 
-    text-align: right !important;
     font-weight: 700 !important;
 }
 #envelopeRadiantGains .data-table td:nth-child(14) { 
@@ -1154,7 +1143,7 @@ input[type=number].form-control {
 #envelopeRadiantGains .data-table td:nth-child(4) input,
 #envelopeRadiantGains .data-table td:nth-child(4) [contenteditable] {
     max-width: 90px !important;  /* Only constrain Area inputs (goalpost culprit) */
-    text-align: right !important; /* Right-align numeric inputs */
+    /* text-align now handled by universal alignment system */
 }
 
 /* Section 10: Keep slider-md sizing for sliders (proven to work) */
@@ -1166,6 +1155,7 @@ input[type=number].form-control {
 #envelopeRadiantGains .data-table td:nth-child(8) [data-type="percentage"] {
     width: 140px !important; /* slider-md sizing - proven to work */
     min-width: 140px !important;
+    /* text-align now handled by universal alignment system */
 }
 
 /* =============== END SECTION 10 LAYOUT OPTIMIZATION =============== */
@@ -1210,7 +1200,7 @@ input[type=number].form-control {
 #buildingOccupancy .data-table td[data-field-id="d_1"],
 #buildingOccupancy .data-table td[data-field-id="d_2"] {
     width: 140px; /* Match slider-md size - clean consolidation, not override */
-    text-align: center !important; /* Center-align sliders */
+    /* text-align now handled by universal alignment system */
 }
 
 /* =============== END SECTION 02 LAYOUT OPTIMIZATION =============== */
@@ -1312,11 +1302,7 @@ input[type=number].form-control {
 
 /* Blue color only for user-modified inputs - base styling handles defaults */
 
-/* Ensure text alignment is preserved */
-.data-table td input[type="number"].form-control,
-.data-table td input[type="number"].user-input {
-  text-align: right !important; /* Most numeric cells are right-aligned */
-}
+/* text-align now handled by universal alignment system at end of file */
 
 /* Apply section-subheader styling to all cells in a row with section-subheader class */
 .data-table tr td.section-subheader,
@@ -1345,17 +1331,7 @@ input[type=number].form-control {
   text-align: left !important; /* Keep important here as it overrides the general center align */
 }
 
-/* --- Section 02 Specific Overrides --- */
-
-/* Force left alignment for specific text-based input/derived fields in Section 02 */
-#buildingInfo td[data-field-id="d_16"],
-#buildingInfo td[data-field-id="h_14"],
-#buildingInfo td[data-field-id="i_16"],
-#buildingInfo td[data-field-id="i_17"] {
-  text-align: left !important; /* !important needed to override global !important rule */
-}
-
-/* --- End Section 02 Overrides --- */
+/* Section 02 text fields now handled by universal alignment system */
 
 /* Clean dropdown styling - removed width 100% to allow fixed-width controls */
 .data-table td select.form-select,
@@ -1421,6 +1397,62 @@ table.data-table select.form-select:hover {
 
 .text-left-indicator {
   text-align: left !important; /* Force left alignment for specific indicator columns */
+}
+
+/* =============== SECTION 11: TRANSMISSION LOSSES (OBC MATRIX PATTERN) =============== */
+
+/* Apply consistent table layout with proper column constraints */
+#envelopeTransmissionLosses .data-table,
+section[data-section-id="envelopeTransmissionLosses"] .data-table {
+  table-layout: fixed;
+}
+
+/* Column A: No expandable rows in S11 */
+#envelopeTransmissionLosses .data-table td:nth-child(1),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(1) {
+  width: 40px;
+  min-width: 40px;
+}
+
+/* Columns B and C: Fixed-width ID and description */
+#envelopeTransmissionLosses .data-table td:nth-child(2),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(2) {
+  width: 60px;
+  min-width: 60px;
+}
+
+#envelopeTransmissionLosses .data-table td:nth-child(3),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(3) {
+  width: 280px;
+  min-width: 200px;
+}
+
+/* Columns D-N: Equal distribution of remaining space (anti-goalpost) */
+#envelopeTransmissionLosses .data-table td:nth-child(4),  /* D: Areas */
+#envelopeTransmissionLosses .data-table td:nth-child(5),  /* E: Rimp */
+#envelopeTransmissionLosses .data-table td:nth-child(6),  /* F: RSI */
+#envelopeTransmissionLosses .data-table td:nth-child(7),  /* G: U-Value */
+#envelopeTransmissionLosses .data-table td:nth-child(8),  /* H: % of Ae & Ag */
+#envelopeTransmissionLosses .data-table td:nth-child(9),  /* I: Heatloss */
+#envelopeTransmissionLosses .data-table td:nth-child(10), /* J: Heatloss % */
+#envelopeTransmissionLosses .data-table td:nth-child(11), /* K: Heatgain */
+#envelopeTransmissionLosses .data-table td:nth-child(12), /* L: Heatgain % */
+#envelopeTransmissionLosses .data-table td:nth-child(13), /* M: Reference */
+#envelopeTransmissionLosses .data-table td:nth-child(14), /* N: Status */
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(4),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(5),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(6),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(7),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(8),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(9),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(10),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(11),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(12),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(13),
+section[data-section-id="envelopeTransmissionLosses"] .data-table td:nth-child(14) {
+  width: auto; /* Equal distribution */
+  min-width: 80px; /* Minimum readable width */
+  max-width: none; /* No goalpost expansion */
 }
 
 /* --- Section 11 Visual Indicators --- */
@@ -2115,6 +2147,32 @@ body.viewing-reference-inputs .reference-input-display-locked select {
   stroke-width: 2.5px; /* Thicker border in fullscreen */
 }
 
+/* Make links more visible in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .link,
+.dependency-graph-svg-wrapper:-webkit-full-screen .link,
+.dependency-graph-svg-wrapper:-moz-full-screen .link,
+.dependency-graph-svg-wrapper:-ms-fullscreen .link {
+  stroke-width: 2px; /* Thicker links in fullscreen */
+  stroke-opacity: 0.7; /* More opaque links in fullscreen */
+}
+
+/* Improve visibility of influential nodes in fullscreen */
+.dependency-graph-svg-wrapper:fullscreen .node circle:not(.node-background),
+.dependency-graph-svg-wrapper:-webkit-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-moz-full-screen
+  .node
+  circle:not(.node-background),
+.dependency-graph-svg-wrapper:-ms-fullscreen
+  .node
+  circle:not(.node-background) {
+  filter: drop-shadow(
+    0px 3px 5px rgba(0, 0, 0, 0.3)
+  ); /* Stronger shadow in fullscreen */
+  stroke-width: 2.5px; /* Thicker border in fullscreen */
+}
+
 /* Special styling for influential nodes (stronger glow in fullscreen) */
 .dependency-graph-svg-wrapper:fullscreen
   .node
@@ -2247,3 +2305,54 @@ body.viewing-reference-inputs .reference-input-display-locked select {
 /* .controls-container .btn {
     white-space: nowrap;
 } */
+
+/* =============== UNIVERSAL ALIGNMENT SYSTEM (OBC Matrix Pattern) =============== */
+/* COMPREHENSIVE system: RIGHT for ALL numbers, LEFT for text - WORKS FOR ALL SECTIONS */
+
+/* RULE 1: RIGHT-ALIGN ALL NUMERIC CONTENT (Comprehensive Coverage with Maximum Specificity) */
+.data-table td input[type="number"],
+.data-table td [contenteditable],
+.data-table td [contenteditable].user-input,
+.data-table td [contenteditable][data-field-id],
+.data-table td input:not([type="text"]):not([type="email"]):not([type="password"]):not([type="search"]),
+.data-table td .calculated-value,
+.data-table td .derived-value,
+.data-table td.calculated-value,
+.data-table td.derived-value,
+.data-table td.numeric-field,
+/* HIGH SPECIFICITY OVERRIDES - Beat ALL section-specific rules */
+section .data-table td input[type="number"],
+section .data-table td [contenteditable],
+section .data-table td [contenteditable].user-input,
+section .data-table td [contenteditable][data-field-id],
+div .data-table td input[type="number"],
+div .data-table td [contenteditable],
+div .data-table td [contenteditable].user-input,
+div .data-table td [contenteditable][data-field-id] {
+  text-align: right !important; /* RIGHT-ALIGN ALL NUMERIC - Universal Override */
+  font-family: var(--font-mono) !important;
+}
+
+/* RULE 2: CENTER-ALIGN SLIDERS AND INTERACTIVE CONTROLS */
+.data-table td [data-type="percentage"],
+.data-table td [data-type="coefficient"], 
+.data-table td [data-type="year_slider"],
+.data-table td .slider-container,
+.data-table td .slider,
+section .data-table td [data-type="percentage"],
+section .data-table td [data-type="coefficient"],
+section .data-table td [data-type="year_slider"],
+section .data-table td .slider-container {
+  text-align: center !important; /* CENTER-ALIGN SLIDERS - Visual balance */
+}
+
+/* RULE 3: LEFT-ALIGN ALL TEXT CONTENT */
+.data-table td[data-type="text"],
+.data-table td[data-type="dropdown"],
+.data-table td.section-subheader,
+.data-table td select,
+.data-table td select.form-select {
+  text-align: left !important; /* LEFT-ALIGN ALL TEXT */
+}
+
+/* =============== END UNIVERSAL ALIGNMENT SYSTEM =============== */

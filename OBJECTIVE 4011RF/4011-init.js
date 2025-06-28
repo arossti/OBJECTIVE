@@ -874,43 +874,47 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // =============== ELEGANT STYLING ENHANCEMENT FOR 4011RF ===============
-  // Initialize elegant input styling to match OBC Matrix behavior
+  // Use EVENT DELEGATION for elegant input styling - handles conditional fields automatically
   function initializeElegantStyling() {
-    // Find all user-input fields in the 4011RF system
-    const editableFields = document.querySelectorAll('[contenteditable="true"].user-input, input.user-input');
+    // Use event delegation on document to catch ALL user inputs (including conditional ones)
+    document.addEventListener('focus', function(e) {
+      const field = e.target;
+      
+      // Check if this is a user input field
+      if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
+        field.classList.add('editing-intent');
+        field.dataset.originalValue = field.textContent || field.value || '';
+      }
+    }, true); // Use capture to ensure we catch all focus events
     
-    editableFields.forEach(field => {
-      // Store original value for change detection
-      const originalValue = field.textContent || field.value || '';
+    document.addEventListener('blur', function(e) {
+      const field = e.target;
       
-      // Add focus handler for editing-intent styling
-      field.addEventListener('focus', function() {
-        this.classList.add('editing-intent');
-        this.dataset.originalValue = this.textContent || this.value || '';
-      });
-      
-      // Add blur handler for user-modified styling
-      field.addEventListener('blur', function() {
-        this.classList.remove('editing-intent');
+      // Check if this is a user input field
+      if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
+        field.classList.remove('editing-intent');
         
-        const currentValue = this.textContent || this.value || '';
-        const originalValue = this.dataset.originalValue || '';
+        const currentValue = field.textContent || field.value || '';
+        const originalValue = field.dataset.originalValue || '';
         
         // If value changed, mark as user-modified
         if (currentValue !== originalValue && currentValue.trim() !== '') {
-          this.classList.add('user-modified');
+          field.classList.add('user-modified');
         } else if (currentValue.trim() === '') {
           // If cleared, remove user-modified (back to default)
-          this.classList.remove('user-modified');
+          field.classList.remove('user-modified');
         }
-      });
-      
-      // DON'T auto-mark fields as user-modified just because they have content
-      // Only mark as user-modified when user actually changes values through interaction
-      // This allows grey italic defaults to show properly
-    });
+      }
+    }, true); // Use capture to ensure we catch all blur events
   }
   
-  // Initialize elegant styling after a short delay to ensure all sections are rendered
-  setTimeout(initializeElegantStyling, 1000);
+  // Function to refresh styling for conditionally enabled fields
+  window.TEUI.refreshElegantStyling = function() {
+    // This function can be called when fields are conditionally enabled
+    // The event delegation approach means no re-initialization needed
+    console.log('Elegant styling ready for all fields (including conditional)');
+  };
+  
+  // Initialize elegant styling immediately - event delegation doesn't need delays
+  initializeElegantStyling();
 });

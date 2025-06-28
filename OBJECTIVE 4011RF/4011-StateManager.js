@@ -81,10 +81,12 @@ TEUI.StateManager = (function () {
 
       // Percentage Formatting
       if (type === "percent") {
+        // OBC Matrix compatibility: basic "percent" defaults to 0dp
+        const percentDecimals = dpPart ? decimals : 0;
         return numValue.toLocaleString(undefined, {
           style: "percent",
-          minimumFractionDigits: decimals,
-          maximumFractionDigits: decimals,
+          minimumFractionDigits: percentDecimals,
+          maximumFractionDigits: percentDecimals,
         });
       }
       // CAD Currency Formatting (using toFixed)
@@ -102,10 +104,12 @@ TEUI.StateManager = (function () {
       }
       // Number Formatting (Default)
       else {
+        // OBC Matrix compatibility: default to no commas unless explicitly requested
+        const shouldUseCommas = formatParts.includes("comma");
         return numValue.toLocaleString(undefined, {
           minimumFractionDigits: decimals,
           maximumFractionDigits: decimals,
-          useGrouping: useCommas,
+          useGrouping: shouldUseCommas,
         });
       }
     } catch (e) {
