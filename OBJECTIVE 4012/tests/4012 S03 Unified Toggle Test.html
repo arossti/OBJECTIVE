@@ -1779,27 +1779,25 @@
             // Slider
             elements.capacitanceSlider.addEventListener("input", function () {
               const value = this.value;
-              capacitanceValue.textContent = window.TEUI.formatNumber(
-                value / 100,
-                "percent-0dp",
-              );
-              DualState.setValue("i_21", value);
+              if (elements.capacitanceValue) {
+                elements.capacitanceValue.textContent = value + "%";
+              }
+              DualState.setValue("i_21", parseInt(value), "user");
 
               // Update calculations
-              UIController.updateCalculations();
+              CalculationService.calculateAll();
             });
 
             // Also listen to 'change' event for Safari compatibility
             elements.capacitanceSlider.addEventListener("change", function () {
               const value = this.value;
-              capacitanceValue.textContent = window.TEUI.formatNumber(
-                value / 100,
-                "percent-0dp",
-              );
-              DualState.setValue("i_21", value);
+              if (elements.capacitanceValue) {
+                elements.capacitanceValue.textContent = value + "%";
+              }
+              DualState.setValue("i_21", parseInt(value), "user");
 
               // Update calculations
-              UIController.updateCalculations();
+              CalculationService.calculateAll();
             });
 
             // Reference toggle
