@@ -346,7 +346,15 @@ window.TEUI.SectionModules.sect01 = (function () {
     // Store raw value as string in StateManager for precision
     if (window.TEUI?.StateManager?.setValue) {
       const valueToStore = isFinite(rawValue) ? rawValue.toString() : "N/A";
+      
+      // 🏗️ DUAL STATE PATTERN: Write BOTH prefixed values for anti-contamination
+      window.TEUI.StateManager.setValue(`target_${fieldId}`, valueToStore, "calculated");
+      window.TEUI.StateManager.setValue(`ref_${fieldId}`, valueToStore, "calculated");
+      
+      // Global unprefixed for backward compatibility and cross-section integration
       window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
+      
+      console.log(`S01: ✅ DUAL UPDATE - ${fieldId}: target_${fieldId}=${valueToStore} AND ref_${fieldId}=${valueToStore} AND global ${fieldId}=${valueToStore}`);
     }
 
     // CRITICAL: Use updateDisplayValue to preserve custom styling instead of direct DOM manipulation
