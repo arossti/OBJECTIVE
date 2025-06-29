@@ -264,10 +264,26 @@ window.TEUI.SectionModules.sect01 = (function () {
   //==========================================================================
 
   /**
-   * Helper function to safely get numeric values from the APPLICATION state.
+   * Helper function to safely get numeric values from the TARGET state.
+   * ANTI-CONTAMINATION: Always reads from S03 Target state for dashboard stability
    */
   function getAppNumericValue(fieldId, defaultValue = 0) {
     let value = defaultValue;
+    
+    // ANTI-CONTAMINATION: First try to get from S03 Target state for climate values
+    if (window.TEUI?.ModeManager?.TargetState && fieldId.startsWith('d_19') || fieldId.startsWith('h_19') || fieldId.startsWith('i_21')) {
+      const targetState = window.TEUI.ModeManager.TargetState || window.TEUI.ModeManager.getCurrentState?.();
+      if (targetState && typeof targetState.getValue === 'function') {
+        const targetValue = targetState.getValue(fieldId);
+        if (targetValue !== undefined && targetValue !== null) {
+          value = window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
+          console.log(`S01 TARGET: Reading ${fieldId} = ${value} from S03 Target state`);
+          return value;
+        }
+      }
+    }
+    
+    // Fallback to StateManager for non-climate values  
     const stateValue =
       window.TEUI?.StateManager?.getApplicationValue?.(fieldId) ||
       window.TEUI?.StateManager?.getValue?.(fieldId);
@@ -290,9 +306,25 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   /**
    * Helper function to safely get numeric values from the REFERENCE state.
+   * ANTI-CONTAMINATION: Always reads from S03 Reference state for climate calculations
    */
   function getRefNumericValue(fieldId, defaultValue = 0) {
     let value = defaultValue;
+    
+    // ANTI-CONTAMINATION: First try to get from S03 Reference state for climate values
+    if (window.TEUI?.ModeManager?.ReferenceState && (fieldId.startsWith('d_19') || fieldId.startsWith('h_19') || fieldId.startsWith('i_21'))) {
+      const referenceState = window.TEUI.ModeManager.ReferenceState;
+      if (referenceState && typeof referenceState.getValue === 'function') {
+        const refValue = referenceState.getValue(fieldId);
+        if (refValue !== undefined && refValue !== null) {
+          value = window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
+          console.log(`S01 REFERENCE: Reading ${fieldId} = ${value} from S03 Reference state`);
+          return value;
+        }
+      }
+    }
+    
+    // Fallback to StateManager for non-climate values
     const stateValue = window.TEUI?.StateManager?.getValue?.(fieldId);
 
     if (stateValue !== undefined && stateValue !== null && stateValue !== "") {
