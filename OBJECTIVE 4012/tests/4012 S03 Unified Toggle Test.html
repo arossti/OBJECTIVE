@@ -1223,137 +1223,113 @@
           },
         };
 
-        // UNIFIED STATE MANAGEMENT: Target and Reference with Toggle Support
+        // ✅ CORRECTED STATE MANAGEMENT: Using StateManager with Prefixes
         
-        // Target State Management (isolated + persistent)
-        const TargetState = {
-          state: {},
-          listeners: {},
+        // Minimal StateManager for offline test (simplified version)
+        const StateManager = {
+          fields: new Map(),
+          listeners: new Map(),
 
-          setValue: function(fieldId, value, source = "user") {
-            this.state[fieldId] = value;
-            this.notifyListeners(fieldId, value);
+          setValue: function(fieldId, value, state = "user-modified") {
+            const oldValue = this.getValue(fieldId);
+            
+            this.fields.set(fieldId, { value, state });
+            this.notifyListeners(fieldId, value, oldValue, state);
             this.saveState();
-            logDebug(`TARGET setValue: ${fieldId} = ${value} (${source}) - SAVED`);
+            
+            logDebug(`StateManager setValue: ${fieldId} = ${value} (${state})`);
+            return true;
           },
 
           getValue: function(fieldId) {
-            return this.state[fieldId];
+            const field = this.fields.get(fieldId);
+            return field ? field.value : null;
           },
 
           addListener: function(fieldId, callback) {
-            if (!this.listeners[fieldId]) {
-              this.listeners[fieldId] = [];
+            if (!this.listeners.has(fieldId)) {
+              this.listeners.set(fieldId, new Set());
             }
-            this.listeners[fieldId].push(callback);
+            this.listeners.get(fieldId).add(callback);
           },
 
-          notifyListeners: function(fieldId, value) {
-            if (this.listeners[fieldId]) {
-              this.listeners[fieldId].forEach(callback => callback(value));
-            }
-          },
-
-          initialize: function() {
-            const savedState = localStorage.getItem('TARGET_STATE');
-            if (savedState) {
+          notifyListeners: function(fieldId, newValue, oldValue, state) {
+            if (!this.listeners.has(fieldId)) return;
+            this.listeners.get(fieldId).forEach(callback => {
               try {
-                this.state = JSON.parse(savedState);
-                logDebug("TARGET STATE: Restored from localStorage", this.state);
-              } catch (e) {
-                this.setDefaults();
+                callback(newValue, oldValue, fieldId, state);
+              } catch (error) {
+                console.error(`Error in listener for ${fieldId}:`, error);
               }
-            } else {
-              this.setDefaults();
-            }
-          },
-
-          setDefaults: function() {
-            this.state = {
-              'd_19': 'ON',         // Province
-              'h_19': 'Alexandria', // City (matches Excel screenshot)
-              'h_20': 'Present',    // Timeframe
-              'h_21': 'Capacitance',
-              'h_23': 18,
-              'h_24': 24,
-              'm_19': 120,
-              'i_21': 50           // Target default: 50%
-            };
-            logDebug("TARGET STATE: Set to defaults (Alexandria/ON, 50% capacitance)");
+            });
           },
 
           saveState: function() {
             try {
-              localStorage.setItem('TARGET_STATE', JSON.stringify(this.state));
+              const stateData = {};
+              this.fields.forEach((field, fieldId) => {
+                if (field.state !== "default") {
+                  stateData[fieldId] = field;
+                }
+              });
+              localStorage.setItem('TEUI_TEST_STATE', JSON.stringify(stateData));
             } catch (e) {
-              logDebug("TARGET STATE: Error saving", e);
+              logDebug("StateManager: Error saving", e);
             }
-          }
-        };
-
-        // Reference State Management (isolated + persistent)
-        const ReferenceState = {
-          state: {},
-          listeners: {},
-
-          setValue: function(fieldId, value, source = "user") {
-            this.state[fieldId] = value;
-            this.notifyListeners(fieldId, value);
-            this.saveState();
-            logDebug(`REFERENCE setValue: ${fieldId} = ${value} (${source}) - SAVED`);
           },
 
-          getValue: function(fieldId) {
-            return this.state[fieldId];
-          },
-
-          addListener: function(fieldId, callback) {
-            if (!this.listeners[fieldId]) {
-              this.listeners[fieldId] = [];
-            }
-            this.listeners[fieldId].push(callback);
-          },
-
-          notifyListeners: function(fieldId, value) {
-            if (this.listeners[fieldId]) {
-              this.listeners[fieldId].forEach(callback => callback(value));
+          loadState: function() {
+            try {
+              const saved = localStorage.getItem('TEUI_TEST_STATE');
+              if (saved) {
+                const stateData = JSON.parse(saved);
+                Object.entries(stateData).forEach(([fieldId, field]) => {
+                  this.fields.set(fieldId, field);
+                });
+                logDebug("StateManager: Restored from localStorage");
+              }
+            } catch (e) {
+              logDebug("StateManager: Error loading", e);
             }
           },
 
           initialize: function() {
-            const savedState = localStorage.getItem('REFERENCE_STATE');
-            if (savedState) {
-              try {
-                this.state = JSON.parse(savedState);
-                logDebug("REFERENCE STATE: Restored from localStorage", this.state);
-              } catch (e) {
-                this.setDefaults();
-              }
-            } else {
-              this.setDefaults();
+            this.loadState();
+            
+            // Set Target defaults (with target_ prefix)
+            this.setDefaultIfMissing('target_d_19', 'ON');
+            this.setDefaultIfMissing('target_h_19', 'Alexandria');
+            this.setDefaultIfMissing('target_h_20', 'Present');
+            this.setDefaultIfMissing('target_h_21', 'Capacitance');
+            this.setDefaultIfMissing('target_h_23', 18);
+            this.setDefaultIfMissing('target_h_24', 24);
+            this.setDefaultIfMissing('target_m_19', 120);
+            this.setDefaultIfMissing('target_i_21', 50);  // Target: 50%
+            
+            // Set Reference defaults (with ref_ prefix) 
+            this.setDefaultIfMissing('ref_d_19', 'BC');
+            this.setDefaultIfMissing('ref_h_19', 'Vancouver');
+            this.setDefaultIfMissing('ref_h_20', 'Present');
+            this.setDefaultIfMissing('ref_h_21', 'Capacitance');
+            this.setDefaultIfMissing('ref_h_23', 18);
+            this.setDefaultIfMissing('ref_h_24', 24);
+            this.setDefaultIfMissing('ref_m_19', 120);
+            this.setDefaultIfMissing('ref_i_21', 75);    // Reference: 75% (different for testing)
+            
+            logDebug("StateManager: Initialized with Target/Reference defaults");
+          },
+
+          setDefaultIfMissing: function(fieldId, value) {
+            if (!this.fields.has(fieldId)) {
+              this.setValue(fieldId, value, "default");
             }
           },
 
-          setDefaults: function() {
-            this.state = {
-              'd_19': 'BC',         // Province (different from Target)
-              'h_19': 'Vancouver',  // City (different from Target)
-              'h_20': 'Present',    // Timeframe
-              'h_21': 'Capacitance',
-              'h_23': 18,
-              'h_24': 24,
-              'm_19': 120,
-              'i_21': 75            // DIFFERENT from Target (50) to test isolation
-            };
-            logDebug("REFERENCE STATE: Set to defaults (with different capacitance for testing)");
-          },
-
-          saveState: function() {
-            try {
-              localStorage.setItem('REFERENCE_STATE', JSON.stringify(this.state));
-            } catch (e) {
-              logDebug("REFERENCE STATE: Error saving", e);
-            }
+          reset: function() {
+            localStorage.removeItem('TEUI_TEST_STATE');
+            this.fields.clear();
+            this.initialize();
+            logDebug("StateManager: Reset to defaults");
           }
         };
 
