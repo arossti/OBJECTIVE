@@ -608,7 +608,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_23",
           type: "calculated",
-          value: "66",
+          value: "64", // Fixed: Correct F conversion of 18°C
           section: "climateCalculations",
           dependencies: ["h_23"],
         },
@@ -631,14 +631,14 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_24",
           type: "derived",
-          value: "34",
+          value: "30", // Fixed: Default to reasonable value, will be overwritten by climate data
           section: "climateCalculations",
           dependencies: ["d_19", "h_19"],
         },
         e: {
           fieldId: "e_24",
           type: "calculated",
-          value: "98",
+          value: "86", // Fixed: Correct F conversion of 30°C
           section: "climateCalculations",
           dependencies: ["d_24"],
         },
@@ -653,7 +653,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_24",
           type: "calculated",
-          value: "78",
+          value: "75", // Fixed: Correct F conversion of 24°C
           section: "climateCalculations",
           dependencies: ["h_24", "l_24"],
         },
