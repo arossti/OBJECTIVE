@@ -210,24 +210,26 @@ window.TEUI.SectionModules.sect03 = (function () {
         timeframeSelect.value = currentState.getValue("h_20");
       }
       
-      // Update capacitance dropdown
+      // Update capacitance dropdown - CRITICAL for GFCDD calculation
       const capacitanceSelect = document.querySelector('[data-dropdown-id="dd_h_21"]');
-      if (capacitanceSelect && currentState.getValue("h_21")) {
-        capacitanceSelect.value = currentState.getValue("h_21");
+      const capacitanceValue = currentState.getValue("h_21") || "Capacitance";
+      if (capacitanceSelect) {
+        capacitanceSelect.value = capacitanceValue;
+        console.log(`S03: Updated capacitance dropdown to "${capacitanceValue}" in ${this.currentMode} mode`);
       }
       
-      // CRITICAL: Update percentage slider from isolated state
-      const percentageSlider = document.querySelector('[data-field-id="i_21"]');
+      // CRITICAL: Update percentage slider from isolated state (FieldManager structure)
+      const percentageSlider = document.querySelector('input.form-range[data-field-id="i_21"]');
       const percentageValue = currentState.getValue("i_21") || 50;
-      if (percentageSlider && percentageSlider.type === "range") {
+      if (percentageSlider) {
         percentageSlider.value = percentageValue;
-        // Update display if it exists
-        const display = document.querySelector('[data-field-id="i_21"] + .slider-value');
+        // Update percentage display - FieldManager creates .slider-value as sibling
+        const sliderContainer = percentageSlider.parentElement;
+        const display = sliderContainer?.querySelector('.slider-value');
         if (display) {
           display.textContent = percentageValue + "%";
         }
-      } else if (percentageSlider) {
-        percentageSlider.textContent = percentageValue + "%";
+        console.log(`S03: Updated slider to ${percentageValue}% in ${this.currentMode} mode`);
       }
       
       // Update all other editable fields from current state
@@ -399,12 +401,13 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Enhanced getFieldValue to use DualState first
+   * Enhanced getFieldValue to use DualState first - CRITICAL for h_21 capacitance dropdown
    */
   function getFieldValue(fieldId) {
     // Try DualState first
     const dualStateValue = DualState.getValue(fieldId);
     if (dualStateValue !== null && dualStateValue !== undefined) {
+      console.log(`S03: getFieldValue(${fieldId}) from DualState: ${dualStateValue}`);
       return dualStateValue.toString();
     }
     
@@ -412,16 +415,22 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (window.TEUI?.StateManager?.getValue) {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
+        console.log(`S03: getFieldValue(${fieldId}) from StateManager: ${value}`);
         return value.toString();
       }
     }
     
+    // Critical fallback for dropdown fields (h_21, etc.)
     const element = document.querySelector(
-      `[data-field-id="${fieldId}"],[data-dropdown-id="${fieldId}"]`,
+      `[data-field-id="${fieldId}"],[data-dropdown-id="dd_${fieldId}"]`,
     );
     if (element) {
-      return element.value !== undefined ? element.value : element.textContent;
+      const domValue = element.value !== undefined ? element.value : element.textContent;
+      console.log(`S03: getFieldValue(${fieldId}) from DOM: ${domValue}`);
+      return domValue;
     }
+    
+    console.warn(`S03: getFieldValue(${fieldId}) - no value found, returning null`);
     return null;
   }
 
@@ -591,6 +600,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           max: 100,
           step: 5,
           section: "climateCalculations",
+          defaultValue: "50",
         },
         j: {
           fieldId: "j_21",
@@ -1207,6 +1217,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   /**
    * Calculate ground facing HDD and CDD
+   * RESTORED from ARCHIVE/GOLD-STANDARDS/OBJECTIVE-4011GS-2025.06.21-SOLSTICE-BASELINE
    */
   function calculateGroundFacing() {
     // --- Ground facing HDD ---
@@ -1218,7 +1229,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
     setFieldValue("d_22", gfhdd);
 
-    // --- Ground facing CDD (h_22) --- NEW LOGIC ---
+    // --- Ground facing CDD (h_22) --- ARCHIVE LOGIC RESTORED ---
     const capacitanceSetting = getFieldValue("h_21") || "Static"; // Default to Static if undefined
     const coolingSetpoint_h24 = getNumericValue("h_24"); // TsetCool
     const coolingDays_m19 = getNumericValue("m_19"); // DaysCooling
@@ -1388,7 +1399,7 @@ window.TEUI.SectionModules.sect03 = (function () {
           if (iconSpan && iconSpan.nextSibling) {
             // Insert after icon and title text
             iconSpan.parentNode.insertBefore(flagSpan, iconSpan.nextSibling.nextSibling || null);
-          } else {
+        } else {
             // Fallback: insert at beginning
             sectionHeader.insertBefore(flagSpan, sectionHeader.firstChild.nextSibling);
           }
@@ -1505,6 +1516,22 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
     }
 
+    // ✅ CRITICAL: Capacitance dropdown (h_21) - AFFECTS GFCDD CALCULATION
+    const capacitanceDropdown = getElement(['[data-dropdown-id="dd_h_21"]']);
+    if (capacitanceDropdown) {
+      // Remove any existing listeners
+      const newCapacitanceDropdown = capacitanceDropdown.cloneNode(true);
+      capacitanceDropdown.parentNode.replaceChild(newCapacitanceDropdown, capacitanceDropdown);
+
+      // Add new listener
+      newCapacitanceDropdown.addEventListener("change", function() {
+        const selectedCapacitance = this.value;
+        console.log('S03: Capacitance setting changed:', selectedCapacitance);
+        DualState.setValue("h_21", selectedCapacitance, "user");
+        calculateAll(); // CRITICAL: Recalculate GFCDD when capacitance changes
+      });
+    }
+
     // Weather data buttons
     ["showWeatherDataBtn", "weatherDataBtn"].forEach((id) => {
       const btn = document.getElementById(id);
@@ -1536,6 +1563,14 @@ window.TEUI.SectionModules.sect03 = (function () {
           field.hasEditableListeners = true; // Set the flag
         }
       });
+    }
+
+    // ✅ INITIALIZE SLIDERS VIA FIELDMANAGER (Standard Architecture)
+    if (window.TEUI?.FieldManager?.initializeSliders) {
+      window.TEUI.FieldManager.initializeSliders("climateCalculations");
+      console.log("S03: Sliders initialized via FieldManager");
+    } else {
+      console.warn("S03: FieldManager.initializeSliders not available");
     }
 
     // Initial update if province and city already selected
@@ -1608,19 +1643,31 @@ window.TEUI.SectionModules.sect03 = (function () {
         calculateGroundFacing();
       });
 
-      // Listener for h_21 (Capacitance Setting) changes
-      window.TEUI.StateManager.addListener("h_21", function (newValue) {
-        calculateAll(); // Recalculate everything as GF CDD changes
-      });
-
       // Listener for m_19 (Cooling Days) changes
       window.TEUI.StateManager.addListener("m_19", function (newValue) {
         calculateAll(); // Recalculate everything as GF HDD and GF CDD change
+      });
+
+      // ✅ CRITICAL: Bridge FieldManager slider updates to DualState
+      window.TEUI.StateManager.addListener("i_21", function (newValue) {
+        // When FieldManager updates StateManager, also update DualState for isolation
+        DualState.setValue("i_21", newValue, "user");
+        calculateAll(); // Recalculate everything as capacitance affects GF CDD
+        console.log(`S03: Capacitance slider updated via FieldManager - bridged to DualState: ${newValue}%`);
+      });
+
+      // ✅ CRITICAL: Bridge capacitance dropdown (h_21) updates to DualState
+      window.TEUI.StateManager.addListener("h_21", function (newValue) {
+        // When dropdown updates StateManager, also update DualState for isolation
+        DualState.setValue("h_21", newValue, "user");
+        calculateAll(); // Recalculate GFCDD when capacitance setting changes
+        console.log(`S03: Capacitance dropdown updated via StateManager - bridged to DualState: ${newValue}`);
       });
     } else {
       console.warn("Section 03: StateManager not found, listeners not added.");
     }
   }
+
 
   /**
    * Handle blur events on editable fields
