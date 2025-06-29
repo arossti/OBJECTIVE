@@ -170,13 +170,13 @@
 ~~**Reference Mode** = Completely separate application files~~  
 ~~**Dashboard S01** = Single state-agnostic reader for both modes~~
 
-**🚨 ARCHITECTURE PIVOT**: Testing proved unified single-file approach with isolated state objects is **superior** to file separation. See updated architecture below.
+**🚨 ARCHITECTURE EVOLUTION**: Testing proved unified single-file approach with isolated state objects is **superior** to file separation. See current architecture below.
 
-## 🏗️ **PERFECTED UNIFIED ARCHITECTURE (v4.012) - BREAKTHROUGH CONFIRMED ✅**
+## 🏗️ **PROVEN DUALSTATE ARCHITECTURE (v4.012) - DECEMBER 2024 CONFIRMED ✅**
 
-### **🎯 THE PROVEN ARCHITECTURE (June 2025 - REFINED DECEMBER 2024)**
+### **🎯 THE PROVEN ARCHITECTURE (S03 DEMONSTRATES COMPLETE SUCCESS)**
 
-**✅ BREAKTHROUGH CONFIRMED**: Single UI files with completely isolated state objects + **smart field categorization via ReferenceValues.js** is the **optimal solution** for dual Target/Reference modeling.
+**✅ S03 BREAKTHROUGH CONFIRMED**: Single UI files with completely isolated state objects + **smart field categorization via ReferenceValues.js** is the **optimal solution** for dual Target/Reference modeling.
 
 **🏆 PROVEN PATTERN**: S03 Climate Data demonstrates 100% reliability with sophisticated state management:
 - ✅ **Perfect state isolation** - each mode maintains independent data with localStorage persistence
@@ -451,20 +451,110 @@ function updateDashboardTotals() {
 - **CSS Nuclear Cleanup**: Universal alignment system (numbers right, text left, sliders center)
 - **Critical Occupancy Flags**: Clean visual indicators in S02 & S03 headers
 
-#### **🎯 NEXT PRIORITIES (January 2025)**:
+#### **🎯 CURRENT STATUS & STRATEGIC IMPLEMENTATION ROADMAP (December 2024)**:
 
-**Phase 1: Core Building Sections**
-- **S02 Building Information** → Add Target/Reference for occupancy scenarios  
-- **S04 Energy & Carbon** → Target vs Reference energy modeling
+**✅ COMPLETED: Foundation DualState Architecture**
+- **S03 Climate Data**: ✅ **FULLY CONVERTED** - First DualState section with proven Target/Reference isolation
+- **Global Toggle UI**: ✅ Located in S01 Key Values header for system-wide control
+- **Capacitance Logic**: ✅ Archive GFCDD calculation restored with FieldManager integration
+- **State Isolation**: ✅ Perfect Target/Reference separation with localStorage persistence
+
+**🎯 STRATEGIC MIGRATION SEQUENCE (Dependency-Driven)**
+
+**Phase 1: Dashboard Foundation (IMMEDIATE PRIORITY)**
+- **S01 Key Values Dashboard** → Fix TEUI contamination (h_10 changes 93.6→83.2 on toggle)
+  - Problem: Dashboard reads from UI mode instead of specific Target/Reference states
+  - Solution: S01 always reads h_10 from Target state, e_10 from Reference state
+  - Result: Dashboard columns never change based on UI toggle
+
+**Phase 2: Calculation Chain Endpoints (HIGH PRIORITY)**  
+- **S15 TEUI** → Convert to DualState while receiving Target values from upstream StateManager
+- **S14 Performance** → Convert to DualState, reads from S15 + other sections
+- **S01 receives from S15/S14** → Completes calculation chain with proper state isolation
+
+**Phase 3: Core Building Sections (MEDIUM PRIORITY)**
+- **S02 Building Information** → DualState with ReferenceValues.js field categorization
+- **S04 Energy & Carbon** → Target vs Reference energy modeling  
 - **S05 Emissions** → Target vs Reference carbon scenarios
 
-**Phase 2: Building Envelope Sections**  
-- **S06-S12** → Envelope, ventilation, and systems with T/R states
-- **CSS/Table Structure Mapping** → Apply flex layout patterns from S03 to S04-S15
+**Phase 4: Complex Envelope Sections (OFFLINE-FIRST APPROACH)**
+- **S10, S11, S13** → **Complex sections developed offline first** (like S03 Unified Toggle Test)
+- **S06-S09, S12** → Standard DualState conversion using proven S03 pattern
+- **S16-S18** → Visual sections with mode-aware content
 
-**Phase 3: Summary & Analysis Sections**
-- **S13-S15** → TEDI, TEUI, and performance summaries with T/R comparison
-- **S16-S18** → Sankey diagrams, dependency graphs, and notes
+**🔧 RATIONALE: Dependency-Driven Migration**
+- **Same field names** throughout transition (h_10, d_20, etc.) = zero breaking changes
+- **Gradual conversion** without breaking calculation chain
+- **S15/S14 converted early** to establish proper S01 dashboard reading
+- **Complex sections tested offline** before integration to prevent system disruption
+
+### **🧪 OFFLINE-FIRST DEVELOPMENT STRATEGY (Complex Sections)**
+
+**💡 PROVEN APPROACH**: S03 Climate Data demonstrated that **offline test files** provide the perfect environment for developing complex DualState implementations without risking the core codebase.
+
+#### **📋 Complex Section Candidates (Offline-First)**
+- **S10 Radiant Heat Gains** → Multiple calculation tables, thermal bridge logic
+- **S11 Building Envelope** → Complex multi-zone thermal calculations  
+- **S13 TEDI/TEUI Summary** → Performance aggregation from all upstream sections
+
+#### **🏗️ Offline Development Pattern (Copy from S03 Success)**
+```
+tests/S10-DualState-Test.html → Standalone section with DualState
+tests/S11-DualState-Test.html → Isolated development environment
+tests/S13-DualState-Test.html → Full functionality testing
+```
+
+**✅ Benefits of Offline-First Approach:**
+1. **Risk-Free Development** → Core codebase remains stable during experimentation
+2. **Rapid Iteration** → No build process, instant testing of DualState integration
+3. **Perfect Isolation** → Test complex scenarios without affecting other sections
+4. **Proven Architecture** → Copy exact S03 pattern that achieved perfect state isolation
+5. **Easy Integration** → Once perfected offline, sleeve into core codebase seamlessly
+
+#### **📋 Offline Development Checklist (Per Complex Section)**
+```html
+<!-- tests/SXX-DualState-Test.html -->
+1. ✅ Copy target section HTML structure
+2. ✅ Include minimal dependencies (ClimateValues.js, formatNumber, etc.)
+3. ✅ Implement TargetState + ReferenceState + ModeManager pattern
+4. ✅ Add all section-specific calculations and event handlers
+5. ✅ Test perfect state isolation (Target ↔ Reference switching)
+6. ✅ Validate localStorage persistence across browser sessions
+7. ✅ Test complex calculation scenarios and edge cases
+8. ✅ Document any special patterns or requirements
+9. ✅ Extract proven code for core integration
+```
+
+#### **🔄 Integration Process (Offline → Core)**
+```javascript
+// Step 1: Offline test file perfected
+tests/S10-DualState-Test.html → ✅ Perfect state isolation achieved
+
+// Step 2: Extract proven patterns
+sections/4011-Section10.js → Copy DualState architecture from test file
+
+// Step 3: Maintain existing API compatibility  
+window.TEUI.SectionModules.sect10 = (function() {
+  // Existing field definitions preserved
+  // DualState architecture added
+  // All calculations work in both Target and Reference modes
+  
+  return { getFields, getLayout, DualState, ModeManager }; // Extended API
+})();
+
+// Step 4: Verify zero regression
+// Existing functionality unchanged, DualState features added
+```
+
+#### **🎯 SUCCESS METRICS (Complex Section Completion)**
+- ✅ **Perfect state isolation** verified in offline test environment
+- ✅ **All calculations work** in both Target and Reference modes  
+- ✅ **LocalStorage persistence** maintains state across browser sessions
+- ✅ **Backward compatibility** preserved with existing StateManager integration
+- ✅ **UI refresh pattern** comprehensive (no contamination bugs)
+- ✅ **Documentation complete** with any special handling requirements
+
+**🏆 RESULT**: Complex sections developed with confidence, zero risk to production codebase, proven DualState architecture across all 18 sections.
 
 #### **📐 CSS/TABLE STRUCTURE MAPPING (S04-S15)**
 
