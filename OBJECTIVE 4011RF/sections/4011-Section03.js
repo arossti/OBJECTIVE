@@ -154,18 +154,15 @@ window.TEUI.SectionModules.sect03 = (function () {
     },
 
     setDefaults: function() {
-      // Set Target defaults only if not already set
+      // Set Target defaults only if not already set - LOCATIONS AND SETTINGS ONLY
       const targetDefaults = {
-        "target_d_19": "ON",
-        "target_h_19": "Alexandria", 
-        "target_h_20": "Present",
-        "target_h_21": "Capacitance",
-        "target_h_23": "18",
-        "target_h_24": "24",
-        "target_m_19": "120",
-        "target_l_22": "80",
-        "target_l_24": "24",
-        "target_i_21": "50"
+        "target_d_19": "ON",           // Province: Ontario
+        "target_h_19": "Alexandria",   // City: Alexandria  
+        "target_h_20": "Present",      // Timeframe: Present (1991-2020)
+        "target_h_21": "Capacitance",  // Capacitance: Capacitance setting
+        "target_i_21": "50",           // Capacitance percentage: 50%
+        "target_m_19": "120",          // Days Cooling: 120 (user editable default)
+        "target_l_24": "24"            // Cooling Override: 24°C (user editable default)
       };
 
       Object.entries(targetDefaults).forEach(([fieldId, defaultValue]) => {
@@ -174,18 +171,15 @@ window.TEUI.SectionModules.sect03 = (function () {
         }
       });
       
-      // Set Reference defaults only if not already set (different for testing isolation)
+      // Set Reference defaults only if not already set - DIFFERENT LOCATIONS FOR TESTING
       const referenceDefaults = {
-        "ref_d_19": "BC",
-        "ref_h_19": "100 Mile House", // Updated to match ClimateValues.js data
-        "ref_h_20": "Present", 
-        "ref_h_21": "Capacitance",
-        "ref_h_23": "18",
-        "ref_h_24": "24",
-        "ref_m_19": "120",
-        "ref_l_22": "80",
-        "ref_l_24": "24",
-        "ref_i_21": "75"
+        "ref_d_19": "ON",              // Province: Ontario
+        "ref_h_19": "Attawapiskat",    // City: Attawapiskat (different climate zone)
+        "ref_h_20": "Future",          // Timeframe: Future (2021-2050)
+        "ref_h_21": "Static",          // Capacitance: Static setting
+        "ref_i_21": "0",               // Capacitance percentage: 0% (Static mode)
+        "ref_m_19": "120",             // Days Cooling: 120 (same as target)
+        "ref_l_24": "24"               // Cooling Override: 24°C (same as target)
       };
 
       Object.entries(referenceDefaults).forEach(([fieldId, defaultValue]) => {
@@ -436,7 +430,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         j: {
           fieldId: "j_19",
           type: "derived",
-          value: "6.0",
           section: "climateCalculations",
           dependencies: ["d_20"],
         },
@@ -462,7 +455,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_20",
           type: "derived",
-          value: "4600",
           section: "climateCalculations",
           dependencies: ["d_19", "h_19"],
         },
@@ -500,7 +492,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_21",
           type: "derived",
-          value: "196",
           section: "climateCalculations",
           dependencies: ["d_19", "h_19"],
         },
@@ -548,7 +539,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_22",
           type: "derived",
-          value: "1960",
           section: "climateCalculations",
           dependencies: ["d_20"],
         },
@@ -558,7 +548,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         h: {
           fieldId: "h_22",
           type: "calculated",
-          value: "-1680",
           section: "climateCalculations",
           dependencies: ["d_21"],
         },
@@ -568,7 +557,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         l: {
           fieldId: "l_22",
           type: "editable",
-          value: "80",
           section: "climateCalculations",
           classes: ["user-input", "editable"],
         },
@@ -586,14 +574,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_23",
           type: "derived",
-          value: "-24",
           section: "climateCalculations",
           dependencies: ["d_19", "h_19", "d_12"],
         },
         e: {
           fieldId: "e_23",
           type: "calculated",
-          value: "-11",
           section: "climateCalculations",
           dependencies: ["d_23"],
         },
@@ -615,7 +601,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         m: {
           fieldId: "m_23",
           type: "calculated",
-          value: "122%",
           section: "climateCalculations",
         },
       },
@@ -669,7 +654,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         m: {
           fieldId: "m_24",
           type: "calculated",
-          value: "108%",
           section: "climateCalculations",
           dependencies: ["h_24", "l_24"],
         },
