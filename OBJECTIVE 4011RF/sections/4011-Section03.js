@@ -1044,8 +1044,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       console.log(`S03: 📊 January 1% extreme temp available: ${cityData.January_1}°C (more extreme cold)`);
     }
 
-    // Update July 2.5% dry bulb temperature (hottest day) - timeframe dependent
+    // 🔥 DEBUG: Update July 2.5% dry bulb temperature (hottest day) - timeframe dependent
     const hottestTemp = timeframe === "Future" ? cityData.Future_July_2_5_Tdb : cityData.July_2_5_Tdb;
+    console.log(`🔥 HOTTEST TEMP DEBUG: timeframe="${timeframe}", Future_July_2_5_Tdb=${cityData.Future_July_2_5_Tdb}, July_2_5_Tdb=${cityData.July_2_5_Tdb}, selected=${hottestTemp}`);
     if (hottestTemp !== null && hottestTemp !== undefined && hottestTemp !== 666) {
       setFieldValue("d_24", hottestTemp, "derived");
       console.log(`S03: ✓ Set July 2.5% dry bulb temp (d_24) = ${hottestTemp}°C for ${timeframe} timeframe`);
@@ -1231,8 +1232,9 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // 🔍 DEBUG: Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
     const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
+    const timeframeDropdownValue = document.querySelector('[data-dropdown-id="dd_h_20"]')?.value;
     const hottestC = parseFloat(hottestC_str);
-    console.log(`🔥 TEMPERATURE CONVERSION DEBUG: d_24 input = "${hottestC_str}", parsed = ${hottestC}`);
+    console.log(`🔥 TEMPERATURE CONVERSION DEBUG: d_24 input = "${hottestC_str}", parsed = ${hottestC}, timeframe dropdown = "${timeframeDropdownValue}"`);
     if (!isNaN(hottestC)) {
       const hottestF = Math.round((hottestC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
       console.log(`🔥 TEMPERATURE CONVERSION: ${hottestC}°C → (${hottestC} × 9/5) + 32 = ${(hottestC * 9) / 5 + 32} → rounded = ${hottestF}°F`);
