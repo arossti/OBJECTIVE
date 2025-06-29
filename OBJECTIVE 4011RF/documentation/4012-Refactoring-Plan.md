@@ -14,6 +14,33 @@
 
 **Key README.md sections to review**: Points 3, 10, 11 (StateManager patterns, standardized helpers, anti-patterns)
 
+## 🚨 **CRITICAL ARCHITECTURAL DEBT: S03 REFACTOR NEEDED**
+
+**Status**: S03 DualState implementation violates corrected StateManager architecture
+
+### **S03 Current Issues (Discovered December 2024)**:
+- ❌ **Bypasses StateManager**: Uses custom `TargetState`/`ReferenceState` objects
+- ❌ **Direct DOM Manipulation**: ~80+ `.textContent`, `.value` assignments  
+- ❌ **Custom localStorage**: Separate persistence instead of StateManager
+- ❌ **Mixed Patterns**: Inconsistent StateManager integration
+- ❌ **Antipattern Template**: Other sections might copy these violations
+
+### **Required S03 Refactor (2-3 Hours)**:
+1. **Remove Custom State Objects**: Eliminate `TargetState`, `ReferenceState` 
+2. **StateManager Integration**: Convert all calls to use `target_`/`ref_` prefixes
+3. **Eliminate Direct DOM**: Replace with StateManager listeners and standard helpers
+4. **Standard Event Handling**: Use registerDependency + addListener patterns  
+5. **localStorage Migration**: Use StateManager persistence instead of custom
+
+### **Post-S03 Refactor Benefits**:
+- ✅ **Clean Template**: S03 becomes proper example for other sections
+- ✅ **No Contamination**: Zero state mixing between Target/Reference
+- ✅ **Consistent Architecture**: All sections follow same StateManager patterns
+- ✅ **Reliable Cross-Section**: Proper communication via StateManager events
+
+### **Immediate Priority (Next Session)**:
+**S03 refactor is the highest architectural priority** - it currently works but violates the fundamental StateManager pattern that prevents contamination and ensures reliable dual-engine calculations.
+
 ---
 
 ## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (June 28, 2024)**
@@ -113,6 +140,234 @@
    - **S10 Radiant Gains**: Surgical anti-goalpost fix, natural browser flexibility with targeted constraints
    - **Result**: Both sections exhibit desired OBC Matrix behavior - fixed controls, flexible columns
 
+#### **🏆 KEY COMMITS DELIVERED (June 28, 2024)**:
+1. **`css-nuclear-cleanup` branch created** - systematic cleanup approach
+2. **Universal alignment rules implemented** - numbers right, text left, sliders center
+3. **OBC Matrix elegant behavior ported** - exact hover/focus patterns
+4. **Calculated values fixed** - missing CSS declarations completed
+5. **MERGED to `solstice-v4012-refactor`** - all fixes now in main working branch
+
+### **📋 NEXT PHASE: Section-by-Section Optimization (Starting Tonight)**
+
+**Current Progress**:
+- ✅ **S02**: Building Occupancy - COMPLETED
+- ✅ **S10**: Radiant Heat Gains - COMPLETED  
+- ✅ **S11**: Building Envelope - PARTIAL (alignment fixed, structure needs work)
+- 🎯 **S03**: Climate Data - **UP NEXT FOR TONIGHT**
+
+**Priority Order**: S03 → S04 → S05 → S06 → S07 → S08 → S09 → S12 → S13 → S14 → S15  
+**Skip**: S01 (unique dashboard, already optimized)
+
+### **🌙 LATE NIGHT WORK SESSION PLAN (June 28, 2024 - Tonight)**
+
+**Objective**: Section-by-section CSS cleanup starting with S03 Climate Data  
+**Approach**: Apply proven surgical optimization pattern from S02/S10  
+**Timeline**: Focus on 2-3 sections per session for quality control
+
+#### **📋 S03 Climate Data Optimization Checklist**:
+- [ ] **Hide empty columns** for density improvement (following S02 pattern)
+- [ ] **Apply sizing classes** (dropdown-sm/md/lg) to climate location dropdowns
+- [ ] **Natural table layout** with targeted constraints for goalpost prevention  
+- [ ] **Test responsive behavior** - equal expansion, no overflow issues
+- [ ] **Validate universal alignment** works correctly with climate data fields
+
+#### **🎯 Session Success Criteria (Tonight)**:
+- [ ] S03 exhibits clean OBC Matrix behavior - fixed dropdowns, flexible columns
+- [ ] Universal alignment system works flawlessly (numbers right, text left)
+- [ ] Elegant input behavior preserved (grey italic → blue confident)
+- [ ] Blue hover underlines working on all editable fields
+- [ ] No CSS conflicts or regression in other sections
+
+### **📊 PROGRESS TRACKING**:
+- ✅ **June 28, 2024**: **NUCLEAR CLEANUP COMPLETED** - Universal fixes across all sections
+- 🎯 **Tonight**: Section-by-Section Optimization (S03 Climate Data)  
+- 📅 **Next Session**: Continue S04-S06 systematic optimization
+- 🏗️ **Future**: Enhanced DualState with Import/Export Precedence
+
+### **✅ COMPLETED DECEMBER 2024: Systematic CSS & JavaScript Cleanup**
+
+#### **🎯 Root Cause Analysis & Resolution**
+1. **✅ SLIDER EXPANSION ISSUE RESOLVED**
+   - **Root Cause**: Aggressive `width: 100% !important` on user inputs fighting against fixed-width controls
+   - **Solution**: Removed conflicting width rules, allowing OBC Matrix sizing classes to work naturally
+   - **Result**: Fixed-width controls (slider-md, dropdown-lg) now work correctly
+
+2. **✅ BLUE TEXT OVERRIDE ISSUE RESOLVED**  
+   - **Root Cause**: JavaScript auto-marking ANY field with content as 'user-modified' after 1-second delay
+   - **Solution**: Removed aggressive auto-marking logic, only mark on actual user interaction
+   - **Result**: Grey italic defaults persist correctly, blue only when user actually modifies
+
+3. **✅ LAYOUT OPTIMIZATION COMPLETED: S02 & S10**
+   - **S02 Building Occupancy**: Clean OBC Matrix layout with fixed dropdowns, equal column expansion
+   - **S10 Radiant Gains**: Surgical anti-goalpost fix, natural browser flexibility with targeted constraints
+   - **Result**: Both sections exhibit desired OBC Matrix behavior - fixed controls, flexible columns
+
+#### **🏆 KEY COMMITS DELIVERED (June 28, 2024)**:
+1. **`css-nuclear-cleanup` branch created** - systematic cleanup approach
+2. **Universal alignment rules implemented** - numbers right, text left, sliders center
+3. **OBC Matrix elegant behavior ported** - exact hover/focus patterns
+4. **Calculated values fixed** - missing CSS declarations completed
+5. **MERGED to `solstice-v4012-refactor`** - all fixes now in main working branch
+
+### **📋 NEXT PHASE: Section-by-Section Optimization (Starting Tonight)**
+
+**Current Progress**:
+- ✅ **S02**: Building Occupancy - COMPLETED
+- ✅ **S10**: Radiant Heat Gains - COMPLETED  
+- ✅ **S11**: Building Envelope - PARTIAL (alignment fixed, structure needs work)
+- 🎯 **S03**: Climate Data - **UP NEXT FOR TONIGHT**
+
+**Priority Order**: S03 → S04 → S05 → S06 → S07 → S08 → S09 → S12 → S13 → S14 → S15  
+**Skip**: S01 (unique dashboard, already optimized)
+
+### **🌙 LATE NIGHT WORK SESSION PLAN (June 28, 2024 - Tonight)**
+
+**Objective**: Section-by-section CSS cleanup starting with S03 Climate Data  
+**Approach**: Apply proven surgical optimization pattern from S02/S10  
+**Timeline**: Focus on 2-3 sections per session for quality control
+
+#### **📋 S03 Climate Data Optimization Checklist**:
+- [ ] **Hide empty columns** for density improvement (following S02 pattern)
+- [ ] **Apply sizing classes** (dropdown-sm/md/lg) to climate location dropdowns
+- [ ] **Natural table layout** with targeted constraints for goalpost prevention  
+- [ ] **Test responsive behavior** - equal expansion, no overflow issues
+- [ ] **Validate universal alignment** works correctly with climate data fields
+
+#### **🎯 Session Success Criteria (Tonight)**:
+- [ ] S03 exhibits clean OBC Matrix behavior - fixed dropdowns, flexible columns
+- [ ] Universal alignment system works flawlessly (numbers right, text left)
+- [ ] Elegant input behavior preserved (grey italic → blue confident)
+- [ ] Blue hover underlines working on all editable fields
+- [ ] No CSS conflicts or regression in other sections
+
+### **📊 PROGRESS TRACKING**:
+- ✅ **June 28, 2024**: **NUCLEAR CLEANUP COMPLETED** - Universal fixes across all sections
+- 🎯 **Tonight**: Section-by-Section Optimization (S03 Climate Data)  
+- 📅 **Next Session**: Continue S04-S06 systematic optimization
+- 🏗️ **Future**: Enhanced DualState with Import/Export Precedence
+
+### **✅ COMPLETED DECEMBER 2024: Systematic CSS & JavaScript Cleanup**
+
+#### **🎯 Root Cause Analysis & Resolution**
+1. **✅ SLIDER EXPANSION ISSUE RESOLVED**
+   - **Root Cause**: Aggressive `width: 100% !important` on user inputs fighting against fixed-width controls
+   - **Solution**: Removed conflicting width rules, allowing OBC Matrix sizing classes to work naturally
+   - **Result**: Fixed-width controls (slider-md, dropdown-lg) now work correctly
+
+2. **✅ BLUE TEXT OVERRIDE ISSUE RESOLVED**  
+   - **Root Cause**: JavaScript auto-marking ANY field with content as 'user-modified' after 1-second delay
+   - **Solution**: Removed aggressive auto-marking logic, only mark on actual user interaction
+   - **Result**: Grey italic defaults persist correctly, blue only when user actually modifies
+
+3. **✅ LAYOUT OPTIMIZATION COMPLETED: S02 & S10**
+   - **S02 Building Occupancy**: Clean OBC Matrix layout with fixed dropdowns, equal column expansion
+   - **S10 Radiant Gains**: Surgical anti-goalpost fix, natural browser flexibility with targeted constraints
+   - **Result**: Both sections exhibit desired OBC Matrix behavior - fixed controls, flexible columns
+
+#### **🏆 KEY COMMITS DELIVERED (June 28, 2024)**:
+1. **`css-nuclear-cleanup` branch created** - systematic cleanup approach
+2. **Universal alignment rules implemented** - numbers right, text left, sliders center
+3. **OBC Matrix elegant behavior ported** - exact hover/focus patterns
+4. **Calculated values fixed** - missing CSS declarations completed
+5. **MERGED to `solstice-v4012-refactor`** - all fixes now in main working branch
+
+### **📋 NEXT PHASE: Section-by-Section Optimization (Starting Tonight)**
+
+**Current Progress**:
+- ✅ **S02**: Building Occupancy - COMPLETED
+- ✅ **S10**: Radiant Heat Gains - COMPLETED  
+- ✅ **S11**: Building Envelope - PARTIAL (alignment fixed, structure needs work)
+- 🎯 **S03**: Climate Data - **UP NEXT FOR TONIGHT**
+
+**Priority Order**: S03 → S04 → S05 → S06 → S07 → S08 → S09 → S12 → S13 → S14 → S15  
+**Skip**: S01 (unique dashboard, already optimized)
+
+### **🌙 LATE NIGHT WORK SESSION PLAN (June 28, 2024 - Tonight)**
+
+**Objective**: Section-by-section CSS cleanup starting with S03 Climate Data  
+**Approach**: Apply proven surgical optimization pattern from S02/S10  
+**Timeline**: Focus on 2-3 sections per session for quality control
+
+#### **📋 S03 Climate Data Optimization Checklist**:
+- [ ] **Hide empty columns** for density improvement (following S02 pattern)
+- [ ] **Apply sizing classes** (dropdown-sm/md/lg) to climate location dropdowns
+- [ ] **Natural table layout** with targeted constraints for goalpost prevention  
+- [ ] **Test responsive behavior** - equal expansion, no overflow issues
+- [ ] **Validate universal alignment** works correctly with climate data fields
+
+#### **🎯 Session Success Criteria (Tonight)**:
+- [ ] S03 exhibits clean OBC Matrix behavior - fixed dropdowns, flexible columns
+- [ ] Universal alignment system works flawlessly (numbers right, text left)
+- [ ] Elegant input behavior preserved (grey italic → blue confident)
+- [ ] Blue hover underlines working on all editable fields
+- [ ] No CSS conflicts or regression in other sections
+
+### **📊 PROGRESS TRACKING**:
+- ✅ **June 28, 2024**: **NUCLEAR CLEANUP COMPLETED** - Universal fixes across all sections
+- 🎯 **Tonight**: Section-by-Section Optimization (S03 Climate Data)  
+- 📅 **Next Session**: Continue S04-S06 systematic optimization
+- 🏗️ **Future**: Enhanced DualState with Import/Export Precedence
+
+### **✅ COMPLETED DECEMBER 2024: Systematic CSS & JavaScript Cleanup**
+
+#### **🎯 Root Cause Analysis & Resolution**
+1. **✅ SLIDER EXPANSION ISSUE RESOLVED**
+   - **Root Cause**: Aggressive `width: 100% !important` on user inputs fighting against fixed-width controls
+   - **Solution**: Removed conflicting width rules, allowing OBC Matrix sizing classes to work naturally
+   - **Result**: Fixed-width controls (slider-md, dropdown-lg) now work correctly
+
+2. **✅ BLUE TEXT OVERRIDE ISSUE RESOLVED**  
+   - **Root Cause**: JavaScript auto-marking ANY field with content as 'user-modified' after 1-second delay
+   - **Solution**: Removed aggressive auto-marking logic, only mark on actual user interaction
+   - **Result**: Grey italic defaults persist correctly, blue only when user actually modifies
+
+3. **✅ LAYOUT OPTIMIZATION COMPLETED: S02 & S10**
+   - **S02 Building Occupancy**: Clean OBC Matrix layout with fixed dropdowns, equal column expansion
+   - **S10 Radiant Gains**: Surgical anti-goalpost fix, natural browser flexibility with targeted constraints
+   - **Result**: Both sections exhibit desired OBC Matrix behavior - fixed controls, flexible columns
+
+#### **🏆 KEY COMMITS DELIVERED (June 28, 2024)**:
+1. **`css-nuclear-cleanup` branch created** - systematic cleanup approach
+2. **Universal alignment rules implemented** - numbers right, text left, sliders center
+3. **OBC Matrix elegant behavior ported** - exact hover/focus patterns
+4. **Calculated values fixed** - missing CSS declarations completed
+5. **MERGED to `solstice-v4012-refactor`** - all fixes now in main working branch
+
+### **📋 NEXT PHASE: Section-by-Section Optimization (Starting Tonight)**
+
+**Current Progress**:
+- ✅ **S02**: Building Occupancy - COMPLETED
+- ✅ **S10**: Radiant Heat Gains - COMPLETED  
+- ✅ **S11**: Building Envelope - PARTIAL (alignment fixed, structure needs work)
+- 🎯 **S03**: Climate Data - **UP NEXT FOR TONIGHT**
+
+**Priority Order**: S03 → S04 → S05 → S06 → S07 → S08 → S09 → S12 → S13 → S14 → S15  
+**Skip**: S01 (unique dashboard, already optimized)
+
+### **🌙 LATE NIGHT WORK SESSION PLAN (June 28, 2024 - Tonight)**
+
+**Objective**: Section-by-section CSS cleanup starting with S03 Climate Data  
+**Approach**: Apply proven surgical optimization pattern from S02/S10  
+**Timeline**: Focus on 2-3 sections per session for quality control
+
+#### **📋 S03 Climate Data Optimization Checklist**:
+- [ ] **Hide empty columns** for density improvement (following S02 pattern)
+- [ ] **Apply sizing classes** (dropdown-sm/md/lg) to climate location dropdowns
+- [ ] **Natural table layout** with targeted constraints for goalpost prevention  
+- [ ] **Test responsive behavior** - equal expansion, no overflow issues
+- [ ] **Validate universal alignment** works correctly with climate data fields
+
+#### **🎯 Session Success Criteria (Tonight)**:
+- [ ] S03 exhibits clean OBC Matrix behavior - fixed dropdowns, flexible columns
+- [ ] Universal alignment system works flawlessly (numbers right, text left)
+- [ ] Elegant input behavior preserved (grey italic → blue confident)
+- [ ] Blue hover underlines working on all editable fields
+- [ ] No CSS conflicts or regression in other sections
+
+### **📊 PROGRESS TRACKING**:
+- ✅ **June 28, 2024**: **NUCLEAR CLEANUP COMPLETED** - Universal fixes across all sections
+- 🎯 **Tonight**: Section-by-Section Optimization (S03 Climate Data)  
+- 📅 **Next Session**: Continue S04-S06 systematic optimization
 #### **📊 Systematic Approach Achievements**
 - **✅ Investigation over Patches**: Found root causes instead of adding band-aid fixes
 - **✅ Consolidation over Expansion**: Removed 76 lines, added only 19 - true cleanup
