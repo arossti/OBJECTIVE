@@ -312,8 +312,15 @@ window.TEUI.SectionModules.sect03 = (function () {
   function setCalculatedValue(fieldId, value, formatType = "number-2dp") {
     const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
     
-    // Store raw value in StateManager
+    // Store raw value in StateManager with prefix (for DualState isolation)
     window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value.toString(), "calculated");
+    
+    // ✅ CRITICAL: ALSO update global unprefixed version for cross-section integration
+    // Climate data must be available globally for other sections to listen
+    if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19") {
+      window.TEUI.StateManager.setValue(fieldId, value.toString(), "calculated");
+      console.log(`S03: ✅ DUAL CALCULATED UPDATE - ${fieldId}: ${prefix}${fieldId}=${value} AND global ${fieldId}=${value}`);
+    }
     
     // ALSO update DOM directly (until StateManager listeners are fully implemented)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
@@ -836,8 +843,15 @@ window.TEUI.SectionModules.sect03 = (function () {
     const rawValue = value !== null && value !== undefined ? value.toString() : null;
     const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
     
-    // Store in StateManager
+    // Store in StateManager with prefix (for DualState isolation)
     window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, rawValue, state);
+    
+    // ✅ CRITICAL: ALSO update global unprefixed version for cross-section integration
+    // Climate data (d_20, d_21) must be available globally for other sections to listen
+    if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19") {
+      window.TEUI.StateManager.setValue(fieldId, rawValue, state);
+      console.log(`S03: ✅ DUAL UPDATE - ${fieldId}: ${prefix}${fieldId}=${rawValue} AND global ${fieldId}=${rawValue}`);
+    }
     
     // ALSO update DOM directly (until StateManager listeners are fully implemented)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
