@@ -265,81 +265,69 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   /**
    * Helper function to safely get numeric values from the TARGET state.
-   * ANTI-CONTAMINATION: Always reads from S03 Target state for dashboard stability
+   * CORRECTED: Always reads from target_ prefixed StateManager values for dashboard stability
    */
   function getAppNumericValue(fieldId, defaultValue = 0) {
     let value = defaultValue;
     
-    // ANTI-CONTAMINATION: First try to get from S03 Target state for climate values
-    if (window.TEUI?.ModeManager?.TargetState && fieldId.startsWith('d_19') || fieldId.startsWith('h_19') || fieldId.startsWith('i_21')) {
-      const targetState = window.TEUI.ModeManager.TargetState || window.TEUI.ModeManager.getCurrentState?.();
-      if (targetState && typeof targetState.getValue === 'function') {
-        const targetValue = targetState.getValue(fieldId);
-        if (targetValue !== undefined && targetValue !== null) {
-          value = window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
-          console.log(`S01 TARGET: Reading ${fieldId} = ${value} from S03 Target state`);
-          return value;
-        }
+    // CORRECTED: Always read from target_ prefixed StateManager values for Target column
+    const targetValue = window.TEUI?.StateManager?.getValue?.(`target_${fieldId}`);
+    if (targetValue !== undefined && targetValue !== null && targetValue !== "") {
+      const parsed = window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
+      if (!isNaN(parsed)) {
+        console.log(`S01 TARGET: Reading target_${fieldId} = ${parsed} from StateManager`);
+        return parsed;
       }
     }
     
-    // Fallback to StateManager for non-climate values  
-    const stateValue =
-      window.TEUI?.StateManager?.getApplicationValue?.(fieldId) ||
-      window.TEUI?.StateManager?.getValue?.(fieldId);
-
-    if (stateValue !== undefined && stateValue !== null && stateValue !== "") {
-      if (typeof stateValue === "string") {
-        const cleanedValue = stateValue.replace(/[^\d.-]/g, "");
-        const parsed =
-          window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ??
-          defaultValue;
+    // Fallback to unprefixed StateManager value if target_ doesn't exist
+    const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+    if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== "") {
+      if (typeof fallbackValue === "string") {
+        const cleanedValue = fallbackValue.replace(/[^\d.-]/g, "");
+        const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
         if (!isNaN(parsed)) {
           value = parsed;
         }
-      } else if (typeof stateValue === "number") {
-        value = stateValue;
+      } else if (typeof fallbackValue === "number") {
+        value = fallbackValue;
       }
     }
+    
     return value;
   }
 
   /**
    * Helper function to safely get numeric values from the REFERENCE state.
-   * ANTI-CONTAMINATION: Always reads from S03 Reference state for climate calculations
+   * CORRECTED: Always reads from ref_ prefixed StateManager values for Reference column
    */
   function getRefNumericValue(fieldId, defaultValue = 0) {
     let value = defaultValue;
     
-    // ANTI-CONTAMINATION: First try to get from S03 Reference state for climate values
-    if (window.TEUI?.ModeManager?.ReferenceState && (fieldId.startsWith('d_19') || fieldId.startsWith('h_19') || fieldId.startsWith('i_21'))) {
-      const referenceState = window.TEUI.ModeManager.ReferenceState;
-      if (referenceState && typeof referenceState.getValue === 'function') {
-        const refValue = referenceState.getValue(fieldId);
-        if (refValue !== undefined && refValue !== null) {
-          value = window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
-          console.log(`S01 REFERENCE: Reading ${fieldId} = ${value} from S03 Reference state`);
-          return value;
-        }
+    // CORRECTED: Always read from ref_ prefixed StateManager values for Reference column
+    const refValue = window.TEUI?.StateManager?.getValue?.(`ref_${fieldId}`);
+    if (refValue !== undefined && refValue !== null && refValue !== "") {
+      const parsed = window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
+      if (!isNaN(parsed)) {
+        console.log(`S01 REFERENCE: Reading ref_${fieldId} = ${parsed} from StateManager`);
+        return parsed;
       }
     }
     
-    // Fallback to StateManager for non-climate values
-    const stateValue = window.TEUI?.StateManager?.getValue?.(fieldId);
-
-    if (stateValue !== undefined && stateValue !== null && stateValue !== "") {
-      if (typeof stateValue === "string") {
-        const cleanedValue = stateValue.replace(/[^\d.-]/g, "");
-        const parsed =
-          window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ??
-          defaultValue;
+    // Fallback to unprefixed StateManager value if ref_ doesn't exist
+    const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+    if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== "") {
+      if (typeof fallbackValue === "string") {
+        const cleanedValue = fallbackValue.replace(/[^\d.-]/g, "");
+        const parsed = window.TEUI?.parseNumeric?.(fallbackValue, defaultValue) ?? defaultValue;
         if (!isNaN(parsed)) {
           value = parsed;
         }
-      } else if (typeof stateValue === "number") {
-        value = stateValue;
+      } else if (typeof fallbackValue === "number") {
+        value = fallbackValue;
       }
     }
+    
     return value;
   }
 
@@ -583,10 +571,10 @@ window.TEUI.SectionModules.sect01 = (function () {
       window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
 
     // Get calculated values from both engines
-    // SIMPLIFIED: Always use ref_ prefixed fields for Reference values
-    const referenceAnnualCarbon = getAppNumericValue("ref_d_8", 17.4);
-    const referenceLifetimeCarbon = getAppNumericValue("ref_d_6", 24.4);
-    const referenceTEUI = getAppNumericValue("ref_e_10", 341.2);
+    // CORRECTED: Use getRefNumericValue for Reference column values
+    const referenceAnnualCarbon = getRefNumericValue("d_8", 17.4);
+    const referenceLifetimeCarbon = getRefNumericValue("d_6", 24.4);
+    const referenceTEUI = getRefNumericValue("e_10", 341.2);
 
     const targetAnnualCarbon = getAppNumericValue("h_8", 4.7);
     const targetLifetimeCarbon = getAppNumericValue("h_6", 11.7);
@@ -842,8 +830,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (!window.TEUI?.StateManager) return;
 
     const targetTEUI_h10 = getAppNumericValue("h_10", 93.0);
-    // SIMPLIFIED: Always use ref_ prefixed field for Reference value
-    const referenceTEUI_e10 = getAppNumericValue("ref_e_10", 341.2);
+    // CORRECTED: Use getRefNumericValue for Reference column value
+    const referenceTEUI_e10 = getRefNumericValue("e_10", 341.2);
     const standard_d13 =
       window.TEUI.StateManager?.getApplicationValue("d_13") || "";
 
@@ -958,7 +946,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Calculate tier for h_10 to pass atomically
     const targetTEUI_h10 = getAppNumericValue("h_10", 93.0);
-    const referenceTEUI_e10 = getAppNumericValue("ref_e_10", 341.2);
+    const referenceTEUI_e10 = getRefNumericValue("e_10", 341.2);
     const standard_d13 =
       window.TEUI.StateManager?.getApplicationValue("d_13") || "";
 
@@ -1111,7 +1099,7 @@ window.TEUI.SectionModules.sect01 = (function () {
   function checkTargetExceedsReference() {
     const targetValue = getAppNumericValue("h_10", 93.0);
     // SIMPLIFIED: Always use ref_ prefixed field for Reference value
-    const referenceValue = getAppNumericValue("ref_e_10", 341.2);
+    const referenceValue = getRefNumericValue("e_10", 341.2);
 
     const gaugeContainer = document
       .getElementById("teui-gauge")
