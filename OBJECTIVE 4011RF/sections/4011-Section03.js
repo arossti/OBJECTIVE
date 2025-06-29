@@ -1198,34 +1198,29 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function calculateTemperatures() {
     console.log(`🔥 calculateTemperatures() FUNCTION CALLED - Starting temperature conversions`);
+    
     // Coldest days conversion (d_23 -> e_23) - Standard conversion
-    const coldestC_str = window.TEUI.StateManager?.getValue("d_23");
-    const coldestC = parseFloat(coldestC_str);
-    if (!isNaN(coldestC)) {
+    const coldestC = getNumericValue("d_23"); // Use helper that reads with proper prefix
+    if (!isNaN(coldestC) && coldestC !== 0) {
       const coldestF = Math.round((coldestC * 9) / 5 + 32);
       setFieldValue("e_23", coldestF);
+      console.log(`🔥 COLDEST TEMP CONVERSION: ${coldestC}°C → ${coldestF}°F`);
     }
 
-    // Heating setpoint conversion (h_23 -> i_23) - Standard conversion
-    const heatingC_str = window.TEUI.StateManager?.getValue("h_23");
-    const heatingC = parseFloat(heatingC_str);
-    if (!isNaN(heatingC)) {
+    // Heating setpoint conversion (h_23 -> i_23) - Standard conversion  
+    const heatingC = getNumericValue("h_23"); // Use helper that reads with proper prefix
+    if (!isNaN(heatingC) && heatingC !== 0) {
       const heatingF = Math.round((heatingC * 9) / 5 + 32);
       setFieldValue("i_23", heatingF);
+      console.log(`🔥 HEATING TEMP CONVERSION: ${heatingC}°C → ${heatingF}°F`);
     }
 
-    // 🔍 DEBUG: Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
-    const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
-    const timeframeDropdownValue = document.querySelector('[data-dropdown-id="dd_h_20"]')?.value;
-    const hottestC = parseFloat(hottestC_str);
-    console.log(`🔥 TEMPERATURE CONVERSION DEBUG: d_24 input = "${hottestC_str}", parsed = ${hottestC}, timeframe dropdown = "${timeframeDropdownValue}"`);
-    if (!isNaN(hottestC)) {
+    // Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
+    const hottestC = getNumericValue("d_24"); // Use helper that reads with proper prefix
+    if (!isNaN(hottestC) && hottestC !== 0) {
       const hottestF = Math.round((hottestC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
-      console.log(`🔥 TEMPERATURE CONVERSION: ${hottestC}°C → (${hottestC} × 9/5) + 32 = ${(hottestC * 9) / 5 + 32} → rounded = ${hottestF}°F`);
       setFieldValue("e_24", hottestF);
-      console.log(`🔥 TEMPERATURE CONVERSION COMPLETE: Set e_24 = ${hottestF}°F`);
-    } else {
-      console.warn(`🔥 TEMPERATURE CONVERSION FAILED: Invalid input "${hottestC_str}"`);
+      console.log(`🔥 HOTTEST TEMP CONVERSION: ${hottestC}°C → ${hottestF}°F`);
     }
 
     // Cooling setpoint conversion is now handled by updateCoolingDependents
@@ -1389,9 +1384,9 @@ window.TEUI.SectionModules.sect03 = (function () {
   function updateCoolingDependents() {
     const effectiveSetpointC = determineEffectiveCoolingSetpoint();
 
-    // ✅ CORRECTED: Update i_24 (Fahrenheit conversion) - Excel formula: h_24*2+30
+    // ✅ FIXED: Update i_24 (Fahrenheit conversion) - Standard C to F conversion
     if (!isNaN(effectiveSetpointC)) {
-      const effectiveSetpointF = Math.round(effectiveSetpointC * 2 + 30); // Excel formula: h_24*2+30
+      const effectiveSetpointF = Math.round((effectiveSetpointC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
       setFieldValue("i_24", effectiveSetpointF);
     }
 
