@@ -1225,11 +1225,11 @@ window.TEUI.SectionModules.sect03 = (function () {
       setFieldValue("i_23", heatingF);
     }
 
-    // ✅ CORRECTED: Hottest days conversion (d_24 -> e_24) - Excel formula: d_24*2+30
+    // Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
     const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
     const hottestC = parseFloat(hottestC_str);
     if (!isNaN(hottestC)) {
-      const hottestF = Math.round(hottestC * 2 + 30); // Excel formula: d_24*2+30
+      const hottestF = Math.round((hottestC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
       setFieldValue("e_24", hottestF);
     }
 
