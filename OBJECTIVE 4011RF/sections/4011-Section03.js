@@ -1,10 +1,13 @@
 /**
- * 4011-Section03.js - CORRECTED STATEMANAGER ARCHITECTURE
+ * 4011-Section03.js - CORRECTED STATEMANAGER ARCHITECTURE - CACHE_BUST_v3_TEMPERATURE_FIX
  * Climate Calculations (Section 3) module for TEUI Calculator 4.011
  *
  * ARCHITECTURAL CORRECTION: Proper StateManager integration with target_/ref_ prefixes
  * Eliminates custom state objects and direct DOM manipulation antipatterns
+ * TEMPERATURE FIX: Standard C to F conversion (C × 9/5) + 32
  */
+
+console.log("🔥 CACHE BUST v3: Section03 loaded with TEMPERATURE CONVERSION FIX");
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
@@ -1209,6 +1212,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Calculate Celsius to Fahrenheit conversions - CORRECTED formulas
    */
   function calculateTemperatures() {
+    console.log(`🔥 calculateTemperatures() FUNCTION CALLED - Starting temperature conversions`);
     // Coldest days conversion (d_23 -> e_23) - Standard conversion
     const coldestC_str = window.TEUI.StateManager?.getValue("d_23");
     const coldestC = parseFloat(coldestC_str);
@@ -1225,12 +1229,17 @@ window.TEUI.SectionModules.sect03 = (function () {
       setFieldValue("i_23", heatingF);
     }
 
-    // Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
+    // 🔍 DEBUG: Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
     const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
     const hottestC = parseFloat(hottestC_str);
+    console.log(`🔥 TEMPERATURE CONVERSION DEBUG: d_24 input = "${hottestC_str}", parsed = ${hottestC}`);
     if (!isNaN(hottestC)) {
       const hottestF = Math.round((hottestC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
+      console.log(`🔥 TEMPERATURE CONVERSION: ${hottestC}°C → (${hottestC} × 9/5) + 32 = ${(hottestC * 9) / 5 + 32} → rounded = ${hottestF}°F`);
       setFieldValue("e_24", hottestF);
+      console.log(`🔥 TEMPERATURE CONVERSION COMPLETE: Set e_24 = ${hottestF}°F`);
+    } else {
+      console.warn(`🔥 TEMPERATURE CONVERSION FAILED: Invalid input "${hottestC_str}"`);
     }
 
     // Cooling setpoint conversion is now handled by updateCoolingDependents
@@ -1280,9 +1289,23 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
+   * 🔥 DEBUG: Force temperature recalculation
+   */
+  function debugForceTemperatureCalculation() {
+    console.log("🔥 DEBUG: Force temperature calculation triggered");
+    calculateTemperatures();
+  }
+
+  // Expose debug function globally
+  if (window.TEUI) {
+    window.TEUI.debugForceTemperatureCalculation = debugForceTemperatureCalculation;
+  }
+
+  /**
    * Calculate all values
    */
   function calculateAll() {
+    console.log("🔥 calculateAll() FUNCTION CALLED - Starting all calculations");
     // Dependencies: d_19, h_19 -> d_23, d_24; h_20 -> future flag; d_12 -> critical flag
 
     // Calculate base setpoints (depend on d_12, which might be set by StateManager init or user)
