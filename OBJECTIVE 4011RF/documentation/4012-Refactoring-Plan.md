@@ -2,6 +2,20 @@
 
 ---
 
+## 🚨 **CRITICAL: MUST READ WITH README.md**
+
+**⚠️ ARCHITECTURAL FOUNDATION**: This document MUST be read in conjunction with `../README.md` which contains the **authoritative architectural patterns** and **anti-pattern warnings**. 
+
+**🏛️ FUNDAMENTAL PRINCIPLE**: 
+- **StateManager** = Single source of truth (the "god") ✅
+- **DualState** = Intelligent mode logic that FEEDS StateManager with prefixes ✅  
+- **NO direct DOM manipulation** - everything flows through StateManager ✅
+- **NO cross-section bypass** - all communication via StateManager listeners ✅
+
+**Key README.md sections to review**: Points 3, 10, 11 (StateManager patterns, standardized helpers, anti-patterns)
+
+---
+
 ## 🌞 **SOLSTICE ROADMAP - ACTIVE PRIORITIES (June 28, 2024)**
 
 **Current Status:** ✅ NUCLEAR CLEANUP BREAKTHROUGH ACHIEVED ✅  
@@ -324,30 +338,45 @@ const ReferenceState = {
   setDefaults: () => { /* different defaults from Target */ }
 };
 
-// Mode Manager - Enhanced with import coordination
+// Mode Manager - CORRECTED: Works WITH StateManager (no bypass)
 const ModeManager = {
   currentMode: "target",
+  
   switchMode: (mode) => {
     this.currentMode = mode;
-    this.refreshUI(); // Update dropdowns to show current mode's values
+    // ✅ CORRECT: Trigger StateManager listeners to refresh UI
+    StateManager.triggerListeners('mode_change', mode);
   },
-  getCurrentState: () => this.currentMode === "target" ? TargetState : ReferenceState,
-  setValue: (fieldId, value, source) => this.getCurrentState().setValue(fieldId, value, source),
-  getValue: (fieldId) => this.getCurrentState().getValue(fieldId),
   
-  // Enhanced import that routes to both states appropriately
+  getCurrentMode: () => this.currentMode,
+  
+  setValue: (fieldId, value, source) => {
+    // ✅ CORRECT: Route to StateManager with proper prefix
+    const prefix = this.currentMode === "target" ? "target_" : "ref_";
+    StateManager.setValue(`${prefix}${fieldId}`, value, source);
+  },
+  
+  getValue: (fieldId) => {
+    // ✅ CORRECT: Read from StateManager with proper prefix  
+    const prefix = this.currentMode === "target" ? "target_" : "ref_";
+    return StateManager.getValue(`${prefix}${fieldId}`);
+  },
+  
   importFromExcel: (parsedExcelData) => {
-    TargetState.importValues(parsedExcelData.targetData);
-    ReferenceState.importValues(parsedExcelData.referenceData);
-    this.refreshUI();
+    // ✅ CORRECT: Store in StateManager with prefixes
+    Object.entries(parsedExcelData.targetData).forEach(([field, value]) => {
+      StateManager.setValue(`target_${field}`, value, 'imported');
+    });
+    Object.entries(parsedExcelData.referenceData).forEach(([field, value]) => {
+      StateManager.setValue(`ref_${field}`, value, 'imported');
+    });
   },
   
   resetAllStates: () => {
-    localStorage.removeItem('SECTION_TARGET_STATE');
-    localStorage.removeItem('SECTION_REFERENCE_STATE');
-    TargetState.setDefaults();
-    ReferenceState.setDefaults();
-    this.refreshUI();
+    // ✅ CORRECT: Clear StateManager values with prefixes
+    StateManager.clearPrefixedValues('target_');
+    StateManager.clearPrefixedValues('ref_');
+    StateManager.loadDefaults();
   }
 };
 
@@ -381,51 +410,64 @@ toggle.addEventListener("click", function () {
 });
 ```
 
-### **🎯 Section Implementation (Enhanced Pattern)**
+### **🎯 Section Implementation (CORRECTED: StateManager Integration)**
 ```javascript
-// Single updateClimateData function works for BOTH modes
+// ✅ CORRECT: DualState coordinates with StateManager, no bypass
 function updateClimateData() {
-  // ModeManager automatically routes to current state (Target OR Reference)
-  const province = DualState.getValue("d_19");  // Gets from current mode
-  const city = DualState.getValue("h_19");      // Gets from current mode
-  const cityData = ClimateDataService.getCityData(province, city);
-  DualState.setValue("d_20", cityData.HDD18, 'calculated');   // Sets in current mode with source
+  // DualState determines current mode, reads from StateManager
+  const currentMode = DualState.getCurrentMode();
+  const prefix = currentMode === "target" ? "target_" : "ref_";
   
-  // Zero duplication, zero contamination, works perfectly for both modes
+  const province = StateManager.getValue(`${prefix}d_19`);
+  const city = StateManager.getValue(`${prefix}h_19`);
+  const cityData = ClimateDataService.getCityData(province, city);
+  
+  // DualState reports TO StateManager with proper prefix
+  StateManager.setValue(`${prefix}d_20`, cityData.HDD18.toString(), 'calculated');
+  
+  // StateManager triggers any cross-section listeners automatically
 }
 
-// Enhanced Excel import handling
+// ✅ CORRECT: Excel import via StateManager
 function handleExcelImport(file) {
   const parsedData = parseExcelFile(file);
   
-  const excelData = {
-    targetData: extractTargetValues(parsedData),    // User's design values
-    referenceData: extractReferenceValues(parsedData) // Code minimum values
-  };
+  // Store with proper prefixes in StateManager
+  Object.entries(parsedData.targetData).forEach(([field, value]) => {
+    StateManager.setValue(`target_${field}`, value, 'imported');
+  });
   
-  // Import preserves user modifications, updates only imported/default values
-  DualState.importFromExcel(excelData);
+  Object.entries(parsedData.referenceData).forEach(([field, value]) => {
+    StateManager.setValue(`ref_${field}`, value, 'imported');  
+  });
+  
+  // StateManager handles all propagation and listeners
 }
 
-// User input handling with proper source tracking
+// ✅ CORRECT: User input through StateManager
 function handleUserEdit(fieldId, newValue) {
-  // User input always trumps imported values
-  DualState.setValue(fieldId, newValue, 'user-modified');
-  calculateAll(); // Trigger recalculation
+  const currentMode = DualState.getCurrentMode();
+  const prefix = currentMode === "target" ? "target_" : "ref_";
+  
+  // Store in StateManager with proper prefix
+  StateManager.setValue(`${prefix}${fieldId}`, newValue, 'user-modified');
+  
+  // StateManager triggers calculateAll via listeners (no direct call)
 }
 ```
 
-### **📊 S01 Dashboard: Enhanced Reader**
+### **📊 S01 Dashboard: CORRECTED StateManager Reader**
 ```javascript
-// 4012s01.js - Enhanced to read from localStorage if needed
+// ✅ CORRECT: S01 reads from StateManager with proper prefixes  
 function updateDashboardTotals() {
-  // Can read both Target and Reference states for summary
-  const targetTEUI = getTargetValue("final_teui");     // From Target localStorage
-  const referenceTEUI = getReferenceValue("final_teui"); // From Reference localStorage
+  // Read Target and Reference values from StateManager (single source of truth)
+  const targetTEUI = getAppNumericValue("h_10");    // Uses StateManager.getValue("target_h_10")
+  const referenceTEUI = getRefNumericValue("e_10"); // Uses StateManager.getValue("ref_e_10") 
   
-  document.getElementById("target-summary").textContent = targetTEUI;
-  document.getElementById("reference-summary").textContent = referenceTEUI;
-  document.getElementById("teui-delta").textContent = targetTEUI - referenceTEUI;
+  // Use setCalculatedValue helper (no direct DOM manipulation)
+  setCalculatedValue("target-summary", targetTEUI, "number-1dp");
+  setCalculatedValue("reference-summary", referenceTEUI, "number-1dp"); 
+  setCalculatedValue("teui-delta", targetTEUI - referenceTEUI, "number-1dp");
 }
 ```
 
