@@ -1120,6 +1120,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       // These are the final Reference values that Section 01 needs for e_10 calculation
       setRefValueIfChanged("ref_d_143", refTEUI_e10); // Reference TEUI
       setRefValueIfChanged("ref_h_143", targetTEUI_h10); // Target TEUI
+      
+      // ✅ FIX: Store Reference TEUI where S01 expects it (ref_e_10)
+      setRefValueIfChanged("ref_e_10", ref_teui_h136); // Reference TEUI for S01 dashboard
 
       // Calculate Reference percentage reductions
       let ref_teuiReduction_d144 =
@@ -1252,6 +1255,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       // h_136: =D136/H15
       let teui_h136 = area > 0 ? teuTargetedElecHPGasOil / area : 0;
       setCalculatedValue("h_136", teui_h136);
+      
+      // ✅ FIX: Store Target TEUI where S01 expects it (target_h_10)  
+      setCalculatedValue("target_h_10", teui_h136);
 
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
       let peakHeatingLoad_d137 =
