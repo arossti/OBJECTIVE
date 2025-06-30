@@ -103,21 +103,25 @@ window.TEUI.SectionModules.sect15 = (function () {
   function setCalculatedValue(fieldId, rawValue, format = "number") {
     const formattedValue = formatNumber(rawValue, format);
 
-    // Store raw value as string in StateManager for precision (as per README Point 5)
-    window.TEUI.StateManager?.setValue(
-      fieldId,
-      rawValue.toString(),
-      "calculated",
-    );
-
-    // Update DOM with formatted value
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      element.textContent = formattedValue;
-      // Add/remove classes based on value if needed (e.g., for negatives)
-      element.classList.toggle("negative-value", rawValue < 0);
+    // 🔧 REFERENCE MODE FIX: Check if we're in Reference mode and store values appropriately
+    if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+      // During Reference mode, store with ref_ prefix to prevent contamination
+      const refFieldId = `ref_${fieldId}`;
+      window.TEUI.StateManager?.setValue(refFieldId, rawValue.toString(), "calculated");
+      
+      // Don't update DOM during Reference mode to prevent visual contamination
+      console.log(`🔧 S15: Reference mode - storing ${refFieldId} = ${rawValue} (no DOM update)`);
     } else {
-      // console.warn(`setCalculatedValue: Element not found for fieldId ${fieldId}`);
+      // Normal Target mode: store in application state and update DOM
+      window.TEUI.StateManager?.setValue(fieldId, rawValue.toString(), "calculated");
+      
+      // Update DOM with formatted value
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        element.textContent = formattedValue;
+        // Add/remove classes based on value if needed (e.g., for negatives)
+        element.classList.toggle("negative-value", rawValue < 0);
+      }
     }
   }
 
@@ -963,13 +967,13 @@ window.TEUI.SectionModules.sect15 = (function () {
       const ref_cdd = getRefValue("d_21"); 
       const ref_gfhdd = getRefValue("d_22");
       const ref_gfcdd = getRefValue("h_22");
-      console.log(`🔍 S15 REFERENCE ENGINE CLIMATE: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
+      // console.log(`🔍 S15 REFERENCE ENGINE CLIMATE: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
       
       // Track Reference upstream values
       const ref_i104 = getRefValue("i_104"); // From S12 Building Envelope
       const ref_m121 = getRefValue("m_121"); // From S13 Ventilation  
       const ref_i80 = getRefValue("i_80");   // From S10 Solar Gains
-      console.log(`🔍 S15 REFERENCE UPSTREAM: i_104=${ref_i104}, m_121=${ref_m121}, i_80=${ref_i80}`);
+      // console.log(`🔍 S15 REFERENCE UPSTREAM: i_104=${ref_i104}, m_121=${ref_m121}, i_80=${ref_i80}`);
 
       // Get other Reference dependencies
       const m43 = getRefValue("m_43");
@@ -1135,9 +1139,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       setRefValueIfChanged("ref_h_143", targetTEUI_h10); // Target TEUI
       
       // ✅ FINAL REFERENCE TEUI CALCULATION TRACKER  
-      console.log(`🔍 S15 REFERENCE ENGINE: Final TEUI calculation = ${ref_teui_h136}`);
-      console.log(`🔍 S15 REFERENCE ENGINE: Setting ref_e_10 = ${ref_teui_h136} (changes with Reference location)`);
-      console.log(`🔍 S15 REFERENCE ENGINE: ** REFERENCE e_10 SHOULD CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
+          // console.log(`🔍 S15 REFERENCE ENGINE: Final TEUI calculation = ${ref_teui_h136}`);
+    // console.log(`🔍 S15 REFERENCE ENGINE: Setting ref_e_10 = ${ref_teui_h136} (changes with Reference location)`);
+    // console.log(`🔍 S15 REFERENCE ENGINE: ** REFERENCE e_10 SHOULD CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
       setRefValueIfChanged("ref_e_10", ref_teui_h136); // Reference TEUI for S01 dashboard
 
       // Calculate Reference percentage reductions
@@ -1197,13 +1201,13 @@ window.TEUI.SectionModules.sect15 = (function () {
       const target_cdd = getNumericValue("d_21"); 
       const target_gfhdd = getNumericValue("d_22");
       const target_gfcdd = getNumericValue("h_22");
-      console.log(`🔍 S15 TARGET ENGINE CLIMATE: HDD=${target_hdd}, CDD=${target_cdd}, GFHDD=${target_gfhdd}, GFCDD=${target_gfcdd}`);
+      // console.log(`🔍 S15 TARGET ENGINE CLIMATE: HDD=${target_hdd}, CDD=${target_cdd}, GFHDD=${target_gfhdd}, GFCDD=${target_gfcdd}`);
       
       // Track key upstream values that feed Target TEUI calculation
       const target_i104 = getNumericValue("i_104"); // From S12 Building Envelope
       const target_m121 = getNumericValue("m_121"); // From S13 Ventilation  
       const target_i80 = getNumericValue("i_80");   // From S10 Solar Gains
-      console.log(`🔍 S15 TARGET UPSTREAM: i_104=${target_i104}, m_121=${target_m121}, i_80=${target_i80}`);
+      // console.log(`🔍 S15 TARGET UPSTREAM: i_104=${target_i104}, m_121=${target_m121}, i_80=${target_i80}`);
       const gasPrice = getNumericValue("l_13"); // Price per m3
       const propanePrice = getNumericValue("l_14"); // Price per kg
       const oilPrice = getNumericValue("l_16"); // Price per litre (CSV says l_16, form says l_15?) - Assuming l_16 from formula
@@ -1288,9 +1292,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       setCalculatedValue("h_136", teui_h136);
       
       // ✅ FINAL TARGET TEUI CALCULATION TRACKER
-      console.log(`🔍 S15 TARGET ENGINE: Final TEUI calculation = ${teui_h136}`);
-      console.log(`🔍 S15 TARGET ENGINE: Setting target_h_10 = ${teui_h136} (should be stable ~93.6)`);
-      console.log(`🔍 S15 TARGET ENGINE: ** TARGET h_10 SHOULD NEVER CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
+          // console.log(`🔍 S15 TARGET ENGINE: Final TEUI calculation = ${teui_h136}`);
+    // console.log(`🔍 S15 TARGET ENGINE: Setting target_h_10 = ${teui_h136} (should be stable ~93.6)`);
+    // console.log(`🔍 S15 TARGET ENGINE: ** TARGET h_10 SHOULD NEVER CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
       setCalculatedValue("target_h_10", teui_h136);
 
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
