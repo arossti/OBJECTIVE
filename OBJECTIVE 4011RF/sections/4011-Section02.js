@@ -678,24 +678,88 @@ window.TEUI.SectionModules.sect02 = (function () {
     }
   }
 
+  //==========================================================================
+  // DUAL-ENGINE ARCHITECTURE
+  //==========================================================================
+
   /**
-   * Calculate all values for this section
-   * Following pattern from Section10
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * Stores results with ref_ prefix to keep separate from Target values
+   */
+  function calculateReferenceModel() {
+    try {
+      // Helper function to get Reference values
+      const getRefValue = (fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        return (
+          window.TEUI?.StateManager?.getValue(refFieldId) ||
+          window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
+          getFieldValue(fieldId)
+        );
+      };
+
+      // Helper function to set Reference values
+      const setRefValueIfChanged = (fieldId, newValue) => {
+        const newValueStr = newValue.toString();
+        if (window.TEUI?.StateManager) {
+          window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        }
+      };
+
+      // Calculate Reference embodied carbon target using Reference inputs
+      const ref_carbonStandard = getRefValue("d_15");
+      let ref_embodiedTarget = 0;
+
+      // Apply same logic as Target model but with Reference values
+      if (ref_carbonStandard === "TGS4") {
+        const ref_i39 = getNumericValue("ref_i_39") || getRefValue("i_39") || 0;
+        ref_embodiedTarget = ref_i39;
+      } else if (ref_carbonStandard === "Self Reported" || ref_carbonStandard === "Not Reported") {
+        const ref_i41 = getNumericValue("ref_i_41") || getRefValue("i_41") || 0;
+        ref_embodiedTarget = ref_i41;
+      } else {
+        // Use default values for other standards
+        const defaults = {
+          "BR18 (Denmark)": 12,
+          "IPCC AR6 EPC": 500,
+          "IPCC AR6 EA": 250,
+          "CaGBC ZCB D": 350,
+          "CaGBC ZCB P": 100
+        };
+        ref_embodiedTarget = defaults[ref_carbonStandard] || 0;
+      }
+
+      setRefValueIfChanged("ref_d_16", ref_embodiedTarget);
+
+    } catch (error) {
+      console.error("[Section02] Error in Reference Model calculations:", error);
+    }
+  }
+
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Application state
+   * This is the existing calculation logic
+   */
+  function calculateTargetModel() {
+    try {
+      // Make sure calculations are registered
+      registerCalculations();
+
+      // Calculate Embodied Carbon Target directly
+      const targetValue = calculateEmbodiedCarbonTarget();
+      setCalculatedValue("d_16", targetValue);
+    } catch (error) {
+      console.error("[Section02] Error in Target Model calculations:", error);
+    }
+  }
+
+  /**
+   * DUAL-ENGINE ORCHESTRATION
+   * Replaces the original calculateAll function
    */
   function calculateAll() {
-    // Make sure calculations are registered
-    registerCalculations();
-
-    // Calculate Embodied Carbon Target directly
-    try {
-      // Calculate the target value
-      const targetValue = calculateEmbodiedCarbonTarget();
-
-      // Pass the value directly (already formatted correctly in the calculation function)
-      setCalculatedValue("d_16", targetValue);
-    } catch (_error) {
-      // console.warn("Error calculating values:", _error);
-    }
+    calculateReferenceModel();
+    calculateTargetModel();
   }
 
   /**

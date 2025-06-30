@@ -958,6 +958,13 @@ window.TEUI.SectionModules.sect15 = (function () {
       const ref_j32 = getRefValue("j_32"); // Reference Total Energy from S04
       const ref_k32 = getRefValue("k_32"); // Reference Total Emissions from S04
 
+      // 🔍 DEBUG: Track what climate data Reference engine is reading
+      const ref_hdd = getRefValue("d_20");
+      const ref_cdd = getRefValue("d_21"); 
+      const ref_gfhdd = getRefValue("d_22");
+      const ref_gfcdd = getRefValue("h_22");
+      console.log(`🔍 S15 REFERENCE ENGINE CLIMATE INPUTS: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
+
       // Get other Reference dependencies
       const m43 = getRefValue("m_43");
       const k51 = getRefValue("k_51");
@@ -1122,6 +1129,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       setRefValueIfChanged("ref_h_143", targetTEUI_h10); // Target TEUI
       
       // ✅ FIX: Store Reference TEUI where S01 expects it (ref_e_10)
+      console.log(`🔍 S15 REFERENCE ENGINE: Setting ref_e_10 = ${ref_teui_h136} (should be ~214+)`);
       setRefValueIfChanged("ref_e_10", ref_teui_h136); // Reference TEUI for S01 dashboard
 
       // Calculate Reference percentage reductions
@@ -1175,6 +1183,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
       const elecPrice = getNumericValue("l_12");
+      
+      // 🔍 DEBUG: S15 doesn't read climate directly - contamination comes from upstream sections
+      // S15 reads i_104 (S12), m_121 (S13), i_80 (S10) - these sections read contaminated climate
+      console.log(`🔍 S15 TARGET ENGINE: Reads accumulated values from upstream sections (contamination source)`);
       const gasPrice = getNumericValue("l_13"); // Price per m3
       const propanePrice = getNumericValue("l_14"); // Price per kg
       const oilPrice = getNumericValue("l_16"); // Price per litre (CSV says l_16, form says l_15?) - Assuming l_16 from formula
@@ -1194,10 +1206,12 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d101 = getNumericValue("d_101"); // Total Area Exposed to Air (Ae)
       const d102 = getNumericValue("d_102"); // Total Area Exposed to Ground (Ag)
       const g102 = getNumericValue("g_102"); // U-Val. for Ag
-      const h23 = getNumericValue("h_23"); // Tset Heating
-      const d23 = getNumericValue("d_23"); // Coldest Days Temp
-      const d24 = getNumericValue("d_24"); // Hottest Days Temp
-      const h24 = getNumericValue("h_24"); // Tset Cooling
+      
+      // ✅ FIX: Read temperature data using target_ prefixes for Target calculations
+      const h23 = getNumericValue("target_h_23") || getNumericValue("h_23"); // Tset Heating
+      const d23 = getNumericValue("target_d_23") || getNumericValue("d_23"); // Coldest Days Temp
+      const d24 = getNumericValue("target_d_24") || getNumericValue("d_24"); // Hottest Days Temp
+      const h24 = getNumericValue("target_h_24") || getNumericValue("h_24"); // Tset Cooling
 
       const d65 = getNumericValue("d_65"); // Plug Loads W/m2
       const d66 = getNumericValue("d_66"); // Lighting Loads W/m2
@@ -1257,6 +1271,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       setCalculatedValue("h_136", teui_h136);
       
       // ✅ FIX: Store Target TEUI where S01 expects it (target_h_10)  
+      console.log(`🔍 S15 TARGET ENGINE: Setting target_h_10 = ${teui_h136} (should be ~93.6)`);
       setCalculatedValue("target_h_10", teui_h136);
 
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000

@@ -721,13 +721,28 @@ window.TEUI.SectionModules.sect11 = (function () {
         );
       }
 
+      // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
       let hdd, heatgainMultiplier;
       if (type === "air") {
-        hdd = getNumericValue("d_20") || 0;
-        heatgainMultiplier = (getNumericValue("d_21") || 0) * 24;
+        if (isReferenceCalculation) {
+          // Reference calculations: read ref_ prefixed climate data
+          hdd = getNumericValue("ref_d_20") || getNumericValue("d_20") || 0;
+          heatgainMultiplier = (getNumericValue("ref_d_21") || getNumericValue("d_21") || 0) * 24;
+        } else {
+          // Target calculations: read target_ prefixed climate data
+          hdd = getNumericValue("target_d_20") || getNumericValue("d_20") || 0;
+          heatgainMultiplier = (getNumericValue("target_d_21") || getNumericValue("d_21") || 0) * 24;
+        }
       } else {
         // ground
-        hdd = getNumericValue("d_22") || 0;
+        if (isReferenceCalculation) {
+          // Reference calculations: read ref_ prefixed climate data
+          hdd = getNumericValue("ref_d_22") || getNumericValue("d_22") || 0;
+        } else {
+          // Target calculations: read target_ prefixed climate data  
+          hdd = getNumericValue("target_d_22") || getNumericValue("d_22") || 0;
+        }
+        
         // Get value from i_21 (assume it's stored as percentage, e.g., 50 for 50%)
         let capacitanceFactor_i21 = getNumericValue("i_21");
         // Convert percentage to decimal, fallback to 0.5 (50%) if input is invalid or missing
@@ -735,8 +750,14 @@ window.TEUI.SectionModules.sect11 = (function () {
         if (isNaN(capacitanceFactor_i21) || capacitanceFactor_i21 === 0) {
           capacitanceFactor_i21 = 0.5; // Apply fallback if result is invalid or zero
         }
-        heatgainMultiplier =
-          capacitanceFactor_i21 * (getNumericValue("h_22") || 0) * 24;
+        
+        if (isReferenceCalculation) {
+          // Reference calculations: read ref_ prefixed climate data
+          heatgainMultiplier = capacitanceFactor_i21 * (getNumericValue("ref_h_22") || getNumericValue("h_22") || 0) * 24;
+        } else {
+          // Target calculations: read target_ prefixed climate data
+          heatgainMultiplier = capacitanceFactor_i21 * (getNumericValue("target_h_22") || getNumericValue("h_22") || 0) * 24;
+        }
       }
 
       const denominator = rsiValue * 1000;

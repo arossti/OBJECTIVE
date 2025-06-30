@@ -691,12 +691,91 @@ window.TEUI.SectionModules.sect08 = (function () {
     }
   }
 
+  //==========================================================================
+  // DUAL-ENGINE ARCHITECTURE
+  //==========================================================================
+
   /**
-   * Main calculation function for the section that orchestrates all calculations.
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * Stores results with ref_ prefix to keep separate from Target values
+   */
+  function calculateReferenceModel() {
+    try {
+      // Helper function to get Reference values
+      const getRefValue = (fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        return (
+          window.TEUI?.StateManager?.getValue(refFieldId) ||
+          window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
+          getFieldValue(fieldId)
+        );
+      };
+
+      // Helper function to set Reference values
+      const setRefValueIfChanged = (fieldId, newValue) => {
+        const newValueStr = newValue.toString();
+        if (window.TEUI?.StateManager) {
+          window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        }
+      };
+
+      // Calculate Reference wood offset
+      const ref_d31 = getNumericValue("ref_d_31") || getRefValue("d_31");
+      const ref_k31 = getNumericValue("ref_k_31") || getRefValue("k_31");
+      let ref_d60_offset = 0;
+      if (ref_d31 > 0) {
+        ref_d60_offset = ref_k31 / 1000;
+      }
+      setRefValueIfChanged("ref_d_60", ref_d60_offset);
+
+      // Calculate Reference IAQ percentages (use Reference values if available)
+      const ref_radonValue = getNumericValue("ref_d_56") || getRefValue("d_56");
+      const ref_co2Value = getNumericValue("ref_d_57") || getRefValue("d_57");
+      const ref_tvocValue = getNumericValue("ref_d_58") || getRefValue("d_58");
+      const ref_heatingHumidity = getNumericValue("ref_d_59") || getRefValue("d_59");
+      const ref_coolingHumidity = getNumericValue("ref_i_59") || getRefValue("i_59");
+
+      // Store Reference percentages and status indicators
+      const radonLimit = 150;
+      const ref_radonPercent = radonLimit > 0 ? ref_radonValue / radonLimit : 0;
+      setRefValueIfChanged("ref_m_56", ref_radonPercent);
+      setRefValueIfChanged("ref_n_56", ref_radonValue <= radonLimit ? "✓" : "✗");
+
+      const co2Limit = 1000;
+      const ref_co2Percent = co2Limit > 0 ? ref_co2Value / co2Limit : 0;
+      setRefValueIfChanged("ref_m_57", ref_co2Percent);
+      setRefValueIfChanged("ref_n_57", ref_co2Value <= co2Limit ? "✓" : "✗");
+
+      const tvocLimit = 400;
+      const ref_tvocPercent = tvocLimit > 0 ? ref_tvocValue / tvocLimit : 0;
+      setRefValueIfChanged("ref_m_58", ref_tvocPercent);
+      setRefValueIfChanged("ref_n_58", ref_tvocValue <= tvocLimit ? "✓" : "✗");
+
+    } catch (error) {
+      console.error("[Section08] Error in Reference Model calculations:", error);
+    }
+  }
+
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Application state
+   * This is the existing calculation logic
+   */
+  function calculateTargetModel() {
+    try {
+      calculateD60_WoodOffset(); // Calculate wood offset first
+      calculatePercentagesAndStatus(); // Then calculate IAQ percentages and statuses
+    } catch (error) {
+      console.error("[Section08] Error in Target Model calculations:", error);
+    }
+  }
+
+  /**
+   * DUAL-ENGINE ORCHESTRATION
+   * Replaces the original calculateAllInternal function
    */
   function calculateAllInternal() {
-    calculateD60_WoodOffset(); // Calculate wood offset first
-    calculatePercentagesAndStatus(); // Then calculate IAQ percentages and statuses
+    calculateReferenceModel();
+    calculateTargetModel();
   }
 
   /**

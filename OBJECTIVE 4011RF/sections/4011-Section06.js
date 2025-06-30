@@ -387,13 +387,78 @@ window.TEUI.SectionModules.sect06 = (function () {
     return wws;
   }
 
+  //==========================================================================
+  // DUAL-ENGINE ARCHITECTURE
+  //==========================================================================
+
   /**
-   * Calculate all values for the Renewable Energy section
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * Stores results with ref_ prefix to keep separate from Target values
+   */
+  function calculateReferenceModel() {
+    try {
+      // Helper function to get Reference values
+      const getRefValue = (fieldId) => {
+        const refFieldId = `ref_${fieldId}`;
+        return (
+          window.TEUI?.StateManager?.getValue(refFieldId) ||
+          window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
+          getFieldValue(fieldId)
+        );
+      };
+
+      // Helper function to set Reference values
+      const setRefValueIfChanged = (fieldId, newValue) => {
+        const newValueStr = newValue.toString();
+        if (window.TEUI?.StateManager) {
+          window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        }
+      };
+
+      // Calculate Reference renewable energy values
+      const ref_pvValue = window.TEUI.parseNumeric(getRefValue("d_44")) || 0;
+      const ref_windValue = window.TEUI.parseNumeric(getRefValue("d_45")) || 0;
+      const ref_evRemoval = window.TEUI.parseNumeric(getRefValue("d_46")) || 0;
+      const ref_subtotal = ref_pvValue + ref_windValue + ref_evRemoval;
+      setRefValueIfChanged("ref_d_43", ref_subtotal);
+
+      // Reference Green Natural Gas
+      const ref_gasVolume = window.TEUI.parseNumeric(getRefValue("k_45")) || 0;
+      const ref_gasEnergy = ref_gasVolume * 10.3321;
+      setRefValueIfChanged("ref_i_45", ref_gasEnergy);
+
+      // Reference Offsite Renewable
+      const ref_wwsValue = window.TEUI.parseNumeric(getRefValue("i_44")) || 0;
+      const ref_reservedValue = window.TEUI.parseNumeric(getRefValue("i_46")) || 0;
+      const ref_offsiteTotal = ref_wwsValue + ref_reservedValue;
+      setRefValueIfChanged("ref_i_43", ref_offsiteTotal);
+
+    } catch (error) {
+      console.error("[Section06] Error in Reference Model calculations:", error);
+    }
+  }
+
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Application state
+   * This is the existing calculation logic
+   */
+  function calculateTargetModel() {
+    try {
+      calculateOnSiteSubtotal();
+      calculateGreenNaturalGasEnergy();
+      calculateOffsiteRenewable();
+    } catch (error) {
+      console.error("[Section06] Error in Target Model calculations:", error);
+    }
+  }
+
+  /**
+   * DUAL-ENGINE ORCHESTRATION
+   * Replaces the original calculateAll function
    */
   function calculateAll() {
-    calculateOnSiteSubtotal();
-    calculateGreenNaturalGasEnergy();
-    calculateOffsiteRenewable();
+    calculateReferenceModel();
+    calculateTargetModel();
   }
 
   /**
