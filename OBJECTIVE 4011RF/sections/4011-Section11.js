@@ -726,12 +726,36 @@ window.TEUI.SectionModules.sect11 = (function () {
       if (type === "air") {
         if (isReferenceCalculation) {
           // Reference calculations: read ref_ prefixed climate data
-          hdd = getNumericValue("ref_d_20") || getNumericValue("d_20") || 0;
-          heatgainMultiplier = (getNumericValue("ref_d_21") || getNumericValue("d_21") || 0) * 24;
+          const ref_hdd = getNumericValue("ref_d_20");
+          const global_hdd = getNumericValue("d_20");
+          hdd = ref_hdd || global_hdd || 0;
+          
+          const ref_cdd = getNumericValue("ref_d_21");
+          const global_cdd = getNumericValue("d_21");
+          heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
+          
+          // 🔍 S11 REFERENCE CONTAMINATION TRACKER
+          console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
+          console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
         } else {
           // Target calculations: read target_ prefixed climate data
-          hdd = getNumericValue("target_d_20") || getNumericValue("d_20") || 0;
-          heatgainMultiplier = (getNumericValue("target_d_21") || getNumericValue("d_21") || 0) * 24;
+          const target_hdd = getNumericValue("target_d_20");
+          const global_hdd = getNumericValue("d_20");
+          hdd = target_hdd || global_hdd || 0;
+          
+          const target_cdd = getNumericValue("target_d_21");
+          const global_cdd = getNumericValue("d_21");
+          heatgainMultiplier = (target_cdd || global_cdd || 0) * 24;
+          
+          // 🚨 S11 TARGET CONTAMINATION TRACKER
+          console.log(`🚨 S11 TARGET: HDD=${hdd} (target_d_20=${target_hdd}, global_d_20=${global_hdd})`);
+          console.log(`🚨 S11 TARGET: CDD=${heatgainMultiplier/24} (target_d_21=${target_cdd}, global_d_21=${global_cdd})`);
+          if (!target_hdd && global_hdd) {
+            console.log(`🚨 S11 TARGET CONTAMINATION: Using contaminated global_d_20=${global_hdd} because target_d_20 is missing!`);
+          }
+          if (!target_cdd && global_cdd) {
+            console.log(`🚨 S11 TARGET CONTAMINATION: Using contaminated global_d_21=${global_cdd} because target_d_21 is missing!`);
+          }
         }
       } else {
         // ground

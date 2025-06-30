@@ -958,12 +958,18 @@ window.TEUI.SectionModules.sect15 = (function () {
       const ref_j32 = getRefValue("j_32"); // Reference Total Energy from S04
       const ref_k32 = getRefValue("k_32"); // Reference Total Emissions from S04
 
-      // 🔍 DEBUG: Track what climate data Reference engine is reading
+      // 🔍 REFERENCE TRACKER: Monitor Reference engine climate data usage
       const ref_hdd = getRefValue("d_20");
       const ref_cdd = getRefValue("d_21"); 
       const ref_gfhdd = getRefValue("d_22");
       const ref_gfcdd = getRefValue("h_22");
-      console.log(`🔍 S15 REFERENCE ENGINE CLIMATE INPUTS: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
+      console.log(`🔍 S15 REFERENCE ENGINE CLIMATE: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
+      
+      // Track Reference upstream values
+      const ref_i104 = getRefValue("i_104"); // From S12 Building Envelope
+      const ref_m121 = getRefValue("m_121"); // From S13 Ventilation  
+      const ref_i80 = getRefValue("i_80");   // From S10 Solar Gains
+      console.log(`🔍 S15 REFERENCE UPSTREAM: i_104=${ref_i104}, m_121=${ref_m121}, i_80=${ref_i80}`);
 
       // Get other Reference dependencies
       const m43 = getRefValue("m_43");
@@ -1128,8 +1134,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       setRefValueIfChanged("ref_d_143", refTEUI_e10); // Reference TEUI
       setRefValueIfChanged("ref_h_143", targetTEUI_h10); // Target TEUI
       
-      // ✅ FIX: Store Reference TEUI where S01 expects it (ref_e_10)
-      console.log(`🔍 S15 REFERENCE ENGINE: Setting ref_e_10 = ${ref_teui_h136} (should be ~214+)`);
+      // ✅ FINAL REFERENCE TEUI CALCULATION TRACKER  
+      console.log(`🔍 S15 REFERENCE ENGINE: Final TEUI calculation = ${ref_teui_h136}`);
+      console.log(`🔍 S15 REFERENCE ENGINE: Setting ref_e_10 = ${ref_teui_h136} (changes with Reference location)`);
+      console.log(`🔍 S15 REFERENCE ENGINE: ** REFERENCE e_10 SHOULD CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
       setRefValueIfChanged("ref_e_10", ref_teui_h136); // Reference TEUI for S01 dashboard
 
       // Calculate Reference percentage reductions
@@ -1184,9 +1192,18 @@ window.TEUI.SectionModules.sect15 = (function () {
       const area = getNumericValue("h_15");
       const elecPrice = getNumericValue("l_12");
       
-      // 🔍 DEBUG: S15 doesn't read climate directly - contamination comes from upstream sections
-      // S15 reads i_104 (S12), m_121 (S13), i_80 (S10) - these sections read contaminated climate
-      console.log(`🔍 S15 TARGET ENGINE: Reads accumulated values from upstream sections (contamination source)`);
+      // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using
+      const target_hdd = getNumericValue("d_20");
+      const target_cdd = getNumericValue("d_21"); 
+      const target_gfhdd = getNumericValue("d_22");
+      const target_gfcdd = getNumericValue("h_22");
+      console.log(`🔍 S15 TARGET ENGINE CLIMATE: HDD=${target_hdd}, CDD=${target_cdd}, GFHDD=${target_gfhdd}, GFCDD=${target_gfcdd}`);
+      
+      // Track key upstream values that feed Target TEUI calculation
+      const target_i104 = getNumericValue("i_104"); // From S12 Building Envelope
+      const target_m121 = getNumericValue("m_121"); // From S13 Ventilation  
+      const target_i80 = getNumericValue("i_80");   // From S10 Solar Gains
+      console.log(`🔍 S15 TARGET UPSTREAM: i_104=${target_i104}, m_121=${target_m121}, i_80=${target_i80}`);
       const gasPrice = getNumericValue("l_13"); // Price per m3
       const propanePrice = getNumericValue("l_14"); // Price per kg
       const oilPrice = getNumericValue("l_16"); // Price per litre (CSV says l_16, form says l_15?) - Assuming l_16 from formula
@@ -1270,8 +1287,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       let teui_h136 = area > 0 ? teuTargetedElecHPGasOil / area : 0;
       setCalculatedValue("h_136", teui_h136);
       
-      // ✅ FIX: Store Target TEUI where S01 expects it (target_h_10)  
-      console.log(`🔍 S15 TARGET ENGINE: Setting target_h_10 = ${teui_h136} (should be ~93.6)`);
+      // ✅ FINAL TARGET TEUI CALCULATION TRACKER
+      console.log(`🔍 S15 TARGET ENGINE: Final TEUI calculation = ${teui_h136}`);
+      console.log(`🔍 S15 TARGET ENGINE: Setting target_h_10 = ${teui_h136} (should be stable ~93.6)`);
+      console.log(`🔍 S15 TARGET ENGINE: ** TARGET h_10 SHOULD NEVER CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
       setCalculatedValue("target_h_10", teui_h136);
 
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000

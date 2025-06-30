@@ -324,6 +324,13 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19") {
       window.TEUI.StateManager.setValue(fieldId, value.toString(), "calculated");
       console.log(`S03: ✅ DUAL CALCULATED UPDATE - ${fieldId}: ${prefix}${fieldId}=${value} AND global ${fieldId}=${value}`);
+      
+      // 🚨 CONTAMINATION ALERT: Track when Reference mode updates global climate
+      if (prefix === "ref_") {
+        console.log(`🚨 S03 CONTAMINATION ALERT: Reference mode is updating global ${fieldId}=${value}`);
+        console.log(`🚨 THIS WILL CONTAMINATE TARGET CALCULATIONS that read global ${fieldId}`);
+        console.log(`🚨 Target engines in S11, S12, S13, S15 should read target_${fieldId} instead!`);
+      }
     }
     
     // ALSO update DOM directly (until StateManager listeners are fully implemented)
