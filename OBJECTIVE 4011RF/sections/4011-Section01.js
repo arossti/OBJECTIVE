@@ -275,7 +275,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (targetValue !== undefined && targetValue !== null && targetValue !== "") {
       const parsed = window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
       if (!isNaN(parsed)) {
-        console.log(`S01 TARGET: Reading target_${fieldId} = ${parsed} from StateManager`);
+        // console.log(`S01 TARGET: Reading target_${fieldId} = ${parsed} from StateManager`);
         return parsed;
       }
     }
@@ -309,7 +309,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (refValue !== undefined && refValue !== null && refValue !== "") {
       const parsed = window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
       if (!isNaN(parsed)) {
-        console.log(`S01 REFERENCE: Reading ref_${fieldId} = ${parsed} from StateManager`);
+        // console.log(`S01 REFERENCE: Reading ref_${fieldId} = ${parsed} from StateManager`);
         return parsed;
       }
     }
@@ -354,7 +354,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       // Global unprefixed for backward compatibility and cross-section integration
       window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
       
-      console.log(`S01: ✅ DUAL UPDATE - ${fieldId}: target_${fieldId}=${valueToStore} AND ref_${fieldId}=${valueToStore} AND global ${fieldId}=${valueToStore}`);
+      // console.log(`S01: ✅ DUAL UPDATE - ${fieldId}: target_${fieldId}=${valueToStore} AND ref_${fieldId}=${valueToStore} AND global ${fieldId}=${valueToStore}`);
     }
 
     // CRITICAL: Use updateDisplayValue to preserve custom styling instead of direct DOM manipulation
