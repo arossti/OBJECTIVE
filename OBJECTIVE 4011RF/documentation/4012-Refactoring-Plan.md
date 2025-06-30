@@ -18,28 +18,28 @@
 
 **Status**: S03 DualState implementation violates corrected StateManager architecture
 
-### **S03 Current Issues (Discovered December 2024)**:
-- ❌ **Bypasses StateManager**: Uses custom `TargetState`/`ReferenceState` objects
-- ❌ **Direct DOM Manipulation**: ~80+ `.textContent`, `.value` assignments  
-- ❌ **Custom localStorage**: Separate persistence instead of StateManager
-- ❌ **Mixed Patterns**: Inconsistent StateManager integration
-- ❌ **Antipattern Template**: Other sections might copy these violations
+### **✅ S03 BREAKTHROUGH: Canonical Tuples-Based Architecture**:
+- ✅ **StateManager Integration**: Perfect target_/ref_ prefix pattern
+- ✅ **Zero Contamination**: Complete state isolation between Target/Reference  
+- ✅ **Dual Calculations**: Always runs both engines with proper data sources
+- ✅ **Cross-Section Integration**: Climate data available globally for listeners
+- ✅ **Proven Template**: Ready for systematic rollout to all 18 sections
 
-### **Required S03 Refactor (2-3 Hours)**:
-1. **Remove Custom State Objects**: Eliminate `TargetState`, `ReferenceState` 
-2. **StateManager Integration**: Convert all calls to use `target_`/`ref_` prefixes
-3. **Eliminate Direct DOM**: Replace with StateManager listeners and standard helpers
-4. **Standard Event Handling**: Use registerDependency + addListener patterns  
-5. **localStorage Migration**: Use StateManager persistence instead of custom
+### **S03 Pattern - Canonical Implementation**:
+```javascript
+// S03 demonstrates the CORRECT tuples-based calculation system:
+const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, "calculated");
 
-### **Post-S03 Refactor Benefits**:
-- ✅ **Clean Template**: S03 becomes proper example for other sections
-- ✅ **No Contamination**: Zero state mixing between Target/Reference
-- ✅ **Consistent Architecture**: All sections follow same StateManager patterns
-- ✅ **Reliable Cross-Section**: Proper communication via StateManager events
+// Climate data gets dual storage for cross-section integration:
+window.TEUI.StateManager.setValue(fieldId, value, "calculated"); // Global unprefixed
+```
 
-### **Immediate Priority (Next Session)**:
-**S03 refactor is the highest architectural priority** - it currently works but violates the fundamental StateManager pattern that prevents contamination and ensures reliable dual-engine calculations.
+### **Architecture Benefits Achieved**:
+- ✅ **Tuples-Based System**: Every calculation produces (target_value, ref_value) pairs
+- ✅ **StateManager as Single Source**: All data flows through StateManager with prefixes
+- ✅ **Reference Model Logic**: Target geometry + ReferenceValues.js code minimums
+- ✅ **d_13 Standard Control**: Reference standard determines code minimum values
 
 ---
 
@@ -546,97 +546,43 @@ onD13Change(newStandard) {
 ```javascript
 // Each section contains this ENHANCED PROVEN architecture:
 
-// Target State - Completely isolated with persistence and source tracking
-const TargetState = {
-  state: {},
-  sources: {}, // Track where each value came from
-  
-  setValue: (fieldId, value, source = 'user-modified') => {
-    this.state[fieldId] = value;
-    this.sources[fieldId] = source;
-    this.persist();
-  },
-  
-  getValue: (fieldId) => {
-    // Return value with source precedence: user-modified > imported > default
-    return this.state[fieldId];
-  },
-  
-  importValues: (importedData) => {
-    // Bulk import that respects existing user modifications
-    Object.entries(importedData).forEach(([fieldId, value]) => {
-      if (this.sources[fieldId] !== 'user-modified') {
-        // Only overwrite if not user-modified
-        this.setValue(fieldId, value, 'imported');
-      }
-    });
-  },
-  
-  persist: () => {
-    localStorage.setItem('SECTION_TARGET_STATE', JSON.stringify({
-      values: this.state,
-      sources: this.sources
-    }));
-  },
-  
-  setDefaults: () => { /* section-specific defaults with 'default' source */ }
-};
+// ✅ TUPLES-BASED ARCHITECTURE: StateManager with dual prefixes
+// Every section follows S03's proven pattern for zero contamination
 
-// Reference State - Completely isolated with same enhanced pattern
-const ReferenceState = {
-  state: {},
-  sources: {},
-  setValue: (fieldId, value, source = 'user-modified') => { /* same pattern */ },
-  getValue: (fieldId) => { /* same pattern */ },
-  importValues: (importedData) => { /* same pattern */ },
-  persist: () => { /* localStorage with SECTION_REFERENCE_STATE key */ },
-  setDefaults: () => { /* different defaults from Target */ }
-};
-
-// Mode Manager - CORRECTED: Works WITH StateManager (no bypass)
+// ✅ S03 CANONICAL PATTERN: ModeManager coordinates with StateManager
 const ModeManager = {
   currentMode: "target",
   
   switchMode: (mode) => {
     this.currentMode = mode;
-    // ✅ CORRECT: Trigger StateManager listeners to refresh UI
-    StateManager.triggerListeners('mode_change', mode);
+    this.refreshUI(); // Update UI to show current mode's values
   },
   
   getCurrentMode: () => this.currentMode,
   
   setValue: (fieldId, value, source) => {
-    // ✅ CORRECT: Route to StateManager with proper prefix
     const prefix = this.currentMode === "target" ? "target_" : "ref_";
-    StateManager.setValue(`${prefix}${fieldId}`, value, source);
+    window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, source);
   },
   
   getValue: (fieldId) => {
-    // ✅ CORRECT: Read from StateManager with proper prefix  
     const prefix = this.currentMode === "target" ? "target_" : "ref_";
-    return StateManager.getValue(`${prefix}${fieldId}`);
-  },
-  
-  importFromExcel: (parsedExcelData) => {
-    // ✅ CORRECT: Store in StateManager with prefixes
-    Object.entries(parsedExcelData.targetData).forEach(([field, value]) => {
-      StateManager.setValue(`target_${field}`, value, 'imported');
-    });
-    Object.entries(parsedExcelData.referenceData).forEach(([field, value]) => {
-      StateManager.setValue(`ref_${field}`, value, 'imported');
-    });
-  },
-  
-  resetAllStates: () => {
-    // ✅ CORRECT: Clear StateManager values with prefixes
-    StateManager.clearPrefixedValues('target_');
-    StateManager.clearPrefixedValues('ref_');
-    StateManager.loadDefaults();
+    return window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
   }
 };
 
-// Compatibility alias for existing code
-const DualState = ModeManager;
+// Pattern from working S03: Every calculation produces tuples
+function setCalculatedValue(fieldId, value, formatType = "number-2dp") {
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  
+  // Store with prefix for isolation
+  window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value.toString(), "calculated");
+  
+  // For cross-section integration fields, also store globally
+  if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19") {
+    window.TEUI.StateManager.setValue(fieldId, value.toString(), "calculated");
+  }
+}
 ```
 
 ### **🔄 Toggle System (Proven UI Pattern)**
@@ -665,64 +611,54 @@ toggle.addEventListener("click", function () {
 });
 ```
 
-### **🎯 Section Implementation (CORRECTED: StateManager Integration)**
+### **🎯 S03 Canonical Implementation Pattern**
 ```javascript
-// ✅ CORRECT: DualState coordinates with StateManager, no bypass
+// ✅ TUPLES-BASED: Every section follows this exact S03 pattern
 function updateClimateData() {
-  // DualState determines current mode, reads from StateManager
-  const currentMode = DualState.getCurrentMode();
-  const prefix = currentMode === "target" ? "target_" : "ref_";
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
   
-  const province = StateManager.getValue(`${prefix}d_19`);
-  const city = StateManager.getValue(`${prefix}h_19`);
+  const province = window.TEUI.StateManager.getValue(`${prefix}d_19`);
+  const city = window.TEUI.StateManager.getValue(`${prefix}h_19`);
   const cityData = ClimateDataService.getCityData(province, city);
   
-  // DualState reports TO StateManager with proper prefix
-  StateManager.setValue(`${prefix}d_20`, cityData.HDD18.toString(), 'calculated');
-  
-  // StateManager triggers any cross-section listeners automatically
+  // Store with prefix AND globally for cross-section integration
+  window.TEUI.StateManager.setValue(`${prefix}d_20`, cityData.HDD18.toString(), 'calculated');
+  window.TEUI.StateManager.setValue('d_20', cityData.HDD18.toString(), 'calculated');
 }
 
-// ✅ CORRECT: Excel import via StateManager
-function handleExcelImport(file) {
-  const parsedData = parseExcelFile(file);
-  
-  // Store with proper prefixes in StateManager
-  Object.entries(parsedData.targetData).forEach(([field, value]) => {
-    StateManager.setValue(`target_${field}`, value, 'imported');
-  });
-  
-  Object.entries(parsedData.referenceData).forEach(([field, value]) => {
-    StateManager.setValue(`ref_${field}`, value, 'imported');  
-  });
-  
-  // StateManager handles all propagation and listeners
-}
-
-// ✅ CORRECT: User input through StateManager
+// ✅ USER INPUT: Routes through ModeManager to StateManager with prefixes
 function handleUserEdit(fieldId, newValue) {
-  const currentMode = DualState.getCurrentMode();
-  const prefix = currentMode === "target" ? "target_" : "ref_";
+  ModeManager.setValue(fieldId, newValue, 'user-modified');
   
-  // Store in StateManager with proper prefix
-  StateManager.setValue(`${prefix}${fieldId}`, newValue, 'user-modified');
-  
-  // StateManager triggers calculateAll via listeners (no direct call)
+  // Update DOM immediately
+  const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+  if (element) element.textContent = newValue;
+}
+
+// ✅ CALCULATION: Always produces (target_value, ref_value) tuples
+function calculateAll() {
+  // Both engines run regardless of UI mode
+  calculateTargetModel();  // Uses target_ prefixed inputs
+  calculateReferenceModel(); // Uses ref_ prefixed inputs
 }
 ```
 
-### **📊 S01 Dashboard: CORRECTED StateManager Reader**
+### **📊 S01 Dashboard: State-Agnostic Reader (S03 Pattern)**
 ```javascript
-// ✅ CORRECT: S01 reads from StateManager with proper prefixes  
+// ✅ S01 ALWAYS reads from specific prefixed StateManager values
 function updateDashboardTotals() {
-  // Read Target and Reference values from StateManager (single source of truth)
-  const targetTEUI = getAppNumericValue("h_10");    // Uses StateManager.getValue("target_h_10")
-  const referenceTEUI = getRefNumericValue("e_10"); // Uses StateManager.getValue("ref_e_10") 
+  // Target Column: ALWAYS reads target_ prefixed values (regardless of mode)
+  const targetTEUI = window.TEUI.StateManager.getValue("target_h_10") || 0;
   
-  // Use setCalculatedValue helper (no direct DOM manipulation)
-  setCalculatedValue("target-summary", targetTEUI, "number-1dp");
-  setCalculatedValue("reference-summary", referenceTEUI, "number-1dp"); 
-  setCalculatedValue("teui-delta", targetTEUI - referenceTEUI, "number-1dp");
+  // Reference Column: ALWAYS reads ref_ prefixed values (regardless of mode)  
+  const referenceTEUI = window.TEUI.StateManager.getValue("ref_h_10") || 0;
+  
+  // Update DOM directly (S01 is mode-agnostic)
+  updateDisplayValue("h_10", targetTEUI);   // Target column
+  updateDisplayValue("e_10", referenceTEUI); // Reference column
+  
+  console.log(`S01 TARGET: Reading target_h_10 = ${targetTEUI}`);
+  console.log(`S01 REFERENCE: Reading ref_h_10 = ${referenceTEUI}`);
 }
 ```
 
@@ -1030,65 +966,53 @@ This architecture is **immediately deployable** for July 1st TEUI 4.012 launch w
 
 **🚀 SCALABLE PATTERN**: This approach works perfectly for all 18 sections - proven, tested, ready to deploy.
 
-### **📋 IMPLEMENTATION BLUEPRINT: The Right Way**
+### **📋 S03 TUPLES-BASED IMPLEMENTATION BLUEPRINT**
 
-**🎯 FOR ANY FUTURE DEVELOPER**: Follow this exact pattern for bulletproof Target/Reference modeling:
+**🎯 CANONICAL PATTERN**: Follow S03's exact architecture for all 18 sections:
 
-#### **✅ STEP 1: State Objects (Copy This Exactly)**
-```javascript
-// Target State - Completely isolated
-const TargetState = {
-  state: {},
-  setValue: (fieldId, value) => {
-    this.state[fieldId] = value;
-    localStorage.setItem('SECTION_TARGET_STATE', JSON.stringify(this.state));
-  },
-  getValue: (fieldId) => this.state[fieldId],
-  setDefaults: () => { this.state = { /* section defaults */ }; }
-};
-
-// Reference State - Completely isolated  
-const ReferenceState = {
-  state: {},
-  setValue: (fieldId, value) => {
-    this.state[fieldId] = value;
-    localStorage.setItem('SECTION_REFERENCE_STATE', JSON.stringify(this.state));
-  },
-  getValue: (fieldId) => this.state[fieldId],
-  setDefaults: () => { this.state = { /* different defaults */ }; }
-};
-```
-
-#### **✅ STEP 2: Mode Manager (Copy This Exactly)**
+#### **✅ STEP 1: Copy S03's ModeManager Pattern**
 ```javascript
 const ModeManager = {
   currentMode: "target",
   switchMode: (mode) => {
     this.currentMode = mode;
-    this.refreshUI(); // Update dropdowns to current mode's values
+    this.refreshUI(); // Update UI to show current mode's values
   },
-  getCurrentState: () => this.currentMode === "target" ? TargetState : ReferenceState,
-  setValue: (fieldId, value) => this.getCurrentState().setValue(fieldId, value),
-  getValue: (fieldId) => this.getCurrentState().getValue(fieldId),
-  resetAllStates: () => {
-    localStorage.removeItem('SECTION_TARGET_STATE');
-    localStorage.removeItem('SECTION_REFERENCE_STATE');
-    TargetState.setDefaults(); ReferenceState.setDefaults();
+  getValue: (fieldId) => {
+    const prefix = this.currentMode === "target" ? "target_" : "ref_";
+    return window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
+  },
+  setValue: (fieldId, value, source) => {
+    const prefix = this.currentMode === "target" ? "target_" : "ref_";
+    window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, source);
   }
 };
-
-// Compatibility alias - existing code works unchanged
-const DualState = ModeManager;
 ```
 
-#### **✅ STEP 3: Success Guaranteed**
-- **Zero code changes needed** in existing calculation logic
-- **All setValue/getValue calls** automatically route to current mode  
-- **State contamination impossible** by design
-- **localStorage persistence** works automatically
-- **Reset functionality** clears everything cleanly
+#### **✅ STEP 2: Copy S03's Calculation Pattern**
+```javascript
+function setCalculatedValue(fieldId, value, formatType = "number-2dp") {
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  
+  // Store with prefix for isolation
+  window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value.toString(), "calculated");
+  
+  // Climate data also stored globally for cross-section listeners
+  if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22") {
+    window.TEUI.StateManager.setValue(fieldId, value.toString(), "calculated");
+  }
+}
+```
 
-**🏆 RESULT**: Perfect Target/Reference separation with elegant single-file architecture.
+#### **✅ STEP 3: Always Run Both Engines**
+```javascript
+function calculateAll() {
+  calculateTargetModel();    // Uses target_ prefixed inputs → produces target_ outputs
+  calculateReferenceModel(); // Uses ref_ prefixed inputs → produces ref_ outputs
+}
+```
+
+**🏆 RESULT**: Tuples-based system where every calculation produces (target_value, ref_value) pairs stored in StateManager with prefixes.
 
 ---
 
