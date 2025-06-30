@@ -1,20 +1,26 @@
-# 4.012 Refactoring Plan
+# 🚨 **DOCUMENTATION MOVED**
+
+## **Current Documentation Location**
+
+This file has been replaced with clean, actionable documentation:
+
+- **Primary Guide**: `4012-CLEAN-REFACTOR-GUIDE.md` - Complete implementation guide
+- **Quick Reference**: `4012-QUICK-PATTERNS.md` - Essential patterns for daily use
+
+## **Why This Change**
+
+The original document was too verbose and repetitive for practical use. The new documentation is:
+- ✅ **Concise** - Essential information only
+- ✅ **Actionable** - Clear patterns and examples  
+- ✅ **Up-to-date** - Reflects completed dual-state architecture
+- ✅ **Agent-friendly** - Easy for future agents to understand
 
 ---
 
-## 🚨 **CRITICAL: MUST READ WITH README.md**
+**For Current Status**: See `4012-CLEAN-REFACTOR-GUIDE.md`
+**For Quick Patterns**: See `4012-QUICK-PATTERNS.md`
 
-**⚠️ ARCHITECTURAL FOUNDATION**: This document MUST be read in conjunction with `../README.md` which contains the **authoritative architectural patterns** and **anti-pattern warnings**. 
 
-**🏛️ FUNDAMENTAL PRINCIPLE**: 
-- **StateManager** = Single source of truth (the "god") ✅
-- **DualState** = Intelligent mode logic that FEEDS StateManager with prefixes ✅  
-- **NO direct DOM manipulation** - everything flows through StateManager ✅
-- **NO cross-section bypass** - all communication via StateManager listeners ✅
-
-**Key README.md sections to review**: Points 3, 10, 11 (StateManager patterns, standardized helpers, anti-patterns)
-
-## 🚨 **CRITICAL ARCHITECTURAL DEBT: S03 REFACTOR NEEDED**
 
 **Status**: S03 DualState implementation violates corrected StateManager architecture
 

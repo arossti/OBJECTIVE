@@ -68,7 +68,17 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Store raw value as string in StateManager for precision
     if (window.TEUI?.StateManager?.setValue) {
       let stateValue = isFinite(rawValue) ? rawValue.toString() : null;
-      window.TEUI.StateManager.setValue(fieldId, stateValue, "calculated");
+      
+      // 🔧 CRITICAL FIX: Be Reference mode aware to prevent contamination
+      if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
+        // Reference mode: store with ref_ prefix (no global contamination)
+        const refFieldId = `ref_${fieldId}`;
+        window.TEUI.StateManager.setValue(refFieldId, stateValue, "calculated");
+        console.log(`S04: 🔒 REFERENCE MODE - ${fieldId}: ref_${fieldId}=${stateValue} (NO global contamination)`);
+      } else {
+        // Target mode: store normally in application state
+        window.TEUI.StateManager.setValue(fieldId, stateValue, "calculated");
+      }
     }
 
     // Update DOM

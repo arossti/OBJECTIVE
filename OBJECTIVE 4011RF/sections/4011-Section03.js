@@ -46,6 +46,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         document.body.classList.remove("viewing-reference-inputs");
       }
       
+      // ✅ CRITICAL: Force Reference defaults when switching to Reference mode
+      if (mode === "reference") {
+        this.setReferenceDefaults();
+      }
+      
       // Refresh UI to show current mode's values from StateManager
       this.refreshUI();
     },
@@ -187,6 +192,26 @@ window.TEUI.SectionModules.sect03 = (function () {
           window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
         }
       });
+    },
+
+    setReferenceDefaults: function() {
+      // ✅ FORCE Reference defaults when switching to Reference mode
+      const referenceDefaults = {
+        "ref_d_19": "ON",              // Province: Ontario
+        "ref_h_19": "Attawapiskat",    // City: Attawapiskat (different climate zone)
+        "ref_h_20": "Future",          // Timeframe: Future (2021-2050)
+        "ref_h_21": "Static",          // Capacitance: Static setting
+        "ref_i_21": "0",               // Capacitance percentage: 0% (Static mode)
+        "ref_m_19": "120",             // Days Cooling: 120 (same as target)
+        "ref_l_24": "24"               // Cooling Override: 24°C (same as target)
+      };
+
+      // Force set these values regardless of what exists
+      Object.entries(referenceDefaults).forEach(([fieldId, defaultValue]) => {
+        window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+      });
+      
+      console.log("S03: Forced Reference defaults - Attawapiskat, Future, Static");
     }
   };
 
@@ -319,18 +344,13 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Store raw value in StateManager with prefix (for DualState isolation)
     window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value.toString(), "calculated");
     
-    // ✅ CRITICAL: ALSO update global unprefixed version for cross-section integration
-    // Climate data must be available globally for other sections to listen
-    if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19") {
+    // ✅ FIXED: ONLY update global values in TARGET mode to prevent contamination
+    // Reference mode should NEVER contaminate global climate data
+    if (prefix === "target_" && (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19")) {
       window.TEUI.StateManager.setValue(fieldId, value.toString(), "calculated");
-      console.log(`S03: ✅ DUAL CALCULATED UPDATE - ${fieldId}: ${prefix}${fieldId}=${value} AND global ${fieldId}=${value}`);
-      
-      // 🚨 CONTAMINATION ALERT: Track when Reference mode updates global climate
-      if (prefix === "ref_") {
-        console.log(`🚨 S03 CONTAMINATION ALERT: Reference mode is updating global ${fieldId}=${value}`);
-        console.log(`🚨 THIS WILL CONTAMINATE TARGET CALCULATIONS that read global ${fieldId}`);
-        console.log(`🚨 Target engines in S11, S12, S13, S15 should read target_${fieldId} instead!`);
-      }
+      console.log(`S03: ✅ TARGET UPDATE - ${fieldId}: ${prefix}${fieldId}=${value} AND global ${fieldId}=${value}`);
+    } else if (prefix === "ref_") {
+      console.log(`S03: 🔒 REFERENCE MODE - ${fieldId}: ref_${fieldId}=${value} (NO global contamination)`);
     }
     
     // ALSO update DOM directly (until StateManager listeners are fully implemented)

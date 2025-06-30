@@ -969,19 +969,19 @@ window.TEUI.SectionModules.sect15 = (function () {
       const ref_gfcdd = getRefValue("h_22");
       // console.log(`🔍 S15 REFERENCE ENGINE CLIMATE: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
       
-      // Track Reference upstream values
-      const ref_i104 = getRefValue("i_104"); // From S12 Building Envelope
-      const ref_m121 = getRefValue("m_121"); // From S13 Ventilation  
-      const ref_i80 = getRefValue("i_80");   // From S10 Solar Gains
-      // console.log(`🔍 S15 REFERENCE UPSTREAM: i_104=${ref_i104}, m_121=${ref_m121}, i_80=${ref_i80}`);
+      // Track Reference upstream values - READ ONLY ref_ prefixed values
+      const ref_i104 = window.TEUI?.StateManager?.getValue("ref_i_104") || 0; // From S12 Building Envelope
+      const ref_m121 = window.TEUI?.StateManager?.getValue("ref_m_121") || 0; // From S13 Ventilation  
+      const ref_i80 = window.TEUI?.StateManager?.getValue("ref_i_80") || 0;   // From S10 Solar Gains
+      console.log(`🔍 S15 REFERENCE UPSTREAM: ref_i_104=${ref_i104}, ref_m_121=${ref_m121}, ref_i_80=${ref_i80}`);
 
       // Get other Reference dependencies
       const m43 = getRefValue("m_43");
       const k51 = getRefValue("k_51");
       const h70 = getRefValue("h_70");
-      const i104 = getRefValue("i_104");
-      const m121 = getRefValue("m_121");
-      const i80 = getRefValue("i_80");
+      const i104 = ref_i104;  // Use Reference values for Reference calculations
+      const m121 = ref_m121;  // Use Reference values for Reference calculations
+      const i80 = ref_i80;    // Use Reference values for Reference calculations
 
       const primaryHeating =
         window.TEUI?.StateManager?.getReferenceValue("d_113") || "Electricity";
@@ -1203,11 +1203,11 @@ window.TEUI.SectionModules.sect15 = (function () {
       const target_gfcdd = getNumericValue("h_22");
       // console.log(`🔍 S15 TARGET ENGINE CLIMATE: HDD=${target_hdd}, CDD=${target_cdd}, GFHDD=${target_gfhdd}, GFCDD=${target_gfcdd}`);
       
-      // Track key upstream values that feed Target TEUI calculation
-      const target_i104 = getNumericValue("i_104"); // From S12 Building Envelope
-      const target_m121 = getNumericValue("m_121"); // From S13 Ventilation  
-      const target_i80 = getNumericValue("i_80");   // From S10 Solar Gains
-      // console.log(`🔍 S15 TARGET UPSTREAM: i_104=${target_i104}, m_121=${target_m121}, i_80=${target_i80}`);
+      // Track key upstream values that feed Target TEUI calculation - READ ONLY target_ prefixed values
+      const target_i104 = window.TEUI?.StateManager?.getValue("target_i_104") || getNumericValue("i_104"); // From S12 Building Envelope
+      const target_m121 = window.TEUI?.StateManager?.getValue("target_m_121") || getNumericValue("m_121"); // From S13 Ventilation  
+      const target_i80 = window.TEUI?.StateManager?.getValue("target_i_80") || getNumericValue("i_80");   // From S10 Solar Gains
+      console.log(`🔍 S15 TARGET UPSTREAM: target_i_104=${target_i104}, target_m_121=${target_m121}, target_i_80=${target_i80}`);
       const gasPrice = getNumericValue("l_13"); // Price per m3
       const propanePrice = getNumericValue("l_14"); // Price per kg
       const oilPrice = getNumericValue("l_16"); // Price per litre (CSV says l_16, form says l_15?) - Assuming l_16 from formula
@@ -1216,9 +1216,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       const m43 = getNumericValue("m_43"); // Onsite Energy Subtotals
       const k51 = getNumericValue("k_51"); // W.3.3 Net Electrical Demand (DHW)
       const h70 = getNumericValue("h_70"); // Plug/Light/Eqpt. Subtotals (Annual kWh)
-      const i104 = getNumericValue("i_104"); // Building Transmission Losses (Heatloss kWh/yr)
-      const m121 = getNumericValue("m_121"); // Net Htg Season Ventil. Lost
-      const i80 = getNumericValue("i_80"); // G.3 Net Usable Gains by Method Selected
+      const i104 = target_i104; // Use Target values for Target calculations
+      const m121 = target_m121; // Use Target values for Target calculations
+      const i80 = target_i80; // Use Target values for Target calculations
 
       const primaryHeating = sm.getValue("d_113"); // e.g., "Heatpump", "Gas", "Oil", "Electricity"
       const d114 = getNumericValue("d_114"); // Heating System Demand (after COP/AFUE)
