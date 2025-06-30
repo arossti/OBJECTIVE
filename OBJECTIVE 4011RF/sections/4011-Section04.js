@@ -2188,51 +2188,17 @@ window.TEUI.SectionModules.sect04 = (function () {
 
     // Calculate Reference subtotals
     const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
-    const ref_k32 =
-      ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - d60 * 1000;
+    setValueIfChanged("ref_j_32", ref_j32);
 
-    // Store Reference values with ref_ prefix - WITH CHANGE DETECTION
-    if (window.TEUI?.StateManager) {
-      // Helper function to set value only if changed
-      const setValueIfChanged = (fieldId, newValue) => {
-        const currentValue = window.TEUI.StateManager.getValue(fieldId);
-        const newValueStr = newValue.toString();
-        if (currentValue !== newValueStr) {
-          window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
-          return true;
-        }
-        return false;
-      };
+    const ref_g27 = (ref_j27 * ref_l27) / 1000;
+    const ref_g28 = (ref_j28 / 10.69) * ref_l28;
+    const ref_g29 = (ref_j29 / 13.66) * ref_l29;
+    const ref_g30 = (ref_j30 / 10.8) * ref_l30;
+    const ref_g31 = ref_j31 * ref_l31;
+    const ref_k32 = ref_g27 + ref_g28 + ref_g29 + ref_g30 + ref_g31 - getRefNumericValue("d_60", 0) * 1000;
+    setValueIfChanged("ref_k_32", ref_k32);
 
-      // Row 27 - only set if values changed
-      setValueIfChanged("ref_h_27", ref_h27.toString());
-      setValueIfChanged("ref_j_27", ref_j27.toString());
-      setValueIfChanged("ref_k_27", ref_k27.toString());
-
-      // Row 28
-      setValueIfChanged("ref_h_28", ref_h28.toString());
-      setValueIfChanged("ref_j_28", ref_j28.toString());
-      setValueIfChanged("ref_k_28", ref_k28.toString());
-
-      // Row 29
-      setValueIfChanged("ref_h_29", ref_h29.toString());
-      setValueIfChanged("ref_j_29", ref_j29.toString());
-      setValueIfChanged("ref_k_29", ref_k29.toString());
-
-      // Row 30
-      setValueIfChanged("ref_h_30", ref_h30.toString());
-      setValueIfChanged("ref_j_30", ref_j30.toString());
-      setValueIfChanged("ref_k_30", ref_k30.toString());
-
-      // Row 31
-      setValueIfChanged("ref_h_31", ref_h31.toString());
-      setValueIfChanged("ref_j_31", ref_j31.toString());
-      setValueIfChanged("ref_k_31", ref_k31.toString());
-
-      // Subtotals - CRITICAL for Section 01 (only set if changed)
-      const j32Changed = setValueIfChanged("ref_j_32", ref_j32.toString());
-      const k32Changed = setValueIfChanged("ref_k_32", ref_k32.toString());
-    }
+    console.log(`S04 REFERENCE MODEL: ref_j_32=${ref_j32}, ref_k_32=${ref_k32}`);
   }
 
   /**

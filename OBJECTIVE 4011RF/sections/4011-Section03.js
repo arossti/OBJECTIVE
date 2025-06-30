@@ -867,18 +867,10 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Store in StateManager with prefix (for DualState isolation)
     window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, rawValue, state);
     
-    // 🔧 CRITICAL FIX: Only update global state during Target mode to prevent Reference contamination
-    // During Reference mode: write ONLY to ref_ prefixed state
-    // During Target mode: write to both prefixed and global state (for backward compatibility)
-    if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22" || fieldId === "j_19") {
-      if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-        // Reference mode: Store ONLY with ref_ prefix (no global contamination)
-        console.log(`S03: 🔒 REFERENCE MODE - ${fieldId}: ref_${fieldId}=${rawValue} (NO global contamination)`);
-      } else {
-        // Target mode: Also update global unprefixed version for cross-section integration
-        window.TEUI.StateManager.setValue(fieldId, rawValue, state);
-        console.log(`S03: ✅ DUAL UPDATE - ${fieldId}: ${prefix}${fieldId}=${rawValue} AND global ${fieldId}=${rawValue}`);
-      }
+    // If we are in target mode, update the global (unprefixed) value for backward compatibility.
+    // NEVER update the global value if we are in reference mode. This is the key to preventing state contamination.
+    if (prefix === 'target_') {
+      window.TEUI.StateManager.setValue(fieldId, rawValue, state);
     }
     
     // ALSO update DOM directly (until StateManager listeners are fully implemented)
