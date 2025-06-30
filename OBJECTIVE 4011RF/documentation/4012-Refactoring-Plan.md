@@ -748,7 +748,7 @@ function updateDashboardTotals() {
 - **CSS Nuclear Cleanup**: Universal alignment system (numbers right, text left, sliders center)
 - **Critical Occupancy Flags**: Clean visual indicators in S02 & S03 headers
 
-#### **🎯 CURRENT STATUS & STRATEGIC IMPLEMENTATION ROADMAP (December 2024)**:
+#### **🎯 CURRENT STATUS & STRATEGIC IMPLEMENTATION ROADMAP (June 29, 2025)**:
 
 **✅ COMPLETED: Foundation DualState Architecture**
 - **S03 Climate Data**: ✅ **FULLY CONVERTED** - First DualState section with proven Target/Reference isolation
@@ -756,18 +756,65 @@ function updateDashboardTotals() {
 - **Capacitance Logic**: ✅ Archive GFCDD calculation restored with FieldManager integration
 - **State Isolation**: ✅ Perfect Target/Reference separation with localStorage persistence
 
-**🎯 STRATEGIC MIGRATION SEQUENCE (Dependency-Driven)**
+**🔄 IN PROGRESS: S15→S01 Calculation Chain Fix (June 29, 2025)**
 
-**Phase 1: Dashboard Foundation (IMMEDIATE PRIORITY)**
-- **S01 Key Values Dashboard** → Fix TEUI contamination (h_10 changes 93.6→83.2 on toggle)
-  - Problem: Dashboard reads from UI mode instead of specific Target/Reference states
-  - Solution: S01 always reads h_10 from Target state, e_10 from Reference state
-  - Result: Dashboard columns never change based on UI toggle
+**Phase 1: Dashboard Foundation (ACTIVE DEBUG SESSION)**
+- **✅ S15 Dual-State Pattern**: Successfully converted to Target/Reference engines with prefixes
+  - **target_h_136**: Target TEUI calculations with target_ prefixed inputs
+  - **ref_h_136**: Reference TEUI calculations with ref_ prefixed inputs
+  - **Dual storage**: Both values calculated and stored separately in StateManager
 
-**Phase 2: Calculation Chain Endpoints (HIGH PRIORITY)**  
-- **S15 TEUI** → Convert to DualState while receiving Target values from upstream StateManager
-- **S14 Performance** → Convert to DualState, reads from S15 + other sections
-- **S01 receives from S15/S14** → Completes calculation chain with proper state isolation
+- **✅ S01 Read-Only Pattern**: Updated to read pre-calculated values from S15
+  - **Target Column**: Now reads from S15's `target_h_136` - NO local calculation
+  - **Reference Column**: Now reads from S15's `ref_h_136` - NO local calculation
+  - **Expected**: Dashboard should be completely state-agnostic
+
+- **🚨 ACTIVE ISSUE**: Target column still changes when toggling modes
+  - **Symptom**: Target TEUI changes from 93.6 → 104.8 when switching to Reference mode
+  - **Expected**: Target column should remain stable at 93.6 regardless of toggle
+  - **Status**: Comprehensive debug logging added to S15 and S01 for tomorrow's session
+
+**🔍 DEBUG INFRASTRUCTURE ADDED (June 29, 2025)**
+- **S15 Engine Logging**: Track Target vs Reference calculation inputs and outputs
+- **S01 Value Tracking**: Monitor what values S01 receives from S15
+- **Climate Data Tracing**: Log key climate inputs (d_23, d_24, h_23, h_24, d_22, h_22)
+- **Final TEUI Output**: Track target_h_136 and ref_h_136 calculation results
+
+**📋 TOMORROW'S SESSION PLAN (June 30, 2025)**
+
+**Phase 1: Root Cause Analysis (30 minutes)**
+1. **Analyze Debug Logs**: Determine if contamination is in S15 calculations or S01 reading
+2. **Identify Contamination Source**: 
+   - Are S15's Target/Reference engines reading different climate values?
+   - Is target_h_136 calculation stable between modes?
+   - Is S01 reading consistent values from S15?
+
+**Phase 2: Fix Implementation (30-45 minutes)**
+3. **Fix S15 Contamination** (if source is S15):
+   - Ensure Target engine only reads target_ prefixed values
+   - Verify Reference engine only reads ref_ prefixed values
+   - Fix any fallback logic that causes cross-contamination
+
+4. **Fix S01 Reading** (if source is S01):
+   - Ensure S01 always reads target_h_136 for Target column
+   - Ensure S01 always reads ref_h_136 for Reference column
+   - Verify no mode-dependent logic in S01
+
+**Phase 3: Validation & Next Steps (15-30 minutes)**
+5. **Test Perfect Isolation**: 
+   - Target column stable at 93.6 regardless of mode toggle
+   - Reference column shows proper Reference calculations
+   - No cross-contamination between Target/Reference values
+
+6. **Move to S14** (if S15 working):
+   - Apply same dual-state pattern to S14 Performance section
+   - Continue dependency-driven migration sequence
+
+**🎯 SUCCESS CRITERIA FOR JUNE 30, 2025**
+- ✅ **Target Column Stability**: h_10 stays at 93.6 when toggling modes
+- ✅ **Reference Column Accuracy**: e_10 shows proper Reference calculations  
+- ✅ **Debug Insight**: Clear understanding of calculation flow and isolation
+- ✅ **S15 Pattern Proven**: Ready to scale to S14→S13→S12 sequence
 
 **Phase 3: Core Building Sections (MEDIUM PRIORITY)**
 - **S02 Building Information** → DualState with ReferenceValues.js field categorization
