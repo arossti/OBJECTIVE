@@ -1,3 +1,226 @@
+# 🎯 **TEUI 4.012RF - CLEAN REFACTORING PLAN**
+
+**Date Updated**: June 30, 2025 - 9:06 PM  
+**Status**: ✅ **BREAKTHROUGH ACHIEVED** - Automatic Reference mode now loads ReferenceValues & triggers calculations  
+**Branch**: `solstice-v4012-refactor`
+
+---
+
+## 🏆 **ARCHITECTURAL VISION - THE ARCHITECT'S WORKFLOW**
+
+### **Real-World Use Case**
+An architect needs to compare their efficient Target design against different building code standards:
+
+1. **Target Model**: User's efficient design (heat pump, high insulation, etc.)
+2. **Reference Model**: Code minimum standard (OBC A3 gas furnace vs OBC C4 superior)  
+3. **Comparison Layer**: Visual indicators showing Target vs Reference performance
+4. **Flexibility**: Change d_13 dropdown to compare against different code standards
+
+**Goal**: Build **"Excel for Building Performance"** with real-time calculations, visual comparisons, and professional workflow support.
+
+### **Current Achievement**
+✅ **Reference mode toggle now works automatically**  
+✅ **Target TEUI stable at 93.6 regardless of Reference changes**  
+✅ **Reference TEUI shows proper values (~162.65) representing code minimums**  
+✅ **Complete dual-state isolation maintained**
+
+---
+
+## 📋 **LOGICAL PATH FORWARD**
+
+### **Phase 1: Foundation Cleanup (Next 2-3 commits)**
+
+#### **1.1 Systematic Section Review**
+```bash
+# Priority order based on contamination risk:
+S15 ✅ FIXED - TEUI calculation engine (h_10/e_10 updates)
+S01 🔄 NEXT  - Dashboard display (h_10 styling issues)  
+S04 ✅ FIXED - Emissions calculations (ref_k_32)
+S03 ✅ FIXED - Climate data (template pattern)
+S02, S05-S14 📋 QUEUE - Remaining calculation sections
+```
+
+#### **1.2 Eliminate Remaining Global State Pollution**
+- Search for direct `setValue(fieldId, ...)` without prefix awareness
+- Convert to mode-aware `setFieldValue()` pattern  
+- Ensure all cross-section communication uses prefixed values
+- Remove legacy hybrid patterns from README.md
+
+#### **1.3 Standardize Helper Functions**
+Every section must have:
+```javascript
+// ✅ Mode-aware reading
+function getNumericValue(fieldId) {
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  return window.TEUI.parseNumeric(StateManager.getValue(`${prefix}${fieldId}`)) || 0;
+}
+
+// ✅ Mode-aware writing with global updates in target mode only
+function setFieldValue(fieldId, value, fieldType = "calculated") {
+  const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  StateManager.setValue(`${modePrefix}${fieldId}`, value, fieldType);
+  
+  if (ModeManager.currentMode === "target") {
+    StateManager.setValue(fieldId, value, fieldType); // Global for DOM
+  }
+}
+```
+
+### **Phase 2: Enhanced d_13 Reference System (Next Major Feature)**
+
+#### **2.1 Smart d_13 Integration**
+```javascript
+// When d_13 changes (e.g., "OBC A3" → "OBC C4"):
+onD13Change(newStandard) {
+  // 1. Load new reference dataset
+  const referenceData = ReferenceValues.getStandard(newStandard);
+  
+  // 2. Write ONLY to ref_ prefixed states
+  Object.entries(referenceData).forEach(([fieldId, value]) => {
+    StateManager.setValue(`ref_${fieldId}`, value, "reference-standard");
+  });
+  
+  // 3. Trigger ONLY Reference calculations
+  calculateReferenceModel();
+  
+  // 4. Update comparison indicators (T-cells)
+  updateComparisonIndicators();
+}
+```
+
+#### **2.2 Visual Comparison Layer (T-cells)**
+```javascript
+// T-cells showing Target vs Reference performance
+function updateComparisonIndicators() {
+  const targetTEUI = StateManager.getValue("target_h_10");
+  const referenceTEUI = StateManager.getValue("ref_h_10");
+  const improvement = ((referenceTEUI - targetTEUI) / referenceTEUI * 100);
+  
+  // Show green checkmark + percentage if Target is better
+  displayComparison("h_10", improvement > 0 ? "✅" : "❌", `${improvement.toFixed(1)}%`);
+}
+```
+
+### **Phase 3: Advanced Features**
+
+#### **3.1 Multi-Standard Comparison**
+- Side-by-side comparison of multiple standards
+- "What-if" scenarios with different d_13 values  
+- Export comparison reports
+
+#### **3.2 Field-Level Granularity**
+- Individual field comparisons (insulation, equipment, etc.)
+- Color-coded performance indicators
+- Detailed breakdown of where improvements come from
+
+---
+
+## 🔧 **IMMEDIATE NEXT STEPS (Next 24 Hours)**
+
+### **Step 1: Fix Section 01 Display Issues** 
+**Priority**: 🚨 **CRITICAL** - Affects main dashboard UX
+- Fix h_10 styling/animation issues caused by Section 15 updates
+- Ensure Section 01's specialized `updateDisplayValue` function is properly called
+- Verify tier indicators and smooth transitions work correctly
+
+### **Step 2: Systematic Section Review Checklist**
+Create standardized review for each section (S02, S05-S14):
+
+#### **A. Mode Manager Integration**
+- [ ] Local `ModeManager` object with `currentMode` property
+- [ ] `switchMode()` function that updates UI and triggers calculations  
+- [ ] Global exposure: `window.TEUI.ModeManager = ModeManager`
+
+#### **B. Helper Function Patterns**
+- [ ] `getNumericValue()`: Mode-aware reading with prefix logic
+- [ ] `setFieldValue()`: Mode-aware writing with global updates in target mode only
+- [ ] `setCalculatedValue()`: Standardized helper for calculated field updates
+- [ ] Field type preservation: "derived" and "calculated" remain as StateManager states
+
+#### **C. Calculation Engine Structure**  
+- [ ] `calculateAll()`: Calls both Target and Reference engines
+- [ ] Target engine: Reads from target_ prefixed or global state
+- [ ] Reference engine: Reads from ref_ prefixed state exclusively
+- [ ] No contamination: Reference calculations never write to global state
+
+#### **D. Cross-Section Communication**
+- [ ] Output fields: Final values update both prefixed AND global fields
+- [ ] Input dependencies: Use StateManager listeners for cross-section updates
+- [ ] Mode isolation: Target calculations stable regardless of Reference changes
+
+### **Step 3: Enhanced d_13 ReferenceValues Integration**
+Build the proper integration that:
+- Loads complete datasets based on standard selection
+- Maintains perfect state isolation  
+- Enables architect workflow (OBC A3 vs OBC C4 comparison)
+- Never contaminates Target model state
+
+---
+
+## 🚨 **CRITICAL ANTI-PATTERNS TO ELIMINATE**
+
+### **❌ Global State Pollution**
+```javascript
+// WRONG: Reference mode writing to globals
+if (isReferenceMode()) {
+  StateManager.setValue("d_20", value, "calculated"); // Contaminates Target
+}
+
+// ✅ CORRECT: Mode-aware writing
+const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+StateManager.setValue(`${prefix}d_20`, value, "calculated");
+```
+
+### **❌ Missing Mode Awareness**
+```javascript
+// WRONG: Direct field access without considering current mode  
+const hdd = getNumericValue("d_20"); // Should consider target_ vs ref_ prefix
+
+// ✅ CORRECT: Mode-aware reading
+function getNumericValue(fieldId) {
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  return StateManager.getValue(`${prefix}${fieldId}`);
+}
+```
+
+### **❌ Inconsistent Prefix Usage**
+```javascript
+// WRONG: Mixing prefixed and unprefixed in same function
+setCalculatedValue("target_h_10", value); // DOM looks for "h_10"
+setCalculatedValue("d_135", value); // Inconsistent with above
+
+// ✅ CORRECT: Final sections update both prefixed AND global
+setCalculatedValue("h_10", value); // Updates target_h_10 AND h_10
+```
+
+---
+
+## 📊 **PROGRESS TRACKING**
+
+### **Completed Milestones**
+- ✅ **S03**: Template pattern for mode-aware field handling
+- ✅ **S04**: Reference emissions calculation (ref_k_32)  
+- ✅ **S15**: TEUI calculation engine with proper h_10/e_10 updates
+- ✅ **Automatic Reference Mode**: Loads ReferenceValues & triggers calculations
+- ✅ **State Isolation**: Target h_10 stable at 93.6 regardless of Reference toggle
+
+### **Next 24 Hours Goals**
+- 🔄 **S01**: Fix dashboard display styling issues
+- 📋 **S02, S05-S14**: Systematic review using standardized checklist
+- 🎯 **d_13 Enhancement**: Proper ReferenceValues integration
+
+### **Success Metrics**
+1. **No State Contamination**: Target values never change when Reference mode changes
+2. **Proper Comparisons**: Reference TEUI consistently higher than Target (code minimums)
+3. **Visual Feedback**: Clear indicators showing Target vs Reference performance
+4. **Architect Workflow**: Easy switching between different code standards (d_13)
+
+---
+
+**Template Pattern**: Use `sections/4011-Section03.js` as canonical example for all future development.
+
+**Architecture Status**: 🏗️ **Foundation Complete** - Ready for advanced comparison features.
+
 # 🚨 **DOCUMENTATION MOVED**
 
 ## **Current Documentation Location**
