@@ -158,12 +158,12 @@ window.TEUI.SectionModules.sect07 = (function () {
   function getDropdownOptions() {
     const options = {};
     Object.values(sectionRows).forEach(row => {
-        if (!row.cells) return;
+      if (!row.cells) return;
         Object.values(row.cells).forEach(cell => {
             if (cell.type === 'dropdown' && cell.dropdownId && cell.options) {
                 options[cell.dropdownId] = cell.options.map(opt => ({ value: opt, name: opt }));
-            }
-        });
+        }
+      });
     });
     return options;
   }
@@ -306,7 +306,7 @@ window.TEUI.SectionModules.sect07 = (function () {
 
       const energyRecovered = netThermalDemand * recoveryPercent;
       setFieldValue("e_53", energyRecovered);
-      
+
       const netDemandAfterRecovery = netThermalDemand - energyRecovered;
       setFieldValue("j_52", netDemandAfterRecovery);
       setFieldValue("j_53", netDemandAfterRecovery);
@@ -356,7 +356,7 @@ window.TEUI.SectionModules.sect07 = (function () {
     const hotWaterLitersPerDay = getNumericValue("h_50");
     const efficiency = getNumericValue("e_52");
     const recoveryPercent = getNumericValue("d_53") / 100;
-    
+
     // Calculate compliance percentages and format them properly
     const waterUsePercentRaw = 275 !== 0 ? litersPerPersonDay / 275 : 0;
     const dhwUsePercentRaw = 110 !== 0 ? hotWaterLitersPerDay / 110 : 0;
@@ -396,7 +396,7 @@ window.TEUI.SectionModules.sect07 = (function () {
       console.error("[S07] Error in Target Model calculations:", error);
     } finally {
       ModeManager.switchMode(originalMode);
-    }
+      }
   }
 
   function calculateAll() {
@@ -505,8 +505,8 @@ window.TEUI.SectionModules.sect07 = (function () {
       window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
       if (e.type === "change") calculateAll();
+      }
     }
-  }
 
   function handleDHWSourceChange(event) {
     const selectedSource = event.target.value;
@@ -559,7 +559,7 @@ window.TEUI.SectionModules.sect07 = (function () {
       if (!dropdown.hasDropdownListener) {
         dropdown.addEventListener("change", handleGenericDropdownChange);
         dropdown.hasDropdownListener = true;
-      }
+    }
     });
 
     // Setup slider handlers
@@ -576,7 +576,7 @@ window.TEUI.SectionModules.sect07 = (function () {
     if (window.TEUI?.StateManager) {
       window.TEUI.StateManager.addListener("d_63", calculateAll);
       window.TEUI.StateManager.addListener("d_51", calculateAll);
-    }
+        }
   }
 
   function onSectionRendered() {

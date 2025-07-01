@@ -42,8 +42,8 @@ S05 ✅ FIXED - Typology and Form (systematic refactor complete)
 S06 ✅ FIXED - Opaque Assemblies Heat Loss (systematic refactor complete)
 S07 ✅ FIXED - Water Use (EXEMPLARY dual-state + UI preservation)
 S08 ✅ FIXED - Indoor Air Quality (dual-state + S13 RH integration TODO)
-S09 ✅ FIXED - Occupant & Internal Gains (SUCCESS! Pure functions, no state pollution)
-S10 🔄 NEXT - Infiltration & Ventilation
+S09 🔄 NEXT - Occupant & Internal Gains (starting from stable backup)
+S10 📋 QUEUE - Infiltration & Ventilation
 S11-S14 📋 QUEUE - Remaining calculation sections
 ```
 
@@ -119,6 +119,18 @@ function updateComparisonIndicators() {
 - Individual field comparisons (insulation, equipment, etc.)
 - Color-coded performance indicators
 - Detailed breakdown of where improvements come from
+
+### **Phase 4: Performance & Dependency Graph Optimization (Post-Refactor)**
+
+**Objective**: Transition from coarse-grained `calculateAll()` triggers to a fine-grained, dependency-driven calculation model using `Dependency.js`. This will eliminate UI lag (as seen in S09) and ensure maximum calculation efficiency.
+
+**Context**: The dual-state refactoring, by making calculation chains more robust and synchronous, has correctly exposed performance bottlenecks. The ~2-second lag when changing "Occupied Hrs/Day" in S09 is a perfect example. The issue is not the *volume* of calculation, but the *strategy*—recalculating entire sections is inefficient.
+
+**Action Plan**:
+1.  **Audit `addStateManagerListeners`**: Systematically review the dependency listeners in all 15 sections.
+2.  **Replace Coarse Triggers**: Replace broad `calculateAll()` handlers with calls to more granular, specific calculation functions (e.g., `calculatePlugLoads()`, `calculateTotals()`).
+3.  **Implement Calculation Orchestrator**: Investigate a central orchestrator that, upon a state change, queries the `Dependency.js` graph to build a precise list of only the downstream functions that need to be re-run.
+4.  **Performance Goal**: User interactions should feel instantaneous, with UI updates completing in under 100ms.
 
 ---
 
