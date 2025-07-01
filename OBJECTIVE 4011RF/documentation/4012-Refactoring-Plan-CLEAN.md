@@ -30,6 +30,123 @@ The original document was too verbose and repetitive for practical use. The new 
 
 ---
 
+## 🔧 **Target/Reference Prefix Patterns & Section Review Framework**
+
+### **Critical Prefix Rules (Updated 2025-01-13)**
+
+Following the h_10 contamination fix, all sections must adhere to these patterns:
+
+#### **1. Field Value Setting Patterns**
+```javascript
+// ✅ CORRECT: Mode-aware setting with global updates
+function setFieldValue(fieldId, value, fieldType = "calculated") {
+  const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  const prefixedFieldId = `${modePrefix}${fieldId}`;
+  
+  // Always store with prefix for dual-state isolation
+  window.TEUI.StateManager?.setValue(prefixedFieldId, value, fieldType);
+  
+  // CRITICAL: Only update global state in target mode
+  if (ModeManager.currentMode === "target") {
+    window.TEUI.StateManager?.setValue(fieldId, value, fieldType);
+    // Update DOM element
+    updateDOMElement(fieldId, value);
+  }
+}
+
+// ❌ WRONG: Direct global updates that cause contamination
+window.TEUI.StateManager.setValue("h_10", value, "calculated"); // Missing mode awareness
+```
+
+#### **2. Cross-Section Output Patterns**
+```javascript
+// ✅ CORRECT: Final calculation sections (like S15) update global fields
+setCalculatedValue("h_10", teui_h136); // Updates both target_h_10 AND h_10
+setCalculatedValue("e_10", ref_teui_h136); // Updates both ref_e_10 AND e_10
+
+// ❌ WRONG: Only updating prefixed values
+setCalculatedValue("target_h_10", teui_h136); // DOM can't find this
+```
+
+#### **3. Mode-Aware Reading Patterns**
+```javascript
+// ✅ CORRECT: Mode-aware reading with fallbacks
+function getNumericValue(fieldId) {
+  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  const prefixedValue = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
+  const globalValue = window.TEUI.StateManager.getValue(fieldId);
+  
+  // Debug contamination issues
+  if (prefixedValue !== globalValue) {
+    console.log(`VALUE MISMATCH for ${fieldId} - Prefixed: ${prefixedValue}, Global: ${globalValue}`);
+  }
+  
+  return window.TEUI.parseNumeric(prefixedValue) || 0;
+}
+
+// ❌ WRONG: Direct global reading without mode awareness
+const value = window.TEUI.StateManager.getValue("d_20"); // Ignores current mode
+```
+
+### **Section Review Checklist**
+
+Each of the 15 calculation sections (S01-S15) should be reviewed for:
+
+#### **A. Mode Manager Integration**
+- [ ] **ModeManager defined**: Local `ModeManager` object with `currentMode` property
+- [ ] **Mode switching**: `switchMode()` function that updates UI and triggers calculations
+- [ ] **Global exposure**: `window.TEUI.ModeManager = ModeManager` for cross-section access
+
+#### **B. Helper Function Patterns**
+- [ ] **getNumericValue()**: Mode-aware reading with prefix logic
+- [ ] **setFieldValue()**: Mode-aware writing with global updates in target mode only
+- [ ] **setCalculatedValue()**: Standardized helper for calculated field updates
+- [ ] **Field type preservation**: "derived" and "calculated" remain as StateManager value states
+
+#### **C. Calculation Engine Structure**
+- [ ] **calculateAll()**: Calls both Target and Reference engines
+- [ ] **Target engine**: Reads from target_ prefixed or global state
+- [ ] **Reference engine**: Reads from ref_ prefixed state exclusively
+- [ ] **No contamination**: Reference calculations never write to global state
+
+#### **D. Cross-Section Communication**
+- [ ] **Output fields**: Final values update both prefixed AND global fields
+- [ ] **Input dependencies**: Use StateManager listeners for cross-section updates
+- [ ] **Mode isolation**: Target calculations stable regardless of Reference changes
+
+### **Priority Review Order**
+
+1. **S15 (TEUI Summary)** - ✅ **FIXED** - Now properly updates h_10 and e_10 globals
+2. **S01 (Key Values)** - Dashboard display section, critical for user experience
+3. **S03 (Climate)** - ✅ **FIXED** - Template pattern for mode-aware field handling
+4. **S04 (Emissions)** - ✅ **FIXED** - Reference emissions calculation restored
+5. **S02, S05-S14** - Remaining calculation sections for systematic review
+
+### **Common Anti-Patterns to Fix**
+
+#### **❌ Global State Pollution**
+```javascript
+// WRONG: Reference mode writing to globals
+if (isReferenceMode()) {
+  window.TEUI.StateManager.setValue("d_20", value, "calculated"); // Contaminates Target
+}
+```
+
+#### **❌ Missing Mode Awareness**
+```javascript
+// WRONG: Direct field access without considering current mode
+const hdd = getNumericValue("d_20"); // Should consider target_ vs ref_ prefix
+```
+
+#### **❌ Inconsistent Prefix Usage**
+```javascript
+// WRONG: Mixing prefixed and unprefixed in same function
+setCalculatedValue("target_h_10", value); // DOM looks for "h_10"
+setCalculatedValue("d_135", value); // Inconsistent with above
+```
+
+---
+
 **For Implementation Details**: See `4012-CLEAN-REFACTOR-GUIDE.md`  
 **For Quick Patterns**: See `4012-QUICK-PATTERNS.md`
 

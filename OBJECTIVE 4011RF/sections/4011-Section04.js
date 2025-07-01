@@ -68,13 +68,15 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Store raw value as string in StateManager for precision
     if (window.TEUI?.StateManager?.setValue) {
       let stateValue = isFinite(rawValue) ? rawValue.toString() : null;
-      
+
       // 🔧 CRITICAL FIX: Be Reference mode aware to prevent contamination
       if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
         // Reference mode: store with ref_ prefix (no global contamination)
         const refFieldId = `ref_${fieldId}`;
         window.TEUI.StateManager.setValue(refFieldId, stateValue, "calculated");
-        console.log(`S04: 🔒 REFERENCE MODE - ${fieldId}: ref_${fieldId}=${stateValue} (NO global contamination)`);
+        console.log(
+          `S04: 🔒 REFERENCE MODE - ${fieldId}: ref_${fieldId}=${stateValue} (NO global contamination)`,
+        );
       } else {
         // Target mode: store normally in application state
         window.TEUI.StateManager.setValue(fieldId, stateValue, "calculated");
@@ -2095,7 +2097,7 @@ window.TEUI.SectionModules.sect04 = (function () {
   function getRefNumericValue(fieldId, defaultValue = 0) {
     // First try to get ref_ prefixed value (from upstream Reference calculations)
     const refFieldId = `ref_${fieldId}`;
-    let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
+    let value = window.TEUI.StateManager?.getValue?.(refFieldId);
 
     // If no ref_ value, fall back to application state
     if (value === null || value === undefined) {
@@ -2109,151 +2111,152 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   /**
-   * REFERENCE MODEL ENGINE: Calculate all Reference values
+   * DUAL-ENGINE: Calculate all Reference values using Reference state
    */
   function calculateReferenceModel() {
-    // Get Reference values from upstream sections
-    const ref_d136 = getRefNumericValue("d_136", 0); // From S15
+    // Helper function to set value only if changed (prevents infinite loops)
+    const setValueIfChanged = (fieldId, newValue) => {
+      const currentValue = window.TEUI.StateManager.getValue(fieldId);
+      const newValueStr = newValue.toString();
+      if (currentValue !== newValueStr) {
+        window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        return true;
+      }
+      return false;
+    };
 
-    // Get system types - these carry over from Application state (Section 07 pattern)
-    const ref_d51 = window.TEUI?.StateManager?.getValue?.("d_51"); // DHW Energy Source (carries over)
-    const ref_d113 = window.TEUI?.StateManager?.getValue?.("d_113"); // Heating Energy Source (carries over)
+    try {
+      // Get all necessary Reference values FIRST to ensure data integrity
+      const ref_h27 = getRefNumericValue("h_27", 0);
+      const ref_h28 = getRefNumericValue("h_28", 0);
+      const ref_h29 = getRefNumericValue("h_29", 0);
+      const ref_h30 = getRefNumericValue("h_30", 0);
+      const ref_h31 = getRefNumericValue("h_31", 0);
+      const ref_j27 = getRefNumericValue("j_27", 0);
+      const ref_j28 = getRefNumericValue("j_28", 0);
+      const ref_j29 = getRefNumericValue("j_29", 0);
+      const ref_j30 = getRefNumericValue("j_30", 0);
+      const ref_j31 = getRefNumericValue("j_31", 0);
+      const ref_k27 = getRefNumericValue("k_27", 0);
+      const ref_k28 = getRefNumericValue("k_28", 0);
+      const ref_k29 = getRefNumericValue("k_29", 0);
+      const ref_k30 = getRefNumericValue("k_30", 0);
+      const ref_k31 = getRefNumericValue("k_31", 0);
+      const ref_l27 = getRefNumericValue("l_27", 0);
+      const ref_l28 = getRefNumericValue("l_28", 1921);
+      const ref_l29 = getRefNumericValue("l_29", 2970);
+      const ref_l30 = getRefNumericValue("l_30", 2753);
+      const ref_l31 = getRefNumericValue("l_31", 150);
+      const d60 = getRefNumericValue("d_60", 0);
 
-    // Get Reference fuel volumes from Section 07 dual-engine calculations
-    const ref_e51 = getRefNumericValue("e_51", 0); // Reference Gas volume from S07
-    const ref_k54 = getRefNumericValue("k_54", 0); // Reference Oil volume from S07
+      // Calculate Reference subtotals
+      const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
+      const ref_k32 =
+        ref_k27 + ref_k28 + ref_k29 + ref_k30 + ref_k31 - d60 * 1000;
 
-    // Get Reference fuel volumes from Section 13 (heating systems)
-    const ref_h115 = getRefNumericValue("h_115", 0); // Reference Gas volume from S13 heating
-    const ref_f115 = getRefNumericValue("f_115", 0); // Reference Oil volume from S13 heating
+      // Store Reference values with ref_ prefix - WITH CHANGE DETECTION
+      setValueIfChanged("ref_j_32", ref_j32);
+      setValueIfChanged("ref_k_32", ref_k32);
 
-    // Get user inputs (these typically carry over from application state)
-    const d27 = getAppNumericValue("d_27", 0); // Electricity
-    const d28 = getAppNumericValue("d_28", 0); // Gas
-    const d29 = getAppNumericValue("d_29", 0); // Propane
-    const d30 = getAppNumericValue("d_30", 0); // Oil
-    const d31 = getAppNumericValue("d_31", 0); // Wood
-    const d60 = getAppNumericValue("d_60", 0); // Offsets
-
-    // Get emission factors (Reference grid intensity may be different from application)
-    const ref_l27 = getRefNumericValue("l_27", 0); // Use Reference grid intensity
-    const l28 = getAppNumericValue("l_28", 1921); // Default gas emissions factor
-    const l29 = getAppNumericValue("l_29", 2970); // Default propane emissions factor
-    const l30 = getAppNumericValue("l_30", 2753); // Default oil emissions factor
-    const l31 = getAppNumericValue("l_31", 150); // Default wood emissions factor
-
-    // Calculate Reference H values (Target consumption)
-    // H27: Electricity target from S15
-    const ref_h27 = ref_d136;
-
-    // H28: Gas target (Excel formula: =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0))))
-    let ref_h28 = 0;
-    if (ref_d113 === "Gas" && ref_d51 === "Gas") {
-      ref_h28 = ref_e51 + ref_h115; // Both heating and DHW use gas
-    } else if (ref_d51 === "Gas") {
-      ref_h28 = ref_e51; // Only DHW uses gas
-    } else if (ref_d113 === "Gas") {
-      ref_h28 = ref_h115; // Only heating uses gas
+      console.log(
+        `S04 REFERENCE MODEL: ref_j_32=${ref_j32}, ref_k_32=${ref_k32}`,
+      );
+    } catch (error) {
+      console.error(
+        "[Section04] Error during Reference Model calculation:",
+        error,
+      );
     }
-
-    // H29: Propane = actual
-    const ref_h29 = d29;
-
-    // H30: Oil target (Excel formula: =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0))))
-    let ref_h30 = 0;
-    if (ref_d113 === "Oil" && ref_d51 === "Oil") {
-      ref_h30 = ref_k54 + ref_f115; // Both heating and DHW use oil
-    } else if (ref_d51 === "Oil") {
-      ref_h30 = ref_k54; // Only DHW uses oil
-    } else if (ref_d113 === "Oil") {
-      ref_h30 = ref_f115; // Only heating uses oil
-    }
-
-    // H31: Wood = actual
-    const ref_h31 = d31;
-
-    // Calculate Reference J values (Energy)
-    const ref_j27 = ref_h27; // Electricity kWh
-    const ref_j28 = ref_h28 * 0.0373 * 277.7778; // Gas conversion
-    const ref_j29 = ref_h29 * 14.019; // Propane conversion
-    const ref_j30 = ref_h30 * 36.72 * 0.2777778; // Oil conversion
-    const ref_j31 = ref_h31 * 1000; // Wood conversion
-
-    // Calculate Reference K values (Emissions)
-    const ref_k27 = (ref_j27 * ref_l27) / 1000;
-    const ref_k28 = (ref_h28 * l28) / 1000;
-    const ref_k29 = (ref_h29 * l29) / 1000;
-    const ref_k30 = (ref_h30 * l30) / 1000;
-    const ref_k31 = ref_h31 * l31;
-
-    // Calculate Reference subtotals
-    const ref_j32 = ref_j27 + ref_j28 + ref_j29 + ref_j30 + ref_j31;
-    setValueIfChanged("ref_j_32", ref_j32);
-
-    const ref_g27 = (ref_j27 * ref_l27) / 1000;
-    const ref_g28 = (ref_j28 / 10.69) * ref_l28;
-    const ref_g29 = (ref_j29 / 13.66) * ref_l29;
-    const ref_g30 = (ref_j30 / 10.8) * ref_l30;
-    const ref_g31 = ref_j31 * ref_l31;
-    const ref_k32 = ref_g27 + ref_g28 + ref_g29 + ref_g30 + ref_g31 - getRefNumericValue("d_60", 0) * 1000;
-    setValueIfChanged("ref_k_32", ref_k32);
-
-    console.log(`S04 REFERENCE MODEL: ref_j_32=${ref_j32}, ref_k_32=${ref_k32}`);
   }
 
   /**
    * TARGET MODEL ENGINE: Calculate all Target/Application values
    */
   function calculateTargetModel() {
-    // This is essentially the existing calculateAll logic
-    // but reorganized to be explicit about being the Target model
+    // Helper function to set value only if changed (prevents infinite loops)
+    const setValueIfChanged = (fieldId, newValue) => {
+      const currentValue = window.TEUI.StateManager.getValue(fieldId);
+      const newValueStr = newValue.toString();
+      if (currentValue !== newValueStr) {
+        window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        return true;
+      }
+      return false;
+    };
 
-    // NOTE: updateElectricityEmissionFactor() is called separately by h_12 listener
-    // Don't call it here to avoid overwriting Reference grid intensity
+    try {
+      // Get all necessary Reference values FIRST to ensure data integrity
+      const ref_h27 = getRefNumericValue("h_27", 0);
+      const ref_h28 = getRefNumericValue("h_28", 0);
+      const ref_h29 = getRefNumericValue("h_29", 0);
+      const ref_h30 = getRefNumericValue("h_30", 0);
+      const ref_h31 = getRefNumericValue("h_31", 0);
+      const ref_j27 = getRefNumericValue("j_27", 0);
+      const ref_j28 = getRefNumericValue("j_28", 0);
+      const ref_j29 = getRefNumericValue("j_29", 0);
+      const ref_j30 = getRefNumericValue("j_30", 0);
+      const ref_j31 = getRefNumericValue("j_31", 0);
+      const ref_k27 = getRefNumericValue("k_27", 0);
+      const ref_k28 = getRefNumericValue("k_28", 0);
+      const ref_k29 = getRefNumericValue("k_29", 0);
+      const ref_k30 = getRefNumericValue("k_30", 0);
+      const ref_k31 = getRefNumericValue("k_31", 0);
+      const ref_l27 = getRefNumericValue("l_27", 0);
+      const ref_l28 = getRefNumericValue("l_28", 1921);
+      const ref_l29 = getRefNumericValue("l_29", 2970);
+      const ref_l30 = getRefNumericValue("l_30", 2753);
+      const ref_l31 = getRefNumericValue("l_31", 150);
+      const ref_d60 = getRefNumericValue("d_60", 0);
 
-    // Calculate all row 27-31 actuals (F and G columns)
-    setCalculatedValue("f_27", calculateF27(), "number-2dp-comma");
-    setCalculatedValue("g_27", calculateG27(), "number-2dp-comma");
+      // Calculate all row 27-31 actuals (F and G columns)
+      setCalculatedValue("f_27", calculateF27(), "number-2dp-comma");
+      setCalculatedValue("g_27", calculateG27(), "number-2dp-comma");
 
-    setCalculatedValue("f_28", calculateF28(), "number-2dp-comma");
-    setCalculatedValue("g_28", calculateG28(), "number-2dp-comma");
+      setCalculatedValue("f_28", calculateF28(), "number-2dp-comma");
+      setCalculatedValue("g_28", calculateG28(), "number-2dp-comma");
 
-    setCalculatedValue("f_29", calculateF29(), "number-2dp-comma");
-    setCalculatedValue("g_29", calculateG29(), "number-2dp-comma");
+      setCalculatedValue("f_29", calculateF29(), "number-2dp-comma");
+      setCalculatedValue("g_29", calculateG29(), "number-2dp-comma");
 
-    setCalculatedValue("f_30", calculateF30(), "number-2dp-comma");
-    setCalculatedValue("g_30", calculateG30(), "number-2dp-comma");
+      setCalculatedValue("f_30", calculateF30(), "number-2dp-comma");
+      setCalculatedValue("g_30", calculateG30(), "number-2dp-comma");
 
-    setCalculatedValue("f_31", calculateF31(), "number-2dp-comma");
-    setCalculatedValue("h_31", getNumericValue("d_31"), "number-2dp-comma");
-    setCalculatedValue("g_31", calculateG31(), "number-2dp-comma");
+      setCalculatedValue("f_31", calculateF31(), "number-2dp-comma");
+      setCalculatedValue("h_31", getNumericValue("d_31"), "number-2dp-comma");
+      setCalculatedValue("g_31", calculateG31(), "number-2dp-comma");
 
-    // Calculate all row 27-31 targets (H, J, and K columns)
-    setCalculatedValue("h_27", getNumericValue("d_136"), "number-2dp-comma");
-    setCalculatedValue("j_27", calculateJ27(), "number-2dp-comma");
-    setCalculatedValue("k_27", calculateK27(), "number-2dp-comma");
+      // Calculate all row 27-31 targets (H, J, and K columns)
+      setCalculatedValue("h_27", getNumericValue("d_136"), "number-2dp-comma");
+      setCalculatedValue("j_27", calculateJ27(), "number-2dp-comma");
+      setCalculatedValue("k_27", calculateK27(), "number-2dp-comma");
 
-    setCalculatedValue("h_28", calculateH28(), "number-2dp-comma");
-    setCalculatedValue("j_28", calculateJ28(), "number-2dp-comma");
-    setCalculatedValue("k_28", calculateK28(), "number-2dp-comma");
+      setCalculatedValue("h_28", calculateH28(), "number-2dp-comma");
+      setCalculatedValue("j_28", calculateJ28(), "number-2dp-comma");
+      setCalculatedValue("k_28", calculateK28(), "number-2dp-comma");
 
-    setCalculatedValue("h_29", calculateH29(), "number-2dp-comma");
-    setCalculatedValue("j_29", calculateJ29(), "number-2dp-comma");
-    setCalculatedValue("k_29", calculateK29(), "number-2dp-comma");
+      setCalculatedValue("h_29", calculateH29(), "number-2dp-comma");
+      setCalculatedValue("j_29", calculateJ29(), "number-2dp-comma");
+      setCalculatedValue("k_29", calculateK29(), "number-2dp-comma");
 
-    setCalculatedValue("h_30", calculateH30(), "number-2dp-comma");
-    setCalculatedValue("j_30", calculateJ30(), "number-2dp-comma");
+      setCalculatedValue("h_30", calculateH30(), "number-2dp-comma");
+      setCalculatedValue("j_30", calculateJ30(), "number-2dp-comma");
 
-    setCalculatedValue("h_30", calculateH30(), "number-2dp-comma");
-    setCalculatedValue("j_30", calculateJ30(), "number-2dp-comma");
-    setCalculatedValue("k_30", calculateK30(), "number-2dp-comma");
+      setCalculatedValue("h_30", calculateH30(), "number-2dp-comma");
+      setCalculatedValue("j_30", calculateJ30(), "number-2dp-comma");
+      setCalculatedValue("k_30", calculateK30(), "number-2dp-comma");
 
-    setCalculatedValue("j_31", calculateJ31(), "number-2dp-comma");
-    setCalculatedValue("k_31", calculateK31(), "number-2dp-comma");
+      setCalculatedValue("j_31", calculateJ31(), "number-2dp-comma");
+      setCalculatedValue("k_31", calculateK31(), "number-2dp-comma");
 
-    // Update subtotals and dependent totals
-    updateSubtotals();
-    updateDependentTotals();
+      // Update subtotals and dependent totals
+      updateSubtotals();
+      updateDependentTotals();
+    } catch (error) {
+      console.error(
+        "[Section04] Error during Target Model calculation:",
+        error,
+      );
+    }
   }
 
   /**
@@ -2261,9 +2264,8 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Now runs BOTH calculation engines.
    */
   function calculateAll() {
-    // DUAL-ENGINE ARCHITECTURE: Always run both engines
-    calculateReferenceModel(); // Calculates Reference values using ref_ inputs
-    calculateTargetModel(); // Calculates Target values using application state
+    calculateReferenceModel();
+    calculateTargetModel();
   }
 
   //==========================================================================

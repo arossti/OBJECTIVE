@@ -1158,7 +1158,7 @@ window.TEUI.SectionModules.sect11 = (function () {
    * Replaces the original calculateAll function
    */
   function calculateAll() {
-    // console.warn("S11: calculateAll called - running dual engines"); // This was already commented
+    console.log(`%c[S11] calculateAll TRIGGERED. isReferenceMode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.()}`, 'color: #f0f; font-weight: bold;');
 
     calculateReferenceModel();
     calculateTargetModel();
@@ -1314,6 +1314,13 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("d_21", calculateAll); // CDD
       window.TEUI.StateManager.addListener("h_22", calculateAll); // GF CDD (affects ground gain)
       window.TEUI.StateManager.addListener("d_22", calculateAll); // GF HDD (affects ground loss)
+      
+      // ✅ ADDED: Listeners for REFERENCE climate data to trigger Reference Model recalculation
+      window.TEUI.StateManager.addListener("ref_d_20", calculateAll);
+      window.TEUI.StateManager.addListener("ref_d_21", calculateAll);
+      window.TEUI.StateManager.addListener("ref_h_22", calculateAll);
+      window.TEUI.StateManager.addListener("ref_d_22", calculateAll);
+
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
       window.TEUI.StateManager.addListener("d_97", calculateAll); // TB Penalty (affects all calculations)
       // console.log("Section 11 listeners for climate data added.");
