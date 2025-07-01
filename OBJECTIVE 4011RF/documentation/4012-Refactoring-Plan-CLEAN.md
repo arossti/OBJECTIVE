@@ -40,7 +40,7 @@ S03 ✅ FIXED - Climate data (template pattern)
 S02 ✅ FIXED - Building Info (systematic refactor complete)
 S05 ✅ FIXED - Typology and Form (systematic refactor complete)
 S06 ✅ FIXED - Opaque Assemblies Heat Loss (systematic refactor complete)
-S07 🔄 NEXT - Fenestration & Doors Heat Loss
+S07 🔄 NEXT - Water Use
 S08-S14 📋 QUEUE - Remaining calculation sections
 ```
 

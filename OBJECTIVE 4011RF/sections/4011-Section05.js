@@ -855,15 +855,5 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
-    calculateReferenceModel: calculateReferenceModel,
-    calculateTargetModel: calculateTargetModel,
-    updateI39Display: updateI39Display,
-    updateI39ForMode: updateI39ForMode,
-    calculateGHGI: calculateGHGI,
-    calculate_i_38: calculate_i_38,
-    calculate_i_40: calculate_i_40,
-    calculate_d_40: calculate_d_40,
-    calculate_d_41: calculate_d_41,
-    calculatePercentages: calculatePercentages,
   };
 })();
