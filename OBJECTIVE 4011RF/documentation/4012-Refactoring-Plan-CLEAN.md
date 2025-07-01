@@ -41,8 +41,9 @@ S02 ✅ FIXED - Building Info (systematic refactor complete)
 S05 ✅ FIXED - Typology and Form (systematic refactor complete)
 S06 ✅ FIXED - Opaque Assemblies Heat Loss (systematic refactor complete)
 S07 ✅ FIXED - Water Use (EXEMPLARY dual-state + UI preservation)
-S08 🔄 NEXT - Infiltration & Ventilation
-S09-S14 📋 QUEUE - Remaining calculation sections
+S08 ✅ FIXED - Indoor Air Quality (dual-state + S13 RH integration TODO)
+S09 🔄 NEXT - Occupant & Internal Gains (preserve complex scheduling)
+S10-S14 📋 QUEUE - Remaining calculation sections
 ```
 
 #### **1.2 Eliminate Remaining Global State Pollution**
