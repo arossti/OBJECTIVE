@@ -1080,34 +1080,24 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   /**
-   * Update area value in StateManager and propagate to TEUI calculations
+   * Update area value in StateManager and trigger a full recalculation.
+   * This is the correct pattern for a global input.
    */
   function updateAreaValue() {
     const areaField = document.querySelector('[data-field-id="h_15"]');
     if (!areaField) return;
 
-    // Get the current displayed value using global helper
-    const displayedArea = areaField.textContent.trim();
-    const areaValue = window.TEUI?.parseNumeric?.(displayedArea, 0) ?? 0;
+    const areaValue = window.TEUI?.parseNumeric?.(areaField.textContent, 0) ?? 0;
 
-    if (
-      !isNaN(areaValue) &&
-      areaValue > 0 &&
-      window.TEUI &&
-      window.TEUI.StateManager
-    ) {
-      window.TEUI.StateManager.setValue(
-        "h_15",
-        areaValue.toString(),
-        "user-modified",
-      );
+    if (!isNaN(areaValue) && areaValue > 0 && window.TEUI?.StateManager) {
+      // Set the value for both the target and reference states
+      window.TEUI.StateManager.setValue("h_15", areaValue.toString(), "user-modified");
+      window.TEUI.StateManager.setValue("ref_h_15", areaValue.toString(), "user-modified");
 
-      // Trigger TEUI recalculation with the new area value
-      setTimeout(() => {
-        if (typeof window.calculateTEUI === "function") {
-          window.calculateTEUI();
-        }
-      }, 100);
+      // Trigger the main calculation chain from the root
+      if (window.TEUI.SectionModules.sect01?.runAllCalculations) {
+        window.TEUI.SectionModules.sect01.runAllCalculations();
+      }
     }
   }
 

@@ -499,28 +499,22 @@ window.TEUI.SectionModules.sect05 = (function () {
    * Calculate the typology-based cap based on selected typology
    */
   function calculateTypologyBasedCap(typology) {
-    // Logic based on provided formula:
-    // =IF(D39="Pt.9 Res. Stick Frame",125,IF(D39="Pt.9 Small Mass Timber",250,IF(D39="Pt.3 Mass Timber",350,IF(D39="Pt.3 Concrete",550,IF(D39="Pt.3 Steel",650,IF(D39="Pt.3 Office",600,IF(D39="Modelled Value",I$41,"Pls. Select a Value")))))))
-
-    if (typology === "Pt.9 Res. Stick Frame") {
-      return 125;
-    } else if (typology === "Pt.9 Small Mass Timber") {
-      return 250;
-    } else if (typology === "Pt.3 Mass Timber") {
-      return 350;
-    } else if (typology === "Pt.3 Concrete") {
-      return 550;
-    } else if (typology === "Pt.3 Steel") {
-      return 650;
-    } else if (typology === "Pt.3 Office") {
-      return 600;
-    } else if (typology === "Modelled Value") {
-      // If "Modelled Value" is selected, use the value from i_41
-      return getNumericValue("i_41", 0); // Use getNumericValue
-    } else {
-      // Default or if typology is not recognized (e.g., "Pls. Select a Value")
-      return 0; // Or handle as appropriate, e.g., return null or a default cap
+    // This function now correctly uses the mode-aware getNumericValue helper,
+    // which will read from the appropriate state (target_ or ref_) automatically.
+    if (typology === "Modelled Value") {
+      return getNumericValue("i_41", 0);
     }
+    
+    const caps = {
+      "Pt.9 Res. Stick Frame": 125,
+      "Pt.9 Small Mass Timber": 250,
+      "Pt.3 Mass Timber": 350,
+      "Pt.3 Concrete": 550,
+      "Pt.3 Steel": 650,
+      "Pt.3 Office": 600,
+    };
+
+    return caps[typology] || 0;
   }
 
   /**
@@ -669,9 +663,8 @@ window.TEUI.SectionModules.sect05 = (function () {
     ModeManager.switchMode("reference");
 
     try {
-      // Since helpers are mode-aware, we can call the same calculation functions
-      // and they will use the `ref_` prefixed state.
-      const typology = getNumericValue("d_39");
+      // CORRECTED: Read the string value directly from the 'ref_' prefixed state.
+      const typology = window.TEUI.StateManager.getValue("ref_d_39");
       const cap = calculateTypologyBasedCap(typology);
       setFieldValue("i_39", cap);
 
@@ -696,8 +689,8 @@ window.TEUI.SectionModules.sect05 = (function () {
     ModeManager.switchMode("target");
 
     try {
-      // In target mode, helpers will use `target_` or global state.
-      const typology = getNumericValue("d_39");
+      // CORRECTED: Read the string value directly from the global state.
+      const typology = window.TEUI.StateManager.getValue("d_39");
       const cap = calculateTypologyBasedCap(typology);
       setFieldValue("i_39", cap);
 
