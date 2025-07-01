@@ -40,8 +40,9 @@ S03 ✅ FIXED - Climate data (template pattern)
 S02 ✅ FIXED - Building Info (systematic refactor complete)
 S05 ✅ FIXED - Typology and Form (systematic refactor complete)
 S06 ✅ FIXED - Opaque Assemblies Heat Loss (systematic refactor complete)
-S07 🔄 NEXT - Water Use
-S08-S14 📋 QUEUE - Remaining calculation sections
+S07 ✅ FIXED - Water Use (EXEMPLARY dual-state + UI preservation)
+S08 🔄 NEXT - Infiltration & Ventilation
+S09-S14 📋 QUEUE - Remaining calculation sections
 ```
 
 #### **1.2 Eliminate Remaining Global State Pollution**
