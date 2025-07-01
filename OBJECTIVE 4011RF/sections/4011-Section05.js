@@ -237,97 +237,66 @@ window.TEUI.SectionModules.sect05 = (function () {
   // HELPER FUNCTIONS (Standardized)
   //==========================================================================
 
-  const editableFields = ["i_41"]; // Removed j_41_test
-
   /**
-   * Helper function to get a field value primarily from StateManager, with a DOM fallback.
-   * This function's main purpose is to retrieve the raw string value.
-   */
-  function getFieldValue(fieldId) {
-    if (
-      window.TEUI &&
-      window.TEUI.StateManager &&
-      typeof window.TEUI.StateManager.getValue === "function"
-    ) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        return String(value); // Ensure it's a string
-      }
-    }
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      return element.value !== undefined
-        ? String(element.value)
-        : String(element.textContent);
-    }
-    return null; // Return null if not found
-  }
-
-  /**
-   * Helper function to get a numeric field value, using global parseNumeric.
-   * Provides a default value if parsing fails or field is not found.
+   * Helper function to safely get numeric values with proper comma handling.
+   * STANDARD MODE-AWARE PATTERN
+   * This function reads from the correct state (`target_` or `ref_`) based on the current mode.
    */
   function getNumericValue(fieldId, defaultValue = 0) {
-    const rawValue = getFieldValue(fieldId);
-    // Use global parseNumeric, ensure it's available
-    if (window.TEUI && typeof window.TEUI.parseNumeric === "function") {
-      return window.TEUI.parseNumeric(rawValue, defaultValue);
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const prefixedFieldId = `${prefix}${fieldId}`;
+
+    // First, try to get the mode-specific value.
+    let rawValue = window.TEUI?.StateManager?.getValue(prefixedFieldId);
+
+    // If the mode-specific value is not found, fall back to the global value.
+    // This is crucial for handling dependencies from sections not yet fully refactored.
+    if (rawValue === null || rawValue === undefined) {
+      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     }
-    // Fallback to basic parseFloat if global is not available (should not happen in normal operation)
-    const parsed = parseFloat(rawValue);
-    return isNaN(parsed) ? defaultValue : parsed;
+
+    return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
   }
 
   /**
-   * Helper function to set a calculated field value.
-   * Stores raw numeric value (as string) in StateManager.
-   * Updates DOM with formatted value using global window.TEUI.formatNumber.
+   * Helper function to set a calculated value in the StateManager and update the DOM.
+   * STANDARD MODE-AWARE PATTERN
+   * This function writes to the correct state and only updates the global (unprefixed)
+   * state when in 'target' mode to prevent state contamination.
    */
-  function setCalculatedValue(
-    fieldId,
-    rawValue,
-    formatType = "number-2dp-comma",
-  ) {
-    const isNumb = typeof rawValue === "number" && isFinite(rawValue);
-    const valueToStore =
-      rawValue === "N/A"
-        ? "N/A"
-        : isNumb
-          ? rawValue.toString()
-          : String(rawValue);
+  function setFieldValue(fieldId, value, fieldType = "calculated") {
+    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const prefixedFieldId = `${modePrefix}${fieldId}`;
 
-    if (
-      window.TEUI &&
-      window.TEUI.StateManager &&
-      typeof window.TEUI.StateManager.setValue === "function"
-    ) {
-      window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
-    }
-
-    let formattedValue;
-    if (rawValue === "N/A") {
-      formattedValue = "N/A";
-    } else if (formatType.startsWith("percent")) {
-      // Ensure rawValue for percent is a fraction (e.g., 0.5 for 50%)
-      // The global formatter expects a fraction for percent types.
-      const numericValForPercent =
-        typeof rawValue === "number" ? rawValue : getNumericValue(fieldId, 0);
-      formattedValue = window.TEUI.formatNumber(
-        numericValForPercent,
-        formatType,
+    // Always store with prefix for dual-state isolation.
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue(
+        prefixedFieldId,
+        value.toString(),
+        fieldType,
       );
-    } else {
-      formattedValue = window.TEUI.formatNumber(rawValue, formatType);
     }
 
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      // For input/select, set value, for others, textContent.
-      // This was in S05 original, kept for safety, though calc fields are usually not inputs.
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = formattedValue; // Or rawValue if the input should not be formatted display
-      } else {
-        element.textContent = formattedValue;
+    // CRITICAL: Only update the global state (for DOM binding) when in target mode.
+    if (ModeManager.currentMode === "target") {
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
+      }
+
+      // Update DOM with formatted value.
+      const formattedValue =
+        value === "N/A"
+          ? "N/A"
+          : window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
+            value.toString();
+
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+          element.value = value;
+        } else {
+          element.textContent = formattedValue;
+        }
       }
     }
   }
@@ -560,15 +529,15 @@ window.TEUI.SectionModules.sect05 = (function () {
   function calculatePercentages() {
     // Get values using getNumericValue for robustness
     const typologyCap = getNumericValue("i_39", 350); // Default if i_39 not set
-    const carbonTargetValue = getFieldValue("i_40"); // Get raw value to check for "N/A"
+    const carbonTargetValue = getNumericValue("i_40"); // Get raw value to check for "N/A"
     const totalEmitted = getNumericValue("d_40", 0); // Default if d_40 not set or invalid
     const modelledValue = getNumericValue("i_41", 0); // Default if i_41 not set or invalid
 
     // Handle special case when carbon target is 'N/A'
     if (carbonTargetValue === "N/A") {
-      setCalculatedValue("l_39", "N/A", "raw"); // Pass 'raw' or a specific N/A format if available
-      setCalculatedValue("l_40", "N/A", "raw");
-      setCalculatedValue("l_41", "N/A", "raw");
+      setFieldValue("l_39", "N/A", "raw"); // Pass 'raw' or a specific N/A format if available
+      setFieldValue("l_40", "N/A", "raw");
+      setFieldValue("l_41", "N/A", "raw");
       return;
     }
 
@@ -584,9 +553,9 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     // Set calculated values using appropriate percentage format
     // The global formatter expects a fraction (e.g., 0.5 for 50%)
-    setCalculatedValue("l_39", typologyPercentRaw, "percent-0dp");
-    setCalculatedValue("l_40", targetPercentRaw, "percent-0dp");
-    setCalculatedValue("l_41", modelledPercentRaw, "percent-0dp");
+    setFieldValue("l_39", typologyPercentRaw, "percent-0dp");
+    setFieldValue("l_40", targetPercentRaw, "percent-0dp");
+    setFieldValue("l_41", modelledPercentRaw, "percent-0dp");
   }
 
   /**
@@ -594,7 +563,7 @@ window.TEUI.SectionModules.sect05 = (function () {
    */
   function calculateGHGI() {
     // Get values using getNumericValue for robustness
-    const d_14_value = getFieldValue("d_14") || "Utility Bills"; // Determine calculation method (string)
+    const d_14_value = getNumericValue("d_14") || "Utility Bills"; // Determine calculation method (string)
     const g_32_value = getNumericValue("g_32");
     const k_32_value = getNumericValue("k_32");
     const conditionedArea = getNumericValue("h_15", 1); // Avoid division by zero, default to 1 if not set
@@ -610,12 +579,12 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     const ghgiPerM2 = conditionedArea !== 0 ? emissionsKg / conditionedArea : 0;
 
-    setCalculatedValue("d_38", ghgiMT, "number-2dp-comma"); // MT CO2e/yr
-    setCalculatedValue("g_38", ghgiPerM2, "number-2dp-comma"); // kgCO2e/m2
+    setFieldValue("d_38", ghgiMT, "number-2dp-comma"); // MT CO2e/yr
+    setFieldValue("g_38", ghgiPerM2, "number-2dp-comma"); // kgCO2e/m2
 
     const serviceLife = getNumericValue("h_13", 50); // Default 50 years
     const lifetimeEmissions = ghgiPerM2 * serviceLife;
-    setCalculatedValue("j_38", lifetimeEmissions, "number-2dp-comma"); // kgCO2e/m2 lifetime
+    setFieldValue("j_38", lifetimeEmissions, "number-2dp-comma"); // kgCO2e/m2 lifetime
   }
 
   /**
@@ -632,7 +601,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     const referenceLifetimeEmissions = lifetimeEmissions * 5;
     const avoidedEmissions = referenceLifetimeEmissions - lifetimeEmissions;
 
-    setCalculatedValue("d_41", avoidedEmissions, "number-2dp-comma");
+    setFieldValue("d_41", avoidedEmissions, "number-2dp-comma");
   }
 
   /**
@@ -643,7 +612,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
 
     const i_38_result = g_38_value * h_13_value;
-    setCalculatedValue("i_38", i_38_result, "number-2dp-comma");
+    setFieldValue("i_38", i_38_result, "number-2dp-comma");
   }
 
   /**
@@ -652,13 +621,13 @@ window.TEUI.SectionModules.sect05 = (function () {
    * Note: d_16 and i_39 should be functionally equivalent to prevent circular references
    */
   function calculate_i_40() {
-    const d_16_value_raw = getFieldValue("d_16"); // Get raw to check "N/A"
+    const d_16_value_raw = getNumericValue("d_16"); // Get raw to check "N/A"
 
     if (d_16_value_raw === "N/A") {
-      setCalculatedValue("i_40", "N/A", "raw");
+      setFieldValue("i_40", "N/A", "raw");
     } else {
       const numericValue = getNumericValue("d_16", 0);
-      setCalculatedValue("i_40", numericValue, "number-2dp-comma");
+      setFieldValue("i_40", numericValue, "number-2dp-comma");
     }
   }
 
@@ -670,7 +639,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     const d_106_value = getNumericValue("d_106", 0); // Total Floor Area m2
 
     const d_40_result = (i_41_value * d_106_value) / 1000; // Result in MT CO2e
-    setCalculatedValue("d_40", d_40_result, "number-2dp-comma");
+    setFieldValue("d_40", d_40_result, "number-2dp-comma");
   }
 
   /**
@@ -685,246 +654,154 @@ window.TEUI.SectionModules.sect05 = (function () {
     const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
 
     const d_41_result = (reference_d_38_placeholder - d_38_value) * h_13_value;
-    setCalculatedValue("d_41", d_41_result, "number-2dp-comma");
+    setFieldValue("d_41", d_41_result, "number-2dp-comma");
   }
 
   //==========================================================================
-  // DUAL-ENGINE ARCHITECTURE
+  // DUAL-ENGINE ARCHITECTURE (Standardized Pattern)
   //==========================================================================
 
   /**
-   * REFERENCE MODEL ENGINE: Calculate i_39 using Reference state d_39
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state.
    */
   function calculateReferenceModel() {
-    // Get Reference state building typology
-    const refTypology =
-      window.TEUI?.StateManager?.getReferenceValue("d_39") ||
-      getFieldValue("d_39");
+    const originalMode = ModeManager.currentMode;
+    ModeManager.switchMode("reference");
 
-    if (refTypology) {
-      const refCap = calculateTypologyBasedCap(refTypology);
-      // Store Reference i_39 with ref_ prefix for Section 01 to use
-      if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(
-          "ref_i_39",
-          refCap.toString(),
-          "calculated",
-        );
-      }
+    try {
+      // Since helpers are mode-aware, we can call the same calculation functions
+      // and they will use the `ref_` prefixed state.
+      const typology = getNumericValue("d_39");
+      const cap = calculateTypologyBasedCap(typology);
+      setFieldValue("i_39", cap);
+
+      calculateGHGI();
+      calculate_i_38();
+      calculate_i_40();
+      calculate_d_40();
+      calculate_d_41();
+      calculatePercentages();
+    } catch (error) {
+      console.error("[S05] Error in Reference Model calculations:", error);
+    } finally {
+      ModeManager.switchMode(originalMode);
     }
   }
 
   /**
-   * TARGET MODEL ENGINE: Calculate i_39 using Application state d_39
+   * TARGET MODEL ENGINE: Calculate all values using Application state.
    */
   function calculateTargetModel() {
-    // Get Application state building typology
-    const appTypology =
-      window.TEUI?.StateManager?.getApplicationValue("d_39") ||
-      getFieldValue("d_39");
+    const originalMode = ModeManager.currentMode;
+    ModeManager.switchMode("target");
 
-    if (appTypology) {
-      const appCap = calculateTypologyBasedCap(appTypology);
-      // Store Application i_39 normally
-      setCalculatedValue("i_39", appCap, "number-2dp-comma");
+    try {
+      // In target mode, helpers will use `target_` or global state.
+      const typology = getNumericValue("d_39");
+      const cap = calculateTypologyBasedCap(typology);
+      setFieldValue("i_39", cap);
+
+      calculateGHGI();
+      calculate_i_38();
+      calculate_i_40();
+      calculate_d_40();
+      calculate_d_41();
+      calculatePercentages();
+    } catch (error) {
+      console.error("[S05] Error in Target Model calculations:", error);
+    } finally {
+      ModeManager.switchMode(originalMode);
     }
-  }
-
-  /**
-   * Update i_39 for a specific mode (like S04's updateGridIntensityForMode)
-   * @param {string} mode - 'application' or 'reference'
-   */
-  function updateI39ForMode(mode) {
-    let typology;
-
-    if (mode === "reference") {
-      // Get Reference state typology
-      typology =
-        window.TEUI?.StateManager?.getReferenceValue("d_39") ||
-        getFieldValue("d_39");
-    } else {
-      // Get Application state typology
-      typology =
-        window.TEUI?.StateManager?.getApplicationValue("d_39") ||
-        getFieldValue("d_39");
-    }
-
-    const cap = calculateTypologyBasedCap(typology);
-
-    if (mode === "reference") {
-      // Store Reference i_39 with ref_ prefix
-      if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(
-          "ref_i_39",
-          cap.toString(),
-          "calculated",
-        );
-      }
-
-      // UPDATE UI IN REFERENCE MODE: If user is currently in Reference Mode, update the visible i_39 field
-      if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-        const i39Element = document.querySelector('[data-field-id="i_39"]');
-        if (i39Element) {
-          i39Element.textContent = window.TEUI.formatNumber(
-            cap,
-            "number-2dp-comma",
-          );
-        }
-      }
-    } else {
-      // Update the application i_39 field
-      setCalculatedValue("i_39", cap, "number-2dp-comma");
-    }
-  }
-
-  /**
-   * Update i_39 display based on current mode (wrapper function)
-   * Shows Reference value in Reference Mode, Application value in Design Mode
-   */
-  function updateI39Display() {
-    const isReferenceMode =
-      window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
-    updateI39ForMode(isReferenceMode ? "reference" : "application");
   }
 
   /**
    * Calculate all values for this section
    */
   function calculateAll() {
-    // Run both engines
-    calculateReferenceModel(); // Calculate Reference i_39 using Reference d_39
-    calculateTargetModel(); // Calculate Target i_39 using Application d_39
-
-    // Update i_39 display based on current mode
-    updateI39Display();
-
-    // Continue with other calculations that use Application state
-    calculateGHGI();
-    calculate_i_38();
-    calculate_i_40();
-    calculate_d_40();
-    calculate_d_41();
-
-    calculatePercentages();
+    calculateReferenceModel();
+    calculateTargetModel();
   }
 
   /**
    * Initialize all event handlers for this section
    */
   function initializeEventHandlers() {
-    // Standard event handlers for editable numeric fields
-    editableFields.forEach((fieldId) => {
-      const field = document.querySelector(`[data-field-id="${fieldId}"]`);
-      // Attach listeners only to fields found and marked as user-input (implies editable)
-      if (field && field.classList.contains("user-input")) {
-        if (!field.hasEditableListeners) {
-          // Prevent adding multiple listeners
-          field.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.stopPropagation(); // Added stopPropagation
-              field.blur();
-            }
-          });
-          field.addEventListener("blur", handleEditableBlur.bind(field)); // Ensure 'this' context
-          // Optional: Add focus/focusout for styling if needed, like in Section 11
-          field.addEventListener("focus", () => {
-            field.classList.add("editing");
-            field.dataset.originalValue = field.textContent.trim(); // Store original value on focus
-          });
-          field.addEventListener("focusout", () =>
-            field.classList.remove("editing"),
-          );
-          field.hasEditableListeners = true; // Mark as listener attached
-        }
-      } else {
-        // console.warn(`Editable field ${fieldId} not found or not marked as 'user-input' in Section 05.`);
-      }
-    });
-
-    // Typology dropdown change handler - simplified like S04 pattern
+    // 1. Event handler for the Typology dropdown
     const typologyDropdown = document.querySelector(
       '[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]',
     );
     if (typologyDropdown) {
-      typologyDropdown.addEventListener("change", function (e) {
+      // Clean up any old listeners before adding a new one
+      typologyDropdown.removeEventListener("change", calculateAll);
+
+      typologyDropdown.addEventListener("change", (e) => {
         const typology = e.target.value;
-
-        // Check if we're in Reference Mode
-        const isReferenceMode =
-          window.TEUI?.ReferenceToggle?.isReferenceMode?.() || false;
-
-        if (isReferenceMode) {
-          // In Reference Mode: Update Reference state only
-          if (window.TEUI?.StateManager?.setValueInReferenceMode) {
-            window.TEUI.StateManager.setValueInReferenceMode("d_39", typology);
-          }
-        } else {
-          // In Design Mode: Update Application state
-          if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue(
-              "d_39",
-              typology,
-              "user-modified",
-            );
-          }
+        // This is a setting that affects both models. Update both states.
+        if (window.TEUI?.StateManager) {
+          window.TEUI.StateManager.setValue("d_39", typology, "user-modified");
+          window.TEUI.StateManager.setValue(
+            "ref_d_39",
+            typology,
+            "user-modified",
+          );
         }
-
-        // Update i_39 for current mode (like S04's updateElectricityEmissionFactor)
-        updateI39ForMode(isReferenceMode ? "reference" : "application");
+        // Recalculate both models to reflect the change.
+        calculateAll();
       });
     }
 
-    // Add listener for i_41 changes IF Modelled Value is selected in d_39
-    if (window.TEUI.StateManager) {
-      window.TEUI.StateManager.addListener("i_41", function (newValue) {
-        const currentTypology = getFieldValue("d_39");
-        if (currentTypology === "Modelled Value") {
-          const cap = window.TEUI.parseNumeric(newValue, 0); // Use global parse
-          setCalculatedValue("i_39", cap, "number-2dp-comma");
-        }
-        calculateAll(); // Call calculateAll to ensure all dependent values are updated
-      });
-
-      // Listen for changes in related fields from other sections (PLACEHOLDERS - Need Update)
-      // TODO: Add listeners for d_14, g_32, k_32, h_15, h_13, d_106, REFERENCE!D38, T40
-
-      // Listen for changes to service life (h_13 affects i_38 and d_41)
-      window.TEUI.StateManager.addListener("h_13", function () {
-        calculateAll();
-      });
-
-      // Listen for changes affecting d_38 (which then affects d_41)
-      // Note: d_38 depends on d_14, g_32, k_32. g_38 depends on d_14, g_32, k_32, h_15.
-      // We need listeners for all unique dependencies affecting d_38 and g_38.
-      const ghgi_dependencies = ["d_14", "g_32", "k_32", "h_15"]; // Inputs for d_38/g_38
-      ghgi_dependencies.forEach((depId) => {
-        window.TEUI.StateManager.addListener(depId, function () {
-          calculateAll();
+    // 2. Event handlers for editable fields like i_41
+    const editableFields = ["i_41"];
+    editableFields.forEach((fieldId) => {
+      const field = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (field && !field.hasEditableListeners) {
+        field.addEventListener("blur", () => {
+          const newValue = field.textContent.trim();
+          // The listener on i_41 below will handle the recalculation
+          if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              newValue,
+              "user-modified",
+            );
+            // Also set the ref_ value for consistency
+            window.TEUI.StateManager.setValue(
+              `ref_${fieldId}`,
+              newValue,
+              "user-modified",
+            );
+          }
         });
-      });
+        field.hasEditableListeners = true;
+      }
+    });
 
-      // Listen for changes to embodied carbon target (d_16 affects i_40)
-      window.TEUI.StateManager.addListener("d_16", function () {
-        calculateAll();
-      });
+    // 3. Listeners for all external dependencies that should trigger a recalculation
+    if (window.TEUI.StateManager) {
+      const dependencies = [
+        "i_41",
+        "ref_i_41", // Modelled value
+        "h_13",
+        "ref_h_13", // Service life
+        "d_14",
+        "ref_d_14", // Utility Bills/Targeted
+        "g_32",
+        "ref_g_32", // from S04
+        "k_32",
+        "ref_k_32", // from S04
+        "h_15",
+        "ref_h_15", // Conditioned Area
+        "d_16",
+        "ref_d_16", // Embodied Carbon Target
+        "d_106",
+        "ref_d_106", // Total Floor Area
+        "ref_d_38", // Placeholder, but good to have
+      ];
 
-      // Listener for i_41 already exists above, merged dependency recalculation.
-      // The existing i_41 listener above already calls calculateAll()
-
-      window.TEUI.StateManager.addListener("d_106", function () {
-        calculateAll();
-      });
-
-      // CRITICAL: Listener for d_39 changes (like S04's h_12 listener)
-      // This ensures i_39 updates when typology changes
-      window.TEUI.StateManager.addListener("d_39", () => {
-        // Update both Application and Reference i_39 values
-        updateI39ForMode("application");
-        updateI39ForMode("reference");
-
-        // Recalculate percentages that depend on i_39
-        calculatePercentages();
+      dependencies.forEach((depId) => {
+        // Ensure we don't add duplicate listeners
+        window.TEUI.StateManager.removeListener(depId, calculateAll);
+        window.TEUI.StateManager.addListener(depId, calculateAll);
       });
     }
   }
@@ -940,6 +817,27 @@ window.TEUI.SectionModules.sect05 = (function () {
     // Run initial calculations
     calculateAll();
   }
+
+  //==========================================================================
+  // DUAL-STATE MODE MANAGEMENT
+  //==========================================================================
+  const ModeManager = {
+    currentMode: "target", // "target" or "reference"
+
+    // S05 has no mode-switching UI, so this is for internal consistency.
+    // The global ReferenceToggle will call this if needed.
+    switchMode: function (mode) {
+      if (mode !== "target" && mode !== "reference") {
+        console.warn(`[S05] Invalid mode: ${mode}`);
+        return;
+      }
+      this.currentMode = mode;
+      console.log(`[S05] Switched to ${mode.toUpperCase()} mode`);
+    },
+  };
+  // Expose ModeManager for debugging and cross-section communication
+  window.TEUI.sect05 = window.TEUI.sect05 || {};
+  window.TEUI.sect05.ModeManager = ModeManager;
 
   //==========================================================================
   // PUBLIC API

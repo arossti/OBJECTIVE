@@ -9,10 +9,10 @@
 ## 🏆 **ARCHITECTURAL VISION - THE ARCHITECT'S WORKFLOW**
 
 ### **Real-World Use Case**
-An architect needs to compare their efficient Target design against different building code standards:
+An architect needs to compare their efficient Target design against different building code minimum standards:
 
 1. **Target Model**: User's efficient design (heat pump, high insulation, etc.)
-2. **Reference Model**: Code minimum standard (OBC A3 gas furnace vs OBC C4 superior)  
+2. **Reference Model**: Code minimum standard (OBC SB12 3.1.1.2.A3 gas furnace vs OBC SB12 3.1.1.2.C4 heaptump - superior)  
 3. **Comparison Layer**: Visual indicators showing Target vs Reference performance
 4. **Flexibility**: Change d_13 dropdown to compare against different code standards
 
@@ -34,10 +34,13 @@ An architect needs to compare their efficient Target design against different bu
 ```bash
 # Priority order based on contamination risk:
 S15 ✅ FIXED - TEUI calculation engine (h_10/e_10 updates)
-S01 🔄 NEXT  - Dashboard display (h_10 styling issues)  
+S01 ✅ FIXED - Dashboard display (h_10 styling issues)  
 S04 ✅ FIXED - Emissions calculations (ref_k_32)
 S03 ✅ FIXED - Climate data (template pattern)
-S02, S05-S14 📋 QUEUE - Remaining calculation sections
+S02 ✅ FIXED - Building Info (systematic refactor complete)
+S05 ✅ FIXED - Typology and Form (systematic refactor complete)
+S06 🔄 NEXT - Opaque Assemblies Heat Loss
+S07-S14 📋 QUEUE - Remaining calculation sections
 ```
 
 #### **1.2 Eliminate Remaining Global State Pollution**

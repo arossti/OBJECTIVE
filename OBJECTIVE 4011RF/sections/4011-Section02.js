@@ -541,122 +541,68 @@ window.TEUI.SectionModules.sect02 = (function () {
   //==========================================================================
 
   /**
-   * Helper function to get a field value from StateManager or DOM
-   * Follows the standard pattern from SectionXX template for consistency
-   */
-  function getFieldValue(fieldId) {
-    // Try to get from StateManager first
-    if (window.TEUI.StateManager && window.TEUI.StateManager.getValue) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        return value;
-      }
-    }
-
-    // Fall back to DOM
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        return element.value;
-      } else {
-        return element.textContent;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Helper function to safely get numeric values with proper comma handling
-   * Uses global window.TEUI.parseNumeric for consistency
+   * Helper function to safely get numeric values with proper comma handling.
+   * STANDARD MODE-AWARE PATTERN
+   * This function reads from the correct state (`target_` or `ref_`) based on the current mode.
    */
   function getNumericValue(fieldId, defaultValue = 0) {
-    const rawValue = getFieldValue(fieldId);
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const prefixedFieldId = `${prefix}${fieldId}`;
+
+    // First, try to get the mode-specific value.
+    let rawValue = window.TEUI?.StateManager?.getValue(prefixedFieldId);
+
+    // If the mode-specific value is not found, fall back to the global value.
+    // This is crucial for handling dependencies from sections not yet fully refactored.
+    if (rawValue === null || rawValue === undefined) {
+      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    }
+
     return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
   }
 
   /**
-   * Set calculated value with proper formatting using global helpers
-   * Uses global window.TEUI.formatNumber for consistency
+   * Helper function to set a calculated value in the StateManager and update the DOM.
+   * STANDARD MODE-AWARE PATTERN
+   * This function writes to the correct state and only updates the global (unprefixed)
+   * state when in 'target' mode to prevent state contamination.
    */
-  function setCalculatedValue(fieldId, value) {
-    // Store raw value in StateManager
+  function setFieldValue(fieldId, value, fieldType = "calculated") {
+    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const prefixedFieldId = `${modePrefix}${fieldId}`;
+
+    // Always store with prefix for dual-state isolation.
     if (window.TEUI?.StateManager) {
       window.TEUI.StateManager.setValue(
-        fieldId,
+        prefixedFieldId,
         value.toString(),
-        "calculated",
+        fieldType,
       );
     }
 
-    // Special handling for 'N/A' values - don't try to format them
-    const formattedValue =
-      value === "N/A"
-        ? "N/A"
-        : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
-          value.toString());
+    // CRITICAL: Only update the global state (for DOM binding) when in target mode.
+    if (ModeManager.currentMode === "target") {
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
+      }
 
-    // Update DOM with formatted value
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = value;
-      } else {
-        element.textContent = formattedValue;
+      // Update DOM with formatted value.
+      // Special handling for 'N/A' values - don't try to format them.
+      const formattedValue =
+        value === "N/A"
+          ? "N/A"
+          : window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
+            value.toString();
+
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+          element.value = value;
+        } else {
+          element.textContent = formattedValue;
+        }
       }
     }
-  }
-
-  /**
-   * Calculate Embodied Carbon Target (d_16) based on selected Carbon Standard (d_15)
-   * Standard calculation function pattern from SectionXX template
-   */
-  function calculateEmbodiedCarbonTarget() {
-    const carbonStandard = getFieldValue("d_15") || "Self Reported";
-    const modelledValueI41 = getNumericValue("i_41", 345.82);
-
-    // Special case: 'Not Reported' should return 'N/A'
-    if (carbonStandard === "Not Reported") {
-      return "N/A";
-    }
-
-    // Handle TGS4 standard specifically by using the typology-based cap from Section 5
-    if (carbonStandard === "TGS4") {
-      const tgs4Value = getNumericValue("i_39", 0); // Get value from i_39 (Sect 5)
-      return tgs4Value; // Return raw number, formatting handled by setCalculatedValue
-    }
-
-    // Values from S3-Carbon-Standards sheet (corrected values)
-    const AR6_EPC_K5 = 3.39; // EPC = 3.39
-    const AR6_EA_L5 = 0.17; // EA = 0.17
-
-    // Implement the formula for other standards
-    let targetValue;
-
-    switch (carbonStandard) {
-      case "BR18 (Denmark)":
-        targetValue = 500;
-        break;
-      case "IPCC AR6 EPC":
-        targetValue = AR6_EPC_K5;
-        break;
-      case "IPCC AR6 EA":
-        targetValue = AR6_EA_L5;
-        break;
-      case "CaGBC ZCB D":
-        targetValue = 425;
-        break;
-      case "CaGBC ZCB P":
-        targetValue = 425;
-        break;
-      case "Self Reported":
-        targetValue = modelledValueI41;
-        break;
-      default:
-        targetValue = modelledValueI41; // Default to modelled/Self Reported value
-    }
-
-    return targetValue; // Return raw number, formatting handled by setCalculatedValue
   }
 
   /**
@@ -683,73 +629,125 @@ window.TEUI.SectionModules.sect02 = (function () {
   //==========================================================================
 
   /**
-   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-   * Stores results with ref_ prefix to keep separate from Target values
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state.
+   * STANDARD MODE-AWARE PATTERN.
+   * Stores results with ref_ prefix to keep separate from Target values.
    */
   function calculateReferenceModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.switchMode("reference"); // Ensure we are in reference context
+
     try {
-      // Helper function to get Reference values
-      const getRefValue = (fieldId) => {
-        const refFieldId = `ref_${fieldId}`;
-        return (
-          window.TEUI?.StateManager?.getValue(refFieldId) ||
-          window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
-          getFieldValue(fieldId)
-        );
-      };
+      // Re-implement the logic from calculateEmbodiedCarbonTarget, but using our
+      // mode-aware helpers, which will now read from `ref_` prefixed state.
+      const carbonStandard =
+        window.TEUI?.StateManager?.getValue("ref_d_15") || "Self Reported";
+      const modelledValueI41 = getNumericValue("i_41", 345.82);
 
-      // Helper function to set Reference values
-      const setRefValueIfChanged = (fieldId, newValue) => {
-        const newValueStr = newValue.toString();
-        if (window.TEUI?.StateManager) {
-          window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
-        }
-      };
-
-      // Calculate Reference embodied carbon target using Reference inputs
-      const ref_carbonStandard = getRefValue("d_15");
-      let ref_embodiedTarget = 0;
-
-      // Apply same logic as Target model but with Reference values
-      if (ref_carbonStandard === "TGS4") {
-        const ref_i39 = getNumericValue("ref_i_39") || getRefValue("i_39") || 0;
-        ref_embodiedTarget = ref_i39;
-      } else if (ref_carbonStandard === "Self Reported" || ref_carbonStandard === "Not Reported") {
-        const ref_i41 = getNumericValue("ref_i_41") || getRefValue("i_41") || 0;
-        ref_embodiedTarget = ref_i41;
-      } else {
-        // Use default values for other standards
-        const defaults = {
-          "BR18 (Denmark)": 12,
-          "IPCC AR6 EPC": 500,
-          "IPCC AR6 EA": 250,
-          "CaGBC ZCB D": 350,
-          "CaGBC ZCB P": 100
-        };
-        ref_embodiedTarget = defaults[ref_carbonStandard] || 0;
+      if (carbonStandard === "Not Reported") {
+        setFieldValue("d_16", "N/A", "calculated");
+        return;
       }
 
-      setRefValueIfChanged("ref_d_16", ref_embodiedTarget);
+      if (carbonStandard === "TGS4") {
+        const tgs4Value = getNumericValue("i_39", 0);
+        setFieldValue("d_16", tgs4Value, "calculated");
+        return;
+      }
 
+      const AR6_EPC_K5 = 3.39;
+      const AR6_EA_L5 = 0.17;
+
+      let targetValue;
+      switch (carbonStandard) {
+        case "BR18 (Denmark)":
+          targetValue = 500;
+          break;
+        case "IPCC AR6 EPC":
+          targetValue = AR6_EPC_K5;
+          break;
+        case "IPCC AR6 EA":
+          targetValue = AR6_EA_L5;
+          break;
+        case "CaGBC ZCB D":
+          targetValue = 425;
+          break;
+        case "CaGBC ZCB P":
+          targetValue = 425;
+          break;
+        case "Self Reported":
+          targetValue = modelledValueI41;
+          break;
+        default:
+          targetValue = modelledValueI41;
+      }
+      setFieldValue("d_16", targetValue, "calculated");
     } catch (error) {
       console.error("[Section02] Error in Reference Model calculations:", error);
+    } finally {
+      ModeManager.switchMode(originalMode); // Restore original mode
     }
   }
 
   /**
-   * TARGET MODEL ENGINE: Calculate all values using Application state
-   * This is the existing calculation logic
+   * TARGET MODEL ENGINE: Calculate all values using Application state.
+   * STANDARD MODE-AWARE PATTERN.
    */
   function calculateTargetModel() {
-    try {
-      // Make sure calculations are registered
-      registerCalculations();
+    const originalMode = ModeManager.currentMode;
+    ModeManager.switchMode("target"); // Ensure we are in target context
 
-      // Calculate Embodied Carbon Target directly
-      const targetValue = calculateEmbodiedCarbonTarget();
-      setCalculatedValue("d_16", targetValue);
+    try {
+      // In target mode, our helpers will read from target_ or global state.
+      // We read the global `d_15` as it's a primary user input.
+      const carbonStandard =
+        window.TEUI?.StateManager?.getValue("d_15") || "Self Reported";
+      const modelledValueI41 = getNumericValue("i_41", 345.82);
+
+      if (carbonStandard === "Not Reported") {
+        setFieldValue("d_16", "N/A", "calculated");
+        return;
+      }
+
+      if (carbonStandard === "TGS4") {
+        const tgs4Value = getNumericValue("i_39", 0);
+        setFieldValue("d_16", tgs4Value, "calculated");
+        return;
+      }
+
+      const AR6_EPC_K5 = 3.39;
+      const AR6_EA_L5 = 0.17;
+
+      let targetValue;
+      switch (carbonStandard) {
+        case "BR18 (Denmark)":
+          targetValue = 500;
+          break;
+        case "IPCC AR6 EPC":
+          targetValue = AR6_EPC_K5;
+          break;
+        case "IPCC AR6 EA":
+          targetValue = AR6_EA_L5;
+          break;
+        case "CaGBC ZCB D":
+          targetValue = 425;
+          break;
+        case "CaGBC ZCB P":
+          targetValue = 425;
+          break;
+        case "Self Reported":
+          targetValue = modelledValueI41;
+          break;
+        default:
+          targetValue = modelledValueI41;
+      }
+
+      // Since mode is 'target', this will update `target_d_16` AND the global `d_16` for the DOM.
+      setFieldValue("d_16", targetValue, "calculated");
     } catch (error) {
       console.error("[Section02] Error in Target Model calculations:", error);
+    } finally {
+      ModeManager.switchMode(originalMode); // Restore original mode
     }
   }
 
@@ -788,15 +786,18 @@ window.TEUI.SectionModules.sect02 = (function () {
     const fieldId = e.target.getAttribute("data-field-id");
     if (!fieldId) return;
 
-    // e.isTrusted is true for real user interactions
     if (e.isTrusted) {
       window.TEUI.sect02.userInteracted = true;
     }
 
-    // Store the value in StateManager
+    // This is a global setting that should affect both models.
+    // We update the global state for the Target model, and the `ref_` state for the Reference model.
     if (window.TEUI?.StateManager) {
+      // Set the global value for the Target model and DOM
+      window.TEUI.StateManager.setValue(fieldId, selectedValue, "user-modified");
+      // Also set the ref_ value for the Reference model
       window.TEUI.StateManager.setValue(
-        fieldId,
+        `ref_${fieldId}`,
         selectedValue,
         "user-modified",
       );
@@ -852,54 +853,16 @@ window.TEUI.SectionModules.sect02 = (function () {
       areaSlider.addEventListener("change", handleAreaSliderChange);
     }
 
-    // Add listener for changes in i_39 (from Section 5)
+    // Add listener for changes from external sections (e.g., Section 5)
     if (window.TEUI && window.TEUI.StateManager) {
-      window.TEUI.StateManager.addListener(
-        "i_39",
-        // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
-        // DO NOT prefix with underscore - causes calculation regression (June 13, 2025)
-        function (newValue, oldValue, fieldId, state) {
-          // Check if the current Carbon Standard (d_15) is TGS4
-          const carbonStandard = getFieldValue("d_15");
-          if (carbonStandard === "TGS4") {
-            // If d_15 is TGS4, recalculate d_16 using the new i_39 value
-            const targetValue = calculateEmbodiedCarbonTarget();
-            // Update the value in StateManager and DOM for d_16
-            setCalculatedValue("d_16", targetValue);
-          }
-        },
-      );
-    }
-
-    // Add listener for changes in i_41 (from Section 5)
-    if (window.TEUI && window.TEUI.StateManager) {
-      window.TEUI.StateManager.addListener(
-        "i_41",
-        // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
-        // DO NOT prefix with underscore - causes calculation regression (June 13, 2025)
-        function (newValue, oldValue, fieldId, state) {
-          // Check if the current Carbon Standard (d_15) is Self Reported or default
-          const carbonStandard = getFieldValue("d_15") || "Self Reported";
-          if (
-            carbonStandard === "Self Reported" ||
-            carbonStandard === "Not Reported"
-          ) {
-            // Also trigger if standard is Not Reported but i_41 changes (edge case)
-            // The calculateEmbodiedCarbonTarget function already reads the latest i_41 value
-            const targetValue = calculateEmbodiedCarbonTarget();
-            setCalculatedValue("d_16", targetValue);
-          }
-        },
-      );
+      // When these external dependencies change, recalculate everything in this section.
+      window.TEUI.StateManager.addListener("i_39", calculateAll);
+      window.TEUI.StateManager.addListener("ref_i_39", calculateAll);
+      window.TEUI.StateManager.addListener("i_41", calculateAll);
+      window.TEUI.StateManager.addListener("ref_i_41", calculateAll);
 
       // Add listener for occupancy changes (d_12) to update critical flag
-      window.TEUI.StateManager.addListener(
-        "d_12",
-        function (newOccupancyValue) {
-          // Update critical occupancy flag in Section 2 when occupancy changes
-          updateCriticalOccupancyFlag();
-        },
-      );
+      window.TEUI.StateManager.addListener("d_12", updateCriticalOccupancyFlag);
     }
   }
 
@@ -1296,6 +1259,26 @@ window.TEUI.SectionModules.sect02 = (function () {
   }
 
   //==========================================================================
+  // DUAL-STATE MODE MANAGEMENT
+  //==========================================================================
+  const ModeManager = {
+    currentMode: "target", // "target" or "reference"
+
+    // S02 has no mode-switching UI, so this is for internal consistency.
+    // The global ReferenceToggle will call this if needed.
+    switchMode: function (mode) {
+      if (mode !== "target" && mode !== "reference") {
+        console.warn(`[S02] Invalid mode: ${mode}`);
+        return;
+      }
+      this.currentMode = mode;
+      console.log(`[S02] Switched to ${mode.toUpperCase()} mode`);
+    },
+  };
+  // Expose ModeManager for debugging and cross-section communication
+  window.TEUI.sect02.ModeManager = ModeManager;
+
+  //==========================================================================
   // PUBLIC API
   //==========================================================================
 
@@ -1308,9 +1291,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Event handling and initialization - REQUIRED
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
-
-    // Public API for carbon target calculation
-    calculateEmbodiedCarbonTarget: calculateEmbodiedCarbonTarget,
 
     // Public API for cost field formatting
     syncCostFieldDisplays: syncCostFieldDisplays,
