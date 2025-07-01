@@ -1368,7 +1368,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     const sectionElement = document.getElementById("occupantInternalGains");
     if (!sectionElement) return;
 
-    // Add handlers for editable fields
+    // Add handlers for editable text fields
     const editableFields = sectionElement.querySelectorAll(
       '.user-input, [contenteditable="true"]',
     );
@@ -1433,26 +1433,37 @@ window.TEUI.SectionModules.sect09 = (function () {
       });
     });
 
-    // Add dropdown change event handlers
-    const dropdowns = sectionElement.querySelectorAll("select");
-    dropdowns.forEach((dropdown) => {
-      dropdown.addEventListener("change", function () {
-        const fieldId = this.getAttribute("data-field-id");
-        if (!fieldId) return;
+    // --- PERFORMANCE FIX: Replace generic dropdown handler with specific ones ---
 
-        // Store the value
-        if (window.TEUI?.StateManager?.setValue) {
-          window.TEUI.StateManager.setValue(
-            fieldId,
-            this.value,
-            "user-modified",
-          );
+    // 1. Handler for Occupied Hours/Day (g_63) - this is the slow one
+    const hoursDropdown = sectionElement.querySelector('[data-field-id="g_63"]');
+    if (hoursDropdown) {
+      hoursDropdown.addEventListener('change', function() {
+        if (window.TEUI?.StateManager) {
+          window.TEUI.StateManager.setValue('g_63', this.value, "user-modified");
         }
-
-        // Recalculate
+        // This is a major input, so a full recalc is appropriate, but we know it's the source of the lag.
+        // A future optimization could be to make the downstream functions more granular.
         calculateAll();
       });
-    });
+    }
+
+    // 2. Handler for Occupant Activity (d_64)
+    const activityDropdown = sectionElement.querySelector('[data-field-id="d_64"]');
+    if (activityDropdown) {
+      activityDropdown.addEventListener('change', function() {
+        if (window.TEUI?.StateManager) {
+          window.TEUI.StateManager.setValue('d_64', this.value, "user-modified");
+        }
+        // More granular update: only recalc what's needed
+        calculateOccupantEnergy();
+        calculateTotals();
+        updateAllReferenceIndicators();
+      });
+    }
+    
+    // The other dropdowns (g_67, d_68) are handled by setupEquipmentDropdownListeners
+    // which correctly calls calculateAll().
 
     // Add special handling for equipment dropdowns
     setupEquipmentDropdownListeners();
