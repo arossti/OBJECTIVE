@@ -1,290 +1,321 @@
-# 🎯 **TEUI 4.011RF - COMPREHENSIVE WORKPLAN & ARCHITECTURE GUIDE**
+# 🎯 **TEUI 4.011RF - SIMPLIFIED DUAL-STATE WORKPLAN**
 
-**Date**: July 01, 2025, 14h28  
-**Status**: 🔄 **PARTIAL DUAL-STATE IMPLEMENTATION** - Only S01-S09 refactored, S10-S15 need complete overhaul  
-**Template**: `sections/4011-Section03.js` - Use as canonical pattern  
+**Date**: July 01, 2025, 16h30  
+**Status**: 🔄 **Target Model Working - Adding Reference Layer**  
+**Strategy**: **Additive Only** - Preserve existing Target functionality, add Reference capability  
 
 ---
 
-## 🚨 **CRITICAL ARCHITECTURE REQUIREMENTS - NO COMPROMISES**
+## 🚨 **CRITICAL SUCCESS STRATEGY - AI-FRIENDLY PATTERNS**
 
-### **1. 100% STATE ISOLATION - ZERO TOLERANCE FOR CONTAMINATION**
+### **Core Principle: Don't Break What Works**
 
-**Target Mode Changes** → ONLY affect `target_` prefixed state  
-**Reference Mode Changes** → ONLY affect `ref_` prefixed state  
-**Complete Independence** → Two entirely different buildings/scenarios possible
+Your **Target model works perfectly**. We're **not refactoring** - we're **adding a thin Reference layer** on top.
 
-**❌ ABSOLUTELY FORBIDDEN PATTERNS (Normal Mode):**
+**✅ KEEP UNCHANGED:**
+- All existing calculation logic
+- All existing DOM updates for Target mode
+- All existing field definitions and layouts
+- All existing file structures
+
+**✅ ADD ONLY:**
+- ModeManager to each section (except S01)
+- Event handler wrapping for dual-state writes
+- Mode-aware reading helpers
+- Dual calculation engines
+
+---
+
+## 📋 **MECHANICAL PATTERNS FOR AI AGENTS**
+
+See `AI-FRIENDLY-PATTERNS.md` for exact find/replace patterns.
+
+**Each pattern is applied mechanically:**
+1. **Find exact text**
+2. **Replace with exact text** 
+3. **Test immediately**
+4. **Commit**
+5. **Move to next pattern**
+
+**No interpretation. No architectural decisions. Just mechanical application.**
+
+---
+
+## 🚀 **EXECUTION PLAN - ONE SECTION AT A TIME**
+
+### **Phase 1: Section 10 (Proof of Concept)**
+
+#### **Step 1.1: Add ModeManager (5 minutes)**
+- Apply **Pattern 1** from AI-FRIENDLY-PATTERNS.md
+- Test: Section 10 should work exactly as before
+- Commit: "feat(S10): add ModeManager"
+
+#### **Step 1.2: Wrap Event Handlers (10 minutes)**
+- Apply **Pattern 2** to all event handlers in Section 10
+- Test: Target mode works exactly as before
+- Test: Reference mode writes to ref_ prefixed state
+- Commit: "feat(S10): add dual-state input handling"
+
+#### **Step 1.3: Add Mode-Aware Reading (10 minutes)**
+- Apply **Pattern 3** to add/modify helper functions
+- Apply **Pattern 4** to split calculateAll into dual engines
+- Apply **Pattern 5** to expose ModeManager
+- Test: Both Target and Reference calculations work
+- Commit: "feat(S10): complete dual-state support"
+
+**Total time for Section 10: ~25 minutes**
+
+### **Phase 2: Remaining Sections (Mechanical Replication)**
+
+Apply the same 3-step pattern to each remaining section:
+- **S11**: Transmission Losses
+- **S12**: Volume Surface Metrics
+- **S13**: Mechanical Loads
+- **S14**: TEDI Summary
+- **S15**: TEUI Summary
+- **S04-S09**: (if not already working)
+
+**Each section: ~25 minutes using proven patterns**
+
+### **Phase 3: Enhanced Reference System (Post-Section Refactoring)**
+
+**Prerequisites**: ✅ All sections (S02-S15) implementing corrected dual-state patterns with zero contamination
+
+### **3.1 Mirror Target to Reference Function (Enhanced "Calculate Reference")**
+
+**Current State**: `ReferenceToggle.js` has basic "Calculate Reference" functionality
+**Enhanced Vision**: True "Mirror Target" that respects dual-state architecture
+
+#### **Core Functionality**:
+1. **Complete Target → Reference Mirror**: Copy ALL Target state to Reference state
+2. **Apply Reference Standard Subset**: Override specific fields from `4011-ReferenceValues.js` based on current `d_13` selection
+3. **Preserve User Edits**: Allow users to modify Reference values after mirroring
+4. **Re-mirror on Demand**: Clicking "Mirror Target" again repeats the process
+
+#### **d_13 Dual Purpose Clarification**:
+- **Target Mode d_13**: Used for pass/fail checkmarks in columns M/N/O (comparison only)
+- **Reference Mode d_13**: **Actually drives Reference model calculations** (active standard)
+- **Reference Mode Results**: Should show 100% compliance by definition
+
+#### **Implementation Plan**:
+
+**Step 3.1.1: Refactor ReferenceToggle.js**
 ```javascript
-// WRONG: Writing to both states from user input (normal mode)
-StateManager.setValue(fieldId, value);
-StateManager.setValue(`ref_${fieldId}`, value);
-
-// WRONG: Fallback to global values  
-const value = getFieldValue(fieldId) || defaultValue;
-const value = StateManager.getValue(fieldId) || StateManager.getValue(`target_${fieldId}`);
-
-// WRONG: Reading unprefixed values in calculations
-const area = StateManager.getValue("h_15"); // Should be target_h_15 or ref_h_15
-```
-
-**✅ EXCEPTION: "Mirror Target" Button Operation:**
-```javascript
-// ALLOWED: When Mirror Target button is explicitly clicked
+// Enhanced Mirror Target function
 function mirrorTargetToReference() {
-  // One-time internal "import" operation
-  Object.keys(targetState).forEach(fieldId => {
-    const targetValue = StateManager.getValue(`target_${fieldId}`);
-    StateManager.setValue(`ref_${fieldId}`, targetValue, "mirrored");
-  });
+  // 1. Copy ALL Target state to Reference state
+  copyAllTargetStateToReference();
   
-  // Apply reference standards to mirrored data
-  const standard = StateManager.getValue("ref_d_13");
-  applyReferenceMinimums(standard);
-}
-
-// After mirroring, Reference mode operates independently
-// Only d_13 changes trigger reapplication of ReferenceValues.js minimums
-```
-
-**✅ REQUIRED PATTERNS:**
-```javascript
-// CORRECT: Mode-aware reading with NO fallbacks
-function getModeValue(fieldId) {
-  const prefix = currentMode === "target" ? "target_" : "ref_";
-  return StateManager.getValue(`${prefix}${fieldId}`);
-}
-
-// CORRECT: User input only affects current mode
-function handleUserInput(fieldId, value) {
-  const prefix = currentMode === "target" ? "target_" : "ref_";
-  StateManager.setValue(`${prefix}${fieldId}`, value, "user-modified");
-}
-```
-
-### **2. NO FALLBACKS EVER - STRICT CODE ONLY**
-
-**Why fallbacks are unnecessary:**
-- Default state exists for ALL values (target_ and ref_ prefixed)
-- Imported Excel data provides initial values
-- User modifications override defaults
-- If a value doesn't exist, it should be explicitly set to 0 or ""
-
-**❌ FORBIDDEN:** Any `||` fallback logic  
-**✅ REQUIRED:** Explicit error handling and default state management
-
-### **3. MODE SWITCHING RULES**
-
-**User Changes Target Mode** → Target state updated, Reference state UNCHANGED  
-**User Changes Reference Mode** → Reference state updated, Target state UNCHANGED  
-**Exception: "Lock Reference to Target" Mode** → Reference state mirrors Target geometry, then applies only ReferenceValues.js minimums based on dropdown d_13 selection
-
-### **3a. REFERENCE MIRRORING SYSTEM (Future Feature)**
-
-**"Mirror Target" Button Workflow:**
-```javascript
-// One-time copy operation when button is clicked
-function mirrorTargetToReference() {
-  // Step 1: Copy ALL Target state to Reference state
-  Object.keys(targetState).forEach(fieldId => {
-    const targetValue = StateManager.getValue(`target_${fieldId}`);
-    StateManager.setValue(`ref_${fieldId}`, targetValue, "mirrored");
-  });
+  // 2. Get Reference mode specific d_13 standard
+  const referenceStandard = getReferenceStandard(); 
   
-  // Step 2: Apply ReferenceValues.js minimums based on current d_13
-  const standard = StateManager.getValue("ref_d_13"); // Use mirrored d_13
-  applyReferenceMinimums(standard);
+  // 3. Apply subset from ReferenceValues.js to Reference state only
+  applyReferenceSubsetToReferenceState(referenceStandard);
   
-  // Step 3: Recalculate Reference model
+  // 4. Trigger Reference calculations using Reference state
   calculateReferenceModel();
+  
+  // 5. Update UI if currently viewing Reference mode
+  refreshReferenceUI();
 }
 
-// When d_13 changes in Reference mode, reapply minimums
-function onReferenceStandardChange(newStandard) {
-  StateManager.setValue("ref_d_13", newStandard, "user-modified");
-  applyReferenceMinimums(newStandard); // Only update specific fields
-  calculateReferenceModel();
-}
-```
-
-**Workflow Logic:**
-1. **Mirror Button Clicked** → Complete Target→Reference copy
-2. **d_13 Changed in Reference Mode** → Reapply only ReferenceValues.js minimums
-3. **Other Reference Edits** → Independent modifications allowed
-4. **No Automatic Syncing** → Mirror is one-time operation, manual button press required
-
-**Use Cases:**
-- **"Start with my design, apply code minimums"** → Mirror + auto-apply standards
-- **"Compare my design to different standards"** → Mirror once, toggle d_13 in Reference mode
-- **"Custom Reference building"** → Don't use Mirror, build independently
-
----
-
-## 📊 **ACTUAL CURRENT STATUS (CORRECTED)**
-
-### **✅ PROPERLY REFACTORED (S01-S09)**
-| Section | ModeManager | Dual Calculations | State Isolation | Status |
-|---------|-------------|-------------------|-----------------|--------|
-| **S01** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED (Consumers-First)** - State-agnostic display preserved, helpers now use strict state isolation. |
-| **S02** | ✅ Yes | 🟨 N/A | ✅ Clean | **REFACTORED** - Producer section. Strict helpers and event handlers implemented. No complex calcs. |
-| **S03** | ✅ Complete | ✅ Yes | ✅ Clean | **TEMPLATE MODEL** |
-| **S04** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
-| **S05** | ✅ Complete | ✅ Yes | ✅ Clean | Good |
-| **S06** | ✅ Complete | ✅ Yes | ✅ Clean | Good |
-| **S07** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
-| **S08** | ✅ Complete | ✅ Yes | ✅ Clean | Good |
-| **S09** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
-
-### **❌ NOT REFACTORED (S10-S15)**
-| Section | Status | Critical Issues |
-|---------|--------|----------------|
-| **S10** | Legacy | No ModeManager, no state isolation, global contamination |
-| **S11** | Legacy | No ModeManager, no state isolation, global contamination |
-| **S12** | Legacy | No ModeManager, no state isolation, global contamination |
-| **S13** | Legacy | No ModeManager, no state isolation, global contamination |
-| **S14** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
-| **S15** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
-
----
-
-## 🚨 **CRITICAL S09 CONTAMINATION DETECTED**
-
-**Current S09 Issues Found:**
-```javascript
-// Line 820: Global value access without prefix
-const referenceStandard = getFieldValue("d_13") || "";
-const buildingType = getFieldValue("d_12") || "";
-
-// Line 785: Cross-section dependency without mode awareness  
-const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120;
-
-// Line 1280-1295: Helper function with fallback contamination
-function getFieldValue(fieldId) {
-  if (window.TEUI?.StateManager?.getValue) {
-    const value = window.TEUI.StateManager.getValue(fieldId); // UNPREFIXED!
-    if (value !== null && value !== undefined) {
-      return value;
-    }
-  }
-  // Falls back to DOM - CONTAMINATION!
+function copyAllTargetStateToReference() {
+  // Get all target_ prefixed values
+  const targetState = StateManager.getAllTargetState();
+  
+  // Copy to ref_ prefixed equivalents
+  Object.entries(targetState).forEach(([fieldId, value]) => {
+    const refFieldId = fieldId.replace('target_', 'ref_');
+    StateManager.setValue(refFieldId, value, 'mirrored-from-target');
+  });
 }
 ```
 
----
+**Step 3.1.2: Button Rename and Enhanced Functionality**
+- Rename "Calculate Reference" → "Mirror Target to Reference"
+- Update button behavior to implement enhanced mirroring
+- Maintain "Show Cached Reference Inputs" functionality
 
-## 🎯 **DEFINITIVE FINAL REFACTORING PLAN**
+**Step 3.1.3: Reference State Independence**
+- Reference mode d_13 changes apply to Reference calculations
+- Target mode d_13 changes only affect pass/fail display
+- No cross-contamination between mode-specific d_13 values
 
-**STRATEGY UPDATE**: Adopting a **"Consumers-First"** approach. We will refactor data-consuming summary sections (S01, S15, S14, S04) before their data producers. This provides clearer feedback on the success of the calculation chain as we work through the legacy sections.
+### **3.2 ReferenceManager.js Updates**
 
-### **PHASE 1: Foundational Consumers & Producers (COMPLETE)**
-- **S09 (COMPLETE)**: Based on `...-REFACTORED.js` file. Replaced ALL `getFieldValue()` calls with mode-aware reading, eliminated ALL fallback patterns, and implemented strict prefix-only access.
-- **S01 (COMPLETE)**: Refactored as a state-agnostic "consumer". Preserved unique 3-column UI while ensuring underlying helpers use strict state isolation (Reference column reads `ref_`, Target/Actual read `target_`). Corrected event listeners to fix broken calculation chains.
-- **S04 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
-- **S15 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
-- **S14 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
-- **S02 (COMPLETE)**: Refactored as a "producer" section. Implemented ModeManager and strict helpers to ensure user inputs are correctly written to `target_*` or `ref_*` state.
-- **S07 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
+**File**: `4011-ReferenceManager.js`
+**Current Issues**: Likely contains state contamination patterns
+**Required Updates**: Apply corrected dual-state patterns
 
-### **PHASE 2: Complete Legacy Sections (In Progress)**
-- Address remaining legacy sections (S10, S11, S12, S13) to complete the full dual-state architecture implementation.
+#### **Key Updates Needed**:
+1. **Eliminate Global State Access**: All reads/writes must use prefixed state
+2. **Mode-Aware Operations**: Functions must respect current mode context
+3. **State Isolation**: Reference operations never contaminate Target state
+4. **Pattern Compliance**: Apply Patterns 1-6B from `AI-FRIENDLY-PATTERNS-CORRECTED.md`
 
----
+### **3.3 Enhanced Toggle System**
 
-## 📋 **SECTION-BY-SECTION REQUIREMENTS CHECKLIST**
+**Current Components**:
+- **S01 Header Toggle**: Mode switching slider (✅ Keep)
+- **Index.html Button Row**: Two buttons above S01 (✅ Keep, enhance)
 
-### **Required for EVERY Section:**
+**Enhanced Button Behaviors**:
 
-**1. ModeManager Object:**
+#### **Button 1: "Mirror Target to Reference"** (was "Calculate Reference")
+- Copies Target state → Reference state
+- Applies d_13 subset from ReferenceValues.js
+- Allows subsequent user edits in Reference mode
+- Re-clicking repeats the mirror + d_13 subset process
+
+#### **Button 2: "Show Cached Reference Inputs"** (unchanged)
+- Highlights values from ReferenceValues.js
+- Visual feedback for code compliance values
+- Toggles with "Show Target Inputs"
+
+### **3.4 Reference Mode Column M/N/O Behavior**
+
+**Target Mode**: Shows percentage compliance vs Reference standard
+**Reference Mode**: Shows 100% compliance (by definition, since values come from the standard)
+
+#### **Implementation**:
 ```javascript
-const ModeManager = {
-  currentMode: "target",
-  switchMode: function(newMode) {
-    this.currentMode = newMode;
-  }
-};
-window.TEUI.sectXX.ModeManager = ModeManager;
-```
-
-**2. Mode-Aware Helper Functions (NO FALLBACKS):**
-```javascript
-function getNumericValue(fieldId) {
-  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-  const value = StateManager.getValue(`${prefix}${fieldId}`);
-  return window.TEUI.parseNumeric(value);
-}
-
-function setFieldValue(fieldId, value) {
-  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-  StateManager.setValue(`${prefix}${fieldId}`, value, "calculated");
-  if (ModeManager.currentMode === "target") {
-    // Only update DOM in target mode
-    updateDOMElement(fieldId, value);
+function updateComplianceColumns() {
+  const isReferenceMode = ModeManager.currentMode === "reference";
+  
+  if (isReferenceMode) {
+    // Reference mode: All compliance shows 100% (✅)
+    updateComplianceDisplay("100%", "✅");
+  } else {
+    // Target mode: Calculate actual compliance vs Reference standard
+    calculateAndDisplayCompliance();
   }
 }
 ```
 
-**3. Event Handlers with 100% State Isolation:**
-```javascript
-// User input ONLY affects current mode
-field.addEventListener("change", function() {
-  const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-  StateManager.setValue(`${prefix}${fieldId}`, this.value, "user-modified");
-  calculateAll();
-});
-```
+### **3.5 Testing Requirements**
 
-**4. Dual Calculation Engines:**
-```javascript
-function calculateReferenceModel() {
-  const originalMode = ModeManager.currentMode;
-  ModeManager.switchMode("reference");
-  // All calculations use ref_ prefixed values
-  ModeManager.switchMode(originalMode);
-}
+**Success Criteria** (must pass before Phase 3 completion):
 
-function calculateTargetModel() {
-  const originalMode = ModeManager.currentMode;
-  ModeManager.switchMode("target");
-  // All calculations use target_ prefixed values
-  ModeManager.switchMode(originalMode);
-}
-```
+1. **✅ Zero State Contamination**: 
+   - Toggle Target → Reference → Target shows correct values
+   - S10, S11 tables show mode-appropriate values
+
+2. **✅ Mirror Target Function**:
+   - Copies all Target values to Reference correctly
+   - Applies d_13 subset properly
+   - Preserves user edits after mirroring
+   - Re-mirroring works correctly
+
+3. **✅ Reference Mode d_13 Independence**:
+   - Reference d_13 changes affect Reference calculations
+   - Target d_13 changes only affect Target compliance display
+   - No cross-mode d_13 contamination
+
+4. **✅ Compliance Display Accuracy**:
+   - Reference mode shows 100% compliance
+   - Target mode shows actual compliance percentages
 
 ---
 
-## 🔥 **CONTAMINATION ELIMINATION PATTERNS**
+## 📊 **CURRENT STATUS - UPDATED PRIORITY ORDER**
 
-### **Replace ALL instances of:**
+| Phase | Status | Timeline | Priority |
+|-------|--------|----------|----------|
+| **Phase 1: Section Refactoring** | 🔄 **In Progress** | 1-2 weeks | **HIGH** |
+| **Phase 2: Test & Verify** | ⏳ **Waiting** | 3-5 days | **HIGH** |
+| **Phase 3: Enhanced Reference System** | 📋 **Planned** | 1 week | **MEDIUM** |
 
-**❌ WRONG:**
-```javascript
-getFieldValue("h_15") || 0
-StateManager.getValue("d_12") || "default"
-const value = globalField || fallbackValue;
-```
-
-**✅ CORRECT:**
-```javascript
-getNumericValue("h_15")  // Uses mode-aware prefix
-getModeValue("d_12")     // Strict prefix, no fallbacks
-const value = getModeValue(fieldId); // Explicit mode awareness
-```
+**Current Focus**: Complete Phase 1 section refactoring with zero contamination before implementing Phase 3 Mirror Target enhancements.
 
 ---
 
-## 🎯 **SUCCESS CRITERIA - ABSOLUTE REQUIREMENTS**
+## 🔍 **TESTING STRATEGY**
 
-1. **✅ Zero global value access** - All values prefixed with target_ or ref_
-2. **✅ Zero fallback patterns** - No `||` logic anywhere in field access
-3. **✅ 100% state isolation** - User changes only affect current mode
-4. **✅ Mode switching works** - Can have completely different buildings in Target vs Reference
-5. **✅ Cross-section dependencies** - All use prefixed values only
-6. **✅ DOM updates controlled** - Only in target mode for global fields
+### **After Each Step:**
+1. **Target Mode Test**: All existing functionality works
+2. **Reference Mode Test**: Inputs write to ref_ state
+3. **State Isolation Test**: Use `test-state-isolation.html`
+
+### **After Each Section:**
+1. **Cross-Section Integration**: Verify data flows correctly
+2. **UI Toggle Test**: Switch between modes works smoothly
+3. **Calculation Accuracy**: Both models produce reasonable results
+
+---
+
+## 📊 **CURRENT STATUS - SECTION BY SECTION**
+
+| Section | ModeManager | Input Wrapping | Mode Reading | Dual Calcs | Status |
+|---------|-------------|----------------|--------------|-------------|--------|
+| **S01** | N/A | N/A | N/A | N/A | **Consumer Only** |
+| **S02** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S03** | ✅ | ✅ | ✅ | ✅ | **Working** |
+| **S04** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S05** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S06** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S07** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S08** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S09** | ❓ | ❓ | ❓ | ❓ | **Unknown** |
+| **S10** | ❌ | ❌ | ❌ | ❌ | **Next Target** |
+| **S11** | ❌ | ❌ | ❌ | ❌ | **Legacy** |
+| **S12** | ❌ | ❌ | ❌ | ❌ | **Legacy** |
+| **S13** | ❌ | ❌ | ❌ | ❌ | **Legacy** |
+| **S14** | ❌ | ❌ | ❌ | ❌ | **Legacy** |
+| **S15** | ❌ | ❌ | ❌ | ❌ | **Legacy** |
+
+---
+
+## 🎯 **SUCCESS METRICS**
+
+### **For Each Section:**
+1. **✅ Target Mode Unchanged**: All existing functionality preserved
+2. **✅ Reference Mode Functional**: User inputs write to ref_ state
+3. **✅ State Isolation**: Target and Reference values stay separate
+4. **✅ Dual Calculations**: Both models calculate independently
+
+### **For Complete System:**
+1. **✅ Mode Toggle Works**: Switch between Target/Reference seamlessly
+2. **✅ Cross-Section Data Flow**: Values propagate correctly between sections
+3. **✅ Reference Standards**: d_13 changes apply Reference minimums
+4. **✅ UI Responsiveness**: No performance degradation
+
+---
+
+## 🔧 **AI AGENT GUIDELINES**
+
+### **When Working on This Project:**
+
+1. **📖 Read AI-FRIENDLY-PATTERNS.md first**
+2. **🎯 Apply ONE pattern at a time**
+3. **✅ Test after EVERY change**
+4. **💾 Commit after EVERY successful step**
+5. **❌ NEVER delete existing working code**
+6. **🔄 If something breaks, revert immediately**
+
+### **Forbidden Actions:**
+- ❌ Wholesale section replacement
+- ❌ Deleting calculation logic
+- ❌ Changing field definitions
+- ❌ Modifying layout structures
+- ❌ "Optimizing" existing patterns
+
+### **Required Actions:**
+- ✅ Preserve all Target functionality
+- ✅ Add Reference capability incrementally  
+- ✅ Test between each small change
+- ✅ Follow exact find/replace patterns
+- ✅ Commit frequently
 
 ---
 
 ## 🏁 **DELIVERY COMMITMENT**
 
-**This is the FINAL refactoring iteration. Each section will be completed to 100% compliance with these requirements on the first pass. No partial implementations, no "we'll fix it later" - each section must fully meet ALL criteria before moving to the next.**
+**This approach transforms dual-state from a "2-month refactoring nightmare" into a "1-week additive enhancement."**
 
-**Target Completion:** All 15 sections implementing perfect dual-state architecture with zero contamination tolerance. 
+**Target Timeline:**
+- **Day 1**: Section 10 complete (proof of concept)
+- **Day 2-3**: Sections 11-15 complete (mechanical replication)
+- **Day 4-5**: Test and verify S02-S09 current status
+- **Day 6-7**: Polish and final integration testing
+
+**The key insight**: Your Target model is already perfect. We just need to **duplicate its success** for Reference mode without breaking anything. 
