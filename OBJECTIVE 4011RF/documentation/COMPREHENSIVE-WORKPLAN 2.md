@@ -125,15 +125,15 @@ function onReferenceStandardChange(newStandard) {
 ### **✅ PROPERLY REFACTORED (S01-S09)**
 | Section | ModeManager | Dual Calculations | State Isolation | Status |
 |---------|-------------|-------------------|-----------------|--------|
-| **S01** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED (Consumers-First)** - State-agnostic display preserved, helpers now use strict state isolation. |
-| **S02** | ✅ Yes | 🟨 N/A | ✅ Clean | **REFACTORED** - Producer section. Strict helpers and event handlers implemented. No complex calcs. |
+| **S01** | ❌ Missing | ✅ Yes | 🔶 Partial | Needs ModeManager |
+| **S02** | ❌ Missing | ❌ No | ❌ No | Needs complete refactor |
 | **S03** | ✅ Complete | ✅ Yes | ✅ Clean | **TEMPLATE MODEL** |
-| **S04** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
+| **S04** | ❌ Missing | ✅ Yes | 🔶 Partial | Needs ModeManager |
 | **S05** | ✅ Complete | ✅ Yes | ✅ Clean | Good |
 | **S06** | ✅ Complete | ✅ Yes | ✅ Clean | Good |
-| **S07** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
+| **S07** | ❌ Missing | ❌ No | ❌ No | Needs complete refactor |
 | **S08** | ✅ Complete | ✅ Yes | ✅ Clean | Good |
-| **S09** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
+| **S09** | ❌ CONTAMINATED | ✅ Yes | ❌ BROKEN | **CRITICAL ISSUE** |
 
 ### **❌ NOT REFACTORED (S10-S15)**
 | Section | Status | Critical Issues |
@@ -142,8 +142,8 @@ function onReferenceStandardChange(newStandard) {
 | **S11** | Legacy | No ModeManager, no state isolation, global contamination |
 | **S12** | Legacy | No ModeManager, no state isolation, global contamination |
 | **S13** | Legacy | No ModeManager, no state isolation, global contamination |
-| **S14** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
-| **S15** | ✅ Yes | ✅ Yes | ✅ Clean | **REFACTORED** - Now uses strict dual-state pattern with no fallbacks. |
+| **S14** | Legacy | No ModeManager, no state isolation, global contamination |
+| **S15** | Legacy | No ModeManager, no state isolation, global contamination |
 
 ---
 
@@ -174,19 +174,22 @@ function getFieldValue(fieldId) {
 
 ## 🎯 **DEFINITIVE FINAL REFACTORING PLAN**
 
-**STRATEGY UPDATE**: Adopting a **"Consumers-First"** approach. We will refactor data-consuming summary sections (S01, S15, S14, S04) before their data producers. This provides clearer feedback on the success of the calculation chain as we work through the legacy sections.
+### **PHASE 1: Fix S09 IMMEDIATELY (Priority 1)**
+- Replace ALL `getFieldValue()` calls with mode-aware reading
+- Eliminate ALL fallback patterns
+- Implement strict prefix-only access
+- Fix contamination in calculatePlugLoads(), calculateEquipmentLoads()
 
-### **PHASE 1: Foundational Consumers & Producers (COMPLETE)**
-- **S09 (COMPLETE)**: Based on `...-REFACTORED.js` file. Replaced ALL `getFieldValue()` calls with mode-aware reading, eliminated ALL fallback patterns, and implemented strict prefix-only access.
-- **S01 (COMPLETE)**: Refactored as a state-agnostic "consumer". Preserved unique 3-column UI while ensuring underlying helpers use strict state isolation (Reference column reads `ref_`, Target/Actual read `target_`). Corrected event listeners to fix broken calculation chains.
-- **S04 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
-- **S15 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
-- **S14 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
-- **S02 (COMPLETE)**: Refactored as a "producer" section. Implemented ModeManager and strict helpers to ensure user inputs are correctly written to `target_*` or `ref_*` state.
-- **S07 (COMPLETE)**: Refactored to use standard dual-state pattern, eliminating contaminated helpers and isolating calculation engines and event listeners.
+### **PHASE 2: Complete Missing ModeManagers (S01, S02, S04, S07)**
+- Add proper ModeManager objects
+- Implement mode-aware helper functions
+- Update event handlers for 100% state isolation
 
-### **PHASE 2: Complete Legacy Sections (In Progress)**
-- Address remaining legacy sections (S10, S11, S12, S13) to complete the full dual-state architecture implementation.
+### **PHASE 3: Complete Legacy Sections (S10-S15)**
+- Full dual-state architecture implementation
+- Mode-aware calculations
+- Prefix-only state access
+- Zero fallback tolerance
 
 ---
 

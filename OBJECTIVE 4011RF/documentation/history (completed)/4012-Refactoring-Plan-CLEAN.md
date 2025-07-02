@@ -274,13 +274,13 @@ The original document was too verbose and repetitive for practical use. The new 
 
 ## 🔧 **Target/Reference Prefix Patterns & Section Review Framework**
 
-### **Critical Prefix Rules (Updated 2025-01-13)**
+### **Critical Prefix Rules (Updated 2025-01-14)**
 
-Following the h_10 contamination fix, all sections must adhere to these patterns:
+Following the h_10 contamination fix and S09 state isolation clarification, all sections must adhere to these patterns:
 
-#### **1. Field Value Setting Patterns**
+#### **1. Field Value Setting Patterns - 100% STATE ISOLATION**
 ```javascript
-// ✅ CORRECT: Mode-aware setting with global updates
+// ✅ CORRECT: Mode-aware setting with 100% state isolation
 function setFieldValue(fieldId, value, fieldType = "calculated") {
   const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
   const prefixedFieldId = `${modePrefix}${fieldId}`;
@@ -288,7 +288,7 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
   // Always store with prefix for dual-state isolation
   window.TEUI.StateManager?.setValue(prefixedFieldId, value, fieldType);
   
-  // CRITICAL: Only update global state in target mode
+  // CRITICAL: Only update global state in target mode (for DOM display)
   if (ModeManager.currentMode === "target") {
     window.TEUI.StateManager?.setValue(fieldId, value, fieldType);
     // Update DOM element
@@ -296,11 +296,30 @@ function setFieldValue(fieldId, value, fieldType = "calculated") {
   }
 }
 
-// ❌ WRONG: Direct global updates that cause contamination
-window.TEUI.StateManager.setValue("h_10", value, "calculated"); // Missing mode awareness
+// ❌ WRONG: Writing to both states creates contamination
+window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
 ```
 
-#### **2. Cross-Section Output Patterns**
+#### **2. User Input Event Handlers - 100% STATE ISOLATION**
+```javascript
+// ✅ CORRECT: User inputs only affect current mode's state
+function handleUserInput(fieldId, newValue) {
+  const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+  window.TEUI.StateManager.setValue(`${modePrefix}${fieldId}`, newValue, "user-modified");
+  
+  // Only update global state in target mode (for DOM display)
+  if (ModeManager.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
+  }
+}
+
+// ❌ WRONG: Shared geometry concept violates 100% isolation
+window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
+window.TEUI.StateManager.setValue(`ref_${fieldId}`, newValue, "user-modified");
+```
+
+#### **3. Cross-Section Output Patterns**
 ```javascript
 // ✅ CORRECT: Final calculation sections (like S15) update global fields
 setCalculatedValue("h_10", teui_h136); // Updates both target_h_10 AND h_10
@@ -310,18 +329,13 @@ setCalculatedValue("e_10", ref_teui_h136); // Updates both ref_e_10 AND e_10
 setCalculatedValue("target_h_10", teui_h136); // DOM can't find this
 ```
 
-#### **3. Mode-Aware Reading Patterns**
+#### **4. Mode-Aware Reading Patterns**
 ```javascript
 // ✅ CORRECT: Mode-aware reading with fallbacks
 function getNumericValue(fieldId) {
   const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
   const prefixedValue = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
   const globalValue = window.TEUI.StateManager.getValue(fieldId);
-  
-  // Debug contamination issues
-  if (prefixedValue !== globalValue) {
-    console.log(`VALUE MISMATCH for ${fieldId} - Prefixed: ${prefixedValue}, Global: ${globalValue}`);
-  }
   
   return window.TEUI.parseNumeric(prefixedValue) || 0;
 }
