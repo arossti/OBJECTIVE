@@ -13,6 +13,19 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 // Section 10: Radiant Gains Module
 window.TEUI.SectionModules.sect10 = (function () {
   //==========================================================================
+  // MODE MANAGER (Dual-State Support)
+  //==========================================================================
+  const ModeManager = {
+    currentMode: "target",
+    switchMode: function(mode) {
+      if (mode !== "target" && mode !== "reference") return;
+      this.currentMode = mode;
+    }
+  };
+  window.TEUI.sect10 = window.TEUI.sect10 || {};
+  window.TEUI.sect10.ModeManager = ModeManager;
+
+  //==========================================================================
   // HELPER FUNCTIONS (Standardized)
   //==========================================================================
   // Note: Using standardized helpers based on S11/S15
@@ -2095,6 +2108,7 @@ window.TEUI.SectionModules.sect10 = (function () {
     registerWithStateManager: registerWithStateManager,
     addStateManagerListeners: addStateManagerListeners,
     registerWithIntegrator: registerWithIntegrator,
+    ModeManager: ModeManager, // Added for dual-state support
 
     calculateGainFactor: function (orientation, climateZone) {
       try {
