@@ -2065,10 +2065,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? "integer"
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-      // Update StateManager
+      
+      // ✅ CORRECTED: Update StateManager with proper prefixed state
       if (window.TEUI.StateManager) {
+        const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
         window.TEUI.StateManager.setValue(
-          fieldId,
+          `${prefix}${fieldId}`,
           numericValue.toString(),
           "user-modified",
         );
@@ -2076,7 +2078,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateAll(); // Recalculate after state update
     } else {
       // Revert to previous value if input is invalid
-      const previousValue = window.TEUI.StateManager?.getValue(fieldId) || "0"; // Fallback to 0
+      const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+      const previousValue = window.TEUI.StateManager?.getValue(`${prefix}${fieldId}`) || "0"; // Fallback to 0
       const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
       const formatType = Number.isInteger(prevNumericValue)
         ? "integer"
