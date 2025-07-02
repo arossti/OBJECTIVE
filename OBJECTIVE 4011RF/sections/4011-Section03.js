@@ -232,7 +232,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     },
 
     setReferenceDefaults: function () {
-      // ✅ FORCE Reference defaults when switching to Reference mode
+      // ✅ CORRECTED: Only set Reference defaults if they don't already exist (preserve user values)
       const referenceDefaults = {
         ref_d_19: "ON", // Province: Ontario
         ref_h_19: "Attawapiskat", // City: Attawapiskat (different climate zone)
@@ -243,13 +243,15 @@ window.TEUI.SectionModules.sect03 = (function () {
         ref_l_24: "24", // Cooling Override: 24°C (same as target)
       };
 
-      // Force set these values regardless of what exists
+      // ✅ CRITICAL FIX: Only set defaults if values don't already exist (preserve user input)
       Object.entries(referenceDefaults).forEach(([fieldId, defaultValue]) => {
-        window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        if (!window.TEUI.StateManager.getValue(fieldId)) {
+          window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        }
       });
       
       console.log(
-        "S03: Forced Reference defaults - Attawapiskat, Future, Static",
+        "S03: Set Reference defaults only where missing (preserving user values)",
       );
     },
 
