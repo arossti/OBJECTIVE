@@ -19,90 +19,27 @@ window.TEUI.SectionModules.sect10 = (function () {
     currentMode: "target",
     switchMode: function(mode) {
       if (mode !== "target" && mode !== "reference") return;
-      if (this.currentMode === mode) return;
-      
       this.currentMode = mode;
-      console.log(`S10: Switched to ${mode.toUpperCase()} mode`);
-      
-      // Refresh UI to show current mode's values
-      this.refreshUI();
-    },
-
-    refreshUI: function() {
-      const prefix = this.currentMode === "target" ? "target_" : "ref_";
-      const sectionElement = document.getElementById("envelopeRadiantGains");
-      if (!sectionElement) return;
-      
-      // Update all editable fields from StateManager
-      const editableFields = sectionElement.querySelectorAll("[data-field-id]");
-      editableFields.forEach((field) => {
-        const fieldId = field.getAttribute("data-field-id");
-        const stateValue = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-        
-        if (stateValue !== undefined && stateValue !== null) {
-          if (field.hasAttribute("contenteditable")) {
-            field.textContent = stateValue;
-          } else if (field.tagName === "SELECT") {
-            field.value = stateValue;
-          } else if (field.tagName === "INPUT" && field.type === "range") {
-            field.value = stateValue;
-            // Update slider display
-            const displayElement = document.querySelector(`[data-display-for="${fieldId}"]`);
-            if (displayElement) {
-              displayElement.textContent = `${stateValue}%`;
-            }
-          }
-        }
-      });
-      
-      console.log(`S10: UI refreshed for ${this.currentMode} mode`);
-    },
-
-    setValue: function(fieldId, value, source = "user-modified") {
-      const prefix = this.currentMode === "target" ? "target_" : "ref_";
-      window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, source);
-    },
-
-    getValue: function(fieldId) {
-      const prefix = this.currentMode === "target" ? "target_" : "ref_";
-      return window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
     }
   };
-  // ✅ CRITICAL FIX: Expose ModeManager globally for cross-section communication
-  // ✅ CRITICAL FIX: Expose ModeManager globally for cross-section communication
   window.TEUI.sect10 = window.TEUI.sect10 || {};
   window.TEUI.sect10.ModeManager = ModeManager;
 
   //==========================================================================
-  // HELPER FUNCTIONS (CORRECTED FOR DUAL-STATE ISOLATION)
+  // HELPER FUNCTIONS (Standardized)
   //==========================================================================
-  
-  /**
-   * CORRECTED: Get numeric value from StateManager with proper prefix
-   */
-  function getNumericValue(fieldId, defaultValue = 0) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const prefixedValue = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-    return window.TEUI.parseNumeric(prefixedValue, defaultValue) || defaultValue;
+  // Note: Using standardized helpers based on S11/S15
+  function getNumericValue(fieldId) {
+    // Directly use the global parser, assuming it's loaded correctly due to index.html order
+    // Use || 0 as a fallback if parseNumeric returns null/undefined/NaN
+    return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
   }
 
-  /**
-   * CORRECTED: Get field value from StateManager with proper prefix
-   */
-  function getFieldValue(fieldId, defaultValue = "") {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-    if (value !== null && value !== undefined) {
-      return value.toString();
-    }
-    
-    // Fallback to DOM only if StateManager doesn't have the value
+  function getFieldValue(fieldId) {
+    const stateValue = window.TEUI?.StateManager?.getValue(fieldId);
+    if (stateValue != null) return stateValue;
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      return element.value !== undefined ? element.value : element.textContent;
-    }
-    
-    return defaultValue;
+    return element ? (element.value ?? element.textContent?.trim()) : null;
   }
 
   /**
@@ -149,7 +86,7 @@ window.TEUI.SectionModules.sect10 = (function () {
   }
 
   /**
-   * CORRECTED: Sets calculated value with proper dual-state handling (like S03)
+   * Sets calculated value in StateManager and updates DOM using standard formatNumber.
    * @param {string} fieldId
    * @param {number} rawValue
    * @param {string} [format='number']
@@ -157,14 +94,7 @@ window.TEUI.SectionModules.sect10 = (function () {
   function setCalculatedValue(fieldId, rawValue, format = "number") {
     // Handle N/A for non-finite numbers
     if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
-      const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-      window.TEUI.StateManager?.setValue(`${prefix}${fieldId}`, "N/A", "calculated");
-      
-      // Also update global state in Target mode for cross-section compatibility
-      if (ModeManager.currentMode === "target") {
-        window.TEUI.StateManager?.setValue(fieldId, "N/A", "calculated");
-      }
-      
+      window.TEUI.StateManager?.setValue(fieldId, "N/A", "calculated");
       const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (elementNA) elementNA.textContent = "N/A";
       return;
@@ -181,33 +111,21 @@ window.TEUI.SectionModules.sect10 = (function () {
     }
 
     const formattedValue = formatNumber(rawValue, format);
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
 
     if (window.TEUI?.StateManager?.setValue) {
-      // Store raw value in prefixed state for dual-state isolation
+      // Store raw value as string for precision
       window.TEUI.StateManager.setValue(
-        `${prefix}${fieldId}`,
+        fieldId,
         rawValue.toString(),
         "calculated",
       );
-      
-      // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
-      if (ModeManager.currentMode === "target") {
-        window.TEUI.StateManager.setValue(
-          fieldId,
-          rawValue.toString(),
-          "calculated",
-        );
-      }
     }
 
-    // Update DOM (only for Target mode to prevent Reference contamination)
-    if (ModeManager.currentMode === "target") {
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        element.textContent = formattedValue;
-        element.classList.toggle("negative-value", rawValue < 0);
-      }
+    // Update DOM
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.textContent = formattedValue;
+      element.classList.toggle("negative-value", rawValue < 0);
     }
   }
 
@@ -264,23 +182,13 @@ window.TEUI.SectionModules.sect10 = (function () {
     }
     fieldElement.textContent = displayValue; // Update DOM display
 
-    // ✅ CORRECTED: Store the validated value in current mode's prefixed state
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    // Store the validated, raw numeric string for user inputs
     if (window.TEUI?.StateManager?.setValue) {
       window.TEUI.StateManager.setValue(
-        `${prefix}${currentFieldId}`,
+        currentFieldId,
         rawValueToStore,
         "user-modified",
       );
-      
-      // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
-      if (ModeManager.currentMode === "target") {
-        window.TEUI.StateManager.setValue(
-          currentFieldId,
-          rawValueToStore,
-          "user-modified",
-        );
-      }
     }
 
     // Trigger recalculation using the standardized calculateAll function
@@ -2008,23 +1916,13 @@ window.TEUI.SectionModules.sect10 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
-        // ✅ CORRECTED: Write to current mode's prefixed state
-        const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+        // Store the value in StateManager
         if (window.TEUI?.StateManager?.setValue) {
           window.TEUI.StateManager.setValue(
-            `${prefix}${fieldId}`,
+            fieldId,
             this.value,
             "user-modified",
           );
-          
-          // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
-          if (ModeManager.currentMode === "target") {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              this.value,
-              "user-modified",
-            );
-          }
         }
 
         // Recalculate
@@ -2039,23 +1937,13 @@ window.TEUI.SectionModules.sect10 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
-        // ✅ CORRECTED: Write to current mode's prefixed state
-        const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+        // Store the value in StateManager
         if (window.TEUI?.StateManager?.setValue) {
           window.TEUI.StateManager.setValue(
-            `${prefix}${fieldId}`,
+            fieldId,
             this.value,
             "user-modified",
           );
-          
-          // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
-          if (ModeManager.currentMode === "target") {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              this.value,
-              "user-modified",
-            );
-          }
         }
 
         // Update the display value

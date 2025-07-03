@@ -62,6 +62,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       
       // Refresh UI to show current mode's values from StateManager
       this.refreshUI();
+      
+      // ✅ CRITICAL FIX: Update weather data for current mode (recalculates climate zone)
+      updateWeatherData();
     },
 
     propagateModeToAllSections: function(mode) {
@@ -1001,16 +1004,22 @@ window.TEUI.SectionModules.sect03 = (function () {
     // This prevents Reference mode from contaminating application state
     if (ModeManager.currentMode === "target") {
       window.TEUI.StateManager?.setValue(fieldId, value, fieldType);
+    }
 
-      // Update DOM with formatted value
+    // ✅ FIXED: Update DOM in BOTH modes (like cooling days fix)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
-        const formattedValue =
-          window.TEUI?.formatNumber?.(parseFloat(value), "number-2dp-comma") ||
-          value.toString();
-        element.textContent = formattedValue;
-        }
+      // ✅ FIXED: Use proper StateManager formatting for climate values
+      let formatType = "number-2dp";
+      if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22") {
+        formatType = "integer-nocomma"; // HDD/CDD should be integers without commas or decimals
       }
+      
+      const formattedValue =
+        window.TEUI?.formatNumber?.(parseFloat(value), formatType) ||
+        value.toString();
+      element.textContent = formattedValue;
+    }
       
     console.log(
       `S03: ${prefixedFieldId} = ${value} ${ModeManager.currentMode === "target" ? "(+ global)" : "(ref only)"}`,
@@ -2019,12 +2028,21 @@ window.TEUI.SectionModules.sect03 = (function () {
         calculateGroundFacing(); // Re-add call needed for GF CDD
       });
 
-      // Listener for d_20 (HDD) changes to update j_19 (Climate Zone)
-      window.TEUI.StateManager.addListener("d_20", function (newHddValue) {
-        const climateZone = determineClimateZone(newHddValue);
-        setFieldValue("j_19", climateZone, "derived");
-        // Also recalculate Ground Facing HDD (d_22) which depends on d_20
-        calculateGroundFacing();
+      // ✅ FIXED: Listen for target and reference HDD changes (like cooling days fix)
+      window.TEUI.StateManager.addListener("target_d_20", function (newHddValue) {
+        if (ModeManager.currentMode === "target") {
+          const climateZone = determineClimateZone(newHddValue);
+          setFieldValue("j_19", climateZone, "derived");
+          calculateGroundFacing();
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_d_20", function (newHddValue) {
+        if (ModeManager.currentMode === "reference") {
+          const climateZone = determineClimateZone(newHddValue);
+          setFieldValue("j_19", climateZone, "derived");
+          calculateGroundFacing();
+        }
       });
 
       // Listener for m_19 (Cooling Days) changes
@@ -2036,16 +2054,12 @@ window.TEUI.SectionModules.sect03 = (function () {
       window.TEUI.StateManager.addListener("target_i_21", function (newValue) {
         if (ModeManager.currentMode === "target") {
           calculateAll(); // Recalculate everything as capacitance affects GF CDD
-          console.log(`S03: Target capacitance slider updated: ${newValue}%`);
         }
       });
 
       window.TEUI.StateManager.addListener("ref_i_21", function (newValue) {
         if (ModeManager.currentMode === "reference") {
           calculateAll(); // Recalculate everything as capacitance affects GF CDD
-          console.log(
-            `S03: Reference capacitance slider updated: ${newValue}%`,
-          );
         }
       });
 
@@ -2053,16 +2067,12 @@ window.TEUI.SectionModules.sect03 = (function () {
       window.TEUI.StateManager.addListener("target_h_21", function (newValue) {
         if (ModeManager.currentMode === "target") {
           calculateAll(); // Recalculate GFCDD when capacitance setting changes
-          console.log(`S03: Target capacitance dropdown updated: ${newValue}`);
         }
       });
 
       window.TEUI.StateManager.addListener("ref_h_21", function (newValue) {
         if (ModeManager.currentMode === "reference") {
           calculateAll(); // Recalculate GFCDD when capacitance setting changes
-          console.log(
-            `S03: Reference capacitance dropdown updated: ${newValue}`,
-          );
         }
       });
     } else {
