@@ -33,6 +33,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       this.currentMode = mode;
       console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
       
+      // ✅ CRITICAL FIX: Propagate mode change to ALL sections
+      this.propagateModeToAllSections(mode);
+      
       // Update UI state indicator
       const indicator = document.querySelector(
         "#climateCalculations .state-indicator",
@@ -59,6 +62,22 @@ window.TEUI.SectionModules.sect03 = (function () {
       
       // Refresh UI to show current mode's values from StateManager
       this.refreshUI();
+    },
+
+    propagateModeToAllSections: function(mode) {
+      // List of all sections with ModeManager
+      const sections = [
+        'sect02', 'sect04', 'sect05', 'sect06', 'sect07', 'sect08', 'sect09',
+        'sect10', 'sect11', 'sect12', 'sect13', 'sect14', 'sect15'
+      ];
+      
+      sections.forEach(sectionName => {
+        const sectionModeManager = window.TEUI?.[sectionName]?.ModeManager;
+        if (sectionModeManager && sectionModeManager.switchMode) {
+          console.log(`S03: Propagating ${mode} mode to ${sectionName}`);
+          sectionModeManager.switchMode(mode);
+        }
+      });
     },
 
     refreshUI: function () {

@@ -68,6 +68,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       return window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
     }
   };
+  // ✅ CRITICAL FIX: Expose ModeManager globally for cross-section communication
+  // ✅ CRITICAL FIX: Expose ModeManager globally for cross-section communication
   window.TEUI.sect10 = window.TEUI.sect10 || {};
   window.TEUI.sect10.ModeManager = ModeManager;
 
@@ -270,6 +272,15 @@ window.TEUI.SectionModules.sect10 = (function () {
         rawValueToStore,
         "user-modified",
       );
+      
+      // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
+      if (ModeManager.currentMode === "target") {
+        window.TEUI.StateManager.setValue(
+          currentFieldId,
+          rawValueToStore,
+          "user-modified",
+        );
+      }
     }
 
     // Trigger recalculation using the standardized calculateAll function
@@ -2005,6 +2016,15 @@ window.TEUI.SectionModules.sect10 = (function () {
             this.value,
             "user-modified",
           );
+          
+          // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
+          if (ModeManager.currentMode === "target") {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              this.value,
+              "user-modified",
+            );
+          }
         }
 
         // Recalculate
@@ -2027,6 +2047,15 @@ window.TEUI.SectionModules.sect10 = (function () {
             this.value,
             "user-modified",
           );
+          
+          // ✅ CRITICAL FIX: Also update global state in Target mode for cross-section integration
+          if (ModeManager.currentMode === "target") {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              this.value,
+              "user-modified",
+            );
+          }
         }
 
         // Update the display value
