@@ -188,7 +188,7 @@ function updateComplianceColumns() {
   } else {
     // Target mode: Calculate actual compliance vs Reference standard
     calculateAndDisplayCompliance();
-  }
+}
 }
 ```
 

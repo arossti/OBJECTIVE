@@ -268,7 +268,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ CRITICAL FIX: Only set defaults if values don't already exist (preserve user input)
       Object.entries(referenceDefaults).forEach(([fieldId, defaultValue]) => {
         if (!window.TEUI.StateManager.getValue(fieldId)) {
-          window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
         }
       });
       
@@ -1015,11 +1015,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         formatType = "integer-nocomma"; // HDD/CDD should be integers without commas or decimals
       }
       
-      const formattedValue =
+        const formattedValue =
         window.TEUI?.formatNumber?.(parseFloat(value), formatType) ||
-        value.toString();
-      element.textContent = formattedValue;
-    }
+          value.toString();
+        element.textContent = formattedValue;
+      }
       
     console.log(
       `S03: ${prefixedFieldId} = ${value} ${ModeManager.currentMode === "target" ? "(+ global)" : "(ref only)"}`,
@@ -2031,9 +2031,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       // ✅ FIXED: Listen for target and reference HDD changes (like cooling days fix)
       window.TEUI.StateManager.addListener("target_d_20", function (newHddValue) {
         if (ModeManager.currentMode === "target") {
-          const climateZone = determineClimateZone(newHddValue);
-          setFieldValue("j_19", climateZone, "derived");
-          calculateGroundFacing();
+        const climateZone = determineClimateZone(newHddValue);
+        setFieldValue("j_19", climateZone, "derived");
+        calculateGroundFacing();
         }
       });
 

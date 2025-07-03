@@ -246,8 +246,18 @@ window.TEUI.SectionModules.sect10 = (function () {
         window.TEUI.StateManager?.setValue(fieldId, "N/A", "calculated");
       }
       
-      // Update DOM only in Target mode (preserve calculation flow)
-      if (ModeManager.currentMode === "target") {
+      // ✅ CORRECTED: Update DOM for all fields, but certain fields should always display in both modes
+      const alwaysDisplayFieldsNA = fieldId.startsWith("m_") || 
+                                   fieldId === "e_80" ||
+                                   fieldId === "e_81" ||
+                                   fieldId === "g_80" ||
+                                   fieldId === "i_80" ||
+                                   fieldId === "g_81" || 
+                                   fieldId === "i_81" ||
+                                   fieldId === "i_82";
+      const shouldUpdateDOMNA = ModeManager.currentMode === "target" || alwaysDisplayFieldsNA;
+      
+      if (shouldUpdateDOMNA) {
         const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (elementNA) elementNA.textContent = "N/A";
       }
@@ -285,8 +295,23 @@ window.TEUI.SectionModules.sect10 = (function () {
       }
     }
 
-    // Update DOM only in Target mode (preserve calculation flow)
-    if (ModeManager.currentMode === "target") {
+    // ✅ CORRECTED: Update DOM for all fields, but certain fields should always display in both modes
+    // - nGains (m_XX): Gain factors should always display
+    // - Total gains (e_80, e_81): Total gains should always display
+    // - Utilization results (g_80, i_80): User-selected method results should always display
+    // - PHPP display (g_81, i_81): PHPP reference should always display
+    // - Unusable gains (i_82): Result of e_80 - i_80 should always display
+    const alwaysDisplayFields = fieldId.startsWith("m_") || 
+                               fieldId === "e_80" ||
+                               fieldId === "e_81" ||
+                               fieldId === "g_80" ||
+                               fieldId === "i_80" ||
+                               fieldId === "g_81" || 
+                               fieldId === "i_81" ||
+                               fieldId === "i_82";
+    const shouldUpdateDOM = ModeManager.currentMode === "target" || alwaysDisplayFields;
+    
+    if (shouldUpdateDOM) {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         element.textContent = formattedValue;
@@ -1842,25 +1867,16 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Calculate total gains (solar + internal)
       const totalGains = solarGains + internalGains;
 
-      // For Reference calculations, don't update DOM for e_80/e_81
-      if (!isReferenceCalculation) {
-        setCalculatedValue("e_80", totalGains, "number");
-        setCalculatedValue("e_81", totalGains, "number");
-      }
+      // ✅ CORRECTED: Update total gains display (e_80/e_81) in both modes
+      setCalculatedValue("e_80", totalGains, "number");
+      setCalculatedValue("e_81", totalGains, "number");
 
       //=====================================================================
       // PART 1: Calculate utilization factor based on selected method in row 80
       //=====================================================================
 
-      // Get utilization method
-      let utilizationMethod;
-      if (isReferenceCalculation) {
-        // For Reference calculations, check if standard specifies a method
-        utilizationMethod =
-          window.TEUI?.StateManager?.getReferenceValue("d_80") || "NRC 40%";
-      } else {
-        utilizationMethod = getFieldValue("d_80") || "NRC 40%";
-      }
+      // Get utilization method (use mode-aware helper consistently)
+      const utilizationMethod = getFieldValue("d_80") || "NRC 40%";
 
       let utilizationFactor = 0.4; // Default to 40%
 
@@ -1924,7 +1940,11 @@ window.TEUI.SectionModules.sect10 = (function () {
       // Calculate usable gains based on selected method (i_80)
       const usableGains = totalGains * utilizationFactor;
 
-      // For Reference calculations, store values with ref_ prefix
+      // ✅ CORRECTED: Update DOM in both modes for row 80
+      setCalculatedValue("g_80", utilizationFactor, "percent");
+      setCalculatedValue("i_80", usableGains, "number");
+
+      // For Reference calculations, also store values with ref_ prefix for cross-section integration
       if (isReferenceCalculation) {
         if (window.TEUI?.StateManager) {
           window.TEUI.StateManager.setValue(
@@ -1943,35 +1963,41 @@ window.TEUI.SectionModules.sect10 = (function () {
             "calculated",
           );
         }
-        return;
       }
 
-      // For Target calculations, update the DOM
-      setCalculatedValue("g_80", utilizationFactor, "percent");
-      setCalculatedValue("i_80", usableGains, "number");
-
       //=====================================================================
-      // PART 2: Calculate PHPP method as reference in row 81 (always)
+      // PART 2: Calculate PHPP method as reference in row 81 (ALWAYS runs)
       //=====================================================================
 
-      // Get loss values again for potentially different reference calc if needed (using same for now)
-      // 🚧 TODO: Loss factors should be mode-aware when other sections are refactored
-      // For now, read from global state until S04/S05/S06/S08 have dual-state support
-      const i97Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("i_97")) || 0;
-      const i103Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("i_103")) || 0;
-      const m121Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("m_121")) || 0;
-      const i98Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("i_98")) || 0;
+      // ✅ CORRECTED: PHPP calculation always runs in both Target and Reference modes
+      // This matches the Archive behavior where row 81 is always a PHPP reference display
+
+      // Get loss values for PHPP calculation (mode-aware)
+      let i97Reference, i103Reference, m121Reference, i98Reference;
+      if (isReferenceCalculation) {
+        // In Reference mode, use ref_ values if available, otherwise fallback to defaults
+        i97Reference = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_97") || window.TEUI?.StateManager?.getValue("i_97") || 15000);
+        i103Reference = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_103") || window.TEUI?.StateManager?.getValue("i_103") || 8000);
+        m121Reference = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_121") || window.TEUI?.StateManager?.getValue("m_121") || 2000);
+        i98Reference = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_98") || window.TEUI?.StateManager?.getValue("i_98") || 1000);
+      } else {
+        // In Target mode, use global values with defaults
+        i97Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("i_97")) || 15000;
+        i103Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("i_103")) || 8000;
+        m121Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("m_121")) || 2000;
+        i98Reference = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("i_98")) || 1000;
+      }
 
       const numeratorReference = totalGains;
       const denominatorReference =
         i97Reference + i103Reference + m121Reference + i98Reference;
 
-      let phUtilizationFactor = 0.9; // Default fallback if denom is 0
+      let phUtilizationFactor = 0.94; // Default fallback to ~94% if no losses
 
       if (denominatorReference > 0) {
         const gammaReference = numeratorReference / denominatorReference;
         if (Math.abs(gammaReference - 1) < 1e-9) {
-          phUtilizationFactor = 5 / 6;
+          phUtilizationFactor = 5 / 6; // ~0.833
         } else {
           const a = 5;
           const gamma_a = Math.pow(gammaReference, a);
@@ -1983,7 +2009,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         phUtilizationFactor = numeratorReference > 0 ? 1 : 0;
       }
 
-      // Update reference values in row 81 (always PHPP method)
+      // ✅ CORRECTED: Update row 81 display in both modes (like nGains)
       setCalculatedValue("g_81", phUtilizationFactor, "percent");
       const phReferenceGains = totalGains * phUtilizationFactor;
       setCalculatedValue("i_81", phReferenceGains, "number");
@@ -1992,19 +2018,18 @@ window.TEUI.SectionModules.sect10 = (function () {
       // PART 3: Calculate unusable gains based on selected method (row 80)
       //=====================================================================
 
+      // ✅ CORRECTED: Calculate unusable gains in both modes (i_82 = e_80 - i_80)
       const unusedGains = totalGains - usableGains;
       setCalculatedValue("i_82", unusedGains, "number");
     } catch (_error) {
-      // Set error values or defaults
-      if (!isReferenceCalculation) {
-        setCalculatedValue("e_80", 0);
-        setCalculatedValue("g_80", 0, "percent");
-        setCalculatedValue("i_80", 0);
-        setCalculatedValue("e_81", 0);
-        setCalculatedValue("g_81", 0, "percent");
-        setCalculatedValue("i_81", 0);
-        setCalculatedValue("i_82", 0);
-      }
+      // Set error values or defaults for fields that display in both modes
+      setCalculatedValue("e_80", 0);
+      setCalculatedValue("e_81", 0);
+      setCalculatedValue("g_80", 0, "percent");
+      setCalculatedValue("i_80", 0);
+      setCalculatedValue("g_81", 0, "percent");
+      setCalculatedValue("i_81", 0);
+      setCalculatedValue("i_82", 0);
     }
   }
 
@@ -2100,6 +2125,15 @@ window.TEUI.SectionModules.sect10 = (function () {
             this.value,
             "user-modified",
           );
+          
+          // ✅ CRITICAL: Also write to global state in Target mode for backward compatibility
+          if (ModeManager.currentMode === "target") {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              this.value,
+              "user-modified",
+            );
+          }
         }
 
         // Recalculate
@@ -2122,6 +2156,15 @@ window.TEUI.SectionModules.sect10 = (function () {
             this.value,
             "user-modified",
           );
+          
+          // ✅ CRITICAL: Also write to global state in Target mode for backward compatibility
+          if (ModeManager.currentMode === "target") {
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              this.value,
+              "user-modified",
+            );
+          }
         }
 
         // Update the display value
@@ -2204,10 +2247,22 @@ window.TEUI.SectionModules.sect10 = (function () {
         return;
       }
 
-      // Add listeners for key fields that might change from other sections
-      // Example: Listen for climate zone changes
+      // ✅ CORRECTED: Listen for climate zone changes in both Target and Reference modes
+      // S03 writes to target_j_19 and ref_j_19, so we need to listen to both
+      window.TEUI.StateManager.addListener("target_j_19", function () {
+        if (ModeManager.currentMode === "target") {
+          calculateAll();
+        }
+      });
+      
+      window.TEUI.StateManager.addListener("ref_j_19", function () {
+        if (ModeManager.currentMode === "reference") {
+          calculateAll();
+        }
+      });
+      
+      // Keep global listener for backward compatibility with single-state sections
       window.TEUI.StateManager.addListener("j_19", function () {
-        // console.log('Climate zone changed, recalculating solar gains');
         calculateAll();
       });
 
