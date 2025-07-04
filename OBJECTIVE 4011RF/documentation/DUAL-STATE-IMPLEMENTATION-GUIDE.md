@@ -8,6 +8,69 @@
 
 ---
 
+## 🚨 **CRITICAL MANDATE FOR AI AGENTS - READ FIRST**
+
+### **🔥 ABSOLUTE REQUIREMENTS - NO EXCEPTIONS**
+
+**1. STUDY THE SUCCESSFUL TEST FILE FIRST**
+- **MANDATORY**: Examine `test-s10-isolation.html` line by line before ANY implementation work
+- **This file proves dual-state works perfectly** - understand WHY and HOW it achieves isolation
+- **Extract the exact patterns** that create perfect Target ≠ Reference separation
+
+**2. FOLLOW THE METHODOLOGY EXACTLY**  
+- **Complex sections (S10, S13, S15)**: Use standalone testing approach - NO DIRECT INTEGRATION
+- **Simple sections (S11, S12, S14)**: Apply patterns directly but verify isolation immediately
+- **DO NOT skip phases** - each step validates the previous one
+
+**3. UNDERSTAND THE ARCHITECTURE CONFLICT**
+- **OLD SYSTEM**: Automatic ReferenceValues loading on mode switch (CAUSES CONTAMINATION)
+- **NEW SYSTEM**: "Free-float" Reference state - user defines their own values independently
+- **FUTURE SYSTEM**: "Mirror Target" command - one-time import + selective ReferenceValues application
+
+### **🏗️ ARCHITECTURAL TRANSITION STRATEGY**
+
+#### **Current Problem: Legacy ReferenceValues Auto-Loading**
+The existing system automatically applies ReferenceValues from `ReferenceValues.js` when switching to Reference mode, **contaminating our clean dual-state isolation**. This must be **completely disabled** for dual-state to work.
+
+#### **New "Free-Float" Reference Architecture**
+- **Target Mode**: User-defined values (Toronto building, user design preferences)
+- **Reference Mode**: Independent user-defined values (could be identical, could be completely different)
+- **No automatic standard loading** - user creates their own reference scenario
+
+#### **Future "Mirror Target" Command (NOT YET IMPLEMENTED)**
+A future enhancement will provide a "Mirror Target" button that:
+1. **One-time import**: Copies all current Target values to Reference state
+2. **Selective standard application**: Applies specific ReferenceValues subset based on `d_13` dropdown selection in REFERENCE mode
+3. **User control**: Only happens when explicitly requested, never automatic
+4. **Implementation note**: Can repurpose existing reference toggle functions but remove auto-trigger
+
+### **🎯 IMPLEMENTATION IMPERATIVES**
+
+#### **For S10 Implementation:**
+1. **Study `test-s10-isolation.html`** - This shows perfect dual-state isolation working
+2. **Identify the exact patterns** that prevent contamination in the test environment
+3. **Apply those patterns systematically** to the main S10 section
+4. **Verify isolation at each step** - Target ≠ Reference values must persist separately
+5. **DO NOT integrate until test environment patterns are fully understood**
+
+#### **For All Dual-State Work:**
+- **Disable automatic ReferenceValues loading** in ReferenceManager, ReferenceToggle, Section03
+- **Implement prefixed state isolation** (`target_` and `ref_` prefixes)
+- **Never fallback to global state** - use field defaults instead
+- **Verify isolation continuously** - different values in different modes
+
+### **⚠️ FORBIDDEN ACTIONS**
+- ❌ **Applying patterns directly to main sections without standalone testing** (for complex sections)
+- ❌ **Enabling automatic ReferenceValues loading during dual-state implementation**
+- ❌ **Falling back to global state when prefixed state is missing**
+- ❌ **Skipping isolation verification between implementation steps**
+
+**IF YOU IGNORE THIS GUIDE AND REPEAT THE MISTAKES IN THE POST-MORTEM, YOU WILL WASTE HOURS OF WORK AND ACHIEVE 100% STATE CONTAMINATION.**
+
+**STUDY THE TEST FILE. FOLLOW THE METHODOLOGY. VERIFY ISOLATION.**
+
+---
+
 ## 🏆 **PROVEN SUCCESS PATTERN**
 
 After 2+ days of debugging, we achieved **perfect dual-state isolation** using the standalone test environment approach. This guide documents the exact patterns that work.
