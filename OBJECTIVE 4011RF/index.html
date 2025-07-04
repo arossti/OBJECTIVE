@@ -66,7 +66,7 @@
     <script src="4011-Dependency.js"></script>
     
     <!-- Climate Data for S03 DualState Architecture -->
-    <script src="../OBJECTIVE 4012/core/data/4012-ClimateValues.js"></script>
+    <script src="4011-ClimateValues.js"></script>
 
     <!-- Initialize everything AFTER core scripts are loaded -->
     <script src="4011-init.js"></script>
@@ -959,6 +959,9 @@ Select a province and city to view weather data.</pre
         // Initialize Component Bridge
         if (TEUI.ComponentBridge) {
           TEUI.ComponentBridge.initAll();
+          
+          // ✅ Initialize dual-state synchronization
+          TEUI.ComponentBridge.initDualStateSync();
         }
 
         // Initialize Calculator
