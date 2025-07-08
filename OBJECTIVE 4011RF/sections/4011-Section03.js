@@ -389,15 +389,8 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Enhanced getNumericValue to use DualState first, then fallback to StateManager
    */
   function getNumericValue(fieldId) {
-    // Try DualState first
     const dualStateValue = DualState.getValue(fieldId);
-    if (dualStateValue !== null && dualStateValue !== undefined) {
-      return window.TEUI?.parseNumeric?.(dualStateValue) || 0;
-    }
-    
-    // Fallback to legacy StateManager
-    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    return window.TEUI?.parseNumeric?.(rawValue) || 0;
+    return window.TEUI?.parseNumeric?.(dualStateValue) || 0;
   }
 
   /**
@@ -407,30 +400,18 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Try DualState first
     const dualStateValue = DualState.getValue(fieldId);
     if (dualStateValue !== null && dualStateValue !== undefined) {
-      console.log(`S03: getFieldValue(${fieldId}) from DualState: ${dualStateValue}`);
       return dualStateValue.toString();
     }
     
-    // Fallback to legacy StateManager and DOM
-    if (window.TEUI?.StateManager?.getValue) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        console.log(`S03: getFieldValue(${fieldId}) from StateManager: ${value}`);
-        return value.toString();
-      }
-    }
-    
-    // Critical fallback for dropdown fields (h_21, etc.)
+    // Fallback for elements not in DualState (should be rare)
     const element = document.querySelector(
       `[data-field-id="${fieldId}"],[data-dropdown-id="dd_${fieldId}"]`,
     );
     if (element) {
       const domValue = element.value !== undefined ? element.value : element.textContent;
-      console.log(`S03: getFieldValue(${fieldId}) from DOM: ${domValue}`);
       return domValue;
     }
     
-    console.warn(`S03: getFieldValue(${fieldId}) - no value found, returning null`);
     return null;
   }
 
