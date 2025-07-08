@@ -1,296 +1,111 @@
 /**
- * 4011-Section08-CLEAN.js
+ * 4011-Section08.js
  * Indoor Air Quality (Section 8) module for TEUI Calculator 4.011
- * 
- * REFACTORED FOR 100% DUAL-STATE ISOLATION following the DUAL-STATE-IMPLEMENTATION-GUIDE.
- * This version includes a self-contained, section-local toggle for isolated testing.
+ *
+ * Refactored to use the standardized dual-engine architecture.
+ * TODO: Future S13 Cooling.js integration - replace default 45% RH with user values from d_59/i_59
  */
 
+// Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
-// Section-specific namespace
-window.TEUI.sect08 = window.TEUI.sect08 || {};
-
+// Section 8: Indoor Air Quality Module
 window.TEUI.SectionModules.sect08 = (function () {
   //==========================================================================
-  // DUAL-STATE MODE MANAGEMENT (Standardized Pattern)
+  // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
-  const ModeManager = {
-    currentMode: "target",
-    switchMode: function (newMode) {
-      if (this.currentMode === newMode) return;
-      if (newMode !== "target" && newMode !== "reference") return;
-      
-      this.currentMode = newMode;
-      console.log(`S08: Switched to ${this.currentMode.toUpperCase()} mode.`);
-      
-      this.updateUIForMode();
-      calculateAll();
-    },
-    updateUIForMode: function() {
-        // This function will refresh the section's input fields to reflect the current mode's state
-        const sectionElement = document.getElementById("indoorAirQuality");
-        if (!sectionElement) return;
 
-        const prefix = this.currentMode === 'target' ? 'target_' : 'ref_';
-        const userInputs = sectionElement.querySelectorAll('.user-input');
-
-        userInputs.forEach(input => {
-            const fieldId = input.getAttribute('data-field-id');
-            const stateValue = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-            
-            if (stateValue !== undefined && stateValue !== null) {
-                if(input.type === 'range') {
-                    input.value = stateValue;
-                    const display = document.querySelector(`[data-display-for="${fieldId}"]`);
-                    if (display) display.textContent = `${stateValue}%`;
-                } else if (input.isContentEditable) {
-                    input.textContent = stateValue;
-                }
-            }
-        });
-    }
-  };
-  // Expose the ModeManager for the local toggle to use
-  window.TEUI.sect08 = { ModeManager: ModeManager };
-
-  //==========================================================================
-  // HELPER FUNCTIONS (Standardized Pattern from Guide)
-  //==========================================================================
-  function getNumericValue(fieldId, defaultValue = 0) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    let rawValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
-    // Fallback for transition period (only for Target mode compatibility)
-    if (ModeManager.currentMode === 'target' && (rawValue === null || rawValue === undefined)) {
-      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    }
-    return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
-  }
-
-  function setCalculatedValue(fieldId, rawValue) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const valueToStore = isFinite(rawValue) ? rawValue.toString() : "N/A";
-    
-    // Always write to the prefixed state for the current mode
-    window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, valueToStore, "calculated");
-
-    // ONLY write to the global (unprefixed) state if in Target mode
-    if (ModeManager.currentMode === "target") {
-      window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
-      
-      // Update the DOM
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        const formatType = getFieldFormat(fieldId);
-        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? valueToStore;
-        element.textContent = formattedValue;
-      }
-    }
-  }
-
-  function getFieldFormat(fieldId) {
-    const formatMap = {
-      d_56: "number-0dp", d_57: "number-0dp", d_58: "number-0dp",
-      d_59: "number-0dp", i_59: "number-0dp", d_60: "number-2dp-comma",
-      k_56: "number-0dp", k_57: "number-0dp", k_58: "number-0dp",
-      m_56: "percent-0dp", m_57: "percent-0dp", m_58: "percent-0dp", m_59: "percent-0dp",
-      n_56: "raw", n_57: "raw", n_58: "raw", n_59: "raw"
-    };
-    return formatMap[fieldId] || "number-0dp";
-  }
-
-  function setElementClass(fieldId, className) {
-    if (ModeManager.currentMode !== "target") return; // Only update DOM in target mode
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      element.classList.remove("checkmark", "warning");
-      if (className) element.classList.add(className);
-    }
-  }
-
-  //==========================================================================
-  // CALCULATION LOGIC (Reads from current mode state)
-  //==========================================================================
-  function calculateAll() {
-    // These functions now implicitly use the current mode via the helper functions
-    calculateWoodOffset();
-    calculateAirQualityStatus();
-  }
-
-  function calculateWoodOffset() {
-    const d31_actualWoodUse = getNumericValue("d_31");
-    const k31_targetWoodEmissions = getNumericValue("k_31");
-    const woodOffset = (d31_actualWoodUse > 0) ? (k31_targetWoodEmissions / 1000) : 0;
-    setCalculatedValue("d_60", woodOffset);
-  }
-
-  function calculateAirQualityStatus() {
-    setCalculatedValue("k_56", 150);
-    setCalculatedValue("k_57", 1000);
-    setCalculatedValue("k_58", 400);
-    setCalculatedValue("k_59", "30-60");
-
-    const radonValue = getNumericValue("d_56");
-    const co2Value = getNumericValue("d_57");
-    const tvocValue = getNumericValue("d_58");
-    const heatingHumidity = getNumericValue("d_59");
-    const coolingHumidity = getNumericValue("i_59");
-    
-    // Radon Status
-    const radonPercent = radonValue / 150;
-    setCalculatedValue("m_56", radonPercent);
-    setCalculatedValue("n_56", radonValue <= 150 ? "✓" : "✗");
-    setElementClass("n_56", radonValue <= 150 ? "checkmark" : "warning");
-
-    // CO2 Status
-    const co2Percent = co2Value / 1000;
-    setCalculatedValue("m_57", co2Percent);
-    setCalculatedValue("n_57", co2Value <= 1000 ? "✓" : "✗");
-    setElementClass("n_57", co2Value <= 1000 ? "checkmark" : "warning");
-
-    // TVOC Status
-    const tvocPercent = tvocValue / 400;
-    setCalculatedValue("m_58", tvocPercent);
-    setCalculatedValue("n_58", tvocValue <= 400 ? "✓" : "✗");
-    setElementClass("n_58", tvocValue <= 400 ? "checkmark" : "warning");
-
-    // Humidity Status
-    const averageHumidity = (heatingHumidity + coolingHumidity) / 2;
-    const humidityPercent = averageHumidity / 45; // Middle of 30-60 range
-    setCalculatedValue("m_59", humidityPercent);
-    const isInRange = (heatingHumidity >= 30 && heatingHumidity <= 60) && (coolingHumidity >= 30 && coolingHumidity <= 60);
-    setCalculatedValue("n_59", isInRange ? "✓" : "✗");
-    setElementClass("n_59", isInRange ? "checkmark" : "warning");
-  }
-
-  //==========================================================================
-  // EVENT HANDLING (Standardized Pattern)
-  //==========================================================================
-  function handleUserInput(event) {
-    const fieldId = event.target.getAttribute('data-field-id');
-    if (!fieldId) return;
-
-    const value = event.target.type === 'range' ? event.target.value : event.target.textContent.trim();
-    const prefix = ModeManager.currentMode === 'target' ? 'target_' : 'ref_';
-
-    window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, "user-modified");
-    
-    // Live update for sliders
-    if (event.target.type === 'range') {
-      const display = document.querySelector(`[data-display-for="${fieldId}"]`);
-      if (display) display.textContent = `${value}%`;
-    }
-    
-    calculateAll();
-  }
-
-  function initializeEventHandlers() {
-    const sectionElement = document.getElementById("indoorAirQuality");
-    if (!sectionElement) return;
-
-    sectionElement.addEventListener('input', e => {
-        if (e.target.matches('input[type="range"]')) handleUserInput(e);
-    });
-    
-    sectionElement.addEventListener('change', e => {
-      if (e.target.matches('input[type="range"]')) handleUserInput(e);
-    });
-
-    sectionElement.addEventListener('blur', e => {
-        if (e.target.matches('[contenteditable="true"]')) handleUserInput(e);
-    }, true);
-
-    sectionElement.addEventListener('keydown', e => {
-      if (e.target.matches('[contenteditable="true"]') && e.key === 'Enter') {
-        e.preventDefault();
-        e.target.blur();
-      }
-    });
-
-    if (window.TEUI?.StateManager) {
-      const sm = window.TEUI.StateManager;
-      const dependencies = ["d_31", "k_31"];
-      dependencies.forEach(dep => {
-        sm.addListener(`target_${dep}`, () => ModeManager.currentMode === 'target' && calculateAll());
-        sm.addListener(`ref_${dep}`, () => ModeManager.currentMode === 'reference' && calculateAll());
-      });
-    }
-  }
-
-  //==========================================================================
-  // SECTION-LOCAL TOGGLE INJECTION
-  //==========================================================================
-  /**
-   * REMOVE BEFORE FLIGHT: This function is for temporary, section-isolated testing only.
-   * It injects a local toggle into the section header.
-   * This should be removed once all sections are refactored and the global toggle is reinstated.
-   */
-  function injectLocalToggle() {
-    const sectionHeader = document.querySelector("#indoorAirQuality .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-toggle-container")) return;
-
-    const toggleContainer = document.createElement("div");
-    toggleContainer.className = "local-toggle-container";
-    toggleContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
-
-    const stateIndicator = document.createElement("span");
-    stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
-
-    const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-    
-    const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
-
-    toggleSwitch.appendChild(slider);
-    
-    toggleSwitch.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const isReference = toggleSwitch.classList.toggle('active');
-        if (isReference) {
-            slider.style.transform = "translateX(20px)";
-            toggleSwitch.style.backgroundColor = "#28a745";
-            stateIndicator.textContent = "REFERENCE";
-            stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-            ModeManager.switchMode("reference");
-        } else {
-            slider.style.transform = "translateX(0px)";
-            toggleSwitch.style.backgroundColor = "#ccc";
-            stateIndicator.textContent = "TARGET";
-            stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-            ModeManager.switchMode("target");
-        }
-    });
-
-    toggleContainer.appendChild(stateIndicator);
-    toggleContainer.appendChild(toggleSwitch);
-    sectionHeader.appendChild(toggleContainer);
-  }
-
-  //==========================================================================
-  // LAYOUT & INITIALIZATION (Largely unchanged)
-  //==========================================================================
   const sectionRows = {
     header: {
-      id: "08-ID", rowId: "08-ID",
+      id: "08-ID",
+      rowId: "08-ID",
       cells: {
-        c: { content: "C", classes: ["section-subheader"] }, d: { content: "Targeted", classes: ["section-subheader"] },
-        e: { content: "E", classes: ["section-subheader"] }, f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] }, h: { content: "H", classes: ["section-subheader"] },
-        i: { content: "I", classes: ["section-subheader"] }, j: { content: "J", classes: ["section-subheader"] },
-        k: { content: "Guidance Limits", classes: ["section-subheader"] }, l: { content: "L", classes: ["section-subheader"] },
-        m: { content: "% per Health Canada/NBC", classes: ["section-subheader"] }, n: { content: "Status", classes: ["section-subheader"] },
+        c: { content: "C", classes: ["section-subheader"] },
+        d: { content: "Targeted", classes: ["section-subheader"] },
+        e: { content: "E", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "G", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "I", classes: ["section-subheader"] },
+        j: { content: "J", classes: ["section-subheader"] },
+        k: { content: "Guidance Limits", classes: ["section-subheader"] },
+        l: { content: "L", classes: ["section-subheader"] },
+        m: { content: "% per Health Canada/NBC", classes: ["section-subheader"] },
+        n: { content: "Status", classes: ["section-subheader"] },
       },
     },
-    56: { id: "A.2", label: "Radon (annual avg.)", cells: { c: { label: "Radon (annual avg.)" }, d: { fieldId: "d_56", type: "editable", value: "50", classes: ["user-input"] }, e: { content: "Bq/m³" }, k: { fieldId: "k_56", type: "calculated", value: "150" }, l: { content: "Bq/m³" }, m: { fieldId: "m_56", type: "calculated", value: "0%" }, n: { fieldId: "n_56", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    57: { id: "A.3", label: "CO2 (annual avg.)", cells: { c: { label: "CO2 (annual avg.)" }, d: { fieldId: "d_57", type: "editable", value: "550", classes: ["user-input"] }, e: { content: "ppm" }, k: { fieldId: "k_57", type: "calculated", value: "1000" }, l: { content: "ppm" }, m: { fieldId: "m_57", type: "calculated", value: "0%" }, n: { fieldId: "n_57", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    58: { id: "A.4", label: "TVOC (annual avg.)", cells: { c: { label: "TVOC (annual avg.)" }, d: { fieldId: "d_58", type: "editable", value: "100", classes: ["user-input"] }, e: { content: "ppm" }, k: { fieldId: "k_58", type: "calculated", value: "400" }, l: { content: "ppm" }, m: { fieldId: "m_58", type: "calculated", value: "0%" }, n: { fieldId: "n_58", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    59: { id: "A.5.1", label: "Indoor Heating Season Avg.", cells: { c: { label: "Indoor Heating Season Avg." }, d: { fieldId: "d_59", type: "percentage", value: "45", min: 0, max: 100, step: 1, classes: ["user-input"] }, e: { content: "% RH" }, f: { content: "A.5.2" }, g: { label: "" }, h: { content: "Indoor Cooling Season Avg." }, i: { fieldId: "i_59", type: "percentage", value: "45", min: 0, max: 100, step: 1, classes: ["user-input"] }, j: { content: "% RH" }, k: { fieldId: "k_59", type: "calculated", value: "30-60" }, l: { content: "%" }, m: { fieldId: "m_59", type: "calculated", value: "0%" }, n: { fieldId: "n_59", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    60: { id: "A.6", label: "Wood Emissions Offset (Calculated)", cells: { c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" }, d: { fieldId: "d_60", type: "calculated", value: "0.00" }, e: { content: "MT/yr CO2e" }}},
+    56: {
+      id: "A.2",
+      label: "Radon (annual avg.)",
+      cells: {
+        c: { label: "Radon (annual avg.)" },
+        d: { fieldId: "d_56", type: "editable", value: "50", classes: ["user-input"] },
+        e: { content: "Bq/m³" },
+        k: { fieldId: "k_56", type: "calculated", value: "150" },
+        l: { content: "Bq/m³" },
+        m: { fieldId: "m_56", type: "calculated", value: "0%" },
+        n: { fieldId: "n_56", type: "calculated", value: "✓", classes: ["checkmark"] },
+      },
+    },
+    57: {
+      id: "A.3",
+      label: "CO2 (annual avg.)",
+      cells: {
+        c: { label: "CO2 (annual avg.)" },
+        d: { fieldId: "d_57", type: "editable", value: "550", classes: ["user-input"] },
+        e: { content: "ppm" },
+        k: { fieldId: "k_57", type: "calculated", value: "1000" },
+        l: { content: "ppm" },
+        m: { fieldId: "m_57", type: "calculated", value: "0%" },
+        n: { fieldId: "n_57", type: "calculated", value: "✓", classes: ["checkmark"] },
+      },
+    },
+    58: {
+      id: "A.4",
+      label: "TVOC (annual avg.)",
+      cells: {
+        c: { label: "TVOC (annual avg.)" },
+        d: { fieldId: "d_58", type: "editable", value: "100", classes: ["user-input"] },
+        e: { content: "ppm" },
+        k: { fieldId: "k_58", type: "calculated", value: "400" },
+        l: { content: "ppm" },
+        m: { fieldId: "m_58", type: "calculated", value: "0%" },
+        n: { fieldId: "n_58", type: "calculated", value: "✓", classes: ["checkmark"] },
+      },
+    },
+    59: {
+      id: "A.5.1",
+      label: "Indoor Heating Season Avg.",
+      cells: {
+        c: { label: "Indoor Heating Season Avg." },
+        d: { fieldId: "d_59", type: "percentage", value: "45", min: 0, max: 100, step: 1, classes: ["user-input"] },
+        e: { content: "% RH" },
+        f: { content: "A.5.2" },
+        g: { label: "" },
+        h: { content: "Indoor Cooling Season Avg." },
+        i: { fieldId: "i_59", type: "percentage", value: "45", min: 0, max: 100, step: 1, classes: ["user-input"] },
+        j: { content: "% RH" },
+        k: { fieldId: "k_59", type: "calculated", value: "30-60" },
+        l: { content: "%" },
+        m: { fieldId: "m_59", type: "calculated", value: "0%" },
+        n: { fieldId: "n_59", type: "calculated", value: "✓", classes: ["checkmark"] },
+      },
+    },
+    60: {
+      id: "A.6",
+      label: "Wood Emissions Offset (Calculated)",
+      cells: {
+        c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" },
+        d: { fieldId: "d_60", type: "calculated", value: "0.00" },
+        e: { content: "MT/yr CO2e" },
+      },
+    },
   };
 
+  //==========================================================================
+  // ACCESSOR METHODS (Standardized)
+  //==========================================================================
   function getFields() {
     const fields = {};
     Object.values(sectionRows).forEach(row => {
@@ -298,7 +113,9 @@ window.TEUI.SectionModules.sect08 = (function () {
       Object.values(row.cells).forEach(cell => {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
-            type: cell.type, label: cell.label || row.label, defaultValue: cell.value || "",
+            type: cell.type,
+            label: cell.label || row.label,
+            defaultValue: cell.value || "",
             section: "indoorAirQuality",
           };
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
@@ -310,7 +127,9 @@ window.TEUI.SectionModules.sect08 = (function () {
     return fields;
   }
 
-  function getDropdownOptions() { return {}; }
+  function getDropdownOptions() {
+    return {}; // No dropdowns in this section
+  }
 
   function getLayout() {
     const layoutRows = [];
@@ -331,22 +150,274 @@ window.TEUI.SectionModules.sect08 = (function () {
     });
     return rowDef;
   }
+  
+  //==========================================================================
+  // DUAL-STATE MODE MANAGEMENT (Standardized Pattern)
+  //==========================================================================
+  const ModeManager = {
+    currentMode: "target",
+    switchMode: function (mode) {
+      if (mode !== "target" && mode !== "reference") return;
+      this.currentMode = mode;
+    },
+  };
+  window.TEUI.sect08 = { ModeManager: ModeManager };
 
-  function onSectionRendered() {
-    addStatusStyles();
-    injectLocalToggle();
-    initializeEventHandlers();
+  //==========================================================================
+  // HELPER FUNCTIONS (Standardized)
+  //==========================================================================
+  function getNumericValue(fieldId, defaultValue = 0) {
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    let rawValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
+    if (rawValue === null || rawValue === undefined) {
+      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    }
+    return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
+  }
+  
+  function getStringValue(fieldId, defaultValue = "") {
+      const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+      let rawValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
+      if (rawValue === null || rawValue === undefined) {
+          rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+      }
+      return rawValue === null || rawValue === undefined ? defaultValue : rawValue;
+  }
+
+  function setFieldValue(fieldId, value, fieldType = "calculated") {
+    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const prefixedFieldId = `${modePrefix}${fieldId}`;
+
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue(prefixedFieldId, value.toString(), fieldType);
+    }
+
+    if (ModeManager.currentMode === "target") {
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
+      }
+      const formatType = getFieldFormat(fieldId);
+      const formattedValue = window.TEUI?.formatNumber?.(value, formatType) ?? value.toString();
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element) {
+        element.textContent = formattedValue;
+        element.classList.toggle("negative-value", Number(value) < 0);
+      }
+    }
+  }
+
+  function getFieldFormat(fieldId) {
+    const formatMap = {
+      d_56: "number-0dp", d_57: "number-0dp", d_58: "number-0dp",
+      d_59: "number-0dp", i_59: "number-0dp", d_60: "number-2dp-comma",
+      k_56: "number-0dp", k_57: "number-0dp", k_58: "number-0dp",
+      m_56: "percent-0dp", m_57: "percent-0dp", m_58: "percent-0dp", m_59: "percent-0dp",
+    };
+    return formatMap[fieldId] || "number-0dp";
+  }
+
+  function setElementClass(fieldId, className) {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.classList.remove("checkmark", "warning");
+      if (className) element.classList.add(className);
+    }
+  }
+
+  //==========================================================================
+  // CALCULATION FUNCTIONS
+  //==========================================================================
+  function calculateWoodOffset() {
+    // TODO: This wood offset calculation reads from S04 values
+    const d31_actualWoodUse = getNumericValue("d_31"); // From S04
+    const k31_targetWoodEmissions = getNumericValue("k_31"); // From S04
+
+    let woodOffset = 0;
+    if (d31_actualWoodUse > 0) {
+      woodOffset = k31_targetWoodEmissions / 1000;
+    }
+    setFieldValue("d_60", woodOffset);
+  }
+
+  function calculateAirQualityStatus() {
+    // Set static limit values
+    setFieldValue("k_56", 150); // Radon limit
+    setFieldValue("k_57", 1000); // CO2 limit
+    setFieldValue("k_58", 400); // TVOC limit
+    setFieldValue("k_59", "30-60"); // Humidity range
+
+    // Calculate Radon status
+    const radonValue = getNumericValue("d_56");
+    const radonLimit = getNumericValue("k_56", 150);
+    if (radonLimit > 0) {
+      const radonPercent = radonValue / radonLimit;
+      setFieldValue("m_56", radonPercent);
+      if (radonValue <= radonLimit) {
+        setFieldValue("n_56", "✓");
+        setElementClass("n_56", "checkmark");
+      } else {
+        setFieldValue("n_56", "✗");
+        setElementClass("n_56", "warning");
+      }
+    }
+
+    // Calculate CO2 status
+    const co2Value = getNumericValue("d_57");
+    const co2Limit = getNumericValue("k_57", 1000);
+    if (co2Limit > 0) {
+      const co2Percent = co2Value / co2Limit;
+      setFieldValue("m_57", co2Percent);
+      if (co2Value <= co2Limit) {
+        setFieldValue("n_57", "✓");
+        setElementClass("n_57", "checkmark");
+      } else {
+        setFieldValue("n_57", "✗");
+        setElementClass("n_57", "warning");
+      }
+    }
+
+    // Calculate TVOC status
+    const tvocValue = getNumericValue("d_58");
+    const tvocLimit = getNumericValue("k_58", 400);
+    if (tvocLimit > 0) {
+      const tvocPercent = tvocValue / tvocLimit;
+      setFieldValue("m_58", tvocPercent);
+      if (tvocValue <= tvocLimit) {
+        setFieldValue("n_58", "✓");
+        setElementClass("n_58", "checkmark");
+      } else {
+        setFieldValue("n_58", "✗");
+        setElementClass("n_58", "warning");
+      }
+    }
+
+    // Calculate Humidity status
+    // TODO: These RH values (d_59 heating, i_59 cooling) will eventually replace
+    // the default 45% RH used in S13 Cooling.js calculations
+    const heatingHumidity = getNumericValue("d_59");
+    const coolingHumidity = getNumericValue("i_59");
+    const minHumidity = 30;
+    const maxHumidity = 60;
     
-    // Set initial default values in StateManager for both modes
-    const allFields = getFields();
-    Object.keys(allFields).forEach(fieldId => {
-        const field = allFields[fieldId];
-        if (field.defaultValue) {
-            window.TEUI.StateManager.setValue(`target_${fieldId}`, field.defaultValue, 'default');
-            window.TEUI.StateManager.setValue(`ref_${fieldId}`, field.defaultValue, 'default');
-        }
+    const averageHumidity = (heatingHumidity + coolingHumidity) / 2;
+    const middleOfRange = (minHumidity + maxHumidity) / 2;
+    const humidityPercent = middleOfRange > 0 ? averageHumidity / middleOfRange : 0;
+    setFieldValue("m_59", humidityPercent);
+
+    const heatingInRange = heatingHumidity >= minHumidity && heatingHumidity <= maxHumidity;
+    const coolingInRange = coolingHumidity >= minHumidity && coolingHumidity <= maxHumidity;
+
+    if (heatingInRange && coolingInRange) {
+      setFieldValue("n_59", "✓");
+      setElementClass("n_59", "checkmark");
+    } else {
+      setFieldValue("n_59", "✗");
+      setElementClass("n_59", "warning");
+    }
+  }
+
+  function calculateAllForMode() {
+    calculateWoodOffset();
+    calculateAirQualityStatus();
+  }
+  
+  function calculateReferenceModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.switchMode("reference");
+    try {
+      calculateAllForMode();
+    } catch (error) {
+      console.error("[S08] Error in Reference Model calculations:", error);
+    } finally {
+      ModeManager.switchMode(originalMode);
+    }
+  }
+
+  function calculateTargetModel() {
+    const originalMode = ModeManager.currentMode;
+    ModeManager.switchMode("target");
+    try {
+      calculateAllForMode();
+    } catch (error) {
+      console.error("[S08] Error in Target Model calculations:", error);
+    } finally {
+      ModeManager.switchMode(originalMode);
+    }
+  }
+
+  function calculateAll() {
+    calculateReferenceModel();
+    calculateTargetModel();
+  }
+
+  //==========================================================================
+  // EVENT HANDLING (Standardized)
+  //==========================================================================
+  function initializeEventHandlers() {
+    const sectionElement = document.getElementById("indoorAirQuality");
+    if (!sectionElement) return;
+
+    // Setup editable field handlers
+    const editableFields = ["d_56", "d_57", "d_58"];
+    editableFields.forEach((fieldId) => {
+      const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+      if (field && !field.hasEditableListeners) {
+        field.setAttribute("contenteditable", "true");
+        field.classList.add("user-input");
+        field.addEventListener("blur", () => {
+          const newValue = field.textContent.trim();
+          if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, newValue, "user-modified");
+          }
+          calculateAll();
+        });
+        field.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            field.blur();
+          }
+        });
+        field.hasEditableListeners = true;
+      }
     });
 
+    // Setup slider handlers for humidity
+    // TODO: Future integration - when S13 Cooling.js is refactored, it should read
+    // d_59 (heating season RH) and i_59 (cooling season RH) instead of using default 45%
+    const sliders = sectionElement.querySelectorAll('input[type="range"]');
+    sliders.forEach((slider) => {
+      if (!slider.hasSliderListener) {
+        slider.addEventListener("input", (e) => {
+          const fieldId = e.target.getAttribute("data-field-id");
+          const value = e.target.value;
+          const displaySpan = document.querySelector(`span[data-display-for="${fieldId}"]`);
+          if (displaySpan) displaySpan.textContent = value + "%";
+        });
+        slider.addEventListener("change", (e) => {
+          const fieldId = e.target.getAttribute("data-field-id");
+          const value = e.target.value;
+          if (window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+            window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
+          }
+          calculateAll();
+        });
+        slider.hasSliderListener = true;
+      }
+    });
+
+    // StateManager listeners for cross-section dependencies
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.addListener("d_31", calculateAll); // S04 wood use
+      window.TEUI.StateManager.addListener("k_31", calculateAll); // S04 wood emissions
+    }
+  }
+
+  function onSectionRendered() {
+    // Add CSS for status indicators
+    addStatusStyles();
+    initializeEventHandlers();
     calculateAll();
   }
 
@@ -355,14 +426,30 @@ window.TEUI.SectionModules.sect08 = (function () {
       const styleElement = document.createElement("style");
       styleElement.id = "air-quality-status-styles";
       styleElement.textContent = `
-        .checkmark { color: #28a745 !important; font-weight: bold; font-size: 1.2em; }
-        .warning { color: #dc3545 !important; font-weight: bold; font-size: 1.2em; }
+        .checkmark {
+          color: #28a745 !important;
+          font-weight: bold;
+          font-size: 1.2em;
+        }
+        .warning {
+          color: #dc3545 !important;
+          font-weight: bold;
+          font-size: 1.2em;
+        }
       `;
       document.head.appendChild(styleElement);
     }
   }
 
+  //==========================================================================
+  // PUBLIC API
+  //==========================================================================
   return {
-    getFields, getDropdownOptions, getLayout, onSectionRendered, calculateAll,
+    getFields,
+    getDropdownOptions,
+    getLayout,
+    initializeEventHandlers,
+    onSectionRendered,
+    calculateAll,
   };
-})(); 
+})();
