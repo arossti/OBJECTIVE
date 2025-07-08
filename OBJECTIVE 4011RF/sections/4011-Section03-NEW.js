@@ -1,176 +1,45 @@
 /**
- * 4011-Section03.js - ENHANCED WITH DUALSTATE ARCHITECTURE
+ * 4011-Section03.js - CORRECTED STATEMANAGER ARCHITECTURE - CACHE_BUST_v3_TEMPERATURE_FIX
  * Climate Calculations (Section 3) module for TEUI Calculator 4.011
  *
- * BREAKTHROUGH: Integrated proven Target/Reference state isolation
- * Using ClimateValues JSON for data lookup (no Excel import needed)
+ * ARCHITECTURAL CORRECTION: Proper StateManager integration with target_/ref_ prefixes
+ * Eliminates custom state objects and direct DOM manipulation antipatterns
+ * TEMPERATURE FIX: Standard C to F conversion (C × 9/5) + 32
  */
+
+console.log(
+  "🔥 CACHE BUST v3: Section03 loaded with TEMPERATURE CONVERSION FIX",
+);
 
 // Ensure namespace exists
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
-// Section 3: Climate Calculations Module with DualState Architecture
+// Section 3: Climate Calculations Module with CORRECTED StateManager Architecture
 window.TEUI.SectionModules.sect03 = (function () {
-  
   //==========================================================================
-  // DUALSTATE ARCHITECTURE - PROVEN PATTERN FROM TEST FILE
+  // CORRECTED ARCHITECTURE - STATEMANAGER AS SINGLE SOURCE OF TRUTH
   //==========================================================================
   
-  // Target State Management (isolated + persistent)
-  const TargetState = {
-    state: {},
-    listeners: {},
-
-    setValue: function(fieldId, value, source = "user") {
-      this.state[fieldId] = value;
-      this.notifyListeners(fieldId, value);
-      this.saveState();
-      console.log(`TARGET setValue: ${fieldId} = ${value} (${source})`);
-    },
-
-    getValue: function(fieldId) {
-      return this.state[fieldId];
-    },
-
-    addListener: function(fieldId, callback) {
-      if (!this.listeners[fieldId]) {
-        this.listeners[fieldId] = [];
-      }
-      this.listeners[fieldId].push(callback);
-    },
-
-    notifyListeners: function(fieldId, value) {
-      if (this.listeners[fieldId]) {
-        this.listeners[fieldId].forEach(callback => callback(value));
-      }
-    },
-
-    initialize: function() {
-      const savedState = localStorage.getItem('S03_TARGET_STATE');
-      if (savedState) {
-        try {
-          this.state = JSON.parse(savedState);
-          console.log("S03 TARGET STATE: Restored from localStorage", this.state);
-        } catch (e) {
-          this.setDefaults();
-        }
-      } else {
-        this.setDefaults();
-      }
-    },
-
-    setDefaults: function() {
-      this.state = {
-        'd_19': 'ON',         // Province
-        'h_19': 'Alexandria', // City 
-        'h_20': 'Present',    // Timeframe
-        'h_21': 'Capacitance',// Capacitance setting
-        'h_23': 18,           // Heating setpoint
-        'h_24': 24,           // Cooling setpoint
-        'm_19': 120,          // Cooling days
-        'l_22': 80,           // Elevation
-        'l_24': 24,           // Cooling override
-        'i_21': 50            // Capacitance percentage
-      };
-      console.log("S03 TARGET STATE: Set to defaults");
-    },
-
-    saveState: function() {
-      try {
-        localStorage.setItem('S03_TARGET_STATE', JSON.stringify(this.state));
-      } catch (e) {
-        console.log("S03 TARGET STATE: Error saving", e);
-      }
-    }
-  };
-
-  // Reference State Management (isolated + persistent)
-  const ReferenceState = {
-    state: {},
-    listeners: {},
-
-    setValue: function(fieldId, value, source = "user") {
-      this.state[fieldId] = value;
-      this.notifyListeners(fieldId, value);
-      this.saveState();
-      console.log(`REFERENCE setValue: ${fieldId} = ${value} (${source})`);
-    },
-
-    getValue: function(fieldId) {
-      return this.state[fieldId];
-    },
-
-    addListener: function(fieldId, callback) {
-      if (!this.listeners[fieldId]) {
-        this.listeners[fieldId] = [];
-      }
-      this.listeners[fieldId].push(callback);
-    },
-
-    notifyListeners: function(fieldId, value) {
-      if (this.listeners[fieldId]) {
-        this.listeners[fieldId].forEach(callback => callback(value));
-      }
-    },
-
-    initialize: function() {
-      const savedState = localStorage.getItem('S03_REFERENCE_STATE');
-      if (savedState) {
-        try {
-          this.state = JSON.parse(savedState);
-          console.log("S03 REFERENCE STATE: Restored from localStorage", this.state);
-        } catch (e) {
-          this.setDefaults();
-        }
-      } else {
-        this.setDefaults();
-      }
-    },
-
-    setDefaults: function() {
-      this.state = {
-        'd_19': 'BC',         // Different province for testing
-        'h_19': 'Vancouver',  // Different city for testing
-        'h_20': 'Present',    // Timeframe
-        'h_21': 'Capacitance',// Capacitance setting
-        'h_23': 18,           // Heating setpoint
-        'h_24': 24,           // Cooling setpoint
-        'm_19': 120,          // Cooling days
-        'l_22': 80,           // Elevation
-        'l_24': 24,           // Cooling override
-        'i_21': 75            // DIFFERENT capacitance for testing isolation
-      };
-      console.log("S03 REFERENCE STATE: Set to defaults (different from Target for testing)");
-    },
-
-    saveState: function() {
-      try {
-        localStorage.setItem('S03_REFERENCE_STATE', JSON.stringify(this.state));
-      } catch (e) {
-        console.log("S03 REFERENCE STATE: Error saving", e);
-      }
-    }
-  };
-
-  // Mode Manager: Handles switching between Target and Reference
+  /**
+   * Mode Manager - Handles switching between Target and Reference WITHOUT bypassing StateManager
+   */
   const ModeManager = {
     currentMode: "target",
 
-    initialize: function() {
-      TargetState.initialize();
-      ReferenceState.initialize();
-      console.log("S03 MODE MANAGER: Both states initialized");
-    },
-
-    switchMode: function(mode) {
+    switchMode: function (mode) {
       if (this.currentMode === mode) return;
       
       this.currentMode = mode;
-      console.log(`S03 MODE MANAGER: Switched to ${mode.toUpperCase()} mode`);
+      console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
       
-      // Update UI state indicator if it exists
-      const indicator = document.querySelector("#climateCalculations .state-indicator");
+      // ✅ CRITICAL FIX: Propagate mode change to ALL sections
+      // this.propagateModeToAllSections(mode); // Temporarily disabled for isolated S03 testing.
+      
+      // Update UI state indicator
+      const indicator = document.querySelector(
+        "#climateCalculations .state-indicator",
+      );
       if (indicator) {
         indicator.textContent = mode.toUpperCase() + " MODE";
         indicator.className = `state-indicator ${mode}`;
@@ -183,60 +52,112 @@ window.TEUI.SectionModules.sect03 = (function () {
         document.body.classList.remove("viewing-reference-inputs");
       }
       
-      // Refresh UI to show current mode's values
+      // ✅ CRITICAL: Force Reference defaults when switching to Reference mode
+      if (mode === "reference") {
+        this.setReferenceDefaults();
+        
+        // ✅ NEW: Load Reference data and trigger calculations like the "Calculate Reference" button
+        this.loadReferenceDataAndCalculate();
+      }
+      
+      // Refresh UI to show current mode's values from StateManager
       this.refreshUI();
+      
+      // ✅ CRITICAL FIX: Update weather data for current mode (recalculates climate zone)
+      updateWeatherData();
     },
 
-    refreshUI: function() {
-      const currentState = this.getCurrentState();
+    propagateModeToAllSections: function(mode) {
+      // List of all sections with ModeManager
+      const sections = [
+        'sect02', 'sect04', 'sect05', 'sect06', 'sect07', 'sect08', 'sect09',
+        'sect10', 'sect11', 'sect12', 'sect13', 'sect14', 'sect15'
+      ];
       
-      // Update province dropdown
-      const provinceSelect = document.querySelector('[data-dropdown-id="dd_d_19"]');
-      if (provinceSelect && currentState.getValue("d_19")) {
-        provinceSelect.value = currentState.getValue("d_19");
-        // Trigger city dropdown update
-        handleProvinceChange({ target: provinceSelect });
+      sections.forEach(sectionName => {
+        const sectionModeManager = window.TEUI?.[sectionName]?.ModeManager;
+        if (sectionModeManager && sectionModeManager.switchMode) {
+          console.log(`S03: Propagating ${mode} mode to ${sectionName}`);
+          sectionModeManager.switchMode(mode);
+        }
+      });
+    },
+
+    refreshUI: function () {
+      const prefix = this.currentMode === "target" ? "target_" : "ref_";
+      
+      // Update province dropdown from StateManager
+      const provinceSelect = document.querySelector(
+        '[data-dropdown-id="dd_d_19"]',
+      );
+      if (provinceSelect) {
+        const provinceValue = window.TEUI.StateManager.getValue(
+          `${prefix}d_19`,
+        );
+        if (provinceValue) {
+          provinceSelect.value = provinceValue;
+          handleProvinceChange({ target: provinceSelect });
+        }
       }
       
-      // Update city dropdown  
+      // Update city dropdown from StateManager
       const citySelect = document.querySelector('[data-dropdown-id="dd_h_19"]');
-      if (citySelect && currentState.getValue("h_19")) {
-        citySelect.value = currentState.getValue("h_19");
+      if (citySelect) {
+        const cityValue = window.TEUI.StateManager.getValue(`${prefix}h_19`);
+        if (cityValue) {
+          citySelect.value = cityValue;
+        }
       }
       
-      // Update timeframe dropdown
-      const timeframeSelect = document.querySelector('[data-dropdown-id="dd_h_20"]');
-      if (timeframeSelect && currentState.getValue("h_20")) {
-        timeframeSelect.value = currentState.getValue("h_20");
+      // Update timeframe dropdown from StateManager
+      const timeframeSelect = document.querySelector(
+        '[data-dropdown-id="dd_h_20"]',
+      );
+      if (timeframeSelect) {
+        const timeframeValue = window.TEUI.StateManager.getValue(
+          `${prefix}h_20`,
+        );
+        if (timeframeValue) {
+          timeframeSelect.value = timeframeValue;
+        }
       }
       
-      // Update capacitance dropdown - CRITICAL for GFCDD calculation
-      const capacitanceSelect = document.querySelector('[data-dropdown-id="dd_h_21"]');
-      const capacitanceValue = currentState.getValue("h_21") || "Capacitance";
+      // Update capacitance dropdown from StateManager
+      const capacitanceSelect = document.querySelector(
+        '[data-dropdown-id="dd_h_21"]',
+      );
       if (capacitanceSelect) {
+        const capacitanceValue =
+          window.TEUI.StateManager.getValue(`${prefix}h_21`) || "Capacitance";
         capacitanceSelect.value = capacitanceValue;
-        console.log(`S03: Updated capacitance dropdown to "${capacitanceValue}" in ${this.currentMode} mode`);
       }
       
-      // CRITICAL: Update percentage slider from isolated state (FieldManager structure)
-      const percentageSlider = document.querySelector('input.form-range[data-field-id="i_21"]');
-      const percentageValue = currentState.getValue("i_21") || 50;
+      // Update percentage slider from StateManager
+      const percentageSlider = document.querySelector(
+        'input.form-range[data-field-id="i_21"]',
+      );
       if (percentageSlider) {
+        const percentageValue =
+          window.TEUI.StateManager.getValue(`${prefix}i_21`) || 50;
         percentageSlider.value = percentageValue;
-        // Update percentage display - FieldManager creates .slider-value as sibling
+        
+        // Update display
         const sliderContainer = percentageSlider.parentElement;
-        const display = sliderContainer?.querySelector('.slider-value');
+        const display = sliderContainer?.querySelector(".slider-value");
         if (display) {
           display.textContent = percentageValue + "%";
         }
-        console.log(`S03: Updated slider to ${percentageValue}% in ${this.currentMode} mode`);
       }
       
-      // Update all other editable fields from current state
-      const editableFields = document.querySelectorAll("#climateCalculations [data-field-id]");
-      editableFields.forEach(field => {
+      // Update all other fields from StateManager
+      const editableFields = document.querySelectorAll(
+        "#climateCalculations [data-field-id]",
+      );
+      editableFields.forEach((field) => {
         const fieldId = field.getAttribute("data-field-id");
-        const stateValue = currentState.getValue(fieldId);
+        const stateValue = window.TEUI.StateManager.getValue(
+          `${prefix}${fieldId}`,
+        );
         if (stateValue !== undefined && stateValue !== null) {
           if (field.isContentEditable) {
             field.textContent = stateValue;
@@ -248,86 +169,186 @@ window.TEUI.SectionModules.sect03 = (function () {
         }
       });
       
-      // Update climate data and calculations for current selections
+      // Update climate data and calculations
       updateWeatherData();
       
-      console.log(`S03 MODE MANAGER: UI refreshed for ${this.currentMode} mode`);
+      console.log(
+        `S03: UI refreshed for ${this.currentMode} mode via StateManager`,
+      );
     },
 
-    getCurrentState: function() {
-      return this.currentMode === "target" ? TargetState : ReferenceState;
+    setValue: function (fieldId, value, source = "user-modified") {
+      const prefix = this.currentMode === "target" ? "target_" : "ref_";
+      window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, source);
     },
 
-    setValue: function(fieldId, value, source = "user") {
-      this.getCurrentState().setValue(fieldId, value, source);
+    getValue: function (fieldId) {
+      const prefix = this.currentMode === "target" ? "target_" : "ref_";
+      return window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
+    },
+
+    resetAllStates: function () {
+      // Clear target values
+      const targetFields = [
+        "d_19",
+        "h_19",
+        "h_20",
+        "h_21",
+        "h_23",
+        "h_24",
+        "m_19",
+        "l_22",
+        "l_24",
+        "i_21",
+      ];
+      targetFields.forEach((fieldId) => {
+        window.TEUI.StateManager.setValue(`target_${fieldId}`, null);
+      });
       
-      // Also update legacy StateManager for compatibility
-      if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      // Clear reference values
+      targetFields.forEach((fieldId) => {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, null);
+      });
+      
+      // Set defaults via StateManager
+      this.setDefaults();
+      
+      console.log("S03: All states reset via StateManager");
+      alert("Section 3 states have been reset to defaults!");
+    },
+
+    setDefaults: function () {
+      // Set Target defaults only if not already set - LOCATIONS AND SETTINGS ONLY
+      const targetDefaults = {
+        target_d_19: "ON", // Province: Ontario
+        target_h_19: "Alexandria", // City: Alexandria
+        target_h_20: "Present", // Timeframe: Present (1991-2020)
+        target_h_21: "Capacitance", // Capacitance: Capacitance setting
+        target_i_21: "50", // Capacitance percentage: 50%
+        target_m_19: "120", // Days Cooling: 120 (user editable default)
+        target_l_24: "24", // Cooling Override: 24°C (user editable default)
+      };
+
+      Object.entries(targetDefaults).forEach(([fieldId, defaultValue]) => {
+        if (window.TEUI.StateManager.getValue(fieldId) === null || window.TEUI.StateManager.getValue(fieldId) === undefined) {
+          window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        }
+      });
+      
+      // Set Reference defaults only if not already set - DIFFERENT LOCATIONS FOR TESTING
+      const referenceDefaults = {
+        ref_d_19: "ON", // Province: Ontario
+        ref_h_19: "Attawapiskat", // City: Attawapiskat (different climate zone)
+        ref_h_20: "Future", // Timeframe: Future (2021-2050)
+        ref_h_21: "Static", // Capacitance: Static setting
+        ref_i_21: "0", // Capacitance percentage: 0% (Static mode)
+        ref_m_19: "120", // Days Cooling: 120 (same as target)
+        ref_l_24: "24", // Cooling Override: 24°C (same as target)
+      };
+
+      Object.entries(referenceDefaults).forEach(([fieldId, defaultValue]) => {
+        if (window.TEUI.StateManager.getValue(fieldId) === null || window.TEUI.StateManager.getValue(fieldId) === undefined) {
+          window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        }
+      });
+    },
+
+    setReferenceDefaults: function () {
+      // ✅ CORRECTED: Only set Reference defaults if they don't already exist (preserve user values)
+      const referenceDefaults = {
+        ref_d_19: "ON", // Province: Ontario
+        ref_h_19: "Attawapiskat", // City: Attawapiskat (different climate zone)
+        ref_h_20: "Future", // Timeframe: Future (2021-2050)
+        ref_h_21: "Static", // Capacitance: Static setting
+        ref_i_21: "0", // Capacitance percentage: 0% (Static mode)
+        ref_m_19: "120", // Days Cooling: 120 (same as target)
+        ref_l_24: "24", // Cooling Override: 24°C (same as target)
+      };
+
+      // ✅ CRITICAL FIX: Only set defaults if values don't already exist (preserve user input)
+      Object.entries(referenceDefaults).forEach(([fieldId, defaultValue]) => {
+        if (window.TEUI.StateManager.getValue(fieldId) === null || window.TEUI.StateManager.getValue(fieldId) === undefined) {
+        window.TEUI.StateManager.setValue(fieldId, defaultValue, "default");
+        }
+      });
+      
+      console.log(
+        "S03: Set Reference defaults only where missing (preserving user values)",
+      );
+    },
+
+    loadReferenceDataAndCalculate: function() {
+      // Get the current Reference standard from d_13 dropdown
+      const d13Element = document.querySelector('[data-dropdown-id="dd_d_13"]');
+      const currentStandardKey = d13Element ? d13Element.value : "NBC 9.36";
+      
+      console.log(`S03: Loading Reference data for standard: ${currentStandardKey}`);
+      
+      // Load Reference data (like the "Calculate Reference" button does)
+      if (window.TEUI?.StateManager?.loadReferenceData) {
+        window.TEUI.StateManager.loadReferenceData(currentStandardKey);
+        
+        // Trigger Reference calculations
+        if (window.TEUI?.Calculator?.calculateAll) {
+          console.log("S03: Triggering Reference calculations...");
+          window.TEUI.Calculator.calculateAll();
+        } else {
+          console.warn("S03: Calculator.calculateAll not available - using fallback");
+          // Fallback: trigger section calculations manually
+          this.triggerAllSectionCalculations();
+        }
+      } else {
+        console.warn("S03: StateManager.loadReferenceData not available");
       }
     },
 
-    getValue: function(fieldId) {
-      return this.getCurrentState().getValue(fieldId);
+    triggerAllSectionCalculations: function() {
+      // Fallback method to trigger calculations in all sections
+      const sections = ['sect01', 'sect03', 'sect04', 'sect11', 'sect12', 'sect15'];
+      
+      sections.forEach(sectionName => {
+        const section = window.TEUI?.SectionModules?.[sectionName];
+        if (section?.runAllCalculations) {
+          console.log(`S03: Triggering calculations for ${sectionName}`);
+          section.runAllCalculations();
+        }
+      });
     },
-
-    addListener: function(fieldId, callback) {
-      // Add listener to both states so UI updates work in both modes
-      TargetState.addListener(fieldId, callback);
-      ReferenceState.addListener(fieldId, callback);
-    },
-
-    resetAllStates: function() {
-      // Clear localStorage
-      localStorage.removeItem('S03_TARGET_STATE');
-      localStorage.removeItem('S03_REFERENCE_STATE');
-      
-      // Reset to defaults
-      TargetState.setDefaults();
-      ReferenceState.setDefaults();
-      
-      // Save clean defaults
-      TargetState.saveState();
-      ReferenceState.saveState();
-      
-      // Refresh UI
-      this.refreshUI();
-      
-      console.log("S03 MODE MANAGER: All states reset to clean defaults");
-      alert("Section 3 states have been reset to defaults!");
-    }
   };
 
-  // Compatibility alias for existing code
+  // Compatibility alias
   const DualState = ModeManager;
 
   //==========================================================================
   // CLIMATE DATA SERVICE - Direct ClimateValues.js Access
   //==========================================================================
 
-  /**
-   * ClimateDataService - Direct access to ClimateValues.js data
-   * Copied verbatim from 4012 S03 Unified Toggle Test.html
-   */
   const ClimateDataService = {
     ensureAvailable: function (callback, maxRetries = 10) {
       let attempts = 0;
 
       const checkData = () => {
         attempts++;
-        console.log(`S03: Checking climate data availability (attempt ${attempts}/${maxRetries})`);
+        console.log(
+          `S03: Checking climate data availability (attempt ${attempts}/${maxRetries})`,
+        );
 
         if (
           window.TEUI?.ClimateData &&
           Object.keys(window.TEUI.ClimateData).length > 0
         ) {
-          console.log("S03: Climate data available", Object.keys(window.TEUI.ClimateData));
+          console.log(
+            "S03: Climate data available",
+            Object.keys(window.TEUI.ClimateData),
+          );
           callback(window.TEUI.ClimateData);
           return;
         }
 
         if (attempts >= maxRetries) {
-          console.error("S03: Error - Climate data not available after max retries");
+          console.error(
+            "S03: Error - Climate data not available after max retries",
+          );
           return;
         }
 
@@ -382,56 +403,115 @@ window.TEUI.SectionModules.sect03 = (function () {
   };
 
   //==========================================================================
-  // ORIGINAL HELPER FUNCTIONS (Enhanced for DualState)
+  // CORRECTED HELPER FUNCTIONS - STATEMANAGER INTEGRATION
   //==========================================================================
 
   /**
-   * Enhanced getNumericValue to use DualState first, then fallback to StateManager
+   * CORRECTED: Get value from StateManager with proper prefix
    */
   function getNumericValue(fieldId) {
-    // Try DualState first
-    const dualStateValue = DualState.getValue(fieldId);
-    if (dualStateValue !== null && dualStateValue !== undefined) {
-      return window.TEUI?.parseNumeric?.(dualStateValue) || 0;
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const prefixedValue = window.TEUI.StateManager.getValue(
+      `${prefix}${fieldId}`,
+    );
+    const globalValue = window.TEUI.StateManager.getValue(fieldId);
+    
+    // 🔍 DEBUG: Compare prefixed vs global values to diagnose TEUI regression
+    if (prefixedValue !== globalValue) {
+      console.log(
+        `S03: 🔍 VALUE MISMATCH for ${fieldId} - Prefixed (${prefix}${fieldId}): ${prefixedValue}, Global: ${globalValue}`,
+      );
     }
     
-    // Fallback to legacy StateManager
-    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    return window.TEUI?.parseNumeric?.(rawValue) || 0;
+    return window.TEUI.parseNumeric(prefixedValue) || 0;
   }
 
   /**
-   * Enhanced getFieldValue to use DualState first - CRITICAL for h_21 capacitance dropdown
+   * CORRECTED: Get field value from StateManager with proper prefix
    */
   function getFieldValue(fieldId) {
-    // Try DualState first
-    const dualStateValue = DualState.getValue(fieldId);
-    if (dualStateValue !== null && dualStateValue !== undefined) {
-      console.log(`S03: getFieldValue(${fieldId}) from DualState: ${dualStateValue}`);
-      return dualStateValue.toString();
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
+    if (value !== null && value !== undefined) {
+      return value.toString();
     }
     
-    // Fallback to legacy StateManager and DOM
-    if (window.TEUI?.StateManager?.getValue) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        console.log(`S03: getFieldValue(${fieldId}) from StateManager: ${value}`);
-        return value.toString();
-      }
-    }
-    
-    // Critical fallback for dropdown fields (h_21, etc.)
+    // Fallback to DOM only if StateManager doesn't have the value
     const element = document.querySelector(
       `[data-field-id="${fieldId}"],[data-dropdown-id="dd_${fieldId}"]`,
     );
     if (element) {
-      const domValue = element.value !== undefined ? element.value : element.textContent;
-      console.log(`S03: getFieldValue(${fieldId}) from DOM: ${domValue}`);
-      return domValue;
+      return element.value !== undefined ? element.value : element.textContent;
     }
     
-    console.warn(`S03: getFieldValue(${fieldId}) - no value found, returning null`);
     return null;
+  }
+
+  /**
+   * CORRECTED: Set calculated value through StateManager AND update DOM
+   */
+  function setCalculatedValue(fieldId, value, formatType = "number-2dp") {
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    
+    // Store raw value in StateManager with prefix (for DualState isolation)
+    window.TEUI.StateManager.setValue(
+      `${prefix}${fieldId}`,
+      value.toString(),
+      "calculated",
+    );
+    
+    // ✅ FIXED: ONLY update global values in TARGET mode to prevent contamination
+    // Reference mode should NEVER contaminate global climate data
+    if (
+      prefix === "target_" &&
+      (fieldId === "d_20" ||
+        fieldId === "d_21" ||
+        fieldId === "d_22" ||
+        fieldId === "h_22" ||
+        fieldId === "j_19")
+    ) {
+      window.TEUI.StateManager.setValue(
+        fieldId,
+        value.toString(),
+        "calculated",
+      );
+      console.log(
+        `S03: ✅ TARGET UPDATE - ${fieldId}: ${prefix}${fieldId}=${value} AND global ${fieldId}=${value}`,
+      );
+    } else if (prefix === "ref_") {
+      console.log(
+        `S03: 🔒 REFERENCE MODE - ${fieldId}: ref_${fieldId}=${value} (NO global contamination)`,
+      );
+    }
+    
+    // ALSO update DOM directly (until StateManager listeners are fully implemented)
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      let displayValue = value.toString();
+      
+      // Apply formatting if it's a number
+      const numericValue = window.TEUI.parseNumeric(value, NaN);
+      if (!isNaN(numericValue)) {
+        displayValue = window.TEUI.formatNumber(numericValue, formatType);
+      }
+      
+      // Update the DOM element
+      if (
+        element.tagName === "SPAN" ||
+        element.hasAttribute("contenteditable")
+      ) {
+        element.textContent = displayValue;
+      } else if (element.tagName === "INPUT") {
+        element.value = displayValue;
+      } else if (element.tagName === "TD") {
+        // Handle table cells (most common case for calculated values)
+        element.textContent = displayValue;
+      }
+      
+      console.log(
+        `S03: Updated calculated DOM for ${fieldId} = ${displayValue}`,
+      );
+    }
   }
 
   //==========================================================================
@@ -500,7 +580,8 @@ window.TEUI.SectionModules.sect03 = (function () {
                 document.querySelector('[data-dropdown-id="dd_d_19"]')?.value;
             }
 
-            const cities = ClimateDataService.getCitiesForProvince(provinceValue);
+            const cities =
+              ClimateDataService.getCitiesForProvince(provinceValue);
             return cities.map((city) => ({
               value: city,
               name: city,
@@ -511,7 +592,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         j: {
           fieldId: "j_19",
           type: "derived",
-          value: "6.0",
           section: "climateCalculations",
           dependencies: ["d_20"],
         },
@@ -537,7 +617,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_20",
           type: "derived",
-          value: "4600",
           section: "climateCalculations",
           dependencies: ["d_19", "h_19"],
         },
@@ -575,7 +654,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_21",
           type: "derived",
-          value: "196",
           section: "climateCalculations",
           dependencies: ["d_19", "h_19"],
         },
@@ -623,7 +701,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_22",
           type: "derived",
-          value: "1960",
           section: "climateCalculations",
           dependencies: ["d_20"],
         },
@@ -633,7 +710,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         h: {
           fieldId: "h_22",
           type: "calculated",
-          value: "-1680",
           section: "climateCalculations",
           dependencies: ["d_21"],
         },
@@ -643,7 +719,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         l: {
           fieldId: "l_22",
           type: "editable",
-          value: "80",
           section: "climateCalculations",
           classes: ["user-input", "editable"],
         },
@@ -661,14 +736,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_23",
           type: "derived",
-          value: "-24",
           section: "climateCalculations",
           dependencies: ["d_19", "h_19", "d_12"],
         },
         e: {
           fieldId: "e_23",
           type: "calculated",
-          value: "-11",
           section: "climateCalculations",
           dependencies: ["d_23"],
         },
@@ -683,14 +756,13 @@ window.TEUI.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_23",
           type: "calculated",
-          value: "66",
+          value: "64", // Fixed: Correct F conversion of 18°C
           section: "climateCalculations",
           dependencies: ["h_23"],
         },
         m: {
           fieldId: "m_23",
           type: "calculated",
-          value: "122%",
           section: "climateCalculations",
         },
       },
@@ -706,14 +778,14 @@ window.TEUI.SectionModules.sect03 = (function () {
         d: {
           fieldId: "d_24",
           type: "derived",
-          value: "34",
+          value: "30", // Fixed: Default to reasonable value, will be overwritten by climate data
           section: "climateCalculations",
           dependencies: ["d_19", "h_19"],
         },
         e: {
           fieldId: "e_24",
           type: "calculated",
-          value: "98",
+          value: "86", // Fixed: Correct F conversion of 30°C
           section: "climateCalculations",
           dependencies: ["d_24"],
         },
@@ -728,7 +800,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         i: {
           fieldId: "i_24",
           type: "calculated",
-          value: "78",
+          value: "75", // Fixed: Correct F conversion of 24°C
           section: "climateCalculations",
           dependencies: ["h_24", "l_24"],
         },
@@ -744,7 +816,6 @@ window.TEUI.SectionModules.sect03 = (function () {
         m: {
           fieldId: "m_24",
           type: "calculated",
-          value: "108%",
           section: "climateCalculations",
           dependencies: ["h_24", "l_24"],
         },
@@ -921,78 +992,47 @@ window.TEUI.SectionModules.sect03 = (function () {
     return null;
   }
 
-  /**
-   * Enhanced setFieldValue - Uses DualState for Target/Reference isolation
-   */
-  function setFieldValue(fieldId, value, state = "calculated") {
-    const rawValue =
-      value !== null && value !== undefined ? value.toString() : null;
+  function setFieldValue(fieldId, value, fieldType = "calculated") {
+    // Determine current mode prefix
+    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    
+    // Store with mode prefix for dual-state architecture
+    const prefixedFieldId = `${modePrefix}${fieldId}`;
+    window.TEUI.StateManager?.setValue(prefixedFieldId, value, fieldType);
+    
+    // CRITICAL FIX: Only update global state when in target mode
+    // This prevents Reference mode from contaminating application state
+    if (ModeManager.currentMode === "target") {
+      window.TEUI.StateManager?.setValue(fieldId, value, fieldType);
+    }
 
-    // Set raw value in DualState (automatically handles current mode)
-    DualState.setValue(fieldId, rawValue, state);
-
-    // Also update DOM with formatting
+    // ✅ FIXED: Update DOM in BOTH modes (like cooling days fix)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element) {
-      let formattedDisplay = rawValue; // Default to raw value if formatting fails
-      const numericValue = window.TEUI.parseNumeric(rawValue, NaN); // Use global parser
-
-      if (!isNaN(numericValue)) {
-        // Determine the correct format type based on field ID conventions
-        let formatType = "number-2dp"; // Default
-        if (["d_20", "d_21", "d_22", "h_22"].includes(fieldId)) {
-          formatType = "integer-nocomma";
-        } else if (["j_19", "l_22"].includes(fieldId)) {
-          formatType = "number-1dp"; // Climate Zone / Elevation
-        } else if (["d_23", "h_23", "d_24", "h_24", "l_24"].includes(fieldId)) {
-          formatType = "integer"; // Temperatures are whole numbers
-        } else if (["e_23", "i_23", "e_24", "i_24"].includes(fieldId)) {
-          formatType = "integer-nocomma"; // Fahrenheit temps
-        } else if (fieldId === "m_19") {
-          formatType = "integer"; // Cooling days
-        }
-        // Ensure the global formatter exists before calling
-        if (typeof window.TEUI?.formatNumber === "function") {
-          formattedDisplay = window.TEUI.formatNumber(numericValue, formatType);
-        } else {
-          console.error("Global window.TEUI.formatNumber is not available.");
-          // Fallback basic formatting if global doesn't exist
-          formattedDisplay = numericValue.toFixed(
-            formatType.includes("1dp")
-              ? 1
-              : formatType.includes("integer")
-                ? 0
-                : 2,
-          );
-        }
-      } else if (typeof rawValue === "string") {
-        // Keep original string if it wasn't numeric (e.g., "N/A", maybe future text values)
-        formattedDisplay = rawValue;
+      // ✅ FIXED: Use proper StateManager formatting for climate values
+      let formatType = "number-2dp";
+      if (fieldId === "d_20" || fieldId === "d_21" || fieldId === "d_22" || fieldId === "h_22") {
+        formatType = "integer-nocomma"; // HDD/CDD should be integers without commas or decimals
       }
-
-      // Update DOM element
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = formattedDisplay; // Use formatted value for display consistency in inputs too?
-      } else {
-        element.textContent = formattedDisplay;
+      
+        const formattedValue =
+        window.TEUI?.formatNumber?.(parseFloat(value), formatType) ||
+          value.toString();
+        element.textContent = formattedValue;
       }
-    }
+      
+    console.log(
+      `S03: ${prefixedFieldId} = ${value} ${ModeManager.currentMode === "target" ? "(+ global)" : "(ref only)"}`,
+    );
   }
 
   /**
-   * Handle province selection change - Using ClimateDataService
+   * Handle province selection change - CORRECTED to use StateManager
    */
   function handleProvinceChange(e) {
-    const provinceValue = e?.target?.value;
-    if (!provinceValue) return;
-
-    console.log('Section03: Province selected:', provinceValue);
-
-    // Set province value in DualState (automatically handles current mode)
-    DualState.setValue("d_19", provinceValue, "user");
-
-    // Update city dropdown for this province
-    updateCityDropdown(provinceValue);
+    const selectedProvince = e.target.value;
+    ModeManager.setValue("d_19", selectedProvince);
+    updateCityDropdown(selectedProvince);
   }
 
   /**
@@ -1029,35 +1069,54 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     cityDropdown.disabled = false;
 
-    // Auto-select city from current state if it exists in this province
-    const currentCity = DualState.getValue("h_19");
+    // Auto-select city from StateManager if it exists in this province
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const currentCity = window.TEUI.StateManager.getValue(`${prefix}h_19`);
     if (currentCity && cities.includes(currentCity)) {
       cityDropdown.value = currentCity;
-      DualState.setValue("h_19", currentCity, "init");
+      window.TEUI.StateManager.setValue(
+        `${prefix}h_19`,
+        currentCity,
+        "default",
+      );
     } else if (provinceValue === "ON" && cities.includes("Alexandria")) {
       // Default to Alexandria for Ontario
       cityDropdown.value = "Alexandria";
-      DualState.setValue("h_19", "Alexandria", "init");
+      window.TEUI.StateManager.setValue(
+        `${prefix}h_19`,
+        "Alexandria",
+        "default",
+      );
     } else if (cities.length > 0) {
       // Default to first city
       cityDropdown.value = cities[0];
-      DualState.setValue("h_19", cities[0], "init");
+      window.TEUI.StateManager.setValue(`${prefix}h_19`, cities[0], "default");
     }
 
-    console.log("City dropdown updated for", provinceValue, "- selected:", cityDropdown.value);
+    console.log(
+      "City dropdown updated for",
+      provinceValue,
+      "- selected:",
+      cityDropdown.value,
+    );
   }
 
   /**
-   * Update weather data based on selected city/province - Using ClimateDataService
+   * Update weather data based on selected city/province - CORRECTED to use StateManager
    */
   function updateWeatherData() {
-    // Get province and city values from DualState (automatically uses current mode)
-    const provinceValue = DualState.getValue("d_19") ||
+    // Get values from StateManager with proper prefix
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const provinceValue =
+      window.TEUI.StateManager.getValue(`${prefix}d_19`) ||
       getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
-    const cityValue = DualState.getValue("h_19") ||
+    const cityValue =
+      window.TEUI.StateManager.getValue(`${prefix}h_19`) ||
       getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
-    const timeframe = DualState.getValue("h_20") ||
-      getElement(['[data-dropdown-id="dd_h_20"]'])?.value || "Present";
+    const timeframe =
+      window.TEUI.StateManager.getValue(`${prefix}h_20`) ||
+      getElement(['[data-dropdown-id="dd_h_20"]'])?.value ||
+      "Present";
 
     if (!provinceValue || !cityValue) {
       console.log("S03: Cannot update weather data - missing province or city");
@@ -1068,55 +1127,294 @@ window.TEUI.SectionModules.sect03 = (function () {
     const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
 
     if (!cityData) {
-      console.warn(`S03: No climate data found for ${cityValue}, ${provinceValue}`);
+      console.warn(
+        `S03: No climate data found for ${cityValue}, ${provinceValue}`,
+      );
       return;
     }
 
-    // Update HDD value - choosing based on timeframe
-    const hddValue = timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
+    // ✅ COMPREHENSIVE: Complete climate data mapping from ClimateValues.js
+    console.log(
+      `S03: ⭐ COMPREHENSIVE mapping of ALL available climate data for ${cityValue}, ${provinceValue} (${timeframe}):`,
+      cityData,
+    );
+
+    // === DEGREE DAYS MAPPING ===
+    // Update HDD18 (Heating Degree Days below 18°C) - timeframe dependent
+    const hddValue =
+      timeframe === "Future" ? cityData.HDD18_2021_2050 : cityData.HDD18;
     if (hddValue !== null && hddValue !== undefined && hddValue !== 666) {
       setFieldValue("d_20", hddValue, "derived");
+      console.log(
+        `S03: ✓ Set HDD18 (d_20) = ${hddValue} for ${timeframe} timeframe`,
+      );
     } else {
       setFieldValue("d_20", "N/A", "derived");
+      console.warn(`S03: ⚠️ HDD18 not available for ${timeframe} timeframe`);
     }
 
-    // Update CDD value - choosing based on timeframe
-    const cddValue = timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
+    // Update CDD24 (Cooling Degree Days above 24°C) - timeframe dependent
+    const cddValue =
+      timeframe === "Future" ? cityData.CDD24_2021_2050 : cityData.CDD24;
     if (cddValue !== null && cddValue !== undefined && cddValue !== 666) {
       setFieldValue("d_21", cddValue, "derived");
+      console.log(
+        `S03: ✓ Set CDD24 (d_21) = ${cddValue} for ${timeframe} timeframe`,
+      );
     } else {
-      // Check if fallback to present value is possible
-      if (timeframe === "Future" && cityData.CDD24 !== null && cityData.CDD24 !== undefined && cityData.CDD24 !== 666) {
-        console.warn(`S03: Future CDD not available for ${cityValue}, ${provinceValue}. Using present value as fallback.`);
+      // For CDD, if Future not available, try Present as fallback
+      if (
+        timeframe === "Future" &&
+        cityData.CDD24 !== null &&
+        cityData.CDD24 !== undefined &&
+        cityData.CDD24 !== 666
+      ) {
+        console.warn(
+          `S03: ⚠️ Future CDD24 not available for ${cityValue}, ${provinceValue}. Using present value as fallback.`,
+        );
         setFieldValue("d_21", cityData.CDD24, "derived");
       } else {
-        setFieldValue("d_21", "N/A", "derived");
+        setFieldValue("d_21", 0, "derived"); // Default to 0 for CDD if no data
+        console.warn(
+          `S03: ⚠️ No CDD24 data available for ${cityValue}, ${provinceValue} - using default 0`,
+        );
       }
     }
 
-    // Update other climate values from cityData
-    const climateUpdates = [
-      { fieldId: "d_23", value: cityData.January_2_5, label: "Coldest Days" },
-      { fieldId: "d_24", value: cityData.July_2_5_Tdb, label: "Hottest Days" },
-      { fieldId: "l_22", value: cityData.Elevation_ASL, label: "Elevation" },
-    ];
+    // Log alternative HDD15 data for reference
+    if (
+      cityData.HDD15 !== null &&
+      cityData.HDD15 !== undefined &&
+      cityData.HDD15 !== 666
+    ) {
+      console.log(
+        `S03: 📊 HDD15 available: ${cityData.HDD15} (below 15°C - informational only)`,
+      );
+    }
 
-    climateUpdates.forEach((update) => {
-      if (update.value !== null && update.value !== undefined && update.value !== 666) {
-        setFieldValue(update.fieldId, update.value, "derived");
+    // === DESIGN TEMPERATURES MAPPING ===
+    // Update January 2.5% design temperature (coldest day)
+    const coldestTemp = cityData.January_2_5;
+    if (
+      coldestTemp !== null &&
+      coldestTemp !== undefined &&
+      coldestTemp !== 666
+    ) {
+      setFieldValue("d_23", coldestTemp, "derived");
+      console.log(
+        `S03: ✓ Set January 2.5% design temp (d_23) = ${coldestTemp}°C`,
+      );
+    } else {
+      setFieldValue("d_23", -24, "derived"); // Default fallback
+      console.warn(`S03: ⚠️ January_2_5 not available, using default -24°C`);
+    }
+
+    // Log January 1% extreme temperature for reference
+    if (
+      cityData.January_1 !== null &&
+      cityData.January_1 !== undefined &&
+      cityData.January_1 !== 666
+    ) {
+      console.log(
+        `S03: 📊 January 1% extreme temp available: ${cityData.January_1}°C (more extreme cold)`,
+      );
+    }
+
+    // 🔥 DEBUG: Update July 2.5% dry bulb temperature (hottest day) - timeframe dependent
+    const hottestTemp =
+      timeframe === "Future"
+        ? cityData.Future_July_2_5_Tdb
+        : cityData.July_2_5_Tdb;
+    console.log(
+      `🔥 HOTTEST TEMP DEBUG: timeframe="${timeframe}", Future_July_2_5_Tdb=${cityData.Future_July_2_5_Tdb}, July_2_5_Tdb=${cityData.July_2_5_Tdb}, selected=${hottestTemp}`,
+    );
+    if (
+      hottestTemp !== null &&
+      hottestTemp !== undefined &&
+      hottestTemp !== 666
+    ) {
+      setFieldValue("d_24", hottestTemp, "derived");
+      console.log(
+        `S03: ✓ Set July 2.5% dry bulb temp (d_24) = ${hottestTemp}°C for ${timeframe} timeframe`,
+      );
+    } else {
+      // Fallback to present if future not available
+      if (
+        timeframe === "Future" &&
+        cityData.July_2_5_Tdb !== null &&
+        cityData.July_2_5_Tdb !== undefined
+      ) {
+        setFieldValue("d_24", cityData.July_2_5_Tdb, "derived");
+        console.warn(
+          `S03: ⚠️ Future July temp not available, using present value`,
+        );
       } else {
-        setFieldValue(update.fieldId, "N/A", "derived");
+        setFieldValue("d_24", 30, "derived"); // Default fallback
+        console.warn(
+          `S03: ⚠️ July design temp not available, using default 30°C`,
+        );
       }
-    });
+    }
+
+    // Log July wet bulb temperatures for reference
+    const hottestWetBulb =
+      timeframe === "Future"
+        ? cityData.Future_July_2_5_Twb
+        : cityData.July_2_5_Twb;
+    if (
+      hottestWetBulb !== null &&
+      hottestWetBulb !== undefined &&
+      hottestWetBulb !== 666
+    ) {
+      console.log(
+        `S03: 📊 July 2.5% wet bulb temp available: ${hottestWetBulb}°C for ${timeframe} timeframe`,
+      );
+    }
+
+    // === SITE CONDITIONS MAPPING ===
+    // Update elevation from ClimateValues.js structure
+    const elevation = cityData["Elev ASL (m)"] || cityData.Elevation_ASL;
+    if (elevation !== null && elevation !== undefined && elevation !== 666) {
+      setFieldValue("l_22", elevation, "derived");
+      console.log(`S03: ✓ Set Elevation (l_22) = ${elevation}m ASL`);
+    } else {
+      setFieldValue("l_22", 80, "derived"); // Default fallback
+      console.warn(`S03: ⚠️ Elevation not available, using default 80m ASL`);
+    }
+
+    // === ADDITIONAL CLIMATE DATA FOR REFERENCE ===
+    // Log future extreme weather data
+    if (
+      cityData.Over_30Tdb_2021_2050 !== null &&
+      cityData.Over_30Tdb_2021_2050 !== undefined &&
+      cityData.Over_30Tdb_2021_2050 !== 666
+    ) {
+      console.log(
+        `S03: 📊 Future days over 30°C (2021-2050): ${cityData.Over_30Tdb_2021_2050} days/year`,
+      );
+    }
+
+    if (
+      cityData.Extreme_Hot_Tdb_1991_2020 !== null &&
+      cityData.Extreme_Hot_Tdb_1991_2020 !== undefined &&
+      cityData.Extreme_Hot_Tdb_1991_2020 !== 666
+    ) {
+      console.log(
+        `S03: 📊 Historical extreme max temp (1991-2020): ${cityData.Extreme_Hot_Tdb_1991_2020}°C`,
+      );
+    }
+
+    // Log precipitation data
+    if (
+      cityData.Rain_Annual_mm !== null &&
+      cityData.Rain_Annual_mm !== undefined &&
+      cityData.Rain_Annual_mm !== 666
+    ) {
+      console.log(`S03: 📊 Annual rainfall: ${cityData.Rain_Annual_mm}mm`);
+    }
+
+    if (
+      cityData.Rain_1_day_1_50mm !== null &&
+      cityData.Rain_1_day_1_50mm !== undefined &&
+      cityData.Rain_1_day_1_50mm !== 666
+    ) {
+      console.log(
+        `S03: 📊 1-day 1/50 year rain event: ${cityData.Rain_1_day_1_50mm}mm`,
+      );
+    }
+
+    if (
+      cityData.Rain_15_min_mm !== null &&
+      cityData.Rain_15_min_mm !== undefined &&
+      cityData.Rain_15_min_mm !== 666
+    ) {
+      console.log(
+        `S03: 📊 15-minute rain intensity: ${cityData.Rain_15_min_mm}mm`,
+      );
+    }
+
+    // Log wind pressure data
+    if (
+      cityData.Wind_Hourly_kPa_1_10 !== null &&
+      cityData.Wind_Hourly_kPa_1_10 !== undefined &&
+      cityData.Wind_Hourly_kPa_1_10 !== 666
+    ) {
+      console.log(
+        `S03: 📊 Hourly wind pressure (1/10 year): ${cityData.Wind_Hourly_kPa_1_10} kPa`,
+      );
+    }
+
+    if (
+      cityData.Wind_Hourly_kPa_1_50 !== null &&
+      cityData.Wind_Hourly_kPa_1_50 !== undefined &&
+      cityData.Wind_Hourly_kPa_1_50 !== 666
+    ) {
+      console.log(
+        `S03: 📊 Hourly wind pressure (1/50 year): ${cityData.Wind_Hourly_kPa_1_50} kPa`,
+      );
+    }
+
+    // Log snow load data
+    if (
+      cityData.Snow_kPa_1_50_Ss !== null &&
+      cityData.Snow_kPa_1_50_Ss !== undefined &&
+      cityData.Snow_kPa_1_50_Ss !== 666
+    ) {
+      console.log(
+        `S03: 📊 Snow load ground (1/50 year): ${cityData.Snow_kPa_1_50_Ss} kPa`,
+      );
+    }
+
+    if (
+      cityData.Snow_kPa_1_50_Sr !== null &&
+      cityData.Snow_kPa_1_50_Sr !== undefined &&
+      cityData.Snow_kPa_1_50_Sr !== 666
+    ) {
+      console.log(
+        `S03: 📊 Snow load roof (1/50 year): ${cityData.Snow_kPa_1_50_Sr} kPa`,
+      );
+    }
+
+    // Log winter/summer averages if available
+    if (
+      cityData.Winter_Tdb_Avg !== null &&
+      cityData.Winter_Tdb_Avg !== undefined &&
+      cityData.Winter_Tdb_Avg !== 666
+    ) {
+      console.log(`S03: 📊 Winter average temp: ${cityData.Winter_Tdb_Avg}°C`);
+    }
+
+    if (
+      cityData.Summer_Tdb_Avg !== null &&
+      cityData.Summer_Tdb_Avg !== undefined &&
+      cityData.Summer_Tdb_Avg !== 666
+    ) {
+      console.log(`S03: 📊 Summer average temp: ${cityData.Summer_Tdb_Avg}°C`);
+    }
+
+    if (
+      cityData.Summer_RH_1500_LST !== null &&
+      cityData.Summer_RH_1500_LST !== undefined &&
+      cityData.Summer_RH_1500_LST !== 666
+    ) {
+      console.log(
+        `S03: 📊 Summer relative humidity (15:00 LST): ${cityData.Summer_RH_1500_LST}%`,
+      );
+    }
 
     // Update climate zone based on HDD
     const climateZone = determineClimateZone(hddValue);
-    setFieldValue("j_19", climateZone, "calculated");
+    setFieldValue("j_19", climateZone, "derived");
 
     // Run all calculations after weather data update
     calculateAll();
 
-    console.log(`S03: Weather data updated for ${cityValue}, ${provinceValue} (${timeframe})`);
+    console.log(
+      `S03: ✅ COMPREHENSIVE climate data mapping complete for ${cityValue}, ${provinceValue} (${timeframe})`,
+    );
+    console.log(
+      `S03: 🌡️ Applied: HDD=${hddValue}, CDD=${cddValue || 0}, Cold=${coldestTemp}°C, Hot=${hottestTemp}°C, Elevation=${elevation}m`,
+    );
   }
 
   /**
@@ -1138,12 +1436,15 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Display weather data in modal - Using ClimateDataService
+   * Display weather data in modal - CORRECTED to use StateManager
    */
   function showWeatherData() {
-    const provinceValue = DualState.getValue("d_19") ||
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const provinceValue =
+      window.TEUI.StateManager.getValue(`${prefix}d_19`) ||
       getElement(['[data-dropdown-id="dd_d_19"]'])?.value;
-    const cityValue = DualState.getValue("h_19") ||
+    const cityValue =
+      window.TEUI.StateManager.getValue(`${prefix}h_19`) ||
       getElement(['[data-dropdown-id="dd_h_19"]'])?.value;
 
     if (!provinceValue || !cityValue) {
@@ -1185,31 +1486,35 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Calculate Celsius to Fahrenheit conversions (Heating only now)
+   * Calculate Celsius to Fahrenheit conversions - CORRECTED formulas
    */
   function calculateTemperatures() {
-    // Coldest days conversion (d_23 -> e_23)
-    const coldestC_str = window.TEUI.StateManager?.getValue("d_23");
-    const coldestC = parseFloat(coldestC_str);
-    if (!isNaN(coldestC)) {
+    console.log(
+      `🔥 calculateTemperatures() FUNCTION CALLED - Starting temperature conversions`,
+    );
+    
+    // Coldest days conversion (d_23 -> e_23) - Standard conversion
+    const coldestC = getNumericValue("d_23"); // Use helper that reads with proper prefix
+    if (!isNaN(coldestC) && coldestC !== 0) {
       const coldestF = Math.round((coldestC * 9) / 5 + 32);
       setFieldValue("e_23", coldestF);
+      console.log(`🔥 COLDEST TEMP CONVERSION: ${coldestC}°C → ${coldestF}°F`);
     }
 
-    // Heating setpoint conversion (h_23 -> i_23)
-    const heatingC_str = window.TEUI.StateManager?.getValue("h_23");
-    const heatingC = parseFloat(heatingC_str);
-    if (!isNaN(heatingC)) {
+    // Heating setpoint conversion (h_23 -> i_23) - Standard conversion  
+    const heatingC = getNumericValue("h_23"); // Use helper that reads with proper prefix
+    if (!isNaN(heatingC) && heatingC !== 0) {
       const heatingF = Math.round((heatingC * 9) / 5 + 32);
       setFieldValue("i_23", heatingF);
+      console.log(`🔥 HEATING TEMP CONVERSION: ${heatingC}°C → ${heatingF}°F`);
     }
 
-    // Hottest days conversion (d_24 -> e_24)
-    const hottestC_str = window.TEUI.StateManager?.getValue("d_24");
-    const hottestC = parseFloat(hottestC_str);
-    if (!isNaN(hottestC)) {
-      const hottestF = Math.round((hottestC * 9) / 5 + 32);
+    // Hottest days conversion (d_24 -> e_24) - Standard Celsius to Fahrenheit
+    const hottestC = getNumericValue("d_24"); // Use helper that reads with proper prefix
+    if (!isNaN(hottestC) && hottestC !== 0) {
+      const hottestF = Math.round((hottestC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
       setFieldValue("e_24", hottestF);
+      console.log(`🔥 HOTTEST TEMP CONVERSION: ${hottestC}°C → ${hottestF}°F`);
     }
 
     // Cooling setpoint conversion is now handled by updateCoolingDependents
@@ -1225,11 +1530,16 @@ window.TEUI.SectionModules.sect03 = (function () {
     const coolingDaysGFH = getNumericValue("m_19"); // Use a separate variable name to avoid confusion
     const heatingDays = 365 - coolingDaysGFH;
 
+    // 🔍 DEBUG: Log calculation values to diagnose TEUI regression
+    console.log(
+      `S03: 🔍 GFHDD calculation - HeatingSetpoint: ${heatingSetpoint}, CoolingDays: ${coolingDaysGFH}, HeatingDays: ${heatingDays}`,
+    );
+
     // Formula: (TsetHeating - 10°C_ground) * HeatingDays
     const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
-    setFieldValue("d_22", gfhdd);
+    setCalculatedValue("d_22", gfhdd);
 
-    // --- Ground facing CDD (h_22) --- ARCHIVE LOGIC RESTORED ---
+    // --- Ground facing CDD (h_22) --- LOGIC from ARCHIVE ---
     const capacitanceSetting = getFieldValue("h_21") || "Static"; // Default to Static if undefined
     const coolingSetpoint_h24 = getNumericValue("h_24"); // TsetCool
     const coolingDays_m19 = getNumericValue("m_19"); // DaysCooling
@@ -1243,16 +1553,32 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Formula: (10 - TsetCool) * DaysCooling
       gfcdd = (10 - coolingSetpoint_h24) * coolingDays_m19;
     }
-
+    
     // Update h_22 field with the newly calculated GF CDD value
-    // Use Math.round as Excel likely rounds this
-    setFieldValue("h_22", Math.round(gfcdd));
+    setCalculatedValue("h_22", Math.round(gfcdd));
+  }
+
+  /**
+   * 🔥 DEBUG: Force temperature recalculation
+   */
+  function debugForceTemperatureCalculation() {
+    console.log("🔥 DEBUG: Force temperature calculation triggered");
+    calculateTemperatures();
+  }
+
+  // Expose debug function globally
+  if (window.TEUI) {
+    window.TEUI.debugForceTemperatureCalculation =
+      debugForceTemperatureCalculation;
   }
 
   /**
    * Calculate all values
    */
   function calculateAll() {
+    console.log(
+      "🔥 calculateAll() FUNCTION CALLED - Starting all calculations",
+    );
     // Dependencies: d_19, h_19 -> d_23, d_24; h_20 -> future flag; d_12 -> critical flag
 
     // Calculate base setpoints (depend on d_12, which might be set by StateManager init or user)
@@ -1284,6 +1610,11 @@ window.TEUI.SectionModules.sect03 = (function () {
     const occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Get from S02
     let heatingSetpoint;
 
+    // 🔍 DEBUG: Log setpoint calculation inputs
+    console.log(
+      `S03: 🔍 HEATING SETPOINT calculation - ReferenceStandard: "${referenceStandard}", OccupancyType: "${occupancyType}"`,
+    );
+
     // Check if the reference standard indicates a Passive House related standard
     if (referenceStandard.toUpperCase().includes("PH")) {
       // Case-insensitive check for "PH"
@@ -1304,6 +1635,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       }
     }
 
+    console.log(`S03: 🔍 HEATING SETPOINT result: ${heatingSetpoint}°C`);
     setFieldValue("h_23", heatingSetpoint); // Update state and DOM via S03 local helper
     return heatingSetpoint; // Return value for potential chaining
   }
@@ -1314,6 +1646,11 @@ window.TEUI.SectionModules.sect03 = (function () {
   function calculateCoolingSetpoint_h24() {
     const occupancyType = window.TEUI.StateManager?.getValue("d_12") || ""; // Direct StateManager access
     let coolingSetpoint = 24; // Default for all types currently
+
+    // 🔍 DEBUG: Log cooling setpoint calculation
+    console.log(
+      `S03: 🔍 COOLING SETPOINT calculation - OccupancyType: "${occupancyType}", Result: ${coolingSetpoint}°C`,
+    );
 
     // Add specific logic based on occupancy if needed in the future
     setFieldValue("h_24", coolingSetpoint); // Update state and DOM
@@ -1343,9 +1680,9 @@ window.TEUI.SectionModules.sect03 = (function () {
   function updateCoolingDependents() {
     const effectiveSetpointC = determineEffectiveCoolingSetpoint();
 
-    // Update i_24 (Fahrenheit conversion)
+    // ✅ FIXED: Update i_24 (Fahrenheit conversion) - Standard C to F conversion
     if (!isNaN(effectiveSetpointC)) {
-      const effectiveSetpointF = Math.round((effectiveSetpointC * 9) / 5 + 32);
+      const effectiveSetpointF = Math.round((effectiveSetpointC * 9) / 5 + 32); // Standard conversion: (C × 9/5) + 32
       setFieldValue("i_24", effectiveSetpointF);
     }
 
@@ -1395,13 +1732,19 @@ window.TEUI.SectionModules.sect03 = (function () {
         const sectionTitleText = sectionHeader.textContent.trim();
         if (sectionTitleText.includes("SECTION 3. Climate Calculations")) {
           // Find the text node or icon and insert after it
-          const iconSpan = sectionHeader.querySelector('.section-icon');
+          const iconSpan = sectionHeader.querySelector(".section-icon");
           if (iconSpan && iconSpan.nextSibling) {
             // Insert after icon and title text
-            iconSpan.parentNode.insertBefore(flagSpan, iconSpan.nextSibling.nextSibling || null);
+            iconSpan.parentNode.insertBefore(
+              flagSpan,
+              iconSpan.nextSibling.nextSibling || null,
+            );
         } else {
             // Fallback: insert at beginning
-            sectionHeader.insertBefore(flagSpan, sectionHeader.firstChild.nextSibling);
+            sectionHeader.insertBefore(
+              flagSpan,
+              sectionHeader.firstChild.nextSibling,
+            );
           }
         }
       }
@@ -1419,13 +1762,13 @@ window.TEUI.SectionModules.sect03 = (function () {
 
   // --- End New Calculation Functions ---
 
-
-
   /**
    * Setup S03-specific weather data button
    */
   function setupS03WeatherButton() {
-    const sectionHeader = document.querySelector("#climateCalculations .section-header");
+    const sectionHeader = document.querySelector(
+      "#climateCalculations .section-header",
+    );
     if (!sectionHeader) {
       console.warn("S03: Section header not found for weather button");
       return;
@@ -1456,7 +1799,7 @@ window.TEUI.SectionModules.sect03 = (function () {
     `;
 
     // Add weather data functionality
-    weatherButton.addEventListener("click", function() {
+    weatherButton.addEventListener("click", function () {
       showWeatherData();
     });
 
@@ -1470,67 +1813,35 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Initialize all event handlers
    */
   function initializeEventHandlers() {
-    // Province dropdown change
-    const provinceDropdown = getElement(['[data-dropdown-id="dd_d_19"]']);
-    if (provinceDropdown) {
-      // Remove any existing listeners
-      const newProvinceDropdown = provinceDropdown.cloneNode(true);
-      provinceDropdown.parentNode.replaceChild(
-        newProvinceDropdown,
-        provinceDropdown,
-      );
+    const sectionElement = document.getElementById("climateCalculations");
+    if (!sectionElement) return;
+    
+    // Use event delegation for all user inputs in the section
+    sectionElement.addEventListener('change', e => {
+      if (e.target.matches('select')) {
+        handleUserInput(e);
+      }
+    });
 
-      // Add new listener
-      newProvinceDropdown.addEventListener("change", handleProvinceChange);
-    }
+    sectionElement.addEventListener('input', e => {
+      if (e.target.matches('input[type="range"]')) {
+        handleUserInput(e);
+      }
+    });
 
-    // City dropdown change
-    const cityDropdown = getElement(['[data-dropdown-id="dd_h_19"]']);
-    if (cityDropdown) {
-      // Remove any existing listeners
-      const newCityDropdown = cityDropdown.cloneNode(true);
-      cityDropdown.parentNode.replaceChild(newCityDropdown, cityDropdown);
+    sectionElement.addEventListener('blur', e => {
+      if (e.target.matches('[contenteditable="true"]')) {
+        handleUserInput(e);
+      }
+    }, true);
 
-      // Add new listener
-      newCityDropdown.addEventListener("change", function () {
-        const selectedCity = this.value;
-        console.log('Section03: City selected:', selectedCity);
-        DualState.setValue("h_19", selectedCity, "user");
-        updateWeatherData();
-      });
-    }
-
-    // Present/Future timeframe dropdown
-    const timeframeDropdown = getElement(['[data-dropdown-id="dd_h_20"]']);
-    if (timeframeDropdown) {
-      // Remove any existing listeners
-      const newTimeframeDropdown = timeframeDropdown.cloneNode(true);
-      timeframeDropdown.parentNode.replaceChild(newTimeframeDropdown, timeframeDropdown);
-
-      // Add new listener
-      newTimeframeDropdown.addEventListener("change", function() {
-        const selectedTimeframe = this.value;
-        console.log('S03: Timeframe selected:', selectedTimeframe);
-        DualState.setValue("h_20", selectedTimeframe, "user");
-        updateWeatherData(); // This will update HDD/CDD values based on Present/Future
-      });
-    }
-
-    // ✅ CRITICAL: Capacitance dropdown (h_21) - AFFECTS GFCDD CALCULATION
-    const capacitanceDropdown = getElement(['[data-dropdown-id="dd_h_21"]']);
-    if (capacitanceDropdown) {
-      // Remove any existing listeners
-      const newCapacitanceDropdown = capacitanceDropdown.cloneNode(true);
-      capacitanceDropdown.parentNode.replaceChild(newCapacitanceDropdown, capacitanceDropdown);
-
-      // Add new listener
-      newCapacitanceDropdown.addEventListener("change", function() {
-        const selectedCapacitance = this.value;
-        console.log('S03: Capacitance setting changed:', selectedCapacitance);
-        DualState.setValue("h_21", selectedCapacitance, "user");
-        calculateAll(); // CRITICAL: Recalculate GFCDD when capacitance changes
-      });
-    }
+    sectionElement.addEventListener('keydown', e => {
+      if (e.target.matches('[contenteditable="true"]') && e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.target.blur();
+      }
+    });
 
     // Weather data buttons
     ["showWeatherDataBtn", "weatherDataBtn"].forEach((id) => {
@@ -1542,28 +1853,25 @@ window.TEUI.SectionModules.sect03 = (function () {
     });
 
     // Add handlers for ALL editable fields in this section (e.g., m_19, l_24)
-    const sectionElement = document.getElementById("climateCalculations");
-    if (sectionElement) {
-      const editableFields = sectionElement.querySelectorAll(
-        ".editable.user-input",
-      );
-      editableFields.forEach((field) => {
-        if (!field.hasEditableListeners) {
-          // Add a flag to prevent duplicate listeners
-          field.setAttribute("contenteditable", "true");
-          field.addEventListener("blur", handleEditableBlur); // Use the general blur handler
-          // Add the general keydown handler to prevent Enter newlines
-          field.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.stopPropagation();
-              this.blur();
-            }
-          });
-          field.hasEditableListeners = true; // Set the flag
-        }
-      });
-    }
+    const editableFields = sectionElement.querySelectorAll(
+      ".editable.user-input",
+    );
+    editableFields.forEach((field) => {
+      if (!field.hasEditableListeners) {
+        // Add a flag to prevent duplicate listeners
+        field.setAttribute("contenteditable", "true");
+        field.addEventListener("blur", handleEditableBlur); // Use the general blur handler
+        // Add the general keydown handler to prevent Enter newlines
+        field.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.blur();
+          }
+        });
+        field.hasEditableListeners = true; // Set the flag
+      }
+    });
 
     // ✅ INITIALIZE SLIDERS VIA FIELDMANAGER (Standard Architecture)
     if (window.TEUI?.FieldManager?.initializeSliders) {
@@ -1592,7 +1900,10 @@ window.TEUI.SectionModules.sect03 = (function () {
 
           // Update d_23 (January Design Temp) based on stored data - Using ClimateDataService
           if (provinceValue && cityValue) {
-            const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
+            const cityData = ClimateDataService.getCityData(
+              provinceValue,
+              cityValue,
+            );
 
             if (cityData) {
               // Use the stored 1% or 2.5% value based on isCritical
@@ -1635,12 +1946,21 @@ window.TEUI.SectionModules.sect03 = (function () {
         calculateGroundFacing(); // Re-add call needed for GF CDD
       });
 
-      // Listener for d_20 (HDD) changes to update j_19 (Climate Zone)
-      window.TEUI.StateManager.addListener("d_20", function (newHddValue) {
+      // ✅ FIXED: Listen for target and reference HDD changes (like cooling days fix)
+      window.TEUI.StateManager.addListener("target_d_20", function (newHddValue) {
+        if (ModeManager.currentMode === "target") {
         const climateZone = determineClimateZone(newHddValue);
         setFieldValue("j_19", climateZone, "derived");
-        // Also recalculate Ground Facing HDD (d_22) which depends on d_20
         calculateGroundFacing();
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_d_20", function (newHddValue) {
+        if (ModeManager.currentMode === "reference") {
+          const climateZone = determineClimateZone(newHddValue);
+          setFieldValue("j_19", climateZone, "derived");
+          calculateGroundFacing();
+        }
       });
 
       // Listener for m_19 (Cooling Days) changes
@@ -1648,26 +1968,35 @@ window.TEUI.SectionModules.sect03 = (function () {
         calculateAll(); // Recalculate everything as GF HDD and GF CDD change
       });
 
-      // ✅ CRITICAL: Bridge FieldManager slider updates to DualState
-      window.TEUI.StateManager.addListener("i_21", function (newValue) {
-        // When FieldManager updates StateManager, also update DualState for isolation
-        DualState.setValue("i_21", newValue, "user");
-        calculateAll(); // Recalculate everything as capacitance affects GF CDD
-        console.log(`S03: Capacitance slider updated via FieldManager - bridged to DualState: ${newValue}%`);
+      // ✅ CORRECTED: Listen for both target and reference slider updates
+      window.TEUI.StateManager.addListener("target_i_21", function (newValue) {
+        if (ModeManager.currentMode === "target") {
+          calculateAll(); // Recalculate everything as capacitance affects GF CDD
+        }
       });
 
-      // ✅ CRITICAL: Bridge capacitance dropdown (h_21) updates to DualState
-      window.TEUI.StateManager.addListener("h_21", function (newValue) {
-        // When dropdown updates StateManager, also update DualState for isolation
-        DualState.setValue("h_21", newValue, "user");
-        calculateAll(); // Recalculate GFCDD when capacitance setting changes
-        console.log(`S03: Capacitance dropdown updated via StateManager - bridged to DualState: ${newValue}`);
+      window.TEUI.StateManager.addListener("ref_i_21", function (newValue) {
+        if (ModeManager.currentMode === "reference") {
+          calculateAll(); // Recalculate everything as capacitance affects GF CDD
+        }
+      });
+
+      // ✅ CORRECTED: Listen for both target and reference dropdown updates
+      window.TEUI.StateManager.addListener("target_h_21", function (newValue) {
+        if (ModeManager.currentMode === "target") {
+          calculateAll(); // Recalculate GFCDD when capacitance setting changes
+        }
+      });
+
+      window.TEUI.StateManager.addListener("ref_h_21", function (newValue) {
+        if (ModeManager.currentMode === "reference") {
+          calculateAll(); // Recalculate GFCDD when capacitance setting changes
+        }
       });
     } else {
       console.warn("Section 03: StateManager not found, listeners not added.");
     }
   }
-
 
   /**
    * Handle blur events on editable fields
@@ -1685,10 +2014,12 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? "integer"
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-      // Update StateManager
+      
+      // ✅ CORRECTED: Update StateManager with proper prefixed state
       if (window.TEUI.StateManager) {
+        const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
         window.TEUI.StateManager.setValue(
-          fieldId,
+          `${prefix}${fieldId}`,
           numericValue.toString(),
           "user-modified",
         );
@@ -1696,7 +2027,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       calculateAll(); // Recalculate after state update
     } else {
       // Revert to previous value if input is invalid
-      const previousValue = window.TEUI.StateManager?.getValue(fieldId) || "0"; // Fallback to 0
+      const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+      const previousValue = window.TEUI.StateManager?.getValue(`${prefix}${fieldId}`) || "0"; // Fallback to 0
       const prevNumericValue = window.TEUI.parseNumeric(previousValue, 0);
       const formatType = Number.isInteger(prevNumericValue)
         ? "integer"
@@ -1730,38 +2062,46 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     console.log("S03: Populated province dropdown with options:", provinces);
 
-    // Set default province from current state
-    const defaultProvince = DualState.getValue("d_19") || "ON";
+    // Set default province from StateManager
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const defaultProvince =
+      window.TEUI.StateManager.getValue(`${prefix}d_19`) || "ON";
     provinceSelect.value = defaultProvince;
 
     if (provinceSelect.value) {
-      DualState.setValue("d_19", provinceSelect.value, "init");
+      window.TEUI.StateManager.setValue(
+        `${prefix}d_19`,
+        provinceSelect.value,
+        "default",
+      );
       // Trigger city dropdown update
       updateCityDropdown(provinceSelect.value);
     }
   }
 
   /**
-   * Called when section is rendered - Enhanced for DualState
+   * Called when section is rendered - CORRECTED for StateManager architecture
    */
   function onSectionRendered() {
-    console.log("S03: Section rendered - initializing DualState architecture");
+    console.log(
+      "S03: Section rendered - initializing corrected StateManager architecture",
+    );
 
-    // Initialize DualState system first
-    ModeManager.initialize();
+    // Initialize defaults in StateManager if not already set
+    ModeManager.setDefaults();
 
-    // Expose ModeManager globally for external access (e.g., global toggle)
+    // ✅ CRITICAL: Expose ModeManager globally for global toggle functionality
     if (window.TEUI) {
       window.TEUI.ModeManager = ModeManager;
       window.TEUI.DualState = DualState;
-      console.log("S03: DualState functionality exposed globally");
+      console.log("S03: ModeManager exposed globally for global toggle");
     }
 
     // Setup S03-specific weather data button
     setupS03WeatherButton();
 
     // Ensure ClimateData is available before proceeding
-    ClimateDataService.ensureAvailable(function() {
+    ClimateDataService.ensureAvailable(function () {
       console.log("S03: ClimateData available - initializing dropdowns");
       
       // Populate province dropdown
@@ -1770,10 +2110,10 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Set up event handlers
       initializeEventHandlers();
 
-      // Initial UI refresh from current state
+      // Initial UI refresh from StateManager
       ModeManager.refreshUI();
 
-      console.log("S03: DualState initialization complete");
+      console.log("S03: StateManager architecture initialization complete");
     });
   }
 
@@ -1796,10 +2136,8 @@ window.TEUI.SectionModules.sect03 = (function () {
     showWeatherData: showWeatherData,
     calculateAll: calculateAll,
 
-    // DualState functionality
+    // StateManager integration functionality
     DualState: DualState,
     ModeManager: ModeManager,
-    TargetState: TargetState,
-    ReferenceState: ReferenceState,
   };
 })();
