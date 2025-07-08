@@ -44,12 +44,16 @@ window.TEUI.SectionModules.sect08 = (function () {
             const stateValue = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
             
             if (stateValue !== undefined && stateValue !== null) {
-                // Check if the element is a slider (range input)
-                if (element.matches('input[type="range"]')) {
-                    element.value = stateValue;
+                // The element itself could be the input, or it could be a wrapper.
+                let slider = element.querySelector('input[type="range"]');
+                if (!slider && element.matches('input[type="range"]')) {
+                    slider = element;
+                }
+
+                if (slider) {
+                    slider.value = stateValue;
                     // Also update the text display for the slider
-                    const display = document.querySelector(`[data-display-for="${fieldId}"]`);
-                    if (display) display.textContent = `${stateValue}%`;
+                    updateSliderDisplay(fieldId, stateValue);
                 } else if (element.isContentEditable) {
                     element.textContent = stateValue;
                 }
@@ -169,21 +173,36 @@ window.TEUI.SectionModules.sect08 = (function () {
 
 
   //==========================================================================
-  // EVENT HANDLING (Standardized Pattern)
+  // EVENT HANDLING & DISPLAY HELPERS (Standardized Pattern)
   //==========================================================================
-  function handleUserInput(event) {
-    const fieldId = event.target.getAttribute('data-field-id');
-    if (!fieldId) return;
 
-    const value = event.target.type === 'range' ? event.target.value : event.target.textContent.trim();
+  /**
+   * Helper to update the visual text display for a slider.
+   * This is called both on user input and on mode switch to ensure UI consistency.
+   */
+  function updateSliderDisplay(fieldId, value) {
+    const display = document.querySelector(`[data-display-for="${fieldId}"]`);
+    if (display) {
+      display.textContent = `${value}%`;
+    }
+  }
+
+  function handleUserInput(event) {
+    const target = event.target;
+    const fieldElement = target.closest('[data-field-id]');
+    if (!fieldElement) return;
+
+    const fieldId = fieldElement.getAttribute('data-field-id');
+    const value = target.matches('input[type="range"]') ? target.value : target.textContent.trim();
     const prefix = ModeManager.currentMode === 'target' ? 'target_' : 'ref_';
 
+    // Per architecture, sections ONLY write to their prefixed state.
+    // ComponentBridge is responsible for syncing target_* to global state.
     window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, "user-modified");
     
-    // Live update for sliders
-    if (event.target.type === 'range') {
-      const display = document.querySelector(`[data-display-for="${fieldId}"]`);
-      if (display) display.textContent = `${value}%`;
+    // Live update for the slider's percentage display
+    if (target.matches('input[type="range"]')) {
+      updateSliderDisplay(fieldId, value);
     }
     
     calculateAll();
