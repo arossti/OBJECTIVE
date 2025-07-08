@@ -220,8 +220,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       
       // CRITICAL: Update percentage slider from isolated state (FieldManager structure)
       const percentageSlider = document.querySelector('input.form-range[data-field-id="i_21"]');
-      const percentageValue = currentState.getValue("i_21") || 50;
-      if (percentageSlider) {
+      const percentageValue = currentState.getValue("i_21");
+      if (percentageSlider && percentageValue !== undefined && percentageValue !== null) {
         percentageSlider.value = percentageValue;
         // Update percentage display - FieldManager creates .slider-value as sibling
         const sliderContainer = percentageSlider.parentElement;
@@ -397,13 +397,14 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Enhanced getFieldValue to use DualState first - CRITICAL for h_21 capacitance dropdown
    */
   function getFieldValue(fieldId) {
-    // Try DualState first
+    // Only get values from the section's internal DualState.
     const dualStateValue = DualState.getValue(fieldId);
     if (dualStateValue !== null && dualStateValue !== undefined) {
       return dualStateValue.toString();
     }
     
-    // Fallback for elements not in DualState (should be rare)
+    // Fallback to the DOM only if the state is not set.
+    // This can happen during initial render before state is fully populated.
     const element = document.querySelector(
       `[data-field-id="${fieldId}"],[data-dropdown-id="dd_${fieldId}"]`,
     );
@@ -1509,6 +1510,13 @@ window.TEUI.SectionModules.sect03 = (function () {
         const selectedCapacitance = this.value;
         console.log('S03: Capacitance setting changed:', selectedCapacitance);
         DualState.setValue("h_21", selectedCapacitance, "user");
+        
+        // If "Static" is chosen, force the percentage to 0
+        if (selectedCapacitance === "Static") {
+          DualState.setValue("i_21", "0", "system");
+          ModeManager.refreshUI(); // Refresh UI to show the slider reset to 0
+        }
+
         calculateAll(); // CRITICAL: Recalculate GFCDD when capacitance changes
       });
     }
