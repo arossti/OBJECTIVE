@@ -753,9 +753,9 @@ Select a province and city to view weather data.</pre
 
       // Global Target/Reference Toggle Setup
       function setupGlobalToggleUI() {
-        const sectionHeader = document.querySelector("#keyValues .section-header");
+        const sectionHeader = document.querySelector("#climateCalculations .section-header");
         if (!sectionHeader) {
-          console.warn("Global Toggle: S01 header not found");
+          console.warn("Global Toggle: S03 header not found");
           return;
         }
 
@@ -798,7 +798,9 @@ Select a province and city to view weather data.</pre
 
         const toggleLabel = document.createElement("label");
         toggleLabel.textContent = "Show Reference";
-        toggleLabel.style.cssText = "font-weight: 500; color: #333; margin: 0;";
+        toggleLabel.style.cssText = `
+          font-weight: 500; color: #fff; margin: 0;
+        `;
 
         const toggleSwitch = document.createElement("div");
         toggleSwitch.className = "toggle-switch";
@@ -841,7 +843,8 @@ Select a province and city to view weather data.</pre
         `;
 
         // Add toggle functionality
-        toggleSwitch.addEventListener("click", function() {
+        toggleSwitch.addEventListener("click", function(event) {
+          event.stopPropagation();
           const isActive = toggleSwitch.classList.contains("active");
           
           if (!isActive) {
@@ -868,7 +871,8 @@ Select a province and city to view weather data.</pre
         });
 
         // Add reset functionality  
-        resetButton.addEventListener("click", function() {
+        resetButton.addEventListener("click", function(event) {
+          event.stopPropagation();
           if (confirm("Are you sure you want to reset all Target/Reference states to defaults?")) {
             ModeManager.resetAllStates();
           }
@@ -885,7 +889,7 @@ Select a province and city to view weather data.</pre
         
         sectionHeader.appendChild(toggleContainer);
 
-        console.log("Global Toggle: Setup complete in S01 header using S03's ModeManager");
+        console.log("Global Toggle: Setup complete in S03 header using S03's ModeManager");
       }
 
       document.addEventListener("DOMContentLoaded", function () {

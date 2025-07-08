@@ -34,7 +34,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
       
       // ✅ CRITICAL FIX: Propagate mode change to ALL sections
-      this.propagateModeToAllSections(mode);
+      // this.propagateModeToAllSections(mode); // Temporarily disabled for isolated S03 testing.
       
       // Update UI state indicator
       const indicator = document.querySelector(
