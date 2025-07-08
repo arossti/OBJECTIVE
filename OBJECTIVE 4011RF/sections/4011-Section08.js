@@ -52,8 +52,11 @@ window.TEUI.SectionModules.sect08 = (function () {
 
                 if (slider) {
                     slider.value = stateValue;
-                    // Also update the text display for the slider
-                    updateSliderDisplay(fieldId, stateValue);
+                    // Find the display element as the next sibling of the slider input
+                    const display = slider.nextElementSibling;
+                    if (display) {
+                      display.textContent = `${stateValue}%`;
+                    }
                 } else if (element.isContentEditable) {
                     element.textContent = stateValue;
                 }
@@ -173,20 +176,8 @@ window.TEUI.SectionModules.sect08 = (function () {
 
 
   //==========================================================================
-  // EVENT HANDLING & DISPLAY HELPERS (Standardized Pattern)
+  // EVENT HANDLING (Standardized Pattern)
   //==========================================================================
-
-  /**
-   * Helper to update the visual text display for a slider.
-   * This is called both on user input and on mode switch to ensure UI consistency.
-   */
-  function updateSliderDisplay(fieldId, value) {
-    const display = document.querySelector(`[data-display-for="${fieldId}"]`);
-    if (display) {
-      display.textContent = `${value}%`;
-    }
-  }
-
   function handleUserInput(event) {
     const target = event.target;
     const fieldElement = target.closest('[data-field-id]');
@@ -196,13 +187,14 @@ window.TEUI.SectionModules.sect08 = (function () {
     const value = target.matches('input[type="range"]') ? target.value : target.textContent.trim();
     const prefix = ModeManager.currentMode === 'target' ? 'target_' : 'ref_';
 
-    // Per architecture, sections ONLY write to their prefixed state.
-    // ComponentBridge is responsible for syncing target_* to global state.
     window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, "user-modified");
     
     // Live update for the slider's percentage display
     if (target.matches('input[type="range"]')) {
-      updateSliderDisplay(fieldId, value);
+      const display = target.nextElementSibling;
+      if (display) {
+        display.textContent = `${value}%`;
+      }
     }
     
     calculateAll();
