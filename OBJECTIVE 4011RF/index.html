@@ -752,6 +752,12 @@ Select a province and city to view weather data.</pre
       }
 
       // Global Target/Reference Toggle Setup
+      /**
+       * REMOVE BEFORE FLIGHT: This function is for temporary, section-isolated testing only.
+       * It currently adds a toggle to the Section 3 header.
+       * This entire function should be removed and replaced by a proper global toggle
+       * implementation once all sections are refactored.
+       */
       function setupGlobalToggleUI() {
         const sectionHeader = document.querySelector("#climateCalculations .section-header");
         if (!sectionHeader) {
