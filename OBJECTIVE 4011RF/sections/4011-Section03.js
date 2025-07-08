@@ -1549,18 +1549,13 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Formula: (TsetHeating - 10°C_ground) * HeatingDays
     const gfhdd = Math.round((heatingSetpoint - 10) * heatingDays);
-    setFieldValue("d_22", gfhdd);
+    setCalculatedValue("d_22", gfhdd);
 
-    // --- Ground facing CDD (h_22) --- ARCHIVE LOGIC RESTORED ---
+    // --- Ground facing CDD (h_22) --- LOGIC from ARCHIVE ---
     const capacitanceSetting = getFieldValue("h_21") || "Static"; // Default to Static if undefined
     const coolingSetpoint_h24 = getNumericValue("h_24"); // TsetCool
     const coolingDays_m19 = getNumericValue("m_19"); // DaysCooling
     let gfcdd;
-
-    // 🔍 DEBUG: Log GFCDD calculation values
-    console.log(
-      `S03: 🔍 GFCDD calculation - Capacitance: ${capacitanceSetting}, CoolingSetpoint: ${coolingSetpoint_h24}, CoolingDays: ${coolingDays_m19}`,
-    );
 
     if (capacitanceSetting === "Static") {
       // Formula: MAX(0, (10 - TsetCool) * DaysCooling)
@@ -1570,15 +1565,9 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Formula: (10 - TsetCool) * DaysCooling
       gfcdd = (10 - coolingSetpoint_h24) * coolingDays_m19;
     }
-
-    // Use Math.round as Excel likely rounds this
-    const roundedGfcdd = Math.round(gfcdd);
-    console.log(
-      `S03: 🔍 GFCDD result - Raw: ${gfcdd}, Rounded: ${roundedGfcdd}`,
-    );
     
     // Update h_22 field with the newly calculated GF CDD value
-    setFieldValue("h_22", roundedGfcdd);
+    setCalculatedValue("h_22", Math.round(gfcdd));
   }
 
   /**
