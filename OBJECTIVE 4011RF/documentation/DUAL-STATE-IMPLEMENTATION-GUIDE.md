@@ -2,7 +2,7 @@
 
 *Consolidated strategy based on proven patterns from successful S10 test environment*
 
-**Date**: July 03, 2025  
+**Updated**: July 08, 2025  
 **Status**: ✅ **Proven Method - S10 Test Environment Successful**  
 **Strategy**: **Standalone Testing + Clean Dual-State Patterns**
 
@@ -555,3 +555,117 @@ The test environment **PROVES** dual-state is achievable. The main app failure *
 > **"Standalone Success → Interference Analysis → Systematic Integration"**
 
 **The guide methodology works. Trust it. Follow it. Don't deviate.** 
+
+---
+
+## 🔧 **PHASE 2.5: SAFELY DISABLING GLOBAL INTERFERENCE & ENABLING SECTION-LEVEL TESTING**
+
+This phase is critical for bridging the gap between standalone testing and full integration. The goal is to disable the legacy global reference system that causes state contamination, while enabling a section-by-section development workflow.
+
+### **Strategy: Local Toggles First, Global Toggle Last**
+
+As a core part of the refactoring process, we will adopt the following sequence:
+
+1.  **Disable the Global Reference Toggle:** Prevent the existing global UI from triggering any mode switches.
+2.  **Neuter the `ReferenceManager`:** Deactivate the automatic loading of reference values. The logic will be preserved for future explicit use.
+3.  **Implement Section-Local Toggles:** For each section being refactored (e.g., S11, S12), add a temporary "Target/Reference" toggle directly within its UI in the main application. This toggle will *only* affect that specific section's `ModeManager`.
+4.  **Refactor Section by Section:** Use the local toggle to test and verify dual-state functionality for each section *in situ*.
+5.  **Reinstate the Global Toggle:** Once all sections are converted, remove the temporary local toggles and implement a new global toggle that acts as an orchestrator, calling the `switchMode` function on every section's `ModeManager`.
+
+### **Example: Taking Legacy Functions Offline**
+
+Here is how to modify the key interfering files to safely disable their automatic behavior without deleting valuable code.
+
+#### **1. Disabling `4011-ReferenceToggle.js`**
+
+The goal here is to prevent the global button from doing anything. The simplest way is to prevent its event listener from ever being attached and to hide the button to avoid confusion.
+
+```javascript
+// In 4011-ReferenceToggle.js
+
+// The existing init function might look something like this:
+/*
+function init() {
+    const globalToggleButton = document.getElementById('global-reference-toggle');
+    globalToggleButton.addEventListener('click', () => {
+        // ... complex logic that triggers the ReferenceManager ...
+        TEUI.ReferenceManager.switchModeTo('reference'); 
+    });
+}
+*/
+
+// MODIFIED and SAFELY DISABLED init() function:
+function init() {
+    console.warn("DUAL-STATE-REFACTOR: The global ReferenceToggle is temporarily disabled.");
+    const globalToggleButton = document.getElementById('global-reference-toggle');
+    if (globalToggleButton) {
+        // Hide the button to prevent user confusion during the refactor
+        globalToggleButton.style.display = 'none';
+        
+        // You can also add a disabled state for extra safety
+        globalToggleButton.disabled = true;
+        
+        // By NOT adding the event listener, this entire file is now inert.
+    }
+}
+
+// Ensure the init() is still called so the warning appears and the button is hidden.
+// document.addEventListener('DOMContentLoaded', init); 
+```
+
+#### **2. Neutering `4011-ReferenceManager.js`**
+
+This is the most critical step. We want to stop the automatic application of reference values, which causes state contamination. We will rename the old function to make it clear it's disabled and preserve its logic within a new, explicitly-called function for future use.
+
+```javascript
+// In 4011-ReferenceManager.js
+
+// Let's assume there is a function that gets called automatically:
+/*
+function applyReferenceValues() {
+    const referenceData = TEUI.ReferenceValues.getValues(); // Gets ALL values
+    for (const [fieldId, value] of Object.entries(referenceData)) {
+        // THIS IS THE CONTAMINATION SOURCE: it overwrites the global state
+        window.TEUI.StateManager.setValue(fieldId, value, 'reference-loaded');
+    }
+    // ... logic to trigger recalculations globally ...
+}
+*/
+
+// --- MODIFIED AND SAFELY DISABLED VERSION ---
+
+// 1. Rename the old function to make it clear it's offline. It does nothing now.
+function applyReferenceValues_AUTOMATIC_DISABLED() {
+    console.warn("DUAL-STATE-REFACTOR: Automatic application of reference values is disabled to prevent state contamination.");
+    // This function is now inert and is not called by anything.
+}
+
+// 2. Create a NEW function that preserves the core logic for explicit, future use.
+// This function will NOT be called automatically. It will be used for the
+// "Mirror Target" or "Apply Standard" feature later.
+function applyReferenceStandardExplicitly(standardKey, targetModeState) {
+    console.log(`Explicitly applying reference standard: ${standardKey}`);
+    
+    // Step A: Copy all current target values to the reference state
+    for (const [key, value] of Object.entries(targetModeState)) {
+        if (key.startsWith('target_')) {
+            const refKey = key.replace('target_', 'ref_');
+            window.TEUI.StateManager.setValue(refKey, value, 'ref-mirrored');
+        }
+    }
+
+    // Step B: Get the specific override values for the chosen standard
+    const standardOverrides = TEUI.ReferenceValues.getValuesForStandard(standardKey); // Assumes a function that gets specific values
+
+    // Step C: Selectively apply the standard's overrides to the reference state
+    for (const [fieldId, value] of Object.entries(standardOverrides)) {
+        // IMPORTANT: Writes ONLY to the 'ref_' prefixed state to ensure isolation.
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, 'ref-standard-override');
+    }
+    
+    console.log("Explicit application of reference standard complete.");
+    // This would then trigger a recalculation event for reference mode.
+}
+```
+
+---
