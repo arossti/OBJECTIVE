@@ -425,14 +425,186 @@
     
     <!-- Test Controller -->
     <script>
-        // Test Controller for S10 Isolation Testing
+        // S10 Self-Contained State Module (Following DUAL-STATE-IMPLEMENTATION-GUIDE.md)
         const TestController = (function() {
-            let currentMode = 'target';
+            
+            //================================================================== 
+            // PATTERN 1: Internal State Objects (Self-Contained + Persistent)
+            //==================================================================
+            
+            // Target State Management (isolated + persistent)
+            const TargetState = {
+                state: {},
+                listeners: {},
+
+                initialize: function() {
+                    const savedState = localStorage.getItem('S10_TARGET_STATE');
+                    if (savedState) {
+                        this.state = JSON.parse(savedState);
+                    } else {
+                        this.setDefaults();
+                    }
+                },
+
+                setDefaults: function() {
+                    this.state = {
+                        'd_73': '7.50', 'd_74': '81.14', 'd_75': '3.83',
+                        'e_73': 'Average', 'e_74': 'North', 'e_75': 'East',
+                        'f_73': '0.50', 'f_74': '0.50', 'f_75': '0.50',
+                        'g_73': '0', 'g_74': '0', 'g_75': '0',
+                        'h_73': '100', 'h_74': '100', 'h_75': '100',
+                        'd_80': 'PHPP Method'
+                    };
+                },
+
+                saveState: function() {
+                    localStorage.setItem('S10_TARGET_STATE', JSON.stringify(this.state));
+                },
+
+                setValue: function(fieldId, value, source = 'user') {
+                    this.state[fieldId] = value;
+                    this.saveState();
+                    console.log(`📝 Target: ${fieldId} = ${value} (${source})`);
+                },
+
+                getValue: function(fieldId) {
+                    return this.state[fieldId];
+                }
+            };
+
+            // Reference State Management (isolated + persistent)
+            const ReferenceState = {
+                state: {},
+                listeners: {},
+
+                initialize: function() {
+                    const savedState = localStorage.getItem('S10_REFERENCE_STATE');
+                    if (savedState) {
+                        this.state = JSON.parse(savedState);
+                    } else {
+                        this.setDefaults();
+                    }
+                },
+
+                setDefaults: function() {
+                    // Different defaults for reference (code minimums)
+                    this.state = {
+                        'd_73': '5.00', 'd_74': '60.00', 'd_75': '2.50',
+                        'e_73': 'South', 'e_74': 'East', 'e_75': 'West',
+                        'f_73': '0.30', 'f_74': '0.35', 'f_75': '0.30',
+                        'g_73': '25', 'g_74': '10', 'g_75': '20',
+                        'h_73': '75', 'h_74': '90', 'h_75': '80',
+                        'd_80': 'Simple Method'
+                    };
+                },
+
+                saveState: function() {
+                    localStorage.setItem('S10_REFERENCE_STATE', JSON.stringify(this.state));
+                },
+
+                setValue: function(fieldId, value, source = 'user') {
+                    this.state[fieldId] = value;
+                    this.saveState();
+                    console.log(`📝 Reference: ${fieldId} = ${value} (${source})`);
+                },
+
+                getValue: function(fieldId) {
+                    return this.state[fieldId];
+                }
+            };
+
+            //==================================================================
+            // PATTERN 2: ModeManager Facade (Single Point of Contact)
+            //==================================================================
+            
+            const ModeManager = {
+                currentMode: "target",
+
+                initialize: function() {
+                    TargetState.initialize();
+                    ReferenceState.initialize();
+                },
+
+                switchMode: function(mode) {
+                    if (this.currentMode === mode || (mode !== 'target' && mode !== 'reference')) return;
+                    
+                    console.log(`🔄 S10: Switching to ${mode.toUpperCase()} mode`);
+                    this.currentMode = mode;
+                    
+                    // Update UI indicators
+                    document.getElementById('target-mode').classList.toggle('active', mode === 'target');
+                    document.getElementById('reference-mode').classList.toggle('active', mode === 'reference');
+                    document.getElementById('current-mode-display').innerHTML = `Current: <strong>${mode.charAt(0).toUpperCase() + mode.slice(1)}</strong>`;
+                    
+                    // Visual mode indicator
+                    const sectionElement = document.getElementById('section-10');
+                    if (sectionElement) {
+                        sectionElement.style.borderLeft = mode === 'target' ? '5px solid #007bff' : '5px solid #28a745';
+                        sectionElement.style.backgroundColor = mode === 'target' ? '#f8f9ff' : '#f8fff8';
+                    }
+                    
+                    this.refreshUI();
+                    calculateTestValues();
+                },
+
+                getCurrentState: function() {
+                    return this.currentMode === "target" ? TargetState : ReferenceState;
+                },
+
+                getValue: function(fieldId) {
+                    return this.getCurrentState().getValue(fieldId);
+                },
+
+                setValue: function(fieldId, value, source = "user") {
+                    this.getCurrentState().setValue(fieldId, value, source);
+                    
+                    // BRIDGE: For backward compatibility, sync Target changes to global StateManager
+                    if (this.currentMode === 'target') {
+                        window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+                    }
+                },
+
+                refreshUI: function() {
+                    console.log(`🔄 S10: Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
+                    const currentState = this.getCurrentState();
+                    const sectionElement = document.getElementById("section-10");
+                    
+                    const fieldsToSync = [
+                        'd_73', 'd_74', 'd_75', // Areas
+                        'e_73', 'e_74', 'e_75', // Orientations
+                        'f_73', 'f_74', 'f_75', // SHGC sliders
+                        'g_73', 'g_74', 'g_75', // Winter shading sliders
+                        'h_73', 'h_74', 'h_75', // Summer shading sliders
+                        'd_80' // PHPP method
+                    ];
+
+                    fieldsToSync.forEach(fieldId => {
+                        const fieldWrapper = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+                        if (!fieldWrapper) return;
+
+                        const stateValue = currentState.getValue(fieldId);
+                        console.log(`  Syncing ${fieldId}: ${stateValue}`);
+
+                        if (stateValue !== undefined && stateValue !== null) {
+                            if (fieldWrapper.tagName === 'SELECT') {
+                                fieldWrapper.value = stateValue;
+                            } else if (fieldWrapper.tagName === 'INPUT') {
+                                fieldWrapper.value = stateValue;
+                                if (fieldWrapper.type === 'range') {
+                                    updateSliderDisplay(fieldId, stateValue);
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+            
+            // Test framework variables
             let isolationTestResults = {};
             let debugPanelVisible = true;
             
             function init() {
-                console.log('🧪 Initializing S10 Isolation Test...');
+                console.log('🧪 Initializing S10 Isolation Test with Self-Contained State Module...');
                 
                 // Initialize TEUI namespace
                 window.TEUI = window.TEUI || {};
@@ -442,24 +614,21 @@
                 // Initialize dependencies
                 initializeDependencies();
                 
+                // Initialize the ModeManager (which initializes both state objects)
+                ModeManager.initialize();
+                
                 // Setup test interface
                 setupModeToggle();
                 setupEventHandlers();
                 
-                // Initialize S10 if available - BUT override its event handlers
-                if (window.TEUI.SectionModules.sect10) {
-                    // Get the module but don't call onSectionRendered yet
-                    window.S10Module = window.TEUI.SectionModules.sect10;
-                    window.S10ModeManager = window.TEUI.SectionModules.sect10.ModeManager;
-                    console.log('✅ S10 Module loaded (event handlers will be overridden)');
-                } else {
-                    console.warn('⚠️ S10 Module not available, using test calculations only');
-                }
-                
                 // Start debug panel updates
                 setupDebugPanel();
                 
-                console.log('✅ S10 Isolation Test initialized');
+                // Initialize UI and calculations
+                ModeManager.refreshUI();
+                calculateTestValues();
+                
+                console.log('✅ S10 Isolation Test initialized with Self-Contained State Module');
                 
                 // Initialize some test values to verify isolation
                 setTimeout(initializeTestValues, 1000);
@@ -469,21 +638,21 @@
                 console.log('🧪 Setting up initial test values...');
                 
                 // Set some default values in Target mode
-                switchMode('target');
+                ModeManager.switchMode('target');
                 setTimeout(() => {
-                    window.TEUI.StateManager.setValue('target_e_73', 'South', 'test-init');
-                    window.TEUI.StateManager.setValue('target_e_74', 'North', 'test-init');
-                    window.TEUI.StateManager.setValue('target_f_73', '0.45', 'test-init');
+                    ModeManager.setValue('e_73', 'South', 'test-init');
+                    ModeManager.setValue('e_74', 'North', 'test-init');
+                    ModeManager.setValue('f_73', '0.45', 'test-init');
                     
                     // Set different values in Reference mode  
-                    switchMode('reference');
+                    ModeManager.switchMode('reference');
                     setTimeout(() => {
-                        window.TEUI.StateManager.setValue('ref_e_73', 'Average', 'test-init');
-                        window.TEUI.StateManager.setValue('ref_e_74', 'East', 'test-init');
-                        window.TEUI.StateManager.setValue('ref_f_73', '0.55', 'test-init');
+                        ModeManager.setValue('e_73', 'Average', 'test-init');
+                        ModeManager.setValue('e_74', 'East', 'test-init');
+                        ModeManager.setValue('f_73', '0.55', 'test-init');
                         
                         // Return to Target mode and run initial calculations
-                        switchMode('target');
+                        ModeManager.switchMode('target');
                         setTimeout(() => {
                             calculateTestValues();
                             console.log('✅ Test values initialized');
@@ -550,78 +719,16 @@
                 const targetBtn = document.getElementById('target-mode');
                 const referenceBtn = document.getElementById('reference-mode');
                 
-                targetBtn.onclick = () => switchMode('target');
-                referenceBtn.onclick = () => switchMode('reference');
+                targetBtn.onclick = () => ModeManager.switchMode('target');
+                referenceBtn.onclick = () => ModeManager.switchMode('reference');
             }
             
             function switchMode(mode) {
-                console.log(`🔄 Switching to ${mode.toUpperCase()} mode`);
-                
-                currentMode = mode;
-                
-                // Update UI
-                document.getElementById('target-mode').classList.toggle('active', mode === 'target');
-                document.getElementById('reference-mode').classList.toggle('active', mode === 'reference');
-                document.getElementById('current-mode-display').innerHTML = `Current: <strong>${mode.charAt(0).toUpperCase() + mode.slice(1)}</strong>`;
-                
-                // Add visual mode indicator to the section
-                const sectionElement = document.getElementById('section-10');
-                if (sectionElement) {
-                    sectionElement.style.borderLeft = mode === 'target' ? '5px solid #007bff' : '5px solid #28a745';
-                    sectionElement.style.backgroundColor = mode === 'target' ? '#f8f9ff' : '#f8fff8';
-                }
-                
-                // Update S10 ModeManager
-                if (window.S10ModeManager) {
-                    window.S10ModeManager.currentMode = mode;
-                    console.log(`✅ S10 ModeManager updated to ${mode}`);
-                }
-                
-                // Update display values for current mode
-                updateDisplayForMode(mode);
-                
-                // Trigger calculations for the new mode
-                setTimeout(() => {
-                    calculateTestValues();
-                }, 100);
+                // Delegate to ModeManager
+                ModeManager.switchMode(mode);
             }
             
-            function updateDisplayForMode(mode) {
-                console.log(`🔄 Updating display for ${mode.toUpperCase()} mode`);
-                const prefix = mode === 'target' ? 'target_' : 'ref_';
-                const fields = [
-                    'd_73', 'd_74', 'd_75', // Areas
-                    'e_73', 'e_74', 'e_75', // Orientations
-                    'f_73', 'f_74', 'f_75', // SHGC sliders
-                    'g_73', 'g_74', 'g_75', // Winter shading sliders
-                    'h_73', 'h_74', 'h_75', // Summer shading sliders
-                    'd_80' // PHPP method
-                ];
-                
-                fields.forEach(fieldId => {
-                    const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-                    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-                    
-                    console.log(`  ${fieldId}: ${prefix}${fieldId} = ${value}`);
-                    
-                    if (element && value !== undefined) {
-                        if (element.tagName === 'SELECT') {
-                            element.value = value;
-                            console.log(`    📋 Set dropdown ${fieldId} = ${value}`);
-                        } else if (element.tagName === 'INPUT') {
-                            element.value = value;
-                            if (element.type === 'range') {
-                                updateSliderDisplay(fieldId, value);
-                            }
-                            console.log(`    📝 Set input ${fieldId} = ${value}`);
-                        }
-                    } else if (element && value === undefined) {
-                        console.log(`    ⚠️ No value found for ${prefix}${fieldId}`);
-                    } else if (!element) {
-                        console.log(`    ❌ Element not found for ${fieldId}`);
-                    }
-                });
-            }
+
             
             function setupEventHandlers() {
                 // Setup input event handlers
@@ -649,27 +756,17 @@
                 const fieldId = event.target.getAttribute('data-field-id');
                 const value = event.target.value || event.target.textContent;
                 
-                console.log(`🖱️ User input: ${fieldId} = ${value} in ${currentMode.toUpperCase()} mode`);
+                console.log(`🖱️ User input: ${fieldId} = ${value} in ${ModeManager.currentMode.toUpperCase()} mode`);
                 
-                // Store to prefixed state for current mode
-                const prefix = currentMode === 'target' ? 'target_' : 'ref_';
-                window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value, 'user-modified');
-                console.log(`📝 Stored to: ${prefix}${fieldId} = ${value}`);
-                
-                // CRITICAL: Only sync to global in Target mode (ComponentBridge should handle this but let's debug)
-                if (currentMode === 'target') {
-                    window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
-                    console.log(`📝 Also stored to global: ${fieldId} = ${value}`);
-                } else {
-                    console.log(`🚫 Reference mode - NOT storing to global state`);
-                }
+                // Use ModeManager to set value (handles state isolation automatically)
+                ModeManager.setValue(fieldId, value, 'user-modified');
                 
                 // Update slider display if needed
                 if (event.target.type === 'range') {
                     updateSliderDisplay(fieldId, value);
                 }
                 
-                // Trigger our custom calculations for the test environment
+                // Trigger calculations
                 console.log(`🧮 Triggering calculations...`);
                 setTimeout(() => {
                     calculateTestValues();
@@ -699,25 +796,25 @@
                 const inputFields = ['d_73', 'd_74', 'd_75', 'e_73', 'e_74', 'e_75', 'f_73', 'f_74', 'f_75', 'g_73', 'g_74', 'g_75', 'h_73', 'h_74', 'h_75'];
                 const calcFields = ['i_73', 'i_74', 'i_75', 'k_73', 'k_74', 'k_75', 'm_73', 'm_74', 'm_75', 'i_79', 'j_80', 'k_80'];
                 
-                let html = `<h4>Current Mode: ${currentMode}</h4>`;
+                let html = `<h4>Current Mode: ${ModeManager.currentMode}</h4>`;
                 
-                html += '<h4>Target Inputs:</h4>';
+                html += '<h4>Target State (Self-Contained):</h4>';
                 inputFields.forEach(fieldId => {
-                    const value = window.TEUI.StateManager.getValue(`target_${fieldId}`);
+                    const value = TargetState.getValue(fieldId);
                     if (value !== undefined) {
-                        html += `<pre style="color: blue;">target_${fieldId}: ${value}</pre>`;
+                        html += `<pre style="color: blue;">${fieldId}: ${value}</pre>`;
                     }
                 });
                 
-                html += '<h4>Reference Inputs:</h4>';
+                html += '<h4>Reference State (Self-Contained):</h4>';
                 inputFields.forEach(fieldId => {
-                    const value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+                    const value = ReferenceState.getValue(fieldId);
                     if (value !== undefined) {
-                        html += `<pre style="color: green;">ref_${fieldId}: ${value}</pre>`;
+                        html += `<pre style="color: green;">${fieldId}: ${value}</pre>`;
                     }
                 });
                 
-                html += '<h4>Global State (for comparison):</h4>';
+                html += '<h4>Global State (Legacy Bridge):</h4>';
                 [...inputFields, ...calcFields].forEach(fieldId => {
                     const value = window.TEUI.StateManager.getValue(fieldId);
                     if (value !== undefined) {
@@ -729,8 +826,8 @@
                 html += '<h4>🔍 Isolation Check:</h4>';
                 const testFields = ['e_73', 'f_73', 'g_73', 'h_73'];
                 testFields.forEach(fieldId => {
-                    const targetVal = window.TEUI.StateManager.getValue(`target_${fieldId}`);
-                    const refVal = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+                    const targetVal = TargetState.getValue(fieldId);
+                    const refVal = ReferenceState.getValue(fieldId);
                     const isolated = targetVal !== refVal && targetVal && refVal;
                     html += `<pre style="color: ${isolated ? 'green' : 'red'};">${fieldId}: T=${targetVal} R=${refVal} ${isolated ? '✅' : '❌'}</pre>`;
                 });
@@ -743,13 +840,13 @@
                 console.log('🧪 Running isolation test...');
                 
                 // Test 1: Set different values in each mode
-                switchMode('target');
+                ModeManager.switchMode('target');
                 setTimeout(() => {
                     document.querySelector('[data-field-id="f_73"]').value = '0.3';
                     document.querySelector('[data-field-id="f_73"]').dispatchEvent(new Event('input'));
                     
                     setTimeout(() => {
-                        switchMode('reference');
+                        ModeManager.switchMode('reference');
                         setTimeout(() => {
                             document.querySelector('[data-field-id="f_73"]').value = '0.7';
                             document.querySelector('[data-field-id="f_73"]').dispatchEvent(new Event('input'));
@@ -765,46 +862,20 @@
             window.resetAllValues = function() {
                 console.log('🔄 Resetting all values...');
                 
-                // Reset StateManager
+                // Reset both state objects to defaults
+                TargetState.setDefaults();
+                TargetState.saveState();
+                ReferenceState.setDefaults();
+                ReferenceState.saveState();
+                
+                // Reset global StateManager
                 window.TEUI.StateManager.state = {};
                 
-                // Reset DOM elements to their default values
-                const defaults = {
-                    'd_73': '7.50',
-                    'd_74': '81.14', 
-                    'd_75': '3.83',
-                    'e_73': 'Average',
-                    'e_74': 'North',
-                    'e_75': 'East',
-                    'f_73': '0.50',
-                    'f_74': '0.50',
-                    'f_75': '0.50',
-                    'g_73': '0',
-                    'g_74': '0',
-                    'g_75': '0',
-                    'h_73': '100',
-                    'h_74': '100',
-                    'h_75': '100'
-                };
-                
-                Object.entries(defaults).forEach(([fieldId, defaultValue]) => {
-                    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-                    if (element) {
-                        if (element.tagName === 'SELECT') {
-                            element.value = defaultValue;
-                        } else if (element.tagName === 'INPUT') {
-                            element.value = defaultValue;
-                            if (element.type === 'range') {
-                                updateSliderDisplay(fieldId, defaultValue);
-                            }
-                        }
-                    }
-                });
-                
-                switchMode('target');
+                // Switch to target mode and refresh UI
+                ModeManager.switchMode('target');
                 updateTestStatus('unknown', 'unknown');
                 
-                console.log('✅ Reset complete');
+                console.log('✅ Reset complete - all states restored to defaults');
             };
             
             window.toggleDebugPanel = function() {
@@ -816,8 +887,8 @@
             function checkIsolation() {
                 console.log('🔍 Checking isolation...');
                 
-                const targetF73 = window.TEUI.StateManager.getValue('target_f_73');
-                const refF73 = window.TEUI.StateManager.getValue('ref_f_73');
+                const targetF73 = TargetState.getValue('f_73');
+                const refF73 = ReferenceState.getValue('f_73');
                 const globalF73 = window.TEUI.StateManager.getValue('f_73');
                 
                 console.log(`Target f_73: ${targetF73}`);
@@ -846,16 +917,12 @@
             
             // Test Environment Calculations (Simplified S10 Logic)
             function calculateTestValues() {
-                console.log(`🧮 Running test calculations in ${currentMode.toUpperCase()} mode`);
+                console.log(`🧮 Running test calculations in ${ModeManager.currentMode.toUpperCase()} mode`);
                 
-                const prefix = currentMode === 'target' ? 'target_' : 'ref_';
-                
-                // Get current mode values from prefixed state
+                // Get current mode values from ModeManager
                 const getFieldValue = (fieldId) => {
-                    const value = window.TEUI.StateManager.getValue(`${prefix}${fieldId}`);
-                    return value !== undefined ? value : 
-                           window.TEUI.StateManager.getValue(fieldId) || // Fallback to global
-                           getDefaultValue(fieldId); // Ultimate fallback
+                    const value = ModeManager.getValue(fieldId);
+                    return value !== undefined ? value : getDefaultValue(fieldId);
                 };
                 
                 const getNumericValue = (fieldId) => {
@@ -991,14 +1058,8 @@
                 
                 element.textContent = formattedValue;
                 
-                // Store to prefixed state as well
-                const prefix = currentMode === 'target' ? 'target_' : 'ref_';
-                window.TEUI.StateManager.setValue(`${prefix}${fieldId}`, value.toString(), 'calculated');
-                
-                // Also store to global in Target mode
-                if (currentMode === 'target') {
-                    window.TEUI.StateManager.setValue(fieldId, value.toString(), 'calculated');
-                }
+                // Store calculated value through ModeManager
+                ModeManager.setValue(fieldId, value.toString(), 'calculated');
             }
             
             return { init };
