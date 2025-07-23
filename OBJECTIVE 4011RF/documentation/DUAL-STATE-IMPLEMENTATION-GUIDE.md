@@ -1,23 +1,20 @@
 # 🏆 TEUI 4.011RF - DUAL-STATE ARCHITECTURE GUIDE (v3)
 
 **Status**: ✅ **Gold Standard** | **Updated**: July 10, 2025  
-**Mandate**: This document outlines the **sole approved pattern** for implementing dual-state (Target/Reference) functionality. It is based on the successful, self-contained architecture proven in Section 03. All previous guides are superseded.
+**Mandate**: This document outlines the **sole approved pattern** for implementing dual-state (Target/Reference) functionality. It is based on the successful, self-contained architecture proven in Section 03, 08, and 10. All previous guides are superseded.
 
 ---
 
-### URGENT: Instructions to Repair `4011-Section10.js`
+## 🏛️ **Architectural Mandate: The Self-Contained State Module**
 
-The `4011-Section10.js` file has been corrupted, leading to syntax errors and UI synchronization failures. To restore functionality, the following components must be replaced with their corrected versions:
+Each dual-state section must have its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures that:
 
-1.  **`TargetState` and `ReferenceState` Defaults:** The default values were misaligned with the UI component definitions.
-2.  **`ModeManager` Object:** The existing manager needs to be replaced with a version containing a robust `refreshUI` function that correctly handles all input types (editable divs, dropdowns, and sliders) to ensure the UI visually matches the underlying state after a mode switch.
-3.  **`sectionRows` Object:** The entire layout definition object is syntactically broken and must be replaced.
+1.  **State Isolation:** Each section's state is completely independent, preventing cross-section interference.
+2.  **Persistence:** States are saved to and loaded from `localStorage` using section-specific keys.
+3.  **Default Values:** Default values are set using `setDefaults()` and can be overridden by user inputs.
+4.  **Value Retrieval:** Values are retrieved using `getValue()` and updated using `setValue()`.
 
-**Action:** Replace the corresponding code blocks in `OBJECTIVE 4011RF/sections/4011-Section10.js` with the code provided below.
-
----
-
-#### 1. Corrected `TargetState` and `ReferenceState` Default Blocks
+### 1. `TargetState` and `ReferenceState` Objects
 
 ```javascript
   // Target State Management (isolated + persistent)
@@ -82,7 +79,7 @@ The `4011-Section10.js` file has been corrupted, leading to syntax errors and UI
   };
 ```
 
-#### 2. Corrected `ModeManager` Object
+### 2. `ModeManager` Facade
 
 ```javascript
   // PATTERN 2: The ModeManager Facade
@@ -115,12 +112,24 @@ The `4011-Section10.js` file has been corrupted, leading to syntax errors and UI
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       }
     },
-    refreshUI: function () {
+    resetState: function() {
+        console.log("SXX: Resetting state and clearing localStorage.");
+        TargetState.setDefaults();
+        TargetState.saveState();
+        ReferenceState.setDefaults();
+        ReferenceState.saveState();
+        
+        // After resetting, refresh the UI to reflect the defaults and recalculate.
+        this.refreshUI();
+        calculateAll();
+    },
+
+    refreshUI: function() {
+      // 1. Get the section's root element to scope all queries.
       const sectionElement = document.getElementById("envelopeRadiantGains");
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      
       const fieldsToSync = [
           'd_73', 'e_73', 'f_73', 'g_73', 'h_73',
           'd_74', 'e_74', 'f_74', 'g_74', 'h_74',
@@ -139,7 +148,8 @@ The `4011-Section10.js` file has been corrupted, leading to syntax errors and UI
           if (!element) return;
           
           if (element.type === 'range') { // Handle sliders specifically
-              element.value = stateValue;
+              const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+              element.value = numericValue;
               // Sliders in this section have a separate display div
               const display = document.querySelector(`[data-display-for="${fieldId}"]`);
               if (display) {
@@ -159,7 +169,7 @@ The `4011-Section10.js` file has been corrupted, leading to syntax errors and UI
   };
 ```
 
-#### 3. Corrected `sectionRows` Object
+### 3. `sectionRows` Object
 
 ```javascript
   // Define rows with integrated field definitions
@@ -1031,257 +1041,112 @@ The `4011-Section10.js` file has been corrupted, leading to syntax errors and UI
 
 ---
 
-## 🏛️ **Architectural Mandate: The Self-Contained State Module**
-
-The TEUI calculator must support multiple, isolated calculation states (e.g., Target Design, Reference Building) that can be expanded in the future without complex refactoring.
-
-To achieve this, each section requiring dual-state functionality **MUST** be implemented as a **Self-Contained State Module**.
-
-### **Core Principles:**
-
-1.  **Encapsulation**: Each section manages its own `TargetState` and `ReferenceState` internally. It does not know or care about the implementation details of other sections.
-2.  **State Isolation**: The `TargetState` and `ReferenceState` are separate JavaScript objects. It is architecturally impossible for one to contaminate the other.
-3.  **Persistence**: Each internal state (`TargetState`, `ReferenceState`) is responsible for its own `localStorage` persistence, ensuring user inputs are saved independently for each mode.
-4.  **Clear Facade**: A `ModeManager` object acts as the single, clean public interface for the section. All interactions (getting/setting values, switching modes) go through it.
-5.  **Legacy Bridge**: The `ModeManager`'s `setValue` function acts as a "bridge" to the old global `StateManager` for backward compatibility, but only when in Target mode. This is a temporary measure until all sections are refactored.
-
-### **Visual Diagram**
-
-```mermaid
-graph TD
-    subgraph Section Module (e.g., sect03)
-        UI -- "ModeManager.setValue('i_21', 35)" --> ModeManager
-        
-        subgraph ModeManager
-            direction LR
-            A[setValue]
-            B[getValue]
-            C[switchMode]
-        end
-
-        ModeManager -- "If currentMode is 'target'" --> TargetState["🎯 TargetState Object<br>(values, listeners, localStorage)"]
-        ModeManager -- "If currentMode is 'reference'" --> ReferenceState["📋 ReferenceState Object<br>(values, listeners, localStorage)"]
-    end
-
-    ModeManager -- "Bridge for legacy compatibility<br>(Target mode ONLY)" --> GlobalStateManager["Global window.TEUI.StateManager"]
-
-```
-This diagram illustrates how the `ModeManager` abstracts away the complexity of the dual-state system, providing a simple API while ensuring perfect state isolation internally.
-
----
-
-## 🔧 **The Gold Standard Implementation Pattern**
-
-The following patterns, derived from the working `4011-Section03.js`, are to be precisely replicated for all dual-state sections.
-
-### **Pattern 1: Internal State Objects**
-
-At the top of the section's IIFE, define two distinct objects to manage the state for each mode. They must include methods for getting, setting, initializing, and persisting their own state.
-
-```javascript
-  // Target State Management (isolated + persistent)
-  const TargetState = {
-    state: {},
-    listeners: {}, // Add listener management if needed by the section
-
-    initialize: function() {
-      // Logic to load from localStorage or setDefaults
-      const savedState = localStorage.getItem('SXX_TARGET_STATE'); // Use section-specific key
-      if (savedState) {
-        this.state = JSON.parse(savedState);
-      } else {
-        this.setDefaults();
-      }
-    },
-    setDefaults: function() {
-      // Define the default values for ALL user inputs in this section for Target mode
-      this.state = {
-        'input_1': 'default_value_A',
-        'input_2': '50' 
-      };
-    },
-    saveState: function() {
-      localStorage.setItem('SXX_TARGET_STATE', JSON.stringify(this.state));
-    },
-    setValue: function(fieldId, value) { 
-      this.state[fieldId] = value; 
-      this.saveState();
-      // Optional: notify internal listeners
-    },
-    getValue: function(fieldId) { return this.state[fieldId]; }
-  };
-
-  // Reference State Management (isolated + persistent)
-  const ReferenceState = {
-    // ... (Identical structure to TargetState, but with different default values and localStorage key)
-    initialize: function() {
-        const savedState = localStorage.getItem('SXX_REFERENCE_STATE');
-        // ...
-    },
-    setDefaults: function() {
-      this.state = {
-        'input_1': 'default_value_B', // Different defaults for reference
-        'input_2': '75' 
-      };
-    },
-    saveState: function() {
-      localStorage.setItem('SXX_REFERENCE_STATE', JSON.stringify(this.state));
-    },
-    // ... rest of the methods
-  };
-```
-
-### **Pattern 2: The ModeManager Facade**
-
-This object is the public API for your section. It's responsible for managing the active state and ensuring the UI is in sync.
-
-```javascript
-  const ModeManager = {
-    currentMode: "target",
-
-    initialize: function() {
-      TargetState.initialize();
-      ReferenceState.initialize();
-    },
-
-    switchMode: function(mode) {
-      if (this.currentMode === mode || (mode !== 'target' && mode !== 'reference')) return;
-      this.currentMode = mode;
-      console.log(`SXX: Switched to ${mode.toUpperCase()} mode`);
-      
-      this.refreshUI();
-      calculateAll(); // Trigger a recalculation for the new mode
-    },
-
-    getCurrentState: function() {
-      return this.currentMode === "target" ? TargetState : ReferenceState;
-    },
-    
-    // Public method for getting the active state's value
-    getValue: function(fieldId) {
-      return this.getCurrentState().getValue(fieldId);
-    },
-
-    // Public method for setting the active state's value
-    setValue: function(fieldId, value, source = "user") {
-      this.getCurrentState().setValue(fieldId, value, source);
-      
-      // BRIDGE: For backward compatibility, sync Target changes to the global StateManager.
-      if (this.currentMode === 'target') {
-        window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
-      }
-    },
-
-    refreshUI: function() {
-      // ... (See Pattern 4) ...
-    }
-  };
-```
-
 ### **Pattern 3: Robust UI Event Handling**
 
-Use a single, delegated event handler for each event type (`change`, `input`, `blur`). The handler should robustly identify the `data-field-id` and call the `ModeManager.setValue` method.
+To ensure smooth user interaction and state synchronization, event handlers must be carefully managed.
 
 ```javascript
-  function handleUserInput(event) {
-    const target = event.target;
-    // Robustly find the element with the data-field-id, which could be the target or a parent.
-    const fieldElement = target.closest('[data-field-id]');
-    if (!fieldElement) return;
-
-    const fieldId = fieldElement.getAttribute('data-field-id');
-    const value = target.matches('input[type="range"]') ? target.value : target.textContent.trim();
-    
-    // ALWAYS use the facade to set the value.
-    ModeManager.setValue(fieldId, value);
-    
-    // Update slider text display live if needed.
-    if (target.matches('input[type="range"]')) {
-      const display = target.nextElementSibling; // Robustly find display as sibling
-      if (display) {
-        display.textContent = `${value}%`;
-      }
-    }
-    
-    calculateAll();
-  }
-
   function initializeEventHandlers() {
-    const sectionElement = document.getElementById("mySectionId");
-    if (!sectionElement) return;
-    
-    sectionElement.addEventListener('change', handleUserInput);
-    sectionElement.addEventListener('input', handleUserInput);
-    sectionElement.addEventListener('blur', handleUserInput, true);
-    // ... etc. ...
+    // Add event listeners for all editable fields
+    document.querySelectorAll(".user-input").forEach(input => {
+      input.addEventListener("input", (event) => {
+        const fieldId = event.target.dataset.fieldId;
+        if (fieldId) {
+          const value = window.TEUI.parseNumeric(event.target.value, 0);
+          ModeManager.setValue(fieldId, value);
+        }
+      });
+    });
+
+    // Add event listeners for all dropdowns
+    document.querySelectorAll("select").forEach(select => {
+      select.addEventListener("change", (event) => {
+        const fieldId = event.target.dataset.fieldId;
+        if (fieldId) {
+          ModeManager.setValue(fieldId, event.target.value);
+        }
+      });
+    });
+
+    // Add event listeners for all sliders
+    document.querySelectorAll(".slider-container").forEach(container => {
+      const fieldId = container.dataset.fieldId;
+      if (fieldId) {
+        const slider = container.querySelector("input[type='range']");
+        if (slider) {
+          slider.addEventListener("input", (event) => {
+            const value = window.TEUI.parseNumeric(event.target.value, 0);
+            ModeManager.setValue(fieldId, value);
+          });
+        }
+      }
+    });
+
+    // Add event listeners for all percentage sliders
+    document.querySelectorAll(".slider-container[data-field-id^='g_'], .slider-container[data-field-id^='h_']").forEach(container => {
+      const fieldId = container.dataset.fieldId;
+      if (fieldId) {
+        const slider = container.querySelector("input[type='range']");
+        if (slider) {
+          slider.addEventListener("input", (event) => {
+            const value = parseFloat(event.target.value);
+            ModeManager.setValue(fieldId, value);
+          });
+        }
+      }
+    });
   }
 ```
 
-### **Pattern 4: UI Synchronization on Mode Switch**
+### **Pattern 4: Section Initialization (`onSectionRendered`)**
 
-The `refreshUI` function is critical. It must read from the **current state object** and update all inputs, including complex ones like sliders.
+Each section must be initialized after it is rendered to the DOM. This ensures that:
 
-```javascript
-    refreshUI: function() {
-      const sectionElement = document.getElementById("mySectionId");
-      const currentState = this.getCurrentState();
-      
-      const fieldsToSync = ['input_1', 'input_2_slider']; // List of all inputs
-
-      fieldsToSync.forEach(fieldId => {
-          const fieldWrapper = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-          if (!fieldWrapper) return;
-
-          const stateValue = currentState.getValue(fieldId);
-          
-          if (stateValue !== undefined && stateValue !== null) {
-              const slider = fieldWrapper.querySelector('input[type="range"]');
-
-              if (slider) {
-                  slider.value = stateValue;
-                  const display = slider.nextElementSibling;
-                  if (display) display.textContent = `${stateValue}%`;
-              } else if (fieldWrapper.isContentEditable) {
-                  fieldWrapper.textContent = stateValue;
-              } else if (fieldWrapper.tagName === 'SELECT') {
-                  fieldWrapper.value = stateValue;
-              }
-          }
-      });
-    }
-```
-
-### **Pattern 5: Section Initialization (`onSectionRendered`)**
-
-This function ties everything together.
+1.  **State is loaded:** The `ModeManager` is initialized to load default values from `localStorage`.
+2.  **Controls are injected:** The `injectHeaderControls` function is called to add the toggle switch and reset button.
+3.  **Event handlers are set up:** `initializeEventHandlers` is called to add event listeners for user inputs.
+4.  **UI is synced:** The `refreshUI` function is called to sync the UI to the default (Target) state.
+5.  **Calculations are run:** `calculateAll()` is called to perform initial calculations based on the default state.
 
 ```javascript
   function onSectionRendered() {
-    ModeManager.initialize();      // 1. Initialize the internal states
-    initializeEventHandlers();     // 2. Set up event handlers
-    ModeManager.refreshUI();       // 3. Sync UI to the default (Target) state
-    calculateAll();                // 4. Run initial calculations
+    ModeManager.initialize();
+    injectHeaderControls();        // 2. Inject the header controls (toggle & reset)
+    initializeEventHandlers();     // 3. Set up event handlers
+    ModeManager.refreshUI();       // 4. Sync UI to the default (Target) state
+    calculateAll();                // 5. Run initial calculations
   }
 ```
 
-By following these five patterns, each section becomes a robust, scalable, and maintainable component that perfectly isolates its states while remaining compatible with the legacy parts of the application. 
+### **Pattern 6: Section Header Controls (Toggle & Reset)**
 
----
-### **Pattern 6: The Section-Local Toggle (Gold Standard UI)**
+To maintain a consistent user experience, each dual-state section must have its own toggle switch and reset button located in its header. The correct implementation uses styled `div` and `button` elements and must be dynamically injected into the section header after it renders.
 
-To maintain a consistent user experience, each dual-state section should have its own toggle switch located in its header. Do not use standard HTML buttons. The correct implementation uses styled `div` elements and must be dynamically injected into the section header after it renders.
-
-**1. Create the `injectLocalToggle` function:** This function builds the switch element by element.
+**1. Create the `injectHeaderControls` function:** This function builds the controls.
 
 ```javascript
-  function injectLocalToggle() {
+  function injectHeaderControls() {
     const sectionHeader = document.querySelector("#mySectionId .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-toggle-container")) return;
+    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) return;
 
-    const toggleContainer = document.createElement("div");
-    toggleContainer.className = "local-toggle-container";
-    toggleContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
 
+    // --- Create Reset Button ---
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = "🔄 Reset";
+    resetButton.title = "Reset Section to Defaults";
+    resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+    
+    resetButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (confirm("Are you sure you want to reset all inputs in this section to their defaults?")) {
+            ModeManager.resetState();
+        }
+    });
+
+    // --- Create Toggle Switch ---
     const stateIndicator = document.createElement("span");
     stateIndicator.textContent = "TARGET";
     stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
@@ -1289,23 +1154,22 @@ To maintain a consistent user experience, each dual-state section should have it
     const toggleSwitch = document.createElement("div");
     toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
     
-    const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    const sliderThumb = document.createElement("div");
+    sliderThumb.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
 
-    toggleSwitch.appendChild(slider);
+    toggleSwitch.appendChild(sliderThumb);
     
-    // 2. Add the click event listener to handle mode switching and UI updates
     toggleSwitch.addEventListener("click", (event) => {
         event.stopPropagation();
         const isReference = toggleSwitch.classList.toggle('active');
         if (isReference) {
-            slider.style.transform = "translateX(20px)";
+            sliderThumb.style.transform = "translateX(20px)";
             toggleSwitch.style.backgroundColor = "#28a745";
             stateIndicator.textContent = "REFERENCE";
             stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
             ModeManager.switchMode("reference");
         } else {
-            slider.style.transform = "translateX(0px)";
+            sliderThumb.style.transform = "translateX(0px)";
             toggleSwitch.style.backgroundColor = "#ccc";
             stateIndicator.textContent = "TARGET";
             stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
@@ -1313,32 +1177,42 @@ To maintain a consistent user experience, each dual-state section should have it
         }
     });
 
-    toggleContainer.appendChild(stateIndicator);
-    toggleContainer.appendChild(toggleSwitch);
-    sectionHeader.appendChild(toggleContainer);
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
   }
 ```
 
-**3. Call from `onSectionRendered`:** Ensure this function is called after the `ModeManager` is initialized.
+**2. Call from `onSectionRendered`:** Ensure this function is called after the `ModeManager` is initialized.
 
 ```javascript
   function onSectionRendered() {
     ModeManager.initialize();
-    injectLocalToggle(); // This injects the switch into the DOM
+    injectHeaderControls(); // This injects the controls into the DOM
     initializeEventHandlers();
     ModeManager.refreshUI();
     calculateAll();
   }
 ```
 
-### **Pattern 7: Robust UI Synchronization (The `refreshUI` function)**
+### **Pattern 7: Robust UI Synchronization (The `refreshUI` function) - GOLD STANDARD**
 
-A common failure point is an incomplete `refreshUI` function that doesn't account for all input types, especially sliders with separate text displays. This leads to a mismatch between the UI and the actual state, causing incorrect calculations on load.
+A common and critical failure point is an incomplete `refreshUI` function. This leads to a visual mismatch between the UI and the actual state, where slider thumbs or dropdown selections do not update when toggling modes, even though the underlying state is correct.
 
-**CRITICAL:** The `refreshUI` function MUST explicitly find and update the `value` of sliders and the `textContent` of their associated display elements.
+**CRITICAL:** The `refreshUI` function MUST be robust enough to handle the various ways the rendering engine creates form elements. It must not make assumptions about the DOM structure.
+
+**Key Architectural Principles for `refreshUI`:**
+
+1.  **Scope All Queries**: Always search for elements *within* the section's container (e.g., `sectionElement.querySelector(...)`). Never use `document.querySelector`, which can cause cross-section bugs.
+2.  **Handle Wrapped Elements**: The rendering engine may place the `data-field-id` on a wrapper `div` rather than directly on the `<input>` or `<select>` element. The logic must look *inside* the found element to find the actual control.
+3.  **Update All Visual Parts**: For complex controls like sliders, update both the slider's `value` (the thumb position) and the separate `textContent` of its text display.
+
+**✅ Gold Standard Implementation (Derived from S08/S10 Fix):**
 
 ```javascript
     refreshUI: function() {
+      // 1. Get the section's root element to scope all queries.
       const sectionElement = document.getElementById("mySectionId");
       if (!sectionElement) return;
 
@@ -1349,27 +1223,34 @@ A common failure point is an incomplete `refreshUI` function that doesn't accoun
           const stateValue = currentState.getValue(fieldId);
           if (stateValue === undefined || stateValue === null) return;
 
+          // 2. Find the container element using the scoped query.
           const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
           if (!element) return;
           
-          // 1. Handle Sliders and their text displays explicitly
-          if (element.type === 'range') {
-              element.value = stateValue;
-              const display = document.querySelector(`[data-display-for="${fieldId}"]`);
+          // 3. Robustly find the actual input control, which may be the element itself or a child.
+          const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
+          const dropdown = element.matches('select') ? element : element.querySelector('select');
+          
+          // 4. Update the correct element based on what was found.
+          if (slider) {
+              const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+              slider.value = numericValue;
+              
+              // Also find and update the separate text display for the slider.
+              const display = sectionElement.querySelector(`[data-display-for="${fieldId}"]`);
               if (display) {
-                  // Add logic for different formats, e.g., percentages vs. decimals
-                  if (fieldId.includes('percent')) {
-                      display.textContent = `${stateValue}%`;
-                  } else {
-                      display.textContent = parseFloat(stateValue).toFixed(2);
+                  // Read the value back from the slider itself to GUARANTEE visual sync
+                  const sliderCurrentValue = slider.value;
+                  if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) { // Example for % sliders
+                      display.textContent = `${sliderCurrentValue}%`;
+                  } else { // Example for coefficient sliders
+                      display.textContent = parseFloat(sliderCurrentValue).toFixed(2);
                   }
               }
-          // 2. Handle contenteditables
+          } else if (dropdown) {
+              dropdown.value = stateValue;
           } else if (element.hasAttribute('contenteditable')) {
               element.textContent = stateValue;
-          // 3. Handle dropdowns
-          } else if (element.tagName === 'SELECT') {
-              element.value = stateValue;
           }
       });
     },

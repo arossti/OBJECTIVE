@@ -65,12 +65,12 @@ window.TEUI.SectionModules.sect10 = (function () {
     },
     setDefaults: function () {
       this.state = {
-        d_73: "5.00", e_73: "South", f_73: "0.30", g_73: "25", h_73: "75",
-        d_74: "60.00", e_74: "East", f_74: "0.35", g_74: "10", h_74: "90",
-        d_75: "2.50", e_75: "West", f_75: "0.30", g_75: "20", h_75: "80",
-        d_76: "159.00", e_76: "South", f_76: "0.50", g_76: "0", h_76: "100", // Placeholder
-        d_77: "100.66", e_77: "West", f_77: "0.50", g_77: "0", h_77: "90", // Placeholder
-        d_78: "0.00", e_78: "Skylight", f_78: "0.50", g_78: "0", h_78: "80", // Placeholder
+        d_73: "5.00", e_73: "South",    f_73: "0.35", g_73: "0", h_73: "0",
+        d_74: "60.00", e_74: "East",     f_74: "0.35", g_74: "0", h_74: "0",
+        d_75: "2.50", e_75: "West",     f_75: "0.35", g_75: "0", h_75: "0",
+        d_76: "159.00", e_76: "South",    f_76: "0.35", g_76: "0", h_76: "0",
+        d_77: "100.66", e_77: "West",     f_77: "0.35", g_77: "0", h_77: "0",
+        d_78: "0.00", e_78: "Skylight", f_78: "0.35", g_78: "0", h_78: "0",
         d_80: "NRC 40%", // Reference method
       };
     },
@@ -101,6 +101,18 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
+    },
+    resetState: function() {
+        console.log("S10: Resetting state and clearing localStorage for Section 10.");
+        TargetState.setDefaults();
+        TargetState.saveState();
+        ReferenceState.setDefaults();
+        ReferenceState.saveState();
+        console.log("S10: States have been reset to defaults.");
+
+        // After resetting, refresh the UI and recalculate.
+        this.refreshUI();
+        calculateAll();
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -139,21 +151,27 @@ window.TEUI.SectionModules.sect10 = (function () {
           const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
           if (!element) return;
           
-          if (element.type === 'range') { // Handle sliders specifically
-              element.value = stateValue;
-              // Sliders in this section have a separate display div
-              const display = document.querySelector(`[data-display-for="${fieldId}"]`);
+          const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
+          const dropdown = element.matches('select') ? element : element.querySelector('select');
+          
+          if (slider) {
+              const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+              slider.value = numericValue;
+              
+              const display = sectionElement.querySelector(`[data-display-for="${fieldId}"]`);
               if (display) {
+                  // Read the value back from the slider to guarantee visual sync
+                  const sliderCurrentValue = slider.value;
                   if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
-                      display.textContent = `${stateValue}%`;
-                  } else { // f_ sliders
-                      display.textContent = parseFloat(stateValue).toFixed(2);
+                      display.textContent = `${sliderCurrentValue}%`;
+                  } else {
+                      display.textContent = parseFloat(sliderCurrentValue).toFixed(2);
                   }
               }
+          } else if (dropdown) {
+              dropdown.value = stateValue;
           } else if (element.hasAttribute('contenteditable')) {
               element.textContent = stateValue;
-          } else if (element.tagName === 'SELECT') {
-              element.value = stateValue;
           }
       });
     },
@@ -1919,9 +1937,11 @@ window.TEUI.SectionModules.sect10 = (function () {
             displayElement.textContent = parseFloat(this.value).toFixed(2);
           }
         }
-
-        // Recalculate with a slight delay to improve performance
-        setTimeout(calculateAll, 100);
+      });
+        // Let's also add a 'change' listener to trigger recalculation when the user releases the slider
+      slider.addEventListener("change", function () {
+        // We only need to trigger the recalculation
+        calculateAll();
       });
     });
   }
@@ -2049,7 +2069,7 @@ window.TEUI.SectionModules.sect10 = (function () {
     ModeManager.initialize();
 
     // 2. Setup the section-specific toggle switch in the header
-    injectLocalToggle();
+    injectHeaderControls();
 
     // 3. Initialize event handlers for this section
     initializeEventHandlers();
@@ -2073,18 +2093,33 @@ window.TEUI.SectionModules.sect10 = (function () {
   }
 
   /**
-   * Creates and injects the Target/Reference toggle switch into the section header.
+   * Creates and injects the Target/Reference toggle and Reset button into the section header.
    */
-  function injectLocalToggle() {
+  function injectHeaderControls() {
       const sectionHeader = document.querySelector("#envelopeRadiantGains .section-header");
-      if (!sectionHeader || sectionHeader.querySelector(".local-toggle-container")) {
+      if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
           return; // Already setup or header not found
       }
 
-      const toggleContainer = document.createElement("div");
-      toggleContainer.className = "local-toggle-container";
-      toggleContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+      const controlsContainer = document.createElement("div");
+      controlsContainer.className = "local-controls-container";
+      controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
 
+      // --- Create Reset Button ---
+      const resetButton = document.createElement("button");
+      resetButton.innerHTML = "🔄 Reset"; // Using an icon for clarity
+      resetButton.title = "Reset Section 10 to Defaults";
+      resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+      
+      resetButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          // Use a confirmation dialog to prevent accidental resets
+          if (confirm("Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 10.")) {
+              ModeManager.resetState();
+          }
+      });
+
+      // --- Create Toggle Switch ---
       const stateIndicator = document.createElement("span");
       stateIndicator.textContent = "TARGET";
       stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
@@ -2115,9 +2150,11 @@ window.TEUI.SectionModules.sect10 = (function () {
           }
       });
 
-      toggleContainer.appendChild(stateIndicator);
-      toggleContainer.appendChild(toggleSwitch);
-      sectionHeader.appendChild(toggleContainer);
+      // Append all controls to the container, then the container to the header
+      controlsContainer.appendChild(resetButton);
+      controlsContainer.appendChild(stateIndicator);
+      controlsContainer.appendChild(toggleSwitch);
+      sectionHeader.appendChild(controlsContainer);
   }
 
   //==========================================================================
