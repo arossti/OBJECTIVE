@@ -13,14 +13,149 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 // Section 10: Radiant Gains Module
 window.TEUI.SectionModules.sect10 = (function () {
   //==========================================================================
-  // DUAL-STATE MODE MANAGEMENT (Simplified with ComponentBridge)
+  // DUAL-STATE ARCHITECTURE (Self-Contained State Module)
   //==========================================================================
+
+  // PATTERN 1: Internal State Objects (Self-Contained + Persistent)
+  const TargetState = {
+    state: {},
+    listeners: {},
+    initialize: function () {
+      const savedState = localStorage.getItem("S10_TARGET_STATE");
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+      } else {
+        this.setDefaults();
+      }
+    },
+    setDefaults: function () {
+      // These defaults MUST match the 'value' properties in the sectionRows definition
+      this.state = {
+        d_73: "7.50", e_73: "Average", f_73: "0.50", g_73: "0", h_73: "100",
+        d_74: "81.14", e_74: "North", f_74: "0.50", g_74: "0", h_74: "100",
+        d_75: "3.83", e_75: "East", f_75: "0.50", g_75: "0", h_75: "100",
+        d_76: "159.00", e_76: "South", f_76: "0.50", g_76: "0", h_76: "100",
+        d_77: "100.66", e_77: "West", f_77: "0.50", g_77: "0", h_77: "90",
+        d_78: "0.00", e_78: "Skylight", f_78: "0.50", g_78: "0", h_78: "80",
+        d_80: "NRC 40%",
+      };
+    },
+    saveState: function () {
+      localStorage.setItem("S10_TARGET_STATE", JSON.stringify(this.state));
+    },
+    setValue: function (fieldId, value) {
+      this.state[fieldId] = value;
+      this.saveState();
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
+  };
+
+  const ReferenceState = {
+    state: {},
+    listeners: {},
+    initialize: function () {
+      const savedState = localStorage.getItem("S10_REFERENCE_STATE");
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+      } else {
+        this.setDefaults();
+      }
+    },
+    setDefaults: function () {
+      this.state = {
+        d_73: "5.00", e_73: "South", f_73: "0.30", g_73: "25", h_73: "75",
+        d_74: "60.00", e_74: "East", f_74: "0.35", g_74: "10", h_74: "90",
+        d_75: "2.50", e_75: "West", f_75: "0.30", g_75: "20", h_75: "80",
+        d_76: "159.00", e_76: "South", f_76: "0.50", g_76: "0", h_76: "100", // Placeholder
+        d_77: "100.66", e_77: "West", f_77: "0.50", g_77: "0", h_77: "90", // Placeholder
+        d_78: "0.00", e_78: "Skylight", f_78: "0.50", g_78: "0", h_78: "80", // Placeholder
+        d_80: "NRC 40%", // Reference method
+      };
+    },
+    saveState: function () {
+      localStorage.setItem("S10_REFERENCE_STATE", JSON.stringify(this.state));
+    },
+    setValue: function (fieldId, value) {
+      this.state[fieldId] = value;
+      this.saveState();
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
+  };
+
+  // PATTERN 2: The ModeManager Facade
   const ModeManager = {
     currentMode: "target",
+    initialize: function () {
+      TargetState.initialize();
+      ReferenceState.initialize();
+    },
     switchMode: function (mode) {
-      if (mode !== "target" && mode !== "reference") return;
+      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
+        return;
       this.currentMode = mode;
       console.log(`S10: Switched to ${mode.toUpperCase()} mode`);
+
+      this.refreshUI();
+      calculateAll(); // Recalculate for the new mode
+    },
+    getCurrentState: function () {
+      return this.currentMode === "target" ? TargetState : ReferenceState;
+    },
+    getValue: function (fieldId) {
+      return this.getCurrentState().getValue(fieldId);
+    },
+    setValue: function (fieldId, value, source = "user") {
+      this.getCurrentState().setValue(fieldId, value, source);
+
+      // BRIDGE: For backward compatibility, sync Target changes to global StateManager.
+      if (this.currentMode === "target") {
+        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      }
+    },
+    refreshUI: function () {
+      const sectionElement = document.getElementById("envelopeRadiantGains");
+      if (!sectionElement) return;
+
+      const currentState = this.getCurrentState();
+      
+      const fieldsToSync = [
+          'd_73', 'e_73', 'f_73', 'g_73', 'h_73',
+          'd_74', 'e_74', 'f_74', 'g_74', 'h_74',
+          'd_75', 'e_75', 'f_75', 'g_75', 'h_75',
+          'd_76', 'e_76', 'f_76', 'g_76', 'h_76',
+          'd_77', 'e_77', 'f_77', 'g_77', 'h_77',
+          'd_78', 'e_78', 'f_78', 'g_78', 'h_78',
+          'd_80'
+      ];
+
+      fieldsToSync.forEach(fieldId => {
+          const stateValue = currentState.getValue(fieldId);
+          if (stateValue === undefined || stateValue === null) return;
+
+          const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+          if (!element) return;
+          
+          if (element.type === 'range') { // Handle sliders specifically
+              element.value = stateValue;
+              // Sliders in this section have a separate display div
+              const display = document.querySelector(`[data-display-for="${fieldId}"]`);
+              if (display) {
+                  if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
+                      display.textContent = `${stateValue}%`;
+                  } else { // f_ sliders
+                      display.textContent = parseFloat(stateValue).toFixed(2);
+                  }
+              }
+          } else if (element.hasAttribute('contenteditable')) {
+              element.textContent = stateValue;
+          } else if (element.tagName === 'SELECT') {
+              element.value = stateValue;
+          }
+      });
     },
   };
   
@@ -29,32 +164,26 @@ window.TEUI.SectionModules.sect10 = (function () {
   window.TEUI.sect10.ModeManager = ModeManager;
 
   //==========================================================================
-  // HELPER FUNCTIONS (Simplified Dual-State with ComponentBridge)
+  // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
   //==========================================================================
   
   function getNumericValue(fieldId) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    let rawValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
-    
-    // Fallback for transition period (ComponentBridge will populate target_ state)
-    if (rawValue === null || rawValue === undefined) {
-      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    }
-    
+    // For values INTERNAL to this section
+    const rawValue = ModeManager.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  function getGlobalNumericValue(fieldId) {
+    // For values EXTERNAL to this section (from global StateManager)
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
     return window.TEUI.parseNumeric(rawValue) || 0;
   }
 
   function getFieldValue(fieldId) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    let stateValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
-    
-    // Fallback for transition period (ComponentBridge will populate target_ state)
-    if (stateValue === null || stateValue === undefined) {
-      stateValue = window.TEUI?.StateManager?.getValue(fieldId);
-    }
-    
+    const stateValue = ModeManager.getValue(fieldId);
     if (stateValue != null) return stateValue;
     
+    // Fallback for non-state values (e.g., legacy DOM elements)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     return element ? (element.value ?? element.textContent?.trim()) : null;
   }
@@ -109,16 +238,14 @@ window.TEUI.SectionModules.sect10 = (function () {
    * @param {string} [format='number']
    */
   function setCalculatedValue(fieldId, rawValue, format = "number") {
+    // NOTE: This function NO LONGER sets state. It only formats and updates the DOM.
+    // State is set within calculation functions via ModeManager.setValue()
+
     // Handle N/A for non-finite numbers
     if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
-      const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-      window.TEUI.StateManager?.setValue(`${prefix}${fieldId}`, "N/A", "calculated");
-      
-      // Update DOM only in Target mode (ComponentBridge sync handles this)
-      if (ModeManager.currentMode === "target") {
+      ModeManager.setValue(fieldId, "N/A", "calculated");
         const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (elementNA) elementNA.textContent = "N/A";
-      }
       return;
     }
 
@@ -134,33 +261,12 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     const formattedValue = formatNumber(rawValue, format);
 
-    // ✅ DUAL-STATE: Write to prefixed state for isolation, global state for backward compatibility
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    if (window.TEUI?.StateManager?.setValue) {
-      // Always write to prefixed state for dual-state isolation
-      window.TEUI.StateManager.setValue(
-        `${prefix}${fieldId}`,
-        rawValue.toString(),
-        "calculated",
-      );
-      
-      // Also write to global state in Target mode for backward compatibility
-      if (ModeManager.currentMode === "target") {
-        window.TEUI.StateManager.setValue(
-          fieldId,
-          rawValue.toString(),
-          "calculated",
-        );
-      }
-    }
-
-    // ✅ DUAL-STATE: Update DOM only in Target mode
-    if (ModeManager.currentMode === "target") {
+    // ✅ DUAL-STATE: State is now set by the calling calculation function
+    // using ModeManager.setValue(). This function only updates the DOM.
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         element.textContent = formattedValue;
         element.classList.toggle("negative-value", rawValue < 0);
-      }
     }
   }
 
@@ -217,25 +323,8 @@ window.TEUI.SectionModules.sect10 = (function () {
     }
     fieldElement.textContent = displayValue; // Update DOM display
 
-    // ✅ DUAL-STATE: Store to prefixed state first, global state only in Target mode
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    if (window.TEUI?.StateManager?.setValue) {
-      // Always store to prefixed state for isolation
-      window.TEUI.StateManager.setValue(
-        `${prefix}${currentFieldId}`,
-        rawValueToStore,
-        "user-modified",
-      );
-      
-      // Also store to global state only in Target mode (backward compatibility)
-      if (ModeManager.currentMode === "target") {
-        window.TEUI.StateManager.setValue(
-          currentFieldId,
-          rawValueToStore,
-          "user-modified",
-        );
-      }
-    }
+    // ✅ DUAL-STATE: Store value using the ModeManager facade.
+    ModeManager.setValue(currentFieldId, rawValueToStore, "user-modified");
 
     // Trigger recalculation using the standardized calculateAll function
     if (typeof calculateAll === "function") {
@@ -1137,6 +1226,27 @@ window.TEUI.SectionModules.sect10 = (function () {
         },
       },
     },
+
+    // G.0: MODE TOGGLE - Dynamically inserted row for the mode switch
+    "mode_toggle": {
+        id: "S10-ModeToggle",
+        rowId: "S10-ModeToggle",
+        isToggleRow: true, // Custom flag to identify this special row
+        cells: {
+            c: {
+                // The content will be a container for the buttons
+                content: `
+                    <div class="section-mode-toggle">
+                        <span>Mode:</span>
+                        <button id="s10-target-mode-btn" class="toggle-button active">🎯 Target</button>
+                        <button id="s10-reference-mode-btn" class="toggle-button">📋 Reference</button>
+                    </div>
+                `,
+                colspan: 11, // Span across all columns
+                classes: ["toggle-cell"]
+            }
+        }
+    },
   };
 
   // Define configuration for orientation rows (similar to Section 11)
@@ -1382,69 +1492,19 @@ window.TEUI.SectionModules.sect10 = (function () {
    * Includes orientation gains (73-78), subtotals (79), and utilization factors (80-82)
    */
   function calculateAll() {
-    calculateReferenceModel();
-    calculateTargetModel();
-  }
-
-  /**
-   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-   * Stores results with ref_ prefix to keep separate from Target values
-   */
-  function calculateReferenceModel() {
-    try {
-      // Calculate individual orientation rows using reference values
-      const orientationResults = {};
+    // Calculate individual orientation rows
       orientationConfig.forEach((rowId) => {
-        orientationResults[rowId] = calculateOrientationGains(
-          rowId.toString(),
-          true,
-        ); // true = isReferenceCalculation
+      calculateOrientationGains(rowId.toString());
       });
 
-      // Calculate subtotals using reference results
-      const subtotalResults = calculateSubtotals(true); // true = isReferenceCalculation
+    // Calculate subtotals
+    calculateSubtotals();
 
-      // Calculate utilization factors using reference values
-      calculateUtilizationFactors(true); // true = isReferenceCalculation
+    // Calculate utilization factors
+    calculateUtilizationFactors();
 
-      // Store reference results with ref_ prefix
-      if (window.TEUI?.StateManager) {
-        // Store individual row reference values
-        orientationConfig.forEach((rowId) => {
-          const rowStr = rowId.toString();
-          const results = orientationResults[rowId] || {
-            heatingGains: 0,
-            coolingGains: 0,
-          };
-          window.TEUI.StateManager.setValue(
-            `ref_i_${rowStr}`,
-            results.heatingGains.toString(),
-            "calculated",
-          );
-          window.TEUI.StateManager.setValue(
-            `ref_k_${rowStr}`,
-            results.coolingGains.toString(),
-            "calculated",
-          );
-        });
-
-        // Store subtotal reference values
-        window.TEUI.StateManager.setValue(
-          "ref_i_79",
-          subtotalResults.heatingGains.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_k_79",
-          subtotalResults.coolingGains.toString(),
-          "calculated",
-        );
-
-        // Note: Utilization factors are stored within calculateUtilizationFactors
-      }
-    } catch (_error) {
-      // Error in Reference Model calculations was previously logged here
-    }
+    // Update reference indicators for all rows
+    updateAllReferenceIndicators();
   }
 
   /**
@@ -1476,43 +1536,27 @@ window.TEUI.SectionModules.sect10 = (function () {
   /**
    * Calculate solar gains for a specific orientation
    * @param {string} rowId - Row ID for the element (e.g., "73" for doors)
-   * @param {boolean} isReferenceCalculation - Whether to use reference values
    */
-  function calculateOrientationGains(rowId, isReferenceCalculation = false) {
+  function calculateOrientationGains(rowId) {
     try {
-      // Get relevant values using getFieldValue and the global parseNumeric
-      const area = window.TEUI.parseNumeric(getFieldValue(`d_${rowId}`));
+      // Get relevant values using the new ModeManager-aware helpers
+      const area = getNumericValue(`d_${rowId}`);
       const orientation = getFieldValue(`e_${rowId}`);
-
-      // Get SHGC value based on calculation type
-      let shgc;
-      if (isReferenceCalculation) {
-        // For Reference calculations, try to get reference SHGC value
-        const refFieldId = `f_${rowId}`;
-        shgc =
-          window.TEUI?.StateManager?.getReferenceValue(refFieldId) ||
-          window.TEUI.parseNumeric(getFieldValue(refFieldId));
-      } else {
-        // For Target calculations, use application value
-        shgc = window.TEUI.parseNumeric(getFieldValue(`f_${rowId}`));
-      }
+      const shgc = getNumericValue(`f_${rowId}`);
 
       // Winter/Summer shading are percentages (0-100), convert to decimal (0-1) for calculation
-      const winterShadingDecimal =
-        window.TEUI.parseNumeric(getFieldValue(`g_${rowId}`), 0) / 100;
-      const summerShadingDecimal =
-        window.TEUI.parseNumeric(getFieldValue(`h_${rowId}`), 100) / 100;
+      const winterShadingDecimal = getNumericValue(`g_${rowId}`) / 100;
+      const summerShadingDecimal = getNumericValue(`h_${rowId}`) / 100;
 
-      const climateZone = getNumericValue("j_19") || 6.0; // Default to zone 6 if not available
+      // EXTERNAL DEPENDENCY: Get Climate Zone from S03 via global state
+      const climateZone = getGlobalNumericValue("j_19") || 6.0; // Default to zone 6 if not available
 
-      const gainFactor = calculateGainFactor(orientation, climateZone); // This is M73 (Gain Factor based on SHGC=0.5)
+      const gainFactor = calculateGainFactor(orientation, climateZone);
 
-      // Only update display for Target calculations
-      if (!isReferenceCalculation) {
-        setCalculatedValue(`m_${rowId}`, gainFactor); // Pass raw value, not formatted string
-      }
+      // Always update the gain factor in the DOM
+      setCalculatedValue(`m_${rowId}`, gainFactor);
 
-      // SHGC Normalization Factor: Adjusts gains based on actual SHGC relative to the baseline SHGC of 0.5 used for M73 values.
+      // SHGC Normalization Factor
       const shgcNormalizationFactor = shgc / 0.5;
 
       // Calculate heating season solar gains
@@ -1523,7 +1567,6 @@ window.TEUI.SectionModules.sect10 = (function () {
         (1 - winterShadingDecimal);
 
       // Calculate cooling season solar gains
-      // The coolingModifierFactor accounts for different load factors in summer (e.g. skylights more, others less)
       const coolingModifierFactor = orientation === "Skylight" ? 1.25 : 0.5;
       const coolingGains =
         area *
@@ -1532,90 +1575,49 @@ window.TEUI.SectionModules.sect10 = (function () {
         (1 - summerShadingDecimal) *
         coolingModifierFactor;
 
-      const cost = getNumericValue("l_12") * (coolingGains - heatingGains);
+      // EXTERNAL DEPENDENCY: Get cost from S01 via global state
+      const cost = getGlobalNumericValue("l_12") * (coolingGains - heatingGains);
 
-      // For Reference calculations, return the calculated values
-      if (isReferenceCalculation) {
-        return {
-          heatingGains,
-          coolingGains,
-          gainFactor,
-        };
-      }
+      // Set state using ModeManager before updating DOM via setCalculatedValue
+      ModeManager.setValue(`i_${rowId}`, heatingGains.toString(), "calculated");
+      ModeManager.setValue(`k_${rowId}`, coolingGains.toString(), "calculated");
+      ModeManager.setValue(`p_${rowId}`, cost.toString(), "calculated");
 
-      // For Target calculations, update the DOM
+      // Update the DOM
       setCalculatedValue(`i_${rowId}`, heatingGains);
       setCalculatedValue(`k_${rowId}`, coolingGains);
       setCalculatedValue(`p_${rowId}`, cost, "currency");
 
-      return {
-        heatingGains,
-        coolingGains,
-        gainFactor,
-      };
     } catch (_error) {
-      return { heatingGains: 0, coolingGains: 0, gainFactor: 0 };
+       // Set error values
+      setCalculatedValue(`i_${rowId}`, 0);
+      setCalculatedValue(`k_${rowId}`, 0);
+      setCalculatedValue(`p_${rowId}`, 0, "currency");
     }
   }
 
   /**
    * Calculate subtotals for solar gains
-   * @param {boolean} isReferenceCalculation - Whether to use reference values
    */
-  function calculateSubtotals(isReferenceCalculation = false) {
+  function calculateSubtotals() {
     try {
-      // Calculate total heating gains
-      let heatingGains, coolingGains;
-
-      if (isReferenceCalculation) {
-        // For Reference calculations, use ref_ prefixed values
-        heatingGains = [
-          window.TEUI?.StateManager?.getValue("ref_i_73") || 0,
-          window.TEUI?.StateManager?.getValue("ref_i_74") || 0,
-          window.TEUI?.StateManager?.getValue("ref_i_75") || 0,
-          window.TEUI?.StateManager?.getValue("ref_i_76") || 0,
-          window.TEUI?.StateManager?.getValue("ref_i_77") || 0,
-          window.TEUI?.StateManager?.getValue("ref_i_78") || 0,
-        ].reduce((sum, val) => sum + parseFloat(val || 0), 0);
-
-        coolingGains = [
-          window.TEUI?.StateManager?.getValue("ref_k_73") || 0,
-          window.TEUI?.StateManager?.getValue("ref_k_74") || 0,
-          window.TEUI?.StateManager?.getValue("ref_k_75") || 0,
-          window.TEUI?.StateManager?.getValue("ref_k_76") || 0,
-          window.TEUI?.StateManager?.getValue("ref_k_77") || 0,
-          window.TEUI?.StateManager?.getValue("ref_k_78") || 0,
-        ].reduce((sum, val) => sum + parseFloat(val || 0), 0);
-      } else {
-        // For Target calculations, use regular values
-        heatingGains = [
-          getNumericValue("i_73"), // Doors
-          getNumericValue("i_74"), // North
-          getNumericValue("i_75"), // East
-          getNumericValue("i_76"), // South
-          getNumericValue("i_77"), // West
-          getNumericValue("i_78"), // Skylights
+      const heatingGains = [
+        getNumericValue("i_73"), getNumericValue("i_74"), getNumericValue("i_75"),
+        getNumericValue("i_76"), getNumericValue("i_77"), getNumericValue("i_78"),
         ].reduce((sum, val) => sum + val, 0);
 
-        coolingGains = [
-          getNumericValue("k_73"), // Doors
-          getNumericValue("k_74"), // North
-          getNumericValue("k_75"), // East
-          getNumericValue("k_76"), // South
-          getNumericValue("k_77"), // West
-          getNumericValue("k_78"), // Skylights
+      const coolingGains = [
+        getNumericValue("k_73"), getNumericValue("k_74"), getNumericValue("k_75"),
+        getNumericValue("k_76"), getNumericValue("k_77"), getNumericValue("k_78"),
         ].reduce((sum, val) => sum + val, 0);
-      }
 
-      // For Reference calculations, just return the values
-      if (isReferenceCalculation) {
-        return {
-          heatingGains,
-          coolingGains,
-        };
-      }
-
-      // For Target calculations, update the DOM
+      // Set state via ModeManager
+      ModeManager.setValue("i_79", heatingGains.toString(), "calculated");
+      ModeManager.setValue("k_79", coolingGains.toString(), "calculated");
+      ModeManager.setValue("j_79", heatingGains > 0 ? "1" : "0", "calculated");
+      ModeManager.setValue("l_79", coolingGains > 0 ? "1" : "0", "calculated");
+      
+      // Update the DOM
       setCalculatedValue("i_79", heatingGains, "number");
       setCalculatedValue("k_79", coolingGains, "number");
       setCalculatedValue("j_79", heatingGains > 0 ? 1 : 0, "percent");
@@ -1634,6 +1636,10 @@ window.TEUI.SectionModules.sect10 = (function () {
 
         const jFieldId = `j_${rowStr}`;
         const lFieldId = `l_${rowStr}`;
+
+        // Set state via ModeManager for percentage values
+        ModeManager.setValue(jFieldId, heatingPercentDecimal.toString(), "calculated");
+        ModeManager.setValue(lFieldId, coolingPercentDecimal.toString(), "calculated");
 
         setCalculatedValue(jFieldId, heatingPercentDecimal, "percent");
         setCalculatedValue(lFieldId, coolingPercentDecimal, "percent");
@@ -1678,68 +1684,33 @@ window.TEUI.SectionModules.sect10 = (function () {
         if (lElement) lElement.classList.add("text-left-indicator");
       }
 
-      return {
-        heatingGains,
-        coolingGains,
-      };
     } catch (_error) {
-      return { heatingGains: 0, coolingGains: 0 };
+       setCalculatedValue("i_79", 0);
+       setCalculatedValue("k_79", 0);
     }
   }
 
   /**
    * Calculate utilization factors
-   * @param {boolean} isReferenceCalculation - Whether to use reference values
    */
-  function calculateUtilizationFactors(isReferenceCalculation = false) {
+  function calculateUtilizationFactors() {
     try {
-      // Get total solar gains
-      let solarGains;
-      if (isReferenceCalculation) {
-        solarGains = parseFloat(
-          window.TEUI?.StateManager?.getValue("ref_i_79") || 0,
-        );
-      } else {
-        solarGains = getNumericValue("i_79");
-      }
-
-      // Get internal gains from Section 9 if available
-      let internalGains;
-      if (isReferenceCalculation) {
-        internalGains = parseFloat(
-          window.TEUI?.StateManager?.getValue("ref_i_71") || 0,
-        );
-      } else {
-        internalGains = getNumericValue("i_71") || 0;
-      }
-
-      // Calculate total gains (solar + internal)
+      // Get total solar gains (internal to S10)
+      const solarGains = getNumericValue("i_79");
+      // EXTERNAL DEPENDENCY: Get internal gains from S09 via global state
+      const internalGains = getGlobalNumericValue("i_71") || 0;
       const totalGains = solarGains + internalGains;
 
-      // For Reference calculations, don't update DOM for e_80/e_81
-      if (!isReferenceCalculation) {
+      // Set total gains for both rows 80 and 81 (DOM only)
         setCalculatedValue("e_80", totalGains, "number");
         setCalculatedValue("e_81", totalGains, "number");
-      }
 
       //=====================================================================
       // PART 1: Calculate utilization factor based on selected method in row 80
       //=====================================================================
-
-      // Get utilization method
-      let utilizationMethod;
-      if (isReferenceCalculation) {
-        // For Reference calculations, check if standard specifies a method
-        utilizationMethod =
-          window.TEUI?.StateManager?.getReferenceValue("d_80") || "NRC 40%";
-      } else {
-        utilizationMethod = getFieldValue("d_80") || "NRC 40%";
-      }
-
+      const utilizationMethod = getFieldValue("d_80") || "NRC 40%";
       let utilizationFactor = 0.4; // Default to 40%
 
-      // Implementation of the G80 formula based on dropdown selection
-      // Options are: "NRC 0%", "NRC 40%", "NRC 50%", "NRC 60%", "PH Method"
       if (utilizationMethod === "NRC 0%") {
         utilizationFactor = 0;
       } else if (utilizationMethod === "NRC 40%") {
@@ -1749,38 +1720,19 @@ window.TEUI.SectionModules.sect10 = (function () {
       } else if (utilizationMethod === "NRC 60%") {
         utilizationFactor = 0.6;
       } else if (utilizationMethod === "PH Method") {
-        // Formula: =(1-((i_79+i_71)/(i_97+i_103+m_121+i_98))^5)/(1-((i_79+i_71)/(i_97+i_103+m_121+i_98))^6)
+        // EXTERNAL DEPENDENCIES: Get loss values from other sections via global state
+        const i97 = getGlobalNumericValue("i_97") || 0;
+        const i103 = getGlobalNumericValue("i_103") || 0;
+        const m121 = getGlobalNumericValue("m_121") || 0;
+        const i98 = getGlobalNumericValue("i_98") || 0;
 
-        // Get loss values from other sections (with fallbacks)
-        let i97, i103, m121, i98;
-        if (isReferenceCalculation) {
-          i97 = parseFloat(
-            window.TEUI?.StateManager?.getValue("ref_i_97") || 0,
-          );
-          i103 = parseFloat(
-            window.TEUI?.StateManager?.getValue("ref_i_103") || 0,
-          );
-          m121 = parseFloat(
-            window.TEUI?.StateManager?.getValue("ref_m_121") || 0,
-          );
-          i98 = parseFloat(
-            window.TEUI?.StateManager?.getValue("ref_i_98") || 0,
-          );
-        } else {
-          i97 = getNumericValue("i_97") || 0;
-          i103 = getNumericValue("i_103") || 0;
-          m121 = getNumericValue("m_121") || 0;
-          i98 = getNumericValue("i_98") || 0;
-        }
-
-        const numerator = totalGains; // i_79 + i_71
-        const denominator = i97 + i103 + m121 + i98; // Total Losses
+        const numerator = totalGains;
+        const denominator = i97 + i103 + m121 + i98;
 
         if (denominator > 0) {
           const gamma = numerator / denominator;
           if (Math.abs(gamma - 1) < 1e-9) {
-            // Handle gamma close to 1
-            utilizationFactor = 5 / 6; // a/(a+1)
+            utilizationFactor = 5 / 6;
           } else {
             const a = 5;
             const gamma_a = Math.pow(gamma, a);
@@ -1789,54 +1741,32 @@ window.TEUI.SectionModules.sect10 = (function () {
             utilizationFactor = Math.max(0, Math.min(1, utilizationFactor));
           }
         } else {
-          utilizationFactor = numerator > 0 ? 1 : 0; // If no losses, use 100% gain or 0%
+          utilizationFactor = numerator > 0 ? 1 : 0;
         }
       }
 
-      // Calculate usable gains based on selected method (i_80)
       const usableGains = totalGains * utilizationFactor;
 
-      // For Reference calculations, store values with ref_ prefix
-      if (isReferenceCalculation) {
-        if (window.TEUI?.StateManager) {
-          window.TEUI.StateManager.setValue(
-            "ref_e_80",
-            totalGains.toString(),
-            "calculated",
-          );
-          window.TEUI.StateManager.setValue(
-            "ref_g_80",
-            utilizationFactor.toString(),
-            "calculated",
-          );
-          window.TEUI.StateManager.setValue(
-            "ref_i_80",
-            usableGains.toString(),
-            "calculated",
-          );
-        }
-        return;
-      }
+      // Set state via ModeManager
+      ModeManager.setValue("g_80", utilizationFactor.toString(), "calculated");
+      ModeManager.setValue("i_80", usableGains.toString(), "calculated");
 
-      // For Target calculations, update the DOM
+      // Update DOM
       setCalculatedValue("g_80", utilizationFactor, "percent");
       setCalculatedValue("i_80", usableGains, "number");
 
       //=====================================================================
       // PART 2: Calculate PHPP method as reference in row 81 (always)
       //=====================================================================
-
-      // Get loss values again for potentially different reference calc if needed (using same for now)
-      const i97Reference = getNumericValue("i_97") || 0;
-      const i103Reference = getNumericValue("i_103") || 0;
-      const m121Reference = getNumericValue("m_121") || 0;
-      const i98Reference = getNumericValue("i_98") || 0;
+      const i97Reference = getGlobalNumericValue("i_97") || 0;
+      const i103Reference = getGlobalNumericValue("i_103") || 0;
+      const m121Reference = getGlobalNumericValue("m_121") || 0;
+      const i98Reference = getGlobalNumericValue("i_98") || 0;
 
       const numeratorReference = totalGains;
-      const denominatorReference =
-        i97Reference + i103Reference + m121Reference + i98Reference;
+      const denominatorReference = i97Reference + i103Reference + m121Reference + i98Reference;
 
-      let phUtilizationFactor = 0.9; // Default fallback if denom is 0
+      let phUtilizationFactor = 0.9;
 
       if (denominatorReference > 0) {
         const gammaReference = numeratorReference / denominatorReference;
@@ -1853,20 +1783,23 @@ window.TEUI.SectionModules.sect10 = (function () {
         phUtilizationFactor = numeratorReference > 0 ? 1 : 0;
       }
 
-      // Update reference values in row 81 (always PHPP method)
-      setCalculatedValue("g_81", phUtilizationFactor, "percent");
       const phReferenceGains = totalGains * phUtilizationFactor;
+
+      // Set state and update DOM for reference row 81
+      ModeManager.setValue("g_81", phUtilizationFactor.toString(), "calculated");
+      ModeManager.setValue("i_81", phReferenceGains.toString(), "calculated");
+      setCalculatedValue("g_81", phUtilizationFactor, "percent");
       setCalculatedValue("i_81", phReferenceGains, "number");
 
       //=====================================================================
       // PART 3: Calculate unusable gains based on selected method (row 80)
       //=====================================================================
-
       const unusedGains = totalGains - usableGains;
+      ModeManager.setValue("i_82", unusedGains.toString(), "calculated");
       setCalculatedValue("i_82", unusedGains, "number");
+
     } catch (_error) {
       // Set error values or defaults
-      if (!isReferenceCalculation) {
         setCalculatedValue("e_80", 0);
         setCalculatedValue("g_80", 0, "percent");
         setCalculatedValue("i_80", 0);
@@ -1874,7 +1807,6 @@ window.TEUI.SectionModules.sect10 = (function () {
         setCalculatedValue("g_81", 0, "percent");
         setCalculatedValue("i_81", 0);
         setCalculatedValue("i_82", 0);
-      }
     }
   }
 
@@ -1962,27 +1894,7 @@ window.TEUI.SectionModules.sect10 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
-        // ✅ DUAL-STATE: Store to prefixed state first, global state only in Target mode
-        const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-        if (window.TEUI?.StateManager?.setValue) {
-          // Always store to prefixed state for isolation
-          window.TEUI.StateManager.setValue(
-            `${prefix}${fieldId}`,
-            this.value,
-            "user-modified",
-          );
-          
-          // Also store to global state only in Target mode (backward compatibility)
-          if (ModeManager.currentMode === "target") {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              this.value,
-              "user-modified",
-            );
-          }
-        }
-
-        // Recalculate
+        ModeManager.setValue(fieldId, this.value, "user-modified");
         calculateAll();
       });
     });
@@ -1994,32 +1906,18 @@ window.TEUI.SectionModules.sect10 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
-        // ✅ DUAL-STATE: Store to prefixed state first, global state only in Target mode
-        const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-        if (window.TEUI?.StateManager?.setValue) {
-          // Always store to prefixed state for isolation
-          window.TEUI.StateManager.setValue(
-            `${prefix}${fieldId}`,
-            this.value,
-            "user-modified",
-          );
+        ModeManager.setValue(fieldId, this.value, "user-modified");
           
-          // Also store to global state only in Target mode (backward compatibility)
-          if (ModeManager.currentMode === "target") {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              this.value,
-              "user-modified",
-            );
-          }
-        }
-
-        // Update the display value
+        // Update the display value in real-time
         const displayElement = document.querySelector(
           `[data-display-for="${fieldId}"]`,
         );
         if (displayElement) {
+          if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
           displayElement.textContent = `${this.value}%`;
+          } else {
+            displayElement.textContent = parseFloat(this.value).toFixed(2);
+          }
         }
 
         // Recalculate with a slight delay to improve performance
@@ -2105,45 +2003,22 @@ window.TEUI.SectionModules.sect10 = (function () {
       ];
 
       dependencies.forEach((fieldId) => {
-        // Listen for target_ changes - only trigger if we're in target mode
-        window.TEUI.StateManager.addListener(`target_${fieldId}`, function () {
-          if (ModeManager.currentMode === "target") {
-            console.log(`S10: Target mode recalculation triggered by ${fieldId}`);
-            calculateAll();
-          }
-        });
-
-        // Listen for ref_ changes - only trigger if we're in reference mode
-        window.TEUI.StateManager.addListener(`ref_${fieldId}`, function () {
-          if (ModeManager.currentMode === "reference") {
-            console.log(`S10: Reference mode recalculation triggered by ${fieldId}`);
-            calculateAll();
-          }
-        });
-
-        // Keep global listeners for backward compatibility during transition
+        // Listen for global state changes (from other sections)
         window.TEUI.StateManager.addListener(fieldId, function() {
-          console.log(`S10: Global listener triggered by ${fieldId}`);
+          console.log(`S10: Global listener triggered by ${fieldId}, recalculating all.`);
           calculateAll();
                 });
       });
 
       // Special handling for utilization factor dependencies
       ["i_97", "i_103", "m_121", "i_98"].forEach((lossField) => {
-        window.TEUI.StateManager.addListener(`target_${lossField}`, function () {
-          if (ModeManager.currentMode === "target") {
-            calculateUtilizationFactors(false);
-          }
-        });
-        
-        window.TEUI.StateManager.addListener(`ref_${lossField}`, function () {
-          if (ModeManager.currentMode === "reference") {
-            calculateUtilizationFactors(true);
-          }
+        window.TEUI.StateManager.addListener(lossField, function () {
+            console.log(`S10: Utilization factor dependency ${lossField} changed.`);
+            calculateUtilizationFactors();
         });
       });
 
-      console.log('S10: Comprehensive dual-state StateManager listeners added');
+      console.log('S10: Simplified global StateManager listeners added');
     } catch (_error) {
       console.error('S10: Error in addStateManagerListeners:', _error);
     }
@@ -2168,34 +2043,81 @@ window.TEUI.SectionModules.sect10 = (function () {
    * This is a good place to initialize values and run initial calculations
    */
   function onSectionRendered() {
-    console.log("S10: Section rendered - initializing dual-state with ComponentBridge");
+    console.log("S10: Section rendered - initializing Self-Contained State Module.");
 
-    // Initialize event handlers
+    // 1. Initialize the ModeManager and its internal states
+    ModeManager.initialize();
+
+    // 2. Setup the section-specific toggle switch in the header
+    injectLocalToggle();
+
+    // 3. Initialize event handlers for this section
     initializeEventHandlers();
 
-    // Setup default values for dropdowns
-    setupDropdownDefaults();
+    // 4. Sync UI to the default (Target) state
+    ModeManager.refreshUI();
 
-    // Register this section with StateManager
+    // Register this section with StateManager and add listeners
     registerWithStateManager();
-
-    // Register with SectionIntegrator if needed
-    registerWithIntegrator();
-
-    // Add StateManager listeners for this section
     addStateManagerListeners();
 
-    // ✅ CRITICAL: Expose ModeManager globally for cross-section communication
+    // Expose ModeManager globally for cross-section communication (e.g., global toggle)
     if (window.TEUI) {
-      // Expose for global toggle integration
       window.TEUI.sect10 = window.TEUI.sect10 || {};
       window.TEUI.sect10.ModeManager = ModeManager;
-      
-      console.log("S10: ModeManager exposed globally for cross-section integration");
+      console.log("S10: ModeManager exposed globally for cross-section integration.");
     }
 
-    // Perform initial calculations for this section
-    calculateAll(); // Calculate directly as part of onSectionRendered
+    // 5. Perform initial calculations for this section
+    calculateAll();
+  }
+
+  /**
+   * Creates and injects the Target/Reference toggle switch into the section header.
+   */
+  function injectLocalToggle() {
+      const sectionHeader = document.querySelector("#envelopeRadiantGains .section-header");
+      if (!sectionHeader || sectionHeader.querySelector(".local-toggle-container")) {
+          return; // Already setup or header not found
+      }
+
+      const toggleContainer = document.createElement("div");
+      toggleContainer.className = "local-toggle-container";
+      toggleContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+      const stateIndicator = document.createElement("span");
+      stateIndicator.textContent = "TARGET";
+      stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+
+      const toggleSwitch = document.createElement("div");
+      toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+      
+      const slider = document.createElement("div");
+      slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+      toggleSwitch.appendChild(slider);
+      
+      toggleSwitch.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const isReference = toggleSwitch.classList.toggle('active');
+          if (isReference) {
+              slider.style.transform = "translateX(20px)";
+              toggleSwitch.style.backgroundColor = "#28a745";
+              stateIndicator.textContent = "REFERENCE";
+              stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+              ModeManager.switchMode("reference");
+          } else {
+              slider.style.transform = "translateX(0px)";
+              toggleSwitch.style.backgroundColor = "#ccc";
+              stateIndicator.textContent = "TARGET";
+              stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+              ModeManager.switchMode("target");
+          }
+      });
+
+      toggleContainer.appendChild(stateIndicator);
+      toggleContainer.appendChild(toggleSwitch);
+      sectionHeader.appendChild(toggleContainer);
   }
 
   //==========================================================================

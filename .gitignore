@@ -1,32 +1,8 @@
-# OS generated files
+# macOS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# Editor files
-*.swp
-*.swo
-*~
-.vscode/
-.idea/
-
-# Logs
-logs
-*.log
-npm-debug.log*
+# VSCode
+*.code-workspace
 
 # Dependencies
-node_modules/
-
-# Build outputs
-dist/
-build/
-
-# Temporary files
-*.tmp
-*.temp
-.cache/ 
+/node_modules 
