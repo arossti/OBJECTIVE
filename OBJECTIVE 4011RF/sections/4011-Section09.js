@@ -201,9 +201,12 @@ window.TEUI.SectionModules.sect09 = (function () {
       // Special handling for dropdowns that might need re-initialization
       const dropdownFieldIds = ['g_63', 'd_64', 'g_67', 'd_68'];
       dropdownFieldIds.forEach(fieldId => {
-        const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        const dropdownId = `dd_${fieldId}`;
+        const element = sectionElement.querySelector(`[data-dropdown-id="${dropdownId}"]`);
         if (element && !element.matches('select')) {
           console.warn(`S09: Field ${fieldId} exists but is not a select element:`, element.tagName);
+        } else if (!element) {
+          console.warn(`S09: Dropdown ${dropdownId} not found in DOM`);
         }
       });
     },
@@ -1775,10 +1778,10 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // 4. Initialize default dropdown values and related calculated fields
     // This logic was critical in the backup version for dropdown functionality
-    const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
-    const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
-    const occupiedHoursDropdown = document.querySelector('select[data-field-id="g_63"]');
-    const activityDropdown = document.querySelector('select[data-field-id="d_64"]');
+    const efficiencyDropdown = document.querySelector('select[data-dropdown-id="dd_g_67"]');
+    const elevatorDropdown = document.querySelector('select[data-dropdown-id="dd_d_68"]');
+    const occupiedHoursDropdown = document.querySelector('select[data-dropdown-id="dd_g_63"]');
+    const activityDropdown = document.querySelector('select[data-dropdown-id="dd_d_64"]');
     const densityField = document.querySelector('[data-field-id="d_67"]');
 
     // Debug: Check if dropdowns exist
@@ -1867,6 +1870,28 @@ window.TEUI.SectionModules.sect09 = (function () {
     if (window.TEUI?.FieldManager?.initializeDropdownsFromFields) {
       console.log("S09: Force-initializing dropdowns via FieldManager");
       window.TEUI.FieldManager.initializeDropdownsFromFields("occupantInternalGains");
+      
+      // Immediately check if dropdowns were created
+      console.log("S09: Checking dropdown creation after FieldManager initialization:");
+      const dropdownChecks = {
+        'dd_g_63': !!document.querySelector('[data-dropdown-id="dd_g_63"]'),
+        'dd_d_64': !!document.querySelector('[data-dropdown-id="dd_d_64"]'), 
+        'dd_g_67': !!document.querySelector('[data-dropdown-id="dd_g_67"]'),
+        'dd_d_68': !!document.querySelector('[data-dropdown-id="dd_d_68"]')
+      };
+      console.log("S09: Dropdown existence after FieldManager:", dropdownChecks);
+      
+      // If still no dropdowns, the issue is with the FieldManager/FieldRenderer
+      const foundDropdowns = Object.values(dropdownChecks).filter(Boolean).length;
+      if (foundDropdowns === 0) {
+        console.error("S09: FieldManager failed to create any dropdown elements. Check FieldRenderer/getLayout()");
+      } else if (foundDropdowns < 4) {
+        console.warn(`S09: Only ${foundDropdowns}/4 dropdowns created. Partial FieldManager success.`);
+      } else {
+        console.log("S09: All dropdowns successfully created by FieldManager!");
+      }
+    } else {
+      console.error("S09: FieldManager.initializeDropdownsFromFields not available!");
     }
 
     // 7. Perform initial calculations for this section
