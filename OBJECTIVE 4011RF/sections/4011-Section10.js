@@ -158,15 +158,18 @@ window.TEUI.SectionModules.sect10 = (function () {
               const numericValue = window.TEUI.parseNumeric(stateValue, 0);
               slider.value = numericValue;
               
-              const display = sectionElement.querySelector(`[data-display-for="${fieldId}"]`);
+              // CORRECTED PATTERN: Use the direct nextElementSibling property, which is the proven pattern from Section 08.
+              const display = slider.nextElementSibling;
+              
               if (display) {
-                  // Read the value back from the slider to guarantee visual sync
-                  const sliderCurrentValue = slider.value;
+                  const displayValue = window.TEUI.parseNumeric(stateValue, 0);
+                  let textContent;
                   if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
-                      display.textContent = `${sliderCurrentValue}%`;
+                      textContent = `${displayValue}%`;
                   } else {
-                      display.textContent = parseFloat(sliderCurrentValue).toFixed(2);
+                      textContent = parseFloat(displayValue).toFixed(2);
                   }
+                  display.textContent = textContent;
               }
           } else if (dropdown) {
               dropdown.value = stateValue;
@@ -1245,6 +1248,30 @@ window.TEUI.SectionModules.sect10 = (function () {
       },
     },
 
+    // Row 999: DEBUG SLIDER ROW
+    "debug_slider": {
+        id: "S10-DebugSlider",
+        rowId: "S10-DebugSlider",
+        label: "DEBUG SLIDER",
+        cells: {
+            c: { 
+                label: "Test Slider for State Isolation",
+                style: "font-weight: bold; color: #dc3545;"
+            },
+            d: {
+                fieldId: "test_slider_999",
+                type: "percentage",
+                value: "0", // Target default
+                min: 0,
+                max: 100,
+                step: 10,
+                section: "envelopeRadiantGains",
+                classes: ["col-large", "slider-container"],
+                colspan: 4 // Span across a few columns to make it stand out
+            }
+        }
+    },
+
     // G.0: MODE TOGGLE - Dynamically inserted row for the mode switch
     "mode_toggle": {
         id: "S10-ModeToggle",
@@ -1926,10 +1953,9 @@ window.TEUI.SectionModules.sect10 = (function () {
 
         ModeManager.setValue(fieldId, this.value, "user-modified");
           
-        // Update the display value in real-time
-        const displayElement = document.querySelector(
-          `[data-display-for="${fieldId}"]`,
-        );
+        // CORRECTED PATTERN: Use the direct nextElementSibling property for the input handler as well.
+        const displayElement = this.nextElementSibling;
+        
         if (displayElement) {
           if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
           displayElement.textContent = `${this.value}%`;

@@ -1198,15 +1198,17 @@ To maintain a consistent user experience, each dual-state section must have its 
 
 ### **Pattern 7: Robust UI Synchronization (The `refreshUI` function) - GOLD STANDARD**
 
-A common and critical failure point is an incomplete `refreshUI` function. This leads to a visual mismatch between the UI and the actual state, where slider thumbs or dropdown selections do not update when toggling modes, even though the underlying state is correct.
+A common and critical failure point is an incomplete `refreshUI` function. This leads to a visual mismatch where slider thumbs or dropdowns do not update when toggling modes. The root cause is often a fragile DOM query that fails to find the correct UI element to update.
 
-**CRITICAL:** The `refreshUI` function MUST be robust enough to handle the various ways the rendering engine creates form elements. It must not make assumptions about the DOM structure.
+**CRITICAL:** The query logic must be robust. Previous attempts using class-based queries (`.closest('.slider-container')`) have proven unreliable due to inconsistencies in how different sections are defined in their `sectionRows` objects.
+
+**The architecturally sound and proven pattern, taken directly from the working Section 08, is to use the `nextElementSibling` property.** This relies on the simple, consistent assumption that the `FieldManager` renders the slider's text display element immediately after its `<input type="range">` element.
 
 **Key Architectural Principles for `refreshUI`:**
 
-1.  **Scope All Queries**: Always search for elements *within* the section's container (e.g., `sectionElement.querySelector(...)`). Never use `document.querySelector`, which can cause cross-section bugs.
-2.  **Handle Wrapped Elements**: The rendering engine may place the `data-field-id` on a wrapper `div` rather than directly on the `<input>` or `<select>` element. The logic must look *inside* the found element to find the actual control.
-3.  **Update All Visual Parts**: For complex controls like sliders, update both the slider's `value` (the thumb position) and the separate `textContent` of its text display.
+1.  **Scope All Queries**: Always search for elements *within* the section's container (e.g., `sectionElement.querySelector(...)`).
+2.  **Handle Wrapped Elements**: Robustly find the `input` or `select` element, which may be the element with the `data-field-id` or a child of it.
+3.  **Use `nextElementSibling` for Sliders**: This is the most reliable method for finding a slider's associated text label, avoiding fragile class-based dependencies.
 
 **✅ Gold Standard Implementation (Derived from S08/S10 Fix):**
 
@@ -1227,24 +1229,22 @@ A common and critical failure point is an incomplete `refreshUI` function. This 
           const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
           if (!element) return;
           
-          // 3. Robustly find the actual input control, which may be the element itself or a child.
+          // 3. Robustly find the actual input control.
           const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
           const dropdown = element.matches('select') ? element : element.querySelector('select');
           
-          // 4. Update the correct element based on what was found.
           if (slider) {
               const numericValue = window.TEUI.parseNumeric(stateValue, 0);
               slider.value = numericValue;
               
-              // Also find and update the separate text display for the slider.
-              const display = sectionElement.querySelector(`[data-display-for="${fieldId}"]`);
+              // 4. CRITICAL: Use `nextElementSibling` to find the display element. This is the most robust pattern.
+              const display = slider.nextElementSibling;
               if (display) {
-                  // Read the value back from the slider itself to GUARANTEE visual sync
-                  const sliderCurrentValue = slider.value;
+                  const displayValue = window.TEUI.parseNumeric(stateValue, 0);
                   if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) { // Example for % sliders
-                      display.textContent = `${sliderCurrentValue}%`;
+                      display.textContent = `${displayValue}%`;
                   } else { // Example for coefficient sliders
-                      display.textContent = parseFloat(sliderCurrentValue).toFixed(2);
+                      display.textContent = parseFloat(displayValue).toFixed(2);
                   }
               }
           } else if (dropdown) {
