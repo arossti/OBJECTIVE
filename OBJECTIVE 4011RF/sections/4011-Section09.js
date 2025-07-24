@@ -10,28 +10,244 @@
 window.TEUI = window.TEUI || {};
 window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 
-// Create a section-specific namespace for global references
-window.TEUI.sect09 = window.TEUI.sect09 || {};
-
-// Global variable to track initialization state
-window.TEUI.sect09.initialized = false;
-window.TEUI.sect09.userInteracted = false;
-
 // Section 9: Occupant + Internal Gains Module
 window.TEUI.SectionModules.sect09 = (function () {
   //==========================================================================
-  // ADDED: STANDARD HELPER FUNCTIONS (Restored)
+  // DUAL-STATE ARCHITECTURE (Self-Contained State Module)
   //==========================================================================
 
-  function getNumericValue(fieldId, defaultValue = 0) {
-    const rawValue = getFieldValue(fieldId);
-    if (window.TEUI && typeof window.TEUI.parseNumeric === "function") {
-      return window.TEUI.parseNumeric(rawValue, defaultValue);
-    }
-    // Fallback parsing if global is not available (should not happen in normal operation)
-    const parsed = parseFloat(String(rawValue).replace(/[$,%]/g, ""));
-    return isNaN(parsed) ? defaultValue : parsed;
+  // PATTERN A: Internal State Objects (Self-Contained + Persistent)
+  const TargetState = {
+    state: {},
+    listeners: {},
+    initialize: function () {
+      const savedState = localStorage.getItem("S09_TARGET_STATE");
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+      } else {
+        this.setDefaults();
+      }
+    },
+    setDefaults: function () {
+      // These defaults MUST match the 'value' properties in the sectionRows definition
+      this.state = {
+        d_63: "126",        // Occupants per building
+        g_63: "12",         // Occupied hours/day
+        d_64: "Normal",     // Occupant activity
+        f_64: "117",        // Activity watts (calculated)
+        i_63: "4380",       // Annual occupied hours (calculated)
+        d_65: "7",          // Plug loads density
+        d_66: "1.5",        // Lighting density
+        g_67: "Efficient",  // Equipment efficiency
+        d_67: "5.00",       // Equipment density (calculated)
+        d_68: "No Elevators", // Elevator status
+        // Calculated values initialized to defaults
+        h_64: "0", i_64: "0", j_64: "0", k_64: "0", l_64: "0",
+        h_65: "0", i_65: "0", j_65: "0", k_65: "0", l_65: "0", m_65: "100", n_65: "✓",
+        h_66: "0", i_66: "0", j_66: "0", k_66: "0", l_66: "0", m_66: "100", n_66: "✓",
+        h_67: "0", i_67: "0", j_67: "0", k_67: "0", l_67: "0", m_67: "100", n_67: "✓",
+        h_69: "0", i_69: "0", j_69: "0", k_69: "0", l_69: "0",
+        h_70: "0", i_70: "0", k_70: "0",
+        h_71: "0", i_71: "0", j_71: "100", k_71: "0", l_71: "100"
+      };
+    },
+    saveState: function () {
+      localStorage.setItem("S09_TARGET_STATE", JSON.stringify(this.state));
+    },
+    setValue: function (fieldId, value) {
+      this.state[fieldId] = value;
+      this.saveState();
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
+  };
+
+  const ReferenceState = {
+    state: {},
+    listeners: {},
+    initialize: function () {
+      const savedState = localStorage.getItem("S09_REFERENCE_STATE");
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+      } else {
+        this.setDefaults();
+      }
+    },
+    setDefaults: function () {
+      // Reference defaults for comparison - based on efficient/standard practices
+      this.state = {
+        d_63: "100",        // Standard occupancy (lower)
+        g_63: "8",          // Standard business hours
+        d_64: "Normal",     // Normal activity
+        f_64: "117",        // Activity watts (same)
+        i_63: "2920",       // Annual occupied hours (8*365)
+        d_65: "5",          // Reference plug loads (lower)
+        d_66: "1.13",       // Reference lighting (code minimum)
+        g_67: "Efficient",  // Always efficient for reference
+        d_67: "3.00",       // Reference equipment density (efficient, no elevators)
+        d_68: "No Elevators", // Reference doesn't include elevators
+        // Calculated values initialized to defaults  
+        h_64: "0", i_64: "0", j_64: "0", k_64: "0", l_64: "0",
+        h_65: "0", i_65: "0", j_65: "0", k_65: "0", l_65: "0", m_65: "100", n_65: "✓",
+        h_66: "0", i_66: "0", j_66: "0", k_66: "0", l_66: "0", m_66: "100", n_66: "✓",
+        h_67: "0", i_67: "0", j_67: "0", k_67: "0", l_67: "0", m_67: "100", n_67: "✓",
+        h_69: "0", i_69: "0", j_69: "0", k_69: "0", l_69: "0",
+        h_70: "0", i_70: "0", k_70: "0",
+        h_71: "0", i_71: "0", j_71: "100", k_71: "0", l_71: "100"
+      };
+      console.log("S09: Reference defaults set for comparison model");
+    },
+    saveState: function () {
+      localStorage.setItem("S09_REFERENCE_STATE", JSON.stringify(this.state));
+    },
+    setValue: function (fieldId, value) {
+      this.state[fieldId] = value;
+      this.saveState();
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
+  };
+
+  // PATTERN A: The ModeManager Facade
+  const ModeManager = {
+    currentMode: "target",
+    initialize: function () {
+      TargetState.initialize();
+      ReferenceState.initialize();
+    },
+    switchMode: function (mode) {
+      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
+        return;
+      this.currentMode = mode;
+      console.log(`S09: Switched to ${mode.toUpperCase()} mode`);
+
+      this.refreshUI();
+      calculateAll(); // Recalculate for the new mode
+    },
+    resetState: function() {
+        console.log("S09: Resetting state and clearing localStorage for Section 09.");
+        TargetState.setDefaults();
+        TargetState.saveState();
+        ReferenceState.setDefaults();
+        ReferenceState.saveState();
+        console.log("S09: States have been reset to defaults.");
+
+        // After resetting, refresh the UI and recalculate.
+        this.refreshUI();
+        calculateAll();
+    },
+    getCurrentState: function () {
+      return this.currentMode === "target" ? TargetState : ReferenceState;
+    },
+    getValue: function (fieldId) {
+      return this.getCurrentState().getValue(fieldId);
+    },
+    setValue: function (fieldId, value, source = "user") {
+      this.getCurrentState().setValue(fieldId, value, source);
+
+      // BRIDGE: For backward compatibility, sync Target changes to global StateManager.
+      if (this.currentMode === "target") {
+        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      }
+    },
+    refreshUI: function () {
+      const sectionElement = document.getElementById("occupantInternalGains");
+      if (!sectionElement) return;
+
+      const currentState = this.getCurrentState();
+      
+      const fieldsToSync = [
+        'd_63', 'g_63', 'd_64', 'f_64', 'i_63',
+        'd_65', 'd_66', 'g_67', 'd_67', 'd_68',
+        'h_64', 'i_64', 'j_64', 'k_64', 'l_64',
+        'h_65', 'i_65', 'j_65', 'k_65', 'l_65', 'm_65', 'n_65',
+        'h_66', 'i_66', 'j_66', 'k_66', 'l_66', 'm_66', 'n_66',
+        'h_67', 'i_67', 'j_67', 'k_67', 'l_67', 'm_67', 'n_67',
+        'h_69', 'i_69', 'j_69', 'k_69', 'l_69',
+        'h_70', 'i_70', 'k_70',
+        'h_71', 'i_71', 'j_71', 'k_71', 'l_71'
+      ];
+
+      fieldsToSync.forEach(fieldId => {
+          const stateValue = currentState.getValue(fieldId);
+          if (stateValue === undefined || stateValue === null) return;
+
+          const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+          if (!element) return;
+          
+          if (element.matches('select')) {
+              element.value = stateValue;
+          } else if (element.hasAttribute('contenteditable')) {
+              element.textContent = stateValue;
+          } else {
+              element.textContent = stateValue;
+          }
+      });
+    },
+  };
+  
+  // Expose globally for cross-section communication
+  window.TEUI.sect09 = window.TEUI.sect09 || {};
+  window.TEUI.sect09.ModeManager = ModeManager;
+
+  //==========================================================================
+  // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
+  //==========================================================================
+  
+  function getNumericValue(fieldId) {
+    // For values INTERNAL to this section
+    const rawValue = ModeManager.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
   }
+
+  function getGlobalNumericValue(fieldId) {
+    // For values EXTERNAL to this section (from global StateManager)
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
+  function getFieldValue(fieldId) {
+    // First try to get from internal state
+    const stateValue = ModeManager.getValue(fieldId);
+    if (stateValue != null) return stateValue;
+    
+    // Then try global StateManager for external dependencies
+    const globalValue = window.TEUI?.StateManager?.getValue(fieldId);
+    if (globalValue != null) return globalValue;
+    
+    // Fallback for non-state values (e.g., legacy DOM elements)
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    return element ? (element.value ?? element.textContent?.trim()) : null;
+  }
+
+  function setCalculatedValue(fieldId, rawValue, formatType = "number") {
+    // Set state using ModeManager before updating DOM
+    ModeManager.setValue(fieldId, rawValue.toString(), "calculated");
+
+    // Upgrade format for specific field patterns
+    if (formatType === "number" && (fieldId.startsWith("h_") || fieldId.startsWith("i_") || fieldId.startsWith("k_"))) {
+      if (fieldId !== "i_63") { // i_63 is annual hours, should be integer
+        formatType = "number-2dp-comma";
+      }
+    }
+
+    // Format the value for display using the global formatter
+    const formattedValue = window.TEUI.formatNumber(rawValue, formatType);
+
+    // Update the corresponding DOM element
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+        element.value = formattedValue;
+      } else {
+        element.textContent = formattedValue;
+      }
+    }
+  }
+
+
   //==========================================================================
   // EQUIPMENT LOADS LOOKUP TABLE
   //==========================================================================
@@ -772,44 +988,28 @@ window.TEUI.SectionModules.sect09 = (function () {
     return annualHours.toString(); // Just return the annual hours, not the ratio
   }
 
-  /**
-   * Calculate the heating/cooling split based on cooling days from Section 03
-   * @returns {Object} Object with heatingRatio and coolingRatio properties
-   */
-  function calculateHeatingCoolingSplit() {
-    // Get cooling days from Section 03, cell m_19
-    const coolingDays = window.TEUI.parseNumeric(getFieldValue("m_19")) || 120; // Default to 120 if not set
 
-    // Calculate heating days
-    const heatingDays = 365 - coolingDays;
-
-    // Calculate ratios
-    const heatingRatio = heatingDays / 365;
-    const coolingRatio = coolingDays / 365;
-
-    return {
-      heatingRatio: heatingRatio,
-      coolingRatio: coolingRatio,
-    };
-  }
 
   /**
    * Calculate Annual kWh/yr for occupants
    */
   function calculateOccupantEnergy() {
-    // Get values using parseNumeric
-    const occupants = window.TEUI.parseNumeric(getFieldValue("d_63"));
-    const dailyHours = window.TEUI.parseNumeric(getFieldValue("g_63"));
-    const watts = window.TEUI.parseNumeric(getFieldValue("f_64"));
+    // Get values using new helper functions
+    const occupants = getNumericValue("d_63");
+    const dailyHours = getNumericValue("g_63");
+    const watts = getNumericValue("f_64");
 
     // Calculate annual energy
     const annualHours = dailyHours * 365;
     const energy = (occupants * watts * annualHours) / 1000; // Convert W to kW
 
-    // Get heating/cooling split
-    const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+    // Get heating/cooling split from external dependency
+    const coolingDays = getGlobalNumericValue("m_19") || 120;
+    const heatingDays = 365 - coolingDays;
+    const heatingRatio = heatingDays / 365;
+    const coolingRatio = coolingDays / 365;
 
-    // Update fields using local helper with format type
+    // Update fields using ModeManager-aware helper
     setCalculatedValue("h_64", energy, "number");
     setCalculatedValue("i_64", energy * heatingRatio, "number"); // Heating portion
     setCalculatedValue("k_64", energy * coolingRatio, "number"); // Cooling portion
@@ -821,9 +1021,11 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Calculate Annual kWh/yr for plug loads
    */
   function calculatePlugLoads() {
-    // Get reference values
-    const referenceStandard = getFieldValue("d_13") || "";
-    const buildingType = getFieldValue("d_12") || "";
+    // Get reference values from external dependencies
+    const referenceStandard = getGlobalNumericValue("d_13") ? 
+      window.TEUI.StateManager.getValue("d_13") : "";
+    const buildingType = getGlobalNumericValue("d_12") ? 
+      window.TEUI.StateManager.getValue("d_12") : "";
 
     // Determine plug load density
     let plugLoadDensity;
@@ -843,18 +1045,21 @@ window.TEUI.SectionModules.sect09 = (function () {
       plugLoadDensity = 7;
     }
 
-    // Update density field using local helper with format type
+    // Update density field using ModeManager-aware helper
     setCalculatedValue("d_65", plugLoadDensity, "number");
 
-    // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-    const conditionedArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
-    const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
+    // Calculate annual energy based on OCCUPIED HOURS from internal state
+    const conditionedArea = getGlobalNumericValue("h_15");
+    const occupiedHours = getNumericValue("i_63"); // Use internal annual occupied hours
     const energy = (plugLoadDensity * conditionedArea * occupiedHours) / 1000; // W/m² to kWh/yr using occupied hours
 
-    // Get heating/cooling split - Use DYNAMIC ratio for Plug Loads per user request
-    const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+    // Get heating/cooling split from external dependency
+    const coolingDays = getGlobalNumericValue("m_19") || 120;
+    const heatingDays = 365 - coolingDays;
+    const heatingRatio = heatingDays / 365;
+    const coolingRatio = coolingDays / 365;
 
-    // Update energy fields using local helper with format type
+    // Update energy fields using ModeManager-aware helper
     setCalculatedValue("h_65", energy, "number");
     setCalculatedValue("i_65", energy * heatingRatio, "number"); // Use dynamic heating ratio
     setCalculatedValue("k_65", energy * coolingRatio, "number"); // Use dynamic cooling ratio
@@ -865,18 +1070,16 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // If using PH standard, then reference is higher (5 or 7) than actual (2.1)
     // so percentage will be lower (which is good)
-    // Use local helper, store raw percentage, format as percent-auto
     const percentOfReference = (plugLoadDensity / referencePlugLoad) * 100;
     setCalculatedValue("m_65", percentOfReference, "percent-auto");
 
     // Set checkmark or X based on whether it's below reference
-    // Use local helper, store raw checkmark, format as raw
     if (plugLoadDensity <= referencePlugLoad) {
       setCalculatedValue("n_65", "✓", "raw"); // Store raw checkmark
-      setElementClass("n_65", "checkmark"); // Keep direct class manipulation for this specific UI
+      setElementClass("n_65", "checkmark");
     } else {
       setCalculatedValue("n_65", "✗", "raw"); // Store raw X
-      setElementClass("n_65", "warning"); // Keep direct class manipulation
+      setElementClass("n_65", "warning");
     }
 
     return energy;
@@ -886,18 +1089,21 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Calculate Annual kWh/yr for lighting loads
    */
   function calculateLightingLoads() {
-    // Get values using parseNumeric
-    const lightingDensity = window.TEUI.parseNumeric(getFieldValue("d_66"));
-    const conditionedArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
+    // Get values using new helper functions
+    const lightingDensity = getNumericValue("d_66");
+    const conditionedArea = getGlobalNumericValue("h_15");
 
-    // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-    const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
+    // Calculate annual energy based on OCCUPIED HOURS from internal state
+    const occupiedHours = getNumericValue("i_63"); // Use internal annual occupied hours
     const energy = (lightingDensity * conditionedArea * occupiedHours) / 1000; // W/m² to kWh/yr using occupied hours
 
-    // Get heating/cooling split - Use DYNAMIC ratio for Lighting Loads
-    const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+    // Get heating/cooling split from external dependency
+    const coolingDays = getGlobalNumericValue("m_19") || 120;
+    const heatingDays = 365 - coolingDays;
+    const heatingRatio = heatingDays / 365;
+    const coolingRatio = coolingDays / 365;
 
-    // Update fields using local helper with format type
+    // Update fields using ModeManager-aware helper
     setCalculatedValue("h_66", energy, "number");
     setCalculatedValue("i_66", energy * heatingRatio, "number"); // Use dynamic heating ratio
     setCalculatedValue("k_66", energy * coolingRatio, "number"); // Use dynamic cooling ratio
@@ -905,13 +1111,11 @@ window.TEUI.SectionModules.sect09 = (function () {
     // Calculate percentage against reference value
     // Based on CSV data, reference appears to be around 1.13 W/m²
     const referenceLightingLoad = 1.13;
-    // Use local helper, store raw percentage, format as percent-auto
     const percentOfReference = (lightingDensity / referenceLightingLoad) * 100;
     setCalculatedValue("m_66", percentOfReference, "percent-auto");
 
     // Set checkmark or X based on standard comparison
     // In this case, we're checking if it exceeds 133% of reference
-    // Use local helper, store raw checkmark/X, format as raw
     if (percentOfReference <= 133) {
       setCalculatedValue("n_66", "✓", "raw");
       setElementClass("n_66", "checkmark");
@@ -928,59 +1132,22 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculateEquipmentLoads() {
     try {
-      // Get values from dropdowns
+      // Get values from dropdowns using external dependencies
       let buildingType = "A-Assembly"; // Default
-      let efficiencyType = "Efficient"; // Default to Efficient (was "Regular")
+      let efficiencyType = "Efficient"; // Default to Efficient
       let elevatorStatus = "No Elevators"; // Default
 
-      // Get building type from dropdown
-      const buildingTypeDropdown = document.querySelector(
-        'select[data-field-id="d_12"]',
-      );
-      if (buildingTypeDropdown && buildingTypeDropdown.tagName === "SELECT") {
-        buildingType =
-          buildingTypeDropdown.options[buildingTypeDropdown.selectedIndex]
-            .value;
-      } else {
-        const buildingTypeCell = document.querySelector(
-          '[data-field-id="d_12"]',
-        );
-        if (buildingTypeCell) {
-          buildingType = buildingTypeCell.textContent.trim();
-        }
+      // Get building type from external dependency
+      const buildingTypeValue = window.TEUI.StateManager.getValue("d_12");
+      if (buildingTypeValue) {
+        buildingType = buildingTypeValue;
       }
 
-      // Get efficiency setting - now in column G in the CSV
-      const efficiencyDropdown = document.querySelector(
-        'select[data-field-id="g_67"]',
-      );
-      if (efficiencyDropdown && efficiencyDropdown.tagName === "SELECT") {
-        efficiencyType =
-          efficiencyDropdown.options[efficiencyDropdown.selectedIndex].value;
-      } else {
-        const efficiencyElement = document.querySelector(
-          '[data-field-id="g_67"]',
-        );
-        if (efficiencyElement) {
-          efficiencyType = efficiencyElement.textContent.trim();
-        }
-      }
+      // Get efficiency setting from internal state
+      efficiencyType = getFieldValue("g_67") || "Efficient";
 
-      // Get elevator setting
-      const elevatorDropdown = document.querySelector(
-        'select[data-field-id="d_68"]',
-      );
-      if (elevatorDropdown && elevatorDropdown.tagName === "SELECT") {
-        elevatorStatus =
-          elevatorDropdown.options[elevatorDropdown.selectedIndex].value;
-      } else {
-        const elevatorElement = document.querySelector(
-          '[data-field-id="d_68"]',
-        );
-        if (elevatorElement) {
-          elevatorStatus = elevatorElement.textContent.trim();
-        }
-      }
+      // Get elevator setting from internal state  
+      elevatorStatus = getFieldValue("d_68") || "No Elevators";
 
       // Format building type to match lookup table
       buildingType = formatBuildingTypeForLookup(buildingType);
@@ -1029,55 +1196,37 @@ window.TEUI.SectionModules.sect09 = (function () {
               ];
           }
         }
-      } else if (
-        equipmentLoadsTable.default &&
-        equipmentLoadsTable.default[efficiencyType] &&
-        equipmentLoadsTable.default[efficiencyType][elevatorStatus] !==
-          undefined
-      ) {
-        densityValue =
-          equipmentLoadsTable.default[efficiencyType][elevatorStatus];
       }
 
-      // Update the equipment density field
-      const densityField = document.querySelector('[data-field-id="d_67"]');
-      if (densityField) {
-        // Format using global helper before setting textContent
-        densityField.textContent = window.TEUI.formatNumber(
-          densityValue,
-          "number",
-        );
-      }
-
-      // Update StateManager and DOM using local helper
+      // Update the equipment density field using ModeManager-aware helper
       setCalculatedValue("d_67", densityValue, "number");
 
-      // Calculate annual energy based on OCCUPIED HOURS (i_63) per Excel formula structure
-      // Use window.TEUI.parseNumeric to safely get the floor area and occupied hours
-      const floorArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
-      const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63")); // Use annual occupied hours
+      // Calculate annual energy based on OCCUPIED HOURS from internal state
+      const floorArea = getGlobalNumericValue("h_15");
+      const occupiedHours = getNumericValue("i_63"); // Use internal annual occupied hours
 
       const annualEnergy =
         (densityValue * floorArea * occupiedHours) / 1000 || 0; // W/m² to kWh/yr using occupied hours
 
-      // Get heating/cooling split - Use DYNAMIC ratio for Equipment Loads
-      const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
+      // Get heating/cooling split from external dependency
+      const coolingDays = getGlobalNumericValue("m_19") || 120;
+      const heatingDays = 365 - coolingDays;
+      const heatingRatio = heatingDays / 365;
+      const coolingRatio = coolingDays / 365;
 
       const heatingPortion = annualEnergy * heatingRatio; // Use dynamic heating ratio
       const coolingPortion = annualEnergy * coolingRatio; // Use dynamic cooling ratio
 
-      // Update fields using local helper
+      // Update fields using ModeManager-aware helper
       setCalculatedValue("h_67", annualEnergy, "number");
       setCalculatedValue("i_67", heatingPortion, "number");
       setCalculatedValue("k_67", coolingPortion, "number");
 
       // Calculate percentage against reference value
       // Reference is 100% - equipment loads are already based on lookup tables with occupancy-specific values
-      // Use local helper, store 100, format as percent-auto
       setCalculatedValue("m_67", 100, "percent-auto");
 
       // Set checkmark for equipment loads
-      // Use local helper, store raw checkmark, format as raw
       setCalculatedValue("n_67", "✓", "raw");
       setElementClass("n_67", "checkmark");
 
@@ -1153,41 +1302,47 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Calculate subtotals and totals
    */
   function calculateTotals() {
-    // Get values for components
-    const dhwLosses = window.TEUI.parseNumeric(getFieldValue("h_69"));
-    // Split DHW losses using DYNAMIC ratio
-    const { heatingRatio: dhwHeatingRatio, coolingRatio: dhwCoolingRatio } =
-      calculateHeatingCoolingSplit();
+    // Get values for components using new helper functions
+    const dhwLosses = getGlobalNumericValue("d_54");
+    
+    // Split DHW losses using external cooling days dependency
+    const coolingDays = getGlobalNumericValue("m_19") || 120;
+    const heatingDays = 365 - coolingDays;
+    const dhwHeatingRatio = heatingDays / 365;
+    const dhwCoolingRatio = coolingDays / 365;
+    
     const dhwHeating = dhwLosses * dhwHeatingRatio;
     const dhwCooling = dhwLosses * dhwCoolingRatio;
-    // Use local helper
+    
+    // Update DHW fields using ModeManager-aware helper
+    setCalculatedValue("h_69", dhwLosses, "number");
     setCalculatedValue("i_69", dhwHeating, "number");
     setCalculatedValue("k_69", dhwCooling, "number");
 
-    // Energy values
-    const plugEnergy = window.TEUI.parseNumeric(getFieldValue("h_65"));
-    const lightingEnergy = window.TEUI.parseNumeric(getFieldValue("h_66"));
-    const equipmentEnergy = window.TEUI.parseNumeric(getFieldValue("h_67"));
-    const occupantEnergy = window.TEUI.parseNumeric(getFieldValue("h_64"));
+    // Energy values using new helper functions
+    const plugEnergy = getNumericValue("h_65");
+    const lightingEnergy = getNumericValue("h_66");
+    const equipmentEnergy = getNumericValue("h_67");
+    const occupantEnergy = getNumericValue("h_64");
 
-    // Heating values
-    const plugHeating = window.TEUI.parseNumeric(getFieldValue("i_65"));
-    const lightingHeating = window.TEUI.parseNumeric(getFieldValue("i_66"));
-    const equipmentHeating = window.TEUI.parseNumeric(getFieldValue("i_67"));
-    const occupantHeating = window.TEUI.parseNumeric(getFieldValue("i_64"));
+    // Heating values using new helper functions
+    const plugHeating = getNumericValue("i_65");
+    const lightingHeating = getNumericValue("i_66");
+    const equipmentHeating = getNumericValue("i_67");
+    const occupantHeating = getNumericValue("i_64");
 
-    // Cooling values
-    const plugCooling = window.TEUI.parseNumeric(getFieldValue("k_65"));
-    const lightingCooling = window.TEUI.parseNumeric(getFieldValue("k_66"));
-    const equipmentCooling = window.TEUI.parseNumeric(getFieldValue("k_67"));
-    const occupantCooling = window.TEUI.parseNumeric(getFieldValue("k_64"));
+    // Cooling values using new helper functions
+    const plugCooling = getNumericValue("k_65");
+    const lightingCooling = getNumericValue("k_66");
+    const equipmentCooling = getNumericValue("k_67");
+    const occupantCooling = getNumericValue("k_64");
 
     // Calculate subtotals for H70 (Plug/Light/Eqpt. Subtotals - EXCLUDING DHW losses h_69)
     const pleTotalEnergy = plugEnergy + lightingEnergy + equipmentEnergy; // EXCLUDES dhwLosses (h_69)
     const pleHeatingTotal = plugHeating + lightingHeating + equipmentHeating; // EXCLUDES dhwHeating (i_69)
     const pleCoolingTotal = plugCooling + lightingCooling + equipmentCooling; // EXCLUDES dhwCooling (k_69)
 
-    // Update subtotal fields using local helper
+    // Update subtotal fields using ModeManager-aware helper
     setCalculatedValue("h_70", pleTotalEnergy, "number");
     setCalculatedValue("i_70", pleHeatingTotal, "number");
     setCalculatedValue("k_70", pleCoolingTotal, "number");
@@ -1197,7 +1352,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     const totalHeating = pleHeatingTotal + occupantHeating + dhwHeating; // Add back dhwHeating for grand total
     const totalCooling = pleCoolingTotal + occupantCooling + dhwCooling; // Add back dhwCooling for grand total
 
-    // Update total fields using local helper
+    // Update total fields using ModeManager-aware helper
     setCalculatedValue("h_71", totalEnergy, "number");
     setCalculatedValue("i_71", totalHeating, "number");
     setCalculatedValue("k_71", totalCooling, "number");
@@ -1340,174 +1495,22 @@ window.TEUI.SectionModules.sect09 = (function () {
     }
   }
 
-  //==========================================================================
-  // DUAL-ENGINE ARCHITECTURE
-  //==========================================================================
-
   /**
-   * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state
-   * Stores results with ref_ prefix to keep separate from Target values
+   * Calculate all values for this section using Pattern A architecture
    */
-  function calculateReferenceModel() {
-    // console.log('[Section09] Running Reference Model calculations...');
+  function calculateAll() {
+    console.log("S09: Running Pattern A calculations");
 
-    // Get reference values for inputs
-    const refActivityLevel =
-      window.TEUI?.StateManager?.getReferenceValue("d_64") ||
-      getFieldValue("d_64");
-    const refDailyHours =
-      window.TEUI?.StateManager?.getReferenceValue("g_63") ||
-      getFieldValue("g_63");
-    const refEfficiency =
-      window.TEUI?.StateManager?.getReferenceValue("g_67") ||
-      getFieldValue("g_67");
-    const refElevators =
-      window.TEUI?.StateManager?.getReferenceValue("d_68") ||
-      getFieldValue("d_68");
-    const refArea =
-      window.TEUI?.StateManager?.getReferenceValue("h_15") ||
-      getFieldValue("h_15");
-    const refCoolingDays =
-      window.TEUI?.StateManager?.getReferenceValue("m_19") ||
-      getFieldValue("m_19");
-
-    // Calculate activity watts using reference values
-    const refActivityWatts = calculateActivityWatts(refActivityLevel);
-    const refAnnualHours = calculateOccupiedHoursRatio(refDailyHours);
-
-    // Calculate occupant energy (Reference)
-    const refOccupants =
-      window.TEUI?.StateManager?.getReferenceValue("d_63") ||
-      getFieldValue("d_63");
-    const refOccupantEnergy =
-      ((window.TEUI.parseNumeric(refOccupants) || 0) *
-        (window.TEUI.parseNumeric(refActivityWatts) || 0) *
-        (window.TEUI.parseNumeric(refAnnualHours) || 0)) /
-      1000;
-
-    // Calculate plug loads (Reference)
-    const refPlugDensity =
-      window.TEUI?.StateManager?.getReferenceValue("d_65") ||
-      getFieldValue("d_65");
-    const refPlugLoads =
-      ((window.TEUI.parseNumeric(refPlugDensity) || 0) *
-        (window.TEUI.parseNumeric(refArea) || 0) *
-        8760) /
-      1000;
-
-    // Calculate lighting loads (Reference)
-    const refLightingDensity =
-      window.TEUI?.StateManager?.getReferenceValue("d_66") ||
-      getFieldValue("d_66");
-    const refLightingLoads =
-      ((window.TEUI.parseNumeric(refLightingDensity) || 0) *
-        (window.TEUI.parseNumeric(refArea) || 0) *
-        8760) /
-      1000;
-
-    // Calculate equipment loads (Reference) - simplified version
-    const refEquipmentDensity =
-      window.TEUI?.StateManager?.getReferenceValue("d_67") ||
-      getFieldValue("d_67");
-    const refEquipmentLoads =
-      ((window.TEUI.parseNumeric(refEquipmentDensity) || 0) *
-        (window.TEUI.parseNumeric(refArea) || 0) *
-        8760) /
-      1000;
-
-    // Calculate DHW system losses (Reference)
-    const refDHWLosses =
-      window.TEUI?.StateManager?.getReferenceValue("d_54") ||
-      window.TEUI?.StateManager?.getReferenceValue("h_69") ||
-      0;
-
-    // Calculate totals
-    const refSubtotal = refPlugLoads + refLightingLoads + refEquipmentLoads;
-    const refTotal =
-      refOccupantEnergy +
-      refSubtotal +
-      (window.TEUI.parseNumeric(refDHWLosses) || 0);
-
-    // Calculate heating/cooling split
-    const coolingDaysNum = window.TEUI.parseNumeric(refCoolingDays) || 120;
-    const heatingDays = 365 - coolingDaysNum;
-    const refHeatingFraction = heatingDays / 365;
-    const refCoolingFraction = coolingDaysNum / 365;
-
-    // Store Reference Model results with ref_ prefix
-    if (window.TEUI?.StateManager) {
-      // Individual components
-      window.TEUI.StateManager.setValue(
-        "ref_h_64",
-        refOccupantEnergy.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_h_65",
-        refPlugLoads.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_h_66",
-        refLightingLoads.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_h_67",
-        refEquipmentLoads.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_h_69",
-        refDHWLosses.toString(),
-        "calculated",
-      );
-
-      // Subtotal and total
-      window.TEUI.StateManager.setValue(
-        "ref_h_70",
-        refSubtotal.toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_h_71",
-        refTotal.toString(),
-        "calculated",
-      );
-
-      // Heating/cooling splits
-      window.TEUI.StateManager.setValue(
-        "ref_i_71",
-        (refTotal * refHeatingFraction).toString(),
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        "ref_k_71",
-        (refTotal * refCoolingFraction).toString(),
-        "calculated",
-      );
-    }
-
-    // console.log('[Section09] Reference Model values stored');
-  }
-
-  /**
-   * TARGET MODEL ENGINE: Calculate all Column H values using Application state
-   * This is the existing calculateAll logic, refactored
-   */
-  function calculateTargetModel() {
-    // console.log('[Section09] Running Target Model calculations...');
-
-    // Calculate individual components
+    // Calculate individual components in sequence
     const activityLevel = getFieldValue("d_64");
     const activityWatts = calculateActivityWatts(activityLevel);
-    setCalculatedValue("f_64", activityWatts, "number-2dp-comma"); // Use comma format
+    setCalculatedValue("f_64", activityWatts, "number-2dp-comma");
 
     const dailyHours = getFieldValue("g_63");
     const annualHours = calculateOccupiedHoursRatio(dailyHours);
     setCalculatedValue("i_63", annualHours, "raw"); // i_63 is raw hours, no comma/decimal
 
-    // Calculate energy usage - these functions now read the updated f_64 and d_63/g_63 correctly
+    // Calculate energy usage for each component
     calculateOccupantEnergy();
     calculatePlugLoads();
     calculateLightingLoads();
@@ -1518,19 +1521,8 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // Update reference indicators
     updateAllReferenceIndicators();
-  }
 
-  /**
-   * DUAL-ENGINE ORCHESTRATION
-   * Replaces the original calculateAll function
-   */
-  function calculateAll() {
-    // console.log('[Section09] Running dual-engine calculations...'); // Comment out
-
-    calculateReferenceModel();
-    calculateTargetModel();
-
-    // console.log('[Section09] Dual-engine calculations complete'); // Comment out
+    console.log("S09: Pattern A calculations complete");
   }
 
   /**
@@ -1558,17 +1550,10 @@ window.TEUI.SectionModules.sect09 = (function () {
         // Handle numeric values
         if (this.getAttribute("contenteditable") === "true") {
           // Get and clean the value
-          const newValue = this.textContent.trim(); //.replace(/,/g, ''); - No replace needed if parseNumeric is used
+          const newValue = this.textContent.trim();
 
-          // Store the raw value using StateManager directly or via helper
-          // Note: setCalculatedValue is for *calculated* fields. For user input, use StateManager.setValue
-          if (window.TEUI?.StateManager?.setValue) {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              newValue,
-              "user-modified",
-            );
-          }
+          // Store the raw value using ModeManager
+          ModeManager.setValue(fieldId, newValue, "user-modified");
 
           // Format the display using global helper if it's a valid number
           const numericValue = window.TEUI.parseNumeric(newValue);
@@ -1583,12 +1568,8 @@ window.TEUI.SectionModules.sect09 = (function () {
             );
           } else {
             // Handle non-numeric input if necessary (e.g., clear or show error)
-            // For now, leave the invalid text or potentially reset to 0.00
             this.textContent = window.TEUI.formatNumber(0, "number"); // Default display format
-            if (window.TEUI?.StateManager?.setValue) {
-              // Store '0' if input was invalid
-              window.TEUI.StateManager.setValue(fieldId, "0", "user-modified");
-            }
+            ModeManager.setValue(fieldId, "0", "user-modified");
           }
 
           // Recalculate
@@ -1612,14 +1593,8 @@ window.TEUI.SectionModules.sect09 = (function () {
         const fieldId = this.getAttribute("data-field-id");
         if (!fieldId) return;
 
-        // Store the value
-        if (window.TEUI?.StateManager?.setValue) {
-          window.TEUI.StateManager.setValue(
-            fieldId,
-            this.value,
-            "user-modified",
-          );
-        }
+        // Store the value using ModeManager
+        ModeManager.setValue(fieldId, this.value, "user-modified");
 
         // Recalculate
         calculateAll();
@@ -1631,6 +1606,71 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // Add cross-section dependency updates
     addStateManagerListeners();
+  }
+
+  /**
+   * Creates and injects the Target/Reference toggle and Reset button into the section header.
+   */
+  function injectHeaderControls() {
+      const sectionHeader = document.querySelector("#occupantInternalGains .section-header");
+      if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+          return; // Already setup or header not found
+      }
+
+      const controlsContainer = document.createElement("div");
+      controlsContainer.className = "local-controls-container";
+      controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+      // --- Create Reset Button ---
+      const resetButton = document.createElement("button");
+      resetButton.innerHTML = "🔄 Reset"; // Using an icon for clarity
+      resetButton.title = "Reset Section 09 to Defaults";
+      resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+      
+      resetButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          // Use a confirmation dialog to prevent accidental resets
+          if (confirm("Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 09.")) {
+              ModeManager.resetState();
+          }
+      });
+
+      // --- Create Toggle Switch ---
+      const stateIndicator = document.createElement("span");
+      stateIndicator.textContent = "TARGET";
+      stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+
+      const toggleSwitch = document.createElement("div");
+      toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+      
+      const slider = document.createElement("div");
+      slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+      toggleSwitch.appendChild(slider);
+      
+      toggleSwitch.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const isReference = toggleSwitch.classList.toggle('active');
+          if (isReference) {
+              slider.style.transform = "translateX(20px)";
+              toggleSwitch.style.backgroundColor = "#28a745";
+              stateIndicator.textContent = "REFERENCE";
+              stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+              ModeManager.switchMode("reference");
+          } else {
+              slider.style.transform = "translateX(0px)";
+              toggleSwitch.style.backgroundColor = "#ccc";
+              stateIndicator.textContent = "TARGET";
+              stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+              ModeManager.switchMode("target");
+          }
+      });
+
+      // Append all controls to the container, then the container to the header
+      controlsContainer.appendChild(resetButton);
+      controlsContainer.appendChild(stateIndicator);
+      controlsContainer.appendChild(toggleSwitch);
+      sectionHeader.appendChild(controlsContainer);
   }
 
   /**
@@ -1701,21 +1741,12 @@ window.TEUI.SectionModules.sect09 = (function () {
   }
 
   /**
-   * Register with StateManager and set proper default values
+   * Register with StateManager for backward compatibility and cross-section communication
    */
   function registerWithStateManager() {
     if (!window.TEUI?.StateManager) return;
 
-    // Register default values with default state (not user-modified)
-    // This ensures they are used as initial values but don't override user choices
-    if (window.TEUI.StateManager.setValue) {
-      window.TEUI.StateManager.setValue("g_67", "Efficient", "default");
-      window.TEUI.StateManager.setValue("d_68", "No Elevators", "default");
-      // Use local helper for initial calculated value setting
-      setCalculatedValue("d_67", 5.0, "number");
-    }
-
-    // Register key fields that other sections might depend on
+    // Register key fields that other sections might depend on (Target values only for global compatibility)
     const keysToRegister = [
       // Total internal gains values
       { id: "h_71", value: "0", state: "calculated" }, // Total internal gains
@@ -1734,162 +1765,38 @@ window.TEUI.SectionModules.sect09 = (function () {
     keysToRegister.forEach((key) => {
       window.TEUI.StateManager.setValue(key.id, key.value, key.state);
     });
-
-    // Register cross-section dependencies
-    const dependencies = [
-      // Building info dependencies
-      {
-        source: "d_12",
-        target: "d_65",
-        description: "Plug loads density based on building type",
-      },
-      {
-        source: "d_12",
-        target: "h_67",
-        description: "Equipment loads based on building type",
-      },
-      {
-        source: "d_13",
-        target: "d_65",
-        description: "Plug loads density based on reference standard",
-      },
-      {
-        source: "h_15",
-        target: "h_65",
-        description: "Plug loads total based on conditioned area",
-      },
-      {
-        source: "h_15",
-        target: "h_66",
-        description: "Lighting loads total based on conditioned area",
-      },
-      {
-        source: "h_15",
-        target: "h_67",
-        description: "Equipment loads total based on conditioned area",
-      },
-
-      // Water use dependency
-      { source: "d_54", target: "h_69", description: "DHW system losses" },
-
-      // Cooling days dependency
-      {
-        source: "m_19",
-        target: "i_64",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "i_65",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "i_66",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "i_67",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "k_64",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "k_65",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "k_66",
-        description: "Heating/cooling split based on cooling days",
-      },
-      {
-        source: "m_19",
-        target: "k_67",
-        description: "Heating/cooling split based on cooling days",
-      },
-
-      // Key dependencies affecting other sections
-      {
-        source: "i_71",
-        target: "i_80",
-        description: "Internal gains contribute to heating utilization factor",
-      },
-      {
-        source: "h_71",
-        target: "h_129",
-        description: "Internal gains contribute to cooling loads",
-      },
-    ];
-
-    // Register each dependency
-    dependencies.forEach((dep) => {
-      window.TEUI.StateManager.registerDependency(
-        dep.source,
-        dep.target,
-        dep.description,
-      );
-    });
   }
 
   /**
    * Called when the section is rendered
    */
   function onSectionRendered() {
-    // Register with state manager and integrator
-    registerWithStateManager();
-    registerWithSectionIntegrator();
+    console.log("S09: Section rendered - initializing Pattern A Self-Contained State Module.");
 
-    // Initialize event handlers
+    // 1. Initialize the ModeManager and its internal states
+    ModeManager.initialize();
+
+    // 2. Setup the section-specific toggle switch in the header
+    injectHeaderControls();
+
+    // 3. Initialize event handlers for this section
     initializeEventHandlers();
 
-    // Initialize default dropdown values and related calculated fields (Moved from setupValueEnforcement)
-    // Check initialization/interaction flags to prevent overriding user changes
-    if (
-      !(window.TEUI.sect09.initialized && window.TEUI.sect09.userInteracted)
-    ) {
-      const efficiencyDropdown = document.querySelector(
-        'select[data-field-id="g_67"]',
-      );
-      const elevatorDropdown = document.querySelector(
-        'select[data-field-id="d_68"]',
-      );
-      const densityField = document.querySelector('[data-field-id="d_67"]');
+    // 4. Sync UI to the default (Target) state
+    ModeManager.refreshUI();
 
-      if (efficiencyDropdown) {
-        efficiencyDropdown.value = "Efficient";
-        if (window.TEUI?.StateManager?.setValue) {
-          window.TEUI.StateManager.setValue("g_67", "Efficient", "default");
-        }
-      }
-      if (elevatorDropdown) {
-        elevatorDropdown.value = "No Elevators";
-        if (window.TEUI?.StateManager?.setValue) {
-          window.TEUI.StateManager.setValue("d_68", "No Elevators", "default");
-        }
-      }
-      if (densityField) {
-        // Use local helper for setting default display value
-        densityField.textContent = window.TEUI.formatNumber(5.0, "number");
-        if (window.TEUI?.StateManager?.setValue) {
-          // Store raw default value in state manager
-          window.TEUI.StateManager.setValue("d_67", "5.00", "default"); // Store as string
-        }
-      }
-      window.TEUI.sect09.initialized = true;
-      // Trigger calculation involving these defaults
-      calculateEquipmentLoads();
+    // Register this section with StateManager and add listeners
+    registerWithStateManager();
+    addStateManagerListeners();
+
+    // Expose ModeManager globally for cross-section communication (e.g., global toggle)
+    if (window.TEUI) {
+      window.TEUI.sect09 = window.TEUI.sect09 || {};
+      window.TEUI.sect09.ModeManager = ModeManager;
+      console.log("S09: ModeManager exposed globally for cross-section integration.");
     }
 
-    // Add checkmark styles
-    addCheckmarkStyles();
-
-    // Run initial full calculation (will re-run parts if defaults were set)
+    // 5. Perform initial calculations for this section
     calculateAll();
   }
 
@@ -1977,22 +1884,9 @@ window.TEUI.SectionModules.sect09 = (function () {
         const fieldId = this.getAttribute("data-field-id"); // Get fieldId here
         if (!fieldId) return; // Exit if no fieldId
 
-        // Flag as user interacted for original section09 dropdowns
-        if (
-          (field.fieldId === "g_67" || field.fieldId === "d_68") &&
-          e.isTrusted
-        ) {
-          if (window.TEUI && window.TEUI.sect09) {
-            window.TEUI.sect09.userInteracted = true;
-          }
-        }
-
-        // Store value in StateManager
-        if (window.TEUI?.StateManager?.setValue) {
-          // Mark as user-modified for real user interactions to prevent overrides
-          const state = e.isTrusted ? "user-modified" : "calculated";
-          window.TEUI.StateManager.setValue(field.fieldId, this.value, state);
-        }
+        // Store value using ModeManager
+        const state = e.isTrusted ? "user-modified" : "calculated";
+        ModeManager.setValue(field.fieldId, this.value, state);
 
         // Trigger calculation - Ensure dependent calculations run
         calculateAll();
@@ -2216,6 +2110,35 @@ document.addEventListener("teui-section-rendered", function (event) {
         window.TEUI.SectionModules.sect09.onSectionRendered();
       }
   }
+});
+
+// Export key functions to the global namespace for cross-section access
+document.addEventListener("DOMContentLoaded", function () {
+  // Create section namespace
+  window.TEUI = window.TEUI || {};
+  window.TEUI.sect09 = window.TEUI.sect09 || {};
+
+  // Export critical functions
+  const module = window.TEUI.SectionModules.sect09;
+  window.TEUI.sect09.calculateAll = module.calculateAll;
+
+  // Create a safe global function for internal gains recalculation
+  window.recalculateInternalGains = function () {
+    if (window.recalculateInternalGainsRunning) return;
+
+    window.recalculateInternalGainsRunning = true;
+    try {
+      if (window.TEUI?.SectionModules?.sect09?.calculateAll) {
+        window.TEUI.SectionModules.sect09.calculateAll();
+      } else if (window.TEUI?.sect09?.calculateAll) {
+        window.TEUI.sect09.calculateAll();
+      }
+    } catch (_e) {
+      // Error in global recalculateInternalGains
+    } finally {
+      window.recalculateInternalGainsRunning = false;
+    }
+  };
 });
 
 // Make sure we have the calculateTEUI function
