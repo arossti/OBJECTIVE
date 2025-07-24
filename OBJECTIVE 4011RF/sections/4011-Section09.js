@@ -209,22 +209,55 @@ window.TEUI.SectionModules.sect09 = (function () {
   }
 
   function getFieldValue(fieldId) {
-    // First try to get from internal state
-    const stateValue = ModeManager.getValue(fieldId);
-    if (stateValue != null) return stateValue;
+    // First check if this is an INTERNAL field that should come from ModeManager
+    const internalFields = [
+      'd_63', 'g_63', 'd_64', 'f_64', 'i_63',
+      'd_65', 'd_66', 'g_67', 'd_67', 'd_68',
+      'h_64', 'i_64', 'j_64', 'k_64', 'l_64',
+      'h_65', 'i_65', 'j_65', 'k_65', 'l_65', 'm_65', 'n_65',
+      'h_66', 'i_66', 'j_66', 'k_66', 'l_66', 'm_66', 'n_66',
+      'h_67', 'i_67', 'j_67', 'k_67', 'l_67', 'm_67', 'n_67',
+      'h_69', 'i_69', 'j_69', 'k_69', 'l_69',
+      'h_70', 'i_70', 'k_70',
+      'h_71', 'i_71', 'j_71', 'k_71', 'l_71'
+    ];
+
+    if (internalFields.includes(fieldId)) {
+      // Get from internal state
+      const stateValue = ModeManager.getValue(fieldId);
+      if (stateValue != null) return stateValue;
+    }
     
-    // Then try global StateManager for external dependencies
-    const globalValue = window.TEUI?.StateManager?.getValue(fieldId);
-    if (globalValue != null) return globalValue;
+    // For EXTERNAL dependencies, get from global StateManager
+    if (window.TEUI?.StateManager?.getValue) {
+      const globalValue = window.TEUI.StateManager.getValue(fieldId);
+      if (globalValue !== null && globalValue !== undefined) {
+        return globalValue;
+      }
+    }
     
     // Fallback for non-state values (e.g., legacy DOM elements)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    return element ? (element.value ?? element.textContent?.trim()) : null;
+    if (element) {
+      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+        return element.value;
+      } else {
+        return element.textContent?.trim();
+      }
+    }
+    
+    return "";
   }
 
   function setCalculatedValue(fieldId, rawValue, formatType = "number") {
-    // Set state using ModeManager before updating DOM
+    // Set state using ModeManager for internal values
     ModeManager.setValue(fieldId, rawValue.toString(), "calculated");
+
+    // CRITICAL: Also set in global StateManager for cross-section communication 
+    // but only for TARGET mode to maintain backward compatibility
+    if (ModeManager.currentMode === "target" && window.TEUI?.StateManager?.setValue) {
+      window.TEUI.StateManager.setValue(fieldId, rawValue.toString(), "calculated");
+    }
 
     // Upgrade format for specific field patterns
     if (formatType === "number" && (fieldId.startsWith("h_") || fieldId.startsWith("i_") || fieldId.startsWith("k_"))) {
@@ -1022,10 +1055,8 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculatePlugLoads() {
     // Get reference values from external dependencies
-    const referenceStandard = getGlobalNumericValue("d_13") ? 
-      window.TEUI.StateManager.getValue("d_13") : "";
-    const buildingType = getGlobalNumericValue("d_12") ? 
-      window.TEUI.StateManager.getValue("d_12") : "";
+    const referenceStandard = getFieldValue("d_13") || "";
+    const buildingType = getFieldValue("d_12") || "";
 
     // Determine plug load density
     let plugLoadDensity;
@@ -1132,21 +1163,21 @@ window.TEUI.SectionModules.sect09 = (function () {
    */
   function calculateEquipmentLoads() {
     try {
-      // Get values from dropdowns using external dependencies
+      // Get values from external and internal sources correctly
       let buildingType = "A-Assembly"; // Default
       let efficiencyType = "Efficient"; // Default to Efficient
       let elevatorStatus = "No Elevators"; // Default
 
-      // Get building type from external dependency
-      const buildingTypeValue = window.TEUI.StateManager.getValue("d_12");
+      // Get building type from EXTERNAL dependency (global StateManager)
+      const buildingTypeValue = getFieldValue("d_12");
       if (buildingTypeValue) {
         buildingType = buildingTypeValue;
       }
 
-      // Get efficiency setting from internal state
+      // Get efficiency setting from INTERNAL state (ModeManager)
       efficiencyType = getFieldValue("g_67") || "Efficient";
 
-      // Get elevator setting from internal state  
+      // Get elevator setting from INTERNAL state (ModeManager)  
       elevatorStatus = getFieldValue("d_68") || "No Elevators";
 
       // Format building type to match lookup table
@@ -1302,8 +1333,8 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Calculate subtotals and totals
    */
   function calculateTotals() {
-    // Get values for components using new helper functions
-    const dhwLosses = getGlobalNumericValue("d_54");
+    // Get values for components using helper functions that route correctly
+    const dhwLosses = getGlobalNumericValue("d_54"); // External dependency from DHW section
     
     // Split DHW losses using external cooling days dependency
     const coolingDays = getGlobalNumericValue("m_19") || 120;
@@ -1319,19 +1350,19 @@ window.TEUI.SectionModules.sect09 = (function () {
     setCalculatedValue("i_69", dhwHeating, "number");
     setCalculatedValue("k_69", dhwCooling, "number");
 
-    // Energy values using new helper functions
+    // Energy values using helper functions (these are internal to this section)
     const plugEnergy = getNumericValue("h_65");
     const lightingEnergy = getNumericValue("h_66");
     const equipmentEnergy = getNumericValue("h_67");
     const occupantEnergy = getNumericValue("h_64");
 
-    // Heating values using new helper functions
+    // Heating values using helper functions (these are internal to this section)
     const plugHeating = getNumericValue("i_65");
     const lightingHeating = getNumericValue("i_66");
     const equipmentHeating = getNumericValue("i_67");
     const occupantHeating = getNumericValue("i_64");
 
-    // Cooling values using new helper functions
+    // Cooling values using helper functions (these are internal to this section)
     const plugCooling = getNumericValue("k_65");
     const lightingCooling = getNumericValue("k_66");
     const equipmentCooling = getNumericValue("k_67");
@@ -1357,6 +1388,10 @@ window.TEUI.SectionModules.sect09 = (function () {
     setCalculatedValue("i_71", totalHeating, "number");
     setCalculatedValue("k_71", totalCooling, "number");
 
+    // Set the 100% values for percentage columns
+    setCalculatedValue("j_71", 100, "percent-auto");
+    setCalculatedValue("l_71", 100, "percent-auto");
+
     // Update percentage fields
     updatePercentages(totalHeating, totalCooling);
   }
@@ -1373,7 +1408,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       total,
       isCooling = false,
     ) => {
-      const value = window.TEUI.parseNumeric(getFieldValue(valueFieldId));
+      const value = getNumericValue(valueFieldId); // Use helper function to get from ModeManager
       const percentageDecimal = total > 0 ? value / total : 0;
       setCalculatedValue(percentageFieldId, percentageDecimal, "percent-auto");
 
@@ -1411,6 +1446,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       if (element) element.classList.add("text-left-indicator");
     };
 
+    // Calculate and set percentages for all components
     setPercentage("i_64", "j_64", totalHeating);
     setPercentage("k_64", "l_64", totalCooling, true);
     setPercentage("i_65", "j_65", totalHeating);
@@ -1422,78 +1458,12 @@ window.TEUI.SectionModules.sect09 = (function () {
     setPercentage("i_69", "j_69", totalHeating);
     setPercentage("k_69", "l_69", totalCooling, true);
 
-    setCalculatedValue("j_71", 1.0, "percent-auto");
-    setCalculatedValue("l_71", 1.0, "percent-auto");
+    // The totals are always 100%
+    setCalculatedValue("j_71", 100, "percent-auto");
+    setCalculatedValue("l_71", 100, "percent-auto");
   }
 
-  /**
-   * Helper function to get a field value
-   */
-  function getFieldValue(fieldId) {
-    // Try to get from StateManager first
-    if (window.TEUI?.StateManager?.getValue) {
-      const value = window.TEUI.StateManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        return value;
-      }
-    }
 
-    // Fall back to DOM
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        return element.value;
-      } else {
-        return element.textContent;
-      }
-    }
-
-    return "";
-  }
-
-  /**
-   * Helper function to set a calculated field value in StateManager and update the DOM.
-   * Uses the global window.TEUI.formatNumber for formatting.
-   * @param {string} fieldId - The ID of the field to update.
-   * @param {*} rawValue - The raw, unformatted value to store in StateManager.
-   * @param {string} formatType - The format type for display (e.g., 'number', 'percent-auto', 'integer', 'raw').
-   */
-  function setCalculatedValue(fieldId, rawValue, formatType = "number") {
-    // If formatType is the default 'number', upgrade to 'number-2dp-comma' for kWh fields in this section
-    if (
-      formatType === "number" &&
-      (fieldId.startsWith("h_") ||
-        fieldId.startsWith("i_") ||
-        fieldId.startsWith("k_"))
-    ) {
-      if (fieldId !== "i_63") {
-        // i_63 is annual hours, should be integer
-        formatType = "number-2dp-comma";
-      }
-    }
-
-    if (window.TEUI?.StateManager?.setValue) {
-      // Ensure rawValue is stored as a string for consistency, especially numbers
-      window.TEUI.StateManager.setValue(
-        fieldId,
-        String(rawValue),
-        "calculated",
-      );
-    }
-
-    // Format the value for display using the global formatter
-    const formattedValue = window.TEUI.formatNumber(rawValue, formatType);
-
-    // Update the corresponding DOM element
-    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-    if (element) {
-      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-        element.value = formattedValue; // Update input/select value
-      } else {
-        element.textContent = formattedValue; // Update other element text content
-      }
-    }
-  }
 
   /**
    * Calculate all values for this section using Pattern A architecture
@@ -1782,7 +1752,42 @@ window.TEUI.SectionModules.sect09 = (function () {
     // 3. Initialize event handlers for this section
     initializeEventHandlers();
 
-    // 4. Sync UI to the default (Target) state
+    // 4. Initialize default dropdown values and related calculated fields
+    // This logic was critical in the backup version for dropdown functionality
+    const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
+    const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
+    const densityField = document.querySelector('[data-field-id="d_67"]');
+
+    if (efficiencyDropdown) {
+      efficiencyDropdown.value = "Efficient";
+      // Set in ModeManager state
+      ModeManager.setValue("g_67", "Efficient", "default");
+      // Also set in global StateManager for compatibility
+      if (window.TEUI?.StateManager?.setValue) {
+        window.TEUI.StateManager.setValue("g_67", "Efficient", "default");
+      }
+    }
+    if (elevatorDropdown) {
+      elevatorDropdown.value = "No Elevators";
+      // Set in ModeManager state
+      ModeManager.setValue("d_68", "No Elevators", "default");
+      // Also set in global StateManager for compatibility
+      if (window.TEUI?.StateManager?.setValue) {
+        window.TEUI.StateManager.setValue("d_68", "No Elevators", "default");
+      }
+    }
+    if (densityField) {
+      // Use helper for setting default display value
+      densityField.textContent = window.TEUI.formatNumber(5.0, "number");
+      // Set in ModeManager state
+      ModeManager.setValue("d_67", "5.00", "default");
+      // Also set in global StateManager for compatibility
+      if (window.TEUI?.StateManager?.setValue) {
+        window.TEUI.StateManager.setValue("d_67", "5.00", "default");
+      }
+    }
+
+    // 5. Sync UI to the current state
     ModeManager.refreshUI();
 
     // Register this section with StateManager and add listeners
@@ -1796,8 +1801,35 @@ window.TEUI.SectionModules.sect09 = (function () {
       console.log("S09: ModeManager exposed globally for cross-section integration.");
     }
 
-    // 5. Perform initial calculations for this section
+    // Add checkmark styles
+    addCheckmarkStyles();
+
+    // 6. Perform initial calculations for this section
     calculateAll();
+  }
+
+  /**
+   * Add CSS styles for checkmarks and X marks
+   */
+  function addCheckmarkStyles() {
+    // Check if the styles already exist
+    let styleElement = document.getElementById("checkmark-styles");
+    if (!styleElement) {
+      // Create style element
+      styleElement = document.createElement("style");
+      styleElement.id = "checkmark-styles";
+      styleElement.textContent = `
+                .checkmark {
+                    color: green;
+                    font-weight: bold;
+                }
+                .warning {
+                    color: red;
+                    font-weight: bold;
+                }
+            `;
+      document.head.appendChild(styleElement);
+    }
   }
 
   /**
@@ -1904,28 +1936,6 @@ window.TEUI.SectionModules.sect09 = (function () {
       element.classList.remove("checkmark", "warning");
       // Add new class
       element.classList.add(className);
-    }
-  }
-
-  // Add CSS styles for checkmarks and X marks
-  function addCheckmarkStyles() {
-    // Check if the styles already exist
-    let styleElement = document.getElementById("checkmark-styles");
-    if (!styleElement) {
-      // Create style element
-      styleElement = document.createElement("style");
-      styleElement.id = "checkmark-styles";
-      styleElement.textContent = `
-                .checkmark {
-                    color: green;
-                    font-weight: bold;
-                }
-                .warning {
-                    color: red;
-                    font-weight: bold;
-                }
-            `;
-      document.head.appendChild(styleElement);
     }
   }
 
