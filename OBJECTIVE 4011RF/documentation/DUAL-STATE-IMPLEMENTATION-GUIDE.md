@@ -1,7 +1,7 @@
 # 🏆 TEUI 4.011RF - DUAL-STATE ARCHITECTURE GUIDE (v3)
 
-**Status**: ✅ **Gold Standard** | **Updated**: July 23, 2025  
-**Mandate**: This document outlines the **sole approved pattern** for implementing dual-state (Target/Reference) functionality. It is based on the successful, self-contained architecture proven in Section 03, 08, and 10. All previous guides are superseded.
+**Status**: ✅ **Gold Standard** | **Updated**: July 24, 2025  
+**Mandate**: This document outlines the **sole approved pattern** for implementing dual-state (Target/Reference) functionality. It is based on the successful, self-contained architecture proven in Section 03, 08, 10, and 11. Includes Sequential Refactoring Strategy for complete Pattern A migration. All previous guides are superseded.
 
 Refactor workplan for July 24, 2025, Section11:
 
@@ -504,6 +504,170 @@ Each section migration should follow this standardized process:
    - Update this GUIDE.md with lessons learned
    - Document any section-specific patterns or challenges
    - Update README.md status
+
+## 🚀 **SEQUENTIAL REFACTORING STRATEGY (July 2025)**
+
+**Status**: ✅ **Recommended Implementation Plan**  
+**Context**: Based on dependency analysis and successful S03/S08/S10/S11 refactoring
+
+### **🔄 Complete Dependency Flow Map**
+
+```
+S05 (Emissions) ──→ S04 (Energy/Emissions) ──→ S15 → S01
+S06 (Renewable) ──→ S04 (Energy/Emissions) ──→ S15 → S01  
+S07 (Water) ──────→ S04 (Energy/Emissions) ──→ S15 → S01
+                           ↑
+S09 (Internal Gains) → S10 ✅ → S13 → S14 → S15 → S01
+    ↓                    ↓      ↓      ↓      ↓      ↓
+S12 (Volume/Surface) ────────→ S13 → S14 → S15 → S01
+    ↓                           ↓      ↓      ↓      ↓  
+S11 ✅ (Envelope) ─────────────→ S14 → S15 → S01
+    ↓                                  ↓      ↓
+S03 ✅ (Climate) ──────────────────────→ S15 → S01
+```
+
+**🎯 Critical Insight**: S04 provides `ref_j_32` and `ref_k_32` that cause S01's oscillating bug, making S04-07 essential for the sequential refactoring plan.
+
+**Key Insight**: Working **upstream-first** prevents timing issues and mixed architecture dependencies that cause calculation instability.
+
+### **🎯 Implementation Sequence (Updated with S04-07)**
+
+#### **Phase 1: Core Foundation**
+
+**1. Section 09 (Internal Gains)** ← *Start Here*
+- **Priority**: HIGH - Eliminates S10's last external dependency
+- **Dependencies**: S02 ✅, S01 (floor area), S03 ✅ (climate) 
+- **Benefit**: Provides clean `i_71` feed to S10 (already Pattern A)
+- **Scope**: Internal gains calculations, equipment loads, occupancy
+- **Expected Duration**: 2-3 hours
+
+**2. Section 12 (Volume/Surface Metrics)**  
+- **Dependencies**: S11 ✅ (envelope data), S03 ✅ (climate)
+- **Benefit**: Provides envelope metrics to S13
+- **Scope**: Building geometry calculations, surface areas, U-values
+
+#### **Phase 2: Energy & Emissions Chain (Critical for S01 Bug)**
+
+**3. Section 05 (CO2e Emissions)**
+- **Dependencies**: S02 ✅ (building info), embodied carbon calculations
+- **Benefit**: Feeds emissions calculations to S04
+- **Scope**: Carbon emissions, embodied carbon targets
+
+**4. Section 06 (Renewable Energy)**
+- **Dependencies**: S02 ✅ (building info), renewable energy systems
+- **Benefit**: Provides renewable energy offsets to S04
+- **Scope**: Solar PV, wind, green gas, renewable energy credits
+
+**5. Section 07 (Water Use)**
+- **Dependencies**: S02 ✅ (building info), S03 ✅ (climate)
+- **Benefit**: Provides domestic hot water energy to S04
+- **Scope**: Water consumption, DHW heating systems
+
+**6. Section 04 (Energy Summary - Emissions & Fuels)** ← *CRITICAL*
+- **Priority**: CRITICAL - Provides `ref_j_32` and `ref_k_32` for S01's oscillating bug
+- **Dependencies**: S05, S06, S07 (all energy sources)
+- **Benefit**: **Resolves S01's primary dependency issue**
+- **Scope**: Total energy calculations, fuel consumption, emissions totals
+
+#### **Phase 3: Mechanical & Performance Summary**
+
+**7. Section 13 (Mechanical Loads)**
+- **Critical**: Uses elevation from S03 fix (cooling calculations)
+- **Dependencies**: S09 (internal gains), S12 (envelope metrics)
+- **Benefit**: Mechanical systems calculations for S14
+- **Scope**: HVAC loads, ventilation, free cooling
+
+**8. Section 14 (TEDI Summary)**
+- **Dependencies**: S11 ✅, S10 ✅, S12, S13 (all clean by this point)
+- **Benefit**: Building envelope performance metrics
+- **Scope**: TEDI/TELI calculations, envelope performance
+
+**9. Section 15 (TEUI Summary)**
+- **Critical**: Provides `ref_h_136` that causes S01's oscillating bug
+- **Dependencies**: S04, S14 and all other sections using Pattern A
+- **Benefit**: Final energy performance metrics
+- **Scope**: TEUI calculations, energy totals
+
+#### **Phase 4: Final Integration**
+
+**10. Section 01 (Key Values)** ← *Final Target*
+- **Complexity**: HIGH - Partially integrated with index.html
+- **Expected Result**: Oscillating calculation bug **disappears naturally**
+- **Benefit**: Clean completion of Pattern A migration
+- **Dependencies**: S04 (`ref_j_32`, `ref_k_32`) + S15 (`ref_h_136`) = **both resolved**
+- **Scope**: Key performance indicators, summary displays
+
+### **🎯 Why This Sequence is Optimal**
+
+#### **1. Dependency Resolution**
+- Each section's inputs are already Pattern A when we refactor it
+- No more mixed architecture timing issues  
+- Clean, predictable state flow
+
+#### **2. S01 Bug Resolution**
+- By the time we reach S01, all upstream dependencies (S04/S14/S15) will be Pattern A
+- The oscillating calculation bug will likely **self-resolve**
+- No defensive patches needed
+
+#### **3. Progressive Validation**
+- Each refactor has clean upstream dependencies
+- Easier to isolate and verify functionality  
+- Less complex debugging at each step
+
+#### **4. Risk Mitigation**
+- Most complex section (S01) tackled last when all dependencies are stable
+- Can revert easily if issues arise
+- Clear rollback points at each phase
+
+### **🛠️ Implementation Guidelines for Each Section**
+
+#### **Pre-Refactoring Checklist**
+- [ ] Create backup file with `-BACKUP` suffix
+- [ ] Document current dependencies and cross-section communications
+- [ ] Verify all upstream dependencies are Pattern A compliant
+- [ ] Test current functionality as baseline
+
+#### **Pattern A Implementation Steps**
+1. **Add Dual-State Structure**: TargetState + ReferenceState + ModeManager
+2. **Implement Header Controls**: Toggle switch + Reset button  
+3. **Add State Persistence**: localStorage with section-specific keys
+4. **Update Helper Functions**: Route all data through ModeManager
+5. **Test & Validate**: Reference mode, Target mode, cross-section flow
+
+#### **Post-Refactoring Validation**
+- [ ] Reference mode shows 100%/✓ for all comparisons
+- [ ] Target mode calculations are accurate
+- [ ] Cross-section dependencies work correctly
+- [ ] UI state synchronization functions properly
+- [ ] Reset functionality works as expected
+
+### **🎉 Expected Outcomes**
+
+#### **Immediate Benefits (After S09-S12)**
+- ✅ S10 has clean internal gains dependency
+- ✅ Envelope calculations use consistent Pattern A
+- ✅ Foundation laid for energy chain refactoring
+
+#### **Critical Benefits (After S04-S07)**  
+- ✅ **S01 oscillating bug 80% resolved** - `ref_j_32` and `ref_k_32` dependencies clean
+- ✅ Complete energy calculation chain uses Pattern A
+- ✅ All fuel sources, emissions, and renewable energy consistently managed
+- ✅ Major calculation stability improvements
+
+#### **Integration Benefits (After S13-S15)**
+- ✅ All summary sections use consistent Pattern A
+- ✅ Mechanical loads and performance metrics reliable
+- ✅ **S01 oscillating bug 100% resolved** - `ref_h_136` dependency clean
+- ✅ Predictable, reliable state management across entire application
+
+#### **Final Benefits (After S01)**
+- ✅ Complete Pattern A architecture across entire application
+- ✅ S01 oscillating bug **permanently eliminated**
+- ✅ Clean, maintainable codebase with consistent patterns
+- ✅ Optimal performance and user experience
+- ✅ **No more mixed architecture timing issues anywhere**
+
+---
 
 ### **Benefits of Consistent Architecture**
 
