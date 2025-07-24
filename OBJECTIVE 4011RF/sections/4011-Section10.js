@@ -1248,50 +1248,7 @@ window.TEUI.SectionModules.sect10 = (function () {
       },
     },
 
-    // Row 999: DEBUG SLIDER ROW
-    "debug_slider": {
-        id: "S10-DebugSlider",
-        rowId: "S10-DebugSlider",
-        label: "DEBUG SLIDER",
-        cells: {
-            c: { 
-                label: "Test Slider for State Isolation",
-                style: "font-weight: bold; color: #dc3545;"
-            },
-            d: {
-                fieldId: "test_slider_999",
-                type: "percentage",
-                value: "0", // Target default
-                min: 0,
-                max: 100,
-                step: 10,
-                section: "envelopeRadiantGains",
-                classes: ["col-large", "slider-container"],
-                colspan: 4 // Span across a few columns to make it stand out
-            }
-        }
-    },
 
-    // G.0: MODE TOGGLE - Dynamically inserted row for the mode switch
-    "mode_toggle": {
-        id: "S10-ModeToggle",
-        rowId: "S10-ModeToggle",
-        isToggleRow: true, // Custom flag to identify this special row
-        cells: {
-            c: {
-                // The content will be a container for the buttons
-                content: `
-                    <div class="section-mode-toggle">
-                        <span>Mode:</span>
-                        <button id="s10-target-mode-btn" class="toggle-button active">🎯 Target</button>
-                        <button id="s10-reference-mode-btn" class="toggle-button">📋 Reference</button>
-                    </div>
-                `,
-                colspan: 11, // Span across all columns
-                classes: ["toggle-cell"]
-            }
-        }
-    },
   };
 
   // Define configuration for orientation rows (similar to Section 11)

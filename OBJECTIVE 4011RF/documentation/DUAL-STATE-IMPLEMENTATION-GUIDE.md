@@ -33,7 +33,9 @@ This plan covers all the necessary steps and incorporates the key lessons learne
 
 ---
 
-## 🏛️ **Architectural Mandate: The Self-Contained State Module**
+## 🏛️ **ARCHITECTURAL MANDATE: The Self-Contained State Module (FINAL STANDARD)**
+
+**⚠️ CRITICAL DECREE**: As of July 2025, **Pattern A (Self-Contained State Objects)** is the **SOLE APPROVED APPROACH** for dual-state implementation. All previous patterns using global prefixed state (target_, ref_) are **DEPRECATED** and should be migrated to this standard.
 
 Each dual-state section must have its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures that:
 
@@ -41,360 +43,471 @@ Each dual-state section must have its own `TargetState` and `ReferenceState` obj
 2.  **Persistence:** States are saved to and loaded from `localStorage` using section-specific keys.
 3.  **Default Values:** Default values are set using `setDefaults()` and can be overridden by user inputs.
 4.  **Value Retrieval:** Values are retrieved using `getValue()` and updated using `setValue()`.
+5.  **Dynamic Reference Loading:** Reference defaults are dynamically loaded from ReferenceValues.js based on dropdown d_13.
+6.  **Visual State Feedback:** Clear visual indicators distinguish between default and user-modified values.
 
-### 1. `TargetState` and `ReferenceState` Objects
+---
+
+## 🎯 **PATTERN A: Dynamic Reference Loading & Visual State Management**
+
+### Dynamic Reference Defaults Integration
+
+Reference state defaults must be dynamically loaded from the ReferenceValues.js system based on the user's selection in dropdown d_13 (Reference Standard). This ensures all reference values stay synchronized with the selected building code standard.
 
 ```javascript
-  // Target State Management (isolated + persistent)
-  const TargetState = {
+  // Reference State Management (with dynamic defaults)
+  const ReferenceState = {
     state: {},
-    listeners: {}, // Add listener management if needed by the section
-
+    listeners: {},
+    
     initialize: function() {
-      // Logic to load from localStorage or setDefaults
-      const savedState = localStorage.getItem('SXX_TARGET_STATE'); // Use section-specific key
+      const savedState = localStorage.getItem('SXX_REFERENCE_STATE');
       if (savedState) {
         this.state = JSON.parse(savedState);
       } else {
         this.setDefaults();
       }
     },
+    
     setDefaults: function() {
-      // These defaults MUST match the 'value' properties in the section's layout definition
+      // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
+      const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
+      
+      // Apply reference values to this section's fields, with fallbacks for missing values
       this.state = {
-        'input_field_1': 'default_text_value',
-        'dropdown_field_1': 'option_a',
-        'slider_field_1': '50', // Sliders are often stored as strings
-        // ... add all other user-modifiable fields for this section
+        'd_85': referenceValues.d_85 || '1411.52',  // Area (inherited from Target, not in ReferenceValues)
+        'f_85': referenceValues.f_85 || '5.30',     // RSI values from ReferenceValues
+        'f_86': referenceValues.f_86 || '4.10',
+        'f_87': referenceValues.f_87 || '6.60',
+        'g_88': referenceValues.g_88 || '1.990',    // U-values from ReferenceValues
+        'g_89': referenceValues.g_89 || '1.420',
+        'g_90': referenceValues.g_90 || '1.420',
+        'g_91': referenceValues.g_91 || '1.420',
+        'g_92': referenceValues.g_92 || '1.420',
+        'g_93': referenceValues.g_93 || '1.420',
+        'f_94': referenceValues.f_94 || '1.80',
+        'f_95': referenceValues.f_95 || '3.50',
+        'd_96': '29.70',  // Interior floors (not typically in building codes)
+        'd_97': referenceValues.d_97 || '50',       // Thermal bridge penalty
+        // ... add all section-specific fields
       };
+      
+      console.log(`SXX: Reference defaults loaded from standard: ${currentStandard}`);
     },
-    saveState: function() {
-      localStorage.setItem('SXX_TARGET_STATE', JSON.stringify(this.state));
-    },
-    setValue: function(fieldId, value) { 
-      this.state[fieldId] = value; 
-      this.saveState();
-      // Optional: notify internal listeners
-    },
-    getValue: function(fieldId) { return this.state[fieldId]; }
-  };
 
-  // Reference State Management (isolated + persistent)
-  const ReferenceState = {
-    // ... (Identical structure to TargetState, but with different default values and localStorage key)
-    initialize: function() {
-        const savedState = localStorage.getItem('SXX_REFERENCE_STATE');
-        // ...
+    // Listen for changes to the reference standard and reload defaults
+    onReferenceStandardChange: function() {
+      console.log('SXX: Reference standard changed, reloading defaults');
+      this.setDefaults();
+      this.saveState();
+      // Only refresh UI if currently in reference mode
+      if (ModeManager.currentMode === 'reference') {
+        ModeManager.refreshUI();
+        calculateAll();
+      }
     },
-    setDefaults: function() {
-      // These defaults should represent the code-minimum or baseline values for the Reference model.
-      this.state = {
-        'input_field_1': 'reference_text_value',
-        'dropdown_field_1': 'option_b',
-        'slider_field_1': '25',
-        // ... add all other user-modifiable fields for this section
-      };
-    },
+
     saveState: function() {
       localStorage.setItem('SXX_REFERENCE_STATE', JSON.stringify(this.state));
     },
-    // ... rest of the methods
+    
+    setValue: function(fieldId, value, source = "user") { 
+      this.state[fieldId] = value; 
+      this.saveState();
+      
+      // Mark field as user-modified for visual feedback
+      if (source === "user" || source === "user-modified") {
+        this.markAsUserModified(fieldId);
+      }
+    },
+    
+    getValue: function(fieldId) { 
+      return this.state[fieldId]; 
+    },
+    
+    markAsUserModified: function(fieldId) {
+      // Apply visual styling to indicate user modification
+      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (element && ModeManager.currentMode === 'reference') {
+        element.classList.remove('reference-default');
+        element.classList.add('reference-modified');
+      }
+    }
   };
 ```
 
-### 2. `ModeManager` Facade
+### Enhanced ModeManager with Visual Feedback
 
 ```javascript
-  // PATTERN 2: The ModeManager Facade
   const ModeManager = {
     currentMode: "target",
+    
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
-    },
-    switchMode: function (mode) {
-      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
-        return;
-      this.currentMode = mode;
-      console.log(`S10: Switched to ${mode.toUpperCase()} mode`);
-
-      this.refreshUI();
-      calculateAll(); // Recalculate for the new mode
-    },
-    getCurrentState: function () {
-      return this.currentMode === "target" ? TargetState : ReferenceState;
-    },
-    getValue: function (fieldId) {
-      return this.getCurrentState().getValue(fieldId);
-    },
-    setValue: function (fieldId, value, source = "user") {
-      this.getCurrentState().setValue(fieldId, value, source);
-
-      // BRIDGE: For backward compatibility, sync Target changes to global StateManager.
-      if (this.currentMode === "target") {
-        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      
+      // Listen for reference standard changes
+      if (window.TEUI?.StateManager?.addListener) {
+        window.TEUI.StateManager.addListener('d_13', () => {
+          ReferenceState.onReferenceStandardChange();
+        });
       }
     },
+    
     resetState: function() {
         console.log("SXX: Resetting state and clearing localStorage.");
+        
+        // Reset both states to their current dynamic defaults
         TargetState.setDefaults();
         TargetState.saveState();
-        ReferenceState.setDefaults();
+        ReferenceState.setDefaults();  // This will reload from current d_13 selection
         ReferenceState.saveState();
         
-        // After resetting, refresh the UI to reflect the defaults and recalculate.
+        // Clear all user-modified visual indicators
+        this.clearUserModifiedIndicators();
+        
+        console.log("SXX: States have been reset to defaults.");
+        
+        // After resetting, refresh the UI and recalculate
         this.refreshUI();
         calculateAll();
     },
+    
+    clearUserModifiedIndicators: function() {
+      const sectionElement = document.getElementById("sectionElementId");
+      if (!sectionElement) return;
+      
+      const modifiedElements = sectionElement.querySelectorAll('.reference-modified, .target-modified');
+      modifiedElements.forEach(element => {
+        element.classList.remove('reference-modified', 'target-modified');
+        element.classList.add(this.currentMode === 'reference' ? 'reference-default' : 'target-default');
+      });
+    },
 
     refreshUI: function() {
-      // 1. Get the section's root element to scope all queries.
-      const sectionElement = document.getElementById("mySectionId"); // Replace with actual section ID
+      // Standard UI refresh logic + visual state indicators
+      const sectionElement = document.getElementById("sectionElementId");
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      // List ALL user-modifiable fields in this section
-      const fieldsToSync = ['input_field_1', 'dropdown_field_1', 'slider_field_1']; 
+      const fieldsToSync = ['field1', 'field2']; // Define per section
 
       fieldsToSync.forEach(fieldId => {
           const stateValue = currentState.getValue(fieldId);
           if (stateValue === undefined || stateValue === null) return;
 
-          // (Refer to Pattern 7 for the full Gold Standard implementation of the update logic)
           const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
           if (!element) return;
           
-          if (element.hasAttribute('contenteditable')) {
-              element.textContent = stateValue;
-          } else if (element.tagName === 'SELECT') {
-              element.value = stateValue;
-          }
-          // ... etc. for sliders and other inputs
+          // Update element value (standard logic)
+          // ... element update code ...
+          
+          // Apply visual state indicators
+          this.applyVisualStateIndicators(element, fieldId);
       });
     },
+    
+    applyVisualStateIndicators: function(element, fieldId) {
+      // Remove all state classes
+      element.classList.remove('reference-default', 'reference-modified', 'target-default', 'target-modified');
+      
+      if (this.currentMode === 'reference') {
+        // Check if this field has been user-modified vs. default
+        const isUserModified = this.isFieldUserModified(fieldId);
+        element.classList.add(isUserModified ? 'reference-modified' : 'reference-default');
+      } else {
+        // Target mode: check for user modifications
+        const isUserModified = this.isFieldUserModified(fieldId);
+        element.classList.add(isUserModified ? 'target-modified' : 'target-default');
+      }
+    },
+    
+    isFieldUserModified: function(fieldId) {
+      // Implementation depends on how you track modifications
+      // Could be based on comparing current value to default value
+      // Or maintaining a separate "modified" flag in state
+      return false; // Placeholder - implement based on section needs
+    },
+
+    // ... rest of standard ModeManager methods ...
   };
 ```
 
+### Required CSS for Visual State Feedback
+
+```css
+/* Default state styling - grey italic to indicate defaults */
+.reference-default {
+  color: #6c757d !important;
+  font-style: italic !important;
+  font-weight: normal !important;
+}
+
+.target-default {
+  color: #495057 !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+}
+
+/* User-modified state styling - bold blue to indicate user changes */
+.reference-modified {
+  color: #007bff !important;
+  font-style: normal !important;
+  font-weight: bold !important;
+}
+
+.target-modified {
+  color: #0056b3 !important;
+  font-style: normal !important;
+  font-weight: bold !important;
+}
+```
+
+### Naming Conventions (MANDATORY)
+
+All dual-state implementations MUST follow these naming conventions:
+
+- **State Objects**: `TargetState`, `ReferenceState` (PascalCase)
+- **ModeManager**: Always named `ModeManager` (never `DualState` or other aliases)
+- **localStorage Keys**: `"SXX_TARGET_STATE"`, `"SXX_REFERENCE_STATE"` (where XX is section number)
+- **Methods**: `initialize()`, `setDefaults()`, `setValue()`, `getValue()`, `saveState()`, `resetState()`, `refreshUI()`
+- **Mode Values**: `"target"`, `"reference"` (lowercase strings)
+- **Global Exposure**: `window.TEUI.sectXX.ModeManager` (where XX is section number)
+
+**⚠️ CRITICAL**: Future developers and AI agents must follow these exact naming conventions to prevent architectural regression.
+
 ---
 
-### **Pattern 3: Robust UI Event Handling**
+## 🎯 **REFERENCE COMPARISON SYSTEM (M/N/O Columns)**
 
-To ensure smooth user interaction and state synchronization, event handlers must be carefully managed.
+### **System Design Philosophy**
+
+The Reference Comparison System provides real-time feedback on how the current design compares to building code requirements. This system must work differently in Target vs Reference modes to provide meaningful feedback.
+
+### **Column Definitions**
+- **Column M**: Reference percentage (current value ÷ reference value × 100%)
+- **Column N**: Status indicator (✓ = pass, ✗ = fail)  
+- **Column O**: Additional reference metrics (varies by section)
+
+### **Mode-Specific Behavior**
+
+#### **🟢 Reference Mode: Perfect Compliance**
+When in Reference mode, the system is displaying the **exact building code minimums**:
+
+- **Column M**: Should ALWAYS show **100%**
+- **Column N**: Should ALWAYS show **✓** (pass)
+- **Logic**: Reference values meeting reference values = perfect compliance
+- **Purpose**: Validates that ReferenceValues.js data is loading correctly
 
 ```javascript
-  function initializeEventHandlers() {
-    // Add event listeners for all editable fields
-    document.querySelectorAll(".user-input").forEach(input => {
-      input.addEventListener("input", (event) => {
-        const fieldId = event.target.dataset.fieldId;
-        if (fieldId) {
-          const value = window.TEUI.parseNumeric(event.target.value, 0);
-          ModeManager.setValue(fieldId, value);
-        }
-      });
-    });
-
-    // Add event listeners for all dropdowns
-    document.querySelectorAll("select").forEach(select => {
-      select.addEventListener("change", (event) => {
-        const fieldId = event.target.dataset.fieldId;
-        if (fieldId) {
-          ModeManager.setValue(fieldId, event.target.value);
-        }
-      });
-    });
-
-    // Add event listeners for all sliders
-    document.querySelectorAll(".slider-container").forEach(container => {
-      const fieldId = container.dataset.fieldId;
-      if (fieldId) {
-        const slider = container.querySelector("input[type='range']");
-        if (slider) {
-          slider.addEventListener("input", (event) => {
-            const value = window.TEUI.parseNumeric(event.target.value, 0);
-            ModeManager.setValue(fieldId, value);
-          });
-        }
-      }
-    });
-
-    // Add event listeners for all percentage sliders
-    document.querySelectorAll(".slider-container[data-field-id^='g_'], .slider-container[data-field-id^='h_']").forEach(container => {
-      const fieldId = container.dataset.fieldId;
-      if (fieldId) {
-        const slider = container.querySelector("input[type='range']");
-        if (slider) {
-          slider.addEventListener("input", (event) => {
-            const value = parseFloat(event.target.value);
-            ModeManager.setValue(fieldId, value);
-          });
-        }
-      }
-    });
-  }
+// Reference Mode Logic
+if (ModeManager.currentMode === 'reference') {
+  referencePercent = 100;  // Always 100% in reference mode
+  isGood = true;           // Always pass in reference mode
+}
 ```
 
-### **Pattern 4: Section Initialization (`onSectionRendered`)**
+#### **🔵 Target Mode: Performance Comparison**
+When in Target mode, the system compares user design against building code requirements:
 
-Each section must be initialized after it is rendered to the DOM. This ensures that:
-
-1.  **State is loaded:** The `ModeManager` is initialized to load default values from `localStorage`.
-2.  **Controls are injected:** The `injectHeaderControls` function is called to add the toggle switch and reset button.
-3.  **Event handlers are set up:** `initializeEventHandlers` is called to add event listeners for user inputs.
-4.  **UI is synced:** The `refreshUI` function is called to sync the UI to the default (Target) state.
-5.  **Calculations are run:** `calculateAll()` is called to perform initial calculations based on the default state.
+- **Column M**: Shows actual performance ratio
+  - **110%** = 10% better than code minimum (exceeds requirement)
+  - **90%** = 10% worse than code minimum (fails requirement)
+- **Column N**: Shows pass/fail based on meeting minimum requirements
+  - **✓** = meets or exceeds code minimum  
+  - **✗** = fails to meet code minimum
 
 ```javascript
-  function onSectionRendered() {
-    ModeManager.initialize();
-    injectHeaderControls();        // 2. Inject the header controls (toggle & reset)
-    initializeEventHandlers();     // 3. Set up event handlers
-    ModeManager.refreshUI();       // 4. Sync UI to the default (Target) state
-    calculateAll();                // 5. Run initial calculations
-  }
+// Target Mode Logic Examples
+// RSI comparison (higher is better)
+if (baseline.type === "rsi") {
+  referencePercent = (currentValue / referenceValue) * 100;
+  isGood = currentValue >= referenceValue;
+}
+
+// U-value comparison (lower is better)  
+if (baseline.type === "uvalue") {
+  referencePercent = (referenceValue / currentValue) * 100;
+  isGood = currentValue <= referenceValue;
+}
 ```
 
-### **Pattern 6: Section Header Controls (Toggle & Reset)**
+### **Implementation Requirements**
 
-To maintain a consistent user experience, each dual-state section must have its own toggle switch and reset button located in its header. The correct implementation uses styled `div` and `button` elements and must be dynamically injected into the section header after it renders.
-
-**1. Create the `injectHeaderControls` function:** This function builds the controls.
+#### **Dynamic Reference Values**
+The comparison must use **dynamic reference values** from the current ReferenceState, not static baselines:
 
 ```javascript
-  function injectHeaderControls() {
-    const sectionHeader = document.querySelector("#mySectionId .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) return;
-
-    const controlsContainer = document.createElement("div");
-    controlsContainer.className = "local-controls-container";
-    controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
-
-    // --- Create Reset Button ---
-    const resetButton = document.createElement("button");
-    resetButton.innerHTML = "🔄 Reset";
-    resetButton.title = "Reset Section to Defaults";
-    resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+function updateReferenceIndicators(rowId) {
+  // ✅ CORRECT: Use dynamic reference values
+  const referenceValue = ModeManager.currentMode === 'reference' 
+    ? ModeManager.getValue(fieldId)  // Use current reference state
+    : ReferenceState.getValue(fieldId); // Use reference state for comparison
     
-    resetButton.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (confirm("Are you sure you want to reset all inputs in this section to their defaults?")) {
-            ModeManager.resetState();
-        }
-    });
-
-    // --- Create Toggle Switch ---
-    const stateIndicator = document.createElement("span");
-    stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
-
-    const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-    
-    const sliderThumb = document.createElement("div");
-    sliderThumb.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
-
-    toggleSwitch.appendChild(sliderThumb);
-    
-    toggleSwitch.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const isReference = toggleSwitch.classList.toggle('active');
-        if (isReference) {
-            sliderThumb.style.transform = "translateX(20px)";
-            toggleSwitch.style.backgroundColor = "#28a745";
-            stateIndicator.textContent = "REFERENCE";
-            stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-            ModeManager.switchMode("reference");
-        } else {
-            sliderThumb.style.transform = "translateX(0px)";
-            toggleSwitch.style.backgroundColor = "#ccc";
-            stateIndicator.textContent = "TARGET";
-            stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-            ModeManager.switchMode("target");
-        }
-    });
-
-    controlsContainer.appendChild(resetButton);
-    controlsContainer.appendChild(stateIndicator);
-    controlsContainer.appendChild(toggleSwitch);
-    sectionHeader.appendChild(controlsContainer);
-  }
+  // ❌ WRONG: Use static baseline values
+  // const referenceValue = baselineValues[rowId]?.value;
+}
 ```
 
-**2. Call from `onSectionRendered`:** Ensure this function is called after the `ModeManager` is initialized.
+#### **Area Field Preservation**
+When d_13 (reference standard) changes:
+
+- **Must Update**: RSI values (f_*), U-values (g_*) from ReferenceValues.js
+- **Must Preserve**: User-modified area values (d_*) - these are design choices, not code requirements
 
 ```javascript
-  function onSectionRendered() {
-    ModeManager.initialize();
-    injectHeaderControls(); // This injects the controls into the DOM
-    initializeEventHandlers();
-    ModeManager.refreshUI();
-    calculateAll();
-  }
+onReferenceStandardChange: function() {
+  // Update only performance values, preserve area values
+  const preservedAreas = {};
+  
+  // Preserve user-modified areas
+  ['d_85', 'd_86', 'd_87', 'd_94', 'd_95', 'd_96'].forEach(fieldId => {
+    if (this.isUserModified(fieldId)) {
+      preservedAreas[fieldId] = this.state[fieldId];
+    }
+  });
+  
+  // Load new reference values
+  this.setDefaults();
+  
+  // Restore preserved areas
+  Object.assign(this.state, preservedAreas);
+  this.saveState();
+}
 ```
 
-### **Pattern 7: Robust UI Synchronization (The `refreshUI` function) - GOLD STANDARD**
+### **Cross-Section Consistency**
 
-A common and critical failure point is an incomplete `refreshUI` function. This leads to a visual mismatch where slider thumbs or dropdowns do not update when toggling modes. The root cause is often a fragile DOM query that fails to find the correct UI element to update.
+This Reference Comparison System should be implemented consistently across all sections with building code requirements:
 
-**CRITICAL:** The query logic must be robust. Previous attempts using class-based queries (`.closest('.slider-container')`) have proven unreliable due to inconsistencies in how different sections are defined in their `sectionRows` objects.
+- **Section 11**: Insulation values (RSI), thermal performance (U-values), thermal bridging
+- **Section 10**: Solar heat gain coefficients, shading requirements  
+- **Section 08**: Ventilation rates, air quality standards
+- **Future Sections**: Equipment efficiency, energy targets
 
-**The architecturally sound and proven pattern, taken directly from the working Section 08, is to use the `nextElementSibling` property.** This relies on the simple, consistent assumption that the `FieldManager` renders the slider's text display element immediately after its `<input type="range">` element.
+### **Visual Feedback Standards**
 
-**Key Architectural Principles for `refreshUI`:**
+#### **Status Indicators**
+- **✓ (Green)**: Meets or exceeds requirements
+- **✗ (Red)**: Fails to meet requirements
+- **? (Yellow)**: Calculation error or missing data
 
-1.  **Scope All Queries**: Always search for elements *within* the section's container (e.g., `sectionElement.querySelector(...)`).
-2.  **Handle Wrapped Elements**: Robustly find the `input` or `select` element, which may be the element with the `data-field-id` or a child of it.
-3.  **Use `nextElementSibling` for Sliders**: This is the most reliable method for finding a slider's associated text label, avoiding fragile class-based dependencies.
+#### **Percentage Colors**
+- **Green**: ≥100% (meets/exceeds)
+- **Yellow**: 90-99% (close but failing)  
+- **Red**: <90% (significantly failing)
 
-**✅ Gold Standard Implementation (Derived from S08/S10 Fix):**
+### **Testing Validation**
 
-```javascript
-    refreshUI: function() {
-      // 1. Get the section's root element to scope all queries.
-      const sectionElement = document.getElementById("mySectionId");
-      if (!sectionElement) return;
+To verify correct implementation:
 
-      const currentState = this.getCurrentState();
-      const fieldsToSync = ['input_1', 'my_slider', 'my_dropdown']; // List ALL user inputs
+1. **Reference Mode Test**: Switch to Reference mode → All M columns should show 100%, all N columns should show ✓
+2. **Target Superior Test**: In Target mode with better values → Should show >100% with ✓
+3. **Target Inferior Test**: In Target mode with worse values → Should show <100% with ✗
+4. **d_13 Change Test**: Change reference standard → Reference percentages update, areas preserve user modifications
 
-      fieldsToSync.forEach(fieldId => {
-          const stateValue = currentState.getValue(fieldId);
-          if (stateValue === undefined || stateValue === null) return;
+---
 
-          // 2. Find the container element using the scoped query.
-          const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-          if (!element) return;
-          
-          // 3. Robustly find the actual input control.
-          const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
-          const dropdown = element.matches('select') ? element : element.querySelector('select');
-          
-          if (slider) {
-              const numericValue = window.TEUI.parseNumeric(stateValue, 0);
-              slider.value = numericValue;
-              
-              // 4. CRITICAL: Use `nextElementSibling` to find the display element. This is the most robust pattern.
-              const display = slider.nextElementSibling;
-              if (display) {
-                  const displayValue = window.TEUI.parseNumeric(stateValue, 0);
-                  if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) { // Example for % sliders
-                      display.textContent = `${displayValue}%`;
-                  } else { // Example for coefficient sliders
-                      display.textContent = parseFloat(displayValue).toFixed(2);
-                  }
-              }
-          } else if (dropdown) {
-              dropdown.value = stateValue;
-          } else if (element.hasAttribute('contenteditable')) {
-              element.textContent = stateValue;
-          }
-      });
-    },
-```
+## 🚀 **REFACTORING PRIORITIES & ARCHITECTURAL MIGRATION**
 
-### **Note on Default State Values**
+### **Current Architecture Status**
 
-The values set in `TargetState.setDefaults()` and `ReferenceState.setDefaults()` are the foundation for all initial calculations.
+**✅ Fully Refactored (Dual-State Pattern A):**
+- **Section 03**: Climate data and reference standards
+- **Section 08**: Ventilation rates and air quality  
+- **Section 10**: Solar radiant gains and utilization factors
+- **Section 11**: Transmission losses and thermal performance
 
--   **Requirement:** These default values **MUST** perfectly match the `value` property defined for each corresponding field in the section's `sectionRows` layout object.
--   **Impact of Mismatch:** If the default state and the layout definition are not aligned, the UI may display one value while the calculation engine uses another, leading to incorrect results on initial page load. Always verify this alignment. 
+**🎯 Next Priority (Critical for Architecture Consistency):**
+- **Section 01**: Building geometry and foundation data
+- **Section 02**: Energy targets and performance metrics
+
+**🔄 Future Migration:**
+- **Section 04-07**: Equipment and systems
+- **Section 09**: Internal gains
+- **Section 12+**: Advanced calculations and reporting
+
+### **S03 Migration Benefits**
+
+When Section 03 is migrated to Pattern A, it will eliminate:
+
+- **Prefixed State Contamination**: No more `target_d_20`, `ref_d_20` - clean `d_20` reads
+- **Cross-Section Dependencies**: S11 can read `getGlobalNumericValue("d_20")` instead of prefixed values
+- **Code Complexity**: Simpler dependency management across climate-dependent sections
+- **Maintenance Burden**: Consistent patterns across all core sections
+
+### **Migration Sequence Strategy**
+
+#### **Phase 1: Core Foundation (Priority 1)**
+**Target**: Complete by Q3 2025
+
+1. **Section 01**: Building areas, geometry, foundation data
+   - **Impact**: All area calculations depend on S01 data
+   - **Dependencies**: S02, S11, S10 read building areas from S01
+
+2. **Section 02**: Energy targets, performance benchmarks  
+   - **Impact**: Performance comparisons and compliance checks
+   - **Dependencies**: S11, S12+ compare against S02 targets
+
+#### **Phase 2: Systems Integration (Priority 2)**  
+**Target**: Complete by Q4 2025
+
+3. **Section 04-07**: HVAC equipment, domestic hot water, lighting
+   - **Impact**: Equipment efficiency and capacity calculations
+   - **Dependencies**: Equipment selections affect overall energy performance
+
+4. **Section 09**: Internal gains (people, equipment, lighting)
+   - **Impact**: Gains calculations for thermal modeling
+   - **Dependencies**: Works with S10 (radiant gains) and S11 (transmission)
+
+#### **Phase 3: Advanced Features (Priority 3)**
+**Target**: Complete by Q1 2026
+
+5. **Section 12+**: Advanced calculations, reporting, compliance
+   - **Impact**: Final performance metrics and code compliance
+   - **Dependencies**: Integrates all previous sections
+
+### **Migration Implementation Guide**
+
+Each section migration should follow this standardized process:
+
+1. **Pre-Migration Assessment**
+   - Identify all dependencies (which sections read this section's data)
+   - Document current state structure and field naming
+   - Create backup of working version
+
+2. **Pattern A Implementation**
+   - Add TargetState and ReferenceState objects
+   - Implement ModeManager facade  
+   - Add header controls (toggle + reset)
+   - Update helper functions to use ModeManager
+
+3. **Dependency Resolution**
+   - Update dependent sections to read from new state structure
+   - Test cross-section data flow
+   - Verify calculations remain accurate
+
+4. **Validation & Testing**
+   - **Reference Mode Test**: All comparisons show 100%/✓
+   - **Target Mode Test**: Performance comparisons work correctly
+   - **Cross-Section Test**: Dependencies function properly
+   - **Reset Test**: State management works as expected
+
+5. **Documentation Update**
+   - Update this GUIDE.md with lessons learned
+   - Document any section-specific patterns or challenges
+   - Update README.md status
+
+### **Benefits of Consistent Architecture**
+
+When all sections use Pattern A:
+
+- **🎯 State Isolation**: Complete independence between Target and Reference
+- **🔄 Predictable Behavior**: All sections work the same way
+- **🛠️ Easier Maintenance**: Consistent patterns across codebase
+- **🚀 Performance**: Optimized state management and calculations
+- **🎨 Better UX**: Consistent controls and visual feedback
+- **📈 Scalability**: Easy to add new sections or features
+
+--- 
