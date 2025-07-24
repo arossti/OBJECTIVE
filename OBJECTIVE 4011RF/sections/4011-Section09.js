@@ -48,7 +48,7 @@ window.TEUI.SectionModules.sect09 = (function () {
         h_67: "0", i_67: "0", j_67: "0", k_67: "0", l_67: "0", m_67: "100", n_67: "✓",
         h_69: "0", i_69: "0", j_69: "0", k_69: "0", l_69: "0",
         h_70: "0", i_70: "0", k_70: "0",
-        h_71: "0", i_71: "0", j_71: "100", k_71: "0", l_71: "100"
+        h_71: "0", i_71: "0", j_71: "1.0", k_71: "0", l_71: "1.0"
       };
     },
     saveState: function () {
@@ -94,7 +94,7 @@ window.TEUI.SectionModules.sect09 = (function () {
         h_67: "0", i_67: "0", j_67: "0", k_67: "0", l_67: "0", m_67: "100", n_67: "✓",
         h_69: "0", i_69: "0", j_69: "0", k_69: "0", l_69: "0",
         h_70: "0", i_70: "0", k_70: "0",
-        h_71: "0", i_71: "0", j_71: "100", k_71: "0", l_71: "100"
+        h_71: "0", i_71: "0", j_71: "1.0", k_71: "0", l_71: "1.0"
       };
       console.log("S09: Reference defaults set for comparison model");
     },
@@ -170,6 +170,9 @@ window.TEUI.SectionModules.sect09 = (function () {
         'h_71', 'i_71', 'j_71', 'k_71', 'l_71'
       ];
 
+      let dropdownsFound = 0;
+      let dropdownsUpdated = 0;
+
       fieldsToSync.forEach(fieldId => {
           const stateValue = currentState.getValue(fieldId);
           if (stateValue === undefined || stateValue === null) return;
@@ -178,12 +181,30 @@ window.TEUI.SectionModules.sect09 = (function () {
           if (!element) return;
           
           if (element.matches('select')) {
-              element.value = stateValue;
+              dropdownsFound++;
+              // For dropdown elements, set the value directly
+              if (element.value !== stateValue) {
+                element.value = stateValue;
+                dropdownsUpdated++;
+              }
           } else if (element.hasAttribute('contenteditable')) {
+              // For editable elements, update text content
               element.textContent = stateValue;
           } else {
+              // For display-only elements, update text content
               element.textContent = stateValue;
           }
+      });
+
+      console.log(`S09: RefreshUI - Found ${dropdownsFound} dropdowns, updated ${dropdownsUpdated}`);
+
+      // Special handling for dropdowns that might need re-initialization
+      const dropdownFieldIds = ['g_63', 'd_64', 'g_67', 'd_68'];
+      dropdownFieldIds.forEach(fieldId => {
+        const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element && !element.matches('select')) {
+          console.warn(`S09: Field ${fieldId} exists but is not a select element:`, element.tagName);
+        }
       });
     },
   };
@@ -1389,8 +1410,8 @@ window.TEUI.SectionModules.sect09 = (function () {
     setCalculatedValue("k_71", totalCooling, "number");
 
     // Set the 100% values for percentage columns
-    setCalculatedValue("j_71", 100, "percent-auto");
-    setCalculatedValue("l_71", 100, "percent-auto");
+    setCalculatedValue("j_71", 1.0, "percent-auto");
+    setCalculatedValue("l_71", 1.0, "percent-auto");
 
     // Update percentage fields
     updatePercentages(totalHeating, totalCooling);
@@ -1459,8 +1480,8 @@ window.TEUI.SectionModules.sect09 = (function () {
     setPercentage("k_69", "l_69", totalCooling, true);
 
     // The totals are always 100%
-    setCalculatedValue("j_71", 100, "percent-auto");
-    setCalculatedValue("l_71", 100, "percent-auto");
+    setCalculatedValue("j_71", 1.0, "percent-auto");
+    setCalculatedValue("l_71", 1.0, "percent-auto");
   }
 
 
@@ -1756,9 +1777,22 @@ window.TEUI.SectionModules.sect09 = (function () {
     // This logic was critical in the backup version for dropdown functionality
     const efficiencyDropdown = document.querySelector('select[data-field-id="g_67"]');
     const elevatorDropdown = document.querySelector('select[data-field-id="d_68"]');
+    const occupiedHoursDropdown = document.querySelector('select[data-field-id="g_63"]');
+    const activityDropdown = document.querySelector('select[data-field-id="d_64"]');
     const densityField = document.querySelector('[data-field-id="d_67"]');
 
-    if (efficiencyDropdown) {
+    // Debug: Check if dropdowns exist
+    console.log("S09 Dropdown Debug:", {
+      efficiency: !!efficiencyDropdown,
+      elevator: !!elevatorDropdown,
+      occupiedHours: !!occupiedHoursDropdown,
+      activity: !!activityDropdown
+    });
+
+    // Force dropdown initialization if they don't exist as select elements
+    if (!efficiencyDropdown) {
+      console.warn("S09: Equipment efficiency dropdown not found as select element");
+    } else {
       efficiencyDropdown.value = "Efficient";
       // Set in ModeManager state
       ModeManager.setValue("g_67", "Efficient", "default");
@@ -1767,7 +1801,10 @@ window.TEUI.SectionModules.sect09 = (function () {
         window.TEUI.StateManager.setValue("g_67", "Efficient", "default");
       }
     }
-    if (elevatorDropdown) {
+
+    if (!elevatorDropdown) {
+      console.warn("S09: Elevator dropdown not found as select element");
+    } else {
       elevatorDropdown.value = "No Elevators";
       // Set in ModeManager state
       ModeManager.setValue("d_68", "No Elevators", "default");
@@ -1776,6 +1813,27 @@ window.TEUI.SectionModules.sect09 = (function () {
         window.TEUI.StateManager.setValue("d_68", "No Elevators", "default");
       }
     }
+
+    if (!occupiedHoursDropdown) {
+      console.warn("S09: Occupied hours dropdown not found as select element");
+    } else {
+      occupiedHoursDropdown.value = "12";
+      ModeManager.setValue("g_63", "12", "default");
+      if (window.TEUI?.StateManager?.setValue) {
+        window.TEUI.StateManager.setValue("g_63", "12", "default");
+      }
+    }
+
+    if (!activityDropdown) {
+      console.warn("S09: Activity dropdown not found as select element");  
+    } else {
+      activityDropdown.value = "Normal";
+      ModeManager.setValue("d_64", "Normal", "default");
+      if (window.TEUI?.StateManager?.setValue) {
+        window.TEUI.StateManager.setValue("d_64", "Normal", "default");
+      }
+    }
+
     if (densityField) {
       // Use helper for setting default display value
       densityField.textContent = window.TEUI.formatNumber(5.0, "number");
@@ -1804,7 +1862,14 @@ window.TEUI.SectionModules.sect09 = (function () {
     // Add checkmark styles
     addCheckmarkStyles();
 
-    // 6. Perform initial calculations for this section
+    // 6. Force dropdown re-initialization if needed
+    // This ensures dropdowns are properly created by the FieldManager
+    if (window.TEUI?.FieldManager?.initializeDropdownsFromFields) {
+      console.log("S09: Force-initializing dropdowns via FieldManager");
+      window.TEUI.FieldManager.initializeDropdownsFromFields("occupantInternalGains");
+    }
+
+    // 7. Perform initial calculations for this section
     calculateAll();
   }
 
