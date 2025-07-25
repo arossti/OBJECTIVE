@@ -1493,19 +1493,12 @@ window.TEUI.SectionModules.sect11 = (function () {
             );
           }
 
-          // LIVE FEEDBACK: Test StateManager propagation for immediate visual response  
-          // TESTING: Removed direct cross-section call to test StateManager performance
+          // LIVE FEEDBACK: Direct calculation calls for immediate visual response
+          // This ensures g_101/g_102 update in real-time during slider drag
           calculateAll(); // Update Section 11 calculations
-          
-          // PURE STATEMANAGER TEST: Let StateManager propagate to S12
-          if (window.TEUI && window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue("d_97", percentageValue.toString(), "user-modified");
+          if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
+            window.TEUI.SectionModules.sect12.calculateCombinedUValue(); // Update g_101, g_102 immediately
           }
-          
-          // COMMENTED OUT FOR TESTING:
-          // if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
-          //   window.TEUI.SectionModules.sect12.calculateCombinedUValue(); // Update g_101, g_102 immediately
-          // }
         });
 
         // ARCHITECTURAL COMPLIANCE: Final change event relies on StateManager dependency chain
