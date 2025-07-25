@@ -670,75 +670,99 @@ When working with this codebase, previous AI assistants have encountered several
 
 Understanding these patterns will help avoid common pitfalls and produce more maintainable code that aligns with the existing architecture.
 
-### CRITICAL: Cross-State Contamination Fix (V2 Post-Refactoring)
+### CRITICAL: Pattern A Dual-State Architecture (Current Standard)
 
-**Issue**: After implementing V2 dual-engine architecture, some sections experienced "cross-state contamination" where Reference and Target values mirrored each other instead of calculating independently.
+**Current Architecture**: The TEUI calculator now uses **Pattern A: Self-Contained State Objects** which eliminates cross-state contamination through complete state isolation.
 
-**Root Cause**: The `getRefFieldValue()` helper function was mode-dependent, preventing proper dual-state calculation where Reference and Target engines should run simultaneously with separate data sources.
+**Pattern A Benefits**: Each section maintains its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures that Reference and Target calculations run independently with separate data sources.
 
-**✅ REQUIRED FIX PATTERN** (Apply to sections with dual-engine architecture):
+**✅ PATTERN A IMPLEMENTATION** (Current standard for dual-state sections):
 
-1. **Fixed Reference Value Getter**:
+1. **Self-Contained State Objects**:
 
    ```javascript
-   // BEFORE (Mode-dependent - WRONG)
-   function getRefFieldValue(fieldId) {
-     if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
-       return window.TEUI.StateManager?.getValue?.(fieldId);
+   // Target State: User's design values
+   const TargetState = {
+     state: {},
+     initialize: function() {
+       const savedState = localStorage.getItem("SXX_TARGET_STATE");
+       if (savedState) {
+         this.state = JSON.parse(savedState);
+       } else {
+         this.setDefaults();
+       }
+     },
+     setValue: function(fieldId, value) {
+       this.state[fieldId] = value;
+       this.saveState();
+     },
+     getValue: function(fieldId) {
+       return this.state[fieldId];
      }
-     return getFieldValue(fieldId);
-   }
+   };
 
-   // AFTER (Always tries reference first - CORRECT)
-   function getRefFieldValue(fieldId) {
-     // CRITICAL FIX: Always try to get reference values first, regardless of viewing mode
-     const refValue = window.TEUI.StateManager?.getReferenceValue?.(fieldId);
-     if (refValue !== null && refValue !== undefined) {
-       return refValue;
+   // Reference State: Code minimum/baseline values  
+   const ReferenceState = {
+     state: {},
+     initialize: function() {
+       const savedState = localStorage.getItem("SXX_REFERENCE_STATE");
+       if (savedState) {
+         this.state = JSON.parse(savedState);
+       } else {
+         this.setDefaults();
+       }
+     },
+     setValue: function(fieldId, value) {
+       this.state[fieldId] = value;
+       this.saveState();
+     },
+     getValue: function(fieldId) {
+       return this.state[fieldId];
      }
-     // Fallback to application value if no reference value exists
-     return (
-       window.TEUI.StateManager?.getApplicationValue?.(fieldId) ||
-       getFieldValue(fieldId)
-     );
-   }
+   };
    ```
 
-2. **Added Explicit State Helpers**:
+2. **ModeManager Facade**:
 
    ```javascript
-   // EXPLICIT Reference state getter for Reference Model calculations
-   function getRefStateValue(fieldId) {
-     const refFieldId = `ref_${fieldId}`;
-     let value = window.TEUI?.StateManager?.getValue?.(refFieldId);
-
-     if (
-       (value === null || value === undefined) &&
-       window.TEUI?.StateManager?.getValue
-     ) {
-       const activeDataSet =
-         window.TEUI.StateManager.activeReferenceDataSet || {};
-       if (activeDataSet[fieldId] !== undefined) {
-         value = activeDataSet[fieldId];
-       } else {
-         value = window.TEUI.StateManager.getValue(fieldId);
+   // ModeManager Facade manages dual-state access
+   const ModeManager = {
+     currentMode: "target",
+     
+     initialize: function() {
+       TargetState.initialize();
+       ReferenceState.initialize();
+     },
+     
+     switchMode: function(mode) {
+       if (this.currentMode === mode) return;
+       this.currentMode = mode;
+       this.refreshUI();
+       calculateAll(); // Recalculate for the new mode
+     },
+     
+     getCurrentState: function() {
+       return this.currentMode === "target" ? TargetState : ReferenceState;
+     },
+     
+     getValue: function(fieldId) {
+       return this.getCurrentState().getValue(fieldId);
+     },
+     
+     setValue: function(fieldId, value, source = "user") {
+       this.getCurrentState().setValue(fieldId, value);
+       
+       // Bridge to StateManager for backward compatibility (Target mode only)
+       if (this.currentMode === "target" && window.TEUI?.StateManager?.setValue) {
+         window.TEUI.StateManager.setValue(fieldId, value, source);
        }
      }
-     return value;
-   }
-
-   // EXPLICIT Application state getter for Target Model calculations
-   function getAppStateValue(fieldId) {
-     return (
-       window.TEUI?.StateManager?.getApplicationValue?.(fieldId) ||
-       getFieldValue(fieldId)
-     );
-   }
+   };
    ```
 
-**Applied To**: S01, S04, S05, S13, S15 (confirmed working)
+**✅ Pattern A Status**: Currently implemented in S03, S08, S09, S10, S11 with complete state isolation and no cross-contamination.
 
-**⚠️ TODO**: Review and apply this fix to additional sections that implement dual-engine architecture (S07, S09, S10, S11, S12, S14) if cross-state contamination is observed.
+**Advantages Over Previous Approaches**: Complete state isolation, no mode-dependent helpers, cleaner architecture, easier maintenance, and elimination of timing-related calculation issues.
 
 **Why This Matters**: Proper state separation ensures Reference calculations use Reference standard values (e.g., HSPF=7.1, ventilation=8.33 ACH) while Target calculations use user's design values (e.g., HSPF=12.5, ventilation=14.00 ACH), preventing the "mirroring" issue where both columns show identical values.
 
@@ -1026,6 +1050,44 @@ function calculateTEUI(sourceField) {
   );
 }
 ```
+
+### Dual-State Calculation Architecture
+
+The TEUI calculator employs a sophisticated dual-state calculation architecture that ensures both Target and Reference models are always current and ready for comparison:
+
+#### Always-Current Dual Calculations
+
+Both states are calculated simultaneously on every trigger, regardless of which mode is displayed:
+
+```javascript
+function calculateAll() {
+  calculateReferenceModel();  // Always runs
+  calculateTargetModel();     // Always runs
+}
+```
+
+**This happens in all scenarios:**
+1. **On initial load**: `onSectionRendered()` → `calculateAll()` → both models calculated
+2. **On user input changes**: Event handlers → `calculateAll()` → both models calculated  
+3. **On mode switching**: `switchMode()` → `calculateAll()` → both models calculated
+4. **On cross-section dependencies**: StateManager listeners → `calculateAll()` → both models calculated
+
+#### The Architecture Advantage
+
+- **UI mode toggle = display-only**: Switching between Target/Reference just changes what's shown, not what's calculated
+- **Always current**: Both totaling sections (S14 & S15) always receive fresh values from both states
+- **Instant switching**: No calculation delays when users toggle modes - values are already computed
+- **Consistent comparisons**: Reference vs Target comparisons are always accurate and up-to-date
+
+#### Value Flow to Dashboard
+
+Section calculations store results for both states using self-contained state objects:
+- **Target results**: Section's `TargetState` values → StateManager → S14 Target totals → S04 → S01 dashboard
+- **Reference results**: Section's `ReferenceState` values → StateManager → S15 Reference totals → S04 → S01 dashboard
+
+**Pattern A Architecture**: Each section maintains its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures complete state isolation and eliminates cross-section contamination that occurred with the previous prefixed global state approach.
+
+This ensures the entire dual-state chain (S09→S14/S15→S04→S01) always has current values for both Target and Reference scenarios, enabling real-time comparison between user design and code minimum performance.
 
 ### Calculation Optimization Strategies
 
@@ -1347,8 +1409,8 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
   - When exiting fullscreen mode, the floating controls (search, filters, layout buttons) remain visible, incorrectly overlaying the standard section view. These controls should only be visible in fullscreen and hide upon exit.
   - The `toggleFullscreen()` method in `4011-Dependency.js` needs review, particularly how it manages the creation, styling, and visibility of the `floatingControls` and `floatingInfoPanel` elements across fullscreen enter/exit events, potentially by using a more robust `fullscreenchange` event listener that handles both states consistently.
 - **Calculation Flow Dependency on File Load Order**: Incorrect total energy use calculations can occur if a building data file is loaded _before_ a weather file. The calculation flow should be robust and based on data availability in `StateManager` and defined dependencies, not the user's file loading sequence. This may require investigating `Calculator.js` and `SectionIntegrator.js` to ensure calculations (e.g., those dependent on climate data from Section 03) are correctly deferred or re-triggered when all necessary precedent data becomes available, regardless of load order, to maintain parity with Excel methods.
-- **S01 Reference TEUI (e_10) Initial Display Glitch**: After a project file import (following weather data import), the initial display of the Reference TEUI in Section 01 (e_10) can show an extremely high or incorrect value. This value corrects itself after any subsequent UI interaction that triggers a recalculation. This is likely due to a race condition where the full chain of reference model calculations (S15 -> S04 -> S01) doesn't complete before e_10 is first rendered. The underlying `activeReferenceDataSet` might not be fully populated or processed in time for the initial calculation pass. This was partially addressed by the `ORDERING` branch refactor but seems to persist or have re-emerged with dual-engine complexity.
-- **Dynamic Reference Calculations on d_13 Change**: When the reference standard dropdown (d_13) is changed by the user, the Reference TEUI (e_10 in Section 01) does not update dynamically. Furthermore, when entering Reference Mode after a d_13 change, the UI for input fields may not reflect the new standard on the first toggle, though they might on a subsequent toggle. However, calculated reference values (like e_10) often remain incorrect for the new standard even after the UI inputs appear correct in Reference Mode. This indicates issues with the sequence of (1) reloading `activeReferenceDataSet`, (2) re-triggering the full reference model calculation chain, and (3) updating the UI display for both input and calculated reference fields.
+- **S01 Reference TEUI (e_10) Initial Display Glitch**: After a project file import (following weather data import), the initial display of the Reference TEUI in Section 01 (e_10) can show an extremely high or incorrect value. This value corrects itself after any subsequent UI interaction that triggers a recalculation. This is likely due to a race condition where the full chain of reference model calculations (S15 -> S04 -> S01) doesn't complete before e_10 is first rendered. **Note**: This issue may be resolved by migrating remaining sections to Pattern A dual-state architecture, which eliminates the complex global state synchronization that causes these timing issues.
+- **Dynamic Reference Calculations on d_13 Change**: When the reference standard dropdown (d_13) is changed by the user, the Reference TEUI (e_10 in Section 01) does not update dynamically. Furthermore, when entering Reference Mode after a d_13 change, the UI for input fields may not reflect the new standard on the first toggle, though they might on a subsequent toggle. However, calculated reference values (like e_10) often remain incorrect for the new standard even after the UI inputs appear correct in Reference Mode. **Note**: This issue should be resolved by migrating remaining sections to Pattern A dual-state architecture, where each section's `ReferenceState` object handles dynamic reference standard changes independently.
 - **S01 Reference TEUI (e_10) Initial Load Timing Issue (PRIORITY: Document & Defer)**:
   - **Issue**: On default page load, Section 01 displays incorrect Reference TEUI values (e.g., 287799.6 instead of ~201.7 kWh/m²/yr) that correct themselves after UI interactions or Reference Mode toggles.
   - **Root Cause**: Timing issue in dual-engine initialization sequence. Reference Mode appears to toggle ON/OFF during initialization (visible in logs), causing Reference data to load then immediately discard.
@@ -1370,7 +1432,7 @@ All rights retained by the Canadian Nponprofit OpenBuilding, Inc., with support 
 - **Event-Driven Calculation Chain (Traffic Cop Model)**: To further enhance calculation stability and address issues like initial display errors from data import race conditions (where values might be read before they are fully calculated and propagated through the dual-engine system), v4.012 should explore a more explicitly event-driven calculation chain. This would involve:
   - Sections emitting events like `referenceModelCalculationComplete` or `targetModelValueAvailable(fieldId)`.
   - Dependent sections (or a central calculation orchestrator) listening for these events from their specific data sources before triggering their own calculations.
-  - This approach would make the calculation flow more reactive and less reliant on a monolithic, perfectly ordered synchronous pass, ensuring data is only consumed once its precedent calculations are verifiably complete. This is particularly important for the dual-engine reference model where the `activeReferenceDataSet` and subsequent `ref_` prefixed values must be fully established before being used by downstream sections like S04 and S01.
+  - This approach would make the calculation flow more reactive and less reliant on a monolithic, perfectly ordered synchronous pass, ensuring data is only consumed once its precedent calculations are verifiably complete. This is particularly important for the Pattern A dual-state architecture where each section's `ReferenceState` objects must be fully calculated before downstream sections consume their values.
 - **Reference State Display Caching**: Implement a robust Reference state UI caching system to improve user experience when toggling between Reference and Application modes:
   - **Current Issue**: When toggling between Reference and Application (Design) modes, the UI always reflects the active calculation state. This means Reference UI values are calculated from scratch each toggle, even if no user interactions or changes occurred.
   - **Proposed Solution**: Create a DOM cache of all calculated Reference values and display elements:

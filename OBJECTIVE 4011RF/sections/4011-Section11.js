@@ -727,8 +727,8 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Handle N/A for non-finite numbers
     if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
       ModeManager.setValue(fieldId, "N/A", "calculated");
-        const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (elementNA) elementNA.textContent = "N/A";
+      const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (elementNA) elementNA.textContent = "N/A";
       return;
     }
 
@@ -754,10 +754,10 @@ window.TEUI.SectionModules.sect11 = (function () {
     ModeManager.setValue(fieldId, rawValue.toString(), "calculated");
 
     // Update DOM with formatted value
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        element.textContent = formattedValue;
-        element.classList.toggle("negative-value", rawValue < 0);
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.textContent = formattedValue;
+      element.classList.toggle("negative-value", rawValue < 0);
     }
   }
 
@@ -1594,7 +1594,7 @@ window.TEUI.SectionModules.sect11 = (function () {
               stateIndicator.textContent = "REFERENCE";
               stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
               ModeManager.switchMode("reference");
-          } else {
+    } else {
               slider.style.transform = "translateX(0px)";
               toggleSwitch.style.backgroundColor = "#ccc";
               stateIndicator.textContent = "TARGET";
@@ -1608,7 +1608,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       controlsContainer.appendChild(stateIndicator);
       controlsContainer.appendChild(toggleSwitch);
       sectionHeader.appendChild(controlsContainer);
-  }
+    }
 
   function onSectionRendered() {
     console.log("S11: Section rendered - initializing Self-Contained State Module.");

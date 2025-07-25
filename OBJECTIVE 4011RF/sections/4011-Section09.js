@@ -133,7 +133,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       console.log(`S09: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
-      // NOTE: No calculations triggered - both states are always up-to-date
+      calculateAll(); // Recalculate for the new mode
     },
     resetState: function() {
       console.log("S09: Resetting states to defaults");

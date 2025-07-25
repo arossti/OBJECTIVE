@@ -154,7 +154,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         return;
       this.currentMode = mode;
       console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
-
+      
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
     },
@@ -167,7 +167,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         console.log("S03: States have been reset to defaults.");
 
         // After resetting, refresh the UI and recalculate.
-        this.refreshUI();
+      this.refreshUI();
         calculateAll();
     },
     getCurrentState: function () {
@@ -342,7 +342,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       } else if (typeof rawValue === "string") {
         // Keep original string if it wasn't numeric (e.g., "N/A", maybe future text values)
         formattedDisplay = rawValue;
-      }
+    }
 
       // Update DOM element
       if (element.tagName === "SELECT" || element.tagName === "INPUT") {
@@ -1364,7 +1364,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Creates and injects the Target/Reference toggle and Reset button into the section header.
    */
   function injectHeaderControls() {
-      const sectionHeader = document.querySelector("#climateCalculations .section-header");
+    const sectionHeader = document.querySelector("#climateCalculations .section-header");
       if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
           return; // Already setup or header not found
       }
@@ -1388,15 +1388,15 @@ window.TEUI.SectionModules.sect03 = (function () {
       });
 
       // --- Create Weather Data Button ---
-      const weatherButton = document.createElement("button");
+    const weatherButton = document.createElement("button");
       weatherButton.textContent = "Weather Data";
-      weatherButton.id = "s03WeatherDataBtn";
+    weatherButton.id = "s03WeatherDataBtn";
       weatherButton.title = "Show detailed weather data for current city";
       weatherButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;";
-      
-      weatherButton.addEventListener("click", function() {
-        showWeatherData();
-      });
+
+    weatherButton.addEventListener("click", function() {
+      showWeatherData();
+    });
 
       // --- Create Toggle Switch ---
       const stateIndicator = document.createElement("span");
