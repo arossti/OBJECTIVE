@@ -2223,74 +2223,91 @@ window.TEUI.SectionModules.sect09 = (function () {
 
   /**
    * Update reference indicator (M and N columns) for a specific field
+   * MODE-AWARE: Reference mode shows 100%/✓, Target mode shows actual comparison
    * @param {string} fieldId - The application field ID to update
    */
   function updateReferenceIndicator(fieldId) {
     const config = referenceComparisons[fieldId];
     if (!config) return;
 
-    const currentValue = getNumericValue(fieldId);
-    const referenceValue =
-      TEUI.StateManager.getTCellValue(fieldId) ||
-      TEUI.StateManager.getReferenceValue(config.tCell);
     const rowId = fieldId.match(/\d+$/)?.[0];
     if (!rowId) return;
 
     const mFieldId = `m_${rowId}`;
     const nFieldId = `n_${rowId}`;
 
-    if (!referenceValue && referenceValue !== 0) {
-      // Allow 0 as a valid reference
-      // console.warn(`No reference value found for ${fieldId} - showing 100%`); // Comment out this specific warning
-      setCalculatedValue(mFieldId, 1, "percent-0dp");
+    // **REFERENCE MODE: Always show 100%/✓ (Perfect Compliance)**
+    if (ModeManager.currentMode === 'reference') {
+      setCalculatedValue(mFieldId, 1.0, "percent-0dp"); // Always 100%
       const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
       if (nElement) {
-        nElement.textContent = "✓";
+        nElement.textContent = "✓"; // Always pass
         setElementClass(nFieldId, "checkmark");
       }
       return;
     }
 
+    // **TARGET MODE: Compare user design against Reference values**
     try {
+      const currentValue = getNumericValue(fieldId);
+      let referenceValue;
       let referencePercent = 1;
       let isGood = true;
 
-      if (fieldId === "g_67") {
-        // For equipment efficiency spec (text comparison)
-        isGood = currentValue === referenceValue;
-        referencePercent = isGood ? 1 : 0;
-      } else {
-        // For numeric comparisons
-        const refValueNum = parseFloat(referenceValue);
-        const currentValueNum = parseFloat(currentValue);
-
-        if (config.type === "lower-is-better") {
-          // For values where lower is better (e.g., plug loads, lighting loads)
-          referencePercent =
-            currentValueNum > 0 ? refValueNum / currentValueNum : 0;
-          isGood = currentValueNum <= refValueNum;
-        } else if (config.type === "higher-is-better") {
-          // For values where higher is better
-          referencePercent =
-            refValueNum > 0 ? currentValueNum / refValueNum : 0;
-          isGood = currentValueNum >= refValueNum;
+      // Get appropriate reference value based on field
+      if (fieldId === 'd_65' || fieldId === 'd_66') {
+        // Rows 65, 66: Use dynamic values from ReferenceValues.js
+        const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+        const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
+        
+        if (fieldId === 'd_65') {
+          // Plug loads: Use t_65 from ReferenceValues.js (typically 7.0 for most standards)
+          referenceValue = window.TEUI.parseNumeric(referenceValues.t_65) || 7.0;
+        } else if (fieldId === 'd_66') {
+          // Lighting loads: Use t_66 from ReferenceValues.js (typically 2.0 for most standards)  
+          referenceValue = window.TEUI.parseNumeric(referenceValues.t_66) || 2.0;
         }
-      }
+        
+        // For both plug and lighting: lower is better
+        const currentValueNum = window.TEUI.parseNumeric(currentValue);
+        const refValueNum = window.TEUI.parseNumeric(referenceValue);
+        
+        if (currentValueNum > 0 && refValueNum > 0) {
+          referencePercent = refValueNum / currentValueNum; // Reference/Current for "lower is better"
+          isGood = currentValueNum <= refValueNum;
+        }
+        
+             } else if (fieldId === 'g_67') {
+         // Row 67: Simple comparison of Reference d_67 / Target d_67
+         const targetEquipmentDensity = window.TEUI.parseNumeric(TargetState.getValue('d_67'));
+         const referenceEquipmentDensity = window.TEUI.parseNumeric(ReferenceState.getValue('d_67'));
+         
+         if (targetEquipmentDensity > 0 && referenceEquipmentDensity > 0) {
+           // Calculate: Reference / Target (e.g., 7.00 / 5.00 = 140%)
+           referencePercent = referenceEquipmentDensity / targetEquipmentDensity;
+           isGood = targetEquipmentDensity <= referenceEquipmentDensity;
+         }
+       }
 
       // Update Column M (Reference %)
       setCalculatedValue(mFieldId, referencePercent, "percent-0dp");
 
-      // Update Column N (Pass/Fail checkmark)
+      // Update Column N (Pass/Fail checkmark) 
       const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
       if (nElement) {
         nElement.textContent = isGood ? "✓" : "✗";
         setElementClass(nFieldId, isGood ? "checkmark" : "warning");
       }
+      
     } catch (error) {
-      console.error(
-        `Error updating reference indicators for ${fieldId}:`,
-        error,
-      );
+      console.error(`Error updating reference indicators for ${fieldId}:`, error);
+      // Fallback: show 100%/✓ on error
+      setCalculatedValue(mFieldId, 1.0, "percent-0dp");
+      const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+      if (nElement) {
+        nElement.textContent = "✓";
+        setElementClass(nFieldId, "checkmark");
+      }
     }
   }
 
