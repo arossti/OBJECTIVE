@@ -657,11 +657,9 @@ window.TEUI.SectionModules.sect05 = (function () {
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state.
+   * ✅ FIXED: No mode switching during calculations to prevent recursion
    */
   function calculateReferenceModel() {
-    const originalMode = ModeManager.currentMode;
-    ModeManager.switchMode("reference");
-
     try {
       // CORRECTED: Read the string value directly from the 'ref_' prefixed state.
       const typology = window.TEUI.StateManager.getValue("ref_d_39");
@@ -676,18 +674,14 @@ window.TEUI.SectionModules.sect05 = (function () {
       calculatePercentages();
     } catch (error) {
       console.error("[S05] Error in Reference Model calculations:", error);
-    } finally {
-      ModeManager.switchMode(originalMode);
     }
   }
 
   /**
    * TARGET MODEL ENGINE: Calculate all values using Application state.
+   * ✅ FIXED: No mode switching during calculations to prevent recursion
    */
   function calculateTargetModel() {
-    const originalMode = ModeManager.currentMode;
-    ModeManager.switchMode("target");
-
     try {
       // CORRECTED: Read the string value directly from the global state.
       const typology = window.TEUI.StateManager.getValue("d_39");
@@ -702,8 +696,6 @@ window.TEUI.SectionModules.sect05 = (function () {
       calculatePercentages();
     } catch (error) {
       console.error("[S05] Error in Target Model calculations:", error);
-    } finally {
-      ModeManager.switchMode(originalMode);
     }
   }
 
@@ -825,7 +817,7 @@ window.TEUI.SectionModules.sect05 = (function () {
         return;
       }
       this.currentMode = mode;
-      console.log(`[S05] Switched to ${mode.toUpperCase()} mode`);
+      // console.log(`[S05] Switched to ${mode.toUpperCase()} mode`);
     },
   };
   // Expose ModeManager for debugging and cross-section communication
