@@ -160,19 +160,13 @@ window.TEUI.SectionModules.sect12 = (function () {
         const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
         if (!element) return;
         
-        // ✅ Use Section 10's proven dropdown pattern
+        // ✅ PATTERN A: Simple dropdown pattern (like S10) - NO SAFETY CHECKS
         const dropdown = element.matches('select') ? element : element.querySelector('select');
         
         if (dropdown) {
-          // 🛡️ SAFETY: Only update if value is valid for this dropdown
-          const optionExists = Array.from(dropdown.options).some(option => option.value === stateValue);
-          if (optionExists && dropdown.value !== stateValue) {
-            dropdown.value = stateValue;
-          }
+          dropdown.value = stateValue; // Simple and direct - like working sections
         } else if (element.hasAttribute('contenteditable')) {
-          if (element.textContent !== stateValue) {
-            element.textContent = stateValue;
-          }
+          element.textContent = stateValue;
         }
       });
     }
@@ -854,6 +848,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     return window.TEUI.parseNumeric(getFieldValue(fieldId)) || 0;
   }
 
+  function getGlobalNumericValue(fieldId) {
+    // ✅ PATTERN A: For values EXTERNAL to this section (from global StateManager)
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+
   function getFieldValue(fieldId) {
     if (window.TEUI?.StateManager?.getValue) {
       const stateValue = window.TEUI.StateManager.getValue(fieldId);
@@ -1468,13 +1468,13 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd;
     if (isReferenceCalculation) {
-      // Reference calculations: read ref_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("ref_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("ref_d_21") || getNumericValue("d_21"));
+      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
+      d20_hdd = getGlobalNumericValue("d_20");
+      d21_cdd = getGlobalNumericValue("d_21");
     } else {
-      // Target calculations: read target_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("target_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("target_d_21") || getNumericValue("d_21"));
+      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
+      d20_hdd = getGlobalNumericValue("d_20");
+      d21_cdd = getGlobalNumericValue("d_21");
     }
     
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
@@ -1512,17 +1512,17 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
     if (isReferenceCalculation) {
-      // Reference calculations: read ref_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("ref_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("ref_d_21") || getNumericValue("d_21"));
-      d22_gfHDD = parseFloat(getNumericValue("ref_d_22") || getNumericValue("d_22"));
-      h22_gfCDD = parseFloat(getNumericValue("ref_h_22") || getNumericValue("h_22"));
+      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
+      d20_hdd = getGlobalNumericValue("d_20");
+      d21_cdd = getGlobalNumericValue("d_21");
+      d22_gfHDD = getGlobalNumericValue("d_22");
+      h22_gfCDD = getGlobalNumericValue("h_22");
     } else {
-      // Target calculations: read target_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("target_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("target_d_21") || getNumericValue("d_21"));
-      d22_gfHDD = parseFloat(getNumericValue("target_d_22") || getNumericValue("d_22"));
-      h22_gfCDD = parseFloat(getNumericValue("target_h_22") || getNumericValue("h_22"));
+      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
+      d20_hdd = getGlobalNumericValue("d_20");
+      d21_cdd = getGlobalNumericValue("d_21");
+      d22_gfHDD = getGlobalNumericValue("d_22");
+      h22_gfCDD = getGlobalNumericValue("h_22");
     }
 
     // Constants
@@ -1614,22 +1614,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     // console.log("[Section12] Running Reference Model calculations..."); // Comment out
 
     try {
-      // ✅ FIX: Calculate Reference values using ref_ prefixed climate data
+      // ✅ PATTERN A: Calculate Reference values using clean climate data access
       calculateAirLeakageHeatLoss(true); // true = isReferenceCalculation
       calculateEnvelopeHeatLossGain(true); // true = isReferenceCalculation
       
-      // Store reference results with ref_ prefix
-      const i103_ref = getNumericValue("i_103");
-      const k103_ref = getNumericValue("k_103");
-      const i104_ref = getNumericValue("i_104");
-      const k104_ref = getNumericValue("k_104");
-      
-      if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue("ref_i_103", i103_ref.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_103", k103_ref.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_104", i104_ref.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_104", k104_ref.toString(), "calculated");
-      }
+      // Note: Pattern A doesn't need ref_ prefixed storage - Reference calculations
+      // are used internally for comparison only, not for cross-section communication
     } catch (error) {
       console.error("Error during Section 12 calculateReferenceModel:", error);
     }
