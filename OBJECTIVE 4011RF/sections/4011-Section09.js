@@ -324,6 +324,70 @@ window.TEUI.SectionModules.sect09 = (function () {
     return isNaN(parsed) ? defaultValue : parsed;
   }
 
+  /**
+   * Helper function to format building type for equipment loads lookup
+   * Moved to module scope to be accessible by both calculateEquipmentLoads and calculateEquipmentDensityForReference
+   */
+  function formatBuildingTypeForLookup(rawType) {
+    // If it's already in the right format, return it
+    if (
+      typeof equipmentLoadsTable !== "undefined" &&
+      Object.keys(equipmentLoadsTable).includes(rawType)
+    ) {
+      return rawType;
+    }
+
+    try {
+      // Extract the category (e.g., "A - Assembly" -> "A")
+      const categoryMatch = rawType.match(/^([A-F][0-9]?)\s*[-–]\s*/);
+      if (categoryMatch) {
+        const category = categoryMatch[1].trim();
+
+        // Map category to lookup key
+        if (category === "A") return "A-Assembly";
+        if (category === "B1") return "B1-Detention";
+        if (category === "B2") return "B2-Care";
+        if (category === "B3") return "B3-DetentionCare";
+        if (category === "C") return "C-Residential";
+        if (category === "D") return "D-Business";
+        if (category === "E") return "E-Mercantile";
+        if (category === "F") return "F-Industrial";
+      }
+
+      // Try extracting just the first character as fallback
+      if (rawType.length > 0) {
+        const firstChar = rawType.charAt(0);
+        if (firstChar === "A") return "A-Assembly";
+        if (firstChar === "C") return "C-Residential";
+        if (firstChar === "D") return "D-Business";
+        if (firstChar === "E") return "E-Mercantile";
+        if (firstChar === "F") return "F-Industrial";
+
+        // Special case for B categories
+        if (firstChar === "B") {
+          if (rawType.includes("1") || rawType.includes("Detention")) {
+            return "B1-Detention";
+          } else if (
+            rawType.includes("2") ||
+            (rawType.includes("Care") && !rawType.includes("Detention"))
+          ) {
+            return "B2-Care";
+          } else if (
+            rawType.includes("3") ||
+            (rawType.includes("Care") && rawType.includes("Detention"))
+          ) {
+            return "B3-DetentionCare";
+          }
+          return "B3-DetentionCare"; // Default B case
+        }
+      }
+    } catch (e) {
+      console.warn("Error formatting building type:", e);
+    }
+
+    return "A-Assembly"; // Default fallback
+  }
+
 
 
   /**
@@ -1328,66 +1392,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       // Error handling could be added here if needed
     }
 
-    // Helper function to format building type
-    function formatBuildingTypeForLookup(rawType) {
-      // If it's already in the right format, return it
-      if (
-        typeof equipmentLoadsTable !== "undefined" &&
-        Object.keys(equipmentLoadsTable).includes(rawType)
-      ) {
-        return rawType;
-      }
 
-      try {
-        // Extract the category (e.g., "A - Assembly" -> "A")
-        const categoryMatch = rawType.match(/^([A-F][0-9]?)\s*[-–]\s*/);
-        if (categoryMatch) {
-          const category = categoryMatch[1].trim();
-
-          // Map category to lookup key
-          if (category === "A") return "A-Assembly";
-          if (category === "B1") return "B1-Detention";
-          if (category === "B2") return "B2-Care";
-          if (category === "B3") return "B3-DetentionCare";
-          if (category === "C") return "C-Residential";
-          if (category === "D") return "D-Business";
-          if (category === "E") return "E-Mercantile";
-          if (category === "F") return "F-Industrial";
-        }
-
-        // Try extracting just the first character as fallback
-        if (rawType.length > 0) {
-          const firstChar = rawType.charAt(0);
-          if (firstChar === "A") return "A-Assembly";
-          if (firstChar === "C") return "C-Residential";
-          if (firstChar === "D") return "D-Business";
-          if (firstChar === "E") return "E-Mercantile";
-          if (firstChar === "F") return "F-Industrial";
-
-          // Special case for B categories
-          if (firstChar === "B") {
-            if (rawType.includes("1") || rawType.includes("Detention")) {
-              return "B1-Detention";
-            } else if (
-              rawType.includes("2") ||
-              (rawType.includes("Care") && !rawType.includes("Detention"))
-            ) {
-              return "B2-Care";
-            } else if (
-              rawType.includes("3") ||
-              (rawType.includes("Care") && rawType.includes("Detention"))
-            ) {
-              return "B3-DetentionCare";
-            }
-            return "B3-DetentionCare"; // Default B case
-          }
-        }
-      } catch (e) {
-        // Error handling could be added here if needed
-      }
-
-      return "A-Assembly"; // Default fallback
-    }
   }
 
   /**
