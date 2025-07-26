@@ -137,35 +137,46 @@ window.TEUI.SectionModules.sect12 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
+      console.log(`S12: ModeManager.setValue(${fieldId}, ${value}) in ${this.currentMode} mode`);
       this.getCurrentState().setValue(fieldId, value, source);
+      console.log(`S12: State after setValue:`, this.getCurrentState().state[fieldId]);
 
       // BRIDGE: For backward compatibility, sync Target changes to global StateManager
       if (this.currentMode === "target") {
+        console.log(`S12: Syncing to StateManager: ${fieldId} = ${value}`);
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       }
     },
     refreshUI: function () {
+      console.log(`S12: refreshUI called in ${this.currentMode} mode`);
       const sectionElement = document.getElementById("volumeSurfaceMetrics");
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
+      console.log(`S12: Current state data:`, currentState.state);
       
       // S12-specific fields to sync
       const fieldsToSync = ['d_103', 'g_103', 'd_105', 'd_108', 'g_109'];
 
       fieldsToSync.forEach(fieldId => {
         const stateValue = currentState.getValue(fieldId);
+        console.log(`S12: refreshUI - ${fieldId} = ${stateValue}`);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-        if (!element) return;
+        if (!element) {
+          console.log(`S12: Element not found for ${fieldId}`);
+          return;
+        }
         
         // ✅ PATTERN A: Simple dropdown pattern (like S10) - NO SAFETY CHECKS
         const dropdown = element.matches('select') ? element : element.querySelector('select');
         
         if (dropdown) {
+          console.log(`S12: Setting dropdown ${fieldId} to ${stateValue}`);
           dropdown.value = stateValue; // Simple and direct - like working sections
         } else if (element.hasAttribute('contenteditable')) {
+          console.log(`S12: Setting editable ${fieldId} to ${stateValue}`);
           element.textContent = stateValue;
         }
       });
@@ -1697,19 +1708,25 @@ window.TEUI.SectionModules.sect12 = (function () {
     sectionElement.addEventListener("keydown", handleFieldKeydown, true);
     // ✅ S10 PROVEN PATTERN: Inline dropdown handlers (like working sections)
     const dropdowns = sectionElement.querySelectorAll("select");
+    console.log(`S12: Found ${dropdowns.length} dropdowns to initialize`);
     dropdowns.forEach((dropdown) => {
       dropdown.addEventListener("change", function () {
         const fieldId = this.getAttribute("data-field-id");
+        console.log(`S12: Dropdown ${fieldId} changed to: ${this.value}`);
         if (!fieldId) return;
 
+        console.log(`S12: Calling ModeManager.setValue(${fieldId}, ${this.value})`);
         ModeManager.setValue(fieldId, this.value, "user-modified");
         
         // Handle conditional g_109 logic for d_108
         if (fieldId === "d_108") {
+          console.log(`S12: Calling handleConditionalEditability for d_108`);
           handleConditionalEditability();
         }
         
+        console.log(`S12: Calling calculateAll()`);
         calculateAll();
+        console.log(`S12: calculateAll() completed`);
       });
     });
     const editableFields = sectionElement.querySelectorAll(
