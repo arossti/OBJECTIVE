@@ -1791,7 +1791,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     sectionElement.addEventListener("blur", handleFieldBlur, true);
     sectionElement.addEventListener("keydown", handleFieldKeydown, true);
     const dropdowns = sectionElement.querySelectorAll("select");
+    console.log(`S12: Found ${dropdowns.length} dropdown(s) to initialize`);
     dropdowns.forEach((dropdown) => {
+      const fieldId = dropdown.getAttribute("data-field-id");
+      console.log(`S12: Adding dropdown listener for ${fieldId}`);
       dropdown.addEventListener("change", handleDropdownChange);
     });
     const editableFields = sectionElement.querySelectorAll(
@@ -1815,6 +1818,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     const dropdown = event.target;
     const fieldId = dropdown.getAttribute("data-field-id");
     if (fieldId) {
+      console.log(`S12: Dropdown ${fieldId} changed to: ${dropdown.value}`);
+      
       // ✅ DUAL-STATE: Store value using the ModeManager facade.
       ModeManager.setValue(fieldId, dropdown.value, "user-modified");
       
@@ -1823,15 +1828,27 @@ window.TEUI.SectionModules.sect12 = (function () {
         const g109Element = document.querySelector('[data-field-id="g_109"]');
         if (g109Element) {
           if (dropdown.value === "MEASURED") {
-            g109Element.classList.remove("disabled-input");
+            // Enable g_109 for user input
+            g109Element.classList.remove("disabled-input", "ghosted");
+            g109Element.classList.add("editable", "user-input");
             g109Element.setAttribute("contenteditable", "true");
+            g109Element.style.backgroundColor = "#f0f8ff"; // Indicate editable
+            g109Element.style.color = "#000"; // Normal text color
           } else {
-            g109Element.classList.add("disabled-input");
+            // Disable g_109 for user input
+            g109Element.classList.remove("editable", "user-input");
+            g109Element.classList.add("disabled-input", "ghosted");
             g109Element.setAttribute("contenteditable", "false");
+            g109Element.style.backgroundColor = "#f8f9fa"; // Grayed out
+            g109Element.style.color = "#6c757d"; // Gray text
+            // Set default value when disabled
+            g109Element.textContent = "0.00";
+            ModeManager.setValue("g_109", "0", "calculated");
           }
         }
       }
       
+      // Always trigger calculations after dropdown changes
       calculateAll();
     }
   }
@@ -1868,6 +1885,8 @@ window.TEUI.SectionModules.sect12 = (function () {
         }
         // ✅ DUAL-STATE: Store value using the ModeManager facade.
         ModeManager.setValue(fieldId, String(numValue), "user-modified");
+        
+        console.log(`S12: Field ${fieldId} updated to: ${numValue}`);
         calculateAll();
       } else {
         // Handle invalid input - revert to previous state value or 0
@@ -1903,42 +1922,53 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function handleConditionalEditability() {
-    const d108Dropdown = document.querySelector(
-      'select[data-field-id="d_108"]',
-    );
-    const g109Cell = document.querySelector('td[data-field-id="g_109"]');
-    if (!d108Dropdown || !g109Cell) return;
-    const isMeasured = d108Dropdown.value === "MEASURED";
-    const g109FieldDef = getFields()["g_109"];
+    const d108Dropdown = document.querySelector('select[data-field-id="d_108"]');
+    const g109Cell = document.querySelector('[data-field-id="g_109"]');
+    
+    if (!d108Dropdown || !g109Cell) {
+      console.warn("S12: Could not find d_108 dropdown or g_109 cell for conditional editability");
+      return;
+    }
+    
+    // ✅ DUAL-STATE: Use ModeManager to get current value
+    const currentD108Value = ModeManager.getValue("d_108") || d108Dropdown.value;
+    const isMeasured = currentD108Value === "MEASURED";
+    
+    console.log(`S12: Setting conditional editability - d_108: ${currentD108Value}, isMeasured: ${isMeasured}`);
+    
     if (isMeasured) {
-      if (g109Cell.getAttribute("contenteditable") !== "true") {
-        g109Cell.setAttribute("contenteditable", "true");
-        g109Cell.classList.add("user-input", "editable");
-        g109Cell.classList.remove("calculated-value", "PendingValue");
-        const currentValue = window.TEUI.StateManager.getValue("g_109");
-        const defaultValue = g109FieldDef?.defaultValue || "0";
-        const valueToDisplay =
-          currentValue !== null && !isNaN(parseFloat(currentValue))
-            ? currentValue
-            : defaultValue;
-        g109Cell.textContent = window.TEUI.formatNumber(
-          valueToDisplay,
-          "number-2dp",
-        ); // ACH is 2dp
-        g109Cell.removeEventListener("focus", handleFieldFocus);
-        g109Cell.removeEventListener("focusout", handleFieldFocusOut);
-        g109Cell.addEventListener("focus", handleFieldFocus);
-        g109Cell.addEventListener("focusout", handleFieldFocusOut);
-      }
+      // Enable g_109 for user input
+      g109Cell.setAttribute("contenteditable", "true");
+      g109Cell.classList.add("user-input", "editable");
+      g109Cell.classList.remove("calculated-value", "PendingValue", "disabled-input", "ghosted");
+      g109Cell.style.backgroundColor = "#f0f8ff"; // Indicate editable
+      g109Cell.style.color = "#000"; // Normal text color
+      
+      // ✅ DUAL-STATE: Get current value from our state
+      const currentValue = ModeManager.getValue("g_109");
+      const valueToDisplay = currentValue !== null && !isNaN(parseFloat(currentValue)) ? currentValue : "0";
+      g109Cell.textContent = window.TEUI.formatNumber(valueToDisplay, "number-2dp");
+      
+      // Add event listeners for the now-editable field
+      g109Cell.removeEventListener("focus", handleFieldFocus);
+      g109Cell.removeEventListener("focusout", handleFieldFocusOut);
+      g109Cell.addEventListener("focus", handleFieldFocus);
+      g109Cell.addEventListener("focusout", handleFieldFocusOut);
     } else {
-      if (g109Cell.getAttribute("contenteditable") === "true") {
-        g109Cell.setAttribute("contenteditable", "false");
-        g109Cell.classList.remove("user-input", "editable", "editing");
-        g109Cell.classList.add("PendingValue");
-        g109Cell.textContent = "Target value used";
-        g109Cell.removeEventListener("focus", handleFieldFocus);
-        g109Cell.removeEventListener("focusout", handleFieldFocusOut);
-      }
+      // Disable g_109 for user input  
+      g109Cell.setAttribute("contenteditable", "false");
+      g109Cell.classList.remove("user-input", "editable", "editing");
+      g109Cell.classList.add("disabled-input", "ghosted");
+      g109Cell.style.backgroundColor = "#f8f9fa"; // Grayed out
+      g109Cell.style.color = "#6c757d"; // Gray text
+      g109Cell.textContent = "N/A";
+      
+      // Remove event listeners
+      g109Cell.removeEventListener("focus", handleFieldFocus);
+      g109Cell.removeEventListener("focusout", handleFieldFocusOut);
+      
+      // ✅ DUAL-STATE: Reset value in state
+      ModeManager.setValue("g_109", "0", "calculated");
     }
   }
 
@@ -1954,7 +1984,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     registerWithStateManager();
     registerDependencies();
     initializeEventHandlers(); // Event handlers now only added once
-    addStateManagerListeners();
+    addStateManagerListeners(); // Critical for "robot fingers" TB penalty connection
 
     // 3. Sync UI to the default (Target) state
     ModeManager.refreshUI();
@@ -1993,74 +2023,30 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function addStateManagerListeners() {
-    if (!window.TEUI?.StateManager) return;
-    const externalDependencies = [
-      // Section 11 Inputs influencing U-Values (g_101, g_102) and Areas (d_101, d_102)
-      "d_85",
-      "f_85",
-      "g_85", // Roof
-      "d_86",
-      "f_86",
-      "g_86", // Walls AG
-      "d_87",
-      "f_87",
-      "g_87", // Floor Exp
-      "d_88",
-      "g_88", // Doors (Area d_88 comes from S10, listen to g_88 U-Value)
-      "d_89",
-      "g_89", // Win N (Area d_89 comes from S10, listen to g_89 U-Value)
-      "d_90",
-      "g_90", // Win E (Area d_90 comes from S10, listen to g_90 U-Value)
-      "d_91",
-      "g_91", // Win S (Area d_91 comes from S10, listen to g_91 U-Value)
-      "d_92",
-      "g_92", // Win W (Area d_92 comes from S10, listen to g_92 U-Value)
-      "d_93",
-      "g_93", // Skylights (Area d_93 comes from S10, listen to g_93 U-Value)
-      "d_94",
-      "f_94",
-      "g_94", // Walls BG
-      "d_95",
-      "f_95",
-      "g_95", // Floor Slab
-      "d_96", // Interior Floor Area (Used for d_106)
-      // Section 11 Thermal Bridge Penalty
-      "d_97",
-      // Section 3 Climate Data
-      "d_20", // HDD
-      "d_21", // CDD
-      "d_22", // GF HDD
-      "h_22", // GF CDD
-      "j_19", // Climate Zone (for N-Factor)
-      "h_21", // Capacitance Setting (for k_104)
-    ];
-    externalDependencies.forEach((depId) => {
-      if (depId === "d_97") {
-        // console.log(`[S12 DEBUG] PRE-REGISTRATION for d_97. Will add specific callback for depId: ${depId}`); // REMOVE DEBUG LOG
-      }
-      window.TEUI.StateManager.addListener(
-        depId,
-        (newValue, oldValue, eventFieldId, state) => {
-          // For d_97, this specific log should appear if this callback is hit
-          // if (depId === 'd_97' && eventFieldId === 'd_97') {  // REMOVE DEBUG LOG BLOCK
-          //     console.log(`***** S12 LISTENER FOR D97 EXECUTED! Value: ${newValue} *****`);
-          // }
+    if (!window.TEUI?.StateManager?.addListener) {
+      console.warn("S12: StateManager not available for adding listeners");
+      return;
+    }
 
-          if (eventFieldId === depId) {
-            calculateAll();
-          }
-        },
-      );
+    // ✅ CRITICAL: Listen for TB penalty changes from S11 (enables "robot fingers")
+    window.TEUI.StateManager.addListener("d_97", (newValue) => {
+      console.log(`[S12] TB penalty changed to: ${newValue}% - updating U-values`);
+      // Note: calculateCombinedUValue will be called directly by S11's "robot fingers"
+      // but this ensures our states stay synchronized
+      calculateCombinedUValue();
     });
 
-    // CRITICAL: Listen for d_13 changes to update reference indicators
-    window.TEUI.StateManager.addListener("d_13", () => {
-      console.log("[Section12] d_13 changed - updating reference indicators");
-      updateAllReferenceIndicators();
-    });
+    // Listen for climate data changes that affect our calculations
+    window.TEUI.StateManager.addListener("d_20", calculateAll); // HDD
+    window.TEUI.StateManager.addListener("d_21", calculateAll); // CDD
+    window.TEUI.StateManager.addListener("d_22", calculateAll); // Ground HDD
+    window.TEUI.StateManager.addListener("h_22", calculateAll); // Ground CDD
+    
+    // Listen for envelope area changes from S11
+    window.TEUI.StateManager.addListener("d_101", calculateAll); // Air-facing area
+    window.TEUI.StateManager.addListener("d_102", calculateAll); // Ground-facing area
 
-    s12ListenersAdded = true;
-    // console.log("[S12 DEBUG] StateManager listeners HAVE BEEN ADDED."); // REMOVE DEBUG LOG
+    console.log("S12: StateManager listeners added successfully");
   }
 
   function addCheckmarkStyles() {
