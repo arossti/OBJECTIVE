@@ -964,41 +964,6 @@ TEUI.FieldManager = (function () {
   }
 
   /**
-   * Check if a field belongs to a Pattern A (self-contained dual-state) section
-   * Pattern A sections manage their own dropdowns and don't need FieldManager event listeners
-   * @param {string} sectionId - Section ID (e.g., "volumeSurfaceMetrics")  
-   * @param {string} fieldId - Field ID (e.g., "g_103")
-   * @returns {boolean} true if field belongs to Pattern A section
-   */
-  function isPatternASectionField(sectionId, fieldId) {
-    // Map section IDs to their corresponding Pattern A ModeManagers
-    const patternASections = {
-      'climateCalculations': window.TEUI?.SectionModules?.sect03?.ModeManager,
-      'envelopeRadiantGains': window.TEUI?.SectionModules?.sect10?.ModeManager, 
-      'envelopeTransmissionLosses': window.TEUI?.SectionModules?.sect11?.ModeManager,
-      'volumeSurfaceMetrics': window.TEUI?.SectionModules?.sect12?.ModeManager,
-    };
-
-    // Field ID patterns for each Pattern A section  
-    const patternAFieldPatterns = {
-      'climateCalculations': /^(d_19|h_19|h_20|h_21|i_21|d_20|d_21|d_22|h_22|j_19)$/,
-      'envelopeRadiantGains': /^(d_6[6-9]|g_6[6-9]|h_6[6-9]|d_7[0-8]|g_7[0-8]|h_7[0-8])$/,
-      'envelopeTransmissionLosses': /^(d_8[5-9]|f_8[5-9]|g_8[5-9]|d_9[0-7]|f_9[0-7]|g_9[0-7])$/,
-      'volumeSurfaceMetrics': /^(d_103|g_103|d_105|d_108|g_109)$/,
-    };
-
-    // Check if this section has a Pattern A ModeManager and field matches pattern
-    const modeManager = patternASections[sectionId];
-    const fieldPattern = patternAFieldPatterns[sectionId];
-    
-    if (modeManager && fieldPattern && fieldPattern.test(fieldId)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
    * Initialize dropdowns from field definitions
    * @param {string} sectionId - Section ID
    */
@@ -1075,20 +1040,14 @@ TEUI.FieldManager = (function () {
         });
 
         // Add change listener to update state
-        // ✅ PATTERN A EXCLUSION: Skip event listeners for Pattern A sections
-        const isPatternASection = isPatternASectionField(sectionId, fieldId);
-        if (isPatternASection) {
-          console.log(`🚫 FieldManager: Skipping event listener for Pattern A field ${fieldId} in section ${sectionId}`);
-        } else {
-          selectElement.addEventListener("change", function () {
-            if (TEUI.StateManager && TEUI.StateManager.setValue) {
-              TEUI.StateManager.setValue(fieldId, this.value);
-            }
+        selectElement.addEventListener("change", function () {
+          if (TEUI.StateManager && TEUI.StateManager.setValue) {
+            TEUI.StateManager.setValue(fieldId, this.value);
+          }
 
-            // Update dependent dropdowns if needed
-            updateDependentDropdowns(fieldId);
-          });
-        }
+          // Update dependent dropdowns if needed
+          updateDependentDropdowns(fieldId);
+        });
       }
     });
   }
