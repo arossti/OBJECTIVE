@@ -37,6 +37,120 @@ This plan covers all the necessary steps and incorporates the key lessons learne
 
 **⚠️ CRITICAL DECREE**: As of July 2025, **Pattern A (Self-Contained State Objects)** is the **SOLE APPROVED APPROACH** for dual-state implementation. All previous patterns using global prefixed state (target_, ref_) are **DEPRECATED** and should be migrated to this standard.
 
+---
+
+## 🚨 **CRITICAL: PATTERN B CONTAMINATION DETECTION & ELIMINATION**
+
+**⚠️ URGENT WARNING**: Pattern B contamination has caused **multiple refactor failures** (S12 attempts 1-7). This section is **MANDATORY** reading before any dual-state implementation.
+
+### **🔍 Pattern B Contamination Symptoms**
+- **Dropdown Blanking**: Dropdowns go blank after user edits
+- **State Persistence Issues**: Values don't persist across mode toggles  
+- **ComponentBridge Conflicts**: `target_` prefixed values created but not accessible
+- **Mixed Architecture**: Some functions use Pattern A, others use Pattern B
+
+### **🔍 How to Detect Pattern B Contamination**
+
+**MANDATORY PRE-REFACTOR SCAN**:
+```bash
+# Search for Pattern B contamination in target section
+grep -n "target_\|ref_" sections/4011-SectionXX.js
+
+# Look for these TOXIC PATTERNS:
+```
+
+#### **❌ TOXIC PATTERN 1: Prefixed External Dependencies**
+```javascript
+// ❌ WRONG: Pattern B contamination
+d20_hdd = parseFloat(getNumericValue("target_d_20") || getNumericValue("d_20"));
+d21_cdd = parseFloat(getNumericValue("ref_d_21") || getNumericValue("d_21"));
+```
+
+#### **❌ TOXIC PATTERN 2: Prefixed Cross-Section Storage**
+```javascript
+// ❌ WRONG: Pattern B contamination  
+window.TEUI.StateManager.setValue("ref_i_103", value, "calculated");
+window.TEUI.StateManager.setValue("target_d_105", value, "user-modified");
+```
+
+#### **❌ TOXIC PATTERN 3: Over-Engineered refreshUI Safety Checks**
+```javascript
+// ❌ WRONG: Causes dropdown blanking
+const optionExists = Array.from(dropdown.options).some(option => option.value === stateValue);
+if (optionExists && dropdown.value !== stateValue) {
+  dropdown.value = stateValue;
+}
+```
+
+### **✅ Pattern A Purification (MANDATORY)**
+
+#### **✅ CORRECT PATTERN 1: Clean External Dependencies**
+```javascript
+// ✅ CORRECT: Pattern A clean access
+function getGlobalNumericValue(fieldId) {
+  const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+  return window.TEUI.parseNumeric(rawValue) || 0;
+}
+
+// Usage: Clean climate data access
+d20_hdd = getGlobalNumericValue("d_20");
+d21_cdd = getGlobalNumericValue("d_21");
+```
+
+#### **✅ CORRECT PATTERN 2: No Prefixed Storage**
+```javascript
+// ✅ CORRECT: Pattern A doesn't need prefixed cross-section storage
+// Reference calculations are internal only, not stored globally
+calculateReferenceModel(); // Internal calculations only
+```
+
+#### **✅ CORRECT PATTERN 3: Simple refreshUI**
+```javascript
+// ✅ CORRECT: Simple dropdown updates (copy S10/S11 pattern)
+if (dropdown) {
+  dropdown.value = stateValue; // Simple and direct
+} else if (element.hasAttribute('contenteditable')) {
+  element.textContent = stateValue;
+}
+```
+
+### **🔧 ComponentBridge Integration**
+
+**CRITICAL**: Ensure ComponentBridge sync works with Pattern A:
+
+```javascript
+// In ModeManager.setValue():
+setValue: function (fieldId, value, source = "user") {
+  this.getCurrentState().setValue(fieldId, value, source);
+
+  // BRIDGE: Sync Target changes to StateManager (NO PREFIX)
+  if (this.currentMode === "target") {
+    window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+  }
+}
+```
+
+### **📋 Pattern B Elimination Checklist**
+
+**MANDATORY BEFORE ANY DUAL-STATE REFACTOR**:
+
+- [ ] **Scan for Contamination**: `grep -n "target_\|ref_" targetFile.js`
+- [ ] **Remove Prefixed Dependencies**: Replace with `getGlobalNumericValue()`
+- [ ] **Remove Prefixed Storage**: Pattern A doesn't need `ref_` storage
+- [ ] **Simplify refreshUI**: Use S10/S11 working pattern, no safety checks
+- [ ] **Test ComponentBridge**: Ensure unprefixed sync to StateManager
+- [ ] **Validate External Dependencies**: All external reads via `getGlobalNumericValue()`
+
+### **⚠️ Why This Matters**
+
+**Pattern B contamination has caused**:
+- **7 failed S12 refactor attempts** over 3 days
+- **Multiple AI agents** unable to identify root cause  
+- **Hundreds of hours** of debugging time wasted
+- **Complete section functionality breakdown**
+
+**This section prevents future failures and ensures first-attempt success.**
+
 Each dual-state section must have its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures that:
 
 1.  **State Isolation:** Each section's state is completely independent, preventing cross-section interference.
