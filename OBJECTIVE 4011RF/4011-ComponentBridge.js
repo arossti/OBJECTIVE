@@ -414,7 +414,7 @@ TEUI.ComponentBridge = (function () {
       return;
     }
 
-    console.log('🔄 ComponentBridge: Initializing SELECTIVE dual-state synchronization...');
+    // console.log('🔄 ComponentBridge: Initializing SELECTIVE dual-state synchronization...');
 
     // Track sync operations to prevent loops
     let isSyncing = false;
@@ -451,14 +451,14 @@ TEUI.ComponentBridge = (function () {
         if (fieldId.startsWith('target_')) {
           const globalFieldId = fieldId.replace('target_', '');
           originalSetValue.call(this, globalFieldId, value, 'bridge-sync');
-          console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${globalFieldId} (${value})`);
+          // console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${globalFieldId} (${value})`);
         }
         
         // Handle global → target_* sync (user inputs only)
         else if (!fieldId.startsWith('target_') && !fieldId.startsWith('ref_')) {
           const targetFieldId = `target_${fieldId}`;
           originalSetValue.call(this, targetFieldId, value, 'bridge-sync');
-          console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${targetFieldId} (${value})`);
+          // console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${targetFieldId} (${value})`);
         }
       } catch (error) {
         console.error('🚨 ComponentBridge sync error:', error);
@@ -471,8 +471,8 @@ TEUI.ComponentBridge = (function () {
     };
 
     isDualStateSyncInitialized = true;
-    console.log('✅ ComponentBridge: Selective dual-state sync initialized successfully');
-    console.log('📌 ComponentBridge: Only syncing USER INPUTS (user/user-modified), not calculated values');
+    // console.log('✅ ComponentBridge: Selective dual-state sync initialized successfully');
+    // console.log('📌 ComponentBridge: Only syncing USER INPUTS (user/user-modified), not calculated values');
   }
 
   /**
