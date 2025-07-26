@@ -265,7 +265,8 @@ window.TEUI.SectionModules.sect05 = (function () {
    * state when in 'target' mode to prevent state contamination.
    */
   function setFieldValue(fieldId, value, fieldType = "calculated") {
-    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const modePrefix =
+      ModeManager.currentMode === "target" ? "target_" : "ref_";
     const prefixedFieldId = `${modePrefix}${fieldId}`;
 
     // Always store with prefix for dual-state isolation.
@@ -287,8 +288,8 @@ window.TEUI.SectionModules.sect05 = (function () {
       const formattedValue =
         value === "N/A"
           ? "N/A"
-          : window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
-            value.toString();
+          : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
+            value.toString());
 
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
@@ -504,7 +505,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     if (typology === "Modelled Value") {
       return getNumericValue("i_41", 0);
     }
-    
+
     const caps = {
       "Pt.9 Res. Stick Frame": 125,
       "Pt.9 Small Mass Timber": 250,

@@ -41,7 +41,22 @@
           "type": "dropdown",
           "value": "-",
           "label": "OCCUPANCY",
-          "options": ["-", "Group A Division 1", "Group A Division 2", "Group A Division 3", "Group A Division 4", "Group B Division 1", "Group B Division 2", "Group B Division 3", "Group C", "Group D", "Group E", "Group F Division 1", "Group F Division 2", "Group F Division 3"]
+          "options": [
+            "-",
+            "Group A Division 1",
+            "Group A Division 2",
+            "Group A Division 3",
+            "Group A Division 4",
+            "Group B Division 1",
+            "Group B Division 2",
+            "Group B Division 3",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 1",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
         },
         {
           "id": "use_1",
@@ -54,7 +69,22 @@
           "type": "dropdown",
           "value": "-",
           "label": "",
-          "options": ["-", "Group A Division 1", "Group A Division 2", "Group A Division 3", "Group A Division 4", "Group B Division 1", "Group B Division 2", "Group B Division 3", "Group C", "Group D", "Group E", "Group F Division 1", "Group F Division 2", "Group F Division 3"]
+          "options": [
+            "-",
+            "Group A Division 1",
+            "Group A Division 2",
+            "Group A Division 3",
+            "Group A Division 4",
+            "Group B Division 1",
+            "Group B Division 2",
+            "Group B Division 3",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 1",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
         },
         {
           "id": "use_2",
@@ -67,7 +97,22 @@
           "type": "dropdown",
           "value": "-",
           "label": "",
-          "options": ["-", "Group A Division 1", "Group A Division 2", "Group A Division 3", "Group A Division 4", "Group B Division 1", "Group B Division 2", "Group B Division 3", "Group C", "Group D", "Group E", "Group F Division 1", "Group F Division 2", "Group F Division 3"]
+          "options": [
+            "-",
+            "Group A Division 1",
+            "Group A Division 2",
+            "Group A Division 3",
+            "Group A Division 4",
+            "Group B Division 1",
+            "Group B Division 2",
+            "Group B Division 3",
+            "Group C",
+            "Group D",
+            "Group E",
+            "Group F Division 1",
+            "Group F Division 2",
+            "Group F Division 3"
+          ]
         },
         {
           "id": "use_3",
@@ -326,7 +371,35 @@
           "type": "dropdown",
           "value": "-",
           "label": "(SIZE AND CONSTRUCTION RELATIVE TO OCCUPANCY)",
-          "options": ["-", "3.2.2.20. Group A, Division 1, Any Height, Any Area, Sprinklered", "3.2.2.21. Group A, Division 1, up to 3 Storeys", "3.2.2.22. Group A, Division 1, up to 2 Storeys", "3.2.2.23. Group A, Division 2, Any Height, Any Area, Sprinklered", "3.2.2.24. Group A, Division 2, up to 6 Storeys, Sprinklered", "3.2.2.25. Group A, Division 2, up to 2 Storeys", "3.2.2.26. Group A, Division 2, up to 2 Storeys", "3.2.2.27. Group A, Division 2, up to 2 Storeys", "3.2.2.28. Group A, Division 2, up to 1 Storey", "3.2.2.29. Group A, Division 3, Any Height, Any Area, Sprinklered", "3.2.2.30. Group A, Division 3, up to 4 Storeys", "3.2.2.31. Group A, Division 3, up to 2 Storeys", "3.2.2.32. Group A, Division 3, up to 2 Storeys", "3.2.2.33. Group A, Division 3, up to 2 Storeys", "3.2.2.34. Group A, Division 3, up to 1 Storey", "3.2.2.35. Group A, Division 4", "3.2.2.36. Group B, Division 1, Any Height, Any Area, Sprinklered", "3.2.2.37. Group B, Division 1, up to 3 Storeys, Sprinklered", "3.2.2.38. Group B, Division 2, Any Height, Any Area, Sprinklered", "3.2.2.39. Group B, Division 2, up to 3 Storeys, Sprinklered", "3.2.2.40. Group B, Division 2, up to 2 Storeys, Sprinklered", "3.2.2.41. Group B, Division 2, up to 1 Storey, Sprinklered", "3.2.2.42. Group B, Division 3, Any Height, Any Area, Sprinklered", "3.2.2.43. Group B, Division 3, up to 3 Storeys, Sprinklered", "3.2.2.44. Group B, Division 3, up to 2 Storeys, Sprinklered", "3.2.2.45. Group B, Division 3, up to 1 Storey, Sprinklered"]
+          "options": [
+            "-",
+            "3.2.2.20. Group A, Division 1, Any Height, Any Area, Sprinklered",
+            "3.2.2.21. Group A, Division 1, up to 3 Storeys",
+            "3.2.2.22. Group A, Division 1, up to 2 Storeys",
+            "3.2.2.23. Group A, Division 2, Any Height, Any Area, Sprinklered",
+            "3.2.2.24. Group A, Division 2, up to 6 Storeys, Sprinklered",
+            "3.2.2.25. Group A, Division 2, up to 2 Storeys",
+            "3.2.2.26. Group A, Division 2, up to 2 Storeys",
+            "3.2.2.27. Group A, Division 2, up to 2 Storeys",
+            "3.2.2.28. Group A, Division 2, up to 1 Storey",
+            "3.2.2.29. Group A, Division 3, Any Height, Any Area, Sprinklered",
+            "3.2.2.30. Group A, Division 3, up to 4 Storeys",
+            "3.2.2.31. Group A, Division 3, up to 2 Storeys",
+            "3.2.2.32. Group A, Division 3, up to 2 Storeys",
+            "3.2.2.33. Group A, Division 3, up to 2 Storeys",
+            "3.2.2.34. Group A, Division 3, up to 1 Storey",
+            "3.2.2.35. Group A, Division 4",
+            "3.2.2.36. Group B, Division 1, Any Height, Any Area, Sprinklered",
+            "3.2.2.37. Group B, Division 1, up to 3 Storeys, Sprinklered",
+            "3.2.2.38. Group B, Division 2, Any Height, Any Area, Sprinklered",
+            "3.2.2.39. Group B, Division 2, up to 3 Storeys, Sprinklered",
+            "3.2.2.40. Group B, Division 2, up to 2 Storeys, Sprinklered",
+            "3.2.2.41. Group B, Division 2, up to 1 Storey, Sprinklered",
+            "3.2.2.42. Group B, Division 3, Any Height, Any Area, Sprinklered",
+            "3.2.2.43. Group B, Division 3, up to 3 Storeys, Sprinklered",
+            "3.2.2.44. Group B, Division 3, up to 2 Storeys, Sprinklered",
+            "3.2.2.45. Group B, Division 3, up to 1 Storey, Sprinklered"
+          ]
         }
       ]
     },
@@ -424,7 +497,12 @@
           "type": "dropdown",
           "value": "-",
           "label": "RESTRICTIONS",
-          "options": ["-", "Combustible Construction NOT Permitted", "Combustible Construction Permitted", "Noncombustible Construction Permitted"]
+          "options": [
+            "-",
+            "Combustible Construction NOT Permitted",
+            "Combustible Construction Permitted",
+            "Noncombustible Construction Permitted"
+          ]
         },
         {
           "id": "construction_actual",
@@ -443,4 +521,4 @@
       ]
     }
   ]
-} 
+}

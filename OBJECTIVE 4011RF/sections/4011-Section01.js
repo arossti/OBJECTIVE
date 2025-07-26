@@ -269,23 +269,36 @@ window.TEUI.SectionModules.sect01 = (function () {
    */
   function getAppNumericValue(fieldId, defaultValue = 0) {
     let value = defaultValue;
-    
+
     // CORRECTED: Always read from target_ prefixed StateManager values for Target column
-    const targetValue = window.TEUI?.StateManager?.getValue?.(`target_${fieldId}`);
-    if (targetValue !== undefined && targetValue !== null && targetValue !== "") {
-      const parsed = window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
+    const targetValue = window.TEUI?.StateManager?.getValue?.(
+      `target_${fieldId}`,
+    );
+    if (
+      targetValue !== undefined &&
+      targetValue !== null &&
+      targetValue !== ""
+    ) {
+      const parsed =
+        window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
       if (!isNaN(parsed)) {
         // console.log(`S01 TARGET: Reading target_${fieldId} = ${parsed} from StateManager`);
         return parsed;
       }
     }
-    
+
     // Fallback to unprefixed StateManager value if target_ doesn't exist
     const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
-    if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== "") {
+    if (
+      fallbackValue !== undefined &&
+      fallbackValue !== null &&
+      fallbackValue !== ""
+    ) {
       if (typeof fallbackValue === "string") {
         const cleanedValue = fallbackValue.replace(/[^\d.-]/g, "");
-        const parsed = window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ?? defaultValue;
+        const parsed =
+          window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ??
+          defaultValue;
         if (!isNaN(parsed)) {
           value = parsed;
         }
@@ -293,7 +306,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         value = fallbackValue;
       }
     }
-    
+
     return value;
   }
 
@@ -303,23 +316,30 @@ window.TEUI.SectionModules.sect01 = (function () {
    */
   function getRefNumericValue(fieldId, defaultValue = 0) {
     let value = defaultValue;
-    
+
     // CORRECTED: Always read from ref_ prefixed StateManager values for Reference column
     const refValue = window.TEUI?.StateManager?.getValue?.(`ref_${fieldId}`);
     if (refValue !== undefined && refValue !== null && refValue !== "") {
-      const parsed = window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
+      const parsed =
+        window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
       if (!isNaN(parsed)) {
         // console.log(`S01 REFERENCE: Reading ref_${fieldId} = ${parsed} from StateManager`);
         return parsed;
       }
     }
-    
+
     // Fallback to unprefixed StateManager value if ref_ doesn't exist
     const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
-    if (fallbackValue !== undefined && fallbackValue !== null && fallbackValue !== "") {
+    if (
+      fallbackValue !== undefined &&
+      fallbackValue !== null &&
+      fallbackValue !== ""
+    ) {
       if (typeof fallbackValue === "string") {
         const cleanedValue = fallbackValue.replace(/[^\d.-]/g, "");
-        const parsed = window.TEUI?.parseNumeric?.(fallbackValue, defaultValue) ?? defaultValue;
+        const parsed =
+          window.TEUI?.parseNumeric?.(fallbackValue, defaultValue) ??
+          defaultValue;
         if (!isNaN(parsed)) {
           value = parsed;
         }
@@ -327,7 +347,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         value = fallbackValue;
       }
     }
-    
+
     return value;
   }
 
@@ -346,14 +366,22 @@ window.TEUI.SectionModules.sect01 = (function () {
     // Store raw value as string in StateManager for precision
     if (window.TEUI?.StateManager?.setValue) {
       const valueToStore = isFinite(rawValue) ? rawValue.toString() : "N/A";
-      
+
       // 🏗️ DUAL STATE PATTERN: Write BOTH prefixed values for anti-contamination
-      window.TEUI.StateManager.setValue(`target_${fieldId}`, valueToStore, "calculated");
-      window.TEUI.StateManager.setValue(`ref_${fieldId}`, valueToStore, "calculated");
-      
+      window.TEUI.StateManager.setValue(
+        `target_${fieldId}`,
+        valueToStore,
+        "calculated",
+      );
+      window.TEUI.StateManager.setValue(
+        `ref_${fieldId}`,
+        valueToStore,
+        "calculated",
+      );
+
       // Global unprefixed for backward compatibility and cross-section integration
       window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
-      
+
       // console.log(`S01: ✅ DUAL UPDATE - ${fieldId}: target_${fieldId}=${valueToStore} AND ref_${fieldId}=${valueToStore} AND global ${fieldId}=${valueToStore}`);
     }
 

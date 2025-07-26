@@ -1,420 +1,554 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>S10 Dual-State Isolation Test</title>
-    <link rel="stylesheet" href="4011-styles.css">
+    <link rel="stylesheet" href="4011-styles.css" />
     <style>
-        .test-header {
-            background: #f0f0f0;
-            padding: 20px;
-            border-bottom: 2px solid #ccc;
-            margin-bottom: 20px;
-        }
-        .mode-toggle {
-            margin: 10px 0;
-        }
-        .mode-toggle button {
-            padding: 8px 16px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            background: white;
-            cursor: pointer;
-        }
-        .mode-toggle button.active {
-            background: #007bff;
-            color: white;
-        }
-        .debug-panel {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 300px;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .debug-panel h3 {
-            margin-top: 0;
-            font-size: 14px;
-        }
-        .debug-panel pre {
-            margin: 2px 0;
-            white-space: pre-wrap;
-        }
-        .test-actions {
-            margin: 20px 0;
-        }
-        .test-actions button {
-            padding: 10px 15px;
-            margin-right: 10px;
-            background: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .test-actions button:hover {
-            background: #218838;
-        }
-        .status-indicator {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .status-pass {
-            background: #28a745;
-            color: white;
-        }
-        .status-fail {
-            background: #dc3545;
-            color: white;
-        }
-        .status-unknown {
-            background: #6c757d;
-            color: white;
-        }
-        
-        /* S10 specific styles */
-        .section-content {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .section-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .section-table th, .section-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        .section-table th {
-            background: #f8f9fa;
-            font-weight: bold;
-        }
-        .user-input {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 4px;
-            text-align: center;
-            min-width: 60px;
-        }
-        .calculated {
-            background: #e8f5e8;
-            padding: 4px;
-            text-align: center;
-            min-width: 60px;
-        }
-        .slider-container {
-            padding: 2px;
-        }
-        .slider-container input[type="range"] {
-            width: 100%;
-            margin: 2px 0;
-        }
-        .slider-display {
-            font-size: 12px;
-            text-align: center;
-        }
-        .gain-indicator {
-            font-weight: bold;
-        }
-        .gain-high { color: #28a745; }
-        .gain-medium { color: #ffc107; }
-        .gain-low { color: #dc3545; }
-        .text-left-indicator { text-align: left !important; }
-        .negative-value { color: #dc3545; }
-        .reference-value { 
-            background: #f8f9fa; 
-            color: #6c757d; 
-            font-style: italic; 
-        }
+      .test-header {
+        background: #f0f0f0;
+        padding: 20px;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 20px;
+      }
+      .mode-toggle {
+        margin: 10px 0;
+      }
+      .mode-toggle button {
+        padding: 8px 16px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+        background: white;
+        cursor: pointer;
+      }
+      .mode-toggle button.active {
+        background: #007bff;
+        color: white;
+      }
+      .debug-panel {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 300px;
+        background: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        font-family: monospace;
+        font-size: 12px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .debug-panel h3 {
+        margin-top: 0;
+        font-size: 14px;
+      }
+      .debug-panel pre {
+        margin: 2px 0;
+        white-space: pre-wrap;
+      }
+      .test-actions {
+        margin: 20px 0;
+      }
+      .test-actions button {
+        padding: 10px 15px;
+        margin-right: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      .test-actions button:hover {
+        background: #218838;
+      }
+      .status-indicator {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .status-pass {
+        background: #28a745;
+        color: white;
+      }
+      .status-fail {
+        background: #dc3545;
+        color: white;
+      }
+      .status-unknown {
+        background: #6c757d;
+        color: white;
+      }
+
+      /* S10 specific styles */
+      .section-content {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .section-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      .section-table th,
+      .section-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+      .section-table th {
+        background: #f8f9fa;
+        font-weight: bold;
+      }
+      .user-input {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 4px;
+        text-align: center;
+        min-width: 60px;
+      }
+      .calculated {
+        background: #e8f5e8;
+        padding: 4px;
+        text-align: center;
+        min-width: 60px;
+      }
+      .slider-container {
+        padding: 2px;
+      }
+      .slider-container input[type="range"] {
+        width: 100%;
+        margin: 2px 0;
+      }
+      .slider-display {
+        font-size: 12px;
+        text-align: center;
+      }
+      .gain-indicator {
+        font-weight: bold;
+      }
+      .gain-high {
+        color: #28a745;
+      }
+      .gain-medium {
+        color: #ffc107;
+      }
+      .gain-low {
+        color: #dc3545;
+      }
+      .text-left-indicator {
+        text-align: left !important;
+      }
+      .negative-value {
+        color: #dc3545;
+      }
+      .reference-value {
+        background: #f8f9fa;
+        color: #6c757d;
+        font-style: italic;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="test-header">
-        <h1>🧪 Section 10 Dual-State Isolation Test</h1>
-        <p>Testing dual-state isolation for window gains calculations</p>
-        
-        <!-- Mode Toggle -->
-        <div class="mode-toggle">
-            <button id="target-mode" class="active">🎯 Target Mode</button>
-            <button id="reference-mode">📋 Reference Mode</button>
-            <span id="current-mode-display">Current: <strong>Target</strong></span>
-        </div>
-        
-        <!-- Test Actions -->
-        <div class="test-actions">
-            <button onclick="runIsolationTest()">🔍 Run Isolation Test</button>
-            <button onclick="resetAllValues()">🔄 Reset All Values</button>
-            <button onclick="toggleDebugPanel()">📊 Toggle Debug Panel</button>
-        </div>
-        
-        <!-- Test Status -->
-        <div id="test-status">
-            <span class="status-indicator status-unknown">Isolation Status: Unknown</span>
-            <span class="status-indicator status-unknown">Sync Status: Unknown</span>
-        </div>
+      <h1>🧪 Section 10 Dual-State Isolation Test</h1>
+      <p>Testing dual-state isolation for window gains calculations</p>
+
+      <!-- Mode Toggle -->
+      <div class="mode-toggle">
+        <button id="target-mode" class="active">🎯 Target Mode</button>
+        <button id="reference-mode">📋 Reference Mode</button>
+        <span id="current-mode-display">Current: <strong>Target</strong></span>
+      </div>
+
+      <!-- Test Actions -->
+      <div class="test-actions">
+        <button onclick="runIsolationTest()">🔍 Run Isolation Test</button>
+        <button onclick="resetAllValues()">🔄 Reset All Values</button>
+        <button onclick="toggleDebugPanel()">📊 Toggle Debug Panel</button>
+      </div>
+
+      <!-- Test Status -->
+      <div id="test-status">
+        <span class="status-indicator status-unknown"
+          >Isolation Status: Unknown</span
+        >
+        <span class="status-indicator status-unknown"
+          >Sync Status: Unknown</span
+        >
+      </div>
     </div>
 
     <div class="section-content">
-        <!-- S10 Content -->
-        <div id="section-10">
-            <h2>Section 10: Radiant Gains</h2>
-            
-            <!-- Window Gains Table -->
-            <table class="section-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>AREA m²</th>
-                        <th>ORIENTATION</th>
-                        <th>SHGC</th>
-                        <th>WINTER SHADING</th>
-                        <th>SUMMER SHADING</th>
-                        <th>HTG GAIN<br>kWh/yr</th>
-                        <th>HTG GAIN<br>%</th>
-                        <th>COOL GAIN<br>kWh/yr</th>
-                        <th>COOL GAIN<br>%</th>
-                        <th>G-FACTOR<br>kWh/m²/yr</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Row 73: Doors -->
-                    <tr>
-                        <td>Doors</td>
-                        <td>
-                            <input type="text" class="user-input" data-field-id="d_73" value="7.50" style="width: 60px; text-align: center;">
-                        </td>
-                        <td>
-                            <select data-field-id="e_73">
-                                <option value="North">North</option>
-                                <option value="NorthEast">NorthEast</option>
-                                <option value="East">East</option>
-                                <option value="SouthEast">SouthEast</option>
-                                <option value="South">South</option>
-                                <option value="SouthWest">SouthWest</option>
-                                <option value="West">West</option>
-                                <option value="NorthWest">NorthWest</option>
-                                <option value="Average" selected>Average</option>
-                                <option value="Skylight">Skylight</option>
-                            </select>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="f_73" min="0.2" max="0.6" step="0.05" value="0.50">
-                                <div class="slider-display" data-display-for="f_73">0.50</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="g_73" min="0" max="100" step="1" value="0">
-                                <div class="slider-display" data-display-for="g_73">0%</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="h_73" min="0" max="100" step="1" value="100">
-                                <div class="slider-display" data-display-for="h_73">100%</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="i_73">225.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated gain-indicator" data-field-id="j_73">1.55%</div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="k_73">0.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated gain-indicator" data-field-id="l_73">0.00%</div>
-                        </td>
-                        <td>
-                            <div class="calculated reference-value" data-field-id="m_73">50</div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Row 74: Window Area North -->
-                    <tr>
-                        <td>Window Area North</td>
-                        <td>
-                            <input type="text" class="user-input" data-field-id="d_74" value="81.14" style="width: 60px; text-align: center;">
-                        </td>
-                        <td>
-                            <select data-field-id="e_74">
-                                <option value="North" selected>North</option>
-                                <option value="NorthEast">NorthEast</option>
-                                <option value="East">East</option>
-                                <option value="SouthEast">SouthEast</option>
-                                <option value="South">South</option>
-                                <option value="SouthWest">SouthWest</option>
-                                <option value="West">West</option>
-                                <option value="NorthWest">NorthWest</option>
-                                <option value="Average">Average</option>
-                                <option value="Skylight">Skylight</option>
-                            </select>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="f_74" min="0.2" max="0.6" step="0.05" value="0.50">
-                                <div class="slider-display" data-display-for="f_74">0.50</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="g_74" min="0" max="100" step="1" value="0">
-                                <div class="slider-display" data-display-for="g_74">0%</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="h_74" min="0" max="100" step="1" value="100">
-                                <div class="slider-display" data-display-for="h_74">100%</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="i_74">350.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated gain-indicator" data-field-id="j_74">2.41%</div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="k_74">0.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated gain-indicator" data-field-id="l_74">0.00%</div>
-                        </td>
-                        <td>
-                            <div class="calculated reference-value" data-field-id="m_74">24.84</div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Row 75: Window Area East -->
-                    <tr>
-                        <td>Window Area East</td>
-                        <td>
-                            <input type="text" class="user-input" data-field-id="d_75" value="3.83" style="width: 60px; text-align: center;">
-                        </td>
-                        <td>
-                            <select data-field-id="e_75">
-                                <option value="North">North</option>
-                                <option value="NorthEast">NorthEast</option>
-                                <option value="East" selected>East</option>
-                                <option value="SouthEast">SouthEast</option>
-                                <option value="South">South</option>
-                                <option value="SouthWest">SouthWest</option>
-                                <option value="West">West</option>
-                                <option value="NorthWest">NorthWest</option>
-                                <option value="Average">Average</option>
-                                <option value="Skylight">Skylight</option>
-                            </select>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="f_75" min="0.2" max="0.6" step="0.05" value="0.50">
-                                <div class="slider-display" data-display-for="f_75">0.50</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="g_75" min="0" max="100" step="1" value="0">
-                                <div class="slider-display" data-display-for="g_75">0%</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="slider-container">
-                                <input type="range" data-field-id="h_75" min="0" max="100" step="1" value="100">
-                                <div class="slider-display" data-display-for="h_75">100%</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="i_75">195.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated gain-indicator" data-field-id="j_75">1.34%</div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="k_75">0.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated gain-indicator" data-field-id="l_75">0.00%</div>
-                        </td>
-                        <td>
-                            <div class="calculated reference-value" data-field-id="m_75">24.84</div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Subtotal Row 79 -->
-                    <tr style="background: #f8f9fa; font-weight: bold;">
-                        <td>SUBTOTAL</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>
-                            <div class="calculated" data-field-id="i_79">770.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="j_79">5.30%</div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="k_79">0.00</div>
-                        </td>
-                        <td>
-                            <div class="calculated" data-field-id="l_79">0.00%</div>
-                        </td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <!-- PHPP Method Selection -->
-            <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                <h3>PHPP Method Selection</h3>
-                <label for="phpp-method">Method:</label>
-                <select id="phpp-method" data-field-id="d_80">
-                    <option value="PHPP Method" selected>PHPP Method (94% Utilization)</option>
-                    <option value="Simple Method">Simple Method (40% Utilization)</option>
-                    <option value="Comprehensive Method">Comprehensive Method (60% Utilization)</option>
+      <!-- S10 Content -->
+      <div id="section-10">
+        <h2>Section 10: Radiant Gains</h2>
+
+        <!-- Window Gains Table -->
+        <table class="section-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>AREA m²</th>
+              <th>ORIENTATION</th>
+              <th>SHGC</th>
+              <th>WINTER SHADING</th>
+              <th>SUMMER SHADING</th>
+              <th>HTG GAIN<br />kWh/yr</th>
+              <th>HTG GAIN<br />%</th>
+              <th>COOL GAIN<br />kWh/yr</th>
+              <th>COOL GAIN<br />%</th>
+              <th>G-FACTOR<br />kWh/m²/yr</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 73: Doors -->
+            <tr>
+              <td>Doors</td>
+              <td>
+                <input
+                  type="text"
+                  class="user-input"
+                  data-field-id="d_73"
+                  value="7.50"
+                  style="width: 60px; text-align: center"
+                />
+              </td>
+              <td>
+                <select data-field-id="e_73">
+                  <option value="North">North</option>
+                  <option value="NorthEast">NorthEast</option>
+                  <option value="East">East</option>
+                  <option value="SouthEast">SouthEast</option>
+                  <option value="South">South</option>
+                  <option value="SouthWest">SouthWest</option>
+                  <option value="West">West</option>
+                  <option value="NorthWest">NorthWest</option>
+                  <option value="Average" selected>Average</option>
+                  <option value="Skylight">Skylight</option>
                 </select>
-                
-                <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div>
-                        <strong>Total Heating Gains:</strong> 
-                        <span class="calculated" data-field-id="i_79">0.00</span> kWh/yr
-                    </div>
-                    <div>
-                        <strong>Utilization Factor:</strong> 
-                        <span class="calculated" data-field-id="j_80">94.0%</span>
-                    </div>
-                    <div>
-                        <strong>Usable Gains:</strong> 
-                        <span class="calculated" data-field-id="k_80">0.00</span> kWh/yr
-                    </div>
-                    <div>
-                        <strong>Unusable Gains:</strong> 
-                        <span class="calculated" data-field-id="l_80">0.00</span> kWh/yr
-                    </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="f_73"
+                    min="0.2"
+                    max="0.6"
+                    step="0.05"
+                    value="0.50"
+                  />
+                  <div class="slider-display" data-display-for="f_73">0.50</div>
                 </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="g_73"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="0"
+                  />
+                  <div class="slider-display" data-display-for="g_73">0%</div>
+                </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="h_73"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="100"
+                  />
+                  <div class="slider-display" data-display-for="h_73">100%</div>
+                </div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="i_73">225.00</div>
+              </td>
+              <td>
+                <div class="calculated gain-indicator" data-field-id="j_73">
+                  1.55%
+                </div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="k_73">0.00</div>
+              </td>
+              <td>
+                <div class="calculated gain-indicator" data-field-id="l_73">
+                  0.00%
+                </div>
+              </td>
+              <td>
+                <div class="calculated reference-value" data-field-id="m_73">
+                  50
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 74: Window Area North -->
+            <tr>
+              <td>Window Area North</td>
+              <td>
+                <input
+                  type="text"
+                  class="user-input"
+                  data-field-id="d_74"
+                  value="81.14"
+                  style="width: 60px; text-align: center"
+                />
+              </td>
+              <td>
+                <select data-field-id="e_74">
+                  <option value="North" selected>North</option>
+                  <option value="NorthEast">NorthEast</option>
+                  <option value="East">East</option>
+                  <option value="SouthEast">SouthEast</option>
+                  <option value="South">South</option>
+                  <option value="SouthWest">SouthWest</option>
+                  <option value="West">West</option>
+                  <option value="NorthWest">NorthWest</option>
+                  <option value="Average">Average</option>
+                  <option value="Skylight">Skylight</option>
+                </select>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="f_74"
+                    min="0.2"
+                    max="0.6"
+                    step="0.05"
+                    value="0.50"
+                  />
+                  <div class="slider-display" data-display-for="f_74">0.50</div>
+                </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="g_74"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="0"
+                  />
+                  <div class="slider-display" data-display-for="g_74">0%</div>
+                </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="h_74"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="100"
+                  />
+                  <div class="slider-display" data-display-for="h_74">100%</div>
+                </div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="i_74">350.00</div>
+              </td>
+              <td>
+                <div class="calculated gain-indicator" data-field-id="j_74">
+                  2.41%
+                </div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="k_74">0.00</div>
+              </td>
+              <td>
+                <div class="calculated gain-indicator" data-field-id="l_74">
+                  0.00%
+                </div>
+              </td>
+              <td>
+                <div class="calculated reference-value" data-field-id="m_74">
+                  24.84
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 75: Window Area East -->
+            <tr>
+              <td>Window Area East</td>
+              <td>
+                <input
+                  type="text"
+                  class="user-input"
+                  data-field-id="d_75"
+                  value="3.83"
+                  style="width: 60px; text-align: center"
+                />
+              </td>
+              <td>
+                <select data-field-id="e_75">
+                  <option value="North">North</option>
+                  <option value="NorthEast">NorthEast</option>
+                  <option value="East" selected>East</option>
+                  <option value="SouthEast">SouthEast</option>
+                  <option value="South">South</option>
+                  <option value="SouthWest">SouthWest</option>
+                  <option value="West">West</option>
+                  <option value="NorthWest">NorthWest</option>
+                  <option value="Average">Average</option>
+                  <option value="Skylight">Skylight</option>
+                </select>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="f_75"
+                    min="0.2"
+                    max="0.6"
+                    step="0.05"
+                    value="0.50"
+                  />
+                  <div class="slider-display" data-display-for="f_75">0.50</div>
+                </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="g_75"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="0"
+                  />
+                  <div class="slider-display" data-display-for="g_75">0%</div>
+                </div>
+              </td>
+              <td>
+                <div class="slider-container">
+                  <input
+                    type="range"
+                    data-field-id="h_75"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="100"
+                  />
+                  <div class="slider-display" data-display-for="h_75">100%</div>
+                </div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="i_75">195.00</div>
+              </td>
+              <td>
+                <div class="calculated gain-indicator" data-field-id="j_75">
+                  1.34%
+                </div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="k_75">0.00</div>
+              </td>
+              <td>
+                <div class="calculated gain-indicator" data-field-id="l_75">
+                  0.00%
+                </div>
+              </td>
+              <td>
+                <div class="calculated reference-value" data-field-id="m_75">
+                  24.84
+                </div>
+              </td>
+            </tr>
+
+            <!-- Subtotal Row 79 -->
+            <tr style="background: #f8f9fa; font-weight: bold">
+              <td>SUBTOTAL</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>
+                <div class="calculated" data-field-id="i_79">770.00</div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="j_79">5.30%</div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="k_79">0.00</div>
+              </td>
+              <td>
+                <div class="calculated" data-field-id="l_79">0.00%</div>
+              </td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- PHPP Method Selection -->
+        <div
+          style="
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+          "
+        >
+          <h3>PHPP Method Selection</h3>
+          <label for="phpp-method">Method:</label>
+          <select id="phpp-method" data-field-id="d_80">
+            <option value="PHPP Method" selected>
+              PHPP Method (94% Utilization)
+            </option>
+            <option value="Simple Method">
+              Simple Method (40% Utilization)
+            </option>
+            <option value="Comprehensive Method">
+              Comprehensive Method (60% Utilization)
+            </option>
+          </select>
+
+          <div
+            style="
+              margin-top: 10px;
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+            "
+          >
+            <div>
+              <strong>Total Heating Gains:</strong>
+              <span class="calculated" data-field-id="i_79">0.00</span> kWh/yr
             </div>
+            <div>
+              <strong>Utilization Factor:</strong>
+              <span class="calculated" data-field-id="j_80">94.0%</span>
+            </div>
+            <div>
+              <strong>Usable Gains:</strong>
+              <span class="calculated" data-field-id="k_80">0.00</span> kWh/yr
+            </div>
+            <div>
+              <strong>Unusable Gains:</strong>
+              <span class="calculated" data-field-id="l_80">0.00</span> kWh/yr
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Debug Panel -->
     <div class="debug-panel" id="debug-panel">
-        <h3>🔍 State Debug Panel</h3>
-        <div id="debug-content"></div>
+      <h3>🔍 State Debug Panel</h3>
+      <div id="debug-content"></div>
     </div>
 
     <!-- Dependencies -->
@@ -422,651 +556,772 @@
     <script src="4011-ComponentBridge.js"></script>
     <script src="4011-ClimateValues.js"></script>
     <script src="sections/4011-Section10.js"></script>
-    
+
     <!-- Test Controller -->
     <script>
-        // S10 Self-Contained State Module (Following DUAL-STATE-IMPLEMENTATION-GUIDE.md)
-        const TestController = (function() {
-            
-            //================================================================== 
-            // PATTERN 1: Internal State Objects (Self-Contained + Persistent)
-            //==================================================================
-            
-            // Target State Management (isolated + persistent)
-            const TargetState = {
-                state: {},
-                listeners: {},
+      // S10 Self-Contained State Module (Following DUAL-STATE-IMPLEMENTATION-GUIDE.md)
+      const TestController = (function () {
+        //==================================================================
+        // PATTERN 1: Internal State Objects (Self-Contained + Persistent)
+        //==================================================================
 
-                initialize: function() {
-                    const savedState = localStorage.getItem('S10_TARGET_STATE');
-                    if (savedState) {
-                        this.state = JSON.parse(savedState);
-                    } else {
-                        this.setDefaults();
-                    }
-                },
+        // Target State Management (isolated + persistent)
+        const TargetState = {
+          state: {},
+          listeners: {},
 
-                setDefaults: function() {
-                    this.state = {
-                        'd_73': '7.50', 'd_74': '81.14', 'd_75': '3.83',
-                        'e_73': 'Average', 'e_74': 'North', 'e_75': 'East',
-                        'f_73': '0.50', 'f_74': '0.50', 'f_75': '0.50',
-                        'g_73': '0', 'g_74': '0', 'g_75': '0',
-                        'h_73': '100', 'h_74': '100', 'h_75': '100',
-                        'd_80': 'PHPP Method'
-                    };
-                },
+          initialize: function () {
+            const savedState = localStorage.getItem("S10_TARGET_STATE");
+            if (savedState) {
+              this.state = JSON.parse(savedState);
+            } else {
+              this.setDefaults();
+            }
+          },
 
-                saveState: function() {
-                    localStorage.setItem('S10_TARGET_STATE', JSON.stringify(this.state));
-                },
-
-                setValue: function(fieldId, value, source = 'user') {
-                    this.state[fieldId] = value;
-                    this.saveState();
-                    console.log(`📝 Target: ${fieldId} = ${value} (${source})`);
-                },
-
-                getValue: function(fieldId) {
-                    return this.state[fieldId];
-                }
+          setDefaults: function () {
+            this.state = {
+              d_73: "7.50",
+              d_74: "81.14",
+              d_75: "3.83",
+              e_73: "Average",
+              e_74: "North",
+              e_75: "East",
+              f_73: "0.50",
+              f_74: "0.50",
+              f_75: "0.50",
+              g_73: "0",
+              g_74: "0",
+              g_75: "0",
+              h_73: "100",
+              h_74: "100",
+              h_75: "100",
+              d_80: "PHPP Method",
             };
+          },
 
-            // Reference State Management (isolated + persistent)
-            const ReferenceState = {
-                state: {},
-                listeners: {},
+          saveState: function () {
+            localStorage.setItem("S10_TARGET_STATE", JSON.stringify(this.state));
+          },
 
-                initialize: function() {
-                    const savedState = localStorage.getItem('S10_REFERENCE_STATE');
-                    if (savedState) {
-                        this.state = JSON.parse(savedState);
-                    } else {
-                        this.setDefaults();
-                    }
-                },
+          setValue: function (fieldId, value, source = "user") {
+            this.state[fieldId] = value;
+            this.saveState();
+            console.log(`📝 Target: ${fieldId} = ${value} (${source})`);
+          },
 
-                setDefaults: function() {
-                    // Different defaults for reference (code minimums)
-                    this.state = {
-                        'd_73': '5.00', 'd_74': '60.00', 'd_75': '2.50',
-                        'e_73': 'South', 'e_74': 'East', 'e_75': 'West',
-                        'f_73': '0.30', 'f_74': '0.35', 'f_75': '0.30',
-                        'g_73': '25', 'g_74': '10', 'g_75': '20',
-                        'h_73': '75', 'h_74': '90', 'h_75': '80',
-                        'd_80': 'Simple Method'
-                    };
-                },
+          getValue: function (fieldId) {
+            return this.state[fieldId];
+          },
+        };
 
-                saveState: function() {
-                    localStorage.setItem('S10_REFERENCE_STATE', JSON.stringify(this.state));
-                },
+        // Reference State Management (isolated + persistent)
+        const ReferenceState = {
+          state: {},
+          listeners: {},
 
-                setValue: function(fieldId, value, source = 'user') {
-                    this.state[fieldId] = value;
-                    this.saveState();
-                    console.log(`📝 Reference: ${fieldId} = ${value} (${source})`);
-                },
+          initialize: function () {
+            const savedState = localStorage.getItem("S10_REFERENCE_STATE");
+            if (savedState) {
+              this.state = JSON.parse(savedState);
+            } else {
+              this.setDefaults();
+            }
+          },
 
-                getValue: function(fieldId) {
-                    return this.state[fieldId];
-                }
+          setDefaults: function () {
+            // Different defaults for reference (code minimums)
+            this.state = {
+              d_73: "5.00",
+              d_74: "60.00",
+              d_75: "2.50",
+              e_73: "South",
+              e_74: "East",
+              e_75: "West",
+              f_73: "0.30",
+              f_74: "0.35",
+              f_75: "0.30",
+              g_73: "25",
+              g_74: "10",
+              g_75: "20",
+              h_73: "75",
+              h_74: "90",
+              h_75: "80",
+              d_80: "Simple Method",
             };
+          },
 
-            //==================================================================
-            // PATTERN 2: ModeManager Facade (Single Point of Contact)
-            //==================================================================
-            
-            const ModeManager = {
-                currentMode: "target",
+          saveState: function () {
+            localStorage.setItem("S10_REFERENCE_STATE", JSON.stringify(this.state));
+          },
 
-                initialize: function() {
-                    TargetState.initialize();
-                    ReferenceState.initialize();
-                },
+          setValue: function (fieldId, value, source = "user") {
+            this.state[fieldId] = value;
+            this.saveState();
+            console.log(`📝 Reference: ${fieldId} = ${value} (${source})`);
+          },
 
-                switchMode: function(mode) {
-                    if (this.currentMode === mode || (mode !== 'target' && mode !== 'reference')) return;
-                    
-                    console.log(`🔄 S10: Switching to ${mode.toUpperCase()} mode`);
-                    this.currentMode = mode;
-                    
-                    // Update UI indicators
-                    document.getElementById('target-mode').classList.toggle('active', mode === 'target');
-                    document.getElementById('reference-mode').classList.toggle('active', mode === 'reference');
-                    document.getElementById('current-mode-display').innerHTML = `Current: <strong>${mode.charAt(0).toUpperCase() + mode.slice(1)}</strong>`;
-                    
-                    // Visual mode indicator
-                    const sectionElement = document.getElementById('section-10');
-                    if (sectionElement) {
-                        sectionElement.style.borderLeft = mode === 'target' ? '5px solid #007bff' : '5px solid #28a745';
-                        sectionElement.style.backgroundColor = mode === 'target' ? '#f8f9ff' : '#f8fff8';
-                    }
-                    
-                    this.refreshUI();
-                    calculateTestValues();
-                },
+          getValue: function (fieldId) {
+            return this.state[fieldId];
+          },
+        };
 
-                getCurrentState: function() {
-                    return this.currentMode === "target" ? TargetState : ReferenceState;
-                },
+        //==================================================================
+        // PATTERN 2: ModeManager Facade (Single Point of Contact)
+        //==================================================================
 
-                getValue: function(fieldId) {
-                    return this.getCurrentState().getValue(fieldId);
-                },
+        const ModeManager = {
+          currentMode: "target",
 
-                setValue: function(fieldId, value, source = "user") {
-                    this.getCurrentState().setValue(fieldId, value, source);
-                    
-                    // BRIDGE: For backward compatibility, sync Target changes to global StateManager
-                    if (this.currentMode === 'target') {
-                        window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
-                    }
-                },
+          initialize: function () {
+            TargetState.initialize();
+            ReferenceState.initialize();
+          },
 
-                refreshUI: function() {
-                    console.log(`🔄 S10: Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
-                    const currentState = this.getCurrentState();
-                    const sectionElement = document.getElementById("section-10");
-                    
-                    const fieldsToSync = [
-                        'd_73', 'd_74', 'd_75', // Areas
-                        'e_73', 'e_74', 'e_75', // Orientations
-                        'f_73', 'f_74', 'f_75', // SHGC sliders
-                        'g_73', 'g_74', 'g_75', // Winter shading sliders
-                        'h_73', 'h_74', 'h_75', // Summer shading sliders
-                        'd_80' // PHPP method
-                    ];
+          switchMode: function (mode) {
+            if (
+              this.currentMode === mode ||
+              (mode !== "target" && mode !== "reference")
+            )
+              return;
 
-                    fieldsToSync.forEach(fieldId => {
-                        const fieldWrapper = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-                        if (!fieldWrapper) return;
+            console.log(`🔄 S10: Switching to ${mode.toUpperCase()} mode`);
+            this.currentMode = mode;
 
-                        const stateValue = currentState.getValue(fieldId);
-                        console.log(`  Syncing ${fieldId}: ${stateValue}`);
+            // Update UI indicators
+            document
+              .getElementById("target-mode")
+              .classList.toggle("active", mode === "target");
+            document
+              .getElementById("reference-mode")
+              .classList.toggle("active", mode === "reference");
+            document.getElementById("current-mode-display").innerHTML =
+              `Current: <strong>${mode.charAt(0).toUpperCase() + mode.slice(1)}</strong>`;
 
-                        if (stateValue !== undefined && stateValue !== null) {
-                            if (fieldWrapper.tagName === 'SELECT') {
-                                fieldWrapper.value = stateValue;
-                            } else if (fieldWrapper.tagName === 'INPUT') {
-                                fieldWrapper.value = stateValue;
-                                if (fieldWrapper.type === 'range') {
-                                    updateSliderDisplay(fieldId, stateValue);
-                                }
-                            }
-                        }
-                    });
+            // Visual mode indicator
+            const sectionElement = document.getElementById("section-10");
+            if (sectionElement) {
+              sectionElement.style.borderLeft =
+                mode === "target" ? "5px solid #007bff" : "5px solid #28a745";
+              sectionElement.style.backgroundColor =
+                mode === "target" ? "#f8f9ff" : "#f8fff8";
+            }
+
+            this.refreshUI();
+            calculateTestValues();
+          },
+
+          getCurrentState: function () {
+            return this.currentMode === "target" ? TargetState : ReferenceState;
+          },
+
+          getValue: function (fieldId) {
+            return this.getCurrentState().getValue(fieldId);
+          },
+
+          setValue: function (fieldId, value, source = "user") {
+            this.getCurrentState().setValue(fieldId, value, source);
+
+            // BRIDGE: For backward compatibility, sync Target changes to global StateManager
+            if (this.currentMode === "target") {
+              window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+            }
+          },
+
+          refreshUI: function () {
+            console.log(
+              `🔄 S10: Refreshing UI for ${this.currentMode.toUpperCase()} mode`,
+            );
+            const currentState = this.getCurrentState();
+            const sectionElement = document.getElementById("section-10");
+
+            const fieldsToSync = [
+              "d_73",
+              "d_74",
+              "d_75", // Areas
+              "e_73",
+              "e_74",
+              "e_75", // Orientations
+              "f_73",
+              "f_74",
+              "f_75", // SHGC sliders
+              "g_73",
+              "g_74",
+              "g_75", // Winter shading sliders
+              "h_73",
+              "h_74",
+              "h_75", // Summer shading sliders
+              "d_80", // PHPP method
+            ];
+
+            fieldsToSync.forEach((fieldId) => {
+              const fieldWrapper = sectionElement.querySelector(
+                `[data-field-id="${fieldId}"]`,
+              );
+              if (!fieldWrapper) return;
+
+              const stateValue = currentState.getValue(fieldId);
+              console.log(`  Syncing ${fieldId}: ${stateValue}`);
+
+              if (stateValue !== undefined && stateValue !== null) {
+                if (fieldWrapper.tagName === "SELECT") {
+                  fieldWrapper.value = stateValue;
+                } else if (fieldWrapper.tagName === "INPUT") {
+                  fieldWrapper.value = stateValue;
+                  if (fieldWrapper.type === "range") {
+                    updateSliderDisplay(fieldId, stateValue);
+                  }
                 }
-            };
-            
-            // Test framework variables
-            let isolationTestResults = {};
-            let debugPanelVisible = true;
-            
-            function init() {
-                console.log('🧪 Initializing S10 Isolation Test with Self-Contained State Module...');
-                
-                // Initialize TEUI namespace
-                window.TEUI = window.TEUI || {};
-                window.TEUI.StateManager = window.TEUI.StateManager || {};
-                window.TEUI.SectionModules = window.TEUI.SectionModules || {};
-                
-                // Initialize dependencies
-                initializeDependencies();
-                
-                // Initialize the ModeManager (which initializes both state objects)
-                ModeManager.initialize();
-                
-                // Setup test interface
-                setupModeToggle();
-                setupEventHandlers();
-                
-                // Start debug panel updates
-                setupDebugPanel();
-                
-                // Initialize UI and calculations
-                ModeManager.refreshUI();
+              }
+            });
+          },
+        };
+
+        // Test framework variables
+        let isolationTestResults = {};
+        let debugPanelVisible = true;
+
+        function init() {
+          console.log(
+            "🧪 Initializing S10 Isolation Test with Self-Contained State Module...",
+          );
+
+          // Initialize TEUI namespace
+          window.TEUI = window.TEUI || {};
+          window.TEUI.StateManager = window.TEUI.StateManager || {};
+          window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+
+          // Initialize dependencies
+          initializeDependencies();
+
+          // Initialize the ModeManager (which initializes both state objects)
+          ModeManager.initialize();
+
+          // Setup test interface
+          setupModeToggle();
+          setupEventHandlers();
+
+          // Start debug panel updates
+          setupDebugPanel();
+
+          // Initialize UI and calculations
+          ModeManager.refreshUI();
+          calculateTestValues();
+
+          console.log(
+            "✅ S10 Isolation Test initialized with Self-Contained State Module",
+          );
+
+          // Initialize some test values to verify isolation
+          setTimeout(initializeTestValues, 1000);
+        }
+
+        function initializeTestValues() {
+          console.log("🧪 Setting up initial test values...");
+
+          // Set some default values in Target mode
+          ModeManager.switchMode("target");
+          setTimeout(() => {
+            ModeManager.setValue("e_73", "South", "test-init");
+            ModeManager.setValue("e_74", "North", "test-init");
+            ModeManager.setValue("f_73", "0.45", "test-init");
+
+            // Set different values in Reference mode
+            ModeManager.switchMode("reference");
+            setTimeout(() => {
+              ModeManager.setValue("e_73", "Average", "test-init");
+              ModeManager.setValue("e_74", "East", "test-init");
+              ModeManager.setValue("f_73", "0.55", "test-init");
+
+              // Return to Target mode and run initial calculations
+              ModeManager.switchMode("target");
+              setTimeout(() => {
                 calculateTestValues();
-                
-                console.log('✅ S10 Isolation Test initialized with Self-Contained State Module');
-                
-                // Initialize some test values to verify isolation
-                setTimeout(initializeTestValues, 1000);
-            }
-            
-            function initializeTestValues() {
-                console.log('🧪 Setting up initial test values...');
-                
-                // Set some default values in Target mode
-                ModeManager.switchMode('target');
-                setTimeout(() => {
-                    ModeManager.setValue('e_73', 'South', 'test-init');
-                    ModeManager.setValue('e_74', 'North', 'test-init');
-                    ModeManager.setValue('f_73', '0.45', 'test-init');
-                    
-                    // Set different values in Reference mode  
-                    ModeManager.switchMode('reference');
-                    setTimeout(() => {
-                        ModeManager.setValue('e_73', 'Average', 'test-init');
-                        ModeManager.setValue('e_74', 'East', 'test-init');
-                        ModeManager.setValue('f_73', '0.55', 'test-init');
-                        
-                        // Return to Target mode and run initial calculations
-                        ModeManager.switchMode('target');
-                        setTimeout(() => {
-                            calculateTestValues();
-                            console.log('✅ Test values initialized');
-                        }, 200);
-                    }, 200);
-                }, 200);
-            }
-            
-            function initializeDependencies() {
-                // Initialize ComponentBridge
-                if (window.TEUI.ComponentBridge) {
-                    window.TEUI.ComponentBridge.initDualStateSync();
-                    console.log('✅ ComponentBridge initialized');
-                }
-                
-                // Initialize StateManager if not already done
-                if (!window.TEUI.StateManager.initialized) {
-                    // Basic StateManager stub for testing
-                    window.TEUI.StateManager = {
-                        state: {},
-                        listeners: {},
-                        
-                        setValue: function(fieldId, value, source) {
-                            this.state[fieldId] = value;
-                            console.log(`📝 State: ${fieldId} = ${value} (${source})`);
-                            
-                            // Notify listeners
-                            if (this.listeners[fieldId]) {
-                                this.listeners[fieldId].forEach(callback => {
-                                    try {
-                                        callback(fieldId, value, source);
-                                    } catch (e) {
-                                        console.error('Listener error:', e);
-                                    }
-                                });
-                            }
-                        },
-                        
-                        getValue: function(fieldId) {
-                            return this.state[fieldId];
-                        },
-                        
-                        addListener: function(fieldId, callback) {
-                            if (!this.listeners[fieldId]) {
-                                this.listeners[fieldId] = [];
-                            }
-                            this.listeners[fieldId].push(callback);
-                        },
-                        
-                        initialized: true
-                    };
-                }
-                
-                // Initialize parseNumeric if not available
-                if (!window.TEUI.parseNumeric) {
-                    window.TEUI.parseNumeric = function(value, defaultValue = 0) {
-                        const parsed = parseFloat(value);
-                        return isNaN(parsed) ? defaultValue : parsed;
-                    };
-                }
-            }
-            
-            function setupModeToggle() {
-                const targetBtn = document.getElementById('target-mode');
-                const referenceBtn = document.getElementById('reference-mode');
-                
-                targetBtn.onclick = () => ModeManager.switchMode('target');
-                referenceBtn.onclick = () => ModeManager.switchMode('reference');
-            }
-            
-            function switchMode(mode) {
-                // Delegate to ModeManager
-                ModeManager.switchMode(mode);
-            }
-            
+                console.log("✅ Test values initialized");
+              }, 200);
+            }, 200);
+          }, 200);
+        }
 
-            
-            function setupEventHandlers() {
-                // Setup input event handlers
-                const inputs = document.querySelectorAll('[data-field-id]');
-                inputs.forEach(input => {
-                    if (input.tagName === 'SELECT') {
-                        input.addEventListener('change', handleInputChange);
-                    } else if (input.tagName === 'INPUT') {
-                        if (input.type === 'text') {
-                            input.addEventListener('blur', handleInputChange);
-                            input.addEventListener('keypress', function(e) {
-                                if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    this.blur();
-                                }
-                            });
-                        } else {
-                            input.addEventListener('input', handleInputChange);
-                        }
+        function initializeDependencies() {
+          // Initialize ComponentBridge
+          if (window.TEUI.ComponentBridge) {
+            window.TEUI.ComponentBridge.initDualStateSync();
+            console.log("✅ ComponentBridge initialized");
+          }
+
+          // Initialize StateManager if not already done
+          if (!window.TEUI.StateManager.initialized) {
+            // Basic StateManager stub for testing
+            window.TEUI.StateManager = {
+              state: {},
+              listeners: {},
+
+              setValue: function (fieldId, value, source) {
+                this.state[fieldId] = value;
+                console.log(`📝 State: ${fieldId} = ${value} (${source})`);
+
+                // Notify listeners
+                if (this.listeners[fieldId]) {
+                  this.listeners[fieldId].forEach((callback) => {
+                    try {
+                      callback(fieldId, value, source);
+                    } catch (e) {
+                      console.error("Listener error:", e);
                     }
-                });
-            }
-            
-            function handleInputChange(event) {
-                const fieldId = event.target.getAttribute('data-field-id');
-                const value = event.target.value || event.target.textContent;
-                
-                console.log(`🖱️ User input: ${fieldId} = ${value} in ${ModeManager.currentMode.toUpperCase()} mode`);
-                
-                // Use ModeManager to set value (handles state isolation automatically)
-                ModeManager.setValue(fieldId, value, 'user-modified');
-                
-                // Update slider display if needed
-                if (event.target.type === 'range') {
-                    updateSliderDisplay(fieldId, value);
+                  });
                 }
-                
-                // Trigger calculations
-                console.log(`🧮 Triggering calculations...`);
-                setTimeout(() => {
-                    calculateTestValues();
-                }, 100);
-            }
-            
-            function updateSliderDisplay(fieldId, value) {
-                const displayElement = document.querySelector(`[data-display-for="${fieldId}"]`);
-                if (displayElement) {
-                    if (fieldId.startsWith('f_')) {
-                        displayElement.textContent = parseFloat(value).toFixed(2);
-                    } else if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
-                        displayElement.textContent = value + '%';
-                    }
+              },
+
+              getValue: function (fieldId) {
+                return this.state[fieldId];
+              },
+
+              addListener: function (fieldId, callback) {
+                if (!this.listeners[fieldId]) {
+                  this.listeners[fieldId] = [];
                 }
+                this.listeners[fieldId].push(callback);
+              },
+
+              initialized: true,
+            };
+          }
+
+          // Initialize parseNumeric if not available
+          if (!window.TEUI.parseNumeric) {
+            window.TEUI.parseNumeric = function (value, defaultValue = 0) {
+              const parsed = parseFloat(value);
+              return isNaN(parsed) ? defaultValue : parsed;
+            };
+          }
+        }
+
+        function setupModeToggle() {
+          const targetBtn = document.getElementById("target-mode");
+          const referenceBtn = document.getElementById("reference-mode");
+
+          targetBtn.onclick = () => ModeManager.switchMode("target");
+          referenceBtn.onclick = () => ModeManager.switchMode("reference");
+        }
+
+        function switchMode(mode) {
+          // Delegate to ModeManager
+          ModeManager.switchMode(mode);
+        }
+
+        function setupEventHandlers() {
+          // Setup input event handlers
+          const inputs = document.querySelectorAll("[data-field-id]");
+          inputs.forEach((input) => {
+            if (input.tagName === "SELECT") {
+              input.addEventListener("change", handleInputChange);
+            } else if (input.tagName === "INPUT") {
+              if (input.type === "text") {
+                input.addEventListener("blur", handleInputChange);
+                input.addEventListener("keypress", function (e) {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    this.blur();
+                  }
+                });
+              } else {
+                input.addEventListener("input", handleInputChange);
+              }
             }
-            
-            function setupDebugPanel() {
-                updateDebugPanel();
-                setInterval(updateDebugPanel, 1000);
+          });
+        }
+
+        function handleInputChange(event) {
+          const fieldId = event.target.getAttribute("data-field-id");
+          const value = event.target.value || event.target.textContent;
+
+          console.log(
+            `🖱️ User input: ${fieldId} = ${value} in ${ModeManager.currentMode.toUpperCase()} mode`,
+          );
+
+          // Use ModeManager to set value (handles state isolation automatically)
+          ModeManager.setValue(fieldId, value, "user-modified");
+
+          // Update slider display if needed
+          if (event.target.type === "range") {
+            updateSliderDisplay(fieldId, value);
+          }
+
+          // Trigger calculations
+          console.log(`🧮 Triggering calculations...`);
+          setTimeout(() => {
+            calculateTestValues();
+          }, 100);
+        }
+
+        function updateSliderDisplay(fieldId, value) {
+          const displayElement = document.querySelector(
+            `[data-display-for="${fieldId}"]`,
+          );
+          if (displayElement) {
+            if (fieldId.startsWith("f_")) {
+              displayElement.textContent = parseFloat(value).toFixed(2);
+            } else if (fieldId.startsWith("g_") || fieldId.startsWith("h_")) {
+              displayElement.textContent = value + "%";
             }
-            
-            function updateDebugPanel() {
-                const debugContent = document.getElementById('debug-content');
-                if (!debugContent) return;
-                
-                const inputFields = ['d_73', 'd_74', 'd_75', 'e_73', 'e_74', 'e_75', 'f_73', 'f_74', 'f_75', 'g_73', 'g_74', 'g_75', 'h_73', 'h_74', 'h_75'];
-                const calcFields = ['i_73', 'i_74', 'i_75', 'k_73', 'k_74', 'k_75', 'm_73', 'm_74', 'm_75', 'i_79', 'j_80', 'k_80'];
-                
-                let html = `<h4>Current Mode: ${ModeManager.currentMode}</h4>`;
-                
-                html += '<h4>Target State (Self-Contained):</h4>';
-                inputFields.forEach(fieldId => {
-                    const value = TargetState.getValue(fieldId);
-                    if (value !== undefined) {
-                        html += `<pre style="color: blue;">${fieldId}: ${value}</pre>`;
-                    }
-                });
-                
-                html += '<h4>Reference State (Self-Contained):</h4>';
-                inputFields.forEach(fieldId => {
-                    const value = ReferenceState.getValue(fieldId);
-                    if (value !== undefined) {
-                        html += `<pre style="color: green;">${fieldId}: ${value}</pre>`;
-                    }
-                });
-                
-                html += '<h4>Global State (Legacy Bridge):</h4>';
-                [...inputFields, ...calcFields].forEach(fieldId => {
-                    const value = window.TEUI.StateManager.getValue(fieldId);
-                    if (value !== undefined) {
-                        html += `<pre style="color: gray;">${fieldId}: ${value}</pre>`;
-                    }
-                });
-                
-                // Show current values comparison
-                html += '<h4>🔍 Isolation Check:</h4>';
-                const testFields = ['e_73', 'f_73', 'g_73', 'h_73'];
-                testFields.forEach(fieldId => {
-                    const targetVal = TargetState.getValue(fieldId);
-                    const refVal = ReferenceState.getValue(fieldId);
-                    const isolated = targetVal !== refVal && targetVal && refVal;
-                    html += `<pre style="color: ${isolated ? 'green' : 'red'};">${fieldId}: T=${targetVal} R=${refVal} ${isolated ? '✅' : '❌'}</pre>`;
-                });
-                
-                debugContent.innerHTML = html;
+          }
+        }
+
+        function setupDebugPanel() {
+          updateDebugPanel();
+          setInterval(updateDebugPanel, 1000);
+        }
+
+        function updateDebugPanel() {
+          const debugContent = document.getElementById("debug-content");
+          if (!debugContent) return;
+
+          const inputFields = [
+            "d_73",
+            "d_74",
+            "d_75",
+            "e_73",
+            "e_74",
+            "e_75",
+            "f_73",
+            "f_74",
+            "f_75",
+            "g_73",
+            "g_74",
+            "g_75",
+            "h_73",
+            "h_74",
+            "h_75",
+          ];
+          const calcFields = [
+            "i_73",
+            "i_74",
+            "i_75",
+            "k_73",
+            "k_74",
+            "k_75",
+            "m_73",
+            "m_74",
+            "m_75",
+            "i_79",
+            "j_80",
+            "k_80",
+          ];
+
+          let html = `<h4>Current Mode: ${ModeManager.currentMode}</h4>`;
+
+          html += "<h4>Target State (Self-Contained):</h4>";
+          inputFields.forEach((fieldId) => {
+            const value = TargetState.getValue(fieldId);
+            if (value !== undefined) {
+              html += `<pre style="color: blue;">${fieldId}: ${value}</pre>`;
             }
-            
-            // Global functions for buttons
-            window.runIsolationTest = function() {
-                console.log('🧪 Running isolation test...');
-                
-                // Test 1: Set different values in each mode
-                ModeManager.switchMode('target');
+          });
+
+          html += "<h4>Reference State (Self-Contained):</h4>";
+          inputFields.forEach((fieldId) => {
+            const value = ReferenceState.getValue(fieldId);
+            if (value !== undefined) {
+              html += `<pre style="color: green;">${fieldId}: ${value}</pre>`;
+            }
+          });
+
+          html += "<h4>Global State (Legacy Bridge):</h4>";
+          [...inputFields, ...calcFields].forEach((fieldId) => {
+            const value = window.TEUI.StateManager.getValue(fieldId);
+            if (value !== undefined) {
+              html += `<pre style="color: gray;">${fieldId}: ${value}</pre>`;
+            }
+          });
+
+          // Show current values comparison
+          html += "<h4>🔍 Isolation Check:</h4>";
+          const testFields = ["e_73", "f_73", "g_73", "h_73"];
+          testFields.forEach((fieldId) => {
+            const targetVal = TargetState.getValue(fieldId);
+            const refVal = ReferenceState.getValue(fieldId);
+            const isolated = targetVal !== refVal && targetVal && refVal;
+            html += `<pre style="color: ${isolated ? "green" : "red"};">${fieldId}: T=${targetVal} R=${refVal} ${isolated ? "✅" : "❌"}</pre>`;
+          });
+
+          debugContent.innerHTML = html;
+        }
+
+        // Global functions for buttons
+        window.runIsolationTest = function () {
+          console.log("🧪 Running isolation test...");
+
+          // Test 1: Set different values in each mode
+          ModeManager.switchMode("target");
+          setTimeout(() => {
+            document.querySelector('[data-field-id="f_73"]').value = "0.3";
+            document
+              .querySelector('[data-field-id="f_73"]')
+              .dispatchEvent(new Event("input"));
+
+            setTimeout(() => {
+              ModeManager.switchMode("reference");
+              setTimeout(() => {
+                document.querySelector('[data-field-id="f_73"]').value = "0.7";
+                document
+                  .querySelector('[data-field-id="f_73"]')
+                  .dispatchEvent(new Event("input"));
+
                 setTimeout(() => {
-                    document.querySelector('[data-field-id="f_73"]').value = '0.3';
-                    document.querySelector('[data-field-id="f_73"]').dispatchEvent(new Event('input'));
-                    
-                    setTimeout(() => {
-                        ModeManager.switchMode('reference');
-                        setTimeout(() => {
-                            document.querySelector('[data-field-id="f_73"]').value = '0.7';
-                            document.querySelector('[data-field-id="f_73"]').dispatchEvent(new Event('input'));
-                            
-                            setTimeout(() => {
-                                checkIsolation();
-                            }, 500);
-                        }, 500);
-                    }, 500);
+                  checkIsolation();
                 }, 500);
-            };
-            
-            window.resetAllValues = function() {
-                console.log('🔄 Resetting all values...');
-                
-                // Reset both state objects to defaults
-                TargetState.setDefaults();
-                TargetState.saveState();
-                ReferenceState.setDefaults();
-                ReferenceState.saveState();
-                
-                // Reset global StateManager
-                window.TEUI.StateManager.state = {};
-                
-                // Switch to target mode and refresh UI
-                ModeManager.switchMode('target');
-                updateTestStatus('unknown', 'unknown');
-                
-                console.log('✅ Reset complete - all states restored to defaults');
-            };
-            
-            window.toggleDebugPanel = function() {
-                const panel = document.getElementById('debug-panel');
-                debugPanelVisible = !debugPanelVisible;
-                panel.style.display = debugPanelVisible ? 'block' : 'none';
-            };
-            
-            function checkIsolation() {
-                console.log('🔍 Checking isolation...');
-                
-                const targetF73 = TargetState.getValue('f_73');
-                const refF73 = ReferenceState.getValue('f_73');
-                const globalF73 = window.TEUI.StateManager.getValue('f_73');
-                
-                console.log(`Target f_73: ${targetF73}`);
-                console.log(`Reference f_73: ${refF73}`);
-                console.log(`Global f_73: ${globalF73}`);
-                
-                const isolationPass = targetF73 !== refF73 && targetF73 && refF73;
-                const syncPass = globalF73 === targetF73; // Global should match target
-                
-                updateTestStatus(isolationPass ? 'pass' : 'fail', syncPass ? 'pass' : 'fail');
-                
-                console.log(`Isolation: ${isolationPass ? 'PASS' : 'FAIL'}`);
-                console.log(`Sync: ${syncPass ? 'PASS' : 'FAIL'}`);
-            }
-            
-            function updateTestStatus(isolation, sync) {
-                const statusElement = document.getElementById('test-status');
-                const isolationClass = isolation === 'pass' ? 'status-pass' : isolation === 'fail' ? 'status-fail' : 'status-unknown';
-                const syncClass = sync === 'pass' ? 'status-pass' : sync === 'fail' ? 'status-fail' : 'status-unknown';
-                
-                statusElement.innerHTML = `
+              }, 500);
+            }, 500);
+          }, 500);
+        };
+
+        window.resetAllValues = function () {
+          console.log("🔄 Resetting all values...");
+
+          // Reset both state objects to defaults
+          TargetState.setDefaults();
+          TargetState.saveState();
+          ReferenceState.setDefaults();
+          ReferenceState.saveState();
+
+          // Reset global StateManager
+          window.TEUI.StateManager.state = {};
+
+          // Switch to target mode and refresh UI
+          ModeManager.switchMode("target");
+          updateTestStatus("unknown", "unknown");
+
+          console.log("✅ Reset complete - all states restored to defaults");
+        };
+
+        window.toggleDebugPanel = function () {
+          const panel = document.getElementById("debug-panel");
+          debugPanelVisible = !debugPanelVisible;
+          panel.style.display = debugPanelVisible ? "block" : "none";
+        };
+
+        function checkIsolation() {
+          console.log("🔍 Checking isolation...");
+
+          const targetF73 = TargetState.getValue("f_73");
+          const refF73 = ReferenceState.getValue("f_73");
+          const globalF73 = window.TEUI.StateManager.getValue("f_73");
+
+          console.log(`Target f_73: ${targetF73}`);
+          console.log(`Reference f_73: ${refF73}`);
+          console.log(`Global f_73: ${globalF73}`);
+
+          const isolationPass = targetF73 !== refF73 && targetF73 && refF73;
+          const syncPass = globalF73 === targetF73; // Global should match target
+
+          updateTestStatus(
+            isolationPass ? "pass" : "fail",
+            syncPass ? "pass" : "fail",
+          );
+
+          console.log(`Isolation: ${isolationPass ? "PASS" : "FAIL"}`);
+          console.log(`Sync: ${syncPass ? "PASS" : "FAIL"}`);
+        }
+
+        function updateTestStatus(isolation, sync) {
+          const statusElement = document.getElementById("test-status");
+          const isolationClass =
+            isolation === "pass"
+              ? "status-pass"
+              : isolation === "fail"
+                ? "status-fail"
+                : "status-unknown";
+          const syncClass =
+            sync === "pass"
+              ? "status-pass"
+              : sync === "fail"
+                ? "status-fail"
+                : "status-unknown";
+
+          statusElement.innerHTML = `
                     <span class="status-indicator ${isolationClass}">Isolation Status: ${isolation.toUpperCase()}</span>
                     <span class="status-indicator ${syncClass}">Sync Status: ${sync.toUpperCase()}</span>
                 `;
-            }
-            
-            // Test Environment Calculations (Simplified S10 Logic)
-            function calculateTestValues() {
-                console.log(`🧮 Running test calculations in ${ModeManager.currentMode.toUpperCase()} mode`);
-                
-                // Get current mode values from ModeManager
-                const getFieldValue = (fieldId) => {
-                    const value = ModeManager.getValue(fieldId);
-                    return value !== undefined ? value : getDefaultValue(fieldId);
-                };
-                
-                const getNumericValue = (fieldId) => {
-                    const value = getFieldValue(fieldId);
-                    return parseFloat(value) || 0;
-                };
-                
-                // Calculate for each row
-                const rows = [73, 74, 75];
-                let totalHeatingGains = 0;
-                
-                rows.forEach(rowId => {
-                    // Get input values
-                    const area = getNumericValue(`d_${rowId}`);
-                    const orientation = getFieldValue(`e_${rowId}`);
-                    const shgc = getNumericValue(`f_${rowId}`);
-                    const winterShading = getNumericValue(`g_${rowId}`) / 100; // Convert % to decimal
-                    const summerShading = getNumericValue(`h_${rowId}`) / 100;
-                    
-                    console.log(`  Row ${rowId}: area=${area}, orientation=${orientation}, shgc=${shgc}, winterShading=${winterShading}`);
-                    
-                    // Calculate gain factor based on orientation (simplified)
-                    const gainFactor = getGainFactor(orientation);
-                    
-                    // Calculate heating gains: area × gainFactor × (shgc/0.5) × (1 - winterShading)
-                    const shgcNormalization = shgc / 0.5; // Baseline SHGC is 0.5
-                    const heatingGains = area * gainFactor * shgcNormalization * (1 - winterShading);
-                    
-                    // Calculate cooling gains (simplified - 50% of heating with summer shading)
-                    const coolingGains = heatingGains * 0.5 * (1 - summerShading);
-                    
-                    console.log(`    Results: gainFactor=${gainFactor}, heatingGains=${heatingGains}, coolingGains=${coolingGains}`);
-                    
-                    // Update DOM for calculated values
-                    updateCalculatedField(`m_${rowId}`, gainFactor, 'number');
-                    updateCalculatedField(`i_${rowId}`, heatingGains, 'number');
-                    updateCalculatedField(`k_${rowId}`, coolingGains, 'number');
-                    
-                    totalHeatingGains += heatingGains;
-                });
-                
-                // Calculate subtotals
-                updateCalculatedField('i_79', totalHeatingGains, 'number');
-                
-                // Calculate percentages for each row (using the calculated values from above)
-                let totalCoolingGains = 0;
-                rows.forEach(rowId => {
-                    const element = document.querySelector(`[data-field-id="k_${rowId}"]`);
-                    const coolingGain = parseFloat(element?.textContent || '0');
-                    totalCoolingGains += coolingGain;
-                });
-                
-                rows.forEach(rowId => {
-                    const heatingElement = document.querySelector(`[data-field-id="i_${rowId}"]`);
-                    const coolingElement = document.querySelector(`[data-field-id="k_${rowId}"]`);
-                    
-                    const heatingGain = parseFloat(heatingElement?.textContent || '0');
-                    const coolingGain = parseFloat(coolingElement?.textContent || '0');
-                    
-                    const heatingPercent = totalHeatingGains > 0 ? heatingGain / totalHeatingGains : 0;
-                    const coolingPercent = totalCoolingGains > 0 ? coolingGain / totalCoolingGains : 0;
-                    
-                    updateCalculatedField(`j_${rowId}`, heatingPercent, 'percent');
-                    updateCalculatedField(`l_${rowId}`, coolingPercent, 'percent');
-                });
-                
-                // Update cooling subtotal
-                updateCalculatedField('k_79', totalCoolingGains, 'number');
-                updateCalculatedField('j_79', totalHeatingGains > 0 ? 1 : 0, 'percent');
-                updateCalculatedField('l_79', totalCoolingGains > 0 ? 1 : 0, 'percent');
-                
-                // Calculate PHPP utilization factors
-                const method = getFieldValue('d_80');
-                let utilizationFactor = 0.94; // Default PHPP
-                
-                if (method.includes('Simple')) {
-                    utilizationFactor = 0.40;
-                } else if (method.includes('Comprehensive')) {
-                    utilizationFactor = 0.60;
-                }
-                
-                const usableGains = totalHeatingGains * utilizationFactor;
-                const unusableGains = totalHeatingGains - usableGains;
-                
-                updateCalculatedField('j_80', utilizationFactor, 'percent');
-                updateCalculatedField('k_80', usableGains, 'number');
-                updateCalculatedField('l_80', unusableGains, 'number');
-                
-                console.log(`✅ Calculations complete: totalGains=${totalHeatingGains}, utilization=${utilizationFactor}`);
-            }
-            
-            function getDefaultValue(fieldId) {
-                const defaults = {
-                    'd_73': '7.50', 'd_74': '81.14', 'd_75': '3.83',
-                    'e_73': 'Average', 'e_74': 'North', 'e_75': 'East',
-                    'f_73': '0.50', 'f_74': '0.50', 'f_75': '0.50',
-                    'g_73': '0', 'g_74': '0', 'g_75': '0',
-                    'h_73': '100', 'h_74': '100', 'h_75': '100',
-                    'd_80': 'PHPP Method'
-                };
-                return defaults[fieldId] || '0';
-            }
-            
-            function getGainFactor(orientation) {
-                // Simplified gain factors (kWh/m²/yr) based on orientation
-                const gainFactors = {
-                    'North': 0.19,
-                    'NorthEast': 12.4,
-                    'East': 2.09,
-                    'SouthEast': 18.7,
-                    'South': 24.76,
-                    'SouthWest': 21.3,
-                    'West': 25.86,
-                    'NorthWest': 16.2,
-                    'Average': 24.84,
-                    'Skylight': 35.2
-                };
-                return gainFactors[orientation] || gainFactors['Average'];
-            }
-            
-            function updateCalculatedField(fieldId, value, format = 'number') {
-                const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-                if (!element) return;
-                
-                let formattedValue;
-                if (format === 'percent') {
-                    formattedValue = (value * 100).toFixed(1) + '%';
-                } else if (format === 'number') {
-                    formattedValue = value.toFixed(2);
-                } else {
-                    formattedValue = value.toString();
-                }
-                
-                element.textContent = formattedValue;
-                
-                // Store calculated value through ModeManager
-                ModeManager.setValue(fieldId, value.toString(), 'calculated');
-            }
-            
-            return { init };
-        })();
-        
-        // Initialize when DOM loaded
-        document.addEventListener('DOMContentLoaded', TestController.init);
+        }
+
+        // Test Environment Calculations (Simplified S10 Logic)
+        function calculateTestValues() {
+          console.log(
+            `🧮 Running test calculations in ${ModeManager.currentMode.toUpperCase()} mode`,
+          );
+
+          // Get current mode values from ModeManager
+          const getFieldValue = (fieldId) => {
+            const value = ModeManager.getValue(fieldId);
+            return value !== undefined ? value : getDefaultValue(fieldId);
+          };
+
+          const getNumericValue = (fieldId) => {
+            const value = getFieldValue(fieldId);
+            return parseFloat(value) || 0;
+          };
+
+          // Calculate for each row
+          const rows = [73, 74, 75];
+          let totalHeatingGains = 0;
+
+          rows.forEach((rowId) => {
+            // Get input values
+            const area = getNumericValue(`d_${rowId}`);
+            const orientation = getFieldValue(`e_${rowId}`);
+            const shgc = getNumericValue(`f_${rowId}`);
+            const winterShading = getNumericValue(`g_${rowId}`) / 100; // Convert % to decimal
+            const summerShading = getNumericValue(`h_${rowId}`) / 100;
+
+            console.log(
+              `  Row ${rowId}: area=${area}, orientation=${orientation}, shgc=${shgc}, winterShading=${winterShading}`,
+            );
+
+            // Calculate gain factor based on orientation (simplified)
+            const gainFactor = getGainFactor(orientation);
+
+            // Calculate heating gains: area × gainFactor × (shgc/0.5) × (1 - winterShading)
+            const shgcNormalization = shgc / 0.5; // Baseline SHGC is 0.5
+            const heatingGains =
+              area * gainFactor * shgcNormalization * (1 - winterShading);
+
+            // Calculate cooling gains (simplified - 50% of heating with summer shading)
+            const coolingGains = heatingGains * 0.5 * (1 - summerShading);
+
+            console.log(
+              `    Results: gainFactor=${gainFactor}, heatingGains=${heatingGains}, coolingGains=${coolingGains}`,
+            );
+
+            // Update DOM for calculated values
+            updateCalculatedField(`m_${rowId}`, gainFactor, "number");
+            updateCalculatedField(`i_${rowId}`, heatingGains, "number");
+            updateCalculatedField(`k_${rowId}`, coolingGains, "number");
+
+            totalHeatingGains += heatingGains;
+          });
+
+          // Calculate subtotals
+          updateCalculatedField("i_79", totalHeatingGains, "number");
+
+          // Calculate percentages for each row (using the calculated values from above)
+          let totalCoolingGains = 0;
+          rows.forEach((rowId) => {
+            const element = document.querySelector(`[data-field-id="k_${rowId}"]`);
+            const coolingGain = parseFloat(element?.textContent || "0");
+            totalCoolingGains += coolingGain;
+          });
+
+          rows.forEach((rowId) => {
+            const heatingElement = document.querySelector(
+              `[data-field-id="i_${rowId}"]`,
+            );
+            const coolingElement = document.querySelector(
+              `[data-field-id="k_${rowId}"]`,
+            );
+
+            const heatingGain = parseFloat(heatingElement?.textContent || "0");
+            const coolingGain = parseFloat(coolingElement?.textContent || "0");
+
+            const heatingPercent =
+              totalHeatingGains > 0 ? heatingGain / totalHeatingGains : 0;
+            const coolingPercent =
+              totalCoolingGains > 0 ? coolingGain / totalCoolingGains : 0;
+
+            updateCalculatedField(`j_${rowId}`, heatingPercent, "percent");
+            updateCalculatedField(`l_${rowId}`, coolingPercent, "percent");
+          });
+
+          // Update cooling subtotal
+          updateCalculatedField("k_79", totalCoolingGains, "number");
+          updateCalculatedField("j_79", totalHeatingGains > 0 ? 1 : 0, "percent");
+          updateCalculatedField("l_79", totalCoolingGains > 0 ? 1 : 0, "percent");
+
+          // Calculate PHPP utilization factors
+          const method = getFieldValue("d_80");
+          let utilizationFactor = 0.94; // Default PHPP
+
+          if (method.includes("Simple")) {
+            utilizationFactor = 0.4;
+          } else if (method.includes("Comprehensive")) {
+            utilizationFactor = 0.6;
+          }
+
+          const usableGains = totalHeatingGains * utilizationFactor;
+          const unusableGains = totalHeatingGains - usableGains;
+
+          updateCalculatedField("j_80", utilizationFactor, "percent");
+          updateCalculatedField("k_80", usableGains, "number");
+          updateCalculatedField("l_80", unusableGains, "number");
+
+          console.log(
+            `✅ Calculations complete: totalGains=${totalHeatingGains}, utilization=${utilizationFactor}`,
+          );
+        }
+
+        function getDefaultValue(fieldId) {
+          const defaults = {
+            d_73: "7.50",
+            d_74: "81.14",
+            d_75: "3.83",
+            e_73: "Average",
+            e_74: "North",
+            e_75: "East",
+            f_73: "0.50",
+            f_74: "0.50",
+            f_75: "0.50",
+            g_73: "0",
+            g_74: "0",
+            g_75: "0",
+            h_73: "100",
+            h_74: "100",
+            h_75: "100",
+            d_80: "PHPP Method",
+          };
+          return defaults[fieldId] || "0";
+        }
+
+        function getGainFactor(orientation) {
+          // Simplified gain factors (kWh/m²/yr) based on orientation
+          const gainFactors = {
+            North: 0.19,
+            NorthEast: 12.4,
+            East: 2.09,
+            SouthEast: 18.7,
+            South: 24.76,
+            SouthWest: 21.3,
+            West: 25.86,
+            NorthWest: 16.2,
+            Average: 24.84,
+            Skylight: 35.2,
+          };
+          return gainFactors[orientation] || gainFactors["Average"];
+        }
+
+        function updateCalculatedField(fieldId, value, format = "number") {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (!element) return;
+
+          let formattedValue;
+          if (format === "percent") {
+            formattedValue = (value * 100).toFixed(1) + "%";
+          } else if (format === "number") {
+            formattedValue = value.toFixed(2);
+          } else {
+            formattedValue = value.toString();
+          }
+
+          element.textContent = formattedValue;
+
+          // Store calculated value through ModeManager
+          ModeManager.setValue(fieldId, value.toString(), "calculated");
+        }
+
+        return { init };
+      })();
+
+      // Initialize when DOM loaded
+      document.addEventListener("DOMContentLoaded", TestController.init);
     </script>
-</body>
-</html> 
+  </body>
+</html>

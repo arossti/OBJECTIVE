@@ -120,23 +120,27 @@ The workspace contains three versions of the codebase:
 Before proceeding with any section work, these patterns are **NON-NEGOTIABLE** for 4.012:
 
 #### **1. Global Input Handling (REQUIRED)**
+
 - **ALWAYS** use `window.TEUI.StateManager.initializeGlobalInputHandlers()`
 - **NEVER** create section-specific blur/focus handlers
 - **MUST** implement change detection to prevent accidental state commits
 - **REQUIRED** graceful behavior: grey→blue→grey/permanent blue
 
 #### **2. Universal Number Formatting (REQUIRED)**
+
 - **ALWAYS** use `window.TEUI.formatNumber(value, formatType)`
 - **NEVER** use direct `toLocaleString()` or custom formatting
 - **MUST** support semantic field types (area, rsi, percent, etc.)
 
 #### **3. State-Aware Visual Feedback (REQUIRED)**
+
 - **MUST** use `.editing-intent` for temporary blue styling
-- **MUST** use `.user-modified` for permanent blue styling  
+- **MUST** use `.user-modified` for permanent blue styling
 - **MUST** preserve grey italic placeholder for default state
 - **REQUIRED** smooth CSS transitions between all states
 
 #### **4. Architectural Consistency (REQUIRED)**
+
 - **NO** duplicate event handlers across sections
 - **NO** section-specific state management patterns
 - **MANDATORY** use of established CSS alignment system
@@ -153,6 +157,7 @@ Browser's `table-layout: auto` algorithm calculates column widths based on form 
 
 **⚠️ Research Findings:**
 Multiple approaches attempted in OBC Matrix project with limited success:
+
 - `table-layout: fixed` approaches broke form functionality and readability
 - CSS width constraints ignored by browser's form element rendering
 - Ellipsis and content truncation had no effect on layout calculation
@@ -160,6 +165,7 @@ Multiple approaches attempted in OBC Matrix project with limited success:
 
 **🔧 Partial Mitigation Available:**
 While full layout control remains challenging, some improvements achievable:
+
 ```css
 /* Universal alignment system (proven effective) */
 .data-table td {
@@ -183,6 +189,7 @@ While full layout control remains challenging, some improvements achievable:
 ```
 
 **📋 4.012 Strategy:**
+
 - **Priority**: Focus on core functionality and proven improvements (input handling, number formatting)
 - **Layout**: Accept current browser behavior while monitoring for alternative approaches
 - **Future Research**: Consider CSS Grid, Flexbox, or alternative DOM structures in v2.0
@@ -211,7 +218,7 @@ While full layout control remains challenging, some improvements achievable:
 🚨 **NON-NEGOTIABLE**: These tasks are required for 4.012 - graceful input behavior is now a core feature
 
 - [ ] **REQUIRED**: Extract CSS classes `.editing-intent`, `.user-modified`, state transition CSS from OBC Matrix
-- [ ] **REQUIRED**: Integrate OBC StateManager's `initializeGlobalInputHandlers()` into 4011 StateManager  
+- [ ] **REQUIRED**: Integrate OBC StateManager's `initializeGlobalInputHandlers()` into 4011 StateManager
 - [ ] **REQUIRED**: Replace ALL individual section input handlers with global system (18 sections)
 - [ ] **REQUIRED**: Ensure all 4011 sections use consistent state class management
 - [ ] **REQUIRED**: Implement change detection in ALL input handlers (prevent accidental commits)
@@ -221,6 +228,7 @@ While full layout control remains challenging, some improvements achievable:
 #### ✅ **Validation Checklist for 4.012:**
 
 Every section MUST demonstrate these behaviors:
+
 - [ ] Click in field → immediate blue confident text (`.editing-intent`)
 - [ ] Click out without changes → gracefully restores grey italic placeholder
 - [ ] Click out with changes → commits to permanent blue confident text (`.user-modified`)
@@ -232,18 +240,21 @@ Every section MUST demonstrate these behaviors:
 ```javascript
 // Core pattern to implement in 4011 StateManager
 function initializeSmartInputFeedback() {
-  const editableFields = document.querySelectorAll('.user-input[contenteditable]');
-  
-  editableFields.forEach(field => {
+  const editableFields = document.querySelectorAll(
+    ".user-input[contenteditable]",
+  );
+
+  editableFields.forEach((field) => {
     field.addEventListener("focus", () => {
       field.classList.add("editing-intent");
       field.dataset.originalValue = field.textContent.trim();
     });
-    
+
     field.addEventListener("blur", () => {
-      const hasChanges = field.textContent.trim() !== field.dataset.originalValue;
+      const hasChanges =
+        field.textContent.trim() !== field.dataset.originalValue;
       field.classList.remove("editing-intent");
-      
+
       if (hasChanges) {
         StateManager.setValue(fieldId, newValue, "user-modified");
         // This automatically adds .user-modified class via updateUI()
@@ -270,6 +281,7 @@ function initializeSmartInputFeedback() {
 The OBC Matrix project successfully streamlined CSS alignment rules, reducing conflicts and complexity. This approach could provide similar benefits for 4011's larger codebase by consolidating competing text alignment rules.
 
 #### 🚨 **The Problem We Solved:**
+
 - Multiple competing alignment rules with `!important` declarations fighting each other
 - Column-specific overrides: `.data-table td:nth-child(5) { text-align: right !important; }`
 - Section-specific overrides: `#buildingInfo td[data-field-id="d_16"] { text-align: left !important; }`
@@ -277,6 +289,7 @@ The OBC Matrix project successfully streamlined CSS alignment rules, reducing co
 - Result: **350+ lines of conflicting CSS rules** in a small project
 
 #### ✅ **The Universal Solution:**
+
 Replace ALL alignment complexity with just **2 clean rules**:
 
 ```css
@@ -299,6 +312,7 @@ Replace ALL alignment complexity with just **2 clean rules**:
 ```
 
 #### 🏆 **Immediate Benefits:**
+
 - **Removed 350+ lines** of competing CSS rules from small OBC Matrix project
 - **Zero alignment conflicts** - no more `!important` wars
 - **Content-based alignment** instead of arbitrary column positions
@@ -308,17 +322,20 @@ Replace ALL alignment complexity with just **2 clean rules**:
 #### 📋 **4011 Integration Tasks:**
 
 **Phase 1: Audit & Document**
+
 - [ ] **Inventory All Alignment Rules**: Search 4011 codebase for `text-align`, `text-left`, `text-right`, `text-center`
 - [ ] **Document Conflicts**: Identify competing `!important` declarations
 - [ ] **Map Semantic Fields**: Catalog which fields should be numeric (right-aligned) vs text (left-aligned)
 
 **Phase 2: Implement Universal System**
+
 - [ ] **Replace Column-Based Rules**: Remove `.data-table td:nth-child(X)` alignment rules
 - [ ] **Remove Section Overrides**: Delete section-specific alignment overrides
 - [ ] **Implement Semantic Rules**: Add semantic field alignment based on data-field-id patterns
 - [ ] **Clean Component Classes**: Remove redundant `text-left` from all components
 
 **Phase 3: Section File Cleanup**
+
 - [ ] **Remove Redundant Classes**: Strip `text-left`, `text-right` from field definitions
 - [ ] **Keep Semantic Classes**: Preserve meaningful classes like `user-input`, `calculated-value`
 - [ ] **Update Documentation**: Document the new alignment philosophy
@@ -348,6 +365,7 @@ Replace ALL alignment complexity with just **2 clean rules**:
 ```
 
 #### 🎯 **Expected Impact for 4011:**
+
 - **Potential Reduction**: Significant consolidation of competing alignment rules (exact reduction TBD by audit)
 - **Reduced Layout Conflicts**: Fewer alignment `!important` declarations fighting each other
 - **Maintainable**: Single source of truth for table alignment
@@ -355,6 +373,7 @@ Replace ALL alignment complexity with just **2 clean rules**:
 - **Performance**: Potentially faster CSS parsing with fewer complex selectors
 
 #### ⚠️ **Implementation Notes:**
+
 - **Preserve Column Widths**: This addresses ONLY alignment, not column sizing
 - **Test Incrementally**: Apply section by section to catch any edge cases
 - **Document Changes**: Track which old rules were removed for rollback if needed
@@ -413,24 +432,28 @@ Replace ALL alignment complexity with just **2 clean rules**:
 Before any section is considered complete, it MUST pass this validation:
 
 #### **Input Handling Validation:**
-- [ ] Section uses `window.TEUI.StateManager.initializeGlobalInputHandlers()` 
+
+- [ ] Section uses `window.TEUI.StateManager.initializeGlobalInputHandlers()`
 - [ ] NO custom blur/focus event handlers in section file
 - [ ] Change detection prevents accidental state commits
 - [ ] Graceful behavior demonstrated: click in/out without changes preserves grey state
 
 #### **Number Formatting Validation:**
+
 - [ ] All numeric display uses `window.TEUI.formatNumber()`
 - [ ] NO direct use of `toLocaleString()` or manual formatting
 - [ ] Semantic formatting based on field types (area, rsi, percent, etc.)
 - [ ] Consistent decimal places and thousands separators
 
 #### **Visual State Validation:**
+
 - [ ] Temporary blue styling uses `.editing-intent` class only
 - [ ] Permanent blue styling uses `.user-modified` class only
 - [ ] Grey italic placeholder preserved for default state
 - [ ] Smooth CSS transitions between all states working
 
 #### **Architectural Validation:**
+
 - [ ] No duplicate code patterns from other sections
 - [ ] Clean integration with existing StateManager
 - [ ] No performance impact on calculation chains
@@ -463,12 +486,14 @@ Any section that fails these validations will be **rejected** and must be refact
 ### 🚨 **CRITICAL FIRST PRIORITY: Mandatory Pattern Setup**
 
 1. **Setup Global Input Handling System**:
+
    - Extract `initializeGlobalInputHandlers()` from OBC Matrix
    - Integrate with 4011 StateManager
    - Implement change detection logic
    - Setup CSS classes (`.editing-intent`, `.user-modified`)
 
 2. **Setup Universal Number Formatting**:
+
    - Extract `window.TEUI.formatNumber()` from OBC Matrix
    - Implement semantic field type detection
    - Create format type constants and utilities
@@ -503,12 +528,14 @@ Any section that fails these validations will be **rejected** and must be refact
 ### 📊 Current Project Status Assessment
 
 **OBJECTIVE 4011GS (Gold Standard)**:
+
 - ✅ Core calculations working (Excel parity achieved)
 - ⚠️ ESLint/Prettier cleanup 70% complete (interrupted)
 - ❌ Reference/Target state contamination (tuple calculation issue)
 - ❌ 5-row export function incomplete
 
 **OBC Matrix**:
+
 - ✅ Sections 01-03 complete with advanced features
 - 🔄 Currently working on Section 04
 - ✅ Code quality excellent (1,519 ESLint issues resolved)
@@ -517,6 +544,7 @@ Any section that fails these validations will be **rejected** and must be refact
 - ❌ Sections 05-10 incomplete
 
 **Cross-System Integration**:
+
 - ✅ Navigation buttons functional
 - ⚠️ State persistence partial (OBC Matrix saves/restores, OBJECTIVE rebuilds from scratch)
 - ❌ Data import/export between systems missing
@@ -527,6 +555,7 @@ Any section that fails these validations will be **rejected** and must be refact
 #### **WEEK 1 (June 13-19): Foundation Completion - 7 Days**
 
 **Priority 1A: Complete OBC Matrix Core (Days 1-4)**
+
 ```
 Goal: Finish sections 04-10 using established patterns
 Why: Regulatory compliance tool must be complete for funder demo
@@ -534,24 +563,26 @@ Effort: 4 days (using copy-paste templates from sections 01-03)
 ```
 
 - [ ] **Day 1**: Complete Section 04 (Firefighting Systems)
-- [ ] **Day 2**: Sections 05-06 (Structural, Occupant Safety) 
+- [ ] **Day 2**: Sections 05-06 (Structural, Occupant Safety)
 - [ ] **Day 3**: Sections 07-08 (Fire Resistance, Plumbing)
 - [ ] **Day 4**: Sections 09-10 (Compliance, Notes)
 
 **Priority 1B: OBC Excel Mapping Validation (Day 5)**
+
 ```
 Goal: Verify d_49 = Excel D49 mapping accuracy
 Why: Must import real regulatory Excel files correctly
 Effort: 1 day focused validation with test files
 ```
 
-- [ ] **Day 5**: 
+- [ ] **Day 5**:
   - Test real OBC Matrix Excel import
   - Fix column offset issues (a,b,c DOM vs Excel A,B,C)
   - Validate all field coordinate mappings
   - Document any persistent mismatches
 
 **Priority 1C: 4011GS ESLint/Prettier Completion (Days 6-7)**
+
 ```
 Goal: Finish interrupted code quality cleanup
 Why: Professional codebase for demo + sets up tuple work
@@ -564,6 +595,7 @@ Effort: 2 days to complete remaining files
 #### **WEEK 2 (June 20-26): Core Integration - 7 Days**
 
 **Priority 2A: 5-Row Export Function (Days 8-10)**
+
 ```
 Goal: Complete export with Target, Reference, OBC data
 Why: Critical demo feature showing system integration
@@ -575,6 +607,7 @@ Effort: 3 days for complex multi-system export
 - [ ] **Day 10**: Implement OBC data extraction and combine with TEUI export
 
 **Priority 2B: Data Bridge Foundation (Days 11-13)**
+
 ```
 Goal: Basic import/export between OBC Matrix ↔ OBJECTIVE
 Why: Professional workflow demo requirement
@@ -586,13 +619,14 @@ Effort: 3 days for core data mapping
 - [ ] **Day 13**: Implement OBJECTIVE → OBC export (refined data back to compliance)
 
 **Priority 2C: Tuple Calculation Fix (Day 14)**
+
 ```
 Goal: Fix Reference/Target state contamination
 Why: Calculation integrity critical for credibility
 Effort: 1 day focused fix using existing StateManager
 ```
 
-- [ ] **Day 14**: 
+- [ ] **Day 14**:
   - Implement proper state isolation in calculations
   - Ensure Reference calculations don't contaminate Target state
   - Validate calculation chains remain intact
@@ -600,6 +634,7 @@ Effort: 1 day focused fix using existing StateManager
 #### **WEEK 3 (June 27-30): Demo Preparation - 4 Days**
 
 **Priority 3A: Integration Testing (Days 15-16)**
+
 ```
 Goal: End-to-end workflow validation
 Why: Demo must work flawlessly
@@ -610,19 +645,21 @@ Effort: 2 days comprehensive testing
 - [ ] **Day 16**: Cross-browser testing, mobile responsiveness, edge case handling
 
 **Priority 3B: Demo Preparation (Days 17-18)**
+
 ```
 Goal: Polished demo ready for presentation
 Why: First impressions matter for funders
 Effort: 2 days polish and preparation
 ```
 
-- [ ] **Day 17**: 
+- [ ] **Day 17**:
+
   - Demo script preparation
   - Sample project data for demonstration
   - Performance optimization
   - Warning banner updates if needed
 
-- [ ] **Day 18**: 
+- [ ] **Day 18**:
   - Final testing and bug fixes
   - Demo rehearsal
   - Backup deployment verification
@@ -631,17 +668,20 @@ Effort: 2 days polish and preparation
 ### 🚨 RISK MITIGATION STRATEGIES
 
 #### **Scope Protection Measures**
+
 - **Time Boxing**: Each task has firm daily limits
 - **Feature Deferral**: Advanced features deferred to post-demo
 - **Quality Gates**: ESLint/Prettier compliance maintained but not blocking
 - **Fallback Plans**: Core OBC Matrix + basic TEUI as minimum viable demo
 
 #### **Critical Dependencies**
+
 - **Excel Mapping**: If Day 5 reveals major issues, defer complex imports to post-demo
 - **Tuple Calculations**: If Day 14 fix is complex, document issue and present workaround
 - **Data Bridge**: Focus on one-way import if bi-directional is too complex
 
 #### **Quality Assurance**
+
 - **Daily Commits**: All work committed daily with descriptive messages
 - **Branch Strategy**: Work on feature branches, merge to main only when stable
 - **Testing First**: Validate existing functionality before adding new features
@@ -649,6 +689,7 @@ Effort: 2 days polish and preparation
 ### 📋 DEMO SUCCESS CRITERIA
 
 **Minimum Viable Demo (Must Have)**:
+
 - ✅ Complete OBC Matrix (all 10 sections functional)
 - ✅ Complete OBJECTIVE TEUI calculator
 - ✅ Cross-navigation between systems
@@ -656,12 +697,14 @@ Effort: 2 days polish and preparation
 - ✅ Professional code quality (ESLint/Prettier compliant)
 
 **Professional Demo (Should Have)**:
+
 - ✅ OBC Matrix Excel import functionality
 - ✅ Basic data import from OBC to OBJECTIVE
 - ✅ 5-row combined export showing integrated workflow
 - ✅ Reference/Target calculation separation
 
 **Impressive Demo (Nice to Have)**:
+
 - ✅ Bi-directional data sync between systems
 - ✅ Advanced audit trail and data provenance
 - ✅ Real-time validation and conflict resolution
@@ -676,12 +719,14 @@ Effort: 2 days polish and preparation
 ### 📊 SUCCESS METRICS
 
 **Technical Metrics**:
+
 - All sections render and function correctly
 - Cross-browser compatibility maintained
 - No calculation regressions from current state
 - Professional code quality standards met
 
 **Business Metrics**:
+
 - Complete regulatory compliance workflow demonstrated
 - Funder requirements satisfied
 - Professional architecture showcased
@@ -690,12 +735,14 @@ Effort: 2 days polish and preparation
 ### ⚠️ CRITICAL NOTES
 
 **Do NOT attempt during this sprint**:
+
 - ❌ Major architectural refactoring (save for post-demo)
 - ❌ New calculation methodologies
 - ❌ Complex UI redesigns
 - ❌ Performance optimization beyond basic cleanup
 
 **Focus ruthlessly on**:
+
 - ✅ Completing existing features
 - ✅ Connecting existing systems
 - ✅ Polishing existing functionality
@@ -714,14 +761,17 @@ _Next Review: June 20, 2025 (Weekly Sprint Review)_
 ## 🧹 ESLint/Prettier Code Quality Progress (December 2024 - December 2024)
 
 ### **Background: Systematic Code Quality Improvement**
+
 As part of the 4012 refactoring preparation, comprehensive ESLint/Prettier cleanup was initiated to establish professional coding standards and eliminate technical debt before architectural improvements.
 
 ### **December 2024 Session: Major Structural Issues Resolved**
+
 **Previous Achievement**: Systematic elimination of complex ESLint violations
+
 - **Fixed**: 48 structural issues (182 → 134 problems)
 - **Categories Eliminated**:
   - ✅ Useless escape characters (10 issues → 0)
-  - ✅ Empty block statements (7 issues → 0) 
+  - ✅ Empty block statements (7 issues → 0)
   - ✅ Prototype builtins access (4 issues → 0)
   - ✅ Duplicate else-if conditions (2 issues → 0)
   - ✅ Function redeclarations (4 issues → 0)
@@ -729,7 +779,9 @@ As part of the 4012 refactoring preparation, comprehensive ESLint/Prettier clean
 - **Result**: All architectural and logical violations eliminated
 
 ### **December 2024 Session: Current Progress Update**
+
 **Today's Achievement**: Systematic `no-unused-vars` cleanup
+
 - **Progress**: 134 → 122 ESLint issues (12 issues resolved)
 - **Approach**: Professional handling of intentionally unused code during development
 - **Method**: Prefix unused variables/functions with `_` to indicate intentional preservation
@@ -737,47 +789,56 @@ As part of the 4012 refactoring preparation, comprehensive ESLint/Prettier clean
 #### **Issues Resolved Today**:
 
 **D3.js Event Handlers** (2 fixes):
+
 - `4011-Dependency.js`: D3 mouseover/dragended event parameters properly prefixed
 - **Reasoning**: D3.js handlers receive standard parameters even when unused
 
 **StateManager Listener Parameters** (2 fixes):
-- `4011-SectionIntegrator.js`: Province/reporting year change listeners  
+
+- `4011-SectionIntegrator.js`: Province/reporting year change listeners
 - **Reasoning**: StateManager listeners require parameter signature compliance
 
 **Development Variables** (4 fixes):
+
 - `4011-ExcelLocationHandler.js`: Temporary DOM calculation variables
 - `4011-FileHandler.js`: Placeholder function parameters for future features
 - `4011-StateManager.js`: Legacy preserved variables from refactoring
 - `4011-init.js`: Bootstrap tooltip initialization variables
 
 **In-Development Integration Functions** (2 fixes):
+
 - `obc/sections/OBC-Section01.js`: Cross-reference validation functions
 - **Critical**: Preserves work-in-progress OBC/OBJECTIVE integration features
 
 #### **Professional Development Practice**:
+
 The `_` prefix approach maintains:
+
 - ✅ **Code functionality**: Functions work exactly the same
-- ✅ **Feature preservation**: In-development cross-system integration preserved  
+- ✅ **Feature preservation**: In-development cross-system integration preserved
 - ✅ **Clean linting**: Eliminates ESLint noise during development
 - ✅ **Professional workflow**: Clear signal of intentional "work in progress"
 - ✅ **Easy activation**: Remove `_` when features are ready for use
 
 #### **Current Status**:
+
 - **122 issues remaining**: All simple `no-unused-vars` warnings
 - **Completion rate**: 99.2% of structural issues eliminated
 - **Code quality**: Professional development standards established
 - **Integration readiness**: OBC/OBJECTIVE cross-system functions preserved
 
 ### **Next Steps for Complete Code Quality**:
+
 1. **Remaining 122 issues**: Continue systematic `_` prefixing for unused variables
 2. **Estimated completion**: 2-3 hours of focused work for 100% clean codebase
-3. **Post-cleanup benefits**: 
+3. **Post-cleanup benefits**:
    - Zero ESLint noise for development
    - Professional foundation for 4012 refactoring
    - Clear distinction between active vs. in-development code
    - Industry-standard code quality metrics
 
 ### **Strategic Value for 4012 Refactoring**:
+
 This systematic code quality work provides the **clean foundation** essential for successful 4012 architectural improvements, ensuring that refactoring efforts focus on architectural improvements rather than debugging coding standard violations.
 
 **Priority for Demo Timeline**: Code quality cleanup supports professional presentation while preserving all in-development integration features for the June 30th funder demo.
@@ -796,14 +857,16 @@ _Next ESLint Session: Continue with remaining 122 `no-unused-vars` issues for 10
 **Problem Discovered**: After completing 35 additional ESLint `no-unused-vars` fixes, **calculation accuracy was compromised**. TEUI target values changed from expected 93.7 to incorrect values, indicating broken calculation chains.
 
 **Root Cause**: Variables that appeared "unused" to ESLint static analysis were actually **critical to calculation engines** through:
+
 - **Dynamic calculation chains** across sections
-- **String-based field lookups** that ESLint can't detect  
+- **String-based field lookups** that ESLint can't detect
 - **StateManager listener dependencies** in Section 01-03
 - **Cross-section calculation triggers** (e.g., Section03 setpoint calculations)
 
 ### **🔍 Progressive Recovery Strategy (SUCCESSFUL)**
 
 **Step 1: Progressive Revert Testing**
+
 ```bash
 git revert --no-commit 47758b9  # Most recent 35 fixes
 # TEST CALCULATIONS → ✅ SUCCESS: Excel parity restored (TEUI target: 93.6)
@@ -818,6 +881,7 @@ git revert --no-commit 47758b9  # Most recent 35 fixes
 Based on this regression, these variable types require **extreme caution**:
 
 #### **Section03 StateManager Listeners** ⚠️ HIGH RISK
+
 ```javascript
 // These appeared "unused" but broke calculations:
 window.TEUI.StateManager.addListener("h_24", function (newValue) {  // ← newValue seemed unused
@@ -826,11 +890,12 @@ window.TEUI.StateManager.addListener("h_21", function (newValue) {  // ← affec
 window.TEUI.StateManager.addListener("m_19", function (newValue) {  // ← GF HDD/CDD dependencies
 ```
 
-#### **Cross-Section Calculation Variables** ⚠️ HIGH RISK  
+#### **Cross-Section Calculation Variables** ⚠️ HIGH RISK
+
 ```javascript
 // Variables used in dynamic calculation chains:
-const refJ32FromS04 = window.TEUI.StateManager?.getValue("ref_j_32");    // Reference calculations
-const occupancyType = window.TEUI.StateManager?.getValue("d_12");       // Cross-section dependencies
+const refJ32FromS04 = window.TEUI.StateManager?.getValue("ref_j_32"); // Reference calculations
+const occupancyType = window.TEUI.StateManager?.getValue("d_12"); // Cross-section dependencies
 const someBaseValueForM24 = 100; // Placeholder for calculation dependencies
 ```
 
@@ -842,11 +907,12 @@ const someBaseValueForM24 = 100; // Placeholder for calculation dependencies
 **NEW PROTOCOL**: Fix 1-2 variables → **test calculations immediately**
 
 #### **Enhanced Testing Checklist**:
+
 ```
 For EACH ESLint fix involving calculation-related variables:
 
 1. ✅ **Apply Fix**: Prefix 1-2 variables with _
-2. ✅ **Test Calculations**: Verify TEUI target shows 93.6-93.7  
+2. ✅ **Test Calculations**: Verify TEUI target shows 93.6-93.7
 3. ✅ **Test Reference Mode**: Toggle Reference and verify accuracy
 4. ✅ **Test Cross-Dependencies**: Modify input → verify cascading calculations
 5. ✅ **Commit Individual Fix**: Small commits for easy rollback
@@ -854,21 +920,24 @@ For EACH ESLint fix involving calculation-related variables:
 ```
 
 #### **High-Risk ESLint Categories (Require Testing)**:
+
 - ✅ **StateManager listeners**: Any `addListener` callback parameters
 - ✅ **Section01-03 variables**: Core calculation engine sections
-- ✅ **Cross-section references**: Variables getting values from other sections  
+- ✅ **Cross-section references**: Variables getting values from other sections
 - ✅ **Calculation intermediates**: Variables in calculation functions
 - ⚠️ **Low-Risk (Safe)**: Catch blocks, D3 event handlers, Bootstrap variables
 
 ### **🏆 Current Status: Stable Calculation Baseline**
 
 **Post-Recovery State**:
+
 - ✅ **Excel calculation parity**: TEUI target at 93.6 (expected ~93.7)
-- ✅ **Safe ESLint fixes preserved**: 27 structural improvements remain  
+- ✅ **Safe ESLint fixes preserved**: 27 structural improvements remain
 - ✅ **Calculation integrity verified**: All sections calculate nominally
 - ✅ **Clean baseline established**: Ready for careful incremental cleanup
 
 **Remaining ESLint Work**:
+
 - **122 issues remain**: Same as before, but now with **mandatory testing protocol**
 - **Focus on safe categories first**: Catch blocks, event handlers, obvious unused variables
 - **Calculation variables last**: StateManager listeners and cross-section dependencies
@@ -878,12 +947,14 @@ For EACH ESLint fix involving calculation-related variables:
 This near-miss provided **critical learnings** for 4012 refactoring:
 
 #### **For Future ESLint Work**:
+
 - ✅ **Proven testing protocol**: We now know exactly how to safely clean code in calculation engines
-- ✅ **Variable risk assessment**: Clear categorization of high-risk vs. safe cleanup targets  
+- ✅ **Variable risk assessment**: Clear categorization of high-risk vs. safe cleanup targets
 - ✅ **Recovery procedures**: Progressive revert strategy tested and proven
 - ✅ **Calculation validation**: Established baseline values for accuracy testing
 
 #### **For 4012 Refactoring**:
+
 - ✅ **Calculation-first mindset**: Accuracy always trumps code quality metrics
 - ✅ **Incremental testing**: Test after every change, not just at completion
 - ✅ **Risk categorization**: Apply same caution to architectural changes
@@ -892,12 +963,14 @@ This near-miss provided **critical learnings** for 4012 refactoring:
 ### **⚠️ NEVER AGAIN: Prevention Measures**
 
 #### **ESLint Workflow Changes**:
+
 1. **🚨 REQUIRED**: Test calculations after each individual fix
 2. **🚨 REQUIRED**: Focus on safe categories before calculation variables
 3. **🚨 REQUIRED**: Small commits (1-3 fixes max) for easy rollback
 4. **🚨 REQUIRED**: Document calculation-critical variables before prefixing
 
 #### **4012 Refactoring Safeguards**:
+
 1. **Calculation test suite**: Automated tests for all key calculation values
 2. **Reference baseline**: Documented expected values for accuracy verification
 3. **Progressive refactoring**: Architectural changes in small, testable increments
@@ -921,23 +994,27 @@ _Next ESLint Session: Continue with enhanced testing protocol - calculation accu
 ### **🎯 Evening Session: Performance & Debug Cleanup Complete**
 
 **Tonight's Achievement**: Comprehensive performance optimization and debug logging cleanup
+
 - **Performance Violations Eliminated**: All setTimeout replaced with requestAnimationFrame
 - **Console Noise Silenced**: Verbose debug logging commented out while preserving Safari-specific messages
 - **User Experience Enhanced**: Calculations now work instantly with no spinning/settling behavior
 - **Code Quality Maintained**: Professional standards preserved with clean, maintainable code structure
 
 #### **🚀 Performance Fixes Applied**:
+
 - **Section09.js**: `setTimeout(100ms)` → `requestAnimationFrame` (eliminated 94-112ms violations)
 - **4011-Dependency.js**: `setTimeout(500ms)` → `requestAnimationFrame` (eliminated 518ms violation)
 - **index.html**: `setTimeout(500ms)` → `requestAnimationFrame` (eliminated 121ms violation)
 
 #### **🧹 Debug Logging Cleanup**:
+
 - **index.html**: Commented out verbose 🔍 DEBUG messages during initialization
 - **4011-Dependency.js**: Silenced [DependencyGraph] chatter for node calculations and layout switches
 - **4011-StateManager.js**: Quieted [StateManager] export notifications
 - **Safari Compatibility**: Preserved Safari-specific debug messages for troubleshooting
 
 #### **✅ Calculation Integrity Verified**:
+
 - **TEUI Target Values**: Stable at 93.6-93.7 (expected range)
 - **Reference Mode**: Working correctly with values around 200+ (near Excel target of 213.4)
 - **No Regressions**: All calculation chains intact and functioning properly
@@ -948,16 +1025,19 @@ _Next ESLint Session: Continue with enhanced testing protocol - calculation accu
 After experiencing the **calculation regression crisis** where seemingly "unused" variables broke critical calculation chains, we chose the path of wisdom tonight:
 
 #### **Where Angels Fear to Tread**:
+
 - **122 remaining ESLint issues**: All `no-unused-vars` warnings in calculation-critical files
 - **High-risk variables**: StateManager listeners, cross-section calculation dependencies
 - **Complex interdependencies**: Dynamic calculation chains that ESLint can't detect
 
 #### **Fools Rush In**:
+
 - ❌ **The tempting path**: Fix all 122 issues tonight and declare victory
 - ❌ **The dangerous approach**: Batch process remaining variables and test at the end
 - ❌ **The costly mistake**: Risk breaking calculations again after achieving stable baseline
 
 #### **Angels (Wise Developers) Know Better**:
+
 - ✅ **Patience over pride**: Better to have 99% clean code that works than 100% clean code that breaks
 - ✅ **Testing discipline**: Mandatory calculation testing after each fix prevents compound errors
 - ✅ **Strategic timing**: Complete cleanup when fresh and focused, not tired at night
@@ -966,12 +1046,14 @@ After experiencing the **calculation regression crisis** where seemingly "unused
 ### **📋 TOMORROW'S PLAN: Methodical ESLint Completion**
 
 #### **Morning Fresh Start**:
+
 - **Systematic approach**: Apply enhanced testing protocol with calculation verification
 - **Safe categories first**: Focus on catch blocks, D3 event handlers, Bootstrap variables
 - **High-risk variables last**: StateManager listeners with extra caution and testing
 - **Small commits**: 1-3 fixes maximum per commit for easy rollback if needed
 
 #### **Success Metrics for Tomorrow**:
+
 - ✅ **100% ESLint compliance**: All 122 remaining issues resolved
 - ✅ **Zero calculation regressions**: TEUI values maintain 93.6-93.7 range
 - ✅ **Professional foundation**: Clean codebase ready for 4012 refactoring work
@@ -982,11 +1064,13 @@ After experiencing the **calculation regression crisis** where seemingly "unused
 With 4011GS ESLint work complete, focus shifts to **OBC Matrix visual improvements**:
 
 #### **Table Layout Challenges**:
+
 - **Goalpost Column Expansion**: Middle columns expanding beyond desired 400-600px widths
 - **Browser Layout Conflicts**: `table-layout: auto` algorithm vs. form element requirements
 - **Cosmetic vs. Functional**: Issue appears purely visual - forms work correctly despite expansion
 
 #### **Proven Improvements Available**:
+
 ```css
 /* Universal alignment system (successfully tested in OBC Matrix) */
 .data-table td {
@@ -1002,6 +1086,7 @@ With 4011GS ESLint work complete, focus shifts to **OBC Matrix visual improvemen
 ```
 
 #### **Strategic Approach**:
+
 - **Focus on proven wins**: Apply universal alignment system that eliminated 350+ CSS conflicts
 - **Document layout challenges**: Research goalpost expansion for future solution
 - **Maintain functionality**: Never sacrifice form usability for visual perfection
@@ -1012,12 +1097,14 @@ With 4011GS ESLint work complete, focus shifts to **OBC Matrix visual improvemen
 This evening demonstrated **professional software development wisdom**:
 
 #### **Technical Excellence**:
+
 - ✅ **Performance optimization completed**: Calculations now instant and smooth
 - ✅ **Debug noise eliminated**: Clean console while preserving essential debugging
 - ✅ **Code quality maintained**: Professional standards without calculation compromise
 - ✅ **User experience enhanced**: No more spinning, no more console spam
 
 #### **Professional Discipline**:
+
 - ✅ **Restraint over ego**: Chose wisdom over the rush to complete
 - ✅ **Quality over quantity**: Perfect tonight's work rather than risk tomorrow's stability
 - ✅ **Experience over ambition**: Applied lessons learned from calculation regression crisis
@@ -1028,6 +1115,7 @@ This evening demonstrated **professional software development wisdom**:
 > "Fools rush in where angels fear to tread" - Alexander Pope
 
 In software development, **angels are experienced developers** who have learned that:
+
 - **Working code trumps perfect metrics**
 - **Methodical progress beats heroic sprints**
 - **Testing discipline prevents expensive mistakes**
@@ -1039,8 +1127,8 @@ Tonight we chose to be angels - patient, wise, and strategic. Tomorrow we comple
 
 **🎯 STATUS**: **PERFORMANCE & DEBUG CLEANUP COMPLETE** ✅  
 **Next Session**: Complete ESLint cleanup with enhanced testing protocol  
-**Following Session**: OBC Matrix table styling improvements  (Tables 4-10 per OBCMatrix.md)
-**Philosophy**: Wisdom over rushing, excellence over ego  
+**Following Session**: OBC Matrix table styling improvements (Tables 4-10 per OBCMatrix.md)
+**Philosophy**: Wisdom over rushing, excellence over ego
 
 ---
 
@@ -1054,6 +1142,7 @@ _Next Update: Tomorrow's methodical ESLint completion with calculation integrity
 ### **📊 Performance Violation Analysis**
 
 **Current State**: Three console performance violations persist in 4011GS:
+
 1. **661ms setTimeout violation** - `index.html:829` - `TEUI.Calculator.calculateAll()`
 2. **60ms setTimeout violation** - `4011-SectionIntegrator.js:650` - `forceVolumeMetricsUpdate()`
 3. **112ms forced reflow** - General layout thrashing during calculations
@@ -1061,12 +1150,14 @@ _Next Update: Tomorrow's methodical ESLint completion with calculation integrity
 ### **🔍 Root Cause Analysis**
 
 #### **Architectural Symptoms, Not Bugs**:
+
 - **Sequential Processing**: All 18 sections calculated in single setTimeout block
 - **Cross-Section Complexity**: Complex integration chains between sections
 - **Mixed Calculation/Display**: DOM manipulation during mathematical operations
 - **Timing Dependencies**: Calculations dependent on DOM layout completion
 
 #### **Why These Exist**:
+
 ```javascript
 // Current Architecture: Sequential section processing
 setTimeout(() => TEUI.Calculator.calculateAll(), 300); // 661ms violation
@@ -1086,7 +1177,7 @@ forceVolumeMetricsUpdate() → sect12.calculateAll() → updateTEDITELI() // 60m
 const results = calculateTEUI(inputs); // {target, reference} - instant calculation
 updateDisplay(results); // Separate rendering step - no layout thrashing
 
-// Current: Complex cross-section integrations  
+// Current: Complex cross-section integrations
 forceVolumeMetricsUpdate() → sect12.calculateAll() → updateTEDITELI()
 
 // v4.012: Single calculation engine
@@ -1094,6 +1185,7 @@ const allResults = calculateAllSections(inputs); // Pure functions, no cross-cal
 ```
 
 #### **Natural Performance Benefits**:
+
 - **Instant Calculations**: Pure functions eliminate setTimeout delays
 - **No Cross-Dependencies**: Single calculation engine eliminates integration chains
 - **Separated Concerns**: Calculation isolated from DOM manipulation
@@ -1102,13 +1194,15 @@ const allResults = calculateAllSections(inputs); // Pure functions, no cross-cal
 ### **📈 Strategic ROI Analysis**
 
 #### **Option A: Fix Now (REJECTED)**
+
 - **Effort**: 2-3 hours implementation + testing
 - **Benefit**: Clean console for 1-2 weeks
 - **Risk**: Changes get obsoleted during refactor
 - **Strategic Value**: **LOW** - Symptom treatment
 
 #### **Option B: Defer to Refactor (SELECTED)**
-- **Effort**: 0 hours now, naturally resolved during refactor  
+
+- **Effort**: 0 hours now, naturally resolved during refactor
 - **Benefit**: Focus time on architectural improvements
 - **Risk**: Console warnings persist briefly
 - **Strategic Value**: **HIGH** - Root cause resolution
@@ -1118,15 +1212,17 @@ const allResults = calculateAllSections(inputs); // Pure functions, no cross-cal
 **Use Performance Violations as Success Criteria**:
 
 #### **Pre-Refactor Baseline (Current)**:
+
 ```javascript
 console.violations = [
   "661ms calculateAll - Sequential section processing",
-  "60ms SectionIntegrator - Cross-section complexity", 
-  "112ms reflow - Layout thrashing"
+  "60ms SectionIntegrator - Cross-section complexity",
+  "112ms reflow - Layout thrashing",
 ];
 ```
 
 #### **Post-Refactor Success Criteria**:
+
 ```javascript
 console.violations = []; // Clean performance profile validates architecture
 calculation.time < 50ms; // Instant tuple calculations
@@ -1144,11 +1240,13 @@ display.separation = true; // Calculation/display concerns separated
 ### **📋 Implementation Strategy**
 
 #### **Immediate Actions**:
+
 - ✅ **Document violations** as refactor requirements
 - ✅ **Focus refactor energy** on root architectural causes
 - ✅ **Use violations** as validation criteria for refactor success
 
 #### **Refactor Priorities**:
+
 1. **Pure Function Architecture**: Eliminate setTimeout dependencies
 2. **Unified Calculation Engine**: Replace cross-section integrations
 3. **Separated Concerns**: Calculation logic independent of DOM
@@ -1156,11 +1254,13 @@ display.separation = true; // Calculation/display concerns separated
 ### **⚠️ Critical Success Factors**
 
 #### **Validation Protocol**:
+
 - **Before Refactor**: Document current violation timing and locations
 - **During Refactor**: Monitor for performance regression
 - **After Refactor**: Verify clean console as architecture validation
 
 #### **Risk Mitigation**:
+
 - **Baseline Documentation**: Current violations serve as regression detection
 - **Progressive Testing**: Validate performance at each refactor milestone
 - **Rollback Criteria**: Any performance regression triggers immediate investigation
@@ -1168,6 +1268,7 @@ display.separation = true; // Calculation/display concerns separated
 ### **🏆 Strategic Value**
 
 **This decision demonstrates professional software development**:
+
 - ✅ **Strategic Thinking**: Fix architecture, not symptoms
 - ✅ **Resource Optimization**: Focus effort on high-value architectural work
 - ✅ **Technical Debt Management**: Address root causes systematically
@@ -1180,7 +1281,7 @@ display.separation = true; // Calculation/display concerns separated
 **🎯 STATUS**: **PERFORMANCE VIOLATIONS STRATEGICALLY DEFERRED** ✅  
 **Refactor Requirement**: Eliminate violations through architectural improvements  
 **Success Criteria**: Clean console performance profile validates tuple architecture  
-**Timeline**: Natural resolution during v4.012 implementation phases  
+**Timeline**: Natural resolution during v4.012 implementation phases
 
 ---
 

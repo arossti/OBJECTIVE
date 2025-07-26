@@ -22,7 +22,7 @@ window.TEUI.SectionModules.sect09 = (function () {
   //==========================================================================
   // PATTERN A: DUAL-STATE ARCHITECTURE (Self-Contained State Objects)
   //==========================================================================
-  
+
   // Target State: User's design values
   const TargetState = {
     state: {},
@@ -37,15 +37,15 @@ window.TEUI.SectionModules.sect09 = (function () {
     setDefaults: function () {
       // These match the current working values from the screenshot
       this.state = {
-        d_63: "126",        // Occupants per building (from screenshot)
-        g_63: "12",         // Occupied hours/day (from screenshot)
-        d_64: "Normal",     // Occupant activity (from screenshot)
-        f_64: "117",        // Activity watts (calculated)
-        i_63: "4380",       // Annual occupied hours (calculated)
-        d_65: "7",          // Plug loads density (from screenshot)
-        d_66: "1.5",        // Lighting density (Target default)
-        g_67: "Efficient",  // Equipment efficiency (user preference)
-        d_67: "7.00",       // Equipment density (from screenshot)
+        d_63: "126", // Occupants per building (from screenshot)
+        g_63: "12", // Occupied hours/day (from screenshot)
+        d_64: "Normal", // Occupant activity (from screenshot)
+        f_64: "117", // Activity watts (calculated)
+        i_63: "4380", // Annual occupied hours (calculated)
+        d_65: "7", // Plug loads density (from screenshot)
+        d_66: "1.5", // Lighting density (Target default)
+        g_67: "Efficient", // Equipment efficiency (user preference)
+        d_67: "7.00", // Equipment density (from screenshot)
         d_68: "No Elevators", // Elevator status (from screenshot)
         // Calculated values will be computed
       };
@@ -76,25 +76,29 @@ window.TEUI.SectionModules.sect09 = (function () {
     },
     setDefaults: function () {
       // Get current reference standard for dynamic loading
-      const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-      const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
-      
+      const currentStandard =
+        window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues =
+        window.TEUI?.ReferenceValues?.[currentStandard] || {};
+
       // Reference defaults: mostly same as Target, but with specific differences
       this.state = {
-        d_63: "126",        // Same occupants as Target (user's design)
-        g_63: "12",         // Same hours as Target (user's design) 
-        d_64: "Normal",     // Same activity as Target
-        f_64: "117",        // Same activity watts
-        i_63: "4380",       // Same annual hours
-        d_65: "7",          // Same plug loads as Target (user's design)
-        d_66: referenceValues.t_66 || "2.0",  // Dynamic lighting load from ReferenceValues.js (2.0 default for most standards)
-        g_67: "Regular",    // DIFFERENCE: Equipment spec = Regular (not Efficient)
-        d_67: "7.00",       // Same equipment density as Target
+        d_63: "126", // Same occupants as Target (user's design)
+        g_63: "12", // Same hours as Target (user's design)
+        d_64: "Normal", // Same activity as Target
+        f_64: "117", // Same activity watts
+        i_63: "4380", // Same annual hours
+        d_65: "7", // Same plug loads as Target (user's design)
+        d_66: referenceValues.t_66 || "2.0", // Dynamic lighting load from ReferenceValues.js (2.0 default for most standards)
+        g_67: "Regular", // DIFFERENCE: Equipment spec = Regular (not Efficient)
+        d_67: "7.00", // Same equipment density as Target
         d_68: "No Elevators", // Same elevator status as Target
         // Calculated values will be computed
       };
-      
-      console.log(`S09: Reference defaults loaded from standard: ${currentStandard}, lighting: ${this.state.d_66}`);
+
+      console.log(
+        `S09: Reference defaults loaded from standard: ${currentStandard}, lighting: ${this.state.d_66}`,
+      );
     },
     saveState: function () {
       localStorage.setItem("S09_REFERENCE_STATE", JSON.stringify(this.state));
@@ -107,16 +111,18 @@ window.TEUI.SectionModules.sect09 = (function () {
       return this.state[fieldId];
     },
     // Dynamic reloading when reference standard changes
-    onReferenceStandardChange: function(newStandard) {
+    onReferenceStandardChange: function (newStandard) {
       const referenceValues = window.TEUI?.ReferenceValues?.[newStandard] || {};
-      
+
       // Update lighting loads dynamically, but preserve user-modified values for other fields
       this.state.d_66 = referenceValues.t_66 || "2.0";
       this.state.g_67 = "Regular"; // Always Regular for reference
-      
+
       this.saveState();
-      console.log(`S09: Reference values updated for standard: ${newStandard}, lighting: ${this.state.d_66}`);
-    }
+      console.log(
+        `S09: Reference values updated for standard: ${newStandard}, lighting: ${this.state.d_66}`,
+      );
+    },
   };
 
   // The ModeManager Facade
@@ -127,7 +133,10 @@ window.TEUI.SectionModules.sect09 = (function () {
       ReferenceState.initialize();
     },
     switchMode: function (mode) {
-      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
+      if (
+        this.currentMode === mode ||
+        (mode !== "target" && mode !== "reference")
+      )
         return;
       this.currentMode = mode;
       console.log(`S09: Switched to ${mode.toUpperCase()} mode`);
@@ -135,13 +144,13 @@ window.TEUI.SectionModules.sect09 = (function () {
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
     },
-    resetState: function() {
+    resetState: function () {
       console.log("S09: Resetting states to defaults");
       TargetState.setDefaults();
       TargetState.saveState();
       ReferenceState.setDefaults();
       ReferenceState.saveState();
-      
+
       this.refreshUI();
       // Trigger calculation after reset
       calculateAll();
@@ -156,7 +165,10 @@ window.TEUI.SectionModules.sect09 = (function () {
       this.getCurrentState().setValue(fieldId, value);
 
       // Bridge to global StateManager for backward compatibility (only Target mode)
-      if (this.currentMode === "target" && window.TEUI?.StateManager?.setValue) {
+      if (
+        this.currentMode === "target" &&
+        window.TEUI?.StateManager?.setValue
+      ) {
         window.TEUI.StateManager.setValue(fieldId, value, source);
       }
     },
@@ -165,24 +177,39 @@ window.TEUI.SectionModules.sect09 = (function () {
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      
-      // Fields that should sync from state to UI (input fields)
-      const fieldsToSync = ['d_63', 'g_63', 'd_64', 'd_65', 'd_66', 'g_67', 'd_68'];
 
-      fieldsToSync.forEach(fieldId => {
+      // Fields that should sync from state to UI (input fields)
+      const fieldsToSync = [
+        "d_63",
+        "g_63",
+        "d_64",
+        "d_65",
+        "d_66",
+        "g_67",
+        "d_68",
+      ];
+
+      fieldsToSync.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
         // Update dropdown elements
-        const dropdownElement = sectionElement.querySelector(`[data-dropdown-id="dd_${fieldId}"]`);
-        if (dropdownElement && dropdownElement.matches('select')) {
+        const dropdownElement = sectionElement.querySelector(
+          `[data-dropdown-id="dd_${fieldId}"]`,
+        );
+        if (dropdownElement && dropdownElement.matches("select")) {
           dropdownElement.value = stateValue;
           return;
         }
 
-        // Update editable elements  
-        const editableElement = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-        if (editableElement && editableElement.hasAttribute('contenteditable')) {
+        // Update editable elements
+        const editableElement = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
+        if (
+          editableElement &&
+          editableElement.hasAttribute("contenteditable")
+        ) {
           editableElement.textContent = stateValue;
           return;
         }
@@ -195,12 +222,33 @@ window.TEUI.SectionModules.sect09 = (function () {
 
       // Update calculated fields: Show Reference results in Reference mode, Target results in Target mode
       const calculatedFields = [
-        'f_64', 'i_63', 'h_64', 'i_64', 'k_64', 'h_65', 'i_65', 'k_65', 
-        'h_66', 'i_66', 'k_66', 'd_67', 'h_67', 'i_67', 'k_67',
-        'h_69', 'i_69', 'k_69', 'h_70', 'i_70', 'k_70', 'h_71', 'i_71', 'k_71'
+        "f_64",
+        "i_63",
+        "h_64",
+        "i_64",
+        "k_64",
+        "h_65",
+        "i_65",
+        "k_65",
+        "h_66",
+        "i_66",
+        "k_66",
+        "d_67",
+        "h_67",
+        "i_67",
+        "k_67",
+        "h_69",
+        "i_69",
+        "k_69",
+        "h_70",
+        "i_70",
+        "k_70",
+        "h_71",
+        "i_71",
+        "k_71",
       ];
 
-      calculatedFields.forEach(fieldId => {
+      calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (!element) return;
 
@@ -209,22 +257,26 @@ window.TEUI.SectionModules.sect09 = (function () {
           // Show Reference calculation results
           value = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
         } else {
-          // Show Target calculation results  
+          // Show Target calculation results
           value = window.TEUI?.StateManager?.getValue(fieldId);
         }
 
         if (value !== undefined && value !== null) {
           // Format value for display based on field type
-          let formatType = 'number';
-          if (fieldId.startsWith('h_') || fieldId.startsWith('i_') || fieldId.startsWith('k_')) {
-            formatType = fieldId === 'i_63' ? 'raw' : 'number-2dp-comma';
+          let formatType = "number";
+          if (
+            fieldId.startsWith("h_") ||
+            fieldId.startsWith("i_") ||
+            fieldId.startsWith("k_")
+          ) {
+            formatType = fieldId === "i_63" ? "raw" : "number-2dp-comma";
           }
-          
+
           const formattedValue = window.TEUI.formatNumber(value, formatType);
           element.textContent = formattedValue;
         }
       });
-      
+
       console.log(`S09: UI refreshed for ${this.currentMode} mode`);
     },
   };
@@ -236,29 +288,40 @@ window.TEUI.SectionModules.sect09 = (function () {
   //==========================================================================
   // HEADER CONTROLS INJECTION
   //==========================================================================
-  
+
   /**
    * Inject Target/Reference toggle and Reset button into section header
    */
   function injectHeaderControls() {
-    const sectionHeader = document.querySelector("#occupantInternalGains .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+    const sectionHeader = document.querySelector(
+      "#occupantInternalGains .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
       return; // Already setup or header not found
     }
 
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "local-controls-container";
-    controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
 
     // --- Create Reset Button ---
     const resetButton = document.createElement("button");
     resetButton.innerHTML = "🔄 Reset";
     resetButton.title = "Reset Section 09 to Defaults";
-    resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
-    
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+
     resetButton.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (confirm("Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 09.")) {
+      if (
+        confirm(
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 09.",
+        )
+      ) {
         ModeManager.resetState();
       }
     });
@@ -266,19 +329,22 @@ window.TEUI.SectionModules.sect09 = (function () {
     // --- Create Toggle Switch ---
     const stateIndicator = document.createElement("span");
     stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
 
     const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-    
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
     const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
 
     toggleSwitch.appendChild(slider);
-    
+
     toggleSwitch.addEventListener("click", (event) => {
       event.stopPropagation();
-      const isReference = toggleSwitch.classList.toggle('active');
+      const isReference = toggleSwitch.classList.toggle("active");
       if (isReference) {
         slider.style.transform = "translateX(20px)";
         toggleSwitch.style.backgroundColor = "#28a745";
@@ -388,15 +454,24 @@ window.TEUI.SectionModules.sect09 = (function () {
     return "A-Assembly"; // Default fallback
   }
 
-
-
   /**
    * DUAL-ROUTING HELPER: Get field value from current ModeManager state (for UI display)
    */
   function getFieldValue(fieldId) {
     // Internal S09 fields: Use ModeManager for dual-state support
-    const internalFields = ['d_63', 'g_63', 'd_64', 'f_64', 'i_63', 'd_65', 'd_66', 'g_67', 'd_67', 'd_68'];
-    
+    const internalFields = [
+      "d_63",
+      "g_63",
+      "d_64",
+      "f_64",
+      "i_63",
+      "d_65",
+      "d_66",
+      "g_67",
+      "d_67",
+      "d_68",
+    ];
+
     if (internalFields.includes(fieldId)) {
       const value = ModeManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
@@ -404,7 +479,7 @@ window.TEUI.SectionModules.sect09 = (function () {
       }
     }
 
-    // External dependencies: Use StateManager  
+    // External dependencies: Use StateManager
     if (window.TEUI?.StateManager?.getValue) {
       const value = window.TEUI.StateManager.getValue(fieldId);
       if (value !== null && value !== undefined) {
@@ -447,8 +522,15 @@ window.TEUI.SectionModules.sect09 = (function () {
     }
 
     // Bridge to StateManager for backward compatibility (Target mode only)
-    if (ModeManager.currentMode === "target" && window.TEUI?.StateManager?.setValue) {
-      window.TEUI.StateManager.setValue(fieldId, String(rawValue), "calculated");
+    if (
+      ModeManager.currentMode === "target" &&
+      window.TEUI?.StateManager?.setValue
+    ) {
+      window.TEUI.StateManager.setValue(
+        fieldId,
+        String(rawValue),
+        "calculated",
+      );
     }
 
     // Format and update DOM
@@ -1317,7 +1399,8 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     // Calculate percentage against reference value
     // Use dynamic reference value from ReferenceState
-    const referenceLightingLoad = window.TEUI.parseNumeric(ReferenceState.getValue("d_66")) || 2.0;
+    const referenceLightingLoad =
+      window.TEUI.parseNumeric(ReferenceState.getValue("d_66")) || 2.0;
     const percentOfReference = (lightingDensity / referenceLightingLoad) * 100;
     setCalculatedValue("m_66", percentOfReference, "percent-auto");
 
@@ -1357,18 +1440,21 @@ window.TEUI.SectionModules.sect09 = (function () {
             ] !== undefined
           ) {
             densityValue =
-              equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus];
+              equipmentLoadsTable[formattedBuildingType][efficiencyType][
+                elevatorStatus
+              ];
           }
         }
       }
 
-      // Update calculated density 
+      // Update calculated density
       setCalculatedValue("d_67", densityValue, "number");
 
       // Calculate annual energy
       const floorArea = window.TEUI.parseNumeric(getFieldValue("h_15"));
       const occupiedHours = window.TEUI.parseNumeric(getFieldValue("i_63"));
-      const annualEnergy = (densityValue * floorArea * occupiedHours) / 1000 || 0;
+      const annualEnergy =
+        (densityValue * floorArea * occupiedHours) / 1000 || 0;
 
       // Get heating/cooling split
       const { heatingRatio, coolingRatio } = calculateHeatingCoolingSplit();
@@ -1391,8 +1477,6 @@ window.TEUI.SectionModules.sect09 = (function () {
     } catch (error) {
       // Error handling could be added here if needed
     }
-
-
   }
 
   /**
@@ -1517,8 +1601,6 @@ window.TEUI.SectionModules.sect09 = (function () {
     setCalculatedValue("l_71", 1.0, "percent-auto");
   }
 
-
-
   //==========================================================================
   // DUAL-ENGINE ARCHITECTURE
   //==========================================================================
@@ -1530,67 +1612,174 @@ window.TEUI.SectionModules.sect09 = (function () {
   function calculateReferenceModel() {
     try {
       // Calculate occupant energy using Reference state
-      const refOccupants = window.TEUI.parseNumeric(ReferenceState.getValue("d_63"));
-      const refDailyHours = window.TEUI.parseNumeric(ReferenceState.getValue("g_63"));
+      const refOccupants = window.TEUI.parseNumeric(
+        ReferenceState.getValue("d_63"),
+      );
+      const refDailyHours = window.TEUI.parseNumeric(
+        ReferenceState.getValue("g_63"),
+      );
       const refActivityLevel = ReferenceState.getValue("d_64");
       const refActivityWatts = calculateActivityWatts(refActivityLevel);
       const refAnnualHours = refDailyHours * 365;
-      const refOccupantEnergy = (refOccupants * refActivityWatts * refAnnualHours) / 1000;
+      const refOccupantEnergy =
+        (refOccupants * refActivityWatts * refAnnualHours) / 1000;
 
       // Calculate plug loads using Reference state
-      const refPlugDensity = window.TEUI.parseNumeric(ReferenceState.getValue("d_65"));
-      const refArea = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("ref_h_15") || window.TEUI?.StateManager?.getValue("h_15"));
+      const refPlugDensity = window.TEUI.parseNumeric(
+        ReferenceState.getValue("d_65"),
+      );
+      const refArea = window.TEUI.parseNumeric(
+        window.TEUI?.StateManager?.getValue("ref_h_15") ||
+          window.TEUI?.StateManager?.getValue("h_15"),
+      );
       const refPlugEnergy = (refPlugDensity * refArea * refAnnualHours) / 1000;
 
-      // Calculate lighting loads using Reference state  
-      const refLightingDensity = window.TEUI.parseNumeric(ReferenceState.getValue("d_66"));
-      const refLightingEnergy = (refLightingDensity * refArea * refAnnualHours) / 1000;
+      // Calculate lighting loads using Reference state
+      const refLightingDensity = window.TEUI.parseNumeric(
+        ReferenceState.getValue("d_66"),
+      );
+      const refLightingEnergy =
+        (refLightingDensity * refArea * refAnnualHours) / 1000;
 
       // Calculate equipment loads using Reference state
       const refEquipmentDensity = calculateEquipmentDensityForReference();
-      const refEquipmentEnergy = (refEquipmentDensity * refArea * refAnnualHours) / 1000;
+      const refEquipmentEnergy =
+        (refEquipmentDensity * refArea * refAnnualHours) / 1000;
 
       // Get DHW losses
-      const refDHWLosses = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("ref_d_54") || window.TEUI?.StateManager?.getValue("d_54")) || 0;
+      const refDHWLosses =
+        window.TEUI.parseNumeric(
+          window.TEUI?.StateManager?.getValue("ref_d_54") ||
+            window.TEUI?.StateManager?.getValue("d_54"),
+        ) || 0;
 
       // Calculate heating/cooling splits using Reference climate data
-      const refCoolingDays = window.TEUI.parseNumeric(window.TEUI?.StateManager?.getValue("ref_m_19") || window.TEUI?.StateManager?.getValue("m_19")) || 120;
+      const refCoolingDays =
+        window.TEUI.parseNumeric(
+          window.TEUI?.StateManager?.getValue("ref_m_19") ||
+            window.TEUI?.StateManager?.getValue("m_19"),
+        ) || 120;
       const refHeatingDays = 365 - refCoolingDays;
       const refHeatingRatio = refHeatingDays / 365;
       const refCoolingRatio = refCoolingDays / 365;
 
       // Calculate totals
-      const refSubtotal = refPlugEnergy + refLightingEnergy + refEquipmentEnergy;
+      const refSubtotal =
+        refPlugEnergy + refLightingEnergy + refEquipmentEnergy;
       const refTotal = refOccupantEnergy + refSubtotal + refDHWLosses;
 
       // Store Reference Model results with ref_ prefix
       if (window.TEUI?.StateManager) {
         // Individual components
-        window.TEUI.StateManager.setValue("ref_h_64", refOccupantEnergy.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_h_65", refPlugEnergy.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_h_66", refLightingEnergy.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_h_67", refEquipmentEnergy.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_h_69", refDHWLosses.toString(), "calculated");
+        window.TEUI.StateManager.setValue(
+          "ref_h_64",
+          refOccupantEnergy.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_h_65",
+          refPlugEnergy.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_h_66",
+          refLightingEnergy.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_h_67",
+          refEquipmentEnergy.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_h_69",
+          refDHWLosses.toString(),
+          "calculated",
+        );
 
         // Heating/cooling splits
-        window.TEUI.StateManager.setValue("ref_i_64", (refOccupantEnergy * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_64", (refOccupantEnergy * refCoolingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_65", (refPlugEnergy * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_65", (refPlugEnergy * refCoolingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_66", (refLightingEnergy * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_66", (refLightingEnergy * refCoolingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_67", (refEquipmentEnergy * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_67", (refEquipmentEnergy * refCoolingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_69", (refDHWLosses * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_69", (refDHWLosses * refCoolingRatio).toString(), "calculated");
+        window.TEUI.StateManager.setValue(
+          "ref_i_64",
+          (refOccupantEnergy * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_64",
+          (refOccupantEnergy * refCoolingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_65",
+          (refPlugEnergy * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_65",
+          (refPlugEnergy * refCoolingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_66",
+          (refLightingEnergy * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_66",
+          (refLightingEnergy * refCoolingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_67",
+          (refEquipmentEnergy * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_67",
+          (refEquipmentEnergy * refCoolingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_69",
+          (refDHWLosses * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_69",
+          (refDHWLosses * refCoolingRatio).toString(),
+          "calculated",
+        );
 
         // Subtotals and totals
-        window.TEUI.StateManager.setValue("ref_h_70", refSubtotal.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_70", (refSubtotal * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_70", (refSubtotal * refCoolingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_h_71", refTotal.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_71", (refTotal * refHeatingRatio).toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_71", (refTotal * refCoolingRatio).toString(), "calculated");
+        window.TEUI.StateManager.setValue(
+          "ref_h_70",
+          refSubtotal.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_70",
+          (refSubtotal * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_70",
+          (refSubtotal * refCoolingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_h_71",
+          refTotal.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_71",
+          (refTotal * refHeatingRatio).toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_71",
+          (refTotal * refCoolingRatio).toString(),
+          "calculated",
+        );
       }
     } catch (error) {
       console.error("[S09] Error in Reference Model calculations:", error);
@@ -1601,7 +1790,8 @@ window.TEUI.SectionModules.sect09 = (function () {
    * Helper function to calculate equipment density for Reference model
    */
   function calculateEquipmentDensityForReference() {
-    const buildingType = window.TEUI?.StateManager?.getValue("d_12") || "A-Assembly";
+    const buildingType =
+      window.TEUI?.StateManager?.getValue("d_12") || "A-Assembly";
     const efficiencyType = ReferenceState.getValue("g_67") || "Regular"; // Reference always uses Regular
     const elevatorStatus = ReferenceState.getValue("d_68") || "No Elevators";
 
@@ -1610,8 +1800,15 @@ window.TEUI.SectionModules.sect09 = (function () {
 
     if (equipmentLoadsTable[formattedBuildingType]) {
       if (equipmentLoadsTable[formattedBuildingType][efficiencyType]) {
-        if (equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus] !== undefined) {
-          densityValue = equipmentLoadsTable[formattedBuildingType][efficiencyType][elevatorStatus];
+        if (
+          equipmentLoadsTable[formattedBuildingType][efficiencyType][
+            elevatorStatus
+          ] !== undefined
+        ) {
+          densityValue =
+            equipmentLoadsTable[formattedBuildingType][efficiencyType][
+              elevatorStatus
+            ];
         }
       }
     }
@@ -1791,13 +1988,13 @@ window.TEUI.SectionModules.sect09 = (function () {
           const newStandard = window.TEUI.StateManager.getValue("d_13");
           if (newStandard && ReferenceState.onReferenceStandardChange) {
             ReferenceState.onReferenceStandardChange(newStandard);
-            
+
             // Refresh UI if currently in reference mode
             if (ModeManager.currentMode === "reference") {
               ModeManager.refreshUI();
             }
           }
-          
+
           calculatePlugLoads();
           calculateTotals();
           updateAllReferenceIndicators();
@@ -1968,7 +2165,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     // 1. Initialize Pattern A dual-state system
     ModeManager.initialize();
 
-    // 2. Inject header controls 
+    // 2. Inject header controls
     injectHeaderControls();
 
     // 3. Initialize event handlers
@@ -2242,7 +2439,7 @@ window.TEUI.SectionModules.sect09 = (function () {
     const nFieldId = `n_${rowId}`;
 
     // **REFERENCE MODE: Always show 100%/✓ (Perfect Compliance)**
-    if (ModeManager.currentMode === 'reference') {
+    if (ModeManager.currentMode === "reference") {
       setCalculatedValue(mFieldId, 1.0, "percent-0dp"); // Always 100%
       const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
       if (nElement) {
@@ -2260,52 +2457,61 @@ window.TEUI.SectionModules.sect09 = (function () {
       let isGood = true;
 
       // Get appropriate reference value based on field
-      if (fieldId === 'd_65' || fieldId === 'd_66') {
+      if (fieldId === "d_65" || fieldId === "d_66") {
         // Rows 65, 66: Use dynamic values from ReferenceValues.js
-        const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-        const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
-        
-        if (fieldId === 'd_65') {
+        const currentStandard =
+          window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+        const referenceValues =
+          window.TEUI?.ReferenceValues?.[currentStandard] || {};
+
+        if (fieldId === "d_65") {
           // Plug loads: Use t_65 from ReferenceValues.js (typically 7.0 for most standards)
-          referenceValue = window.TEUI.parseNumeric(referenceValues.t_65) || 7.0;
-        } else if (fieldId === 'd_66') {
-          // Lighting loads: Use t_66 from ReferenceValues.js (typically 2.0 for most standards)  
-          referenceValue = window.TEUI.parseNumeric(referenceValues.t_66) || 2.0;
+          referenceValue =
+            window.TEUI.parseNumeric(referenceValues.t_65) || 7.0;
+        } else if (fieldId === "d_66") {
+          // Lighting loads: Use t_66 from ReferenceValues.js (typically 2.0 for most standards)
+          referenceValue =
+            window.TEUI.parseNumeric(referenceValues.t_66) || 2.0;
         }
-        
+
         // For both plug and lighting: lower is better
         const currentValueNum = window.TEUI.parseNumeric(currentValue);
         const refValueNum = window.TEUI.parseNumeric(referenceValue);
-        
+
         if (currentValueNum > 0 && refValueNum > 0) {
           referencePercent = refValueNum / currentValueNum; // Reference/Current for "lower is better"
           isGood = currentValueNum <= refValueNum;
         }
-        
-             } else if (fieldId === 'g_67') {
-         // Row 67: Simple comparison of Reference d_67 / Target d_67
-         const targetEquipmentDensity = window.TEUI.parseNumeric(TargetState.getValue('d_67'));
-         const referenceEquipmentDensity = window.TEUI.parseNumeric(ReferenceState.getValue('d_67'));
-         
-         if (targetEquipmentDensity > 0 && referenceEquipmentDensity > 0) {
-           // Calculate: Reference / Target (e.g., 7.00 / 5.00 = 140%)
-           referencePercent = referenceEquipmentDensity / targetEquipmentDensity;
-           isGood = targetEquipmentDensity <= referenceEquipmentDensity;
-         }
-       }
+      } else if (fieldId === "g_67") {
+        // Row 67: Simple comparison of Reference d_67 / Target d_67
+        const targetEquipmentDensity = window.TEUI.parseNumeric(
+          TargetState.getValue("d_67"),
+        );
+        const referenceEquipmentDensity = window.TEUI.parseNumeric(
+          ReferenceState.getValue("d_67"),
+        );
+
+        if (targetEquipmentDensity > 0 && referenceEquipmentDensity > 0) {
+          // Calculate: Reference / Target (e.g., 7.00 / 5.00 = 140%)
+          referencePercent = referenceEquipmentDensity / targetEquipmentDensity;
+          isGood = targetEquipmentDensity <= referenceEquipmentDensity;
+        }
+      }
 
       // Update Column M (Reference %)
       setCalculatedValue(mFieldId, referencePercent, "percent-0dp");
 
-      // Update Column N (Pass/Fail checkmark) 
+      // Update Column N (Pass/Fail checkmark)
       const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
       if (nElement) {
         nElement.textContent = isGood ? "✓" : "✗";
         setElementClass(nFieldId, isGood ? "checkmark" : "warning");
       }
-      
     } catch (error) {
-      console.error(`Error updating reference indicators for ${fieldId}:`, error);
+      console.error(
+        `Error updating reference indicators for ${fieldId}:`,
+        error,
+      );
       // Fallback: show 100%/✓ on error
       setCalculatedValue(mFieldId, 1.0, "percent-0dp");
       const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
@@ -2361,9 +2567,9 @@ document.addEventListener("teui-section-rendered", function (event) {
   if (event.detail?.sectionId === "occupantInternalGains") {
     // PERFORMANCE FIX: Execute initialization immediately to avoid requestAnimationFrame violations
     // Heavy initialization work should not be in animation frames (causes 99-116ms violations)
-      if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
-        window.TEUI.SectionModules.sect09.onSectionRendered();
-      }
+    if (window.TEUI?.SectionModules?.sect09?.onSectionRendered) {
+      window.TEUI.SectionModules.sect09.onSectionRendered();
+    }
   }
 });
 

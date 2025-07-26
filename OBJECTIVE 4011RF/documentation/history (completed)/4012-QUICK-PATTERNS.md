@@ -10,13 +10,14 @@
 ## 📝 **Essential Patterns**
 
 ### **1. Section Structure (Required)**
+
 ```javascript
 function calculateTargetModel() {
   // Target calculations - reads unprefixed values
 }
 
 function calculateReferenceModel() {
-  // Reference calculations - reads ref_ prefixed values  
+  // Reference calculations - reads ref_ prefixed values
 }
 
 function calculateAll() {
@@ -26,6 +27,7 @@ function calculateAll() {
 ```
 
 ### **2. Mode-Aware Writing (Required)**
+
 ```javascript
 const setCalculatedValue = (fieldId, value, format = "number") => {
   if (window.TEUI?.ReferenceToggle?.isReferenceMode?.()) {
@@ -37,12 +39,15 @@ const setCalculatedValue = (fieldId, value, format = "number") => {
 ```
 
 ### **3. Mode-Aware Reading (Critical for S15 and cross-section dependencies)**
+
 ```javascript
 // Reference calculations - ONLY read ref_ prefixed
 const ref_value = window.TEUI?.StateManager?.getValue("ref_fieldId") || 0;
 
 // Target calculations - read target_ prefixed with fallback
-const target_value = window.TEUI?.StateManager?.getValue("target_fieldId") || getNumericValue("fieldId");
+const target_value =
+  window.TEUI?.StateManager?.getValue("target_fieldId") ||
+  getNumericValue("fieldId");
 ```
 
 ---
@@ -70,4 +75,4 @@ const target_value = window.TEUI?.StateManager?.getValue("target_fieldId") || ge
 
 ---
 
-**Most Common Issue**: Forgetting mode-aware reading in sections that consume other sections' outputs (like S15 reading S11/S12/S13 values). 
+**Most Common Issue**: Forgetting mode-aware reading in sections that consume other sections' outputs (like S15 reading S11/S12/S13 values).

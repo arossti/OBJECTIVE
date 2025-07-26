@@ -64,7 +64,7 @@
     <script src="4011-ExcelMapper.js"></script>
     <script src="4011-FileHandler.js"></script>
     <script src="4011-Dependency.js"></script>
-    
+
     <!-- Climate Data for S03 DualState Architecture -->
     <script src="4011-ClimateValues.js"></script>
 
@@ -113,11 +113,9 @@
             TEUI v.4.012RF | for Canadian Projects
           </h1>
         </div>
-              </header>
+      </header>
 
-
-
-        <!-- Action buttons row -->
+      <!-- Action buttons row -->
       <div class="row button-row mb-2">
         <div class="col-12 text-end">
           <div
@@ -248,7 +246,7 @@
               class="btn btn-sm btn-dark ms-2"
               onclick="saveStateAndNavigate('obc/indexobc.html')"
               title="Switch to OBC Matrix for Building Code Compliance (saves current work)"
-              style="transition: background-color 0.2s ease;"
+              style="transition: background-color 0.2s ease"
               onmouseover="this.style.backgroundColor='#6c757d'"
               onmouseout="this.style.backgroundColor=''"
             >
@@ -585,15 +583,20 @@
             <!-- Demo Warning - Moved from banner -->
             <div class="alert alert-warning border-warning mb-4" role="alert">
               <div class="flex-grow-1">
-                <strong>⚠️ DEMO ONLY</strong> - OBJECTIVE 4.012 is under active development. 
-                <strong>DO NOT USE for real projects.</strong> 
-                For production work, download: 
-                <a href="https://openbuilding.ca/product/objective-v3/" target="_blank" class="alert-link">
+                <strong>⚠️ DEMO ONLY</strong> - OBJECTIVE 4.012 is under active
+                development.
+                <strong>DO NOT USE for real projects.</strong>
+                For production work, download:
+                <a
+                  href="https://openbuilding.ca/product/objective-v3/"
+                  target="_blank"
+                  class="alert-link"
+                >
                   https://openbuilding.ca/product/objective-v3/
                 </a>
               </div>
             </div>
-            
+
             <p>
               This tool helps you calculate the Total Energy Use Intensity
               (TEUI) & Thermal Energy Demand Intensity (TEDI) of a building or
@@ -721,16 +724,18 @@ Select a province and city to view weather data.</pre
       function saveStateAndNavigate(url) {
         if (TEUI && TEUI.StateManager) {
           // console.log("🔍 DEBUG: Field count before save:", TEUI.StateManager.getDebugInfo().fieldCount);
-          
+
           // Force immediate save before navigation
           TEUI.StateManager.saveState();
-          console.log("TEUI StateManager: State saved before navigating to OBC Matrix");
-          
+          console.log(
+            "TEUI StateManager: State saved before navigating to OBC Matrix",
+          );
+
           // Check what was actually saved
-          const saved = localStorage.getItem('TEUI_Calculator_State');
+          const saved = localStorage.getItem("TEUI_Calculator_State");
           // console.log("🔍 DEBUG: What was saved to localStorage:", saved ? "State preserved" : "Nothing saved");
         }
-        
+
         // Navigate after a brief delay to ensure save completes
         setTimeout(() => {
           window.location.href = url;
@@ -743,7 +748,7 @@ Select a province and city to view weather data.</pre
           // Clear all state including localStorage
           TEUI.StateManager.clear();
           console.log("TEUI StateManager: All data cleared including localStorage");
-          
+
           // Reload the page to show clean state
           setTimeout(() => {
             window.location.reload();
@@ -754,8 +759,10 @@ Select a province and city to view weather data.</pre
       // Global Target/Reference Toggle Setup
       function setupGlobalToggleUI(retryCount = 0) {
         const maxRetries = 10; // Maximum 10 retries = 5 seconds
-        
-        const sectionHeader = document.querySelector("#climateCalculations .section-header");
+
+        const sectionHeader = document.querySelector(
+          "#climateCalculations .section-header",
+        );
         if (!sectionHeader) {
           console.warn("Global Toggle: S03 header not found");
           return;
@@ -770,18 +777,23 @@ Select a province and city to view weather data.</pre
         const ModeManager = window.TEUI?.ModeManager;
         if (!ModeManager) {
           if (retryCount < maxRetries) {
-            console.warn(`Global Toggle: TEUI.ModeManager not available - retry ${retryCount + 1}/${maxRetries}`);
+            console.warn(
+              `Global Toggle: TEUI.ModeManager not available - retry ${retryCount + 1}/${maxRetries}`,
+            );
             // Retry after a delay if S03 isn't ready (with retry limit)
             setTimeout(() => setupGlobalToggleUI(retryCount + 1), 500);
           } else {
-            console.error("Global Toggle: TEUI.ModeManager never became available after max retries. S03 may have failed to load.");
+            console.error(
+              "Global Toggle: TEUI.ModeManager never became available after max retries. S03 may have failed to load.",
+            );
           }
           return;
         }
 
         // Create toggle container
         const toggleContainer = document.createElement("div");
-        toggleContainer.style.cssText = "display: flex; align-items: center; gap: 20px; margin-left: auto;";
+        toggleContainer.style.cssText =
+          "display: flex; align-items: center; gap: 20px; margin-left: auto;";
 
         // Create state indicator
         const stateIndicator = document.createElement("span");
@@ -849,10 +861,10 @@ Select a province and city to view weather data.</pre
         `;
 
         // Add toggle functionality
-        toggleSwitch.addEventListener("click", function(event) {
+        toggleSwitch.addEventListener("click", function (event) {
           event.stopPropagation();
           const isActive = toggleSwitch.classList.contains("active");
-          
+
           if (!isActive) {
             // Switching to reference mode
             toggleSwitch.classList.add("active");
@@ -876,10 +888,14 @@ Select a province and city to view weather data.</pre
           }
         });
 
-        // Add reset functionality  
-        resetButton.addEventListener("click", function(event) {
+        // Add reset functionality
+        resetButton.addEventListener("click", function (event) {
           event.stopPropagation();
-          if (confirm("Are you sure you want to reset all Target/Reference states to defaults?")) {
+          if (
+            confirm(
+              "Are you sure you want to reset all Target/Reference states to defaults?",
+            )
+          ) {
             ModeManager.resetAllStates();
           }
         });
@@ -888,14 +904,16 @@ Select a province and city to view weather data.</pre
         toggleSwitch.appendChild(toggleSlider);
         toggleDiv.appendChild(toggleLabel);
         toggleDiv.appendChild(toggleSwitch);
-        
+
         toggleContainer.appendChild(stateIndicator);
         toggleContainer.appendChild(toggleDiv);
         toggleContainer.appendChild(resetButton);
-        
+
         sectionHeader.appendChild(toggleContainer);
 
-        console.log("Global Toggle: Setup complete in S03 header using S03's ModeManager");
+        console.log(
+          "Global Toggle: Setup complete in S03 header using S03's ModeManager",
+        );
       }
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -907,11 +925,11 @@ Select a province and city to view weather data.</pre
           //   loadState: typeof TEUI.StateManager.loadState,
           //   clear: typeof TEUI.StateManager.clear
           // });
-          
+
           // Check what's in localStorage before initialization
-          const saved = localStorage.getItem('TEUI_Calculator_State');
+          const saved = localStorage.getItem("TEUI_Calculator_State");
           // console.log("🔍 DEBUG: localStorage content before initialize:", saved ? "State found" : "No saved state");
-          
+
           if (saved) {
             const parsedState = JSON.parse(saved);
             // console.log("🔍 DEBUG: Saved state details:", {
@@ -920,33 +938,41 @@ Select a province and city to view weather data.</pre
             //   sampleValues: Object.entries(parsedState).slice(0, 3)
             // });
           }
-          
+
           // Initialize now loads state automatically during initialization
           TEUI.StateManager.initialize();
-          
+
           // Check if state was preserved and loaded
           const debugInfo = TEUI.StateManager.getDebugInfo();
           // console.log("🔍 DEBUG: StateManager field count after initialize:", debugInfo.fieldCount);
-          
+
           // Check if user-modified fields are actually loaded
           const allKeys = TEUI.StateManager.getAllKeys();
           let userModifiedCount = 0;
           let importedCount = 0;
           let defaultCount = 0;
           let calculatedCount = 0;
-          
-          allKeys.forEach(key => {
+
+          allKeys.forEach((key) => {
             const fieldInfo = TEUI.StateManager.getDebugInfo(key);
             if (fieldInfo) {
-              switch(fieldInfo.state) {
-                case 'user-modified': userModifiedCount++; break;
-                case 'imported': importedCount++; break;
-                case 'default': defaultCount++; break;
-                case 'calculated': calculatedCount++; break;
+              switch (fieldInfo.state) {
+                case "user-modified":
+                  userModifiedCount++;
+                  break;
+                case "imported":
+                  importedCount++;
+                  break;
+                case "default":
+                  defaultCount++;
+                  break;
+                case "calculated":
+                  calculatedCount++;
+                  break;
               }
             }
           });
-          
+
           // console.log("🔍 DEBUG: Field states after initialize:", {
           //   'user-modified': userModifiedCount,
           //   'imported': importedCount,
@@ -971,7 +997,7 @@ Select a province and city to view weather data.</pre
         // Initialize Component Bridge
         if (TEUI.ComponentBridge) {
           TEUI.ComponentBridge.initAll();
-          
+
           // ✅ Initialize dual-state synchronization
           TEUI.ComponentBridge.initDualStateSync();
         }

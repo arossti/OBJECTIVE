@@ -7,7 +7,7 @@
 
     <!-- Link to production 4011RF styles for reference mode consistency -->
     <link rel="stylesheet" href="../../OBJECTIVE 4011RF/4011-styles.css" />
-    
+
     <!-- Import climate data only -->
     <script src="../core/data/4012-ClimateValues.js"></script>
 
@@ -812,7 +812,18 @@
           <button id="showWeatherDataBtn" class="weather-data-btn">
             More Weather Data
           </button>
-          <button id="resetStateBtn" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;">
+          <button
+            id="resetStateBtn"
+            style="
+              padding: 8px 16px;
+              background-color: #f44336;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              font-weight: 500;
+              cursor: pointer;
+            "
+          >
             Reset All States
           </button>
         </div>
@@ -1269,38 +1280,38 @@
         };
 
         // UNIFIED STATE MANAGEMENT: Target and Reference with Toggle Support
-        
+
         // Target State Management (isolated + persistent)
         const TargetState = {
           state: {},
           listeners: {},
 
-          setValue: function(fieldId, value, source = "user") {
+          setValue: function (fieldId, value, source = "user") {
             this.state[fieldId] = value;
             this.notifyListeners(fieldId, value);
             this.saveState();
             logDebug(`TARGET setValue: ${fieldId} = ${value} (${source}) - SAVED`);
           },
 
-          getValue: function(fieldId) {
+          getValue: function (fieldId) {
             return this.state[fieldId];
           },
 
-          addListener: function(fieldId, callback) {
+          addListener: function (fieldId, callback) {
             if (!this.listeners[fieldId]) {
               this.listeners[fieldId] = [];
             }
             this.listeners[fieldId].push(callback);
           },
 
-          notifyListeners: function(fieldId, value) {
+          notifyListeners: function (fieldId, value) {
             if (this.listeners[fieldId]) {
-              this.listeners[fieldId].forEach(callback => callback(value));
+              this.listeners[fieldId].forEach((callback) => callback(value));
             }
           },
 
-          initialize: function() {
-            const savedState = localStorage.getItem('TARGET_STATE');
+          initialize: function () {
+            const savedState = localStorage.getItem("TARGET_STATE");
             if (savedState) {
               try {
                 this.state = JSON.parse(savedState);
@@ -1313,27 +1324,27 @@
             }
           },
 
-          setDefaults: function() {
+          setDefaults: function () {
             this.state = {
-              'd_19': 'ON',         // Province
-              'h_19': 'Toronto',    // City  
-              'h_20': 'Present',    // Timeframe
-              'h_21': 'Capacitance',
-              'h_23': 18,
-              'h_24': 24,
-              'm_19': 120,
-              'i_21': 50
+              d_19: "ON", // Province
+              h_19: "Toronto", // City
+              h_20: "Present", // Timeframe
+              h_21: "Capacitance",
+              h_23: 18,
+              h_24: 24,
+              m_19: 120,
+              i_21: 50,
             };
             logDebug("TARGET STATE: Set to defaults");
           },
 
-          saveState: function() {
+          saveState: function () {
             try {
-              localStorage.setItem('TARGET_STATE', JSON.stringify(this.state));
+              localStorage.setItem("TARGET_STATE", JSON.stringify(this.state));
             } catch (e) {
               logDebug("TARGET STATE: Error saving", e);
             }
-          }
+          },
         };
 
         // Reference State Management (isolated + persistent)
@@ -1341,32 +1352,32 @@
           state: {},
           listeners: {},
 
-          setValue: function(fieldId, value, source = "user") {
+          setValue: function (fieldId, value, source = "user") {
             this.state[fieldId] = value;
             this.notifyListeners(fieldId, value);
             this.saveState();
             logDebug(`REFERENCE setValue: ${fieldId} = ${value} (${source}) - SAVED`);
           },
 
-          getValue: function(fieldId) {
+          getValue: function (fieldId) {
             return this.state[fieldId];
           },
 
-          addListener: function(fieldId, callback) {
+          addListener: function (fieldId, callback) {
             if (!this.listeners[fieldId]) {
               this.listeners[fieldId] = [];
             }
             this.listeners[fieldId].push(callback);
           },
 
-          notifyListeners: function(fieldId, value) {
+          notifyListeners: function (fieldId, value) {
             if (this.listeners[fieldId]) {
-              this.listeners[fieldId].forEach(callback => callback(value));
+              this.listeners[fieldId].forEach((callback) => callback(value));
             }
           },
 
-          initialize: function() {
-            const savedState = localStorage.getItem('REFERENCE_STATE');
+          initialize: function () {
+            const savedState = localStorage.getItem("REFERENCE_STATE");
             if (savedState) {
               try {
                 this.state = JSON.parse(savedState);
@@ -1379,142 +1390,143 @@
             }
           },
 
-          setDefaults: function() {
+          setDefaults: function () {
             this.state = {
-              'd_19': 'BC',         // Province (different from Target)
-              'h_19': 'Vancouver',  // City (different from Target)
-              'h_20': 'Present',    // Timeframe
-              'h_21': 'Capacitance',
-              'h_23': 18,
-              'h_24': 24,
-              'm_19': 120,
-              'i_21': 50
+              d_19: "BC", // Province (different from Target)
+              h_19: "Vancouver", // City (different from Target)
+              h_20: "Present", // Timeframe
+              h_21: "Capacitance",
+              h_23: 18,
+              h_24: 24,
+              m_19: 120,
+              i_21: 50,
             };
             logDebug("REFERENCE STATE: Set to defaults");
           },
 
-          saveState: function() {
+          saveState: function () {
             try {
-              localStorage.setItem('REFERENCE_STATE', JSON.stringify(this.state));
+              localStorage.setItem("REFERENCE_STATE", JSON.stringify(this.state));
             } catch (e) {
               logDebug("REFERENCE STATE: Error saving", e);
             }
-          }
+          },
         };
 
         // Mode Manager: Handles switching between Target and Reference
         const ModeManager = {
           currentMode: "target",
 
-          initialize: function() {
+          initialize: function () {
             TargetState.initialize();
             ReferenceState.initialize();
-            
+
             // Set initial toggle label for target mode
             const toggleLabel = document.getElementById("toggleLabel");
             if (toggleLabel) {
               toggleLabel.textContent = "Show Reference";
             }
-            
+
             logDebug("MODE MANAGER: Both states initialized");
           },
 
-          switchMode: function(mode) {
+          switchMode: function (mode) {
             if (this.currentMode === mode) return;
-            
+
             this.currentMode = mode;
             logDebug(`MODE MANAGER: Switched to ${mode.toUpperCase()} mode`);
-            
+
             // Update UI state indicator
             const indicator = document.getElementById("stateIndicator");
             if (indicator) {
               indicator.textContent = mode.toUpperCase() + " MODE";
               indicator.className = `state-indicator ${mode}`;
             }
-            
+
             // Update toggle label to show the opposite mode
             const toggleLabel = document.getElementById("toggleLabel");
             if (toggleLabel) {
-              toggleLabel.textContent = mode === "target" ? "Show Reference" : "Show Target";
+              toggleLabel.textContent =
+                mode === "target" ? "Show Reference" : "Show Target";
             }
-            
+
             // Update body class for CSS styling
             if (mode === "reference") {
               document.body.classList.add("viewing-reference-inputs");
             } else {
               document.body.classList.remove("viewing-reference-inputs");
             }
-            
+
             // Refresh UI to show current mode's values
             this.refreshUI();
           },
 
-          refreshUI: function() {
+          refreshUI: function () {
             // Update all dropdowns and fields to show current mode's values
             const currentState = this.getCurrentState();
-            
+
             // Update province dropdown
             const provinceSelect = document.getElementById("provinceSelect");
             if (provinceSelect && currentState.getValue("d_19")) {
               provinceSelect.value = currentState.getValue("d_19");
               UIController.updateCityDropdown(currentState.getValue("d_19"));
             }
-            
-            // Update city dropdown  
+
+            // Update city dropdown
             const citySelect = document.getElementById("citySelect");
             if (citySelect && currentState.getValue("h_19")) {
               citySelect.value = currentState.getValue("h_19");
             }
-            
+
             // Update timeframe dropdown
             const timeframeSelect = document.getElementById("timeframeSelect");
             if (timeframeSelect && currentState.getValue("h_20")) {
               timeframeSelect.value = currentState.getValue("h_20");
             }
-            
+
             // Update climate data for current selections
             UIController.updateClimateData();
-            
+
             logDebug(`MODE MANAGER: UI refreshed for ${this.currentMode} mode`);
           },
 
-          getCurrentState: function() {
+          getCurrentState: function () {
             return this.currentMode === "target" ? TargetState : ReferenceState;
           },
 
-          setValue: function(fieldId, value, source = "user") {
+          setValue: function (fieldId, value, source = "user") {
             this.getCurrentState().setValue(fieldId, value, source);
           },
 
-          getValue: function(fieldId) {
+          getValue: function (fieldId) {
             return this.getCurrentState().getValue(fieldId);
           },
 
-          addListener: function(fieldId, callback) {
+          addListener: function (fieldId, callback) {
             // Add listener to both states so UI updates work in both modes
             TargetState.addListener(fieldId, callback);
             ReferenceState.addListener(fieldId, callback);
           },
 
-          resetAllStates: function() {
+          resetAllStates: function () {
             // Clear localStorage
-            localStorage.removeItem('TARGET_STATE');
-            localStorage.removeItem('REFERENCE_STATE');
-            
+            localStorage.removeItem("TARGET_STATE");
+            localStorage.removeItem("REFERENCE_STATE");
+
             // Reset to defaults
             TargetState.setDefaults();
             ReferenceState.setDefaults();
-            
+
             // Save clean defaults
             TargetState.saveState();
             ReferenceState.saveState();
-            
+
             // Refresh UI
             this.refreshUI();
-            
+
             logDebug("MODE MANAGER: All states reset to clean defaults");
             alert("All states have been reset to defaults!");
-          }
+          },
         };
 
         // Compatibility alias for existing code
@@ -1579,8 +1591,6 @@
             return document.querySelector(`[data-field-id="${id}"]`);
           },
         };
-
-
 
         // Debug logging
         function logDebug(message, obj) {
@@ -1804,7 +1814,7 @@
             const toggle = DOMElements.referenceToggle;
             toggle.addEventListener("click", function () {
               const isActive = toggle.classList.contains("active");
-              
+
               if (!isActive) {
                 // Switching to reference mode
                 toggle.classList.add("active");
@@ -1820,7 +1830,11 @@
             document
               .getElementById("resetStateBtn")
               .addEventListener("click", function () {
-                if (confirm("Are you sure you want to reset all states to defaults? This will clear all your saved settings.")) {
+                if (
+                  confirm(
+                    "Are you sure you want to reset all states to defaults? This will clear all your saved settings.",
+                  )
+                ) {
                   ModeManager.resetAllStates();
                 }
               });
@@ -2227,8 +2241,24 @@
         function setupStateObservers() {
           // Common field IDs we want to observe
           const allFields = [
-            'd_19', 'h_19', 'h_20', 'h_21', 'h_23', 'h_24', 'm_19', 'i_21',
-            'd_20', 'd_21', 'd_22', 'd_23', 'd_24', 'h_22', 'l_21', 'l_23', 'l_24', 'l_25'
+            "d_19",
+            "h_19",
+            "h_20",
+            "h_21",
+            "h_23",
+            "h_24",
+            "m_19",
+            "i_21",
+            "d_20",
+            "d_21",
+            "d_22",
+            "d_23",
+            "d_24",
+            "h_22",
+            "l_21",
+            "l_23",
+            "l_24",
+            "l_25",
           ];
 
           allFields.forEach((fieldId) => {
@@ -2285,7 +2315,7 @@
           ClimateDataService.ensureAvailable(function () {
             // Initialize both Target and Reference states
             ModeManager.initialize();
-            
+
             UIController.initialize();
             UIController.populateProvinceDropdown();
             setupStateObservers();

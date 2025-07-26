@@ -1,115 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TEUI v4.012 - Enhanced Number Formatting Test</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .test-container {
-            background: white;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .test-section {
-            margin: 20px 0;
-            padding: 15px;
-            border-left: 4px solid #007acc;
-            background-color: #f8f9fa;
-        }
-        .test-grid {
-            display: grid;
-            grid-template-columns: 200px 150px 150px 200px;
-            gap: 10px;
-            margin: 10px 0;
-            font-family: monospace;
-        }
-        .test-grid div {
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        .test-header {
-            font-weight: bold;
-            background-color: #007acc !important;
-            color: white;
-        }
-        .pass { background-color: #d4edda !important; border-color: #c3e6cb; }
-        .fail { background-color: #f8d7da !important; border-color: #f5c6cb; }
-        .value { font-weight: bold; }
-        h1 { color: #007acc; }
-        h2 { color: #495057; border-bottom: 2px solid #007acc; padding-bottom: 5px; }
-        .summary {
-            background: linear-gradient(135deg, #007acc, #0056b3);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border-left: 4px solid #007acc;
+        background-color: #f8f9fa;
+      }
+      .test-grid {
+        display: grid;
+        grid-template-columns: 200px 150px 150px 200px;
+        gap: 10px;
+        margin: 10px 0;
+        font-family: monospace;
+      }
+      .test-grid div {
+        padding: 8px;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+      .test-header {
+        font-weight: bold;
+        background-color: #007acc !important;
+        color: white;
+      }
+      .pass {
+        background-color: #d4edda !important;
+        border-color: #c3e6cb;
+      }
+      .fail {
+        background-color: #f8d7da !important;
+        border-color: #f5c6cb;
+      }
+      .value {
+        font-weight: bold;
+      }
+      h1 {
+        color: #007acc;
+      }
+      h2 {
+        color: #495057;
+        border-bottom: 2px solid #007acc;
+        padding-bottom: 5px;
+      }
+      .summary {
+        background: linear-gradient(135deg, #007acc, #0056b3);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🧪 TEUI v4.012 Enhanced Number Formatting Test Suite</h1>
     <div class="summary">
-        <h2 style="color: white; border-bottom: 2px solid white;">Test Coverage</h2>
-        <p><strong>OBC Matrix Formats:</strong> number, number-2dp, number-0dp, number-3dp, number-2dp-comma, percent</p>
-        <p><strong>4011RF Enhanced Formats:</strong> percent-1dp, percent-2dp, integer, integer-nocomma, cad-2dp, u-value, rsi</p>
-        <p><strong>Edge Cases:</strong> null, undefined, empty strings, non-numeric values</p>
+      <h2 style="color: white; border-bottom: 2px solid white">
+        Test Coverage
+      </h2>
+      <p>
+        <strong>OBC Matrix Formats:</strong> number, number-2dp, number-0dp,
+        number-3dp, number-2dp-comma, percent
+      </p>
+      <p>
+        <strong>4011RF Enhanced Formats:</strong> percent-1dp, percent-2dp,
+        integer, integer-nocomma, cad-2dp, u-value, rsi
+      </p>
+      <p>
+        <strong>Edge Cases:</strong> null, undefined, empty strings, non-numeric
+        values
+      </p>
     </div>
 
     <!-- Load the DualState system -->
     <script src="../core/state/4012-DualState.js"></script>
 
     <div class="test-container">
-        <h2>📊 Test Results</h2>
-        <div id="test-results"></div>
-        
-        <div class="test-section">
-            <h3>Test Summary</h3>
-            <div id="test-summary"></div>
-        </div>
+      <h2>📊 Test Results</h2>
+      <div id="test-results"></div>
+
+      <div class="test-section">
+        <h3>Test Summary</h3>
+        <div id="test-summary"></div>
+      </div>
     </div>
 
     <script>
-        // Test suite for the enhanced formatNumber function
-        class NumberFormatTester {
-            constructor() {
-                this.tests = [];
-                this.passCount = 0;
-                this.failCount = 0;
-            }
+      // Test suite for the enhanced formatNumber function
+      class NumberFormatTester {
+        constructor() {
+          this.tests = [];
+          this.passCount = 0;
+          this.failCount = 0;
+        }
 
-            addTest(description, input, formatType, expected) {
-                this.tests.push({
-                    description,
-                    input,
-                    formatType,
-                    expected
-                });
-            }
+        addTest(description, input, formatType, expected) {
+          this.tests.push({
+            description,
+            input,
+            formatType,
+            expected,
+          });
+        }
 
-            runTests() {
-                // Check if DualState is available
-                if (!window.TEUI?.v4012?.formatNumber) {
-                    console.error('DualState formatNumber not available');
-                    return;
-                }
+        runTests() {
+          // Check if DualState is available
+          if (!window.TEUI?.v4012?.formatNumber) {
+            console.error("DualState formatNumber not available");
+            return;
+          }
 
-                const resultsContainer = document.getElementById('test-results');
-                
-                // Create test header
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'test-grid';
-                headerDiv.innerHTML = `
+          const resultsContainer = document.getElementById("test-results");
+
+          // Create test header
+          const headerDiv = document.createElement("div");
+          headerDiv.className = "test-grid";
+          headerDiv.innerHTML = `
                     <div class="test-header">Test Description</div>
                     <div class="test-header">Input</div>
                     <div class="test-header">Format</div>
@@ -117,109 +142,113 @@
                     <div class="test-header">Actual</div>
                     <div class="test-header">Result</div>
                 `;
-                resultsContainer.appendChild(headerDiv);
+          resultsContainer.appendChild(headerDiv);
 
-                // Run each test
-                this.tests.forEach(test => {
-                    const actual = window.TEUI.v4012.formatNumber(test.input, test.formatType);
-                    const passed = actual === test.expected;
-                    
-                    if (passed) this.passCount++;
-                    else this.failCount++;
+          // Run each test
+          this.tests.forEach((test) => {
+            const actual = window.TEUI.v4012.formatNumber(
+              test.input,
+              test.formatType,
+            );
+            const passed = actual === test.expected;
 
-                    const testDiv = document.createElement('div');
-                    testDiv.className = 'test-grid';
-                    testDiv.innerHTML = `
+            if (passed) this.passCount++;
+            else this.failCount++;
+
+            const testDiv = document.createElement("div");
+            testDiv.className = "test-grid";
+            testDiv.innerHTML = `
                         <div>${test.description}</div>
                         <div class="value">${JSON.stringify(test.input)}</div>
                         <div class="value">${test.formatType}</div>
                         <div class="value">${test.expected}</div>
-                        <div class="value ${passed ? 'pass' : 'fail'}">${actual}</div>
-                        <div class="${passed ? 'pass' : 'fail'}">${passed ? '✅ PASS' : '❌ FAIL'}</div>
+                        <div class="value ${passed ? "pass" : "fail"}">${actual}</div>
+                        <div class="${passed ? "pass" : "fail"}">${passed ? "✅ PASS" : "❌ FAIL"}</div>
                     `;
-                    resultsContainer.appendChild(testDiv);
-                });
+            resultsContainer.appendChild(testDiv);
+          });
 
-                // Show summary
-                this.showSummary();
-            }
+          // Show summary
+          this.showSummary();
+        }
 
-            showSummary() {
-                const summaryContainer = document.getElementById('test-summary');
-                const total = this.passCount + this.failCount;
-                const percentage = total > 0 ? Math.round((this.passCount / total) * 100) : 0;
-                
-                summaryContainer.innerHTML = `
+        showSummary() {
+          const summaryContainer = document.getElementById("test-summary");
+          const total = this.passCount + this.failCount;
+          const percentage =
+            total > 0 ? Math.round((this.passCount / total) * 100) : 0;
+
+          summaryContainer.innerHTML = `
                     <p><strong>Total Tests:</strong> ${total}</p>
                     <p><strong>Passed:</strong> ${this.passCount}</p>
                     <p><strong>Failed:</strong> ${this.failCount}</p>
                     <p><strong>Success Rate:</strong> ${percentage}%</p>
                 `;
-            }
         }
+      }
 
-        // Initialize and run tests
-        const tester = new NumberFormatTester();
+      // Initialize and run tests
+      const tester = new NumberFormatTester();
 
-        // OBC Matrix Format Tests
-        tester.addTest('Basic number format', 123.456, 'number', '123.46');
-        tester.addTest('Number 2dp explicit', 123.456, 'number-2dp', '123.46');
-        tester.addTest('Number 0dp (integer)', 123.456, 'number-0dp', '123');
-        tester.addTest('Number 3dp precision', 123.456789, 'number-3dp', '123.457');
-        tester.addTest('Number with commas', 1234.56, 'number-2dp-comma', '1,234.56');
-        tester.addTest('Basic percent (0dp)', 0.1234, 'percent', '12%');
+      // OBC Matrix Format Tests
+      tester.addTest("Basic number format", 123.456, "number", "123.46");
+      tester.addTest("Number 2dp explicit", 123.456, "number-2dp", "123.46");
+      tester.addTest("Number 0dp (integer)", 123.456, "number-0dp", "123");
+      tester.addTest("Number 3dp precision", 123.456789, "number-3dp", "123.457");
+      tester.addTest("Number with commas", 1234.56, "number-2dp-comma", "1,234.56");
+      tester.addTest("Basic percent (0dp)", 0.1234, "percent", "12%");
 
-        // 4011RF Enhanced Format Tests  
-        tester.addTest('Percent 1dp', 0.1234, 'percent-1dp', '12.3%');
-        tester.addTest('Percent 2dp', 0.1234, 'percent-2dp', '12.34%');
-        tester.addTest('Integer with commas', 12345, 'integer', '12,345');
-        tester.addTest('Integer no commas', 12345, 'integer-nocomma', '12345');
-        tester.addTest('CAD currency', 123.45, 'cad-2dp', '$123.45');
-        tester.addTest('CAD with commas', 1234.56, 'cad-2dp-comma', '$1,234.56');
+      // 4011RF Enhanced Format Tests
+      tester.addTest("Percent 1dp", 0.1234, "percent-1dp", "12.3%");
+      tester.addTest("Percent 2dp", 0.1234, "percent-2dp", "12.34%");
+      tester.addTest("Integer with commas", 12345, "integer", "12,345");
+      tester.addTest("Integer no commas", 12345, "integer-nocomma", "12345");
+      tester.addTest("CAD currency", 123.45, "cad-2dp", "$123.45");
+      tester.addTest("CAD with commas", 1234.56, "cad-2dp-comma", "$1,234.56");
 
-        // Alias Tests
-        tester.addTest('U-value alias', 0.123456, 'u-value', '0.123');
-        tester.addTest('RSI alias', 12.3456, 'rsi', '12.35');
+      // Alias Tests
+      tester.addTest("U-value alias", 0.123456, "u-value", "0.123");
+      tester.addTest("RSI alias", 12.3456, "rsi", "12.35");
 
-        // Edge Case Tests
-        tester.addTest('Null input', null, 'number-2dp', '');
-        tester.addTest('Undefined input', undefined, 'number-2dp', '');
-        tester.addTest('Empty string', '', 'number-2dp', '');
-        tester.addTest('String number', '123.45', 'number-2dp', '123.45');
-        tester.addTest('String with commas', '1,234.56', 'number-2dp', '1234.56');
-        tester.addTest('Non-numeric string', 'hello', 'number-2dp', 'hello');
-        tester.addTest('Zero value', 0, 'number-2dp', '0.00');
-        tester.addTest('Negative number', -123.45, 'number-2dp', '-123.45');
+      // Edge Case Tests
+      tester.addTest("Null input", null, "number-2dp", "");
+      tester.addTest("Undefined input", undefined, "number-2dp", "");
+      tester.addTest("Empty string", "", "number-2dp", "");
+      tester.addTest("String number", "123.45", "number-2dp", "123.45");
+      tester.addTest("String with commas", "1,234.56", "number-2dp", "1234.56");
+      tester.addTest("Non-numeric string", "hello", "number-2dp", "hello");
+      tester.addTest("Zero value", 0, "number-2dp", "0.00");
+      tester.addTest("Negative number", -123.45, "number-2dp", "-123.45");
 
-        // Wait for DualState to load, then run tests
-        setTimeout(() => {
-            if (window.TEUI?.v4012?.formatNumber) {
-                console.log('✅ DualState formatNumber loaded successfully');
-                tester.runTests();
-            } else {
-                console.error('❌ DualState formatNumber not available');
-                document.getElementById('test-results').innerHTML = 
-                    '<div style="color: red; font-weight: bold;">❌ Error: DualState formatNumber not loaded</div>';
-            }
-        }, 100);
+      // Wait for DualState to load, then run tests
+      setTimeout(() => {
+        if (window.TEUI?.v4012?.formatNumber) {
+          console.log("✅ DualState formatNumber loaded successfully");
+          tester.runTests();
+        } else {
+          console.error("❌ DualState formatNumber not available");
+          document.getElementById("test-results").innerHTML =
+            '<div style="color: red; font-weight: bold;">❌ Error: DualState formatNumber not loaded</div>';
+        }
+      }, 100);
 
-        // Test parseNumeric as well
-        setTimeout(() => {
-            if (window.TEUI?.v4012?.parseNumeric) {
-                console.log('✅ Testing parseNumeric function');
-                
-                // Test parseNumeric functionality
-                const parseTests = [
-                    ['123.45', window.TEUI.v4012.parseNumeric('123.45'), 123.45],
-                    ['1,234.56', window.TEUI.v4012.parseNumeric('1,234.56'), 1234.56],
-                    ['hello', window.TEUI.v4012.parseNumeric('hello', 0), 0],
-                    [null, window.TEUI.v4012.parseNumeric(null, -1), -1],
-                    ['', window.TEUI.v4012.parseNumeric('', 99), 99]
-                ];
-                
-                console.log('📊 parseNumeric test results:', parseTests);
-            }
-        }, 200);
+      // Test parseNumeric as well
+      setTimeout(() => {
+        if (window.TEUI?.v4012?.parseNumeric) {
+          console.log("✅ Testing parseNumeric function");
+
+          // Test parseNumeric functionality
+          const parseTests = [
+            ["123.45", window.TEUI.v4012.parseNumeric("123.45"), 123.45],
+            ["1,234.56", window.TEUI.v4012.parseNumeric("1,234.56"), 1234.56],
+            ["hello", window.TEUI.v4012.parseNumeric("hello", 0), 0],
+            [null, window.TEUI.v4012.parseNumeric(null, -1), -1],
+            ["", window.TEUI.v4012.parseNumeric("", 99), 99],
+          ];
+
+          console.log("📊 parseNumeric test results:", parseTests);
+        }
+      }, 200);
     </script>
-</body>
-</html> 
+  </body>
+</html>

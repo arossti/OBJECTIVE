@@ -17,76 +17,108 @@ window.TEUI.SectionModules.sect08 = (function () {
 
   const TargetState = {
     state: {},
-    initialize: function() { this.setDefaults(); },
-    setDefaults: function() {
-      this.state = { 'd_56': '50', 'd_57': '550', 'd_58': '100', 'd_59': '45', 'i_59': '45' };
+    initialize: function () {
+      this.setDefaults();
     },
-    setValue: function(fieldId, value) { this.state[fieldId] = value; },
-    getValue: function(fieldId) { return this.state[fieldId]; }
+    setDefaults: function () {
+      this.state = {
+        d_56: "50",
+        d_57: "550",
+        d_58: "100",
+        d_59: "45",
+        i_59: "45",
+      };
+    },
+    setValue: function (fieldId, value) {
+      this.state[fieldId] = value;
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
   };
 
   const ReferenceState = {
     state: {},
-    initialize: function() { this.setDefaults(); },
-    setDefaults: function() {
-      this.state = { 'd_56': '150', 'd_57': '1000', 'd_58': '400', 'd_59': '30', 'i_59': '50' };
+    initialize: function () {
+      this.setDefaults();
     },
-    setValue: function(fieldId, value) { this.state[fieldId] = value; },
-    getValue: function(fieldId) { return this.state[fieldId]; }
+    setDefaults: function () {
+      this.state = {
+        d_56: "150",
+        d_57: "1000",
+        d_58: "400",
+        d_59: "30",
+        i_59: "50",
+      };
+    },
+    setValue: function (fieldId, value) {
+      this.state[fieldId] = value;
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
   };
 
   const ModeManager = {
     currentMode: "target",
-    initialize: function() {
+    initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
     },
     switchMode: function (newMode) {
-      if (this.currentMode === newMode || (newMode !== "target" && newMode !== "reference")) return;
+      if (
+        this.currentMode === newMode ||
+        (newMode !== "target" && newMode !== "reference")
+      )
+        return;
       this.currentMode = newMode;
       console.log(`S08: Switched to ${this.currentMode.toUpperCase()} mode.`);
       this.updateUIForMode();
       calculateAll();
     },
-    updateUIForMode: function() {
-        const sectionElement = document.getElementById("indoorAirQuality");
-        if (!sectionElement) return;
+    updateUIForMode: function () {
+      const sectionElement = document.getElementById("indoorAirQuality");
+      if (!sectionElement) return;
 
-        const currentState = this.getCurrentState();
-        const fieldsToSync = ['d_56', 'd_57', 'd_58', 'd_59', 'i_59'];
+      const currentState = this.getCurrentState();
+      const fieldsToSync = ["d_56", "d_57", "d_58", "d_59", "i_59"];
 
-        fieldsToSync.forEach(fieldId => {
-            const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-            const stateValue = currentState.getValue(fieldId);
+      fieldsToSync.forEach((fieldId) => {
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
+        const stateValue = currentState.getValue(fieldId);
 
-            if (!element || stateValue === undefined || stateValue === null) return;
-            
-            let slider = element.querySelector('input[type="range"]') || (element.matches('input[type="range"]') ? element : null);
+        if (!element || stateValue === undefined || stateValue === null) return;
 
-            if (slider) {
-                slider.value = stateValue;
-                const display = slider.nextElementSibling;
-                if (display) display.textContent = `${stateValue}%`;
-            } else if (element.isContentEditable) {
-                element.textContent = stateValue;
-            }
-        });
+        let slider =
+          element.querySelector('input[type="range"]') ||
+          (element.matches('input[type="range"]') ? element : null);
+
+        if (slider) {
+          slider.value = stateValue;
+          const display = slider.nextElementSibling;
+          if (display) display.textContent = `${stateValue}%`;
+        } else if (element.isContentEditable) {
+          element.textContent = stateValue;
+        }
+      });
     },
-    getCurrentState: function() {
+    getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
     },
-    setValue: function(fieldId, value) {
+    setValue: function (fieldId, value) {
       this.getCurrentState().setValue(fieldId, value);
       // Bridge to global StateManager for backward compatibility
-      if (this.currentMode === 'target') {
-        window.TEUI.StateManager.setValue(fieldId, value, 'user-modified');
+      if (this.currentMode === "target") {
+        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       }
     },
-    getValue: function(fieldId) {
+    getValue: function (fieldId) {
       return this.getCurrentState().getValue(fieldId);
-    }
+    },
   };
-  
+
   // Expose ModeManager for the local toggle to use
   window.TEUI.sect08.ModeManager = ModeManager;
 
@@ -104,20 +136,33 @@ window.TEUI.SectionModules.sect08 = (function () {
 
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     if (element && ModeManager.currentMode === "target") {
-        const formatType = getFieldFormat(fieldId);
-        const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? valueToStore;
-        element.textContent = formattedValue;
+      const formatType = getFieldFormat(fieldId);
+      const formattedValue =
+        window.TEUI?.formatNumber?.(rawValue, formatType) ?? valueToStore;
+      element.textContent = formattedValue;
     }
   }
 
   // getFieldFormat and setElementClass remain largely the same, but ensure they respect the current mode
   function getFieldFormat(fieldId) {
     const formatMap = {
-      d_56: "number-0dp", d_57: "number-0dp", d_58: "number-0dp",
-      d_59: "number-0dp", i_59: "number-0dp", d_60: "number-2dp-comma",
-      k_56: "number-0dp", k_57: "number-0dp", k_58: "number-0dp",
-      m_56: "percent-0dp", m_57: "percent-0dp", m_58: "percent-0dp", m_59: "percent-0dp",
-      n_56: "raw", n_57: "raw", n_58: "raw", n_59: "raw"
+      d_56: "number-0dp",
+      d_57: "number-0dp",
+      d_58: "number-0dp",
+      d_59: "number-0dp",
+      i_59: "number-0dp",
+      d_60: "number-2dp-comma",
+      k_56: "number-0dp",
+      k_57: "number-0dp",
+      k_58: "number-0dp",
+      m_56: "percent-0dp",
+      m_57: "percent-0dp",
+      m_58: "percent-0dp",
+      m_59: "percent-0dp",
+      n_56: "raw",
+      n_57: "raw",
+      n_58: "raw",
+      n_59: "raw",
     };
     return formatMap[fieldId] || "number-0dp";
   }
@@ -142,7 +187,8 @@ window.TEUI.SectionModules.sect08 = (function () {
   function calculateWoodOffset() {
     const d31_actualWoodUse = getNumericValue("d_31");
     const k31_targetWoodEmissions = getNumericValue("k_31");
-    const woodOffset = (d31_actualWoodUse > 0) ? (k31_targetWoodEmissions / 1000) : 0;
+    const woodOffset =
+      d31_actualWoodUse > 0 ? k31_targetWoodEmissions / 1000 : 0;
     setCalculatedValue("d_60", woodOffset);
   }
 
@@ -158,7 +204,7 @@ window.TEUI.SectionModules.sect08 = (function () {
     const tvocValue = getNumericValue("d_58");
     const heatingHumidity = getNumericValue("d_59");
     const coolingHumidity = getNumericValue("i_59");
-    
+
     const radonPercent = radonValue / 150;
     setCalculatedValue("m_56", radonPercent);
     setCalculatedValue("n_56", radonValue <= 150 ? "✓" : "✗");
@@ -177,7 +223,11 @@ window.TEUI.SectionModules.sect08 = (function () {
     const averageHumidity = (heatingHumidity + coolingHumidity) / 2;
     const humidityPercent = averageHumidity / 45;
     setCalculatedValue("m_59", humidityPercent);
-    const isInRange = (heatingHumidity >= 30 && heatingHumidity <= 60) && (coolingHumidity >= 30 && coolingHumidity <= 60);
+    const isInRange =
+      heatingHumidity >= 30 &&
+      heatingHumidity <= 60 &&
+      coolingHumidity >= 30 &&
+      coolingHumidity <= 60;
     setCalculatedValue("n_59", isInRange ? "✓" : "✗");
     setElementClass("n_59", isInRange ? "checkmark" : "warning");
   }
@@ -187,19 +237,21 @@ window.TEUI.SectionModules.sect08 = (function () {
   //==========================================================================
   function handleUserInput(event) {
     const target = event.target;
-    const fieldElement = target.closest('[data-field-id]');
+    const fieldElement = target.closest("[data-field-id]");
     if (!fieldElement) return;
 
-    const fieldId = fieldElement.getAttribute('data-field-id');
-    const value = target.matches('input[type="range"]') ? target.value : target.textContent.trim();
-    
+    const fieldId = fieldElement.getAttribute("data-field-id");
+    const value = target.matches('input[type="range"]')
+      ? target.value
+      : target.textContent.trim();
+
     ModeManager.setValue(fieldId, value); // Let the ModeManager handle state
-    
+
     if (target.matches('input[type="range"]')) {
       const display = target.nextElementSibling;
       if (display) display.textContent = `${value}%`;
     }
-    
+
     calculateAll();
   }
 
@@ -207,26 +259,30 @@ window.TEUI.SectionModules.sect08 = (function () {
     const sectionElement = document.getElementById("indoorAirQuality");
     if (!sectionElement) return;
 
-    sectionElement.addEventListener('input', e => {
-        if (e.target.matches('input[type="range"]')) handleUserInput(e);
+    sectionElement.addEventListener("input", (e) => {
+      if (e.target.matches('input[type="range"]')) handleUserInput(e);
     });
-    
-    sectionElement.addEventListener('blur', e => {
-        if (e.target.matches('[contenteditable="true"]')) handleUserInput(e);
-    }, true);
 
-    sectionElement.addEventListener('keydown', e => {
-      if (e.target.matches('[contenteditable="true"]') && e.key === 'Enter') {
+    sectionElement.addEventListener(
+      "blur",
+      (e) => {
+        if (e.target.matches('[contenteditable="true"]')) handleUserInput(e);
+      },
+      true,
+    );
+
+    sectionElement.addEventListener("keydown", (e) => {
+      if (e.target.matches('[contenteditable="true"]') && e.key === "Enter") {
         e.preventDefault();
         e.target.blur();
       }
     });
-    
+
     // Listen to external dependencies via global StateManager
     if (window.TEUI?.StateManager) {
       const sm = window.TEUI.StateManager;
       const dependencies = ["d_31", "k_31"];
-      dependencies.forEach(dep => {
+      dependencies.forEach((dep) => {
         sm.addListener(dep, calculateAll);
       });
     }
@@ -236,41 +292,51 @@ window.TEUI.SectionModules.sect08 = (function () {
   // SECTION-LOCAL TOGGLE (Unchanged)
   //==========================================================================
   function injectLocalToggle() {
-    const sectionHeader = document.querySelector("#indoorAirQuality .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-toggle-container")) return;
+    const sectionHeader = document.querySelector(
+      "#indoorAirQuality .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-toggle-container")
+    )
+      return;
 
     const toggleContainer = document.createElement("div");
     toggleContainer.className = "local-toggle-container";
-    toggleContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+    toggleContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
 
     const stateIndicator = document.createElement("span");
     stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
 
     const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-    
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
     const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
 
     toggleSwitch.appendChild(slider);
-    
+
     toggleSwitch.addEventListener("click", (event) => {
-        event.stopPropagation();
-        const isReference = toggleSwitch.classList.toggle('active');
-        if (isReference) {
-            slider.style.transform = "translateX(20px)";
-            toggleSwitch.style.backgroundColor = "#28a745";
-            stateIndicator.textContent = "REFERENCE";
-            stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-            ModeManager.switchMode("reference");
-        } else {
-            slider.style.transform = "translateX(0px)";
-            toggleSwitch.style.backgroundColor = "#ccc";
-            stateIndicator.textContent = "TARGET";
-            stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-            ModeManager.switchMode("target");
-        }
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
     });
 
     toggleContainer.appendChild(stateIndicator);
@@ -283,31 +349,155 @@ window.TEUI.SectionModules.sect08 = (function () {
   //==========================================================================
   const sectionRows = {
     header: {
-      id: "08-ID", rowId: "08-ID",
+      id: "08-ID",
+      rowId: "08-ID",
       cells: {
-        c: { content: "C", classes: ["section-subheader"] }, d: { content: "Targeted", classes: ["section-subheader"] },
-        e: { content: "E", classes: ["section-subheader"] }, f: { content: "F", classes: ["section-subheader"] },
-        g: { content: "G", classes: ["section-subheader"] }, h: { content: "H", classes: ["section-subheader"] },
-        i: { content: "I", classes: ["section-subheader"] }, j: { content: "J", classes: ["section-subheader"] },
-        k: { content: "Guidance Limits", classes: ["section-subheader"] }, l: { content: "L", classes: ["section-subheader"] },
-        m: { content: "% per Health Canada/NBC", classes: ["section-subheader"] }, n: { content: "Status", classes: ["section-subheader"] },
+        c: { content: "C", classes: ["section-subheader"] },
+        d: { content: "Targeted", classes: ["section-subheader"] },
+        e: { content: "E", classes: ["section-subheader"] },
+        f: { content: "F", classes: ["section-subheader"] },
+        g: { content: "G", classes: ["section-subheader"] },
+        h: { content: "H", classes: ["section-subheader"] },
+        i: { content: "I", classes: ["section-subheader"] },
+        j: { content: "J", classes: ["section-subheader"] },
+        k: { content: "Guidance Limits", classes: ["section-subheader"] },
+        l: { content: "L", classes: ["section-subheader"] },
+        m: {
+          content: "% per Health Canada/NBC",
+          classes: ["section-subheader"],
+        },
+        n: { content: "Status", classes: ["section-subheader"] },
       },
     },
-    56: { id: "A.2", label: "Radon (annual avg.)", cells: { c: { label: "Radon (annual avg.)" }, d: { fieldId: "d_56", type: "editable", value: "50", classes: ["user-input"] }, e: { content: "Bq/m³" }, k: { fieldId: "k_56", type: "calculated", value: "150" }, l: { content: "Bq/m³" }, m: { fieldId: "m_56", type: "calculated", value: "0%" }, n: { fieldId: "n_56", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    57: { id: "A.3", label: "CO2 (annual avg.)", cells: { c: { label: "CO2 (annual avg.)" }, d: { fieldId: "d_57", type: "editable", value: "550", classes: ["user-input"] }, e: { content: "ppm" }, k: { fieldId: "k_57", type: "calculated", value: "1000" }, l: { content: "ppm" }, m: { fieldId: "m_57", type: "calculated", value: "0%" }, n: { fieldId: "n_57", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    58: { id: "A.4", label: "TVOC (annual avg.)", cells: { c: { label: "TVOC (annual avg.)" }, d: { fieldId: "d_58", type: "editable", value: "100", classes: ["user-input"] }, e: { content: "ppm" }, k: { fieldId: "k_58", type: "calculated", value: "400" }, l: { content: "ppm" }, m: { fieldId: "m_58", type: "calculated", value: "0%" }, n: { fieldId: "n_58", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    59: { id: "A.5.1", label: "Indoor Heating Season Avg.", cells: { c: { label: "Indoor Heating Season Avg." }, d: { fieldId: "d_59", type: "percentage", value: "45", min: 0, max: 100, step: 1, classes: ["user-input"] }, e: { content: "% RH" }, f: { content: "A.5.2" }, g: { label: "" }, h: { content: "Indoor Cooling Season Avg." }, i: { fieldId: "i_59", type: "percentage", value: "45", min: 0, max: 100, step: 1, classes: ["user-input"] }, j: { content: "% RH" }, k: { fieldId: "k_59", type: "calculated", value: "30-60" }, l: { content: "%" }, m: { fieldId: "m_59", type: "calculated", value: "0%" }, n: { fieldId: "n_59", type: "calculated", value: "✓", classes: ["checkmark"] }}},
-    60: { id: "A.6", label: "Wood Emissions Offset (Calculated)", cells: { c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" }, d: { fieldId: "d_60", type: "calculated", value: "0.00" }, e: { content: "MT/yr CO2e" }}},
+    56: {
+      id: "A.2",
+      label: "Radon (annual avg.)",
+      cells: {
+        c: { label: "Radon (annual avg.)" },
+        d: {
+          fieldId: "d_56",
+          type: "editable",
+          value: "50",
+          classes: ["user-input"],
+        },
+        e: { content: "Bq/m³" },
+        k: { fieldId: "k_56", type: "calculated", value: "150" },
+        l: { content: "Bq/m³" },
+        m: { fieldId: "m_56", type: "calculated", value: "0%" },
+        n: {
+          fieldId: "n_56",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+        },
+      },
+    },
+    57: {
+      id: "A.3",
+      label: "CO2 (annual avg.)",
+      cells: {
+        c: { label: "CO2 (annual avg.)" },
+        d: {
+          fieldId: "d_57",
+          type: "editable",
+          value: "550",
+          classes: ["user-input"],
+        },
+        e: { content: "ppm" },
+        k: { fieldId: "k_57", type: "calculated", value: "1000" },
+        l: { content: "ppm" },
+        m: { fieldId: "m_57", type: "calculated", value: "0%" },
+        n: {
+          fieldId: "n_57",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+        },
+      },
+    },
+    58: {
+      id: "A.4",
+      label: "TVOC (annual avg.)",
+      cells: {
+        c: { label: "TVOC (annual avg.)" },
+        d: {
+          fieldId: "d_58",
+          type: "editable",
+          value: "100",
+          classes: ["user-input"],
+        },
+        e: { content: "ppm" },
+        k: { fieldId: "k_58", type: "calculated", value: "400" },
+        l: { content: "ppm" },
+        m: { fieldId: "m_58", type: "calculated", value: "0%" },
+        n: {
+          fieldId: "n_58",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+        },
+      },
+    },
+    59: {
+      id: "A.5.1",
+      label: "Indoor Heating Season Avg.",
+      cells: {
+        c: { label: "Indoor Heating Season Avg." },
+        d: {
+          fieldId: "d_59",
+          type: "percentage",
+          value: "45",
+          min: 0,
+          max: 100,
+          step: 1,
+          classes: ["user-input"],
+        },
+        e: { content: "% RH" },
+        f: { content: "A.5.2" },
+        g: { label: "" },
+        h: { content: "Indoor Cooling Season Avg." },
+        i: {
+          fieldId: "i_59",
+          type: "percentage",
+          value: "45",
+          min: 0,
+          max: 100,
+          step: 1,
+          classes: ["user-input"],
+        },
+        j: { content: "% RH" },
+        k: { fieldId: "k_59", type: "calculated", value: "30-60" },
+        l: { content: "%" },
+        m: { fieldId: "m_59", type: "calculated", value: "0%" },
+        n: {
+          fieldId: "n_59",
+          type: "calculated",
+          value: "✓",
+          classes: ["checkmark"],
+        },
+      },
+    },
+    60: {
+      id: "A.6",
+      label: "Wood Emissions Offset (Calculated)",
+      cells: {
+        c: { label: "Wood Emissions Offset (Calculated from Target Wood Use)" },
+        d: { fieldId: "d_60", type: "calculated", value: "0.00" },
+        e: { content: "MT/yr CO2e" },
+      },
+    },
   };
 
   function getFields() {
     const fields = {};
-    Object.values(sectionRows).forEach(row => {
+    Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach(cell => {
+      Object.values(row.cells).forEach((cell) => {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
-            type: cell.type, label: cell.label || row.label, defaultValue: cell.value || "",
+            type: cell.type,
+            label: cell.label || row.label,
+            defaultValue: cell.value || "",
             section: "indoorAirQuality",
           };
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
@@ -318,19 +508,35 @@ window.TEUI.SectionModules.sect08 = (function () {
     });
     return fields;
   }
-  function getDropdownOptions() { return {}; }
+  function getDropdownOptions() {
+    return {};
+  }
   function getLayout() {
     const layoutRows = [];
-    if (sectionRows["header"]) layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.keys(sectionRows).forEach(key => {
+    if (sectionRows["header"])
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
+    Object.keys(sectionRows).forEach((key) => {
       if (key !== "header") layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
   }
   function createLayoutRow(row) {
     const rowDef = { id: row.id, cells: [{}, {}] };
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"];
-    columns.forEach(col => {
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+    ];
+    columns.forEach((col) => {
       const cell = row.cells?.[col] || {};
       if (col === "c" && !cell.label && row.label) cell.label = row.label;
       rowDef.cells.push(cell);
@@ -360,7 +566,11 @@ window.TEUI.SectionModules.sect08 = (function () {
   }
 
   return {
-    getFields, getDropdownOptions, getLayout, onSectionRendered, calculateAll,
+    getFields,
+    getDropdownOptions,
+    getLayout,
+    onSectionRendered,
+    calculateAll,
     ModeManager, // Expose for external control if needed
   };
-})(); 
+})();

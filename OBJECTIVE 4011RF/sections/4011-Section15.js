@@ -112,7 +112,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         rawValue.toString(),
         "calculated",
       );
-      
+
       // Don't update DOM during Reference mode to prevent visual contamination
       console.log(
         `🔧 S15: Reference mode - storing ${refFieldId} = ${rawValue} (no DOM update)`,
@@ -124,7 +124,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         rawValue.toString(),
         "calculated",
       );
-      
+
       // Update DOM with formatted value
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
@@ -974,14 +974,14 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // 🔍 REFERENCE TRACKER: Monitor Reference engine climate data usage
       const ref_hdd = getRefValue("d_20");
-      const ref_cdd = getRefValue("d_21"); 
+      const ref_cdd = getRefValue("d_21");
       const ref_gfhdd = getRefValue("d_22");
       const ref_gfcdd = getRefValue("h_22");
       // console.log(`🔍 S15 REFERENCE ENGINE CLIMATE: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
-      
+
       // Track Reference upstream values - READ ONLY ref_ prefixed values
       const ref_i104 = window.TEUI?.StateManager?.getValue("ref_i_104") || 0; // From S12 Building Envelope
-      const ref_m121 = window.TEUI?.StateManager?.getValue("ref_m_121") || 0; // From S13 Ventilation  
+      const ref_m121 = window.TEUI?.StateManager?.getValue("ref_m_121") || 0; // From S13 Ventilation
       const ref_i80 = window.TEUI?.StateManager?.getValue("ref_i_80") || 0; // From S10 Solar Gains
       console.log(
         `🔍 S15 REFERENCE UPSTREAM: ref_i_104=${ref_i104}, ref_m_121=${ref_m121}, ref_i_80=${ref_i80}`,
@@ -1149,20 +1149,33 @@ window.TEUI.SectionModules.sect15 = (function () {
       // These are the final Reference values that Section 01 needs for e_10 calculation
       setRefValueIfChanged("ref_d_143", refTEUI_e10); // Reference TEUI
       setRefValueIfChanged("ref_h_143", targetTEUI_h10); // Target TEUI
-      
+
       // ✅ FINAL REFERENCE TEUI CALCULATION TRACKER - Use Section 01's specialized display system
-          // console.log(`🔍 S15 REFERENCE ENGINE: Final TEUI calculation = ${ref_teui_h136}`);
+      // console.log(`🔍 S15 REFERENCE ENGINE: Final TEUI calculation = ${ref_teui_h136}`);
       // console.log(`🔍 S15 REFERENCE ENGINE: Setting e_10 = ${ref_teui_h136} (changes with Reference location)`);
-    // console.log(`🔍 S15 REFERENCE ENGINE: ** REFERENCE e_10 SHOULD CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
-      
+      // console.log(`🔍 S15 REFERENCE ENGINE: ** REFERENCE e_10 SHOULD CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
+
       // Store in StateManager but let Section 01 handle the display
-      window.TEUI.StateManager?.setValue("e_10", ref_teui_h136.toString(), "calculated");
-      window.TEUI.StateManager?.setValue("ref_e_10", ref_teui_h136.toString(), "calculated");
-      
+      window.TEUI.StateManager?.setValue(
+        "e_10",
+        ref_teui_h136.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager?.setValue(
+        "ref_e_10",
+        ref_teui_h136.toString(),
+        "calculated",
+      );
+
       // Trigger Section 01's specialized display update if available
       if (window.TEUI?.SectionModules?.sect01?.updateDisplayValue) {
-        const formattedValue = window.TEUI?.formatNumber?.(ref_teui_h136, "number-1dp") ?? ref_teui_h136.toString();
-        window.TEUI.SectionModules.sect01.updateDisplayValue("e_10", formattedValue);
+        const formattedValue =
+          window.TEUI?.formatNumber?.(ref_teui_h136, "number-1dp") ??
+          ref_teui_h136.toString();
+        window.TEUI.SectionModules.sect01.updateDisplayValue(
+          "e_10",
+          formattedValue,
+        );
       }
 
       // Calculate Reference percentage reductions
@@ -1216,14 +1229,14 @@ window.TEUI.SectionModules.sect15 = (function () {
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
       const elecPrice = getNumericValue("l_12");
-      
+
       // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using
       const target_hdd = getNumericValue("d_20");
-      const target_cdd = getNumericValue("d_21"); 
+      const target_cdd = getNumericValue("d_21");
       const target_gfhdd = getNumericValue("d_22");
       const target_gfcdd = getNumericValue("h_22");
       // console.log(`🔍 S15 TARGET ENGINE CLIMATE: HDD=${target_hdd}, CDD=${target_cdd}, GFHDD=${target_gfhdd}, GFCDD=${target_gfcdd}`);
-      
+
       // Track key upstream values that feed Target TEUI calculation - READ ONLY target_ prefixed values
       const target_i104 =
         window.TEUI?.StateManager?.getValue("target_i_104") ||
@@ -1256,7 +1269,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d101 = getNumericValue("d_101"); // Total Area Exposed to Air (Ae)
       const d102 = getNumericValue("d_102"); // Total Area Exposed to Ground (Ag)
       const g102 = getNumericValue("g_102"); // U-Val. for Ag
-      
+
       // ✅ FIX: Read temperature data using target_ prefixes for Target calculations
       const h23 = getNumericValue("target_h_23") || getNumericValue("h_23"); // Tset Heating
       const d23 = getNumericValue("target_d_23") || getNumericValue("d_23"); // Coldest Days Temp
@@ -1319,20 +1332,33 @@ window.TEUI.SectionModules.sect15 = (function () {
       // h_136: =D136/H15
       let teui_h136 = area > 0 ? teuTargetedElecHPGasOil / area : 0;
       setCalculatedValue("h_136", teui_h136);
-      
+
       // ✅ FINAL TARGET TEUI CALCULATION TRACKER - Use Section 01's specialized display system
-          // console.log(`🔍 S15 TARGET ENGINE: Final TEUI calculation = ${teui_h136}`);
+      // console.log(`🔍 S15 TARGET ENGINE: Final TEUI calculation = ${teui_h136}`);
       // console.log(`🔍 S15 TARGET ENGINE: Setting h_10 = ${teui_h136} (should be stable ~93.6)`);
-    // console.log(`🔍 S15 TARGET ENGINE: ** TARGET h_10 SHOULD NEVER CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
-      
+      // console.log(`🔍 S15 TARGET ENGINE: ** TARGET h_10 SHOULD NEVER CHANGE WHEN REFERENCE MODE LOCATION CHANGES **`);
+
       // Store in StateManager but let Section 01 handle the display
-      window.TEUI.StateManager?.setValue("h_10", teui_h136.toString(), "calculated");
-      window.TEUI.StateManager?.setValue("target_h_10", teui_h136.toString(), "calculated");
-      
+      window.TEUI.StateManager?.setValue(
+        "h_10",
+        teui_h136.toString(),
+        "calculated",
+      );
+      window.TEUI.StateManager?.setValue(
+        "target_h_10",
+        teui_h136.toString(),
+        "calculated",
+      );
+
       // Trigger Section 01's specialized display update if available
       if (window.TEUI?.SectionModules?.sect01?.updateDisplayValue) {
-        const formattedValue = window.TEUI?.formatNumber?.(teui_h136, "number-1dp") ?? teui_h136.toString();
-        window.TEUI.SectionModules.sect01.updateDisplayValue("h_10", formattedValue);
+        const formattedValue =
+          window.TEUI?.formatNumber?.(teui_h136, "number-1dp") ??
+          teui_h136.toString();
+        window.TEUI.SectionModules.sect01.updateDisplayValue(
+          "h_10",
+          formattedValue,
+        );
       }
 
       // d_137: =(G101*D101+D102*G102)*(H23-D23)/1000
@@ -1613,7 +1639,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     });
 
     // Initial calculation on render
-        calculateAll();
+    calculateAll();
   }
 
   /**

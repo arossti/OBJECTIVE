@@ -69,7 +69,7 @@ TEUI.Calculator = (function () {
     // Initialize Component Bridge
     if (TEUI.ComponentBridge) {
       TEUI.ComponentBridge.initAll();
-      
+
       // ✅ Initialize dual-state synchronization
       TEUI.ComponentBridge.initDualStateSync();
     }

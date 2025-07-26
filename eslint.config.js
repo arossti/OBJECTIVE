@@ -43,14 +43,17 @@ export default [
       "html/xml-extensions": [".xhtml"], // Add other XML-like extensions if needed
     },
     rules: {
-      "no-unused-vars": ["warn", {
-        "vars": "all",
-        "args": "after-used",
-        "caughtErrors": "all",
-        "varsIgnorePattern": "^_",
-        "argsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
-      }],
+      "no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          args: "after-used",
+          caughtErrors: "all",
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       // Add HTML specific rules or overrides here if necessary
       // e.g. "no-undef": "off" for HTML if too many issues with script scopes
     },
@@ -245,14 +248,17 @@ export default [
       },
     },
     rules: {
-      "no-unused-vars": ["warn", {
-        "vars": "all",
-        "args": "after-used",
-        "caughtErrors": "all",
-        "varsIgnorePattern": "^_",
-        "argsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
-      }],
+      "no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          args: "after-used",
+          caughtErrors: "all",
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       // Potentially add/adjust other rules here
       // e.g. "no-undef": "warn" to make undefined variables warnings instead of errors temporarily
     },

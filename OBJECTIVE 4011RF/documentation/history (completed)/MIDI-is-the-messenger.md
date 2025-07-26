@@ -1,6 +1,6 @@
 🎵 **MIDI is the Messenger: How Album Creation Solved State Contamination**
 
-*This document explains how a week-long musical detour creating an album (releasing next week via LANDR!) provided the conceptual breakthrough for OBJECTIVE v4.012's DualState architecture.*
+_This document explains how a week-long musical detour creating an album (releasing next week via LANDR!) provided the conceptual breakthrough for OBJECTIVE v4.012's DualState architecture._
 
 ---
 
@@ -9,7 +9,7 @@
 In OBJECTIVE v4.011, we faced a persistent architectural challenge: **reference state contamination**. When users toggled between Target and Reference modes, state objects would leak into each other, causing:
 
 - Reference calculations appearing in Target results
-- UI state getting corrupted during mode switches  
+- UI state getting corrupted during mode switches
 - localStorage persistence failing due to mixed state
 - Performance degradation from state conflicts
 
@@ -19,9 +19,10 @@ Previous attempts at file separation and global state management only made the p
 
 ## 🔷 The Musical Breakthrough: Channel Isolation
 
-While musing on state isolation while avoiding working on this complex and seemingly divergent problem, I started modifying and customizing a music-generation app in JavaScript just foir fun, which led to a number of songs in collaboration with my son (a pianist and *real* musician), and I happened on a fundamental principle that actually solved our contamination problem: **MIDI channel isolation**, while also creating a new artist (Musitron) and album of 7 original tracks!
+While musing on state isolation while avoiding working on this complex and seemingly divergent problem, I started modifying and customizing a music-generation app in JavaScript just foir fun, which led to a number of songs in collaboration with my son (a pianist and _real_ musician), and I happened on a fundamental principle that actually solved our contamination problem: **MIDI channel isolation**, while also creating a new artist (Musitron) and album of 7 original tracks!
 
 ### In Music Production:
+
 ```
 MIDI Channel 1: Piano     → Isolated note events, no bleed
 MIDI Channel 2: Synths   → Separate parameter space
@@ -31,18 +32,19 @@ MIDI Channel 3: Drum Loops  → Independent timing/velocity
 Each channel maintains **complete parameter isolation** while appearing as a unified composition during playback.
 
 ### In Energy Modeling:
+
 ```javascript
 // DualState.js - The breakthrough architecture
 const TargetState = {
-  mode: 'target',
-  calculations: {},  // Isolated calculation space
-  ui: {}            // Isolated UI state
+  mode: "target",
+  calculations: {}, // Isolated calculation space
+  ui: {}, // Isolated UI state
 };
 
 const ReferenceState = {
-  mode: 'reference', 
-  calculations: {},  // Completely separate calculation space
-  ui: {}            // Zero contamination from target
+  mode: "reference",
+  calculations: {}, // Completely separate calculation space
+  ui: {}, // Zero contamination from target
 };
 ```
 
@@ -52,15 +54,16 @@ const ReferenceState = {
 
 **Musical Concept**: In music software, you have a **reference recording** (the original take) and **live performance** (real-time modifications). The reference recording remains your baseline while you experiment with live effects, automation, and variations.
 
-**Energy Modeling Application**: 
+**Energy Modeling Application**:
+
 - **ReferenceState** = The functional baseline building model (not modified)
 - **TargetState** = Live performance of energy scenarios (user modifications)
 - **ModeManager** = The mixing console that routes between channels
 
 ```javascript
 // Like a MIDI sequencer's channel routing
-ModeManager.switchTo('reference'); // Route to channel 1 (reference)
-ModeManager.switchTo('target');    // Route to channel 2 (target)
+ModeManager.switchTo("reference"); // Route to channel 1 (reference)
+ModeManager.switchTo("target"); // Route to channel 2 (target)
 ```
 
 ---
@@ -68,6 +71,7 @@ ModeManager.switchTo('target');    // Route to channel 2 (target)
 ## 🔷 Tuple Events: Immutable Note Messages
 
 **Musical Insight**: MIDI events are immutable tuples:
+
 ```
 Note Event = (channel, note, velocity, timing, duration)
 ```
@@ -75,6 +79,7 @@ Note Event = (channel, note, velocity, timing, duration)
 Once recorded, these events don't change - you layer new events or route to different channels.
 
 **Energy Application**: Building calculation tuples are immutable:
+
 ```javascript
 const buildingTuple = (climate, area, orientation, efficiency, systems);
 // Immutable - no reference contamination possible
@@ -87,18 +92,20 @@ Each state channel processes its own tuple stream without affecting the other.
 ## 🔷 The Unified Performance: Single UI, Isolated Engines
 
 **Musical Reality**: One interface controls multiple isolated sound engines
+
 - Single keyboard → Multiple synthesizers (different channels)
 - One transport control → Multiple track playback
 - Unified mixer → Separate audio processing chains
 
 **OBJECTIVE v4.012 Reality**: One UI controls two isolated calculation engines
+
 ```javascript
 // Single UI file with dual isolated state objects
 const Section = {
   ui: createUnifiedInterface(),
-  target: TargetState,      // Isolated calculation engine
+  target: TargetState, // Isolated calculation engine
   reference: ReferenceState, // Isolated calculation engine
-  mode: ModeManager         // Channel router
+  mode: ModeManager, // Channel router
 };
 ```
 
@@ -109,7 +116,7 @@ const Section = {
 Creating the Musitron Cosmos album taught me about **creative contamination** - when working on one track acoustically influences others unintentionally (via harmonics, timing). The solution in music:
 
 1. **Bounce to audio** (finalize one track before starting another)
-2. **Channel isolation** (separate MIDI channels)  
+2. **Channel isolation** (separate MIDI channels)
 3. **Version control** (save project states/add new reference tracks/muting)
 4. **A/B comparison** (acoustic isolation/switching between versions)
 5. **Quantization** Fit to a time signature that maintains flow
@@ -132,14 +139,16 @@ These exact principles became the OBJECTIVE v4.012 architecture:
 ### The Tempo-Dependency Parallel:
 
 **Music Production:**
+
 ```
 Master Clock: 120 BPM → Everything quantizes to this tempo
 ├── Piano: Quantized to 1/4 notes
-├── Synth: Quantized to 1/8 notes  
+├── Synth: Quantized to 1/8 notes
 └── Drums: Quantized to 1/16 notes
 ```
 
 **Energy Calculations:**
+
 ```javascript
 // Dependency clock: Calculation order → Everything flows from this sequence
 MasterCalculationFlow: {
@@ -157,6 +166,7 @@ MasterCalculationFlow: {
 When I was working on the more complex Musitron arrangements, I realized that **smooth playback** required every element to find its exact place in time. Notes that hit off-beat create jarring interruptions, just like calculations that execute out-of-order create UI stutters.
 
 The solution in both cases is **predictable timing**:
+
 - **Music**: Quantize to the grid → smooth playback
 - **Energy Modeling**: Order dependencies → smooth rendering
 
@@ -168,7 +178,7 @@ The solution in both cases is **predictable timing**:
 
 ```javascript
 // Like musical lookahead buffering
-DependencyManager.preload(['climate', 'building']); // Buffer next calculations
+DependencyManager.preload(["climate", "building"]); // Buffer next calculations
 // When user changes input, dependent calculations are ready to execute
 ```
 
@@ -179,6 +189,7 @@ This is why the v4.012 architecture includes **calculation dependency trees** - 
 ## 🔷 Why Music Software Got It Right
 
 Music software solved the "contamination problem" decades ago because:
+
 - **Real-time performance** demands zero latency in switching
 - **Creative workflow** requires non-destructive editing
 - **Complex layering** needs isolation without losing synchronization
@@ -202,9 +213,9 @@ This insight led directly to the DualState.js architecture that finally solved o
 
 The album releasing next week via LANDR isn't just music - it's a sonic representation of isolated state channels working in harmony. Each track demonstrates the principle that made OBJECTIVE v4.012 possible: **complete parameter isolation within unified composition**.
 
-The music became the messenger for the architecture. I hope you can dance to the models. 
+The music became the messenger for the architecture. I hope you can dance to the models.
 
 ---
 
-*"Sometimes you have to do something unthinking and fun for a while to prepare your mind as a way to solve sticky problems."*  
-*- OBJECTIVE Development Notes, 2025*
+_"Sometimes you have to do something unthinking and fun for a while to prepare your mind as a way to solve sticky problems."_  
+_- OBJECTIVE Development Notes, 2025_

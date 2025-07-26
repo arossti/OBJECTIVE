@@ -31,12 +31,36 @@ window.TEUI.SectionModules.sect10 = (function () {
     setDefaults: function () {
       // These defaults MUST match the 'value' properties in the sectionRows definition
       this.state = {
-        d_73: "7.50", e_73: "Average", f_73: "0.50", g_73: "0", h_73: "100",
-        d_74: "81.14", e_74: "North", f_74: "0.50", g_74: "0", h_74: "100",
-        d_75: "3.83", e_75: "East", f_75: "0.50", g_75: "0", h_75: "100",
-        d_76: "159.00", e_76: "South", f_76: "0.50", g_76: "0", h_76: "100",
-        d_77: "100.66", e_77: "West", f_77: "0.50", g_77: "0", h_77: "90",
-        d_78: "0.00", e_78: "Skylight", f_78: "0.50", g_78: "0", h_78: "80",
+        d_73: "7.50",
+        e_73: "Average",
+        f_73: "0.50",
+        g_73: "0",
+        h_73: "100",
+        d_74: "81.14",
+        e_74: "North",
+        f_74: "0.50",
+        g_74: "0",
+        h_74: "100",
+        d_75: "3.83",
+        e_75: "East",
+        f_75: "0.50",
+        g_75: "0",
+        h_75: "100",
+        d_76: "159.00",
+        e_76: "South",
+        f_76: "0.50",
+        g_76: "0",
+        h_76: "100",
+        d_77: "100.66",
+        e_77: "West",
+        f_77: "0.50",
+        g_77: "0",
+        h_77: "90",
+        d_78: "0.00",
+        e_78: "Skylight",
+        f_78: "0.50",
+        g_78: "0",
+        h_78: "80",
         d_80: "NRC 40%",
       };
     },
@@ -65,12 +89,36 @@ window.TEUI.SectionModules.sect10 = (function () {
     },
     setDefaults: function () {
       this.state = {
-        d_73: "5.00", e_73: "South",    f_73: "0.35", g_73: "0", h_73: "0",
-        d_74: "60.00", e_74: "East",     f_74: "0.35", g_74: "0", h_74: "0",
-        d_75: "2.50", e_75: "West",     f_75: "0.35", g_75: "0", h_75: "0",
-        d_76: "159.00", e_76: "South",    f_76: "0.35", g_76: "0", h_76: "0",
-        d_77: "100.66", e_77: "West",     f_77: "0.35", g_77: "0", h_77: "0",
-        d_78: "0.00", e_78: "Skylight", f_78: "0.35", g_78: "0", h_78: "0",
+        d_73: "5.00",
+        e_73: "South",
+        f_73: "0.35",
+        g_73: "0",
+        h_73: "0",
+        d_74: "60.00",
+        e_74: "East",
+        f_74: "0.35",
+        g_74: "0",
+        h_74: "0",
+        d_75: "2.50",
+        e_75: "West",
+        f_75: "0.35",
+        g_75: "0",
+        h_75: "0",
+        d_76: "159.00",
+        e_76: "South",
+        f_76: "0.35",
+        g_76: "0",
+        h_76: "0",
+        d_77: "100.66",
+        e_77: "West",
+        f_77: "0.35",
+        g_77: "0",
+        h_77: "0",
+        d_78: "0.00",
+        e_78: "Skylight",
+        f_78: "0.35",
+        g_78: "0",
+        h_78: "0",
         d_80: "NRC 40%", // Reference method
       };
     },
@@ -94,7 +142,10 @@ window.TEUI.SectionModules.sect10 = (function () {
       ReferenceState.initialize();
     },
     switchMode: function (mode) {
-      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
+      if (
+        this.currentMode === mode ||
+        (mode !== "target" && mode !== "reference")
+      )
         return;
       this.currentMode = mode;
       console.log(`S10: Switched to ${mode.toUpperCase()} mode`);
@@ -102,17 +153,19 @@ window.TEUI.SectionModules.sect10 = (function () {
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
     },
-    resetState: function() {
-        console.log("S10: Resetting state and clearing localStorage for Section 10.");
-        TargetState.setDefaults();
-        TargetState.saveState();
-        ReferenceState.setDefaults();
-        ReferenceState.saveState();
-        console.log("S10: States have been reset to defaults.");
+    resetState: function () {
+      console.log(
+        "S10: Resetting state and clearing localStorage for Section 10.",
+      );
+      TargetState.setDefaults();
+      TargetState.saveState();
+      ReferenceState.setDefaults();
+      ReferenceState.saveState();
+      console.log("S10: States have been reset to defaults.");
 
-        // After resetting, refresh the UI and recalculate.
-        this.refreshUI();
-        calculateAll();
+      // After resetting, refresh the UI and recalculate.
+      this.refreshUI();
+      calculateAll();
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -133,53 +186,83 @@ window.TEUI.SectionModules.sect10 = (function () {
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      
+
       const fieldsToSync = [
-          'd_73', 'e_73', 'f_73', 'g_73', 'h_73',
-          'd_74', 'e_74', 'f_74', 'g_74', 'h_74',
-          'd_75', 'e_75', 'f_75', 'g_75', 'h_75',
-          'd_76', 'e_76', 'f_76', 'g_76', 'h_76',
-          'd_77', 'e_77', 'f_77', 'g_77', 'h_77',
-          'd_78', 'e_78', 'f_78', 'g_78', 'h_78',
-          'd_80'
+        "d_73",
+        "e_73",
+        "f_73",
+        "g_73",
+        "h_73",
+        "d_74",
+        "e_74",
+        "f_74",
+        "g_74",
+        "h_74",
+        "d_75",
+        "e_75",
+        "f_75",
+        "g_75",
+        "h_75",
+        "d_76",
+        "e_76",
+        "f_76",
+        "g_76",
+        "h_76",
+        "d_77",
+        "e_77",
+        "f_77",
+        "g_77",
+        "h_77",
+        "d_78",
+        "e_78",
+        "f_78",
+        "g_78",
+        "h_78",
+        "d_80",
       ];
 
-      fieldsToSync.forEach(fieldId => {
-          const stateValue = currentState.getValue(fieldId);
-          if (stateValue === undefined || stateValue === null) return;
+      fieldsToSync.forEach((fieldId) => {
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue === undefined || stateValue === null) return;
 
-          const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-          if (!element) return;
-          
-          const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
-          const dropdown = element.matches('select') ? element : element.querySelector('select');
-          
-          if (slider) {
-              const numericValue = window.TEUI.parseNumeric(stateValue, 0);
-              slider.value = numericValue;
-              
-              // CORRECTED PATTERN: Use the direct nextElementSibling property, which is the proven pattern from Section 08.
-              const display = slider.nextElementSibling;
-              
-              if (display) {
-                  const displayValue = window.TEUI.parseNumeric(stateValue, 0);
-                  let textContent;
-                  if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
-                      textContent = `${displayValue}%`;
-                  } else {
-                      textContent = parseFloat(displayValue).toFixed(2);
-                  }
-                  display.textContent = textContent;
-              }
-          } else if (dropdown) {
-              dropdown.value = stateValue;
-          } else if (element.hasAttribute('contenteditable')) {
-              element.textContent = stateValue;
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
+        if (!element) return;
+
+        const slider = element.matches('input[type="range"]')
+          ? element
+          : element.querySelector('input[type="range"]');
+        const dropdown = element.matches("select")
+          ? element
+          : element.querySelector("select");
+
+        if (slider) {
+          const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+          slider.value = numericValue;
+
+          // CORRECTED PATTERN: Use the direct nextElementSibling property, which is the proven pattern from Section 08.
+          const display = slider.nextElementSibling;
+
+          if (display) {
+            const displayValue = window.TEUI.parseNumeric(stateValue, 0);
+            let textContent;
+            if (fieldId.startsWith("g_") || fieldId.startsWith("h_")) {
+              textContent = `${displayValue}%`;
+            } else {
+              textContent = parseFloat(displayValue).toFixed(2);
+            }
+            display.textContent = textContent;
           }
+        } else if (dropdown) {
+          dropdown.value = stateValue;
+        } else if (element.hasAttribute("contenteditable")) {
+          element.textContent = stateValue;
+        }
       });
     },
   };
-  
+
   // Expose globally for cross-section communication
   window.TEUI.sect10 = window.TEUI.sect10 || {};
   window.TEUI.sect10.ModeManager = ModeManager;
@@ -187,7 +270,7 @@ window.TEUI.SectionModules.sect10 = (function () {
   //==========================================================================
   // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
   //==========================================================================
-  
+
   function getNumericValue(fieldId) {
     // For values INTERNAL to this section
     const rawValue = ModeManager.getValue(fieldId);
@@ -203,7 +286,7 @@ window.TEUI.SectionModules.sect10 = (function () {
   function getFieldValue(fieldId) {
     const stateValue = ModeManager.getValue(fieldId);
     if (stateValue != null) return stateValue;
-    
+
     // Fallback for non-state values (e.g., legacy DOM elements)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     return element ? (element.value ?? element.textContent?.trim()) : null;
@@ -265,8 +348,8 @@ window.TEUI.SectionModules.sect10 = (function () {
     // Handle N/A for non-finite numbers
     if (!isFinite(rawValue) || rawValue === null || rawValue === undefined) {
       ModeManager.setValue(fieldId, "N/A", "calculated");
-        const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (elementNA) elementNA.textContent = "N/A";
+      const elementNA = document.querySelector(`[data-field-id="${fieldId}"]`);
+      if (elementNA) elementNA.textContent = "N/A";
       return;
     }
 
@@ -284,10 +367,10 @@ window.TEUI.SectionModules.sect10 = (function () {
 
     // ✅ DUAL-STATE: State is now set by the calling calculation function
     // using ModeManager.setValue(). This function only updates the DOM.
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        element.textContent = formattedValue;
-        element.classList.toggle("negative-value", rawValue < 0);
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      element.textContent = formattedValue;
+      element.classList.toggle("negative-value", rawValue < 0);
     }
   }
 
@@ -1247,8 +1330,6 @@ window.TEUI.SectionModules.sect10 = (function () {
         },
       },
     },
-
-
   };
 
   // Define configuration for orientation rows (similar to Section 11)
@@ -1495,9 +1576,9 @@ window.TEUI.SectionModules.sect10 = (function () {
    */
   function calculateAll() {
     // Calculate individual orientation rows
-      orientationConfig.forEach((rowId) => {
+    orientationConfig.forEach((rowId) => {
       calculateOrientationGains(rowId.toString());
-      });
+    });
 
     // Calculate subtotals
     calculateSubtotals();
@@ -1578,7 +1659,8 @@ window.TEUI.SectionModules.sect10 = (function () {
         coolingModifierFactor;
 
       // EXTERNAL DEPENDENCY: Get cost from S01 via global state
-      const cost = getGlobalNumericValue("l_12") * (coolingGains - heatingGains);
+      const cost =
+        getGlobalNumericValue("l_12") * (coolingGains - heatingGains);
 
       // Set state using ModeManager before updating DOM via setCalculatedValue
       ModeManager.setValue(`i_${rowId}`, heatingGains.toString(), "calculated");
@@ -1589,9 +1671,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       setCalculatedValue(`i_${rowId}`, heatingGains);
       setCalculatedValue(`k_${rowId}`, coolingGains);
       setCalculatedValue(`p_${rowId}`, cost, "currency");
-
     } catch (_error) {
-       // Set error values
+      // Set error values
       setCalculatedValue(`i_${rowId}`, 0);
       setCalculatedValue(`k_${rowId}`, 0);
       setCalculatedValue(`p_${rowId}`, 0, "currency");
@@ -1604,21 +1685,29 @@ window.TEUI.SectionModules.sect10 = (function () {
   function calculateSubtotals() {
     try {
       const heatingGains = [
-        getNumericValue("i_73"), getNumericValue("i_74"), getNumericValue("i_75"),
-        getNumericValue("i_76"), getNumericValue("i_77"), getNumericValue("i_78"),
-        ].reduce((sum, val) => sum + val, 0);
+        getNumericValue("i_73"),
+        getNumericValue("i_74"),
+        getNumericValue("i_75"),
+        getNumericValue("i_76"),
+        getNumericValue("i_77"),
+        getNumericValue("i_78"),
+      ].reduce((sum, val) => sum + val, 0);
 
       const coolingGains = [
-        getNumericValue("k_73"), getNumericValue("k_74"), getNumericValue("k_75"),
-        getNumericValue("k_76"), getNumericValue("k_77"), getNumericValue("k_78"),
-        ].reduce((sum, val) => sum + val, 0);
+        getNumericValue("k_73"),
+        getNumericValue("k_74"),
+        getNumericValue("k_75"),
+        getNumericValue("k_76"),
+        getNumericValue("k_77"),
+        getNumericValue("k_78"),
+      ].reduce((sum, val) => sum + val, 0);
 
       // Set state via ModeManager
       ModeManager.setValue("i_79", heatingGains.toString(), "calculated");
       ModeManager.setValue("k_79", coolingGains.toString(), "calculated");
       ModeManager.setValue("j_79", heatingGains > 0 ? "1" : "0", "calculated");
       ModeManager.setValue("l_79", coolingGains > 0 ? "1" : "0", "calculated");
-      
+
       // Update the DOM
       setCalculatedValue("i_79", heatingGains, "number");
       setCalculatedValue("k_79", coolingGains, "number");
@@ -1640,8 +1729,16 @@ window.TEUI.SectionModules.sect10 = (function () {
         const lFieldId = `l_${rowStr}`;
 
         // Set state via ModeManager for percentage values
-        ModeManager.setValue(jFieldId, heatingPercentDecimal.toString(), "calculated");
-        ModeManager.setValue(lFieldId, coolingPercentDecimal.toString(), "calculated");
+        ModeManager.setValue(
+          jFieldId,
+          heatingPercentDecimal.toString(),
+          "calculated",
+        );
+        ModeManager.setValue(
+          lFieldId,
+          coolingPercentDecimal.toString(),
+          "calculated",
+        );
 
         setCalculatedValue(jFieldId, heatingPercentDecimal, "percent");
         setCalculatedValue(lFieldId, coolingPercentDecimal, "percent");
@@ -1685,10 +1782,9 @@ window.TEUI.SectionModules.sect10 = (function () {
         );
         if (lElement) lElement.classList.add("text-left-indicator");
       }
-
     } catch (_error) {
-       setCalculatedValue("i_79", 0);
-       setCalculatedValue("k_79", 0);
+      setCalculatedValue("i_79", 0);
+      setCalculatedValue("k_79", 0);
     }
   }
 
@@ -1704,8 +1800,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       const totalGains = solarGains + internalGains;
 
       // Set total gains for both rows 80 and 81 (DOM only)
-        setCalculatedValue("e_80", totalGains, "number");
-        setCalculatedValue("e_81", totalGains, "number");
+      setCalculatedValue("e_80", totalGains, "number");
+      setCalculatedValue("e_81", totalGains, "number");
 
       //=====================================================================
       // PART 1: Calculate utilization factor based on selected method in row 80
@@ -1766,7 +1862,8 @@ window.TEUI.SectionModules.sect10 = (function () {
       const i98Reference = getGlobalNumericValue("i_98") || 0;
 
       const numeratorReference = totalGains;
-      const denominatorReference = i97Reference + i103Reference + m121Reference + i98Reference;
+      const denominatorReference =
+        i97Reference + i103Reference + m121Reference + i98Reference;
 
       let phUtilizationFactor = 0.9;
 
@@ -1788,7 +1885,11 @@ window.TEUI.SectionModules.sect10 = (function () {
       const phReferenceGains = totalGains * phUtilizationFactor;
 
       // Set state and update DOM for reference row 81
-      ModeManager.setValue("g_81", phUtilizationFactor.toString(), "calculated");
+      ModeManager.setValue(
+        "g_81",
+        phUtilizationFactor.toString(),
+        "calculated",
+      );
       ModeManager.setValue("i_81", phReferenceGains.toString(), "calculated");
       setCalculatedValue("g_81", phUtilizationFactor, "percent");
       setCalculatedValue("i_81", phReferenceGains, "number");
@@ -1799,16 +1900,15 @@ window.TEUI.SectionModules.sect10 = (function () {
       const unusedGains = totalGains - usableGains;
       ModeManager.setValue("i_82", unusedGains.toString(), "calculated");
       setCalculatedValue("i_82", unusedGains, "number");
-
     } catch (_error) {
       // Set error values or defaults
-        setCalculatedValue("e_80", 0);
-        setCalculatedValue("g_80", 0, "percent");
-        setCalculatedValue("i_80", 0);
-        setCalculatedValue("e_81", 0);
-        setCalculatedValue("g_81", 0, "percent");
-        setCalculatedValue("i_81", 0);
-        setCalculatedValue("i_82", 0);
+      setCalculatedValue("e_80", 0);
+      setCalculatedValue("g_80", 0, "percent");
+      setCalculatedValue("i_80", 0);
+      setCalculatedValue("e_81", 0);
+      setCalculatedValue("g_81", 0, "percent");
+      setCalculatedValue("i_81", 0);
+      setCalculatedValue("i_82", 0);
     }
   }
 
@@ -1909,19 +2009,19 @@ window.TEUI.SectionModules.sect10 = (function () {
         if (!fieldId) return;
 
         ModeManager.setValue(fieldId, this.value, "user-modified");
-          
+
         // CORRECTED PATTERN: Use the direct nextElementSibling property for the input handler as well.
         const displayElement = this.nextElementSibling;
-        
+
         if (displayElement) {
-          if (fieldId.startsWith('g_') || fieldId.startsWith('h_')) {
-          displayElement.textContent = `${this.value}%`;
+          if (fieldId.startsWith("g_") || fieldId.startsWith("h_")) {
+            displayElement.textContent = `${this.value}%`;
           } else {
             displayElement.textContent = parseFloat(this.value).toFixed(2);
           }
         }
       });
-        // Let's also add a 'change' listener to trigger recalculation when the user releases the slider
+      // Let's also add a 'change' listener to trigger recalculation when the user releases the slider
       slider.addEventListener("change", function () {
         // We only need to trigger the recalculation
         calculateAll();
@@ -1997,33 +2097,37 @@ window.TEUI.SectionModules.sect10 = (function () {
 
       // ✅ DUAL-STATE: Listen for both target_ and ref_ prefixed dependencies
       const dependencies = [
-        "j_19",    // Climate zone from S03 (CRITICAL for window gains calculation)
-        "i_71",    // Internal gains from S09
-        "i_97",    // Loss factors from S11 for PH Method
+        "j_19", // Climate zone from S03 (CRITICAL for window gains calculation)
+        "i_71", // Internal gains from S09
+        "i_97", // Loss factors from S11 for PH Method
         "i_103",
-        "m_121", 
-        "i_98"
+        "m_121",
+        "i_98",
       ];
 
       dependencies.forEach((fieldId) => {
         // Listen for global state changes (from other sections)
-        window.TEUI.StateManager.addListener(fieldId, function() {
-          console.log(`S10: Global listener triggered by ${fieldId}, recalculating all.`);
+        window.TEUI.StateManager.addListener(fieldId, function () {
+          console.log(
+            `S10: Global listener triggered by ${fieldId}, recalculating all.`,
+          );
           calculateAll();
-                });
+        });
       });
 
       // Special handling for utilization factor dependencies
       ["i_97", "i_103", "m_121", "i_98"].forEach((lossField) => {
         window.TEUI.StateManager.addListener(lossField, function () {
-            console.log(`S10: Utilization factor dependency ${lossField} changed.`);
-            calculateUtilizationFactors();
+          console.log(
+            `S10: Utilization factor dependency ${lossField} changed.`,
+          );
+          calculateUtilizationFactors();
         });
       });
 
-      console.log('S10: Simplified global StateManager listeners added');
+      console.log("S10: Simplified global StateManager listeners added");
     } catch (_error) {
-      console.error('S10: Error in addStateManagerListeners:', _error);
+      console.error("S10: Error in addStateManagerListeners:", _error);
     }
   }
 
@@ -2046,7 +2150,9 @@ window.TEUI.SectionModules.sect10 = (function () {
    * This is a good place to initialize values and run initial calculations
    */
   function onSectionRendered() {
-    console.log("S10: Section rendered - initializing Self-Contained State Module.");
+    console.log(
+      "S10: Section rendered - initializing Self-Contained State Module.",
+    );
 
     // 1. Initialize the ModeManager and its internal states
     ModeManager.initialize();
@@ -2068,7 +2174,9 @@ window.TEUI.SectionModules.sect10 = (function () {
     if (window.TEUI) {
       window.TEUI.sect10 = window.TEUI.sect10 || {};
       window.TEUI.sect10.ModeManager = ModeManager;
-      console.log("S10: ModeManager exposed globally for cross-section integration.");
+      console.log(
+        "S10: ModeManager exposed globally for cross-section integration.",
+      );
     }
 
     // 5. Perform initial calculations for this section
@@ -2079,65 +2187,79 @@ window.TEUI.SectionModules.sect10 = (function () {
    * Creates and injects the Target/Reference toggle and Reset button into the section header.
    */
   function injectHeaderControls() {
-      const sectionHeader = document.querySelector("#envelopeRadiantGains .section-header");
-      if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
-          return; // Already setup or header not found
+    const sectionHeader = document.querySelector(
+      "#envelopeRadiantGains .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
+      return; // Already setup or header not found
+    }
+
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+    // --- Create Reset Button ---
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = "🔄 Reset"; // Using an icon for clarity
+    resetButton.title = "Reset Section 10 to Defaults";
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      // Use a confirmation dialog to prevent accidental resets
+      if (
+        confirm(
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 10.",
+        )
+      ) {
+        ModeManager.resetState();
       }
+    });
 
-      const controlsContainer = document.createElement("div");
-      controlsContainer.className = "local-controls-container";
-      controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+    // --- Create Toggle Switch ---
+    const stateIndicator = document.createElement("span");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
 
-      // --- Create Reset Button ---
-      const resetButton = document.createElement("button");
-      resetButton.innerHTML = "🔄 Reset"; // Using an icon for clarity
-      resetButton.title = "Reset Section 10 to Defaults";
-      resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
-      
-      resetButton.addEventListener("click", (event) => {
-          event.stopPropagation();
-          // Use a confirmation dialog to prevent accidental resets
-          if (confirm("Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 10.")) {
-              ModeManager.resetState();
-          }
-      });
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
 
-      // --- Create Toggle Switch ---
-      const stateIndicator = document.createElement("span");
-      stateIndicator.textContent = "TARGET";
-      stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+    const slider = document.createElement("div");
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
 
-      const toggleSwitch = document.createElement("div");
-      toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-      
-      const slider = document.createElement("div");
-      slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    toggleSwitch.appendChild(slider);
 
-      toggleSwitch.appendChild(slider);
-      
-      toggleSwitch.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const isReference = toggleSwitch.classList.toggle('active');
-          if (isReference) {
-              slider.style.transform = "translateX(20px)";
-              toggleSwitch.style.backgroundColor = "#28a745";
-              stateIndicator.textContent = "REFERENCE";
-              stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-              ModeManager.switchMode("reference");
-          } else {
-              slider.style.transform = "translateX(0px)";
-              toggleSwitch.style.backgroundColor = "#ccc";
-              stateIndicator.textContent = "TARGET";
-              stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-              ModeManager.switchMode("target");
-          }
-      });
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
 
-      // Append all controls to the container, then the container to the header
-      controlsContainer.appendChild(resetButton);
-      controlsContainer.appendChild(stateIndicator);
-      controlsContainer.appendChild(toggleSwitch);
-      sectionHeader.appendChild(controlsContainer);
+    // Append all controls to the container, then the container to the header
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
   }
 
   //==========================================================================

@@ -10,8 +10,8 @@ Estimate the time it takes for interior air to reach a survivability threshold *
 
 BasePhaseLag = [1.2 × V_air × cp_air × (T_set - T_survive)] ÷ [U × A × (T_set - T_ext)] ÷ 3600
 
-
 **Where:**
+
 - `V_air`: Interior air volume (m³)
 - `cp_air`: Specific heat of air (1005 J/kg·K)
 - `U`: U-value of component (W/m²·K)
@@ -21,6 +21,7 @@ BasePhaseLag = [1.2 × V_air × cp_air × (T_set - T_survive)] ÷ [U × A × (T_
 - `T_ext`: Exterior design temperature (°C)
 
 **Excel Example (Q98):**
+
 ```excel
 = (1.2 * D105 * 1005 * (H23 - L23)) / (G85 * D85 * (H23 - D23)) / 3600
 
@@ -61,7 +62,8 @@ D39: Typology selection cell
 D101: Envelope area exposed to exterior air (m²)
 
 ⚠️ Disclaimer
-This method simplifies real-world heat flow using steady-state assumptions and approximate capacitance modeling. 
-It omits dynamic heat transfer, solar gain, internal loads, and mechanical systems. 
-The capacitance slider approximates the proportion of thermal mass actively moderating temperature. 
+This method simplifies real-world heat flow using steady-state assumptions and approximate capacitance modeling.
+It omits dynamic heat transfer, solar gain, internal loads, and mechanical systems.
+The capacitance slider approximates the proportion of thermal mass actively moderating temperature.
 For critical design applications, use dynamic simulation tools (e.g., EnergyPlus, IES-VE, TRNSYS).
+```

@@ -80,13 +80,15 @@ Objective TEUI 4.012 Framework - Next Generation Architecture
 A specialized adaptation of the TEUI 4011 codebase to create the **2024 Ontario Building Code Data Matrix** - an interactive web form that replicates the Ontario Association of Architects' standardized Building Code Excel template.
 
 #### **Completed Phases**:
+
 - ✅ **Phase 1**: Infrastructure setup and TEUI-specific removals
-- ✅ **Phase 2**: OBC Matrix branding and disclaimer modal  
+- ✅ **Phase 2**: OBC Matrix branding and disclaimer modal
 - ✅ **Phase 3**: CSV structure analysis and field mapping
 - ✅ **Phase 4**: Section 01 implementation with practice info, dropdowns, stamp upload
 - ✅ **Phase 5**: 15-column Excel structure compliance and Notes column toggle
 
 #### **Phase 5 Achievements**:
+
 - **Perfect Excel Structure Match**: Extended table from 14 to 15 columns (A-O)
 - **Column Alignment Fixed**: Labels in Column B, User inputs in Column C, Notes in Column O
 - **Notes Toggle System**: Column-level show/hide functionality (Excel column O equivalent)
@@ -95,12 +97,14 @@ A specialized adaptation of the TEUI 4011 codebase to create the **2024 Ontario 
 - **OAA Compliance**: Exact structural correspondence with official Excel template
 
 #### **Technical Architecture**:
+
 - **Excel Cell Mapping**: DOM elements use Excel coordinates (e.g., `id="c_3"` for cell C3)
 - **Section-Based Modules**: `4011-Section01.js` handles building information forms
 - **Field Management**: Centralized state through FieldManager system
 - **CSS Grid Layout**: Clean responsive design matching Excel visual structure
 
 #### **Next Development Phases**:
+
 - **Phase 6**: Additional OBC sections (3.03, 3.04, etc.)
 - **Phase 7**: Form validation and data export
 - **Phase 8**: Import/export compatibility with Excel template
@@ -684,7 +688,7 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
    // Target State: User's design values
    const TargetState = {
      state: {},
-     initialize: function() {
+     initialize: function () {
        const savedState = localStorage.getItem("SXX_TARGET_STATE");
        if (savedState) {
          this.state = JSON.parse(savedState);
@@ -692,19 +696,19 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
          this.setDefaults();
        }
      },
-     setValue: function(fieldId, value) {
+     setValue: function (fieldId, value) {
        this.state[fieldId] = value;
        this.saveState();
      },
-     getValue: function(fieldId) {
+     getValue: function (fieldId) {
        return this.state[fieldId];
-     }
+     },
    };
 
-   // Reference State: Code minimum/baseline values  
+   // Reference State: Code minimum/baseline values
    const ReferenceState = {
      state: {},
-     initialize: function() {
+     initialize: function () {
        const savedState = localStorage.getItem("SXX_REFERENCE_STATE");
        if (savedState) {
          this.state = JSON.parse(savedState);
@@ -712,13 +716,13 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
          this.setDefaults();
        }
      },
-     setValue: function(fieldId, value) {
+     setValue: function (fieldId, value) {
        this.state[fieldId] = value;
        this.saveState();
      },
-     getValue: function(fieldId) {
+     getValue: function (fieldId) {
        return this.state[fieldId];
-     }
+     },
    };
    ```
 
@@ -728,35 +732,38 @@ Understanding these patterns will help avoid common pitfalls and produce more ma
    // ModeManager Facade manages dual-state access
    const ModeManager = {
      currentMode: "target",
-     
-     initialize: function() {
+
+     initialize: function () {
        TargetState.initialize();
        ReferenceState.initialize();
      },
-     
-     switchMode: function(mode) {
+
+     switchMode: function (mode) {
        if (this.currentMode === mode) return;
        this.currentMode = mode;
        this.refreshUI();
        calculateAll(); // Recalculate for the new mode
      },
-     
-     getCurrentState: function() {
+
+     getCurrentState: function () {
        return this.currentMode === "target" ? TargetState : ReferenceState;
      },
-     
-     getValue: function(fieldId) {
+
+     getValue: function (fieldId) {
        return this.getCurrentState().getValue(fieldId);
      },
-     
-     setValue: function(fieldId, value, source = "user") {
+
+     setValue: function (fieldId, value, source = "user") {
        this.getCurrentState().setValue(fieldId, value);
-       
+
        // Bridge to StateManager for backward compatibility (Target mode only)
-       if (this.currentMode === "target" && window.TEUI?.StateManager?.setValue) {
+       if (
+         this.currentMode === "target" &&
+         window.TEUI?.StateManager?.setValue
+       ) {
          window.TEUI.StateManager.setValue(fieldId, value, source);
        }
-     }
+     },
    };
    ```
 
@@ -1061,14 +1068,15 @@ Both states are calculated simultaneously on every trigger, regardless of which 
 
 ```javascript
 function calculateAll() {
-  calculateReferenceModel();  // Always runs
-  calculateTargetModel();     // Always runs
+  calculateReferenceModel(); // Always runs
+  calculateTargetModel(); // Always runs
 }
 ```
 
 **This happens in all scenarios:**
+
 1. **On initial load**: `onSectionRendered()` → `calculateAll()` → both models calculated
-2. **On user input changes**: Event handlers → `calculateAll()` → both models calculated  
+2. **On user input changes**: Event handlers → `calculateAll()` → both models calculated
 3. **On mode switching**: `switchMode()` → `calculateAll()` → both models calculated
 4. **On cross-section dependencies**: StateManager listeners → `calculateAll()` → both models calculated
 
@@ -1082,6 +1090,7 @@ function calculateAll() {
 #### Value Flow to Dashboard
 
 Section calculations store results for both states using self-contained state objects:
+
 - **Target results**: Section's `TargetState` values → StateManager → S14 Target totals → S04 → S01 dashboard
 - **Reference results**: Section's `ReferenceState` values → StateManager → S15 Reference totals → S04 → S01 dashboard
 
@@ -1526,7 +1535,7 @@ The OBC Matrix project successfully implemented a global input handling system t
 #### ✅ **Proven Benefits from OBC Matrix Implementation:**
 
 1. **Enter/Return Key Fix**: Prevents newlines in text entry across ALL sections automatically
-2. **Auto-blur on Enter**: Pressing Enter properly finishes field editing and triggers calculations  
+2. **Auto-blur on Enter**: Pressing Enter properly finishes field editing and triggers calculations
 3. **Visual Feedback**: Fields show "editing" state with CSS classes
 4. **Centralized Logic**: No code duplication - one handler for all sections
 5. **Consistent Formatting**: Uses global `window.TEUI.formatNumber` for consistent display
@@ -1537,8 +1546,8 @@ The OBC Matrix project successfully implemented a global input handling system t
 ```javascript
 // In StateManager or dedicated InputHandler module
 function initializeGlobalInputHandlers() {
-  const editableFields = document.querySelectorAll('.editable[data-field-id]');
-  
+  const editableFields = document.querySelectorAll(".editable[data-field-id]");
+
   editableFields.forEach((field) => {
     if (!field.hasGlobalListeners) {
       // Prevent enter key from creating newlines
@@ -1548,14 +1557,16 @@ function initializeGlobalInputHandlers() {
           field.blur();
         }
       });
-      
+
       // Handle field blur (when user finishes editing)
       field.addEventListener("blur", handleFieldBlur);
-      
+
       // Visual feedback for editing state
       field.addEventListener("focus", () => field.classList.add("editing"));
-      field.addEventListener("focusout", () => field.classList.remove("editing"));
-      
+      field.addEventListener("focusout", () =>
+        field.classList.remove("editing"),
+      );
+
       field.hasGlobalListeners = true;
     }
   });
@@ -1565,21 +1576,21 @@ function handleFieldBlur(event) {
   const fieldElement = event.target;
   const fieldId = fieldElement.getAttribute("data-field-id");
   if (!fieldId) return;
-  
+
   let valueStr = fieldElement.textContent.trim();
   let numValue = window.TEUI.parseNumeric(valueStr, NaN);
-  
+
   // Apply appropriate formatting based on field type
   if (!isNaN(numValue)) {
-    if (fieldId.includes('area') || fieldId.includes('dimension')) {
+    if (fieldId.includes("area") || fieldId.includes("dimension")) {
       valueStr = window.TEUI.formatNumber(numValue, "number-2dp");
-    } else if (fieldId.includes('percent')) {
+    } else if (fieldId.includes("percent")) {
       valueStr = window.TEUI.formatNumber(numValue, "percent");
     } else {
       valueStr = window.TEUI.formatNumber(numValue, "number");
     }
   }
-  
+
   // Update display and state
   fieldElement.textContent = valueStr;
   window.TEUI.StateManager.setValue(fieldId, valueStr, "user-modified");
@@ -1608,12 +1619,14 @@ function handleFieldBlur(event) {
 The OBC Matrix achieved a UX breakthrough with smart state-aware input styling that provides instant visual feedback while maintaining intelligent state management:
 
 **🎯 Perfect UX Behavior:**
+
 1. **Placeholder State**: Grey italic text for default/empty fields
 2. **Click In**: Instantly switches to blue confident text (temporary `.editing-intent` class)
 3. **No Changes + Click Away**: Automatically reverts to grey italic placeholder
 4. **Make Changes + Commit**: Permanently switches to blue confident text (`.user-modified` state)
 
 **🔧 Implementation Pattern:**
+
 ```javascript
 // On focus: Add temporary visual feedback (no state change)
 field.addEventListener("focus", () => {
@@ -1625,7 +1638,7 @@ field.addEventListener("focus", () => {
 field.addEventListener("blur", () => {
   const hasChanges = field.textContent.trim() !== field.dataset.originalValue;
   field.classList.remove("editing-intent"); // Remove temporary styling
-  
+
   if (hasChanges) {
     // Permanently commit to user-modified state (stays blue)
     StateManager.setValue(fieldId, newValue, "user-modified");
@@ -1635,11 +1648,13 @@ field.addEventListener("blur", () => {
 ```
 
 **🎨 CSS State Classes:**
+
 - `.user-input:not(.user-modified)`: Grey italic placeholder styling
 - `.user-input.editing-intent`: Blue confident styling (temporary, while actively editing)
 - `.user-input.user-modified`: Blue confident styling (permanent, after committing changes)
 
 **💡 Why This Is Revolutionary:**
+
 - **Instant Feedback**: Users see immediate response when they click into fields
 - **Forgiving UX**: Accidental clicks automatically revert with no consequences
 - **Clear Ownership**: Permanent visual distinction between placeholder and user-entered content

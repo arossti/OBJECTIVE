@@ -1263,19 +1263,27 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Get necessary values with full precision using parseFloat
     const g108_nrl50Target = parseFloat(getNumericValue("g_108")); // NRL50 Target (L/s*m2)
     const g110_nFactor = parseFloat(getNumericValue("g_110"));
-    
+
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd;
     if (isReferenceCalculation) {
       // Reference calculations: read ref_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("ref_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("ref_d_21") || getNumericValue("d_21"));
+      d20_hdd = parseFloat(
+        getNumericValue("ref_d_20") || getNumericValue("d_20"),
+      );
+      d21_cdd = parseFloat(
+        getNumericValue("ref_d_21") || getNumericValue("d_21"),
+      );
     } else {
       // Target calculations: read target_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("target_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("target_d_21") || getNumericValue("d_21"));
+      d20_hdd = parseFloat(
+        getNumericValue("target_d_20") || getNumericValue("d_20"),
+      );
+      d21_cdd = parseFloat(
+        getNumericValue("target_d_21") || getNumericValue("d_21"),
+      );
     }
-    
+
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
     const h15_conditionedArea = parseFloat(getNumericValue("h_15")); // Get Conditioned Floor Area from S2
 
@@ -1307,21 +1315,37 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d102_areaGround = parseFloat(getNumericValue("d_102"));
     const g101_uAir = parseFloat(getNumericValue("g_101"));
     const g102_uGround = parseFloat(getNumericValue("g_102"));
-    
+
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
     if (isReferenceCalculation) {
       // Reference calculations: read ref_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("ref_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("ref_d_21") || getNumericValue("d_21"));
-      d22_gfHDD = parseFloat(getNumericValue("ref_d_22") || getNumericValue("d_22"));
-      h22_gfCDD = parseFloat(getNumericValue("ref_h_22") || getNumericValue("h_22"));
+      d20_hdd = parseFloat(
+        getNumericValue("ref_d_20") || getNumericValue("d_20"),
+      );
+      d21_cdd = parseFloat(
+        getNumericValue("ref_d_21") || getNumericValue("d_21"),
+      );
+      d22_gfHDD = parseFloat(
+        getNumericValue("ref_d_22") || getNumericValue("d_22"),
+      );
+      h22_gfCDD = parseFloat(
+        getNumericValue("ref_h_22") || getNumericValue("h_22"),
+      );
     } else {
       // Target calculations: read target_ prefixed climate data
-      d20_hdd = parseFloat(getNumericValue("target_d_20") || getNumericValue("d_20"));
-      d21_cdd = parseFloat(getNumericValue("target_d_21") || getNumericValue("d_21"));
-      d22_gfHDD = parseFloat(getNumericValue("target_d_22") || getNumericValue("d_22"));
-      h22_gfCDD = parseFloat(getNumericValue("target_h_22") || getNumericValue("h_22"));
+      d20_hdd = parseFloat(
+        getNumericValue("target_d_20") || getNumericValue("d_20"),
+      );
+      d21_cdd = parseFloat(
+        getNumericValue("target_d_21") || getNumericValue("d_21"),
+      );
+      d22_gfHDD = parseFloat(
+        getNumericValue("target_d_22") || getNumericValue("d_22"),
+      );
+      h22_gfCDD = parseFloat(
+        getNumericValue("target_h_22") || getNumericValue("h_22"),
+      );
     }
 
     // Constants
@@ -1416,18 +1440,34 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ FIX: Calculate Reference values using ref_ prefixed climate data
       calculateAirLeakageHeatLoss(true); // true = isReferenceCalculation
       calculateEnvelopeHeatLossGain(true); // true = isReferenceCalculation
-      
+
       // Store reference results with ref_ prefix
       const i103_ref = getNumericValue("i_103");
       const k103_ref = getNumericValue("k_103");
       const i104_ref = getNumericValue("i_104");
       const k104_ref = getNumericValue("k_104");
-      
+
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue("ref_i_103", i103_ref.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_103", k103_ref.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_i_104", i104_ref.toString(), "calculated");
-        window.TEUI.StateManager.setValue("ref_k_104", k104_ref.toString(), "calculated");
+        window.TEUI.StateManager.setValue(
+          "ref_i_103",
+          i103_ref.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_103",
+          k103_ref.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_i_104",
+          i104_ref.toString(),
+          "calculated",
+        );
+        window.TEUI.StateManager.setValue(
+          "ref_k_104",
+          k104_ref.toString(),
+          "calculated",
+        );
       }
     } catch (error) {
       console.error("Error during Section 12 calculateReferenceModel:", error);

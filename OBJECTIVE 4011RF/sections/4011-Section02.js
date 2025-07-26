@@ -568,7 +568,8 @@ window.TEUI.SectionModules.sect02 = (function () {
    * state when in 'target' mode to prevent state contamination.
    */
   function setFieldValue(fieldId, value, fieldType = "calculated") {
-    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const modePrefix =
+      ModeManager.currentMode === "target" ? "target_" : "ref_";
     const prefixedFieldId = `${modePrefix}${fieldId}`;
 
     // Always store with prefix for dual-state isolation.
@@ -591,8 +592,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       const formattedValue =
         value === "N/A"
           ? "N/A"
-          : window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
-            value.toString();
+          : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
+            value.toString());
 
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
@@ -683,7 +684,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
       setFieldValue("d_16", targetValue, "calculated");
     } catch (error) {
-      console.error("[Section02] Error in Reference Model calculations:", error);
+      console.error(
+        "[Section02] Error in Reference Model calculations:",
+        error,
+      );
     } finally {
       ModeManager.switchMode(originalMode); // Restore original mode
     }
@@ -794,7 +798,11 @@ window.TEUI.SectionModules.sect02 = (function () {
     // We update the global state for the Target model, and the `ref_` state for the Reference model.
     if (window.TEUI?.StateManager) {
       // Set the global value for the Target model and DOM
-      window.TEUI.StateManager.setValue(fieldId, selectedValue, "user-modified");
+      window.TEUI.StateManager.setValue(
+        fieldId,
+        selectedValue,
+        "user-modified",
+      );
       // Also set the ref_ value for the Reference model
       window.TEUI.StateManager.setValue(
         `ref_${fieldId}`,
@@ -899,18 +907,24 @@ window.TEUI.SectionModules.sect02 = (function () {
           border-radius: 4px;
           border: 1px solid rgba(220, 53, 69, 0.3);
         `;
-        
+
         // Insert immediately after the section title text
         const sectionTitleText = sectionHeader.textContent.trim();
         if (sectionTitleText.includes("SECTION 2. Building Information")) {
           // Find the text node or icon and insert after it
-          const iconSpan = sectionHeader.querySelector('.section-icon');
+          const iconSpan = sectionHeader.querySelector(".section-icon");
           if (iconSpan && iconSpan.nextSibling) {
             // Insert after icon and title text
-            iconSpan.parentNode.insertBefore(flagSpan, iconSpan.nextSibling.nextSibling || null);
+            iconSpan.parentNode.insertBefore(
+              flagSpan,
+              iconSpan.nextSibling.nextSibling || null,
+            );
           } else {
             // Fallback: insert at beginning
-            sectionHeader.insertBefore(flagSpan, sectionHeader.firstChild.nextSibling);
+            sectionHeader.insertBefore(
+              flagSpan,
+              sectionHeader.firstChild.nextSibling,
+            );
           }
         }
       }
@@ -1087,12 +1101,21 @@ window.TEUI.SectionModules.sect02 = (function () {
     const areaField = document.querySelector('[data-field-id="h_15"]');
     if (!areaField) return;
 
-    const areaValue = window.TEUI?.parseNumeric?.(areaField.textContent, 0) ?? 0;
+    const areaValue =
+      window.TEUI?.parseNumeric?.(areaField.textContent, 0) ?? 0;
 
     if (!isNaN(areaValue) && areaValue > 0 && window.TEUI?.StateManager) {
       // Set the value for both the target and reference states
-      window.TEUI.StateManager.setValue("h_15", areaValue.toString(), "user-modified");
-      window.TEUI.StateManager.setValue("ref_h_15", areaValue.toString(), "user-modified");
+      window.TEUI.StateManager.setValue(
+        "h_15",
+        areaValue.toString(),
+        "user-modified",
+      );
+      window.TEUI.StateManager.setValue(
+        "ref_h_15",
+        areaValue.toString(),
+        "user-modified",
+      );
 
       // Trigger the main calculation chain from the root
       if (window.TEUI.SectionModules.sect01?.runAllCalculations) {

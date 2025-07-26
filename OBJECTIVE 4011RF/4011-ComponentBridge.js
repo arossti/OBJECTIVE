@@ -405,12 +405,14 @@ TEUI.ComponentBridge = (function () {
    */
   function initDualStateSync() {
     if (isDualStateSyncInitialized) {
-      console.log('🔄 ComponentBridge: Dual-state sync already initialized');
+      console.log("🔄 ComponentBridge: Dual-state sync already initialized");
       return;
     }
 
     if (!window.TEUI.StateManager) {
-      console.warn('🔄 ComponentBridge: StateManager not available, dual-state sync delayed');
+      console.warn(
+        "🔄 ComponentBridge: StateManager not available, dual-state sync delayed",
+      );
       return;
     }
 
@@ -418,55 +420,59 @@ TEUI.ComponentBridge = (function () {
 
     // Track sync operations to prevent loops
     let isSyncing = false;
-    
+
     // ✅ FIXED: Hook into StateManager's setValue with SELECTIVE filtering
     const originalSetValue = window.TEUI.StateManager.setValue;
-    
-    window.TEUI.StateManager.setValue = function(fieldId, value, source) {
+
+    window.TEUI.StateManager.setValue = function (fieldId, value, source) {
       // Call the original setValue first
       const result = originalSetValue.call(this, fieldId, value, source);
-      
+
       // 🔥 CRITICAL: Only sync USER INPUTS, not calculated values!
-      const isUserInput = source === 'user' || source === 'user-modified';
-      const isBridgeSync = source === 'bridge-sync';
-      const isCalculated = source === 'calculated' || source === 'derived' || source === 'default';
-      
+      const isUserInput = source === "user" || source === "user-modified";
+      const isBridgeSync = source === "bridge-sync";
+      const isCalculated =
+        source === "calculated" || source === "derived" || source === "default";
+
       // Skip if not a user input or already syncing
       if (!isUserInput || isBridgeSync || isSyncing || isCalculated) {
         return result;
       }
-      
+
       const currentMode = getCurrentMode();
-      
+
       // Only proceed in Target mode
-      if (currentMode !== 'target') {
+      if (currentMode !== "target") {
         return result;
       }
-      
+
       // Prevent recursive calls
       isSyncing = true;
-      
+
       try {
         // Handle target_* → global sync (user inputs only)
-        if (fieldId.startsWith('target_')) {
-          const globalFieldId = fieldId.replace('target_', '');
-          originalSetValue.call(this, globalFieldId, value, 'bridge-sync');
+        if (fieldId.startsWith("target_")) {
+          const globalFieldId = fieldId.replace("target_", "");
+          originalSetValue.call(this, globalFieldId, value, "bridge-sync");
           // console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${globalFieldId} (${value})`);
         }
-        
+
         // Handle global → target_* sync (user inputs only)
-        else if (!fieldId.startsWith('target_') && !fieldId.startsWith('ref_')) {
+        else if (
+          !fieldId.startsWith("target_") &&
+          !fieldId.startsWith("ref_")
+        ) {
           const targetFieldId = `target_${fieldId}`;
-          originalSetValue.call(this, targetFieldId, value, 'bridge-sync');
+          originalSetValue.call(this, targetFieldId, value, "bridge-sync");
           // console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${targetFieldId} (${value})`);
         }
       } catch (error) {
-        console.error('🚨 ComponentBridge sync error:', error);
+        console.error("🚨 ComponentBridge sync error:", error);
       } finally {
         // Always reset sync flag
         isSyncing = false;
       }
-      
+
       return result;
     };
 
@@ -489,11 +495,11 @@ TEUI.ComponentBridge = (function () {
 
     // Return the mode from the first available dual-state section
     if (dualStateSections.length > 0) {
-      return dualStateSections[0].currentMode || 'target';
+      return dualStateSections[0].currentMode || "target";
     }
 
     // Default to target mode if no dual-state sections are available
-    return 'target';
+    return "target";
   }
 
   /**
@@ -513,7 +519,7 @@ TEUI.ComponentBridge = (function () {
     initializeDropdown: initializeDropdown,
     initDualStateSync: initDualStateSync,
     getCurrentMode: getCurrentMode,
-    isDualStateSyncEnabled: isDualStateSyncEnabled
+    isDualStateSyncEnabled: isDualStateSyncEnabled,
   };
 })();
 

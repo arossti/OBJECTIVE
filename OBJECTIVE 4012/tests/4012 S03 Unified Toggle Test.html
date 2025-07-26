@@ -7,7 +7,7 @@
 
     <!-- Link to production 4011RF styles for reference mode consistency -->
     <link rel="stylesheet" href="../../OBJECTIVE 4011RF/4011-styles.css" />
-    
+
     <!-- Import climate data only -->
     <script src="../core/data/4012-ClimateValues.js"></script>
 
@@ -767,7 +767,18 @@
           <button id="showWeatherDataBtn" class="weather-data-btn">
             More Weather Data
           </button>
-          <button id="resetStateBtn" style="padding: 8px 16px; background-color: #f44336; color: white; border: none; border-radius: 4px; font-weight: 500; cursor: pointer;">
+          <button
+            id="resetStateBtn"
+            style="
+              padding: 8px 16px;
+              background-color: #f44336;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              font-weight: 500;
+              cursor: pointer;
+            "
+          >
             Reset All States
           </button>
         </div>
@@ -922,7 +933,12 @@
                     value="50"
                     style="flex: 1"
                   />
-                  <span id="capacitance_value" class="slider-value" data-field-id="i_21">50%</span>
+                  <span
+                    id="capacitance_value"
+                    class="slider-value"
+                    data-field-id="i_21"
+                    >50%</span
+                  >
                 </div>
               </td>
               <td>
@@ -1224,38 +1240,38 @@
         };
 
         // ✅ CORRECTED STATE MANAGEMENT: Using StateManager with Prefixes
-        
+
         // Minimal StateManager for offline test (simplified version)
         const StateManager = {
           fields: new Map(),
           listeners: new Map(),
 
-          setValue: function(fieldId, value, state = "user-modified") {
+          setValue: function (fieldId, value, state = "user-modified") {
             const oldValue = this.getValue(fieldId);
-            
+
             this.fields.set(fieldId, { value, state });
             this.notifyListeners(fieldId, value, oldValue, state);
             this.saveState();
-            
+
             logDebug(`StateManager setValue: ${fieldId} = ${value} (${state})`);
             return true;
           },
 
-          getValue: function(fieldId) {
+          getValue: function (fieldId) {
             const field = this.fields.get(fieldId);
             return field ? field.value : null;
           },
 
-          addListener: function(fieldId, callback) {
+          addListener: function (fieldId, callback) {
             if (!this.listeners.has(fieldId)) {
               this.listeners.set(fieldId, new Set());
             }
             this.listeners.get(fieldId).add(callback);
           },
 
-          notifyListeners: function(fieldId, newValue, oldValue, state) {
+          notifyListeners: function (fieldId, newValue, oldValue, state) {
             if (!this.listeners.has(fieldId)) return;
-            this.listeners.get(fieldId).forEach(callback => {
+            this.listeners.get(fieldId).forEach((callback) => {
               try {
                 callback(newValue, oldValue, fieldId, state);
               } catch (error) {
@@ -1264,7 +1280,7 @@
             });
           },
 
-          saveState: function() {
+          saveState: function () {
             try {
               const stateData = {};
               this.fields.forEach((field, fieldId) => {
@@ -1272,15 +1288,15 @@
                   stateData[fieldId] = field;
                 }
               });
-              localStorage.setItem('TEUI_TEST_STATE', JSON.stringify(stateData));
+              localStorage.setItem("TEUI_TEST_STATE", JSON.stringify(stateData));
             } catch (e) {
               logDebug("StateManager: Error saving", e);
             }
           },
 
-          loadState: function() {
+          loadState: function () {
             try {
-              const saved = localStorage.getItem('TEUI_TEST_STATE');
+              const saved = localStorage.getItem("TEUI_TEST_STATE");
               if (saved) {
                 const stateData = JSON.parse(saved);
                 Object.entries(stateData).forEach(([fieldId, field]) => {
@@ -1293,131 +1309,132 @@
             }
           },
 
-          initialize: function() {
+          initialize: function () {
             this.loadState();
-            
+
             // Set Target defaults (with target_ prefix)
-            this.setDefaultIfMissing('target_d_19', 'ON');
-            this.setDefaultIfMissing('target_h_19', 'Alexandria');
-            this.setDefaultIfMissing('target_h_20', 'Present');
-            this.setDefaultIfMissing('target_h_21', 'Capacitance');
-            this.setDefaultIfMissing('target_h_23', 18);
-            this.setDefaultIfMissing('target_h_24', 24);
-            this.setDefaultIfMissing('target_m_19', 120);
-            this.setDefaultIfMissing('target_i_21', 50);  // Target: 50%
-            
-            // Set Reference defaults (with ref_ prefix) 
-            this.setDefaultIfMissing('ref_d_19', 'BC');
-            this.setDefaultIfMissing('ref_h_19', 'Vancouver');
-            this.setDefaultIfMissing('ref_h_20', 'Present');
-            this.setDefaultIfMissing('ref_h_21', 'Capacitance');
-            this.setDefaultIfMissing('ref_h_23', 18);
-            this.setDefaultIfMissing('ref_h_24', 24);
-            this.setDefaultIfMissing('ref_m_19', 120);
-            this.setDefaultIfMissing('ref_i_21', 75);    // Reference: 75% (different for testing)
-            
+            this.setDefaultIfMissing("target_d_19", "ON");
+            this.setDefaultIfMissing("target_h_19", "Alexandria");
+            this.setDefaultIfMissing("target_h_20", "Present");
+            this.setDefaultIfMissing("target_h_21", "Capacitance");
+            this.setDefaultIfMissing("target_h_23", 18);
+            this.setDefaultIfMissing("target_h_24", 24);
+            this.setDefaultIfMissing("target_m_19", 120);
+            this.setDefaultIfMissing("target_i_21", 50); // Target: 50%
+
+            // Set Reference defaults (with ref_ prefix)
+            this.setDefaultIfMissing("ref_d_19", "BC");
+            this.setDefaultIfMissing("ref_h_19", "Vancouver");
+            this.setDefaultIfMissing("ref_h_20", "Present");
+            this.setDefaultIfMissing("ref_h_21", "Capacitance");
+            this.setDefaultIfMissing("ref_h_23", 18);
+            this.setDefaultIfMissing("ref_h_24", 24);
+            this.setDefaultIfMissing("ref_m_19", 120);
+            this.setDefaultIfMissing("ref_i_21", 75); // Reference: 75% (different for testing)
+
             logDebug("StateManager: Initialized with Target/Reference defaults");
           },
 
-          setDefaultIfMissing: function(fieldId, value) {
+          setDefaultIfMissing: function (fieldId, value) {
             if (!this.fields.has(fieldId)) {
               this.setValue(fieldId, value, "default");
             }
           },
 
-          reset: function() {
-            localStorage.removeItem('TEUI_TEST_STATE');
+          reset: function () {
+            localStorage.removeItem("TEUI_TEST_STATE");
             this.fields.clear();
             this.initialize();
             logDebug("StateManager: Reset to defaults");
-          }
+          },
         };
 
         // Mode Manager: Handles switching between Target and Reference
         const ModeManager = {
           currentMode: "target",
 
-          initialize: function() {
+          initialize: function () {
             TargetState.initialize();
             ReferenceState.initialize();
-            
+
             // Set initial toggle label for target mode
             const toggleLabel = document.getElementById("toggleLabel");
             if (toggleLabel) {
               toggleLabel.textContent = "Show Reference";
             }
-            
+
             logDebug("MODE MANAGER: Both states initialized");
           },
 
-          switchMode: function(mode) {
+          switchMode: function (mode) {
             if (this.currentMode === mode) return;
-            
+
             this.currentMode = mode;
             logDebug(`MODE MANAGER: Switched to ${mode.toUpperCase()} mode`);
-            
+
             // Update UI state indicator
             const indicator = document.getElementById("stateIndicator");
             if (indicator) {
               indicator.textContent = mode.toUpperCase() + " MODE";
               indicator.className = `state-indicator ${mode}`;
             }
-            
+
             // Update toggle label to show the opposite mode
             const toggleLabel = document.getElementById("toggleLabel");
             if (toggleLabel) {
-              toggleLabel.textContent = mode === "target" ? "Show Reference" : "Show Target";
+              toggleLabel.textContent =
+                mode === "target" ? "Show Reference" : "Show Target";
             }
-            
+
             // Update body class for CSS styling
             if (mode === "reference") {
               document.body.classList.add("viewing-reference-inputs");
             } else {
               document.body.classList.remove("viewing-reference-inputs");
             }
-            
+
             // Refresh UI to show current mode's values
             this.refreshUI();
           },
 
-          refreshUI: function() {
+          refreshUI: function () {
             // Update all dropdowns and fields to show current mode's values
             const currentState = this.getCurrentState();
-            
+
             // Update province dropdown
             const provinceSelect = document.getElementById("provinceSelect");
             if (provinceSelect && currentState.getValue("d_19")) {
               provinceSelect.value = currentState.getValue("d_19");
               UIController.updateCityDropdown(currentState.getValue("d_19"));
             }
-            
-            // Update city dropdown  
+
+            // Update city dropdown
             const citySelect = document.getElementById("citySelect");
             if (citySelect && currentState.getValue("h_19")) {
               citySelect.value = currentState.getValue("h_19");
             }
-            
+
             // Update timeframe dropdown
             const timeframeSelect = document.getElementById("timeframeSelect");
             if (timeframeSelect && currentState.getValue("h_20")) {
               timeframeSelect.value = currentState.getValue("h_20");
             }
-            
+
             // CRITICAL FIX: Update capacitance slider and percentage from isolated state
             const capacitanceSlider = document.getElementById("capacitance_slider");
             const capacitanceValue = document.getElementById("capacitance_value");
             const sliderValueFromState = currentState.getValue("i_21") || 50;
-            
+
             if (capacitanceSlider) {
               capacitanceSlider.value = sliderValueFromState;
             }
             if (capacitanceValue) {
               capacitanceValue.textContent = sliderValueFromState + "%";
             }
-            
+
             // Update all other editable fields from current state
             const editableFields = document.querySelectorAll("[data-field-id]");
-            editableFields.forEach(field => {
+            editableFields.forEach((field) => {
               const fieldId = field.getAttribute("data-field-id");
               const stateValue = currentState.getValue(fieldId);
               if (stateValue !== undefined && stateValue !== null) {
@@ -1430,50 +1447,52 @@
                 }
               }
             });
-            
+
             // Update climate data for current selections
             UIController.updateClimateData();
-            
-            logDebug(`MODE MANAGER: UI refreshed for ${this.currentMode} mode - State isolation maintained`);
+
+            logDebug(
+              `MODE MANAGER: UI refreshed for ${this.currentMode} mode - State isolation maintained`,
+            );
           },
 
-          getCurrentState: function() {
+          getCurrentState: function () {
             return this.currentMode === "target" ? TargetState : ReferenceState;
           },
 
-          setValue: function(fieldId, value, source = "user") {
+          setValue: function (fieldId, value, source = "user") {
             this.getCurrentState().setValue(fieldId, value, source);
           },
 
-          getValue: function(fieldId) {
+          getValue: function (fieldId) {
             return this.getCurrentState().getValue(fieldId);
           },
 
-          addListener: function(fieldId, callback) {
+          addListener: function (fieldId, callback) {
             // Add listener to both states so UI updates work in both modes
             TargetState.addListener(fieldId, callback);
             ReferenceState.addListener(fieldId, callback);
           },
 
-          resetAllStates: function() {
+          resetAllStates: function () {
             // Clear localStorage
-            localStorage.removeItem('TARGET_STATE');
-            localStorage.removeItem('REFERENCE_STATE');
-            
+            localStorage.removeItem("TARGET_STATE");
+            localStorage.removeItem("REFERENCE_STATE");
+
             // Reset to defaults
             TargetState.setDefaults();
             ReferenceState.setDefaults();
-            
+
             // Save clean defaults
             TargetState.saveState();
             ReferenceState.saveState();
-            
+
             // Refresh UI
             this.refreshUI();
-            
+
             logDebug("MODE MANAGER: All states reset to clean defaults");
             alert("All states have been reset to defaults!");
-          }
+          },
         };
 
         // Compatibility alias for existing code
@@ -1538,8 +1557,6 @@
             return document.querySelector(`[data-field-id="${id}"]`);
           },
         };
-
-
 
         // Debug logging
         function logDebug(message, obj) {
@@ -1763,7 +1780,7 @@
             const toggle = DOMElements.referenceToggle;
             toggle.addEventListener("click", function () {
               const isActive = toggle.classList.contains("active");
-              
+
               if (!isActive) {
                 // Switching to reference mode
                 toggle.classList.add("active");
@@ -1779,7 +1796,11 @@
             document
               .getElementById("resetStateBtn")
               .addEventListener("click", function () {
-                if (confirm("Are you sure you want to reset all states to defaults? This will clear all your saved settings.")) {
+                if (
+                  confirm(
+                    "Are you sure you want to reset all states to defaults? This will clear all your saved settings.",
+                  )
+                ) {
                   ModeManager.resetAllStates();
                 }
               });
@@ -1818,7 +1839,9 @@
 
           setupEditableFields: function () {
             // Setup both .editable (legacy) and .user-input (new elegant styling) fields
-            const editableFields = document.querySelectorAll(".editable, .user-input[contenteditable]");
+            const editableFields = document.querySelectorAll(
+              ".editable, .user-input[contenteditable]",
+            );
 
             editableFields.forEach((field) => {
               const fieldId = field.getAttribute("data-field-id");
@@ -1838,12 +1861,14 @@
             function handleEditableFocus() {
               // Store original value for change detection
               this.dataset.originalValue = this.textContent.trim();
-              
+
               // Add editing-intent class for temporary blue styling
               this.classList.add("editing-intent");
               this.classList.remove("user-modified");
-              
-              logDebug(`Field ${this.getAttribute("data-field-id")} focused - editing intent activated`);
+
+              logDebug(
+                `Field ${this.getAttribute("data-field-id")} focused - editing intent activated`,
+              );
             }
 
             function handleEditableKeydown(e) {
@@ -1853,7 +1878,7 @@
                 this.blur(); // Trigger save
                 return false;
               }
-              
+
               // Prevent other problematic keys that can cause formatting issues
               if (e.key === "Tab") {
                 e.preventDefault();
@@ -1876,11 +1901,13 @@
               if (hasChanged && newValue !== "") {
                 // User made changes - apply user-modified styling
                 this.classList.add("user-modified");
-                
+
                 const numericValue = parseFloat(newValue) || 0;
                 DualState.setValue(fieldId, numericValue, "user");
-                
-                logDebug(`Field ${fieldId} changed to: ${numericValue} (user-modified styling applied)`);
+
+                logDebug(
+                  `Field ${fieldId} changed to: ${numericValue} (user-modified styling applied)`,
+                );
                 CalculationService.calculateAll();
               } else if (!hasChanged) {
                 // No changes made - revert to default styling if no previous user modification
@@ -1898,7 +1925,9 @@
               } else {
                 // Empty value - remove user-modified styling and restore default
                 this.classList.remove("user-modified");
-                logDebug(`Field ${fieldId} - empty value, reverted to default styling`);
+                logDebug(
+                  `Field ${fieldId} - empty value, reverted to default styling`,
+                );
               }
             }
           },
@@ -2234,8 +2263,24 @@
         function setupStateObservers() {
           // Common field IDs we want to observe
           const allFields = [
-            'd_19', 'h_19', 'h_20', 'h_21', 'h_23', 'h_24', 'm_19', 'i_21',
-            'd_20', 'd_21', 'd_22', 'd_23', 'd_24', 'h_22', 'l_21', 'l_23', 'l_24', 'l_25'
+            "d_19",
+            "h_19",
+            "h_20",
+            "h_21",
+            "h_23",
+            "h_24",
+            "m_19",
+            "i_21",
+            "d_20",
+            "d_21",
+            "d_22",
+            "d_23",
+            "d_24",
+            "h_22",
+            "l_21",
+            "l_23",
+            "l_24",
+            "l_25",
           ];
 
           allFields.forEach((fieldId) => {
@@ -2292,7 +2337,7 @@
           ClimateDataService.ensureAvailable(function () {
             // Initialize both Target and Reference states
             ModeManager.initialize();
-            
+
             UIController.initialize();
             UIController.populateProvinceDropdown();
             setupStateObservers();

@@ -1,138 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>State Isolation Diagnostic</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-section { border: 1px solid #ccc; margin: 10px 0; padding: 15px; }
-        .mode-indicator { padding: 5px 10px; margin: 5px; border-radius: 3px; }
-        .target-mode { background: #e3f2fd; }
-        .reference-mode { background: #fff3e0; }
-        .test-result { margin: 10px 0; padding: 10px; border-radius: 3px; }
-        .pass { background: #e8f5e8; border: 1px solid #4caf50; }
-        .fail { background: #ffebee; border: 1px solid #f44336; }
-        button { margin: 5px; padding: 8px 16px; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .test-section {
+        border: 1px solid #ccc;
+        margin: 10px 0;
+        padding: 15px;
+      }
+      .mode-indicator {
+        padding: 5px 10px;
+        margin: 5px;
+        border-radius: 3px;
+      }
+      .target-mode {
+        background: #e3f2fd;
+      }
+      .reference-mode {
+        background: #fff3e0;
+      }
+      .test-result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 3px;
+      }
+      .pass {
+        background: #e8f5e8;
+        border: 1px solid #4caf50;
+      }
+      .fail {
+        background: #ffebee;
+        border: 1px solid #f44336;
+      }
+      button {
+        margin: 5px;
+        padding: 8px 16px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🔍 State Isolation Diagnostic</h1>
-    
+
     <div class="test-section">
-        <h3>Current Mode Test</h3>
-        <button onclick="setMode('target')">Switch to Target Mode</button>
-        <button onclick="setMode('reference')">Switch to Reference Mode</button>
-        <div id="currentMode" class="mode-indicator">Unknown</div>
+      <h3>Current Mode Test</h3>
+      <button onclick="setMode('target')">Switch to Target Mode</button>
+      <button onclick="setMode('reference')">Switch to Reference Mode</button>
+      <div id="currentMode" class="mode-indicator">Unknown</div>
     </div>
 
     <div class="test-section">
-        <h3>Section 03 (Climate) - Known Working</h3>
-        <p>Test: Change city in both modes, verify separate storage</p>
-        <button onclick="testSection03()">Test S03 Isolation</button>
-        <div id="s03Result" class="test-result">Not tested</div>
+      <h3>Section 03 (Climate) - Known Working</h3>
+      <p>Test: Change city in both modes, verify separate storage</p>
+      <button onclick="testSection03()">Test S03 Isolation</button>
+      <div id="s03Result" class="test-result">Not tested</div>
     </div>
 
     <div class="test-section">
-        <h3>Section 08 (Air Quality) - To Test</h3>
-        <p>Test: Change RH% slider in both modes, verify separate storage</p>
-        <button onclick="testSection08()">Test S08 Isolation</button>
-        <div id="s08Result" class="test-result">Not tested</div>
+      <h3>Section 08 (Air Quality) - To Test</h3>
+      <p>Test: Change RH% slider in both modes, verify separate storage</p>
+      <button onclick="testSection08()">Test S08 Isolation</button>
+      <div id="s08Result" class="test-result">Not tested</div>
     </div>
 
     <div class="test-section">
-        <h3>Section 10 (Radiant Gains) - To Test</h3>
-        <p>Test: Change building orientation in both modes</p>
-        <button onclick="testSection10()">Test S10 Isolation</button>
-        <div id="s10Result" class="test-result">Not tested</div>
+      <h3>Section 10 (Radiant Gains) - To Test</h3>
+      <p>Test: Change building orientation in both modes</p>
+      <button onclick="testSection10()">Test S10 Isolation</button>
+      <div id="s10Result" class="test-result">Not tested</div>
     </div>
 
     <script>
-        function setMode(mode) {
-            if (window.TEUI?.ModeManager) {
-                window.TEUI.ModeManager.switchMode(mode);
-                updateModeDisplay();
-            } else {
-                document.getElementById('currentMode').textContent = "ModeManager not available";
-            }
+      function setMode(mode) {
+        if (window.TEUI?.ModeManager) {
+          window.TEUI.ModeManager.switchMode(mode);
+          updateModeDisplay();
+        } else {
+          document.getElementById("currentMode").textContent =
+            "ModeManager not available";
+        }
+      }
+
+      function updateModeDisplay() {
+        const modeDiv = document.getElementById("currentMode");
+        if (window.TEUI?.ModeManager) {
+          const currentMode = window.TEUI.ModeManager.currentMode;
+          modeDiv.textContent = `Current Mode: ${currentMode.toUpperCase()}`;
+          modeDiv.className = `mode-indicator ${currentMode}-mode`;
+        }
+      }
+
+      function testSection03() {
+        const resultDiv = document.getElementById("s03Result");
+
+        if (!window.TEUI?.StateManager) {
+          resultDiv.innerHTML =
+            '<span class="fail">❌ StateManager not available</span>';
+          return;
         }
 
-        function updateModeDisplay() {
-            const modeDiv = document.getElementById('currentMode');
-            if (window.TEUI?.ModeManager) {
-                const currentMode = window.TEUI.ModeManager.currentMode;
-                modeDiv.textContent = `Current Mode: ${currentMode.toUpperCase()}`;
-                modeDiv.className = `mode-indicator ${currentMode}-mode`;
-            }
+        try {
+          // Test: Set different cities in Target vs Reference mode
+          setMode("target");
+          window.TEUI.StateManager.setValue("target_h_19", "Alexandria", "test");
+
+          setMode("reference");
+          window.TEUI.StateManager.setValue("ref_h_19", "Attawapiskat", "test");
+
+          // Verify isolation
+          const targetCity = window.TEUI.StateManager.getValue("target_h_19");
+          const refCity = window.TEUI.StateManager.getValue("ref_h_19");
+
+          if (targetCity === "Alexandria" && refCity === "Attawapiskat") {
+            resultDiv.innerHTML = `<span class="pass">✅ PASS: Target=${targetCity}, Reference=${refCity}</span>`;
+          } else {
+            resultDiv.innerHTML = `<span class="fail">❌ FAIL: Target=${targetCity}, Reference=${refCity}</span>`;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<span class="fail">❌ ERROR: ${error.message}</span>`;
+        }
+      }
+
+      function testSection08() {
+        const resultDiv = document.getElementById("s08Result");
+
+        if (!window.TEUI?.StateManager) {
+          resultDiv.innerHTML =
+            '<span class="fail">❌ StateManager not available</span>';
+          return;
         }
 
-        function testSection03() {
-            const resultDiv = document.getElementById('s03Result');
-            
-            if (!window.TEUI?.StateManager) {
-                resultDiv.innerHTML = '<span class="fail">❌ StateManager not available</span>';
-                return;
-            }
+        try {
+          // Test: Set different RH% values in Target vs Reference mode
+          setMode("target");
+          window.TEUI.StateManager.setValue("target_e_77", "45", "test");
 
-            try {
-                // Test: Set different cities in Target vs Reference mode
-                setMode('target');
-                window.TEUI.StateManager.setValue('target_h_19', 'Alexandria', 'test');
-                
-                setMode('reference');
-                window.TEUI.StateManager.setValue('ref_h_19', 'Attawapiskat', 'test');
-                
-                // Verify isolation
-                const targetCity = window.TEUI.StateManager.getValue('target_h_19');
-                const refCity = window.TEUI.StateManager.getValue('ref_h_19');
-                
-                if (targetCity === 'Alexandria' && refCity === 'Attawapiskat') {
-                    resultDiv.innerHTML = `<span class="pass">✅ PASS: Target=${targetCity}, Reference=${refCity}</span>`;
-                } else {
-                    resultDiv.innerHTML = `<span class="fail">❌ FAIL: Target=${targetCity}, Reference=${refCity}</span>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="fail">❌ ERROR: ${error.message}</span>`;
-            }
+          setMode("reference");
+          window.TEUI.StateManager.setValue("ref_e_77", "55", "test");
+
+          // Verify isolation
+          const targetRH = window.TEUI.StateManager.getValue("target_e_77");
+          const refRH = window.TEUI.StateManager.getValue("ref_e_77");
+
+          if (targetRH === "45" && refRH === "55") {
+            resultDiv.innerHTML = `<span class="pass">✅ PASS: Target=${targetRH}%, Reference=${refRH}%</span>`;
+          } else {
+            resultDiv.innerHTML = `<span class="fail">❌ FAIL: Target=${targetRH}%, Reference=${refRH}%</span>`;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<span class="fail">❌ ERROR: ${error.message}</span>`;
         }
+      }
 
-        function testSection08() {
-            const resultDiv = document.getElementById('s08Result');
-            
-            if (!window.TEUI?.StateManager) {
-                resultDiv.innerHTML = '<span class="fail">❌ StateManager not available</span>';
-                return;
-            }
+      function testSection10() {
+        const resultDiv = document.getElementById("s10Result");
+        resultDiv.innerHTML =
+          '<span class="test-result">Section 10 test not implemented yet</span>';
+      }
 
-            try {
-                // Test: Set different RH% values in Target vs Reference mode
-                setMode('target');
-                window.TEUI.StateManager.setValue('target_e_77', '45', 'test');
-                
-                setMode('reference');
-                window.TEUI.StateManager.setValue('ref_e_77', '55', 'test');
-                
-                // Verify isolation
-                const targetRH = window.TEUI.StateManager.getValue('target_e_77');
-                const refRH = window.TEUI.StateManager.getValue('ref_e_77');
-                
-                if (targetRH === '45' && refRH === '55') {
-                    resultDiv.innerHTML = `<span class="pass">✅ PASS: Target=${targetRH}%, Reference=${refRH}%</span>`;
-                } else {
-                    resultDiv.innerHTML = `<span class="fail">❌ FAIL: Target=${targetRH}%, Reference=${refRH}%</span>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="fail">❌ ERROR: ${error.message}</span>`;
-            }
-        }
-
-        function testSection10() {
-            const resultDiv = document.getElementById('s10Result');
-            resultDiv.innerHTML = '<span class="test-result">Section 10 test not implemented yet</span>';
-        }
-
-        // Initialize on page load
-        window.addEventListener('load', function() {
-            setTimeout(updateModeDisplay, 500); // Give modules time to load
-        });
+      // Initialize on page load
+      window.addEventListener("load", function () {
+        setTimeout(updateModeDisplay, 500); // Give modules time to load
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>

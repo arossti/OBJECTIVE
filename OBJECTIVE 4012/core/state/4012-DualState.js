@@ -476,11 +476,11 @@
   window.TEUI.v4012.DualState = new DualState();
 
   // Expose formatting functions globally for easy access
-  window.TEUI.v4012.formatNumber = function(value, formatType = "number-2dp") {
+  window.TEUI.v4012.formatNumber = function (value, formatType = "number-2dp") {
     return window.TEUI.v4012.DualState.formatNumber(value, formatType);
   };
 
-  window.TEUI.v4012.parseNumeric = function(value, defaultValue = 0) {
+  window.TEUI.v4012.parseNumeric = function (value, defaultValue = 0) {
     return window.TEUI.v4012.DualState.parseNumeric(value, defaultValue);
   };
 })();

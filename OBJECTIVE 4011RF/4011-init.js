@@ -869,7 +869,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Initialize other UI handlers
     initializeUIHandlers();
-    
+
     // Initialize elegant user input behavior
     initializeElegantInputBehavior();
   } else {
@@ -879,31 +879,43 @@ document.addEventListener("DOMContentLoaded", function () {
   // =============== ELEGANT USER INPUT BEHAVIOR ===============
   function initializeElegantInputBehavior() {
     // Event delegation catches ALL user inputs (including conditional ones)
-    document.addEventListener('focus', function(e) {
-      const field = e.target;
-      if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
-        field.classList.add('editing-intent');
-        field.dataset.originalValue = field.textContent || field.value || '';
-      }
-    }, true);
-
-    document.addEventListener('blur', function(e) {
-      const field = e.target;
-      if (field.matches('[contenteditable="true"].user-input, input.user-input')) {
-        field.classList.remove('editing-intent');
-        
-        const currentValue = field.textContent || field.value || '';
-        const originalValue = field.dataset.originalValue || '';
-        
-        // If value changed, mark as user-modified
-        if (currentValue !== originalValue && currentValue.trim() !== '') {
-          field.classList.add('user-modified');
-        } else if (currentValue.trim() === '') {
-          // If cleared, remove user-modified (back to default grey italic)
-          field.classList.remove('user-modified');
+    document.addEventListener(
+      "focus",
+      function (e) {
+        const field = e.target;
+        if (
+          field.matches('[contenteditable="true"].user-input, input.user-input')
+        ) {
+          field.classList.add("editing-intent");
+          field.dataset.originalValue = field.textContent || field.value || "";
         }
-      }
-    }, true);
+      },
+      true,
+    );
+
+    document.addEventListener(
+      "blur",
+      function (e) {
+        const field = e.target;
+        if (
+          field.matches('[contenteditable="true"].user-input, input.user-input')
+        ) {
+          field.classList.remove("editing-intent");
+
+          const currentValue = field.textContent || field.value || "";
+          const originalValue = field.dataset.originalValue || "";
+
+          // If value changed, mark as user-modified
+          if (currentValue !== originalValue && currentValue.trim() !== "") {
+            field.classList.add("user-modified");
+          } else if (currentValue.trim() === "") {
+            // If cleared, remove user-modified (back to default grey italic)
+            field.classList.remove("user-modified");
+          }
+        }
+      },
+      true,
+    );
 
     // ROOT CAUSE FIX: No auto-marking on page load - clean slate
     // Fields start grey italic and only turn blue on actual interaction

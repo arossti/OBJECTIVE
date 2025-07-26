@@ -37,8 +37,26 @@ window.TEUI.SectionModules.sect07 = (function () {
       label: "Total Hot+Cold Water Use (Method)",
       cells: {
         c: { label: "Total Hot+Cold Water Use (Method)" },
-        d: { fieldId: "d_49", type: "dropdown", dropdownId: "d_49", value: "User Defined", options: ["User Defined", "By Engineer", "PHPP Method", "NBC Method", "OBC Method", "Luxury"] },
-        e: { fieldId: "e_49", type: "editable", value: "40.00", classes: ["user-input"] },
+        d: {
+          fieldId: "d_49",
+          type: "dropdown",
+          dropdownId: "d_49",
+          value: "User Defined",
+          options: [
+            "User Defined",
+            "By Engineer",
+            "PHPP Method",
+            "NBC Method",
+            "OBC Method",
+            "Luxury",
+          ],
+        },
+        e: {
+          fieldId: "e_49",
+          type: "editable",
+          value: "40.00",
+          classes: ["user-input"],
+        },
         f: { content: "lpppd (User Defined)", classes: ["text-left"] },
         h: { fieldId: "h_49", type: "calculated", value: "40.00" },
         i: { fieldId: "i_49", type: "calculated", value: "1,839,600" },
@@ -55,7 +73,12 @@ window.TEUI.SectionModules.sect07 = (function () {
       cells: {
         c: { label: "DHW Use (40% of W.1.0)" },
         d: { content: "" },
-        e: { fieldId: "e_50", type: "editable", value: "10,000.00", classes: ["user-input"] },
+        e: {
+          fieldId: "e_50",
+          type: "editable",
+          value: "10,000.00",
+          classes: ["user-input"],
+        },
         f: { content: "kWh/yr (IF By Engineer)", classes: ["text-left"] },
         h: { fieldId: "h_50", type: "calculated", value: "16.00" },
         i: { fieldId: "i_50", type: "calculated", value: "735,840" },
@@ -69,7 +92,13 @@ window.TEUI.SectionModules.sect07 = (function () {
       label: "DHW or SHW Energy Source",
       cells: {
         c: { label: "DHW or SHW Energy Source" },
-        d: { fieldId: "d_51", type: "dropdown", dropdownId: "d_51", value: "Heatpump", options: ["Heatpump", "Gas", "Oil", "Electric"] },
+        d: {
+          fieldId: "d_51",
+          type: "dropdown",
+          dropdownId: "d_51",
+          value: "Heatpump",
+          options: ["Heatpump", "Gas", "Oil", "Electric"],
+        },
         e: { fieldId: "e_51", type: "calculated", value: "0.00" },
         f: { content: "Gas m³/yr", classes: ["text-left"] },
         g: { content: "W.3.2", classes: ["text-left"] },
@@ -84,13 +113,26 @@ window.TEUI.SectionModules.sect07 = (function () {
       label: "DHW or SHW Efficiency Factor (EF)",
       cells: {
         c: { label: "DHW or SHW Efficiency Factor (EF)" },
-        d: { fieldId: "d_52", type: "percentage", value: "300", min: 50, max: 400, step: 2, classes: ["user-input"] },
+        d: {
+          fieldId: "d_52",
+          type: "percentage",
+          value: "300",
+          min: 50,
+          max: 400,
+          step: 2,
+          classes: ["user-input"],
+        },
         e: { fieldId: "e_52", type: "calculated", value: "3.00" },
         f: { content: "COPdhw", classes: ["text-left"] },
         g: { content: "W.5.2", classes: ["text-left"] },
         h: { content: "Net Demand-Recovered", classes: ["text-left"] },
         j: { fieldId: "j_52", type: "calculated", value: "12,828.14" },
-        k: { fieldId: "k_52", type: "editable", value: "0.90", classes: ["user-input"] },
+        k: {
+          fieldId: "k_52",
+          type: "editable",
+          value: "0.90",
+          classes: ["user-input"],
+        },
         l: { content: "W.4.2 AFUE", classes: ["text-left"] },
         m: { content: "✓", classes: ["checkmark"] },
         n: { fieldId: "n_52", type: "calculated", value: "100%" },
@@ -101,7 +143,15 @@ window.TEUI.SectionModules.sect07 = (function () {
       label: "Drain Water Heat Recovery Efficiency",
       cells: {
         c: { label: "Drain Water Heat Recovery Efficiency" },
-        d: { fieldId: "d_53", type: "percentage", value: "0", min: 0, max: 70, step: 1, classes: ["user-input"] },
+        d: {
+          fieldId: "d_53",
+          type: "percentage",
+          value: "0",
+          min: 0,
+          max: 70,
+          step: 1,
+          classes: ["user-input"],
+        },
         e: { fieldId: "e_53", type: "calculated", value: "0.00" },
         f: { content: "kWh/yr", classes: ["text-left"] },
         g: { content: "W.5.3", classes: ["text-left"] },
@@ -133,9 +183,9 @@ window.TEUI.SectionModules.sect07 = (function () {
   //==========================================================================
   function getFields() {
     const fields = {};
-    Object.values(sectionRows).forEach(row => {
+    Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach(cell => {
+      Object.values(row.cells).forEach((cell) => {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -144,7 +194,8 @@ window.TEUI.SectionModules.sect07 = (function () {
             section: "waterUse",
           };
           // Add additional properties for dropdown fields
-          if (cell.dropdownId) fields[cell.fieldId].dropdownId = cell.dropdownId;
+          if (cell.dropdownId)
+            fields[cell.fieldId].dropdownId = cell.dropdownId;
           if (cell.options) fields[cell.fieldId].options = cell.options;
           if (cell.min !== undefined) fields[cell.fieldId].min = cell.min;
           if (cell.max !== undefined) fields[cell.fieldId].max = cell.max;
@@ -157,11 +208,14 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function getDropdownOptions() {
     const options = {};
-    Object.values(sectionRows).forEach(row => {
+    Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
-        Object.values(row.cells).forEach(cell => {
-            if (cell.type === 'dropdown' && cell.dropdownId && cell.options) {
-                options[cell.dropdownId] = cell.options.map(opt => ({ value: opt, name: opt }));
+      Object.values(row.cells).forEach((cell) => {
+        if (cell.type === "dropdown" && cell.dropdownId && cell.options) {
+          options[cell.dropdownId] = cell.options.map((opt) => ({
+            value: opt,
+            name: opt,
+          }));
         }
       });
     });
@@ -170,8 +224,9 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function getLayout() {
     const layoutRows = [];
-    if (sectionRows["header"]) layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.keys(sectionRows).forEach(key => {
+    if (sectionRows["header"])
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
+    Object.keys(sectionRows).forEach((key) => {
       if (key !== "header") layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
@@ -179,15 +234,28 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function createLayoutRow(row) {
     const rowDef = { id: row.id, cells: [{}, {}] };
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"];
-    columns.forEach(col => {
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+    ];
+    columns.forEach((col) => {
       const cell = row.cells?.[col] || {};
       if (col === "c" && !cell.label && row.label) cell.label = row.label;
       rowDef.cells.push(cell);
     });
     return rowDef;
   }
-  
+
   //==========================================================================
   // DUAL-STATE MODE MANAGEMENT (Standardized Pattern)
   //==========================================================================
@@ -211,22 +279,29 @@ window.TEUI.SectionModules.sect07 = (function () {
     }
     return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
   }
-  
+
   function getStringValue(fieldId, defaultValue = "") {
-      const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-      let rawValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
-      if (rawValue === null || rawValue === undefined) {
-          rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-      }
-      return rawValue === null || rawValue === undefined ? defaultValue : rawValue;
+    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    let rawValue = window.TEUI?.StateManager?.getValue(`${prefix}${fieldId}`);
+    if (rawValue === null || rawValue === undefined) {
+      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    }
+    return rawValue === null || rawValue === undefined
+      ? defaultValue
+      : rawValue;
   }
 
   function setFieldValue(fieldId, value, fieldType = "calculated") {
-    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const modePrefix =
+      ModeManager.currentMode === "target" ? "target_" : "ref_";
     const prefixedFieldId = `${modePrefix}${fieldId}`;
 
     if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue(prefixedFieldId, value.toString(), fieldType);
+      window.TEUI.StateManager.setValue(
+        prefixedFieldId,
+        value.toString(),
+        fieldType,
+      );
     }
 
     if (ModeManager.currentMode === "target") {
@@ -234,7 +309,8 @@ window.TEUI.SectionModules.sect07 = (function () {
         window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
       }
       const formatType = getFieldFormat(fieldId);
-      const formattedValue = window.TEUI?.formatNumber?.(value, formatType) ?? value.toString();
+      const formattedValue =
+        window.TEUI?.formatNumber?.(value, formatType) ?? value.toString();
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         element.textContent = formattedValue;
@@ -245,12 +321,24 @@ window.TEUI.SectionModules.sect07 = (function () {
 
   function getFieldFormat(fieldId) {
     const formatMap = {
-      h_49: "number-2dp", i_49: "integer-comma", h_50: "number-2dp",
-      i_50: "integer-comma", j_50: "number-2dp-comma", n_49: "percent-0dp",
-      n_50: "percent-0dp", e_52: "number-2dp", j_51: "number-2dp-comma",
-      e_53: "number-2dp-comma", j_52: "number-2dp-comma", j_53: "number-2dp-comma",
-      e_51: "number-2dp-comma", k_51: "number-2dp-comma", d_54: "number-2dp-comma",
-      j_54: "number-2dp-comma", k_54: "number-2dp-comma", k_49: "number-2dp-comma",
+      h_49: "number-2dp",
+      i_49: "integer-comma",
+      h_50: "number-2dp",
+      i_50: "integer-comma",
+      j_50: "number-2dp-comma",
+      n_49: "percent-0dp",
+      n_50: "percent-0dp",
+      e_52: "number-2dp",
+      j_51: "number-2dp-comma",
+      e_53: "number-2dp-comma",
+      j_52: "number-2dp-comma",
+      j_53: "number-2dp-comma",
+      e_51: "number-2dp-comma",
+      k_51: "number-2dp-comma",
+      d_54: "number-2dp-comma",
+      j_54: "number-2dp-comma",
+      k_54: "number-2dp-comma",
+      k_49: "number-2dp-comma",
     };
     return formatMap[fieldId] || "number-2dp-comma";
   }
@@ -268,51 +356,74 @@ window.TEUI.SectionModules.sect07 = (function () {
     let hotWaterEnergyDemand = 0;
 
     switch (method) {
-      case "User Defined": litersPerPersonDay = userDefinedValue; break;
-      case "By Engineer": hotWaterEnergyDemand = engineerValue; break;
-      case "PHPP Method": litersPerPersonDay = 62.5; break;
-      case "NBC Method": litersPerPersonDay = 220; break;
-      case "OBC Method": litersPerPersonDay = 275; break;
-      case "Luxury": litersPerPersonDay = 400; break;
-      default: litersPerPersonDay = 40;
+      case "User Defined":
+        litersPerPersonDay = userDefinedValue;
+        break;
+      case "By Engineer":
+        hotWaterEnergyDemand = engineerValue;
+        break;
+      case "PHPP Method":
+        litersPerPersonDay = 62.5;
+        break;
+      case "NBC Method":
+        litersPerPersonDay = 220;
+        break;
+      case "OBC Method":
+        litersPerPersonDay = 275;
+        break;
+      case "Luxury":
+        litersPerPersonDay = 400;
+        break;
+      default:
+        litersPerPersonDay = 40;
     }
 
     if (method !== "By Engineer") {
-        hotWaterEnergyDemand = litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
+      hotWaterEnergyDemand =
+        litersPerPersonDay * 0.4 * occupants * 0.0523 * 365;
     } else {
-        const waterHeatFactor = 0.0524;
-        litersPerPersonDay = occupants > 0 ? engineerValue / (365 * waterHeatFactor * occupants * 0.4) : 0;
+      const waterHeatFactor = 0.0524;
+      litersPerPersonDay =
+        occupants > 0
+          ? engineerValue / (365 * waterHeatFactor * occupants * 0.4)
+          : 0;
     }
-    
+
     setFieldValue("h_49", litersPerPersonDay);
     setFieldValue("i_49", litersPerPersonDay * occupants * 365);
     setFieldValue("h_50", litersPerPersonDay * 0.4);
     setFieldValue("i_50", litersPerPersonDay * 0.4 * occupants * 365);
     setFieldValue("j_50", hotWaterEnergyDemand);
   }
-  
+
   function calculateHeatingSystem() {
-      const hotWaterEnergyDemand = getNumericValue("j_50");
-      const systemType = getStringValue("d_51", "Heatpump");
-      const efficiencyInput = getNumericValue("d_52", 300);
-      const afue = getNumericValue("k_52", 0.9);
-      const recoveryPercent = getNumericValue("d_53", 0) / 100;
-      
-      const efficiency = efficiencyInput / 100;
-      setFieldValue("e_52", efficiency);
+    const hotWaterEnergyDemand = getNumericValue("j_50");
+    const systemType = getStringValue("d_51", "Heatpump");
+    const efficiencyInput = getNumericValue("d_52", 300);
+    const afue = getNumericValue("k_52", 0.9);
+    const recoveryPercent = getNumericValue("d_53", 0) / 100;
 
-      const netThermalDemand = (systemType === "Heatpump" || systemType === "Electric") ? hotWaterEnergyDemand / efficiency : hotWaterEnergyDemand / afue;
-      setFieldValue("j_51", netThermalDemand);
+    const efficiency = efficiencyInput / 100;
+    setFieldValue("e_52", efficiency);
 
-      const energyRecovered = netThermalDemand * recoveryPercent;
-      setFieldValue("e_53", energyRecovered);
+    const netThermalDemand =
+      systemType === "Heatpump" || systemType === "Electric"
+        ? hotWaterEnergyDemand / efficiency
+        : hotWaterEnergyDemand / afue;
+    setFieldValue("j_51", netThermalDemand);
 
-      const netDemandAfterRecovery = netThermalDemand - energyRecovered;
-      setFieldValue("j_52", netDemandAfterRecovery);
-      setFieldValue("j_53", netDemandAfterRecovery);
+    const energyRecovered = netThermalDemand * recoveryPercent;
+    setFieldValue("e_53", energyRecovered);
 
-      const netElectricalDemand = (systemType === "Heatpump" || systemType === "Electric") ? netDemandAfterRecovery : 0;
-      setFieldValue("k_51", netElectricalDemand);
+    const netDemandAfterRecovery = netThermalDemand - energyRecovered;
+    setFieldValue("j_52", netDemandAfterRecovery);
+    setFieldValue("j_53", netDemandAfterRecovery);
+
+    const netElectricalDemand =
+      systemType === "Heatpump" || systemType === "Electric"
+        ? netDemandAfterRecovery
+        : 0;
+    setFieldValue("k_51", netElectricalDemand);
   }
 
   function calculateEmissionsAndLosses() {
@@ -325,29 +436,46 @@ window.TEUI.SectionModules.sect07 = (function () {
     let gasVolume = 0;
     let oilVolume = 0;
     if (systemType === "Gas") {
-        const conversionFactor = 10.3321;
-        gasVolume = afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
+      const conversionFactor = 10.3321;
+      gasVolume =
+        afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
     } else if (systemType === "Oil") {
-        const conversionFactor = 10.18; // 36.72 * 0.2777778
-        oilVolume = afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
+      const conversionFactor = 10.18; // 36.72 * 0.2777778
+      oilVolume =
+        afue > 0 ? netDemandAfterRecovery / (conversionFactor * afue) : 0;
     }
     setFieldValue("e_51", gasVolume);
     setFieldValue("k_54", oilVolume);
 
     const oilEmissionsFactor = getNumericValue("l_30", 2753);
     const gasEmissionsFactor = getNumericValue("l_28", 1921);
-    const dhwEmissions = (systemType === "Oil" ? oilVolume * oilEmissionsFactor : (systemType === "Gas" ? gasVolume * gasEmissionsFactor : 0)) / 1000;
+    const dhwEmissions =
+      (systemType === "Oil"
+        ? oilVolume * oilEmissionsFactor
+        : systemType === "Gas"
+          ? gasVolume * gasEmissionsFactor
+          : 0) / 1000;
     setFieldValue("k_49", dhwEmissions);
 
-    const exhaustLosses = (systemType === "Gas" || systemType === "Oil") ? netDemandAfterRecovery * (1 - afue) : 0;
+    const exhaustLosses =
+      systemType === "Gas" || systemType === "Oil"
+        ? netDemandAfterRecovery * (1 - afue)
+        : 0;
     setFieldValue("j_54", exhaustLosses);
-    
+
     const efficiency = getNumericValue("e_52");
-    const systemLosses = (efficiency <= 1) ? hotWaterEnergyDemand * (waterUseMethod === "PHPP Method" ? 0.25 : 0.1) : 0;
+    const systemLosses =
+      efficiency <= 1
+        ? hotWaterEnergyDemand * (waterUseMethod === "PHPP Method" ? 0.25 : 0.1)
+        : 0;
     setFieldValue("d_54", systemLosses);
-    
+
     if (window.TEUI.StateManager) {
-        window.TEUI.StateManager.setValue("h_69", systemLosses.toString(), "calculated");
+      window.TEUI.StateManager.setValue(
+        "h_69",
+        systemLosses.toString(),
+        "calculated",
+      );
     }
   }
 
@@ -361,25 +489,38 @@ window.TEUI.SectionModules.sect07 = (function () {
     const waterUsePercentRaw = 275 !== 0 ? litersPerPersonDay / 275 : 0;
     const dhwUsePercentRaw = 110 !== 0 ? hotWaterLitersPerDay / 110 : 0;
     const efficiencyPercentRaw = 0.9 !== 0 ? efficiency / 0.9 : 0;
-    
-    setFieldValue("n_49", window.TEUI?.formatNumber?.(waterUsePercentRaw, "percent-0dp") ?? "0%");
-    setFieldValue("n_50", window.TEUI?.formatNumber?.(dhwUsePercentRaw, "percent-0dp") ?? "0%");
-    setFieldValue("n_52", window.TEUI?.formatNumber?.(efficiencyPercentRaw, "percent-0dp") ?? "100%");
-    setFieldValue("n_53", window.TEUI?.formatNumber?.(recoveryPercent, "percent-0dp") ?? "0%");
+
+    setFieldValue(
+      "n_49",
+      window.TEUI?.formatNumber?.(waterUsePercentRaw, "percent-0dp") ?? "0%",
+    );
+    setFieldValue(
+      "n_50",
+      window.TEUI?.formatNumber?.(dhwUsePercentRaw, "percent-0dp") ?? "0%",
+    );
+    setFieldValue(
+      "n_52",
+      window.TEUI?.formatNumber?.(efficiencyPercentRaw, "percent-0dp") ??
+        "100%",
+    );
+    setFieldValue(
+      "n_53",
+      window.TEUI?.formatNumber?.(recoveryPercent, "percent-0dp") ?? "0%",
+    );
   }
 
   function calculateAllForMode() {
-      calculateWaterUse();
-      calculateHeatingSystem();
-      calculateEmissionsAndLosses();
-      calculateCompliance();
+    calculateWaterUse();
+    calculateHeatingSystem();
+    calculateEmissionsAndLosses();
+    calculateCompliance();
   }
-  
+
   function calculateReferenceModel() {
     const originalMode = ModeManager.currentMode;
     ModeManager.switchMode("reference");
     try {
-        calculateAllForMode();
+      calculateAllForMode();
     } catch (error) {
       console.error("[S07] Error in Reference Model calculations:", error);
     } finally {
@@ -391,12 +532,12 @@ window.TEUI.SectionModules.sect07 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.switchMode("target");
     try {
-        calculateAllForMode();
+      calculateAllForMode();
     } catch (error) {
       console.error("[S07] Error in Target Model calculations:", error);
     } finally {
       ModeManager.switchMode(originalMode);
-      }
+    }
   }
 
   function calculateAll() {
@@ -410,13 +551,19 @@ window.TEUI.SectionModules.sect07 = (function () {
   function updateSection7Visibility(waterMethod, systemType) {
     const isUserDefined = waterMethod === "User Defined";
     setFieldGhosted("e_49", !isUserDefined);
-    const f49Cell = document.querySelector('.data-table tr[data-id="W.1.0"] td:nth-child(6)');
+    const f49Cell = document.querySelector(
+      '.data-table tr[data-id="W.1.0"] td:nth-child(6)',
+    );
     if (f49Cell) f49Cell.classList.toggle("disabled-input", !isUserDefined);
 
     const isByEngineer = waterMethod === "By Engineer";
     setFieldGhosted("e_50", !isByEngineer);
-    const e50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(5)');
-    const f50Cell = document.querySelector('.data-table tr[data-id="W.1.2"] td:nth-child(6)');
+    const e50Cell = document.querySelector(
+      '.data-table tr[data-id="W.1.2"] td:nth-child(5)',
+    );
+    const f50Cell = document.querySelector(
+      '.data-table tr[data-id="W.1.2"] td:nth-child(6)',
+    );
     if (e50Cell) e50Cell.classList.toggle("disabled-input", !isByEngineer);
     if (f50Cell) f50Cell.classList.toggle("disabled-input", !isByEngineer);
 
@@ -425,7 +572,9 @@ window.TEUI.SectionModules.sect07 = (function () {
     const isFossilFuel = isGas || isOil;
 
     setFieldGhosted("e_51", !isGas);
-    const f51Cell = document.querySelector('.data-table tr[data-id="W.3.1"] td:nth-child(6)');
+    const f51Cell = document.querySelector(
+      '.data-table tr[data-id="W.3.1"] td:nth-child(6)',
+    );
     if (f51Cell) f51Cell.classList.toggle("disabled-input", !isGas);
 
     setFieldGhosted("k_54", !isOil);
@@ -438,12 +587,16 @@ window.TEUI.SectionModules.sect07 = (function () {
     const valueCell = document.querySelector(`td[data-field-id="${fieldId}"]`);
     if (valueCell) {
       valueCell.classList.toggle("disabled-input", shouldBeGhosted);
-      const input = valueCell.querySelector('input, select, [contenteditable="true"]');
+      const input = valueCell.querySelector(
+        'input, select, [contenteditable="true"]',
+      );
       if (input) {
-        if (input.hasAttribute("contenteditable")) input.contentEditable = !shouldBeGhosted;
+        if (input.hasAttribute("contenteditable"))
+          input.contentEditable = !shouldBeGhosted;
         else input.disabled = shouldBeGhosted;
       }
-      if (valueCell.hasAttribute("contenteditable")) valueCell.contentEditable = !shouldBeGhosted;
+      if (valueCell.hasAttribute("contenteditable"))
+        valueCell.contentEditable = !shouldBeGhosted;
     }
   }
 
@@ -456,7 +609,9 @@ window.TEUI.SectionModules.sect07 = (function () {
     if (!fieldId) return;
 
     let rawTextValue = fieldElement.textContent.trim();
-    let numericValue = window.TEUI?.parseNumeric?.(rawTextValue, NaN) ?? parseFloat(rawTextValue.replace(/[$,%]/g, ""));
+    let numericValue =
+      window.TEUI?.parseNumeric?.(rawTextValue, NaN) ??
+      parseFloat(rawTextValue.replace(/[$,%]/g, ""));
 
     if (isNaN(numericValue)) {
       const previousValue = getStringValue(fieldId, "0");
@@ -465,28 +620,43 @@ window.TEUI.SectionModules.sect07 = (function () {
 
     const formatType = fieldId === "k_52" ? "number-2dp" : "number-2dp-comma";
     const valueToStore = numericValue.toString();
-    const formattedDisplay = window.TEUI?.formatNumber?.(numericValue, formatType) ?? valueToStore;
+    const formattedDisplay =
+      window.TEUI?.formatNumber?.(numericValue, formatType) ?? valueToStore;
     fieldElement.textContent = formattedDisplay;
 
     if (window.TEUI?.StateManager) {
       const currentStateValue = window.TEUI.StateManager.getValue(fieldId);
       if (currentStateValue !== valueToStore) {
-        window.TEUI.StateManager.setValue(fieldId, valueToStore, "user-modified");
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, valueToStore, "user-modified");
+        window.TEUI.StateManager.setValue(
+          fieldId,
+          valueToStore,
+          "user-modified",
+        );
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          valueToStore,
+          "user-modified",
+        );
         calculateAll();
       }
     }
   }
 
   function handleGenericDropdownChange(e) {
-    const fieldId = e.target.getAttribute("data-field-id") || e.target.getAttribute("data-dropdown-id");
+    const fieldId =
+      e.target.getAttribute("data-field-id") ||
+      e.target.getAttribute("data-dropdown-id");
     const value = e.target.value;
     if (fieldId && window.TEUI?.StateManager?.setValue) {
       window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
-      window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
-      
+      window.TEUI.StateManager.setValue(
+        `ref_${fieldId}`,
+        value,
+        "user-modified",
+      );
+
       if (fieldId === "d_51") handleDHWSourceChange(e);
-      
+
       const currentWaterMethod = getStringValue("d_49", "User Defined");
       const currentSystemType = getStringValue("d_51", "Heatpump");
       updateSection7Visibility(currentWaterMethod, currentSystemType);
@@ -497,39 +667,73 @@ window.TEUI.SectionModules.sect07 = (function () {
   function handleSliderChange(e) {
     const fieldId = e.target.getAttribute("data-field-id");
     const value = e.target.value;
-    const displaySpan = document.querySelector(`span[data-display-for="${fieldId}"]`);
+    const displaySpan = document.querySelector(
+      `span[data-display-for="${fieldId}"]`,
+    );
 
     if (displaySpan) displaySpan.textContent = value + "%";
 
-    if (fieldId && window.TEUI?.StateManager?.setValue && (e.type === "change" || e.type === "input")) {
+    if (
+      fieldId &&
+      window.TEUI?.StateManager?.setValue &&
+      (e.type === "change" || e.type === "input")
+    ) {
       window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
-      window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "user-modified");
+      window.TEUI.StateManager.setValue(
+        `ref_${fieldId}`,
+        value,
+        "user-modified",
+      );
       if (e.type === "change") calculateAll();
-      }
     }
+  }
 
   function handleDHWSourceChange(event) {
     const selectedSource = event.target.value;
-    const d52Slider = document.querySelector('input[type="range"][data-field-id="d_52"]');
+    const d52Slider = document.querySelector(
+      'input[type="range"][data-field-id="d_52"]',
+    );
     const d52Display = document.querySelector(`span[data-display-for="d_52"]`);
 
-    let newMinValue = 50, newMaxValue = 400, newStep = 2, newValue = 300;
+    let newMinValue = 50,
+      newMaxValue = 400,
+      newStep = 2,
+      newValue = 300;
 
     if (selectedSource === "Gas" || selectedSource === "Oil") {
-      newMinValue = 50; newMaxValue = 98; newStep = 1; newValue = 90;
+      newMinValue = 50;
+      newMaxValue = 98;
+      newStep = 1;
+      newValue = 90;
     } else if (selectedSource === "Electric") {
-      newMinValue = 90; newMaxValue = 100; newStep = 1; newValue = 100;
+      newMinValue = 90;
+      newMaxValue = 100;
+      newStep = 1;
+      newValue = 100;
     } else {
-      newMinValue = 100; newMaxValue = 450; newStep = 10; newValue = 300;
+      newMinValue = 100;
+      newMaxValue = 450;
+      newStep = 10;
+      newValue = 300;
     }
 
     if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue("d_52", newValue.toString(), "system-update");
-      window.TEUI.StateManager.setValue(`ref_d_52`, newValue.toString(), "system-update");
+      window.TEUI.StateManager.setValue(
+        "d_52",
+        newValue.toString(),
+        "system-update",
+      );
+      window.TEUI.StateManager.setValue(
+        `ref_d_52`,
+        newValue.toString(),
+        "system-update",
+      );
     }
     if (d52Slider) {
-      d52Slider.min = newMinValue; d52Slider.max = newMaxValue;
-      d52Slider.step = newStep; d52Slider.value = newValue;
+      d52Slider.min = newMinValue;
+      d52Slider.max = newMaxValue;
+      d52Slider.step = newStep;
+      d52Slider.value = newValue;
       if (d52Display) d52Display.textContent = `${newValue}%`;
     }
   }
@@ -541,25 +745,36 @@ window.TEUI.SectionModules.sect07 = (function () {
     // Setup editable field handlers
     const editableFields = ["e_49", "e_50", "k_52"];
     editableFields.forEach((fieldId) => {
-      const field = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-      if (field && field.classList.contains("editable") && !field.hasEditableListeners) {
+      const field = sectionElement.querySelector(
+        `[data-field-id="${fieldId}"]`,
+      );
+      if (
+        field &&
+        field.classList.contains("editable") &&
+        !field.hasEditableListeners
+      ) {
         field.setAttribute("contenteditable", "true");
         field.classList.add("user-input");
         field.addEventListener("blur", handleEditableBlur);
         field.addEventListener("keydown", function (e) {
-          if (e.key === "Enter") { e.preventDefault(); this.blur(); }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            this.blur();
+          }
         });
         field.hasEditableListeners = true;
       }
     });
 
     // Setup dropdown handlers
-    const dropdowns = sectionElement.querySelectorAll("select[data-dropdown-id]");
+    const dropdowns = sectionElement.querySelectorAll(
+      "select[data-dropdown-id]",
+    );
     dropdowns.forEach((dropdown) => {
       if (!dropdown.hasDropdownListener) {
         dropdown.addEventListener("change", handleGenericDropdownChange);
         dropdown.hasDropdownListener = true;
-    }
+      }
     });
 
     // Setup slider handlers
@@ -576,7 +791,7 @@ window.TEUI.SectionModules.sect07 = (function () {
     if (window.TEUI?.StateManager) {
       window.TEUI.StateManager.addListener("d_63", calculateAll);
       window.TEUI.StateManager.addListener("d_51", calculateAll);
-        }
+    }
   }
 
   function onSectionRendered() {
@@ -615,7 +830,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.TEUI.sect07.calculateWaterUse = module.calculateWaterUse;
     window.TEUI.sect07.calculateHeatingSystem = module.calculateHeatingSystem;
     window.TEUI.sect07.calculateAll = module.calculateAll;
-    window.TEUI.sect07.updateSection7Visibility = module.updateSection7Visibility;
+    window.TEUI.sect07.updateSection7Visibility =
+      module.updateSection7Visibility;
   }
 });
 

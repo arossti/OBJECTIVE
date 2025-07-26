@@ -95,19 +95,24 @@ window.TEUI.SectionModules.sect11 = (function () {
     setDefaults: function () {
       // These defaults MUST match the 'value' properties in the sectionRows definition
       this.state = {
-        d_85: "1411.52", f_85: "9.35",     // Roof
-        d_86: "712.97",  f_86: "6.69",     // Walls Above Grade
-        d_87: "0.00",    f_87: "9.52",     // Floor Exposed
-        g_88: "0.900",                     // Doors U-value
-        g_89: "0.900",                     // Window Area North U-value
-        g_90: "0.900",                     // Window Area East U-value
-        g_91: "0.900",                     // Window Area South U-value
-        g_92: "0.900",                     // Window Area West U-value
-        g_93: "0.900",                     // Skylights U-value
-        d_94: "0.00",    f_94: "4.00",     // Walls Below Grade
-        d_95: "1100.42", f_95: "3.70",     // Floor Slab
-        d_96: "29.70",                     // Interior Floors
-        d_97: "20",                        // Thermal Bridge Penalty %
+        d_85: "1411.52",
+        f_85: "9.35", // Roof
+        d_86: "712.97",
+        f_86: "6.69", // Walls Above Grade
+        d_87: "0.00",
+        f_87: "9.52", // Floor Exposed
+        g_88: "0.900", // Doors U-value
+        g_89: "0.900", // Window Area North U-value
+        g_90: "0.900", // Window Area East U-value
+        g_91: "0.900", // Window Area South U-value
+        g_92: "0.900", // Window Area West U-value
+        g_93: "0.900", // Skylights U-value
+        d_94: "0.00",
+        f_94: "4.00", // Walls Below Grade
+        d_95: "1100.42",
+        f_95: "3.70", // Floor Slab
+        d_96: "29.70", // Interior Floors
+        d_97: "20", // Thermal Bridge Penalty %
       };
     },
     saveState: function () {
@@ -135,60 +140,71 @@ window.TEUI.SectionModules.sect11 = (function () {
     },
     setDefaults: function () {
       // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
-      const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-      const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
-      
+      const currentStandard =
+        window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues =
+        window.TEUI?.ReferenceValues?.[currentStandard] || {};
+
       // Apply reference values to this section's fields, with fallbacks for missing values
       this.state = {
         // Area values (d_) inherit from Target - not typically in building codes
-        d_85: "1411.52",  f_85: referenceValues.f_85 || "5.30",  // Roof
-        d_86: "712.97",   f_86: referenceValues.f_86 || "4.10",  // Walls Above Grade
-        d_87: "0.00",     f_87: referenceValues.f_87 || "6.60",  // Floor Exposed
-        g_88: referenceValues.g_88 || "1.990",                   // Doors U-value
-        g_89: referenceValues.g_89 || "1.420",                   // Window Area North U-value
-        g_90: referenceValues.g_90 || "1.420",                   // Window Area East U-value
-        g_91: referenceValues.g_91 || "1.420",                   // Window Area South U-value
-        g_92: referenceValues.g_92 || "1.420",                   // Window Area West U-value
-        g_93: referenceValues.g_93 || "1.420",                   // Skylights U-value
-        d_94: "0.00",     f_94: referenceValues.f_94 || "1.80",  // Walls Below Grade
-        d_95: "1100.42",  f_95: referenceValues.f_95 || "3.50",  // Floor Slab
-        d_96: "29.70",                                            // Interior Floors (not in codes)
-        d_97: referenceValues.d_97 || "50",                      // Thermal Bridge Penalty %
+        d_85: "1411.52",
+        f_85: referenceValues.f_85 || "5.30", // Roof
+        d_86: "712.97",
+        f_86: referenceValues.f_86 || "4.10", // Walls Above Grade
+        d_87: "0.00",
+        f_87: referenceValues.f_87 || "6.60", // Floor Exposed
+        g_88: referenceValues.g_88 || "1.990", // Doors U-value
+        g_89: referenceValues.g_89 || "1.420", // Window Area North U-value
+        g_90: referenceValues.g_90 || "1.420", // Window Area East U-value
+        g_91: referenceValues.g_91 || "1.420", // Window Area South U-value
+        g_92: referenceValues.g_92 || "1.420", // Window Area West U-value
+        g_93: referenceValues.g_93 || "1.420", // Skylights U-value
+        d_94: "0.00",
+        f_94: referenceValues.f_94 || "1.80", // Walls Below Grade
+        d_95: "1100.42",
+        f_95: referenceValues.f_95 || "3.50", // Floor Slab
+        d_96: "29.70", // Interior Floors (not in codes)
+        d_97: referenceValues.d_97 || "50", // Thermal Bridge Penalty %
       };
-      
-      console.log(`S11: Reference defaults loaded from standard: ${currentStandard}`);
+
+      console.log(
+        `S11: Reference defaults loaded from standard: ${currentStandard}`,
+      );
     },
-    
+
     // Listen for changes to the reference standard and reload defaults
-    onReferenceStandardChange: function() {
-      console.log('S11: Reference standard changed, reloading defaults');
-      
+    onReferenceStandardChange: function () {
+      console.log("S11: Reference standard changed, reloading defaults");
+
       // Preserve user-modified area values (design choices, not code requirements)
       const preservedAreas = {};
-      const areaFields = ['d_85', 'd_86', 'd_87', 'd_94', 'd_95', 'd_96'];
-      
-      areaFields.forEach(fieldId => {
+      const areaFields = ["d_85", "d_86", "d_87", "d_94", "d_95", "d_96"];
+
+      areaFields.forEach((fieldId) => {
         // For Reference mode, always preserve current values
-        if (ModeManager.currentMode === 'reference') {
+        if (ModeManager.currentMode === "reference") {
           preservedAreas[fieldId] = this.state[fieldId];
         }
-        // For Target mode, preserve areas from TargetState 
+        // For Target mode, preserve areas from TargetState
         else {
           preservedAreas[fieldId] = TargetState.getValue(fieldId);
         }
       });
-      
+
       // Load new reference values (this updates RSI/U-values from ReferenceValues.js)
       this.setDefaults();
-      
+
       // Restore preserved area values
       Object.assign(this.state, preservedAreas);
       this.saveState();
-      
-      console.log('S11: Reference standard updated, areas preserved, performance values updated');
-      
+
+      console.log(
+        "S11: Reference standard updated, areas preserved, performance values updated",
+      );
+
       // Only refresh UI if currently in reference mode
-      if (ModeManager.currentMode === 'reference') {
+      if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
         calculateAll();
       }
@@ -212,16 +228,19 @@ window.TEUI.SectionModules.sect11 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
-      
+
       // Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
-        window.TEUI.StateManager.addListener('d_13', () => {
+        window.TEUI.StateManager.addListener("d_13", () => {
           ReferenceState.onReferenceStandardChange();
         });
       }
     },
     switchMode: function (mode) {
-      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
+      if (
+        this.currentMode === mode ||
+        (mode !== "target" && mode !== "reference")
+      )
         return;
       this.currentMode = mode;
       console.log(`S11: Switched to ${mode.toUpperCase()} mode`);
@@ -229,17 +248,19 @@ window.TEUI.SectionModules.sect11 = (function () {
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
     },
-    resetState: function() {
-        console.log("S11: Resetting state and clearing localStorage for Section 11.");
-        TargetState.setDefaults();
-        TargetState.saveState();
-        ReferenceState.setDefaults();  // This will reload from current d_13 selection
-        ReferenceState.saveState();
-        console.log("S11: States have been reset to defaults.");
+    resetState: function () {
+      console.log(
+        "S11: Resetting state and clearing localStorage for Section 11.",
+      );
+      TargetState.setDefaults();
+      TargetState.saveState();
+      ReferenceState.setDefaults(); // This will reload from current d_13 selection
+      ReferenceState.saveState();
+      console.log("S11: States have been reset to defaults.");
 
-        // After resetting, refresh the UI and recalculate.
-        this.refreshUI();
-        calculateAll();
+      // After resetting, refresh the UI and recalculate.
+      this.refreshUI();
+      calculateAll();
     },
     getCurrentState: function () {
       return this.currentMode === "target" ? TargetState : ReferenceState;
@@ -256,43 +277,64 @@ window.TEUI.SectionModules.sect11 = (function () {
       }
     },
     refreshUI: function () {
-      const sectionElement = document.getElementById("envelopeTransmissionLosses");
+      const sectionElement = document.getElementById(
+        "envelopeTransmissionLosses",
+      );
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      
+
       const fieldsToSync = [
-        'd_85', 'f_85', 'd_86', 'f_86', 'd_87', 'f_87',        // RSI inputs
-        'g_88', 'g_89', 'g_90', 'g_91', 'g_92', 'g_93',       // U-value inputs
-        'd_94', 'f_94', 'd_95', 'f_95', 'd_96', 'd_97'        // Ground RSI + Interior + TBP
+        "d_85",
+        "f_85",
+        "d_86",
+        "f_86",
+        "d_87",
+        "f_87", // RSI inputs
+        "g_88",
+        "g_89",
+        "g_90",
+        "g_91",
+        "g_92",
+        "g_93", // U-value inputs
+        "d_94",
+        "f_94",
+        "d_95",
+        "f_95",
+        "d_96",
+        "d_97", // Ground RSI + Interior + TBP
       ];
 
-      fieldsToSync.forEach(fieldId => {
-          const stateValue = currentState.getValue(fieldId);
-          if (stateValue === undefined || stateValue === null) return;
+      fieldsToSync.forEach((fieldId) => {
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue === undefined || stateValue === null) return;
 
-          const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
-          if (!element) return;
-          
-          const slider = element.matches('input[type="range"]') ? element : element.querySelector('input[type="range"]');
-          
-          if (slider) {
-              // Handle thermal bridge penalty slider (d_97)
-              const numericValue = window.TEUI.parseNumeric(stateValue, 0);
-              slider.value = numericValue;
-              
-              // CORRECTED PATTERN: Use the direct nextElementSibling property
-              const display = slider.nextElementSibling;
-              if (display) {
-                  display.textContent = `${numericValue}%`;
-              }
-          } else if (element.hasAttribute('contenteditable')) {
-              element.textContent = stateValue;
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
+        if (!element) return;
+
+        const slider = element.matches('input[type="range"]')
+          ? element
+          : element.querySelector('input[type="range"]');
+
+        if (slider) {
+          // Handle thermal bridge penalty slider (d_97)
+          const numericValue = window.TEUI.parseNumeric(stateValue, 0);
+          slider.value = numericValue;
+
+          // CORRECTED PATTERN: Use the direct nextElementSibling property
+          const display = slider.nextElementSibling;
+          if (display) {
+            display.textContent = `${numericValue}%`;
           }
+        } else if (element.hasAttribute("contenteditable")) {
+          element.textContent = stateValue;
+        }
       });
     },
   };
-  
+
   // Expose globally for cross-section communication
   window.TEUI.sect11 = window.TEUI.sect11 || {};
   window.TEUI.sect11.ModeManager = ModeManager;
@@ -695,7 +737,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   //==========================================================================
   // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
   //==========================================================================
-  
+
   function getNumericValue(fieldId) {
     // For values INTERNAL to this section
     const rawValue = ModeManager.getValue(fieldId);
@@ -711,7 +753,7 @@ window.TEUI.SectionModules.sect11 = (function () {
   function getFieldValue(fieldId) {
     const stateValue = ModeManager.getValue(fieldId);
     if (stateValue != null) return stateValue;
-    
+
     // Fallback for non-state values (e.g., legacy DOM elements)
     const element = document.querySelector(`[data-field-id="${fieldId}"]`);
     return element ? (element.value ?? element.textContent?.trim()) : null;
@@ -863,8 +905,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       let area = 0;
       const sourceAreaFieldId = areaSourceMap[rowNumber];
       area = sourceAreaFieldId
-        ? getGlobalNumericValue(sourceAreaFieldId) || 0  // External dependency from S10
-        : getNumericValue(areaFieldId) || 0;             // Internal to S11
+        ? getGlobalNumericValue(sourceAreaFieldId) || 0 // External dependency from S10
+        : getNumericValue(areaFieldId) || 0; // Internal to S11
       if (sourceAreaFieldId && !isReferenceCalculation) {
         setCalculatedValue(areaFieldId, area);
       }
@@ -938,11 +980,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           const ref_hdd = getGlobalNumericValue("ref_d_20");
           const global_hdd = getGlobalNumericValue("d_20");
           hdd = ref_hdd || global_hdd || 0;
-          
+
           const ref_cdd = getGlobalNumericValue("ref_d_21");
           const global_cdd = getGlobalNumericValue("d_21");
           heatgainMultiplier = (ref_cdd || global_cdd || 0) * 24;
-          
+
           // 🔍 S11 REFERENCE CONTAMINATION TRACKER
           // console.log(`🔍 S11 REFERENCE: HDD=${hdd} (ref_d_20=${ref_hdd}, global_d_20=${global_hdd})`);
           // console.log(`🔍 S11 REFERENCE: CDD=${heatgainMultiplier/24} (ref_d_21=${ref_cdd}, global_d_21=${global_cdd})`);
@@ -951,11 +993,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           const target_hdd = getGlobalNumericValue("target_d_20");
           const global_hdd = getGlobalNumericValue("d_20");
           hdd = target_hdd || global_hdd || 0;
-          
+
           const target_cdd = getGlobalNumericValue("target_d_21");
           const global_cdd = getGlobalNumericValue("d_21");
           heatgainMultiplier = (target_cdd || global_cdd || 0) * 24;
-          
+
           // 🚨 S11 TARGET CONTAMINATION TRACKER
           // console.log(`🚨 S11 TARGET: HDD=${hdd} (target_d_20=${target_hdd}, global_d_20=${global_hdd})`);
           // console.log(`🚨 S11 TARGET: CDD=${heatgainMultiplier/24} (target_d_21=${target_cdd}, global_d_21=${global_cdd})`);
@@ -970,12 +1012,18 @@ window.TEUI.SectionModules.sect11 = (function () {
         // ground
         if (isReferenceCalculation) {
           // Reference calculations: read ref_ prefixed climate data
-          hdd = getGlobalNumericValue("ref_d_22") || getGlobalNumericValue("d_22") || 0;
+          hdd =
+            getGlobalNumericValue("ref_d_22") ||
+            getGlobalNumericValue("d_22") ||
+            0;
         } else {
-          // Target calculations: read target_ prefixed climate data  
-          hdd = getGlobalNumericValue("target_d_22") || getGlobalNumericValue("d_22") || 0;
+          // Target calculations: read target_ prefixed climate data
+          hdd =
+            getGlobalNumericValue("target_d_22") ||
+            getGlobalNumericValue("d_22") ||
+            0;
         }
-        
+
         // Get value from i_21 (assume it's stored as percentage, e.g., 50 for 50%)
         let capacitanceFactor_i21 = getGlobalNumericValue("i_21");
         // Convert percentage to decimal, fallback to 0.5 (50%) if input is invalid or missing
@@ -983,13 +1031,23 @@ window.TEUI.SectionModules.sect11 = (function () {
         if (isNaN(capacitanceFactor_i21) || capacitanceFactor_i21 === 0) {
           capacitanceFactor_i21 = 0.5; // Apply fallback if result is invalid or zero
         }
-        
+
         if (isReferenceCalculation) {
           // Reference calculations: read ref_ prefixed climate data
-          heatgainMultiplier = capacitanceFactor_i21 * (getGlobalNumericValue("ref_h_22") || getGlobalNumericValue("h_22") || 0) * 24;
+          heatgainMultiplier =
+            capacitanceFactor_i21 *
+            (getGlobalNumericValue("ref_h_22") ||
+              getGlobalNumericValue("h_22") ||
+              0) *
+            24;
         } else {
           // Target calculations: read target_ prefixed climate data
-          heatgainMultiplier = capacitanceFactor_i21 * (getGlobalNumericValue("target_h_22") || getGlobalNumericValue("h_22") || 0) * 24;
+          heatgainMultiplier =
+            capacitanceFactor_i21 *
+            (getGlobalNumericValue("target_h_22") ||
+              getGlobalNumericValue("h_22") ||
+              0) *
+            24;
         }
       }
 
@@ -1038,12 +1096,14 @@ window.TEUI.SectionModules.sect11 = (function () {
       let penaltyPercent;
       if (isReferenceCalculation) {
         // For Reference calculations, use ReferenceState value
-        penaltyPercent = window.TEUI.parseNumeric(ReferenceState.getValue("d_97")) || 0;
+        penaltyPercent =
+          window.TEUI.parseNumeric(ReferenceState.getValue("d_97")) || 0;
       } else {
         // For Target calculations, use TargetState value
-        penaltyPercent = window.TEUI.parseNumeric(TargetState.getValue("d_97")) || 0;
+        penaltyPercent =
+          window.TEUI.parseNumeric(TargetState.getValue("d_97")) || 0;
       }
-      
+
       // Convert percentage to decimal factor for calculation
       const penaltyDecimal = penaltyPercent / 100;
       const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal)); // Keep validation just in case
@@ -1061,14 +1121,13 @@ window.TEUI.SectionModules.sect11 = (function () {
       setCalculatedValue("e_97", validatedPenalty, "number-3dp"); // Show decimal with 3dp
       setCalculatedValue("i_97", penaltyHeatloss);
       setCalculatedValue("k_97", penaltyHeatgain);
-      
     } catch (error) {
       console.error("Error calculating TBP:", error);
       if (isReferenceCalculation) {
         return { heatloss: 0, heatgain: 0 };
       } else {
-      setCalculatedValue("i_97", 0);
-      setCalculatedValue("k_97", 0);
+        setCalculatedValue("i_97", 0);
+        setCalculatedValue("k_97", 0);
       }
     }
   }
@@ -1083,12 +1142,14 @@ window.TEUI.SectionModules.sect11 = (function () {
 
     try {
       // ✅ REFERENCE MODE: Perfect Compliance (Always 100% and ✓)
-      if (ModeManager.currentMode === 'reference') {
-        referencePercent = 100;  // Always 100% in reference mode
-        isGood = true;           // Always pass in reference mode
-        
+      if (ModeManager.currentMode === "reference") {
+        referencePercent = 100; // Always 100% in reference mode
+        isGood = true; // Always pass in reference mode
+
         setCalculatedValue(mFieldId, 1.0, "percent"); // 1.0 = 100%
-        const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
+        const nElement = document.querySelector(
+          `[data-field-id="${nFieldId}"]`,
+        );
         if (nElement) nElement.textContent = "✓";
         setElementClass(nFieldId, true);
         return;
@@ -1113,10 +1174,11 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // Get current (Target) value
       const currentValue = getNumericValue(valueSourceFieldId);
-      
+
       // Get dynamic reference value from ReferenceState
       const referenceValue = ReferenceState.getValue(referenceFieldId);
-      const referenceNumeric = window.TEUI.parseNumeric(referenceValue) || baseline.value;
+      const referenceNumeric =
+        window.TEUI.parseNumeric(referenceValue) || baseline.value;
 
       // Calculate percentage and pass/fail based on comparison type
       if (baseline.type === "rsi") {
@@ -1146,7 +1208,6 @@ window.TEUI.SectionModules.sect11 = (function () {
       const nElement = document.querySelector(`[data-field-id="${nFieldId}"]`);
       if (nElement) nElement.textContent = isGood ? "✓" : "✗";
       setElementClass(nFieldId, isGood);
-
     } catch (error) {
       console.error(
         `Error updating reference indicators for row ${rowId}:`,
@@ -1196,7 +1257,11 @@ window.TEUI.SectionModules.sect11 = (function () {
     });
 
     // Calculate thermal bridge penalty using reference values
-    const penaltyResults = calculateThermalBridgePenalty(totals.loss, totals.gain, true); // true = isReferenceCalculation
+    const penaltyResults = calculateThermalBridgePenalty(
+      totals.loss,
+      totals.gain,
+      true,
+    ); // true = isReferenceCalculation
     const penaltyHeatlossI = penaltyResults ? penaltyResults.heatloss : 0;
     const penaltyHeatgainK = penaltyResults ? penaltyResults.heatgain : 0;
 
@@ -1382,7 +1447,10 @@ window.TEUI.SectionModules.sect11 = (function () {
    * Replaces the original calculateAll function
    */
   function calculateAll() {
-    console.log(`%c[S11] calculateAll TRIGGERED. isReferenceMode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.()}`, 'color: #f0f; font-weight: bold;');
+    console.log(
+      `%c[S11] calculateAll TRIGGERED. isReferenceMode: ${window.TEUI?.ReferenceToggle?.isReferenceMode?.()}`,
+      "color: #f0f; font-weight: bold;",
+    );
 
     calculateReferenceModel();
     calculateTargetModel();
@@ -1500,7 +1568,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
 
           // ✅ DUAL-STATE: Update via ModeManager (handles both state and StateManager sync)
-          ModeManager.setValue("d_97", percentageValue.toString(), "user-modified");
+          ModeManager.setValue(
+            "d_97",
+            percentageValue.toString(),
+            "user-modified",
+          );
 
           // LIVE FEEDBACK: Direct calculation calls for immediate visual response
           // This ensures g_101/g_102 update in real-time during slider drag
@@ -1516,7 +1588,11 @@ window.TEUI.SectionModules.sect11 = (function () {
           if (isNaN(percentageValue)) return;
 
           // ✅ DUAL-STATE: Final value goes through ModeManager - handles state and dependency chain
-          ModeManager.setValue("d_97", percentageValue.toString(), "user-modified");
+          ModeManager.setValue(
+            "d_97",
+            percentageValue.toString(),
+            "user-modified",
+          );
           // Note: StateManager listeners will handle full recalculation cascade
         });
 
@@ -1533,7 +1609,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("d_21", calculateAll); // CDD
       window.TEUI.StateManager.addListener("h_22", calculateAll); // GF CDD (affects ground gain)
       window.TEUI.StateManager.addListener("d_22", calculateAll); // GF HDD (affects ground loss)
-      
+
       // ✅ ADDED: Listeners for REFERENCE climate data to trigger Reference Model recalculation
       window.TEUI.StateManager.addListener("ref_d_20", calculateAll);
       window.TEUI.StateManager.addListener("ref_d_21", calculateAll);
@@ -1552,69 +1628,85 @@ window.TEUI.SectionModules.sect11 = (function () {
    * Creates and injects the Target/Reference toggle and Reset button into the section header.
    */
   function injectHeaderControls() {
-      const sectionHeader = document.querySelector("#envelopeTransmissionLosses .section-header");
-      if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
-          return; // Already setup or header not found
-      }
-
-      const controlsContainer = document.createElement("div");
-      controlsContainer.className = "local-controls-container";
-      controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
-
-      // --- Create Reset Button ---
-      const resetButton = document.createElement("button");
-      resetButton.innerHTML = "🔄 Reset"; // Using an icon for clarity
-      resetButton.title = "Reset Section 11 to Defaults";
-      resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
-      
-      resetButton.addEventListener("click", (event) => {
-          event.stopPropagation();
-          // Use a confirmation dialog to prevent accidental resets
-          if (confirm("Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 11.")) {
-              ModeManager.resetState();
-          }
-      });
-
-      // --- Create Toggle Switch ---
-      const stateIndicator = document.createElement("span");
-      stateIndicator.textContent = "TARGET";
-      stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
-
-      const toggleSwitch = document.createElement("div");
-      toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-      
-      const slider = document.createElement("div");
-      slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
-
-      toggleSwitch.appendChild(slider);
-      
-      toggleSwitch.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const isReference = toggleSwitch.classList.toggle('active');
-          if (isReference) {
-              slider.style.transform = "translateX(20px)";
-              toggleSwitch.style.backgroundColor = "#28a745";
-              stateIndicator.textContent = "REFERENCE";
-              stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-              ModeManager.switchMode("reference");
-    } else {
-              slider.style.transform = "translateX(0px)";
-              toggleSwitch.style.backgroundColor = "#ccc";
-              stateIndicator.textContent = "TARGET";
-              stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-              ModeManager.switchMode("target");
-          }
-      });
-
-      // Append all controls to the container, then the container to the header
-      controlsContainer.appendChild(resetButton);
-      controlsContainer.appendChild(stateIndicator);
-      controlsContainer.appendChild(toggleSwitch);
-      sectionHeader.appendChild(controlsContainer);
+    const sectionHeader = document.querySelector(
+      "#envelopeTransmissionLosses .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
+      return; // Already setup or header not found
     }
 
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+    // --- Create Reset Button ---
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = "🔄 Reset"; // Using an icon for clarity
+    resetButton.title = "Reset Section 11 to Defaults";
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      // Use a confirmation dialog to prevent accidental resets
+      if (
+        confirm(
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 11.",
+        )
+      ) {
+        ModeManager.resetState();
+      }
+    });
+
+    // --- Create Toggle Switch ---
+    const stateIndicator = document.createElement("span");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
+    const slider = document.createElement("div");
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Append all controls to the container, then the container to the header
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
+  }
+
   function onSectionRendered() {
-    console.log("S11: Section rendered - initializing Self-Contained State Module.");
+    console.log(
+      "S11: Section rendered - initializing Self-Contained State Module.",
+    );
 
     // 1. Initialize the ModeManager and its internal states
     ModeManager.initialize();
@@ -1649,7 +1741,9 @@ window.TEUI.SectionModules.sect11 = (function () {
     if (window.TEUI) {
       window.TEUI.sect11 = window.TEUI.sect11 || {};
       window.TEUI.sect11.ModeManager = ModeManager;
-      console.log("S11: ModeManager exposed globally for cross-section integration.");
+      console.log(
+        "S11: ModeManager exposed globally for cross-section integration.",
+      );
     }
 
     // 5. Perform initial calculations for this section

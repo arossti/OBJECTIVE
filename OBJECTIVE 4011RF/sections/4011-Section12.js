@@ -17,83 +17,87 @@ window.TEUI.SectionModules.sect12 = (function () {
   // PATTERN A: Internal State Objects (Self-Contained + Persistent)
   const TargetState = {
     state: {},
-    initialize: function() {
-      const savedState = localStorage.getItem('S12_TARGET_STATE');
+    initialize: function () {
+      const savedState = localStorage.getItem("S12_TARGET_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
       } else {
         this.setDefaults();
       }
     },
-    setDefaults: function() {
+    setDefaults: function () {
       // S12-specific defaults - MUST match sectionRows values
       this.state = {
-        'd_103': '1.5',         // Number of stories (dropdown)
-        'g_103': 'Normal',      // Exposure (dropdown)  
-        'd_105': '8000.00',     // Conditioned volume (editable)
-        'd_108': 'AL-1B',       // Blower door method (dropdown)
-        'g_109': '1.50'         // Measured value (conditional editable)
+        d_103: "1.5", // Number of stories (dropdown)
+        g_103: "Normal", // Exposure (dropdown)
+        d_105: "8000.00", // Conditioned volume (editable)
+        d_108: "AL-1B", // Blower door method (dropdown)
+        g_109: "1.50", // Measured value (conditional editable)
       };
     },
-    saveState: function() {
-      localStorage.setItem('S12_TARGET_STATE', JSON.stringify(this.state));
+    saveState: function () {
+      localStorage.setItem("S12_TARGET_STATE", JSON.stringify(this.state));
     },
-    setValue: function(fieldId, value, source = "user") {
+    setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
       this.saveState();
     },
-    getValue: function(fieldId) {
+    getValue: function (fieldId) {
       return this.state[fieldId];
-    }
+    },
   };
 
   const ReferenceState = {
     state: {},
-    initialize: function() {
-      const savedState = localStorage.getItem('S12_REFERENCE_STATE');
+    initialize: function () {
+      const savedState = localStorage.getItem("S12_REFERENCE_STATE");
       if (savedState) {
         this.state = JSON.parse(savedState);
       } else {
         this.setDefaults();
       }
     },
-    setDefaults: function() {
+    setDefaults: function () {
       // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
-      const currentStandard = window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-      const referenceValues = window.TEUI?.ReferenceValues?.[currentStandard] || {};
-      
+      const currentStandard =
+        window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues =
+        window.TEUI?.ReferenceValues?.[currentStandard] || {};
+
       // Apply reference values to S12 fields with fallbacks
       this.state = {
-        'd_103': referenceValues.d_103 || '1',          // Stories - DIFFERENT: 1 vs Target 1.5
-        'g_103': referenceValues.g_103 || 'Exposed',   // Exposure - DIFFERENT: Exposed vs Target Normal  
-        'd_105': '8200.00',                             // Volume - DIFFERENT: 8200 vs Target 8000
-        'd_108': referenceValues.d_108 || 'MEASURED',   // Blower door method - DIFFERENT: MEASURED vs Target AL-1B
-        'g_109': referenceValues.g_109 || '2.00'       // Measured - DIFFERENT: 2.00 vs Target 1.50
+        d_103: referenceValues.d_103 || "1", // Stories - DIFFERENT: 1 vs Target 1.5
+        g_103: referenceValues.g_103 || "Exposed", // Exposure - DIFFERENT: Exposed vs Target Normal
+        d_105: "8200.00", // Volume - DIFFERENT: 8200 vs Target 8000
+        d_108: referenceValues.d_108 || "MEASURED", // Blower door method - DIFFERENT: MEASURED vs Target AL-1B
+        g_109: referenceValues.g_109 || "2.00", // Measured - DIFFERENT: 2.00 vs Target 1.50
       };
-      
-      console.log(`S12: Reference defaults loaded from standard: ${currentStandard}`);
+
+      console.log(
+        `S12: Reference defaults loaded from standard: ${currentStandard}`,
+      );
     },
     // MANDATORY: Include onReferenceStandardChange for d_13 changes
-    onReferenceStandardChange: function() {
-      console.log('S12: Reference standard changed, reloading defaults');
+    onReferenceStandardChange: function () {
+      console.log("S12: Reference standard changed, reloading defaults");
       this.setDefaults();
       this.saveState();
       // Only refresh UI if currently in reference mode
-      if (ModeManager.currentMode === 'reference') {
+      if (ModeManager.currentMode === "reference") {
         ModeManager.refreshUI();
         calculateAll();
       }
     },
-    saveState: function() {
-      localStorage.setItem('S12_REFERENCE_STATE', JSON.stringify(this.state));
+    saveState: function () {
+      localStorage.setItem("S12_REFERENCE_STATE", JSON.stringify(this.state));
     },
-    setValue: function(fieldId, value, source = "user") {
+    setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
       this.saveState();
     },
-    getValue: function(fieldId) {
+    getValue: function (fieldId) {
       return this.state[fieldId];
-    }
+    },
   };
 
   // PATTERN 2: The ModeManager Facade
@@ -102,16 +106,19 @@ window.TEUI.SectionModules.sect12 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
-      
+
       // MANDATORY: Listen for reference standard changes
       if (window.TEUI?.StateManager?.addListener) {
-        window.TEUI.StateManager.addListener('d_13', () => {
+        window.TEUI.StateManager.addListener("d_13", () => {
           ReferenceState.onReferenceStandardChange();
         });
       }
     },
     switchMode: function (mode) {
-      if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
+      if (
+        this.currentMode === mode ||
+        (mode !== "target" && mode !== "reference")
+      )
         return;
       this.currentMode = mode;
       console.log(`S12: Switched to ${mode.toUpperCase()} mode`);
@@ -119,7 +126,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       this.refreshUI();
       calculateAll();
     },
-    resetState: function() {
+    resetState: function () {
       console.log("S12: Resetting state and clearing localStorage.");
       TargetState.setDefaults();
       TargetState.saveState();
@@ -137,9 +144,14 @@ window.TEUI.SectionModules.sect12 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
-      console.log(`S12: ModeManager.setValue(${fieldId}, ${value}) in ${this.currentMode} mode`);
+      console.log(
+        `S12: ModeManager.setValue(${fieldId}, ${value}) in ${this.currentMode} mode`,
+      );
       this.getCurrentState().setValue(fieldId, value, source);
-      console.log(`S12: State after setValue:`, this.getCurrentState().state[fieldId]);
+      console.log(
+        `S12: State after setValue:`,
+        this.getCurrentState().state[fieldId],
+      );
 
       // BRIDGE: For backward compatibility, sync Target changes to global StateManager
       if (this.currentMode === "target") {
@@ -154,33 +166,37 @@ window.TEUI.SectionModules.sect12 = (function () {
 
       const currentState = this.getCurrentState();
       console.log(`S12: Current state data:`, currentState.state);
-      
-      // S12-specific fields to sync
-      const fieldsToSync = ['d_103', 'g_103', 'd_105', 'd_108', 'g_109'];
 
-      fieldsToSync.forEach(fieldId => {
+      // S12-specific fields to sync
+      const fieldsToSync = ["d_103", "g_103", "d_105", "d_108", "g_109"];
+
+      fieldsToSync.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
         console.log(`S12: refreshUI - ${fieldId} = ${stateValue}`);
         if (stateValue === undefined || stateValue === null) return;
 
-        const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
         if (!element) {
           console.log(`S12: Element not found for ${fieldId}`);
           return;
         }
-        
+
         // ✅ PATTERN A: Simple dropdown pattern (like S10) - NO SAFETY CHECKS
-        const dropdown = element.matches('select') ? element : element.querySelector('select');
-        
+        const dropdown = element.matches("select")
+          ? element
+          : element.querySelector("select");
+
         if (dropdown) {
           console.log(`S12: Setting dropdown ${fieldId} to ${stateValue}`);
           dropdown.value = stateValue; // Simple and direct - like working sections
-        } else if (element.hasAttribute('contenteditable')) {
+        } else if (element.hasAttribute("contenteditable")) {
           console.log(`S12: Setting editable ${fieldId} to ${stateValue}`);
           element.textContent = stateValue;
         }
       });
-    }
+    },
   };
 
   // MANDATORY: Global exposure
@@ -1238,21 +1254,28 @@ window.TEUI.SectionModules.sect12 = (function () {
     // 🚨 PERFORMANCE NOTE: Robot fingers connection is working but laggy.
     // TODO: Optimize for production - consider direct event binding vs StateManager cascade
     let d97_tbPenaltyPercent;
-    if (window.TEUI?.sect11?.ModeManager && 
-        window.TEUI?.sect11?.TargetState && 
-        window.TEUI?.sect11?.ReferenceState) {
+    if (
+      window.TEUI?.sect11?.ModeManager &&
+      window.TEUI?.sect11?.TargetState &&
+      window.TEUI?.sect11?.ReferenceState
+    ) {
       const s11Mode = window.TEUI.sect11.ModeManager.currentMode;
-      
-      if (s11Mode === 'reference' && window.TEUI.sect11.ReferenceState.getValue) {
+
+      if (
+        s11Mode === "reference" &&
+        window.TEUI.sect11.ReferenceState.getValue
+      ) {
         // Use S11's ReferenceState TB penalty
-        d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-          window.TEUI.sect11.ReferenceState.getValue("d_97")
-        ) || 50;
+        d97_tbPenaltyPercent =
+          window.TEUI.parseNumeric(
+            window.TEUI.sect11.ReferenceState.getValue("d_97"),
+          ) || 50;
       } else if (window.TEUI.sect11.TargetState.getValue) {
-        // Use S11's TargetState TB penalty  
-        d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-          window.TEUI.sect11.TargetState.getValue("d_97")
-        ) || 50;
+        // Use S11's TargetState TB penalty
+        d97_tbPenaltyPercent =
+          window.TEUI.parseNumeric(
+            window.TEUI.sect11.TargetState.getValue("d_97"),
+          ) || 50;
       } else {
         // Safety fallback if state methods not available
         d97_tbPenaltyPercent = parseFloat(getNumericValue("d_97")) || 50;
@@ -1261,7 +1284,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       // Fallback to StateManager for compatibility
       d97_tbPenaltyPercent = parseFloat(getNumericValue("d_97")) || 50;
     }
-    
+
     // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
     // We must divide by 100 to get the decimal factor (0.2) before using in calculations
     const tbFactor = 1 + d97_tbPenaltyPercent / 100; // Convert percentage to decimal before adding 1
@@ -1475,7 +1498,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Get necessary values with full precision using parseFloat
     const g108_nrl50Target = parseFloat(getNumericValue("g_108")); // NRL50 Target (L/s*m2)
     const g110_nFactor = parseFloat(getNumericValue("g_110"));
-    
+
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd;
     if (isReferenceCalculation) {
@@ -1487,7 +1510,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       d20_hdd = getGlobalNumericValue("d_20");
       d21_cdd = getGlobalNumericValue("d_21");
     }
-    
+
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
     const h15_conditionedArea = parseFloat(getNumericValue("h_15")); // Get Conditioned Floor Area from S2
 
@@ -1519,7 +1542,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d102_areaGround = parseFloat(getNumericValue("d_102"));
     const g101_uAir = parseFloat(getNumericValue("g_101"));
     const g102_uGround = parseFloat(getNumericValue("g_102"));
-    
+
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
     if (isReferenceCalculation) {
@@ -1628,7 +1651,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ PATTERN A: Calculate Reference values using clean climate data access
       calculateAirLeakageHeatLoss(true); // true = isReferenceCalculation
       calculateEnvelopeHeatLossGain(true); // true = isReferenceCalculation
-      
+
       // Note: Pattern A doesn't need ref_ prefixed storage - Reference calculations
       // are used internally for comparison only, not for cross-section communication
     } catch (error) {
@@ -1714,15 +1737,17 @@ window.TEUI.SectionModules.sect12 = (function () {
         console.log(`S12: Dropdown ${fieldId} changed to: ${this.value}`);
         if (!fieldId) return;
 
-        console.log(`S12: Calling ModeManager.setValue(${fieldId}, ${this.value})`);
+        console.log(
+          `S12: Calling ModeManager.setValue(${fieldId}, ${this.value})`,
+        );
         ModeManager.setValue(fieldId, this.value, "user-modified");
-        
+
         // Handle conditional g_109 logic for d_108
         if (fieldId === "d_108") {
           console.log(`S12: Calling handleConditionalEditability for d_108`);
           handleConditionalEditability();
         }
-        
+
         console.log(`S12: Calling calculateAll()`);
         calculateAll();
         console.log(`S12: calculateAll() completed`);
@@ -1753,12 +1778,12 @@ window.TEUI.SectionModules.sect12 = (function () {
     const field = event.target;
     const fieldId = field.getAttribute("data-field-id");
     if (!fieldId) return;
-    
+
     const numValue = window.TEUI.parseNumeric(field.textContent);
     if (!isNaN(numValue) && isFinite(numValue)) {
       const formattedValue = window.TEUI.formatNumber(numValue, "number-2dp");
       field.textContent = formattedValue;
-      
+
       // ✅ DUAL-STATE: Store value using ModeManager
       ModeManager.setValue(fieldId, String(numValue), "user-modified");
       calculateAll();
@@ -1779,15 +1804,18 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function handleConditionalEditability() {
-    const d108Dropdown = document.querySelector('select[data-field-id="d_108"]');
+    const d108Dropdown = document.querySelector(
+      'select[data-field-id="d_108"]',
+    );
     const g109Cell = document.querySelector('[data-field-id="g_109"]');
-    
+
     if (!d108Dropdown || !g109Cell) return;
-    
+
     // ✅ DUAL-STATE: Use ModeManager to get current value
-    const currentD108Value = ModeManager.getValue("d_108") || d108Dropdown.value;
+    const currentD108Value =
+      ModeManager.getValue("d_108") || d108Dropdown.value;
     const isMeasured = currentD108Value === "MEASURED";
-    
+
     if (isMeasured) {
       g109Cell.setAttribute("contenteditable", "true");
       g109Cell.classList.add("user-input", "editable");
@@ -1808,7 +1836,9 @@ window.TEUI.SectionModules.sect12 = (function () {
   function onSectionRendered() {
     if (isInitialized) return;
 
-    console.log("S12: Section rendered - initializing Pattern A Dual-State Module.");
+    console.log(
+      "S12: Section rendered - initializing Pattern A Dual-State Module.",
+    );
 
     // 1. Initialize the ModeManager and its internal states
     ModeManager.initialize();
@@ -1916,7 +1946,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     });
 
     // Add other external dependency listeners
-    const otherDeps = externalDependencies.filter(dep => dep !== "d_97");
+    const otherDeps = externalDependencies.filter((dep) => dep !== "d_97");
     otherDeps.forEach((depId) => {
       window.TEUI.StateManager.addListener(
         depId,
@@ -1942,24 +1972,35 @@ window.TEUI.SectionModules.sect12 = (function () {
    * Creates and injects the Target/Reference toggle and Reset button into the section header.
    */
   function injectHeaderControls() {
-    const sectionHeader = document.querySelector("#volumeSurfaceMetrics .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+    const sectionHeader = document.querySelector(
+      "#volumeSurfaceMetrics .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
       return; // Already setup or header not found
     }
 
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "local-controls-container";
-    controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
 
     // Reset Button
     const resetButton = document.createElement("button");
     resetButton.innerHTML = "🔄 Reset";
     resetButton.title = "Reset Section 12 to Defaults";
-    resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
-    
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+
     resetButton.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (confirm("Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 12.")) {
+      if (
+        confirm(
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 12.",
+        )
+      ) {
         ModeManager.resetState();
       }
     });
@@ -1967,19 +2008,22 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Toggle Switch (exact copy from S11)
     const stateIndicator = document.createElement("span");
     stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
 
     const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-    
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
     const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
 
     toggleSwitch.appendChild(slider);
-    
+
     toggleSwitch.addEventListener("click", (event) => {
       event.stopPropagation();
-      const isReference = toggleSwitch.classList.toggle('active');
+      const isReference = toggleSwitch.classList.toggle("active");
       if (isReference) {
         slider.style.transform = "translateX(20px)";
         toggleSwitch.style.backgroundColor = "#28a745";
@@ -2031,4 +2075,4 @@ window.TEUI.SectionModules.sect12 = (function () {
     calculateAll: calculateAll,
     calculateCombinedUValue: calculateCombinedUValue,
   };
-  })();
+})();

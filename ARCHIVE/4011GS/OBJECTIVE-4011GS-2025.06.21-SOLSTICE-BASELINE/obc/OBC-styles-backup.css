@@ -352,8 +352,6 @@ body {
   text-align: right !important;
 }
 
-
-
 /* Style for fields awaiting measurement/input */
 .PendingValue {
   font-style: italic;
@@ -627,18 +625,22 @@ td[colspan="2"] .form-select {
   background-color: transparent !important;
   padding: 4px 8px !important;
   margin: 0 !important;
-  
+
   /* Typography */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif !important;
   font-size: inherit !important;
   color: var(--user-input-color) !important;
   font-weight: 500 !important;
-  
+
   /* Clean interactions */
   outline: none !important;
-  transition: border-bottom-color 0.2s ease, background-color 0.2s ease !important;
+  transition:
+    border-bottom-color 0.2s ease,
+    background-color 0.2s ease !important;
   cursor: text !important;
-  
+
   /* Default alignment */
   text-align: left !important;
   width: 100% !important;
@@ -657,7 +659,7 @@ td[colspan="2"] .form-select {
 /* Special alignment for numeric fields */
 .data-table td input[type="number"].user-input,
 .data-table td[contenteditable="true"][data-field-id*="area"],
-.data-table td[contenteditable="true"][data-field-id*="dimension"], 
+.data-table td[contenteditable="true"][data-field-id*="dimension"],
 .data-table td[contenteditable="true"][data-field-id*="height"],
 .data-table td[contenteditable="true"][data-field-id*="cost"],
 .data-table td[contenteditable="true"][data-field-id*="value"] {
@@ -756,8 +758,12 @@ td[colspan="2"] .form-select {
 .data-table td input[type="number"].user-input,
 .data-table td.editable[contenteditable="true"],
 .data-table td .user-input[contenteditable="true"] {
-  transition: color 0.3s ease, font-style 0.3s ease, font-weight 0.3s ease, 
-              border-bottom-color 0.2s ease, background-color 0.2s ease !important;
+  transition:
+    color 0.3s ease,
+    font-style 0.3s ease,
+    font-weight 0.3s ease,
+    border-bottom-color 0.2s ease,
+    background-color 0.2s ease !important;
 }
 
 /* =============== END MINIMAL INPUT FIELD STYLING =============== */

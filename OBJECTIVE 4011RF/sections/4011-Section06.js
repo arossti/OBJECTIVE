@@ -48,7 +48,12 @@ window.TEUI.SectionModules.sect06 = (function () {
         i: { fieldId: "i_43", type: "calculated", value: "0.00" },
         j: { content: "P.5", classes: ["label-prefix"] },
         k: { content: "Exterior/Site/Other Loads", classes: ["label-main"] },
-        m: { fieldId: "m_43", type: "editable", value: "0.00", classes: ["user-input"] },
+        m: {
+          fieldId: "m_43",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
       },
     },
     44: {
@@ -57,11 +62,21 @@ window.TEUI.SectionModules.sect06 = (function () {
       label: "Photovoltaics",
       cells: {
         c: { label: "Photovoltaics" },
-        d: { fieldId: "d_44", type: "editable", value: "0.00", classes: ["user-input"] },
+        d: {
+          fieldId: "d_44",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
         f: { content: "R.6", classes: ["label-prefix"] },
         g: { content: "WWS Electricity", classes: ["label-main"] },
         h: {},
-        i: { fieldId: "i_44", type: "editable", value: "0.00", classes: ["user-input"] },
+        i: {
+          fieldId: "i_44",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
       },
     },
     45: {
@@ -70,13 +85,23 @@ window.TEUI.SectionModules.sect06 = (function () {
       label: "Wind",
       cells: {
         c: { label: "Wind" },
-        d: { fieldId: "d_45", type: "editable", value: "0.00", classes: ["user-input"] },
+        d: {
+          fieldId: "d_45",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
         f: { content: "R.7", classes: ["label-prefix"] },
         g: { content: "Green Natural Gas", classes: ["label-main"] },
         h: {},
         i: { fieldId: "i_45", type: "calculated", value: "0.00" },
         j: { content: "ekWh/yr" },
-        k: { fieldId: "k_45", type: "editable", value: "0.00", classes: ["user-input"] },
+        k: {
+          fieldId: "k_45",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
         l: { content: "m³" },
       },
     },
@@ -86,11 +111,21 @@ window.TEUI.SectionModules.sect06 = (function () {
       label: "Remove EV Charging from TEUI",
       cells: {
         c: { label: "Remove EV Charging from TEUI" },
-        d: { fieldId: "d_46", type: "editable", value: "0.00", classes: ["user-input"] },
+        d: {
+          fieldId: "d_46",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
         f: { content: "R.8", classes: ["label-prefix"] },
         g: { content: "Reserved (other removals)", classes: ["label-main"] },
         h: {},
-        i: { fieldId: "i_46", type: "editable", value: "0.00", classes: ["user-input"] },
+        i: {
+          fieldId: "i_46",
+          type: "editable",
+          value: "0.00",
+          classes: ["user-input"],
+        },
       },
     },
   };
@@ -100,9 +135,9 @@ window.TEUI.SectionModules.sect06 = (function () {
   //==========================================================================
   function getFields() {
     const fields = {};
-    Object.values(sectionRows).forEach(row => {
+    Object.values(sectionRows).forEach((row) => {
       if (!row.cells) return;
-      Object.values(row.cells).forEach(cell => {
+      Object.values(row.cells).forEach((cell) => {
         if (cell.fieldId) {
           fields[cell.fieldId] = {
             type: cell.type,
@@ -116,12 +151,15 @@ window.TEUI.SectionModules.sect06 = (function () {
     return fields;
   }
 
-  function getDropdownOptions() { return {}; }
+  function getDropdownOptions() {
+    return {};
+  }
 
   function getLayout() {
     const layoutRows = [];
-    if (sectionRows["header"]) layoutRows.push(createLayoutRow(sectionRows["header"]));
-    Object.keys(sectionRows).forEach(key => {
+    if (sectionRows["header"])
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
+    Object.keys(sectionRows).forEach((key) => {
       if (key !== "header") layoutRows.push(createLayoutRow(sectionRows[key]));
     });
     return { rows: layoutRows };
@@ -129,8 +167,21 @@ window.TEUI.SectionModules.sect06 = (function () {
 
   function createLayoutRow(row) {
     const rowDef = { id: row.id, cells: [{}, {}] };
-    const columns = ["c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"];
-    columns.forEach(col => {
+    const columns = [
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+    ];
+    columns.forEach((col) => {
       if (row.cells && row.cells[col]) {
         const cell = { ...row.cells[col] };
         if (col === "c" && !cell.label && row.label) cell.label = row.label;
@@ -167,18 +218,25 @@ window.TEUI.SectionModules.sect06 = (function () {
   }
 
   function setFieldValue(fieldId, value, fieldType = "calculated") {
-    const modePrefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
+    const modePrefix =
+      ModeManager.currentMode === "target" ? "target_" : "ref_";
     const prefixedFieldId = `${modePrefix}${fieldId}`;
 
     if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue(prefixedFieldId, value.toString(), fieldType);
+      window.TEUI.StateManager.setValue(
+        prefixedFieldId,
+        value.toString(),
+        fieldType,
+      );
     }
 
     if (ModeManager.currentMode === "target") {
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
       }
-      const formattedValue = window.TEUI?.formatNumber?.(value, "number-2dp-comma") ?? value.toString();
+      const formattedValue =
+        window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
+        value.toString();
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (element) {
         element.textContent = formattedValue;
@@ -248,7 +306,15 @@ window.TEUI.SectionModules.sect06 = (function () {
   // EVENT HANDLING (Standardized)
   //==========================================================================
   function initializeEventHandlers() {
-    const editableFields = ["d_44", "d_45", "d_46", "i_44", "i_46", "k_45", "m_43"];
+    const editableFields = [
+      "d_44",
+      "d_45",
+      "d_46",
+      "i_44",
+      "i_46",
+      "k_45",
+      "m_43",
+    ];
     editableFields.forEach((fieldId) => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field && !field.hasEditableListeners) {
@@ -257,8 +323,16 @@ window.TEUI.SectionModules.sect06 = (function () {
         field.addEventListener("blur", () => {
           const newValue = field.textContent.trim();
           if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
-            window.TEUI.StateManager.setValue(`ref_${fieldId}`, newValue, "user-modified");
+            window.TEUI.StateManager.setValue(
+              fieldId,
+              newValue,
+              "user-modified",
+            );
+            window.TEUI.StateManager.setValue(
+              `ref_${fieldId}`,
+              newValue,
+              "user-modified",
+            );
           }
           calculateAll();
         });

@@ -110,11 +110,9 @@
             TEUI v.4.011 | for Canadian Projects
           </h1>
         </div>
-              </header>
+      </header>
 
-
-
-        <!-- Action buttons row -->
+      <!-- Action buttons row -->
       <div class="row button-row mb-2">
         <div class="col-12 text-end">
           <div
@@ -245,7 +243,7 @@
               class="btn btn-sm btn-dark ms-2"
               onclick="saveStateAndNavigate('obc/indexobc.html')"
               title="Switch to OBC Matrix for Building Code Compliance (saves current work)"
-              style="transition: background-color 0.2s ease;"
+              style="transition: background-color 0.2s ease"
               onmouseover="this.style.backgroundColor='#6c757d'"
               onmouseout="this.style.backgroundColor=''"
             >
@@ -582,15 +580,20 @@
             <!-- Demo Warning - Moved from banner -->
             <div class="alert alert-warning border-warning mb-4" role="alert">
               <div class="flex-grow-1">
-                <strong>⚠️ DEMO ONLY</strong> - OBJECTIVE 4.012 is under active development. 
-                <strong>DO NOT USE for real projects.</strong> 
-                For production work, download: 
-                <a href="https://openbuilding.ca/product/objective-v3/" target="_blank" class="alert-link">
+                <strong>⚠️ DEMO ONLY</strong> - OBJECTIVE 4.012 is under active
+                development.
+                <strong>DO NOT USE for real projects.</strong>
+                For production work, download:
+                <a
+                  href="https://openbuilding.ca/product/objective-v3/"
+                  target="_blank"
+                  class="alert-link"
+                >
                   https://openbuilding.ca/product/objective-v3/
                 </a>
               </div>
             </div>
-            
+
             <p>
               This tool helps you calculate the Total Energy Use Intensity
               (TEUI) & Thermal Energy Demand Intensity (TEDI) of a building or
@@ -718,16 +721,18 @@ Select a province and city to view weather data.</pre
       function saveStateAndNavigate(url) {
         if (TEUI && TEUI.StateManager) {
           // console.log("🔍 DEBUG: Field count before save:", TEUI.StateManager.getDebugInfo().fieldCount);
-          
+
           // Force immediate save before navigation
           TEUI.StateManager.saveState();
-          console.log("TEUI StateManager: State saved before navigating to OBC Matrix");
-          
+          console.log(
+            "TEUI StateManager: State saved before navigating to OBC Matrix",
+          );
+
           // Check what was actually saved
-          const saved = localStorage.getItem('TEUI_Calculator_State');
+          const saved = localStorage.getItem("TEUI_Calculator_State");
           // console.log("🔍 DEBUG: What was saved to localStorage:", saved ? "State preserved" : "Nothing saved");
         }
-        
+
         // Navigate after a brief delay to ensure save completes
         setTimeout(() => {
           window.location.href = url;
@@ -740,7 +745,7 @@ Select a province and city to view weather data.</pre
           // Clear all state including localStorage
           TEUI.StateManager.clear();
           console.log("TEUI StateManager: All data cleared including localStorage");
-          
+
           // Reload the page to show clean state
           setTimeout(() => {
             window.location.reload();
@@ -757,11 +762,11 @@ Select a province and city to view weather data.</pre
           //   loadState: typeof TEUI.StateManager.loadState,
           //   clear: typeof TEUI.StateManager.clear
           // });
-          
+
           // Check what's in localStorage before initialization
-          const saved = localStorage.getItem('TEUI_Calculator_State');
+          const saved = localStorage.getItem("TEUI_Calculator_State");
           // console.log("🔍 DEBUG: localStorage content before initialize:", saved ? "State found" : "No saved state");
-          
+
           if (saved) {
             const parsedState = JSON.parse(saved);
             // console.log("🔍 DEBUG: Saved state details:", {
@@ -770,33 +775,41 @@ Select a province and city to view weather data.</pre
             //   sampleValues: Object.entries(parsedState).slice(0, 3)
             // });
           }
-          
+
           // Initialize now loads state automatically during initialization
           TEUI.StateManager.initialize();
-          
+
           // Check if state was preserved and loaded
           const debugInfo = TEUI.StateManager.getDebugInfo();
           // console.log("🔍 DEBUG: StateManager field count after initialize:", debugInfo.fieldCount);
-          
+
           // Check if user-modified fields are actually loaded
           const allKeys = TEUI.StateManager.getAllKeys();
           let userModifiedCount = 0;
           let importedCount = 0;
           let defaultCount = 0;
           let calculatedCount = 0;
-          
-          allKeys.forEach(key => {
+
+          allKeys.forEach((key) => {
             const fieldInfo = TEUI.StateManager.getDebugInfo(key);
             if (fieldInfo) {
-              switch(fieldInfo.state) {
-                case 'user-modified': userModifiedCount++; break;
-                case 'imported': importedCount++; break;
-                case 'default': defaultCount++; break;
-                case 'calculated': calculatedCount++; break;
+              switch (fieldInfo.state) {
+                case "user-modified":
+                  userModifiedCount++;
+                  break;
+                case "imported":
+                  importedCount++;
+                  break;
+                case "default":
+                  defaultCount++;
+                  break;
+                case "calculated":
+                  calculatedCount++;
+                  break;
               }
             }
           });
-          
+
           // console.log("🔍 DEBUG: Field states after initialize:", {
           //   'user-modified': userModifiedCount,
           //   'imported': importedCount,
