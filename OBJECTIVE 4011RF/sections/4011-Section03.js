@@ -26,7 +26,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       if (savedState) {
         try {
           this.state = JSON.parse(savedState);
-          console.log("S03 TARGET STATE: Restored from localStorage", this.state);
+          // console.log("S03 TARGET STATE: Restored from localStorage", this.state);
         } catch (e) {
           this.setDefaults();
         }
@@ -47,7 +47,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         'l_24': 24,           // Cooling override
         'i_21': 50            // Capacitance percentage
       };
-      console.log("S03 TARGET STATE: Set to defaults");
+      // console.log("S03 TARGET STATE: Set to defaults");
     },
     saveState: function () {
       try {
@@ -60,7 +60,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       this.state[fieldId] = value;
       this.notifyListeners(fieldId, value);
       this.saveState();
-      console.log(`S03 TARGET setValue: ${fieldId} = ${value} (${source})`);
+      // console.log(`S03 TARGET setValue: ${fieldId} = ${value} (${source})`);
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
@@ -87,7 +87,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       if (savedState) {
         try {
           this.state = JSON.parse(savedState);
-          console.log("S03 REFERENCE STATE: Restored from localStorage", this.state);
+          // console.log("S03 REFERENCE STATE: Restored from localStorage", this.state);
         } catch (e) {
           this.setDefaults();
         }
@@ -110,7 +110,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         'l_24': 24,               // Cooling override
         'i_21': 75                // DIFFERENT capacitance for testing isolation
       };
-      console.log("S03 REFERENCE STATE: Set to climate comparison defaults");
+              // console.log("S03 REFERENCE STATE: Set to climate comparison defaults");
     },
     saveState: function () {
       try {
@@ -123,7 +123,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       this.state[fieldId] = value;
       this.notifyListeners(fieldId, value);
       this.saveState();
-      console.log(`S03 REFERENCE setValue: ${fieldId} = ${value} (${source})`);
+              // console.log(`S03 REFERENCE setValue: ${fieldId} = ${value} (${source})`);
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
@@ -147,13 +147,13 @@ window.TEUI.SectionModules.sect03 = (function () {
     initialize: function () {
       TargetState.initialize();
       ReferenceState.initialize();
-      console.log("S03 MODE MANAGER: Both states initialized");
+      // console.log("S03 MODE MANAGER: Both states initialized");
     },
     switchMode: function (mode) {
       if (this.currentMode === mode || (mode !== "target" && mode !== "reference"))
         return;
       this.currentMode = mode;
-      console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
+      // console.log(`S03: Switched to ${mode.toUpperCase()} mode`);
       
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
@@ -215,7 +215,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       const capacitanceValue = currentState.getValue("h_21") || "Capacitance";
       if (capacitanceSelect) {
         capacitanceSelect.value = capacitanceValue;
-        console.log(`S03: Updated capacitance dropdown to "${capacitanceValue}" in ${this.currentMode} mode`);
+        // console.log(`S03: Updated capacitance dropdown to "${capacitanceValue}" in ${this.currentMode} mode`);
       }
       
       // CRITICAL: Update percentage slider from isolated state (FieldManager structure)
@@ -229,7 +229,7 @@ window.TEUI.SectionModules.sect03 = (function () {
         if (display) {
           display.textContent = percentageValue + "%";
         }
-        console.log(`S03: Updated slider to ${percentageValue}% in ${this.currentMode} mode`);
+        // console.log(`S03: Updated slider to ${percentageValue}% in ${this.currentMode} mode`);
       }
       
       // Update all other editable fields from current state
@@ -251,7 +251,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Update climate data and calculations for current selections
       updateWeatherData();
       
-      console.log(`S03: UI refreshed for ${this.currentMode} mode`);
+              // console.log(`S03: UI refreshed for ${this.currentMode} mode`);
     }
   };
   
