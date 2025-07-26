@@ -1695,9 +1695,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     if (!sectionElement) return;
     sectionElement.removeEventListener("blur", handleFieldBlur, true);
     sectionElement.removeEventListener("keydown", handleFieldKeydown, true);
-    sectionElement.querySelectorAll("select").forEach((dropdown) => {
-      dropdown.removeEventListener("change", handleDropdownChange);
-    });
+    // ✅ FIXED: Removed reference to non-existent handleDropdownChange function
+    // No need to remove old dropdown listeners since we're using new inline pattern
     sectionElement
       .querySelectorAll('[contenteditable="true"].user-input')
       .forEach((field) => {
