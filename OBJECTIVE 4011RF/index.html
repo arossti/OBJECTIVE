@@ -752,7 +752,9 @@ Select a province and city to view weather data.</pre
       }
 
       // Global Target/Reference Toggle Setup
-      function setupGlobalToggleUI() {
+      function setupGlobalToggleUI(retryCount = 0) {
+        const maxRetries = 10; // Maximum 10 retries = 5 seconds
+        
         const sectionHeader = document.querySelector("#climateCalculations .section-header");
         if (!sectionHeader) {
           console.warn("Global Toggle: S03 header not found");
@@ -767,9 +769,13 @@ Select a province and city to view weather data.</pre
         // Use the ModeManager exposed by S03
         const ModeManager = window.TEUI?.ModeManager;
         if (!ModeManager) {
-          console.warn("Global Toggle: TEUI.ModeManager not available - S03 may not be loaded yet");
-          // Retry after a delay if S03 isn't ready
-          setTimeout(setupGlobalToggleUI, 500);
+          if (retryCount < maxRetries) {
+            console.warn(`Global Toggle: TEUI.ModeManager not available - retry ${retryCount + 1}/${maxRetries}`);
+            // Retry after a delay if S03 isn't ready (with retry limit)
+            setTimeout(() => setupGlobalToggleUI(retryCount + 1), 500);
+          } else {
+            console.error("Global Toggle: TEUI.ModeManager never became available after max retries. S03 may have failed to load.");
+          }
           return;
         }
 
@@ -957,8 +963,10 @@ Select a province and city to view weather data.</pre
           // console.log("🔍 DEBUG: After renderAllSections, field count:", TEUI.StateManager.getDebugInfo().fieldCount);
         }
 
+        // ⏸️ DISABLED: Global toggle failing with 10 retries - causing console spam
         // Setup global toggle UI after sections are rendered and S03's DualState is available
-        setTimeout(setupGlobalToggleUI, 1500); // Give S03 time to expose ModeManager
+        // setTimeout(setupGlobalToggleUI, 1500); // Give S03 time to expose ModeManager
+        // TODO: Re-enable when migrating to unified global toggle for all Pattern A sections
 
         // Initialize Component Bridge
         if (TEUI.ComponentBridge) {
