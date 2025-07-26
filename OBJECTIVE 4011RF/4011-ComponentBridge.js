@@ -450,12 +450,25 @@ TEUI.ComponentBridge = (function () {
         // Handle target_* → global sync (user inputs only)
         if (fieldId.startsWith('target_')) {
           const globalFieldId = fieldId.replace('target_', '');
+          
+          // ✅ PATTERN A EXCLUSION: Skip fields managed by Pattern A sections  
+          if (isPatternAField(globalFieldId)) {
+            console.log(`🚫 ComponentBridge: Skipping Pattern A field ${fieldId} (self-managed)`);
+            return result;
+          }
+          
           originalSetValue.call(this, globalFieldId, value, 'bridge-sync');
           console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${globalFieldId} (${value})`);
         }
         
         // Handle global → target_* sync (user inputs only)
         else if (!fieldId.startsWith('target_') && !fieldId.startsWith('ref_')) {
+          // ✅ PATTERN A EXCLUSION: Skip fields managed by Pattern A sections
+          if (isPatternAField(fieldId)) {
+            console.log(`🚫 ComponentBridge: Skipping Pattern A field ${fieldId} (self-managed)`);
+            return result;
+          }
+          
           const targetFieldId = `target_${fieldId}`;
           originalSetValue.call(this, targetFieldId, value, 'bridge-sync');
           console.log(`🔄 ComponentBridge: User input synced ${fieldId} → ${targetFieldId} (${value})`);
@@ -476,6 +489,40 @@ TEUI.ComponentBridge = (function () {
   }
 
   /**
+   * Check if a field belongs to a Pattern A (self-contained dual-state) section
+   * Pattern A sections manage their own Target/Reference states and don't need ComponentBridge
+   * @param {string} fieldId - The field ID to check
+   * @returns {boolean} true if field belongs to Pattern A section
+   */
+  function isPatternAField(fieldId) {
+    // Pattern A sections with self-contained dual-state management
+    const patternASections = {
+      's03': window.TEUI?.SectionModules?.sect03?.ModeManager,  // Climate
+      's10': window.TEUI?.SectionModules?.sect10?.ModeManager,  // Radiant Gains  
+      's11': window.TEUI?.SectionModules?.sect11?.ModeManager,  // Transmission
+      's12': window.TEUI?.SectionModules?.sect12?.ModeManager,  // Volume/Surface
+      // Add other Pattern A sections here as they're refactored
+    };
+
+    // Field ID patterns for each Pattern A section
+    const patternAFieldPatterns = {
+      's03': /^(d_19|h_19|h_20|h_21|i_21|d_20|d_21|d_22|h_22|j_19)$/,          // Climate fields
+      's10': /^(d_6[6-9]|g_6[6-9]|h_6[6-9]|d_7[0-8]|g_7[0-8]|h_7[0-8])$/,     // Radiant gains fields  
+      's11': /^(d_8[5-9]|f_8[5-9]|g_8[5-9]|d_9[0-7]|f_9[0-7]|g_9[0-7])$/,     // Transmission fields
+      's12': /^(d_103|g_103|d_105|d_108|g_109)$/,                              // Volume/Surface fields
+    };
+
+    // Check if field belongs to any Pattern A section
+    for (const [sectionKey, modeManager] of Object.entries(patternASections)) {
+      if (modeManager && patternAFieldPatterns[sectionKey]?.test(fieldId)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Get the current mode from dual-state sections
    * @returns {string} 'target' or 'reference'
    */
@@ -484,7 +531,9 @@ TEUI.ComponentBridge = (function () {
     const dualStateSections = [
       window.TEUI?.SectionModules?.sect03?.ModeManager,
       window.TEUI?.SectionModules?.sect10?.ModeManager,
-      // Add other dual-state sections as they're implemented
+      window.TEUI?.SectionModules?.sect11?.ModeManager,
+      window.TEUI?.SectionModules?.sect12?.ModeManager,
+      // Add other Pattern A dual-state sections as they're implemented
     ].filter(Boolean);
 
     // Return the mode from the first available dual-state section
