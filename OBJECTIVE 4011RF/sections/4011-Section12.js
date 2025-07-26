@@ -1695,9 +1695,22 @@ window.TEUI.SectionModules.sect12 = (function () {
       });
     sectionElement.addEventListener("blur", handleFieldBlur, true);
     sectionElement.addEventListener("keydown", handleFieldKeydown, true);
+    // ✅ S10 PROVEN PATTERN: Inline dropdown handlers (like working sections)
     const dropdowns = sectionElement.querySelectorAll("select");
     dropdowns.forEach((dropdown) => {
-      dropdown.addEventListener("change", handleDropdownChange);
+      dropdown.addEventListener("change", function () {
+        const fieldId = this.getAttribute("data-field-id");
+        if (!fieldId) return;
+
+        ModeManager.setValue(fieldId, this.value, "user-modified");
+        
+        // Handle conditional g_109 logic for d_108
+        if (fieldId === "d_108") {
+          handleConditionalEditability();
+        }
+        
+        calculateAll();
+      });
     });
     const editableFields = sectionElement.querySelectorAll(
       '[contenteditable="true"].user-input',
@@ -1706,33 +1719,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       field.addEventListener("focus", handleFieldFocus);
       field.addEventListener("focusout", handleFieldFocusOut);
     });
+    // Initialize conditional editability state
     handleConditionalEditability();
-    const d108Dropdown = sectionElement.querySelector(
-      'select[data-field-id="d_108"]',
-    );
-    if (d108Dropdown) {
-      d108Dropdown.removeEventListener("change", handleConditionalEditability);
-      d108Dropdown.addEventListener("change", handleConditionalEditability);
-    }
   }
 
-  function handleDropdownChange(event) {
-    const dropdown = event.target;
-    const fieldId = dropdown.getAttribute("data-field-id");
-    if (fieldId) {
-      // console.log(`S12: Dropdown ${fieldId} changed to: ${dropdown.value}`);
-      
-      // ✅ DUAL-STATE: Store value using ModeManager
-      ModeManager.setValue(fieldId, dropdown.value, "user-modified");
-      
-      // Handle conditional g_109 logic
-      if (fieldId === "d_108") {
-        handleConditionalEditability();
-      }
-      
-      calculateAll();
-    }
-  }
+  // ✅ REMOVED: Now using S10's inline dropdown handler pattern
 
   function handleFieldFocus(event) {
     event.target.classList.add("editing");
