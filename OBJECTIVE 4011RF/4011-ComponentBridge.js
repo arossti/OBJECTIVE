@@ -464,9 +464,7 @@ TEUI.ComponentBridge = (function () {
         // Handle global → target_* sync (user inputs only)
         else if (!fieldId.startsWith('target_') && !fieldId.startsWith('ref_')) {
           // ✅ PATTERN A EXCLUSION: Skip fields managed by Pattern A sections
-          const isPatternA = isPatternAField(fieldId);
-          console.log(`🔍 ComponentBridge: Checking ${fieldId} - Pattern A: ${isPatternA}`);
-          if (isPatternA) {
+          if (isPatternAField(fieldId)) {
             console.log(`🚫 ComponentBridge: Skipping Pattern A field ${fieldId} (self-managed)`);
             return result;
           }
@@ -515,18 +513,12 @@ TEUI.ComponentBridge = (function () {
     };
 
     // Check if field belongs to any Pattern A section
-    console.log(`🔍 ComponentBridge: Checking field ${fieldId} against Pattern A sections`);
     for (const [sectionKey, modeManager] of Object.entries(patternASections)) {
-      const hasManager = !!modeManager;
-      const matchesPattern = patternAFieldPatterns[sectionKey]?.test(fieldId);
-      console.log(`🔍 ComponentBridge: ${sectionKey} - ModeManager: ${hasManager}, Pattern match: ${matchesPattern}`);
-      if (modeManager && matchesPattern) {
-        console.log(`✅ ComponentBridge: ${fieldId} belongs to Pattern A section ${sectionKey}`);
+      if (modeManager && patternAFieldPatterns[sectionKey]?.test(fieldId)) {
         return true;
       }
     }
 
-    console.log(`❌ ComponentBridge: ${fieldId} not found in any Pattern A section`);
     return false;
   }
 
