@@ -1031,25 +1031,45 @@ window.TEUI.SectionModules.sect11 = (function () {
   function calculateThermalBridgePenalty(
     componentHeatlossSubtotal,
     componentHeatgainSubtotal,
+    isReferenceCalculation = false,
   ) {
     try {
-      // Read the percentage value directly from state/slider
-      const penaltyPercent = getNumericValue("d_97");
+      // Get the thermal bridge penalty value based on calculation mode
+      let penaltyPercent;
+      if (isReferenceCalculation) {
+        // For Reference calculations, use ReferenceState value
+        penaltyPercent = window.TEUI.parseNumeric(ReferenceState.getValue("d_97")) || 0;
+      } else {
+        // For Target calculations, use TargetState value
+        penaltyPercent = window.TEUI.parseNumeric(TargetState.getValue("d_97")) || 0;
+      }
+      
       // Convert percentage to decimal factor for calculation
       const penaltyDecimal = penaltyPercent / 100;
       const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal)); // Keep validation just in case
 
-      // Update e_97 to display the decimal factor if desired
-      setCalculatedValue("e_97", validatedPenalty, "number-3dp"); // Show decimal with 3dp
-
-      let penaltyHeatloss = componentHeatlossSubtotal * validatedPenalty;
-      setCalculatedValue("i_97", penaltyHeatloss);
+      // Calculate penalty amounts
+      const penaltyHeatloss = componentHeatlossSubtotal * validatedPenalty;
       const penaltyHeatgain = componentHeatgainSubtotal * validatedPenalty;
+
+      // For Reference calculations, return the calculated values (stored elsewhere)
+      if (isReferenceCalculation) {
+        return { heatloss: penaltyHeatloss, heatgain: penaltyHeatgain };
+      }
+
+      // For Target calculations, update the DOM and state
+      setCalculatedValue("e_97", validatedPenalty, "number-3dp"); // Show decimal with 3dp
+      setCalculatedValue("i_97", penaltyHeatloss);
       setCalculatedValue("k_97", penaltyHeatgain);
+      
     } catch (error) {
       console.error("Error calculating TBP:", error);
-      setCalculatedValue("i_97", 0);
-      setCalculatedValue("k_97", 0);
+      if (isReferenceCalculation) {
+        return { heatloss: 0, heatgain: 0 };
+      } else {
+        setCalculatedValue("i_97", 0);
+        setCalculatedValue("k_97", 0);
+      }
     }
   }
 
@@ -1175,15 +1195,10 @@ window.TEUI.SectionModules.sect11 = (function () {
       else if (config.type === "ground") totals.groundAreaD += area;
     });
 
-    // Calculate thermal bridge penalty using reference percentage
-    const penaltyPercent =
-      window.TEUI?.StateManager?.getReferenceValue("d_97") ||
-      getNumericValue("d_97");
-    const penaltyDecimal = penaltyPercent / 100;
-    const validatedPenalty = Math.max(0, Math.min(1, penaltyDecimal));
-
-    const penaltyHeatlossI = totals.loss * validatedPenalty;
-    const penaltyHeatgainK = totals.gain * validatedPenalty;
+    // Calculate thermal bridge penalty using reference values
+    const penaltyResults = calculateThermalBridgePenalty(totals.loss, totals.gain, true); // true = isReferenceCalculation
+    const penaltyHeatlossI = penaltyResults ? penaltyResults.heatloss : 0;
+    const penaltyHeatgainK = penaltyResults ? penaltyResults.heatgain : 0;
 
     // Store Reference Model results with ref_ prefix
     if (window.TEUI?.StateManager) {
@@ -1254,7 +1269,7 @@ window.TEUI.SectionModules.sect11 = (function () {
       else if (config.type === "ground") totals.groundAreaD += area;
     });
 
-    calculateThermalBridgePenalty(totals.loss, totals.gain);
+    calculateThermalBridgePenalty(totals.loss, totals.gain, false); // false = Target calculation
     const penaltyHeatlossI = getNumericValue("i_97") || 0;
     const penaltyHeatgainK = getNumericValue("k_97") || 0;
 
@@ -1484,14 +1499,8 @@ window.TEUI.SectionModules.sect11 = (function () {
             displaySpan.textContent = percentageValue.toFixed(0) + "%";
           }
 
-          // Update StateManager (triggers listeners, but may be too slow for live feedback)
-          if (window.TEUI && window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue(
-              "d_97",
-              percentageValue.toString(),
-              "user-modified",
-            );
-          }
+          // ✅ DUAL-STATE: Update via ModeManager (handles both state and StateManager sync)
+          ModeManager.setValue("d_97", percentageValue.toString(), "user-modified");
 
           // LIVE FEEDBACK: Direct calculation calls for immediate visual response
           // This ensures g_101/g_102 update in real-time during slider drag
@@ -1506,14 +1515,8 @@ window.TEUI.SectionModules.sect11 = (function () {
           const percentageValue = parseFloat(this.value);
           if (isNaN(percentageValue)) return;
 
-          // Final value goes through StateManager - let dependency chain handle everything
-          if (window.TEUI && window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue(
-              "d_97",
-              percentageValue.toString(),
-              "user-modified",
-            );
-          }
+          // ✅ DUAL-STATE: Final value goes through ModeManager - handles state and dependency chain
+          ModeManager.setValue("d_97", percentageValue.toString(), "user-modified");
           // Note: StateManager listeners will handle full recalculation cascade
         });
 
