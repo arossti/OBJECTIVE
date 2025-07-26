@@ -935,7 +935,7 @@ When all sections use Pattern A:
 - ✅ **Calculation Chain Active**: `calculateAll()` executes when dropdowns change
 - ✅ **Basic State Structure**: TargetState/ReferenceState/ModeManager in place
 
-**❌ Outstanding Issues (As of July 25, 2025):**
+**❌ Outstanding Issues (As of July 26, 2025):**
 - ❌ **Dropdown Blanking Persists**: After 1-2 edits, dropdowns still go blank
 - ❌ **Reset Button Non-Functional**: Does nothing when clicked
 - ❌ **One-Way State Persistence**: Target→Reference works, Reference→Target fails
@@ -1034,5 +1034,95 @@ grep -n "handleDropdownChange\|handleFieldBlur\|removeEventListener" targetFile.
 ---
 
 **⚠️ IMPORTANT**: This section is a **work in progress** and should be updated as S12 issues are resolved. Future implementers should consider the **cost/benefit** of continuing to debug S12 vs starting fresh with proven patterns.
+
+---
+
+## 🚧 **CURRENT IMPLEMENTATION STATUS & TEMPORARY MEASURES (July 2025)**
+
+### **S12 Refactor Progress Update**
+
+**Status**: Partially functional but ongoing challenges with state persistence and dropdown behavior.
+
+**Recent Progress**:
+- ✅ **Critical Function Scoping Fixed**: S09 `formatBuildingTypeForLookup` error resolved
+- ✅ **Console Noise Eliminated**: S05 recursion bug fixed, S03 verbose logging cleaned
+- ✅ **ComponentBridge Spam Reduced**: Sync logging commented out for cleaner debugging
+- ✅ **Global Toggle Disabled**: Preventing retry warning spam during development
+
+**S12 Specific Issues Resolved**:
+- ✅ Dropdown event listeners now attach correctly
+- ✅ Calculations fire when dropdowns change  
+- ✅ Basic Pattern A structure in place
+
+**S12 Outstanding Issues**:
+- ❌ Dropdown blanking after 1-2 edits persists
+- ❌ Reset button non-functional
+- ❌ State persistence only works one-way (Target→Reference)
+
+### **Temporary Architecture Decisions**
+
+#### **1. Global Toggle Temporarily Disabled**
+
+```javascript
+// ⏸️ DISABLED: Global toggle failing with 10 retries - causing console spam
+// setTimeout(setupGlobalToggleUI, 1500); 
+// TODO: Re-enable when migrating to unified global toggle for all Pattern A sections
+```
+
+**Rationale**: 
+- Individual section toggles are functional and preferred for development
+- Global toggle was looking for `window.TEUI.ModeManager` but S03 exposes `window.TEUI.sect03.ModeManager`
+- Better to have clean console now, re-enable when architecture is ready
+
+**Future Plan**: 
+- Complete Pattern A migration for all sections
+- Implement unified global toggle that works with section-specific ModeManager exposure pattern
+- Retire individual section toggles in favor of application-wide mode switching
+
+#### **2. ComponentBridge Scheduled for Retirement**
+
+**Current State**: ComponentBridge sync logging commented out but functionality preserved.
+
+**Future Architecture Plan**:
+- **Replace** ComponentBridge pattern with **direct state object reading**
+- **Eliminate** `target_`/`ref_` prefixed sync mechanisms 
+- **Implement** clean Pattern A data flow: `StateManager` reads directly from section ModeManagers
+- **Preserve** cross-section communication via section-specific APIs
+
+**Migration Strategy**:
+```javascript
+// Current Pattern B (ComponentBridge dependent):
+const value = window.TEUI.StateManager.getValue("target_d_103");
+
+// Future Pattern A (direct state access):
+const value = window.TEUI.sect12.ModeManager.getValue("d_103");
+```
+
+**Benefits**:
+- Eliminates prefix-based state contamination
+- Removes ComponentBridge as potential interference point
+- Simplifies data flow with clear section sovereignty
+- Reduces complexity and maintenance burden
+
+### **Code Quality Improvements Completed**
+
+#### **Console Noise Elimination (July 26, 2025)**
+
+**Major Issues Resolved**:
+- **S05 Recursion Catastrophe**: Eliminated hundreds of mode switches causing performance issues
+- **S09 Function Scoping**: Fixed `ReferenceError` breaking Reference Model calculations  
+- **S03 Verbose Logging**: Commented out 11 debug logs firing on every state change
+- **ComponentBridge Spam**: Reduced sync operation logging for cleaner debugging
+- **Global Toggle Retries**: Stopped 10 consecutive warning messages on page load
+
+**Impact**: Console dramatically quieter, actual debugging issues now visible.
+
+#### **Next Phase: Code Formatting & Standards**
+
+**Planned**: ESLint and Prettier cleanup for consistent code style and error detection.
+
+---
+
+**📋 TODO: Update this section as S12 completion and ComponentBridge retirement progress.**
 
 --- 

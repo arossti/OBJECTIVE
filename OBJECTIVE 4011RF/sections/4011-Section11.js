@@ -1067,8 +1067,8 @@ window.TEUI.SectionModules.sect11 = (function () {
       if (isReferenceCalculation) {
         return { heatloss: 0, heatgain: 0 };
       } else {
-        setCalculatedValue("i_97", 0);
-        setCalculatedValue("k_97", 0);
+      setCalculatedValue("i_97", 0);
+      setCalculatedValue("k_97", 0);
       }
     }
   }
