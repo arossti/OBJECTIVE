@@ -198,6 +198,73 @@ window.TEUI.SectionModules.sect12 = (function () {
   window.TEUI.sect12.ModeManager = ModeManager;
 
   //==========================================================================
+  // HEADER CONTROLS INJECTION
+  //==========================================================================
+  
+  function injectHeaderControls() {
+    const sectionHeader = document.querySelector("#volumeSurfaceMetrics .section-header");
+    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+      return; // Already setup or header not found
+    }
+
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText = "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+    // --- Create Reset Button ---
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = "🔄 Reset";
+    resetButton.title = "Reset Section 12 to Defaults";
+    resetButton.style.cssText = "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+    
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (confirm("Are you sure you want to reset all values in this section to their defaults? This will clear any saved data for Section 12.")) {
+        ModeManager.resetState();
+      }
+    });
+
+    // --- Create Toggle Switch ---
+    const stateIndicator = document.createElement("span");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText = "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+    
+    const slider = document.createElement("div");
+    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+    
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle('active');
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Append all controls to the container, then the container to the header
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
+
+    console.log("S12: Header controls injected successfully");
+  }
+
+  //==========================================================================
   // HELPER FUNCTIONS (Refactored for Self-Contained State Module)
   //==========================================================================
   
@@ -207,10 +274,26 @@ window.TEUI.SectionModules.sect12 = (function () {
     return window.TEUI.parseNumeric(rawValue) || 0;
   }
 
-  function getGlobalNumericValue(fieldId) {
+  function getGlobalNumericValue(fieldId, mode) {
     // For values EXTERNAL to this section (from global StateManager or other sections)
-    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    return window.TEUI.parseNumeric(rawValue) || 0;
+    // Uses GEMINI's mode-aware approach for correct Target/Reference reading
+    const stateManager = window.TEUI?.StateManager;
+    if (!stateManager) return 0;
+
+    let value;
+    const currentMode = mode || ModeManager.currentMode;
+    
+    if (currentMode === "reference") {
+      // For reference calculations, check for 'ref_', then non-prefixed.
+      value = stateManager.getValue(`ref_${fieldId}`);
+      if (value === null || value === undefined) {
+        value = stateManager.getValue(fieldId);
+      }
+    } else {
+      // For target calculations, there is NO prefix.
+      value = stateManager.getValue(fieldId);
+    }
+    return window.TEUI.parseNumeric(value) || 0;
   }
 
   function getFieldValue(fieldId) {
@@ -1980,13 +2063,16 @@ window.TEUI.SectionModules.sect12 = (function () {
     // 1. Initialize the ModeManager and its internal states
     ModeManager.initialize();
 
-    // 2. Initialize existing infrastructure  
+    // 2. Setup the section-specific toggle switch in the header
+    injectHeaderControls();
+
+    // 3. Initialize existing infrastructure  
     registerWithStateManager();
     registerDependencies();
     initializeEventHandlers(); // Event handlers now only added once
     addStateManagerListeners(); // Critical for "robot fingers" TB penalty connection
 
-    // 3. Sync UI to the default (Target) state
+    // 4. Sync UI to the default (Target) state
     ModeManager.refreshUI();
 
     // 4. Perform initial calculations for this section
