@@ -151,6 +151,133 @@ setValue: function (fieldId, value, source = "user") {
 
 **This section prevents future failures and ensures first-attempt success.**
 
+---
+
+## 🏗️ **ARCHITECTURAL CLARITY: When to Use Prefixed Values**
+
+**⚠️ CRITICAL DISTINCTION**: Not all prefixed values are contamination. Understanding **when to keep** vs **when to eliminate** prefixed values is essential for successful Pattern A implementation.
+
+### **✅ KEEP ref_ Prefixes: Cross-Section Communication**
+
+**Purpose**: Downstream sections need access to "what would the reference values be?" for comparison and reporting.
+
+```javascript
+// ✅ CORRECT: Store calculated RESULTS for other sections to use
+// In S11 (Pattern A) - calculateReferenceModel()
+window.TEUI.StateManager.setValue("ref_d_98", totals.areaD.toString(), "calculated");
+window.TEUI.StateManager.setValue("ref_i_98", totals.loss.toString(), "calculated");
+
+// ✅ CORRECT: Store calculated RESULTS for downstream consumption  
+// In S09 (Pattern A) - calculateReferenceModel()
+window.TEUI.StateManager.setValue("ref_i_71", (refTotal * refHeatingRatio).toString(), "calculated");
+window.TEUI.StateManager.setValue("ref_h_71", refTotal.toString(), "calculated");
+```
+
+**Why This Works**: Other sections (S14, S15, S01) need to access reference calculation results for summary reports and compliance comparisons.
+
+### **❌ ELIMINATE target_/ref_ Prefixes: External Dependencies**
+
+**Problem**: Sections try to read prefixed external values, but upstream sections manage Target/Reference internally.
+
+```javascript
+// ❌ WRONG: Pattern B contamination - trying to read external prefixed values
+const refArea = window.TEUI?.StateManager?.getValue("ref_h_15") || window.TEUI?.StateManager?.getValue("h_15");
+const refClimate = parseFloat(getNumericValue("ref_d_20") || getNumericValue("d_20"));
+
+// ✅ CORRECT: Pattern A clean access - upstream section handles Target/Reference
+const area = getGlobalNumericValue("h_15");  // S02 manages Target vs Reference internally
+const climate = getGlobalNumericValue("d_20"); // S03 manages Target vs Reference internally
+```
+
+**Why This Works**: S02 and S03 (Pattern A) internally manage Target vs Reference and provide the correct value based on current context.
+
+### **🎯 The "State Sovereignty" Principle**
+
+**Pattern A Architecture Rule**: Each section has **complete sovereignty** over its internal state management.
+
+#### **Internal State Management (Self-Contained)**
+```javascript
+// Each section manages its own Target/Reference internally
+const ModeManager = {
+  currentMode: "target", // or "reference"
+  getValue: function(fieldId) {
+    return this.currentMode === "target" 
+      ? TargetState.getValue(fieldId)
+      : ReferenceState.getValue(fieldId);
+  }
+};
+```
+
+#### **External Dependencies (Clean Interface)**
+```javascript
+// External reads are always clean - no prefixes
+function getGlobalNumericValue(fieldId) {
+  const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+  return window.TEUI.parseNumeric(rawValue) || 0;
+}
+
+// Usage: Read climate data from S03
+const hdd = getGlobalNumericValue("d_20"); // S03 provides correct value based on its mode
+```
+
+#### **Cross-Section Results (Prefixed for Clarity)**
+```javascript
+// Outbound results use prefixes for downstream consumption
+if (isReferenceCalculation) {
+  // Store reference results for other sections
+  window.TEUI.StateManager.setValue("ref_i_98", heatloss.toString(), "calculated");
+} else {
+  // Store target results (unprefixed)
+  window.TEUI.StateManager.setValue("i_98", heatloss.toString(), "calculated");
+}
+```
+
+### **📋 Prefixed Values Decision Matrix**
+
+| **Scenario** | **Use Prefixes?** | **Pattern** |
+|--------------|-------------------|-------------|
+| **Reading from other sections** | ❌ NO | `getGlobalNumericValue("d_20")` |
+| **Reading within own section** | ❌ NO | `ModeManager.getValue("d_105")` |
+| **Storing calculated results for others** | ✅ YES | `setValue("ref_i_98", value)` |
+| **Internal calculations** | ❌ NO | Use state objects directly |
+
+### **🚨 Common Contamination Patterns**
+
+#### **❌ TOXIC: External Dependency Contamination**
+```javascript
+// Reading prefixed values from other sections
+const climate = getNumericValue("target_d_20") || getNumericValue("ref_d_20");
+const area = window.TEUI?.StateManager?.getValue("ref_h_15");
+```
+
+#### **✅ CLEAN: External Dependency Pattern A**  
+```javascript
+// Reading clean values - upstream section manages Target/Reference
+const climate = getGlobalNumericValue("d_20");
+const area = getGlobalNumericValue("h_15");
+```
+
+### **🎯 Why This Architecture Works**
+
+1. **No Cross-Contamination**: Each section's state is completely isolated
+2. **Simple Interfaces**: External dependencies use clean, unprefixed field names
+3. **Clear Separation**: Internal state management vs external communication
+4. **Downstream Compatibility**: Reference results available for reporting/comparison
+5. **Mode Awareness**: Each section handles Target vs Reference internally
+
+### **⚠️ Migration Strategy**
+
+When purifying Pattern B contamination:
+
+1. **Keep**: `ref_` prefixed STORAGE of calculated results (`setValue("ref_i_71", ...)`)
+2. **Remove**: `target_`/`ref_` prefixed READING of external dependencies (`getValue("ref_d_20")`)
+3. **Replace**: External reads with `getGlobalNumericValue(fieldId)`
+4. **Preserve**: Cross-section communication patterns for downstream sections
+
+This ensures **clean internal state management** while maintaining **cross-section compatibility**.
+
+---
+
 Each dual-state section must have its own `TargetState` and `ReferenceState` objects, managed by a `ModeManager` facade. This ensures that:
 
 1.  **State Isolation:** Each section's state is completely independent, preventing cross-section interference.
