@@ -2163,9 +2163,13 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate COPh and COPc values based on heating system and HSPF
    */
   function calculateCOPValues(isReferenceCalculation = false) {
-    // ✅ DUAL-ENGINE: Use getSectionValue based on calculation context
-    const hspf = window.TEUI.parseNumeric(getSectionValue("f_113", isReferenceCalculation)) || 0;
-    const systemType = getSectionValue("d_113", isReferenceCalculation);
+    // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
+    const hspf = window.TEUI.parseNumeric(isReferenceCalculation ? 
+      getSectionValue("f_113", true) : 
+      getFieldValue("f_113")) || 0;
+    const systemType = isReferenceCalculation ? 
+      getSectionValue("d_113", true) : 
+      getFieldValue("d_113");
     let copheat = 1;
     if (systemType === "Heatpump" && hspf > 0) {
       copheat = hspf / 3.412;
@@ -2196,9 +2200,12 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate heating system values based on system type and COP
    */
   function calculateHeatingSystem(isReferenceCalculation = false) {
-    // ✅ DUAL-ENGINE: Use getSectionValue based on calculation context
-    const systemType = getSectionValue("d_113", isReferenceCalculation);
-    const tedTarget = window.TEUI.parseNumeric(getGlobalNumericValue("d_127")) || 0;
+    // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
+    // For Reference calculations, use ReferenceState (different defaults)
+    const systemType = isReferenceCalculation ? 
+      getSectionValue("d_113", true) : 
+      getFieldValue("d_113");
+    const tedTarget = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
     let heatingDemand_d114 = 0;
     let heatingSink_l113 = 0;
     let isHeatpump = systemType === "Heatpump";
@@ -2213,7 +2220,9 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     if (isHeatpump) {
       // Recalculate & set COPs when switching TO Heatpump
-      const hspf = window.TEUI.parseNumeric(getSectionValue("f_113", isReferenceCalculation)) || 3.5;
+      const hspf = window.TEUI.parseNumeric(isReferenceCalculation ? 
+        getSectionValue("f_113", true) : 
+        getFieldValue("f_113")) || 3.5;
       const local_copheat = hspf > 0 ? hspf / 3.412 : 1;
       const local_copcool = Math.max(1, local_copheat - 1);
       const local_ceer = 3.412 * local_copcool;
@@ -2348,9 +2357,13 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate cooling system values
    */
   function calculateCoolingSystem(isReferenceCalculation = false) {
-    // ✅ MODE-AWARE: Use ModeManager for section-local values
-    const coolingSystemType = ModeManager.getValue("d_116");
-    const heatingSystemType = ModeManager.getValue("d_113");
+    // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
+    const coolingSystemType = isReferenceCalculation ? 
+      getSectionValue("d_116", true) : 
+      getFieldValue("d_116");
+    const heatingSystemType = isReferenceCalculation ? 
+      getSectionValue("d_113", true) : 
+      getFieldValue("d_113");
     const coolingDemand_m129 =
       window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
@@ -2461,7 +2474,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Now calculate d_120 (Volumetric Rate) as it depends on d_119 and g_118
     const ventMethod = getFieldValue("g_118"); // This was likely causing issues, use getNumericValue/parseNum if needed
     const ratePerPerson_d119 =
-      window.TEUI.parseNumeric(ModeManager.getValue("d_119")) || 0;
+      window.TEUI.parseNumeric(isReferenceCalculation ? 
+        getSectionValue("d_119", true) : 
+        getFieldValue("d_119")) || 0;
     // console.log(`[S13 CalcVentRates] Read d_119 as: ${ratePerPerson_d119}`); // Log value read
     const volume = window.TEUI.parseNumeric(getFieldValue("d_105")) || 0;
     const ach = window.TEUI.parseNumeric(getFieldValue("l_118")) || 0;
@@ -2496,7 +2511,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     setCalculatedValue("f_120", ventRateLs * 2.11888, "number-2dp-comma"); // cfm conversion
     setCalculatedValue("h_120", ventilationRateM3h_h120, "number-2dp-comma"); // m3/hr
 
-    const sre_d118 = window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0;
+    const sre_d118 = window.TEUI.parseNumeric(isReferenceCalculation ? 
+      getSectionValue("d_118", true) : 
+      getFieldValue("d_118")) || 0;
     // Commented out - m_118 is now handled by reference indicator system
     // setCalculatedValue('m_118', sre_d118 / 100, 'percent-0dp');
 
@@ -2510,7 +2527,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     const ventRate = window.TEUI.parseNumeric(getFieldValue("d_120")) || 0;
     const hdd = getGlobalNumericValue("d_20");
     const efficiency =
-      (window.TEUI.parseNumeric(ModeManager.getValue("d_118")) || 0) / 100;
+      (window.TEUI.parseNumeric(isReferenceCalculation ? 
+        getSectionValue("d_118", true) : 
+        getFieldValue("d_118")) || 0) / 100;
     const heatingVentEnergy = (1.21 * ventRate * hdd * 24) / 1000;
     setCalculatedValue("d_121", heatingVentEnergy, "number-2dp-comma");
     const recoveredEnergy = heatingVentEnergy * efficiency;
@@ -2544,7 +2563,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     const coolingSystem_d116 = getFieldValue("d_116");
     const baseConstant = 1.21;
     const sre_d118 =
-      window.TEUI.parseNumeric(ModeManager.getValue("d_118")) / 100 || 0;
+      window.TEUI.parseNumeric(isReferenceCalculation ? 
+        getSectionValue("d_118", true) : 
+        getFieldValue("d_118")) / 100 || 0;
 
     // Logging removed
     // console.warn(`[S13 Debug CoolVent Inputs] d120: ${ventilationRateLs_d120.toFixed(2)}, d21: ${cdd_d21}, i63: ${occupiedHours_i63}, j63: ${totalHours_j63}, i122_factor: ${latentLoadFactor_i122.toFixed(2)}, l119_boost: ${summerBoostFactor.toFixed(2)}, d116_cool: ${coolingSystem_d116}, d118_sre: ${sre_d118.toFixed(2)}`);
