@@ -1069,54 +1069,109 @@ The primary villain of the S12 bug was a subtle interaction between a logical fl
 3.  **Log `setDefaults` vs `initialize`**: Add logs to see if a component is loading from storage or setting defaults.
 4.  **Trace Conditional Logic**: Be wary of functions like `handleConditionalEditability` that run during initialization and can modify the state before the user has a chance to interact.
 
-### **✅ Final Resolution: Mode-Aware Calculation Engine**
+### **✅ CORRECTED: Dual-Engine Calculation Architecture**
 
-After extensive debugging, the root cause of the persistent UI and calculation bugs in Section 12 (stale calculations, "one-way" mode switching) was identified as a fundamental architectural issue with the calculation system.
+**⚠️ CRITICAL CORRECTION**: The previous interpretation of "mode-aware calculations" was fundamentally wrong and caused months of state mixing issues. The correct dual-state architecture follows the working pattern established in S03, S08, S09, S10, S11.
 
-**The Problem:** While the `switchMode` and `resetState` functions existed and worked correctly for input fields, the **calculation engine was not mode-aware**. The `calculateAll()` function was running both Target AND Reference calculations regardless of the current mode, and the individual calculation functions were using global StateManager values instead of the current mode's state values.
+### **🎯 The True Dual-State Architecture**
 
-**The Impact:** Mode switching would correctly update input fields (dropdowns, editable fields) but calculated values would remain stale. Users would see Reference input defaults but Target calculation results, or vice versa.
+The application implements a **three-column performance display** in S01:
 
-**The Root Causes:**
+1. **Reference Column (Red)**: Building code minimum performance ← `ref_` prefixed values
+2. **Target Column (Center)**: Optimized design performance ← unprefixed values  
+3. **Actual Column**: Real utility bill data ← S04 inputs
 
-1. **Non-Mode-Aware calculateAll()**: Always ran both calculation engines instead of just the current mode
-2. **Non-Mode-Aware calculation functions**: Used `getNumericValue()` and `getFieldValue()` instead of `ModeManager.getValue()` for section-local values
-
-**The Solution:** Make the calculation system fully mode-aware:
+### **🔧 Correct Calculation Pattern (from working S11)**
 
 ```javascript
-// ✅ FIXED: Mode-aware calculateAll()
 function calculateAll() {
-  // Only calculate for current mode
-  if (ModeManager.currentMode === "reference") {
-    calculateReferenceModel();
-  } else {
-    calculateTargetModel();
-  }
-}
-
-// ✅ FIXED: Mode-aware calculation functions
-function calculateVolumeMetrics() {
-  // External values (from other sections) - use getGlobalNumericValue()
-  const d85 = parseFloat(getGlobalNumericValue("d_85"));
-  // ... other external values ...
+  console.log("[Section] Running dual-engine calculations...");
   
-  // Section-local values - use ModeManager.getValue()
-  const d105_vol = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_105")) || 0);
+  // ✅ ALWAYS run BOTH engines in parallel
+  calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
+  calculateTargetModel();    // Reads TargetState → stores unprefixed
+  
+  console.log("[Section] Dual-engine calculations complete");
 }
 
-function calculateNFactor() {
-  const climateZone = parseFloat(getGlobalNumericValue("j_19")) || 6; // External
-  const stories = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_103")) || 0) || 1.5; // Local
-  const shielding = ModeManager.getValue("g_103") || "Normal"; // Local
+function calculateReferenceModel() {
+  // Use Reference state inputs to calculate Reference performance
+  // Store results with ref_ prefix for downstream sections
+  window.TEUI.StateManager.setValue("ref_i_104", value, "calculated");
+}
+
+function calculateTargetModel() {
+  // Use Target state inputs to calculate Target performance  
+  // Store results unprefixed for downstream sections
+  setCalculatedValue("i_104", value);
 }
 ```
 
-**Critical Pattern:** Use `ModeManager.getValue()` for **section-local** values and `getGlobalNumericValue()` for **external dependencies**.
+### **🚨 What Mode Switching Actually Controls**
 
-**Conclusion for Future Refactors:** The ModeManager structure alone is insufficient. All calculation functions must be updated to use `ModeManager.getValue()` for section-local fields to ensure proper mode-aware behavior. Simply copying the ModeManager from working sections without updating the calculation logic will result in the same stale calculation issue.
+**Mode switching is a UI filter, NOT a calculation trigger:**
+
+- **Target Mode**: User edits Target input values, sees Target calculated outputs
+- **Reference Mode**: User edits Reference input values, sees Reference calculated outputs
+- **Calculations**: ALWAYS run both engines to maintain both data streams
+
+### **📋 S12 & S13 Correction Workplan**
+
+Both S12 and S13 were incorrectly implemented with "mode-aware calculations" that broke the dual-stream architecture. They need correction to follow the working S11 pattern.
+
+#### **Phase 1: S12 Correction** 
+
+**Issues to Fix:**
+- `calculateAll()` only runs one engine based on mode
+- No `ref_` prefixed output storage for downstream sections
+- Mode switching affects calculation streams instead of just UI
+
+**Correction Steps:**
+1. **Restore dual-engine `calculateAll()`**:
+   ```javascript
+   function calculateAll() {
+     calculateReferenceModel(); // Always → ref_ prefixed
+     calculateTargetModel();    // Always → unprefixed
+   }
+   ```
+
+2. **Update calculation functions** to accept `isReferenceCalculation` parameter like S11
+3. **Add Reference output storage** with `ref_` prefixes for S14/S15 consumption
+4. **Test**: Verify Reference column updates in S01, Target column stable
+
+#### **Phase 2: S13 Correction**
+
+**Issues to Fix:**
+- Same calculation engine problems as S12
+- Complex cooling calculations need dual-stream outputs
+- Missing `ref_` storage for mechanical load results
+
+**Correction Steps:**
+1. **Apply same dual-engine pattern** as S12 correction
+2. **Ensure cooling calculations** run for both Target and Reference states
+3. **Add Reference mechanical load outputs** with `ref_` prefixes
+4. **Test**: Verify both heating and cooling systems populate correct columns
+
+#### **Phase 3: Validation**
+
+**Success Criteria:**
+- ✅ Reference toggle updates **Reference column** (red values) in S01
+- ✅ Target edits update **Target column** (center values) in S01  
+- ✅ No cross-contamination between streams
+- ✅ Downstream sections (S14, S15, S04) receive both data streams
+
+### **📚 Key Lessons Learned**
+
+1. **Never break the dual-stream architecture** - both engines must always run
+2. **Mode switching = UI filter only** - not a calculation trigger
+3. **Follow working section patterns** (S11) rather than inventing new approaches
+4. **Test with S01 three-column display** to verify correct data flow
+
+This correction restores the intended architecture and ends the months of state mixing issues.
 
 ### **📋 Next Steps for S12 Completion & 'Robot Fingers'**
+
+**Note**: This section addresses thermal bridge penalty communication between S11 and S12, which is a separate issue from the dual-state calculation architecture above. These options should be considered **after** completing the dual-engine correction.
 
 With the core state corruption and UI bugs resolved, the final challenge is to implement a performant and architecturally sound connection between the Section 11 Thermal Bridge Penalty slider (`d_97`) and the U-value calculations in Section 12. The original "fence-jumping" direct call, while functional, is architecturally risky. The event-listener approach has proven unreliable due to complex timing issues.
 
