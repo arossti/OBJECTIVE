@@ -1575,10 +1575,8 @@ window.TEUI.SectionModules.sect11 = (function () {
           );
 
           // LIVE FEEDBACK: Direct calculation calls for immediate visual response
-          // This ensures g_101/g_102 update in real-time during slider drag
-          calculateAll(); // Update Section 11 calculations
           if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
-            window.TEUI.SectionModules.sect12.calculateCombinedUValue(); // Update g_101, g_102 immediately
+            window.TEUI.SectionModules.sect12.calculateCombinedUValue();
           }
         });
 

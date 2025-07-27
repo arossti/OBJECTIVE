@@ -1069,6 +1069,45 @@ The primary villain of the S12 bug was a subtle interaction between a logical fl
 3.  **Log `setDefaults` vs `initialize`**: Add logs to see if a component is loading from storage or setting defaults.
 4.  **Trace Conditional Logic**: Be wary of functions like `handleConditionalEditability` that run during initialization and can modify the state before the user has a chance to interact.
 
+### **📋 Next Steps for S12 Completion & 'Robot Fingers'**
+
+With the core state corruption and UI bugs resolved, the final challenge is to implement a performant and architecturally sound connection between the Section 11 Thermal Bridge Penalty slider (`d_97`) and the U-value calculations in Section 12. The original "fence-jumping" direct call, while functional, is architecturally risky. The event-listener approach has proven unreliable due to complex timing issues.
+
+Here are three potential paths forward:
+
+#### **Option 1: The "Pragmatic Fence-Jump" (Refined Direct Call)**
+
+This approach acknowledges that the direct call worked and focuses on making it safer and more explicit.
+
+*   **How:** Restore the direct call from S11 to a function in S12, but instead of calling `calculateCombinedUValue` directly, call a new, dedicated function like `TEUI.SectionModules.sect12.updateUValuesFromSlider(newValue)`.
+*   **Inside S12:** This new function would be very lightweight. It would *only* calculate the two affected U-values (`g_101`, `g_102`) and update their DOM elements. It would **not** trigger a full `calculateAll()` in S12, preventing calculation storms.
+*   **The Final Update:** The `change` event on the slider (when the user lets go) would still fire a standard `StateManager` event to trigger the full, proper calculation chain for all dependent values.
+*   **Pros:** High likelihood of success, excellent performance. Explicitly naming the function makes the architectural exception clear.
+*   **Cons:** Still technically violates the principle of section sovereignty.
+
+#### **Option 2: The "Direct State Injection" (A Better Listener)**
+
+This is a more architecturally pure approach that aims to fix the flaws in our previous listener attempt.
+
+*   **How:** Use the `StateManager` listener in S12, but make the callback function much smarter and more direct.
+*   **Inside the S12 Listener:** When the `d_97` or `ref_d_97` event is received, the callback function will *immediately* and *directly* call a lightweight calculation for only the affected U-values, just as in Option 1. It will read the new slider value directly from the event payload.
+*   **Why It Might Work Now:** Our previous attempt tried to trigger a full `calculateAll`, which caused instability. By making the listener's action very small and targeted, we may get the same performance benefit as the direct call but keep the communication flowing through the proper channels.
+*   **Pros:** Architecturally pure; all communication is decoupled.
+*   **Cons:** Requires careful implementation to avoid the timing issues and instability we've already encountered.
+
+#### **Option 3: Merge U-Value Calculations into Section 11 (User Preferred)**
+
+This is the most robust solution, as it solves the communication problem by eliminating it entirely. Given the persistent difficulties in linking S11 and S12, this is the recommended path forward.
+
+*   **How:** Move the relevant rows (101, 102, and the total row 104) and their corresponding calculation logic (`calculateCombinedUValue`) from `4011-Section12.js` directly into `4011-Section11.js`.
+*   **Rationale:** Section 11 is fundamentally about the building envelope's transmission losses. The aggregate U-values are a direct summation and weighted average of the components defined in S11, making them a logical "total" for that section.
+*   **Impact:**
+    *   **Section 11:** Becomes the sole owner of all transmission-related data, from individual components to the final weighted average U-values. The `d_97` slider and its effects are now entirely local to the section, eliminating all cross-section communication issues for this feature.
+    *   **Section 12:** Becomes a leaner, more focused module dedicated purely to volume, surface area ratios, and airtightness metrics (`d_103` through `d_110`). Its complexity is significantly reduced.
+    *   **DOM/Import/Export:** The DOM structure and field IDs (`d_101`, `g_101`, etc.) remain unchanged, ensuring that import/export functionality and Excel parity are completely unaffected.
+*   **Pros:** Permanently eliminates the "robot fingers" problem. Architecturally clean and logical. Reduces the complexity of S12, making it easier to maintain.
+*   **Cons:** Requires a more significant, albeit straightforward, refactoring effort than the other options.
+
 ---
 
 **⚠️ IMPORTANT**: This section is a **work in progress** and should be updated as S12 issues are resolved. Future implementers should consider the **cost/benefit** of continuing to debug S12 vs starting fresh with proven patterns.

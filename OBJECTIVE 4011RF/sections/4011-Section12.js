@@ -1261,10 +1261,6 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ CRITICAL: Read TB penalty from S11's Pattern A system with safety checks
     // 🚨 PERFORMANCE NOTE: Robot fingers connection is working but laggy.
     // TODO: Optimize for production - consider direct event binding vs StateManager cascade
-    
-    // AT: START OF DEBUG COMMENT BLOCK - Temporarily disabling d_97 dependency to isolate S12 bugs.
-    const d97_tbPenaltyPercent = 0; // Set to 0 to neutralize its effect.
-    /*
     let d97_tbPenaltyPercent;
     if (
       window.TEUI?.sect11?.ModeManager &&
@@ -1296,9 +1292,6 @@ window.TEUI.SectionModules.sect12 = (function () {
       // Fallback to StateManager for compatibility
       d97_tbPenaltyPercent = parseFloat(getNumericValue("d_97")) || 50;
     }
-    */
-    // AT: END OF DEBUG COMMENT BLOCK
-
 
     // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
     // We must divide by 100 to get the decimal factor (0.2) before using in calculations
