@@ -152,44 +152,30 @@ window.TEUI.SectionModules.sect12 = (function () {
       return this.getCurrentState().getValue(fieldId);
     },
     setValue: function (fieldId, value, source = "user") {
-      console.log(
-        `S12: ModeManager.setValue(${fieldId}, ${value}) in ${this.currentMode} mode`,
-      );
       this.getCurrentState().setValue(fieldId, value, source);
-      console.log(
-        `S12: State after setValue:`,
-        this.getCurrentState().state[fieldId],
-      );
 
       // BRIDGE: For backward compatibility, sync Target changes to global StateManager
       if (this.currentMode === "target") {
-        console.log(`S12: Syncing to StateManager: ${fieldId} = ${value}`);
         window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
       }
     },
     refreshUI: function () {
-      console.log(`S12: refreshUI called in ${this.currentMode} mode`);
       const sectionElement = document.getElementById("volumeSurfaceMetrics");
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      console.log(`S12: Current state data:`, currentState.state);
 
       // S12-specific fields to sync
       const fieldsToSync = ["d_103", "g_103", "d_105", "d_108", "g_109"];
 
       fieldsToSync.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
-        console.log(`S12: refreshUI - ${fieldId} = ${stateValue}`);
         if (stateValue === undefined || stateValue === null) return;
 
         const element = sectionElement.querySelector(
           `[data-field-id="${fieldId}"]`,
         );
-        if (!element) {
-          console.log(`S12: Element not found for ${fieldId}`);
-          return;
-        }
+        if (!element) return;
 
         // ✅ PATTERN A: Simple dropdown pattern (like S10) - NO SAFETY CHECKS
         const dropdown = element.matches("select")
@@ -197,10 +183,8 @@ window.TEUI.SectionModules.sect12 = (function () {
           : element.querySelector("select");
 
         if (dropdown) {
-          console.log(`S12: Setting dropdown ${fieldId} to ${stateValue}`);
           dropdown.value = stateValue; // Simple and direct - like working sections
         } else if (element.hasAttribute("contenteditable")) {
-          console.log(`S12: Setting editable ${fieldId} to ${stateValue}`);
           element.textContent = stateValue;
         }
       });
@@ -1174,19 +1158,20 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   function calculateVolumeMetrics() {
     // Get all values with full precision using parseFloat
-    const d85 = parseFloat(getNumericValue("d_85"));
-    const d86 = parseFloat(getNumericValue("d_86"));
-    const d87 = parseFloat(getNumericValue("d_87"));
-    const d88 = parseFloat(getNumericValue("d_88"));
-    const d89 = parseFloat(getNumericValue("d_89"));
-    const d90 = parseFloat(getNumericValue("d_90"));
-    const d91 = parseFloat(getNumericValue("d_91"));
-    const d92 = parseFloat(getNumericValue("d_92"));
-    const d93 = parseFloat(getNumericValue("d_93"));
-    const d94 = parseFloat(getNumericValue("d_94"));
-    const d95 = parseFloat(getNumericValue("d_95"));
-    const d96 = parseFloat(getNumericValue("d_96"));
-    const d105_vol = parseFloat(getNumericValue("d_105"));
+    const d85 = parseFloat(getGlobalNumericValue("d_85"));
+    const d86 = parseFloat(getGlobalNumericValue("d_86"));
+    const d87 = parseFloat(getGlobalNumericValue("d_87"));
+    const d88 = parseFloat(getGlobalNumericValue("d_88"));
+    const d89 = parseFloat(getGlobalNumericValue("d_89"));
+    const d90 = parseFloat(getGlobalNumericValue("d_90"));
+    const d91 = parseFloat(getGlobalNumericValue("d_91"));
+    const d92 = parseFloat(getGlobalNumericValue("d_92"));
+    const d93 = parseFloat(getGlobalNumericValue("d_93"));
+    const d94 = parseFloat(getGlobalNumericValue("d_94"));
+    const d95 = parseFloat(getGlobalNumericValue("d_95"));
+    const d96 = parseFloat(getGlobalNumericValue("d_96"));
+    // ✅ MODE-AWARE: Use ModeManager for section-local values
+    const d105_vol = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_105")) || 0);
 
     // Calculate with full precision
     const d101_areaAir = d85 + d86 + d87 + d88 + d89 + d90 + d91 + d92 + d93;
@@ -1213,50 +1198,50 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Get u-values directly where available, otherwise calculate from RSI (1/RSI)
     // Use parseFloat to maintain full floating point precision
     const g85 =
-      parseFloat(getNumericValue("g_85")) ||
-      1 / parseFloat(getNumericValue("f_85") || 1);
+      parseFloat(getGlobalNumericValue("g_85")) ||
+      1 / parseFloat(getGlobalNumericValue("f_85") || 1);
     const g86 =
-      parseFloat(getNumericValue("g_86")) ||
-      1 / parseFloat(getNumericValue("f_86") || 1);
+      parseFloat(getGlobalNumericValue("g_86")) ||
+      1 / parseFloat(getGlobalNumericValue("f_86") || 1);
     const g87 =
-      parseFloat(getNumericValue("g_87")) ||
-      1 / parseFloat(getNumericValue("f_87") || 1);
+      parseFloat(getGlobalNumericValue("g_87")) ||
+      1 / parseFloat(getGlobalNumericValue("f_87") || 1);
     const g88 =
-      parseFloat(getNumericValue("g_88")) ||
-      1 / parseFloat(getNumericValue("f_88") || 1);
+      parseFloat(getGlobalNumericValue("g_88")) ||
+      1 / parseFloat(getGlobalNumericValue("f_88") || 1);
     const g89 =
-      parseFloat(getNumericValue("g_89")) ||
-      1 / parseFloat(getNumericValue("f_89") || 1);
+      parseFloat(getGlobalNumericValue("g_89")) ||
+      1 / parseFloat(getGlobalNumericValue("f_89") || 1);
     const g90 =
-      parseFloat(getNumericValue("g_90")) ||
-      1 / parseFloat(getNumericValue("f_90") || 1);
+      parseFloat(getGlobalNumericValue("g_90")) ||
+      1 / parseFloat(getGlobalNumericValue("f_90") || 1);
     const g91 =
-      parseFloat(getNumericValue("g_91")) ||
-      1 / parseFloat(getNumericValue("f_91") || 1);
+      parseFloat(getGlobalNumericValue("g_91")) ||
+      1 / parseFloat(getGlobalNumericValue("f_91") || 1);
     const g92 =
-      parseFloat(getNumericValue("g_92")) ||
-      1 / parseFloat(getNumericValue("f_92") || 1);
+      parseFloat(getGlobalNumericValue("g_92")) ||
+      1 / parseFloat(getGlobalNumericValue("f_92") || 1);
     const g93 =
-      parseFloat(getNumericValue("g_93")) ||
-      1 / parseFloat(getNumericValue("f_93") || 1);
+      parseFloat(getGlobalNumericValue("g_93")) ||
+      1 / parseFloat(getGlobalNumericValue("f_93") || 1);
     const g94 =
-      parseFloat(getNumericValue("g_94")) ||
-      1 / parseFloat(getNumericValue("f_94") || 1);
+      parseFloat(getGlobalNumericValue("g_94")) ||
+      1 / parseFloat(getGlobalNumericValue("f_94") || 1);
     const g95 =
-      parseFloat(getNumericValue("g_95")) ||
-      1 / parseFloat(getNumericValue("f_95") || 1);
+      parseFloat(getGlobalNumericValue("g_95")) ||
+      1 / parseFloat(getGlobalNumericValue("f_95") || 1);
 
-    const d85 = parseFloat(getNumericValue("d_85"));
-    const d86 = parseFloat(getNumericValue("d_86"));
-    const d87 = parseFloat(getNumericValue("d_87"));
-    const d88 = parseFloat(getNumericValue("d_88"));
-    const d89 = parseFloat(getNumericValue("d_89"));
-    const d90 = parseFloat(getNumericValue("d_90"));
-    const d91 = parseFloat(getNumericValue("d_91"));
-    const d92 = parseFloat(getNumericValue("d_92"));
-    const d93 = parseFloat(getNumericValue("d_93"));
-    const d94 = parseFloat(getNumericValue("d_94"));
-    const d95 = parseFloat(getNumericValue("d_95"));
+    const d85 = parseFloat(getGlobalNumericValue("d_85"));
+    const d86 = parseFloat(getGlobalNumericValue("d_86"));
+    const d87 = parseFloat(getGlobalNumericValue("d_87"));
+    const d88 = parseFloat(getGlobalNumericValue("d_88"));
+    const d89 = parseFloat(getGlobalNumericValue("d_89"));
+    const d90 = parseFloat(getGlobalNumericValue("d_90"));
+    const d91 = parseFloat(getGlobalNumericValue("d_91"));
+    const d92 = parseFloat(getGlobalNumericValue("d_92"));
+    const d93 = parseFloat(getGlobalNumericValue("d_93"));
+    const d94 = parseFloat(getGlobalNumericValue("d_94"));
+    const d95 = parseFloat(getGlobalNumericValue("d_95"));
 
     // ✅ CRITICAL: Read TB penalty from S11's Pattern A system with safety checks
     // 🚨 PERFORMANCE NOTE: Robot fingers connection is working but laggy.
@@ -1336,13 +1321,13 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   function calculateWWR() {
     // Get values with full precision
-    const d86 = parseFloat(getNumericValue("d_86"));
-    const d88 = parseFloat(getNumericValue("d_88"));
-    const d89 = parseFloat(getNumericValue("d_89"));
-    const d90 = parseFloat(getNumericValue("d_90"));
-    const d91 = parseFloat(getNumericValue("d_91"));
-    const d92 = parseFloat(getNumericValue("d_92"));
-    const d93 = parseFloat(getNumericValue("d_93"));
+    const d86 = parseFloat(getGlobalNumericValue("d_86"));
+    const d88 = parseFloat(getGlobalNumericValue("d_88"));
+    const d89 = parseFloat(getGlobalNumericValue("d_89"));
+    const d90 = parseFloat(getGlobalNumericValue("d_90"));
+    const d91 = parseFloat(getGlobalNumericValue("d_91"));
+    const d92 = parseFloat(getGlobalNumericValue("d_92"));
+    const d93 = parseFloat(getGlobalNumericValue("d_93"));
 
     // Calculate with full precision
     const windowDoorArea = d88 + d89 + d90 + d91 + d92 + d93;
@@ -1361,13 +1346,13 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateACH50Target() {
-    // Get method value
-    const d108_method = getFieldValue("d_108");
+    // ✅ MODE-AWARE: Use ModeManager for section-local values
+    const d108_method = ModeManager.getValue("d_108");
 
     // Get numeric values with full precision
-    const g109_measured = parseFloat(getNumericValue("g_109"));
+    const g109_measured = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("g_109")) || 0);
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
-    const d105_vol = parseFloat(getNumericValue("d_105"));
+    const d105_vol = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_105")) || 0);
 
     // Target values for different methods
     let g108_nrl50Target = 0;
@@ -1428,7 +1413,8 @@ window.TEUI.SectionModules.sect12 = (function () {
   function calculateAe10() {
     // Get values with full precision
     const ach50Target = parseFloat(getNumericValue("d_109"));
-    const volume = parseFloat(getNumericValue("d_105"));
+    // ✅ MODE-AWARE: Use ModeManager for section-local values  
+    const volume = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_105")) || 0);
 
     // Calculate with full precision
     const ae10 = volume > 0 ? (ach50Target * volume) / 3600 : 0;
@@ -1446,9 +1432,10 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   function calculateNFactor() {
     // Get values with full precision
-    const climateZone = parseFloat(getNumericValue("j_19")) || 6;
-    const stories = parseFloat(getNumericValue("d_103")) || 1.5;
-    const shielding = getFieldValue("g_103") || "Normal";
+    const climateZone = parseFloat(getGlobalNumericValue("j_19")) || 6;
+    // ✅ MODE-AWARE: Use ModeManager for section-local values
+    const stories = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_103")) || 0) || 1.5;
+    const shielding = ModeManager.getValue("g_103") || "Normal";
 
     // Determine zone number
     let zoneNum = 2;
@@ -1520,7 +1507,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     }
 
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
-    const h15_conditionedArea = parseFloat(getNumericValue("h_15")); // Get Conditioned Floor Area from S2
+    const h15_conditionedArea = parseFloat(getGlobalNumericValue("h_15")); // Get Conditioned Floor Area from S2
 
     // Constants from Excel formula structure
     const leakageFactor = 1.21; // Factor representing conversion and heat capacity (Ws/m³K?)
@@ -1640,41 +1627,52 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    // console.log("[Section12] Running dual-engine calculations..."); // Comment out
+    console.log(`[Section12] Running calculations in ${ModeManager.currentMode} mode`);
 
-    calculateReferenceModel();
-    calculateTargetModel();
+    // ✅ MODE-AWARE: Only calculate for current mode
+    if (ModeManager.currentMode === "reference") {
+      calculateReferenceModel();
+    } else {
+      calculateTargetModel();
+    }
 
-    // console.log("[Section12] Dual-engine calculations complete"); // Comment out
+    console.log("[Section12] Mode-aware calculations complete");
   }
 
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state
-   * Stores results with ref_ prefix to keep separate from Target values
+   * Uses Reference state values for section-local inputs
    */
   function calculateReferenceModel() {
-    // console.log("[Section12] Running Reference Model calculations..."); // Comment out
+    console.log("[Section12] Running Reference Model calculations...");
 
     try {
-      // ✅ PATTERN A: Calculate Reference values using clean climate data access
+      // ✅ MODE-AWARE: Calculate all metrics using Reference state values
+      calculateVolumeMetrics();
+      calculateCombinedUValue();
+      calculateWWR();
+      calculateNFactor();
+      calculateACH50Target();
+      calculateAe10();
       calculateAirLeakageHeatLoss(true); // true = isReferenceCalculation
       calculateEnvelopeHeatLossGain(true); // true = isReferenceCalculation
+      calculateEnvelopeTotals();
 
-      // Note: Pattern A doesn't need ref_ prefixed storage - Reference calculations
-      // are used internally for comparison only, not for cross-section communication
+      // Update reference indicators after all calculations
+      updateAllReferenceIndicators();
     } catch (error) {
       console.error("Error during Section 12 calculateReferenceModel:", error);
     }
 
-    // console.log("[Section12] Reference Model calculations stored"); // Comment out
+    console.log("[Section12] Reference Model calculations complete");
   }
 
   /**
-   * TARGET MODEL ENGINE: Calculate all values using Application state
-   * This is the existing calculation logic
+   * TARGET MODEL ENGINE: Calculate all values using Target state
+   * Uses Target state values for section-local inputs
    */
   function calculateTargetModel() {
-    // console.log("[Section12] Running Target Model calculations..."); // Comment out
+    console.log("[Section12] Running Target Model calculations...");
 
     try {
       calculateVolumeMetrics();
@@ -1693,7 +1691,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       console.error("Error during Section 12 calculateTargetModel:", error);
     }
 
-    // console.log("[Section12] Target Model calculations complete"); // Comment out
+    console.log("[Section12] Target Model calculations complete");
   }
 
   //==========================================================================
@@ -1727,30 +1725,22 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // ✅ S10 PROVEN PATTERN: Inline dropdown handlers (like working sections)
     const dropdowns = sectionElement.querySelectorAll("select");
-    console.log(`S12: Found ${dropdowns.length} dropdowns to initialize`);
     dropdowns.forEach((dropdown) => {
       // Prevent attaching listeners multiple times
       if (dropdown.hasS12Listener) return;
 
       dropdown.addEventListener("change", function () {
         const fieldId = this.getAttribute("data-field-id");
-        console.log(`S12: Dropdown ${fieldId} changed to: ${this.value}`);
         if (!fieldId) return;
 
-        console.log(
-          `S12: Calling ModeManager.setValue(${fieldId}, ${this.value})`,
-        );
         ModeManager.setValue(fieldId, this.value, "user-modified");
 
         // Handle conditional g_109 logic for d_108
         if (fieldId === "d_108") {
-          console.log(`S12: Calling handleConditionalEditability for d_108`);
           handleConditionalEditability();
         }
 
-        console.log(`S12: Calling calculateAll()`);
         calculateAll();
-        console.log(`S12: calculateAll() completed`);
       });
       dropdown.hasS12Listener = true;
     });

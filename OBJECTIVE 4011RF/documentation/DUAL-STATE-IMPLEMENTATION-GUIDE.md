@@ -1069,6 +1069,53 @@ The primary villain of the S12 bug was a subtle interaction between a logical fl
 3.  **Log `setDefaults` vs `initialize`**: Add logs to see if a component is loading from storage or setting defaults.
 4.  **Trace Conditional Logic**: Be wary of functions like `handleConditionalEditability` that run during initialization and can modify the state before the user has a chance to interact.
 
+### **✅ Final Resolution: Mode-Aware Calculation Engine**
+
+After extensive debugging, the root cause of the persistent UI and calculation bugs in Section 12 (stale calculations, "one-way" mode switching) was identified as a fundamental architectural issue with the calculation system.
+
+**The Problem:** While the `switchMode` and `resetState` functions existed and worked correctly for input fields, the **calculation engine was not mode-aware**. The `calculateAll()` function was running both Target AND Reference calculations regardless of the current mode, and the individual calculation functions were using global StateManager values instead of the current mode's state values.
+
+**The Impact:** Mode switching would correctly update input fields (dropdowns, editable fields) but calculated values would remain stale. Users would see Reference input defaults but Target calculation results, or vice versa.
+
+**The Root Causes:**
+
+1. **Non-Mode-Aware calculateAll()**: Always ran both calculation engines instead of just the current mode
+2. **Non-Mode-Aware calculation functions**: Used `getNumericValue()` and `getFieldValue()` instead of `ModeManager.getValue()` for section-local values
+
+**The Solution:** Make the calculation system fully mode-aware:
+
+```javascript
+// ✅ FIXED: Mode-aware calculateAll()
+function calculateAll() {
+  // Only calculate for current mode
+  if (ModeManager.currentMode === "reference") {
+    calculateReferenceModel();
+  } else {
+    calculateTargetModel();
+  }
+}
+
+// ✅ FIXED: Mode-aware calculation functions
+function calculateVolumeMetrics() {
+  // External values (from other sections) - use getGlobalNumericValue()
+  const d85 = parseFloat(getGlobalNumericValue("d_85"));
+  // ... other external values ...
+  
+  // Section-local values - use ModeManager.getValue()
+  const d105_vol = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_105")) || 0);
+}
+
+function calculateNFactor() {
+  const climateZone = parseFloat(getGlobalNumericValue("j_19")) || 6; // External
+  const stories = parseFloat(window.TEUI.parseNumeric(ModeManager.getValue("d_103")) || 0) || 1.5; // Local
+  const shielding = ModeManager.getValue("g_103") || "Normal"; // Local
+}
+```
+
+**Critical Pattern:** Use `ModeManager.getValue()` for **section-local** values and `getGlobalNumericValue()` for **external dependencies**.
+
+**Conclusion for Future Refactors:** The ModeManager structure alone is insufficient. All calculation functions must be updated to use `ModeManager.getValue()` for section-local fields to ensure proper mode-aware behavior. Simply copying the ModeManager from working sections without updating the calculation logic will result in the same stale calculation issue.
+
 ### **📋 Next Steps for S12 Completion & 'Robot Fingers'**
 
 With the core state corruption and UI bugs resolved, the final challenge is to implement a performant and architecturally sound connection between the Section 11 Thermal Bridge Penalty slider (`d_97`) and the U-value calculations in Section 12. The original "fence-jumping" direct call, while functional, is architecturally risky. The event-listener approach has proven unreliable due to complex timing issues.
