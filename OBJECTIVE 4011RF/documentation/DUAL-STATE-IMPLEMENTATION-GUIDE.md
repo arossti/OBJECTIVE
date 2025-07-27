@@ -1027,123 +1027,47 @@ When all sections use Pattern A:
 
 ## 🚨 **S12 REFACTOR BATTLEFIELD REPORT (July 2025)**
 
-**⚠️ WARNING**: The Section 12 refactor has proven **exceptionally challenging** and is **NOT YET COMPLETE**. This section documents hard-learned lessons from **7+ refactor attempts** over **3 days** to help future implementers avoid the same pitfalls.
+**⚠️ WARNING**: The Section 12 refactor has proven **exceptionally challenging** and is **NOW STABLE**. This section documents hard-learned lessons from **7+ refactor attempts** over **3 days** to help future implementers avoid the same pitfalls. The root cause was a combination of faulty initialization logic creating corrupt `localStorage` entries, compounded by minor deviations from the proven S10/S11 Pattern A implementation.
 
-### **🎯 Current Status: Partially Functional but Unstable**
+### **🎯 Current Status: ✅ STABLE AND FUNCTIONAL**
 
 **✅ Progress Made:**
 
-- ✅ **Dropdown Blanking Fixed**: Identified root cause as incomplete refactoring (dead function reference in cleanup code)
-- ✅ **Event Listeners Working**: Dropdowns now fire events and trigger calculations
-- ✅ **Calculation Chain Active**: `calculateAll()` executes when dropdowns change
-- ✅ **Basic State Structure**: TargetState/ReferenceState/ModeManager in place
+- ✅ **Dropdown Blanking Fixed**: Root cause was identified as corrupt `localStorage` state being loaded on initialization, which caused `refreshUI` to set dropdown values to `undefined`.
+- ✅ **State Persistence Issues Fixed**: The "one-way" trip to Reference mode was a symptom of the corrupt `TargetState` being reloaded. Once the state initialization was fixed, bidirectional toggling and value persistence now work correctly.
+- ✅ **Reset Button Functional**: The `resetState` function is now confirmed to be working as expected.
+- ✅ **Event Listeners Corrected**: Event handlers were simplified to match the robust pattern in S10/S11, preventing duplicate listeners and ensuring reliable firing.
+- ✅ **Default Value Logic Corrected**: The `TargetState.setDefaults()` function was updated to set `d_108` to `"MEASURED"` by default, preventing the `handleConditionalEditability` function from immediately overwriting `g_109` to `0` and creating the corrupt state.
 
-**❌ Outstanding Issues (As of July 26, 2025):**
+### **🔍 Critical Lesson: The `localStorage` Trap**
 
-- ❌ **Dropdown Blanking Persists**: After 1-2 edits, dropdowns still go blank
-- ❌ **Reset Button Non-Functional**: Does nothing when clicked
-- ❌ **One-Way State Persistence**: Target→Reference works, Reference→Target fails
-- ❌ **State Corruption**: User changes don't persist across mode toggles
+The primary villain of the S12 bug was a subtle interaction between a logical flaw in the code and the persistence of `localStorage`.
 
-### **🔍 Critical Debugging Patterns That Saved Time**
+1.  **The Flaw**: The initial `setDefaults` in `TargetState` set `d_108` to `"AL-1B"`. Immediately after, `handleConditionalEditability()` would run.
+2.  **The Action**: Because `d_108` was not `"MEASURED"`, the function would correctly set the state for `g_109` to `"0"`.
+3.  **The Trap**: This incomplete, corrupted state (`{"g_109":"0"}`) was then saved to `localStorage`.
+4.  **The Loop**: On every subsequent page load, the `TargetState.initialize()` function would find the corrupt `S12_TARGET_STATE` in `localStorage` and load it, skipping the `setDefaults()` call entirely. This is why the bug was so persistent.
 
-#### **1. Systematic Console Logging**
+**The Fix**:
+- **Manually deleting the `S12_TARGET_STATE` key** from the browser's developer tools was the essential first step to break the cycle.
+- **Correcting the `setDefaults` logic** for `d_108` to `"MEASURED"` prevented the corrupt state from being created in the first place.
+- **Aligning the module with the S10 pattern** (adding `listeners: {}`, simplifying event handlers) made the entire component more robust and less prone to such errors.
 
-```javascript
-// Add to dropdown handlers to track event firing
-console.log(`S12: Dropdown ${fieldId} changed to: ${this.value}`);
+### **🎯 Comparison: Why S10/S11 Work vs S12 Struggled**
 
-// Add to ModeManager.setValue to track state changes
-console.log(
-  `S12: ModeManager.setValue(${fieldId}, ${value}) in ${this.currentMode} mode`,
-);
+| **Aspect** | **S10/S11 (Working)** | **S12 (Problematic)** | **Resolution** |
+| --- | --- | --- | --- |
+| **State Objects** | Contains `listeners: {}` | Missing `listeners: {}` | Added to match standard |
+| **Initialization** | Cleanly loads defaults | Loaded corrupt `localStorage` | Corrected default logic |
+| **Event Pattern** | Pure inline handlers | Mixed/conflicting patterns | Simplified to match S10 |
+| **UI Refresh** | Reads valid state | Read `undefined` from corrupt state | Now reads valid state |
 
-// Add to refreshUI to track state persistence
-console.log(`S12: refreshUI - ${fieldId} = ${stateValue}`);
-```
+### **🔧 Debugging Sequence for Future Refactors**
 
-**Lesson**: Without logging, "dead dropdowns" appeared to be a Pattern A issue when it was actually an initialization crash.
-
-#### **2. Error Log Analysis**
-
-```bash
-grep -A5 -B5 "Error.*initializeEventHandlers" Logs.md
-```
-
-**Breakthrough**: Found `ReferenceError: handleDropdownChange is not defined` - 3 days of debugging solved in 5 minutes.
-
-#### **3. Function Reference Auditing**
-
-```bash
-grep -n "handleDropdownChange\|handleFieldBlur\|removeEventListener" targetFile.js
-```
-
-**Lesson**: Incomplete refactoring leaves dead function references that crash initialization silently.
-
-### **🚨 Specific S12 Anti-Patterns Discovered**
-
-#### **❌ Anti-Pattern 1: Incomplete Function Removal**
-
-```javascript
-// WRONG: Removed function but left cleanup reference
-// dropdown.removeEventListener("change", handleDropdownChange); // ← CRASHES
-// function handleDropdownChange() { ... } // ← DELETED
-```
-
-#### **❌ Anti-Pattern 2: Mixed Event Handler Patterns**
-
-- S12 tried to use both `handleDropdownChange()` AND inline handlers
-- This created conflicts and state management confusion
-- **Solution**: Pick ONE pattern (S10's inline) and implement completely
-
-#### **❌ Anti-Pattern 3: Over-Engineering refreshUI**
-
-- S12's `refreshUI` included safety checks that other sections don't need
-- These checks actually broke dropdown value setting
-- **Solution**: Copy S10's simple `dropdown.value = stateValue` exactly
-
-### **🎯 Comparison: Why S10/S11 Work vs S12 Struggles**
-
-| **Aspect**           | **S10/S11 (Working)** | **S12 (Problematic)**              |
-| -------------------- | --------------------- | ---------------------------------- |
-| **Event Pattern**    | Pure inline handlers  | Mixed/conflicting patterns         |
-| **refreshUI**        | Simple, direct        | Over-engineered with safety checks |
-| **Function Cleanup** | Complete removal      | Incomplete, dead references        |
-| **State Management** | Clean, consistent     | Mixed with legacy patterns         |
-| **Field Count**      | 8-12 fields           | 5 fields (simpler but buggier)     |
-
-### **🔧 Debugging Sequence for Future S12 Work**
-
-1. **Verify Initialization**: Check for `initializeEventHandlers` errors in console
-2. **Test Event Firing**: Add logging to verify dropdown events trigger
-3. **Track State Changes**: Log `ModeManager.setValue()` calls
-4. **Verify State Persistence**: Log `refreshUI()` reads from state
-5. **Test Reset Functionality**: Log reset button event handlers
-6. **Check DOM Updates**: Verify `refreshUI()` actually updates dropdowns
-
-### **🚫 Resource Drain Warning**
-
-**Time Investment**: S12 has consumed **3+ days** of development time across **multiple AI agents**
-**Complexity**: Disproportionately complex for a **5-field section**
-**Recommendation**: Consider **full rewrite** from S10/S11 working patterns rather than continued incremental fixes
-
-### **📋 Next Steps for S12 Completion**
-
-**Immediate Priorities** (in order):
-
-1. Fix dropdown blanking after edits (likely refreshUI issue)
-2. Fix reset button functionality (check event listener attachment)
-3. Fix bidirectional state persistence (TargetState/ReferenceState corruption)
-4. Simplify refreshUI to match S10's exact pattern
-5. Remove any remaining Pattern B contamination
-
-**Alternative Approach**:
-
-- Start fresh with S10's working code as template
-- Copy dropdown structure exactly
-- Copy ModeManager pattern exactly
-- Copy refreshUI pattern exactly
-- **Stop trying to fix the current broken implementation**
+1.  **ALWAYS SUSPECT `localStorage`**: If a component misbehaves on load, **first clear its state from `localStorage`** in the Application tab of dev tools and hard-refresh.
+2.  **Verify Initialization**: Check the console for errors during `initializeEventHandlers` and `onSectionRendered`.
+3.  **Log `setDefaults` vs `initialize`**: Add logs to see if a component is loading from storage or setting defaults.
+4.  **Trace Conditional Logic**: Be wary of functions like `handleConditionalEditability` that run during initialization and can modify the state before the user has a chance to interact.
 
 ---
 

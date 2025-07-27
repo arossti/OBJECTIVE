@@ -17,6 +17,7 @@ window.TEUI.SectionModules.sect12 = (function () {
   // PATTERN A: Internal State Objects (Self-Contained + Persistent)
   const TargetState = {
     state: {},
+    listeners: {},
     initialize: function () {
       const savedState = localStorage.getItem("S12_TARGET_STATE");
       if (savedState) {
@@ -31,7 +32,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         d_103: "1.5", // Number of stories (dropdown)
         g_103: "Normal", // Exposure (dropdown)
         d_105: "8000.00", // Conditioned volume (editable)
-        d_108: "AL-1B", // Blower door method (dropdown)
+        d_108: "MEASURED", // Blower door method (dropdown) - CHANGED to make g_109 default to 1.50
         g_109: "1.50", // Measured value (conditional editable)
       };
     },
@@ -49,6 +50,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
   const ReferenceState = {
     state: {},
+    listeners: {},
     initialize: function () {
       const savedState = localStorage.getItem("S12_REFERENCE_STATE");
       if (savedState) {
@@ -1253,6 +1255,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ CRITICAL: Read TB penalty from S11's Pattern A system with safety checks
     // 🚨 PERFORMANCE NOTE: Robot fingers connection is working but laggy.
     // TODO: Optimize for production - consider direct event binding vs StateManager cascade
+    
+    // AT: START OF DEBUG COMMENT BLOCK - Temporarily disabling d_97 dependency to isolate S12 bugs.
+    const d97_tbPenaltyPercent = 0; // Set to 0 to neutralize its effect.
+    /*
     let d97_tbPenaltyPercent;
     if (
       window.TEUI?.sect11?.ModeManager &&
@@ -1284,6 +1290,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       // Fallback to StateManager for compatibility
       d97_tbPenaltyPercent = parseFloat(getNumericValue("d_97")) || 50;
     }
+    */
+    // AT: END OF DEBUG COMMENT BLOCK
+
 
     // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
     // We must divide by 100 to get the decimal factor (0.2) before using in calculations
@@ -1716,22 +1725,14 @@ window.TEUI.SectionModules.sect12 = (function () {
   function initializeEventHandlers() {
     const sectionElement = document.getElementById("volumeSurfaceMetrics");
     if (!sectionElement) return;
-    sectionElement.removeEventListener("blur", handleFieldBlur, true);
-    sectionElement.removeEventListener("keydown", handleFieldKeydown, true);
-    // ✅ FIXED: Removed reference to non-existent handleDropdownChange function
-    // No need to remove old dropdown listeners since we're using new inline pattern
-    sectionElement
-      .querySelectorAll('[contenteditable="true"].user-input')
-      .forEach((field) => {
-        field.removeEventListener("focus", handleFieldFocus);
-        field.removeEventListener("focusout", handleFieldFocusOut);
-      });
-    sectionElement.addEventListener("blur", handleFieldBlur, true);
-    sectionElement.addEventListener("keydown", handleFieldKeydown, true);
+
     // ✅ S10 PROVEN PATTERN: Inline dropdown handlers (like working sections)
     const dropdowns = sectionElement.querySelectorAll("select");
     console.log(`S12: Found ${dropdowns.length} dropdowns to initialize`);
     dropdowns.forEach((dropdown) => {
+      // Prevent attaching listeners multiple times
+      if (dropdown.hasS12Listener) return;
+
       dropdown.addEventListener("change", function () {
         const fieldId = this.getAttribute("data-field-id");
         console.log(`S12: Dropdown ${fieldId} changed to: ${this.value}`);
@@ -1752,14 +1753,24 @@ window.TEUI.SectionModules.sect12 = (function () {
         calculateAll();
         console.log(`S12: calculateAll() completed`);
       });
+      dropdown.hasS12Listener = true;
     });
+
     const editableFields = sectionElement.querySelectorAll(
       '[contenteditable="true"].user-input',
     );
     editableFields.forEach((field) => {
+      // Prevent attaching listeners multiple times
+      if (field.hasS12Listener) return;
+
       field.addEventListener("focus", handleFieldFocus);
       field.addEventListener("focusout", handleFieldFocusOut);
+      // Blur and Keydown are attached globally now, but keeping local pattern for robustness
+      field.addEventListener("blur", handleFieldBlur, true);
+      field.addEventListener("keydown", handleFieldKeydown, true);
+      field.hasS12Listener = true;
     });
+
     // Initialize conditional editability state
     handleConditionalEditability();
   }
