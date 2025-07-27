@@ -2260,6 +2260,12 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Continue with dependent calculations
     calculateHeatingFuelImpact(isReferenceCalculation);
     calculateCoolingSystem(isReferenceCalculation);
+
+    // Return calculated values for Reference engine storage
+    return {
+      d_114: heatingDemand_d114,
+      l_113: heatingSink_l113
+    };
   }
 
   /**
@@ -2390,17 +2396,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       copcool_to_use = 0;
     }
 
-    setCalculatedValue("j_116", copcool_to_use, "number-1dp");
-    setCalculatedValue("l_116", coolingSink_l116, "number-2dp-comma");
-    setCalculatedValue("l_114", coolingSink_l114, "number-2dp-comma");
-    setCalculatedValue("d_117", coolingLoad_d117, "number-2dp-comma");
-
     const area_h15 = window.TEUI.parseNumeric(getFieldValue("h_15")) || 0;
     const intensity_f117 = area_h15 > 0 ? coolingLoad_d117 / area_h15 : 0;
-    setCalculatedValue("f_117", intensity_f117, "number-2dp");
-
     const ceer_j117 = 3.412 * copcool_to_use;
-    setCalculatedValue("j_117", ceer_j117, "number-1dp");
 
     // TODO: Fetch actual Reference values (T116, T117) when available
     const ref_cop_cool_T116 = 3.35;
@@ -2408,13 +2406,34 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     const m116_value =
       copcool_to_use > 0 ? ref_cop_cool_T116 / copcool_to_use : 0;
-    setCalculatedValue("m_116", m116_value, "percent-0dp");
-
     const m117_value =
       ref_intensity_T117 > 0 ? intensity_f117 / ref_intensity_T117 : 0;
-    setCalculatedValue("m_117", m117_value, "percent-0dp");
 
-    calculateCoolingVentilation();
+    // Only update DOM for Target calculations
+    if (!isReferenceCalculation) {
+      setCalculatedValue("j_116", copcool_to_use, "number-1dp");
+      setCalculatedValue("l_116", coolingSink_l116, "number-2dp-comma");
+      setCalculatedValue("l_114", coolingSink_l114, "number-2dp-comma");
+      setCalculatedValue("d_117", coolingLoad_d117, "number-2dp-comma");
+      setCalculatedValue("f_117", intensity_f117, "number-2dp");
+      setCalculatedValue("j_117", ceer_j117, "number-1dp");
+      setCalculatedValue("m_116", m116_value, "percent-0dp");
+      setCalculatedValue("m_117", m117_value, "percent-0dp");
+      
+      calculateCoolingVentilation();
+    }
+
+    // Return calculated values for Reference engine storage
+    return {
+      j_116: copcool_to_use,
+      l_116: coolingSink_l116,
+      l_114: coolingSink_l114,
+      d_117: coolingLoad_d117,
+      f_117: intensity_f117,
+      j_117: ceer_j117,
+      m_116: m116_value,
+      m_117: m117_value
+    };
   }
 
   /**
@@ -2679,18 +2698,18 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateReferenceModel() {
     console.log("[Section13] Running Reference Model calculations...");
     try {
-      // ✅ DUAL-ENGINE: Calculate using Reference state values (don't update DOM)
-      calculateCOPValues(true); // true = isReferenceCalculation
-      calculateHeatingSystem(true);
+      // ✅ DUAL-ENGINE: Calculate using Reference state values and capture results
+      const copResults = calculateCOPValues(true); // true = isReferenceCalculation
+      const heatingResults = calculateHeatingSystem(true);
       calculateVentilationRates(true);
       calculateVentilationEnergy(true);
       calculateCoolingVentilation(true);
       calculateFreeCooling(true);
-      calculateCoolingSystem(true);
-      calculateMitigatedCED(true);
+      const coolingResults = calculateCoolingSystem(true);
+      const mitigatedResults = calculateMitigatedCED(true);
 
       // Store Reference Model results with ref_ prefix for downstream sections
-      storeReferenceResults();
+      storeReferenceResults(copResults, heatingResults, coolingResults, mitigatedResults);
       
       console.log("[Section13] Reference Model calculations complete");
     } catch (error) {
@@ -2733,23 +2752,21 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * Store Reference Model calculation results with ref_ prefix for downstream sections (S14, S15, S04, S01)
    */
-  function storeReferenceResults() {
+  function storeReferenceResults(copResults, heatingResults, coolingResults, mitigatedResults) {
     if (!window.TEUI?.StateManager) return;
 
-    // Store key S13 Reference results that downstream sections need
-    const fieldsToStore = [
-      "j_113", "k_113", "l_113", // Heating system results
-      "j_114", "k_114", "l_114", // Cooling system results  
-      "j_116", "k_116", "l_116", // Ventilation results
-      "j_124", "k_124", "l_124", // Free cooling results
-      "j_129", "k_129", "l_129", // Mitigated CED results
-      "h_113", "h_114", "h_116", "h_124", "h_129" // Load calculations
-    ];
+    // Combine all Reference calculation results
+    const allResults = {
+      ...copResults,
+      ...heatingResults,
+      ...coolingResults,
+      ...mitigatedResults
+    };
 
-    fieldsToStore.forEach(fieldId => {
-      const value = window.TEUI.StateManager.getValue(fieldId);
+    // Store Reference results with ref_ prefix for downstream consumption
+    Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, "calculated");
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
       }
     });
 
@@ -2774,7 +2791,15 @@ window.TEUI.SectionModules.sect13 = (function () {
     // Logging removed
     // console.warn(`[S13 Debug MitigatedCED Output] MitigatedLoad(m129): ${m129.toFixed(2)}`);
 
-    setCalculatedValue("m_129", m129, "number-2dp-comma");
+    // Only update DOM for Target calculations
+    if (!isReferenceCalculation) {
+      setCalculatedValue("m_129", m129, "number-2dp-comma");
+    }
+
+    // Return calculated value for Reference engine storage
+    return {
+      m_129: m129
+    };
   }
 
   //==========================================================================
