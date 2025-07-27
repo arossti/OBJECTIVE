@@ -41,7 +41,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.state = {
         d_113: "Heatpump", // Primary heating system (dropdown)
         f_113: "12.5", // HSPF coefficient (slider)
-        d_116: "AC", // Cooling system (dropdown) 
+        d_116: "Cooling", // Cooling system (dropdown) - FIXED: was "AC"
         f_117: "18.0", // SEER coefficient (slider)
         d_118: "HRV", // Ventilation system (dropdown)
         f_118: "0.85", // Heat recovery efficiency (slider)
@@ -86,7 +86,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.state = {
         d_113: referenceValues.d_113 || "Gas", // DIFFERENT: Gas vs Target Heatpump
         f_113: referenceValues.f_113 || "10.0", // DIFFERENT: Lower HSPF for reference
-        d_116: referenceValues.d_116 || "AC", // Cooling system (same as target for now)
+        d_116: referenceValues.d_116 || "Cooling", // Cooling system - FIXED: was "AC"
         f_117: referenceValues.f_117 || "15.0", // DIFFERENT: Lower SEER for reference
         d_118: referenceValues.d_118 || "HRV", // Ventilation system
         f_118: referenceValues.f_118 || "0.60", // DIFFERENT: Lower efficiency for reference
@@ -1830,7 +1830,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("f_113", calculateCOPValues);
 
       // Listener for d_116 (Cooling System) changes
-      sm.addListener("d_116", calculateCoolingSystem);
+      sm.addListener("d_116", () => {
+        console.log("[Section13] 📡 🧊 d_116 (COOLING SYSTEM) listener triggered!");
+        calculateCoolingSystem();
+      });
 
       // Listener for d_118 (Ventilation Efficiency) changes
       sm.addListener("d_118", calculateVentilationValues);
@@ -2389,6 +2392,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     let coolingSink_l114 = 0; // Initialize Sink for Heatpump Cooling
     let isCoolingActive = coolingSystemType === "Cooling";
 
+    console.log(`[Section13] 🧊 COOLING CALC: mode=${isReferenceCalculation ? 'REF' : 'TGT'}, coolingSystemType="${coolingSystemType}", heatingType="${heatingSystemType}", isCoolingActive=${isCoolingActive}, coolingDemand=${coolingDemand_m129}`);
+
     if (isCoolingActive) {
       if (heatingSystemType === "Heatpump") {
         copcool_to_use = copcool_hp_j113;
@@ -2445,6 +2450,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       setCalculatedValue("j_117", ceer_j117, "number-1dp");
       setCalculatedValue("m_116", m116_value, "percent-0dp");
       setCalculatedValue("m_117", m117_value, "percent-0dp");
+      
+      console.log(`[Section13] 🧊 COOLING RESULTS: d_117=${coolingLoad_d117}, j_116=${copcool_to_use}, l_116=${coolingSink_l116}, l_114=${coolingSink_l114}`);
       
       calculateCoolingVentilation();
     }
