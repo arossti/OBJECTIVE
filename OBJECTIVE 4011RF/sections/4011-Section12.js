@@ -41,7 +41,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-      this.saveState();
+      // Only save to localStorage if the change was triggered by direct user interaction.
+      if (source === 'user-modified') {
+        this.saveState();
+      }
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
@@ -95,7 +98,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-      this.saveState();
+      // Only save to localStorage if the change was triggered by direct user interaction.
+      if (source === 'user-modified') {
+        this.saveState();
+      }
     },
     getValue: function (fieldId) {
       return this.state[fieldId];
@@ -1833,6 +1839,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       g109Cell.classList.remove("disabled-input", "ghosted");
       g109Cell.style.backgroundColor = "#f0f8ff";
       g109Cell.style.color = "#000";
+      // If the cell is empty or N/A when switching to Measured, set it to a sensible default.
+      if (!g109Cell.textContent.trim() || g109Cell.textContent.trim() === "N/A") {
+        g109Cell.textContent = "1.50";
+        ModeManager.setValue("g_109", "1.50", "calculated");
+      }
     } else {
       g109Cell.setAttribute("contenteditable", "false");
       g109Cell.classList.remove("user-input", "editable");
