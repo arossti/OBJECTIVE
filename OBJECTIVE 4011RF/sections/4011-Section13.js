@@ -1807,9 +1807,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     // --- StateManager Listeners ---
     if (window.TEUI && window.TEUI.StateManager) {
       const sm = window.TEUI.StateManager; // Alias for brevity
+      console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
       // Listener for d_113 (Heating System) changes
       sm.addListener("d_113", () => {
+        console.log("[Section13] 📡 d_113 listener triggered");
         if (typeof calculateHeatingSystem === "function") {
           calculateHeatingSystem();
         }
@@ -1837,7 +1839,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("g_118", () => {
         calculateVentilationValues(); // Recalculates d_120, h_120 etc.
         calculateFreeCooling(); // Reads updated h_120, recalculates row 124
-        calculateMitigatedCED(); // Updates m_129 based on updated h_124
+        calculateMitigatedCED(); // Updates m_129 based on updated h_124/d_123
       });
 
       // Listener for d_119 (Per Person Rate) changes
@@ -1853,17 +1855,27 @@ window.TEUI.SectionModules.sect13 = (function () {
       // -----------------------------------------
 
       // Add listeners for climate/gain/loss data changes from other sections
+      console.log("[Section13] 🔗 Attaching CRITICAL upstream listeners...");
       sm.addListener("d_20", calculateAll); // HDD
       sm.addListener("d_21", calculateAll); // CDD
       sm.addListener("d_23", calculateAll); // Coldest Day Temp
       sm.addListener("d_24", calculateAll); // Hottest Day Temp
       sm.addListener("h_23", calculateAll); // Heating Setpoint
       sm.addListener("h_24", calculateAll); // Cooling Setpoint
-      sm.addListener("i_104", calculateAll); // Total Trans Loss
+      sm.addListener("i_104", () => {
+        console.log("[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!");
+        calculateAll();
+      }); // Total Trans Loss
       sm.addListener("k_104", calculateAll); // Total Ground Loss
-      sm.addListener("i_71", calculateAll); // Total Occ Gains
+      sm.addListener("i_71", () => {
+        console.log("[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!");
+        calculateAll();
+      }); // Total Occ Gains
       sm.addListener("i_79", calculateAll); // Total App Gains
-      sm.addListener("d_127", calculateHeatingSystem); // TED (from S14, for d_114)
+      sm.addListener("d_127", () => {
+        console.log("[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!");
+        calculateHeatingSystem();
+      }); // TED (from S14, for d_114)
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
         coolingState.coolingLoad =
@@ -1875,8 +1887,9 @@ window.TEUI.SectionModules.sect13 = (function () {
       });
       // *** MOVED: Listener for d_113 to handle ghosting (Correct location) ***
       sm.addListener("d_113", handleHeatingSystemChangeForGhosting);
+      console.log("[Section13] ✅ ALL LISTENERS ATTACHED SUCCESSFULLY");
     } else {
-      // console.warn("Section 13: StateManager not available to add listeners.");
+      console.error("[Section13] ❌ StateManager not available to add listeners!");
     }
 
     // --- Use Event Delegation for k_120 control ---
@@ -2703,13 +2716,22 @@ window.TEUI.SectionModules.sect13 = (function () {
    * Calculate all values for this section
    */
   function calculateAll() {
-    console.log("[Section13] Running dual-engine calculations...");
+    console.log("[Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...");
     
     // ✅ DUAL-ENGINE: Always run both engines in parallel
-    calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
-    calculateTargetModel();    // Reads TargetState → stores unprefixed
-    
-    console.log("[Section13] Dual-engine calculations complete");
+    try {
+      console.log("[Section13] 🔄 Starting Reference Model calculations...");
+      calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
+      console.log("[Section13] ✅ Reference Model complete");
+      
+      console.log("[Section13] 🔄 Starting Target Model calculations...");
+      calculateTargetModel();    // Reads TargetState → stores unprefixed
+      console.log("[Section13] ✅ Target Model complete");
+      
+      console.log("[Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE");
+    } catch (error) {
+      console.error("[Section13] ❌ ERROR in calculateAll:", error);
+    }
   }
 
   /**
