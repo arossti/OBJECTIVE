@@ -136,288 +136,6 @@ window.TEUI.SectionModules.sect15 = (function () {
   }
 
   //==========================================================================
-  // 🎯 PATTERN A DUAL-STATE ARCHITECTURE
-  //==========================================================================
-
-  /**
-   * TargetState: Manages Target (user's design) state with persistence
-   */
-  const TargetState = {
-    data: {},
-    storageKey: "S15_TARGET_STATE",
-
-    // Load saved state from localStorage
-    loadState: function () {
-      try {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-          this.data = JSON.parse(saved);
-          console.log(`S15: Loaded Target state from localStorage`);
-        }
-      } catch (error) {
-        console.warn(`S15: Error loading Target state:`, error);
-        this.data = {};
-      }
-    },
-
-    // Save current state to localStorage
-    saveState: function () {
-      try {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S15: Saved Target state to localStorage`);
-      } catch (error) {
-        console.warn(`S15: Error saving Target state:`, error);
-      }
-    },
-
-    // Get value with fallback to DOM
-    getValue: function (fieldId) {
-      return this.data[fieldId] || getNumericValue(fieldId) || 0;
-    },
-
-    // Set value and optionally save state
-    setValue: function (fieldId, value, source = "calculated") {
-      this.data[fieldId] = value;
-      if (source === "user" || source === "user-modified") {
-        this.saveState();
-      }
-    },
-
-    // Set default values for Target calculations
-    setDefaults: function () {
-      // S15 is mostly calculated values, minimal defaults needed
-      console.log(`S15: Target defaults set`);
-    },
-  };
-
-  /**
-   * ReferenceState: Manages Reference (building code minimums) state with persistence
-   */
-  const ReferenceState = {
-    data: {},
-    storageKey: "S15_REFERENCE_STATE",
-
-    // Load saved state from localStorage
-    loadState: function () {
-      try {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-          this.data = JSON.parse(saved);
-          console.log(`S15: Loaded Reference state from localStorage`);
-        }
-      } catch (error) {
-        console.warn(`S15: Error loading Reference state:`, error);
-        this.data = {};
-      }
-    },
-
-    // Save current state to localStorage
-    saveState: function () {
-      try {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S15: Saved Reference state to localStorage`);
-      } catch (error) {
-        console.warn(`S15: Error saving Reference state:`, error);
-      }
-    },
-
-    // Get value with fallback to DOM
-    getValue: function (fieldId) {
-      return this.data[fieldId] || getNumericValue(fieldId) || 0;
-    },
-
-    // Set value and optionally save state
-    setValue: function (fieldId, value, source = "calculated") {
-      this.data[fieldId] = value;
-      if (source === "user" || source === "user-modified") {
-        this.saveState();
-      }
-    },
-
-    // Set default values for Reference calculations
-    setDefaults: function () {
-      // S15 is mostly calculated values, minimal defaults needed
-      console.log(`S15: Reference defaults set`);
-    },
-  };
-
-  /**
-   * ModeManager: Handles UI mode switching and state coordination
-   */
-  const ModeManager = {
-    currentMode: "target", // "target" or "reference"
-
-    // Initialize the mode manager
-    initialize: function () {
-      TargetState.loadState();
-      ReferenceState.loadState();
-      TargetState.setDefaults();
-      ReferenceState.setDefaults();
-
-      // Inject header controls
-      this.injectHeaderControls();
-      console.log(`S15: Pattern A initialization complete.`);
-    },
-
-    // Switch between Target and Reference modes
-    switchMode: function (mode) {
-      if (mode !== "target" && mode !== "reference") {
-        console.warn(`S15: Invalid mode: ${mode}`);
-        return;
-      }
-
-      this.currentMode = mode;
-      console.log(`S15: Switched to ${mode.toUpperCase()} mode`);
-
-      // Update the toggle switch state
-      const toggle = document.querySelector("#s15-mode-toggle");
-      if (toggle) {
-        toggle.checked = mode === "reference";
-      }
-
-      // Refresh UI for new mode
-      this.refreshUI();
-
-      // Trigger calculations for the new mode
-      calculateAll();
-    },
-
-    // Refresh UI based on current mode
-    refreshUI: function () {
-      const fieldsToSync = [
-        // S15 is mostly calculated fields, minimal user inputs to sync
-        "d_141", "h_141", // Capital cost inputs if any
-      ];
-
-      fieldsToSync.forEach((fieldId) => {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-          const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-          const value = currentState.getValue(fieldId);
-          if (element.type === "checkbox") {
-            element.checked = value === "true" || value === true;
-          } else {
-            element.value = value || "";
-          }
-        }
-      });
-
-      // Update calculated display values
-      this.updateCalculatedDisplayValues();
-
-      console.log(`S15: UI refreshed for ${this.currentMode} mode`);
-    },
-
-    // Update calculated field displays based on current mode
-    updateCalculatedDisplayValues: function () {
-      const calculatedFields = [
-        "d_135", "h_135", "d_136", "h_136", "d_137", "h_137", "d_138", "h_138",
-        "d_139", "h_139", "d_140", "h_140", "h_142", "d_143", "h_143", "l_143",
-        "d_144", "h_144", "l_144", "d_145"
-      ];
-
-      calculatedFields.forEach((fieldId) => {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-          let displayValue;
-          if (this.currentMode === "reference") {
-            // Show Reference calculated values
-            const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
-            displayValue = refValue || "0.00";
-          } else {
-            // Show Target calculated values
-            const targetValue = window.TEUI?.StateManager?.getValue(fieldId);
-            displayValue = targetValue || "0.00";
-          }
-          
-          // Update the display
-          element.textContent = displayValue;
-        }
-      });
-
-      console.log(`[S15] Calculated display values updated for ${this.currentMode} mode`);
-    },
-
-    // Inject toggle controls into section header
-    injectHeaderControls: function () {
-      const headerRow = document.querySelector('[data-row-id="15-ID"]');
-      if (!headerRow) {
-        console.warn("S15: Could not find header row for toggle injection");
-        return;
-      }
-
-      // Find the section header cell (usually first cell with section title)
-      const headerCell = headerRow.querySelector(".section-header");
-      if (!headerCell) {
-        console.warn("S15: Could not find section header cell");
-        return;
-      }
-
-      // Create controls container
-      const controlsHTML = `
-        <div class="section-controls">
-          <label class="mode-toggle">
-            <input type="checkbox" id="s15-mode-toggle" />
-            <span class="toggle-slider"></span>
-            <span class="toggle-label-left">TARGET</span>
-            <span class="toggle-label-right">REFERENCE</span>
-          </label>
-          <button type="button" class="reset-button" id="s15-reset-button">Reset</button>
-        </div>
-      `;
-
-      // Inject controls
-      headerCell.insertAdjacentHTML("beforeend", controlsHTML);
-
-      // Attach event handlers
-      const toggle = document.getElementById("s15-mode-toggle");
-      const resetButton = document.getElementById("s15-reset-button");
-
-      if (toggle) {
-        toggle.addEventListener("change", (e) => {
-          const mode = e.target.checked ? "reference" : "target";
-          this.switchMode(mode);
-        });
-      }
-
-      if (resetButton) {
-        resetButton.addEventListener("click", () => {
-          if (confirm("Reset all Section 15 values to defaults?")) {
-            this.resetCurrentState();
-          }
-        });
-      }
-
-      console.log("S15: Header controls injected successfully");
-    },
-
-    // Reset current mode's state to defaults
-    resetCurrentState: function () {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-      currentState.data = {};
-      currentState.setDefaults();
-      currentState.saveState();
-      
-      this.refreshUI();
-      calculateAll();
-      
-      console.log(`S15: ${this.currentMode} state reset to defaults`);
-    },
-
-    // Get current value based on active mode
-    getValue: function (fieldId) {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-      return currentState.getValue(fieldId);
-    },
-
-    // Set value in current mode's state
-    setValue: function (fieldId, value, source = "calculated") {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-      currentState.setValue(fieldId, value, source);
-    },
-  };
-
-  //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
 
@@ -1216,17 +934,19 @@ window.TEUI.SectionModules.sect15 = (function () {
    */
   function calculateReferenceModel() {
     try {
-      // 🎯 Enhanced helper function to get Reference values with comprehensive parseFloat
+      // Helper function to get Reference values with proper fallback
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
-        const refValue = window.TEUI?.StateManager?.getValue(refFieldId);
-        const fallbackValue = window.TEUI?.StateManager?.getReferenceValue(fieldId);
-        const domValue = getNumericValue(fieldId);
-        
-        const finalValue = refValue || fallbackValue || domValue;
-        
-        // ✅ CRITICAL: Convert strings to numbers for math (prevents concatenation)
-        return parseFloat(finalValue) || 0;
+        let value =
+          window.TEUI?.StateManager?.getValue(refFieldId) ||
+          window.TEUI?.StateManager?.getReferenceValue(fieldId) ||
+          getNumericValue(fieldId);
+
+        // CRITICAL FIX: Ensure numeric conversion to prevent string concatenation
+        if (typeof value === "string") {
+          value = parseFloat(value.replace(/,/g, "")) || 0;
+        }
+        return typeof value === "number" ? value : 0;
       };
 
       // Helper function to set Reference values only if changed (Section 07 Gold Standard)
@@ -1240,61 +960,81 @@ window.TEUI.SectionModules.sect15 = (function () {
         return false;
       };
 
-      // ✅ Get Reference values from upstream sections and convert to numbers
-      const area = parseFloat(getRefValue("h_15")) || 1; // Use 1 as fallback to avoid division by zero
-      const elecPrice = parseFloat(getRefValue("l_12")) || 0;
-      const gasPrice = parseFloat(getRefValue("l_13")) || 0;
-      const propanePrice = parseFloat(getRefValue("l_14")) || 0;
-      const oilPrice = parseFloat(getRefValue("l_16")) || 0;
-      const woodPrice = parseFloat(getRefValue("l_15")) || 0;
+      // Get Reference values from upstream sections
+      const area = getRefValue("h_15");
+      const elecPrice = getRefValue("l_12");
+      const gasPrice = getRefValue("l_13");
+      const propanePrice = getRefValue("l_14");
+      const oilPrice = getRefValue("l_16");
+      const woodPrice = getRefValue("l_15");
 
-      // ✅ CRITICAL: Get Reference values from Section 04 (j_32, k_32) with parseFloat
-      const ref_j32 = parseFloat(getRefValue("j_32")) || 0; // Reference Total Energy from S04
-      const ref_k32 = parseFloat(getRefValue("k_32")) || 0; // Reference Total Emissions from S04
+      // CRITICAL: Get Reference values from Section 04 (j_32, k_32)
+      const ref_j32 = getRefValue("j_32"); // Reference Total Energy from S04
+      const ref_k32 = getRefValue("k_32"); // Reference Total Emissions from S04
 
-      // ✅ Reference upstream values - READ ONLY ref_ prefixed values with parseFloat
-      const ref_i104 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_104")) || 0; // From S12 Building Envelope
-      const ref_m121 = parseFloat(window.TEUI?.StateManager?.getValue("ref_m_121")) || 0; // From S13 Ventilation
-      const ref_i80 = parseFloat(window.TEUI?.StateManager?.getValue("ref_i_80")) || 0; // From S10 Solar Gains
+      // 🔍 REFERENCE TRACKER: Monitor Reference engine climate data usage
+      const ref_hdd = getRefValue("d_20");
+      const ref_cdd = getRefValue("d_21");
+      const ref_gfhdd = getRefValue("d_22");
+      const ref_gfcdd = getRefValue("h_22");
+      // console.log(`🔍 S15 REFERENCE ENGINE CLIMATE: HDD=${ref_hdd}, CDD=${ref_cdd}, GFHDD=${ref_gfhdd}, GFCDD=${ref_gfcdd}`);
+
+      // Track Reference upstream values - READ ONLY ref_ prefixed values
+      const ref_i104 = window.TEUI?.StateManager?.getValue("ref_i_104") || 0; // From S12 Building Envelope
+      const ref_m121 = window.TEUI?.StateManager?.getValue("ref_m_121") || 0; // From S13 Ventilation
+      const ref_i80 = window.TEUI?.StateManager?.getValue("ref_i_80") || 0; // From S10 Solar Gains
       console.log(
         `🔍 S15 REFERENCE UPSTREAM: ref_i_104=${ref_i104}, ref_m_121=${ref_m121}, ref_i_80=${ref_i80}`,
       );
 
-      // ✅ Get other Reference dependencies with parseFloat conversion
-      const m43 = parseFloat(getRefValue("m_43")) || 0;
-      const k51 = parseFloat(getRefValue("k_51")) || 0;
-      const h70 = parseFloat(getRefValue("h_70")) || 0;
+      // Get other Reference dependencies
+      const m43 = getRefValue("m_43");
+      const k51 = getRefValue("k_51");
+      const h70 = getRefValue("h_70");
       const i104 = ref_i104; // Use Reference values for Reference calculations
       const m121 = ref_m121; // Use Reference values for Reference calculations
       const i80 = ref_i80; // Use Reference values for Reference calculations
 
       const primaryHeating =
         window.TEUI?.StateManager?.getReferenceValue("d_113") || "Electricity";
-      const d114 = parseFloat(getRefValue("d_114")) || 0;
+      const d114 = getRefValue("d_114");
 
-      const g101 = parseFloat(getRefValue("g_101")) || 0;
-      const d101 = parseFloat(getRefValue("d_101")) || 0;
-      const d102 = parseFloat(getRefValue("d_102")) || 0;
-      const g102 = parseFloat(getRefValue("g_102")) || 0;
-      const h23 = parseFloat(getRefValue("h_23")) || 0;
-      const d23 = parseFloat(getRefValue("d_23")) || 0;
-      const d24 = parseFloat(getRefValue("d_24")) || 0;
-      const h24 = parseFloat(getRefValue("h_24")) || 0;
+      const g101 = getRefValue("g_101");
+      const d101 = getRefValue("d_101");
+      const d102 = getRefValue("d_102");
+      const g102 = getRefValue("g_102");
+      const h23 = getRefValue("h_23");
+      const d23 = getRefValue("d_23");
+      const d24 = getRefValue("d_24");
+      const h24 = getRefValue("h_24");
 
-      const d65 = parseFloat(getRefValue("d_65")) || 0;
-      const d66 = parseFloat(getRefValue("d_66")) || 0;
-      const d67 = parseFloat(getRefValue("d_67")) || 0;
-      const k79 = parseFloat(getRefValue("k_79")) || 0;
-      const d122 = parseFloat(getRefValue("d_122")) || 0;
-      const k64 = parseFloat(getRefValue("k_64")) || 0;
-      const h124 = parseFloat(getRefValue("h_124")) || 0;
-      const m19_days = parseFloat(getRefValue("m_19")) || 120;
+      const d65 = getRefValue("d_65");
+      const d66 = getRefValue("d_66");
+      const d67 = getRefValue("d_67");
+      const k79 = getRefValue("k_79");
+      const d122 = getRefValue("d_122");
+      const k64 = getRefValue("k_64");
+      const h124 = getRefValue("h_124");
+      const m19_days = getRefValue("m_19") || 120;
 
-      console.log(`✅ S15 Reference Model: All values converted to numbers for proper math`);
+      const d28 = getRefValue("d_28");
+      const d29 = getRefValue("d_29");
+      const d31 = getRefValue("d_31");
+      const d30_litres = getRefValue("d_30");
 
-      // Get cooling type for d117 logic
-      const coolingType_d116 = window.TEUI?.StateManager?.getReferenceValue("d_116") || "No Cooling";
-      let d117_actual_val = parseFloat(getRefValue("d_117")) || 0;
+      const hpCostPremium = getRefValue("d_142");
+
+      const refTEUI_e10 = getRefValue("e_10");
+      const targetTEUI_h10 = getRefValue("h_10");
+      const actualTEUI_k10 = getRefValue("k_10");
+      const reportingMode_d14 =
+        window.TEUI?.StateManager?.getReferenceValue("d_14") || "Targeted Use";
+
+      const coolingType_d116 =
+        window.TEUI?.StateManager?.getReferenceValue("d_116") || "Heatpump";
+
+      // Calculate Reference values
+      let d117_actual_val = getRefValue("d_117");
       let d117_effective = d117_actual_val;
       if (coolingType_d116 === "No Cooling") {
         d117_effective = 0;
@@ -1906,9 +1646,6 @@ window.TEUI.SectionModules.sect15 = (function () {
    * Called when section is rendered
    */
   function onSectionRendered() {
-    // Initialize Pattern A Dual-State Module
-    ModeManager.initialize();
-
     // Register dependencies first
     // Dependencies might rely on other sections being registered, so ensure StateManager is ready
     if (window.TEUI.StateManager) {
