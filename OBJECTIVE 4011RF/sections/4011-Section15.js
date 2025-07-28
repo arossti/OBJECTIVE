@@ -1292,6 +1292,17 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       console.log(`✅ S15 Reference Model: All values converted to numbers for proper math`);
 
+      // ✅ Get additional fuel and cost variables with parseFloat conversion
+      const d28 = parseFloat(getRefValue("d_28")) || 0; // Total Fossil Gas Use (m3/yr)
+      const d29 = parseFloat(getRefValue("d_29")) || 0; // Total Propane Use (kg/yr)
+      const d31 = parseFloat(getRefValue("d_31")) || 0; // Total Wood Use (m3/yr)
+      const d30_litres = parseFloat(getRefValue("d_30")) || 0; // Total Oil Use (litres/yr)
+      const hpCostPremium = parseFloat(getRefValue("d_142")) || 0; // Heat pump cost premium
+      const refTEUI_e10 = parseFloat(getRefValue("e_10")) || 0; // Reference TEUI (Sec 1)
+      const targetTEUI_h10 = parseFloat(getRefValue("h_10")) || 0; // Target TEUI (Sec 1)
+
+      console.log(`✅ S15 Reference Model: Additional fuel variables declared for cost calculations`);
+
       // Get cooling type for d117 logic
       const coolingType_d116 = window.TEUI?.StateManager?.getReferenceValue("d_116") || "No Cooling";
       let d117_actual_val = parseFloat(getRefValue("d_117")) || 0;
