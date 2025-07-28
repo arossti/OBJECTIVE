@@ -18,7 +18,7 @@ TEUI.ReferenceToggle = (function () {
   // Updated button text for Pattern A architecture
   const BUTTON_TEXT_SHOW_REFERENCE = "Show Reference";
   const BUTTON_TEXT_SHOW_TARGET = "Show Target";
-  const BUTTON_TEXT_SHOW_CACHED_INPUTS = "Show Reference Inputs";
+  const BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES = "Highlight Reference Values";
   const BUTTON_TEXT_SHOW_TARGET_INPUTS = "Show Target Inputs";
 
   let isViewingReferenceInputs = false;
@@ -106,7 +106,7 @@ TEUI.ReferenceToggle = (function () {
     const viewRefInputsBtn = document.getElementById(VIEW_REFERENCE_INPUTS_BUTTON_ID);
     if (viewRefInputsBtn) {
       viewRefInputsBtn.addEventListener("click", toggleReferenceInputsView);
-      viewRefInputsBtn.textContent = BUTTON_TEXT_SHOW_CACHED_INPUTS;
+      viewRefInputsBtn.textContent = BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES;
     }
 
     // Setup reference standard change handler
@@ -126,7 +126,7 @@ TEUI.ReferenceToggle = (function () {
 
   /**
    * MAIN FUNCTION: Toggle between showing Target and Reference calculated values
-   * This is the new "Show Reference" functionality
+   * This is the new "Show Reference" functionality with proper red UI styling
    */
   function toggleReferenceDisplay() {
     isShowingReference = !isShowingReference;
@@ -147,10 +147,15 @@ TEUI.ReferenceToggle = (function () {
         runRefBtn.textContent = isShowingReference ? BUTTON_TEXT_SHOW_TARGET : BUTTON_TEXT_SHOW_REFERENCE;
       }
       
-      // Add/remove body class for global styling
+      // 🎨 CRITICAL: Apply RED Reference mode styling to entire UI
+      document.body.classList.toggle("reference-mode", isShowingReference);
       document.body.classList.toggle("viewing-reference-values", isShowingReference);
       
-      console.log(`[ReferenceToggle] Successfully toggled to ${targetMode.toUpperCase()} display mode`);
+      // Also trigger any global Reference mode styling
+      const htmlElement = document.documentElement;
+      htmlElement.classList.toggle("reference-mode", isShowingReference);
+      
+      console.log(`[ReferenceToggle] Successfully toggled to ${targetMode.toUpperCase()} display mode with UI styling`);
     } else {
       console.warn("[ReferenceToggle] No sections were switched - reverting toggle");
       isShowingReference = !isShowingReference; // Revert if nothing was switched
@@ -206,7 +211,7 @@ TEUI.ReferenceToggle = (function () {
     if (viewRefInputsBtn) {
       viewRefInputsBtn.textContent = isViewingReferenceInputs ? 
         BUTTON_TEXT_SHOW_TARGET_INPUTS : 
-        BUTTON_TEXT_SHOW_CACHED_INPUTS;
+        BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES;
     }
     
     // This feature needs to be implemented to highlight Reference input fields
