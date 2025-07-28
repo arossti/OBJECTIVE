@@ -982,45 +982,40 @@ window.TEUI.SectionModules.sect14 = (function () {
         
         const finalValue = refValue || fallbackValue || domValue;
         
-        // TEMPORARY DEBUG: Log ALL Reference value retrievals to trace the source
-        console.log(`[S14 DEBUG] 🔍 getRefValue(${fieldId}): ref="${refValue}" (${typeof refValue}), fallback="${fallbackValue}" (${typeof fallbackValue}), dom="${domValue}" (${typeof domValue}), final="${finalValue}" (${typeof finalValue})`);
+        // TEMPORARY DEBUG: Only log problematic values now that we know the issue
+        if (!finalValue || isNaN(finalValue)) {
+          console.log(`[S14 DEBUG] ❌ getRefValue(${fieldId}): ref="${refValue}", fallback="${fallbackValue}", dom="${domValue}", final="${finalValue}"`);
+        }
         
         return finalValue;
       };
 
-      // Fetch all Reference dependencies
-      const area = getRefValue("h_15");
-      const i97 = getRefValue("i_97"); // Thermal Bridge Penalty Heatloss
-      const i98 = getRefValue("i_98"); // Envelope Totals Heatloss
-      const i103 = getRefValue("i_103"); // Natural Air Leakage Heatloss
-      const m121 = getRefValue("m_121"); // Net Htg Season Ventil. Lost
-      const i80 = getRefValue("i_80"); // Internal heat gains - Occupants
-      const k71 = getRefValue("k_71"); // Internal gains people
-      const k79 = getRefValue("k_79"); // Internal gains equip/light
-      const k97 = getRefValue("k_97"); // Solar
-      const k98 = getRefValue("k_98"); // Transmission
-      const d122 = getRefValue("d_122"); // Incoming Cooling Vent Energy from S13
-      const h124 = getRefValue("h_124"); // Free Cooling Limit from S13
-      const d123 = getRefValue("d_123"); // Recovered Cooling Vent Energy from S13
-      const k103 = getRefValue("k_103"); // Natural Air Leakage Heatgain
+      // Fetch all Reference dependencies and convert to numbers
+      const area = parseFloat(getRefValue("h_15")) || 1; // Use 1 as fallback to avoid division by zero
+      // Get values and convert strings to numbers for math
+      const i97 = parseFloat(getRefValue("i_97")) || 0; // Thermal Bridge Penalty Heatloss
+      const i98 = parseFloat(getRefValue("i_98")) || 0; // Envelope Totals Heatloss
+      const i103 = parseFloat(getRefValue("i_103")) || 0; // Natural Air Leakage Heatloss
+      const m121 = parseFloat(getRefValue("m_121")) || 0; // Net Htg Season Ventil. Lost
+      const i80 = parseFloat(getRefValue("i_80")) || 0; // Internal heat gains - Occupants
+      const k71 = parseFloat(getRefValue("k_71")) || 0; // Internal gains people
+      const k79 = parseFloat(getRefValue("k_79")) || 0; // Internal gains equip/light
+      const k97 = parseFloat(getRefValue("k_97")) || 0; // Solar
+      const k98 = parseFloat(getRefValue("k_98")) || 0; // Transmission
+      const d122 = parseFloat(getRefValue("d_122")) || 0; // Incoming Cooling Vent Energy from S13
+      const h124 = parseFloat(getRefValue("h_124")) || 0; // Free Cooling Limit from S13
+      const d123 = parseFloat(getRefValue("d_123")) || 0; // Recovered Cooling Vent Energy from S13
+      const k103 = parseFloat(getRefValue("k_103")) || 0; // Natural Air Leakage Heatgain
 
       // Calculate Reference values with proper numeric safety
       
-      // TEMPORARY DEBUG: Log what values we're getting WITH TYPES
-      console.log(`[S14 DEBUG] Raw Reference inputs: i97=${i97} (${typeof i97}), i98=${i98} (${typeof i98}), i103=${i103} (${typeof i103}), m121=${m121} (${typeof m121}), i80=${i80} (${typeof i80})`);
-      console.log(`[S14 DEBUG] Raw Reference inputs: area=${area} (${typeof area}), k71=${k71} (${typeof k71}), k79=${k79} (${typeof k79}), d122=${d122} (${typeof d122})`);
+      // TEMPORARY DEBUG: Confirm numeric conversion worked
+      console.log(`[S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80}`);
 
-      // TEMPORARY DEBUG: Test the arithmetic step by step
-      console.log(`[S14 DEBUG] Step-by-step arithmetic test:`);
-      console.log(`[S14 DEBUG] Step 1: ${i97} + ${i98} = ${i97 + i98}`);
-      console.log(`[S14 DEBUG] Step 2: ${i97 + i98} + ${i103} = ${i97 + i98 + i103}`);
-      console.log(`[S14 DEBUG] Step 3: ${i97 + i98 + i103} + ${m121} = ${i97 + i98 + i103 + m121}`);
-      console.log(`[S14 DEBUG] Step 4: ${i97 + i98 + i103 + m121} - ${i80} = ${i97 + i98 + i103 + m121 - i80}`);
-
-      // d_127: TED (Heating Load) - Using original calculation logic
+      // d_127: TED (Heating Load) - Using original calculation logic with numeric values
       const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
       
-      console.log(`[S14 DEBUG] Final ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80} = ${ref_tedHeatloss_d127}`);
+      console.log(`[S14 DEBUG] ✅ ref_d_127 = ${ref_tedHeatloss_d127} (should be numeric, not NaN)`);
       
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",
