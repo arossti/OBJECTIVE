@@ -640,6 +640,36 @@ if (baseline.type === "uvalue") {
 
 ### **Implementation Requirements**
 
+#### **🚨 MANDATORY: d_13 Standard Change Integration**
+
+**Only sections with ReferenceValues.js dependencies MUST implement this pattern:**
+
+⚠️ **Exception**: Sections without building code minimums (S01, S04, S06, etc.) do NOT need this pattern. Only sections with entries in `ReferenceValues.js` require d_13 standard change integration.
+
+```javascript
+// 1. MANDATORY: Listen for d_13 changes in ModeManager.initialize()
+window.TEUI.StateManager.addListener("d_13", () => {
+  ReferenceState.onReferenceStandardChange();
+});
+
+// 2. MANDATORY: Implement onReferenceStandardChange in ReferenceState
+onReferenceStandardChange: function () {
+  console.log("SXX: Reference standard changed, reloading defaults");
+  this.setDefaults(); // Reload from ReferenceValues.js[newStandard]
+  this.saveState();
+  // Only refresh UI if currently in reference mode
+  if (ModeManager.currentMode === "reference") {
+    ModeManager.refreshUI();
+    calculateAll();
+  }
+}
+```
+
+**Why This is Critical:**
+- User changes `d_13` in S02 → All sections must reload building code minimums
+- Ensures Reference mode always reflects current building standard
+- Maintains regulatory compliance across standard changes
+
 #### **Dynamic Reference Values**
 
 The comparison must use **dynamic reference values** from the current ReferenceState, not static baselines:
@@ -967,10 +997,11 @@ S03 ✅ (Climate) ────────────────────�
 #### **Pattern A Implementation Steps**
 
 1. **Add Dual-State Structure**: TargetState + ReferenceState + ModeManager
-2. **Implement Header Controls**: Toggle switch + Reset button
-3. **Add State Persistence**: localStorage with section-specific keys
-4. **Update Helper Functions**: Route all data through ModeManager
-5. **Test & Validate**: Reference mode, Target mode, cross-section flow
+2. **🚨 MANDATORY: Add d_13 Standard Change Integration**: `addListener("d_13")` + `onReferenceStandardChange()`
+3. **Implement Header Controls**: Toggle switch + Reset button  
+4. **Add State Persistence**: localStorage with section-specific keys
+5. **Update Helper Functions**: Route all data through ModeManager
+6. **Test & Validate**: Reference mode, Target mode, cross-section flow, d_13 standard changes
 
 #### **Post-Refactoring Validation**
 
@@ -979,6 +1010,7 @@ S03 ✅ (Climate) ────────────────────�
 - [ ] Cross-section dependencies work correctly
 - [ ] UI state synchronization functions properly
 - [ ] Reset functionality works as expected
+- [ ] **🚨 d_13 standard changes reload Reference defaults correctly**
 
 ### **🎉 Expected Outcomes**
 
@@ -1160,14 +1192,119 @@ Both S12 and S13 were incorrectly implemented with "mode-aware calculations" tha
 - ✅ No cross-contamination between streams
 - ✅ Downstream sections (S14, S15, S04) receive both data streams
 
+### **📊 Current Implementation Status (July 27, 6.48pm 2025)**
+
+#### **✅ Completed Sections - 100% Operational**
+- **S03, S08, S09, S10, S11**: Gold standard dual-state implementations
+- **S12 (Volume & Surface Metrics)**: ✅ **COMPLETED** - Full dual-engine architecture working perfectly
+  - Both Target and Reference calculations run in parallel
+  - Complete state isolation achieved
+  - Proper `ref_` prefixed output storage
+  - Mode switching only affects UI display, not calculations
+  - All calculated values update immediately when switching modes
+
+#### **🚧 In Progress**
+- **S13 (Mechanical Loads)**: ⚠️ **75% COMPLETE** - Partial dual-engine implementation
+  - ✅ Fixed: Dual-engine `calculateAll()` structure implemented  
+  - ✅ Fixed: Reference calculations no longer contaminate Target state
+  - ✅ Fixed: Upstream flow from S10/S11 now working (timing issue resolved)
+  - ✅ Fixed: Cooling system toggle now affects calculations
+  - ⚠️ **Issue**: Reference mode shows zeros instead of calculated values
+  - ⚠️ **Issue**: Reference TED (`ref_d_127`) may not be available from S14
+  - ⚠️ **Issue**: Gas system calculations need validation in Reference mode
+
+#### **📋 Pending Sections**
+- **S14, S15, S04**: Need dual-state Pattern A implementation
+- **S01**: Reference column shows 0.0 - likely due to missing upstream Reference data
+
+#### **🔍 Root Cause Analysis**
+The S13 zeros issue suggests **missing upstream Reference data flow**:
+1. S13 correctly reads `ref_d_127` for Reference calculations
+2. But `ref_d_127` may not exist or equals 0 from S14
+3. S14/S15 refactoring should provide proper Reference TED values
+4. This will cascade to fix S13 Reference calculations and S01 Reference TEUI
+
 ### **📚 Key Lessons Learned**
 
 1. **Never break the dual-stream architecture** - both engines must always run
 2. **Mode switching = UI filter only** - not a calculation trigger
 3. **Follow working section patterns** (S11) rather than inventing new approaches
 4. **Test with S01 three-column display** to verify correct data flow
+5. **Debug timing/logging can resolve mysterious calculation flow issues**
+6. **Upstream dependencies must be established before fixing downstream sections**
+7. **SIMPLIFICATION**: Pattern 2 (separate functions + helpers) is cleaner than Pattern 1 (boolean parameters)
 
-This correction restores the intended architecture and ends the months of state mixing issues.
+### **🔧 Pattern Simplification Recommendation**
+
+Two valid dual-state patterns have emerged in the codebase:
+
+**Pattern 1: Boolean Parameters (S11, S12)**
+```javascript
+function calculateValues(isReferenceCalculation = false) {
+  if (isReferenceCalculation) {
+    // Reference logic
+  } else {
+    // Target logic  
+  }
+}
+```
+
+**Pattern 2: Separate Functions + Helpers (S14, S15, S01, S13)**
+```javascript
+function calculateReferenceModel() {
+  const getRefValue = (fieldId) => {
+    return window.TEUI.StateManager.getValue(`ref_${fieldId}`) || fallback;
+  };
+  // Use getRefValue throughout
+}
+
+function calculateTargetModel() {
+  // Use getFieldValue throughout - naturally reads correct values
+}
+```
+
+**Recommendation**: **Pattern 2 is preferred** for new implementations and future refactoring:
+- Cleaner code without boolean parameters throughout
+- Natural separation of concerns
+- Easier to debug and maintain
+- Follows S14/S15 proven approach
+
+**Action**: Consider simplifying S11/S12 to Pattern 2 in future refactoring sessions.
+
+This correction process has successfully restored the intended architecture in S12 and significantly advanced S13 implementation.
+
+### **🔧 Planned Investigation & Audit (Evening Session)**
+
+#### **Immediate S13 Investigation**
+1. **Verify upstream Reference data**: Check if `ref_d_127` exists in StateManager from S14
+2. **Debug Reference TED flow**: Track why Reference calculations result in zeros
+3. **Validate Reference state object**: Ensure Reference defaults are being read correctly
+4. **Test gas system calculations**: Verify AFUE, emissions, and exhaust calculations in Reference mode
+
+#### **Comprehensive Section Audit Plan**
+Once S13 is stabilized, conduct systematic audit of all Pattern A sections:
+
+**Target Mode Validation:**
+- S03, S08, S09, S10, S11, S12, S13: Verify Target calculations use Target state
+- Confirm no Reference contamination in Target calculations
+- Validate Target TEUI stability (93.6) across all section interactions
+
+**Reference Mode Validation:**  
+- S03, S08, S09, S10, S11, S12, S13: Verify Reference calculations use Reference state
+- Confirm Reference values display immediately upon mode switch
+- Validate Reference defaults match expected building code baselines
+- Ensure Reference calculations flow to S01 Reference column (red values)
+
+**Cross-Section Data Flow:**
+- Verify `ref_` prefixed values flow correctly between sections
+- Confirm Target values flow correctly without `ref_` prefix
+- Test edge cases and complex interactions (thermal bridges, cooling systems, etc.)
+
+**Success Criteria:**
+- S01 displays three distinct columns with appropriate values
+- Reference TEUI appears in red column (not 0.0)
+- No state mixing or cross-contamination between Target/Reference streams
+- All sections follow identical dual-state patterns from the GUIDE
 
 ### **📋 Next Steps for S12 Completion & 'Robot Fingers'**
 

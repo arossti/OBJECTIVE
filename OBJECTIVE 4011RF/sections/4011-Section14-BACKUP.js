@@ -16,319 +16,6 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 // Section 14: TEDI & TELI Module
 window.TEUI.SectionModules.sect14 = (function () {
   //==========================================================================
-  // DUAL-STATE ARCHITECTURE (Self-Contained State Module)
-  //==========================================================================
-
-  // PATTERN A: Internal State Objects (Self-Contained + Persistent)
-  const TargetState = {
-    state: {},
-    listeners: {},
-    initialize: function () {
-      const savedState = localStorage.getItem("S14_TARGET_STATE");
-      if (savedState) {
-        this.state = JSON.parse(savedState);
-      } else {
-        this.setDefaults();
-      }
-    },
-    setDefaults: function () {
-      // S14-specific Target defaults - minimal user inputs
-      this.state = {
-        d_142: "0", // Capital cost premium for HP equipment (only user input)
-        // Most other fields are calculated from upstream sections
-      };
-    },
-    saveState: function () {
-      localStorage.setItem("S14_TARGET_STATE", JSON.stringify(this.state));
-    },
-    setValue: function (fieldId, value, source = "user") {
-      this.state[fieldId] = value;
-      if (source === "user-modified") {
-        this.saveState();
-      }
-    },
-    getValue: function (fieldId) {
-      return this.state[fieldId];
-    },
-  };
-
-  const ReferenceState = {
-    state: {},
-    listeners: {},
-    initialize: function () {
-      const savedState = localStorage.getItem("S14_REFERENCE_STATE");
-      if (savedState) {
-        this.state = JSON.parse(savedState);
-      } else {
-        this.setDefaults();
-      }
-    },
-    setDefaults: function () {
-      // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
-      const currentStandard =
-        window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-      const referenceValues =
-        window.TEUI?.ReferenceValues?.[currentStandard] || {};
-
-      // Apply reference values to S14 fields with fallbacks
-      this.state = {
-        d_142: referenceValues.d_142 || "0", // Capital cost premium (typically 0 for reference)
-        // Most S14 values are calculated from upstream Reference sections
-      };
-
-      console.log(
-        `S14: Reference defaults loaded from standard: ${currentStandard}`,
-      );
-    },
-    // MANDATORY: Include onReferenceStandardChange for d_13 changes
-    onReferenceStandardChange: function () {
-      console.log("S14: Reference standard changed, reloading defaults");
-      this.setDefaults();
-      this.saveState();
-      // Only refresh UI if currently in reference mode
-      if (ModeManager.currentMode === "reference") {
-        ModeManager.refreshUI();
-        calculateAll();
-      }
-    },
-    saveState: function () {
-      localStorage.setItem("S14_REFERENCE_STATE", JSON.stringify(this.state));
-    },
-    setValue: function (fieldId, value, source = "user") {
-      this.state[fieldId] = value;
-      if (source === "user-modified") {
-        this.saveState();
-      }
-    },
-    getValue: function (fieldId) {
-      return this.state[fieldId];
-    },
-  };
-
-  // PATTERN 2: The ModeManager Facade
-  const ModeManager = {
-    currentMode: "target",
-    initialize: function () {
-      TargetState.initialize();
-      ReferenceState.initialize();
-
-      // MANDATORY: Listen for reference standard changes
-      if (window.TEUI?.StateManager?.addListener) {
-        window.TEUI.StateManager.addListener("d_13", () => {
-          ReferenceState.onReferenceStandardChange();
-        });
-      }
-    },
-    switchMode: function (mode) {
-      if (
-        this.currentMode === mode ||
-        (mode !== "target" && mode !== "reference")
-      )
-        return;
-      this.currentMode = mode;
-      console.log(`S14: Switched to ${mode.toUpperCase()} mode`);
-
-      this.refreshUI();
-      calculateAll();
-      // ✅ FIX: Update displayed calculated values based on new mode
-      this.updateCalculatedDisplayValues();
-    },
-    
-    // Update displayed calculated values based on current mode
-    updateCalculatedDisplayValues: function () {
-      if (!window.TEUI?.StateManager) return;
-      
-      console.log(`[Section14] 🔄 Updating calculated display values for ${this.currentMode} mode`);
-
-      const calculatedFields = [
-        "d_127", "h_127", "d_128", "h_128", // TED/TEDI values
-        "d_129", "h_129", "m_129", // CED values
-        "d_130", "h_130", // CEDI W/m2 values
-        "d_131", "h_131", // TEL values
-        "d_132", "h_132", // CEG values
-        "l_128", // CED Mitigated (calculated field)
-      ];
-
-      calculatedFields.forEach(fieldId => {
-        let valueToDisplay;
-        
-        if (this.currentMode === "reference") {
-          // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-                           window.TEUI.StateManager.getValue(fieldId);
-        } else {
-          // In Target mode, show regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
-        }
-
-        if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-          if (element && !element.hasAttribute("contenteditable")) {
-            // Only update calculated fields, not user-editable ones
-            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
-            if (!isNaN(numericValue)) {
-              // Use appropriate formatting for different field types
-              let formattedValue;
-              if (fieldId.startsWith("h_") && (fieldId === "h_130" || fieldId === "d_130")) {
-                // W/m2 fields
-                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
-              } else {
-                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
-              }
-              element.textContent = formattedValue;
-            }
-          }
-        }
-      });
-
-      console.log(`[Section14] Calculated display values updated for ${this.currentMode} mode`);
-    },
-    resetState: function () {
-      console.log("S14: Resetting state and clearing localStorage.");
-      TargetState.setDefaults();
-      TargetState.saveState();
-      ReferenceState.setDefaults();
-      ReferenceState.saveState();
-      console.log("S14: States have been reset to defaults.");
-
-      this.refreshUI();
-      calculateAll();
-    },
-    getCurrentState: function () {
-      return this.currentMode === "target" ? TargetState : ReferenceState;
-    },
-    getValue: function (fieldId) {
-      return this.getCurrentState().getValue(fieldId);
-    },
-    setValue: function (fieldId, value, source = "user") {
-      this.getCurrentState().setValue(fieldId, value, source);
-
-      // BRIDGE: For backward compatibility, sync Target changes to global StateManager
-      if (this.currentMode === "target") {
-        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
-      }
-    },
-    refreshUI: function () {
-      const sectionElement = document.getElementById("tediSummary");
-      if (!sectionElement) return;
-
-      const currentState = this.getCurrentState();
-
-      // S14-specific fields to sync (minimal user inputs)
-      const fieldsToSync = ["d_142"]; // Only one user input field
-
-      fieldsToSync.forEach((fieldId) => {
-        const stateValue = currentState.getValue(fieldId);
-        if (stateValue === undefined || stateValue === null) return;
-
-        const element = sectionElement.querySelector(
-          `[data-field-id="${fieldId}"]`,
-        );
-        if (!element) return;
-
-        // ✅ PATTERN A: Simple element updates
-        if (element.hasAttribute("contenteditable")) {
-          element.textContent = stateValue;
-        } else if (element.type === "range") {
-          // Handle sliders if any
-          element.value = stateValue;
-          const textDisplay = element.nextElementSibling;
-          if (textDisplay && textDisplay.matches("[data-field-id]")) {
-            textDisplay.textContent = stateValue;
-          }
-        }
-      });
-    },
-  };
-
-  // MANDATORY: Global exposure
-  window.TEUI.sect14 = window.TEUI.sect14 || {};
-  window.TEUI.sect14.ModeManager = ModeManager;
-  window.TEUI.sect14.TargetState = TargetState;
-  window.TEUI.sect14.ReferenceState = ReferenceState;
-
-  //==========================================================================
-  // HEADER CONTROLS INJECTION
-  //==========================================================================
-
-  /**
-   * Creates and injects the Target/Reference toggle and Reset button into the section header.
-   */
-  function injectHeaderControls() {
-    const sectionHeader = document.querySelector(
-      "#tediSummary .section-header, #tediSummary .section-title",
-    );
-    if (
-      !sectionHeader ||
-      sectionHeader.querySelector(".local-controls-container")
-    ) {
-      return; // Already setup or header not found
-    }
-
-    const controlsContainer = document.createElement("div");
-    controlsContainer.className = "local-controls-container";
-    controlsContainer.style.cssText =
-      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
-
-    // Reset Button
-    const resetButton = document.createElement("button");
-    resetButton.innerHTML = "🔄 Reset";
-    resetButton.title = "Reset Section 14 to Defaults";
-    resetButton.style.cssText =
-      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
-
-    resetButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      if (
-        confirm(
-          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 14.",
-        )
-      ) {
-        ModeManager.resetState();
-      }
-    });
-
-    // Toggle Switch (exact copy from S13)
-    const stateIndicator = document.createElement("span");
-    stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText =
-      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
-
-    const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText =
-      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
-
-    const slider = document.createElement("div");
-    slider.style.cssText =
-      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
-
-    toggleSwitch.appendChild(slider);
-
-    toggleSwitch.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const isReference = toggleSwitch.classList.toggle("active");
-      if (isReference) {
-        slider.style.transform = "translateX(20px)";
-        toggleSwitch.style.backgroundColor = "#28a745";
-        stateIndicator.textContent = "REFERENCE";
-        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-        ModeManager.switchMode("reference");
-      } else {
-        slider.style.transform = "translateX(0px)";
-        toggleSwitch.style.backgroundColor = "#ccc";
-        stateIndicator.textContent = "TARGET";
-        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-        ModeManager.switchMode("target");
-      }
-    });
-
-    controlsContainer.appendChild(resetButton);
-    controlsContainer.appendChild(stateIndicator);
-    controlsContainer.appendChild(toggleSwitch);
-    sectionHeader.appendChild(controlsContainer);
-  }
-
-  //==========================================================================
   // HELPER FUNCTIONS (Copied from Section 15 Refactor)
   //==========================================================================
 
@@ -995,17 +682,11 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // d_127: TED (Heating Load)
       const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
-      
-      // TEMPORARY DEBUG: Log Reference TED calculation
-      console.log(`[S14 DEBUG] Calculating ref_d_127: i97=${i97} + i98=${i98} + i103=${i103} + m121=${m121} - i80=${i80} = ${ref_tedHeatloss_d127}`);
-      
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",
         ref_tedHeatloss_d127.toString(),
         "calculated",
       );
-      
-      console.log(`[S14 DEBUG] Stored ref_d_127 = ${ref_tedHeatloss_d127} in StateManager`);
 
       // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
       const ref_tedi_h127 = area > 0 ? ref_tedHeatloss_d127 / area : 0;
@@ -1407,33 +1088,18 @@ window.TEUI.SectionModules.sect14 = (function () {
    * Called when section is rendered
    */
   function onSectionRendered() {
-    console.log(
-      "S14: Section rendered - initializing Pattern A Dual-State Module.",
-    );
+    // console.log("TEDI & TELI section (sect14) rendered");
 
-    // 1. Initialize the ModeManager and its internal states
-    ModeManager.initialize();
-
-    // 2. Setup the section-specific toggle switch in the header
-    injectHeaderControls();
-
-    // 3. Register dependencies
     if (window.TEUI.StateManager) {
       registerDependencies();
     } else {
-      console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
+      // console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
     }
 
-    // 4. Initialize event handlers
     initializeEventHandlers();
 
-    // 5. Sync UI to the default (Target) state
-    ModeManager.refreshUI();
-
-    // 6. Run initial calculations for both engines
-    calculateAll();
-
-    console.log("S14: Pattern A initialization complete.");
+    // Initial calculation should now be triggered by the central Calculator.calculateAll
+    // or by listeners responding to dependency updates.
   }
 
   //==========================================================================
