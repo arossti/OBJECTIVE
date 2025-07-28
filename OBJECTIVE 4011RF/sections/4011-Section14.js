@@ -982,10 +982,8 @@ window.TEUI.SectionModules.sect14 = (function () {
         
         const finalValue = refValue || fallbackValue || domValue;
         
-        // TEMPORARY DEBUG: Log problematic values
-        if (!finalValue || isNaN(finalValue)) {
-          console.log(`[S14 DEBUG] ❌ getRefValue(${fieldId}): ref="${refValue}", fallback="${fallbackValue}", dom="${domValue}", final="${finalValue}"`);
-        }
+        // TEMPORARY DEBUG: Log ALL Reference value retrievals to trace the source
+        console.log(`[S14 DEBUG] 🔍 getRefValue(${fieldId}): ref="${refValue}" (${typeof refValue}), fallback="${fallbackValue}" (${typeof fallbackValue}), dom="${domValue}" (${typeof domValue}), final="${finalValue}" (${typeof finalValue})`);
         
         return finalValue;
       };
@@ -1008,14 +1006,21 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // Calculate Reference values with proper numeric safety
       
-      // TEMPORARY DEBUG: Log what values we're getting
-      console.log(`[S14 DEBUG] Raw Reference inputs: i97=${i97}, i98=${i98}, i103=${i103}, m121=${m121}, i80=${i80}`);
-      console.log(`[S14 DEBUG] Raw Reference inputs: area=${area}, k71=${k71}, k79=${k79}, d122=${d122}`);
+      // TEMPORARY DEBUG: Log what values we're getting WITH TYPES
+      console.log(`[S14 DEBUG] Raw Reference inputs: i97=${i97} (${typeof i97}), i98=${i98} (${typeof i98}), i103=${i103} (${typeof i103}), m121=${m121} (${typeof m121}), i80=${i80} (${typeof i80})`);
+      console.log(`[S14 DEBUG] Raw Reference inputs: area=${area} (${typeof area}), k71=${k71} (${typeof k71}), k79=${k79} (${typeof k79}), d122=${d122} (${typeof d122})`);
+
+      // TEMPORARY DEBUG: Test the arithmetic step by step
+      console.log(`[S14 DEBUG] Step-by-step arithmetic test:`);
+      console.log(`[S14 DEBUG] Step 1: ${i97} + ${i98} = ${i97 + i98}`);
+      console.log(`[S14 DEBUG] Step 2: ${i97 + i98} + ${i103} = ${i97 + i98 + i103}`);
+      console.log(`[S14 DEBUG] Step 3: ${i97 + i98 + i103} + ${m121} = ${i97 + i98 + i103 + m121}`);
+      console.log(`[S14 DEBUG] Step 4: ${i97 + i98 + i103 + m121} - ${i80} = ${i97 + i98 + i103 + m121 - i80}`);
 
       // d_127: TED (Heating Load) - Using original calculation logic
       const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
       
-      console.log(`[S14 DEBUG] ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80} = ${ref_tedHeatloss_d127}`);
+      console.log(`[S14 DEBUG] Final ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80} = ${ref_tedHeatloss_d127}`);
       
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",
