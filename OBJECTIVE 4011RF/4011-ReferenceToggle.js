@@ -148,10 +148,12 @@ TEUI.ReferenceToggle = (function () {
       }
       
       // 🎨 CRITICAL: Apply RED Reference mode styling to entire UI
-      document.body.classList.toggle("reference-mode", isShowingReference);
+      // Use the SAME CSS class that "Highlight Reference Values" uses
+      document.body.classList.toggle("viewing-reference-inputs", isShowingReference);
       document.body.classList.toggle("viewing-reference-values", isShowingReference);
       
-      // Also trigger any global Reference mode styling
+      // Also apply additional classes for comprehensive styling
+      document.body.classList.toggle("reference-mode", isShowingReference);
       const htmlElement = document.documentElement;
       htmlElement.classList.toggle("reference-mode", isShowingReference);
       
