@@ -340,55 +340,66 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Inject toggle controls into section header
     injectHeaderControls: function () {
-      const headerRow = document.querySelector('[data-row-id="15-ID"]');
-      if (!headerRow) {
-        console.warn("S15: Could not find header row for toggle injection");
-        return;
-      }
+      // Add delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        const headerRow = document.querySelector('[data-row-id="15-ID"]');
+        if (!headerRow) {
+          console.warn("S15: Could not find header row for toggle injection");
+          console.log("S15: Available rows:", document.querySelectorAll('[data-row-id]'));
+          return;
+        }
 
-      // Find the section header cell (usually first cell with section title)
-      const headerCell = headerRow.querySelector(".section-header");
-      if (!headerCell) {
-        console.warn("S15: Could not find section header cell");
-        return;
-      }
+        // Find the section header cell (usually first cell with section title)
+        const headerCell = headerRow.querySelector(".section-header");
+        if (!headerCell) {
+          console.warn("S15: Could not find section header cell");
+          console.log("S15: Available header cells:", headerRow.querySelectorAll("td, th"));
+          return;
+        }
 
-      // Create controls container
-      const controlsHTML = `
-        <div class="section-controls">
-          <label class="mode-toggle">
-            <input type="checkbox" id="s15-mode-toggle" />
-            <span class="toggle-slider"></span>
-            <span class="toggle-label-left">TARGET</span>
-            <span class="toggle-label-right">REFERENCE</span>
-          </label>
-          <button type="button" class="reset-button" id="s15-reset-button">Reset</button>
-        </div>
-      `;
+        // Check if controls already exist to prevent duplicates
+        if (headerCell.querySelector(".section-controls")) {
+          console.log("S15: Header controls already exist, skipping injection");
+          return;
+        }
 
-      // Inject controls
-      headerCell.insertAdjacentHTML("beforeend", controlsHTML);
+        // Create controls container
+        const controlsHTML = `
+          <div class="section-controls">
+            <label class="mode-toggle">
+              <input type="checkbox" id="s15-mode-toggle" />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label-left">TARGET</span>
+              <span class="toggle-label-right">REFERENCE</span>
+            </label>
+            <button type="button" class="reset-button" id="s15-reset-button">Reset</button>
+          </div>
+        `;
 
-      // Attach event handlers
-      const toggle = document.getElementById("s15-mode-toggle");
-      const resetButton = document.getElementById("s15-reset-button");
+        // Inject controls
+        headerCell.insertAdjacentHTML("beforeend", controlsHTML);
 
-      if (toggle) {
-        toggle.addEventListener("change", (e) => {
-          const mode = e.target.checked ? "reference" : "target";
-          this.switchMode(mode);
-        });
-      }
+        // Attach event handlers
+        const toggle = document.getElementById("s15-mode-toggle");
+        const resetButton = document.getElementById("s15-reset-button");
 
-      if (resetButton) {
-        resetButton.addEventListener("click", () => {
-          if (confirm("Reset all Section 15 values to defaults?")) {
-            this.resetCurrentState();
-          }
-        });
-      }
+        if (toggle) {
+          toggle.addEventListener("change", (e) => {
+            const mode = e.target.checked ? "reference" : "target";
+            this.switchMode(mode);
+          });
+        }
 
-      console.log("S15: Header controls injected successfully");
+        if (resetButton) {
+          resetButton.addEventListener("click", () => {
+            if (confirm("Reset all Section 15 values to defaults?")) {
+              this.resetCurrentState();
+            }
+          });
+        }
+
+        console.log("✅ S15: Header controls injected successfully");
+      }, 100); // 100ms delay to ensure DOM is ready
     },
 
     // Reset current mode's state to defaults
