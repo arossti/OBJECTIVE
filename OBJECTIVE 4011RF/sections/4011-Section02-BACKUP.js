@@ -942,9 +942,6 @@ window.TEUI.SectionModules.sect02 = (function () {
    * Standard implementation from SectionXX template
    */
   function onSectionRendered() {
-    // Initialize Pattern A Dual-State Module
-    ModeManager.initialize();
-
     // Initialize event handlers
     initializeEventHandlers();
 
@@ -1277,120 +1274,8 @@ window.TEUI.SectionModules.sect02 = (function () {
   //==========================================================================
   // DUAL-STATE MODE MANAGEMENT
   //==========================================================================
-
-  /**
-   * TargetState: Manages Target (user's design) state with persistence
-   */
-  const TargetState = {
-    data: {},
-    storageKey: "S02_TARGET_STATE",
-
-    loadState: function () {
-      try {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-          this.data = JSON.parse(saved);
-          console.log(`S02: Loaded Target state from localStorage`);
-        }
-      } catch (error) {
-        console.warn(`S02: Error loading Target state:`, error);
-        this.data = {};
-      }
-    },
-
-    saveState: function () {
-      try {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S02: Saved Target state to localStorage`);
-      } catch (error) {
-        console.warn(`S02: Error saving Target state:`, error);
-      }
-    },
-
-    getValue: function (fieldId) {
-      return this.data[fieldId] || "";
-    },
-
-    setValue: function (fieldId, value, source = "calculated") {
-      this.data[fieldId] = value;
-      if (source === "user" || source === "user-modified") {
-        this.saveState();
-      }
-    },
-
-    setDefaults: function () {
-      // S02 Building Information defaults
-      this.data = {
-        ...this.data,
-        d_13: "OBC SB10 5.5-6 Z6", // Default reference standard
-        d_15: "Self Reported", // Default carbon standard
-      };
-      console.log(`S02: Target defaults set`);
-    },
-  };
-
-  /**
-   * ReferenceState: Manages Reference (building code minimums) state with persistence
-   */
-  const ReferenceState = {
-    data: {},
-    storageKey: "S02_REFERENCE_STATE",
-
-    loadState: function () {
-      try {
-        const saved = localStorage.getItem(this.storageKey);
-        if (saved) {
-          this.data = JSON.parse(saved);
-          console.log(`S02: Loaded Reference state from localStorage`);
-        }
-      } catch (error) {
-        console.warn(`S02: Error loading Reference state:`, error);
-        this.data = {};
-      }
-    },
-
-    saveState: function () {
-      try {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S02: Saved Reference state to localStorage`);
-      } catch (error) {
-        console.warn(`S02: Error saving Reference state:`, error);
-      }
-    },
-
-    getValue: function (fieldId) {
-      return this.data[fieldId] || "";
-    },
-
-    setValue: function (fieldId, value, source = "calculated") {
-      this.data[fieldId] = value;
-      if (source === "user" || source === "user-modified") {
-        this.saveState();
-      }
-    },
-
-    setDefaults: function () {
-      // S02 Reference defaults (same as Target for building info)
-      this.data = {
-        ...this.data,
-        d_13: "OBC SB10 5.5-6 Z6", // Default reference standard
-        d_15: "Self Reported", // Default carbon standard  
-      };
-      console.log(`S02: Reference defaults set`);
-    },
-  };
-
   const ModeManager = {
     currentMode: "target", // "target" or "reference"
-
-    // Initialize the mode manager
-    initialize: function () {
-      TargetState.loadState();
-      ReferenceState.loadState();
-      TargetState.setDefaults();
-      ReferenceState.setDefaults();
-      console.log(`S02: Pattern A initialization complete.`);
-    },
 
     // S02 has no mode-switching UI, so this is for internal consistency.
     // The global ReferenceToggle will call this if needed.
@@ -1401,16 +1286,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
       this.currentMode = mode;
       console.log(`[S02] Switched to ${mode.toUpperCase()} mode`);
-    },
-
-    getValue: function (fieldId) {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-      return currentState.getValue(fieldId);
-    },
-
-    setValue: function (fieldId, value, source = "calculated") {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-      currentState.setValue(fieldId, value, source);
     },
   };
   // Expose ModeManager for debugging and cross-section communication
