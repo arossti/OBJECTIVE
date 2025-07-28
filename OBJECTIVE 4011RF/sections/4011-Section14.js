@@ -991,13 +991,21 @@ window.TEUI.SectionModules.sect14 = (function () {
       const d123 = getRefValue("d_123"); // Recovered Cooling Vent Energy from S13
       const k103 = getRefValue("k_103"); // Natural Air Leakage Heatgain
 
-      // Calculate Reference values
+      // Calculate Reference values with proper numeric safety
+      
+      // ✅ FIXED: Ensure all values are valid numbers before calculation
+      const safe_i97 = window.TEUI.parseNumeric(i97) || 0;
+      const safe_i98 = window.TEUI.parseNumeric(i98) || 0;
+      const safe_i103 = window.TEUI.parseNumeric(i103) || 0;
+      const safe_m121 = window.TEUI.parseNumeric(m121) || 0;
+      const safe_i80 = window.TEUI.parseNumeric(i80) || 0;
 
       // d_127: TED (Heating Load)
-      const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
+      const ref_tedHeatloss_d127 = safe_i97 + safe_i98 + safe_i103 + safe_m121 - safe_i80;
       
-      // TEMPORARY DEBUG: Log Reference TED calculation
-      console.log(`[S14 DEBUG] Calculating ref_d_127: i97=${i97} + i98=${i98} + i103=${i103} + m121=${m121} - i80=${i80} = ${ref_tedHeatloss_d127}`);
+      // TEMPORARY DEBUG: Log Reference TED calculation with safety checks
+      console.log(`[S14 DEBUG] Safe calculation ref_d_127: ${safe_i97} + ${safe_i98} + ${safe_i103} + ${safe_m121} - ${safe_i80} = ${ref_tedHeatloss_d127}`);
+      console.log(`[S14 DEBUG] Input validation - i97: ${i97}→${safe_i97}, i98: ${i98}→${safe_i98}, i103: ${i103}→${safe_i103}, m121: ${m121}→${safe_m121}, i80: ${i80}→${safe_i80}`);
       
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",

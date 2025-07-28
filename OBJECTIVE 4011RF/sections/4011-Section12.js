@@ -32,8 +32,8 @@ window.TEUI.SectionModules.sect12 = (function () {
         d_103: "1.5", // Number of stories (dropdown)
         g_103: "Normal", // Exposure (dropdown)
         d_105: "8000.00", // Conditioned volume (editable)
-        d_108: "MEASURED", // Blower door method (dropdown) - CHANGED to make g_109 default to 1.50
-        g_109: "1.50", // Measured value (conditional editable)
+        d_108: "AL-1B", // ✅ FIXED: Use AL-1B method (was MEASURED) to get proper 93.6 TEUI
+        g_109: "1.50", // Measured value (conditional editable, N/A when not MEASURED)
       };
     },
     saveState: function () {
@@ -41,9 +41,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-      // Only save to localStorage if the change was triggered by direct user interaction.
-      if (source === 'user-modified') {
+      // ✅ FIXED: Save state for any user action (user or user-modified)
+      if (source === "user" || source === "user-modified") {
         this.saveState();
+        console.log(`S12 TargetState: Saved state after ${source} changed ${fieldId} to ${value}`);
       }
     },
     getValue: function (fieldId) {
@@ -74,7 +75,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         d_103: referenceValues.d_103 || "1", // Stories - DIFFERENT: 1 vs Target 1.5
         g_103: referenceValues.g_103 || "Exposed", // Exposure - DIFFERENT: Exposed vs Target Normal
         d_105: "8200.00", // Volume - DIFFERENT: 8200 vs Target 8000
-        d_108: referenceValues.d_108 || "MEASURED", // Blower door method - DIFFERENT: MEASURED vs Target AL-1B
+        d_108: referenceValues.d_108 || "MEASURED", // Blower door method - DIFFERENT: Reference uses MEASURED vs Target AL-1B
         g_109: referenceValues.g_109 || "2.00", // Measured - DIFFERENT: 2.00 vs Target 1.50
       };
 
@@ -98,9 +99,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-      // Only save to localStorage if the change was triggered by direct user interaction.
-      if (source === 'user-modified') {
+      // ✅ FIXED: Save state for any user action (user or user-modified)
+      if (source === "user" || source === "user-modified") {
         this.saveState();
+        console.log(`S12 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`);
       }
     },
     getValue: function (fieldId) {
@@ -1384,8 +1386,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     if (!isReferenceCalculation) {
       setCalculatedValue("g_101", g101_uAir, "W/m2");
       setCalculatedValue("g_102", g102_uGround, "W/m2");
-      setCalculatedValue("d_104", d104_uCombined, "W/m2");
-    }
+    setCalculatedValue("d_104", d104_uCombined, "W/m2");
+  }
 
     // Return calculated values for Reference engine storage
     return {
@@ -1604,8 +1606,8 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // Only update DOM for Target calculations (like S11 pattern)
     if (!isReferenceCalculation) {
-      setCalculatedValue("i_103", i103_heatloss, "number-2dp-comma");
-      setCalculatedValue("k_103", k103_heatgain, "number-2dp-comma");
+    setCalculatedValue("i_103", i103_heatloss, "number-2dp-comma");
+    setCalculatedValue("k_103", k103_heatgain, "number-2dp-comma");
     }
 
     // Return calculated values for Reference engine storage
@@ -1662,11 +1664,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       setCalculatedValue("i_101", i101_heatlossAir, "number-2dp-comma");
       setCalculatedValue("j_101", j101_gainRateAir, "number-2dp");
       setCalculatedValue("k_101", k101_heatgainAir, "number-2dp-comma");
-      setCalculatedValue("h_102", h102_lossRateGround, "number-2dp");
-      setCalculatedValue("i_102", i102_heatlossGround, "number-2dp-comma");
-      setCalculatedValue("j_102", j102_gainRateGround, "number-2dp");
-      setCalculatedValue("k_102", k102_heatgainGround, "number-2dp-comma");
-    }
+    setCalculatedValue("h_102", h102_lossRateGround, "number-2dp");
+    setCalculatedValue("i_102", i102_heatlossGround, "number-2dp-comma");
+    setCalculatedValue("j_102", j102_gainRateGround, "number-2dp");
+    setCalculatedValue("k_102", k102_heatgainGround, "number-2dp-comma");
+  }
 
     // Return calculated values for Reference engine storage
     return {

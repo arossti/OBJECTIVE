@@ -896,7 +896,28 @@ Select a province and city to view weather data.</pre
               "Are you sure you want to reset all Target/Reference states to defaults?",
             )
           ) {
-            ModeManager.resetAllStates();
+            // Clear all dual-state localStorage keys
+            const dualStateKeys = [
+              "S03_TARGET_STATE", "S03_REFERENCE_STATE",
+              "S08_TARGET_STATE", "S08_REFERENCE_STATE", 
+              "S09_TARGET_STATE", "S09_REFERENCE_STATE",
+              "S10_TARGET_STATE", "S10_REFERENCE_STATE",
+              "S11_TARGET_STATE", "S11_REFERENCE_STATE", 
+              "S12_TARGET_STATE", "S12_REFERENCE_STATE",
+              "S13_TARGET_STATE", "S13_REFERENCE_STATE",
+              "S14_TARGET_STATE", "S14_REFERENCE_STATE",
+              "S15_TARGET_STATE", "S15_REFERENCE_STATE"
+            ];
+            
+            dualStateKeys.forEach(key => {
+              localStorage.removeItem(key);
+              console.log(`Global Reset: Cleared ${key}`);
+            });
+            
+            console.log("Global Reset: All dual-state localStorage cleared. Refreshing page...");
+            
+            // Refresh page to reload defaults
+            location.reload();
           }
         });
 

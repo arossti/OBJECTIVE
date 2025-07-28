@@ -55,8 +55,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-      if (source === "user-modified") {
+      // ✅ FIXED: Save state for any user action (user or user-modified)
+      if (source === "user" || source === "user-modified") {
         this.saveState();
+        console.log(`S13 TargetState: Saved state after ${source} changed ${fieldId} to ${value}`);
       }
     },
     getValue: function (fieldId) {
@@ -141,8 +143,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     },
     setValue: function (fieldId, value, source = "user") {
       this.state[fieldId] = value;
-      if (source === "user-modified") {
+      // ✅ FIXED: Save state for any user action (user or user-modified)
+      if (source === "user" || source === "user-modified") {
         this.saveState();
+        console.log(`S13 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`);
       }
     },
     getValue: function (fieldId) {
@@ -298,7 +302,54 @@ window.TEUI.SectionModules.sect13 = (function () {
           }
         }
       });
+
+      // ✅ FIXED: Update calculated display values after UI refresh
+      this.updateCalculatedDisplayValues();
     },
+    
+    // ✅ FIXED: Update displayed calculated values based on current mode  
+    updateCalculatedDisplayValues: function () {
+      if (!window.TEUI?.StateManager) return;
+
+      const calculatedFields = [
+        "h_113", "j_113", "j_114", "d_114", "d_115", "f_115", "h_115", "l_115", "m_115",
+        "l_113", "d_117", "j_116", "l_116", "l_114", "d_120", "d_121", "h_121", 
+        "d_122", "f_122", "h_122", "l_122", "d_123", "f_123", "h_123", "l_123",
+        "d_124", "h_124", "j_124", "l_124", "d_125", "h_125", "j_125", "l_125"
+      ];
+
+      calculatedFields.forEach(fieldId => {
+        let valueToDisplay;
+        
+        if (this.currentMode === "reference") {
+          // In Reference mode, try to show ref_ values, fallback to regular values
+          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
+                           window.TEUI.StateManager.getValue(fieldId);
+        } else {
+          // In Target mode, show regular values  
+          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+        }
+
+        if (valueToDisplay !== null && valueToDisplay !== undefined) {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element && !element.hasAttribute("contenteditable")) {
+            // Only update calculated fields, not user-editable ones
+            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
+            if (!isNaN(numericValue)) {
+              let formattedValue;
+              // Use appropriate formatting based on field type
+              if (fieldId.includes("115") && fieldId !== "d_115") {
+                formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
+              } else {
+                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+              }
+              element.textContent = formattedValue;
+            }
+          }
+        }
+      });
+    },
+    
     // CRITICAL: Mode-aware conditional UI updates
     updateConditionalUI: function () {
       const currentHeatingSystem = this.getValue("d_113");
