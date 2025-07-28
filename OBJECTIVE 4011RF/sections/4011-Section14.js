@@ -1007,6 +1007,17 @@ window.TEUI.SectionModules.sect14 = (function () {
       const safe_i103 = window.TEUI.parseNumeric(i103) || 0;
       const safe_m121 = window.TEUI.parseNumeric(m121) || 0;
       const safe_i80 = window.TEUI.parseNumeric(i80) || 0;
+      
+      // ✅ ADDED: Safety checks for other calculation values
+      const safe_k71 = window.TEUI.parseNumeric(k71) || 0;
+      const safe_k79 = window.TEUI.parseNumeric(k79) || 0;
+      const safe_k97 = window.TEUI.parseNumeric(k97) || 0;
+      const safe_k98 = window.TEUI.parseNumeric(k98) || 0;
+      const safe_k103 = window.TEUI.parseNumeric(k103) || 0;
+      const safe_d122 = window.TEUI.parseNumeric(d122) || 0;
+      const safe_h124 = window.TEUI.parseNumeric(h124) || 0;
+      const safe_d123 = window.TEUI.parseNumeric(d123) || 0;
+      const safe_area = window.TEUI.parseNumeric(area) || 1; // Use 1 as fallback to avoid division by zero
 
       // d_127: TED (Heating Load)
       const ref_tedHeatloss_d127 = safe_i97 + safe_i98 + safe_i103 + safe_m121 - safe_i80;
@@ -1025,7 +1036,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       console.log(`[S14 DEBUG] 🔄 Continuing with other Reference calculations...`);
 
       // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
-      const ref_tedi_h127 = area > 0 ? ref_tedHeatloss_d127 / area : 0;
+      const ref_tedi_h127 = safe_area > 0 ? ref_tedHeatloss_d127 / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_127",
         ref_tedi_h127.toString(),
@@ -1033,7 +1044,10 @@ window.TEUI.SectionModules.sect14 = (function () {
       );
 
       // d_128: TED Envelope (Heating Load - Envelope Only)
-      const ref_tediEnvelope_d128 = i97 + i98 + i103 - i80;
+      const ref_tediEnvelope_d128 = safe_i97 + safe_i98 + safe_i103 - safe_i80;
+      
+      console.log(`[S14 DEBUG] Safe calculation ref_d_128: ${safe_i97} + ${safe_i98} + ${safe_i103} - ${safe_i80} = ${ref_tediEnvelope_d128}`);
+      
       window.TEUI?.StateManager?.setValue(
         "ref_d_128",
         ref_tediEnvelope_d128.toString(),
@@ -1041,7 +1055,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       );
 
       // h_128: TEDI Envelope (Heating Load Intensity - Envelope Only kWh/m²/yr)
-      const ref_tediEnvelope_h128 = area > 0 ? ref_tediEnvelope_d128 / area : 0;
+      const ref_tediEnvelope_h128 = safe_area > 0 ? ref_tediEnvelope_d128 / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_128",
         ref_tediEnvelope_h128.toString(),
@@ -1049,7 +1063,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       );
 
       // d_129 and related cooling calculations
-      const ref_cedCoolingUnmitigated_d129 = k71 + k79 + k98 + d122;
+      const ref_cedCoolingUnmitigated_d129 = safe_k71 + safe_k79 + safe_k98 + safe_d122;
       window.TEUI?.StateManager?.setValue(
         "ref_d_129",
         ref_cedCoolingUnmitigated_d129.toString(),
@@ -1058,7 +1072,7 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // h_129: CEDI Unmitigated (kWh/m²/yr)
       const ref_cediUnmitigated_h129 =
-        area > 0 ? ref_cedCoolingUnmitigated_d129 / area : 0;
+        safe_area > 0 ? ref_cedCoolingUnmitigated_d129 / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_129",
         ref_cediUnmitigated_h129.toString(),
@@ -1067,7 +1081,7 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // m_129: CED Mitigated (kWh/yr)
       const ref_cedMitigated_m129 =
-        ref_cedCoolingUnmitigated_d129 - h124 - d123;
+        ref_cedCoolingUnmitigated_d129 - safe_h124 - safe_d123;
       window.TEUI?.StateManager?.setValue(
         "ref_m_129",
         ref_cedMitigated_m129.toString(),
@@ -1076,7 +1090,7 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // d_130: CEDI Cooling Load W/m2 Unmitigated
       const ref_cediCoolingWm2_d130 =
-        area > 0 ? ((ref_cedCoolingUnmitigated_d129 / 8760) * 1000) / area : 0;
+        safe_area > 0 ? ((ref_cedCoolingUnmitigated_d129 / 8760) * 1000) / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_d_130",
         ref_cediCoolingWm2_d130.toString(),
@@ -1085,7 +1099,7 @@ window.TEUI.SectionModules.sect14 = (function () {
 
       // h_130: CEDI Mitigated W/m2
       const ref_cediMitigated_h130 =
-        area > 0 ? ((ref_cedMitigated_m129 / 8760) * 1000) / area : 0;
+        safe_area > 0 ? ((ref_cedMitigated_m129 / 8760) * 1000) / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_130",
         ref_cediMitigated_h130.toString(),
@@ -1093,7 +1107,7 @@ window.TEUI.SectionModules.sect14 = (function () {
       );
 
       // d_131: TEL Heatloss
-      const ref_telHeatloss_d131 = i97 + i98 + i103;
+      const ref_telHeatloss_d131 = safe_i97 + safe_i98 + safe_i103;
       window.TEUI?.StateManager?.setValue(
         "ref_d_131",
         ref_telHeatloss_d131.toString(),
@@ -1101,22 +1115,22 @@ window.TEUI.SectionModules.sect14 = (function () {
       );
 
       // h_131: TELI Heatloss Intensity
-      const ref_teli_h131 = area > 0 ? ref_telHeatloss_d131 / area : 0;
+      const ref_teli_h131 = safe_area > 0 ? ref_telHeatloss_d131 / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_131",
         ref_teli_h131.toString(),
         "calculated",
       );
 
-      // d_132 & h_132: CEG and CEGI
-      const ref_cegHeatgain_d132 = k97 + k98 + k103;
+      // d_132 & h_132: CEG and CEGI  
+      const ref_cegHeatgain_d132 = safe_k97 + safe_k98 + safe_k103;
       window.TEUI?.StateManager?.setValue(
         "ref_d_132",
         ref_cegHeatgain_d132.toString(),
         "calculated",
       );
 
-      const ref_cegi_h132 = area > 0 ? ref_cegHeatgain_d132 / area : 0;
+      const ref_cegi_h132 = safe_area > 0 ? ref_cegHeatgain_d132 / safe_area : 0;
       window.TEUI?.StateManager?.setValue(
         "ref_h_132",
         ref_cegi_h132.toString(),
