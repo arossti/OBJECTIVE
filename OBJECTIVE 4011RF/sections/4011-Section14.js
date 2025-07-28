@@ -138,7 +138,15 @@ window.TEUI.SectionModules.sect14 = (function () {
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
       
-      console.log(`[Section14] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+      console.log(`[S14 DEBUG] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+      
+      // TEMPORARY DEBUG: Check if Reference values exist in StateManager
+      const sampleRefValues = {
+        ref_d_127: window.TEUI.StateManager.getValue("ref_d_127"),
+        ref_h_127: window.TEUI.StateManager.getValue("ref_h_127"),
+        ref_d_128: window.TEUI.StateManager.getValue("ref_d_128")
+      };
+      console.log(`[S14 DEBUG] Sample Reference values in StateManager:`, sampleRefValues);
 
       const calculatedFields = [
         "d_127", "h_127", "d_128", "h_128", // TED/TEDI values
@@ -962,7 +970,7 @@ window.TEUI.SectionModules.sect14 = (function () {
    * Stores results with ref_ prefix to keep separate from Target values
    */
   function calculateReferenceModel() {
-    // console.log("[Section14] Running Reference Model calculations...");
+    console.log("[S14 DEBUG] 🔄 Running Reference Model calculations...");
 
     try {
       // Get Reference values from upstream sections
@@ -1013,7 +1021,8 @@ window.TEUI.SectionModules.sect14 = (function () {
         "calculated",
       );
       
-      console.log(`[S14 DEBUG] Stored ref_d_127 = ${ref_tedHeatloss_d127} in StateManager`);
+      console.log(`[S14 DEBUG] ✅ Stored ref_d_127 = ${ref_tedHeatloss_d127} in StateManager`);
+      console.log(`[S14 DEBUG] 🔄 Continuing with other Reference calculations...`);
 
       // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
       const ref_tedi_h127 = area > 0 ? ref_tedHeatloss_d127 / area : 0;
