@@ -1466,9 +1466,20 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 - ✅ **S14**: Heating & Cooling Demand → COMPLETE
 - ✅ **S15**: TEUI Summary → COMPLETE
 
+**GLOBAL ARCHITECTURE (Pattern A Compatible):**
+- ✅ **ReferenceToggle.js**: Modernized for Pattern A → COMPLETE
+- ✅ **Global "Show Reference" Toggle**: Works with all 10 dual-state sections → COMPLETE
+- ✅ **Reference Standard (d_13) Changes**: Auto-updates ReferenceValues.js → COMPLETE
+- ✅ **Zero State Contamination**: Target/Reference isolation achieved → COMPLETE
+
 **PENDING SECTIONS:**
 - 🔄 **S01**: Summary (Final consumer section - special structure, may not need refactoring)
 - 🔄 **S05, S06, S07**: Additional sections
+
+**ADVANCED FEATURES (Planned):**
+- 🔄 **"Show Reference Differentiation"**: Highlight Target vs Reference input differences
+- 🔄 **"Match Target Building Inputs"**: Copy Target inputs to Reference (except d_13 values)
+- 🔄 **Component Bridge Retirement**: Remove Pattern B target_ prefix translations
 
 **PATTERN ANALYSIS:**
 - **Pattern 1 (Boolean Parameters)**: S11, S12 - Working but could be simplified
