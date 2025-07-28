@@ -1451,3 +1451,102 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 **📋 TODO: Update this section as S12 completion and ComponentBridge retirement progress.**
 
 ---
+
+## 🎯 **Implementation Status**
+
+**COMPLETED SECTIONS (Pattern A Fully Implemented):**
+- ✅ **S02**: Building Information → COMPLETE (Critical for `d_13` reference standard)
+- ✅ **S03**: Climate & Location → COMPLETE
+- ✅ **S04**: Energy Use Summary → COMPLETE  
+- ✅ **S08**: Capacity & Efficiency → COMPLETE  
+- ✅ **S10**: Solar Gains → COMPLETE
+- ✅ **S11**: Building Envelope → COMPLETE
+- ✅ **S12**: Air Leakage & Volume → COMPLETE  
+- ✅ **S13**: HVAC Systems → COMPLETE
+- ✅ **S14**: Heating & Cooling Demand → COMPLETE
+- ✅ **S15**: TEUI Summary → COMPLETE
+
+**PENDING SECTIONS:**
+- 🔄 **S01**: Summary (Final consumer section - special structure, may not need refactoring)
+- 🔄 **S05, S06, S07**: Additional sections
+
+**PATTERN ANALYSIS:**
+- **Pattern 1 (Boolean Parameters)**: S11, S12 - Working but could be simplified
+- **Pattern 2 (Separate Functions)**: S13, S14, S15 - Cleaner architecture, **RECOMMENDED**
+
+**🔍 Pattern exceptions noted for sections without ReferenceValues.js dependencies**
+
+---
+
+## 🎮 **Reference Model Toggling & Global Controls**
+
+### 🎯 **Core Reference Toggle Functionality**
+
+**Primary Global Toggle: "Show Reference" / "Show Target"**
+- **Purpose**: Switch ALL dual-state sections simultaneously between Target and Reference calculated values
+- **Architecture**: Leverages Pattern A `ModeManager.switchMode()` across all sections
+- **Button Location**: Global dropdown in header (`index.html`)
+- **Functionality**: 
+  - ✅ **"Show Reference"**: Displays Reference calculated values (stored with `ref_` prefix) across all sections
+  - ✅ **"Show Target"**: Displays Target calculated values (default application state) across all sections
+  - ✅ **State Isolation**: No cross-contamination between Target and Reference calculations
+  - ✅ **Real-time Updates**: Both Target and Reference calculations run in parallel always
+
+**Reference Standard Selection (d_13)**
+- **Purpose**: Selects which building code standard to use for Reference calculations
+- **Location**: Section 02 (Building Information)
+- **Functionality**: Changes ReferenceValues.js dataset loaded across all sections
+- **Auto-Update**: Triggers `onReferenceStandardChange()` in sections with ReferenceValues.js dependencies
+
+### 🔍 **Advanced Reference Analysis Features**
+
+**1. "Show Reference Inputs" (Implemented)**
+- **Purpose**: Highlights actual Reference input fields applied from ReferenceValues.js
+- **Visual**: Distinguishes between Reference inputs vs Reference calculated values
+- **Use Case**: Understand which fields are controlled by building code standards vs calculated results
+
+**2. "Show Reference Differentiation" (Planned)**
+- **Purpose**: Highlight input fields that differ between Target and Reference models
+- **Visual**: Show only fields where Reference differs from Target (excludes d_13 applied values)
+- **Use Case**: Troubleshoot when attempting identical building models, identify unintended differences
+
+**3. "Match Target Building Inputs" (Planned)**
+- **Purpose**: Copy all Target input values to Reference model, except d_13 ReferenceValues.js overrides
+- **Logic**: 
+  - Copy Target user inputs → Reference state
+  - Preserve d_13 standard-driven ReferenceValues.js inputs  
+  - Maintain calculation isolation
+- **Use Case**: Create identical building model with only code-minimum differences
+
+### 🏗️ **Implementation Pattern for Global Controls**
+
+```javascript
+// Pattern A Compatible Global Toggle
+TEUI.ReferenceToggle.switchAllSectionsMode("reference");
+
+// Sections with Pattern A architecture automatically respond
+sections.forEach(section => {
+  section.modeManager.switchMode("reference");
+  section.modeManager.updateCalculatedDisplayValues();
+});
+
+// Reference Standard Changes
+section.ReferenceState.onReferenceStandardChange(newStandard);
+```
+
+### 🎨 **UI/UX Design Patterns**
+
+**Global Reference Controls Location**: Header dropdown in `index.html`
+- **"Show Reference"** / **"Show Target"**: Primary toggle
+- **"Show Reference Inputs"**: Advanced analysis tool
+- **"Show Reference Differentiation"**: Troubleshooting tool (planned)
+- **"Match Target Building Inputs"**: Model setup tool (planned)
+
+**Visual Indicators**:
+- **Body Classes**: `viewing-reference-values`, `viewing-reference-inputs` for global styling
+- **Field Highlighting**: Reference inputs, calculated values, differences
+- **Button States**: Clear indication of current view mode
+
+**No Individual Section Controls**: Pattern A uses global toggle only, no individual section header controls
+
+---
