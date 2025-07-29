@@ -1041,21 +1041,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       return;
     }
 
-    console.log(`[S03 DEBUG] updateWeatherData() called in ${ModeManager.currentMode} mode: province="${provinceValue}", city="${cityValue}", timeframe="${timeframe}"`);
-
     // Get city data using ClimateDataService
     const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
-    
-    if (!cityData) {
-      console.error(`[S03 DEBUG] ❌ ClimateDataService.getCityData("${provinceValue}", "${cityValue}") returned null/undefined`);
-    } else {
-      console.log(`[S03 DEBUG] ✅ ClimateDataService found data for ${cityValue}, ${provinceValue}:`, {
-        HDD18: cityData.HDD18,
-        CDD24: cityData.CDD24, 
-        January_2_5: cityData.January_2_5,
-        July_2_5_Tdb: cityData.July_2_5_Tdb
-      });
-    }
 
     if (!cityData) {
       console.warn(
@@ -1304,10 +1291,6 @@ window.TEUI.SectionModules.sect03 = (function () {
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
       
-      // ✅ CRITICAL: Update weather data for Reference location (Vancouver) first
-      // NOTE: Do NOT call updateWeatherData() here - it causes recursion since it calls calculateAll()
-      // Instead, the climate data should already be loaded from UI state switching
-      
       // Run all calculations using Reference state values (Vancouver climate)
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
@@ -1333,9 +1316,6 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
-    
-    console.log(`[S03 DEBUG] storeReferenceResults() - Current mode: ${ModeManager.currentMode}`);
-    console.log(`[S03 DEBUG] ReferenceState full state:`, ReferenceState.state);
     
     // Get Reference state climate values and store with ref_ prefix
     const referenceResults = {

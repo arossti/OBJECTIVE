@@ -1585,19 +1585,9 @@ window.TEUI.SectionModules.sect15 = (function () {
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
       
-      // ✅ FIX: Use robust parser for formatted energy cost from S04 (handles $0.1300 format)
-      const elecPriceRaw = window.TEUI?.StateManager?.getValue("l_12");
-      let elecPrice = 0;
-      if (elecPriceRaw) {
-        // Try global parser first, then fallback to manual parsing for currency
-        elecPrice = window.TEUI?.parseNumeric ? window.TEUI.parseNumeric(elecPriceRaw) : 0;
-        if (elecPrice === 0 && typeof elecPriceRaw === 'string') {
-          // Fallback: strip currency symbols and parse manually
-          const cleanedPrice = elecPriceRaw.replace(/[$,]/g, '').trim();
-          elecPrice = parseFloat(cleanedPrice) || 0;
-        }
-      }
-      console.log(`[S15 DEBUG] 💰 Electricity price from S04: raw="${elecPriceRaw}" → parsed=$${elecPrice}/kWh`);
+      // ✅ FIX: Use robust getter for electricity price from S04 (like Reference calculation does)
+      const elecPrice = parseFloat(window.TEUI?.StateManager?.getValue("l_12")) || 0;
+      console.log(`[S15 DEBUG] 💰 Electricity price from S04: $${elecPrice}/kWh`);
 
       // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using
       const target_hdd = getNumericValue("d_20");
@@ -1619,13 +1609,10 @@ window.TEUI.SectionModules.sect15 = (function () {
       console.log(
         `🔍 S15 TARGET UPSTREAM: target_i_104=${target_i104}, target_m_121=${target_m121}, target_i_80=${target_i80}`,
       );
-      // ✅ FIX: Use consistent getter for all energy prices from S04
       const gasPrice = getNumericValue("l_13"); // Price per m3
-      const propanePrice = getNumericValue("l_14"); // Price per kg  
-      const oilPrice = getNumericValue("l_16"); // Price per litre
-      const woodPrice = getNumericValue("l_15"); // Price per m3
-      
-      console.log(`[S15 DEBUG] 💰 All energy prices from S04: elec=$${elecPrice}, gas=$${gasPrice}, propane=$${propanePrice}, oil=$${oilPrice}, wood=$${woodPrice}`);
+      const propanePrice = getNumericValue("l_14"); // Price per kg
+      const oilPrice = getNumericValue("l_16"); // Price per litre (CSV says l_16, form says l_15?) - Assuming l_16 from formula
+      const woodPrice = getNumericValue("l_15"); // Price per m3 (CSV says l_15, form says l_16?) - Assuming l_15 from formula
 
       const m43 = getNumericValue("m_43"); // Onsite Energy Subtotals
       const k51 = getNumericValue("k_51"); // W.3.3 Net Electrical Demand (DHW)
