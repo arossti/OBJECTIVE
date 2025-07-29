@@ -2081,10 +2081,14 @@ window.TEUI.SectionModules.sect12 = (function () {
       "j_19", // Climate Zone (for N-Factor)
       "h_21", // Capacitance Setting (for k_104)
     ];
-    // CRITICAL: Robot fingers connection
+    // CRITICAL: Robot fingers connection - MUST run dual-engine for proper Reference storage
+    // 📋 WORKPLAN: Consider moving aggregate U-value calculations (g_101, g_102) to S11
+    // This would eliminate Robot Fingers bypass issues and better align responsibilities:
+    // - S11: All transmission calculations (areas, U-values, thermal bridges)  
+    // - S12: Air leakage, volume, exposures only
     window.TEUI.StateManager.addListener("d_97", (newValue) => {
       // console.log(`[S12] TB penalty changed to: ${newValue}% - updating U-values`);
-      calculateCombinedUValue();
+      calculateAll(); // ✅ FIX: Run dual-engine instead of Target-only
     });
 
     // Add other external dependency listeners

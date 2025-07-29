@@ -1770,7 +1770,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       setCalculatedValue("h_140", maxCoolingIntensity_h140);
 
       // d_141: =D135*L12
-      let annualCostElecPre_d141 = teuTargetTotal * elecPrice; // Using d_135 value
+      const d135_value = parseFloat(getNumericValue("d_135")) || teuTargetTotal; // Read stored d_135 value
+      let annualCostElecPre_d141 = d135_value * elecPrice; // Use actual d_135 value
       setCalculatedValue("d_141", annualCostElecPre_d141, "currency");
 
       // h_141: =D136*L12
