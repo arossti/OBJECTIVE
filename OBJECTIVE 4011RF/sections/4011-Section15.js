@@ -254,8 +254,6 @@ window.TEUI.SectionModules.sect15 = (function () {
       TargetState.setDefaults();
       ReferenceState.setDefaults();
 
-      // Inject header controls
-      this.injectHeaderControls();
       console.log(`S15: Pattern A initialization complete.`);
     },
 
@@ -269,17 +267,14 @@ window.TEUI.SectionModules.sect15 = (function () {
       this.currentMode = mode;
       console.log(`S15: Switched to ${mode.toUpperCase()} mode`);
 
-      // Update the toggle switch state
-      const toggle = document.querySelector("#s15-mode-toggle");
-      if (toggle) {
-        toggle.checked = mode === "reference";
-      }
-
       // Refresh UI for new mode
       this.refreshUI();
 
       // Trigger calculations for the new mode
       calculateAll();
+      
+      // ✅ FIX: Update displayed calculated values based on new mode (AFTER calculations)
+      this.updateCalculatedDisplayValues();
     },
 
     // Refresh UI based on current mode
@@ -310,97 +305,77 @@ window.TEUI.SectionModules.sect15 = (function () {
 
     // Update calculated field displays based on current mode
     updateCalculatedDisplayValues: function () {
+      if (!window.TEUI?.StateManager) return;
+      
+      console.log(`[S15 DEBUG] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+      
+      // TEMPORARY DEBUG: Check if Reference values exist in StateManager like S14 does
+      const sampleRefValues = {
+        ref_d_135: window.TEUI.StateManager.getValue("ref_d_135"),
+        ref_h_135: window.TEUI.StateManager.getValue("ref_h_135"),
+        ref_d_136: window.TEUI.StateManager.getValue("ref_d_136")
+      };
+      console.log(`[S15 DEBUG] Sample Reference values in StateManager:`, sampleRefValues);
+      
       const calculatedFields = [
         "d_135", "h_135", "d_136", "h_136", "d_137", "h_137", "d_138", "h_138",
         "d_139", "h_139", "d_140", "h_140", "h_142", "d_143", "h_143", "l_143",
         "d_144", "h_144", "l_144", "d_145"
       ];
 
-      calculatedFields.forEach((fieldId) => {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element) {
-          let displayValue;
-          if (this.currentMode === "reference") {
-            // Show Reference calculated values
-            const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
-            displayValue = refValue || "0.00";
-          } else {
-            // Show Target calculated values
-            const targetValue = window.TEUI?.StateManager?.getValue(fieldId);
-            displayValue = targetValue || "0.00";
+      calculatedFields.forEach(fieldId => {
+        let valueToDisplay;
+        
+        if (this.currentMode === "reference") {
+          // In Reference mode, try to show ref_ values, fallback to regular values
+          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
+                           window.TEUI.StateManager.getValue(fieldId);
+        } else {
+          // In Target mode, show regular values
+          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+        }
+
+        // DEBUG: Log the first few fields to see what's happening
+        if (fieldId === "d_135" || fieldId === "h_135" || fieldId === "d_136") {
+          const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          const targetValue = window.TEUI.StateManager.getValue(fieldId);
+          console.log(`[S15 DEBUG] ${fieldId}: ref_value="${refValue}", target_value="${targetValue}", mode=${this.currentMode}, displaying="${valueToDisplay}"`);
+        }
+
+        if (valueToDisplay !== null && valueToDisplay !== undefined) {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element && !element.hasAttribute("contenteditable")) {
+            // Only update calculated fields, not user-editable ones
+            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
+            if (!isNaN(numericValue)) {
+              // Use appropriate formatting for different field types
+              let formattedValue;
+              if (fieldId === "d_141" || fieldId === "h_141" || fieldId === "l_141" || fieldId === "d_142") {
+                // Currency fields
+                formattedValue = window.TEUI.formatNumber(numericValue, "currency-2dp");
+              } else if (fieldId === "d_144" || fieldId === "h_144" || fieldId === "l_144" || fieldId === "d_145") {
+                // Percentage fields
+                formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
+              } else if (fieldId === "l_137" || fieldId === "l_138" || fieldId === "l_139") {
+                // BTU fields
+                formattedValue = window.TEUI.formatNumber(numericValue, "integer");
+              } else if (fieldId === "h_138" || fieldId === "h_139") {
+                // Tons fields
+                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+              } else {
+                // Default number format
+                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+              }
+              element.textContent = formattedValue;
+            }
           }
-          
-          // Update the display
-          element.textContent = displayValue;
         }
       });
 
-      console.log(`[S15] Calculated display values updated for ${this.currentMode} mode`);
+      console.log(`[Section15] Calculated display values updated for ${this.currentMode} mode`);
     },
 
-    // Inject toggle controls into section header
-    injectHeaderControls: function () {
-      // Add delay to ensure DOM is fully rendered
-      setTimeout(() => {
-        const headerRow = document.querySelector('[data-row-id="15-ID"]');
-        if (!headerRow) {
-          console.warn("S15: Could not find header row for toggle injection");
-          console.log("S15: Available rows:", document.querySelectorAll('[data-row-id]'));
-          return;
-        }
 
-        // Find the section header cell (usually first cell with section title)
-        const headerCell = headerRow.querySelector(".section-header");
-        if (!headerCell) {
-          console.warn("S15: Could not find section header cell");
-          console.log("S15: Available header cells:", headerRow.querySelectorAll("td, th"));
-          return;
-        }
-
-        // Check if controls already exist to prevent duplicates
-        if (headerCell.querySelector(".section-controls")) {
-          console.log("S15: Header controls already exist, skipping injection");
-          return;
-        }
-
-        // Create controls container
-        const controlsHTML = `
-          <div class="section-controls">
-            <label class="mode-toggle">
-              <input type="checkbox" id="s15-mode-toggle" />
-              <span class="toggle-slider"></span>
-              <span class="toggle-label-left">TARGET</span>
-              <span class="toggle-label-right">REFERENCE</span>
-            </label>
-            <button type="button" class="reset-button" id="s15-reset-button">Reset</button>
-          </div>
-        `;
-
-        // Inject controls
-        headerCell.insertAdjacentHTML("beforeend", controlsHTML);
-
-        // Attach event handlers
-        const toggle = document.getElementById("s15-mode-toggle");
-        const resetButton = document.getElementById("s15-reset-button");
-
-        if (toggle) {
-          toggle.addEventListener("change", (e) => {
-            const mode = e.target.checked ? "reference" : "target";
-            this.switchMode(mode);
-          });
-        }
-
-        if (resetButton) {
-          resetButton.addEventListener("click", () => {
-            if (confirm("Reset all Section 15 values to defaults?")) {
-              this.resetCurrentState();
-            }
-          });
-        }
-
-        console.log("✅ S15: Header controls injected successfully");
-      }, 100); // 100ms delay to ensure DOM is ready
-    },
 
     // Reset current mode's state to defaults
     resetCurrentState: function () {
@@ -427,6 +402,98 @@ window.TEUI.SectionModules.sect15 = (function () {
       currentState.setValue(fieldId, value, source);
     },
   };
+
+  // MANDATORY: Global exposure for cross-section communication
+  window.TEUI.sect15 = window.TEUI.sect15 || {};
+  window.TEUI.sect15.ModeManager = ModeManager;
+  window.TEUI.sect15.TargetState = TargetState;
+  window.TEUI.sect15.ReferenceState = ReferenceState;
+
+  //==========================================================================
+  // HEADER CONTROLS INJECTION
+  //==========================================================================
+
+  /**
+   * Creates and injects the Target/Reference toggle and Reset button into the section header.
+   * Follows the exact pattern from S14, S13, S12, S11 for consistent behavior.
+   */
+  function injectHeaderControls() {
+    const sectionHeader = document.querySelector(
+      "#teuiSummary .section-header, #teuiSummary .section-title",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
+      return; // Already setup or header not found
+    }
+
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+    // Reset Button
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = "🔄 Reset";
+    resetButton.title = "Reset Section 15 to Defaults";
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (
+        confirm(
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 15.",
+        )
+      ) {
+        ModeManager.resetCurrentState();
+      }
+    });
+
+    // Toggle Switch (exact copy from S14 pattern)
+    const stateIndicator = document.createElement("span");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
+    const slider = document.createElement("div");
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+
+    // Toggle Switch Click Handler
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation(); // ✅ FIX: Prevent header collapse
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Assemble controls
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
+
+    console.log("✅ S15: Header controls injected successfully");
+  }
 
   //==========================================================================
   // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
@@ -1930,6 +1997,9 @@ window.TEUI.SectionModules.sect15 = (function () {
   function onSectionRendered() {
     // Initialize Pattern A Dual-State Module
     ModeManager.initialize();
+
+    // Inject header controls for local testing and troubleshooting
+    injectHeaderControls();
 
     // Register dependencies first
     // Dependencies might rely on other sections being registered, so ensure StateManager is ready

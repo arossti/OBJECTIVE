@@ -581,6 +581,79 @@ All dual-state implementations MUST follow these naming conventions:
 
 ---
 
+## 🚨 **CRITICAL: Order of Operations in switchMode() Function**
+
+**⚠️ CRITICAL TIMING ISSUE**: One of the most common and persistent bugs in dual-state implementation is the **incorrect order of operations** in the `ModeManager.switchMode()` function. This issue has caused multiple failed implementations and hours of debugging.
+
+### **❌ WRONG ORDER (Causes Reference Values to Show as Target Values)**
+
+```javascript
+// ❌ WRONG: This will show identical values in both modes
+switchMode: function (mode) {
+  this.currentMode = mode;
+  
+  this.refreshUI();                    // 1. Updates input fields
+  this.updateCalculatedDisplayValues(); // 2. ❌ TRIES TO READ VALUES BEFORE CALCULATION
+  calculateAll();                      // 3. Actually calculates and stores values
+}
+```
+
+**Why This Fails:**
+- `updateCalculatedDisplayValues()` tries to read `ref_` prefixed values from StateManager
+- But `calculateAll()` hasn't run yet, so `ref_` values don't exist or are stale
+- Function falls back to regular values, showing Target values in both modes
+- Users see identical values in Target and Reference modes (major bug indicator)
+
+### **✅ CORRECT ORDER (Shows Distinct Values in Each Mode)**
+
+```javascript
+// ✅ CORRECT: This will show different values in Target vs Reference modes
+switchMode: function (mode) {
+  this.currentMode = mode;
+  
+  this.refreshUI();                    // 1. Updates input fields for new mode
+  calculateAll();                      // 2. Runs calculations and stores ref_ values
+  this.updateCalculatedDisplayValues(); // 3. Reads stored values and updates display
+}
+```
+
+**Why This Works:**
+- `calculateAll()` runs both `calculateTargetModel()` and `calculateReferenceModel()`
+- Reference calculations store results with `ref_` prefixes in StateManager
+- `updateCalculatedDisplayValues()` can then successfully read the stored Reference values
+- Users see distinctly different values when toggling between modes
+
+### **🔍 Debugging This Issue**
+
+**Symptom**: Reference mode shows identical values to Target mode  
+**Root Cause**: Wrong order of operations in `switchMode()`  
+**Fix**: Ensure `calculateAll()` runs **BEFORE** `updateCalculatedDisplayValues()`
+
+**Debug Steps:**
+1. Add logging to `updateCalculatedDisplayValues()` to check if `ref_` values exist:
+   ```javascript
+   const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+   const targetValue = window.TEUI.StateManager.getValue(fieldId);
+   console.log(`${fieldId}: ref="${refValue}", target="${targetValue}"`);
+   ```
+2. If `refValue` is null/undefined, the order is wrong
+3. Move `updateCalculatedDisplayValues()` after `calculateAll()`
+
+### **📋 Implementation Checklist**
+
+When implementing `switchMode()` function:
+
+- [ ] **Step 1**: `this.currentMode = mode` - Set the mode
+- [ ] **Step 2**: `this.refreshUI()` - Update input field displays  
+- [ ] **Step 3**: `calculateAll()` - Run calculations (stores ref_ values)
+- [ ] **Step 4**: `this.updateCalculatedDisplayValues()` - Update calculated displays
+
+**⚠️ Never call `updateCalculatedDisplayValues()` before `calculateAll()`**
+
+This order ensures that Reference values are calculated and stored before attempting to display them, preventing the common bug where both modes show identical values.
+
+---
+
 ## 🎯 **REFERENCE COMPARISON SYSTEM (M/N/O Columns)**
 
 ### **System Design Philosophy**
