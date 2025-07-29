@@ -1585,9 +1585,18 @@ window.TEUI.SectionModules.sect15 = (function () {
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
       
-      // ✅ FIX: Use proper global parser for formatted energy cost from S04
+      // ✅ FIX: Use robust parser for formatted energy cost from S04 (handles $0.1300 format)
       const elecPriceRaw = window.TEUI?.StateManager?.getValue("l_12");
-      const elecPrice = window.TEUI?.parseNumeric ? window.TEUI.parseNumeric(elecPriceRaw) || 0 : parseFloat(elecPriceRaw) || 0;
+      let elecPrice = 0;
+      if (elecPriceRaw) {
+        // Try global parser first, then fallback to manual parsing for currency
+        elecPrice = window.TEUI?.parseNumeric ? window.TEUI.parseNumeric(elecPriceRaw) : 0;
+        if (elecPrice === 0 && typeof elecPriceRaw === 'string') {
+          // Fallback: strip currency symbols and parse manually
+          const cleanedPrice = elecPriceRaw.replace(/[$,]/g, '').trim();
+          elecPrice = parseFloat(cleanedPrice) || 0;
+        }
+      }
       console.log(`[S15 DEBUG] 💰 Electricity price from S04: raw="${elecPriceRaw}" → parsed=$${elecPrice}/kWh`);
 
       // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using

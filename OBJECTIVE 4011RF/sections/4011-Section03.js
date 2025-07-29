@@ -1041,8 +1041,21 @@ window.TEUI.SectionModules.sect03 = (function () {
       return;
     }
 
+    console.log(`[S03 DEBUG] updateWeatherData() called in ${ModeManager.currentMode} mode: province="${provinceValue}", city="${cityValue}", timeframe="${timeframe}"`);
+
     // Get city data using ClimateDataService
     const cityData = ClimateDataService.getCityData(provinceValue, cityValue);
+    
+    if (!cityData) {
+      console.error(`[S03 DEBUG] ❌ ClimateDataService.getCityData("${provinceValue}", "${cityValue}") returned null/undefined`);
+    } else {
+      console.log(`[S03 DEBUG] ✅ ClimateDataService found data for ${cityValue}, ${provinceValue}:`, {
+        HDD18: cityData.HDD18,
+        CDD24: cityData.CDD24, 
+        January_2_5: cityData.January_2_5,
+        July_2_5_Tdb: cityData.July_2_5_Tdb
+      });
+    }
 
     if (!cityData) {
       console.warn(
@@ -1290,6 +1303,10 @@ window.TEUI.SectionModules.sect03 = (function () {
       // Force Reference mode temporarily to get Reference calculations
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
+      
+      // ✅ CRITICAL: Update weather data for Reference location (Vancouver) first
+      console.log(`[S03 DEBUG] About to call updateWeatherData() in Reference mode. ReferenceState: d_19="${ReferenceState.getValue("d_19")}", h_19="${ReferenceState.getValue("h_19")}"`);
+      updateWeatherData();
       
       // Run all calculations using Reference state values (Vancouver climate)
       calculateHeatingSetpoint();
