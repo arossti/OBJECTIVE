@@ -1305,8 +1305,8 @@ window.TEUI.SectionModules.sect03 = (function () {
       ModeManager.currentMode = "reference";
       
       // ✅ CRITICAL: Update weather data for Reference location (Vancouver) first
-      console.log(`[S03 DEBUG] About to call updateWeatherData() in Reference mode. ReferenceState: d_19="${ReferenceState.getValue("d_19")}", h_19="${ReferenceState.getValue("h_19")}"`);
-      updateWeatherData();
+      // NOTE: Do NOT call updateWeatherData() here - it causes recursion since it calls calculateAll()
+      // Instead, the climate data should already be loaded from UI state switching
       
       // Run all calculations using Reference state values (Vancouver climate)
       calculateHeatingSetpoint();
@@ -1333,6 +1333,9 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
+    
+    console.log(`[S03 DEBUG] storeReferenceResults() - Current mode: ${ModeManager.currentMode}`);
+    console.log(`[S03 DEBUG] ReferenceState full state:`, ReferenceState.state);
     
     // Get Reference state climate values and store with ref_ prefix
     const referenceResults = {
