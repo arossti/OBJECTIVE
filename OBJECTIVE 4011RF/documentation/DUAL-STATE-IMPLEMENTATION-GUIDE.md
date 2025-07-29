@@ -1747,3 +1747,142 @@ if (ModeManager && typeof ModeManager.injectHeaderControls === 'function') {
 4. **Cross-Section Data Flow**: Reference calculations cascade properly through dependency chain
 
 ---
+
+## 🔧 **COMPLETING PATTERN A SECTIONS WITH MISSING REFERENCE STORAGE**
+
+### **📋 Problem: UI Works, Downstream Broken**
+
+Some sections (notably **S03**) have **excellent Pattern A dual-state UI** but are missing the **Reference calculation engine** that stores `ref_` prefixed values for downstream consumption.
+
+**Symptoms:**
+- ✅ **Internal state switching**: Perfect (Target vs Reference locations work)
+- ✅ **Header controls**: Working (local toggles function)
+- ✅ **State isolation**: Complete (no contamination)
+- ❌ **Downstream consumption**: Broken (other sections can't read Reference values)
+
+### **🎯 S03 Specific Issue**
+
+**S03 Currently Working:**
+- **Target**: Ontario, Alexandria climate data
+- **Reference**: BC, Vancouver climate data  
+- **UI Switching**: Perfect between both climate locations
+
+**S03 Missing for S15:**
+- `ref_h_23` (Reference heating setpoint - Vancouver)
+- `ref_d_23` (Reference coldest day - Vancouver)
+- `ref_d_24` (Reference hottest day - Vancouver)  
+- `ref_h_24` (Reference cooling setpoint - Vancouver)
+
+**Result**: S15 cooling load calculations (rows 137-145) show identical Target/Reference values because they can't read Vancouver climate data.
+
+### **🔧 Implementation Pattern**
+
+**Add Reference Storage Engine to sections with perfect UI but missing downstream storage:**
+
+#### **Step 1: Add Reference Calculation Engine**
+
+```javascript
+/**
+ * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+ * Stores results with ref_ prefix for downstream sections (S15, S14, etc.)
+ */
+function calculateReferenceModel() {
+  console.log("[Section03] Running Reference Model calculations...");
+  
+  try {
+    // Force Reference mode temporarily to get Reference calculations
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference";
+    
+    // Run all calculations using Reference state values (Vancouver climate)
+    calculateHeatingSetpoint();
+    calculateCoolingSetpoint_h24();
+    calculateTemperatures();
+    calculateGroundFacing();
+    updateCoolingDependents();
+    
+    // Restore original mode
+    ModeManager.currentMode = originalMode;
+    
+    // Store Reference results for downstream consumption
+    storeReferenceResults();
+    
+  } catch (error) {
+    console.error("Error during Section 03 calculateReferenceModel:", error);
+  }
+  
+  console.log("[Section03] Reference Model calculations complete");
+}
+```
+
+#### **Step 2: Add Reference Storage Function**
+
+```javascript
+/**
+ * Store Reference Model calculation results with ref_ prefix for downstream sections
+ */
+function storeReferenceResults() {
+  if (!window.TEUI?.StateManager) return;
+  
+  // Get Reference state climate values and store with ref_ prefix
+  const referenceResults = {
+    h_23: ReferenceState.getValue("h_23"), // Vancouver heating setpoint
+    d_23: ReferenceState.getValue("d_23"), // Vancouver coldest day
+    d_24: ReferenceState.getValue("d_24"), // Vancouver hottest day
+    h_24: ReferenceState.getValue("h_24"), // Vancouver cooling setpoint
+    d_20: ReferenceState.getValue("d_20"), // Vancouver HDD
+    d_21: ReferenceState.getValue("d_21"), // Vancouver CDD
+    d_22: ReferenceState.getValue("d_22"), // Vancouver GF HDD
+    h_22: ReferenceState.getValue("h_22"), // Vancouver GF CDD
+    j_19: ReferenceState.getValue("j_19"), // Vancouver climate zone
+  };
+  
+  // Store with ref_ prefix for downstream sections
+  Object.entries(referenceResults).forEach(([fieldId, value]) => {
+    if (value !== null && value !== undefined) {
+      window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+    }
+  });
+  
+  console.log("[Section03] Reference results stored with ref_ prefix for downstream sections");
+}
+```
+
+#### **Step 3: Modify calculateAll() for Dual-Engine**
+
+```javascript
+function calculateAll() {
+  // ALWAYS run BOTH engines in parallel for complete downstream data
+  calculateTargetModel();   // Updates UI for current mode
+  calculateReferenceModel(); // Stores ref_ values for downstream sections
+}
+
+function calculateTargetModel() {
+  // Existing calculation logic (unchanged)
+  calculateHeatingSetpoint();
+  calculateCoolingSetpoint_h24();
+  calculateTemperatures();
+  calculateGroundFacing();
+  updateCoolingDependents();
+  updateCriticalOccupancyFlag();
+}
+```
+
+### **🧪 Testing Success**
+
+**After Implementation:**
+- ✅ **S03 UI**: Still works perfectly (Target Ontario ↔ Reference BC)
+- ✅ **S03 Storage**: Now provides `ref_h_23`, `ref_d_23`, etc. to StateManager
+- ✅ **S15 Cooling Loads**: Will show different values using Vancouver vs Ontario climate data
+- ✅ **Complete Pattern A**: UI switching + Downstream storage working
+
+### **🎯 Apply This Pattern To:**
+
+**Any section showing these symptoms:**
+1. **Perfect local UI switching** ✅
+2. **Perfect header controls** ✅  
+3. **Downstream sections showing identical Target/Reference values** ❌
+
+**Likely candidates**: S03 (confirmed), potentially other early Pattern A refactors.
+
+---
