@@ -335,11 +335,11 @@ window.TEUI.SectionModules.sect15 = (function () {
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
         }
 
-        // DEBUG: Log the first few fields to see what's happening
-        if (fieldId === "d_135" || fieldId === "h_135" || fieldId === "d_136") {
+        // Debug key fields to verify Reference/Target switching
+        if ((fieldId === "d_135" || fieldId === "h_135") && this.currentMode === "reference") {
           const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
           const targetValue = window.TEUI.StateManager.getValue(fieldId);
-          console.log(`[S15 DEBUG] ${fieldId}: ref_value="${refValue}", target_value="${targetValue}", mode=${this.currentMode}, displaying="${valueToDisplay}"`);
+          console.log(`[S15] ${fieldId}: REF=${refValue} vs TGT=${targetValue} (showing REF)`);
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
@@ -1358,6 +1358,13 @@ window.TEUI.SectionModules.sect15 = (function () {
       const d23 = parseFloat(getRefValue("d_23")) || 0;
       const d24 = parseFloat(getRefValue("d_24")) || 0;
       const h24 = parseFloat(getRefValue("h_24")) || 0;
+
+      // Check if critical upstream Reference values are available
+      const criticalRefValues = ["ref_g_101", "ref_d_101", "ref_h_23", "ref_i_104"];
+      const missingValues = criticalRefValues.filter(fieldId => !window.TEUI.StateManager.getValue(fieldId));
+      if (missingValues.length > 0) {
+        console.warn(`[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`);
+      }
 
       const d65 = parseFloat(getRefValue("d_65")) || 0;
       const d66 = parseFloat(getRefValue("d_66")) || 0;

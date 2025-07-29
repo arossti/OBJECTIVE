@@ -1707,9 +1707,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       k104_totalGain = k101 + k102;
     }
 
-    // Update values using standard formatters
-    setCalculatedValue("i_104", i104_totalLoss, "number-2dp-comma");
-    setCalculatedValue("k_104", k104_totalGain, "number-2dp-comma");
+    // Only update DOM for Target calculations (like S11 pattern)
+    if (!isReferenceCalculation) {
+      setCalculatedValue("i_104", i104_totalLoss, "number-2dp-comma");
+      setCalculatedValue("k_104", k104_totalGain, "number-2dp-comma");
+    }
 
     // Calculate percentages with full precision
     const l101 = i104_totalLoss > 0 ? i101 / i104_totalLoss : 0;
@@ -1717,11 +1719,23 @@ window.TEUI.SectionModules.sect12 = (function () {
     const l103 = i104_totalLoss > 0 ? i103 / i104_totalLoss : 0;
     const l104 = l101 + l102 + l103;
 
-    // Update percentage values using standard formatters
-    setCalculatedValue("l_101", l101, "percent-2dp");
-    setCalculatedValue("l_102", l102, "percent-2dp");
-    setCalculatedValue("l_103", l103, "percent-2dp");
-    setCalculatedValue("l_104", l104, "percent-0dp");
+    // Update percentage values using standard formatters  
+    if (!isReferenceCalculation) {
+      setCalculatedValue("l_101", l101, "percent-2dp");
+      setCalculatedValue("l_102", l102, "percent-2dp");
+      setCalculatedValue("l_103", l103, "percent-2dp");
+      setCalculatedValue("l_104", l104, "percent-0dp");
+    }
+
+    // ✅ FIX: Return calculated values for Reference engine storage
+    return {
+      i_104: i104_totalLoss,
+      k_104: k104_totalGain,
+      l_101: l101,
+      l_102: l102, 
+      l_103: l103,
+      l_104: l104
+    };
   }
 
   function calculateAll() {
@@ -1751,10 +1765,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       calculateAe10(true);
       const airLeakageResults = calculateAirLeakageHeatLoss(true);
       const envelopeResults = calculateEnvelopeHeatLossGain(true);
-      calculateEnvelopeTotals(true);
+      const envelopeTotalsResults = calculateEnvelopeTotals(true); // ✅ FIX: Capture return value
 
       // Store Reference Model results with ref_ prefix for downstream sections
-      storeReferenceResults(volumeResults, uValueResults, airLeakageResults, envelopeResults);
+      storeReferenceResults(volumeResults, uValueResults, airLeakageResults, envelopeResults, envelopeTotalsResults);
       
       // Update reference indicators after all calculations
       updateAllReferenceIndicators();
@@ -1768,7 +1782,7 @@ window.TEUI.SectionModules.sect12 = (function () {
   /**
    * Store Reference Model calculation results with ref_ prefix for downstream sections (S14, S15, S04, S01)
    */
-  function storeReferenceResults(volumeResults, uValueResults, airLeakageResults, envelopeResults) {
+  function storeReferenceResults(volumeResults, uValueResults, airLeakageResults, envelopeResults, envelopeTotalsResults) {
     if (!window.TEUI?.StateManager) return;
 
     // Store Reference calculation results with ref_ prefix
@@ -1776,7 +1790,8 @@ window.TEUI.SectionModules.sect12 = (function () {
       ...volumeResults,
       ...uValueResults, 
       ...airLeakageResults,
-      ...envelopeResults
+      ...envelopeResults,
+      ...envelopeTotalsResults // ✅ FIX: Include envelope totals (i_104, k_104, etc.)
     };
 
     Object.entries(allResults).forEach(([fieldId, value]) => {
