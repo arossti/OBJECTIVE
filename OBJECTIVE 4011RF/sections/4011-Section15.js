@@ -1584,7 +1584,10 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
-      const elecPrice = getNumericValue("l_12");
+      
+      // ✅ FIX: Use robust getter for electricity price from S04 (like Reference calculation does)
+      const elecPrice = parseFloat(window.TEUI?.StateManager?.getValue("l_12")) || 0;
+      console.log(`[S15 DEBUG] 💰 Electricity price from S04: $${elecPrice}/kWh`);
 
       // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using
       const target_hdd = getNumericValue("d_20");
@@ -1772,6 +1775,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // d_141: =D135*L12
       const d135_value = parseFloat(getNumericValue("d_135")) || teuTargetTotal; // Read stored d_135 value
       let annualCostElecPre_d141 = d135_value * elecPrice; // Use actual d_135 value
+      console.log(`[S15 DEBUG] 🧮 D141 calculation: ${d135_value} kWh/m²/yr × $${elecPrice}/kWh = $${annualCostElecPre_d141.toFixed(2)}`);
       setCalculatedValue("d_141", annualCostElecPre_d141, "currency");
 
       // h_141: =D136*L12

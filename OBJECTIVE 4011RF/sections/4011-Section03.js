@@ -1246,9 +1246,20 @@ window.TEUI.SectionModules.sect03 = (function () {
   }
 
   /**
-   * Calculate all values
+   * Calculate all values - DUAL-ENGINE PATTERN
+   * Runs both Target and Reference calculations for complete downstream data
    */
   function calculateAll() {
+    // ALWAYS run BOTH engines in parallel for complete downstream data
+    calculateTargetModel();   // Updates UI for current mode
+    calculateReferenceModel(); // Stores ref_ values for downstream sections
+  }
+
+  /**
+   * TARGET MODEL ENGINE: Calculate all values using Target state
+   * This is the original calculateAll() function renamed
+   */
+  function calculateTargetModel() {
     // Dependencies: d_19, h_19 -> d_23, d_24; h_20 -> future flag; d_12 -> critical flag
 
     // Calculate base setpoints (depend on d_12, which might be set by StateManager init or user)
@@ -1264,10 +1275,69 @@ window.TEUI.SectionModules.sect03 = (function () {
     // Calculate cooling dependents (depend on h_24, l_24)
     updateCoolingDependents();
 
-    // Add calculation for m_23 here if needed
-
     // Update critical occupancy flag (depends on d_12)
     updateCriticalOccupancyFlag();
+  }
+
+  /**
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
+   * Stores results with ref_ prefix for downstream sections (S15, S14, etc.)
+   */
+  function calculateReferenceModel() {
+    console.log("[Section03] Running Reference Model calculations...");
+    
+    try {
+      // Force Reference mode temporarily to get Reference calculations
+      const originalMode = ModeManager.currentMode;
+      ModeManager.currentMode = "reference";
+      
+      // Run all calculations using Reference state values (Vancouver climate)
+      calculateHeatingSetpoint();
+      calculateCoolingSetpoint_h24();
+      calculateTemperatures();
+      calculateGroundFacing();
+      updateCoolingDependents();
+      
+      // Restore original mode
+      ModeManager.currentMode = originalMode;
+      
+      // Store Reference results for downstream consumption
+      storeReferenceResults();
+      
+    } catch (error) {
+      console.error("Error during Section 03 calculateReferenceModel:", error);
+    }
+    
+    console.log("[Section03] Reference Model calculations complete");
+  }
+
+  /**
+   * Store Reference Model calculation results with ref_ prefix for downstream sections
+   */
+  function storeReferenceResults() {
+    if (!window.TEUI?.StateManager) return;
+    
+    // Get Reference state climate values and store with ref_ prefix
+    const referenceResults = {
+      h_23: ReferenceState.getValue("h_23"), // Vancouver heating setpoint
+      d_23: ReferenceState.getValue("d_23"), // Vancouver coldest day
+      d_24: ReferenceState.getValue("d_24"), // Vancouver hottest day
+      h_24: ReferenceState.getValue("h_24"), // Vancouver cooling setpoint
+      d_20: ReferenceState.getValue("d_20"), // Vancouver HDD
+      d_21: ReferenceState.getValue("d_21"), // Vancouver CDD
+      d_22: ReferenceState.getValue("d_22"), // Vancouver GF HDD
+      h_22: ReferenceState.getValue("h_22"), // Vancouver GF CDD
+      j_19: ReferenceState.getValue("j_19"), // Vancouver climate zone
+    };
+    
+    // Store with ref_ prefix for downstream sections
+    Object.entries(referenceResults).forEach(([fieldId, value]) => {
+      if (value !== null && value !== undefined) {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+      }
+    });
+    
+    console.log("[Section03] Reference results stored with ref_ prefix for downstream sections:", referenceResults);
   }
 
   // --- New Calculation Functions ---
