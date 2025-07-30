@@ -629,6 +629,8 @@ window.TEUI.SectionModules.sect02 = (function () {
   // DUAL-ENGINE ARCHITECTURE
   //==========================================================================
 
+
+
   /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state.
    * STANDARD MODE-AWARE PATTERN.
@@ -683,6 +685,9 @@ window.TEUI.SectionModules.sect02 = (function () {
           targetValue = modelledValueI41;
       }
       setFieldValue("d_16", targetValue, "calculated");
+      
+
+      
     } catch (error) {
       console.error(
         "[Section02] Error in Reference Model calculations:",
@@ -748,6 +753,9 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // Since mode is 'target', this will update `target_d_16` AND the global `d_16` for the DOM.
       setFieldValue("d_16", targetValue, "calculated");
+      
+
+      
     } catch (error) {
       console.error("[Section02] Error in Target Model calculations:", error);
     } finally {
@@ -1389,6 +1397,13 @@ window.TEUI.SectionModules.sect02 = (function () {
       ReferenceState.loadState();
       TargetState.setDefaults();
       ReferenceState.setDefaults();
+      
+      // ✅ CRITICAL FIX: Store default energy costs in StateManager for downstream sections
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("l_12", "0.1300", "default"); // Electricity $0.1300/kWh
+        console.log(`[S02] Stored default l_12 = 0.1300 in StateManager`);
+      }
+      
       console.log(`S02: Pattern A initialization complete.`);
     },
 

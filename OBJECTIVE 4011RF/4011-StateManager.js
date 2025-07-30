@@ -135,8 +135,8 @@ TEUI.StateManager = (function () {
     }
     let numericValue;
     if (typeof value === "string") {
-      // Remove commas, trim whitespace
-      const cleanedValue = value.replace(/,/g, "").trim();
+      // Remove currency symbols, commas, and trim whitespace
+      const cleanedValue = value.replace(/[$£€¥]/g, "").replace(/,/g, "").trim();
       if (cleanedValue === "" || cleanedValue.toUpperCase() === "N/A") {
         return defaultValue;
       }

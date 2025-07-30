@@ -1722,6 +1722,19 @@ if (ModeManager && typeof ModeManager.injectHeaderControls === 'function') {
 - **Fix state contamination**: Complete isolation in S02, S01
 - **Comprehensive testing**: All 13 sections working with global toggle
 
+#### **🔧 S04 Testing Priority**
+
+**⚠️ CRITICAL**: S04 (Energy Use Summary) needs Target/Reference toggle injection for thorough dual-state testing:
+
+- **Purpose**: Verify electricity prices, fuel costs, and energy pricing are correctly isolated between Target and Reference states
+- **Impact**: S04 provides `l_12` (electricity price) to S15 D_141 cost calculations
+- **Testing**: Inject header controls to manually test both states show expected values:
+  - Different energy rates for Target vs Reference scenarios
+  - Independent fuel pricing (gas, propane, oil, wood)
+  - Proper cost calculations in each mode
+- **Validation**: Ensure S15 cost calculations (D_141, H_141, L_141) receive correct pricing data from S04 in both Target and Reference modes
+- **Debugging**: Critical for resolving S15 electricity cost issues ($0 display problems)
+
 ### 🧪 **TESTING VALIDATION CHECKLIST**
 
 **Global Toggle Test**:

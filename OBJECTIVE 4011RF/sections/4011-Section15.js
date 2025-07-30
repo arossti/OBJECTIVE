@@ -1320,7 +1320,8 @@ window.TEUI.SectionModules.sect15 = (function () {
 
       // ✅ Get Reference values from upstream sections and convert to numbers
       const area = parseFloat(getRefValue("h_15")) || 1; // Use 1 as fallback to avoid division by zero
-      const elecPrice = parseFloat(getRefValue("l_12")) || 0;
+      const elecPrice = window.TEUI?.parseNumeric?.(window.TEUI?.StateManager?.getValue(`ref_l_12`)) || 
+                       window.TEUI?.parseNumeric?.(window.TEUI?.StateManager?.getValue("l_12")) || 0;
       const gasPrice = parseFloat(getRefValue("l_13")) || 0;
       const propanePrice = parseFloat(getRefValue("l_14")) || 0;
       const oilPrice = parseFloat(getRefValue("l_16")) || 0;
@@ -1585,8 +1586,8 @@ window.TEUI.SectionModules.sect15 = (function () {
       // --- Get Input Values ---
       const area = getNumericValue("h_15");
       
-      // ✅ FIX: Use robust getter for electricity price from S04 (like Reference calculation does)
-      const elecPrice = parseFloat(window.TEUI?.StateManager?.getValue("l_12")) || 0;
+      // ✅ FIX: Use robust currency parsing for electricity price from S04 
+      const elecPrice = window.TEUI?.parseNumeric?.(window.TEUI?.StateManager?.getValue("l_12")) || 0;
       console.log(`[S15 DEBUG] 💰 Electricity price from S04: $${elecPrice}/kWh`);
 
       // 🔍 CONTAMINATION TRACKER: Monitor what climate data Target engine is actually using
