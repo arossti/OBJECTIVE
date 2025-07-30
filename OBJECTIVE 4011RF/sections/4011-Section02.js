@@ -632,6 +632,77 @@ window.TEUI.SectionModules.sect02 = (function () {
 
 
   /**
+   * Inject Target/Reference toggle controls into section header
+   * Standard Pattern A implementation
+   */
+  function injectHeaderControls() {
+    const sectionHeader = document.querySelector("#buildingInfo .section-header");
+    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+      return; // Already setup or header not found
+    }
+
+    // Create controls container
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText = "display: flex; align-items: center; gap: 10px; margin-left: auto;";
+
+    // Create Reset button
+    const resetButton = document.createElement("button");
+    resetButton.textContent = "Reset";
+    resetButton.style.cssText = "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (confirm("Reset all values to defaults?")) {
+        TargetState.setDefaults();
+        ReferenceState.setDefaults();
+        ModeManager.refreshUI();
+        console.log("S02: Reset to defaults");
+      }
+    });
+
+    // Create state indicator
+    const stateIndicator = document.createElement("div");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText = "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
+
+    // Create toggle switch
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
+    const slider = document.createElement("div");
+    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+
+    // Toggle Switch Click Handler
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Assemble controls
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
+
+    console.log("✅ S02: Header controls injected successfully");
+  }
+
+  /**
    * REFERENCE MODEL ENGINE: Calculate all values using Reference state.
    * STANDARD MODE-AWARE PATTERN.
    * Stores results with ref_ prefix to keep separate from Target values.
@@ -955,6 +1026,9 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Initialize event handlers
     initializeEventHandlers();
+
+    // Inject header controls for Target/Reference toggle
+    injectHeaderControls();
 
     // Ensure default reference standard is set
     if (window.TEUI?.StateManager) {
@@ -1426,6 +1500,29 @@ window.TEUI.SectionModules.sect02 = (function () {
     setValue: function (fieldId, value, source = "calculated") {
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
+    },
+
+    // Update UI input fields based on current mode's state
+    refreshUI: function () {
+      console.log(`[S02] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
+      
+      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      
+      // Update user input fields with values from current state
+      const userInputFields = ["h_15", "d_13", "d_15", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"];
+      
+      userInputFields.forEach(fieldId => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        const value = currentState.getValue(fieldId);
+        
+        if (element && value) {
+          if (element.tagName === "SELECT") {
+            element.value = value;
+          } else {
+            element.textContent = value;
+          }
+        }
+      });
     },
   };
   // Expose ModeManager for debugging and cross-section communication

@@ -225,7 +225,102 @@ window.TEUI.SectionModules.sect04 = (function () {
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
     },
+
+    // Update UI input fields based on current mode's state
+    refreshUI: function () {
+      console.log(`[S04] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
+      
+      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      
+      // Update user input fields with values from current state
+      // S04 fields include energy costs, fuel costs, carbon factors, etc.
+      const userInputFields = ["l_12", "l_13", "l_14", "l_15", "l_16", "m_12", "m_13", "m_14", "m_15", "m_16"];
+      
+      userInputFields.forEach(fieldId => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        const value = currentState.getValue(fieldId);
+        
+        if (element && value) {
+          if (element.tagName === "SELECT") {
+            element.value = value;
+          } else {
+            element.textContent = value;
+          }
+        }
+      });
+    },
   };
+
+  /**
+   * Inject Target/Reference toggle controls into section header
+   * Standard Pattern A implementation
+   */
+  function injectHeaderControls() {
+    const sectionHeader = document.querySelector("#actualTargetEnergy .section-header");
+    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+      return; // Already setup or header not found
+    }
+
+    // Create controls container
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText = "display: flex; align-items: center; gap: 10px; margin-left: auto;";
+
+    // Create Reset button
+    const resetButton = document.createElement("button");
+    resetButton.textContent = "Reset";
+    resetButton.style.cssText = "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (confirm("Reset all values to defaults?")) {
+        TargetState.setDefaults();
+        ReferenceState.setDefaults();
+        ModeManager.refreshUI();
+        console.log("S04: Reset to defaults");
+      }
+    });
+
+    // Create state indicator
+    const stateIndicator = document.createElement("div");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText = "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
+
+    // Create toggle switch
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
+    const slider = document.createElement("div");
+    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+
+    // Toggle Switch Click Handler
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Assemble controls
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
+
+    console.log("✅ S04: Header controls injected successfully");
+  }
 
   //==========================================================================
   // PART 1: SECTION DEFINITION (DECLARATIVE STRUCTURE)
@@ -2170,6 +2265,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Initialize Pattern A Dual-State Module
     ModeManager.initialize();
 
+    // Inject header controls for Target/Reference toggle
+    injectHeaderControls();
+
     // --- Start: Add Default Province Initialization ---
     // Ensure Ontario is selected by default for emissions calculations
     if (window.TEUI && window.TEUI.StateManager) {
@@ -2425,6 +2523,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateAll: calculateAll, // Now correctly points to the defined function
     calculateReferenceModel: calculateReferenceModel, // NEW: Reference engine
     calculateTargetModel: calculateTargetModel, // NEW: Target engine
+    
+    // Expose ModeManager for global Toggle and cross-section communication
+    ModeManager: ModeManager,
     updateElectricityEmissionFactor: updateElectricityEmissionFactor,
     getProvinceCode: getProvinceCode, // Expose getProvinceCode
     // ... any other functions that need to be public ...
@@ -2474,4 +2575,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     updateSubtotals: updateSubtotals,
     updateDependentTotals: updateDependentTotals,
   };
+
+  // Expose ModeManager globally for cross-section communication
+  window.TEUI.sect04 = window.TEUI.sect04 || {};
+  window.TEUI.sect04.ModeManager = ModeManager;
+  
 })();
