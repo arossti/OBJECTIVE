@@ -141,8 +141,13 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
 
     setDefaults: function () {
-      // S04 minimal defaults - mostly calculated values
-      console.log(`S04: Target defaults set`);
+      // S04 Target minimal defaults - mostly calculated values
+      this.data = {
+        // S04 reads d_19 (province) from StateManager (set by S03), doesn't set its own
+        // S04 calculates emission factors (l_27-l_31) from S02 reporting year + S03 location
+        // Differences come from 2022 vs 2020 reporting years between Target/Reference
+      };
+      console.log(`S04: Target defaults set (derived values only)`);
     },
   };
 
@@ -187,8 +192,13 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
 
     setDefaults: function () {
-      // S04 minimal defaults - mostly calculated values
-      console.log(`S04: Reference defaults set`);
+      // S04 Reference minimal defaults - mostly calculated values
+      this.data = {
+        // S04 reads d_19 (province) from StateManager (set by S03), doesn't set its own
+        // S04 calculates emission factors (l_27-l_31) from S02 reporting year + S03 location  
+        // Differences come naturally from 2020 vs 2022 reporting years + location differences
+      };
+      console.log(`S04: Reference defaults set (derived values only)`);
     },
   };
 
@@ -199,10 +209,11 @@ window.TEUI.SectionModules.sect04 = (function () {
     currentMode: "target", // "target" or "reference"
 
     initialize: function () {
-      TargetState.loadState();
-      ReferenceState.loadState();
+      // ✅ CRITICAL FIX: Set defaults BEFORE loading state (so loadState can override)
       TargetState.setDefaults();
       ReferenceState.setDefaults();
+      TargetState.loadState();
+      ReferenceState.loadState();
       console.log(`S04: Pattern A initialization complete.`);
     },
 
@@ -213,6 +224,11 @@ window.TEUI.SectionModules.sect04 = (function () {
       }
       this.currentMode = mode;
       console.log(`S04: Switched to ${mode.toUpperCase()} mode`);
+      
+      // ✅ CRITICAL: Update UI to show values from the new mode's state
+      this.refreshUI();
+      
+      // ✅ CRITICAL: Recalculate everything after mode switch
       calculateAll();
     },
 
@@ -224,8 +240,109 @@ window.TEUI.SectionModules.sect04 = (function () {
     setValue: function (fieldId, value, source = "calculated") {
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
+
+      // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections
+      if (this.currentMode === "target" && window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(fieldId, value, source);
+      }
+      
+      // ✅ CRITICAL BRIDGE: Sync Reference changes to StateManager with ref_ prefix
+      if (this.currentMode === "reference" && window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
+      }
+    },
+
+    // Update UI input fields based on current mode's state
+    refreshUI: function () {
+      console.log(`[S04] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
+      
+      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      
+      // ✅ CRITICAL FIX: S04 reads upstream values from StateManager (set by S03)
+      // d_19 (province) is set by S03, not stored in S04's internal state
+      const provinceElement = document.querySelector(`[data-field-id="d_19"]`);
+      if (provinceElement && window.TEUI?.StateManager) {
+        const provinceValue = window.TEUI.StateManager.getValue("d_19") || "ON"; // Fallback to ON
+        if (provinceElement.tagName === "SELECT") {
+          provinceElement.value = provinceValue;
+        } else {
+          provinceElement.textContent = provinceValue;
+        }
+        console.log(`[S04] Updated d_19 = "${provinceValue}" (from StateManager - set by S03)`);
+      }
     },
   };
+
+  /**
+   * Inject Target/Reference toggle controls into section header
+   * Standard Pattern A implementation
+   */
+  function injectHeaderControls() {
+    const sectionHeader = document.querySelector("#actualTargetEnergy .section-header");
+    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+      return; // Already setup or header not found
+    }
+
+    // Create controls container
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText = "display: flex; align-items: center; gap: 10px; margin-left: auto;";
+
+    // Create Reset button
+    const resetButton = document.createElement("button");
+    resetButton.textContent = "Reset";
+    resetButton.style.cssText = "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (confirm("Reset all values to defaults?")) {
+        TargetState.setDefaults();
+        ReferenceState.setDefaults();
+        ModeManager.refreshUI();
+        console.log("S04: Reset to defaults");
+      }
+    });
+
+    // Create state indicator
+    const stateIndicator = document.createElement("div");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText = "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
+
+    // Create toggle switch
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
+    const slider = document.createElement("div");
+    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+
+    // Toggle Switch Click Handler
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Assemble controls
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
+
+    console.log("✅ S04: Header controls injected successfully");
+  }
 
   //==========================================================================
   // PART 1: SECTION DEFINITION (DECLARATIVE STRUCTURE)
@@ -1044,13 +1161,14 @@ window.TEUI.SectionModules.sect04 = (function () {
 
         // Only update if value has changed
         if (this.dataset.originalValue !== newValue) {
-          // Update state manager if available
-          if (window.TEUI && window.TEUI.StateManager) {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              newValue,
-              "user-modified",
-            );
+          // ✅ CRITICAL FIX: For upstream values (d_19), only save to StateManager
+          // d_19 is owned by S03, S04 just reads/updates it in StateManager
+          if (fieldId === "d_19" && window.TEUI?.StateManager) {
+            window.TEUI.StateManager.setValue(fieldId, newValue, "user-modified");
+            console.log(`[S04] Saved d_19 = "${newValue}" to StateManager (upstream value)`);
+          } else {
+            // For S04-owned fields, save to internal state via ModeManager
+            ModeManager.setValue(fieldId, newValue, "user-modified");
           }
 
           // Removed call to updateDependentFields - rely on StateManager listeners
@@ -2170,6 +2288,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Initialize Pattern A Dual-State Module
     ModeManager.initialize();
 
+    // Inject header controls for Target/Reference toggle
+    injectHeaderControls();
+
     // --- Start: Add Default Province Initialization ---
     // Ensure Ontario is selected by default for emissions calculations
     if (window.TEUI && window.TEUI.StateManager) {
@@ -2248,12 +2369,16 @@ window.TEUI.SectionModules.sect04 = (function () {
    * DUAL-ENGINE: Calculate all Reference values using Reference state
    */
   function calculateReferenceModel() {
-    // Helper function to set value only if changed (prevents infinite loops)
+    // Temporarily switch to Reference mode for calculations
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "reference";
+    
+    // ✅ PATTERN A: Helper function to set value via ModeManager (dual-state)
     const setValueIfChanged = (fieldId, newValue) => {
-      const currentValue = window.TEUI.StateManager.getValue(fieldId);
+      const currentValue = ModeManager.getValue(fieldId);
       const newValueStr = newValue.toString();
       if (currentValue !== newValueStr) {
-        window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        ModeManager.setValue(fieldId, newValueStr, "calculated");
         return true;
       }
       return false;
@@ -2300,6 +2425,9 @@ window.TEUI.SectionModules.sect04 = (function () {
         "[Section04] Error during Reference Model calculation:",
         error,
       );
+    } finally {
+      // ✅ CRITICAL: Restore original mode
+      ModeManager.currentMode = originalMode;
     }
   }
 
@@ -2307,40 +2435,44 @@ window.TEUI.SectionModules.sect04 = (function () {
    * TARGET MODEL ENGINE: Calculate all Target/Application values
    */
   function calculateTargetModel() {
-    // Helper function to set value only if changed (prevents infinite loops)
+    // Temporarily switch to Target mode for calculations
+    const originalMode = ModeManager.currentMode;
+    ModeManager.currentMode = "target";
+    
+    // ✅ PATTERN A: Helper function to set value via ModeManager (dual-state)
     const setValueIfChanged = (fieldId, newValue) => {
-      const currentValue = window.TEUI.StateManager.getValue(fieldId);
+      const currentValue = ModeManager.getValue(fieldId);
       const newValueStr = newValue.toString();
       if (currentValue !== newValueStr) {
-        window.TEUI.StateManager.setValue(fieldId, newValueStr, "calculated");
+        ModeManager.setValue(fieldId, newValueStr, "calculated");
         return true;
       }
       return false;
     };
 
     try {
-      // Get all necessary Reference values FIRST to ensure data integrity
-      const ref_h27 = getRefNumericValue("h_27", 0);
-      const ref_h28 = getRefNumericValue("h_28", 0);
-      const ref_h29 = getRefNumericValue("h_29", 0);
-      const ref_h30 = getRefNumericValue("h_30", 0);
-      const ref_h31 = getRefNumericValue("h_31", 0);
-      const ref_j27 = getRefNumericValue("j_27", 0);
-      const ref_j28 = getRefNumericValue("j_28", 0);
-      const ref_j29 = getRefNumericValue("j_29", 0);
-      const ref_j30 = getRefNumericValue("j_30", 0);
-      const ref_j31 = getRefNumericValue("j_31", 0);
-      const ref_k27 = getRefNumericValue("k_27", 0);
-      const ref_k28 = getRefNumericValue("k_28", 0);
-      const ref_k29 = getRefNumericValue("k_29", 0);
-      const ref_k30 = getRefNumericValue("k_30", 0);
-      const ref_k31 = getRefNumericValue("k_31", 0);
-      const ref_l27 = getRefNumericValue("l_27", 0);
-      const ref_l28 = getRefNumericValue("l_28", 1921);
-      const ref_l29 = getRefNumericValue("l_29", 2970);
-      const ref_l30 = getRefNumericValue("l_30", 2753);
-      const ref_l31 = getRefNumericValue("l_31", 150);
-      const ref_d60 = getRefNumericValue("d_60", 0);
+      // ✅ CRITICAL FIX: Get Target/Application values for Target model (NOT Reference!)
+      const app_h27 = getAppNumericValue("h_27", 0);
+      const app_h28 = getAppNumericValue("h_28", 0);
+      const app_h29 = getAppNumericValue("h_29", 0);
+      const app_h30 = getAppNumericValue("h_30", 0);
+      const app_h31 = getAppNumericValue("h_31", 0);
+      const app_j27 = getAppNumericValue("j_27", 0);
+      const app_j28 = getAppNumericValue("j_28", 0);
+      const app_j29 = getAppNumericValue("j_29", 0);
+      const app_j30 = getAppNumericValue("j_30", 0);
+      const app_j31 = getAppNumericValue("j_31", 0);
+      const app_k27 = getAppNumericValue("k_27", 0);
+      const app_k28 = getAppNumericValue("k_28", 0);
+      const app_k29 = getAppNumericValue("k_29", 0);
+      const app_k30 = getAppNumericValue("k_30", 0);
+      const app_k31 = getAppNumericValue("k_31", 0);
+      const app_l27 = getAppNumericValue("l_27", 0);
+      const app_l28 = getAppNumericValue("l_28", 1921);
+      const app_l29 = getAppNumericValue("l_29", 2970);
+      const app_l30 = getAppNumericValue("l_30", 2753);
+      const app_l31 = getAppNumericValue("l_31", 150);
+      const app_d60 = getAppNumericValue("d_60", 0);
 
       // Calculate all row 27-31 actuals (F and G columns)
       setCalculatedValue("f_27", calculateF27(), "number-2dp-comma");
@@ -2390,6 +2522,9 @@ window.TEUI.SectionModules.sect04 = (function () {
         "[Section04] Error during Target Model calculation:",
         error,
       );
+    } finally {
+      // ✅ CRITICAL: Restore original mode
+      ModeManager.currentMode = originalMode;
     }
   }
 
@@ -2425,6 +2560,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateAll: calculateAll, // Now correctly points to the defined function
     calculateReferenceModel: calculateReferenceModel, // NEW: Reference engine
     calculateTargetModel: calculateTargetModel, // NEW: Target engine
+    
+    // Expose ModeManager for global Toggle and cross-section communication
+    ModeManager: ModeManager,
     updateElectricityEmissionFactor: updateElectricityEmissionFactor,
     getProvinceCode: getProvinceCode, // Expose getProvinceCode
     // ... any other functions that need to be public ...
@@ -2474,4 +2612,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     updateSubtotals: updateSubtotals,
     updateDependentTotals: updateDependentTotals,
   };
+
+  // Expose ModeManager globally for cross-section communication
+  window.TEUI.sect04 = window.TEUI.sect04 || {};
+  window.TEUI.sect04.ModeManager = ModeManager;
+  
 })();

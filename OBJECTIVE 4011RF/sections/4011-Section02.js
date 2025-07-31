@@ -1458,8 +1458,8 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     setDefaults: function () {
       // S02 Target defaults (Validation Case: 2022 reporting year)
+      // ✅ CRITICAL FIX: Don't spread existing data - defaults should ALWAYS take precedence
       this.data = {
-        ...this.data,
         d_13: "OBC SB10 5.5-6 Z6", // Target building code
         d_15: "Self Reported", // Carbon standard
         // Reporting year 2022 for Target (affects S04 emissions factors)
@@ -1471,7 +1471,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         l_15: "180.00", // Wood cost
         l_16: "1.5000", // Oil cost
       };
-      console.log(`S02: Target defaults set (2022 reporting year)`);
+      console.log(`S02: Target defaults set (2022 reporting year) - overriding any localStorage empties`);
     },
   };
 
@@ -1517,8 +1517,8 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     setDefaults: function () {
       // S02 Reference defaults (Validation Case: 2020 reporting year)
+      // ✅ CRITICAL FIX: Don't spread existing data - defaults should ALWAYS take precedence
       this.data = {
-        ...this.data,
         d_13: "OBC SB10 5.5-6 Z5 (2010)", // Reference building code - earlier standard
         d_15: "Self Reported", // Carbon standard (same)
         // Reporting year 2020 for Reference (creates natural S04 emissions differences)
@@ -1530,7 +1530,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         l_15: "180.00", // Wood cost (same as Target)
         l_16: "1.5000", // Oil cost (same as Target)
       };
-      console.log(`S02: Reference defaults set (2020 reporting year)`);
+      console.log(`S02: Reference defaults set (2020 reporting year) - overriding any localStorage empties`);
     },
   };
 

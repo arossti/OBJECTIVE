@@ -1899,3 +1899,50 @@ function calculateTargetModel() {
 **Likely candidates**: S03 (confirmed), potentially other early Pattern A refactors.
 
 ---
+
+## 🚨 **CRITICAL SESSION FINDINGS: S02/S04 Dual-State Issues (Dec 2024)**
+
+### **S02 Dual-State Corrections & Remaining Issues**
+
+#### **✅ FIXED: Core Architecture Issues**
+- **StateManager Bridge**: Added missing bridge in `ModeManager.setValue()` to sync Target→StateManager and Reference→ref_StateManager
+- **Pattern B Contamination**: Removed direct StateManager calls in dropdown handlers, now use `ModeManager.setValue()`
+- **Defaults Override Bug**: Removed `...this.data` spread in `setDefaults()` that allowed empty localStorage to override defaults
+
+#### **🔴 REMAINING CRITICAL ISSUES**
+
+**1. Reset Behavior Inconsistency**
+- **Local Reset Button**: Works correctly, loads proper Target/Reference defaults and energy costs
+- **Global Reset/Browser Refresh**: Clears Target mode energy costs, causes Reference d_13 (2010) to contaminate Target mode
+- **Root Cause**: Global reset mechanism differs from local reset, likely bypassing `setDefaults()` entirely
+
+**2. Initialization Order Problem** 
+- `setDefaults()` → `loadState()` order is correct
+- Issue occurs during global reset or page reload, not local section reset
+- Suggests StateManager or ComponentBridge interference during global initialization
+
+### **S04 Critical Regression & Reversion**
+
+#### **🚨 SEVERE REGRESSION DISCOVERED**
+- **S04 Toggle Breaking S03**: Our S04 dual-state implementation caused S03's location dropdowns to malfunction
+- **Cross-Section Contamination**: S04's `ModeManager` interfering with working S03 functionality
+- **Immediate Action**: S04 reverted to backup, modified version suffixed 'ERROR' and taken offline
+
+#### **S04 Architecture Problems Identified**
+1. **No Reference State Display**: Toggle didn't show different Reference values
+2. **Cross-Section Interference**: Our implementation broke other working sections
+3. **Incorrect Scope**: S04 should read upstream values (d_19 from S03), not manage internal dual-state for them
+
+#### **Lessons Learned**
+- **Test Cross-Section Impact**: Always verify changes don't break working sections
+- **Derived Sections Different**: S04's architecture should differ from input sections like S02/S03
+- **StateManager Dependencies**: Sections that primarily read upstream values need different patterns
+
+### **🎯 NEXT SESSION PRIORITIES**
+
+1. **Fix S02 Global Reset**: Debug why global reset differs from local reset behavior
+2. **S04 Architecture Redesign**: Create proper pattern for derived/totalling sections 
+3. **Cross-Section Testing**: Establish testing protocol to prevent working section regressions
+4. **Pattern Documentation**: Document different patterns for input vs derived vs totalling sections
+
+---
