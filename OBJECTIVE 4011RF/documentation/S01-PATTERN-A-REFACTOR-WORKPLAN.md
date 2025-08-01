@@ -1,135 +1,171 @@
-# Section 01 Pattern A Refactor Workplan
+# Section 01 Consumer Section Refactor Workplan
 **Target Date: August 1st, 2025**
-**Status: Ready for Implementation**
+**Status: DUAL-STATE Architecture Compliant**
 
 ## 🎯 **Refactor Objectives**
 
-### **Pattern A Goals for S01:**
-- ✅ **Eliminate B Pattern contamination** (target_ prefixed values)
-- ✅ **Clean data source separation** (unprefixed vs ref_ prefixed)
+### **S01 Consumer Section Goals:**
+- ✅ **Eliminate B Pattern contamination** (`getAppNumericValue()` complexity)
+- ✅ **Implement clean external dependencies** (`getGlobalNumericValue()` pattern)
 - ✅ **Remove dual-state interference** (like the k_10 bug we just fixed)
 - ✅ **Maintain existing display/animation functionality**
 - ✅ **Preserve state-agnostic dashboard behavior**
 
-### **S01 Advantages for Pattern A:**
-- 🔹 **No user inputs** → No complex state management needed
-- 🔹 **No mode switching** → No UI toggling required  
-- 🔹 **Display-focused** → Clean separation between data and presentation
-- 🔹 **State agnostic** → Already shows Reference, Target, Actual simultaneously
+### **S01 Architecture Role:**
+- 🏛️ **Consumer Section** → Reads results from upstream Pattern A sections
+- 🎯 **Display Only** → Shows Reference (E), Target (H), Actual (K) simultaneously
+- 🚫 **No Internal State** → No TargetState/ReferenceState objects needed
+- 🔗 **Clean Dependencies** → Uses approved external dependency patterns
 
 ---
 
 ## 📋 **Implementation Plan**
 
-### **Phase 1: Analysis & Preparation (15 mins)**
+### **Phase 1: Analysis & B Pattern Detection (15 mins)**
 ```
-□ Map current data dependencies in calculateTargetModel()
-□ Identify all getAppNumericValue() calls that need replacement
-□ Document which values are:
-  - Application state (unprefixed): f_32, h_15, i_41, h_13, d_14
-  - Target calculations (unprefixed): j_32, k_32 (from other sections)
-  - Reference calculations (ref_ prefixed): ref_j_32, ref_k_32, ref_e_10
-□ Verify no target_ prefixed dependencies remain after refactor
-```
-
-### **Phase 2: Data Reading Refactor (30 mins)**
-```
-□ Replace getAppNumericValue() with direct StateManager calls
-□ Create clean helper functions:
-  - getApplicationValue(fieldId) → StateManager.getValue(fieldId)
-  - getReferenceValue(fieldId) → StateManager.getValue(`ref_${fieldId}`)
-□ Update calculateTargetModel() to use new helpers
-□ Remove the dual-state interference logic we added today (will be unnecessary)
+□ Scan for B Pattern contamination using DUAL-STATE guide:
+  grep -n "target_\|getAppNumericValue" sections/4011-Section01.js
+□ Map current external dependencies from upstream sections:
+  - S02: h_15 (area), i_41 (embodied carbon), h_13 (service life)
+  - S04: f_32, j_32, k_32, g_32 (energy/emissions totals)
+  - S15: ref_h_136 (reference TEUI final calculation)
+□ Identify which dependencies need ref_ prefixed versions
+□ Document display targets: Reference (E), Target (H), Actual (K) columns
 ```
 
-### **Phase 3: Clean Calculation Logic (20 mins)**
+### **Phase 2: Clean External Dependencies (30 mins)**
 ```
-□ Simplify k_10 calculation back to standard pattern:
-  k_10 = getApplicationValue("f_32") / getApplicationValue("h_15")
-□ Ensure h_10 uses target calculations: 
-  h_10 = getApplicationValue("j_32") / getApplicationValue("h_15")
-□ Ensure e_10 uses reference values:
-  e_10 = getReferenceValue("j_32") / getReferenceValue("h_15")
-□ Apply same pattern to k_8, h_8, k_6, h_6 calculations
-```
-
-### **Phase 4: StateManager Listener Cleanup (15 mins)**
-```
-□ Review listener dependencies in lines 1254-1293
-□ Ensure listeners watch correct unprefixed + ref_ values
-□ Remove any remaining target_ prefixed listeners
-□ Test that area slider changes trigger recalculation properly
+□ Implement DUAL-STATE compliant getGlobalNumericValue() helper:
+  function getGlobalNumericValue(fieldId) {
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
+  }
+□ Replace ALL getAppNumericValue() calls with getGlobalNumericValue()
+□ Remove the complex dual-state interference logic we added today
+□ Ensure clean separation: unprefixed reads for current values, 
+  ref_ prefixed reads for reference calculations
 ```
 
-### **Phase 5: Testing & Validation (20 mins)**
+### **Phase 3: Simplified Consumer Calculations (20 mins)**
 ```
-□ Test Reference column (E): Shows reference model values
-□ Test Target column (H): Shows target building performance  
-□ Test Actual column (K): Shows utility bill-based performance
-□ Verify area slider updates all relevant calculations
-□ Verify mode switching in other sections doesn't affect S01
-□ Test gauge animations still work correctly
+□ Simplify k_10 (Actual TEUI) calculation:
+  k_10 = getGlobalNumericValue("f_32") / getGlobalNumericValue("h_15")
+□ Ensure h_10 (Target TEUI) reads correctly:
+  h_10 = getGlobalNumericValue("j_32") / getGlobalNumericValue("h_15")  
+□ Ensure e_10 (Reference TEUI) reads correctly:
+  e_10 = getGlobalNumericValue("ref_h_136") // Final reference calc from S15
+□ Apply same clean pattern to all dashboard calculations
+```
+
+### **Phase 4: External Dependency Cleanup (15 mins)**
+```
+□ Review StateManager listeners - ensure they watch correct sources
+□ Remove any remaining target_ prefixed contamination
+□ Verify S01 has no internal state management (consumer only)
+□ Test that upstream Pattern A sections provide correct values
+```
+
+### **Phase 5: Consumer Section Validation (20 mins)**
+```
+□ Test Reference column (E): Displays results from ref_ calculations
+□ Test Target column (H): Displays results from unprefixed calculations  
+□ Test Actual column (K): Displays utility bill-based calculations
+□ Verify area slider in S02 updates S01 calculations immediately
+□ Verify global Reference toggle doesn't break S01 display
+□ Test gauge animations with clean data sources
 ```
 
 ---
 
 ## 🔧 **Code Changes Required**
 
-### **Current Problem Pattern:**
+### **Current Problem Pattern (B Pattern Contamination):**
 ```javascript
-// ❌ B Pattern contamination
-const appArea = getAppNumericValue("h_15", 1);  // Checks target_h_15, then h_15
+// ❌ B Pattern contamination - complex dual-state interference
+function getAppNumericValue(fieldId, defaultValue = 0) {
+  let value = defaultValue;
+  const targetValue = window.TEUI?.StateManager?.getValue?.(`target_${fieldId}`);
+  if (targetValue !== undefined && targetValue !== null && targetValue !== "") {
+    // Complex fallback logic that creates dual-state interference...
+  }
+  const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+  // More complex logic...
+  return value;
+}
+
+// Usage that caused k_10 drift:
+const appArea = getAppNumericValue("h_15", 1);
 const appActualEnergy = getAppNumericValue("f_32", 0);
 ```
 
-### **Target Pattern A Solution:**
+### **Target Consumer Section Pattern (DUAL-STATE Compliant):**
 ```javascript
-// ✅ Clean Pattern A
-const appArea = StateManager.getValue("h_15") || 1;  // Direct application state
-const appActualEnergy = StateManager.getValue("f_32") || 0;
-const refTEUI = StateManager.getValue("ref_e_10") || 341.2;  // Direct reference state
+// ✅ Clean external dependencies - DUAL-STATE guide approved
+function getGlobalNumericValue(fieldId) {
+  const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+  return window.TEUI.parseNumeric(rawValue) || 0;
+}
+
+// Usage for consumer section:
+const area = getGlobalNumericValue("h_15");           // From S02 (current state)
+const actualEnergy = getGlobalNumericValue("f_32");   // From S04 (application)
+const targetEnergy = getGlobalNumericValue("j_32");   // From S04 (calculated)
+const refEnergy = getGlobalNumericValue("ref_j_32");  // From S04 (reference calc)
+
+// Clean calculations:
+const k_10 = actualEnergy / area;  // Actual TEUI
+const h_10 = targetEnergy / area;  // Target TEUI
+const e_10 = refEnergy / area;     // Reference TEUI (or use ref_h_136 from S15)
 ```
 
-### **Key Functions to Refactor:**
-1. **calculateTargetModel()** - Main calculation engine
-2. **getAppNumericValue()** - Replace with direct StateManager calls
-3. **StateManager listeners** - Clean up target_ dependencies
-4. **Display functions** - Ensure they read correct values
+### **Key Changes:**
+1. **Remove getAppNumericValue()** - Replace with getGlobalNumericValue()
+2. **Remove complex dual-state logic** - Let upstream sections handle Target/Reference
+3. **Clean external dependencies** - No target_ prefix contamination
+4. **Consumer section pattern** - Read results, don't manage internal state
 
 ---
 
 ## 🎯 **Expected Outcomes**
 
-### **After Refactor:**
-- ✅ **k_10 calculation** naturally stable (no dual-state interference)
-- ✅ **Clear data flow**: Application state → Target calcs → Reference calcs
-- ✅ **No target_ prefixes** in Section 01 codebase
-- ✅ **Future-proof** for complete Pattern A migration
-- ✅ **Identical functionality** with cleaner architecture
+### **After Consumer Section Refactor:**
+- ✅ **k_10 calculation** naturally stable (no B Pattern interference)
+- ✅ **Clean external dependencies**: Upstream Pattern A sections provide correct values
+- ✅ **No B Pattern contamination** in Section 01 codebase
+- ✅ **DUAL-STATE compliant** consumer section architecture
+- ✅ **Simplified codebase** with clean data flow
 
 ### **Validation Criteria:**
-- All 3 dashboard columns calculate correctly
-- Area slider changes update immediately 
-- No calculation drift or timing issues
-- Gauge animations work smoothly
-- Code is simpler and more maintainable
+- Reference column (E) displays correct reference calculations
+- Target column (H) displays correct target calculations  
+- Actual column (K) displays correct utility bill calculations
+- Area slider changes in S02 update S01 immediately
+- Global Reference toggle works without breaking S01
+- Gauge animations work smoothly with clean data sources
+- Code is significantly simpler and more maintainable
 
 ---
 
 ## 📝 **Implementation Notes**
 
-### **Special Considerations:**
-- **index.html integration**: Ensure animations/formatting remain intact
-- **Cross-section dependencies**: S01 reads from S04, S05, S15 outputs
-- **Backwards compatibility**: Other sections still push to unprefixed values
-- **Error handling**: Graceful fallbacks for missing values
+### **Consumer Section Characteristics:**
+- **No ModeManager**: S01 doesn't manage internal Target/Reference state
+- **External dependency pattern**: Uses getGlobalNumericValue() for all reads
+- **Display aggregator**: Shows results from multiple upstream Pattern A sections
+- **State agnostic**: Always displays Reference, Target, Actual simultaneously
+
+### **DUAL-STATE Architecture Compliance:**
+- **Line 1552 compliance**: "S01: Summary (Final consumer section)"
+- **AI-FRIENDLY-PATTERNS compliance**: "Apply to ALL sections except S01"
+- **Clean interface**: No target_ prefixed contamination
+- **Upstream dependency**: Relies on S02, S04, S15 Pattern A implementations
 
 ### **Testing Strategy:**
-1. **Baseline test**: Record current dashboard values
-2. **Refactor incrementally**: Test after each major change
-3. **Integration test**: Verify with area slider operations
-4. **Regression test**: Ensure all original functionality preserved
+1. **B Pattern scan**: Verify no target_/getAppNumericValue contamination
+2. **External dependency test**: Confirm clean reads from upstream sections
+3. **Integration test**: Verify area slider and global toggle functionality
+4. **Regression test**: Ensure identical display functionality
 
 ---
 
-**Ready to implement tomorrow morning! This refactor will eliminate the root cause of the k_10 issue and align S01 with our Pattern A architecture goals.** 🚀
+**DUAL-STATE Architecture Compliant! This refactor eliminates B Pattern contamination and establishes S01 as a proper consumer section.** 🏛️
