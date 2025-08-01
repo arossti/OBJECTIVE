@@ -958,6 +958,13 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Set province value in DualState (automatically handles current mode)
     DualState.setValue("d_19", provinceValue, "user");
+    
+    // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue("d_19", provinceValue, "user-modified");
+      window.TEUI.StateManager.setValue("dd_d_19", provinceValue, "user-modified");
+      console.log(`S03: Synced province change "${provinceValue}" to StateManager for S04 listeners`);
+    }
 
     // Update city dropdown for this province
     updateCityDropdown(provinceValue);
@@ -1872,6 +1879,14 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     if (provinceSelect.value) {
       DualState.setValue("d_19", provinceSelect.value, "init");
+      
+      // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication
+      if (window.TEUI?.StateManager) {
+        window.TEUI.StateManager.setValue("d_19", provinceSelect.value, "default");
+        window.TEUI.StateManager.setValue("dd_d_19", provinceSelect.value, "default");
+        console.log(`S03: Synced province "${provinceSelect.value}" to StateManager for cross-section communication`);
+      }
+      
       // Trigger city dropdown update
       updateCityDropdown(provinceSelect.value);
     }
