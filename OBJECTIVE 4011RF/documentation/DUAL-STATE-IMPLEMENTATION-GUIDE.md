@@ -1585,56 +1585,147 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 - **Functionality**: Changes ReferenceValues.js dataset loaded across all sections
 - **Auto-Update**: Triggers `onReferenceStandardChange()` in sections with ReferenceValues.js dependencies
 
-### 🔍 **Advanced Reference Analysis Features**
+### 🔧 **Reference Model Setup Functions**
 
-**1. "Show Reference Inputs" (Implemented)**
-- **Purpose**: Highlights actual Reference input fields applied from ReferenceValues.js
-- **Visual**: Distinguishes between Reference inputs vs Reference calculated values
-- **Use Case**: Understand which fields are controlled by building code standards vs calculated results
+**New Architecture (v4.012): Three Reference Setup Scenarios**
 
-**2. "Show Reference Differentiation" (Planned)**
-- **Purpose**: Highlight input fields that differ between Target and Reference models
-- **Visual**: Show only fields where Reference differs from Target (excludes d_13 applied values)
-- **Use Case**: Troubleshoot when attempting identical building models, identify unintended differences
+The ReferenceToggle.js system provides three distinct scenarios for setting up Reference model comparisons, each serving different analysis purposes:
 
-**3. "Match Target Building Inputs" (Planned)**
-- **Purpose**: Copy all Target input values to Reference model, except d_13 ReferenceValues.js overrides
-- **Logic**: 
-  - Copy Target user inputs → Reference state
-  - Preserve d_13 standard-driven ReferenceValues.js inputs  
-  - Maintain calculation isolation
-- **Use Case**: Create identical building model with only code-minimum differences
+#### **1. "Mirror Target" Mode**
+- **Purpose**: Create 100% identical Target and Reference models for pure building code standard comparison
+- **Behavior**: 
+  - Copies ALL Target state values (user inputs, defaults, even calculated values initially) to Reference state
+  - Results in identical Target/Reference totals initially (perfect synchronization)
+  - Subsequently allows user edits to Reference values for fine-tuning
+- **Use Case**: "What if I built this exact building to different code standards?"
+- **Expected Result**: Initially perfect Target/Reference match until user makes Reference modifications
 
-### 🏗️ **Implementation Pattern for Global Controls**
+#### **2. "Mirror Target * Reference" Mode (Default/Recommended)**
+- **Purpose**: Apply Target building design with Reference Standard building code values
+- **Behavior**:
+  - Copies all Target user inputs (geometry, climate, energy costs) to Reference state
+  - **Exception**: Reference Standard (d_13) drives ReferenceValues.js overrides
+  - **Locks ReferenceValues-derived fields** to prevent user confusion
+  - Target d_13 selection used only for L/M/O comparison displays, not Reference calculations
+- **Use Case**: "How does my building design compare to code minimums?" (most common scenario)
+- **Expected Result**: Same building envelope/geometry, different performance due to code requirements
+
+#### **3. "Reference Independence" Mode**
+- **Purpose**: Complete flexibility for custom Target vs Reference comparisons
+- **Behavior**:
+  - Unlocks all Reference values for user editing
+  - No constraints or copying from Target state
+  - Maintains complete state isolation
+- **Use Case**: "Compare any two building scenarios" or "What-if analysis with custom Reference"
+- **Expected Result**: Completely independent Target and Reference models
+
+### 🎨 **User Experience Design**
+
+#### **Reference Differentiation Highlighting (Always Active)**
+- **Visual**: Automatic highlighting of fields that differ between Target and Reference states
+- **Replaces**: Previous "Highlight Reference Values" as separate command
+- **Benefit**: Users immediately see where models differ without manual activation
+
+#### **Smart Field Locking**
+- **Mode 1 (Mirror Target)**: All fields editable after initial copying
+- **Mode 2 (Mirror Target * Reference)**: ReferenceValues-derived fields locked, others editable  
+- **Mode 3 (Reference Independence)**: All fields editable
+- **Visual Indication**: Locked fields clearly marked as "Code-Derived" with lock icon
+
+#### **Reference Standard (d_13) Separation**
+- **Target d_13**: Only affects L/M/O comparison displays in Target mode
+- **Reference d_13**: Drives actual ReferenceValues.js dataset for Reference calculations
+- **Benefit**: Eliminates confusion about which standard affects which calculations
+
+### 🎮 **Updated Global Controls Architecture**
+
+**Primary Display Toggle**:
+- **"View Target State" / "View Reference State"**: Switches display between Target and Reference calculated values
+- **Location**: Global header toggle
+- **Function**: Pure display switching, no model setup
+
+**Reference Setup Dropdown**:
+- **"Mirror Target"**: Setup function for identical model comparison
+- **"Mirror Target * Reference"**: Setup function for standard building vs code comparison  
+- **"Reference Independence"**: Setup function for custom comparison scenarios
+- **Location**: Reference setup dropdown (separate from display toggle)
+- **Function**: Model configuration, not display switching
+
+### 🏗️ **Implementation Pattern for Reference Setup Functions**
 
 ```javascript
-// Pattern A Compatible Global Toggle
-TEUI.ReferenceToggle.switchAllSectionsMode("reference");
+// 1. Mirror Target Mode Implementation
+TEUI.ReferenceToggle.mirrorTarget = function() {
+  getAllDualStateSections().forEach(section => {
+    const targetState = section.ModeManager.TargetState.data;
+    // Copy ALL Target values to Reference state
+    Object.keys(targetState).forEach(fieldId => {
+      section.ModeManager.ReferenceState.setValue(fieldId, targetState[fieldId], "mirrored");
+    });
+    section.ModeManager.refreshUI();
+  });
+  console.log("🔗 Mirror Target: Reference state synchronized with Target state");
+};
 
-// Sections with Pattern A architecture automatically respond
-sections.forEach(section => {
-  section.modeManager.switchMode("reference");
-  section.modeManager.updateCalculatedDisplayValues();
-});
+// 2. Mirror Target * Reference Mode Implementation  
+TEUI.ReferenceToggle.mirrorTargetWithReference = function() {
+  getAllDualStateSections().forEach(section => {
+    const targetState = section.ModeManager.TargetState.data;
+    // Copy Target inputs except d_13-derived ReferenceValues
+    Object.keys(targetState).forEach(fieldId => {
+      if (!section.isReferenceValueField?.(fieldId)) {
+        section.ModeManager.ReferenceState.setValue(fieldId, targetState[fieldId], "mirrored");
+      }
+    });
+    // Lock ReferenceValues-derived fields
+    section.lockReferenceValueFields?.();
+    section.ModeManager.refreshUI();
+  });
+  console.log("🔗 Mirror Target * Reference: Target inputs + locked Reference values");
+};
 
-// Reference Standard Changes
-section.ReferenceState.onReferenceStandardChange(newStandard);
+// 3. Reference Independence Mode Implementation
+TEUI.ReferenceToggle.enableReferenceIndependence = function() {
+  getAllDualStateSections().forEach(section => {
+    // Unlock all Reference fields for editing
+    section.unlockAllReferenceFields?.();
+    section.ModeManager.refreshUI();
+  });
+  console.log("🔓 Reference Independence: All Reference fields unlocked for custom editing");
+};
+
+// Display Toggle (unchanged)
+TEUI.ReferenceToggle.switchAllSectionsMode = function(mode) {
+  getAllDualStateSections().forEach(section => {
+    section.ModeManager.switchMode(mode);
+    section.ModeManager.updateCalculatedDisplayValues();
+  });
+};
 ```
 
-### 🎨 **UI/UX Design Patterns**
+### 🎨 **Updated UI/UX Design Patterns**
 
-**Global Reference Controls Location**: Header dropdown in `index.html`
-- **"Show Reference"** / **"Show Target"**: Primary toggle
-- **"Show Reference Inputs"**: Advanced analysis tool
-- **"Show Reference Differentiation"**: Troubleshooting tool (planned)
-- **"Match Target Building Inputs"**: Model setup tool (planned)
+**Global Reference Controls Location**: Header in `index.html`
+
+**Primary Display Toggle**:
+- **"View Target State"** / **"View Reference State"**: Pure display switching
+- **Visual**: Blue (Target) / Red (Reference) UI styling
+- **Function**: Shows Target or Reference calculated values across all sections
+
+**Reference Setup Dropdown**: 
+- **"Mirror Target"**: Setup function for identical model comparison
+- **"Mirror Target * Reference"**: Setup function for building vs code comparison (default)
+- **"Reference Independence"**: Setup function for custom comparison scenarios
+- **Visual**: Setup dropdown separate from display toggle
+- **Function**: Configures Reference model relationship to Target model
 
 **Visual Indicators**:
-- **Body Classes**: `viewing-reference-values`, `viewing-reference-inputs` for global styling
-- **Field Highlighting**: Reference inputs, calculated values, differences
-- **Button States**: Clear indication of current view mode
+- **Body Classes**: `viewing-target-state`, `viewing-reference-state` for global mode styling
+- **Field Highlighting**: Automatic highlighting of fields that differ between Target/Reference
+- **Field Locking**: Locked ReferenceValues fields show lock icon and "Code-Derived" tooltip
+- **Button States**: Clear indication of current view mode and setup configuration
 
-**No Individual Section Controls**: Pattern A uses global toggle only, no individual section header controls
+**Individual Section Controls**: Pattern A sections retain header toggles for debugging, but global controls are primary interface
 
 ---
 
