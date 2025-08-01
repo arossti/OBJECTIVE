@@ -1851,6 +1851,40 @@ updateCalculatedDisplayValues: function () {
 }
 ```
 
+#### **🎯 EXCEL S04 ANALYSIS: What S04 Should Actually Be**
+
+**Based on FORMULAE-3039.csv lines 26-36**, Excel S04 is a **simple consumer + user input section**:
+
+**S04's Real Job (Excel-Compliant):**
+1. **User Input Collection**: Actual energy bills (d_27, d_28, d_29, d_30, d_31)
+2. **Simple Arithmetic**: Unit conversions, emission factor lookups, sums
+3. **Consume Target Values**: 
+   - **h_27 = d_136** (from S15 calculations) ✅
+   - **h_28 = heating system logic** (from S13 heating equipment)
+   - **h_29 = d_29** (mirror user input)
+   - **h_30 = heating system logic** (from S13 heating equipment)  
+   - **h_31 = d_31** (mirror user input)
+4. **Summary Calculations**: Net energy (j_32), emissions (k_32), per-capita values
+
+**What S04 Should NOT Do:**
+- ❌ Complex energy modeling calculations
+- ❌ Heating/cooling system calculations (that's S13's job)
+- ❌ TEUI calculations (that's S15's job)
+- ❌ Internal Reference value generation
+
+**Evidence from Excel:**
+```
+T.3.1 Total Electricity Target: =D$136    // CONSUMES from S15
+T.3.2 Gas Target: heating system logic    // CONSUMES from S13  
+T.3.3 Propane Target: =D29               // MIRRORS user input
+T.3.4 Oil Target: heating system logic   // CONSUMES from S13
+T.3.5 Wood Target: =D31                  // MIRRORS user input
+```
+
+**Current Problem**: Our S04 (2,715 lines) tries to **calculate everything internally** instead of **consuming from upstream sections** like Excel does.
+
+**Correct Architecture**: S04 should be ~300-500 lines max, focused on data collection and simple calculations.
+
 #### **🚨 CRITICAL DISCOVERY: S15 Missing Reference Storage**
 
 **ROOT CAUSE IDENTIFIED**: S04 Reference toggle fails because **S15 doesn't store its Reference calculations for downstream consumption**.
