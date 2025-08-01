@@ -225,11 +225,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       this.currentMode = mode;
       console.log(`S04: Switched to ${mode.toUpperCase()} mode`);
       
-      // ✅ CRITICAL: Update UI to show values from the new mode's state
-      this.refreshUI();
-      
-      // ✅ CRITICAL: Recalculate everything after mode switch
-      calculateAll();
+      // ✅ PATTERN A: Mode switches only change display, don't trigger calculations
+      // Reference values should already exist from dual-engine calculations
+      this.updateCalculatedDisplayValues();
     },
 
     getValue: function (fieldId) {
@@ -271,8 +269,10 @@ window.TEUI.SectionModules.sect04 = (function () {
         }
       });
       
-      // ✅ CRITICAL: Update calculated field displays after refreshing inputs
+      // ✅ Update calculated display values (for general refreshes, resets, etc.)
       this.updateCalculatedDisplayValues();
+      
+      console.log(`[S04] UI refreshed for ${this.currentMode} mode`);
     },
 
     // ✅ NEW: Update calculated field displays based on current mode
@@ -280,6 +280,17 @@ window.TEUI.SectionModules.sect04 = (function () {
       if (!window.TEUI?.StateManager) return;
       
       console.log(`[S04] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+      
+      // 🐛 DEBUG: Check if Reference values exist in StateManager
+      if (this.currentMode === "reference") {
+        const debugRefValues = {
+          ref_j_32: window.TEUI.StateManager.getValue("ref_j_32"),
+          ref_k_32: window.TEUI.StateManager.getValue("ref_k_32"),
+          ref_f_32: window.TEUI.StateManager.getValue("ref_f_32"),
+          ref_g_32: window.TEUI.StateManager.getValue("ref_g_32")
+        };
+        console.log(`[S04 DEBUG] Reference values in StateManager:`, debugRefValues);
+      }
 
       // All calculated fields that S04 produces
       const calculatedFields = [
@@ -308,8 +319,14 @@ window.TEUI.SectionModules.sect04 = (function () {
         
         if (this.currentMode === "reference") {
           // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-                           window.TEUI.StateManager.getValue(fieldId);
+          const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          const targetValue = window.TEUI.StateManager.getValue(fieldId);
+          valueToDisplay = refValue || targetValue;
+          
+          // 🐛 DEBUG: Log what we're finding for key fields
+          if (fieldId === "j_32" || fieldId === "k_32") {
+            console.log(`[S04 DEBUG] ${fieldId}: ref_${fieldId}=${refValue}, ${fieldId}=${targetValue}, using=${valueToDisplay}`);
+          }
         } else {
           // In Target mode, show regular values
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
@@ -331,7 +348,17 @@ window.TEUI.SectionModules.sect04 = (function () {
                 formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp-comma");
               }
               element.textContent = formattedValue;
+              
+              // 🐛 DEBUG: Log successful updates for key fields
+              if (fieldId === "j_32" || fieldId === "k_32") {
+                console.log(`[S04 DEBUG] Updated ${fieldId} display to: ${formattedValue}`);
+              }
             }
+          }
+        } else {
+          // 🐛 DEBUG: Log when values are missing
+          if (fieldId === "j_32" || fieldId === "k_32") {
+            console.log(`[S04 DEBUG] No value found for ${fieldId} in ${this.currentMode} mode`);
           }
         }
       });
@@ -2431,12 +2458,21 @@ window.TEUI.SectionModules.sect04 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference";
     
-    // ✅ PATTERN A: Helper function to set value via ModeManager (dual-state)
+    // ✅ PATTERN A FIX: Use same successful pattern as S15 for Reference storage
     const setValueIfChanged = (fieldId, newValue) => {
       const currentValue = ModeManager.getValue(fieldId);
       const newValueStr = newValue.toString();
       if (currentValue !== newValueStr) {
+        // Store in local ModeManager
         ModeManager.setValue(fieldId, newValueStr, "calculated");
+        
+        // ✅ CRITICAL FIX: Store Reference values directly in StateManager like S15 does
+        // Note: fieldId might already include "ref_" prefix, so check before adding another
+        if (window.TEUI?.StateManager) {
+          const stateKey = fieldId.startsWith("ref_") ? fieldId : `ref_${fieldId}`;
+          window.TEUI.StateManager.setValue(stateKey, newValueStr, "calculated");
+          console.log(`[S04 FIX] Stored ${stateKey} = ${newValueStr} directly in StateManager`);
+        }
         return true;
       }
       return false;

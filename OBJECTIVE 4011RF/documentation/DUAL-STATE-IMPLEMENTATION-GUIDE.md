@@ -1529,7 +1529,7 @@ const value = window.TEUI.sect12.ModeManager.getValue("d_103");
 
 **COMPLETED SECTIONS (Pattern A Architecture Implemented):**
 - ✅ **S03**: Climate & Location → COMPLETE (Full functionality verified)
-- ✅ **S04**: Energy Use Summary → COMPLETE  
+- 🚨 **S04**: Energy Use Summary → **OVERENGINEERED - NEEDS ARCHITECTURAL REDESIGN**  
 - ✅ **S11**: Building Envelope → COMPLETE (Full functionality verified)
 - ✅ **S12**: Air Leakage & Volume → COMPLETE (Full functionality verified)
 - ✅ **S13**: HVAC Systems → COMPLETE (Full functionality verified)
@@ -1813,9 +1813,86 @@ if (ModeManager && typeof ModeManager.injectHeaderControls === 'function') {
 - **Fix state contamination**: Complete isolation in S02, S01
 - **Comprehensive testing**: All 13 sections working with global toggle
 
-#### **🔧 S04 Testing Priority**
+#### **🚨 S04 CRITICAL ARCHITECTURAL ISSUE**
 
-**⚠️ CRITICAL**: S04 (Energy Use Summary) needs Target/Reference toggle injection for thorough dual-state testing:
+**PROBLEM IDENTIFIED**: S04 has become massively overengineered (2712+ lines) when it should be one of the simplest consumer sections like S15.
+
+**ROOT CAUSE**: S04 was incorrectly implemented as a complex dual-state producer section instead of a simple consumer section.
+
+##### **What S04 Should Be (Like S15):**
+- **Simple Consumer Pattern**: Read calculated values from upstream sections (S13, S14, S15) 
+- **Display-Only Totaling**: Show energy/emissions totals with Target/Reference toggle
+- **~300-500 lines**: Minimal complexity for totaling and display
+- **No Internal Calculations**: Just aggregate and display upstream results
+
+##### **What S04 Became (Incorrectly):**
+- **Complex Dual-State Producer**: Calculating its own Target/Reference values
+- **Overengineered**: 2712+ lines with internal state management
+- **Reference Storage Issues**: Double-prefix bugs (`ref_ref_j_32` instead of `ref_j_32`)
+- **Toggle Failures**: Reference mode shows Target values due to architectural complexity
+
+##### **Correct S04 Architecture (Future Refactor):**
+```javascript
+// S04 should follow S15's simple consumer pattern
+updateCalculatedDisplayValues: function () {
+  // Read totals calculated by upstream sections
+  const targetEnergyTotal = getGlobalNumericValue("j_32");   // From S05-S07 → S15
+  const refEnergyTotal = getGlobalNumericValue("ref_j_32");  // From S05-S07 → S15
+  const targetEmissionsTotal = getGlobalNumericValue("k_32"); 
+  const refEmissionsTotal = getGlobalNumericValue("ref_k_32");
+  
+  if (this.currentMode === "reference") {
+    updateDisplay("j_32", refEnergyTotal || targetEnergyTotal);
+    updateDisplay("k_32", refEmissionsTotal || targetEmissionsTotal);
+  } else {
+    updateDisplay("j_32", targetEnergyTotal);
+    updateDisplay("k_32", targetEmissionsTotal);
+  }
+}
+```
+
+#### **🚨 CRITICAL DISCOVERY: S15 Missing Reference Storage**
+
+**ROOT CAUSE IDENTIFIED**: S04 Reference toggle fails because **S15 doesn't store its Reference calculations for downstream consumption**.
+
+**The Broken Flow:**
+1. **S15 calculates** Reference d_136 (higher values like 313,511.38) ✅
+2. **S15 should store** `ref_d_136` in StateManager for S04 ❌ **MISSING**
+3. **S04 should read** `ref_d_136` from StateManager ❌ **NOT AVAILABLE**
+4. **S04 falls back** to identical Target values (133,574.37) ❌ **WRONG ARCHITECTURE**
+
+**Evidence**:
+- **S15 logs**: `S15 Reference Model: All values converted to numbers` (calculations working)
+- **S04 logs**: `ref_j_32: '133574.37', j_32: '133574.37'` (identical values prove no Reference data)
+- **Missing**: No logs of S15 storing `ref_d_136` like S13/S12 do
+
+**Required Fix**: S15 needs `storeReferenceResults()` function like other sections:
+```javascript
+// S15 needs this function (missing):
+function storeReferenceResults() {
+  if (!window.TEUI?.StateManager) return;
+  
+  const referenceResults = {
+    d_136: calculatedReferenceD136,  // For S04 h_27 consumption
+    h_136: calculatedReferenceH136,  // For S04 j_27 consumption
+    // ... other Reference values S04 needs
+  };
+  
+  Object.entries(referenceResults).forEach(([fieldId, value]) => {
+    window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+  });
+}
+```
+
+**IMMEDIATE WORKAROUND**: Continue using current S04 architecture until S15 Reference storage is implemented.
+
+**PRIORITY**: 
+1. **Implement S15 Reference storage** for S04 consumption
+2. **Then redesign S04** as simple consumer reading from S15
+
+#### **🔧 S04 Testing Priority (Current Implementation)**
+
+**⚠️ NOTE**: Current S04 implementation has fundamental architectural issues but toggle functionality can be debugged:
 
 - **Purpose**: Verify electricity prices, fuel costs, and energy pricing are correctly isolated between Target and Reference states
 - **Impact**: S04 provides `l_12` (electricity price) to S15 D_141 cost calculations
