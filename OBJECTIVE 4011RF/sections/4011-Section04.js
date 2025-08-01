@@ -258,9 +258,85 @@ window.TEUI.SectionModules.sect04 = (function () {
       
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       
-          // ✅ FIXED: S04 no longer manipulates S03's d_19 DOM elements
-    // S04 only reads d_19 from StateManager for emission factor calculations
-    // S03 is responsible for its own d_19 DOM updates
+      // Update user-editable input fields from current state
+      const fields = getFields();
+      Object.keys(fields).forEach(fieldId => {
+        const fieldValue = currentState.getValue(fieldId);
+        if (fieldValue !== null && fieldValue !== undefined) {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element && element.hasAttribute("contenteditable")) {
+            // Only update editable fields, not calculated ones
+            element.textContent = fieldValue;
+          }
+        }
+      });
+      
+      // ✅ CRITICAL: Update calculated field displays after refreshing inputs
+      this.updateCalculatedDisplayValues();
+    },
+
+    // ✅ NEW: Update calculated field displays based on current mode
+    updateCalculatedDisplayValues: function () {
+      if (!window.TEUI?.StateManager) return;
+      
+      console.log(`[S04] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+
+      // All calculated fields that S04 produces
+      const calculatedFields = [
+        // Energy totals
+        "f_32", "j_32",
+        // Emissions totals  
+        "g_32", "k_32",
+        // Intermediate energy calculations
+        "f_27", "f_28", "f_29", "f_30", "f_31",
+        // Intermediate emissions calculations
+        "g_27", "g_28", "g_29", "g_30", "g_31",
+        // Target energy calculations
+        "j_27", "j_28", "j_30", "j_31",
+        // Target emissions calculations
+        "k_27", "k_28", "k_30", "k_31",
+        // Heating/cooling calculations
+        "h_27", "h_28", "h_30", "h_31", "h_33", "h_34",
+        // Lifecycle carbon calculations
+        "d_33", "d_34", "d_35", "f_34", "f_35", "j_34",
+        // Emission factors
+        "l_27"
+      ];
+
+      calculatedFields.forEach(fieldId => {
+        let valueToDisplay;
+        
+        if (this.currentMode === "reference") {
+          // In Reference mode, try to show ref_ values, fallback to regular values
+          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
+                           window.TEUI.StateManager.getValue(fieldId);
+        } else {
+          // In Target mode, show regular values
+          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+        }
+
+        if (valueToDisplay !== null && valueToDisplay !== undefined) {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element && !element.hasAttribute("contenteditable")) {
+            // Only update calculated fields, not user-editable ones
+            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
+            if (!isNaN(numericValue)) {
+              // Use appropriate formatting for different field types
+              let formattedValue;
+              if (fieldId === "l_27") {
+                // Emission factor as integer
+                formattedValue = window.TEUI.formatNumber(numericValue, "integer");
+              } else {
+                // All other fields as 2 decimal places with commas
+                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp-comma");
+              }
+              element.textContent = formattedValue;
+            }
+          }
+        }
+      });
+
+      console.log(`[S04] Calculated display values updated for ${this.currentMode} mode`);
     },
   };
 
@@ -2297,23 +2373,41 @@ window.TEUI.SectionModules.sect04 = (function () {
    * DUAL-ENGINE ARCHITECTURE: Helper functions to get values based on calculation mode
    */
 
-  /**
-   * Get numeric value from Application state (for Target calculations)
-   */
-  function getAppNumericValue(fieldId, defaultValue = 0) {
-    const value =
-      window.TEUI?.StateManager?.getApplicationValue?.(fieldId) ||
-      window.TEUI?.StateManager?.getValue?.(fieldId);
+  //==========================================================================
+  // PATTERN A HELPER FUNCTIONS  
+  //==========================================================================
 
-    // Use the global parseNumeric function to handle comma-formatted values
-    return window.TEUI?.parseNumeric?.(value, defaultValue) || defaultValue;
+  /**
+   * ✅ PATTERN A: Get values EXTERNAL to this section (from global StateManager)
+   * Used for reading calculated results from upstream sections
+   */
+  function getGlobalNumericValue(fieldId) {
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
   }
 
   /**
-   * Get numeric value for Reference calculations
-   * First checks for ref_ prefixed values, then falls back to application state
+   * ✅ PATTERN A: Get section-local value based on calculation context (not UI mode)
+   * @param {string} fieldId - The field identifier  
+   * @param {boolean} isReferenceCalculation - Whether this is for Reference calculation
+   * @returns {string|number} - The value from appropriate state
    */
+  function getSectionValue(fieldId, isReferenceCalculation = false) {
+    if (isReferenceCalculation) {
+      return ReferenceState.getValue(fieldId);
+    } else {
+      return TargetState.getValue(fieldId);
+    }
+  }
+
+  // ❌ DEPRECATED B PATTERN FUNCTIONS - Remove after refactor complete
+  function getAppNumericValue(fieldId, defaultValue = 0) {
+    console.warn(`[S04 DEPRECATED] getAppNumericValue(${fieldId}) - use getGlobalNumericValue() instead`);
+    return getGlobalNumericValue(fieldId) || defaultValue;
+  }
+
   function getRefNumericValue(fieldId, defaultValue = 0) {
+    console.warn(`[S04 DEPRECATED] getRefNumericValue(${fieldId}) - use getGlobalNumericValue() with ref_ prefix instead`);
     // First try to get ref_ prefixed value (from upstream Reference calculations)
     const refFieldId = `ref_${fieldId}`;
     let value = window.TEUI.StateManager?.getValue?.(refFieldId);
@@ -2415,28 +2509,28 @@ window.TEUI.SectionModules.sect04 = (function () {
     };
 
     try {
-      // ✅ CRITICAL FIX: Get Target/Application values for Target model (NOT Reference!)
-      const app_h27 = getAppNumericValue("h_27", 0);
-      const app_h28 = getAppNumericValue("h_28", 0);
-      const app_h29 = getAppNumericValue("h_29", 0);
-      const app_h30 = getAppNumericValue("h_30", 0);
-      const app_h31 = getAppNumericValue("h_31", 0);
-      const app_j27 = getAppNumericValue("j_27", 0);
-      const app_j28 = getAppNumericValue("j_28", 0);
-      const app_j29 = getAppNumericValue("j_29", 0);
-      const app_j30 = getAppNumericValue("j_30", 0);
-      const app_j31 = getAppNumericValue("j_31", 0);
-      const app_k27 = getAppNumericValue("k_27", 0);
-      const app_k28 = getAppNumericValue("k_28", 0);
-      const app_k29 = getAppNumericValue("k_29", 0);
-      const app_k30 = getAppNumericValue("k_30", 0);
-      const app_k31 = getAppNumericValue("k_31", 0);
-      const app_l27 = getAppNumericValue("l_27", 0);
-      const app_l28 = getAppNumericValue("l_28", 1921);
-      const app_l29 = getAppNumericValue("l_29", 2970);
-      const app_l30 = getAppNumericValue("l_30", 2753);
-      const app_l31 = getAppNumericValue("l_31", 150);
-      const app_d60 = getAppNumericValue("d_60", 0);
+      // ✅ PATTERN A: Get external calculated values using getGlobalNumericValue()
+      const app_h27 = getGlobalNumericValue("h_27");
+      const app_h28 = getGlobalNumericValue("h_28");
+      const app_h29 = getGlobalNumericValue("h_29");
+      const app_h30 = getGlobalNumericValue("h_30");
+      const app_h31 = getGlobalNumericValue("h_31");
+      const app_j27 = getGlobalNumericValue("j_27");
+      const app_j28 = getGlobalNumericValue("j_28");
+      const app_j29 = getGlobalNumericValue("j_29");
+      const app_j30 = getGlobalNumericValue("j_30");
+      const app_j31 = getGlobalNumericValue("j_31");
+      const app_k27 = getGlobalNumericValue("k_27");
+      const app_k28 = getGlobalNumericValue("k_28");
+      const app_k29 = getGlobalNumericValue("k_29");
+      const app_k30 = getGlobalNumericValue("k_30");
+      const app_k31 = getGlobalNumericValue("k_31");
+      const app_l27 = getGlobalNumericValue("l_27");
+      const app_l28 = getGlobalNumericValue("l_28") || 1921; // Default gas emissions factor
+      const app_l29 = getGlobalNumericValue("l_29") || 2970; // Default propane emissions factor
+      const app_l30 = getGlobalNumericValue("l_30") || 2753; // Default oil emissions factor
+      const app_l31 = getGlobalNumericValue("l_31") || 150;  // Default wood emissions factor
+      const app_d60 = getGlobalNumericValue("d_60");
 
       // Calculate all row 27-31 actuals (F and G columns)
       setCalculatedValue("f_27", calculateF27(), "number-2dp-comma");
