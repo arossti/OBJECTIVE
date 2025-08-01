@@ -1427,12 +1427,15 @@ window.TEUI.SectionModules.sect02 = (function () {
       try {
         const saved = localStorage.getItem(this.storageKey);
         if (saved) {
-          this.data = JSON.parse(saved);
-          console.log(`S02: Loaded Target state from localStorage`);
+          const savedData = JSON.parse(saved);
+          // ✅ CRITICAL FIX: Merge saved data with defaults, don't replace defaults
+          this.data = { ...this.data, ...savedData };
+          console.log(`S02: Loaded and merged Target state from localStorage`);
         }
       } catch (error) {
         console.warn(`S02: Error loading Target state:`, error);
-        this.data = {};
+        // ✅ CRITICAL FIX: Don't wipe defaults on error, keep existing defaults
+        console.log(`S02: Keeping Target defaults due to localStorage error`);
       }
     },
 
@@ -1486,12 +1489,15 @@ window.TEUI.SectionModules.sect02 = (function () {
       try {
         const saved = localStorage.getItem(this.storageKey);
         if (saved) {
-          this.data = JSON.parse(saved);
-          console.log(`S02: Loaded Reference state from localStorage`);
+          const savedData = JSON.parse(saved);
+          // ✅ CRITICAL FIX: Merge saved data with defaults, don't replace defaults
+          this.data = { ...this.data, ...savedData };
+          console.log(`S02: Loaded and merged Reference state from localStorage`);
         }
       } catch (error) {
         console.warn(`S02: Error loading Reference state:`, error);
-        this.data = {};
+        // ✅ CRITICAL FIX: Don't wipe defaults on error, keep existing defaults
+        console.log(`S02: Keeping Reference defaults due to localStorage error`);
       }
     },
 
@@ -1547,8 +1553,19 @@ window.TEUI.SectionModules.sect02 = (function () {
       
       // ✅ CRITICAL FIX: Store default energy costs in StateManager for downstream sections
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue("l_12", "0.1300", "default"); // Electricity $0.1300/kWh
-        console.log(`[S02] Stored default l_12 = 0.1300 in StateManager`);
+        const energyCosts = {
+          l_12: "0.1300", // Electricity $/kWh
+          l_13: "0.5070", // Gas $/m³
+          l_14: "1.6200", // Propane $/kg
+          l_15: "180.00", // Wood $/m³
+          l_16: "1.5000"  // Oil $/litre
+        };
+        
+        Object.entries(energyCosts).forEach(([fieldId, value]) => {
+          window.TEUI.StateManager.setValue(fieldId, value, "default");
+        });
+        
+        console.log(`[S02] Stored default energy costs in StateManager:`, energyCosts);
       }
       
       console.log(`S02: Pattern A initialization complete.`);
