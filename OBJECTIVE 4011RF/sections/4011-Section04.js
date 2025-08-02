@@ -1592,23 +1592,35 @@ window.TEUI.SectionModules.sect04 = (function () {
     const originalMode = ModeManager.currentMode;
     ModeManager.currentMode = "reference";
 
-    // Calculate each Excel row in sequence for Reference
-    // Note: For S04, Reference mostly mirrors Target since it's utility bill data
-    // The main differences are in h_27-h_31 values from S15 reference calculations
-    calculateRow27(); // Electricity (uses ref_d_136 from S15)
-    calculateRow28(); // Gas
-    calculateRow29(); // Propane
-    calculateRow30(); // Oil
-    calculateRow31(); // Wood
-    calculateRow32(); // Subtotals
-    calculateRow33(); // Total Net Energy
-    calculateRow34(); // Annual Percapita Energy
-    calculateRow35(); // Primary Energy
+    // CRITICAL: Override calculation storage to use Reference prefixes
+    // eslint-disable-next-line no-func-assign
+    const originalSetCalculatedValue = setCalculatedValue;
+    // eslint-disable-next-line no-func-assign
+    setCalculatedValue = function (fieldId, rawValue, formatType) {
+      setReferenceCalculatedValue(fieldId, rawValue, formatType);
+    };
 
-    console.log("[S04] Reference model calculations complete");
+    try {
+      // Calculate each Excel row in sequence for Reference
+      // Note: For S04, Reference mostly mirrors Target since it's utility bill data
+      // The main differences are in h_27-h_31 values from S15 reference calculations
+      calculateRow27(); // Electricity (uses ref_d_136 from S15)
+      calculateRow28(); // Gas
+      calculateRow29(); // Propane
+      calculateRow30(); // Oil
+      calculateRow31(); // Wood
+      calculateRow32(); // Subtotals
+      calculateRow33(); // Total Net Energy
+      calculateRow34(); // Annual Percapita Energy
+      calculateRow35(); // Primary Energy
 
-    // Restore original mode
-    ModeManager.currentMode = originalMode;
+      console.log("[S04] Reference model calculations complete");
+    } finally {
+      // CRITICAL: Restore original functions
+      // eslint-disable-next-line no-func-assign
+      setCalculatedValue = originalSetCalculatedValue;
+      ModeManager.currentMode = originalMode;
+    }
   }
 
   //==========================================================================
