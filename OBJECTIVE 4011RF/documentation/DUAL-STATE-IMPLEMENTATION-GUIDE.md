@@ -2208,11 +2208,149 @@ function calculateTargetModel() {
 - **Derived Sections Different**: S04's architecture should differ from input sections like S02/S03
 - **StateManager Dependencies**: Sections that primarily read upstream values need different patterns
 
+---
+
+## 🔍 **QC/QA CHECKLIST FOR COMPLETED SECTIONS**
+
+**⚠️ MANDATORY REVIEW**: Every completed dual-state section must pass this comprehensive checklist before being considered production-ready. This checklist prevents regression and ensures architectural compliance.
+
+### **📋 1. ARCHITECTURAL COMPLIANCE**
+
+#### **✅ Pattern A Implementation**
+- [ ] **TargetState Object**: Properly defined with `setDefaults()`, `saveState()`, `loadState()`, `setValue()`, `getValue()`
+- [ ] **ReferenceState Object**: Properly defined with same methods as TargetState
+- [ ] **ModeManager Facade**: Contains `initialize()`, `switchMode()`, `refreshUI()`, `resetState()`, `getValue()`, `setValue()`
+- [ ] **localStorage Keys**: Follow naming convention `"SXX_TARGET_STATE"`, `"SXX_REFERENCE_STATE"`
+- [ ] **Global Exposure**: `window.TEUI.sectXX.ModeManager` accessible for cross-section integration
+
+#### **✅ Pattern B Contamination Elimination**
+- [ ] **No Global Prefixed State**: No `target_*`, `ref_*` in internal state management
+- [ ] **No getAppNumericValue()**: All external dependencies use `getGlobalNumericValue()`
+- [ ] **No ComponentBridge Interference**: Section doesn't interfere with other sections' DOM/state
+- [ ] **Clean External Dependencies**: Only reads from StateManager using approved patterns
+
+### **📋 2. DUAL-ENGINE ARCHITECTURE**
+
+#### **✅ Calculation Pattern**
+- [ ] **calculateAll() Dual-Engine**: Always runs both `calculateTargetModel()` and `calculateReferenceModel()`
+- [ ] **Target Storage**: `calculateTargetModel()` stores unprefixed values in StateManager
+- [ ] **Reference Storage**: `calculateReferenceModel()` stores `ref_` prefixed values in StateManager
+- [ ] **Mode Independence**: Calculations run regardless of current UI mode
+- [ ] **Parallel Execution**: Both engines run in same `calculateAll()` call
+
+#### **✅ UI Toggle Pattern**
+- [ ] **Display-Only switchMode()**: Only calls `refreshUI()` and `updateCalculatedDisplayValues()`
+- [ ] **NO calculateAll() in switchMode()**: UI toggles never trigger calculations
+- [ ] **Pre-calculated Values**: All values exist in StateManager before mode switch
+- [ ] **Smooth Transitions**: Mode switches are instant (no calculation delays)
+
+### **📋 3. FUNCTIONAL TESTING**
+
+#### **✅ Core Functionality**
+- [ ] **Distinct Values**: Reference mode shows different values from Target mode
+- [ ] **User Input Persistence**: Input changes survive mode toggles
+- [ ] **localStorage Persistence**: State survives browser refresh
+- [ ] **External Dependencies**: Reacts to upstream section changes
+- [ ] **Downstream Provision**: Provides calculated values to dependent sections
+
+#### **✅ UI Testing**
+- [ ] **Header Controls**: Target/Reference toggle and Reset button present and functional
+- [ ] **Visual Feedback**: Toggle shows current mode (blue=Target, red=Reference)
+- [ ] **Input Synchronization**: `refreshUI()` correctly loads state into input fields
+- [ ] **Calculated Display Updates**: `updateCalculatedDisplayValues()` shows correct mode values
+- [ ] **Reset Functionality**: Reset button clears localStorage and reloads defaults
+
+### **📋 4. INTEGRATION TESTING**
+
+#### **✅ StateManager Integration**
+- [ ] **Value Storage**: Section stores values in StateManager for downstream consumption
+- [ ] **Value Retrieval**: Section reads external dependencies from StateManager
+- [ ] **Reference Value Provision**: Stores `ref_` prefixed values for Reference column in S01
+- [ ] **Listener Registration**: Reacts to external changes via `StateManager.addListener()`
+
+#### **✅ Cross-Section Communication**
+- [ ] **Upstream Dependencies**: Correctly reads from required upstream sections
+- [ ] **Downstream Provision**: Provides required values to dependent sections
+- [ ] **S01 Dashboard Display**: Values appear correctly in Reference/Target/Actual columns
+- [ ] **Global Toggle Integration**: Responds to global Reference toggle commands
+
+### **📋 5. ERROR HANDLING & EDGE CASES**
+
+#### **✅ Robustness**
+- [ ] **Missing Dependencies**: Graceful handling when upstream values are undefined
+- [ ] **Invalid Input Values**: Proper validation and error handling for user inputs
+- [ ] **localStorage Corruption**: Falls back to defaults if saved state is invalid
+- [ ] **StateManager Unavailable**: Section functions even if StateManager isn't loaded
+- [ ] **Console Error Free**: No JavaScript errors in browser console
+
+#### **✅ Performance**
+- [ ] **Calculation Efficiency**: No redundant calculations on mode switches
+- [ ] **Memory Management**: No memory leaks from event listeners
+- [ ] **DOM Updates**: Minimal DOM manipulation, no layout thrashing
+- [ ] **localStorage Size**: Reasonable storage usage (no bloated state objects)
+
+### **📋 6. CODE QUALITY**
+
+#### **✅ Maintainability**
+- [ ] **Consistent Naming**: Follows established naming conventions
+- [ ] **Clear Documentation**: Functions and complex logic documented
+- [ ] **Helper Function Reuse**: Uses established patterns like `setCalculatedValue()`
+- [ ] **Error Logging**: Appropriate console logging for debugging
+- [ ] **Code Organization**: Clear separation of concerns (state, calculations, UI)
+
+#### **✅ Standards Compliance**
+- [ ] **Linter Clean**: No ESLint errors or warnings
+- [ ] **DUAL-STATE Guide Compliance**: Follows all patterns from this guide
+- [ ] **Excel Methodology**: Calculations match Excel reference implementation
+- [ ] **Regulator Compliance**: Maintains approved calculation methodologies
+
+---
+
+## 📂 **SECTION-SPECIFIC WORKPLANS**
+
+### **🎯 Section 01 (Dashboard) - Consumer Section Refactor**
+
+**Reference**: `S01-PATTERN-A-REFACTOR-WORKPLAN.md`
+
+Section 01 has a **dedicated workplan** due to its unique role as a consumer section that displays Reference/Target/Actual columns simultaneously. Unlike other sections, S01:
+
+- ✅ **No Dual-State Objects**: Consumer sections don't need TargetState/ReferenceState
+- ✅ **Clean External Dependencies**: Uses `getGlobalNumericValue()` for upstream data
+- ✅ **State-Agnostic Display**: Shows all three columns (Reference, Target, Actual) at once
+- ✅ **B Pattern Elimination**: Removes `getAppNumericValue()` complexity
+
+**Priority**: Complete S01 refactor after all upstream sections (S04, S05-S07, S15) are Pattern A compliant.
+
+### **🎯 Remaining Section Refactors**
+
+**Next Priority Sections** (following corrected DUAL-STATE guide):
+- **S05, S06, S07**: Standard dual-state refactors following the patterns established in S04
+- **S11 Correction**: Remove `calculateAll()` from `switchMode()` (architectural error)
+- **S12, S13 Review**: Verify compliance with dual-engine architecture
+
+---
+
+## 🏁 **COMPLETION CRITERIA**
+
+A section is considered **COMPLETE** when it passes all QC/QA checklist items and:
+
+1. ✅ **Pattern A Compliant**: No Pattern B contamination detected
+2. ✅ **Dual-Engine Functional**: Both Target and Reference calculations working
+3. ✅ **Integration Tested**: Works correctly with upstream and downstream sections
+4. ✅ **UI Toggle Reliable**: Mode switching shows distinct values consistently
+5. ✅ **Error-Free Operation**: No console errors or functional issues
+6. ✅ **Documentation Updated**: Any changes reflected in this guide
+
+**Final Validation**: Section must contribute correctly to S01 dashboard display showing distinct Reference vs Target performance metrics.
+
+---
+
 ### **🎯 NEXT SESSION PRIORITIES**
 
-1. **Fix S02 Global Reset**: Debug why global reset differs from local reset behavior
-2. **S04 Architecture Redesign**: Create proper pattern for derived/totalling sections 
-3. **Cross-Section Testing**: Establish testing protocol to prevent working section regressions
-4. **Pattern Documentation**: Document different patterns for input vs derived vs totalling sections
+1. **S05-S07 Dual-State Refactors**: Apply corrected dual-engine architecture patterns
+2. **S11 Architecture Correction**: Remove `calculateAll()` from `switchMode()` function
+3. **QC/QA Review**: Run completed sections through comprehensive checklist
+4. **S01 Consumer Refactor**: Execute dedicated workplan for dashboard section
+5. **Cross-Section Integration Testing**: Verify all sections work together correctly
 
 ---
