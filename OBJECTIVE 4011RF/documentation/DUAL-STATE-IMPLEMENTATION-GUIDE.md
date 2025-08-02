@@ -581,76 +581,139 @@ All dual-state implementations MUST follow these naming conventions:
 
 ---
 
-## 🚨 **CRITICAL: Order of Operations in switchMode() Function**
+## 🚨 **CRITICAL: Dual-Engine Architecture & UI Toggle Pattern**
 
-**⚠️ CRITICAL TIMING ISSUE**: One of the most common and persistent bugs in dual-state implementation is the **incorrect order of operations** in the `ModeManager.switchMode()` function. This issue has caused multiple failed implementations and hours of debugging.
+**⚠️ MAJOR ARCHITECTURAL CLARIFICATION**: Previous guidance contained contradictory information about when calculations should run. This section provides the **definitive correct pattern** based on successful S04 implementation.
 
-### **❌ WRONG ORDER (Causes Reference Values to Show as Target Values)**
+### **🎯 The Correct Dual-Engine Architecture**
+
+**FUNDAMENTAL PRINCIPLE**: 
+- **Calculations run automatically** when data changes (dual-engine always producing both Target and Reference results)
+- **UI toggles only switch display** (no calculation triggering)
+- **Values are pre-calculated** and stored in StateManager with `ref_` prefixes
+
+### **✅ CORRECT: Dual-Engine calculateAll() Pattern**
 
 ```javascript
-// ❌ WRONG: This will show identical values in both modes
-switchMode: function (mode) {
-  this.currentMode = mode;
+// ✅ ALWAYS runs both engines to maintain dual data streams
+function calculateAll() {
+  console.log("[Section] Running dual-engine calculations...");
   
-  this.refreshUI();                    // 1. Updates input fields
-  this.updateCalculatedDisplayValues(); // 2. ❌ TRIES TO READ VALUES BEFORE CALCULATION
-  calculateAll();                      // 3. Actually calculates and stores values
+  // BOTH engines run in parallel, regardless of UI mode
+  calculateTargetModel();    // Stores unprefixed values in StateManager
+  calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
+  
+  console.log("[Section] Dual-engine calculations complete");
+}
+
+function calculateReferenceModel() {
+  // Switch to reference mode temporarily for calculations
+  const originalMode = ModeManager.currentMode;
+  ModeManager.currentMode = "reference";
+  
+  try {
+    // Run calculations using Reference state inputs
+    // Store results with ref_ prefix for downstream sections  
+    setReferenceCalculatedValue("j_32", value); // → StateManager.setValue("ref_j_32", value)
+  } finally {
+    ModeManager.currentMode = originalMode;
+  }
 }
 ```
 
-**Why This Fails:**
-- `updateCalculatedDisplayValues()` tries to read `ref_` prefixed values from StateManager
-- But `calculateAll()` hasn't run yet, so `ref_` values don't exist or are stale
-- Function falls back to regular values, showing Target values in both modes
-- Users see identical values in Target and Reference modes (major bug indicator)
-
-### **✅ CORRECT ORDER (Shows Distinct Values in Each Mode)**
+### **✅ CORRECT: UI Toggle switchMode() Pattern**
 
 ```javascript
-// ✅ CORRECT: This will show different values in Target vs Reference modes
+// ✅ CORRECT: UI toggle only switches display, never triggers calculations
 switchMode: function (mode) {
-  this.currentMode = mode;
+  if (this.currentMode === mode) return; // No change needed
   
-  this.refreshUI();                    // 1. Updates input fields for new mode
-  calculateAll();                      // 2. Runs calculations and stores ref_ values
-  this.updateCalculatedDisplayValues(); // 3. Reads stored values and updates display
+  this.currentMode = mode;
+  console.log(`Switched to ${mode.toUpperCase()} mode`);
+  
+  // ONLY update display - values should already be calculated
+  this.refreshUI();                    // 1. Update input field displays
+  this.updateCalculatedDisplayValues(); // 2. Read pre-calculated values from StateManager
+  
+  // ❌ NEVER call calculateAll() here - it's a UI action, not a data change
 }
 ```
 
-**Why This Works:**
-- `calculateAll()` runs both `calculateTargetModel()` and `calculateReferenceModel()`
-- Reference calculations store results with `ref_` prefixes in StateManager
-- `updateCalculatedDisplayValues()` can then successfully read the stored Reference values
-- Users see distinctly different values when toggling between modes
+### **🎯 When Calculations ARE Triggered**
 
-### **🔍 Debugging This Issue**
+**Calculations should run when data actually changes:**
+
+```javascript
+// ✅ User input changes
+element.addEventListener('blur', function() {
+  ModeManager.setValue(fieldId, value, 'user-modified');
+  calculateAll(); // Recalculate because data changed
+});
+
+// ✅ External dependency changes  
+StateManager.addListener('d_136', () => {
+  console.log('Upstream value changed');
+  calculateAll(); // Recalculate because dependency changed
+});
+
+// ✅ App initialization
+onSectionRendered: function() {
+  ModeManager.initialize();
+  calculateAll(); // Initial calculation to populate all values
+}
+```
+
+### **🔍 Debugging "Identical Values" Issue**
 
 **Symptom**: Reference mode shows identical values to Target mode  
-**Root Cause**: Wrong order of operations in `switchMode()`  
-**Fix**: Ensure `calculateAll()` runs **BEFORE** `updateCalculatedDisplayValues()`
+**Root Cause**: Dual-engine calculations not storing Reference values properly  
+**Fix**: Ensure `calculateReferenceModel()` stores values with `ref_` prefixes
 
 **Debug Steps:**
-1. Add logging to `updateCalculatedDisplayValues()` to check if `ref_` values exist:
+1. Check if Reference values exist in StateManager:
    ```javascript
    const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
    const targetValue = window.TEUI.StateManager.getValue(fieldId);
-   console.log(`${fieldId}: ref="${refValue}", target="${targetValue}"`);
+   console.log(`DEBUG: ${fieldId}: target="${targetValue}", ref="${refValue}"`);
    ```
-2. If `refValue` is null/undefined, the order is wrong
-3. Move `updateCalculatedDisplayValues()` after `calculateAll()`
+2. If `refValue` is null/undefined, the dual-engine pattern is broken
+3. Fix `calculateReferenceModel()` to store `ref_` prefixed values
+4. **Never** add `calculateAll()` to `switchMode()` - that's treating the symptom, not the cause
 
 ### **📋 Implementation Checklist**
 
-When implementing `switchMode()` function:
+When implementing dual-state sections:
 
-- [ ] **Step 1**: `this.currentMode = mode` - Set the mode
-- [ ] **Step 2**: `this.refreshUI()` - Update input field displays  
-- [ ] **Step 3**: `calculateAll()` - Run calculations (stores ref_ values)
-- [ ] **Step 4**: `this.updateCalculatedDisplayValues()` - Update calculated displays
+- [ ] **Dual-Engine**: `calculateAll()` always runs both Target and Reference models
+- [ ] **Reference Storage**: `calculateReferenceModel()` stores `ref_` prefixed values in StateManager  
+- [ ] **UI Toggle**: `switchMode()` only calls `refreshUI()` and `updateCalculatedDisplayValues()`
+- [ ] **Data Triggers**: `calculateAll()` called on user input, external changes, and initialization
+- [ ] **Never**: Call `calculateAll()` from UI toggle functions
 
-**⚠️ Never call `updateCalculatedDisplayValues()` before `calculateAll()`**
+**⚠️ CRITICAL**: UI toggles are display filters, NOT calculation triggers. Values should be pre-calculated and waiting in StateManager.
 
-This order ensures that Reference values are calculated and stored before attempting to display them, preventing the common bug where both modes show identical values.
+### **🔧 CORRECTION NEEDED: Existing Sections with Wrong Pattern**
+
+**URGENT**: S11 and other existing sections incorrectly call `calculateAll()` in `switchMode()` and need correction:
+
+```javascript
+// ❌ WRONG: S11 line 249 - remove this calculateAll()
+switchMode: function (mode) {
+  this.currentMode = mode;
+  this.refreshUI();
+  calculateAll(); // ← REMOVE THIS LINE
+}
+
+// ✅ CORRECT: Should be display-only
+switchMode: function (mode) {
+  if (this.currentMode === mode) return;
+  this.currentMode = mode;
+  this.refreshUI();
+  this.updateCalculatedDisplayValues(); // Only update display
+}
+```
+
+**Sections Needing Correction**: S11, S12, S13 (and any others calling `calculateAll()` in `switchMode()`)
 
 ---
 
@@ -1214,11 +1277,16 @@ function calculateTargetModel() {
 
 ### **🚨 What Mode Switching Actually Controls**
 
-**Mode switching is a UI filter, NOT a calculation trigger:**
+**Mode switching is a UI display filter, NOT a calculation trigger:**
 
-- **Target Mode**: User edits Target input values, sees Target calculated outputs
-- **Reference Mode**: User edits Reference input values, sees Reference calculated outputs
-- **Calculations**: ALWAYS run both engines to maintain both data streams
+- **Target Mode**: User sees Target input values and Target calculated outputs from StateManager
+- **Reference Mode**: User sees Reference input values and Reference calculated outputs from StateManager (ref_ prefixed)
+
+**Key Principle**: Values are **pre-calculated and waiting** in StateManager. UI toggles just choose which set to display.
+
+- **Calculations**: ALWAYS run both engines automatically when data changes (dual-engine architecture)
+- **UI Toggles**: Only switch between displaying Target vs Reference values
+- **No Recalculation**: Mode switches never trigger `calculateAll()` - that would be an architectural error
 
 ### **📋 S12 & S13 Correction Workplan**
 
