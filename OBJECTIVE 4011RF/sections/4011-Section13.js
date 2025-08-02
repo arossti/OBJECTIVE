@@ -226,9 +226,11 @@ window.TEUI.SectionModules.sect13 = (function () {
             if (!isNaN(numericValue)) {
               // Use appropriate formatting for different field types
               let formattedValue;
-              if (fieldId.startsWith("l_")) {
+              if (fieldId === "m_115") {
+                // Only m_115 (AFUE efficiency) should be percent
                 formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
               } else {
+                // All other fields should use number-2dp formatting
                 formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
               }
               element.textContent = formattedValue;
@@ -338,9 +340,11 @@ window.TEUI.SectionModules.sect13 = (function () {
             if (!isNaN(numericValue)) {
               let formattedValue;
               // Use appropriate formatting based on field type
-              if (fieldId.includes("115") && fieldId !== "d_115") {
+              if (fieldId === "m_115") {
+                // Only m_115 (AFUE efficiency) should be percent
                 formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
               } else {
+                // All other fields (h_115, f_115, l_115, etc.) should be number-2dp
                 formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
               }
               element.textContent = formattedValue;

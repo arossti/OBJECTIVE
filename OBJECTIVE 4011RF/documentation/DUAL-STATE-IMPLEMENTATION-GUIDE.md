@@ -2306,6 +2306,41 @@ function calculateTargetModel() {
 
 ---
 
+## ⚠️ **KNOWN ISSUES TO ADDRESS POST-REFACTOR**
+
+### **🐛 Reference State Initialization Issue**
+
+**Status**: Identified - Fix Pending After S05-S07 Refactors  
+**Affects**: S04, S13, S15, and potentially other sections  
+**Discovered**: During S04 gas/oil calculation implementation  
+
+**Issue Description**:
+The Reference state calculations work correctly when manually triggered (e.g., user changes fuel types), but **default Reference values are not properly initialized on initial page load**. This means:
+
+- ✅ **Manual Triggers Work**: Changing fuel types correctly recalculates gas/oil flows
+- ✅ **Cross-Section Flow Works**: S07/S13 → S04 integration functions properly  
+- ❌ **Initial Load Broken**: Default Reference state shows zero instead of calculated values
+- ❌ **Mode Toggle Shows Same Values**: Target=Reference on fresh load
+
+**Root Cause (Suspected)**:
+The dual-engine architecture correctly calculates both models, but the **Reference state storage and initialization sequence** may have timing issues or missing triggers during initial section rendering.
+
+**Examples Observed**:
+- S13 defaults to Gas heating in Reference mode
+- S13 calculates `ref_h_115 = 27,214.94 m³` correctly (visible in logs)
+- S04 H28 shows `0.00 m³` instead of S13's gas volume on initial load
+- After manually changing fuel types, calculations flow correctly
+
+**Fix Strategy (Post S05-S07)**:
+1. **Complete remaining section refactors** to ensure all upstream dependencies are Pattern A compliant
+2. **Review initialization sequence** across all sections for Reference state triggers
+3. **Test complete calculation flow** with all sections using dual-state architecture
+4. **Implement initialization fixes** once the full dependency chain is stable
+
+**Tracking**: Document resolution in next guide update after S05-S07 completion.
+
+---
+
 ## 📂 **SECTION-SPECIFIC WORKPLANS**
 
 ### **🎯 Section 01 (Dashboard) - Consumer Section Refactor**

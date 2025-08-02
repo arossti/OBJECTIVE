@@ -44,7 +44,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Update DOM only if in Target mode
     if (ModeManager.currentMode === 'target') {
       const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
+    if (element) {
         const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue.toString();
         element.textContent = formattedValue;
       }
@@ -64,10 +64,10 @@ window.TEUI.SectionModules.sect04 = (function () {
     
     // Update DOM only if in Reference mode
     if (ModeManager.currentMode === 'reference') {
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
         const formattedValue = window.TEUI?.formatNumber?.(rawValue, formatType) ?? rawValue.toString();
-        element.textContent = formattedValue;
+      element.textContent = formattedValue;
       }
     }
   }
@@ -134,15 +134,15 @@ window.TEUI.SectionModules.sect04 = (function () {
         this.setDefaults();
       }
     },
-    
+
     initialize: function() {
       this.setDefaults();
       this.loadState();
     },
-    
+
     setValue: function(fieldId, value, source = "calculated") {
       this.data[fieldId] = value;
-      this.saveState();
+        this.saveState();
     },
     
     getValue: function(fieldId) {
@@ -210,15 +210,15 @@ window.TEUI.SectionModules.sect04 = (function () {
         this.setDefaults();
       }
     },
-    
+
     initialize: function() {
       this.setDefaults();
       this.loadState();
     },
-    
+
     setValue: function(fieldId, value, source = "calculated") {
       this.data[fieldId] = value;
-      this.saveState();
+        this.saveState();
     },
     
     getValue: function(fieldId) {
@@ -231,7 +231,7 @@ window.TEUI.SectionModules.sect04 = (function () {
    */
   const ModeManager = {
     currentMode: "target", // "target" or "reference"
-    
+
     initialize: function() {
       console.log("S04: Initializing Pattern A ModeManager");
       TargetState.initialize();
@@ -264,18 +264,18 @@ window.TEUI.SectionModules.sect04 = (function () {
       // ✅ FIX: Call refreshUI to restore field values from state
       this.refreshUI();
     },
-    
+      
     getCurrentState: function() {
       return this.currentMode === "target" ? TargetState : ReferenceState;
     },
-    
+
     getValue: function(fieldId) {
       return this.getCurrentState().getValue(fieldId);
     },
-    
+
     setValue: function(fieldId, value, source = "calculated") {
       this.getCurrentState().setValue(fieldId, value, source);
-      
+
       // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager (NO PREFIX)
       if (this.currentMode === "target" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value, source);
@@ -286,7 +286,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
       }
     },
-    
+
     resetState: function() {
       console.log("S04: Resetting state and clearing localStorage");
       
@@ -638,29 +638,16 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Excel: D28 (actual), H28 (target calculated)
    */
   function calculateRow28() {
-    // ✅ FIX: Use mode-aware reading for user inputs
-    const actualGas = ModeManager.getValue('d_28') || 0;
+    // ✅ FIX: Use Excel-compliant calculations for gas row
     
-    // H28: Target gas use mirrors actual for S04 (user controls both)
-    const targetGas = ModeManager.getValue('d_28') || 0;
+    // Call individual calculation functions (Excel-compliant)
+    calculateF28(); // F28: Actual gas to ekWh
+    calculateG28(); // G28: Actual emissions
+    calculateH28(); // H28: Target gas volume (Excel formula with S07/S13)
+    calculateJ28(); // J28: Target gas to ekWh
+    calculateK28(); // K28: Target emissions
     
-    // F28: Convert actual to ekWh (D28 * 0.0373 * 277.7778)
-    const actualGas_ekWh = actualGas * 0.0373 * 277.7778;
-    
-    // G28: Emissions from actual (D28 * 1921 / 1000)
-    const actualEmissions = (actualGas * 1921) / 1000;
-    
-    // J28: Convert target to ekWh
-    const targetGas_ekWh = targetGas * 0.0373 * 277.7778;
-    
-    // K28: Emissions from target
-    const targetEmissions = (targetGas * 1921) / 1000;
-    
-    setCalculatedValue('h_28', targetGas);
-    setCalculatedValue('f_28', actualGas_ekWh);
-    setCalculatedValue('g_28', actualEmissions);
-    setCalculatedValue('j_28', targetGas_ekWh);
-    setCalculatedValue('k_28', targetEmissions);
+    // Set emission factor
     setCalculatedValue('l_28', 1921, 'integer'); // Gas emission factor
   }
 
@@ -693,22 +680,16 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Row 30: T.3.4 Total Oil Use
    */
   function calculateRow30() {
-    // ✅ FIX: Use mode-aware reading for user inputs
-    const actualOil = ModeManager.getValue('d_30') || 0;
-    const targetOil = ModeManager.getValue('d_30') || 0; // Target mirrors actual for S04
+    // ✅ FIX: Use Excel-compliant calculations for oil row
     
-    // F30: Convert to ekWh (D30 * 36.72 * 0.2777778)
-    const actualOil_ekWh = actualOil * 36.72 * 0.2777778;
-    const actualEmissions = (actualOil * 2753) / 1000;
+    // Call individual calculation functions (Excel-compliant)
+    calculateF30(); // F30: Actual oil to ekWh
+    calculateG30(); // G30: Actual emissions
+    calculateH30(); // H30: Target oil volume (Excel formula with S07/S13)
+    calculateJ30(); // J30: Target oil to ekWh
+    calculateK30(); // K30: Target emissions
     
-    const targetOil_ekWh = targetOil * 36.72 * 0.2777778;
-    const targetEmissions = (targetOil * 2753) / 1000;
-    
-    setCalculatedValue('h_30', targetOil);
-    setCalculatedValue('f_30', actualOil_ekWh);
-    setCalculatedValue('g_30', actualEmissions);
-    setCalculatedValue('j_30', targetOil_ekWh);
-    setCalculatedValue('k_30', targetEmissions);
+    // Set emission factor
     setCalculatedValue('l_30', 2753, 'integer'); // Oil emission factor
   }
 
@@ -1007,8 +988,53 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function calculateH28() {
-    // Target gas - for now mirrors actual (could be different in future)
-    const result = ModeManager.getValue('d_28') || getGlobalNumericValue('d_28') || 0;
+    // Excel: =IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
+    // D113 = space heating fuel type (S13)
+    // D51 = water heating fuel type (S07)  
+    // E51 = gas volume from S07 (water heating)
+    // H115 = gas volume from S13 (space heating)
+    
+    // Read fuel types from StateManager (these are always unprefixed per Pattern A)
+    const spaceHeatingFuel = window.TEUI?.StateManager?.getValue('d_113') || 'Heatpump'; // Default from S13
+    const waterHeatingFuel = window.TEUI?.StateManager?.getValue('d_51') || 'Electricity'; // Default from S07
+    
+    // Read gas volumes based on current mode
+    let waterGasVolume = 0;
+    let spaceGasVolume = 0;
+    
+    if (ModeManager.currentMode === "reference") {
+      // In Reference mode, read ref_ prefixed values if available
+      waterGasVolume = getGlobalNumericValue('ref_e_51') || getGlobalNumericValue('e_51') || 0;
+      spaceGasVolume = getGlobalNumericValue('ref_h_115') || getGlobalNumericValue('h_115') || 0;
+    } else {
+      // In Target mode, read unprefixed values
+      waterGasVolume = getGlobalNumericValue('e_51') || 0;
+      spaceGasVolume = getGlobalNumericValue('h_115') || 0;
+    }
+    
+    // Apply Excel formula logic
+    let result = 0;
+    if (spaceHeatingFuel === "Gas" && waterHeatingFuel === "Gas") {
+      // Both systems use gas - add both volumes
+      result = waterGasVolume + spaceGasVolume;
+    } else if (waterHeatingFuel === "Gas") {
+      // Only water heating uses gas
+      result = waterGasVolume;
+    } else if (spaceHeatingFuel === "Gas") {
+      // Only space heating uses gas
+      result = spaceGasVolume;
+    } else {
+      // No gas use
+      result = 0;
+    }
+    
+    console.log(`[S04] calculateH28 DEBUG:
+      Space heating fuel (d_113): '${spaceHeatingFuel}'
+      Water heating fuel (d_51): '${waterHeatingFuel}'
+      Water gas volume (e_51): ${waterGasVolume}
+      Space gas volume (h_115): ${spaceGasVolume}
+      Final H28 result: ${result}`);
+    
     // ✅ FIX: Mode-aware storage for Reference mode calculations
     if (ModeManager.currentMode === "reference") {
       setReferenceCalculatedValue('h_28', result);
@@ -1031,8 +1057,53 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function calculateH30() {
-    // Target oil - for now mirrors actual
-    const result = ModeManager.getValue('d_30') || getGlobalNumericValue('d_30') || 0;
+    // Excel: =IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
+    // D113 = space heating fuel type (S13)
+    // D51 = water heating fuel type (S07)  
+    // K54 = oil volume from S07 (water heating)
+    // F115 = oil volume from S13 (space heating)
+    
+    // Read fuel types from StateManager (these are always unprefixed per Pattern A)
+    const spaceHeatingFuel = window.TEUI?.StateManager?.getValue('d_113') || 'Heatpump'; // Default from S13
+    const waterHeatingFuel = window.TEUI?.StateManager?.getValue('d_51') || 'Electricity'; // Default from S07
+    
+    // Read oil volumes based on current mode
+    let waterOilVolume = 0;
+    let spaceOilVolume = 0;
+    
+    if (ModeManager.currentMode === "reference") {
+      // In Reference mode, read ref_ prefixed values if available
+      waterOilVolume = getGlobalNumericValue('ref_k_54') || getGlobalNumericValue('k_54') || 0;
+      spaceOilVolume = getGlobalNumericValue('ref_f_115') || getGlobalNumericValue('f_115') || 0;
+    } else {
+      // In Target mode, read unprefixed values
+      waterOilVolume = getGlobalNumericValue('k_54') || 0;
+      spaceOilVolume = getGlobalNumericValue('f_115') || 0;
+    }
+    
+    // Apply Excel formula logic
+    let result = 0;
+    if (spaceHeatingFuel === "Oil" && waterHeatingFuel === "Oil") {
+      // Both systems use oil - add both volumes
+      result = waterOilVolume + spaceOilVolume;
+    } else if (waterHeatingFuel === "Oil") {
+      // Only water heating uses oil
+      result = waterOilVolume;
+    } else if (spaceHeatingFuel === "Oil") {
+      // Only space heating uses oil
+      result = spaceOilVolume;
+    } else {
+      // No oil use
+      result = 0;
+    }
+    
+    console.log(`[S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): '${spaceHeatingFuel}'
+      Water heating fuel (d_51): '${waterHeatingFuel}'
+      Water oil volume (k_54): ${waterOilVolume}
+      Space oil volume (f_115): ${spaceOilVolume}
+      Final H30 result: ${result}`);
+    
     // ✅ FIX: Mode-aware storage for Reference mode calculations
     if (ModeManager.currentMode === "reference") {
       setReferenceCalculatedValue('h_30', result);
@@ -2075,8 +2146,8 @@ window.TEUI.SectionModules.sect04 = (function () {
           console.log(`[S04] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`);
           
           // Store in current mode's state
-          ModeManager.setValue(fieldId, newValue, "user-modified");
-          
+            ModeManager.setValue(fieldId, newValue, "user-modified");
+
           // Trigger calculations
           calculateAll();
         }
@@ -2157,6 +2228,56 @@ window.TEUI.SectionModules.sect04 = (function () {
         // Update display values
         ModeManager.updateCalculatedDisplayValues();
       });
+      
+      // ✅ CRITICAL: React to S07/S13 gas-related changes (affects H28 target gas volume)
+      window.TEUI.StateManager.addListener('d_51', () => {
+        console.log(`[S04] S07 water heating fuel type changed: d_51`);
+        calculateH28(); // Recalculate target gas volume
+        calculateJ28(); // Recalculate target energy from gas
+        calculateK28(); // Recalculate target emissions from gas
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      window.TEUI.StateManager.addListener('d_113', () => {
+        console.log(`[S04] S13 space heating fuel type changed: d_113`);
+        calculateH28(); // Recalculate target gas volume
+        calculateJ28(); // Recalculate target energy from gas
+        calculateK28(); // Recalculate target emissions from gas
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      window.TEUI.StateManager.addListener('e_51', () => {
+        console.log(`[S04] S07 water gas volume changed: e_51`);
+        calculateH28(); // Recalculate target gas volume
+        calculateJ28(); // Recalculate target energy from gas
+        calculateK28(); // Recalculate target emissions from gas
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      window.TEUI.StateManager.addListener('h_115', () => {
+        console.log(`[S04] S13 space gas volume changed: h_115`);
+        calculateH28(); // Recalculate target gas volume
+        calculateJ28(); // Recalculate target energy from gas
+        calculateK28(); // Recalculate target emissions from gas
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      // ✅ CRITICAL: React to S07/S13 oil-related changes (affects H30 target oil volume)
+      window.TEUI.StateManager.addListener('k_54', () => {
+        console.log(`[S04] S07 water oil volume changed: k_54`);
+        calculateH30(); // Recalculate target oil volume
+        calculateJ30(); // Recalculate target energy from oil
+        calculateK30(); // Recalculate target emissions from oil
+        ModeManager.updateCalculatedDisplayValues();
+      });
+      
+      window.TEUI.StateManager.addListener('f_115', () => {
+        console.log(`[S04] S13 space oil volume changed: f_115`);
+        calculateH30(); // Recalculate target oil volume
+        calculateJ30(); // Recalculate target energy from oil
+        calculateK30(); // Recalculate target emissions from oil
+        ModeManager.updateCalculatedDisplayValues();
+      });
     }
   }
 
@@ -2193,11 +2314,11 @@ window.TEUI.SectionModules.sect04 = (function () {
       console.log('[S04] Pattern A S04 section rendered');
       
       // Initialize Pattern A dual-state architecture
-      ModeManager.initialize();
-      
-      // Inject header controls for Target/Reference toggle
-      injectHeaderControls();
-      
+    ModeManager.initialize();
+
+    // Inject header controls for Target/Reference toggle
+    injectHeaderControls();
+
       // Setup event handlers for user inputs
       setupEventHandlers();
       
