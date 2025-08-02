@@ -44,7 +44,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
-        console.log(`S12 TargetState: Saved state after ${source} changed ${fieldId} to ${value}`);
+        console.log(
+          `S12 TargetState: Saved state after ${source} changed ${fieldId} to ${value}`,
+        );
       }
     },
     getValue: function (fieldId) {
@@ -102,7 +104,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ FIXED: Save state for any user action (user or user-modified)
       if (source === "user" || source === "user-modified") {
         this.saveState();
-        console.log(`S12 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`);
+        console.log(
+          `S12 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`,
+        );
       }
     },
     getValue: function (fieldId) {
@@ -138,48 +142,89 @@ window.TEUI.SectionModules.sect12 = (function () {
       // ✅ FIX: Update displayed calculated values based on new mode
       this.updateCalculatedDisplayValues();
     },
-    
+
     // Update displayed calculated values based on current mode
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
 
       const calculatedFields = [
-        "d_101", "d_102", "d_104", "d_105", "d_106", "d_107",
-        "g_101", "g_102", "g_105", "g_108", "g_109", "g_110", 
-        "h_101", "h_102",
-        "i_101", "i_102", "i_103", "i_104", "i_105", "i_110",
-        "j_101", "j_102",
-        "k_101", "k_102", "k_103", "k_104",
-        "l_101", "l_102", "l_103", "l_104", "l_107", "l_109", "l_110",
-        "d_109", "d_110"
+        "d_101",
+        "d_102",
+        "d_104",
+        "d_105",
+        "d_106",
+        "d_107",
+        "g_101",
+        "g_102",
+        "g_105",
+        "g_108",
+        "g_109",
+        "g_110",
+        "h_101",
+        "h_102",
+        "i_101",
+        "i_102",
+        "i_103",
+        "i_104",
+        "i_105",
+        "i_110",
+        "j_101",
+        "j_102",
+        "k_101",
+        "k_102",
+        "k_103",
+        "k_104",
+        "l_101",
+        "l_102",
+        "l_103",
+        "l_104",
+        "l_107",
+        "l_109",
+        "l_110",
+        "d_109",
+        "d_110",
       ];
 
-      calculatedFields.forEach(fieldId => {
+      calculatedFields.forEach((fieldId) => {
         let valueToDisplay;
-        
+
         if (this.currentMode === "reference") {
           // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-                           window.TEUI.StateManager.getValue(fieldId);
+          valueToDisplay =
+            window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
+            window.TEUI.StateManager.getValue(fieldId);
         } else {
           // In Target mode, show regular values
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`,
+          );
           if (element && !element.hasAttribute("contenteditable")) {
             // Only update calculated fields, not user-editable ones
             const numericValue = window.TEUI.parseNumeric(valueToDisplay);
             if (!isNaN(numericValue)) {
               let formattedValue;
               // Use appropriate formatting based on field type
-              if (fieldId.startsWith("g_") && (fieldId.includes("101") || fieldId.includes("102") || fieldId === "d_104")) {
+              if (
+                fieldId.startsWith("g_") &&
+                (fieldId.includes("101") ||
+                  fieldId.includes("102") ||
+                  fieldId === "d_104")
+              ) {
                 formattedValue = formatNumber(numericValue, "W/m2");
               } else if (fieldId.startsWith("l_")) {
-                formattedValue = window.TEUI.formatNumber(numericValue, "percent-0dp");
+                formattedValue = window.TEUI.formatNumber(
+                  numericValue,
+                  "percent-0dp",
+                );
               } else {
-                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+                formattedValue = window.TEUI.formatNumber(
+                  numericValue,
+                  "number-2dp",
+                );
               }
               element.textContent = formattedValue;
             }
@@ -187,7 +232,9 @@ window.TEUI.SectionModules.sect12 = (function () {
         }
       });
 
-      console.log(`[Section12] Calculated display values updated for ${this.currentMode} mode`);
+      console.log(
+        `[Section12] Calculated display values updated for ${this.currentMode} mode`,
+      );
     },
     resetState: function () {
       console.log("S12: Resetting state and clearing localStorage.");
@@ -1235,7 +1282,11 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d95 = parseFloat(getGlobalNumericValue("d_95"));
     const d96 = parseFloat(getGlobalNumericValue("d_96"));
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
-    const d105_vol = parseFloat(window.TEUI.parseNumeric(getSectionValue("d_105", isReferenceCalculation)) || 0);
+    const d105_vol = parseFloat(
+      window.TEUI.parseNumeric(
+        getSectionValue("d_105", isReferenceCalculation),
+      ) || 0,
+    );
 
     // Calculate with full precision
     const d101_areaAir = d85 + d86 + d87 + d88 + d89 + d90 + d91 + d92 + d93;
@@ -1258,10 +1309,10 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Return calculated values for Reference engine storage
     return {
       d_101: d101_areaAir,
-      d_102: d102_areaGround, 
+      d_102: d102_areaGround,
       d_106: d106_floorArea,
       g_105: g105_volAreaRatio,
-      i_105: i105_areaVolRatio
+      i_105: i105_areaVolRatio,
     };
   }
 
@@ -1382,18 +1433,18 @@ window.TEUI.SectionModules.sect12 = (function () {
           totalArea
         : 0;
 
-    // Only update DOM for Target calculations (like S11 pattern)  
+    // Only update DOM for Target calculations (like S11 pattern)
     if (!isReferenceCalculation) {
       setCalculatedValue("g_101", g101_uAir, "W/m2");
       setCalculatedValue("g_102", g102_uGround, "W/m2");
-    setCalculatedValue("d_104", d104_uCombined, "W/m2");
-  }
+      setCalculatedValue("d_104", d104_uCombined, "W/m2");
+    }
 
     // Return calculated values for Reference engine storage
     return {
       g_101: g101_uAir,
       g_102: g102_uGround,
-      d_104: d104_uCombined
+      d_104: d104_uCombined,
     };
   }
 
@@ -1428,9 +1479,17 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d108_method = getSectionValue("d_108", isReferenceCalculation);
 
     // Get numeric values with full precision
-    const g109_measured = parseFloat(window.TEUI.parseNumeric(getSectionValue("g_109", isReferenceCalculation)) || 0);
+    const g109_measured = parseFloat(
+      window.TEUI.parseNumeric(
+        getSectionValue("g_109", isReferenceCalculation),
+      ) || 0,
+    );
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
-    const d105_vol = parseFloat(window.TEUI.parseNumeric(getSectionValue("d_105", isReferenceCalculation)) || 0);
+    const d105_vol = parseFloat(
+      window.TEUI.parseNumeric(
+        getSectionValue("d_105", isReferenceCalculation),
+      ) || 0,
+    );
 
     // Target values for different methods
     let g108_nrl50Target = 0;
@@ -1491,8 +1550,12 @@ window.TEUI.SectionModules.sect12 = (function () {
   function calculateAe10(isReferenceCalculation = false) {
     // Get values with full precision
     const ach50Target = parseFloat(getNumericValue("d_109"));
-    // ✅ DUAL-ENGINE: Use correct state based on calculation context  
-    const volume = parseFloat(window.TEUI.parseNumeric(getSectionValue("d_105", isReferenceCalculation)) || 0);
+    // ✅ DUAL-ENGINE: Use correct state based on calculation context
+    const volume = parseFloat(
+      window.TEUI.parseNumeric(
+        getSectionValue("d_105", isReferenceCalculation),
+      ) || 0,
+    );
 
     // Calculate with full precision
     const ae10 = volume > 0 ? (ach50Target * volume) / 3600 : 0;
@@ -1512,8 +1575,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Get values with full precision
     const climateZone = parseFloat(getGlobalNumericValue("j_19")) || 6;
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
-    const stories = parseFloat(window.TEUI.parseNumeric(getSectionValue("d_103", isReferenceCalculation)) || 0) || 1.5;
-    const shielding = getSectionValue("g_103", isReferenceCalculation) || "Normal";
+    const stories =
+      parseFloat(
+        window.TEUI.parseNumeric(
+          getSectionValue("d_103", isReferenceCalculation),
+        ) || 0,
+      ) || 1.5;
+    const shielding =
+      getSectionValue("g_103", isReferenceCalculation) || "Normal";
 
     // Determine zone number
     let zoneNum = 2;
@@ -1606,14 +1675,14 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // Only update DOM for Target calculations (like S11 pattern)
     if (!isReferenceCalculation) {
-    setCalculatedValue("i_103", i103_heatloss, "number-2dp-comma");
-    setCalculatedValue("k_103", k103_heatgain, "number-2dp-comma");
+      setCalculatedValue("i_103", i103_heatloss, "number-2dp-comma");
+      setCalculatedValue("k_103", k103_heatgain, "number-2dp-comma");
     }
 
     // Return calculated values for Reference engine storage
     return {
       i_103: i103_heatloss,
-      k_103: k103_heatgain
+      k_103: k103_heatgain,
     };
   }
 
@@ -1664,11 +1733,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       setCalculatedValue("i_101", i101_heatlossAir, "number-2dp-comma");
       setCalculatedValue("j_101", j101_gainRateAir, "number-2dp");
       setCalculatedValue("k_101", k101_heatgainAir, "number-2dp-comma");
-    setCalculatedValue("h_102", h102_lossRateGround, "number-2dp");
-    setCalculatedValue("i_102", i102_heatlossGround, "number-2dp-comma");
-    setCalculatedValue("j_102", j102_gainRateGround, "number-2dp");
-    setCalculatedValue("k_102", k102_heatgainGround, "number-2dp-comma");
-  }
+      setCalculatedValue("h_102", h102_lossRateGround, "number-2dp");
+      setCalculatedValue("i_102", i102_heatlossGround, "number-2dp-comma");
+      setCalculatedValue("j_102", j102_gainRateGround, "number-2dp");
+      setCalculatedValue("k_102", k102_heatgainGround, "number-2dp-comma");
+    }
 
     // Return calculated values for Reference engine storage
     return {
@@ -1679,7 +1748,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       h_102: h102_lossRateGround,
       i_102: i102_heatlossGround,
       j_102: j102_gainRateGround,
-      k_102: k102_heatgainGround
+      k_102: k102_heatgainGround,
     };
   }
 
@@ -1719,7 +1788,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     const l103 = i104_totalLoss > 0 ? i103 / i104_totalLoss : 0;
     const l104 = l101 + l102 + l103;
 
-    // Update percentage values using standard formatters  
+    // Update percentage values using standard formatters
     if (!isReferenceCalculation) {
       setCalculatedValue("l_101", l101, "percent-2dp");
       setCalculatedValue("l_102", l102, "percent-2dp");
@@ -1732,9 +1801,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       i_104: i104_totalLoss,
       k_104: k104_totalGain,
       l_101: l101,
-      l_102: l102, 
+      l_102: l102,
       l_103: l103,
-      l_104: l104
+      l_104: l104,
     };
   }
 
@@ -1743,7 +1812,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // ✅ ALWAYS run BOTH engines in parallel (corrected from wrong mode-aware approach)
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
-    calculateTargetModel();    // Reads TargetState → stores unprefixed
+    calculateTargetModel(); // Reads TargetState → stores unprefixed
 
     console.log("[Section12] Dual-engine calculations complete");
   }
@@ -1768,8 +1837,14 @@ window.TEUI.SectionModules.sect12 = (function () {
       const envelopeTotalsResults = calculateEnvelopeTotals(true); // ✅ FIX: Capture return value
 
       // Store Reference Model results with ref_ prefix for downstream sections
-      storeReferenceResults(volumeResults, uValueResults, airLeakageResults, envelopeResults, envelopeTotalsResults);
-      
+      storeReferenceResults(
+        volumeResults,
+        uValueResults,
+        airLeakageResults,
+        envelopeResults,
+        envelopeTotalsResults,
+      );
+
       // Update reference indicators after all calculations
       updateAllReferenceIndicators();
     } catch (error) {
@@ -1782,25 +1857,37 @@ window.TEUI.SectionModules.sect12 = (function () {
   /**
    * Store Reference Model calculation results with ref_ prefix for downstream sections (S14, S15, S04, S01)
    */
-  function storeReferenceResults(volumeResults, uValueResults, airLeakageResults, envelopeResults, envelopeTotalsResults) {
+  function storeReferenceResults(
+    volumeResults,
+    uValueResults,
+    airLeakageResults,
+    envelopeResults,
+    envelopeTotalsResults,
+  ) {
     if (!window.TEUI?.StateManager) return;
 
     // Store Reference calculation results with ref_ prefix
     const allResults = {
       ...volumeResults,
-      ...uValueResults, 
+      ...uValueResults,
       ...airLeakageResults,
       ...envelopeResults,
-      ...envelopeTotalsResults // ✅ FIX: Include envelope totals (i_104, k_104, etc.)
+      ...envelopeTotalsResults, // ✅ FIX: Include envelope totals (i_104, k_104, etc.)
     };
 
     Object.entries(allResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          String(value),
+          "calculated",
+        );
       }
     });
 
-    console.log("[Section12] Reference results stored with ref_ prefix for downstream sections");
+    console.log(
+      "[Section12] Reference results stored with ref_ prefix for downstream sections",
+    );
   }
 
   /**
@@ -1960,7 +2047,10 @@ window.TEUI.SectionModules.sect12 = (function () {
       g109Cell.style.backgroundColor = "#f0f8ff";
       g109Cell.style.color = "#000";
       // If the cell is empty or N/A when switching to Measured, set it to a sensible default.
-      if (!g109Cell.textContent.trim() || g109Cell.textContent.trim() === "N/A") {
+      if (
+        !g109Cell.textContent.trim() ||
+        g109Cell.textContent.trim() === "N/A"
+      ) {
         g109Cell.textContent = "1.50";
         ModeManager.setValue("g_109", "1.50", "calculated");
       }
@@ -2084,7 +2174,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     // CRITICAL: Robot fingers connection - MUST run dual-engine for proper Reference storage
     // 📋 WORKPLAN: Consider moving aggregate U-value calculations (g_101, g_102) to S11
     // This would eliminate Robot Fingers bypass issues and better align responsibilities:
-    // - S11: All transmission calculations (areas, U-values, thermal bridges)  
+    // - S11: All transmission calculations (areas, U-values, thermal bridges)
     // - S12: Air leakage, volume, exposures only
     window.TEUI.StateManager.addListener("d_97", (newValue) => {
       // console.log(`[S12] TB penalty changed to: ${newValue}% - updating U-values`);

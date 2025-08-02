@@ -521,15 +521,21 @@ window.TEUI.SectionModules.sect01 = (function () {
       // All inputs from Application state
       const appTargetEnergy = getAppNumericValue("j_32", 0);
       // ✅ CRITICAL: f_32 (actual energy) must ALWAYS use application state, never Reference
-      const appActualEnergy = window.TEUI?.StateManager?.getValue("f_32") || 
-                             window.TEUI?.StateManager?.getValue("target_f_32") || 0;
-      const appActualEnergyParsed = window.TEUI?.parseNumeric?.(appActualEnergy, 0) ?? 0;
-      
+      const appActualEnergy =
+        window.TEUI?.StateManager?.getValue("f_32") ||
+        window.TEUI?.StateManager?.getValue("target_f_32") ||
+        0;
+      const appActualEnergyParsed =
+        window.TEUI?.parseNumeric?.(appActualEnergy, 0) ?? 0;
+
       const appTargetEmissions = getAppNumericValue("k_32", 0);
       // ✅ CRITICAL: g_32 (actual emissions) must ALWAYS use application state, never Reference
-      const appActualEmissions = window.TEUI?.StateManager?.getValue("g_32") || 
-                               window.TEUI?.StateManager?.getValue("target_g_32") || 0;
-      const appActualEmissionsParsed = window.TEUI?.parseNumeric?.(appActualEmissions, 0) ?? 0;
+      const appActualEmissions =
+        window.TEUI?.StateManager?.getValue("g_32") ||
+        window.TEUI?.StateManager?.getValue("target_g_32") ||
+        0;
+      const appActualEmissionsParsed =
+        window.TEUI?.parseNumeric?.(appActualEmissions, 0) ?? 0;
       const appArea = getAppNumericValue("h_15", 1);
       const appServiceLife = getAppNumericValue("h_13", 50);
       const appEmbodiedCarbon = getAppNumericValue("i_41", 345.82);
@@ -547,12 +553,16 @@ window.TEUI.SectionModules.sect01 = (function () {
       let actualTEUI = 0;
       if (useType === "Utility Bills") {
         // Force reading Target area directly, bypassing dual-state interference
-        const targetAreaDirect = window.TEUI?.StateManager?.getValue("h_15") || 
-                                window.TEUI?.StateManager?.getValue("target_h_15") || 1;
-        const targetAreaParsed = window.TEUI?.parseNumeric?.(targetAreaDirect, 1) ?? 1;
-        
+        const targetAreaDirect =
+          window.TEUI?.StateManager?.getValue("h_15") ||
+          window.TEUI?.StateManager?.getValue("target_h_15") ||
+          1;
+        const targetAreaParsed =
+          window.TEUI?.parseNumeric?.(targetAreaDirect, 1) ?? 1;
+
         if (targetAreaParsed > 0) {
-          actualTEUI = Math.round((appActualEnergyParsed / targetAreaParsed) * 10) / 10;
+          actualTEUI =
+            Math.round((appActualEnergyParsed / targetAreaParsed) * 10) / 10;
         }
       }
 
@@ -567,12 +577,16 @@ window.TEUI.SectionModules.sect01 = (function () {
       let actualAnnualCarbon = 0;
       if (useType === "Utility Bills") {
         // Use same Target area as k_10 for consistency
-        const targetAreaDirect = window.TEUI?.StateManager?.getValue("h_15") || 
-                                window.TEUI?.StateManager?.getValue("target_h_15") || 1;
-        const targetAreaParsed = window.TEUI?.parseNumeric?.(targetAreaDirect, 1) ?? 1;
-        
+        const targetAreaDirect =
+          window.TEUI?.StateManager?.getValue("h_15") ||
+          window.TEUI?.StateManager?.getValue("target_h_15") ||
+          1;
+        const targetAreaParsed =
+          window.TEUI?.parseNumeric?.(targetAreaDirect, 1) ?? 1;
+
         if (targetAreaParsed > 0) {
-          actualAnnualCarbon = Math.round((appActualEmissionsParsed / targetAreaParsed) * 10) / 10;
+          actualAnnualCarbon =
+            Math.round((appActualEmissionsParsed / targetAreaParsed) * 10) / 10;
         }
       }
 

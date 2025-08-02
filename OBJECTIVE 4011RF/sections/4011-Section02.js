@@ -629,27 +629,32 @@ window.TEUI.SectionModules.sect02 = (function () {
   // DUAL-ENGINE ARCHITECTURE
   //==========================================================================
 
-
-
   /**
    * Inject Target/Reference toggle controls into section header
    * Standard Pattern A implementation
    */
   function injectHeaderControls() {
-    const sectionHeader = document.querySelector("#buildingInfo .section-header");
-    if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
+    const sectionHeader = document.querySelector(
+      "#buildingInfo .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
       return; // Already setup or header not found
     }
 
     // Create controls container
     const controlsContainer = document.createElement("div");
     controlsContainer.className = "local-controls-container";
-    controlsContainer.style.cssText = "display: flex; align-items: center; gap: 10px; margin-left: auto;";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; gap: 10px; margin-left: auto;";
 
     // Create Reset button
     const resetButton = document.createElement("button");
     resetButton.textContent = "Reset";
-    resetButton.style.cssText = "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 3px;";
     resetButton.addEventListener("click", (event) => {
       event.stopPropagation();
       if (confirm("Reset all values to defaults?")) {
@@ -663,14 +668,17 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Create state indicator
     const stateIndicator = document.createElement("div");
     stateIndicator.textContent = "TARGET";
-    stateIndicator.style.cssText = "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
+    stateIndicator.style.cssText =
+      "padding: 4px 8px; font-size: 12px; font-weight: bold; color: white; background-color: rgba(0, 123, 255, 0.5); border-radius: 3px;";
 
     // Create toggle switch
     const toggleSwitch = document.createElement("div");
-    toggleSwitch.style.cssText = "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
 
     const slider = document.createElement("div");
-    slider.style.cssText = "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
 
     toggleSwitch.appendChild(slider);
 
@@ -756,10 +764,9 @@ window.TEUI.SectionModules.sect02 = (function () {
           targetValue = modelledValueI41;
       }
       setFieldValue("d_16", targetValue, "calculated");
-      
+
       // Store Reference results for downstream sections
       storeReferenceResults();
-      
     } catch (error) {
       console.error(
         "[Section02] Error in Reference Model calculations:",
@@ -769,13 +776,13 @@ window.TEUI.SectionModules.sect02 = (function () {
       ModeManager.currentMode = originalMode; // Restore original mode directly
     }
   }
-  
+
   /**
    * Store Reference calculation results with ref_ prefix for downstream sections
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
-    
+
     // Store Reference values for downstream consumption
     const referenceResults = {
       h_12: ReferenceState.getValue("h_12"), // 2020 reporting year
@@ -788,15 +795,21 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_15: ReferenceState.getValue("l_15"), // Propane price
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
-    
+
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          String(value),
+          "calculated",
+        );
       }
     });
-    
-    console.log("[S02] Reference results stored with ref_ prefix for downstream sections");
+
+    console.log(
+      "[S02] Reference results stored with ref_ prefix for downstream sections",
+    );
   }
 
   /**
@@ -854,9 +867,6 @@ window.TEUI.SectionModules.sect02 = (function () {
 
       // Since mode is 'target', this will update `target_d_16` AND the global `d_16` for the DOM.
       setFieldValue("d_16", targetValue, "calculated");
-      
-
-      
     } catch (error) {
       console.error("[Section02] Error in Target Model calculations:", error);
     } finally {
@@ -904,8 +914,10 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
-    
-    console.log(`[S02] Carbon standard changed to: ${selectedValue} (${ModeManager.currentMode} mode)`);
+
+    console.log(
+      `[S02] Carbon standard changed to: ${selectedValue} (${ModeManager.currentMode} mode)`,
+    );
 
     // Recalculate all values
     calculateAll();
@@ -918,7 +930,7 @@ window.TEUI.SectionModules.sect02 = (function () {
   function handleBuildingCodeChange(e) {
     const selectedValue = e.target.value;
     const fieldId = e.target.getAttribute("data-field-id") || "d_13";
-    
+
     if (e.isTrusted) {
       window.TEUI.sect02.userInteracted = true;
     }
@@ -926,8 +938,10 @@ window.TEUI.SectionModules.sect02 = (function () {
     // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
     // This ensures user changes persist when toggling between modes
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
-    
-    console.log(`[S02] Building code changed to: ${selectedValue} (${ModeManager.currentMode} mode)`);
+
+    console.log(
+      `[S02] Building code changed to: ${selectedValue} (${ModeManager.currentMode} mode)`,
+    );
 
     // Recalculate all values after building code change
     calculateAll();
@@ -938,12 +952,12 @@ window.TEUI.SectionModules.sect02 = (function () {
    */
   function setupBuildingCodeDropdown() {
     const dropdown = document.querySelector(
-      'select[data-dropdown-id="dd_d_13"], select[data-field-id="d_13"]'
+      'select[data-dropdown-id="dd_d_13"], select[data-field-id="d_13"]',
     );
     if (dropdown) {
       // Remove existing listener to prevent duplicates
       dropdown.removeEventListener("change", handleBuildingCodeChange);
-      
+
       // Add new listener
       dropdown.addEventListener("change", handleBuildingCodeChange);
     }
@@ -999,7 +1013,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     // ✅ PATTERN A: Year slider events (h_12 - reporting year)
     const yearSlider = document.querySelector('input[data-field-id="h_12"]');
     if (yearSlider) {
-      yearSlider.addEventListener("input", function(e) {
+      yearSlider.addEventListener("input", function (e) {
         const newYear = e.target.value;
         // Update display label
         const yearDisplay = this.nextElementSibling;
@@ -1007,12 +1021,14 @@ window.TEUI.SectionModules.sect02 = (function () {
           yearDisplay.textContent = newYear;
         }
       });
-      
-      yearSlider.addEventListener("change", function(e) {
+
+      yearSlider.addEventListener("change", function (e) {
         const newYear = e.target.value;
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_12", newYear, "user-modified");
-        console.log(`[S02] User changed reporting year to: ${newYear} (${ModeManager.currentMode} mode)`);
+        console.log(
+          `[S02] User changed reporting year to: ${newYear} (${ModeManager.currentMode} mode)`,
+        );
         // Recalculate after year change
         calculateAll();
       });
@@ -1208,7 +1224,7 @@ window.TEUI.SectionModules.sect02 = (function () {
               this.textContent.trim(),
               "user-modified",
             );
-            
+
             // Also update StateManager for downstream sections (if this field needs to be shared)
             if (window.TEUI && window.TEUI.StateManager && fieldId === "l_12") {
               window.TEUI.StateManager.setValue(
@@ -1265,7 +1281,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     if (!isNaN(areaValue) && areaValue > 0) {
       // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
       ModeManager.setValue("h_15", areaValue.toString(), "user-modified");
-      
+
       // Recalculate after state update
       calculateAll();
     }
@@ -1469,12 +1485,14 @@ window.TEUI.SectionModules.sect02 = (function () {
         h_12: "2022", // Reporting Period - Target uses 2022 (actual field is h_12)
         // Energy costs - same for both Target and Reference
         l_12: "0.1300", // Electricity cost
-        l_13: "0.5070", // Gas cost  
+        l_13: "0.5070", // Gas cost
         l_14: "1.6200", // Propane cost
         l_15: "180.00", // Wood cost
         l_16: "1.5000", // Oil cost
       };
-      console.log(`S02: Target defaults set (2022 reporting year) - overriding any localStorage empties`);
+      console.log(
+        `S02: Target defaults set (2022 reporting year) - overriding any localStorage empties`,
+      );
     },
   };
 
@@ -1492,12 +1510,16 @@ window.TEUI.SectionModules.sect02 = (function () {
           const savedData = JSON.parse(saved);
           // ✅ CRITICAL FIX: Merge saved data with defaults, don't replace defaults
           this.data = { ...this.data, ...savedData };
-          console.log(`S02: Loaded and merged Reference state from localStorage`);
+          console.log(
+            `S02: Loaded and merged Reference state from localStorage`,
+          );
         }
       } catch (error) {
         console.warn(`S02: Error loading Reference state:`, error);
         // ✅ CRITICAL FIX: Don't wipe defaults on error, keep existing defaults
-        console.log(`S02: Keeping Reference defaults due to localStorage error`);
+        console.log(
+          `S02: Keeping Reference defaults due to localStorage error`,
+        );
       }
     },
 
@@ -1536,7 +1558,9 @@ window.TEUI.SectionModules.sect02 = (function () {
         l_15: "180.00", // Wood cost (same as Target)
         l_16: "1.5000", // Oil cost (same as Target)
       };
-      console.log(`S02: Reference defaults set (2020 reporting year) - overriding any localStorage empties`);
+      console.log(
+        `S02: Reference defaults set (2020 reporting year) - overriding any localStorage empties`,
+      );
     },
   };
 
@@ -1550,7 +1574,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       ReferenceState.setDefaults();
       TargetState.loadState();
       ReferenceState.loadState();
-      
+
       // ✅ CRITICAL FIX: Store default energy costs in StateManager for downstream sections
       if (window.TEUI?.StateManager) {
         const energyCosts = {
@@ -1558,16 +1582,19 @@ window.TEUI.SectionModules.sect02 = (function () {
           l_13: "0.5070", // Gas $/m³
           l_14: "1.6200", // Propane $/kg
           l_15: "180.00", // Wood $/m³
-          l_16: "1.5000"  // Oil $/litre
+          l_16: "1.5000", // Oil $/litre
         };
-        
+
         Object.entries(energyCosts).forEach(([fieldId, value]) => {
           window.TEUI.StateManager.setValue(fieldId, value, "default");
         });
-        
-        console.log(`[S02] Stored default energy costs in StateManager:`, energyCosts);
+
+        console.log(
+          `[S02] Stored default energy costs in StateManager:`,
+          energyCosts,
+        );
       }
-      
+
       console.log(`S02: Pattern A initialization complete.`);
     },
 
@@ -1579,10 +1606,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       }
       this.currentMode = mode;
       console.log(`[S02] Switched to ${mode.toUpperCase()} mode`);
-      
+
       // ✅ CRITICAL: Update UI to show values from the new mode's state
       this.refreshUI();
-      
+
       // ✅ CRITICAL: Recalculate everything after mode switch
       if (typeof calculateAll === "function") {
         calculateAll();
@@ -1590,19 +1617,21 @@ window.TEUI.SectionModules.sect02 = (function () {
     },
 
     getValue: function (fieldId) {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      const currentState =
+        this.currentMode === "target" ? TargetState : ReferenceState;
       return currentState.getValue(fieldId);
     },
 
     setValue: function (fieldId, value, source = "calculated") {
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      const currentState =
+        this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value, source);
 
       // ✅ CRITICAL BRIDGE: Sync Target changes to StateManager for downstream sections
       if (this.currentMode === "target" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value, source);
       }
-      
+
       // ✅ CRITICAL BRIDGE: Sync Reference changes to StateManager with ref_ prefix
       if (this.currentMode === "reference" && window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, source);
@@ -1611,31 +1640,44 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Update UI input fields based on current mode's state (✅ S03 Pattern)
     refreshUI: function () {
-      console.log(`[S02] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
-      
+      console.log(
+        `[S02] Refreshing UI for ${this.currentMode.toUpperCase()} mode`,
+      );
+
       const sectionElement = document.getElementById("buildingInfo");
       if (!sectionElement) return;
 
-      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      const currentState =
+        this.currentMode === "target" ? TargetState : ReferenceState;
 
       // ✅ S03 PATTERN: Update Reference Standard dropdown using specific selector
-      const referenceStandardDropdown = sectionElement.querySelector('[data-dropdown-id="dd_d_13"]');
+      const referenceStandardDropdown = sectionElement.querySelector(
+        '[data-dropdown-id="dd_d_13"]',
+      );
       const d13Value = currentState.getValue("d_13");
       if (referenceStandardDropdown && d13Value) {
         referenceStandardDropdown.value = d13Value;
-        console.log(`[S02] Updated d_13 dropdown = "${d13Value}" (${this.currentMode} mode)`);
+        console.log(
+          `[S02] Updated d_13 dropdown = "${d13Value}" (${this.currentMode} mode)`,
+        );
       }
 
-      // ✅ S03 PATTERN: Update Carbon Standard dropdown using specific selector  
-      const carbonStandardDropdown = sectionElement.querySelector('[data-dropdown-id="dd_d_15"]');
+      // ✅ S03 PATTERN: Update Carbon Standard dropdown using specific selector
+      const carbonStandardDropdown = sectionElement.querySelector(
+        '[data-dropdown-id="dd_d_15"]',
+      );
       const d15Value = currentState.getValue("d_15");
       if (carbonStandardDropdown && d15Value) {
         carbonStandardDropdown.value = d15Value;
-        console.log(`[S02] Updated d_15 dropdown = "${d15Value}" (${this.currentMode} mode)`);
+        console.log(
+          `[S02] Updated d_15 dropdown = "${d15Value}" (${this.currentMode} mode)`,
+        );
       }
 
       // ✅ CRITICAL: Update reporting year slider (h_12, displayed as d_1)
-      const yearSlider = sectionElement.querySelector('input[data-field-id="h_12"]');
+      const yearSlider = sectionElement.querySelector(
+        'input[data-field-id="h_12"]',
+      );
       const yearValue = currentState.getValue("h_12"); // Actual field is h_12
       if (yearSlider && yearValue) {
         yearSlider.value = yearValue;
@@ -1644,33 +1686,49 @@ window.TEUI.SectionModules.sect02 = (function () {
         if (yearDisplay) {
           yearDisplay.textContent = yearValue;
         }
-        console.log(`[S02] Updated h_12 (reporting year) slider = "${yearValue}" (${this.currentMode} mode)`);
+        console.log(
+          `[S02] Updated h_12 (reporting year) slider = "${yearValue}" (${this.currentMode} mode)`,
+        );
       }
 
       // ✅ Update other editable fields using standard selectors
-      const editableFields = ["h_15", "i_17", "l_12", "l_13", "l_14", "l_15", "l_16"];
-      
+      const editableFields = [
+        "h_15",
+        "i_17",
+        "l_12",
+        "l_13",
+        "l_14",
+        "l_15",
+        "l_16",
+      ];
+
       editableFields.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
         if (stateValue === undefined || stateValue === null) return;
 
-        const element = sectionElement.querySelector(`[data-field-id="${fieldId}"]`);
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
         if (!element) return;
 
         if (element.hasAttribute("contenteditable")) {
           let displayValue = stateValue;
-          
+
           // Format currency fields properly
           if (["l_12", "l_13", "l_14", "l_15", "l_16"].includes(fieldId)) {
             const numericValue = window.TEUI?.parseNumeric?.(stateValue, 0);
             if (numericValue > 0) {
               const formatType = fieldId === "l_15" ? "cad-2dp" : "cad-4dp";
-              displayValue = window.TEUI?.formatNumber?.(numericValue, formatType) ?? stateValue;
+              displayValue =
+                window.TEUI?.formatNumber?.(numericValue, formatType) ??
+                stateValue;
             }
           }
-          
+
           element.textContent = displayValue;
-          console.log(`[S02] Updated ${fieldId} = "${displayValue}" (${this.currentMode} mode)`);
+          console.log(
+            `[S02] Updated ${fieldId} = "${displayValue}" (${this.currentMode} mode)`,
+          );
         }
       });
     },

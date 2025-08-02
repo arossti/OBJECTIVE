@@ -958,12 +958,18 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // Set province value in DualState (automatically handles current mode)
     DualState.setValue("d_19", provinceValue, "user");
-    
+
     // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication
     if (window.TEUI?.StateManager) {
       window.TEUI.StateManager.setValue("d_19", provinceValue, "user-modified");
-      window.TEUI.StateManager.setValue("dd_d_19", provinceValue, "user-modified");
-      console.log(`S03: Synced province change "${provinceValue}" to StateManager for S04 listeners`);
+      window.TEUI.StateManager.setValue(
+        "dd_d_19",
+        provinceValue,
+        "user-modified",
+      );
+      console.log(
+        `S03: Synced province change "${provinceValue}" to StateManager for S04 listeners`,
+      );
     }
 
     // Update city dropdown for this province
@@ -1258,7 +1264,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function calculateAll() {
     // ALWAYS run BOTH engines in parallel for complete downstream data
-    calculateTargetModel();   // Updates UI for current mode
+    calculateTargetModel(); // Updates UI for current mode
     calculateReferenceModel(); // Stores ref_ values for downstream sections
   }
 
@@ -1292,29 +1298,28 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function calculateReferenceModel() {
     console.log("[Section03] Running Reference Model calculations...");
-    
+
     try {
       // Force Reference mode temporarily to get Reference calculations
       const originalMode = ModeManager.currentMode;
       ModeManager.currentMode = "reference";
-      
+
       // Run all calculations using Reference state values (Vancouver climate)
       calculateHeatingSetpoint();
       calculateCoolingSetpoint_h24();
       calculateTemperatures();
       calculateGroundFacing();
       updateCoolingDependents();
-      
+
       // Restore original mode
       ModeManager.currentMode = originalMode;
-      
+
       // Store Reference results for downstream consumption
       storeReferenceResults();
-      
     } catch (error) {
       console.error("Error during Section 03 calculateReferenceModel:", error);
     }
-    
+
     console.log("[Section03] Reference Model calculations complete");
   }
 
@@ -1323,7 +1328,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    */
   function storeReferenceResults() {
     if (!window.TEUI?.StateManager) return;
-    
+
     // Get Reference state climate values and store with ref_ prefix
     const referenceResults = {
       h_23: ReferenceState.getValue("h_23"), // Vancouver heating setpoint
@@ -1336,15 +1341,22 @@ window.TEUI.SectionModules.sect03 = (function () {
       h_22: ReferenceState.getValue("h_22"), // Vancouver GF CDD
       j_19: ReferenceState.getValue("j_19"), // Vancouver climate zone
     };
-    
+
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(`ref_${fieldId}`, String(value), "calculated");
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          String(value),
+          "calculated",
+        );
       }
     });
-    
-    console.log("[Section03] Reference results stored with ref_ prefix for downstream sections:", referenceResults);
+
+    console.log(
+      "[Section03] Reference results stored with ref_ prefix for downstream sections:",
+      referenceResults,
+    );
   }
 
   // --- New Calculation Functions ---
@@ -1879,14 +1891,24 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     if (provinceSelect.value) {
       DualState.setValue("d_19", provinceSelect.value, "init");
-      
+
       // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication
       if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue("d_19", provinceSelect.value, "default");
-        window.TEUI.StateManager.setValue("dd_d_19", provinceSelect.value, "default");
-        console.log(`S03: Synced province "${provinceSelect.value}" to StateManager for cross-section communication`);
+        window.TEUI.StateManager.setValue(
+          "d_19",
+          provinceSelect.value,
+          "default",
+        );
+        window.TEUI.StateManager.setValue(
+          "dd_d_19",
+          provinceSelect.value,
+          "default",
+        );
+        console.log(
+          `S03: Synced province "${provinceSelect.value}" to StateManager for cross-section communication`,
+        );
       }
-      
+
       // Trigger city dropdown update
       updateCityDropdown(provinceSelect.value);
     }

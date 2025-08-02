@@ -133,55 +133,80 @@ window.TEUI.SectionModules.sect14 = (function () {
       // ✅ FIX: Update displayed calculated values based on new mode
       this.updateCalculatedDisplayValues();
     },
-    
+
     // Update displayed calculated values based on current mode
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
-      
-      console.log(`[S14 DEBUG] 🔄 Updating calculated display values for ${this.currentMode} mode`);
-      
+
+      console.log(
+        `[S14 DEBUG] 🔄 Updating calculated display values for ${this.currentMode} mode`,
+      );
+
       // TEMPORARY DEBUG: Check if Reference values exist in StateManager
       const sampleRefValues = {
         ref_d_127: window.TEUI.StateManager.getValue("ref_d_127"),
         ref_h_127: window.TEUI.StateManager.getValue("ref_h_127"),
-        ref_d_128: window.TEUI.StateManager.getValue("ref_d_128")
+        ref_d_128: window.TEUI.StateManager.getValue("ref_d_128"),
       };
-      console.log(`[S14 DEBUG] Sample Reference values in StateManager:`, sampleRefValues);
+      console.log(
+        `[S14 DEBUG] Sample Reference values in StateManager:`,
+        sampleRefValues,
+      );
 
       const calculatedFields = [
-        "d_127", "h_127", "d_128", "h_128", // TED/TEDI values
-        "d_129", "h_129", "m_129", // CED values
-        "d_130", "h_130", // CEDI W/m2 values
-        "d_131", "h_131", // TEL values
-        "d_132", "h_132", // CEG values
+        "d_127",
+        "h_127",
+        "d_128",
+        "h_128", // TED/TEDI values
+        "d_129",
+        "h_129",
+        "m_129", // CED values
+        "d_130",
+        "h_130", // CEDI W/m2 values
+        "d_131",
+        "h_131", // TEL values
+        "d_132",
+        "h_132", // CEG values
         "l_128", // CED Mitigated (calculated field)
       ];
 
-      calculatedFields.forEach(fieldId => {
+      calculatedFields.forEach((fieldId) => {
         let valueToDisplay;
-        
+
         if (this.currentMode === "reference") {
           // In Reference mode, try to show ref_ values, fallback to regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
-                           window.TEUI.StateManager.getValue(fieldId);
+          valueToDisplay =
+            window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
+            window.TEUI.StateManager.getValue(fieldId);
         } else {
           // In Target mode, show regular values
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`,
+          );
           if (element && !element.hasAttribute("contenteditable")) {
             // Only update calculated fields, not user-editable ones
             const numericValue = window.TEUI.parseNumeric(valueToDisplay);
             if (!isNaN(numericValue)) {
               // Use appropriate formatting for different field types
               let formattedValue;
-              if (fieldId.startsWith("h_") && (fieldId === "h_130" || fieldId === "d_130")) {
+              if (
+                fieldId.startsWith("h_") &&
+                (fieldId === "h_130" || fieldId === "d_130")
+              ) {
                 // W/m2 fields
-                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+                formattedValue = window.TEUI.formatNumber(
+                  numericValue,
+                  "number-2dp",
+                );
               } else {
-                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp");
+                formattedValue = window.TEUI.formatNumber(
+                  numericValue,
+                  "number-2dp",
+                );
               }
               element.textContent = formattedValue;
             }
@@ -189,7 +214,9 @@ window.TEUI.SectionModules.sect14 = (function () {
         }
       });
 
-      console.log(`[Section14] Calculated display values updated for ${this.currentMode} mode`);
+      console.log(
+        `[Section14] Calculated display values updated for ${this.currentMode} mode`,
+      );
     },
     resetState: function () {
       console.log("S14: Resetting state and clearing localStorage.");
@@ -977,16 +1004,19 @@ window.TEUI.SectionModules.sect14 = (function () {
       const getRefValue = (fieldId) => {
         const refFieldId = `ref_${fieldId}`;
         const refValue = window.TEUI?.StateManager?.getValue(refFieldId);
-        const fallbackValue = window.TEUI?.StateManager?.getReferenceValue(fieldId);
+        const fallbackValue =
+          window.TEUI?.StateManager?.getReferenceValue(fieldId);
         const domValue = getNumericValue(fieldId);
-        
+
         const finalValue = refValue || fallbackValue || domValue;
-        
+
         // TEMPORARY DEBUG: Only log problematic values now that we know the issue
         if (!finalValue || isNaN(finalValue)) {
-          console.log(`[S14 DEBUG] ❌ getRefValue(${fieldId}): ref="${refValue}", fallback="${fallbackValue}", dom="${domValue}", final="${finalValue}"`);
+          console.log(
+            `[S14 DEBUG] ❌ getRefValue(${fieldId}): ref="${refValue}", fallback="${fallbackValue}", dom="${domValue}", final="${finalValue}"`,
+          );
         }
-        
+
         return finalValue;
       };
 
@@ -1008,23 +1038,31 @@ window.TEUI.SectionModules.sect14 = (function () {
       const k103 = parseFloat(getRefValue("k_103")) || 0; // Natural Air Leakage Heatgain
 
       // Calculate Reference values with proper numeric safety
-      
+
       // TEMPORARY DEBUG: Confirm numeric conversion worked
-      console.log(`[S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80}`);
+      console.log(
+        `[S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: ${i97} + ${i98} + ${i103} + ${m121} - ${i80}`,
+      );
 
       // d_127: TED (Heating Load) - Using original calculation logic with numeric values
       const ref_tedHeatloss_d127 = i97 + i98 + i103 + m121 - i80;
-      
-      console.log(`[S14 DEBUG] ✅ ref_d_127 = ${ref_tedHeatloss_d127} (should be numeric, not NaN)`);
-      
+
+      console.log(
+        `[S14 DEBUG] ✅ ref_d_127 = ${ref_tedHeatloss_d127} (should be numeric, not NaN)`,
+      );
+
       window.TEUI?.StateManager?.setValue(
         "ref_d_127",
         ref_tedHeatloss_d127.toString(),
         "calculated",
       );
-      
-      console.log(`[S14 DEBUG] ✅ Stored ref_d_127 = ${ref_tedHeatloss_d127} in StateManager`);
-      console.log(`[S14 DEBUG] 🔄 Continuing with other Reference calculations...`);
+
+      console.log(
+        `[S14 DEBUG] ✅ Stored ref_d_127 = ${ref_tedHeatloss_d127} in StateManager`,
+      );
+      console.log(
+        `[S14 DEBUG] 🔄 Continuing with other Reference calculations...`,
+      );
 
       // h_127: TEDI (Heating Load Intensity kWh/m²/yr)
       const ref_tedi_h127 = area > 0 ? ref_tedHeatloss_d127 / area : 0;
@@ -1034,11 +1072,13 @@ window.TEUI.SectionModules.sect14 = (function () {
         "calculated",
       );
 
-      // d_128: TED Envelope (Heating Load - Envelope Only) 
+      // d_128: TED Envelope (Heating Load - Envelope Only)
       const ref_tediEnvelope_d128 = i97 + i98 + i103 - i80;
-      
-      console.log(`[S14 DEBUG] ref_d_128 calculation: ${i97} + ${i98} + ${i103} - ${i80} = ${ref_tediEnvelope_d128}`);
-      
+
+      console.log(
+        `[S14 DEBUG] ref_d_128 calculation: ${i97} + ${i98} + ${i103} - ${i80} = ${ref_tediEnvelope_d128}`,
+      );
+
       window.TEUI?.StateManager?.setValue(
         "ref_d_128",
         ref_tediEnvelope_d128.toString(),
@@ -1113,7 +1153,7 @@ window.TEUI.SectionModules.sect14 = (function () {
         "calculated",
       );
 
-      // d_132 & h_132: CEG and CEGI  
+      // d_132 & h_132: CEG and CEGI
       const ref_cegHeatgain_d132 = k97 + k98 + k103;
       window.TEUI?.StateManager?.setValue(
         "ref_d_132",
@@ -1443,7 +1483,9 @@ window.TEUI.SectionModules.sect14 = (function () {
     if (window.TEUI.StateManager) {
       registerDependencies();
     } else {
-      console.warn("StateManager not ready during sect14 onSectionRendered dependency registration.");
+      console.warn(
+        "StateManager not ready during sect14 onSectionRendered dependency registration.",
+      );
     }
 
     // 4. Initialize event handlers
