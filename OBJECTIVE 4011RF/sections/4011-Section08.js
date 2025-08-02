@@ -185,11 +185,24 @@ window.TEUI.SectionModules.sect08 = (function () {
   }
 
   function calculateWoodOffset() {
-    const d31_actualWoodUse = getNumericValue("d_31");
-    const k31_targetWoodEmissions = getNumericValue("k_31");
-    const woodOffset =
-      d31_actualWoodUse > 0 ? k31_targetWoodEmissions / 1000 : 0;
+    // ✅ Read from StateManager (S04's calculated values)
+    const d31_actualWoodUse = window.TEUI?.StateManager?.getValue('d_31') || 0;
+    const k31_targetWoodEmissions = window.TEUI?.StateManager?.getValue('k_31') || 0;
+    
+    const d31_parsed = window.TEUI?.parseNumeric?.(d31_actualWoodUse, 0) ?? 0;
+    const k31_parsed = window.TEUI?.parseNumeric?.(k31_targetWoodEmissions, 0) ?? 0;
+    
+    // Excel formula: =IF(D31 > 0, K31/1000, 0)
+    const woodOffset = d31_parsed > 0 ? k31_parsed / 1000 : 0;
+    
     setCalculatedValue("d_60", woodOffset);
+    
+    // ✅ CRITICAL: Store in StateManager for S04 to consume
+    if (window.TEUI?.StateManager) {
+      window.TEUI.StateManager.setValue('d_60', woodOffset, 'calculated');
+    }
+    
+    return woodOffset;
   }
 
   function calculateAirQualityStatus() {
@@ -549,8 +562,38 @@ window.TEUI.SectionModules.sect08 = (function () {
     addStatusStyles();
     injectLocalToggle();
     initializeEventHandlers();
+    
+    // ✅ CRITICAL: Setup S04 listeners for wood offset calculation
+    setupS04Listeners();
+    
     ModeManager.updateUIForMode();
     calculateAll();
+    
+    // ✅ Force calculation after a delay to catch S04 initialization
+    setTimeout(() => {
+      calculateWoodOffset();
+    }, 500);
+  }
+  
+  /**
+   * Setup listeners for S04 fields that affect d_60 (Wood Offset)
+   */
+  function setupS04Listeners() {
+    if (window.TEUI?.StateManager) {
+      // Listen for S04's actual wood use (d_31)
+      window.TEUI.StateManager.addListener('d_31', () => {
+        setTimeout(() => calculateWoodOffset(), 100); // Small delay to ensure S04 calculations complete
+      });
+      
+      // Listen for S04's target wood emissions (k_31)
+      window.TEUI.StateManager.addListener('k_31', () => {
+        setTimeout(() => calculateWoodOffset(), 100); // Small delay to ensure S04 calculations complete
+      });
+      
+      console.log('[S08] S04 listeners setup complete');
+    } else {
+      console.warn('[S08] StateManager not available for S04 listeners');
+    }
   }
 
   function addStatusStyles() {

@@ -135,6 +135,11 @@ window.TEUI.SectionModules.sect04 = (function () {
       }
     },
     
+    initialize: function() {
+      this.setDefaults();
+      this.loadState();
+    },
+    
     setValue: function(fieldId, value, source = "calculated") {
       this.data[fieldId] = value;
       this.saveState();
@@ -206,6 +211,11 @@ window.TEUI.SectionModules.sect04 = (function () {
       }
     },
     
+    initialize: function() {
+      this.setDefaults();
+      this.loadState();
+    },
+    
     setValue: function(fieldId, value, source = "calculated") {
       this.data[fieldId] = value;
       this.saveState();
@@ -226,6 +236,19 @@ window.TEUI.SectionModules.sect04 = (function () {
       console.log("S04: Initializing Pattern A ModeManager");
       TargetState.initialize();
       ReferenceState.initialize();
+      
+      // ✅ CRITICAL: Sync defaults to StateManager for downstream sections
+      if (window.TEUI?.StateManager) {
+        // Sync Target defaults to StateManager (no prefix)
+        Object.keys(TargetState.data).forEach(fieldId => {
+          const value = TargetState.data[fieldId];
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(fieldId, value, 'default');
+          }
+        });
+        console.log("S04: Synced Target defaults to StateManager");
+      }
+      
       console.log("S04: Pattern A initialization complete");
     },
     
@@ -238,8 +261,8 @@ window.TEUI.SectionModules.sect04 = (function () {
       console.log(`S04: Switched to ${mode.toUpperCase()} mode`);
       
       // ✅ PATTERN A: UI toggle only switches display, values should already be calculated
+      // ✅ FIX: Call refreshUI to restore field values from state
       this.refreshUI();
-      this.updateCalculatedDisplayValues();
     },
     
     getCurrentState: function() {
@@ -273,6 +296,17 @@ window.TEUI.SectionModules.sect04 = (function () {
       ReferenceState.setDefaults();
       ReferenceState.saveState();
       
+      // ✅ CRITICAL: Sync defaults back to StateManager for downstream sections
+      if (window.TEUI?.StateManager) {
+        Object.keys(TargetState.data).forEach(fieldId => {
+          const value = TargetState.data[fieldId];
+          if (value !== null && value !== undefined) {
+            window.TEUI.StateManager.setValue(fieldId, value, 'default');
+          }
+        });
+        console.log("S04: Synced reset defaults to StateManager");
+      }
+      
       console.log("S04: States have been reset to defaults");
       
       // Refresh UI and recalculate
@@ -281,64 +315,97 @@ window.TEUI.SectionModules.sect04 = (function () {
     },
     
     refreshUI: function() {
-      // Sync user input fields (d_27-d_31) based on current mode
-      const inputFields = ['d_27', 'd_28', 'd_29', 'd_30', 'd_31'];
+      // ✅ FIX: Use BACKUP's proven approach for state restoration
+      console.log(`[S04] Refreshing UI for ${this.currentMode.toUpperCase()} mode`);
       
-      inputFields.forEach(fieldId => {
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        const stateValue = this.getValue(fieldId);
-        
-        if (element && stateValue !== undefined) {
-          if (element.tagName === 'SELECT') {
-            element.value = stateValue;
-          } else if (element.hasAttribute('contenteditable')) {
-            element.textContent = stateValue;
-          } else if (element.type === 'text' || element.type === 'number') {
-            element.value = stateValue;
+      const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
+      
+      // Update user-editable input fields from current state
+      const fields = getFields();
+      Object.keys(fields).forEach(fieldId => {
+        const fieldValue = currentState.getValue(fieldId);
+        if (fieldValue !== null && fieldValue !== undefined) {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element && element.hasAttribute("contenteditable")) {
+            // Only update editable fields, not calculated ones
+            element.textContent = fieldValue;
           }
         }
       });
       
-      console.log(`S04: UI refreshed for ${this.currentMode} mode`);
+      // Update calculated display values
+      this.updateCalculatedDisplayValues();
+      
+      console.log(`[S04] UI refreshed for ${this.currentMode} mode`);
     },
     
     updateCalculatedDisplayValues: function() {
-      const calculatedFields = ['f_27', 'f_28', 'f_29', 'f_30', 'f_31',
-                               'g_27', 'g_28', 'g_29', 'g_30', 'g_31',
-                               'h_27', 'h_28', 'h_29', 'h_30', 'h_31', 
-                               'j_27', 'j_28', 'j_29', 'j_30', 'j_31',
-                               'k_27', 'k_28', 'k_29', 'k_30', 'k_31',
-                               'l_27', 'l_28', 'l_29', 'l_30', 'l_31',
-                               'f_32', 'g_32', 'j_32', 'k_32',
-                               'd_33', 'h_33', 'd_34', 'f_34', 'h_34', 'j_34',
-                               'd_35', 'f_35'];
+      if (!window.TEUI?.StateManager) return;
+      
+      console.log(`[S04] 🔄 Updating calculated display values for ${this.currentMode} mode`);
+      
+      // All calculated fields that S04 produces (BACKUP approach)
+      const calculatedFields = [
+        // Energy totals
+        "f_32", "j_32",
+        // Emissions totals  
+        "g_32", "k_32",
+        // Intermediate energy calculations
+        "f_27", "f_28", "f_29", "f_30", "f_31",
+        // Intermediate emissions calculations
+        "g_27", "g_28", "g_29", "g_30", "g_31",
+        // Target energy calculations
+        "j_27", "j_28", "j_29", "j_30", "j_31",
+        // Target emissions calculations
+        "k_27", "k_28", "k_29", "k_30", "k_31",
+        // Heating/cooling calculations
+        "h_27", "h_28", "h_29", "h_30", "h_31", "h_33", "h_34",
+        // Lifecycle carbon calculations
+        "d_33", "d_34", "d_35", "f_34", "f_35", "j_34",
+        // Emission factors
+        "l_27"
+      ];
       
       calculatedFields.forEach(fieldId => {
         let valueToDisplay;
         
         if (this.currentMode === "reference") {
           // In Reference mode, try to show ref_ values, fallback to regular values
-          const refValue = window.TEUI?.StateManager?.getValue(`ref_${fieldId}`);
-          const targetValue = window.TEUI?.StateManager?.getValue(fieldId);
-          valueToDisplay = refValue !== null && refValue !== undefined ? refValue : targetValue;
+          const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          const targetValue = window.TEUI.StateManager.getValue(fieldId);
+          valueToDisplay = refValue || targetValue;
           
-          // 🐛 DEBUG: Log what we're finding for key subtotal fields
-          if (fieldId === "j_32" || fieldId === "k_32" || fieldId === "f_32" || fieldId === "g_32") {
+          // 🐛 DEBUG: Log what we're finding for key fields
+          if (fieldId === "j_32" || fieldId === "k_32") {
             console.log(`[S04 DEBUG] ${fieldId}: ref_${fieldId}=${refValue}, ${fieldId}=${targetValue}, using=${valueToDisplay}`);
           }
         } else {
           // In Target mode, show regular values
-          valueToDisplay = window.TEUI?.StateManager?.getValue(fieldId);
+          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
         }
 
-        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-        if (element && valueToDisplay !== null && valueToDisplay !== undefined) {
-          const formattedValue = window.TEUI?.formatNumber?.(valueToDisplay, 'number-2dp-comma') ?? valueToDisplay.toString();
-          element.textContent = formattedValue;
+        if (valueToDisplay !== null && valueToDisplay !== undefined) {
+          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+          if (element && !element.hasAttribute("contenteditable")) {
+            // Only update calculated fields, not user-editable ones
+            const numericValue = window.TEUI.parseNumeric(valueToDisplay);
+            if (!isNaN(numericValue)) {
+              // Use appropriate formatting for different field types
+              let formattedValue;
+              if (fieldId === "l_27") {
+                // Emission factor as integer
+                formattedValue = window.TEUI.formatNumber(numericValue, "integer");
+              } else {
+                // All other fields as 2 decimal places with commas
+                formattedValue = window.TEUI.formatNumber(numericValue, "number-2dp-comma");
+              }
+              element.textContent = formattedValue;
+            }
+          }
         }
       });
       
-      console.log(`S04: Calculated display values updated for ${this.currentMode} mode`);
+      console.log(`[S04] Calculated display values updated for ${this.currentMode} mode`);
     }
   };
 
@@ -543,8 +610,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       targetElectricity = getGlobalNumericValue('d_136') || 0;
     }
     
-    // F27: Convert actual to ekWh (D27 already in kWh)
-    const actualElectricity = getGlobalNumericValue('d_27') || 0;
+    // ✅ FIX: Use mode-aware reading for user inputs
+    // F27: Convert actual to ekWh (D27 already in kWh) - MODE AWARE
+    const actualElectricity = ModeManager.getValue('d_27') || 0;
     
     // G27: Emissions from actual (D27 * L27 / 1000)
     const emissionFactor = getElectricityEmissionFactor();
@@ -570,11 +638,11 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Excel: D28 (actual), H28 (target calculated)
    */
   function calculateRow28() {
-    // Get actual gas use (user input)
-    const actualGas = getGlobalNumericValue('d_28') || 0;
+    // ✅ FIX: Use mode-aware reading for user inputs
+    const actualGas = ModeManager.getValue('d_28') || 0;
     
-    // H28: Target gas use (from S15 calculations if applicable)
-    const targetGas = getGlobalNumericValue('h_28') || 0;
+    // H28: Target gas use mirrors actual for S04 (user controls both)
+    const targetGas = ModeManager.getValue('d_28') || 0;
     
     // F28: Convert actual to ekWh (D28 * 0.0373 * 277.7778)
     const actualGas_ekWh = actualGas * 0.0373 * 277.7778;
@@ -600,7 +668,8 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Row 29: T.3.3 Total Propane Use
    */
   function calculateRow29() {
-    const actualPropane = getGlobalNumericValue('d_29') || 0;
+    // ✅ FIX: Use mode-aware reading for user inputs
+    const actualPropane = ModeManager.getValue('d_29') || 0;
     
     // ✅ Target propane mirrors actual input (user-controlled resource)
     const targetPropane = actualPropane;
@@ -624,8 +693,9 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Row 30: T.3.4 Total Oil Use
    */
   function calculateRow30() {
-    const actualOil = getGlobalNumericValue('d_30') || 0;
-    const targetOil = getGlobalNumericValue('h_30') || 0;
+    // ✅ FIX: Use mode-aware reading for user inputs
+    const actualOil = ModeManager.getValue('d_30') || 0;
+    const targetOil = ModeManager.getValue('d_30') || 0; // Target mirrors actual for S04
     
     // F30: Convert to ekWh (D30 * 36.72 * 0.2777778)
     const actualOil_ekWh = actualOil * 36.72 * 0.2777778;
@@ -646,7 +716,8 @@ window.TEUI.SectionModules.sect04 = (function () {
    * Row 31: T.3.5 Total Wood Use
    */
   function calculateRow31() {
-    const actualWood = getGlobalNumericValue('d_31') || 0;
+    // ✅ FIX: Use mode-aware reading for user inputs
+    const actualWood = ModeManager.getValue('d_31') || 0;
     
     // ✅ Target wood mirrors actual input (user-controlled resource)
     const targetWood = actualWood;
@@ -783,6 +854,413 @@ window.TEUI.SectionModules.sect04 = (function () {
     
     setCalculatedValue('d_35', d_35);
     setCalculatedValue('f_35', f_35);
+  }
+
+  //==========================================================================
+  // INDIVIDUAL FIELD CALCULATION FUNCTIONS (Required by FieldManager dependencies)
+  //==========================================================================
+
+  /**
+   * ✅ FIX 2: Individual calculation functions for field dependency system
+   * These functions return values for specific fields when their dependencies change
+   */
+
+  // F-column calculations (actual energy to ekWh)
+  function calculateF27() {
+    const d_27 = ModeManager.getValue('d_27') || getGlobalNumericValue('d_27') || 0;
+    const result = d_27; // Electricity already in kWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('f_27', result);
+    } else {
+      setCalculatedValue('f_27', result);
+    }
+    return result;
+  }
+
+  function calculateF28() {
+    const d_28 = ModeManager.getValue('d_28') || getGlobalNumericValue('d_28') || 0;
+    const result = d_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('f_28', result);
+    } else {
+      setCalculatedValue('f_28', result);
+    }
+    return result;
+  }
+
+  function calculateF29() {
+    const d_29 = ModeManager.getValue('d_29') || getGlobalNumericValue('d_29') || 0;
+    const result = d_29 * 14.019; // Propane kg to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('f_29', result);
+    } else {
+      setCalculatedValue('f_29', result);
+    }
+    return result;
+  }
+
+  function calculateF30() {
+    const d_30 = ModeManager.getValue('d_30') || getGlobalNumericValue('d_30') || 0;
+    const result = d_30 * 36.72 * 0.2777778; // Oil L to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('f_30', result);
+    } else {
+      setCalculatedValue('f_30', result);
+    }
+    return result;
+  }
+
+  function calculateF31() {
+    const d_31 = ModeManager.getValue('d_31') || getGlobalNumericValue('d_31') || 0;
+    const result = d_31 * 1000; // Wood m³ to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('f_31', result);
+    } else {
+      setCalculatedValue('f_31', result);
+    }
+    return result;
+  }
+
+  // G-column calculations (actual emissions)
+  function calculateG27() {
+    const f_27 = ModeManager.getValue('f_27') || 0;
+    const l_27 = getElectricityEmissionFactor();
+    const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('g_27', result);
+    } else {
+      setCalculatedValue('g_27', result);
+    }
+    return result;
+  }
+
+  function calculateG28() {
+    const d_28 = ModeManager.getValue('d_28') || getGlobalNumericValue('d_28') || 0;
+    const result = (d_28 * 1921) / 1000; // Gas emissions
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('g_28', result);
+    } else {
+      setCalculatedValue('g_28', result);
+    }
+    return result;
+  }
+
+  function calculateG29() {
+    const d_29 = ModeManager.getValue('d_29') || getGlobalNumericValue('d_29') || 0;
+    const result = (d_29 * 2970) / 1000; // Propane emissions
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('g_29', result);
+    } else {
+      setCalculatedValue('g_29', result);
+    }
+    return result;
+  }
+
+  function calculateG30() {
+    const d_30 = ModeManager.getValue('d_30') || getGlobalNumericValue('d_30') || 0;
+    const result = (d_30 * 2753) / 1000; // Oil emissions
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('g_30', result);
+    } else {
+      setCalculatedValue('g_30', result);
+    }
+    return result;
+  }
+
+  function calculateG31() {
+    const d_31 = ModeManager.getValue('d_31') || getGlobalNumericValue('d_31') || 0;
+    const result = d_31 * 150; // Wood emissions (already in kgCO2e/m³)
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('g_31', result);
+    } else {
+      setCalculatedValue('g_31', result);
+    }
+    return result;
+  }
+
+  // H-column calculations (target energy)
+  function calculateH27() {
+    // Read from S15's calculated electricity value
+    let result;
+    if (ModeManager.currentMode === "reference") {
+      result = getGlobalNumericValue('ref_d_136') || getGlobalNumericValue('d_136') || 0;
+    } else {
+      result = getGlobalNumericValue('d_136') || 0;
+    }
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('h_27', result);
+    } else {
+      setCalculatedValue('h_27', result);
+    }
+    return result;
+  }
+
+  function calculateH28() {
+    // Target gas - for now mirrors actual (could be different in future)
+    const result = ModeManager.getValue('d_28') || getGlobalNumericValue('d_28') || 0;
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('h_28', result);
+    } else {
+      setCalculatedValue('h_28', result);
+    }
+    return result;
+  }
+
+  function calculateH29() {
+    // Target propane mirrors actual (user-controlled)
+    const result = ModeManager.getValue('d_29') || getGlobalNumericValue('d_29') || 0;
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('h_29', result);
+    } else {
+      setCalculatedValue('h_29', result);
+    }
+    return result;
+  }
+
+  function calculateH30() {
+    // Target oil - for now mirrors actual
+    const result = ModeManager.getValue('d_30') || getGlobalNumericValue('d_30') || 0;
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('h_30', result);
+    } else {
+      setCalculatedValue('h_30', result);
+    }
+    return result;
+  }
+
+  function calculateH31() {
+    // Target wood mirrors actual (user-controlled)
+    const result = ModeManager.getValue('d_31') || getGlobalNumericValue('d_31') || 0;
+    
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('h_31', result);
+    } else {
+      setCalculatedValue('h_31', result);
+    }
+    return result;
+  }
+
+  // J-column calculations (target energy to ekWh)
+  function calculateJ27() {
+    const h_27 = ModeManager.getValue('h_27') || 0;
+    const result = h_27; // Electricity already in kWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('j_27', result);
+    } else {
+      setCalculatedValue('j_27', result);
+    }
+    return result;
+  }
+
+  function calculateJ28() {
+    const h_28 = ModeManager.getValue('h_28') || 0;
+    const result = h_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('j_28', result);
+    } else {
+      setCalculatedValue('j_28', result);
+    }
+    return result;
+  }
+
+  function calculateJ29() {
+    const h_29 = ModeManager.getValue('h_29') || 0;
+    const result = h_29 * 14.019; // Propane kg to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('j_29', result);
+    } else {
+      setCalculatedValue('j_29', result);
+    }
+    return result;
+  }
+
+  function calculateJ30() {
+    const h_30 = ModeManager.getValue('h_30') || 0;
+    const result = h_30 * 36.72 * 0.2777778; // Oil L to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('j_30', result);
+    } else {
+      setCalculatedValue('j_30', result);
+    }
+    return result;
+  }
+
+  function calculateJ31() {
+    const h_31 = ModeManager.getValue('h_31') || 0;
+    const result = h_31 * 1000; // Wood m³ to ekWh
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('j_31', result);
+    } else {
+      setCalculatedValue('j_31', result);
+    }
+    return result;
+  }
+
+  // K-column calculations (target emissions)
+  function calculateK27() {
+    const j_27 = ModeManager.getValue('j_27') || 0;
+    const l_27 = getElectricityEmissionFactor();
+    const result = (j_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('k_27', result);
+    } else {
+      setCalculatedValue('k_27', result);
+    }
+    return result;
+  }
+
+  function calculateK28() {
+    const h_28 = ModeManager.getValue('h_28') || 0;
+    const result = (h_28 * 1921) / 1000; // Gas target emissions
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('k_28', result);
+    } else {
+      setCalculatedValue('k_28', result);
+    }
+    return result;
+  }
+
+  function calculateK29() {
+    const h_29 = ModeManager.getValue('h_29') || 0;
+    const result = (h_29 * 2970) / 1000; // Propane target emissions
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('k_29', result);
+    } else {
+      setCalculatedValue('k_29', result);
+    }
+    return result;
+  }
+
+  function calculateK30() {
+    const h_30 = ModeManager.getValue('h_30') || 0;
+    const result = (h_30 * 2753) / 1000; // Oil target emissions
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('k_30', result);
+    } else {
+      setCalculatedValue('k_30', result);
+    }
+    return result;
+  }
+
+  function calculateK31() {
+    const h_31 = ModeManager.getValue('h_31') || 0;
+    const result = h_31 * 150; // Wood target emissions
+    
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('k_31', result);
+    } else {
+      setCalculatedValue('k_31', result);
+    }
+    
+    return result;
+  }
+
+  // L-column calculation (emission factor)
+  function calculateL27() {
+    const result = getElectricityEmissionFactor();
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('l_27', result, 'integer');
+    } else {
+      setCalculatedValue('l_27', result, 'integer');
+    }
+    return result;
+  }
+
+  // Subtotal calculations (F32, G32, J32, K32)
+  function calculateF32() {
+    const f_27 = ModeManager.getValue('f_27') || 0;
+    const f_28 = ModeManager.getValue('f_28') || 0;
+    const f_29 = ModeManager.getValue('f_29') || 0;
+    const f_30 = ModeManager.getValue('f_30') || 0;
+    const f_31 = ModeManager.getValue('f_31') || 0;
+    const result = f_27 + f_28 + f_29 + f_30 + f_31;
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('f_32', result);
+    } else {
+      setCalculatedValue('f_32', result);
+    }
+    return result;
+  }
+
+  function calculateG32() {
+    const g_27 = ModeManager.getValue('g_27') || 0;
+    const g_28 = ModeManager.getValue('g_28') || 0;
+    const g_29 = ModeManager.getValue('g_29') || 0;
+    const g_30 = ModeManager.getValue('g_30') || 0;
+    const g_31 = ModeManager.getValue('g_31') || 0;
+    const d_60 = getGlobalNumericValue('d_60') || 0; // ✅ Forestry offset from S08
+    
+    // =SUM(G27:G31)-(D60*1000) - Excel formula for wood emissions offset
+    const result = g_27 + g_28 + g_29 + g_30 + g_31 - (d_60 * 1000);
+    
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('g_32', result);
+    } else {
+      setCalculatedValue('g_32', result);
+    }
+    return result;
+  }
+
+  function calculateJ32() {
+    const j_27 = ModeManager.getValue('j_27') || 0;
+    const j_28 = ModeManager.getValue('j_28') || 0;
+    const j_29 = ModeManager.getValue('j_29') || 0;
+    const j_30 = ModeManager.getValue('j_30') || 0;
+    const j_31 = ModeManager.getValue('j_31') || 0;
+    const result = j_27 + j_28 + j_29 + j_30 + j_31;
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('j_32', result);
+    } else {
+      setCalculatedValue('j_32', result);
+    }
+    return result;
+  }
+
+  function calculateK32() {
+    const k_27 = ModeManager.getValue('k_27') || 0;
+    const k_28 = ModeManager.getValue('k_28') || 0;
+    const k_29 = ModeManager.getValue('k_29') || 0;
+    const k_30 = ModeManager.getValue('k_30') || 0;
+    const k_31 = ModeManager.getValue('k_31') || 0;
+    const d_60 = getGlobalNumericValue('d_60') || 0; // ✅ Forestry offset from S08
+    // =SUM(K27:K31)-(D60*1000) - Excel formula for wood emissions offset  
+    const result = k_27 + k_28 + k_29 + k_30 + k_31 - (d_60 * 1000);
+    // ✅ FIX: Mode-aware storage for Reference mode calculations
+    if (ModeManager.currentMode === "reference") {
+      setReferenceCalculatedValue('k_32', result);
+    } else {
+      setCalculatedValue('k_32', result);
+    }
+    return result;
   }
 
   //==========================================================================
@@ -1257,7 +1735,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "g_32",
           type: "calculated",
           value: "0",
-          dependencies: ["g_27", "g_28", "g_29", "g_30", "g_31"],
+          dependencies: ["g_27", "g_28", "g_29", "g_30", "g_31", "d_60"],
           classes: ["calculated-value"],
           section: "actualTargetEnergy",
         },
@@ -1275,7 +1753,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           fieldId: "k_32",
           type: "calculated",
           value: "0",
-          dependencies: ["k_27", "k_28", "k_29", "k_30", "k_31"],
+          dependencies: ["k_27", "k_28", "k_29", "k_30", "k_31", "d_60"],
           classes: ["calculated-value"],
           section: "actualTargetEnergy",
         },
@@ -1550,17 +2028,80 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   function setupEventHandlers() {
-    // Listen for user input changes on actual energy fields and PER factor
-    ['d_27', 'd_28', 'd_29', 'd_30', 'd_31', 'h_35'].forEach(fieldId => {
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        element.addEventListener('blur', function() {
-          const value = window.TEUI?.parseNumeric?.(this.value, 0) ?? 0;
-          ModeManager.setValue(fieldId, value, 'user-modified');
-          console.log(`[S04] User modified ${fieldId}: ${value}`);
-          calculateAll(); // Recalculate when user changes values
+    // ✅ FIX: Use BACKUP's proven approach for comprehensive field handling
+    const sectionElement = document.getElementById("actualTargetEnergy");
+    if (!sectionElement) {
+      console.warn('[S04] Section element not found');
+      return;
+    }
+
+    // Find all editable fields within this section (like BACKUP does)
+    const editableFields = sectionElement.querySelectorAll(
+      '.user-input, [data-field-id^="d_"], [data-field-id^="h_"], [data-field-id^="l_"]'
+    );
+
+    console.log(`[S04] Found ${editableFields.length} editable fields`);
+
+    editableFields.forEach((field) => {
+      // Make editable fields actually editable (BACKUP approach)
+      if (field.classList.contains("user-input") || field.classList.contains("editable")) {
+        field.setAttribute("contenteditable", "true");
+
+        // Add focus styling and original value tracking
+        field.addEventListener("focus", function () {
+          this.classList.add("editing");
+          // Store original value to detect changes
+          this.dataset.originalValue = this.textContent.trim();
+        });
+
+        field.addEventListener("blur", function () {
+          this.classList.remove("editing");
         });
       }
+
+      // Handle changes to the field value (BACKUP approach)
+      field.addEventListener("blur", function () {
+        const fieldId = this.getAttribute("data-field-id");
+        if (!fieldId) return;
+
+        // Get new value using textContent (for contenteditable)
+        let newValue = this.textContent.trim();
+
+        // Clean the value - remove commas before parsing (BACKUP approach)
+        newValue = newValue.replace(/,/g, "");
+
+        // Only update if value has changed (BACKUP approach)
+        if (this.dataset.originalValue !== newValue) {
+          console.log(`[S04] User modified ${fieldId}: ${this.dataset.originalValue} → ${newValue}`);
+          
+          // Store in current mode's state
+          ModeManager.setValue(fieldId, newValue, "user-modified");
+          
+          // Trigger calculations
+          calculateAll();
+        }
+      });
+
+      // Add keydown handler to prevent newlines on Enter
+      field.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault(); // Prevent adding a newline
+          this.blur(); // Remove focus to trigger the blur event
+        }
+      });
+
+      // Add paste event handler to clean pasted values
+      field.addEventListener("paste", function () {
+        setTimeout(() => {
+          const pastedContent = this.textContent.trim();
+          if (pastedContent.includes(",")) {
+            const cleanValue = window.TEUI?.parseNumeric?.(pastedContent, 0) ?? 0;
+            if (!isNaN(cleanValue)) {
+              this.textContent = window.TEUI.formatNumber(cleanValue, "number-2dp-comma");
+            }
+          }
+        }, 0);
+      });
     });
 
     // ✅ CRITICAL: Listen for external dependencies that affect S04 calculations
@@ -1606,6 +2147,16 @@ window.TEUI.SectionModules.sect04 = (function () {
         console.log(`[S04] Building status changed: d_14`);
         calculateAll();
       });
+
+      // ✅ CRITICAL: React to S08 forestry offset changes (affects G32/K32 subtotals)
+      window.TEUI.StateManager.addListener('d_60', () => {
+        console.log(`[S04] S08 forestry offset changed: d_60`);
+        // Recalculate subtotals that include wood emissions offset
+        calculateG32();
+        calculateK32();
+        // Update display values
+        ModeManager.updateCalculatedDisplayValues();
+      });
     }
   }
 
@@ -1620,6 +2171,17 @@ window.TEUI.SectionModules.sect04 = (function () {
     
     // Calculation
     calculateAll: calculateAll,
+    
+    // ✅ FIX 2: Expose individual calculation functions for FieldManager dependency system
+    calculations: {
+      calculateF27, calculateF28, calculateF29, calculateF30, calculateF31,
+      calculateG27, calculateG28, calculateG29, calculateG30, calculateG31,
+      calculateH27, calculateH28, calculateH29, calculateH30, calculateH31,
+      calculateJ27, calculateJ28, calculateJ29, calculateJ30, calculateJ31,
+      calculateK27, calculateK28, calculateK29, calculateK30, calculateK31,
+      calculateL27,
+      calculateF32, calculateG32, calculateJ32, calculateK32
+    },
     
     // Pattern A Mode management
     switchMode: function(mode) {
