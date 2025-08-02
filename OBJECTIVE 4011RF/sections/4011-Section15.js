@@ -2045,9 +2045,17 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Calculations
     calculateAll: calculateAll,
 
+    // Pattern A Mode management
+    switchMode: function(mode) {
+      ModeManager.switchMode(mode);
+    },
+
     // Event handling and initialization - REQUIRED
     initializeEventHandlers: initializeEventHandlers,
     onSectionRendered: onSectionRendered,
+    
+    // Expose ModeManager for global toggle integration
+    ModeManager: ModeManager
   };
 })();
 
