@@ -2,14 +2,8 @@
  * 4011-Section01.js
  * Key Values (Section 1) module for TEUI Calculator 4.011
  *
- * ✅ DUAL-STATE ARCHITECTURE COMPLIANT: Consumer Section Pattern
- * ✅ CONSUMER SECTION: Reads results from upstream Pattern A sections (S02, S04, S15)  
- * ✅ DISPLAY ONLY: Shows Reference (E), Target (H), Actual (K) simultaneously
- * ✅ NO INTERNAL STATE: No TargetState/ReferenceState objects needed
- * ✅ CLEAN DEPENDENCIES: Uses approved external dependency patterns
- * 
  * Direct HTML rendering for precise styling, dynamic calculations for key metrics.
- * B Pattern contamination eliminated - follows S01-PATTERN-A-REFACTOR-WORKPLAN.md
+ * DUAL-ENGINE ARCHITECTURE: Reference Model (Column E) and Target Model (Column H)
  */
 
 window.TEUI = window.TEUI || {};
@@ -266,17 +260,95 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   //==========================================================================
-  // PART 4: CONSUMER SECTION PATTERN - CLEAN EXTERNAL DEPENDENCIES
+  // PART 4: DUAL-ENGINE HELPER FUNCTIONS
   //==========================================================================
 
   /**
-   * DUAL-STATE compliant helper for external dependencies
-   * ✅ CONSUMER SECTION PATTERN: Clean external dependency pattern
-   * Upstream sections handle Target/Reference internally, S01 reads results
+   * Helper function to safely get numeric values from the TARGET state.
+   * CORRECTED: Always reads from target_ prefixed StateManager values for dashboard stability
    */
-  function getGlobalNumericValue(fieldId) {
-    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
-    return window.TEUI.parseNumeric(rawValue) || 0;
+  function getAppNumericValue(fieldId, defaultValue = 0) {
+    let value = defaultValue;
+
+    // CORRECTED: Always read from target_ prefixed StateManager values for Target column
+    const targetValue = window.TEUI?.StateManager?.getValue?.(
+      `target_${fieldId}`,
+    );
+    if (
+      targetValue !== undefined &&
+      targetValue !== null &&
+      targetValue !== ""
+    ) {
+      const parsed =
+        window.TEUI?.parseNumeric?.(targetValue, defaultValue) ?? defaultValue;
+      if (!isNaN(parsed)) {
+        // console.log(`S01 TARGET: Reading target_${fieldId} = ${parsed} from StateManager`);
+        return parsed;
+      }
+    }
+
+    // Fallback to unprefixed StateManager value if target_ doesn't exist
+    const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+    if (
+      fallbackValue !== undefined &&
+      fallbackValue !== null &&
+      fallbackValue !== ""
+    ) {
+      if (typeof fallbackValue === "string") {
+        const cleanedValue = fallbackValue.replace(/[^\d.-]/g, "");
+        const parsed =
+          window.TEUI?.parseNumeric?.(cleanedValue, defaultValue) ??
+          defaultValue;
+        if (!isNaN(parsed)) {
+          value = parsed;
+        }
+      } else if (typeof fallbackValue === "number") {
+        value = fallbackValue;
+      }
+    }
+
+    return value;
+  }
+
+  /**
+   * Helper function to safely get numeric values from the REFERENCE state.
+   * CORRECTED: Always reads from ref_ prefixed StateManager values for Reference column
+   */
+  function getRefNumericValue(fieldId, defaultValue = 0) {
+    let value = defaultValue;
+
+    // CORRECTED: Always read from ref_ prefixed StateManager values for Reference column
+    const refValue = window.TEUI?.StateManager?.getValue?.(`ref_${fieldId}`);
+    if (refValue !== undefined && refValue !== null && refValue !== "") {
+      const parsed =
+        window.TEUI?.parseNumeric?.(refValue, defaultValue) ?? defaultValue;
+      if (!isNaN(parsed)) {
+        // console.log(`S01 REFERENCE: Reading ref_${fieldId} = ${parsed} from StateManager`);
+        return parsed;
+      }
+    }
+
+    // Fallback to unprefixed StateManager value if ref_ doesn't exist
+    const fallbackValue = window.TEUI?.StateManager?.getValue?.(fieldId);
+    if (
+      fallbackValue !== undefined &&
+      fallbackValue !== null &&
+      fallbackValue !== ""
+    ) {
+      if (typeof fallbackValue === "string") {
+        const cleanedValue = fallbackValue.replace(/[^\d.-]/g, "");
+        const parsed =
+          window.TEUI?.parseNumeric?.(fallbackValue, defaultValue) ??
+          defaultValue;
+        if (!isNaN(parsed)) {
+          value = parsed;
+        }
+      } else if (typeof fallbackValue === "number") {
+        value = fallbackValue;
+      }
+    }
+
+    return value;
   }
 
   /**
@@ -337,8 +409,8 @@ window.TEUI.SectionModules.sect01 = (function () {
   let targetCalculationInProgress = false;
 
   /**
-   * REFERENCE MODEL ENGINE: Consumer section pattern - reads Reference results from upstream sections
-   * ✅ CONSUMER SECTION PATTERN: No internal state, external dependencies only
+   * REFERENCE MODEL ENGINE: Calculate all Column E values using Reference state exclusively
+   * ENHANCED: Now properly receives Reference TEUI from Section 15 (column ref_h_136)
    */
   function calculateReferenceModel() {
     // Add recursion protection
@@ -349,53 +421,63 @@ window.TEUI.SectionModules.sect01 = (function () {
     referenceCalculationInProgress = true;
 
     try {
-      console.log("🔍 [S01] REFERENCE MODEL: Reading upstream Reference values...");
-      
-      // ✅ CLEAN EXTERNAL DEPENDENCIES: Read Reference values from upstream Pattern A sections
-      // S15: ref_h_136 (reference TEUI final calculation)
-      const referenceTEUI = getGlobalNumericValue("ref_h_136") || 341.2;
-      console.log(`🔍 [S01] ref_h_136 from S15: ${referenceTEUI}`);
-      
-      // S04: ref_k_32 (reference emissions totals)
-      const refTargetEmissions = getGlobalNumericValue("ref_k_32") || 14740.8;
-      console.log(`🔍 [S01] ref_k_32 from S04: ${refTargetEmissions}`);
-      
-      // S02: h_15 (area) - upstream section handles Target vs Reference internally
-      const area = getGlobalNumericValue("h_15") || 1427.2;
-      console.log(`🔍 [S01] h_15 from S02: ${area}`);
-      
-      // S05: ref_i_39 (reference embodied carbon)
-      const refEmbodiedCarbon = getGlobalNumericValue("ref_i_39") || getGlobalNumericValue("i_41") || 0;
-      console.log(`🔍 [S01] ref_i_39 from S05: ${refEmbodiedCarbon}`);
-      
-      // S02: h_13 (service life) - upstream section handles Target vs Reference internally
-      const serviceLife = getGlobalNumericValue("h_13") || 60;
-      console.log(`🔍 [S01] h_13 from S02: ${serviceLife}`);
+      // CRITICAL: Get Reference TEUI from Section 15 (final Reference calculation)
+      const refTEUIFromS15 = window.TEUI.StateManager?.getValue("ref_h_136");
+      // ⚠️ WARNING: ESLint flags refJ32FromS04 as unused, but this variable is CALCULATION-CRITICAL
+      // DO NOT prefix with underscore or remove - causes calculation regression (June 13, 2025)
+      const refJ32FromS04 = window.TEUI.StateManager?.getValue("ref_j_32");
+      const refK32FromS04 = window.TEUI.StateManager?.getValue("ref_k_32");
 
-      // Calculate Reference Annual Carbon (e_8) using clean external dependencies
+      // Calculate Reference TEUI (e_10) using Section 15's final Reference calculation
+      let referenceTEUI = 341.2; // Default fallback
+      if (refTEUIFromS15) {
+        referenceTEUI =
+          window.TEUI?.parseNumeric?.(refTEUIFromS15, 341.2) ?? 341.2;
+      }
+
+      // Calculate Reference Annual Carbon (e_8) using Section 04's Reference total
+      const refTargetEmissions =
+        window.TEUI?.parseNumeric?.(refK32FromS04, 14740.8) ?? 14740.8;
+
+      // CRITICAL FIX: Use Application area as fallback, not default of 1
+      // This prevents timing issues where Reference calculations run before Reference standard loads
+      const refArea = getRefNumericValue(
+        "h_15",
+        getAppNumericValue("h_15", 1427.2),
+      );
+
       let referenceAnnualCarbon = 0;
-      if (area > 0) {
+      if (refArea > 0) {
         referenceAnnualCarbon =
-          Math.round((refTargetEmissions / area) * 10) / 10;
+          Math.round((refTargetEmissions / refArea) * 10) / 10;
+      } else {
+        console.error(
+          "❌ ERROR: refArea is 0 or invalid for Reference e_8 calculation",
+        );
       }
 
       // Calculate Reference Lifetime Carbon
+      const refEmbodiedCarbon = getRefNumericValue(
+        "ref_i_39",
+        getAppNumericValue("i_41", 0),
+      );
+      const refServiceLife = getRefNumericValue(
+        "h_13",
+        getAppNumericValue("h_13", 60),
+      );
       let referenceLifetimeCarbon = 0;
-      if (serviceLife > 0) {
+
+      if (refServiceLife > 0) {
         referenceLifetimeCarbon =
           Math.round(
-            (refEmbodiedCarbon / serviceLife + referenceAnnualCarbon) * 10,
+            (refEmbodiedCarbon / refServiceLife + referenceAnnualCarbon) * 10,
           ) / 10;
       }
-
-      console.log(`🔍 [S01] REFERENCE RESULTS: e_10=${referenceTEUI}, e_8=${referenceAnnualCarbon}, e_6=${referenceLifetimeCarbon}`);
 
       // Use standardized helper with proper 1dp formatting for key values
       setCalculatedValue("e_10", referenceTEUI, "number-1dp");
       setCalculatedValue("e_8", referenceAnnualCarbon, "number-1dp");
       setCalculatedValue("e_6", referenceLifetimeCarbon, "number-1dp");
-      
-      console.log("✅ [S01] REFERENCE MODEL: Values stored in Reference column (e_6, e_8, e_10)");
 
       // Store Reference values with ref_ prefix for cross-section use
       if (window.TEUI?.StateManager) {
@@ -425,8 +507,7 @@ window.TEUI.SectionModules.sect01 = (function () {
   //==========================================================================
 
   /**
-   * TARGET MODEL ENGINE: Consumer section pattern with clean external dependencies
-   * ✅ CONSUMER SECTION PATTERN: Simplified calculations using upstream results
+   * TARGET MODEL ENGINE: Calculate all Column H values using Application state exclusively
    */
   function calculateTargetModel() {
     // Add recursion protection
@@ -437,57 +518,95 @@ window.TEUI.SectionModules.sect01 = (function () {
     targetCalculationInProgress = true;
 
     try {
-      console.log("🎯 [S01] TARGET MODEL: Reading upstream Target values...");
-      
-      // ✅ CLEAN EXTERNAL DEPENDENCIES: Read from upstream Pattern A sections
-      // S04: j_32 (target energy total), f_32 (actual energy), k_32 (target emissions), g_32 (actual emissions)
-      const targetEnergy = getGlobalNumericValue("j_32");
-      const actualEnergy = getGlobalNumericValue("f_32");
-      const targetEmissions = getGlobalNumericValue("k_32");
-      const actualEmissions = getGlobalNumericValue("g_32");
-      console.log(`🎯 [S01] Energy: j_32=${targetEnergy}, f_32=${actualEnergy}, k_32=${targetEmissions}, g_32=${actualEmissions}`);
-      
-      // S02: h_15 (area), h_13 (service life), i_41 (embodied carbon) - upstream handles Target vs Reference
-      const area = getGlobalNumericValue("h_15") || 1;
-      const serviceLife = getGlobalNumericValue("h_13") || 50;
-      const embodiedCarbon = getGlobalNumericValue("i_41") || 345.82;
-      console.log(`🎯 [S01] Building: h_15=${area}, h_13=${serviceLife}, i_41=${embodiedCarbon}`);
-      
-      // S02: d_14 (use type)
-      const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
-      console.log(`🎯 [S01] Use type: ${useType}`);
+      // All inputs from Application state
+      const appTargetEnergy = getAppNumericValue("j_32", 0);
+      // ✅ CRITICAL: f_32 (actual energy) must ALWAYS use application state, never Reference
+      const appActualEnergy =
+        window.TEUI?.StateManager?.getValue("f_32") ||
+        window.TEUI?.StateManager?.getValue("target_f_32") ||
+        0;
+      const appActualEnergyParsed =
+        window.TEUI?.parseNumeric?.(appActualEnergy, 0) ?? 0;
 
-      // ✅ SIMPLIFIED: Calculate Target TEUI (h_10)
-      const targetTEUI = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 0;
+      const appTargetEmissions = getAppNumericValue("k_32", 0);
+      // ✅ CRITICAL: g_32 (actual emissions) must ALWAYS use application state, never Reference
+      const appActualEmissions =
+        window.TEUI?.StateManager?.getValue("g_32") ||
+        window.TEUI?.StateManager?.getValue("target_g_32") ||
+        0;
+      const appActualEmissionsParsed =
+        window.TEUI?.parseNumeric?.(appActualEmissions, 0) ?? 0;
+      const appArea = getAppNumericValue("h_15", 1);
+      const appServiceLife = getAppNumericValue("h_13", 50);
+      const appEmbodiedCarbon = getAppNumericValue("i_41", 345.82);
+      const useType =
+        window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
 
-      // ✅ SIMPLIFIED: Calculate Actual TEUI (k_10) - only if in Utility Bills mode
+      // Calculate Target TEUI (h_10)
+      let targetTEUI = 0;
+      if (appArea > 0) {
+        targetTEUI = Math.round((appTargetEnergy / appArea) * 10) / 10;
+      }
+
+      // Calculate Actual TEUI (k_10) - only if in Utility Bills mode
+      // ✅ CRITICAL: k_10 must ALWAYS use Target area, never Reference area
       let actualTEUI = 0;
-      if (useType === "Utility Bills" && area > 0) {
-        actualTEUI = Math.round((actualEnergy / area) * 10) / 10;
+      if (useType === "Utility Bills") {
+        // Force reading Target area directly, bypassing dual-state interference
+        const targetAreaDirect =
+          window.TEUI?.StateManager?.getValue("h_15") ||
+          window.TEUI?.StateManager?.getValue("target_h_15") ||
+          1;
+        const targetAreaParsed =
+          window.TEUI?.parseNumeric?.(targetAreaDirect, 1) ?? 1;
+
+        if (targetAreaParsed > 0) {
+          actualTEUI =
+            Math.round((appActualEnergyParsed / targetAreaParsed) * 10) / 10;
+        }
       }
 
       // Calculate Target Annual Carbon (h_8)
-      const targetAnnualCarbon = area > 0 ? Math.round((targetEmissions / area) * 10) / 10 : 0;
+      let targetAnnualCarbon = 0;
+      if (appArea > 0) {
+        targetAnnualCarbon =
+          Math.round((appTargetEmissions / appArea) * 10) / 10;
+      }
 
       // Calculate Actual Annual Carbon (k_8) - only if in Utility Bills mode
       let actualAnnualCarbon = 0;
-      if (useType === "Utility Bills" && area > 0) {
-        actualAnnualCarbon = Math.round((actualEmissions / area) * 10) / 10;
+      if (useType === "Utility Bills") {
+        // Use same Target area as k_10 for consistency
+        const targetAreaDirect =
+          window.TEUI?.StateManager?.getValue("h_15") ||
+          window.TEUI?.StateManager?.getValue("target_h_15") ||
+          1;
+        const targetAreaParsed =
+          window.TEUI?.parseNumeric?.(targetAreaDirect, 1) ?? 1;
+
+        if (targetAreaParsed > 0) {
+          actualAnnualCarbon =
+            Math.round((appActualEmissionsParsed / targetAreaParsed) * 10) / 10;
+        }
       }
 
       // Calculate Target Lifetime Carbon (h_6)
-      const targetLifetimeCarbon = serviceLife > 0 ? 
-        Math.round((embodiedCarbon / serviceLife + targetAnnualCarbon) * 10) / 10 : 0;
+      let targetLifetimeCarbon = 0;
+      if (appServiceLife > 0) {
+        targetLifetimeCarbon =
+          Math.round(
+            (appEmbodiedCarbon / appServiceLife + targetAnnualCarbon) * 10,
+          ) / 10;
+      }
 
       // Calculate Actual Lifetime Carbon (k_6) - only if in Utility Bills mode
       let actualLifetimeCarbon = 0;
-      if (useType === "Utility Bills" && serviceLife > 0) {
-        actualLifetimeCarbon = 
-          Math.round((embodiedCarbon / serviceLife + actualAnnualCarbon) * 10) / 10;
+      if (useType === "Utility Bills" && appServiceLife > 0) {
+        actualLifetimeCarbon =
+          Math.round(
+            (appEmbodiedCarbon / appServiceLife + actualAnnualCarbon) * 10,
+          ) / 10;
       }
-
-      console.log(`🎯 [S01] TARGET RESULTS: h_10=${targetTEUI}, h_8=${targetAnnualCarbon}, h_6=${targetLifetimeCarbon}`);
-      console.log(`🎯 [S01] ACTUAL RESULTS: k_10=${actualTEUI}, k_8=${actualAnnualCarbon}, k_6=${actualLifetimeCarbon}`);
 
       // Use standardized helper with proper 1dp formatting for key values
       setCalculatedValue("h_10", targetTEUI, "number-1dp");
@@ -497,14 +616,14 @@ window.TEUI.SectionModules.sect01 = (function () {
       // Handle Actual values (K column) - conditional based on use type
       if (useType === "Utility Bills") {
         setCalculatedValue("k_10", actualTEUI, "number-1dp");
+
         setCalculatedValue("k_8", actualAnnualCarbon, "number-1dp");
+
         setCalculatedValue("k_6", actualLifetimeCarbon, "number-1dp");
-        console.log("✅ [S01] TARGET MODEL: Values stored in Target (h_6, h_8, h_10) and Actual (k_6, k_8, k_10) columns");
       } else {
         setCalculatedValue("k_10", "N/A", "raw");
         setCalculatedValue("k_8", "N/A", "raw");
         setCalculatedValue("k_6", "N/A", "raw");
-        console.log("✅ [S01] TARGET MODEL: Values stored in Target (h_6, h_8, h_10) columns, Actual set to N/A");
       }
 
       // Calculate percentages and explanations
@@ -519,23 +638,22 @@ window.TEUI.SectionModules.sect01 = (function () {
   //==========================================================================
 
   function calculatePercentagesAndExplanations() {
-    const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+    const useType =
+      window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
 
-    // ✅ CLEAN EXTERNAL DEPENDENCIES: Read calculated values using consumer pattern
-    // Reference values from upstream sections or stored ref_ values
-    const referenceAnnualCarbon = getGlobalNumericValue("ref_e_8") || getGlobalNumericValue("e_8") || 17.4;
-    const referenceLifetimeCarbon = getGlobalNumericValue("ref_e_6") || getGlobalNumericValue("e_6") || 24.4;
-    const referenceTEUI = getGlobalNumericValue("ref_e_10") || getGlobalNumericValue("e_10") || 341.2;
+    // Get calculated values from both engines
+    // CORRECTED: Use getRefNumericValue for Reference column values
+    const referenceAnnualCarbon = getRefNumericValue("e_8", 17.4);
+    const referenceLifetimeCarbon = getRefNumericValue("e_6", 24.4);
+    const referenceTEUI = getRefNumericValue("e_10", 341.2);
 
-    // Target values from calculated results
-    const targetAnnualCarbon = getGlobalNumericValue("h_8") || 4.7;
-    const targetLifetimeCarbon = getGlobalNumericValue("h_6") || 11.7;
-    const targetTEUI = getGlobalNumericValue("h_10") || 93.0;
+    const targetAnnualCarbon = getAppNumericValue("h_8", 4.7);
+    const targetLifetimeCarbon = getAppNumericValue("h_6", 11.7);
+    const targetTEUI = getAppNumericValue("h_10", 93.0);
 
-    // Actual values from calculated results
-    const actualLifetimeCarbon = getGlobalNumericValue("k_6") || 11.7;
-    const actualAnnualCarbon = getGlobalNumericValue("k_8") || 4.8;
-    const actualTEUI = getGlobalNumericValue("k_10") || 93.1;
+    const actualLifetimeCarbon = getAppNumericValue("k_6", 11.7); // Added for k_6 explanation
+    const actualAnnualCarbon = getAppNumericValue("k_8", 4.8);
+    const actualTEUI = getAppNumericValue("k_10", 93.1);
 
     // Calculate T.2 Annual Carbon Percentage (j_8)
     let annualCarbonPercent = 0;
@@ -782,10 +900,11 @@ window.TEUI.SectionModules.sect01 = (function () {
   function calculateTargetTier() {
     if (!window.TEUI?.StateManager) return;
 
-    // ✅ CLEAN EXTERNAL DEPENDENCIES: Read calculated values using consumer pattern
-    const targetTEUI_h10 = getGlobalNumericValue("h_10") || 93.0;
-    const referenceTEUI_e10 = getGlobalNumericValue("ref_e_10") || getGlobalNumericValue("e_10") || 341.2;
-    const standard_d13 = window.TEUI.StateManager?.getValue("d_13") || "";
+    const targetTEUI_h10 = getAppNumericValue("h_10", 93.0);
+    // CORRECTED: Use getRefNumericValue for Reference column value
+    const referenceTEUI_e10 = getRefNumericValue("e_10", 341.2);
+    const standard_d13 =
+      window.TEUI.StateManager?.getApplicationValue("d_13") || "";
 
     // Calculate the reduction percentage (D144 in Excel formula) - this is 1-(target/reference)
     let reduction = 0;
@@ -897,9 +1016,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     updateDisplayValue("h_8", h8Formatted);
 
     // Calculate tier for h_10 to pass atomically
-    const targetTEUI_h10 = getGlobalNumericValue("h_10") || 93.0;
-    const referenceTEUI_e10 = getGlobalNumericValue("ref_e_10") || getGlobalNumericValue("e_10") || 341.2;
-    const standard_d13 = window.TEUI.StateManager?.getValue("d_13") || "";
+    const targetTEUI_h10 = getAppNumericValue("h_10", 93.0);
+    const referenceTEUI_e10 = getRefNumericValue("e_10", 341.2);
+    const standard_d13 =
+      window.TEUI.StateManager?.getApplicationValue("d_13") || "";
 
     let reduction = 0;
     if (referenceTEUI_e10 !== 0) {
@@ -955,7 +1075,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       updateDisplayValue("k_8", k8Formatted);
 
       // Special handling for k_10 (Actual TEUI)
-      const energyValue_f32 = getGlobalNumericValue("f_32");
+      const energyValue_f32 = getAppNumericValue("f_32", 0);
       let actualTEUIDisplay = "N/A";
       if (energyValue_f32 === 0 || Math.abs(energyValue_f32) < 0.01) {
         actualTEUIDisplay = "0.0";
@@ -1037,19 +1157,20 @@ window.TEUI.SectionModules.sect01 = (function () {
       return { actualValue: 0, referenceValue: 100 };
     }
 
-    // ✅ CLEAN EXTERNAL DEPENDENCIES: Use consumer pattern for gauge values
-    const referenceValue = getGlobalNumericValue(refFieldPrefixed) || getGlobalNumericValue(refFieldPrefixed.replace("ref_", "")) || defaultRef;
-    const appValueForGauge = getGlobalNumericValue(
-      isUtilityMode ? actualFieldApp : targetFieldApp
-    ) || (isUtilityMode ? defaultActual : defaultTarget);
+    // SIMPLIFIED: Always use ref_ prefixed value for Reference
+    const referenceValue = getAppNumericValue(refFieldPrefixed, defaultRef);
+    const appValueForGauge = getAppNumericValue(
+      isUtilityMode ? actualFieldApp : targetFieldApp,
+      isUtilityMode ? defaultActual : defaultTarget,
+    );
 
     return { actualValue: appValueForGauge, referenceValue };
   }
 
   function checkTargetExceedsReference() {
-    // ✅ CLEAN EXTERNAL DEPENDENCIES: Use consumer pattern
-    const targetValue = getGlobalNumericValue("h_10") || 93.0;
-    const referenceValue = getGlobalNumericValue("ref_e_10") || getGlobalNumericValue("e_10") || 341.2;
+    const targetValue = getAppNumericValue("h_10", 93.0);
+    // SIMPLIFIED: Always use ref_ prefixed field for Reference value
+    const referenceValue = getRefNumericValue("e_10", 341.2);
 
     const gaugeContainer = document
       .getElementById("teui-gauge")
@@ -1141,10 +1262,6 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     calculationInProgress = true;
-    
-    console.log("🚀 [S01] =================================");
-    console.log("🚀 [S01] CALCULATION TRIGGERED");
-    console.log("🚀 [S01] =================================");
 
     try {
       // Run both engines independently
@@ -1155,9 +1272,6 @@ window.TEUI.SectionModules.sect01 = (function () {
       calculateTargetTier(); // Calculate i_10 (Target Tier for h_10)
       updateTEUIDisplay(); // Update all visual displays
       updateTitleModeIndicators(); // <-- ADDED CALL HERE
-      
-      console.log("✅ [S01] ALL CALCULATIONS COMPLETE");
-      console.log("🚀 [S01] =================================");
     } finally {
       calculationInProgress = false;
     }
@@ -1170,13 +1284,16 @@ window.TEUI.SectionModules.sect01 = (function () {
   function initializeEventHandlers() {
     if (!window.TEUI || !window.TEUI.StateManager) return;
 
-    // ✅ CONSUMER SECTION PATTERN: Listen to TRUE INPUT fields that affect calculations
-    // S01 as consumer section only listens to user inputs that affect its display calculations
+    // Only listen to TRUE INPUT fields that affect calculations, not calculated outputs
+    // CRITICAL: Do NOT listen to calculated fields like j_32, k_32 as they create infinite loops
     const inputFieldsToWatch = [
-      "d_14", // Use type (user dropdown) - affects Actual column display
-      "d_13", // Reference standard (user dropdown) - affects Reference calculations
-      // REMOVED B Pattern contamination: No need to listen to calculated intermediate fields
-      // Upstream sections (S04, S13, S15) handle their own dependencies
+      "i_41", // Embodied carbon (user input)
+      "h_13", // Service life (user input)
+      "h_15", // Conditioned area (user input)
+      "d_51", // Energy source (user dropdown)
+      "d_14", // Use type (user dropdown)
+      "d_13", // Reference standard (user dropdown)
+      // REMOVED: j_32, k_32, f_32, g_32 - these are calculated by other sections
     ];
 
     // Listen to user input fields
@@ -1198,26 +1315,16 @@ window.TEUI.SectionModules.sect01 = (function () {
       );
     });
 
-    // ✅ CONSUMER SECTION PATTERN: Listen to calculated fields from upstream Pattern A sections
+    // Listen to calculated fields from other sections that Section 01 depends on
     const calculatedFieldsToWatch = [
-      // S04: Energy and emissions totals
-      "j_32", // Target energy total
-      "k_32", // Target emissions total 
-      "f_32", // Actual energy total
-      "g_32", // Actual emissions total
-      "ref_j_32", // Reference energy total
-      "ref_k_32", // Reference emissions total
-      
-      // S02: Building information
-      "h_15", // Conditioned area
-      "h_13", // Service life
-      "i_41", // Embodied carbon
-      
-      // S15: Final Reference TEUI calculation (critical for Reference column)
-      "ref_h_136", // Reference TEUI from Section 15 (final Reference calculation)
-      
-      // S05: Reference embodied carbon
-      "ref_i_39", // Reference embodied carbon
+      "j_32", // Target energy total (from Section 04)
+      "k_32", // Target emissions total (from Section 04)
+      "f_32", // Actual energy total (from Section 04)
+      "g_32", // Actual emissions total (from Section 04)
+      "ref_j_32", // Reference energy total (from Section 04)
+      "ref_k_32", // Reference emissions total (from Section 04)
+      "ref_i_39", // Reference embodied carbon (from Section 05)
+      "ref_h_136", // CRITICAL: Reference TEUI from Section 15 (final Reference calculation)
     ];
 
     calculatedFieldsToWatch.forEach((fieldId) => {
@@ -1228,7 +1335,6 @@ window.TEUI.SectionModules.sect01 = (function () {
         (newValue, oldValue, sourceFieldId) => {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
-            console.log(`📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`);
             if (fieldId === "g_32") {
               // Special handling for g_32 field changes (if needed in future)
             }

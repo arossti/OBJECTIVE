@@ -1920,9 +1920,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for d_113 (Heating System) changes
       sm.addListener("d_113", () => {
         console.log("[Section13] 📡 d_113 listener triggered");
-        if (typeof calculateHeatingSystem === "function") {
-          calculateHeatingSystem();
-        }
+        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
+        calculateAll();
         if (
           window.TEUI &&
           window.TEUI.StateManager &&
@@ -1993,7 +1992,8 @@ window.TEUI.SectionModules.sect13 = (function () {
         console.log(
           "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
         );
-        calculateHeatingSystem();
+        // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
+        calculateAll();
       }); // TED (from S14, for d_114)
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
@@ -2319,10 +2319,10 @@ window.TEUI.SectionModules.sect13 = (function () {
       setCalculatedValue("h_113", copheat, "number-2dp");
       setCalculatedValue("j_113", copcool, "number-1dp");
       setCalculatedValue("j_114", ceer, "number-1dp");
-      calculateHeatingSystem(isReferenceCalculation);
+      // ✅ PATTERN 2: No recursive calls - let the dual-engine handle heating system calculations
     } else {
-      // For Reference calculations, just call heating system without DOM updates
-      calculateHeatingSystem(isReferenceCalculation);
+      // ✅ PATTERN 2: Reference calculations handled by dual-engine architecture
+      // No individual function calls needed - calculateAll handles both engines
     }
 
     // Return calculated values for Reference engine storage
@@ -2333,104 +2333,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     };
   }
 
-  /**
-   * Calculate heating system values based on system type and COP
-   */
-  function calculateHeatingSystem(isReferenceCalculation = false) {
-    // ✅ DUAL-ENGINE: For Target calculations, use StateManager (authoritative source)
-    // For Reference calculations, use ReferenceState (different defaults)
-    const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)
-      : getFieldValue("d_113");
 
-    // CRITICAL FIX: Read correct TED based on calculation mode
-    // Reference calculations must use ref_d_127 (Reference TED from S14)
-    // Target calculations use d_127 (Target TED from S14)
-    const tedTarget = isReferenceCalculation
-      ? window.TEUI.parseNumeric(
-          window.TEUI.StateManager?.getValue("ref_d_127"),
-        ) || 0
-      : window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
-
-    console.log(
-      `[Section13] 🔥 HEATING CALC: mode=${isReferenceCalculation ? "REF" : "TGT"}, systemType="${systemType}", tedTarget=${tedTarget}, source=${isReferenceCalculation ? "ref_d_127" : "d_127"}`,
-    );
-    let heatingDemand_d114 = 0;
-    let heatingSink_l113 = 0;
-    let isHeatpump = systemType === "Heatpump";
-
-    // Apply dynamic styling/values only for Target calculations
-    if (!isReferenceCalculation) {
-      setFieldDisabled("f_113", !isHeatpump);
-      setFieldDisabled("h_113", !isHeatpump);
-      setFieldDisabled("j_113", !isHeatpump);
-      setFieldDisabled("l_113", !isHeatpump);
-    }
-
-    if (isHeatpump) {
-      // Recalculate & set COPs when switching TO Heatpump
-      const hspf =
-        window.TEUI.parseNumeric(
-          isReferenceCalculation
-            ? getSectionValue("f_113", true)
-            : getFieldValue("f_113"),
-        ) || 3.5;
-      const local_copheat = hspf > 0 ? hspf / 3.412 : 1;
-      const local_copcool = Math.max(1, local_copheat - 1);
-      const local_ceer = 3.412 * local_copcool;
-
-      // Only update DOM for Target calculations
-      if (!isReferenceCalculation) {
-        setCalculatedValue("h_113", local_copheat, "number-2dp");
-        setCalculatedValue("j_113", local_copcool, "number-1dp");
-        setCalculatedValue("j_114", local_ceer, "number-1dp");
-      }
-
-      // Calculate demand and sink using the recalculated COP
-      if (local_copheat > 0) {
-        heatingDemand_d114 = tedTarget / local_copheat;
-        heatingSink_l113 = heatingDemand_d114 * (local_copheat - 1);
-      } else {
-        heatingDemand_d114 = tedTarget;
-        heatingSink_l113 = 0;
-      }
-    } else {
-      // Not a Heatpump - Use TEDI directly, sink is 0
-      heatingDemand_d114 = tedTarget;
-      heatingSink_l113 = 0;
-      // --- Add Log for j_115 ---
-      const current_j115 = getFieldValue("j_115");
-      // console.log(`[S13 DEBUG] Switching away from Heatpump. Current j_115 state: "${current_j115}". Forcing COPs to 1/0.`);
-      // --- End Log ---
-      // Force COP values for non-heatpump systems
-      // Force COP values for non-heatpump systems only for Target calculations
-      if (!isReferenceCalculation) {
-        setCalculatedValue("h_113", 1.0, "number-2dp");
-        setCalculatedValue("j_113", 0.0, "number-1dp");
-        setCalculatedValue("j_114", 0.0, "number-1dp"); // CEER is also 0
-      }
-      // NOTE: We are NOT explicitly setting j_115 here, relying on its default/user value.
-    }
-
-    // Only update DOM for Target calculations
-    if (!isReferenceCalculation) {
-      setCalculatedValue("d_114", heatingDemand_d114, "number-2dp-comma");
-      setCalculatedValue("l_113", heatingSink_l113, "number-2dp-comma");
-    }
-
-    // Continue with dependent calculations
-    const fuelImpactResults = calculateHeatingFuelImpact(
-      isReferenceCalculation,
-    );
-    calculateCoolingSystem(isReferenceCalculation);
-
-    // Return calculated values for Reference engine storage
-    return {
-      d_114: heatingDemand_d114,
-      l_113: heatingSink_l113,
-      ...fuelImpactResults,
-    };
-  }
 
   /**
    * Calculate heating fuel impact for gas and oil systems
@@ -3449,7 +3352,6 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
-    calculateHeatingSystem: calculateHeatingSystem,
     calculateCoolingSystem: calculateCoolingSystem,
     calculateVentilationValues: calculateVentilationValues,
     calculateFreeCooling: calculateFreeCooling,
