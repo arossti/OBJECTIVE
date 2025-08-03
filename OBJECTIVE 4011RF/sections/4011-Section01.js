@@ -295,19 +295,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (window.TEUI?.StateManager?.setValue) {
       const valueToStore = isFinite(rawValue) ? rawValue.toString() : "N/A";
 
-      // 🏗️ DUAL STATE PATTERN: Write BOTH prefixed values for anti-contamination
-      window.TEUI.StateManager.setValue(
-        `target_${fieldId}`,
-        valueToStore,
-        "calculated",
-      );
-      window.TEUI.StateManager.setValue(
-        `ref_${fieldId}`,
-        valueToStore,
-        "calculated",
-      );
-
-      // Global unprefixed for backward compatibility and cross-section integration
+      // ✅ CONSUMER SECTION PATTERN: Only write global unprefixed values
+      // S01 must NOT contaminate target_/ref_ state - upstream sections handle that
       window.TEUI.StateManager.setValue(fieldId, valueToStore, "calculated");
 
       // console.log(`S01: ✅ DUAL UPDATE - ${fieldId}: target_${fieldId}=${valueToStore} AND ref_${fieldId}=${valueToStore} AND global ${fieldId}=${valueToStore}`);
@@ -396,25 +385,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       setCalculatedValue("e_6", referenceLifetimeCarbon, "number-1dp");
       
       console.log("✅ [S01] REFERENCE MODEL: Values stored in Reference column (e_6, e_8, e_10)");
-
-      // Store Reference values with ref_ prefix for cross-section use
-      if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(
-          "ref_e_10",
-          referenceTEUI.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_e_8",
-          referenceAnnualCarbon.toString(),
-          "calculated",
-        );
-        window.TEUI.StateManager.setValue(
-          "ref_e_6",
-          referenceLifetimeCarbon.toString(),
-          "calculated",
-        );
-      }
+      console.log("✅ [S01] CONSUMER SECTION: S01 does NOT write ref_ prefixed values - upstream sections handle that");
     } finally {
       referenceCalculationInProgress = false;
     }
@@ -561,8 +532,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Only update StateManager if values have changed
     if (window.TEUI?.StateManager) {
-      const currentJ8 = window.TEUI.StateManager.getApplicationValue("j_8");
-      const currentJ10 = window.TEUI.StateManager.getApplicationValue("j_10");
+      const currentJ8 = window.TEUI.StateManager.getValue("j_8");
+      const currentJ10 = window.TEUI.StateManager.getValue("j_10");
       const newJ8 = `${annualCarbonPercent}%`;
       const newJ10 = `${teuiPercent}%`;
 
@@ -694,7 +665,7 @@ window.TEUI.SectionModules.sect01 = (function () {
           if (fieldId === "h_10") {
             const tierValue =
               tierOverride ||
-              window.TEUI.StateManager?.getApplicationValue("i_10") ||
+              window.TEUI.StateManager?.getValue("i_10") ||
               "tier3";
             const tierClass =
               tierValue.toLowerCase().replace(" ", "-") + "-tag";
@@ -721,7 +692,7 @@ window.TEUI.SectionModules.sect01 = (function () {
             if (fieldId === "h_10") {
               const tierValue =
                 tierOverride ||
-                window.TEUI.StateManager?.getApplicationValue("i_10") ||
+                window.TEUI.StateManager?.getValue("i_10") ||
                 "tier3";
               const tierClass =
                 tierValue.toLowerCase().replace(" ", "-") + "-tag";
@@ -750,7 +721,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (fieldId === "h_10") {
       const tierValue =
         tierOverride ||
-        window.TEUI.StateManager?.getApplicationValue("i_10") ||
+        window.TEUI.StateManager?.getValue("i_10") ||
         "tier3";
       const tierClass = tierValue.toLowerCase().replace(" ", "-") + "-tag";
       element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
@@ -831,7 +802,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     // Only update StateManager if value has changed
-    const currentTier = window.TEUI.StateManager.getApplicationValue("i_10");
+    const currentTier = window.TEUI.StateManager.getValue("i_10");
     if (currentTier !== tier) {
       window.TEUI.StateManager.setValue("i_10", tier, "calculated");
     }
@@ -839,7 +810,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   function updateTEUIDisplay() {
     const useType =
-      window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
+      window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
 
     // MIRROR TARGET/APPLICATION PATTERN: Use Reference values for Column E display
@@ -869,29 +840,18 @@ window.TEUI.SectionModules.sect01 = (function () {
     updateDisplayValue("e_8", e8RefFormatted);
     updateDisplayValue("e_10", e10RefFormatted);
 
-    // ALWAYS display Target/Application values in Column H
-    const h6Raw =
-      window.TEUI.StateManager?.getApplicationValue("h_6") || "11.7";
-    const h8Raw = window.TEUI.StateManager?.getApplicationValue("h_8") || "4.7";
-    const h10Raw =
-      window.TEUI.StateManager?.getApplicationValue("h_10") || "93.0";
+    // ✅ CONSUMER PATTERN: Read calculated Target values using clean helpers
+    const h6Raw = getGlobalNumericValue("h_6") || 11.7;
+    const h8Raw = getGlobalNumericValue("h_8") || 4.7;
+    const h10Raw = getGlobalNumericValue("h_10") || 93.0;
 
-    // CRITICAL FIX: Format values before passing to updateDisplayValue to prevent decimal burp
+    // ✅ CONSUMER PATTERN: Format calculated values for display
     const h6Formatted =
-      window.TEUI?.formatNumber?.(
-        window.TEUI?.parseNumeric?.(h6Raw, 11.7),
-        "number-1dp",
-      ) ?? h6Raw;
+      window.TEUI?.formatNumber?.(h6Raw, "number-1dp") ?? h6Raw.toString();
     const h8Formatted =
-      window.TEUI?.formatNumber?.(
-        window.TEUI?.parseNumeric?.(h8Raw, 4.7),
-        "number-1dp",
-      ) ?? h8Raw;
+      window.TEUI?.formatNumber?.(h8Raw, "number-1dp") ?? h8Raw.toString();
     const h10Formatted =
-      window.TEUI?.formatNumber?.(
-        window.TEUI?.parseNumeric?.(h10Raw, 93.0),
-        "number-1dp",
-      ) ?? h10Raw;
+      window.TEUI?.formatNumber?.(h10Raw, "number-1dp") ?? h10Raw.toString();
 
     updateDisplayValue("h_6", h6Formatted);
     updateDisplayValue("h_8", h8Formatted);
@@ -932,24 +892,15 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // Update Actual Column (K) values - conditional on Utility Bills mode
     if (isUtilityMode) {
-      const k6Raw =
-        window.TEUI.StateManager?.getApplicationValue("k_6") || "11.7";
-      const k8Raw =
-        window.TEUI.StateManager?.getApplicationValue("k_8") || "4.8";
-      const k10Raw =
-        window.TEUI.StateManager?.getApplicationValue("k_10") || "93.1";
+      const k6Raw = getGlobalNumericValue("k_6") || 11.7;
+      const k8Raw = getGlobalNumericValue("k_8") || 4.8;
+      const k10Raw = getGlobalNumericValue("k_10") || 93.1;
 
-      // CRITICAL FIX: Format values before passing to updateDisplayValue to prevent decimal burp
+      // ✅ CONSUMER PATTERN: Format Actual values for display
       const k6Formatted =
-        window.TEUI?.formatNumber?.(
-          window.TEUI?.parseNumeric?.(k6Raw, 11.7),
-          "number-1dp",
-        ) ?? k6Raw;
+        window.TEUI?.formatNumber?.(k6Raw, "number-1dp") ?? k6Raw.toString();
       const k8Formatted =
-        window.TEUI?.formatNumber?.(
-          window.TEUI?.parseNumeric?.(k8Raw, 4.8),
-          "number-1dp",
-        ) ?? k8Raw;
+        window.TEUI?.formatNumber?.(k8Raw, "number-1dp") ?? k8Raw.toString();
 
       updateDisplayValue("k_6", k6Formatted);
       updateDisplayValue("k_8", k8Formatted);
@@ -961,10 +912,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         actualTEUIDisplay = "0.0";
       } else {
         actualTEUIDisplay =
-          window.TEUI?.formatNumber?.(
-            window.TEUI?.parseNumeric?.(k10Raw, 93.1),
-            "number-1dp",
-          ) ?? k10Raw;
+          window.TEUI?.formatNumber?.(k10Raw, "number-1dp") ?? k10Raw.toString();
       }
       updateDisplayValue("k_10", actualTEUIDisplay);
     } else {
@@ -1007,7 +955,7 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   function getGaugeValues(gaugeId) {
     const useType =
-      window.TEUI.StateManager?.getApplicationValue("d_14") || "Targeted Use";
+      window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
     let actualFieldApp, targetFieldApp, refFieldPrefixed;
     let defaultActual, defaultTarget, defaultRef;
@@ -1085,7 +1033,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (!window.TEUI || !window.TEUI.StateManager) return;
 
     const useType =
-      window.TEUI.StateManager.getApplicationValue("d_14") || "Targeted Use";
+      window.TEUI.StateManager.getValue("d_14") || "Targeted Use";
     const modeTextContent = useType === "Utility Bills" ? "Actual" : "Targeted";
 
     const indicators = [
