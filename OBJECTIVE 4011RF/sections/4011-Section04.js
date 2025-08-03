@@ -1023,12 +1023,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_27 =
       ModeManager.getValue("d_27") || getGlobalNumericValue("d_27") || 0;
     const result = d_27; // Electricity already in kWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("f_27", result);
-    } else {
-      setCalculatedValue("f_27", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("f_27", result);
     return result;
   }
 
@@ -1036,12 +1032,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_28 =
       ModeManager.getValue("d_28") || getGlobalNumericValue("d_28") || 0;
     const result = d_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("f_28", result);
-    } else {
-      setCalculatedValue("f_28", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("f_28", result);
+    setCalculatedValue("f_28", result);
     return result;
   }
 
@@ -1049,12 +1042,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_29 =
       ModeManager.getValue("d_29") || getGlobalNumericValue("d_29") || 0;
     const result = d_29 * 14.019; // Propane kg to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("f_29", result);
-    } else {
-      setCalculatedValue("f_29", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("f_29", result);
+    setCalculatedValue("f_29", result);
     return result;
   }
 
@@ -1062,12 +1052,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_30 =
       ModeManager.getValue("d_30") || getGlobalNumericValue("d_30") || 0;
     const result = d_30 * 36.72 * 0.2777778; // Oil L to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("f_30", result);
-    } else {
-      setCalculatedValue("f_30", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("f_30", result);
+    setCalculatedValue("f_30", result);
     return result;
   }
 
@@ -1075,12 +1062,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_31 =
       ModeManager.getValue("d_31") || getGlobalNumericValue("d_31") || 0;
     const result = d_31 * 1000; // Wood m³ to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("f_31", result);
-    } else {
-      setCalculatedValue("f_31", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("f_31", result);
+    setCalculatedValue("f_31", result);
     return result;
   }
 
@@ -1089,12 +1073,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const f_27 = ModeManager.getValue("f_27") || 0;
     const l_27 = getElectricityEmissionFactor();
     const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("g_27", result);
-    } else {
-      setCalculatedValue("g_27", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("g_27", result);
+    setCalculatedValue("g_27", result);
     return result;
   }
 
@@ -1102,12 +1083,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_28 =
       ModeManager.getValue("d_28") || getGlobalNumericValue("d_28") || 0;
     const result = (d_28 * 1921) / 1000; // Gas emissions
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("g_28", result);
-    } else {
-      setCalculatedValue("g_28", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("g_28", result);
+    setCalculatedValue("g_28", result);
     return result;
   }
 
@@ -1115,12 +1093,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_29 =
       ModeManager.getValue("d_29") || getGlobalNumericValue("d_29") || 0;
     const result = (d_29 * 2970) / 1000; // Propane emissions
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("g_29", result);
-    } else {
-      setCalculatedValue("g_29", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("g_29", result);
+    setCalculatedValue("g_29", result);
     return result;
   }
 
@@ -1128,12 +1103,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_30 =
       ModeManager.getValue("d_30") || getGlobalNumericValue("d_30") || 0;
     const result = (d_30 * 2753) / 1000; // Oil emissions
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("g_30", result);
-    } else {
-      setCalculatedValue("g_30", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("g_30", result);
+    setCalculatedValue("g_30", result);
     return result;
   }
 
@@ -1141,12 +1113,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_31 =
       ModeManager.getValue("d_31") || getGlobalNumericValue("d_31") || 0;
     const result = d_31 * 150; // Wood emissions (already in kgCO2e/m³)
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("g_31", result);
-    } else {
-      setCalculatedValue("g_31", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("g_31", result);
+    setCalculatedValue("g_31", result);
     return result;
   }
 
@@ -1162,12 +1131,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     } else {
       result = getGlobalNumericValue("d_136") || 0;
     }
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("h_27", result);
-    } else {
-      setCalculatedValue("h_27", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("h_27", result);
+    setCalculatedValue("h_27", result);
     return result;
   }
 
@@ -1225,12 +1191,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       Space gas volume (h_115): ${spaceGasVolume}
       Final H28 result: ${result}`);
 
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("h_28", result);
-    } else {
-      setCalculatedValue("h_28", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("h_28", result);
+    setCalculatedValue("h_28", result);
     return result;
   }
 
@@ -1238,12 +1201,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     // Target propane mirrors actual (user-controlled)
     const result =
       ModeManager.getValue("d_29") || getGlobalNumericValue("d_29") || 0;
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("h_29", result);
-    } else {
-      setCalculatedValue("h_29", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("h_29", result);
+    setCalculatedValue("h_29", result);
     return result;
   }
 
@@ -1301,12 +1261,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       Space oil volume (f_115): ${spaceOilVolume}
       Final H30 result: ${result}`);
 
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("h_30", result);
-    } else {
-      setCalculatedValue("h_30", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("h_30", result);
+    setCalculatedValue("h_30", result);
     return result;
   }
 
@@ -1315,12 +1272,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const result =
       ModeManager.getValue("d_31") || getGlobalNumericValue("d_31") || 0;
 
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("h_31", result);
-    } else {
-      setCalculatedValue("h_31", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("h_31", result);
+    setCalculatedValue("h_31", result);
     return result;
   }
 
@@ -1328,60 +1282,45 @@ window.TEUI.SectionModules.sect04 = (function () {
   function calculateJ27() {
     const h_27 = ModeManager.getValue("h_27") || 0;
     const result = h_27; // Electricity already in kWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("j_27", result);
-    } else {
-      setCalculatedValue("j_27", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("j_27", result);
+    setCalculatedValue("j_27", result);
     return result;
   }
 
   function calculateJ28() {
     const h_28 = ModeManager.getValue("h_28") || 0;
     const result = h_28 * 0.0373 * 277.7778; // Gas m³ to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("j_28", result);
-    } else {
-      setCalculatedValue("j_28", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("j_28", result);
+    setCalculatedValue("j_28", result);
     return result;
   }
 
   function calculateJ29() {
     const h_29 = ModeManager.getValue("h_29") || 0;
     const result = h_29 * 14.019; // Propane kg to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("j_29", result);
-    } else {
-      setCalculatedValue("j_29", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("j_29", result);
+    setCalculatedValue("j_29", result);
     return result;
   }
 
   function calculateJ30() {
     const h_30 = ModeManager.getValue("h_30") || 0;
     const result = h_30 * 36.72 * 0.2777778; // Oil L to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("j_30", result);
-    } else {
-      setCalculatedValue("j_30", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("j_30", result);
+    setCalculatedValue("j_30", result);
     return result;
   }
 
   function calculateJ31() {
     const h_31 = ModeManager.getValue("h_31") || 0;
     const result = h_31 * 1000; // Wood m³ to ekWh
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("j_31", result);
-    } else {
-      setCalculatedValue("j_31", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("j_31", result);
+    setCalculatedValue("j_31", result);
     return result;
   }
 
@@ -1390,48 +1329,36 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_27 = ModeManager.getValue("j_27") || 0;
     const l_27 = getElectricityEmissionFactor();
     const result = (j_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("k_27", result);
-    } else {
-      setCalculatedValue("k_27", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("k_27", result);
+    setCalculatedValue("k_27", result);
     return result;
   }
 
   function calculateK28() {
     const h_28 = ModeManager.getValue("h_28") || 0;
     const result = (h_28 * 1921) / 1000; // Gas target emissions
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("k_28", result);
-    } else {
-      setCalculatedValue("k_28", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("k_28", result);
+    setCalculatedValue("k_28", result);
     return result;
   }
 
   function calculateK29() {
     const h_29 = ModeManager.getValue("h_29") || 0;
     const result = (h_29 * 2970) / 1000; // Propane target emissions
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("k_29", result);
-    } else {
-      setCalculatedValue("k_29", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("k_29", result);
+    setCalculatedValue("k_29", result);
     return result;
   }
 
   function calculateK30() {
     const h_30 = ModeManager.getValue("h_30") || 0;
     const result = (h_30 * 2753) / 1000; // Oil target emissions
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("k_30", result);
-    } else {
-      setCalculatedValue("k_30", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("k_30", result);
+    setCalculatedValue("k_30", result);
     return result;
   }
 
@@ -1439,12 +1366,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     const h_31 = ModeManager.getValue("h_31") || 0;
     const result = h_31 * 150; // Wood target emissions
 
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("k_31", result);
-    } else {
-      setCalculatedValue("k_31", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("k_31", result);
 
     return result;
   }
@@ -1452,12 +1375,8 @@ window.TEUI.SectionModules.sect04 = (function () {
   // L-column calculation (emission factor)
   function calculateL27() {
     const result = getElectricityEmissionFactor();
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("l_27", result, "integer");
-    } else {
-      setCalculatedValue("l_27", result, "integer");
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("l_27", result, "integer");
     return result;
   }
 
@@ -1469,12 +1388,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const f_30 = ModeManager.getValue("f_30") || 0;
     const f_31 = ModeManager.getValue("f_31") || 0;
     const result = f_27 + f_28 + f_29 + f_30 + f_31;
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("f_32", result);
-    } else {
-      setCalculatedValue("f_32", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("f_32", result);
+    setCalculatedValue("f_32", result);
     return result;
   }
 
@@ -1489,12 +1405,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     // =SUM(G27:G31)-(D60*1000) - Excel formula for wood emissions offset
     const result = g_27 + g_28 + g_29 + g_30 + g_31 - d_60 * 1000;
 
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("g_32", result);
-    } else {
-      setCalculatedValue("g_32", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("g_32", result);
     return result;
   }
 
@@ -1505,12 +1417,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_30 = ModeManager.getValue("j_30") || 0;
     const j_31 = ModeManager.getValue("j_31") || 0;
     const result = j_27 + j_28 + j_29 + j_30 + j_31;
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("j_32", result);
-    } else {
-      setCalculatedValue("j_32", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("j_32", result);
     return result;
   }
 
@@ -1523,12 +1431,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_60 = getGlobalNumericValue("d_60") || 0; // ✅ Forestry offset from S08
     // =SUM(K27:K31)-(D60*1000) - Excel formula for wood emissions offset
     const result = k_27 + k_28 + k_29 + k_30 + k_31 - d_60 * 1000;
-    // ✅ FIX: Mode-aware storage for Reference mode calculations
-    if (ModeManager.currentMode === "reference") {
-      setReferenceCalculatedValue("k_32", result);
-    } else {
-      setCalculatedValue("k_32", result);
-    }
+    // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    setCalculatedValue("k_32", result);
     return result;
   }
 

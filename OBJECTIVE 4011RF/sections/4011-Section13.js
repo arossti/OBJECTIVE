@@ -2305,8 +2305,8 @@ window.TEUI.SectionModules.sect13 = (function () {
           : getFieldValue("f_113"),
       ) || 0;
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)
-      : getFieldValue("d_113");
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state
     let copheat = 1;
     if (systemType === "Heatpump" && hspf > 0) {
       copheat = hspf / 3.412;
@@ -2341,10 +2341,10 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateHeatingFuelImpact(isReferenceCalculation = false) {
     // console.log("[S13 DEBUG] Entering calculateHeatingFuelImpact"); // LOG ENTRY
 
-    // FIXED: Read values based on calculation context
+    // ✅ PATTERN A: Read values from proper state objects
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)
-      : getFieldValue("d_113");
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state (defaults)
     const tedTarget = isReferenceCalculation
       ? window.TEUI.parseNumeric(
           window.TEUI.StateManager?.getValue("ref_d_127"),
@@ -2388,7 +2388,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       setCalculatedValue("m_115", m115_percent, "percent-0dp");
 
       // Calculate space heating emissions
-      calculateSpaceHeatingEmissions();
+      calculateSpaceHeatingEmissions(isReferenceCalculation);
     }
 
     // Return calculated values for Reference engine storage
@@ -2411,8 +2411,11 @@ window.TEUI.SectionModules.sect13 = (function () {
    * - H115 is the Gas volume (m³)
    * - L28 is the emissions factor for gas (kgCO2e/m³)
    */
-  function calculateSpaceHeatingEmissions() {
-    const systemType = getFieldValue("d_113");
+  function calculateSpaceHeatingEmissions(isReferenceCalculation = false) {
+    // ✅ PATTERN A: Read values from proper state objects
+    const systemType = isReferenceCalculation
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state
     const oilVolume = window.TEUI.parseNumeric(getFieldValue("f_115")) || 0;
     const gasVolume = window.TEUI.parseNumeric(getFieldValue("h_115")) || 0;
 
@@ -2445,8 +2448,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       ? getSectionValue("d_116", true)
       : getFieldValue("d_116");
     const heatingSystemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)
-      : getFieldValue("d_113");
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state
     const coolingDemand_m129 =
       window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
@@ -3130,10 +3133,10 @@ window.TEUI.SectionModules.sect13 = (function () {
    * SIMPLIFIED: Dedicated Target function with DOM updates
    */
   function calculateTargetModelHeatingSystem() {
-    // Read Target values directly
-    const systemType = getFieldValue("d_113");
+    // ✅ PATTERN A: Read Target values from TargetState
+    const systemType = TargetState.getValue("d_113");
     const tedTarget = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
-    const hspf = window.TEUI.parseNumeric(getFieldValue("f_113")) || 3.5;
+    const hspf = window.TEUI.parseNumeric(TargetState.getValue("f_113")) || 3.5;
 
     console.log(
       `[Section13] 🔥 TGT HEATING: systemType="${systemType}", tedTarget=${tedTarget}, hspf=${hspf}`,
@@ -3225,8 +3228,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     const m115_percent = afue > 0 ? 1 / afue : 0;
     setCalculatedValue("m_115", m115_percent, "percent-0dp");
 
-    // Calculate space heating emissions
-    calculateSpaceHeatingEmissions();
+    // Calculate space heating emissions  
+    calculateSpaceHeatingEmissions(false); // Target calculation
   }
 
   /**

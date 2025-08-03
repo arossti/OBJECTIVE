@@ -490,6 +490,7 @@ TEUI.ComponentBridge = (function () {
     const dualStateSections = [
       window.TEUI?.SectionModules?.sect03?.ModeManager,
       window.TEUI?.SectionModules?.sect10?.ModeManager,
+      window.TEUI?.SectionModules?.sect13?.ModeManager,  // ✅ CRITICAL: Include S13!
       // Add other dual-state sections as they're implemented
     ].filter(Boolean);
 

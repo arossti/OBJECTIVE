@@ -2453,4 +2453,41 @@ A review of `4011-Section02.js` revealed **critical architectural flaws** when c
 4. **S01 Consumer Refactor**: Execute dedicated workplan for dashboard section
 5. **Cross-Section Integration Testing**: Verify all sections work together correctly
 
+## 🚨 CRITICAL DISCOVERY: "Current State" Anti-Pattern Must Be Eliminated
+
+**Date Added:** 2024-12-28  
+**Context:** State mixing debug session revealed fundamental architectural flaw
+
+### The Problem
+
+During debugging of Target h_10 contamination during Reference mode operations, we discovered that **the concept of "current state" is architecturally broken** in a pure dual-state system.
+
+### Root Cause
+
+Functions like `getFieldValue(fieldId)` read from an ambiguous "current" state that changes based on UI mode, rather than from explicit state objects. This creates **implicit state contamination** where:
+
+- **Target calculations** incorrectly read current UI values instead of Target defaults
+- **Reference calculations** may read stale or incorrect state data  
+- **State isolation is impossible** when calculations depend on current UI context
+
+### The Fix
+
+**Replace all "current state" reads with explicit state object access:**
+
+```javascript
+// ❌ BROKEN: Ambiguous current state
+const systemType = getFieldValue("d_113"); // Could be Target or Reference!
+
+// ✅ CORRECT: Always know which state you're reading  
+const systemType = isReferenceCalculation
+  ? ReferenceState.getValue("d_113")  // Explicit Reference state
+  : TargetState.getValue("d_113");    // Explicit Target state
+```
+
+### Implementation Priority
+
+**This must be addressed together with Pattern 2 revisions** in the next major refactoring pass. Every section with `getFieldValue()` anti-patterns needs systematic cleanup to achieve true state isolation.
+
+**Affected Sections:** All sections still using `getFieldValue()` for calculations (notably S13 has 50+ instances)
+
 ---
