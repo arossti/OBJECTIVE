@@ -844,15 +844,15 @@ TEUI.StateManager = (function () {
   /**
    * Update TEUI calculations when source values change
    * @param {string} _sourceField - The source field that changed
-   *
+   * 
    * ⚠️  DISABLED: This function bypasses the dual-engine architecture.
    * S01 is designed as a PURE DISPLAY CONSUMER that reads upstream values.
    * Direct StateManager calculation overwrites h_10/k_10 without mode awareness.
    */
   function updateTEUICalculations(_sourceField) {
-    // ❌ DISABLED: Bypasses dual-engine architecture
+    // ❌ DISABLED: Bypasses dual-engine architecture  
     return;
-
+    
     // LEGACY CODE BELOW (disabled)
     try {
       // Get raw values from state manager

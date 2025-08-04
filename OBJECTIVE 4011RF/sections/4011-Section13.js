@@ -1918,8 +1918,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
       // Listener for d_113 (Heating System) changes
-      sm.addListener("d_113", () => {
-        console.log("[Section13] 📡 d_113 listener triggered");
+      sm.addListener("d_113", (newValue, oldValue) => {
+        console.log(`[S13] d_113 → ${newValue}`);
+        
+        // ✅ NOTE: Target calculations now read d_113 directly from StateManager
+        // No TargetState sync needed since getFieldValue("d_113") reads from StateManager
+        
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
         if (
@@ -2338,7 +2342,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   /**
    * Calculate heating fuel impact for gas and oil systems
    */
-  function calculateHeatingFuelImpact(isReferenceCalculation = false) {
+  // ❌ REMOVED: Legacy function causing state contamination
+  function calculateHeatingFuelImpact_DISABLED(isReferenceCalculation = false) {
     // console.log("[S13 DEBUG] Entering calculateHeatingFuelImpact"); // LOG ENTRY
 
     // ✅ PATTERN A: Read values from proper state objects
@@ -2983,7 +2988,7 @@ window.TEUI.SectionModules.sect13 = (function () {
             fieldId,
           )
         ) {
-          console.log(`[S13 DEBUG] Storing ref_${fieldId} = ${value}`);
+          // Store reference value (debug logging removed)
         }
       }
     });
@@ -3047,9 +3052,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       document.getElementById("d_127")?.value,
     );
 
-    console.log(
-      `[S13 DEBUG] Reading ref_d_127: direct="${directRead}", fallback="${fallbackRead}", dom="${domRead}", final="${tedReference}"`,
-    );
+    // Reading reference TED value (debug logging removed)
     console.log(
       `[Section13] 🔥 REF HEATING: systemType="${systemType}", tedReference=${tedReference}, hspf=${hspf}`,
     );
@@ -3133,14 +3136,13 @@ window.TEUI.SectionModules.sect13 = (function () {
    * SIMPLIFIED: Dedicated Target function with DOM updates
    */
   function calculateTargetModelHeatingSystem() {
-    // ✅ PATTERN A: Read Target values from TargetState
-    const systemType = TargetState.getValue("d_113");
+    // 🔧 CRITICAL FIX: Read fuel type from global StateManager (user changes update this immediately)
+    // Other values from TargetState, but d_113 must read from StateManager for immediate fuel switch response
+    const systemType = getFieldValue("d_113");
     const tedTarget = window.TEUI.parseNumeric(getFieldValue("d_127")) || 0;
     const hspf = window.TEUI.parseNumeric(TargetState.getValue("f_113")) || 3.5;
 
-    console.log(
-      `[Section13] 🔥 TGT HEATING: systemType="${systemType}", tedTarget=${tedTarget}, hspf=${hspf}`,
-    );
+    console.log(`[S13] TGT HEATING: ${systemType}, HSPF=${hspf}`);
 
     let heatingDemand_d114 = 0;
     let heatingSink_l113 = 0;
@@ -3203,6 +3205,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     heatingDemand_d114,
   ) {
     const afue = window.TEUI.parseNumeric(getFieldValue("j_115")) || 1;
+    
+    console.log(`[S13] TGT FUEL: ${systemType} system`);
 
     let fuelImpact = 0,
       oilLitres = 0,
@@ -3225,6 +3229,9 @@ window.TEUI.SectionModules.sect13 = (function () {
     setCalculatedValue("f_115", oilLitres, "number-2dp-comma");
     setCalculatedValue("h_115", gasM3, "number-2dp-comma");
     setCalculatedValue("l_115", exhaust, "number-2dp-comma");
+    
+    // ✅ S13→S04→S01 dependency flow: Values stored via setCalculatedValue trigger StateManager listeners  
+    console.log(`[S13] FUEL STORED: ${systemType} → Gas=${gasM3}m³, Oil=${oilLitres}L`);
     const m115_percent = afue > 0 ? 1 / afue : 0;
     setCalculatedValue("m_115", m115_percent, "percent-0dp");
 

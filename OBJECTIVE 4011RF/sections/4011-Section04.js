@@ -314,6 +314,10 @@ window.TEUI.SectionModules.sect04 = (function () {
       console.log("S04: Initializing Pattern A ModeManager");
       TargetState.initialize();
       ReferenceState.initialize();
+      
+      // Initialize backup tracking for h_115 and d_113 changes
+      this.lastH115Value = window.TEUI?.StateManager?.getValue("h_115");
+      this.lastD113Value = window.TEUI?.StateManager?.getValue("d_113");
 
       // ✅ CRITICAL: Sync defaults to StateManager for downstream sections
       if (window.TEUI?.StateManager) {
@@ -428,6 +432,23 @@ window.TEUI.SectionModules.sect04 = (function () {
       console.log(
         `[S04] 🔄 Updating calculated display values for ${this.currentMode} mode`,
       );
+      
+      // 🔧 BACKUP MECHANISM: Manual change detection (in case StateManager listeners fail)
+      const currentH115 = window.TEUI?.StateManager?.getValue("h_115");
+      const currentD113 = window.TEUI?.StateManager?.getValue("d_113");
+      
+      if (this.lastH115Value !== null && currentH115 !== this.lastH115Value) {
+        console.log(`[S04] 🚨 BACKUP: h_115 changed (listener missed)`);
+        calculateRow28(); calculateJ32(); // Force recalculation
+      }
+      
+      if (this.lastD113Value !== null && currentD113 !== this.lastD113Value) {
+        console.log(`[S04] 🚨 BACKUP: d_113 changed (listener missed)`);
+        calculateRow28(); calculateF32(); calculateG32(); calculateJ32(); calculateK32();
+      }
+      
+      this.lastH115Value = currentH115;
+      this.lastD113Value = currentD113;
 
       // All calculated fields that S04 produces (BACKUP approach)
       const calculatedFields = [
@@ -730,22 +751,23 @@ window.TEUI.SectionModules.sect04 = (function () {
     // ✅ MODE-AWARE: Get province from S03 (d_19) based on current mode
     let provinceRaw;
     let year;
-    
+
     if (isReferenceCalculation) {
       // Reference mode: read ref_ prefixed values
-      provinceRaw = 
-        getGlobalNumericValue("ref_d_19") || 
-        getGlobalNumericValue("d_19") || 
+      provinceRaw =
+        getGlobalNumericValue("ref_d_19") ||
+        getGlobalNumericValue("d_19") ||
         "ON";
-      year = getGlobalNumericValue("ref_h_12") || getGlobalNumericValue("h_12") || 2022;
+      year =
+        getGlobalNumericValue("ref_h_12") ||
+        getGlobalNumericValue("h_12") ||
+        2022;
     } else {
       // Target mode: read unprefixed values
-      provinceRaw = 
-        getGlobalNumericValue("d_19") || 
-        "ON";
+      provinceRaw = getGlobalNumericValue("d_19") || "ON";
       year = getGlobalNumericValue("h_12") || 2022;
     }
-    
+
     const province = getProvinceCode(provinceRaw);
     return getElectricityFactor(province, year);
   }
@@ -793,7 +815,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const actualElectricity = ModeManager.getValue("d_27") || 0;
 
     // G27: Emissions from actual (D27 * L27 / 1000)
-    const emissionFactor = getElectricityEmissionFactor(ModeManager.currentMode === "reference");
+    const emissionFactor = getElectricityEmissionFactor(
+      ModeManager.currentMode === "reference",
+    );
     const actualEmissions = (actualElectricity * emissionFactor) / 1000;
 
     // K27: Emissions from target (H27 * L27 / 1000)
@@ -1091,7 +1115,9 @@ window.TEUI.SectionModules.sect04 = (function () {
   // G-column calculations (actual emissions)
   function calculateG27() {
     const f_27 = ModeManager.getValue("f_27") || 0;
-    const l_27 = getElectricityEmissionFactor(ModeManager.currentMode === "reference");
+    const l_27 = getElectricityEmissionFactor(
+      ModeManager.currentMode === "reference",
+    );
     const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("g_27", result);
@@ -1204,15 +1230,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       result = 0;
     }
 
-    console.log(`[S04] calculateH28 DEBUG:
-      Space heating fuel (d_113): '${spaceHeatingFuel}'
-      Water heating fuel (d_51): '${waterHeatingFuel}'
-      Water gas volume (e_51): ${waterGasVolume}
-      Space gas volume (h_115): ${spaceGasVolume}
-      Final H28 result: ${result}`);
+    // Calculate gas energy for space and water heating
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
-    setCalculatedValue("h_28", result);
     setCalculatedValue("h_28", result);
     return result;
   }
@@ -1355,7 +1375,9 @@ window.TEUI.SectionModules.sect04 = (function () {
   // K-column calculations (target emissions)
   function calculateK27() {
     const j_27 = ModeManager.getValue("j_27") || 0;
-    const l_27 = getGlobalNumericValue("l_27") || getElectricityEmissionFactor(ModeManager.currentMode === "reference"); // Dynamic electricity emission factor
+    const l_27 =
+      getGlobalNumericValue("l_27") ||
+      getElectricityEmissionFactor(ModeManager.currentMode === "reference"); // Dynamic electricity emission factor
     const result = (j_27 * l_27) / 1000; // Excel: =J27*L27/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("k_27", result);
@@ -1404,7 +1426,9 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   // L-column calculation (emission factor)
   function calculateL27() {
-    const result = getElectricityEmissionFactor(ModeManager.currentMode === "reference");
+    const result = getElectricityEmissionFactor(
+      ModeManager.currentMode === "reference",
+    );
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("l_27", result, "integer");
     return result;
@@ -1447,6 +1471,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const j_30 = ModeManager.getValue("j_30") || 0;
     const j_31 = ModeManager.getValue("j_31") || 0;
     const result = j_27 + j_28 + j_29 + j_30 + j_31;
+    
+    // Calculate TARGET energy total (j_32)
+    
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("j_32", result);
     return result;
@@ -1527,7 +1554,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     ModeManager.currentMode = "reference";
 
     // CRITICAL: Override calculation storage to use Reference prefixes
-    // eslint-disable-next-line no-func-assign
+
     const originalSetCalculatedValue = setCalculatedValue;
     // eslint-disable-next-line no-func-assign
     setCalculatedValue = function (fieldId, rawValue, formatType) {
@@ -2377,14 +2404,18 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to Reference mode province changes from S03 (affects emission factors)
       window.TEUI.StateManager.addListener("ref_d_19", () => {
-        console.log(`[S04] Province changed (Reference), updating emission factors: ref_d_19`);
+        console.log(
+          `[S04] Province changed (Reference), updating emission factors: ref_d_19`,
+        );
         calculateReferenceModel(); // Reference emission factors depend on Reference province
         ModeManager.updateCalculatedDisplayValues();
       });
 
       // ✅ CRITICAL: React to Reference mode reporting year changes from S02 (affects emission factors)
       window.TEUI.StateManager.addListener("ref_h_12", () => {
-        console.log(`[S04] Reporting year changed (Reference), updating emission factors: ref_h_12`);
+        console.log(
+          `[S04] Reporting year changed (Reference), updating emission factors: ref_h_12`,
+        );
         calculateReferenceModel(); // Reference emission factors depend on Reference year
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2428,12 +2459,12 @@ window.TEUI.SectionModules.sect04 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       });
 
-      window.TEUI.StateManager.addListener("d_113", () => {
-        console.log(`[S04] S13 space heating fuel type changed: d_113`);
+      window.TEUI.StateManager.addListener("d_113", (newValue, oldValue) => {
+        console.log(`[S04] d_113 → ${newValue}`);
         calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
+        calculateJ32(); // Recalculate TARGET subtotal  
         calculateK32(); // Recalculate TARGET emissions subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2449,7 +2480,8 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       window.TEUI.StateManager.addListener("h_115", () => {
-        console.log(`[S04] S13 space gas volume changed: h_115`);
+        const newValue = window.TEUI.StateManager.getValue("h_115");
+      console.log(`[S04] 🔥 S13 space gas volume LISTENER triggered: h_115 = ${newValue}`);
         calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
@@ -2470,7 +2502,8 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       window.TEUI.StateManager.addListener("f_115", () => {
-        console.log(`[S04] S13 space oil volume changed: f_115`);
+        const newValue = window.TEUI.StateManager.getValue("f_115");
+      console.log(`[S04] 🛢️ S13 space oil volume LISTENER triggered: f_115 = ${newValue}`);
         calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
         calculateF32(); // Recalculate ACTUAL subtotal
         calculateG32(); // Recalculate ACTUAL emissions subtotal
@@ -2514,7 +2547,9 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to S07/S13 Reference mode gas-related changes
       window.TEUI.StateManager.addListener("ref_d_51", () => {
-        console.log(`[S04] S07 water heating fuel type changed (Reference): ref_d_51`);
+        console.log(
+          `[S04] S07 water heating fuel type changed (Reference): ref_d_51`,
+        );
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2533,13 +2568,17 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       window.TEUI.StateManager.addListener("ref_f_115", () => {
-        console.log(`[S04] S13 space oil volume changed (Reference): ref_f_115`);
+        console.log(
+          `[S04] S13 space oil volume changed (Reference): ref_f_115`,
+        );
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });
 
       window.TEUI.StateManager.addListener("ref_h_115", () => {
-        console.log(`[S04] S13 space gas volume changed (Reference): ref_h_115`);
+        console.log(
+          `[S04] S13 space gas volume changed (Reference): ref_h_115`,
+        );
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2597,6 +2636,38 @@ window.TEUI.SectionModules.sect04 = (function () {
       ModeManager.switchMode(mode);
     },
 
+    /**
+     * Register cross-section dependencies for S13→S04→S01 flow
+     * Following README pattern for proper dependency-based calculations
+     */
+    registerCalculations: function () {
+      if (!window.TEUI || !window.TEUI.StateManager) {
+        return;
+      }
+
+      try {
+        // ✅ S13→S04 Dependencies: S13 fuel calculations affect S04 energy totals
+        window.TEUI.StateManager.registerDependency("h_115", "j_28"); // Gas volume affects Target gas energy  
+        window.TEUI.StateManager.registerDependency("f_115", "j_30"); // Oil volume affects Target oil energy
+        window.TEUI.StateManager.registerDependency("h_115", "j_32"); // Gas volume affects Target total energy
+        window.TEUI.StateManager.registerDependency("f_115", "j_32"); // Oil volume affects Target total energy
+        
+        // Reference state dependencies  
+        window.TEUI.StateManager.registerDependency("ref_h_115", "ref_j_28");
+        window.TEUI.StateManager.registerDependency("ref_f_115", "ref_j_30");
+        window.TEUI.StateManager.registerDependency("ref_h_115", "ref_j_32");
+        window.TEUI.StateManager.registerDependency("ref_f_115", "ref_j_32");
+
+        console.log("[S04] ✅ S13→S04→S01 dependencies registered");
+        
+        // Diagnostic: Check StateManager initialization
+        const currentD113 = window.TEUI?.StateManager?.getValue("d_113");
+        console.log(`[S04] INIT: d_113="${currentD113}"`);
+      } catch (error) {
+        console.warn("[S04] Error registering dependencies:", error);
+      }
+    },
+
     // Event setup - Pattern A initialization
     onSectionRendered: function () {
       console.log("[S04] Pattern A S04 section rendered");
@@ -2609,6 +2680,9 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // Setup event handlers for user inputs
       setupEventHandlers();
+
+      // Register cross-section dependencies
+      this.registerCalculations();
 
       // Run initial calculations
       calculateAll();
