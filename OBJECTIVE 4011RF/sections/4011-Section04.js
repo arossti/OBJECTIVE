@@ -1023,12 +1023,12 @@ window.TEUI.SectionModules.sect04 = (function () {
     const d_27 =
       ModeManager.getValue("d_27") || getGlobalNumericValue("d_27") || 0;
     
-    // ✅ EXCEL FORMULA PRESERVED: F27 = D27 - D43 - I43 (Net electricity after renewables)
-    // ✅ MODE-AWARE: Read Reference values when available (S06 renewable subtotals)
-    const d_43 = getGlobalNumericValue("ref_d_43") || getGlobalNumericValue("d_43") || 0; // S06 onsite renewable subtotal
-    const i_43 = getGlobalNumericValue("ref_i_43") || getGlobalNumericValue("i_43") || 0; // S06 offsite renewable subtotal
+    // ✅ EXCEL FORMULA PRESERVED: F27 = D27 - D43 - I43 (ACTUAL electricity minus renewables)
+    // ✅ ACTUAL ONLY: No mode-awareness needed - just use actual renewable totals
+    const d_43 = getGlobalNumericValue("d_43") || 0; // S06 actual onsite renewable subtotal
+    const i_43 = getGlobalNumericValue("i_43") || 0; // S06 actual offsite renewable subtotal
     
-    const result = d_27 - d_43 - i_43; // NET electricity consumption after renewable offsets
+    const result = d_27 - d_43 - i_43; // NET actual electricity consumption after renewable offsets
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("f_27", result);
     return result;
@@ -2434,12 +2434,14 @@ window.TEUI.SectionModules.sect04 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       });
 
-      // ✅ CRITICAL: React to S06 renewable energy changes (affects F27 & J27 net electricity)
+      // ✅ CRITICAL: React to S06 renewable energy changes (affects F27, J27, and subtotals)
       // Excel formulas: F27 = D27 - D43 - I43, J27 = H27 - D43 - I43
       window.TEUI.StateManager.addListener("d_43", () => {
         console.log(`[S04] S06 onsite renewable subtotal changed: d_43`);
         calculateF27(); // Recalculate ACTUAL net electricity after onsite renewables
         calculateJ27(); // Recalculate TARGET net electricity after onsite renewables
+        calculateF32(); // Recalculate ACTUAL subtotal (F27+F28+F29+F30+F31)
+        calculateJ32(); // Recalculate TARGET subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
 
@@ -2447,21 +2449,23 @@ window.TEUI.SectionModules.sect04 = (function () {
         console.log(`[S04] S06 offsite renewable subtotal changed: i_43`);
         calculateF27(); // Recalculate ACTUAL net electricity after offsite renewables
         calculateJ27(); // Recalculate TARGET net electricity after offsite renewables
+        calculateF32(); // Recalculate ACTUAL subtotal (F27+F28+F29+F30+F31)
+        calculateJ32(); // Recalculate TARGET subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
 
       // ✅ CRITICAL: React to S06 Reference mode renewable changes
       window.TEUI.StateManager.addListener("ref_d_43", () => {
         console.log(`[S04] S06 reference onsite renewable subtotal changed: ref_d_43`);
-        calculateF27(); // Recalculate ACTUAL net electricity after onsite renewables
         calculateJ27(); // Recalculate REFERENCE net electricity after onsite renewables
+        calculateJ32(); // Recalculate REFERENCE subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
 
       window.TEUI.StateManager.addListener("ref_i_43", () => {
         console.log(`[S04] S06 reference offsite renewable subtotal changed: ref_i_43`);
-        calculateF27(); // Recalculate ACTUAL net electricity after offsite renewables
         calculateJ27(); // Recalculate REFERENCE net electricity after offsite renewables
+        calculateJ32(); // Recalculate REFERENCE subtotal
         ModeManager.updateCalculatedDisplayValues();
       });
     }
