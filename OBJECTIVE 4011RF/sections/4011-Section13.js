@@ -2305,8 +2305,8 @@ window.TEUI.SectionModules.sect13 = (function () {
           : getFieldValue("f_113"),
       ) || 0;
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true) // Reference reads Reference state
-      : TargetState.getValue("d_113"); // Target reads Target state
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state
     let copheat = 1;
     if (systemType === "Heatpump" && hspf > 0) {
       copheat = hspf / 3.412;
@@ -2333,6 +2333,8 @@ window.TEUI.SectionModules.sect13 = (function () {
     };
   }
 
+
+
   /**
    * Calculate heating fuel impact for gas and oil systems
    */
@@ -2341,8 +2343,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // ✅ PATTERN A: Read values from proper state objects
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true) // Reference reads Reference state
-      : TargetState.getValue("d_113"); // Target reads Target state (defaults)
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state (defaults)
     const tedTarget = isReferenceCalculation
       ? window.TEUI.parseNumeric(
           window.TEUI.StateManager?.getValue("ref_d_127"),
@@ -2412,8 +2414,8 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateSpaceHeatingEmissions(isReferenceCalculation = false) {
     // ✅ PATTERN A: Read values from proper state objects
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true) // Reference reads Reference state
-      : TargetState.getValue("d_113"); // Target reads Target state
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state
     const oilVolume = window.TEUI.parseNumeric(getFieldValue("f_115")) || 0;
     const gasVolume = window.TEUI.parseNumeric(getFieldValue("h_115")) || 0;
 
@@ -2446,8 +2448,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       ? getSectionValue("d_116", true)
       : getFieldValue("d_116");
     const heatingSystemType = isReferenceCalculation
-      ? getSectionValue("d_113", true) // Reference reads Reference state
-      : TargetState.getValue("d_113"); // Target reads Target state
+      ? getSectionValue("d_113", true)        // Reference reads Reference state
+      : TargetState.getValue("d_113");        // Target reads Target state
     const coolingDemand_m129 =
       window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
@@ -2932,60 +2934,12 @@ window.TEUI.SectionModules.sect13 = (function () {
       calculateTargetModelCoolingSystem(); // Depends on m_129 which depends on h_124
       calculateTargetModelMitigatedCED(); // Recalculate m_129 based on updated h_124/d_123
 
-      // ✅ CRITICAL FIX: Store Target calculation results to StateManager for downstream sections (S04, S01)
-      storeTargetResults();
-
       // Update reference indicators after calculations
       updateAllReferenceIndicators();
     } catch (error) {
       console.error("[Section13] Error in Target Model calculations:", error);
     }
     console.log("[Section13] Target Model calculations complete");
-  }
-
-  /**
-   * ✅ CRITICAL FIX: Store Target Model calculation results to StateManager for downstream sections (S04, S01)
-   * This was missing, causing S04 to not receive S13 fuel quantities and resulting in artificially low TEUI
-   */
-  function storeTargetResults() {
-    if (!window.TEUI?.StateManager) return;
-
-    // Key calculated values that downstream sections (S04, S01) need from S13
-    const targetFieldsToStore = [
-      "d_113", // Space heating fuel type - affects S04 H28/H30 formulas
-      "d_114", // Heating demand (kWh/yr)
-      "d_115", // Fossil fuel impact (kWh/yr)
-      "f_114", // Space heating emissions (kgCO2e/yr)
-      "f_115", // Oil volume (litres/yr) - CRITICAL for S04 H30 calculation
-      "h_115", // Gas volume (m³/yr) - CRITICAL for S04 H28 calculation
-      "l_115", // Exhaust (kWh/yr)
-      "m_115", // AFUE efficiency
-      "h_124", // Free cooling (kWh/yr)
-      "d_123", // Cooling energy demand (kWh/yr)
-      "m_129", // Mitigated cooling energy demand (kWh/yr)
-    ];
-
-    targetFieldsToStore.forEach((fieldId) => {
-      const value = ModeManager.getValue(fieldId);
-      if (value !== null && value !== undefined) {
-        window.TEUI.StateManager.setValue(
-          fieldId,
-          value.toString(),
-          "calculated",
-        );
-
-        // Log critical fuel values for debugging
-        if (["h_115", "f_115", "d_113"].includes(fieldId)) {
-          console.log(
-            `[S13 CRITICAL FIX] Storing Target ${fieldId} = ${value} for S04 consumption`,
-          );
-        }
-      }
-    });
-
-    console.log(
-      "[Section13] ✅ CRITICAL FIX: Target results stored to StateManager for downstream sections",
-    );
   }
 
   /**
@@ -3274,7 +3228,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     const m115_percent = afue > 0 ? 1 / afue : 0;
     setCalculatedValue("m_115", m115_percent, "percent-0dp");
 
-    // Calculate space heating emissions
+    // Calculate space heating emissions  
     calculateSpaceHeatingEmissions(false); // Target calculation
   }
 
