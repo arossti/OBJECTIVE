@@ -439,7 +439,12 @@ window.TEUI.SectionModules.sect07 = (function () {
   function calculateWaterUse(isReferenceCalculation = false) {
     // ✅ PATTERN A: Explicit state access while preserving Excel formulas
     const method = getSectionValue("d_49", isReferenceCalculation) || "User Defined";
-    const occupants = getSectionNumericValue("d_63", 0, isReferenceCalculation);
+    
+    // ✅ PATTERN A: External dependency - read from StateManager with mode awareness
+    const occupants = isReferenceCalculation
+      ? (window.TEUI?.StateManager?.getValue("ref_d_63") || window.TEUI?.StateManager?.getValue("d_63") || 0)
+      : (window.TEUI?.StateManager?.getValue("d_63") || 0);
+    
     const userDefinedValue = getSectionNumericValue("e_49", 40, isReferenceCalculation);
     const engineerValue = getSectionNumericValue("e_50", 10000, isReferenceCalculation);
 
@@ -622,6 +627,19 @@ window.TEUI.SectionModules.sect07 = (function () {
       calculateHeatingSystem(false);
       calculateEmissionsAndLosses(false);
       calculateCompliance(false);
+      
+      // ✅ PATTERN A: Store Target results to StateManager for downstream sections
+      const targetFields = [
+        'h_49', 'h_50', 'i_49', 'i_50', 'j_50', 'j_51', 'j_52', 'j_53', 'j_54',
+        'k_49', 'k_51', 'k_52', 'k_54', 'e_51', 'e_52', 'e_53', 'd_54'
+      ];
+      
+      targetFields.forEach(fieldId => {
+        const value = TargetState.getValue(fieldId);
+        if (value !== null) {
+          window.TEUI?.StateManager?.setValue(fieldId, value.toString(), "calculated");
+        }
+      });
 
     } catch (error) {
       console.error("[S07] Error in Target Model calculations:", error);
@@ -905,7 +923,7 @@ window.TEUI.SectionModules.sect07 = (function () {
   // HEADER CONTROLS (Pattern A Mode Switching)
   //==========================================================================
   function injectHeaderControls() {
-    const sectionHeader = document.querySelector("#waterSection .section-header");
+    const sectionHeader = document.querySelector("#waterUse .section-header");
     if (!sectionHeader || sectionHeader.querySelector(".local-controls-container")) {
       return; // Already setup or header not found
     }
