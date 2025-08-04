@@ -8,11 +8,15 @@
 2. **RUN QA/QC CHECKLIST BELOW** - Every single check, no exceptions
 3. **DO NOT COPY S11 PATTERNS** - S11 has wrong patterns, use documented examples instead
 4. **DO NOT THROW OUT WORKING CALCULATIONS** - Add dual-state to existing working code
-5. **FOLLOW DOCUMENTED PATTERNS EXACTLY** - Don't reinvent, patterns are already perfected
+5. **🚨 PRESERVE ALL EXCEL FORMULAS EXACTLY** - Focus on dual-state support, NOT formula changes
+6. **FOLLOW DOCUMENTED PATTERNS EXACTLY** - Don't reinvent, patterns are already perfected
 
 🚨 **AGENT FAILURE MODES TO AVOID:**
 - Citing S11 as "gold standard" (it has wrong patterns documented in guide)
 - Throwing out working calculation functions from BACKUP files
+- **🚨 CHANGING EXCEL FORMULAS** - Focus on dual-state support, NOT formula modifications
+- **"Improving" or "optimizing" calculations** - Formulas are regulatory-approved, don't alter them
+- **Modifying mathematical operations** - Keep Excel formulas exactly as they work in BACKUP files
 - Not running the QA/QC checklist (causes architectural failures)
 - Speed-reading instead of following patterns exactly
 - Adding `calculateAll()` to `switchMode()` (major anti-pattern)
@@ -169,10 +173,84 @@ window.TEUI.StateManager.setValue("ref_i_98", heatloss.toString(), "calculated")
     *   Default values (like `i_41: "345.82"`)
 7.  **Test basic functionality**: Dropdown changes MUST update calculated fields in DOM immediately
 
-### **Phase 4: Pattern 2 Compliance**
-8.  **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
-9.  **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
-10. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref_ values
+### **Phase 4: Excel Formula Preservation (URGENT)**
+8.  **🚨 FORMULA AUDIT**: Compare ALL calculation functions with BACKUP file to ensure no changes
+    *   **Mathematical operations**: Addition, subtraction, multiplication, division - keep identical
+    *   **Conditional logic**: IF statements, case structures - preserve Excel logic exactly  
+    *   **Constants and factors**: Any hard-coded numbers or conversion factors - don't change
+    *   **Function signatures**: Input parameters and return values - maintain compatibility
+9.  **NO FORMULA "IMPROVEMENTS"**: Resist urge to "optimize" or "clean up" calculations
+    *   Excel formulas are **regulatory-approved** - changing them invalidates compliance
+    *   Focus ONLY on adding dual-state support to existing working formulas
+
+### **Phase 5: Pattern 2 Compliance**
+10. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
+11. **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
+12. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref_ values
+
+---
+
+## 🚀 COMPONENTBRIDGE RETIREMENT (After S07 Refactor)
+
+**STATUS**: All sections Pattern A except S07. ComponentBridge can be retired after S07 refactor.
+
+### **🎯 ComponentBridge Retirement Checklist**
+
+**ONLY proceed after S07 is fully refactored to Pattern A**
+
+1. **✅ Verify All Sections Pattern A**:
+   - S01: ✅ Consumer (reads from S04)
+   - S02-S06: ✅ Pattern A dual-state  
+   - S07: ❌ **MUST BE REFACTORED FIRST**
+   - S08-S15: ✅ Pattern A dual-state
+
+2. **🔥 Remove ComponentBridge**:
+   ```javascript
+   // DELETE these files entirely:
+   // - 4011-ComponentBridge.js
+   // - Any ComponentBridge.initAll() calls in main initialization
+   ```
+
+3. **🧪 Test Post-Retirement Flow**:
+   ```javascript
+   // Expected clean flow (example):
+   // S06 Reference d_44 input → ReferenceState → ref_d_43 → 
+   // S04 ref_d_43 listener → calculateReferenceModel() → ref_j_32 →
+   // S01 ref_j_32 listener → Reference column display
+   ```
+
+### **🏛️ Clean Post-ComponentBridge Architecture**
+
+#### **Direct StateManager Registration** (No Bridge Layer)
+```javascript
+// Each Pattern A section stores BOTH states directly:
+function calculateTargetModel() {
+  const result = calculations_using_TargetState();
+  StateManager.setValue("fieldId", result, "calculated");  // Target → unprefixed
+}
+
+function calculateReferenceModel() {
+  const result = calculations_using_ReferenceState();
+  StateManager.setValue("ref_fieldId", result, "calculated");  // Reference → ref_ prefixed
+}
+```
+
+#### **Clean Listener Network** (No Contamination)
+```javascript
+// Perfect state isolation - each mode flows separately:
+StateManager.addListener("d_43", calculateTargetModel);        // Target → Target
+StateManager.addListener("ref_d_43", calculateReferenceModel); // Reference → Reference
+```
+
+#### **Benefits of Retirement**:
+- **🔥 Performance**: No bridge layer overhead
+- **🛡️ Reliability**: Eliminates all contamination vectors  
+- **🔍 Debuggability**: Direct listener traces
+- **⚡ Simplicity**: Fewer moving parts
+- **🧪 Testability**: Isolated state testing
+
+### **⚠️ CRITICAL: Do NOT Retire ComponentBridge Until S07 Complete**
+ComponentBridge is still needed for S07's Pattern B compatibility. Premature removal will break S07 functionality.
 
 ---
 
