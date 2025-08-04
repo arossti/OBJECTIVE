@@ -160,6 +160,14 @@ window.TEUI.StateManager.setValue("ref_i_98", heatloss.toString(), "calculated")
           ? getGlobalNumericValue("ref_g_32")  
           : getGlobalNumericValue("g_32");
         ```
+    *   **calculateRowXX() Bypass Anti-Pattern**: Row functions bypassing individual Excel formula functions
+        ```javascript
+        // ❌ WRONG: Direct assignment missing renewable offsets
+        setCalculatedValue("j_27", targetElectricity);
+        
+        // ✅ CORRECT: Use proper Excel formula function
+        calculateJ27(); // J27 = H27 - D43 - I43 (includes renewable offsets)
+        ```
 
 ### **Phase 3: DOM Update & Function Preservation (CRITICAL)**
 5.  **Check DOM updates**: Every `calculateAll()` call MUST be followed by `updateCalculatedDisplayValues()`
