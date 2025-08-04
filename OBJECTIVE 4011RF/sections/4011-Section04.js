@@ -786,17 +786,20 @@ window.TEUI.SectionModules.sect04 = (function () {
     const emissionFactor = getElectricityEmissionFactor();
     const actualEmissions = (actualElectricity * emissionFactor) / 1000;
 
-    // J27: Convert target to ekWh (H27 already in kWh)
-    const targetElectricity_ekWh = targetElectricity;
-
     // K27: Emissions from target (H27 * L27 / 1000)
     const targetEmissions = (targetElectricity * emissionFactor) / 1000;
 
     // Store calculated values
     setCalculatedValue("h_27", targetElectricity);
-    setCalculatedValue("f_27", actualElectricity);
+    
+    // ✅ FIX: Use calculateF27() for proper renewable offset (F27 = D27 - D43 - I43)
+    calculateF27(); // This applies the Excel formula with renewable offsets for Actual
+    
     setCalculatedValue("g_27", actualEmissions);
-    setCalculatedValue("j_27", targetElectricity_ekWh);
+    
+    // ✅ FIX: Use calculateJ27() for proper renewable offset (J27 = H27 - D43 - I43)
+    calculateJ27(); // This applies the Excel formula with renewable offsets
+    
     setCalculatedValue("k_27", targetEmissions);
     setCalculatedValue("l_27", emissionFactor, "integer"); // Emission factor as integer
   }
