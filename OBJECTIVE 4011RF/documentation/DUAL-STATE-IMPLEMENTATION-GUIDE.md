@@ -3,6 +3,8 @@
 **Status**: ✅ **Gold Standard** | **Updated**: July 24, 2025  
 **Mandate**: This document outlines the **sole approved pattern** for implementing dual-state (Target/Reference) functionality. It is based on the successful, self-contained architecture proven in Section 03, 08, 10, and 11. Includes Sequential Refactoring Strategy for complete Pattern A migration. All previous guides are superseded.
 
+**🚨 BEFORE IMPLEMENTING**: Review the **MANDATORY QA/QC Checklist** in `DUAL-STATE-CHEATSHEET.md` - it contains critical anti-pattern detection that prevents architectural failures.
+
 ---
 
 ## 🏛️ **ARCHITECTURAL MANDATE: The Self-Contained State Module (FINAL STANDARD)**

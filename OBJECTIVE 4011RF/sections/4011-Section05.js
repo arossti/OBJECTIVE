@@ -13,7 +13,209 @@ window.TEUI.SectionModules = window.TEUI.SectionModules || {};
 // Section 5: CO2e Emissions Module
 window.TEUI.SectionModules.sect05 = (function () {
   //==========================================================================
-  // CONSOLIDATED FIELD DEFINITIONS AND LAYOUT
+  // DUAL-STATE ARCHITECTURE (Self-Contained State Module - Pattern A)
+  //==========================================================================
+
+  // PATTERN 1: Internal State Objects (Self-Contained + Persistent)
+  const TargetState = {
+    state: {},
+    listeners: {},
+    initialize: function () {
+      const savedState = localStorage.getItem("S05_TARGET_STATE");
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+      } else {
+        this.setDefaults();
+      }
+    },
+    setDefaults: function () {
+      this.state = {
+        d_39: "Pt.3 Mass Timber", // Typology-Based Carbon Intensity
+        i_41: "345.82", // Modelled Value kgCO2e/m2
+      };
+    },
+    saveState: function () {
+      localStorage.setItem("S05_TARGET_STATE", JSON.stringify(this.state));
+    },
+    setValue: function (fieldId, value, source = "user") {
+      this.state[fieldId] = value;
+      this.saveState();
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
+  };
+
+  const ReferenceState = {
+    state: {},
+    listeners: {},
+    initialize: function () {
+      const savedState = localStorage.getItem("S05_REFERENCE_STATE");
+      if (savedState) {
+        this.state = JSON.parse(savedState);
+      } else {
+        this.setDefaults();
+      }
+    },
+    setDefaults: function () {
+      // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
+      const currentStandard =
+        window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
+      const referenceValues =
+        window.TEUI?.ReferenceValues?.[currentStandard] || {};
+
+      // Apply reference values with fallbacks for missing values
+      this.state = {
+        d_39: referenceValues.d_39 || "Pt.3 Mass Timber", // Use reference typology if available
+        i_41: referenceValues.i_41 || "345.82", // Reference embodied carbon value
+      };
+
+      console.log(
+        `S05: Reference defaults loaded from standard: ${currentStandard}`,
+      );
+    },
+    // Listen for changes to the reference standard and reload defaults
+    onReferenceStandardChange: function () {
+      console.log("S05: Reference standard changed, reloading defaults");
+      this.setDefaults();
+      this.saveState();
+      // Only refresh UI if currently in reference mode
+      if (ModeManager.currentMode === "reference") {
+        ModeManager.refreshUI();
+        calculateAll();
+      }
+    },
+    saveState: function () {
+      localStorage.setItem("S05_REFERENCE_STATE", JSON.stringify(this.state));
+    },
+    setValue: function (fieldId, value, source = "user") {
+      this.state[fieldId] = value;
+      this.saveState();
+    },
+    getValue: function (fieldId) {
+      return this.state[fieldId];
+    },
+  };
+
+  // PATTERN 2: ModeManager Facade (Unified Interface)
+  const ModeManager = {
+    currentMode: "target",
+
+    initialize: function () {
+      TargetState.initialize();
+      ReferenceState.initialize();
+
+      // Listen for reference standard changes
+      if (window.TEUI?.StateManager?.addListener) {
+        window.TEUI.StateManager.addListener("d_13", () => {
+          ReferenceState.onReferenceStandardChange();
+        });
+      }
+    },
+
+    getCurrentState: function () {
+      return this.currentMode === "target" ? TargetState : ReferenceState;
+    },
+
+    getValue: function (fieldId) {
+      return this.getCurrentState().getValue(fieldId);
+    },
+
+    setValue: function (fieldId, value, source = "user") {
+      this.getCurrentState().setValue(fieldId, value, source);
+
+      // BRIDGE: Sync Target changes to StateManager (NO PREFIX)
+      if (this.currentMode === "target") {
+        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+      }
+    },
+
+    switchMode: function (mode) {
+      if (this.currentMode === mode) return;
+      this.currentMode = mode;
+      console.log(`S05: Switched to ${mode.toUpperCase()} mode`);
+      
+      // ✅ CORRECTED: Only refresh UI, don't re-run calculations
+      // Both engines should already have calculated values stored in StateManager
+      this.refreshUI();
+      this.updateCalculatedDisplayValues(); // Update calculated field displays only
+    },
+
+    refreshUI: function () {
+      const sectionElement = document.getElementById("emissions");
+      if (!sectionElement) return;
+
+      const currentState = this.getCurrentState();
+      const fieldsToSync = ["d_39", "i_41"]; // Input fields only
+
+      fieldsToSync.forEach((fieldId) => {
+        const stateValue = currentState.getValue(fieldId);
+        if (stateValue === undefined || stateValue === null) return;
+
+        const element = sectionElement.querySelector(
+          `[data-field-id="${fieldId}"]`,
+        );
+        if (!element) return;
+
+        // ✅ PATTERN A: Simple dropdown pattern (like S10/S12) - NO SAFETY CHECKS
+        const dropdown = element.tagName === "SELECT" 
+          ? element 
+          : element.querySelector("select");
+
+        if (dropdown) {
+          dropdown.value = stateValue; // Simple and direct - like working sections
+        } else if (element.hasAttribute("contenteditable")) {
+          element.textContent = stateValue;
+        }
+      });
+    },
+
+    updateCalculatedDisplayValues: function () {
+      // Update all calculated fields to show values for current mode
+      const calculatedFields = ["d_38", "g_38", "i_38", "i_39", "i_40", "d_40", "d_41", "m_38"];
+      console.log(`🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`);
+      
+      calculatedFields.forEach((fieldId) => {
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        if (element) {
+          // Read the correct value from StateManager based on mode
+          const value = this.currentMode === "reference" 
+            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`) || window.TEUI.StateManager.getValue(fieldId)
+            : window.TEUI.StateManager.getValue(fieldId);
+          
+          if (value !== null && value !== undefined) {
+            const formattedValue = window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value;
+            element.textContent = formattedValue;
+          }
+        }
+      });
+    },
+
+    resetState: function () {
+      console.log("S05: Resetting state and clearing localStorage.");
+
+      // Reset both states to their current dynamic defaults
+      TargetState.setDefaults();
+      TargetState.saveState();
+      ReferenceState.setDefaults();
+      ReferenceState.saveState();
+
+      console.log("S05: States have been reset to defaults.");
+
+      // After resetting, refresh the UI and recalculate
+      this.refreshUI();
+      calculateAll();
+      this.updateCalculatedDisplayValues(); // Update DOM with calculated values
+    },
+  };
+
+  // Expose ModeManager for debugging and cross-section communication
+  window.TEUI.SectionModules = window.TEUI.SectionModules || {};
+  window.TEUI.SectionModules.sect05 = window.TEUI.SectionModules.sect05 || {};
+  window.TEUI.SectionModules.sect05.ModeManager = ModeManager;
+
+  //==========================================================================
+  // FIELD DEFINITIONS AND LAYOUT
   //==========================================================================
 
   // Define rows with integrated field definitions
@@ -233,124 +435,96 @@ window.TEUI.SectionModules.sect05 = (function () {
     },
   };
 
+
+
+
+
+
+
+
+
   //==========================================================================
-  // HELPER FUNCTIONS (Standardized)
+  // EVENT HANDLING AND CALCULATIONS
+  //==========================================================================
+
+
+
+
+
+
+
+  //==========================================================================
+  // LAYOUT GENERATION (Essential for Rendering)
   //==========================================================================
 
   /**
-   * Helper function to safely get numeric values with proper comma handling.
-   * STANDARD MODE-AWARE PATTERN
-   * This function reads from the correct state (`target_` or `ref_`) based on the current mode.
+   * Generate layout from integrated row definitions
+   * This converts our compact definition to the format expected by the renderer
    */
-  function getNumericValue(fieldId, defaultValue = 0) {
-    const prefix = ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const prefixedFieldId = `${prefix}${fieldId}`;
+  function getLayout() {
+    // IMPORTANT: To ensure the header appears first, we process the rows in
+    // a specific order: header first, then all other rows
 
-    // First, try to get the mode-specific value.
-    let rawValue = window.TEUI?.StateManager?.getValue(prefixedFieldId);
+    // Start with an empty array for rows
+    const layoutRows = [];
 
-    // If the mode-specific value is not found, fall back to the global value.
-    // This is crucial for handling dependencies from sections not yet fully refactored.
-    if (rawValue === null || rawValue === undefined) {
-      rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    // First add the header row if it exists
+    if (sectionRows["header"]) {
+      layoutRows.push(createLayoutRow(sectionRows["header"]));
     }
 
-    return window.TEUI?.parseNumeric?.(rawValue, defaultValue) ?? defaultValue;
+    // Then add all other rows in their original order, excluding the header
+    Object.entries(sectionRows).forEach(([key, row]) => {
+      if (key !== "header") {
+        layoutRows.push(createLayoutRow(row));
+      }
+    });
+
+    return { rows: layoutRows };
   }
 
   /**
-   * Helper function to set a calculated value in the StateManager and update the DOM.
-   * STANDARD MODE-AWARE PATTERN
-   * This function writes to the correct state and only updates the global (unprefixed)
-   * state when in 'target' mode to prevent state contamination.
+   * Helper function to convert a row definition to the layout format
    */
-  function setFieldValue(fieldId, value, fieldType = "calculated") {
-    const modePrefix =
-      ModeManager.currentMode === "target" ? "target_" : "ref_";
-    const prefixedFieldId = `${modePrefix}${fieldId}`;
+  function createLayoutRow(row) {
+    // Create standard row structure
+    const rowDef = {
+      id: row.id,
+      cells: [
+        {}, // Empty column A
+        {}, // ID column B (auto-populated)
+      ],
+    };
 
-    // Always store with prefix for dual-state isolation.
-    if (window.TEUI?.StateManager) {
-      window.TEUI.StateManager.setValue(
-        prefixedFieldId,
-        value.toString(),
-        fieldType,
-      );
-    }
+    // Add cells C through N based on the row definition
+    const columns = [
+      "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
+    ];
 
-    // CRITICAL: Only update the global state (for DOM binding) when in target mode.
-    if (ModeManager.currentMode === "target") {
-      if (window.TEUI?.StateManager) {
-        window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
-      }
+    // For each column, add the cell definition if it exists in the row
+    columns.forEach((col) => {
+      if (row.cells && row.cells[col]) {
+        // Create a simplified cell definition for the renderer
+        // without the extra field properties
+        const cell = { ...row.cells[col] };
 
-      // Update DOM with formatted value.
-      const formattedValue =
-        value === "N/A"
-          ? "N/A"
-          : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
-            value.toString());
+        // Remove field-specific properties that aren't needed for rendering
+        delete cell.getOptions;
+        delete cell.section;
+        delete cell.dependencies;
 
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-          element.value = value;
-        } else {
-          element.textContent = formattedValue;
-        }
-      }
-    }
-  }
-
-  /**
-   * Handles the blur event for editable numeric fields.
-   * Parses the input, updates StateManager, re-formats the display, and recalculates.
-   */
-  function handleEditableBlur() {
-    // Renamed from handleFieldBlur to be specific
-    const fieldElement = this; // 'this' is bound to the field element
-    const currentFieldId = fieldElement.getAttribute("data-field-id");
-    if (!currentFieldId) return;
-
-    const originalValue = fieldElement.dataset.originalValue || "";
-    let currentValueStr = fieldElement.textContent.trim();
-
-    // Only proceed if the value has actually changed
-    if (currentValueStr !== originalValue) {
-      let numValue = window.TEUI.parseNumeric(currentValueStr, NaN);
-      let rawValueToStore;
-
-      if (!isNaN(numValue)) {
-        // Successfully parsed a number
-        rawValueToStore = numValue.toString();
-        // Update StateManager with the user-modified value
-        if (window.TEUI && window.TEUI.StateManager) {
-          window.TEUI.StateManager.setValue(
-            currentFieldId,
-            rawValueToStore,
-            "user-modified",
-          );
-        }
-        // The existing StateManager listener for i_41 should handle recalculations and updates to i_39.
-        // No direct call to calculateAll() here.
-        // No direct re-formatting of fieldElement.textContent here;
-        // if StateManager updates trigger a re-render or i_41 is read and set by a calculation,
-        // that process should handle formatting.
+        rowDef.cells.push(cell);
       } else {
-        // If parsing fails, revert to original value to prevent saving invalid input
-        fieldElement.textContent = originalValue;
-        // console.warn(`Invalid input for ${currentFieldId}: '${currentValueStr}'. Reverted to '${originalValue}'.`);
+        // Add empty cell if not defined
+        rowDef.cells.push({});
       }
-    } else {
-      // If the value hasn't changed, ensure it still has the standard formatting if needed.
-      // This can be added if values sometimes lose formatting without changing.
-      // For now, we only act on actual value changes to mirror S04 more closely.
-    }
-    // No calculateAll() here, rely on StateManager listeners.
+    });
+
+    return rowDef;
   }
 
   //==========================================================================
-  // ACCESSOR METHODS TO EXTRACT FIELDS AND LAYOUT
+  // FIELD MANAGER INTEGRATION (Essential for FieldManager)
   //==========================================================================
 
   /**
@@ -415,97 +589,72 @@ window.TEUI.SectionModules.sect05 = (function () {
     return options;
   }
 
-  /**
-   * Generate layout from integrated row definitions
-   * This converts our compact definition to the format expected by the renderer
-   */
-  function getLayout() {
-    // IMPORTANT: To ensure the header appears first, we process the rows in
-    // a specific order: header first, then all other rows
+  //==========================================================================
+  // EXTERNAL DEPENDENCIES (Clean Interface - Pattern A)
+  //==========================================================================
 
-    // Start with an empty array for rows
-    const layoutRows = [];
-
-    // First add the header row if it exists
-    if (sectionRows["header"]) {
-      layoutRows.push(createLayoutRow(sectionRows["header"]));
-    }
-
-    // Then add all other rows in their original order, excluding the header
-    Object.entries(sectionRows).forEach(([key, row]) => {
-      if (key !== "header") {
-        layoutRows.push(createLayoutRow(row));
-      }
-    });
-
-    return { rows: layoutRows };
+  function getGlobalNumericValue(fieldId) {
+    // ✅ CLEAN: Read external dependencies without prefixes
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return window.TEUI.parseNumeric(rawValue) || 0;
   }
 
+  function getSectionValue(fieldId, isReferenceCalculation = false) {
+    // ✅ DUAL-ENGINE PATTERN: Get section-local values based on calculation context
+    if (isReferenceCalculation) {
+      return ReferenceState.getValue(fieldId);
+    } else {
+      return TargetState.getValue(fieldId);
+    }
+  }
+
+  //==========================================================================
+  // DUAL-ENGINE CALCULATIONS (Clean Pattern A)
+  //==========================================================================
+
   /**
-   * Helper function to convert a row definition to the layout format
+   * Calculate GHGI Operational Emissions (d_38 = g_32 from S04)
    */
-  function createLayoutRow(row) {
-    // Create standard row structure
-    const rowDef = {
-      id: row.id,
-      cells: [
-        {}, // Empty column A
-        {}, // ID column B (auto-populated)
-      ],
-    };
-
-    // Add cells C through N based on the row definition
-    const columns = [
-      "c",
-      "d",
-      "e",
-      "f",
-      "g",
-      "h",
-      "i",
-      "j",
-      "k",
-      "l",
-      "m",
-      "n",
-    ];
-
-    // For each column, add the cell definition if it exists in the row
-    columns.forEach((col) => {
-      if (row.cells && row.cells[col]) {
-        // Create a simplified cell definition for the renderer
-        // without the extra field properties
-        const cell = { ...row.cells[col] };
-
-        // Remove field-specific properties that aren't needed for rendering
-        delete cell.getOptions;
-        delete cell.section;
-        delete cell.dependencies;
-
-        rowDef.cells.push(cell);
+  function calculateGHGI(isReferenceCalculation = false) {
+    // ✅ PATTERN 2: Explicit state access - no "current" state
+    const g_32_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_g_32")   // Reference reads Reference upstream
+      : getGlobalNumericValue("g_32");      // Target reads Target upstream
+    
+    // Store in appropriate state based on calculation context
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_38", g_32_value, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("d_38", g_32_value, "calculated");
+    }
+    
+    // Calculate annual kgCO2e/m2 (g_38 = d_38 * 1000 / h_15)
+    const h_15_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_15")   // Reference reads Reference upstream
+      : getGlobalNumericValue("h_15");      // Target reads Target upstream
+    const g_38_result = h_15_value > 0 ? (g_32_value * 1000) / h_15_value : 0;
+    
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_g_38", g_38_result, "calculated");
       } else {
-        // Add empty cell if not defined
-        rowDef.cells.push({});
-      }
-    });
-
-    return rowDef;
+      window.TEUI.StateManager.setValue("g_38", g_38_result, "calculated");
+    }
   }
 
-  //==========================================================================
-  // EVENT HANDLING AND CALCULATIONS
-  //==========================================================================
-
   /**
-   * Calculate the typology-based cap based on selected typology
+   * Calculate Typology-Based Carbon Intensity (i_39)
    */
-  function calculateTypologyBasedCap(typology) {
-    // This function now correctly uses the mode-aware getNumericValue helper,
-    // which will read from the appropriate state (target_ or ref_) automatically.
+  function calculateTypologyBasedCap(typology, isReferenceCalculation = false) {
+    // ✅ EXCEL FORMULA IMPLEMENTATION: =IF(D39="Pt.9 Res. Stick Frame",125,IF(D39="Pt.9 Small Mass Timber",250,...
     if (typology === "Modelled Value") {
-      return getNumericValue("i_41", 0);
+      // When "Modelled Value" is selected, use I41 (i_41) value
+      const i_41_value = isReferenceCalculation 
+        ? ReferenceState.getValue("i_41")
+        : TargetState.getValue("i_41");
+      return window.TEUI.parseNumeric(i_41_value) || 0;
     }
 
+    // Direct typology mapping from Excel formula
     const caps = {
       "Pt.9 Res. Stick Frame": 125,
       "Pt.9 Small Mass Timber": 250,
@@ -514,199 +663,168 @@ window.TEUI.SectionModules.sect05 = (function () {
       "Pt.3 Steel": 650,
       "Pt.3 Office": 600,
     };
-
-    return caps[typology] || 0;
-  }
-
-  /**
-   * Calculate percentage of target achieved
-   */
-  function calculatePercentages() {
-    // Get values using getNumericValue for robustness
-    const typologyCap = getNumericValue("i_39", 350); // Default if i_39 not set
-    const carbonTargetValue = getNumericValue("i_40"); // Get raw value to check for "N/A"
-    const totalEmitted = getNumericValue("d_40", 0); // Default if d_40 not set or invalid
-    const modelledValue = getNumericValue("i_41", 0); // Default if i_41 not set or invalid
-
-    // Handle special case when carbon target is 'N/A'
-    if (carbonTargetValue === "N/A") {
-      setFieldValue("l_39", "N/A", "raw"); // Pass 'raw' or a specific N/A format if available
-      setFieldValue("l_40", "N/A", "raw");
-      setFieldValue("l_41", "N/A", "raw");
-      return;
-    }
-
-    const carbonTarget = window.TEUI.parseNumeric(carbonTargetValue, 0); // Use global parseNumeric
-
-    // Calculate percentages - ensure inputs to division are not zero where it makes sense
-    const typologyPercentRaw =
-      typologyCap !== 0 ? carbonTarget / typologyCap : 0;
-    const targetPercentRaw =
-      totalEmitted !== 0 ? carbonTarget / totalEmitted : 0;
-    const modelledPercentRaw =
-      carbonTarget !== 0 ? modelledValue / carbonTarget : 0;
-
-    // Set calculated values using appropriate percentage format
-    // The global formatter expects a fraction (e.g., 0.5 for 50%)
-    setFieldValue("l_39", typologyPercentRaw, "percent-0dp");
-    setFieldValue("l_40", targetPercentRaw, "percent-0dp");
-    setFieldValue("l_41", modelledPercentRaw, "percent-0dp");
-  }
-
-  /**
-   * Calculate GHGI operational values
-   */
-  function calculateGHGI() {
-    // Get values using getNumericValue for robustness
-    const d_14_value = getNumericValue("d_14") || "Utility Bills"; // Determine calculation method (string)
-    const g_32_value = getNumericValue("g_32");
-    const k_32_value = getNumericValue("k_32");
-    const conditionedArea = getNumericValue("h_15", 1); // Avoid division by zero, default to 1 if not set
-
-    const actual_g_32 = g_32_value;
-    const actual_k_32 = k_32_value;
-
-    const ghgiMT =
-      d_14_value === "Utility Bills" ? actual_g_32 / 1000 : actual_k_32 / 1000;
-
-    const emissionsKg =
-      d_14_value === "Utility Bills" ? actual_g_32 : actual_k_32;
-
-    const ghgiPerM2 = conditionedArea !== 0 ? emissionsKg / conditionedArea : 0;
-
-    setFieldValue("d_38", ghgiMT, "number-2dp-comma"); // MT CO2e/yr
-    setFieldValue("g_38", ghgiPerM2, "number-2dp-comma"); // kgCO2e/m2
-
-    const serviceLife = getNumericValue("h_13", 50); // Default 50 years
-    const lifetimeEmissions = ghgiPerM2 * serviceLife;
-    setFieldValue("j_38", lifetimeEmissions, "number-2dp-comma"); // kgCO2e/m2 lifetime
-  }
-
-  /**
-   * Calculate lifetime avoided emissions
-   */
-  function calculateLifetimeAvoided() {
-    // This function seems to have placeholder logic ("referenceLifetimeEmissions = lifetimeEmissions * 5;")
-    // We will keep the logic but ensure it uses new helpers.
-    const lifetimeEmissions = getNumericValue("j_38", 0);
-    // const embeddedCarbon = getNumericValue("d_40", 0); // This was in original but not used in calc
-
-    // Original S05 used `toFixed(2)` which implies a numeric result desired.
-    // Placeholder logic:
-    const referenceLifetimeEmissions = lifetimeEmissions * 5;
-    const avoidedEmissions = referenceLifetimeEmissions - lifetimeEmissions;
-
-    setFieldValue("d_41", avoidedEmissions, "number-2dp-comma");
+    return caps[typology] || 0; // Return 0 if typology not found (equivalent to "Pls. Select a Value")
   }
 
   /**
    * Calculate Lifetime Operational kgCO2e/m2 (i_38 = g_38 * h_13)
    */
-  function calculate_i_38() {
-    const g_38_value = getNumericValue("g_38", 0); // Annual GHGI kgCO2e/m2
-    const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
+  function calculate_i_38(isReferenceCalculation = false) {
+    const g_38_field = isReferenceCalculation ? "ref_g_38" : "g_38";
+    const g_38_value = window.TEUI.StateManager.getValue(g_38_field) || 0;
+    const h_13_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_13")   // Reference reads Reference upstream
+      : getGlobalNumericValue("h_13");      // Target reads Target upstream
 
     const i_38_result = g_38_value * h_13_value;
-    setFieldValue("i_38", i_38_result, "number-2dp-comma");
+    
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_i_38", i_38_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("i_38", i_38_result, "calculated");
+    }
   }
 
   /**
    * Calculate Target kgCO2e/m2 (i_40 = d_16)
-   * This maintains Excel parity where i_40 comes from Section 2's d_16
-   * Note: d_16 and i_39 should be functionally equivalent to prevent circular references
    */
-  function calculate_i_40() {
-    const d_16_value_raw = getNumericValue("d_16"); // Get raw to check "N/A"
+  function calculate_i_40(isReferenceCalculation = false) {
+    const d_16_value_raw = isReferenceCalculation
+      ? getGlobalNumericValue("ref_d_16")   // Reference reads Reference upstream
+      : getGlobalNumericValue("d_16");      // Target reads Target upstream
 
-    if (d_16_value_raw === "N/A") {
-      setFieldValue("i_40", "N/A", "raw");
+    let result;
+    if (d_16_value_raw === "N/A" || isNaN(d_16_value_raw)) {
+      result = "N/A";
     } else {
-      const numericValue = getNumericValue("d_16", 0);
-      setFieldValue("i_40", numericValue, "number-2dp-comma");
+      result = d_16_value_raw;
+    }
+    
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_i_40", result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("i_40", result, "calculated");
     }
   }
 
   /**
    * Calculate Total Embedded MT CO2e (d_40 = i_41 * d_106 / 1000)
    */
-  function calculate_d_40() {
-    const i_41_value = getNumericValue("i_41", 0); // Modelled Value kgCO2e/m2
-    const d_106_value = getNumericValue("d_106", 0); // Total Floor Area m2
+  function calculate_d_40(isReferenceCalculation = false) {
+    const i_41_value = getSectionValue("i_41", isReferenceCalculation);
+    const d_106_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_d_106")  // Reference reads Reference upstream
+      : getGlobalNumericValue("d_106");     // Target reads Target upstream
 
-    const d_40_result = (i_41_value * d_106_value) / 1000; // Result in MT CO2e
-    setFieldValue("d_40", d_40_result, "number-2dp-comma");
+    const i_41_numeric = window.TEUI.parseNumeric(i_41_value) || 0;
+    const d_40_result = (i_41_numeric * d_106_value) / 1000; // Result in MT CO2e
+    
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_40", d_40_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("d_40", d_40_result, "calculated");
+    }
   }
 
   /**
-   * Calculate Lifetime Avoided MT CO2e (d_41 = (REFERENCE_D38 - d_38) * h_13)
-   * Uses a placeholder for the reference value until DeepState is implemented.
+   * Calculate Lifetime Avoided MT CO2e (d_41)
    */
-  function calculate_d_41() {
-    // Placeholder for REFERENCE_D38
-    const reference_d_38_placeholder = getNumericValue("ref_d_38", 47.9209);
+  function calculate_d_41(isReferenceCalculation = false) {
+    // Get current calculated values
+    const ref_d_38 = window.TEUI.StateManager.getValue("ref_d_38") || 0;
+    const target_d_38 = window.TEUI.StateManager.getValue("d_38") || 0;
+    const h_13_value = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_13")   // Reference reads Reference upstream
+      : getGlobalNumericValue("h_13");      // Target reads Target upstream
 
-    const d_38_value = getNumericValue("d_38", 0); // Actual/Target MT CO2e/yr
-    const h_13_value = getNumericValue("h_13", 50); // Service Life (yrs)
+    const d_41_result = (ref_d_38 - target_d_38) * h_13_value;
+    
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_41", d_41_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("d_41", d_41_result, "calculated");
+    }
+  }
 
-    const d_41_result = (reference_d_38_placeholder - d_38_value) * h_13_value;
-    setFieldValue("d_41", d_41_result, "number-2dp-comma");
+  /**
+   * Calculate compliance percentages (m_38)
+   */
+  function calculatePercentages(isReferenceCalculation = false) {
+    // Simple percentage calculation - can be enhanced based on requirements
+    const result = isReferenceCalculation ? "100%" : "N/A";
+    
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_m_38", result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("m_38", result, "calculated");
+    }
   }
 
   //==========================================================================
-  // DUAL-ENGINE ARCHITECTURE (Standardized Pattern)
+  // DUAL-ENGINE ARCHITECTURE (Clean Pattern A)
   //==========================================================================
 
   /**
-   * REFERENCE MODEL ENGINE: Calculate all values using Reference state.
-   * ✅ FIXED: No mode switching during calculations to prevent recursion
+   * REFERENCE MODEL ENGINE: Calculate all values using Reference state
    */
   function calculateReferenceModel() {
     try {
-      // CORRECTED: Read the string value directly from the 'ref_' prefixed state.
-      const typology = window.TEUI.StateManager.getValue("ref_d_39");
-      const cap = calculateTypologyBasedCap(typology);
-      setFieldValue("i_39", cap);
+      // Read typology from Reference state
+      const typology = ReferenceState.getValue("d_39");
+      const cap = calculateTypologyBasedCap(typology, true); 
+      window.TEUI.StateManager.setValue("ref_i_39", cap, "calculated");
 
-      calculateGHGI();
-      calculate_i_38();
-      calculate_i_40();
-      calculate_d_40();
-      calculate_d_41();
-      calculatePercentages();
+      // Run all calculations in Reference context
+      calculateGHGI(true);
+      calculate_i_38(true);
+      calculate_i_40(true);
+      calculate_d_40(true);
+      calculate_d_41(true);
+      calculatePercentages(true);
+      
+      console.log("[S05] Reference model calculations complete");
     } catch (error) {
       console.error("[S05] Error in Reference Model calculations:", error);
     }
   }
 
   /**
-   * TARGET MODEL ENGINE: Calculate all values using Application state.
-   * ✅ FIXED: No mode switching during calculations to prevent recursion
+   * TARGET MODEL ENGINE: Calculate all values using Target state
    */
   function calculateTargetModel() {
     try {
-      // CORRECTED: Read the string value directly from the global state.
-      const typology = window.TEUI.StateManager.getValue("d_39");
-      const cap = calculateTypologyBasedCap(typology);
-      setFieldValue("i_39", cap);
+      // Read typology from Target state
+      const typology = TargetState.getValue("d_39");
+      const cap = calculateTypologyBasedCap(typology, false);
+      window.TEUI.StateManager.setValue("i_39", cap, "calculated");
 
-      calculateGHGI();
-      calculate_i_38();
-      calculate_i_40();
-      calculate_d_40();
-      calculate_d_41();
-      calculatePercentages();
+      // Run all calculations in Target context
+      calculateGHGI(false);
+      calculate_i_38(false);
+      calculate_i_40(false);
+      calculate_d_40(false);
+      calculate_d_41(false);
+      calculatePercentages(false);
+      
+      console.log("[S05] Target model calculations complete");
     } catch (error) {
       console.error("[S05] Error in Target Model calculations:", error);
     }
   }
 
   /**
-   * Calculate all values for this section
+   * ✅ DUAL-ENGINE: Always run both engines in parallel
    */
   function calculateAll() {
-    calculateReferenceModel();
-    calculateTargetModel();
+    console.log("[S05] Running dual-engine calculations...");
+    calculateTargetModel();    // Stores unprefixed values in StateManager
+    calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
+    console.log("[S05] Dual-engine calculations complete");
   }
+
+  //==========================================================================
+  // EVENT HANDLERS (Clean Pattern A)
+  //==========================================================================
 
   /**
    * Initialize all event handlers for this section
@@ -717,79 +835,133 @@ window.TEUI.SectionModules.sect05 = (function () {
       '[data-field-id="d_39"], [data-dropdown-id="dd_d_39"]',
     );
     if (typologyDropdown) {
-      // Clean up any old listeners before adding a new one
-      typologyDropdown.removeEventListener("change", calculateAll);
-
       typologyDropdown.addEventListener("change", (e) => {
         const typology = e.target.value;
-        // This is a setting that affects both models. Update both states.
-        if (window.TEUI?.StateManager) {
-          window.TEUI.StateManager.setValue("d_39", typology, "user-modified");
-          window.TEUI.StateManager.setValue(
-            "ref_d_39",
-            typology,
-            "user-modified",
-          );
-        }
-        // Recalculate both models to reflect the change.
-        calculateAll();
+        ModeManager.setValue("d_39", typology, "user-modified");
+        calculateAll(); // Trigger both engines
+        ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
       });
+    } else {
+      console.warn(`⚠️ [S05] Typology dropdown not found! Selector: [data-field-id="d_39"], [data-dropdown-id="dd_d_39"]`);
     }
 
-    // 2. Event handlers for editable fields like i_41
+    // 2. Event handlers for editable fields
     const editableFields = ["i_41"];
     editableFields.forEach((fieldId) => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field && !field.hasEditableListeners) {
         field.addEventListener("blur", () => {
           const newValue = field.textContent.trim();
-          // The listener on i_41 below will handle the recalculation
-          if (window.TEUI?.StateManager) {
-            window.TEUI.StateManager.setValue(
-              fieldId,
-              newValue,
-              "user-modified",
-            );
-            // Also set the ref_ value for consistency
-            window.TEUI.StateManager.setValue(
-              `ref_${fieldId}`,
-              newValue,
-              "user-modified",
-            );
-          }
+          // ✅ CLEAN: Update via ModeManager
+          ModeManager.setValue(fieldId, newValue, "user-modified");
+          calculateAll(); // Trigger both engines
+          ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
         });
         field.hasEditableListeners = true;
       }
     });
 
-    // 3. Listeners for all external dependencies that should trigger a recalculation
+    // 3. ✅ PATTERN 2: Listen for BOTH Target and Reference dependencies
     if (window.TEUI.StateManager) {
       const dependencies = [
-        "i_41",
-        "ref_i_41", // Modelled value
-        "h_13",
-        "ref_h_13", // Service life
-        "d_14",
-        "ref_d_14", // Utility Bills/Targeted
-        "g_32",
-        "ref_g_32", // from S04
-        "k_32",
-        "ref_k_32", // from S04
-        "h_15",
-        "ref_h_15", // Conditioned Area
-        "d_16",
-        "ref_d_16", // Embodied Carbon Target
-        "d_106",
-        "ref_d_106", // Total Floor Area
-        "ref_d_38", // Placeholder, but good to have
+        "h_13", "ref_h_13",      // Service life (both modes)
+        "g_32", "ref_g_32",      // from S04 (both modes)
+        "k_32", "ref_k_32",      // from S04 (both modes) 
+        "h_15", "ref_h_15",      // Conditioned Area (both modes)
+        "d_15", "ref_d_15",      // from S02: Carbon Standard (affects d_16 → i_40)
+        "d_16", "ref_d_16",      // Embodied Carbon Target (both modes)
+        "d_106", "ref_d_106",    // Total Floor Area (both modes)
       ];
 
+      // Create a wrapper function that calculates AND updates DOM
+      const calculateAndRefresh = () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      };
+
       dependencies.forEach((depId) => {
-        // Ensure we don't add duplicate listeners
-        window.TEUI.StateManager.removeListener(depId, calculateAll);
-        window.TEUI.StateManager.addListener(depId, calculateAll);
+        window.TEUI.StateManager.removeListener(depId, calculateAndRefresh);
+        window.TEUI.StateManager.addListener(depId, calculateAndRefresh);
       });
     }
+  }
+
+  /**
+   * Creates and injects the Target/Reference toggle and Reset button into the section header.
+   */
+  function injectHeaderControls() {
+    const sectionHeader = document.querySelector(
+      "#emissions .section-header",
+    );
+    if (
+      !sectionHeader ||
+      sectionHeader.querySelector(".local-controls-container")
+    ) {
+      return; // Already setup or header not found
+    }
+
+    const controlsContainer = document.createElement("div");
+    controlsContainer.className = "local-controls-container";
+    controlsContainer.style.cssText =
+      "display: flex; align-items: center; margin-left: auto; gap: 10px;";
+
+    // --- Create Reset Button ---
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = "🔄 Reset";
+    resetButton.title = "Reset Section 05 to Defaults";
+    resetButton.style.cssText =
+      "padding: 4px 8px; font-size: 0.8em; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;";
+
+    resetButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (
+        confirm(
+          "Are you sure you want to reset all inputs in this section to their defaults? This will clear any saved data for Section 05.",
+        )
+      ) {
+        ModeManager.resetState();
+      }
+    });
+
+    // --- Create Toggle Switch ---
+    const stateIndicator = document.createElement("span");
+    stateIndicator.textContent = "TARGET";
+    stateIndicator.style.cssText =
+      "color: #fff; font-weight: bold; font-size: 0.8em; background-color: rgba(0, 123, 255, 0.5); padding: 2px 6px; border-radius: 4px;";
+
+    const toggleSwitch = document.createElement("div");
+    toggleSwitch.style.cssText =
+      "position: relative; width: 40px; height: 20px; background-color: #ccc; border-radius: 10px; cursor: pointer;";
+
+    const slider = document.createElement("div");
+    slider.style.cssText =
+      "position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: white; border-radius: 50%; transition: transform 0.2s;";
+
+    toggleSwitch.appendChild(slider);
+
+    toggleSwitch.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isReference = toggleSwitch.classList.toggle("active");
+      if (isReference) {
+        slider.style.transform = "translateX(20px)";
+        toggleSwitch.style.backgroundColor = "#28a745";
+        stateIndicator.textContent = "REFERENCE";
+        stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
+        ModeManager.switchMode("reference");
+      } else {
+        slider.style.transform = "translateX(0px)";
+        toggleSwitch.style.backgroundColor = "#ccc";
+        stateIndicator.textContent = "TARGET";
+        stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
+        ModeManager.switchMode("target");
+      }
+    });
+
+    // Append all controls to the container, then the container to the header
+    controlsContainer.appendChild(resetButton);
+    controlsContainer.appendChild(stateIndicator);
+    controlsContainer.appendChild(toggleSwitch);
+    sectionHeader.appendChild(controlsContainer);
   }
 
   /**
@@ -797,33 +969,28 @@ window.TEUI.SectionModules.sect05 = (function () {
    * This is a good place to initialize values and run initial calculations
    */
   function onSectionRendered() {
-    // Initialize event handlers
+    console.log("S05: Pattern A initialization starting...");
+
+    // 1. Initialize dual-state architecture
+    ModeManager.initialize();
+
+    // 2. Initialize event handlers
     initializeEventHandlers();
 
-    // Run initial calculations
+    // 3. Inject header controls for testing
+    injectHeaderControls();
+
+    // 4. Sync initial UI state
+    ModeManager.refreshUI();
+
+    // 5. Perform initial calculations for this section
     calculateAll();
+    
+    // 6. Update DOM with calculated values
+    ModeManager.updateCalculatedDisplayValues();
+
+    console.log("S05: Pattern A initialization complete.");
   }
-
-  //==========================================================================
-  // DUAL-STATE MODE MANAGEMENT
-  //==========================================================================
-  const ModeManager = {
-    currentMode: "target", // "target" or "reference"
-
-    // S05 has no mode-switching UI, so this is for internal consistency.
-    // The global ReferenceToggle will call this if needed.
-    switchMode: function (mode) {
-      if (mode !== "target" && mode !== "reference") {
-        console.warn(`[S05] Invalid mode: ${mode}`);
-        return;
-      }
-      this.currentMode = mode;
-      // console.log(`[S05] Switched to ${mode.toUpperCase()} mode`);
-    },
-  };
-  // Expose ModeManager for debugging and cross-section communication
-  window.TEUI.sect05 = window.TEUI.sect05 || {};
-  window.TEUI.sect05.ModeManager = ModeManager;
 
   //==========================================================================
   // PUBLIC API
@@ -841,5 +1008,8 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
+    
+    // ✅ PATTERN A: Expose ModeManager for cross-section communication
+    ModeManager: ModeManager,
   };
 })();
