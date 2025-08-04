@@ -434,8 +434,10 @@ window.TEUI.SectionModules.sect06 = (function () {
     const d_43_result = d_44_value + d_45_value + d_46_value;
     
     if (isReferenceCalculation) {
+      console.log(`🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`);
       window.TEUI.StateManager.setValue("ref_d_43", d_43_result, "calculated");
     } else {
+      console.log(`🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`);
       window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
     }
   }
@@ -552,8 +554,13 @@ window.TEUI.SectionModules.sect06 = (function () {
 
         field.addEventListener("blur", () => {
           const newValue = field.textContent.trim();
+          console.log(`🟦 [S06-INPUT] User entered ${newValue} in field ${fieldId} while in ${ModeManager.currentMode} mode`);
+          
           // ✅ CLEAN: Update via ModeManager
           ModeManager.setValue(fieldId, newValue, "user-modified");
+          
+          console.log(`🟦 [S06-INPUT] After setValue - TargetState.${fieldId} = ${TargetState.getValue(fieldId)}, ReferenceState.${fieldId} = ${ReferenceState.getValue(fieldId)}`);
+          
           calculateAll(); // Trigger both engines
           ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
         });
