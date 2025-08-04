@@ -172,7 +172,10 @@ window.TEUI.SectionModules.sect05 = (function () {
 
     updateCalculatedDisplayValues: function () {
       // Update all calculated fields to show values for current mode
-      const calculatedFields = ["d_38", "g_38", "i_38", "i_39", "i_40", "d_40", "d_41", "m_38"];
+      const calculatedFields = [
+        "d_38", "g_38", "i_38", "i_39", "i_40", "d_40", "d_41", "m_38",
+        "l_39", "l_40", "l_41", "n_39", "n_40", "n_41"  // L/M percentage and status columns
+      ];
       console.log(`🔄 [S05] updateCalculatedDisplayValues: mode=${this.currentMode}`);
       
       calculatedFields.forEach((fieldId) => {
@@ -184,7 +187,18 @@ window.TEUI.SectionModules.sect05 = (function () {
             : window.TEUI.StateManager.getValue(fieldId);
           
           if (value !== null && value !== undefined) {
-            const formattedValue = window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value;
+            // Use appropriate formatting - percentages and checkmarks don't need number formatting
+            let formattedValue;
+            if (fieldId.startsWith("l_")) {
+              // Percentage fields - value should already be formatted
+              formattedValue = value;
+            } else if (fieldId.startsWith("n_")) {
+              // Status checkmark fields
+              formattedValue = value;
+            } else {
+              // Numeric fields
+              formattedValue = window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value;
+            }
             element.textContent = formattedValue;
           }
         }
@@ -613,7 +627,7 @@ window.TEUI.SectionModules.sect05 = (function () {
   //==========================================================================
 
   /**
-   * Calculate GHGI Operational Emissions (d_38 = g_32 from S04)
+   * Calculate GHGI Operational Emissions (d_38 = g_32/1000, g_38 = g_32/h_15)
    */
   function calculateGHGI(isReferenceCalculation = false) {
     // ✅ PATTERN 2: Explicit state access - no "current" state
@@ -621,24 +635,24 @@ window.TEUI.SectionModules.sect05 = (function () {
       ? getGlobalNumericValue("ref_g_32")   // Reference reads Reference upstream
       : getGlobalNumericValue("g_32");      // Target reads Target upstream
     
-    // Store in appropriate state based on calculation context
-    if (isReferenceCalculation) {
-      window.TEUI.StateManager.setValue("ref_d_38", g_32_value, "calculated");
-    } else {
-      window.TEUI.StateManager.setValue("d_38", g_32_value, "calculated");
-    }
-    
-    // Calculate annual kgCO2e/m2 (g_38 = d_38 * 1000 / h_15)
     const h_15_value = isReferenceCalculation
       ? getGlobalNumericValue("ref_h_15")   // Reference reads Reference upstream
       : getGlobalNumericValue("h_15");      // Target reads Target upstream
-    const g_38_result = h_15_value > 0 ? (g_32_value * 1000) / h_15_value : 0;
     
+    // ✅ CORRECTED: d_38 = g_32 / 1000 (convert kg to MT)
+    const d_38_result = g_32_value / 1000; // MT CO2e/yr
+    
+    // ✅ CORRECTED: g_38 = g_32 / h_15 (annual kgCO2e/m2)
+    const g_38_result = h_15_value > 0 ? g_32_value / h_15_value : 0;
+    
+    // Store results in appropriate state
     if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_d_38", d_38_result, "calculated");
       window.TEUI.StateManager.setValue("ref_g_38", g_38_result, "calculated");
       } else {
+      window.TEUI.StateManager.setValue("d_38", d_38_result, "calculated");
       window.TEUI.StateManager.setValue("g_38", g_38_result, "calculated");
-    }
+      }
   }
 
   /**
@@ -747,16 +761,90 @@ window.TEUI.SectionModules.sect05 = (function () {
   }
 
   /**
-   * Calculate compliance percentages (m_38)
+   * Calculate percentage compliance (L columns) and status (M columns)
    */
   function calculatePercentages(isReferenceCalculation = false) {
-    // Simple percentage calculation - can be enhanced based on requirements
-    const result = isReferenceCalculation ? "100%" : "N/A";
-    
-    if (isReferenceCalculation) {
-      window.TEUI.StateManager.setValue("ref_m_38", result, "calculated");
+    // Get values for percentage calculations
+    const i_39_value = isReferenceCalculation 
+      ? window.TEUI.StateManager.getValue("ref_i_39") || 0
+      : window.TEUI.StateManager.getValue("i_39") || 0;
+    const i_40_value = isReferenceCalculation
+      ? window.TEUI.StateManager.getValue("ref_i_40") || 0  
+      : window.TEUI.StateManager.getValue("i_40") || 0;
+    const d_40_value = isReferenceCalculation
+      ? window.TEUI.StateManager.getValue("ref_d_40") || 0
+      : window.TEUI.StateManager.getValue("d_40") || 0;
+    const i_41_value = getSectionValue("i_41", isReferenceCalculation);
+
+    // Parse numeric values
+    const typologyCap = window.TEUI.parseNumeric(i_39_value) || 350;
+    const carbonTarget = window.TEUI.parseNumeric(i_40_value);
+    const totalEmitted = window.TEUI.parseNumeric(d_40_value) || 0;
+    const modelledValue = window.TEUI.parseNumeric(i_41_value) || 0;
+
+    // Handle N/A case
+    if (carbonTarget === "N/A" || isNaN(carbonTarget)) {
+      const naFields = ["l_39", "l_40", "l_41"];
+      const okFields = ["n_39", "n_40", "n_41"];
+      
+      naFields.forEach(fieldId => {
+        if (isReferenceCalculation) {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, "N/A", "calculated");
     } else {
-      window.TEUI.StateManager.setValue("m_38", result, "calculated");
+          window.TEUI.StateManager.setValue(fieldId, "N/A", "calculated");
+        }
+      });
+      
+      okFields.forEach(fieldId => {
+        if (isReferenceCalculation) {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, "✓", "calculated");
+        } else {
+          window.TEUI.StateManager.setValue(fieldId, "✓", "calculated");
+        }
+      });
+      return;
+    }
+
+    // Calculate percentages (as fractions for proper formatting)
+    const typologyPercent = typologyCap !== 0 ? carbonTarget / typologyCap : 0;
+    const targetPercent = totalEmitted !== 0 ? carbonTarget / totalEmitted : 0; 
+    const modelledPercent = carbonTarget !== 0 ? modelledValue / carbonTarget : 0;
+
+    // Store percentage results
+    const percentFields = [
+      { field: "l_39", value: typologyPercent },
+      { field: "l_40", value: targetPercent },
+      { field: "l_41", value: modelledPercent }
+    ];
+
+    percentFields.forEach(({field, value}) => {
+      const formattedValue = window.TEUI.formatNumber ? 
+        window.TEUI.formatNumber(value, "percent-0dp") : 
+        Math.round(value * 100) + "%";
+      
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(`ref_${field}`, formattedValue, "calculated");
+      } else {
+        window.TEUI.StateManager.setValue(field, formattedValue, "calculated");
+      }
+    });
+
+    // Set checkmarks for status columns
+    const statusFields = ["n_39", "n_40", "n_41"];
+    statusFields.forEach(fieldId => {
+      if (isReferenceCalculation) {
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, "✓", "calculated");
+      } else {
+        window.TEUI.StateManager.setValue(fieldId, "✓", "calculated");
+      }
+    });
+
+    // Simple m_38 compliance
+    const m_38_result = isReferenceCalculation ? "100%" : "N/A";
+    if (isReferenceCalculation) {
+      window.TEUI.StateManager.setValue("ref_m_38", m_38_result, "calculated");
+    } else {
+      window.TEUI.StateManager.setValue("m_38", m_38_result, "calculated");
     }
   }
 
@@ -850,6 +938,14 @@ window.TEUI.SectionModules.sect05 = (function () {
     editableFields.forEach((fieldId) => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field && !field.hasEditableListeners) {
+        // ✅ CRITICAL: Prevent newlines on Enter key (copy from S04/S08/S09 pattern)
+        field.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault(); // Prevent adding a newline
+            field.blur(); // Remove focus to trigger the blur event
+          }
+        });
+
         field.addEventListener("blur", () => {
           const newValue = field.textContent.trim();
           // ✅ CLEAN: Update via ModeManager
@@ -868,7 +964,6 @@ window.TEUI.SectionModules.sect05 = (function () {
         "g_32", "ref_g_32",      // from S04 (both modes)
         "k_32", "ref_k_32",      // from S04 (both modes) 
         "h_15", "ref_h_15",      // Conditioned Area (both modes)
-        "d_15", "ref_d_15",      // from S02: Carbon Standard (affects d_16 → i_40)
         "d_16", "ref_d_16",      // Embodied Carbon Target (both modes)
         "d_106", "ref_d_106",    // Total Floor Area (both modes)
       ];
@@ -883,6 +978,50 @@ window.TEUI.SectionModules.sect05 = (function () {
         window.TEUI.StateManager.removeListener(depId, calculateAndRefresh);
         window.TEUI.StateManager.addListener(depId, calculateAndRefresh);
       });
+
+      // 4. ✅ S05→S02 RELATIONSHIP: Listen for Carbon Standard changes and update d_16
+      const updateCarbonTarget = (fieldId) => {
+        const isReference = fieldId === "ref_d_15";
+        const d_15_value = window.TEUI.StateManager.getValue(fieldId);
+        let d_16_value;
+
+        // Excel formula logic: =IF(D15="BR18 (Denmark)",500,IF(D15="IPCC AR6 EPC"...
+        switch(d_15_value) {
+          case "BR18 (Denmark)":
+          case "TGS4":
+            d_16_value = 500;
+            break;
+          case "CaGBC ZCB D":
+          case "CaGBC ZCB P":
+            d_16_value = 425;
+            break;
+          case "IPCC AR6 EPC":
+            // TODO: Look up from S3-Carbon-Standards K7 when available
+            d_16_value = 400; // Placeholder
+            break;
+          case "IPCC AR6 EA":
+            // TODO: Look up from S3-Carbon-Standards L7 when available  
+            d_16_value = 450; // Placeholder
+            break;
+          case "Self Reported":
+            // Use current i_41 value from S05
+            d_16_value = getSectionValue("i_41", isReference);
+            break;
+          default:
+            d_16_value = "N/A";
+        }
+
+        // Update S02's d_16 field
+        const targetField = isReference ? "ref_d_16" : "d_16";
+        window.TEUI.StateManager.setValue(targetField, d_16_value, "calculated");
+        console.log(`[S05→S02] Updated ${targetField} = ${d_16_value} based on ${fieldId} = ${d_15_value}`);
+      };
+
+      // Listen for both Target and Reference Carbon Standard changes
+      window.TEUI.StateManager.removeListener("d_15", () => updateCarbonTarget("d_15"));
+      window.TEUI.StateManager.addListener("d_15", () => updateCarbonTarget("d_15"));
+      window.TEUI.StateManager.removeListener("ref_d_15", () => updateCarbonTarget("ref_d_15"));  
+      window.TEUI.StateManager.addListener("ref_d_15", () => updateCarbonTarget("ref_d_15"));
     }
   }
 

@@ -31,7 +31,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       this.state = {
         // Editable renewable energy fields - all default to 0
         d_44: "0.00", // Photovoltaics (kWh/yr)
-        d_45: "0.00", // Wind (kWh/yr)  
+        d_45: "0.00", // Wind (kWh/yr)
         d_46: "0.00", // Remove EV Charging from TEUI (kWh/yr)
         i_44: "0.00", // WWS Electricity (kWh/yr)
         i_46: "0.00", // Reserved other removals (kWh/yr)
@@ -71,7 +71,7 @@ window.TEUI.SectionModules.sect06 = (function () {
 
       // Apply reference values with fallbacks - renewable energy typically 0 for reference
       this.state = {
-        d_44: referenceValues.d_44 || "0.00", // Photovoltaics 
+        d_44: referenceValues.d_44 || "0.00", // Photovoltaics
         d_45: referenceValues.d_45 || "0.00", // Wind
         d_46: referenceValues.d_46 || "0.00", // Remove EV Charging
         i_44: referenceValues.i_44 || "0.00", // WWS Electricity
@@ -144,7 +144,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       if (this.currentMode === mode) return;
       this.currentMode = mode;
       console.log(`S06: Switched to ${mode.toUpperCase()} mode`);
-      
+
       // ✅ CORRECTED: Only refresh UI, don't re-run calculations
       // Both engines should already have calculated values stored in StateManager
       this.refreshUI();
@@ -156,7 +156,15 @@ window.TEUI.SectionModules.sect06 = (function () {
       if (!sectionElement) return;
 
       const currentState = this.getCurrentState();
-      const fieldsToSync = ["d_44", "d_45", "d_46", "i_44", "i_46", "k_45", "m_43"]; // All editable fields
+      const fieldsToSync = [
+        "d_44",
+        "d_45",
+        "d_46",
+        "i_44",
+        "i_46",
+        "k_45",
+        "m_43",
+      ]; // All editable fields
 
       fieldsToSync.forEach((fieldId) => {
         const stateValue = currentState.getValue(fieldId);
@@ -177,8 +185,10 @@ window.TEUI.SectionModules.sect06 = (function () {
     updateCalculatedDisplayValues: function () {
       // Update all calculated fields to show values for current mode
       const calculatedFields = ["d_43", "i_43", "i_45"];
-      console.log(`🔄 [S06] updateCalculatedDisplayValues: mode=${this.currentMode}`);
-      
+      console.log(
+        `🔄 [S06] updateCalculatedDisplayValues: mode=${this.currentMode}`,
+      );
+
       calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
@@ -193,8 +203,10 @@ window.TEUI.SectionModules.sect06 = (function () {
           } else {
             value = window.TEUI.StateManager.getValue(fieldId) || 0;
           }
-          
-          const formattedValue = window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value;
+
+          const formattedValue = window.TEUI.formatNumber
+            ? window.TEUI.formatNumber(value, "number-2dp-comma")
+            : value;
           element.textContent = formattedValue;
         }
       });
@@ -426,18 +438,31 @@ window.TEUI.SectionModules.sect06 = (function () {
    * ✅ EXCEL FORMULA PRESERVED: d_43 = d_44 + d_45 + d_46 (Onsite Energy Subtotal)
    */
   function calculateOnSiteSubtotal(isReferenceCalculation = false) {
-    const d_44_value = window.TEUI.parseNumeric(getSectionValue("d_44", isReferenceCalculation)) || 0;
-    const d_45_value = window.TEUI.parseNumeric(getSectionValue("d_45", isReferenceCalculation)) || 0;
-    const d_46_value = window.TEUI.parseNumeric(getSectionValue("d_46", isReferenceCalculation)) || 0;
-    
+    const d_44_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("d_44", isReferenceCalculation),
+      ) || 0;
+    const d_45_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("d_45", isReferenceCalculation),
+      ) || 0;
+    const d_46_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("d_46", isReferenceCalculation),
+      ) || 0;
+
     // ✅ EXACT EXCEL FORMULA: Sum of all onsite renewable inputs
     const d_43_result = d_44_value + d_45_value + d_46_value;
-    
+
     if (isReferenceCalculation) {
-      console.log(`🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`);
+      console.log(
+        `🔵 [S06-REF] Storing ref_d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`,
+      );
       window.TEUI.StateManager.setValue("ref_d_43", d_43_result, "calculated");
     } else {
-      console.log(`🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`);
+      console.log(
+        `🟢 [S06-TAR] Storing d_43 = ${d_43_result} (from d_44=${d_44_value}, d_45=${d_45_value}, d_46=${d_46_value})`,
+      );
       window.TEUI.StateManager.setValue("d_43", d_43_result, "calculated");
     }
   }
@@ -446,12 +471,18 @@ window.TEUI.SectionModules.sect06 = (function () {
    * ✅ EXCEL FORMULA PRESERVED: i_43 = i_44 + i_46 (Offsite Renewable subtotal)
    */
   function calculateOffsiteRenewable(isReferenceCalculation = false) {
-    const i_44_value = window.TEUI.parseNumeric(getSectionValue("i_44", isReferenceCalculation)) || 0;
-    const i_46_value = window.TEUI.parseNumeric(getSectionValue("i_46", isReferenceCalculation)) || 0;
-    
+    const i_44_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("i_44", isReferenceCalculation),
+      ) || 0;
+    const i_46_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("i_46", isReferenceCalculation),
+      ) || 0;
+
     // ✅ EXACT EXCEL FORMULA: Sum of offsite renewable inputs
     const i_43_result = i_44_value + i_46_value;
-    
+
     if (isReferenceCalculation) {
       window.TEUI.StateManager.setValue("ref_i_43", i_43_result, "calculated");
     } else {
@@ -464,11 +495,14 @@ window.TEUI.SectionModules.sect06 = (function () {
    * 10.3321 is the regulatory-approved conversion factor from m³ to kWh
    */
   function calculateGreenNaturalGasEnergy(isReferenceCalculation = false) {
-    const k_45_value = window.TEUI.parseNumeric(getSectionValue("k_45", isReferenceCalculation)) || 0;
-    
+    const k_45_value =
+      window.TEUI.parseNumeric(
+        getSectionValue("k_45", isReferenceCalculation),
+      ) || 0;
+
     // ✅ EXACT EXCEL FORMULA: Gas volume * conversion factor
     const i_45_result = k_45_value * 10.3321;
-    
+
     if (isReferenceCalculation) {
       window.TEUI.StateManager.setValue("ref_i_45", i_45_result, "calculated");
     } else {
@@ -489,7 +523,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       calculateOnSiteSubtotal(true);
       calculateGreenNaturalGasEnergy(true);
       calculateOffsiteRenewable(true);
-      
+
       console.log("[S06] Reference model calculations complete");
     } catch (error) {
       console.error("[S06] Error in Reference Model calculations:", error);
@@ -505,7 +539,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       calculateOnSiteSubtotal(false);
       calculateGreenNaturalGasEnergy(false);
       calculateOffsiteRenewable(false);
-      
+
       console.log("[S06] Target model calculations complete");
     } catch (error) {
       console.error("[S06] Error in Target Model calculations:", error);
@@ -517,7 +551,7 @@ window.TEUI.SectionModules.sect06 = (function () {
    */
   function calculateAll() {
     console.log("[S06] Running dual-engine calculations...");
-    calculateTargetModel();    // Stores unprefixed values in StateManager
+    calculateTargetModel(); // Stores unprefixed values in StateManager
     calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
     console.log("[S06] Dual-engine calculations complete");
   }
@@ -532,7 +566,7 @@ window.TEUI.SectionModules.sect06 = (function () {
   function initializeEventHandlers() {
     // 1. Event handlers for editable fields (all renewable energy inputs)
     const editableFields = [
-      "d_44", // Photovoltaics 
+      "d_44", // Photovoltaics
       "d_45", // Wind
       "d_46", // Remove EV Charging
       "i_44", // WWS Electricity
@@ -540,7 +574,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       "k_45", // Green Natural Gas
       "m_43", // Exterior/Site loads
     ];
-    
+
     editableFields.forEach((fieldId) => {
       const field = document.querySelector(`[data-field-id="${fieldId}"]`);
       if (field && !field.hasEditableListeners) {
@@ -554,13 +588,8 @@ window.TEUI.SectionModules.sect06 = (function () {
 
         field.addEventListener("blur", () => {
           const newValue = field.textContent.trim();
-          console.log(`🟦 [S06-INPUT] User entered ${newValue} in field ${fieldId} while in ${ModeManager.currentMode} mode`);
-          
           // ✅ CLEAN: Update via ModeManager
           ModeManager.setValue(fieldId, newValue, "user-modified");
-          
-          console.log(`🟦 [S06-INPUT] After setValue - TargetState.${fieldId} = ${TargetState.getValue(fieldId)}, ReferenceState.${fieldId} = ${ReferenceState.getValue(fieldId)}`);
-          
           calculateAll(); // Trigger both engines
           ModeManager.updateCalculatedDisplayValues(); // Update DOM with new calculated values
         });
@@ -668,7 +697,7 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     // 5. Perform initial calculations for this section
     calculateAll();
-    
+
     // 6. Update DOM with calculated values
     ModeManager.updateCalculatedDisplayValues();
 
@@ -691,7 +720,7 @@ window.TEUI.SectionModules.sect06 = (function () {
 
     // Section-specific utility functions - OPTIONAL
     calculateAll: calculateAll,
-    
+
     // ✅ PATTERN A: Expose ModeManager for cross-section communication
     ModeManager: ModeManager,
   };
