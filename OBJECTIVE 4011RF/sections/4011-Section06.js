@@ -182,15 +182,20 @@ window.TEUI.SectionModules.sect06 = (function () {
       calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
-          // Read the correct value from StateManager based on mode
-          const value = this.currentMode === "reference" 
-            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`) || window.TEUI.StateManager.getValue(fieldId)
-            : window.TEUI.StateManager.getValue(fieldId);
-          
-          if (value !== null && value !== undefined) {
-            const formattedValue = window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value;
-            element.textContent = formattedValue;
+          // ✅ FIXED: No fallback to Target values - Reference should show Reference values only
+          let value;
+          if (this.currentMode === "reference") {
+            value = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+            // If Reference value doesn't exist, default to 0 (not Target value)
+            if (value === null || value === undefined) {
+              value = 0;
+            }
+          } else {
+            value = window.TEUI.StateManager.getValue(fieldId) || 0;
           }
+          
+          const formattedValue = window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value;
+          element.textContent = formattedValue;
         }
       });
     },
