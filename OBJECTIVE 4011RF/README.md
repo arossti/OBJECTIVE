@@ -916,14 +916,20 @@ Show it as a message
 Let the user copy/send it to themselves
 Decode it later from SMS by pasting it back in
 
-8. **Number Display Formatting**:
+8. **S07/S13 Emissions Flow to S04/S01**: Changes to fuel selections (Oil vs Gas) in S07 and S13 need to properly flow through to S04 and S01 emissions calculations. Currently, S01 emissions may not update when switching between Oil and Gas because listeners are tied to energy loads (kWh) which don't change when fuel type changes, but emissions factors do change significantly (oil has much higher emissions than gas). Need to ensure emissions calculations update when fuel sources change, not just when energy demand changes. This requires additional listeners for fuel-type changes that trigger emission recalculations downstream.
+
+9. **Graphics Sections S16/S17 Dual-State Refactoring**: Section 16 (Sankey Diagram) and Section 17 (Dependency Graph) were not refactored to Pattern A dual-state architecture. These are reader sections that don't perform calculations themselves, but read values from states to display visualizations. Currently they only read unprefixed application state, but should be enhanced to allow users to view Target or Reference model data in the graphical UI. This would provide visual comparison capabilities between different scenarios and reference standards.
+
+10. **S03 ClimateValues.js Completion for All Canadian Locations**: Complete the ClimateValues.js file for all locations in Canada using data from CANADA.csv. Currently only a subset of Canadian cities have climate data available. This is best achieved by creating a JavaScript automation tool to systematically populate the JSON values in ClimateValues.js from the comprehensive CANADA.csv dataset, ensuring all Canadian locations have proper climate data for accurate energy modeling.
+
+11. **Number Display Formatting**:
 
    - **TODO:** Implement consistent number display formatting across all sections. Ensure that:
      - Integer inputs/calculations are displayed with two decimal places (e.g., `24` becomes `24.00`).
      - Zero values are displayed as `0.00`.
      - Emptying a field (e.g., via Cut/Delete/Backspace) results in `0.00` being displayed and stored (or handle appropriately based on field requirements). Refactor `formatNumber` helpers and input field `blur` event handlers as needed.
 
-9. **Section Naming Refactor**:
+12. **Section Naming Refactor**:
 
    - **Current State**: Sections use verbose, natural language IDs (e.g., 'envelopeTransmissionLosses', 'mechanicalLoads')
    - **Target State**: Return to simple numeric nomenclature ('sect01', 'sect02', etc.)
@@ -939,26 +945,26 @@ Decode it later from SMS by pasting it back in
      - Create mapping documentation between numeric IDs and their functions
    - **Note**: Current verbose names are a temporary workaround and should not be replicated in new section implementations
 
-10. **Elevation Data Handling (Section 03)**: ✅ **COMPLETED**
+13. **Elevation Data Handling (Section 03)**: ✅ **COMPLETED**
 
    - **Status**: ✅ Resolved - Dynamic elevation fetching implemented.
    - **Solution**: Section 03 now automatically populates `l_22` (Elevation ASL) from ClimateValues.js based on the selected city. For example, Alexandria, ON correctly shows 80m elevation.
    - **Integration**: Section 13's cooling calculations properly read the dynamic elevation value from `l_22` for atmospheric pressure adjustments.
    - **Impact**: Accurate cooling load calculations now depend on actual project location elevation rather than hardcoded defaults.
 
-11. **Ventilation Constant Discrepancy:**
+14. **Ventilation Constant Discrepancy:**
 
     - **Issue:** There's a potential inconsistency in constants used for ventilation calculations. Formulas involving ventilation energy (e.g., `d_121`, `d_122`) often use a factor of `1.21` (which implicitly includes density and specific heat for L/s flow rates). However, the `coolingState` object defines `airMass` as `1.204` (kg/m³) and `specificHeatCapacity` as `1005` (J/kg·K).
     - **Plan:** Review these constants and their application in Sections 13 and potentially other sections during future refactoring to ensure consistent physics are applied (either stick to the `1.21` convention or refactor formulas to explicitly use density and specific heat with m³/s rates).
 
-12. **Conditional Ghosting for UI Fields:**
+15. **Conditional Ghosting for UI Fields:**
 
     - **Issue:** Attempts to implement conditional field ghosting (using the 'disabled-input' class) based on dropdown selections can interfere with core calculation logic.
     - **Example:** When attempting to ghost emissions fields in sections 7 and 13 based on fuel type selections (Oil/Gas vs Electric/Heatpump), the changes unexpectedly broke calculation fidelity with the Excel codebase.
     - **Caution:** Changes to UI ghosting logic should be implemented with extreme care, thoroughly tested against the Excel reference model, and immediately reverted if calculation discrepancies are observed.
     - **Plan:** Future UI improvements should separate presentation logic (ghosting) from calculation logic more completely to avoid these interactions.
 
-13. **Cooling Calculation Parity (d_117)**:
+16. **Cooling Calculation Parity (d_117)**:
     - **Issue:** The calculated value for `d_117` (Heatpump Cool Elect. Load in S13, used in S15's `d_135`) shows a discrepancy (~123 kWh in default scenario) compared to the Excel reference model.
     - **Plan:** Perform a deep dive into the cooling calculation chain affecting `d_117` (likely originating in S13/`4011-Cooling.js`) to identify the source of the difference and improve parity with Excel.
 
