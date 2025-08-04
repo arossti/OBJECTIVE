@@ -51,12 +51,16 @@ window.TEUI.SectionModules.sect07 = (function () {
     currentMode: "target", // "target" or "reference"
     
     switchMode: function(mode) {
+      console.log(`🔄 [S07] switchMode: Switching from "${this.currentMode}" to "${mode}"`);
       this.currentMode = mode;
       this.refreshUI();
       this.updateCalculatedDisplayValues(); // ✅ DOM update without calculations
+      console.log(`✅ [S07] switchMode: Switch to "${mode}" completed`);
     },
     
     refreshUI: function() {
+      console.log(`🔄 [S07] refreshUI: Starting refresh for mode=${this.currentMode}`);
+      
       // Update input fields to show current mode's values
       const fields = getFields();
       Object.keys(fields).forEach(fieldId => {
@@ -64,22 +68,52 @@ window.TEUI.SectionModules.sect07 = (function () {
         const storedValue = currentState.getValue(fieldId);
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         
+        console.log(`🔍 [S07] refreshUI: fieldId=${fieldId}, storedValue=${storedValue}, elementFound=${!!element}`);
+        
         if (element) {
           // ✅ PATTERN A: Get field default from sectionRows definition
           const fieldDefault = this.getFieldDefault(fieldId);
           const valueToShow = storedValue !== null ? storedValue : fieldDefault;
           
-          if (element.hasAttribute('contenteditable')) {
-            element.textContent = valueToShow || "";
-          } else if (element.tagName === 'SELECT') {
-            // ✅ CRITICAL: Always update dropdowns, use default if no stored value
-            element.value = valueToShow || "";
+          // ✅ CRITICAL FIX: Look for SELECT inside TD if element is a table cell
+          let targetElement = element;
+          let elementType = element.tagName || element.type;
+          
+          if (element.tagName === 'TD') {
+            // Look for SELECT or INPUT inside the TD
+            const selectInside = element.querySelector('select');
+            const inputInside = element.querySelector('input[type="range"]');
+            const editableInside = element.querySelector('[contenteditable="true"]');
+            
+            if (selectInside) {
+              targetElement = selectInside;
+              elementType = 'SELECT';
+            } else if (inputInside) {
+              targetElement = inputInside;
+              elementType = 'range';
+            } else if (editableInside) {
+              targetElement = editableInside;
+              elementType = 'contenteditable';
+            }
+          }
+          
+          console.log(`📋 [S07] refreshUI: fieldId=${fieldId}, default=${fieldDefault}, valueToShow=${valueToShow}, elementType=${elementType}`);
+          
+          if (elementType === 'contenteditable' || targetElement.hasAttribute('contenteditable')) {
+            console.log(`✏️ [S07] refreshUI: Setting contenteditable ${fieldId} = "${valueToShow || ""}"`);
+            targetElement.textContent = valueToShow || "";
+          } else if (elementType === 'SELECT') {
+            console.log(`🔽 [S07] refreshUI: Setting dropdown ${fieldId} from "${targetElement.value}" to "${valueToShow || ""}" (mode=${this.currentMode})`);
+            targetElement.value = valueToShow || "";
+            console.log(`🔽 [S07] refreshUI: Dropdown ${fieldId} now shows "${targetElement.value}"`);
             // Store the default if no value was stored yet
             if (storedValue === null && fieldDefault) {
+              console.log(`💾 [S07] refreshUI: Storing default ${fieldId} = "${fieldDefault}" to ${this.currentMode} state`);
               currentState.setValue(fieldId, fieldDefault);
             }
-          } else if (element.type === 'range') {
-            element.value = valueToShow || "";
+          } else if (elementType === 'range' || targetElement.type === 'range') {
+            console.log(`🎚️ [S07] refreshUI: Setting slider ${fieldId} = "${valueToShow || ""}"`);
+            targetElement.value = valueToShow || "";
             // Also update the display span if it exists
             const displaySpan = document.querySelector(`span[data-display-for="${fieldId}"]`);
             if (displaySpan) displaySpan.textContent = (valueToShow || "0") + "%";
@@ -90,21 +124,26 @@ window.TEUI.SectionModules.sect07 = (function () {
           }
         }
       });
+      
+      console.log(`✅ [S07] refreshUI: Completed refresh for mode=${this.currentMode}`);
     },
     
     // Helper function to get field defaults from sectionRows definition
     getFieldDefault: function(fieldId) {
+      console.log(`🔍 [S07] getFieldDefault: Looking for default for fieldId=${fieldId}`);
       for (const rowKey in sectionRows) {
         const row = sectionRows[rowKey];
         if (row.cells) {
           for (const cellKey in row.cells) {
             const cell = row.cells[cellKey];
             if (cell.fieldId === fieldId && cell.value !== undefined) {
+              console.log(`✅ [S07] getFieldDefault: Found default for ${fieldId} = "${cell.value}"`);
               return cell.value;
             }
           }
         }
       }
+      console.log(`❌ [S07] getFieldDefault: No default found for ${fieldId}`);
       return null;
     },
     
@@ -144,16 +183,22 @@ window.TEUI.SectionModules.sect07 = (function () {
     
     getValue: function(fieldId) {
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-      return currentState.getValue(fieldId);
+      const value = currentState.getValue(fieldId);
+      console.log(`📖 [S07] ModeManager.getValue: ${fieldId} = "${value}" (mode=${this.currentMode})`);
+      return value;
     },
     
     setValue: function(fieldId, value, source = "user-modified") {
+      console.log(`💾 [S07] ModeManager.setValue: Setting ${fieldId} = "${value}" (mode=${this.currentMode}, source=${source})`);
       const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
       currentState.setValue(fieldId, value);
       
       // ✅ PATTERN A: Store to StateManager for cross-section communication
       if (this.currentMode === "target") {
+        console.log(`🌐 [S07] ModeManager.setValue: Also storing to global StateManager: ${fieldId} = "${value}"`);
         window.TEUI?.StateManager?.setValue(fieldId, value, source);
+      } else {
+        console.log(`🔒 [S07] ModeManager.setValue: Reference value - not storing to global StateManager yet`);
       }
       // Reference values don't get stored globally until calculateReferenceModel runs
     }
@@ -804,14 +849,18 @@ window.TEUI.SectionModules.sect07 = (function () {
       e.target.getAttribute("data-dropdown-id");
     const value = e.target.value;
     
+    console.log(`🔽 [S07] handleGenericDropdownChange: fieldId=${fieldId}, value="${value}", mode=${ModeManager.currentMode}`);
+    
     if (fieldId) {
       // ✅ PATTERN A: Use ModeManager.setValue for proper state separation
+      console.log(`💾 [S07] handleGenericDropdownChange: Storing ${fieldId}="${value}" in ${ModeManager.currentMode} mode`);
       ModeManager.setValue(fieldId, value, "user-modified");
 
       if (fieldId === "d_51") handleDHWSourceChange(e);
 
       const currentWaterMethod = ModeManager.getValue("d_49") || "User Defined";
       const currentSystemType = ModeManager.getValue("d_51") || "Heatpump";
+      console.log(`🔍 [S07] handleGenericDropdownChange: Read back values - waterMethod="${currentWaterMethod}", systemType="${currentSystemType}"`);
       updateSection7Visibility(currentWaterMethod, currentSystemType);
       calculateAll();
       ModeManager.updateCalculatedDisplayValues(); // ✅ DOM update after calculations
@@ -1001,19 +1050,20 @@ window.TEUI.SectionModules.sect07 = (function () {
     toggleSwitch.addEventListener("click", (event) => {
       event.stopPropagation();
       const isReference = toggleSwitch.classList.toggle("active");
+      console.log(`🎛️ [S07] Toggle switch clicked: isReference=${isReference}`);
       if (isReference) {
         slider.style.transform = "translateX(20px)";
         toggleSwitch.style.backgroundColor = "#28a745";
         stateIndicator.textContent = "REFERENCE";
         stateIndicator.style.backgroundColor = "rgba(40, 167, 69, 0.7)";
-
+        console.log(`🔄 [S07] Toggle: Switching to REFERENCE mode`);
         ModeManager.switchMode("reference");
       } else {
         slider.style.transform = "translateX(0px)";
         toggleSwitch.style.backgroundColor = "#ccc";
         stateIndicator.textContent = "TARGET";
         stateIndicator.style.backgroundColor = "rgba(0, 123, 255, 0.5)";
-
+        console.log(`🔄 [S07] Toggle: Switching to TARGET mode`);
         ModeManager.switchMode("target");
       }
     });
