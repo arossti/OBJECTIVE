@@ -61,21 +61,51 @@ window.TEUI.SectionModules.sect07 = (function () {
       const fields = getFields();
       Object.keys(fields).forEach(fieldId => {
         const currentState = this.currentMode === "target" ? TargetState : ReferenceState;
-        const value = currentState.getValue(fieldId);
-        if (value !== null) {
-          const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-          if (element && element.hasAttribute('contenteditable')) {
-            element.textContent = value;
-          } else if (element && element.tagName === 'SELECT') {
-            element.value = value;
-          } else if (element && element.type === 'range') {
-            element.value = value;
+        const storedValue = currentState.getValue(fieldId);
+        const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+        
+        if (element) {
+          // ✅ PATTERN A: Get field default from sectionRows definition
+          const fieldDefault = this.getFieldDefault(fieldId);
+          const valueToShow = storedValue !== null ? storedValue : fieldDefault;
+          
+          if (element.hasAttribute('contenteditable')) {
+            element.textContent = valueToShow || "";
+          } else if (element.tagName === 'SELECT') {
+            // ✅ CRITICAL: Always update dropdowns, use default if no stored value
+            element.value = valueToShow || "";
+            // Store the default if no value was stored yet
+            if (storedValue === null && fieldDefault) {
+              currentState.setValue(fieldId, fieldDefault);
+            }
+          } else if (element.type === 'range') {
+            element.value = valueToShow || "";
             // Also update the display span if it exists
             const displaySpan = document.querySelector(`span[data-display-for="${fieldId}"]`);
-            if (displaySpan) displaySpan.textContent = value + "%";
+            if (displaySpan) displaySpan.textContent = (valueToShow || "0") + "%";
+            // Store the default if no value was stored yet
+            if (storedValue === null && fieldDefault) {
+              currentState.setValue(fieldId, fieldDefault);
+            }
           }
         }
       });
+    },
+    
+    // Helper function to get field defaults from sectionRows definition
+    getFieldDefault: function(fieldId) {
+      for (const rowKey in sectionRows) {
+        const row = sectionRows[rowKey];
+        if (row.cells) {
+          for (const cellKey in row.cells) {
+            const cell = row.cells[cellKey];
+            if (cell.fieldId === fieldId && cell.value !== undefined) {
+              return cell.value;
+            }
+          }
+        }
+      }
+      return null;
     },
     
     updateCalculatedDisplayValues: function() {
