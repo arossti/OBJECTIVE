@@ -1294,7 +1294,12 @@ window.TEUI.SectionModules.sect04 = (function () {
     const i_43 = getGlobalNumericValue("ref_i_43") || getGlobalNumericValue("i_43") || 0; // S06 offsite renewable subtotal
     
     const result = h_27 - d_43 - i_43; // NET target electricity consumption after renewable offsets
+    
+    // 🔍 DEBUG: Log the calculation details
+    console.log(`🔵 [S04] calculateJ27: h_27=${h_27}, d_43=${d_43}, i_43=${i_43}, result=${result}`);
+    
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
+    console.log(`🔵 [S04] calculateJ27 storing j_27 = ${result} (setCalculatedValue will route based on context)`);
     setCalculatedValue("j_27", result);
     return result;
   }
@@ -2456,16 +2461,32 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to S06 Reference mode renewable changes
       window.TEUI.StateManager.addListener("ref_d_43", () => {
-        console.log(`[S04] S06 reference onsite renewable subtotal changed: ref_d_43`);
-        calculateJ27(); // Recalculate REFERENCE net electricity after onsite renewables
-        calculateJ32(); // Recalculate REFERENCE subtotal
+        const ref_d_43_value = window.TEUI.StateManager.getValue("ref_d_43");
+        console.log(`🔵 [S04-REF] ref_d_43 listener triggered with value: ${ref_d_43_value}`);
+        
+        // ✅ FIX: Use calculateReferenceModel() to ensure function override routing
+        calculateReferenceModel(); // This has the function override to route j_27 → ref_j_27
+        
+        // Log what we're storing
+        const ref_j_27 = window.TEUI.StateManager.getValue("ref_j_27");
+        const ref_j_32 = window.TEUI.StateManager.getValue("ref_j_32");
+        console.log(`🔵 [S04-REF] After calculateReferenceModel: ref_j_27=${ref_j_27}, ref_j_32=${ref_j_32}`);
+        
         ModeManager.updateCalculatedDisplayValues();
       });
 
       window.TEUI.StateManager.addListener("ref_i_43", () => {
-        console.log(`[S04] S06 reference offsite renewable subtotal changed: ref_i_43`);
-        calculateJ27(); // Recalculate REFERENCE net electricity after offsite renewables
-        calculateJ32(); // Recalculate REFERENCE subtotal
+        const ref_i_43_value = window.TEUI.StateManager.getValue("ref_i_43");
+        console.log(`🔵 [S04-REF] ref_i_43 listener triggered with value: ${ref_i_43_value}`);
+        
+        // ✅ FIX: Use calculateReferenceModel() to ensure function override routing
+        calculateReferenceModel(); // This has the function override to route j_27 → ref_j_27
+        
+        // Log what we're storing
+        const ref_j_27 = window.TEUI.StateManager.getValue("ref_j_27");
+        const ref_j_32 = window.TEUI.StateManager.getValue("ref_j_32");
+        console.log(`🔵 [S04-REF] After calculateReferenceModel: ref_j_27=${ref_j_27}, ref_j_32=${ref_j_32}`);
+        
         ModeManager.updateCalculatedDisplayValues();
       });
     }
