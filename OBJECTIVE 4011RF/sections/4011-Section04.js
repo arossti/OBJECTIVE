@@ -315,9 +315,9 @@ window.TEUI.SectionModules.sect04 = (function () {
       TargetState.initialize();
       ReferenceState.initialize();
       
-      // Initialize backup tracking for h_115 and d_113 changes
-      this.lastH115Value = window.TEUI?.StateManager?.getValue("h_115");
-      this.lastD113Value = window.TEUI?.StateManager?.getValue("d_113");
+      // This has been disabled as the new unified listener is more robust.
+      // this.lastH115Value = window.TEUI?.StateManager?.getValue("h_115");
+      // this.lastD113Value = window.TEUI?.StateManager?.getValue("d_113");
 
       // ✅ CRITICAL: Sync defaults to StateManager for downstream sections
       if (window.TEUI?.StateManager) {
@@ -434,6 +434,8 @@ window.TEUI.SectionModules.sect04 = (function () {
       );
       
       // 🔧 BACKUP MECHANISM: Manual change detection (in case StateManager listeners fail)
+      // This has been disabled as the new unified listener is more robust.
+      /*
       const currentH115 = window.TEUI?.StateManager?.getValue("h_115");
       const currentD113 = window.TEUI?.StateManager?.getValue("d_113");
       
@@ -449,6 +451,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       
       this.lastH115Value = currentH115;
       this.lastD113Value = currentD113;
+      */
 
       // All calculated fields that S04 produces (BACKUP approach)
       const calculatedFields = [
@@ -2448,69 +2451,31 @@ window.TEUI.SectionModules.sect04 = (function () {
         ModeManager.updateCalculatedDisplayValues();
       });
 
-      // ✅ CRITICAL: React to S07/S13 gas-related changes (affects H28 target gas volume)
-      window.TEUI.StateManager.addListener("d_51", () => {
-        console.log(`[S04] S07 water heating fuel type changed: d_51`);
+      // ✅ ROBUST: Create a single, unified callback for all fuel-related changes.
+      const handleFuelSystemUpdate = () => {
+        console.log(`[S04] Unified fuel system listener triggered.`);
         calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("d_113", (newValue, oldValue) => {
-        console.log(`[S04] d_113 → ${newValue}`);
-        calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal  
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("e_51", () => {
-        console.log(`[S04] S07 water gas volume changed: e_51`);
-        calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("h_115", () => {
-        const newValue = window.TEUI.StateManager.getValue("h_115");
-      console.log(`[S04] 🔥 S13 space gas volume LISTENER triggered: h_115 = ${newValue}`);
-        calculateRow28(); // Recalculate complete gas row (includes H28, J28, K28)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      // ✅ CRITICAL: React to S07/S13 oil-related changes (affects H30 target oil volume)
-      window.TEUI.StateManager.addListener("k_54", () => {
-        console.log(`[S04] S07 water oil volume changed: k_54`);
         calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
+        
+        // The row calculations will update their individual values.
+        // Now, trigger the subtotals which depend on them.
+        calculateF32(); 
+        calculateG32(); 
+        calculateJ32();  
+        calculateK32(); 
+        
+        // Finally, ensure the UI reflects all changes.
         ModeManager.updateCalculatedDisplayValues();
-      });
+      };
 
-      window.TEUI.StateManager.addListener("f_115", () => {
-        const newValue = window.TEUI.StateManager.getValue("f_115");
-      console.log(`[S04] 🛢️ S13 space oil volume LISTENER triggered: f_115 = ${newValue}`);
-        calculateRow30(); // Recalculate complete oil row (includes H30, J30, K30)
-        calculateF32(); // Recalculate ACTUAL subtotal
-        calculateG32(); // Recalculate ACTUAL emissions subtotal
-        calculateJ32(); // Recalculate TARGET subtotal
-        calculateK32(); // Recalculate TARGET emissions subtotal
-        ModeManager.updateCalculatedDisplayValues();
-      });
+      // ✅ CRITICAL: Point all S07/S13 fuel-related dependencies to the single handler.
+      // This ensures that any change triggers a complete recalculation of the fuel block.
+      window.TEUI.StateManager.addListener("d_51", handleFuelSystemUpdate);  // S07 Water Heating Fuel Type
+      window.TEUI.StateManager.addListener("d_113", handleFuelSystemUpdate); // S13 Space Heating Fuel Type
+      window.TEUI.StateManager.addListener("e_51", handleFuelSystemUpdate);  // S07 Water Gas Volume
+      window.TEUI.StateManager.addListener("h_115", handleFuelSystemUpdate); // S13 Space Gas Volume
+      window.TEUI.StateManager.addListener("k_54", handleFuelSystemUpdate);  // S07 Water Oil Volume
+      window.TEUI.StateManager.addListener("f_115", handleFuelSystemUpdate);  // S13 Space Oil Volume
 
       // ✅ CRITICAL: React to S06 renewable energy changes (affects F27, J27, and subtotals)
       // Excel formulas: F27 = D27 - D43 - I43, J27 = H27 - D43 - I43
@@ -2533,55 +2498,14 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       // ✅ CRITICAL: React to S06 Reference mode renewable changes
-      window.TEUI.StateManager.addListener("ref_d_43", () => {
-        // ✅ FIX: Use calculateReferenceModel() to ensure function override routing
-        calculateReferenceModel(); // This has the function override to route j_27 → ref_j_27
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("ref_i_43", () => {
-        // ✅ FIX: Use calculateReferenceModel() to ensure function override routing
-        calculateReferenceModel(); // This has the function override to route j_27 → ref_j_27
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      // ✅ CRITICAL: React to S07/S13 Reference mode gas-related changes
-      window.TEUI.StateManager.addListener("ref_d_51", () => {
-        console.log(
-          `[S04] S07 water heating fuel type changed (Reference): ref_d_51`,
-        );
-        calculateReferenceModel(); // This has the function override to ensure ref_ routing
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("ref_e_51", () => {
-        console.log(`[S04] S07 water gas volume changed (Reference): ref_e_51`);
-        calculateReferenceModel(); // This has the function override to ensure ref_ routing
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      // ✅ CRITICAL: React to S07/S13 Reference mode oil-related changes
-      window.TEUI.StateManager.addListener("ref_k_54", () => {
-        console.log(`[S04] S07 water oil volume changed (Reference): ref_k_54`);
-        calculateReferenceModel(); // This has the function override to ensure ref_ routing
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("ref_f_115", () => {
-        console.log(
-          `[S04] S13 space oil volume changed (Reference): ref_f_115`,
-        );
-        calculateReferenceModel(); // This has the function override to ensure ref_ routing
-        ModeManager.updateCalculatedDisplayValues();
-      });
-
-      window.TEUI.StateManager.addListener("ref_h_115", () => {
-        console.log(
-          `[S04] S13 space gas volume changed (Reference): ref_h_115`,
-        );
-        calculateReferenceModel(); // This has the function override to ensure ref_ routing
-        ModeManager.updateCalculatedDisplayValues();
-      });
+      // Use the single, robust fuel handler for Reference mode changes as well.
+      window.TEUI.StateManager.addListener("ref_d_43", handleFuelSystemUpdate);
+      window.TEUI.StateManager.addListener("ref_i_43", handleFuelSystemUpdate);
+      window.TEUI.StateManager.addListener("ref_d_51", handleFuelSystemUpdate);
+      window.TEUI.StateManager.addListener("ref_e_51", handleFuelSystemUpdate);
+      window.TEUI.StateManager.addListener("ref_k_54", handleFuelSystemUpdate);
+      window.TEUI.StateManager.addListener("ref_f_115", handleFuelSystemUpdate);
+      window.TEUI.StateManager.addListener("ref_h_115", handleFuelSystemUpdate);
     }
   }
 
