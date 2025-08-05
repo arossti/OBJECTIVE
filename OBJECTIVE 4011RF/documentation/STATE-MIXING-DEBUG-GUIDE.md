@@ -2,9 +2,33 @@
 
 ## **CRITICAL ISSUE IDENTIFIED**
 
-**Problem**: Perfect state isolation is NOT achieved. Reference mode changes in S13 are contaminating Target values in S01.
+**Problem**: Perfect state isolation is NOT achieved. Reference mode changes in S13 are contaminating Target values in S01. Furthermore, Target mode fuel changes in S07 and S13 are incorrectly triggering updates to the Reference column (E) in S01.
 
 **Evidence**: Target TEUI `h_10` changes from `93.6` (correct heatpump) to `154.3` (electricity) or `156` (gas) when ONLY Reference mode edits are made in S13.
+
+## **SESSION RECAP (Current Date)**
+
+This session focused on diagnosing a persistent calculation bug related to fuel switching in S13 and S07. The initial symptom was that TEUI values in S01 would not reliably update when switching between fossil fuels (Gas/Oil).
+
+**Attempts & Outcomes**:
+1.  **Hypothesis**: The `d_113` listener in S04 was not firing because the state value wasn't changing.
+    *   **Action**: Replaced granular listeners in `S04` with a single, robust `handleFuelSystemUpdate` callback, mirroring a pattern from a working archived version.
+    *   **Result**: The issue persisted. Logs revealed that while the new listener fired, it was part of a larger "calculation storm" of redundant triggers.
+
+2.  **Hypothesis**: A race condition existed between the primary `StateManager` listeners and a backup timer-based mechanism in `S04`.
+    *   **Action**: Disabled the backup/failsafe mechanism in `S04`'s `updateCalculatedDisplayValues` function.
+    *   **Result**: The issue persisted, indicating the race condition was more fundamental.
+
+3.  **Hypothesis**: The master calculation order defined in `4011-Calculator.js` was incorrect after the dual-state refactor.
+    *   **Action**: Modified the `calcOrder` array to move `sect15` to execute after `sect04`.
+    *   **Result**: The issue persisted. While a logical change, it did not solve the root cause.
+
+4.  **Hypothesis**: The calculation storm itself, caused by a mix of a master procedural loop (`Calculator.calculateAll`) and reactive section-level listeners, was the problem.
+    *   **Action**: Implemented a global calculation lock (`window.TEUI.isCalculating`). `Calculator.calculateAll` now sets this flag, and listeners (like S04's `handleFuelSystemUpdate`) are guarded to prevent firing during a global calculation pass.
+    *   **Result**: The issue persists. This indicates the contamination is happening within the global calculation pass itself.
+
+**New Critical Insight**:
+*   State mixing is bidirectional. Target mode changes in S07/S13 are incorrectly updating the S01 Reference column (E). This points to a fundamental flaw in how the dual-engine calculations are being managed, likely by a legacy system.
 
 ## **DEBUGGING METHODOLOGY**
 
@@ -144,14 +168,13 @@ Line 1548: h_10=156 (❌ FURTHER CONTAMINATION - Target TEUI showing gas values)
 - `sections/4011-Section04.js` (global j_32/k_32 writes)
 - `4011-SectionIntegrator.js` (orchestration logic)
 - `documentation/Logs.md` (contamination evidence)
+- `4011-ComponentBridge.js` (**NEW - Primary suspect for state mixing**)
 
-## **NEXT STEPS**
+## **NEXT STEPS (Strategy for Next Session)**
 
-1. **Fresh debugging session** with clean context
-2. **Focused diagnostic logging** on suspected contamination points
-3. **Targeted fix** once root cause identified
-4. **Verification testing** to confirm perfect state isolation
-5. **Resume S05-S07 refactoring** once debugging complete
+1.  **Primary Hypothesis**: `ComponentBridge.js` is the source of the state contamination. Its logic is likely incompatible with the new Pattern A architecture where sections manage their own state and communicate directly via prefixed values in `StateManager`.
+2.  **First Action**: Investigate and then systematically disable `ComponentBridge.js` by commenting out its initialization and any `initDualStateSync()` calls. Test the S07/S13 fuel switching in both Target and Reference modes to see if this single action resolves the state mixing.
+3.  **Contingency Plan**: If disabling `ComponentBridge.js` does not solve the issue, proceed with swapping in the archived (pre-dual-state) versions of S13 and/or S07 to isolate whether the fault lies in the new section logic itself or in how the rest of the system is interacting with it.
 
 ---
 
