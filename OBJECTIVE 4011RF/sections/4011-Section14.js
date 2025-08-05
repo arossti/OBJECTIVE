@@ -1443,6 +1443,10 @@ window.TEUI.SectionModules.sect14 = (function () {
     // Add listeners for all unique dependencies
     uniqueDependencies.forEach((dep) => {
       sm.addListener(dep, () => {
+        if (window.TEUI.isCalculating) {
+          // console.log(`[S14] Listener for ${dep} suppressed during global calculation.`);
+          return;
+        }
         // console.log(`Listener triggered for dependency: ${dep} in Section 14`);
         calculateAll();
       });

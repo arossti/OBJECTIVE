@@ -77,20 +77,18 @@
 4011-Section03.js:1356 [Section03] Reference results stored with ref_ prefix for downstream sections: {h_23: '18', d_23: undefined, d_24: undefined, h_24: '24', d_20: undefined, …}
 4011-Section03.js:1323 [Section03] Reference Model calculations complete
 4011-Section03.js:1956 S03: Self-Contained State Module initialization complete
-4011-Section04.js:2566 [S04] Pattern A S04 section rendered
+4011-Section04.js:2597 [S04] Pattern A S04 section rendered
 4011-Section04.js:314 S04: Initializing Pattern A ModeManager
 4011-Section04.js:159 S04: TargetState defaults set
-4011-Section04.js:177 S04: TargetState loaded from localStorage
 4011-Section04.js:265 S04: ReferenceState defaults set
-4011-Section04.js:286 S04: ReferenceState loaded from localStorage
-4011-Section01.js:1061 📡 [S01] Listener triggered: f_32 changed from null to 132938
+4011-Section01.js:1061 📡 [S01] Listener triggered: f_32 changed from null to 0
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=0 (from ref_j_32), refEmissions=0, refEmbodiedCarbon=0
 4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=0 (from j_32), targetEmissions=0, embodiedCarbon=0
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=0
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=0, actualEmissions=0
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Targeted Use
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=0, e_8=0, e_6=0
 4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=0, h_8=0, h_6=0
@@ -98,14 +96,14 @@
 4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
 4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
 4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: g_32 changed from null to 6779.838
+4011-Section01.js:1061 📡 [S01] Listener triggered: g_32 changed from null to 0
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=0 (from ref_j_32), refEmissions=0, refEmbodiedCarbon=0
 4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=0 (from j_32), targetEmissions=0, embodiedCarbon=0
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=0, actualEmissions=0
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Targeted Use
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=0, e_8=0, e_6=0
 4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=0, h_8=0, h_6=0
@@ -120,7 +118,7 @@
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=0 (from ref_j_32), refEmissions=0, refEmbodiedCarbon=0
 4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=0 (from j_32), targetEmissions=0, embodiedCarbon=0
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=0, actualEmissions=0
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Targeted Use
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=0, e_8=0, e_6=0
 4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=0, h_8=0, h_6=0
@@ -135,7 +133,7 @@
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=0 (from ref_j_32), refEmissions=0, refEmbodiedCarbon=0
 4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=0 (from j_32), targetEmissions=0, embodiedCarbon=0
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=0, actualEmissions=0
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Targeted Use
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=0, e_8=0, e_6=0
 4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=0, h_8=0, h_6=0
@@ -147,8 +145,8 @@
 4011-Section04.js:334 S04: Pattern A initialization complete
 4011-Section04.js:638 ✅ S04: Header controls injected successfully
 4011-Section04.js:2307 [S04] Found 17 editable fields
-4011-Section04.js:2554 [S04] ✅ S13→S04→S01 dependencies registered
-4011-Section04.js:2558 [S04] INIT: d_113="null"
+4011-Section04.js:2585 [S04] ✅ S13→S04→S01 dependencies registered
+4011-Section04.js:2589 [S04] INIT: d_113="null"
 4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:1516 [S04] Calculating Target model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
@@ -158,6 +156,36 @@
       Space oil volume (f_115): 0
       Final H30 result: 0
 4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
+4011-Section01.js:1061 📡 [S01] Listener triggered: f_32 changed from 0 to 132938
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=0 (from ref_j_32), refEmissions=0, refEmbodiedCarbon=0
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=0 (from j_32), targetEmissions=0, embodiedCarbon=0
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=0
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Targeted Use
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=0, e_8=0, e_6=0
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=0, h_8=0, h_6=0
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=0, k_8=0, k_6=0
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: g_32 changed from 0 to 6779.838
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=0 (from ref_j_32), refEmissions=0, refEmbodiedCarbon=0
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=0 (from j_32), targetEmissions=0, embodiedCarbon=0
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Targeted Use
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=0, e_8=0, e_6=0
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=0, h_8=0, h_6=0
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=0, k_8=0, k_6=0
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
 4011-Section04.js:1548 [S04] Target model calculations complete
 4011-Section04.js:1521 [S04] Calculating Reference model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
@@ -228,56 +256,52 @@
 4011-Section06.js:83 S06: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
 4011-Section06.js:553 [S06] Running dual-engine calculations...
 4011-Section06.js:463 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2483 [S04] S06 onsite renewable subtotal changed: d_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2492 [S04] S06 offsite renewable subtotal changed: i_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:543 [S06] Target model calculations complete
 4011-Section06.js:458 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Electricity'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Electricity'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:527 [S06] Reference model calculations complete
 4011-Section06.js:556 [S06] Dual-engine calculations complete
 4011-Section06.js:188 🔄 [S06] updateCalculatedDisplayValues: mode=target
 4011-Section06.js:704 S06: Pattern A initialization complete.
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section08.js:595 [S08] S04 listeners setup complete
@@ -287,6 +311,7 @@
 4011-Section04.js:2446 [S04] S08 forestry offset changed: d_60
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section09.js:52 S09: Target defaults set
 4011-Section09.js:99 S09: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6, lighting: 2.0
 4011-Section09.js:369 S09: Header controls injected successfully
 4011-Section09.js:280 S09: UI refreshed for target mode
@@ -362,50 +387,22 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=0, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -416,50 +413,22 @@
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: HeatpumpElectricityGasOil, HSPF=12.5
 4011-Section13.js:3209 [S13] TGT FUEL: HeatpumpElectricityGasOil system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:3234 [S13] FUEL STORED: HeatpumpElectricityGasOil → Gas=0m³, Oil=0L
@@ -493,27 +462,13 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=170240.08064223375, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Electricity'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electricity'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -851,7 +806,7 @@
 4011-Section03.js:1356 [Section03] Reference results stored with ref_ prefix for downstream sections: {h_23: '18', d_23: undefined, d_24: undefined, h_24: '24', d_20: undefined, …}
 4011-Section03.js:1323 [Section03] Reference Model calculations complete
 4011-Section03.js:1956 S03: Self-Contained State Module initialization complete
-4011-Section04.js:2566 [S04] Pattern A S04 section rendered
+4011-Section04.js:2597 [S04] Pattern A S04 section rendered
 4011-Section04.js:314 S04: Initializing Pattern A ModeManager
 4011-Section04.js:159 S04: TargetState defaults set
 4011-Section04.js:177 S04: TargetState loaded from localStorage
@@ -920,8 +875,8 @@
 4011-Section04.js:331 S04: Synced Target defaults to StateManager
 4011-Section04.js:334 S04: Pattern A initialization complete
 4011-Section04.js:2307 [S04] Found 17 editable fields
-4011-Section04.js:2554 [S04] ✅ S13→S04→S01 dependencies registered
-4011-Section04.js:2558 [S04] INIT: d_113="Heatpump"
+4011-Section04.js:2585 [S04] ✅ S13→S04→S01 dependencies registered
+4011-Section04.js:2589 [S04] INIT: d_113="Heatpump"
 4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:1516 [S04] Calculating Target model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
@@ -1001,56 +956,52 @@
 4011-Section06.js:83 S06: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
 4011-Section06.js:553 [S06] Running dual-engine calculations...
 4011-Section06.js:463 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2483 [S04] S06 onsite renewable subtotal changed: d_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2492 [S04] S06 offsite renewable subtotal changed: i_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:543 [S06] Target model calculations complete
 4011-Section06.js:458 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:527 [S06] Reference model calculations complete
 4011-Section06.js:556 [S06] Dual-engine calculations complete
 4011-Section06.js:188 🔄 [S06] updateCalculatedDisplayValues: mode=target
 4011-Section06.js:704 S06: Pattern A initialization complete.
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section08.js:595 [S08] S04 listeners setup complete
@@ -1090,50 +1041,22 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=0, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -1144,50 +1067,22 @@
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: Heatpump, HSPF=12.5
 4011-Section13.js:3209 [S13] TGT FUEL: Heatpump system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:3234 [S13] FUEL STORED: Heatpump → Gas=0m³, Oil=0L
@@ -1221,27 +1116,13 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=240490.4045619144, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -2650,7 +2531,7 @@
 4011-Section03.js:1356 [Section03] Reference results stored with ref_ prefix for downstream sections: {h_23: '18', d_23: undefined, d_24: undefined, h_24: '24', d_20: undefined, …}
 4011-Section03.js:1323 [Section03] Reference Model calculations complete
 4011-Section03.js:1956 S03: Self-Contained State Module initialization complete
-4011-Section04.js:2566 [S04] Pattern A S04 section rendered
+4011-Section04.js:2597 [S04] Pattern A S04 section rendered
 4011-Section04.js:314 S04: Initializing Pattern A ModeManager
 4011-Section04.js:159 S04: TargetState defaults set
 4011-Section04.js:177 S04: TargetState loaded from localStorage
@@ -2719,8 +2600,8 @@
 4011-Section04.js:331 S04: Synced Target defaults to StateManager
 4011-Section04.js:334 S04: Pattern A initialization complete
 4011-Section04.js:2307 [S04] Found 17 editable fields
-4011-Section04.js:2554 [S04] ✅ S13→S04→S01 dependencies registered
-4011-Section04.js:2558 [S04] INIT: d_113="Heatpump"
+4011-Section04.js:2585 [S04] ✅ S13→S04→S01 dependencies registered
+4011-Section04.js:2589 [S04] INIT: d_113="Heatpump"
 4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:1516 [S04] Calculating Target model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
@@ -2830,56 +2711,52 @@
 4011-Section06.js:83 S06: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
 4011-Section06.js:553 [S06] Running dual-engine calculations...
 4011-Section06.js:463 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2483 [S04] S06 onsite renewable subtotal changed: d_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2492 [S04] S06 offsite renewable subtotal changed: i_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:543 [S06] Target model calculations complete
 4011-Section06.js:458 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:527 [S06] Reference model calculations complete
 4011-Section06.js:556 [S06] Dual-engine calculations complete
 4011-Section06.js:188 🔄 [S06] updateCalculatedDisplayValues: mode=target
 4011-Section06.js:704 S06: Pattern A initialization complete.
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section08.js:595 [S08] S04 listeners setup complete
@@ -2919,50 +2796,22 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=0, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -2973,50 +2822,22 @@
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: Heatpump, HSPF=12.5
 4011-Section13.js:3209 [S13] TGT FUEL: Heatpump system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:3234 [S13] FUEL STORED: Heatpump → Gas=0m³, Oil=0L
@@ -3050,27 +2871,13 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=240490.4045619144, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -4479,7 +4286,7 @@
 4011-Section03.js:1356 [Section03] Reference results stored with ref_ prefix for downstream sections: {h_23: '18', d_23: undefined, d_24: undefined, h_24: '24', d_20: undefined, …}
 4011-Section03.js:1323 [Section03] Reference Model calculations complete
 4011-Section03.js:1956 S03: Self-Contained State Module initialization complete
-4011-Section04.js:2566 [S04] Pattern A S04 section rendered
+4011-Section04.js:2597 [S04] Pattern A S04 section rendered
 4011-Section04.js:314 S04: Initializing Pattern A ModeManager
 4011-Section04.js:159 S04: TargetState defaults set
 4011-Section04.js:177 S04: TargetState loaded from localStorage
@@ -4548,8 +4355,8 @@
 4011-Section04.js:331 S04: Synced Target defaults to StateManager
 4011-Section04.js:334 S04: Pattern A initialization complete
 4011-Section04.js:2307 [S04] Found 17 editable fields
-4011-Section04.js:2554 [S04] ✅ S13→S04→S01 dependencies registered
-4011-Section04.js:2558 [S04] INIT: d_113="Heatpump"
+4011-Section04.js:2585 [S04] ✅ S13→S04→S01 dependencies registered
+4011-Section04.js:2589 [S04] INIT: d_113="Heatpump"
 4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:1516 [S04] Calculating Target model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
@@ -4659,56 +4466,52 @@
 4011-Section06.js:83 S06: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
 4011-Section06.js:553 [S06] Running dual-engine calculations...
 4011-Section06.js:463 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2483 [S04] S06 onsite renewable subtotal changed: d_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2492 [S04] S06 offsite renewable subtotal changed: i_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:543 [S06] Target model calculations complete
 4011-Section06.js:458 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:527 [S06] Reference model calculations complete
 4011-Section06.js:556 [S06] Dual-engine calculations complete
 4011-Section06.js:188 🔄 [S06] updateCalculatedDisplayValues: mode=target
 4011-Section06.js:704 S06: Pattern A initialization complete.
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section08.js:595 [S08] S04 listeners setup complete
@@ -4748,50 +4551,22 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=0, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -4802,50 +4577,22 @@
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: Heatpump, HSPF=12.5
 4011-Section13.js:3209 [S13] TGT FUEL: Heatpump system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:3234 [S13] FUEL STORED: Heatpump → Gas=0m³, Oil=0L
@@ -4879,27 +4626,13 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=240490.4045619144, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -6313,7 +6046,7 @@
 4011-Section03.js:1356 [Section03] Reference results stored with ref_ prefix for downstream sections: {h_23: '18', d_23: undefined, d_24: undefined, h_24: '24', d_20: undefined, …}
 4011-Section03.js:1323 [Section03] Reference Model calculations complete
 4011-Section03.js:1956 S03: Self-Contained State Module initialization complete
-4011-Section04.js:2566 [S04] Pattern A S04 section rendered
+4011-Section04.js:2597 [S04] Pattern A S04 section rendered
 4011-Section04.js:314 S04: Initializing Pattern A ModeManager
 4011-Section04.js:159 S04: TargetState defaults set
 4011-Section04.js:177 S04: TargetState loaded from localStorage
@@ -6382,8 +6115,8 @@
 4011-Section04.js:331 S04: Synced Target defaults to StateManager
 4011-Section04.js:334 S04: Pattern A initialization complete
 4011-Section04.js:2307 [S04] Found 17 editable fields
-4011-Section04.js:2554 [S04] ✅ S13→S04→S01 dependencies registered
-4011-Section04.js:2558 [S04] INIT: d_113="Heatpump"
+4011-Section04.js:2585 [S04] ✅ S13→S04→S01 dependencies registered
+4011-Section04.js:2589 [S04] INIT: d_113="Heatpump"
 4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:1516 [S04] Calculating Target model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
@@ -6493,56 +6226,52 @@
 4011-Section06.js:83 S06: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
 4011-Section06.js:553 [S06] Running dual-engine calculations...
 4011-Section06.js:463 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2483 [S04] S06 onsite renewable subtotal changed: d_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2492 [S04] S06 offsite renewable subtotal changed: i_43
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:543 [S06] Target model calculations complete
 4011-Section06.js:458 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section06.js:527 [S06] Reference model calculations complete
 4011-Section06.js:556 [S06] Dual-engine calculations complete
 4011-Section06.js:188 🔄 [S06] updateCalculatedDisplayValues: mode=target
 4011-Section06.js:704 S06: Pattern A initialization complete.
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section08.js:595 [S08] S04 listeners setup complete
@@ -6582,50 +6311,22 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=0, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -6636,50 +6337,22 @@
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: Heatpump, HSPF=12.5
 4011-Section13.js:3209 [S13] TGT FUEL: Heatpump system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:3234 [S13] FUEL STORED: Heatpump → Gas=0m³, Oil=0L
@@ -6713,27 +6386,13 @@
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
 4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=240490.4045619144, hspf=7.1
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
@@ -8148,27 +7807,13 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: ref_h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133574.3671495516, K32: 6812.292724627132
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.38968, K32: 11286.41002848
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
@@ -8383,7 +8028,6 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section04.js:2446 [S04] S08 forestry offset changed: d_60
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Calculator.js:487 🚀 [Calculator] Global calculateAll triggered. Calculation lock ON.
 4011-Section03.js:1300 [Section03] Running Reference Model calculations...
 4011-Section03.js:1356 [Section03] Reference results stored with ref_ prefix for downstream sections: {h_23: '18', d_23: undefined, d_24: undefined, h_24: '24', d_20: undefined, …}
 4011-Section03.js:1323 [Section03] Reference Model calculations complete
@@ -8550,783 +8194,23 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
 4011-Section04.js:1581 [S04] Reference model calculations complete
 4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section05.js:907 [S05] Running dual-engine calculations...
 4011-Section05.js:897 [S05] Target model calculations complete
 4011-Section05.js:873 [S05] Reference model calculations complete
 4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Dependency.js:78 [DependencyGraph] Data loaded: 386 nodes, 661 links
 4011-Dependency.js:712 [DependencyGraph] Calculating node sizes...
-4011-Calculator.js:524 🚀 [Calculator] Global calculateAll finished. Calculation lock OFF.
-4011-Section07.js:852 🔽 [S07] handleGenericDropdownChange: fieldId=d_51, value="Gas", mode=target
-4011-Section07.js:856 💾 [S07] handleGenericDropdownChange: Storing d_51="Gas" in target mode
-4011-Section07.js:192 💾 [S07] ModeManager.setValue: Setting d_51 = "Gas" (mode=target, source=user-modified)
-4011-Section07.js:198 🌐 [S07] ModeManager.setValue: Also storing to global StateManager: d_51 = "Gas"
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_49 = "null" (mode=target)
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_51 = "Gas" (mode=target)
-4011-Section07.js:863 🔍 [S07] handleGenericDropdownChange: Read back values - waterMethod="User Defined", systemType="Gas"
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Gas'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 120746.22233416289, K32: 6158.057339042307
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 133574.36633416289 → 120746.22233416289
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=120746.22233416289 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=84.6, h_8=4.8, h_6=11.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 6812.2926830423075 to 6158.057339042307
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=120746.22233416289 (from j_32), targetEmissions=6158.057339042307, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=84.6, h_8=4.3, h_6=11.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Gas'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Gas'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 168391.2767318524, K32: 14991.679640198683
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 120746.22233416289 → 168391.2767318524
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168391.2767318524 (from j_32), targetEmissions=6158.057339042307, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=4.3, h_6=11.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 6158.057339042307 to 14991.679640198683
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168391.2767318524 (from j_32), targetEmissions=14991.679640198683, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=10.5, h_6=17.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Gas'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 361156.4392393555, K32: 20120.032155456352
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 313511.384841666 to 361156.4392393555 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361156.4392393555 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168391.2767318524 (from j_32), targetEmissions=14991.679640198683, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253.1, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=10.5, h_6=17.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 11286.409854299976 to 20120.032155456352
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361156.4392393555 (from ref_j_32), refEmissions=20120.032155456352, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168391.2767318524 (from j_32), targetEmissions=14991.679640198683, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253.1, e_8=14.1, e_6=21.1
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=10.5, h_6=17.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section07.js:852 🔽 [S07] handleGenericDropdownChange: fieldId=d_51, value="Oil", mode=target
-4011-Section07.js:856 💾 [S07] handleGenericDropdownChange: Storing d_51="Oil" in target mode
-4011-Section07.js:192 💾 [S07] ModeManager.setValue: Setting d_51 = "Oil" (mode=target, source=user-modified)
-4011-Section07.js:198 🌐 [S07] ModeManager.setValue: Also storing to global StateManager: d_51 = "Oil"
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_49 = "null" (mode=target)
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_51 = "Oil" (mode=target)
-4011-Section07.js:863 🔍 [S07] handleGenericDropdownChange: Read back values - waterMethod="User Defined", systemType="Oil"
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: e_51.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Oil'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 120746.22233416289, K32: 6158.057339042307
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 168391.2767318524 → 120746.22233416289
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361156.4392393555 (from ref_j_32), refEmissions=20120.032155456352, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=120746.22233416289 (from j_32), targetEmissions=14991.679640198683, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253.1, e_8=14.1, e_6=21.1
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=84.6, h_8=10.5, h_6=17.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 14991.679640198683 to 6158.057339042307
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361156.4392393555 (from ref_j_32), refEmissions=20120.032155456352, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=120746.22233416289 (from j_32), targetEmissions=6158.057339042307, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253.1, e_8=14.1, e_6=21.1
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=84.6, h_8=4.3, h_6=11.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Oil'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 361156.4392393555 to 313511.384841666 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=20120.032155456352, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=120746.22233416289 (from j_32), targetEmissions=6158.057339042307, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=14.1, e_6=21.1
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=84.6, h_8=4.3, h_6=11.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 20120.032155456352 to 11286.409854299976
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=120746.22233416289 (from j_32), targetEmissions=6158.057339042307, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=84.6, h_8=4.3, h_6=11.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Oil'
-      Water oil volume (k_54): 4667.155642872735
-      Space oil volume (f_115): 0
-      Final H30 result: 4667.155642872735
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 168351.2136998638, K32: 19006.736823870946
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 120746.22233416289 → 168351.2136998638
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168351.2136998638 (from j_32), targetEmissions=6158.057339042307, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=4.3, h_6=11.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 6158.057339042307 to 19006.736823870946
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168351.2136998638 (from j_32), targetEmissions=19006.736823870946, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=13.3, h_6=20.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Oil'
-      Water oil volume (k_54): 4667.155642872735
-      Space oil volume (f_115): 0
-      Final H30 result: 4667.155642872735
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 361116.3762073669, K32: 24135.089339128615
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 313511.384841666 to 361116.3762073669 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361116.3762073669 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168351.2136998638 (from j_32), targetEmissions=19006.736823870946, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=13.3, h_6=20.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 11286.409854299976 to 24135.089339128615
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361116.3762073669 (from ref_j_32), refEmissions=24135.089339128615, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=168351.2136998638 (from j_32), targetEmissions=19006.736823870946, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253, e_8=16.9, e_6=23.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=118, h_8=13.3, h_6=20.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section07.js:852 🔽 [S07] handleGenericDropdownChange: fieldId=d_51, value="Electric", mode=target
-4011-Section07.js:856 💾 [S07] handleGenericDropdownChange: Storing d_51="Electric" in target mode
-4011-Section07.js:192 💾 [S07] ModeManager.setValue: Setting d_51 = "Electric" (mode=target, source=user-modified)
-4011-Section07.js:198 🌐 [S07] ModeManager.setValue: Also storing to global StateManager: d_51 = "Electric"
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_49 = "null" (mode=target)
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_51 = "Electric" (mode=target)
-4011-Section07.js:863 🔍 [S07] handleGenericDropdownChange: Read back values - waterMethod="User Defined", systemType="Electric"
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electric'
-      Water oil volume (k_54): 4667.155642872735
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133574.36633416289, K32: 6812.2926830423075
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 168351.2136998638 → 133574.36633416289
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361116.3762073669 (from ref_j_32), refEmissions=24135.089339128615, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=133574.36633416289 (from j_32), targetEmissions=19006.736823870946, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253, e_8=16.9, e_6=23.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=93.6, h_8=13.3, h_6=20.2
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 19006.736823870946 to 6812.2926830423075
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=361116.3762073669 (from ref_j_32), refEmissions=24135.089339128615, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=133574.36633416289 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=253, e_8=16.9, e_6=23.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=93.6, h_8=4.8, h_6=11.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electric'
-      Water oil volume (k_54): 4667.155642872735
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 361116.3762073669 to 313511.384841666 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=24135.089339128615, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=133574.36633416289 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=16.9, e_6=23.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=93.6, h_8=4.8, h_6=11.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 24135.089339128615 to 11286.409854299976
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=133574.36633416289 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=93.6, h_8=4.8, h_6=11.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: k_54.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electric'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133574.36633416289, K32: 6812.2926830423075
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Heatpump'
-      Water heating fuel (d_51): 'Electric'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section07.js:852 🔽 [S07] handleGenericDropdownChange: fieldId=d_51, value="Heatpump", mode=target
-4011-Section07.js:856 💾 [S07] handleGenericDropdownChange: Storing d_51="Heatpump" in target mode
-4011-Section07.js:192 💾 [S07] ModeManager.setValue: Setting d_51 = "Heatpump" (mode=target, source=user-modified)
-4011-Section07.js:198 🌐 [S07] ModeManager.setValue: Also storing to global StateManager: d_51 = "Heatpump"
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_49 = "null" (mode=target)
-4011-Section07.js:187 📖 [S07] ModeManager.getValue: d_51 = "Heatpump" (mode=target)
-4011-Section07.js:863 🔍 [S07] handleGenericDropdownChange: Read back values - waterMethod="User Defined", systemType="Heatpump"
-4011-Section13.js:1922 [S13] d_113 → Electricity
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Electricity, HSPF=12.5
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
+      Space heating fuel (d_113): 'Gas'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 220216.84641217405, K32: 11231.059167020876
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 133574.36633416289 → 220216.84641217405
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=220216.84641217405 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=154.3, h_8=4.8, h_6=11.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 6812.2926830423075 to 11231.059167020876
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=220216.84641217405 (from j_32), targetEmissions=11231.059167020876, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=154.3, h_8=7.9, h_6=14.8
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:3209 [S13] TGT FUEL: Electricity system
-4011-Section13.js:3234 [S13] FUEL STORED: Electricity → Gas=0m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 216390.02500166593, K32: 11035.891275084963
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 220216.84641217405 → 216390.02500166593
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166593 (from j_32), targetEmissions=11231.059167020876, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=151.6, h_8=7.9, h_6=14.8
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 11231.059167020876 to 11035.891275084963
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166593 (from j_32), targetEmissions=11035.891275084963, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=151.6, h_8=7.7, h_6=14.6
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:1922 [S13] d_113 → Electricity
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Electricity, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Electricity system
-4011-Section13.js:3234 [S13] FUEL STORED: Electricity → Gas=0m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:1922 [S13] d_113 → Gas
 4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
 4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
@@ -9340,57 +8224,6 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: Gas, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Gas system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 338006.69408064, K32: 33584.20680855359
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 216390.02500166593 → 338006.69408064
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=338006.69408064 (from j_32), targetEmissions=11035.891275084963, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=236.8, h_8=7.7, h_6=14.6
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 11035.891275084963 to 33584.20680855359
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=338006.69408064 (from j_32), targetEmissions=33584.20680855359, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=236.8, h_8=23.5, h_6=30.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
@@ -9402,33 +8235,33 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 218835.1490789741, K32: 27506.45801346862
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 338006.69408064 → 218835.1490789741
+4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 101045.30141050817, K32: 5153.310371935916
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 133574.36633416289 → 101045.30141050817
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=218835.1490789741 (from j_32), targetEmissions=33584.20680855359, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=101045.30141050817 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=153.3, h_8=23.5, h_6=30.4
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=70.8, h_8=4.8, h_6=11.7
 4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
 4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
 4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
 4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 33584.20680855359 to 27506.45801346862
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 6812.2926830423075 to 5153.310371935916
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=218835.1490789741 (from j_32), targetEmissions=27506.45801346862, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=101045.30141050817 (from j_32), targetEmissions=5153.310371935916, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=153.3, h_8=19.3, h_6=26.2
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=70.8, h_8=3.6, h_6=10.5
 4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
 4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
 4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
@@ -9466,16 +8299,132 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=218835.1490789741 (from j_32), targetEmissions=27506.45801346862, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=101045.30141050817 (from j_32), targetEmissions=5153.310371935916, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=153.3, h_8=19.3, h_6=26.2
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=70.8, h_8=3.6, h_6=10.5
 4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
 4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
 4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
 4011-Section01.js:983 🚀 [S01] =================================
 4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 11286.409854299976 to 63566.30832563106
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=101045.30141050817 (from j_32), targetEmissions=5153.310371935916, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=70.8, h_8=3.6, h_6=10.5
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:1581 [S04] Reference model calculations complete
+4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section13.js:3209 [S13] TGT FUEL: Gas system
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Gas'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 101045.30141050817 → 222661.97048948225
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=222661.97048948225 (from j_32), targetEmissions=5153.310371935916, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=156, h_8=3.6, h_6=10.5
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 5153.310371935916 to 27701.625905404537
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=222661.97048948225 (from j_32), targetEmissions=27701.625905404537, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=156, h_8=19.4, h_6=26.3
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=11737.80090237825m³, Oil=0L
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
+4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Gas'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 218835.1490789741, K32: 27506.45801346862
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 222661.97048948225 → 218835.1490789741
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=218835.1490789741 (from j_32), targetEmissions=27701.625905404537, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=153.3, h_8=19.4, h_6=26.3
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 27701.625905404537 to 27506.45801346862
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
@@ -9504,8 +8453,8 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section04.js:1548 [S04] Target model calculations complete
@@ -9519,10 +8468,8 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 595488.4177793527, K32: 63566.30832563106
 4011-Section04.js:1581 [S04] Reference model calculations complete
 4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=11737.80090237825m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
 4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
@@ -9543,16 +8490,13 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
 4011-Section13.js:3145 [S13] TGT HEATING: Gas, HSPF=12.5
 4011-Section13.js:3209 [S13] TGT FUEL: Gas system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Gas'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 229645.5196637718, K32: 29510.752727554718
 4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 218835.1490789741 → 229645.5196637718
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
@@ -9597,17 +8541,6 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 595488.4177793527, K32: 63566.30832563106
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
 4011-Section04.js:556 [S04] Calculated display values updated for target mode
 4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=12781.16098258965m³, Oil=0L
@@ -9622,438 +8555,13 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:1922 [S13] d_113 → Oil
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Oil, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Oil system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
       Space heating fuel (d_113): 'Oil'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 229631.31837265502, K32: 40696.62433071746
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 229645.5196637718 → 229631.31837265502
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=29510.752727554718, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=20.7, h_6=27.6
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 29510.752727554718 to 40696.62433071746
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 445924.22321432095, K32: 47024.891705017435
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 595488.4177793527 to 445924.22321432095 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 63566.30832563106 to 47024.891705017435
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 229631.31837265502, K32: 40696.62433071746
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 445924.22321432095, K32: 47024.891705017435
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section13.js:3234 [S13] FUEL STORED: Oil → Gas=0m³, Oil=12981.649782316546L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:1922 [S13] d_113 → Oil
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Oil, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Oil system
-4011-Section13.js:3234 [S13] FUEL STORED: Oil → Gas=0m³, Oil=12981.649782316546L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:1922 [S13] d_113 → Gas
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Gas, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Gas system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
       Space oil volume (f_115): 0
       Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 97218.48, K32: 4958.1424799999995
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 229631.31837265502 → 97218.48
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 40696.62433071746 to 4958.1424799999995
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 595488.4177793527, K32: 63566.30832563106
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 445924.22321432095 to 595488.4177793527 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 47024.891705017435 to 63566.30832563106
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 229645.5196637718, K32: 29510.752727554718
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 97218.48 → 229645.5196637718
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229645.5196637718 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 4958.1424799999995 to 29510.752727554718
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229645.5196637718 (from j_32), targetEmissions=29510.752727554718, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=20.7, h_6=27.6
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 595488.4177793527, K32: 63566.30832563106
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=12781.16098258965m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:1922 [S13] d_113 → Gas
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Gas, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Gas system
-4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=12781.16098258965m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:1922 [S13] d_113 → Electricity
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Electricity, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Electricity system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 97218.48, K32: 4958.1424799999995
 4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 229645.5196637718 → 97218.48
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
@@ -10096,23 +8604,186 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section13.js:1922 [S13] d_113 → Oil
+4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
+4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
+4011-Section13.js:2875 [Section13] Running Reference Model calculations...
+4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
+4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
+4011-Section13.js:2913 [Section13] Reference Model calculations complete
+4011-Section13.js:2857 [Section13] ✅ Reference Model complete
+4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
+4011-Section13.js:2927 [Section13] Running Target Model calculations...
+4011-Section13.js:3145 [S13] TGT HEATING: Oil, HSPF=12.5
+4011-Section13.js:3209 [S13] TGT FUEL: Oil system
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
+      Space heating fuel (d_113): 'Oil'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 216390.02500166593, K32: 11035.891275084963
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 97218.48 → 216390.02500166593
+      Space oil volume (f_115): 12981.649782316546
+      Final H30 result: 12981.649782316546
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 97218.48 → 229631.31837265502
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166593 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=3.5, h_6=10.4
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 4958.1424799999995 to 40696.62433071746
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Oil'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 12981.649782316546
+      Final H30 result: 12981.649782316546
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section13.js:3234 [S13] FUEL STORED: Oil → Gas=0m³, Oil=12981.649782316546L
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2947 [Section13] Target Model calculations complete
+4011-Section13.js:2861 [Section13] ✅ Target Model complete
+4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
+4011-Section13.js:1922 [S13] d_113 → Oil
+4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
+4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
+4011-Section13.js:2875 [Section13] Running Reference Model calculations...
+4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
+4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
+4011-Section13.js:2913 [Section13] Reference Model calculations complete
+4011-Section13.js:2857 [Section13] ✅ Reference Model complete
+4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
+4011-Section13.js:2927 [Section13] Running Target Model calculations...
+4011-Section13.js:3145 [S13] TGT HEATING: Oil, HSPF=12.5
+4011-Section13.js:3209 [S13] TGT FUEL: Oil system
+4011-Section13.js:3234 [S13] FUEL STORED: Oil → Gas=0m³, Oil=12981.649782316546L
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2947 [Section13] Target Model calculations complete
+4011-Section13.js:2861 [Section13] ✅ Target Model complete
+4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 12981.649782316546
+      Final H30 result: 0
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 229631.31837265502 → 97218.48
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=28.5, h_6=35.4
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 40696.62433071746 to 4958.1424799999995
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
+4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 12981.649782316546
+      Final H30 result: 0
+4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 216390.02500166587, K32: 11035.89127508496
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 97218.48 → 216390.02500166587
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166587 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
@@ -10121,13 +8792,13 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
 4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
 4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 4958.1424799999995 to 11035.891275084963
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 4958.1424799999995 to 11035.89127508496
 4011-Section01.js:973 🚀 [S01] =================================
 4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166593 (from j_32), targetEmissions=11035.891275084963, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166587 (from j_32), targetEmissions=11035.89127508496, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
@@ -10157,10 +8828,10 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section04.js:1548 [S04] Target model calculations complete
 4011-Section04.js:1521 [S04] Calculating Reference model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
+      Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
+      Space oil volume (f_115): 12981.649782316546
       Final H30 result: 0
 4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
 4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 595488.4177793527 to 313511.384841666 → will update REFERENCE COLUMN E
@@ -10169,7 +8840,7 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166593 (from j_32), targetEmissions=11035.891275084963, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166587 (from j_32), targetEmissions=11035.89127508496, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=44.5, e_6=51.5
@@ -10184,7 +8855,7 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section01.js:975 🚀 [S01] =================================
 4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
 4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166593 (from j_32), targetEmissions=11035.891275084963, embodiedCarbon=345.82
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=216390.02500166587 (from j_32), targetEmissions=11035.89127508496, embodiedCarbon=345.82
 4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
 4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
 4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
@@ -10211,10 +8882,170 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
 4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section13.js:1922 [S13] d_113 → Heatpump
+4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
+4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
+4011-Section13.js:2875 [Section13] Running Reference Model calculations...
+4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
+4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
+4011-Section13.js:2913 [Section13] Reference Model calculations complete
+4011-Section13.js:2857 [Section13] ✅ Reference Model complete
+4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
+4011-Section13.js:2927 [Section13] Running Target Model calculations...
+4011-Section13.js:3145 [S13] TGT HEATING: Heatpump, HSPF=12.5
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
+4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 12981.649782316546
+      Final H30 result: 0
+4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 129747.54492365471, K32: 6617.124791106391
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 216390.02500166587 → 129747.54492365471
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=129747.54492365471 (from j_32), targetEmissions=11035.89127508496, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=90.9, h_8=7.7, h_6=14.6
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 11035.89127508496 to 6617.124791106391
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=129747.54492365471 (from j_32), targetEmissions=6617.124791106391, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=90.9, h_8=4.6, h_6=11.5
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
 4011-Section04.js:1548 [S04] Target model calculations complete
 4011-Section04.js:1521 [S04] Calculating Reference model
 4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Electricity'
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 12981.649782316546
+      Final H30 result: 0
+4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
+4011-Section04.js:1581 [S04] Reference model calculations complete
+4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section13.js:3209 [S13] TGT FUEL: Heatpump system
+4011-Section04.js:2456 [S04] Unified fuel system listener triggered.
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
+4011-Section04.js:556 [S04] Calculated display values updated for target mode
+4011-Section13.js:3234 [S13] FUEL STORED: Heatpump → Gas=0m³, Oil=0L
+4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
+4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
+4011-Section04.js:1516 [S04] Calculating Target model
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
+      Water heating fuel (d_51): 'Heatpump'
+      Water oil volume (k_54): 0
+      Space oil volume (f_115): 0
+      Final H30 result: 0
+4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133574.36633416289, K32: 6812.2926830423075
+4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 129747.54492365471 → 133574.36633416289
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=133574.36633416289 (from j_32), targetEmissions=6617.124791106391, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=93.6, h_8=4.6, h_6=11.5
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 6617.124791106391 to 6812.2926830423075
+4011-Section01.js:973 🚀 [S01] =================================
+4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
+4011-Section01.js:975 🚀 [S01] =================================
+4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
+4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
+4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=133574.36633416289 (from j_32), targetEmissions=6812.2926830423075, embodiedCarbon=345.82
+4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
+4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
+4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
+4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=93.6, h_8=4.8, h_6=11.7
+4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
+4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
+4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
+4011-Section01.js:983 🚀 [S01] =================================
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section05.js:907 [S05] Running dual-engine calculations...
+4011-Section05.js:897 [S05] Target model calculations complete
+4011-Section05.js:873 [S05] Reference model calculations complete
+4011-Section05.js:910 [S05] Dual-engine calculations complete
+4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section04.js:1548 [S04] Target model calculations complete
+4011-Section04.js:1521 [S04] Calculating Reference model
+4011-Section04.js:1300 [S04] calculateH30 DEBUG:
+      Space heating fuel (d_113): 'Heatpump'
       Water heating fuel (d_51): 'Heatpump'
       Water oil volume (k_54): 0
       Space oil volume (f_115): 0
@@ -10222,17 +9053,15 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.384841666, K32: 11286.409854299976
 4011-Section04.js:1581 [S04] Reference model calculations complete
 4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section13.js:3234 [S13] FUEL STORED: Electricity → Gas=0m³, Oil=0L
+4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
+4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=3826.8214105081656, j_116=2.663540445486518, l_116=0, l_114=6366.0721940341
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=3826.8214105081656, j_116=2.663540445486518, l_116=0, l_114=6366.0721940341
 4011-Section13.js:2947 [Section13] Target Model calculations complete
 4011-Section13.js:2861 [Section13] ✅ Target Model complete
 4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:1922 [S13] d_113 → Electricity
+4011-Section13.js:1922 [S13] d_113 → Heatpump
 4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
 4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
 4011-Section13.js:2875 [Section13] Running Reference Model calculations...
@@ -10244,467 +9073,13 @@ index.html:1052 TEUI Calculator 4.011 initialization complete
 4011-Section13.js:2857 [Section13] ✅ Reference Model complete
 4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
 4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Electricity, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Electricity system
-4011-Section13.js:3234 [S13] FUEL STORED: Electricity → Gas=0m³, Oil=0L
+4011-Section13.js:3145 [S13] TGT HEATING: Heatpump, HSPF=12.5
+4011-Section13.js:3209 [S13] TGT FUEL: Heatpump system
+4011-Section13.js:3234 [S13] FUEL STORED: Heatpump → Gas=0m³, Oil=0L
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=3826.8214105081656, j_116=2.663540445486518, l_116=0, l_114=6366.0721940341
 4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:1922 [S13] d_113 → Oil
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Oil, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Oil system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 348802.8633743209, K32: 46774.37312580242
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 216390.02500166593 → 348802.8633743209
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=348802.8633743209 (from j_32), targetEmissions=11035.891275084963, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=244.4, h_8=7.7, h_6=14.6
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 11035.891275084963 to 46774.37312580242
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=348802.8633743209 (from j_32), targetEmissions=46774.37312580242, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=244.4, h_8=32.8, h_6=39.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:2384 [S04] S15 target electricity changed: d_136
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 229631.31837265502, K32: 40696.62433071746
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 348802.8633743209 → 229631.31837265502
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=46774.37312580242, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=32.8, h_6=39.7
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 46774.37312580242 to 40696.62433071746
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=313511.384841666 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=219.7, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 445924.22321432095, K32: 47024.891705017435
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 313511.384841666 to 445924.22321432095 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=11286.409854299976, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=7.9, e_6=14.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 11286.409854299976 to 47024.891705017435
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229631.31837265502 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Oil'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 12981.649782316546
-      Final H30 result: 12981.649782316546
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 445924.22321432095, K32: 47024.891705017435
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section13.js:3234 [S13] FUEL STORED: Oil → Gas=0m³, Oil=12981.649782316546L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:1922 [S13] d_113 → Oil
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Oil, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Oil system
-4011-Section13.js:3234 [S13] FUEL STORED: Oil → Gas=0m³, Oil=12981.649782316546L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section13.js:1922 [S13] d_113 → Gas
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Gas, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Gas system
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: f_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 97218.48, K32: 4958.1424799999995
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 229631.31837265502 → 97218.48
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=40696.62433071746, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=28.5, h_6=35.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 40696.62433071746 to 4958.1424799999995
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=445924.22321432095 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=312.4, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 595488.4177793527, K32: 63566.30832563106
-4011-Section01.js:1057 🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from 445924.22321432095 to 595488.4177793527 → will update REFERENCE COLUMN E
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=47024.891705017435, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=32.9, e_6=39.9
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: ref_k_32 changed from 47024.891705017435 to 63566.30832563106
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=97218.48 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=68.1, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section04.js:2460 [S04] Unified fuel system listener triggered by change in: h_115.
-4011-Section04.js:1508 [S04] Starting dual-engine Excel-compliant calculations
-4011-Section04.js:1516 [S04] Calculating Target model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 229645.5196637718, K32: 29510.752727554718
-4011-Section01.js:1055 🟢 [S01] TARGET ENERGY LISTENER: j_32 97218.48 → 229645.5196637718
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229645.5196637718 (from j_32), targetEmissions=4958.1424799999995, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=3.5, h_6=10.4
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section01.js:1061 📡 [S01] Listener triggered: k_32 changed from 4958.1424799999995 to 29510.752727554718
-4011-Section01.js:973 🚀 [S01] =================================
-4011-Section01.js:974 🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED
-4011-Section01.js:975 🚀 [S01] =================================
-4011-Section01.js:573 🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...
-4011-Section01.js:600 🔵 [S01] Upstream Reference: refEnergy=595488.4177793527 (from ref_j_32), refEmissions=63566.30832563106, refEmbodiedCarbon=350
-4011-Section01.js:603 🟢 [S01] Upstream Target: targetEnergy=229645.5196637718 (from j_32), targetEmissions=29510.752727554718, embodiedCarbon=345.82
-4011-Section01.js:606 🟡 [S01] Upstream Actual: actualEnergy=132938, actualEmissions=6779.838
-4011-Section01.js:609 🎯 [S01] Building: area=1427.2, serviceLife=50, useType=Utility Bills
-4011-Section01.js:666 🔵 [S01] CALCULATED Reference COLUMN E: e_10=417.2, e_8=44.5, e_6=51.5
-4011-Section01.js:669 🟢 [S01] CALCULATED Target COLUMN H: h_10=160.9, h_8=20.7, h_6=27.6
-4011-Section01.js:672 🟡 [S01] CALCULATED Actual COLUMN K: k_10=93.1, k_8=4.8, k_6=11.7
-4011-Section01.js:774 ✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed
-4011-Section01.js:982 ✅ [S01] PURE DISPLAY CONSUMER COMPLETE
-4011-Section01.js:983 🚀 [S01] =================================
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section05.js:907 [S05] Running dual-engine calculations...
-4011-Section05.js:897 [S05] Target model calculations complete
-4011-Section05.js:873 [S05] Reference model calculations complete
-4011-Section05.js:910 [S05] Dual-engine calculations complete
-4011-Section05.js:179 🔄 [S05] updateCalculatedDisplayValues: mode=target
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section15.js:1486 ✅ S15 Reference Model: All values converted to numbers for proper math
-4011-Section15.js:1499 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
-4011-Section04.js:1548 [S04] Target model calculations complete
-4011-Section04.js:1521 [S04] Calculating Reference model
-4011-Section04.js:1300 [S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): 'Gas'
-      Water heating fuel (d_51): 'Heatpump'
-      Water oil volume (k_54): 0
-      Space oil volume (f_115): 0
-      Final H30 result: 0
-4011-Section04.js:966 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 595488.4177793527, K32: 63566.30832563106
-4011-Section04.js:1581 [S04] Reference model calculations complete
-4011-Section04.js:1527 [S04] Dual-engine calculations completed successfully
-4011-Section04.js:432 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:556 [S04] Calculated display values updated for target mode
-4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=12781.16098258965m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2947 [Section13] Target Model calculations complete
-4011-Section13.js:2861 [Section13] ✅ Target Model complete
-4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
-4011-Section13.js:1922 [S13] d_113 → Gas
-4011-Section13.js:2849 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
-4011-Section13.js:2855 [Section13] 🔄 Starting Reference Model calculations...
-4011-Section13.js:2875 [Section13] Running Reference Model calculations...
-4011-Section13.js:3056 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2996 [Section13] Reference results stored with ref_ prefix for downstream sections
-4011-Section13.js:2999 [S13 DEBUG] Total Reference results stored: 33
-4011-Section13.js:2913 [Section13] Reference Model calculations complete
-4011-Section13.js:2857 [Section13] ✅ Reference Model complete
-4011-Section13.js:2859 [Section13] 🔄 Starting Target Model calculations...
-4011-Section13.js:2927 [Section13] Running Target Model calculations...
-4011-Section13.js:3145 [S13] TGT HEATING: Gas, HSPF=12.5
-4011-Section13.js:3209 [S13] TGT FUEL: Gas system
-4011-Section13.js:3234 [S13] FUEL STORED: Gas → Gas=12781.16098258965m³, Oil=0L
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
-4011-Section13.js:2470 [Section13] 🧊 COOLING CALC: mode=TGT, coolingSystemType="Cooling", heatingType="Heatpump", isCoolingActive=true, coolingDemand=10192.893604542265
-4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=0, j_116=0, l_116=0, l_114=0
+4011-Section13.js:2531 [Section13] 🧊 COOLING RESULTS: d_117=3826.8214105081656, j_116=2.663540445486518, l_116=0, l_114=6366.0721940341
 4011-Section13.js:2947 [Section13] Target Model calculations complete
 4011-Section13.js:2861 [Section13] ✅ Target Model complete
 4011-Section13.js:2863 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
