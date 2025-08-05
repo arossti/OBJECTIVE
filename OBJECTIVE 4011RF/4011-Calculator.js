@@ -67,12 +67,12 @@ TEUI.Calculator = (function () {
     }
 
     // Initialize Component Bridge
-    if (TEUI.ComponentBridge) {
+    /* if (TEUI.ComponentBridge) {
       TEUI.ComponentBridge.initAll();
 
       // ✅ Initialize dual-state synchronization
       TEUI.ComponentBridge.initDualStateSync();
-    }
+    } */
 
     // Set up event listeners after DOM is ready
     // setupEventListeners(); // Assuming event listeners are set up elsewhere now

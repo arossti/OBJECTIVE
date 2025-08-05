@@ -59,7 +59,7 @@
     <!-- Integrator might depend on managers -->
     <script src="4011-Calculator.js"></script>
     <!-- Calculator logic -->
-    <script src="4011-ComponentBridge.js"></script>
+    <!-- <script src="4011-ComponentBridge.js"></script> -->
     <script src="4011-ExcelLocationHandler.js"></script>
     <script src="4011-ExcelMapper.js"></script>
     <script src="4011-FileHandler.js"></script>
@@ -1027,12 +1027,12 @@ Select a province and city to view weather data.</pre
         // TODO: Re-enable when migrating to unified global toggle for all Pattern A sections
 
         // Initialize Component Bridge
-        if (TEUI.ComponentBridge) {
+        /* if (TEUI.ComponentBridge) {
           TEUI.ComponentBridge.initAll();
 
           // ✅ Initialize dual-state synchronization
           TEUI.ComponentBridge.initDualStateSync();
-        }
+        } */
 
         // Initialize Calculator
         if (TEUI.Calculator) {
