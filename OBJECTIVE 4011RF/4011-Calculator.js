@@ -12,9 +12,6 @@ window.TEUI = window.TEUI || {};
 
 // Calculator Module
 TEUI.Calculator = (function () {
-  // Add a global flag to prevent calculation storms
-  window.TEUI.isCalculating = false;
-
   // Reference to state manager
   let stateManager;
 
@@ -482,52 +479,40 @@ TEUI.Calculator = (function () {
    * Recalculate all values
    */
   function calculateAll() {
-    // Prevent calculation storms and recursion
-    if (window.TEUI.isCalculating) {
-      console.warn("[Calculator] Suppressing nested calculateAll call.");
-      return;
-    }
-    window.TEUI.isCalculating = true;
+    // Define a logical calculation order based on major dependencies
+    const calcOrder = [
+      "sect02", // Building Info
+      "sect03", // Climate
+      "sect08", // IAQ
+      "sect09", // Internal Gains
+      "sect12", // Volume Metrics (defines areas for S10, S11)
+      "sect10", // Radiant Gains (i80 for S15)
+      "sect11", // Transmission Losses
+      "sect07", // Water Use (k51 for S15)
+      "sect13", // Mechanical Loads (d117, m121 for S15)
+      "sect06", // Renewable Energy (m43 for S15)
+      "sect14", // TEDI Summary (uses S9, S10, S11, S12, S13)
+      "sect04", // Actual/Target Energy (many inputs, but needs to calc before S05 consumes its outputs)
+      "sect05", // Emissions (consumes S04 outputs)
+      "sect15", // TEUI Summary (consumes S14, S04 and others)
+      "sect16", // Sankey Diagram (visualisation, should be late)
+      "sect17", // Dependency Graph (visualisation, should be late)
+      "sect01", // Key Values (consumes S15, S05)
+    ];
 
-    try {
-      // Define a logical calculation order based on major dependencies
-      const calcOrder = [
-        "sect02", // Building Info
-        "sect03", // Climate
-        "sect08", // IAQ
-        "sect09", // Internal Gains
-        "sect12", // Volume Metrics (defines areas for S10, S11)
-        "sect10", // Radiant Gains (i80 for S15)
-        "sect11", // Transmission Losses
-        "sect07", // Water Use (k51 for S15)
-        "sect13", // Mechanical Loads (d117, m121 for S15)
-        "sect06", // Renewable Energy (m43 for S15)
-        "sect14", // TEDI Summary (uses S9, S10, S11, S12, S13)
-        "sect04", // Actual/Target Energy (many inputs, but needs to calc before S05 consumes its outputs)
-        "sect05", // Emissions (consumes S04 outputs)
-        "sect15", // TEUI Summary (consumes S14, S04 and others)
-        "sect16", // Sankey Diagram (visualisation, should be late)
-        "sect17", // Dependency Graph (visualisation, should be late)
-        "sect01", // Key Values (consumes S15, S05)
-      ];
-
-      // Explicitly call each section's calculateAll if it exists
-      calcOrder.forEach((sectionKey) => {
-        const sectionModule = window.TEUI.SectionModules?.[sectionKey];
-        if (sectionModule && typeof sectionModule.calculateAll === "function") {
-          try {
-            sectionModule.calculateAll();
-          } catch (error) {
-            console.error(`Error calculating section ${sectionKey}:`, error);
-          }
-        } else {
-          // Section module not found or doesn't have calculateAll method
+    // Explicitly call each section's calculateAll if it exists
+    calcOrder.forEach((sectionKey) => {
+      const sectionModule = window.TEUI.SectionModules?.[sectionKey];
+      if (sectionModule && typeof sectionModule.calculateAll === "function") {
+        try {
+          sectionModule.calculateAll();
+        } catch (error) {
+          console.error(`Error calculating section ${sectionKey}:`, error);
         }
-      });
-    } finally {
-      // Always reset the flag
-      window.TEUI.isCalculating = false;
-    }
+      } else {
+        // Section module not found or doesn't have calculateAll method
+      }
+    });
   }
 
   /**

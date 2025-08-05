@@ -2310,6 +2310,5 @@ window.TEUI.SectionModules.sect12 = (function () {
     onSectionRendered: onSectionRendered,
     calculateAll: calculateAll,
     calculateCombinedUValue: calculateCombinedUValue,
-    calculateReferenceModel: calculateReferenceModel, // ✅ Export for S15 fallback
   };
 })();

@@ -3,11 +3,11 @@
  * Key Values (Section 1) module for TEUI Calculator 4.011
  *
  * ✅ DUAL-STATE ARCHITECTURE COMPLIANT: Consumer Section Pattern
- * ✅ CONSUMER SECTION: Reads results from upstream Pattern A sections (S02, S04, S15)
+ * ✅ CONSUMER SECTION: Reads results from upstream Pattern A sections (S02, S04, S15)  
  * ✅ DISPLAY ONLY: Shows Reference (E), Target (H), Actual (K) simultaneously
  * ✅ NO INTERNAL STATE: No TargetState/ReferenceState objects needed
  * ✅ CLEAN DEPENDENCIES: Uses approved external dependency patterns
- *
+ * 
  * Direct HTML rendering for precise styling, dynamic calculations for key metrics.
  * B Pattern contamination eliminated - follows S01-PATTERN-A-REFACTOR-WORKPLAN.md
  */
@@ -318,7 +318,7 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   //==========================================================================
-  // PURE DISPLAY CONSUMER: Direct Math from Upstream Values
+  // PURE DISPLAY CONSUMER: Direct Math from Upstream Values  
   //==========================================================================
 
   // Removed calculation engines - S01 is now a pure display consumer
@@ -327,30 +327,18 @@ window.TEUI.SectionModules.sect01 = (function () {
   // SUPPLEMENTARY CALCULATIONS (Percentages & Explanations)
   //==========================================================================
 
-  function calculatePercentagesAndExplanations(
-    e_6,
-    e_8,
-    e_10,
-    h_6,
-    h_8,
-    h_10,
-    k_6,
-    k_8,
-    k_10,
-    useType,
-  ) {
+  function calculatePercentagesAndExplanations(e_6, e_8, e_10, h_6, h_8, h_10, k_6, k_8, k_10, useType) {
     // Calculate T.2 Annual Carbon Percentage (j_8)
     let annualCarbonPercent = 0;
     if (e_8 !== 0) {
-      const valueToUse = useType === "Utility Bills" && !isNaN(k_8) ? k_8 : h_8;
+      const valueToUse = (useType === "Utility Bills" && !isNaN(k_8)) ? k_8 : h_8;
       annualCarbonPercent = Math.round((valueToUse / e_8) * 100);
     }
 
-    // Calculate T.3 TEUI Percentage (j_10)
+    // Calculate T.3 TEUI Percentage (j_10)  
     let teuiPercent = 0;
     if (e_10 !== 0) {
-      const valueToUse =
-        useType === "Utility Bills" && !isNaN(k_10) ? k_10 : h_10;
+      const valueToUse = (useType === "Utility Bills" && !isNaN(k_10)) ? k_10 : h_10;
       teuiPercent = Math.round((valueToUse / e_10) * 100);
     }
 
@@ -534,7 +522,9 @@ window.TEUI.SectionModules.sect01 = (function () {
     // Standard non-animated update
     if (fieldId === "h_10") {
       const tierValue =
-        tierOverride || window.TEUI.StateManager?.getValue("i_10") || "tier3";
+        tierOverride ||
+        window.TEUI.StateManager?.getValue("i_10") ||
+        "tier3";
       const tierClass = tierValue.toLowerCase().replace(" ", "-") + "-tag";
       element.innerHTML = `<span class="tier-indicator ${tierClass}">${tierValue}</span> ${value}`;
     } else if (fieldId === "e_10") {
@@ -570,132 +560,98 @@ window.TEUI.SectionModules.sect01 = (function () {
    * ✅ NO STORAGE: Direct read → calculate → display
    */
   function updateTEUIDisplay() {
-    console.log(
-      "🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...",
-    );
-
-    const useType =
-      window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+    console.log("🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...");
+    
+    const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
 
     // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
     // Building data from S02
     const area = getGlobalNumericValue("h_15") || 1427.2;
     const serviceLife = getGlobalNumericValue("h_13") || 50;
-
+    
     // Reference values from upstream sections (S04, S05, S15)
-    const refEnergy = getGlobalNumericValue("ref_j_32") || 0; // From S04 Reference
-    const refEmissions = getGlobalNumericValue("ref_k_32") || 0; // From S04 Reference
-    const refEmbodiedCarbon = getGlobalNumericValue("ref_i_39") || 0; // From S05 Reference
-
+    const refEnergy = getGlobalNumericValue("ref_j_32") || 0;  // From S04 Reference
+    const refEmissions = getGlobalNumericValue("ref_k_32") || 0;  // From S04 Reference  
+    const refEmbodiedCarbon = getGlobalNumericValue("ref_i_39") || 0;  // From S05 Reference
+    
     // Target values from upstream sections (S04, S05)
-    const targetEnergy = getGlobalNumericValue("j_32") || 0; // From S04 Target
-    const targetEmissions = getGlobalNumericValue("k_32") || 0; // From S04 Target
-    const embodiedCarbon = getGlobalNumericValue("i_41") || 0; // From S05 Target
-
+    const targetEnergy = getGlobalNumericValue("j_32") || 0;  // From S04 Target
+    const targetEmissions = getGlobalNumericValue("k_32") || 0;  // From S04 Target
+    const embodiedCarbon = getGlobalNumericValue("i_41") || 0;  // From S05 Target
+    
     // Actual values from upstream sections (S04)
-    const actualEnergy = getGlobalNumericValue("f_32") || 0; // From S04 Actual
-    const actualEmissions = getGlobalNumericValue("g_32") || 0; // From S04 Actual
+    const actualEnergy = getGlobalNumericValue("f_32") || 0;  // From S04 Actual
+    const actualEmissions = getGlobalNumericValue("g_32") || 0;  // From S04 Actual
 
-    console.log(
-      `🔵 [S01] Upstream Reference: refEnergy=${refEnergy} (from ref_j_32), refEmissions=${refEmissions}, refEmbodiedCarbon=${refEmbodiedCarbon}`,
-    );
-    console.log(
-      `🟢 [S01] Upstream Target: targetEnergy=${targetEnergy} (from j_32), targetEmissions=${targetEmissions}, embodiedCarbon=${embodiedCarbon}`,
-    );
-    console.log(
-      `🟡 [S01] Upstream Actual: actualEnergy=${actualEnergy}, actualEmissions=${actualEmissions}`,
-    );
-    console.log(
-      `🎯 [S01] Building: area=${area}, serviceLife=${serviceLife}, useType=${useType}`,
-    );
+    console.log(`🔵 [S01] Upstream Reference: refEnergy=${refEnergy} (from ref_j_32), refEmissions=${refEmissions}, refEmbodiedCarbon=${refEmbodiedCarbon}`);
+    console.log(`🟢 [S01] Upstream Target: targetEnergy=${targetEnergy} (from j_32), targetEmissions=${targetEmissions}, embodiedCarbon=${embodiedCarbon}`);
+    console.log(`🟡 [S01] Upstream Actual: actualEnergy=${actualEnergy}, actualEmissions=${actualEmissions}`);
+    console.log(`🎯 [S01] Building: area=${area}, serviceLife=${serviceLife}, useType=${useType}`);
 
     // ========================================
     // COLUMN E (REFERENCE): Excel-compliant calculations
     // ========================================
-
+    
     // e_10 = ref_j_32 / h_15 (Reference TEUI)
     const e_10 = area > 0 ? Math.round((refEnergy / area) * 10) / 10 : 0;
-
-    // e_8 = ref_k_32 / h_15 (Reference Annual Carbon)
+    
+    // e_8 = ref_k_32 / h_15 (Reference Annual Carbon)  
     const e_8 = area > 0 ? Math.round((refEmissions / area) * 10) / 10 : 0;
-
+    
     // e_6 = ref_i_39 / h_13 + e_8 (Reference Lifetime Carbon)
-    const e_6 =
-      serviceLife > 0
-        ? Math.round((refEmbodiedCarbon / serviceLife + e_8) * 10) / 10
-        : 0;
+    const e_6 = serviceLife > 0 ? Math.round((refEmbodiedCarbon / serviceLife + e_8) * 10) / 10 : 0;
 
     // ========================================
     // COLUMN H (TARGET): Excel-compliant calculations
     // ========================================
-
+    
     // h_10 = j_32 / h_15 (Target TEUI)
     const h_10 = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 0;
-
+    
     // h_8 = k_32 / h_15 (Target Annual Carbon)
     const h_8 = area > 0 ? Math.round((targetEmissions / area) * 10) / 10 : 0;
-
+    
     // h_6 = i_41 / h_13 + h_8 (Target Lifetime Carbon)
-    const h_6 =
-      serviceLife > 0
-        ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10
-        : 0;
+    const h_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10 : 0;
 
     // ========================================
     // COLUMN K (ACTUAL): Excel-compliant calculations (Utility Bills mode only)
     // ========================================
-
-    let k_10 = 0,
-      k_8 = 0,
-      k_6 = 0;
+    
+    let k_10 = 0, k_8 = 0, k_6 = 0;
     if (isUtilityMode) {
       // k_10 = f_32 / h_15 (Actual TEUI)
       k_10 = area > 0 ? Math.round((actualEnergy / area) * 10) / 10 : 0;
-
-      // k_8 = g_32 / h_15 (Actual Annual Carbon)
+      
+      // k_8 = g_32 / h_15 (Actual Annual Carbon)  
       k_8 = area > 0 ? Math.round((actualEmissions / area) * 10) / 10 : 0;
-
+      
       // k_6 = i_41 / h_13 + k_8 (Actual Lifetime Carbon)
-      k_6 =
-        serviceLife > 0
-          ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10
-          : 0;
+      k_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10 : 0;
     }
 
-    console.log(
-      `🔵 [S01] CALCULATED Reference COLUMN E: e_10=${e_10}, e_8=${e_8}, e_6=${e_6}`,
-    );
-    console.log(
-      `🟢 [S01] CALCULATED Target COLUMN H: h_10=${h_10}, h_8=${h_8}, h_6=${h_6}`,
-    );
-    console.log(
-      `🟡 [S01] CALCULATED Actual COLUMN K: k_10=${k_10}, k_8=${k_8}, k_6=${k_6}`,
-    );
+    console.log(`🔵 [S01] CALCULATED Reference COLUMN E: e_10=${e_10}, e_8=${e_8}, e_6=${e_6}`);
+    console.log(`🟢 [S01] CALCULATED Target COLUMN H: h_10=${h_10}, h_8=${h_8}, h_6=${h_6}`);
+    console.log(`🟡 [S01] CALCULATED Actual COLUMN K: k_10=${k_10}, k_8=${k_8}, k_6=${k_6}`);
 
     // ========================================
     // DISPLAY: Format and animate - NO STORAGE
     // ========================================
-
+    
     // Column E (Reference) - Format and display
-    const e10Formatted =
-      window.TEUI?.formatNumber?.(e_10, "number-1dp") ?? e_10.toString();
-    const e8Formatted =
-      window.TEUI?.formatNumber?.(e_8, "number-1dp") ?? e_8.toString();
-    const e6Formatted =
-      window.TEUI?.formatNumber?.(e_6, "number-1dp") ?? e_6.toString();
-
+    const e10Formatted = window.TEUI?.formatNumber?.(e_10, "number-1dp") ?? e_10.toString();
+    const e8Formatted = window.TEUI?.formatNumber?.(e_8, "number-1dp") ?? e_8.toString();
+    const e6Formatted = window.TEUI?.formatNumber?.(e_6, "number-1dp") ?? e_6.toString();
+    
     updateDisplayValue("e_10", e10Formatted);
     updateDisplayValue("e_8", e8Formatted);
     updateDisplayValue("e_6", e6Formatted);
 
     // Column H (Target) - Format and display with tier calculation
-    const h10Formatted =
-      window.TEUI?.formatNumber?.(h_10, "number-1dp") ?? h_10.toString();
-    const h8Formatted =
-      window.TEUI?.formatNumber?.(h_8, "number-1dp") ?? h_8.toString();
-    const h6Formatted =
-      window.TEUI?.formatNumber?.(h_6, "number-1dp") ?? h_6.toString();
+    const h10Formatted = window.TEUI?.formatNumber?.(h_10, "number-1dp") ?? h_10.toString();
+    const h8Formatted = window.TEUI?.formatNumber?.(h_8, "number-1dp") ?? h_8.toString();
+    const h6Formatted = window.TEUI?.formatNumber?.(h_6, "number-1dp") ?? h_6.toString();
 
     // Calculate tier for h_10 based on reduction from e_10
     const standard_d13 = window.TEUI.StateManager?.getValue("d_13") || "";
@@ -703,10 +659,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     if (e_10 > 0) {
       const reduction = 1 - h_10 / e_10;
       const standardLower = standard_d13.toLowerCase();
-      const isCodeStandard =
-        standardLower.includes("nbc") ||
-        standardLower.includes("obc") ||
-        standardLower.includes("necb");
+      const isCodeStandard = standardLower.includes("nbc") || standardLower.includes("obc") || standardLower.includes("necb");
 
       if (isCodeStandard) {
         if (reduction > 0.7) calculatedTier = "tier5";
@@ -722,7 +675,7 @@ window.TEUI.SectionModules.sect01 = (function () {
         else calculatedTier = "No Tier";
       }
     }
-
+    
     // Store tier in StateManager for compatibility with other sections
     if (window.TEUI?.StateManager) {
       const currentTier = window.TEUI.StateManager.getValue("i_10");
@@ -730,20 +683,17 @@ window.TEUI.SectionModules.sect01 = (function () {
         window.TEUI.StateManager.setValue("i_10", calculatedTier, "calculated");
       }
     }
-
+    
     updateDisplayValue("h_10", h10Formatted, calculatedTier);
     updateDisplayValue("h_8", h8Formatted);
     updateDisplayValue("h_6", h6Formatted);
 
     // Column K (Actual) - Conditional on Utility Bills mode
     if (isUtilityMode) {
-      const k10Formatted =
-        window.TEUI?.formatNumber?.(k_10, "number-1dp") ?? k_10.toString();
-      const k8Formatted =
-        window.TEUI?.formatNumber?.(k_8, "number-1dp") ?? k_8.toString();
-      const k6Formatted =
-        window.TEUI?.formatNumber?.(k_6, "number-1dp") ?? k_6.toString();
-
+      const k10Formatted = window.TEUI?.formatNumber?.(k_10, "number-1dp") ?? k_10.toString();
+      const k8Formatted = window.TEUI?.formatNumber?.(k_8, "number-1dp") ?? k_8.toString();
+      const k6Formatted = window.TEUI?.formatNumber?.(k_6, "number-1dp") ?? k_6.toString();
+      
       updateDisplayValue("k_10", k10Formatted);
       updateDisplayValue("k_8", k8Formatted);
       updateDisplayValue("k_6", k6Formatted);
@@ -754,26 +704,13 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     // Calculate percentages and explanations using the calculated values
-    calculatePercentagesAndExplanations(
-      e_6,
-      e_8,
-      e_10,
-      h_6,
-      h_8,
-      h_10,
-      k_6,
-      k_8,
-      k_10,
-      useType,
-    );
-
+    calculatePercentagesAndExplanations(e_6, e_8, e_10, h_6, h_8, h_10, k_6, k_8, k_10, useType);
+    
     // Update gauges and warnings
     updateAllGauges();
     checkTargetExceedsReference();
-
-    console.log(
-      "✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed",
-    );
+    
+    console.log("✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed");
   }
 
   function updateAllGauges() {
@@ -804,67 +741,55 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function getGaugeValues(gaugeId) {
-    const useType =
-      window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
+    const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
 
     // ✅ PURE CONSUMER: Read upstream values and calculate on-the-fly (same as updateTEUIDisplay)
     const area = getGlobalNumericValue("h_15") || 1427.2;
     const serviceLife = getGlobalNumericValue("h_13") || 50;
-
+    
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
-    const refEmissions = getGlobalNumericValue("ref_k_32") || 0;
+    const refEmissions = getGlobalNumericValue("ref_k_32") || 0;  
     const refEmbodiedCarbon = getGlobalNumericValue("ref_i_39") || 0;
-
+    
     const targetEnergy = getGlobalNumericValue("j_32") || 0;
     const targetEmissions = getGlobalNumericValue("k_32") || 0;
     const embodiedCarbon = getGlobalNumericValue("i_41") || 0;
-
+    
     const actualEnergy = getGlobalNumericValue("f_32") || 0;
     const actualEmissions = getGlobalNumericValue("g_32") || 0;
 
     // Calculate values directly (same math as updateTEUIDisplay)
     const e_10 = area > 0 ? Math.round((refEnergy / area) * 10) / 10 : 341.2;
     const e_8 = area > 0 ? Math.round((refEmissions / area) * 10) / 10 : 17.4;
-    const e_6 =
-      serviceLife > 0
-        ? Math.round((refEmbodiedCarbon / serviceLife + e_8) * 10) / 10
-        : 24.4;
-
+    const e_6 = serviceLife > 0 ? Math.round((refEmbodiedCarbon / serviceLife + e_8) * 10) / 10 : 24.4;
+    
     const h_10 = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 93.0;
     const h_8 = area > 0 ? Math.round((targetEmissions / area) * 10) / 10 : 4.7;
-    const h_6 =
-      serviceLife > 0
-        ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10
-        : 11.7;
-
-    let k_10 = 93.1,
-      k_8 = 4.8,
-      k_6 = 11.7; // defaults
+    const h_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10 : 11.7;
+    
+    let k_10 = 93.1, k_8 = 4.8, k_6 = 11.7;  // defaults
     if (isUtilityMode) {
       k_10 = area > 0 ? Math.round((actualEnergy / area) * 10) / 10 : 93.1;
       k_8 = area > 0 ? Math.round((actualEmissions / area) * 10) / 10 : 4.8;
-      k_6 =
-        serviceLife > 0
-          ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10
-          : 11.7;
+      k_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10 : 11.7;
     }
 
     // Return appropriate values based on gauge type
     if (gaugeId === "teui-gauge") {
-      return {
-        actualValue: isUtilityMode ? k_10 : h_10,
-        referenceValue: e_10,
+      return { 
+        actualValue: isUtilityMode ? k_10 : h_10, 
+        referenceValue: e_10 
       };
     } else if (gaugeId === "annual-carbon-gauge") {
-      return {
-        actualValue: isUtilityMode ? k_8 : h_8,
-        referenceValue: e_8,
+      return { 
+        actualValue: isUtilityMode ? k_8 : h_8, 
+        referenceValue: e_8 
       };
     } else if (gaugeId === "lifetime-carbon-gauge") {
-      return {
-        actualValue: isUtilityMode ? k_6 : h_6,
-        referenceValue: e_6,
+      return { 
+        actualValue: isUtilityMode ? k_6 : h_6, 
+        referenceValue: e_6 
       };
     } else {
       return { actualValue: 0, referenceValue: 100 };
@@ -876,7 +801,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     const area = getGlobalNumericValue("h_15") || 1427.2;
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
     const targetEnergy = getGlobalNumericValue("j_32") || 0;
-
+    
     const e_10 = area > 0 ? Math.round((refEnergy / area) * 10) / 10 : 341.2;
     const h_10 = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 93.0;
 
@@ -913,7 +838,8 @@ window.TEUI.SectionModules.sect01 = (function () {
   function updateTitleModeIndicators() {
     if (!window.TEUI || !window.TEUI.StateManager) return;
 
-    const useType = window.TEUI.StateManager.getValue("d_14") || "Targeted Use";
+    const useType =
+      window.TEUI.StateManager.getValue("d_14") || "Targeted Use";
     const modeTextContent = useType === "Utility Bills" ? "Actual" : "Targeted";
 
     const indicators = [
@@ -969,7 +895,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     }
 
     calculationInProgress = true;
-
+    
     console.log("🚀 [S01] =================================");
     console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
     console.log("🚀 [S01] =================================");
@@ -978,7 +904,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
       updateTEUIDisplay(); // Calculates all values and updates display
       updateTitleModeIndicators(); // Update mode indicators
-
+      
       console.log("✅ [S01] PURE DISPLAY CONSUMER COMPLETE");
       console.log("🚀 [S01] =================================");
     } finally {
@@ -1025,20 +951,20 @@ window.TEUI.SectionModules.sect01 = (function () {
     const calculatedFieldsToWatch = [
       // S04: Energy and emissions totals
       "j_32", // Target energy total
-      "k_32", // Target emissions total
+      "k_32", // Target emissions total 
       "f_32", // Actual energy total
       "g_32", // Actual emissions total
       "ref_j_32", // Reference energy total
       "ref_k_32", // Reference emissions total
-
+      
       // S02: Building information
       "h_15", // Conditioned area
       "h_13", // Service life
       "i_41", // Embodied carbon
-
+      
       // S15: Final Reference TEUI calculation (critical for Reference column)
       "ref_h_136", // Reference TEUI from Section 15 (final Reference calculation)
-
+      
       // S05: Reference embodied carbon
       "ref_i_39", // Reference embodied carbon
     ];
@@ -1052,17 +978,13 @@ window.TEUI.SectionModules.sect01 = (function () {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "j_32") {
-              console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 ${oldValue} → ${newValue}`);
+              console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H`);
             } else if (fieldId === "ref_j_32") {
-              console.log(
-                `🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`,
-              );
+              console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
             } else {
-              console.log(
-                `📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`,
-              );
+              console.log(`📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`);
             }
-
+            
             if (fieldId === "g_32") {
               // Special handling for g_32 field changes (if needed in future)
             }

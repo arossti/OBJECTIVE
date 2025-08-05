@@ -1220,12 +1220,6 @@ window.TEUI.SectionModules.sect15 = (function () {
     }
     const sm = window.TEUI.StateManager;
 
-    // ✅ FIX: Register dependencies on S12 reference values that S15 needs
-    // These ensure S12 reference calculations complete before S15 reference calculations
-    sm.registerDependency("ref_g_101", "ref_d_135"); // S12 U-value affects S15 reference TEDI
-    sm.registerDependency("ref_d_101", "ref_d_135"); // S12 area affects S15 reference TEDI
-    sm.registerDependency("ref_i_104", "ref_d_135"); // S12 heat loss affects S15 reference TEDI
-
     // Dependencies for d_135: =M43+K51+H70+D117+I104+M121-I80
     ["m_43", "k_51", "h_70", "d_117", "i_104", "m_121", "i_80"].forEach((dep) =>
       sm.registerDependency(dep, "d_135"),
@@ -1443,7 +1437,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // Check if critical upstream Reference values are available
       const criticalRefValues = [
         "ref_g_101",
-        "ref_d_101", 
+        "ref_d_101",
         "ref_h_23",
         "ref_i_104",
       ];
@@ -1451,27 +1445,9 @@ window.TEUI.SectionModules.sect15 = (function () {
         (fieldId) => !window.TEUI.StateManager.getValue(fieldId),
       );
       if (missingValues.length > 0) {
-        // Try to trigger S12 reference calculation as fallback
-        if (window.TEUI?.SectionModules?.sect12?.calculateReferenceModel) {
-          console.log(`[S15] Triggering S12 reference calculation for missing: ${missingValues.join(", ")}`);
-          try {
-            window.TEUI.SectionModules.sect12.calculateReferenceModel();
-            // Re-check if values are now available
-            const stillMissing = criticalRefValues.filter(
-              (fieldId) => !window.TEUI.StateManager.getValue(fieldId),
-            );
-            if (stillMissing.length > 0) {
-              console.log(`[S15] Still missing after S12 trigger: ${stillMissing.join(", ")}`);
-              return; // Skip calculation if still missing
-            }
-          } catch (error) {
-            console.warn(`[S15] Failed to trigger S12 reference calculation:`, error);
-            return;
-          }
-        } else {
-          console.log(`[S15] Waiting for S12 reference values: ${missingValues.join(", ")}`);
-          return; // Early return - will recalculate when dependencies are available
-        }
+        console.warn(
+          `[S15] Missing critical upstream Reference values: ${missingValues.join(", ")}`,
+        );
       }
 
       const d65 = parseFloat(getRefValue("d_65")) || 0;

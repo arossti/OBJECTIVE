@@ -1972,30 +1972,27 @@ window.TEUI.SectionModules.sect13 = (function () {
 
       // Add listeners for climate/gain/loss data changes from other sections
       console.log("[Section13] 🔗 Attaching CRITICAL upstream listeners...");
-      sm.addListener("d_20", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // HDD
-      sm.addListener("d_21", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // CDD
-      sm.addListener("d_23", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // Coldest Day Temp
-      sm.addListener("d_24", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // Hottest Day Temp
-      sm.addListener("h_23", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // Heating Setpoint
-      sm.addListener("h_24", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // Cooling Setpoint
+      sm.addListener("d_20", calculateAll); // HDD
+      sm.addListener("d_21", calculateAll); // CDD
+      sm.addListener("d_23", calculateAll); // Coldest Day Temp
+      sm.addListener("d_24", calculateAll); // Hottest Day Temp
+      sm.addListener("h_23", calculateAll); // Heating Setpoint
+      sm.addListener("h_24", calculateAll); // Cooling Setpoint
       sm.addListener("i_104", () => {
-        if (window.TEUI.isCalculating) return;
         console.log(
           "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
         );
         calculateAll();
       }); // Total Trans Loss
-      sm.addListener("k_104", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // Total Ground Loss
+      sm.addListener("k_104", calculateAll); // Total Ground Loss
       sm.addListener("i_71", () => {
-        if (window.TEUI.isCalculating) return;
         console.log(
           "[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!",
         );
         calculateAll();
       }); // Total Occ Gains
-      sm.addListener("i_79", () => { if (!window.TEUI.isCalculating) calculateAll(); }); // Total App Gains
+      sm.addListener("i_79", calculateAll); // Total App Gains
       sm.addListener("d_127", () => {
-        if (window.TEUI.isCalculating) return;
         console.log(
           "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
         );

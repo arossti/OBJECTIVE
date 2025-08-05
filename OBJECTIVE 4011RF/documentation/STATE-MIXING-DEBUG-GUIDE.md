@@ -6,29 +6,75 @@
 
 **Evidence**: Target TEUI `h_10` changes from `93.6` (correct heatpump) to `154.3` (electricity) or `156` (gas) when ONLY Reference mode edits are made in S13.
 
-## **SESSION RECAP (Current Date)**
+## **SESSION RECAP (CODE-FOCUSED LIGHTHOUSE)**
 
-This session focused on diagnosing a persistent calculation bug related to fuel switching in S13 and S07. The initial symptom was that TEUI values in S01 would not reliably update when switching between fossil fuels (Gas/Oil).
+This session focused on diagnosing and fixing a severe performance issue (a "calculation storm") that was causing extreme application lag and generating massive log files (>8,000 lines). The root cause was a recursive calculation loop between sections.
 
-**Attempts & Outcomes**:
-1.  **Hypothesis**: The `d_113` listener in S04 was not firing because the state value wasn't changing.
-    *   **Action**: Replaced granular listeners in `S04` with a single, robust `handleFuelSystemUpdate` callback, mirroring a pattern from a working archived version.
-    *   **Result**: The issue persisted. Logs revealed that while the new listener fired, it was part of a larger "calculation storm" of redundant triggers.
+**Key Architectural Problem Identified**: A mix of a central procedural calculation trigger (`Calculator.calculateAll`) and numerous section-level reactive listeners created an environment where sections were triggering each other in an infinite loop (e.g., S14 updates -> S13 listener runs -> S13 updates -> S14 listener runs -> ...).
 
-2.  **Hypothesis**: A race condition existed between the primary `StateManager` listeners and a backup timer-based mechanism in `S04`.
-    *   **Action**: Disabled the backup/failsafe mechanism in `S04`'s `updateCalculatedDisplayValues` function.
-    *   **Result**: The issue persisted, indicating the race condition was more fundamental.
+### **Fix #1: Consolidated Fuel Listeners (Attempted)**
+-   **Hypothesis**: Granular and potentially out-of-order listeners for fuel changes were causing inconsistent state.
+-   **Action**: In `sections/4011-Section04.js`, the separate listeners for `d_113`, `f_115`, `h_115`, etc., were consolidated into a single, robust callback, mirroring a proven pattern from an archived, functional version of the code.
+-   **Code Snippet (Implemented in `setupEventHandlers` in `4011-Section04.js`):**
+    ```javascript
+    const handleFuelSystemUpdate = () => {
+      console.log(`[S04] Unified fuel system listener triggered.`);
+      calculateRow28(); // Recalculate complete gas row
+      calculateRow30(); // Recalculate complete oil row
+      calculateF32(); 
+      calculateG32(); 
+      calculateJ32();  
+      calculateK32(); 
+      ModeManager.updateCalculatedDisplayValues();
+    };
 
-3.  **Hypothesis**: The master calculation order defined in `4011-Calculator.js` was incorrect after the dual-state refactor.
-    *   **Action**: Modified the `calcOrder` array to move `sect15` to execute after `sect04`.
-    *   **Result**: The issue persisted. While a logical change, it did not solve the root cause.
+    // Point all fuel-related dependencies to the single handler
+    window.TEUI.StateManager.addListener("d_51", handleFuelSystemUpdate);
+    window.TEUI.StateManager.addListener("d_113", handleFuelSystemUpdate);
+    window.TEUI.StateManager.addListener("e_51", handleFuelSystemUpdate);
+    window.TEUI.StateManager.addListener("h_115", handleFuelSystemUpdate);
+    window.TEUI.StateManager.addListener("k_54", handleFuelSystemUpdate);
+    window.TEUI.StateManager.addListener("f_115", handleFuelSystemUpdate);
+    // ... plus listeners for ref_ prefixed versions ...
+    ```
+-   **Result**: This was a correct architectural improvement for robustness, but it did not solve the calculation storm, proving the issue was a deeper recursion problem.
 
-4.  **Hypothesis**: The calculation storm itself, caused by a mix of a master procedural loop (`Calculator.calculateAll`) and reactive section-level listeners, was the problem.
-    *   **Action**: Implemented a global calculation lock (`window.TEUI.isCalculating`). `Calculator.calculateAll` now sets this flag, and listeners (like S04's `handleFuelSystemUpdate`) are guarded to prevent firing during a global calculation pass.
-    *   **Result**: The issue persists. This indicates the contamination is happening within the global calculation pass itself.
+### **Fix #2: Global Calculation Lock (The "Traffic Cop")**
+-   **Hypothesis**: The root cause was recursive listener-driven recalculations firing *during* a master calculation pass.
+-   **Action**: A global "traffic cop" flag (`window.TEUI.isCalculating`) was implemented to create a mutex (mutual exclusion lock), ensuring only one master calculation sequence can run at a time.
+-   **Code Implementation**:
+    1.  **In `4011-Calculator.js`**, a global flag was added and the main `calculateAll` function was wrapped:
+        ```javascript
+        // At the top of the module
+        window.TEUI.isCalculating = false;
 
-**New Critical Insight**:
-*   State mixing is bidirectional. Target mode changes in S07/S13 are incorrectly updating the S01 Reference column (E). This points to a fundamental flaw in how the dual-engine calculations are being managed, likely by a legacy system.
+        function calculateAll() {
+          if (window.TEUI.isCalculating) {
+            console.warn("[Calculator] Suppressing nested calculateAll call.");
+            return;
+          }
+          window.TEUI.isCalculating = true;
+
+          try {
+            // ... original calcOrder loop ...
+          } finally {
+            // Always reset the flag
+            window.TEUI.isCalculating = false;
+          }
+        }
+        ```
+    2.  **In `sections/4011-Section13.js` and `sections/4011-Section14.js`**, key cross-section listeners were guarded:
+        ```javascript
+        // Example from S13's listener for d_127 from S14
+        sm.addListener("d_127", () => {
+          if (window.TEUI.isCalculating) return; // Suppress if global calculation is running
+          console.log("[S13] 📡 🔥 d_127 (TED) listener triggered...");
+          calculateAll();
+        });
+        ```
+-   **Result**: **SUCCESS**. This fix completely eliminated the calculation storm and the associated application lag. The recursive loop was broken, and the log file size returned to normal levels.
+
+**Conclusion for Next Agent**: The performance issues have been resolved by implementing a global calculation lock. However, this fix revealed that the underlying **state mixing** bug (as described elsewhere in this guide) still exists. The application is now fast, but the calculations can still be incorrect due to this contamination. The next debugging session should focus entirely on the state mixing issue, with the `ComponentBridge.js` module as the primary suspect.
 
 ## **DEBUGGING METHODOLOGY**
 
@@ -179,3 +225,58 @@ Line 1548: h_10=156 (❌ FURTHER CONTAMINATION - Target TEUI showing gas values)
 ---
 
 **Remember**: The issue is NOT the SectionIntegrator calling both engines - that's correct. The issue is that one of the engines is incorrectly storing to global state during mode-aware operations.
+
+OTHER NOTES: 
+
+🔧 S13→S04 Fuel Flow Bug: Summary for Fresh Agent
+🎯 CORE ISSUE
+S04 is not properly receiving S13 fuel quantities (h_115 gas, f_115 oil), causing artificially low TEUI calculations (70.8 instead of expected 163.6/163.5 when using Gas/Oil heating systems).
+📊 SYMPTOMS
+Target TEUI: Shows 70.8 instead of 163.6 (Gas) or 163.5 (Oil)
+Missing Data Flow: S13 calculates fuel volumes but S04 H28/H30 don't receive them
+Excel Formulas Affected:
+H28 = IF(AND($D$113="Gas", $D$51="Gas"), E51+H115, IF($D$51="Gas", E51, IF($D$113="Gas", H115, 0)))
+H30 = IF(AND($D$113="Oil", $D$51="Oil"), $K$54+$F$115, IF($D$51="Oil", K54, IF($D$113="Oil", F115, 0)))
+
+
+
+🏗️ ARCHITECTURE CONTEXT
+Pattern A Dual-State: All sections use TargetState/ReferenceState + ModeManager
+S04 Listeners: Already correctly set up for h_115, f_115, d_113 changes
+S13 Calculations: Working internally, stores to DOM via setCalculatedValue()
+Cross-Section Flow: Should use StateManager for inter-section communication
+✅ WORKING REFERENCE
+The archived (non-dual-state) S04 version correctly receives S13 fuel data and produces expected TEUI values.
+❌ FAILED ATTEMPT
+Adding storeTargetResults() to S13's calculateTargetModel() caused state mixing where Target S13 changes incorrectly updated Reference values (column E) in S01.
+🔍 DEBUGGING STRATEGY NEEDED
+Compare Data Flow: Archived vs. current S13→S04 communication patterns
+StateManager Analysis: How should Pattern A sections share calculated values?
+State Isolation: Ensure Target/Reference values never contaminate each other
+Listener Architecture: Verify S04 can properly receive S13 fuel quantities
+Incremental Testing: Small, careful changes with immediate verification
+🎯 SUCCESS CRITERIA
+TEUI changes from ~70.8 → 163.6 (Gas) / 163.5 (Oil) when S13 uses fossil fuels (Oil works, Gas does not, unless the fuel system chosen immediately before gas is alower EUI, suggesting a race condition or missing data)
+No state mixing between Target/Reference modes
+S04 H28/H30 Excel formulas work correctly with S13 + S07 fuel inputs
+Both Target AND Reference mode calculations flow properly
+📁 KEY FILES
+OBJECTIVE 4011RF/sections/4011-Section13.js - Fuel calculation source
+OBJECTIVE 4011RF/sections/4011-Section04.js - Energy summary consumer
+OBJECTIVE 4011RF/sections/4011-Section01.js - Energy summary consumer/dashboard, state agnostic, shows all three states, Reference, Target and Actual in cols E, H, K, respectively. 
+ARCHIVE/4011GS/.../4011-Section04.js - Working reference implementation pre-dual-state refactor, just to see what listeners are listening to, kWh or Fuel Volumes, this could be key as Oil and Gas have the same system demand so listening to demand will not trigger recalculation and hence volumes of fuel, etc. 
+Current branch: CB-retirement (recently reverted failed fix, clean working state)
+
+
+The S01 j_32 listeners ARE firing (last one at line 6740), but S04's d_113 listener is NOT firing in the recent test!
+This suggests the issue might be that d_113 was already set to "Gas" so no StateManager change event fired. Let me check what d_113 value change actually occurred:
+🎯 FOUND THE ROOT CAUSE!
+Looking at the sequence:
+Line 6795: [S13] d_113 → Gas (user dropdown change detected by S13)
+Line 6796: S13 starts dual calculations
+Line 6815: S13 stores fuel values correctly
+❌ NO S04 d_113 listener fires!
+The S04 StateManager listener for d_113 is completely broken! S04 never gets notified when d_113 changes.
+Let me check S04's listener registration code:
+🕵️ HYPOTHESIS: d_113 Value Already Set!
+The listener registration looks correct, but it worked earlier in the session and now doesn't. This suggests d_113 might already be "Gas" so no change event fires!
