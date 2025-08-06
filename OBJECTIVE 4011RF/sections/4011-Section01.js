@@ -566,9 +566,11 @@ window.TEUI.SectionModules.sect01 = (function () {
     const isUtilityMode = useType === "Utility Bills";
 
     // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
-    // Building data from S02
-    const area = getGlobalNumericValue("h_15") || 1427.2;
+    // Building data from S02 - CRITICAL FIX: Separate Target and Reference areas
+    const targetArea = getGlobalNumericValue("h_15") || 1427.2;
+    const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea; // Fallback to targetArea if ref_h_15 is not yet set
     const serviceLife = getGlobalNumericValue("h_13") || 50;
+    const refServiceLife = getGlobalNumericValue("ref_h_13") || serviceLife; // Reference service life
     
     // Reference values from upstream sections (S04, S05, S15)
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;  // From S04 Reference
@@ -587,30 +589,31 @@ window.TEUI.SectionModules.sect01 = (function () {
     console.log(`🔵 [S01] Upstream Reference: refEnergy=${refEnergy} (from ref_j_32), refEmissions=${refEmissions}, refEmbodiedCarbon=${refEmbodiedCarbon}`);
     console.log(`🟢 [S01] Upstream Target: targetEnergy=${targetEnergy} (from j_32), targetEmissions=${targetEmissions}, embodiedCarbon=${embodiedCarbon}`);
     console.log(`🟡 [S01] Upstream Actual: actualEnergy=${actualEnergy}, actualEmissions=${actualEmissions}`);
-    console.log(`🎯 [S01] Building: area=${area}, serviceLife=${serviceLife}, useType=${useType}`);
+    console.log(`🎯 [S01] Building: targetArea=${targetArea}, referenceArea=${referenceArea}, serviceLife=${serviceLife}, refServiceLife=${refServiceLife}, useType=${useType}`);
 
     // ========================================
     // COLUMN E (REFERENCE): Excel-compliant calculations
+    // ✅ CRITICAL FIX: Use referenceArea for all Reference calculations
     // ========================================
     
-    // e_10 = ref_j_32 / h_15 (Reference TEUI)
-    const e_10 = area > 0 ? Math.round((refEnergy / area) * 10) / 10 : 0;
+    // e_10 = ref_j_32 / ref_h_15 (Reference TEUI)
+    const e_10 = referenceArea > 0 ? Math.round((refEnergy / referenceArea) * 10) / 10 : 0;
     
-    // e_8 = ref_k_32 / h_15 (Reference Annual Carbon)  
-    const e_8 = area > 0 ? Math.round((refEmissions / area) * 10) / 10 : 0;
+    // e_8 = ref_k_32 / ref_h_15 (Reference Annual Carbon)  
+    const e_8 = referenceArea > 0 ? Math.round((refEmissions / referenceArea) * 10) / 10 : 0;
     
-    // e_6 = ref_i_39 / h_13 + e_8 (Reference Lifetime Carbon)
-    const e_6 = serviceLife > 0 ? Math.round((refEmbodiedCarbon / serviceLife + e_8) * 10) / 10 : 0;
+    // e_6 = ref_i_39 / ref_h_13 + e_8 (Reference Lifetime Carbon)
+    const e_6 = refServiceLife > 0 ? Math.round((refEmbodiedCarbon / refServiceLife + e_8) * 10) / 10 : 0;
 
     // ========================================
     // COLUMN H (TARGET): Excel-compliant calculations
     // ========================================
     
     // h_10 = j_32 / h_15 (Target TEUI)
-    const h_10 = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 0;
+    const h_10 = targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 0;
     
     // h_8 = k_32 / h_15 (Target Annual Carbon)
-    const h_8 = area > 0 ? Math.round((targetEmissions / area) * 10) / 10 : 0;
+    const h_8 = targetArea > 0 ? Math.round((targetEmissions / targetArea) * 10) / 10 : 0;
     
     // h_6 = i_41 / h_13 + h_8 (Target Lifetime Carbon)
     const h_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10 : 0;
@@ -622,10 +625,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     let k_10 = 0, k_8 = 0, k_6 = 0;
     if (isUtilityMode) {
       // k_10 = f_32 / h_15 (Actual TEUI)
-      k_10 = area > 0 ? Math.round((actualEnergy / area) * 10) / 10 : 0;
+      k_10 = targetArea > 0 ? Math.round((actualEnergy / targetArea) * 10) / 10 : 0;
       
       // k_8 = g_32 / h_15 (Actual Annual Carbon)  
-      k_8 = area > 0 ? Math.round((actualEmissions / area) * 10) / 10 : 0;
+      k_8 = targetArea > 0 ? Math.round((actualEmissions / targetArea) * 10) / 10 : 0;
       
       // k_6 = i_41 / h_13 + k_8 (Actual Lifetime Carbon)
       k_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10 : 0;
@@ -745,8 +748,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     const isUtilityMode = useType === "Utility Bills";
 
     // ✅ PURE CONSUMER: Read upstream values and calculate on-the-fly (same as updateTEUIDisplay)
-    const area = getGlobalNumericValue("h_15") || 1427.2;
+    const targetArea = getGlobalNumericValue("h_15") || 1427.2;
+    const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea;
     const serviceLife = getGlobalNumericValue("h_13") || 50;
+    const refServiceLife = getGlobalNumericValue("ref_h_13") || serviceLife;
     
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
     const refEmissions = getGlobalNumericValue("ref_k_32") || 0;  
@@ -760,18 +765,18 @@ window.TEUI.SectionModules.sect01 = (function () {
     const actualEmissions = getGlobalNumericValue("g_32") || 0;
 
     // Calculate values directly (same math as updateTEUIDisplay)
-    const e_10 = area > 0 ? Math.round((refEnergy / area) * 10) / 10 : 341.2;
-    const e_8 = area > 0 ? Math.round((refEmissions / area) * 10) / 10 : 17.4;
-    const e_6 = serviceLife > 0 ? Math.round((refEmbodiedCarbon / serviceLife + e_8) * 10) / 10 : 24.4;
+    const e_10 = referenceArea > 0 ? Math.round((refEnergy / referenceArea) * 10) / 10 : 341.2;
+    const e_8 = referenceArea > 0 ? Math.round((refEmissions / referenceArea) * 10) / 10 : 17.4;
+    const e_6 = refServiceLife > 0 ? Math.round((refEmbodiedCarbon / refServiceLife + e_8) * 10) / 10 : 24.4;
     
-    const h_10 = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 93.0;
-    const h_8 = area > 0 ? Math.round((targetEmissions / area) * 10) / 10 : 4.7;
+    const h_10 = targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 93.0;
+    const h_8 = targetArea > 0 ? Math.round((targetEmissions / targetArea) * 10) / 10 : 4.7;
     const h_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10 : 11.7;
     
     let k_10 = 93.1, k_8 = 4.8, k_6 = 11.7;  // defaults
     if (isUtilityMode) {
-      k_10 = area > 0 ? Math.round((actualEnergy / area) * 10) / 10 : 93.1;
-      k_8 = area > 0 ? Math.round((actualEmissions / area) * 10) / 10 : 4.8;
+      k_10 = targetArea > 0 ? Math.round((actualEnergy / targetArea) * 10) / 10 : 93.1;
+      k_8 = targetArea > 0 ? Math.round((actualEmissions / targetArea) * 10) / 10 : 4.8;
       k_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10 : 11.7;
     }
 
@@ -798,12 +803,13 @@ window.TEUI.SectionModules.sect01 = (function () {
 
   function checkTargetExceedsReference() {
     // ✅ PURE CONSUMER: Calculate values directly for warning check
-    const area = getGlobalNumericValue("h_15") || 1427.2;
+    const targetArea = getGlobalNumericValue("h_15") || 1427.2;
+    const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea;
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
     const targetEnergy = getGlobalNumericValue("j_32") || 0;
     
-    const e_10 = area > 0 ? Math.round((refEnergy / area) * 10) / 10 : 341.2;
-    const h_10 = area > 0 ? Math.round((targetEnergy / area) * 10) / 10 : 93.0;
+    const e_10 = referenceArea > 0 ? Math.round((refEnergy / referenceArea) * 10) / 10 : 341.2;
+    const h_10 = targetArea > 0 ? Math.round((targetEnergy / targetArea) * 10) / 10 : 93.0;
 
     const gaugeContainer = document
       .getElementById("teui-gauge")
@@ -958,8 +964,10 @@ window.TEUI.SectionModules.sect01 = (function () {
       "ref_k_32", // Reference emissions total
       
       // S02: Building information
-      "h_15", // Conditioned area
-      "h_13", // Service life
+      "h_15", // Conditioned area (Target)
+      "ref_h_15", // Conditioned area (Reference)
+      "h_13", // Service life (Target)
+      "ref_h_13", // Service life (Reference)
       "i_41", // Embodied carbon
       
       // S15: Final Reference TEUI calculation (critical for Reference column)

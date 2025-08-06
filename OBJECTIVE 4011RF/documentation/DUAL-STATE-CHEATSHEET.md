@@ -18,11 +18,12 @@
 - **🚨 CHANGING EXCEL FORMULAS** - Focus on dual-state support, NOT formula modifications
 - **"Improving" or "optimizing" calculations** - Formulas are regulatory-approved, don't alter them
 - **Modifying mathematical operations** - Keep Excel formulas exactly as they work in BACKUP files
+- **🚨 DUPLICATE DEFAULTS** - Hardcoding defaults in state objects that duplicate field definitions (DATA CORRUPTION RISK)
 - Not running the QA/QC checklist (causes architectural failures)
 - Speed-reading instead of following patterns exactly
 - Adding `calculateAll()` to `switchMode()` (major anti-pattern)
 - Not implementing `updateCalculatedDisplayValues()` for DOM updates
-- Forgetting to call `updateCalculatedDisplayValues()` after `calculateAll()`
+- Forgetting to call `updateCalculatedDisplayValues()` AFTER `calculateAll()`
 
 ========================================================
 
@@ -45,9 +46,8 @@
 
 The Pattern A refactoring initiative is substantially complete.
 
-- ✅ **Completed Sections**: S01, S02, S03, S08, S09, S10, S11, S12, S13, S14, S15.
-- ✅ **S04 (Energy Summary)**: Has been completely rebuilt from scratch as a pure **Consumer Section**, resolving previous architectural issues. It now correctly reads upstream values from S13/S15.
-- 🚧 **Pending Refactor**: S05, S06, S07 are the final sections to be migrated to Pattern A.
+- ✅ **Completed Sections**: S01, S02, S03, S05, S06, S07, S08, S09, S10, S11, S12, S13, S14, S15.
+- ✅ **S04 (Energy Summary)**: Has been completely rebuilt from scratch as a pure **Consumer Section**, resolving previous architectural issues. It now SHOULD correctly read upstream values from S13/S15.
 
 ---
 
@@ -211,11 +211,37 @@ window.TEUI.StateManager.setValue(
     - Excel formulas are **regulatory-approved** - changing them invalidates compliance
     - Focus ONLY on adding dual-state support to existing working formulas
 
-### **Phase 5: Pattern 2 Compliance**
+### **Phase 5: Default Values Anti-Pattern (DATA CORRUPTION RISK)**
 
-10. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
-11. **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
-12. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref\_ values
+10. **🚨 DUPLICATE DEFAULTS AUDIT**: Scan for hardcoded defaults that duplicate field definitions
+    - **Search Pattern**: `grep -n "defaultValue\|value.*:" sections/4011-SectionXX.js | grep -E "[0-9]+\.[0-9]+|[0-9]+"`
+    - **Critical Anti-Pattern**: Setting defaults in BOTH field definitions AND state objects
+    
+    ```javascript
+    // ❌ CORRUPTION RISK: Duplicate defaults in multiple places
+    // Field definition:
+    { fieldId: "h_15", value: "1,427.20", type: "editable" }
+    // State object (WRONG):
+    TargetState.setDefaults() { this.data = { h_15: "1427.20" }; }
+    
+    // ✅ CORRECT: Single source of truth
+    // Field definition (ONLY place for defaults):
+    { fieldId: "h_15", value: "1,427.20", type: "editable" }
+    // State object (correct):
+    TargetState.setDefaults() { this.data = { /* h_15 comes from field definition */ }; }
+    ```
+
+11. **MANDATORY FIXES**: Remove ALL hardcoded defaults from state objects that duplicate field definitions
+    - **WHY CRITICAL**: Creates version drift, maintenance nightmare, and data corruption
+    - **Field definitions are the SINGLE SOURCE OF TRUTH** for all default values
+    - **State objects should ONLY contain mode-specific overrides** (like different reporting years)
+    - **Add fallback logic** in getValue functions to handle missing state values
+
+### **Phase 6: Pattern 2 Compliance**
+
+12. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
+13. **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
+14. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref\_ values
 
 ---
 
@@ -283,7 +309,7 @@ StateManager.addListener("ref_d_43", calculateReferenceModel); // Reference → 
 - **⚡ Simplicity**: Fewer moving parts
 - **🧪 Testability**: Isolated state testing
 
-### **🎉 READY FOR COMPONENTBRIDGE RETIREMENT (August 4, 2025)**
+### **🎉 COMPLETED COMPONENTBRIDGE RETIREMENT (August 5, 2025)**
 
 **Status: ALL SECTIONS NOW PATTERN A COMPLIANT**
 
@@ -292,7 +318,7 @@ StateManager.addListener("ref_d_43", calculateReferenceModel); // Reference → 
 ✅ **S07**: **COMPLETED August 4** - Pattern A with mode-aware calculations  
 ✅ **S08-S18**: Pattern A dual-state architecture  
 
-**ComponentBridge can now be safely retired** - all sections use direct StateManager registration and proper state isolation.
+**ComponentBridge now be safely retired** - all sections use direct StateManager registration and proper state isolation.
 
 ---
 
@@ -306,7 +332,7 @@ Target and Reference must have **completely independent input states**.
 - Target: `const systemType = TargetState.getValue("d_113");`
 - Reference: `const systemType = ReferenceState.getValue("d_113");`
 
-This independence allows comparing different systems (e.g., Gas vs Electric heating).
+This independence allows comparing different systems, locations, and even geometry scenarios (e.g., Gas vs Electric heating, Attawapiskat vs. Alexandria, ON, Future vs. Present Weather values, etc.).
 
 **🎯 CALCULATION vs INPUT BEHAVIOR**:
 - **Input Changes**: Only affect the current mode (Target changes only in Target mode, Reference changes only in Reference mode)
@@ -347,7 +373,7 @@ function setupDropdownEventHandlers() {
 
 🛑 **FINAL REMINDER FOR AI AGENTS** 🛑
 
-**IF ANY STEP FAILS**: Go back to the DUAL-STATE-IMPLEMENTATION-GUIDE.md and follow the patterns exactly as documented. Do NOT improvise or "fix" things differently than shown.
+**IF ANY STEP FAILS**: Go back to the longer, more complete DUAL-STATE-IMPLEMENTATION-GUIDE.md and follow the patterns exactly as documented. Do NOT improvise or "fix" things differently than shown.
 
 **SUCCESS CRITERIA**: User can change dropdowns and see calculated fields update immediately in the DOM. Both Target and Reference modes work without state contamination.
 
