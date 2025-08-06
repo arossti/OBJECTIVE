@@ -568,9 +568,9 @@ window.TEUI.SectionModules.sect01 = (function () {
     // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
     // Building data from S02 - CRITICAL FIX: Separate Target and Reference areas
     const targetArea = getGlobalNumericValue("h_15") || 1427.2;
-    const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea; // Fallback to targetArea if ref_h_15 is not yet set
+    const referenceArea = getGlobalNumericValue("ref_h_15") || 1427.2; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
     const serviceLife = getGlobalNumericValue("h_13") || 50;
-    const refServiceLife = getGlobalNumericValue("ref_h_13") || serviceLife; // Reference service life
+    const refServiceLife = getGlobalNumericValue("ref_h_13") || 50; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
     
     // Reference values from upstream sections (S04, S05, S15)
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;  // From S04 Reference

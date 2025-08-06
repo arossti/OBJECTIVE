@@ -2498,9 +2498,14 @@ window.TEUI.SectionModules.sect13 = (function () {
     ? getGlobalNumericValue("ref_h_115")
     : getGlobalNumericValue("h_115");
 
-    // Emissions factors from S04 (gCO2e), divided by 1000 to get kgCO2e
-    const oilEmissionsFactor = getGlobalNumericValue("l_30") || 2753;
-    const gasEmissionsFactor = getGlobalNumericValue("l_28") || 1921;
+    // ✅ CRITICAL FIX: Mode-aware emissions factors from S04 (gCO2e), divided by 1000 to get kgCO2e
+    // Reference calculations must use Reference emissions factors, Target uses Target factors
+    const oilEmissionsFactor = isReferenceCalculation 
+      ? (getGlobalNumericValue("ref_l_30") || getGlobalNumericValue("l_30") || 2753)
+      : (getGlobalNumericValue("l_30") || 2753);
+    const gasEmissionsFactor = isReferenceCalculation
+      ? (getGlobalNumericValue("ref_l_28") || getGlobalNumericValue("l_28") || 1921)
+      : (getGlobalNumericValue("l_28") || 1921);
 
     let emissions = 0;
 

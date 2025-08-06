@@ -237,11 +237,36 @@ window.TEUI.StateManager.setValue(
     - **State objects should ONLY contain mode-specific overrides** (like different reporting years)
     - **Add fallback logic** in getValue functions to handle missing state values
 
-### **Phase 6: Pattern 2 Compliance**
+### **Phase 6: Mode Display Isolation (CRITICAL BLEEDING PREVENTION)**
 
-12. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
-13. **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
-14. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref\_ values
+12. **🚨 NO FALLBACK CONTAMINATION**: `updateCalculatedDisplayValues()` must NEVER use fallback patterns
+    ```javascript
+    // ❌ WRONG: Reference bleeding into Target
+    const refValue = StateManager.getValue(`ref_${fieldId}`);
+    const targetValue = StateManager.getValue(fieldId);
+    valueToDisplay = refValue || targetValue; // CONTAMINATION!
+    
+    // ✅ CORRECT: Strict mode isolation
+    let valueToDisplay;
+    if (this.currentMode === "reference") {
+      valueToDisplay = StateManager.getValue(`ref_${fieldId}`);
+      // If Reference doesn't exist, show 0 or field default - NEVER Target value
+      if (valueToDisplay === null || valueToDisplay === undefined) {
+        valueToDisplay = 0; // or field definition default
+      }
+    } else {
+      valueToDisplay = StateManager.getValue(fieldId) || 0;
+    }
+    ```
+
+13. **INITIALIZATION ORDER**: `ModeManager.initialize()` MUST be called before any calculations
+    - Set defaults → Load state → Store defaults to StateManager → Calculate
+
+### **Phase 7: Pattern 2 Compliance**
+
+14. **External Dependencies**: ALL calculations must read explicit Target or Reference upstream values
+15. **Dual-Mode Listeners**: Listen to BOTH `"fieldId"` AND `"ref_fieldId"` for all external dependencies
+16. **State Isolation**: Reference calculations NEVER read unprefixed values; Target calculations NEVER read ref\_ values
 
 ---
 
@@ -371,6 +396,119 @@ function setupDropdownEventHandlers() {
 
 **FAILURE MODE**: Missing dropdown handlers = "dropdown changes not saved", "values stuck", "Target/Reference stuck on old values"
 
+---
+
+## 🔧 **SYSTEMATIC QA/QC FRAMEWORK**
+
+### **🚨 COMMON FAILURE PATTERNS (Post-Refactoring Bugs)**
+
+**These issues stem from incomplete Pattern A implementation and require systematic detection:**
+
+#### **1. State Bleeding (Reference → Target)**
+- **Symptom**: Reference mode changes affect Target mode display
+- **Root Cause**: Fallback logic in `updateCalculatedDisplayValues()`
+- **Detection**: `grep -r "|| targetValue" sections/` 
+- **Fix**: Remove ALL fallbacks, use strict mode isolation
+
+#### **2. Initial Load Contamination** 
+- **Symptom**: Target changes affect Reference on first page load
+- **Root Cause**: Missing `ModeManager.initialize()` call before calculations
+- **Detection**: Check `onSectionRendered()` call order
+- **Fix**: Ensure `ModeManager.initialize()` → `calculateAll()` → `updateCalculatedDisplayValues()`
+
+#### **3. Missing State Storage**
+- **Symptom**: Mode changes don't trigger downstream updates
+- **Root Cause**: Missing fields in `storeReferenceResults()`
+- **Detection**: Check if Reference sliders trigger `ref_` prefixed storage
+- **Fix**: Add missing fields to `storeReferenceResults()`
+
+#### **4. Missing Event Handlers**
+- **Symptom**: Slider changes don't save to state
+- **Root Cause**: No event handlers for key sliders (h_12, h_13, h_15)
+- **Detection**: Check if section has handlers for ALL user input fields
+- **Fix**: Add complete event handlers that call `ModeManager.setValue()`
+
+### **🎯 SYSTEMATIC QA/QC PROTOCOL**
+
+#### **Phase A: Pre-Implementation Audit**
+1. **Read DUAL-STATE-CHEATSHEET.md completely**
+2. **Identify ALL user input fields** (dropdowns, sliders, editable fields)
+3. **Identify ALL calculated output fields** 
+4. **Map dependency chain** (which sections read this section's outputs)
+
+#### **Phase B: Implementation Checklist**
+1. **✅ Dual-State Objects**: `TargetState`, `ReferenceState`, `ModeManager`
+2. **✅ Dual-Engine Functions**: `calculateTargetModel()`, `calculateReferenceModel()`, `calculateAll()`
+3. **✅ Proper `switchMode()`**: UI-only, no calculations, calls `updateCalculatedDisplayValues()`
+4. **✅ State Storage**: `storeReferenceResults()` includes ALL relevant fields
+5. **✅ Event Handlers**: ALL user inputs call `ModeManager.setValue()` → `calculateAll()` → `updateCalculatedDisplayValues()`
+6. **✅ DOM Updates**: `updateCalculatedDisplayValues()` with strict mode isolation (NO fallbacks)
+
+#### **Phase C: Post-Implementation Testing**
+1. **Test Initial Load**: Verify no cross-contamination on page load
+2. **Test Target Mode**: Changes affect Target only
+3. **Test Reference Mode**: Changes affect Reference only  
+4. **Test Mode Switching**: No bleeding between modes
+5. **Test Downstream Propagation**: Verify `ref_` prefixed values reach dependent sections
+
+#### **Phase D: Systematic Bug Detection**
+```bash
+# State bleeding detection
+grep -r "|| targetValue" sections/
+grep -r "refValue || target" sections/
+
+# Missing initialization detection  
+grep -r "onSectionRendered" sections/ | grep -v "ModeManager.initialize"
+
+# Missing event handlers detection
+grep -r "data-field-id.*h_12\|h_13\|h_15" sections/ 
+# Then verify each has corresponding addEventListener
+
+# Missing Reference storage detection
+grep -r "storeReferenceResults" sections/
+# Then verify all slider fields are included
+```
+
+### **🛠️ STANDARDIZED FIX PATTERNS**
+
+#### **Fix 1: State Bleeding** 
+```javascript
+// ❌ WRONG:
+valueToDisplay = refValue || targetValue;
+
+// ✅ CORRECT:
+if (this.currentMode === "reference") {
+  valueToDisplay = StateManager.getValue(`ref_${fieldId}`) || 0;
+} else {
+  valueToDisplay = StateManager.getValue(fieldId) || 0;
+}
+```
+
+#### **Fix 2: Missing Event Handler**
+```javascript
+// Add to initializeEventHandlers():
+const slider = document.querySelector('input[data-field-id="fieldId"]');
+if (slider) {
+  slider.addEventListener("change", function(e) {
+    ModeManager.setValue("fieldId", e.target.value, "user-modified");
+    calculateAll();
+    ModeManager.updateCalculatedDisplayValues();
+  });
+}
+```
+
+#### **Fix 3: Missing Reference Storage**
+```javascript
+// Add to storeReferenceResults():
+const referenceResults = {
+  // ... existing fields
+  h_12: ReferenceState.getValue("h_12"), // Add missing field
+  h_13: ReferenceState.getValue("h_13"), // Add missing field
+};
+```
+
+---
+
 🛑 **FINAL REMINDER FOR AI AGENTS** 🛑
 
 **IF ANY STEP FAILS**: Go back to the longer, more complete DUAL-STATE-IMPLEMENTATION-GUIDE.md and follow the patterns exactly as documented. Do NOT improvise or "fix" things differently than shown.
@@ -378,3 +516,5 @@ function setupDropdownEventHandlers() {
 **SUCCESS CRITERIA**: User can change dropdowns and see calculated fields update immediately in the DOM. Both Target and Reference modes work without state contamination.
 
 **FAILURE MODES**: "DOM not updating", "values stuck at old values", "both engines running on mode switch" = You didn't follow the documented patterns.
+
+**NEW SYSTEMATIC APPROACH**: Use the QA/QC Framework above to prevent field-by-field debugging cycles.

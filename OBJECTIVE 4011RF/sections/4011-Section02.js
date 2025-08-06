@@ -786,6 +786,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     // Store Reference values for downstream consumption
     const referenceResults = {
       h_12: ReferenceState.getValue("h_12"), // 2020 reporting year
+      h_13: ReferenceState.getValue("h_13"), // ✅ CRITICAL FIX: Service life (was missing!)
       d_13: ReferenceState.getValue("d_13"), // OBC SB10 5.5-6 Z5 (2010)
       d_15: ReferenceState.getValue("d_15"), // Carbon standard
       h_15: ReferenceState.getValue("h_15"), // Building area
@@ -1120,6 +1121,32 @@ window.TEUI.SectionModules.sect02 = (function () {
           `[S02] User changed reporting year to: ${newYear} (${ModeManager.currentMode} mode)`,
         );
         // Recalculate after year change
+        calculateAll();
+        // Update DOM with new calculated values
+        ModeManager.updateCalculatedDisplayValues();
+      });
+    }
+
+    // ✅ CRITICAL FIX: Service life slider events (h_13)
+    const serviceLifeSlider = document.querySelector('input[data-field-id="h_13"]');
+    if (serviceLifeSlider) {
+      serviceLifeSlider.addEventListener("input", function (e) {
+        const newServiceLife = e.target.value;
+        // Update display label
+        const serviceLifeDisplay = this.nextElementSibling;
+        if (serviceLifeDisplay) {
+          serviceLifeDisplay.textContent = newServiceLife;
+        }
+      });
+
+      serviceLifeSlider.addEventListener("change", function (e) {
+        const newServiceLife = e.target.value;
+        // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
+        ModeManager.setValue("h_13", newServiceLife, "user-modified");
+        console.log(
+          `[S02] User changed service life to: ${newServiceLife} (${ModeManager.currentMode} mode)`,
+        );
+        // Recalculate after service life change
         calculateAll();
         // Update DOM with new calculated values
         ModeManager.updateCalculatedDisplayValues();

@@ -484,20 +484,29 @@ window.TEUI.SectionModules.sect04 = (function () {
         let valueToDisplay;
 
         if (this.currentMode === "reference") {
-          // In Reference mode, try to show ref_ values, fallback to regular values
-          const refValue = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
-          const targetValue = window.TEUI.StateManager.getValue(fieldId);
-          valueToDisplay = refValue || targetValue;
+          // ✅ CRITICAL FIX: Strict Reference mode isolation - NO fallback to Target values
+          valueToDisplay = window.TEUI.StateManager.getValue(`ref_${fieldId}`);
+          // If Reference value doesn't exist, show 0 - NEVER fallback to Target value
+          if (valueToDisplay === null || valueToDisplay === undefined) {
+            valueToDisplay = 0;
+          }
 
           // 🐛 DEBUG: Log what we're finding for key fields
-          if (fieldId === "j_32" || fieldId === "k_32") {
+          if (fieldId === "j_32" || fieldId === "k_32" || fieldId === "l_27") {
             console.log(
-              `[S04 DEBUG] ${fieldId}: ref_${fieldId}=${refValue}, ${fieldId}=${targetValue}, using=${valueToDisplay}`,
+              `[S04 DEBUG] Reference mode - ${fieldId}: ref_${fieldId}=${valueToDisplay} (NO fallback to Target)`,
             );
           }
         } else {
-          // In Target mode, show regular values
-          valueToDisplay = window.TEUI.StateManager.getValue(fieldId);
+          // In Target mode, show regular values only
+          valueToDisplay = window.TEUI.StateManager.getValue(fieldId) || 0;
+          
+          // 🐛 DEBUG: Log Target mode values for key fields
+          if (fieldId === "j_32" || fieldId === "k_32" || fieldId === "l_27") {
+            console.log(
+              `[S04 DEBUG] Target mode - ${fieldId}: ${valueToDisplay}`,
+            );
+          }
         }
 
         if (valueToDisplay !== null && valueToDisplay !== undefined) {
@@ -2393,6 +2402,7 @@ window.TEUI.SectionModules.sect04 = (function () {
       window.TEUI.StateManager.addListener("d_19", () => {
         console.log(`[S04] Province changed, updating emission factors: d_19`);
         calculateAll(); // Emission factors depend on province
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL FIX: Update DOM after calculations
       });
 
       // ✅ CRITICAL: React to reporting year changes from S02 (affects Ontario emission factors)
@@ -2401,6 +2411,7 @@ window.TEUI.SectionModules.sect04 = (function () {
           `[S04] Reporting year changed, updating emission factors: h_12`,
         );
         calculateAll(); // Emission factors depend on year (especially Ontario XLOOKUP)
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL FIX: Update DOM after calculations
       });
 
       // ✅ CRITICAL: React to Reference mode province changes from S03 (affects emission factors)
