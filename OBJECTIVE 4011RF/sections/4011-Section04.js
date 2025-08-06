@@ -1164,11 +1164,25 @@ window.TEUI.SectionModules.sect04 = (function () {
     // E51 = gas volume from S07 (water heating)
     // H115 = gas volume from S13 (space heating)
 
-    // Read fuel types from StateManager (these are always unprefixed per Pattern A)
-    const spaceHeatingFuel =
-      window.TEUI?.StateManager?.getValue("d_113") || "Heatpump"; // Default from S13
-    const waterHeatingFuel =
-      window.TEUI?.StateManager?.getValue("d_51") || "Electricity"; // Default from S07
+    // ✅ MODE-AWARE: Read fuel types based on the current calculation mode
+    let spaceHeatingFuel;
+    let waterHeatingFuel;
+
+    if (ModeManager.currentMode === "reference") {
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_113") ||
+        window.TEUI?.StateManager?.getValue("d_113") ||
+        "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_51") ||
+        window.TEUI?.StateManager?.getValue("d_51") ||
+        "Electricity";
+    } else {
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_113") || "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_51") || "Electricity";
+    }
 
     // Read gas volumes based on current mode
     let waterGasVolume = 0;
@@ -1234,11 +1248,25 @@ window.TEUI.SectionModules.sect04 = (function () {
     // K54 = oil volume from S07 (water heating)
     // F115 = oil volume from S13 (space heating)
 
-    // Read fuel types from StateManager (these are always unprefixed per Pattern A)
-    const spaceHeatingFuel =
-      window.TEUI?.StateManager?.getValue("d_113") || "Heatpump"; // Default from S13
-    const waterHeatingFuel =
-      window.TEUI?.StateManager?.getValue("d_51") || "Electricity"; // Default from S07
+    // ✅ MODE-AWARE: Read fuel types based on the current calculation mode
+    let spaceHeatingFuel;
+    let waterHeatingFuel;
+
+    if (ModeManager.currentMode === "reference") {
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_113") ||
+        window.TEUI?.StateManager?.getValue("d_113") ||
+        "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("ref_d_51") ||
+        window.TEUI?.StateManager?.getValue("d_51") ||
+        "Electricity";
+    } else {
+      spaceHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_113") || "Heatpump";
+      waterHeatingFuel =
+        window.TEUI?.StateManager?.getValue("d_51") || "Electricity";
+    }
 
     // Read oil volumes based on current mode
     let waterOilVolume = 0;
