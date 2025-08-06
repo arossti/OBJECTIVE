@@ -280,3 +280,22 @@ The S04 StateManager listener for d_113 is completely broken! S04 never gets not
 Let me check S04's listener registration code:
 🕵️ HYPOTHESIS: d_113 Value Already Set!
 The listener registration looks correct, but it worked earlier in the session and now doesn't. This suggests d_113 might already be "Gas" so no change event fires!
+
+---
+### **August 5, 2025, 12:42am - NEW FINDING**
+
+**Action Taken**: `ComponentBridge.js` has been disabled by commenting out its initialization in `index.html` and `4011-Calculator.js`. This was a necessary step to simplify the architecture and rule out the bridge as the source of state mixing.
+
+**Analysis of New Logs**: With `ComponentBridge` disabled, the root cause of state mixing is now unobscured. The logs clearly show that `4011-Section04.js` is not mode-aware. Specifically, its calculation functions (`calculateH28`, `calculateH30`) are incorrectly using the **Target** state (e.g., `d_113` for fuel type) when they should be using **Reference** state (`ref_d_113`) during Reference model calculations.
+
+**Evidence from Logs (Example)**:
+```
+[S04] calculateH28 DEBUG:
+     Space heating fuel (d_113): 'Oil'
+```
+This log line shows that during a Reference calculation (triggered by a change to a `ref_` prefixed value), the function is checking the unprefixed `d_113`, which holds the Target model's fuel type ('Oil', from user testing), instead of the correct `ref_d_113` ('Gas', the Reference default).
+
+**Path Forward (Next Session)**:
+1.  **Targeted Refactor**: The primary focus is now `OBJECTIVE 4011RF/sections/4011-Section04.js`.
+2.  **Make Calculations Mode-Aware**: Modify the calculation functions within `Section04.js` (like `calculateH28`, `calculateH30`, and any others that contribute to the energy/emissions summary) to correctly read from either the Target state (unprefixed variables) or the Reference state (`ref_` prefixed variables) based on the context of the calculation being performed.
+3.  **Validate**: After refactoring, re-run the S13/S07 fuel switching tests and confirm that S01's Target and Reference columns update independently and without contamination.

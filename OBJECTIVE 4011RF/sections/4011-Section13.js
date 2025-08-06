@@ -153,6 +153,16 @@ window.TEUI.SectionModules.sect13 = (function () {
         console.log(
           `S13 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`,
         );
+        
+        // ✅ CRITICAL FIX: Trigger recalculations when key Reference fields change
+        // BUT ONLY when currently in Reference mode (respects mode isolation)
+        // calculateAll() runs BOTH Target and Reference calculations (efficient)
+        const criticalFields = ["d_113", "d_116", "f_113", "d_118", "d_119", "j_115", "l_118"];
+        if (criticalFields.includes(fieldId) && ModeManager.currentMode === "reference") {
+          console.log(`[S13] Reference ${fieldId} → ${value}`);
+          calculateAll(); // Runs both models - efficient and keeps both current
+          ModeManager.updateCalculatedDisplayValues();
+        }
       }
     },
     getValue: function (fieldId) {
@@ -1917,15 +1927,13 @@ window.TEUI.SectionModules.sect13 = (function () {
       const sm = window.TEUI.StateManager; // Alias for brevity
       console.log("[Section13] 🔗 Attaching StateManager listeners...");
 
-      // Listener for d_113 (Heating System) changes
+      // Listener for d_113 (Heating System) changes - Target mode
       sm.addListener("d_113", (newValue, oldValue) => {
-        console.log(`[S13] d_113 → ${newValue}`);
-        
-        // ✅ NOTE: Target calculations now read d_113 directly from StateManager
-        // No TargetState sync needed since getFieldValue("d_113") reads from StateManager
+        console.log(`[S13] Target d_113 → ${newValue}`);
         
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
+        ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
         if (
           window.TEUI &&
           window.TEUI.StateManager &&
@@ -1936,6 +1944,10 @@ window.TEUI.SectionModules.sect13 = (function () {
           );
         }
       });
+
+      // ✅ Reference mode d_113 changes are now handled by ReferenceState.setValue()
+      // When user changes dropdowns in Reference mode, ReferenceState.setValue() triggers
+      // calculateAll() and updateCalculatedDisplayValues() for d_113 changes
 
       // Listener for f_113 (HSPF) changes
       sm.addListener("f_113", calculateCOPValues);
@@ -1970,34 +1982,40 @@ window.TEUI.SectionModules.sect13 = (function () {
       sm.addListener("d_123", calculateMitigatedCED); // d_123 from S13 (Vent Recovery)
       // -----------------------------------------
 
+      // Helper function for external dependency changes - DUAL-STATE PATTERN COMPLIANT
+      const calculateAndRefresh = () => {
+        calculateAll();
+        ModeManager.updateCalculatedDisplayValues();
+      };
+
       // Add listeners for climate/gain/loss data changes from other sections
       console.log("[Section13] 🔗 Attaching CRITICAL upstream listeners...");
-      sm.addListener("d_20", calculateAll); // HDD
-      sm.addListener("d_21", calculateAll); // CDD
-      sm.addListener("d_23", calculateAll); // Coldest Day Temp
-      sm.addListener("d_24", calculateAll); // Hottest Day Temp
-      sm.addListener("h_23", calculateAll); // Heating Setpoint
-      sm.addListener("h_24", calculateAll); // Cooling Setpoint
+      sm.addListener("d_20", calculateAndRefresh); // HDD
+      sm.addListener("d_21", calculateAndRefresh); // CDD
+      sm.addListener("d_23", calculateAndRefresh); // Coldest Day Temp
+      sm.addListener("d_24", calculateAndRefresh); // Hottest Day Temp
+      sm.addListener("h_23", calculateAndRefresh); // Heating Setpoint
+      sm.addListener("h_24", calculateAndRefresh); // Cooling Setpoint
       sm.addListener("i_104", () => {
         console.log(
           "[Section13] 📡 🔥 i_104 (TRANSMISSION LOSS) listener triggered - S11 thermal bridges changed!",
         );
-        calculateAll();
+        calculateAndRefresh();
       }); // Total Trans Loss
-      sm.addListener("k_104", calculateAll); // Total Ground Loss
+      sm.addListener("k_104", calculateAndRefresh); // Total Ground Loss
       sm.addListener("i_71", () => {
         console.log(
           "[Section13] 📡 🔥 i_71 (OCCUPANT GAINS) listener triggered - S10 gains factor changed!",
         );
-        calculateAll();
+        calculateAndRefresh();
       }); // Total Occ Gains
-      sm.addListener("i_79", calculateAll); // Total App Gains
+      sm.addListener("i_79", calculateAndRefresh); // Total App Gains
       sm.addListener("d_127", () => {
         console.log(
           "[Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!",
         );
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
-        calculateAll();
+        calculateAndRefresh();
       }); // TED (from S14, for d_114)
       // Listener for m_129 (CED Mitigated) from S14 to update S13 coolingState
       sm.addListener("m_129", () => {
@@ -2210,6 +2228,10 @@ window.TEUI.SectionModules.sect13 = (function () {
     // console.log(`[S13 Init] BEFORE calculateAll - j_115 textContent: "${j115ElementInitial?.textContent}"`);
 
     calculateAll(); // Run initial calculations first
+    ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM with all calculated values including f_114
+
+    // ✅ CRITICAL FIX: Set up dropdown event handlers (like S09, S07, S02)
+    setupDropdownEventHandlers();
 
     // --- ADDED: Explicitly update DOM display for editable defaults AFTER initial calculations ---
     if (window.TEUI?.StateManager && window.TEUI?.formatNumber) {
@@ -2250,6 +2272,53 @@ window.TEUI.SectionModules.sect13 = (function () {
     }, 100); // Short delay might be needed
 
     console.log("S13: Pattern A initialization complete.");
+  }
+
+  /**
+   * Set up dropdown event handlers (following S09/S07/S02 pattern)
+   * ✅ CRITICAL FIX: This was missing in S13, causing dropdown changes to not be saved
+   */
+  function setupDropdownEventHandlers() {
+    const sectionElement = document.getElementById("mechanicalLoads");
+    if (!sectionElement) return;
+
+    // Set up event handlers for all dropdowns in this section
+    const dropdowns = sectionElement.querySelectorAll("select");
+    dropdowns.forEach((dropdown) => {
+      // Remove any existing handlers to avoid duplicates
+      dropdown.removeEventListener("change", handleDropdownChange);
+      
+      // Add the event listener
+      dropdown.addEventListener("change", handleDropdownChange);
+    });
+
+    console.log(`[S13] Set up dropdown event handlers for ${dropdowns.length} dropdowns`);
+  }
+
+  /**
+   * Handle dropdown changes (following S09 pattern)
+   * ✅ CRITICAL: Store dropdown changes in current state via ModeManager
+   */
+  function handleDropdownChange(e) {
+    const fieldId = e.target.getAttribute("data-field-id");
+    if (!fieldId) return;
+
+    const newValue = e.target.value;
+    console.log(`[S13] Dropdown change: ${fieldId}="${newValue}" in ${ModeManager.currentMode} mode`);
+
+    // Store via ModeManager (dual-state aware) 
+    if (ModeManager && typeof ModeManager.setValue === "function") {
+      ModeManager.setValue(fieldId, newValue, "user-modified");
+    }
+
+    // Special handling for heating system changes
+    if (fieldId === "d_113") {
+      handleHeatingSystemChangeForGhosting(newValue);
+    }
+
+    // Recalculate and update display
+    calculateAll();
+    ModeManager.updateCalculatedDisplayValues();
   }
 
   /**
@@ -2421,14 +2490,17 @@ window.TEUI.SectionModules.sect13 = (function () {
     const systemType = isReferenceCalculation
       ? getSectionValue("d_113", true)        // Reference reads Reference state
       : TargetState.getValue("d_113");        // Target reads Target state
-    const oilVolume = window.TEUI.parseNumeric(getFieldValue("f_115")) || 0;
-    const gasVolume = window.TEUI.parseNumeric(getFieldValue("h_115")) || 0;
+  const oilVolume = isReferenceCalculation
+    ? getGlobalNumericValue("ref_f_115")
+    : getGlobalNumericValue("f_115");
+    
+  const gasVolume = isReferenceCalculation
+    ? getGlobalNumericValue("ref_h_115")
+    : getGlobalNumericValue("h_115");
 
-    // Emissions factors (these would ideally come from a global constants source)
-    const oilEmissionsFactor =
-      window.TEUI.parseNumeric(getFieldValue("l_30")) || 2.753; // Default if not available
-    const gasEmissionsFactor =
-      window.TEUI.parseNumeric(getFieldValue("l_28")) || 2.03; // Default if not available
+    // Emissions factors from S04 (gCO2e), divided by 1000 to get kgCO2e
+    const oilEmissionsFactor = getGlobalNumericValue("l_30") || 2753;
+    const gasEmissionsFactor = getGlobalNumericValue("l_28") || 1921;
 
     let emissions = 0;
 
@@ -3118,12 +3190,16 @@ window.TEUI.SectionModules.sect13 = (function () {
       }
     }
 
+    // ✅ ADDED: Calculate space heating emissions for the Reference model
+    const emissions = calculateSpaceHeatingEmissions(true); // true for Reference
+
     return {
       d_115: fuelImpact,
       f_115: oilLitres,
       h_115: gasM3,
       l_115: exhaust,
       m_115: afue > 0 ? 1 / afue : 0,
+      f_114: emissions, // ✅ ADDED: Include emissions in the return object
     };
   }
 

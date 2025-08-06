@@ -296,6 +296,55 @@ StateManager.addListener("ref_d_43", calculateReferenceModel); // Reference → 
 
 ---
 
+🛑 **CRITICAL ANTI-PATTERN PREVENTION** 🛑
+
+**NEVER** make Target and Reference models read the same user input values.
+Target and Reference must have **completely independent input states**.
+
+❌ **WRONG**: `const systemType = getFieldValue("d_113"); // Same for both models`
+✅ **CORRECT**: 
+- Target: `const systemType = TargetState.getValue("d_113");`
+- Reference: `const systemType = ReferenceState.getValue("d_113");`
+
+This independence allows comparing different systems (e.g., Gas vs Electric heating).
+
+**🎯 CALCULATION vs INPUT BEHAVIOR**:
+- **Input Changes**: Only affect the current mode (Target changes only in Target mode, Reference changes only in Reference mode)
+- **Calculation Execution**: BOTH Target and Reference calculations run after ANY input change (efficient - keeps both models current)
+
+🛑 **CRITICAL DROPDOWN EVENT HANDLER REQUIREMENT** 🛑
+
+**MANDATORY FOR ALL DUAL-STATE SECTIONS**: Every section MUST set up its own dropdown event handlers in `onSectionRendered()`. FieldManager does NOT handle dropdown value storage.
+
+**Required Pattern (S09/S07/S02/S13):**
+```javascript
+function setupDropdownEventHandlers() {
+  const sectionElement = document.getElementById("sectionId");
+  if (!sectionElement) return;
+
+  const dropdowns = sectionElement.querySelectorAll("select");
+  dropdowns.forEach((dropdown) => {
+    dropdown.addEventListener("change", function () {
+      const fieldId = this.getAttribute("data-field-id");
+      if (!fieldId) return;
+      
+      // Store via ModeManager (dual-state aware)
+      if (ModeManager && typeof ModeManager.setValue === "function") {
+        ModeManager.setValue(fieldId, this.value, "user-modified");
+      }
+      
+      // Recalculate
+      calculateAll();
+      ModeManager.updateCalculatedDisplayValues();
+    });
+  });
+}
+```
+
+**Call in onSectionRendered():** `setupDropdownEventHandlers();`
+
+**FAILURE MODE**: Missing dropdown handlers = "dropdown changes not saved", "values stuck", "Target/Reference stuck on old values"
+
 🛑 **FINAL REMINDER FOR AI AGENTS** 🛑
 
 **IF ANY STEP FAILS**: Go back to the DUAL-STATE-IMPLEMENTATION-GUIDE.md and follow the patterns exactly as documented. Do NOT improvise or "fix" things differently than shown.
