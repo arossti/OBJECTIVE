@@ -565,12 +565,26 @@ window.TEUI.SectionModules.sect01 = (function () {
     const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
 
-    // ✅ CONSUMER PATTERN: Read upstream values directly from StateManager
-    // Building data from S02 - CRITICAL FIX: Separate Target and Reference areas
-    const targetArea = getGlobalNumericValue("h_15") || 1427.2;
-    const referenceArea = getGlobalNumericValue("ref_h_15") || 1427.2; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
-    const serviceLife = getGlobalNumericValue("h_13") || 50;
-    const refServiceLife = getGlobalNumericValue("ref_h_13") || 50; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
+    // ✅ DEPENDENCY ORDER: Read upstream values with strict validation  
+    // Values should ALWAYS exist when called via dependency order from Calculator.js
+    let targetArea = getGlobalNumericValue("h_15");
+    let referenceArea = getGlobalNumericValue("ref_h_15");
+    let serviceLife = getGlobalNumericValue("h_13");
+    let refServiceLife = getGlobalNumericValue("ref_h_13");
+    
+    // ✅ STRICT VALIDATION: Only proceed if ALL required values exist
+    if (!targetArea || !referenceArea || !serviceLife || !refServiceLife) {
+      console.warn(`🚨 [S01] Missing upstream values - targetArea=${targetArea}, referenceArea=${referenceArea}, serviceLife=${serviceLife}, refServiceLife=${refServiceLife}`);
+      console.warn(`🚨 [S01] This should NOT happen with proper dependency order - using safe defaults`);
+      
+      // Use safe defaults only as emergency fallback
+      targetArea = targetArea || 1427.2;
+      referenceArea = referenceArea || 1427.2;
+      serviceLife = serviceLife || 50;
+      refServiceLife = refServiceLife || 50;
+      
+      console.log(`🛡️ [S01] Emergency fallback: targetArea=${targetArea}, referenceArea=${referenceArea}, serviceLife=${serviceLife}, refServiceLife=${refServiceLife}`);
+    }
     
     // Reference values from upstream sections (S04, S05, S15)
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;  // From S04 Reference
@@ -747,11 +761,11 @@ window.TEUI.SectionModules.sect01 = (function () {
     const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
 
-    // ✅ PURE CONSUMER: Read upstream values and calculate on-the-fly (same as updateTEUIDisplay)
+    // ✅ DEPENDENCY ORDER: Read upstream values (should exist via dependency order)
     const targetArea = getGlobalNumericValue("h_15") || 1427.2;
-    const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea;
+    const referenceArea = getGlobalNumericValue("ref_h_15") || 1427.2; // Use field default, not Target
     const serviceLife = getGlobalNumericValue("h_13") || 50;
-    const refServiceLife = getGlobalNumericValue("ref_h_13") || serviceLife;
+    const refServiceLife = getGlobalNumericValue("ref_h_13") || 50; // Use field default, not Target
     
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
     const refEmissions = getGlobalNumericValue("ref_k_32") || 0;  
@@ -802,9 +816,9 @@ window.TEUI.SectionModules.sect01 = (function () {
   }
 
   function checkTargetExceedsReference() {
-    // ✅ PURE CONSUMER: Calculate values directly for warning check
+    // ✅ DEPENDENCY ORDER: Calculate values directly for warning check
     const targetArea = getGlobalNumericValue("h_15") || 1427.2;
-    const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea;
+    const referenceArea = getGlobalNumericValue("ref_h_15") || 1427.2;
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
     const targetEnergy = getGlobalNumericValue("j_32") || 0;
     
@@ -894,7 +908,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     });
   }
 
-  function runAllCalculations() {
+  function calculateAll() {
     // Add recursion protection
     if (calculationInProgress) {
       return;
@@ -903,15 +917,15 @@ window.TEUI.SectionModules.sect01 = (function () {
     calculationInProgress = true;
     
     console.log("🚀 [S01] =================================");
-    console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
+    console.log("🚀 [S01] DASHBOARD calculateAll() via dependency order");
     console.log("🚀 [S01] =================================");
 
     try {
-      // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
-      updateTEUIDisplay(); // Calculates all values and updates display
+      // ✅ DASHBOARD CONSUMER: Single function does all math and display with animations
+      updateTEUIDisplay(); // Calculates all values and updates display with animations
       updateTitleModeIndicators(); // Update mode indicators
       
-      console.log("✅ [S01] PURE DISPLAY CONSUMER COMPLETE");
+      console.log("✅ [S01] DASHBOARD calculateAll() COMPLETE");
       console.log("🚀 [S01] =================================");
     } finally {
       calculationInProgress = false;
@@ -925,84 +939,33 @@ window.TEUI.SectionModules.sect01 = (function () {
   function initializeEventHandlers() {
     if (!window.TEUI || !window.TEUI.StateManager) return;
 
-    // ✅ CONSUMER SECTION PATTERN: Listen to TRUE INPUT fields that affect calculations
-    // S01 as consumer section only listens to user inputs that affect its display calculations
-    const inputFieldsToWatch = [
-      "d_14", // Use type (user dropdown) - affects Actual column display
-      "d_13", // Reference standard (user dropdown) - affects Reference calculations
-      // REMOVED B Pattern contamination: No need to listen to calculated intermediate fields
-      // Upstream sections (S04, S13, S15) handle their own dependencies
+    // ✅ DEPENDENCY ORDER PATTERN: S01 now relies on Calculator.js dependency order
+    // Only listen to TRUE USER INPUT fields that directly affect S01's display logic
+    const directInputFieldsToWatch = [
+      // d_14 is actually in S02, not S01 - removing
+      // d_13 is for Reference standard - affects tier calculations  
+      "d_13", // Reference standard (user dropdown) - affects tier calculations in S01
     ];
 
-    // Listen to user input fields
-    inputFieldsToWatch.forEach((fieldId) => {
+    // Listen to minimal user input fields that S01 needs for its own display logic
+    directInputFieldsToWatch.forEach((fieldId) => {
       window.TEUI.StateManager.addListener(
         fieldId,
-        // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
-        // DO NOT prefix with underscore - causes calculation regression (June 13, 2025)
         (newValue, oldValue, sourceFieldId) => {
-          // Debounce for d_51 which can trigger rapid changes
-          if (fieldId === "d_51") {
-            setTimeout(() => {
-              runAllCalculations();
-            }, 50);
-          } else {
-            runAllCalculations();
-          }
+          console.log(`📡 [S01] Direct input listener: ${fieldId} changed from ${oldValue} to ${newValue}`);
+          calculateAll(); // Recalculate when user changes direct inputs
         },
       );
     });
 
-    // ✅ CONSUMER SECTION PATTERN: Listen to calculated fields from upstream Pattern A sections
-    const calculatedFieldsToWatch = [
-      // S04: Energy and emissions totals
-      "j_32", // Target energy total
-      "k_32", // Target emissions total 
-      "f_32", // Actual energy total
-      "g_32", // Actual emissions total
-      "ref_j_32", // Reference energy total
-      "ref_k_32", // Reference emissions total
-      
-      // S02: Building information
-      "h_15", // Conditioned area (Target)
-      "ref_h_15", // Conditioned area (Reference)
-      "h_13", // Service life (Target)
-      "ref_h_13", // Service life (Reference)
-      "i_41", // Embodied carbon
-      
-      // S15: Final Reference TEUI calculation (critical for Reference column)
-      "ref_h_136", // Reference TEUI from Section 15 (final Reference calculation)
-      
-      // S05: Reference embodied carbon
-      "ref_i_39", // Reference embodied carbon
-    ];
-
-    calculatedFieldsToWatch.forEach((fieldId) => {
-      window.TEUI.StateManager.addListener(
-        fieldId,
-        // ⚠️ WARNING: ESLint flags these parameters as unused, but they are CALCULATION-CRITICAL
-        // DO NOT prefix with underscore - causes calculation regression (June 13, 2025)
-        (newValue, oldValue, sourceFieldId) => {
-          // Only recalculate if the value actually changed
-          if (newValue !== oldValue) {
-            if (fieldId === "j_32") {
-              console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H`);
-            } else if (fieldId === "ref_j_32") {
-              console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
-            } else {
-              console.log(`📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`);
-            }
-            
-            if (fieldId === "g_32") {
-              // Special handling for g_32 field changes (if needed in future)
-            }
-            runAllCalculations();
-          }
-        },
-      );
-    });
-
-    runAllCalculations();
+    // ✅ DEPENDENCY ORDER: Remove calculated field listeners 
+    // S01 will now be called by Calculator.js AFTER all upstream sections complete
+    // This eliminates the race condition entirely
+    
+    console.log("🎯 [S01] DEPENDENCY ORDER: S01 initialization complete, waiting for Calculator.js to call calculateAll()");
+    
+    // ✅ INITIAL CALCULATION: Still call once for immediate display
+    calculateAll();
   }
 
   function addCustomStyling() {
@@ -1049,7 +1012,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     getDropdownOptions: () => ({}),
     getLayout: () => ({ rows: [] }),
     onSectionRendered: onSectionRendered,
-    runAllCalculations: runAllCalculations,
+    calculateAll: calculateAll, // ✅ DEPENDENCY ORDER: Now properly exposed for Calculator.js
     updateDisplayValue: updateDisplayValue, // Expose for cross-section use (S15 -> S01)
   };
 })();
