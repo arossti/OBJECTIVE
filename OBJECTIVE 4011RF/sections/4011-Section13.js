@@ -196,8 +196,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       this.refreshUI();
       // CRITICAL: Update ghosting for new mode's system
       this.updateConditionalUI();
-      calculateAll();
-      // ✅ FIX: Update displayed calculated values based on new mode
+      // ✅ FIX: UI toggle is for DISPLAY ONLY - values are already calculated
+      // Removed calculateAll() - mode switch should only update display, not trigger calculations
       this.updateCalculatedDisplayValues();
     },
 
