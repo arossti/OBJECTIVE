@@ -1,6 +1,143 @@
-# S01 & S02 State-Mixing Repairs - Completed (August 2025)
+# TEUI Calculator Section Debugging Workplan - August 2025
 
-This document tracks the successful resolution of state-mixing anti-patterns identified in S01 and S02 sections.
+This document serves as a working log and guidance for systematic section-by-section repairs to achieve full dual-state compliance.
+
+---
+
+## 🎯 **CURRENT SYSTEMATIC DEBUGGING WORKPLAN**
+
+### **Issue Summary**:
+After fixing S02 and S01 state isolation, we've identified **multiple interconnected calculation chain bugs**:
+
+1. **S11** ✅ Updates properly when `d_13` reference standard changes
+2. **S12** ❌ U-values (`g_101`, `g_102`) remain stale despite S11 updates  
+3. **S13** ❌ Doesn't calculate until manual intervention (e.g., `d_113` fuel change)
+4. **S01** ❌ `e_10` doesn't update until manual calculation trigger
+
+### **Root Cause**: 
+**Systematic dual-state pattern violations** across S10-S13 preventing proper calculation cascade from S02 → S11 → S12 → S13 → S01.
+
+---
+
+## 📋 **SYSTEMATIC REPAIR STRATEGY**
+
+### **Phase 1: Section-by-Section DUAL-STATE-CHEATSHEET Audit**
+
+**Audit each section (S10, S11, S12, S13) against all checklist phases:**
+
+✅ **Phase 1**: Dual-engine calculations (`calculateTargetModel()` + `calculateReferenceModel()`)  
+✅ **Phase 2**: Reference results storage with `ref_` prefixes in `storeReferenceResults()`  
+✅ **Phase 3**: DOM updates via `updateCalculatedDisplayValues()` after every `calculateAll()`  
+✅ **Phase 4**: Sovereign state reading (eliminate Pattern B contamination)  
+✅ **Phase 5**: Remove duplicate defaults anti-pattern  
+✅ **Phase 6**: Mode display isolation in `updateCalculatedDisplayValues()`
+
+### **Phase 2: Priority Section Repairs**
+
+#### **🔥 IMMEDIATE PRIORITY: S12 Repair**
+**Problem**: S12 U-values don't update despite S11 providing updated values
+**Hypothesis**: S12 has fundamental dual-state violations preventing response to upstream changes
+
+**Investigation Plan**:
+1. Audit S12's listener setup for S11 outputs
+2. Check S12's calculation functions for Pattern B contamination  
+3. Verify S12's `updateCalculatedDisplayValues()` functionality
+4. Test calculation cascade: S11 outputs → S12 inputs → S12 calculations → S12 DOM
+
+#### **🔧 ARCHITECTURAL CONSIDERATION: S11/S12 Unification**
+**Background**: Earlier analysis suggested merging S12 calculations into S11 for architectural simplicity
+
+**Current Evidence Supporting Unification**:
+- **Robot Fingers TB slider** requires immediate S12 DOM updates for UX
+- **Cross-section dependency complexity** makes dual-state compliance difficult
+- **S11 already working correctly** with dual-state patterns
+
+**Unification Benefits**:
+- **Eliminates cross-section race conditions**
+- **Simplifies TB slider → U-value DOM updates** within single section
+- **Reduces calculation chain complexity** (S11 → S12 becomes internal to S11)
+- **Architecturally cleaner** than complex inter-section listeners
+
+**Decision Point**: If S12 audit reveals extensive violations, consider S11/S12 unification over complex repairs
+
+### **Phase 3: Sequential Section Repairs**
+
+**Order**: S12 → S13 → S10 (based on calculation dependency chain)
+
+1. **S12**: Fix U-value calculation and DOM update issues
+2. **S13**: Ensure proper listener setup for S12 outputs, verify heating calculations  
+3. **S10**: Audit for any remaining dual-state violations
+
+### **Phase 4: End-to-End Validation**
+
+**Test full calculation cascade**: S02 `d_13` change → S11 → S12 → S13 → S01 `e_10` update
+**Success criteria**: No manual intervention required for calculation flow
+
+---
+
+## 🔍 **STARTING POINT: S12 INVESTIGATION**
+
+### **S12 Audit Checklist**:
+
+**🚨 CRITICAL EVIDENCE FROM LOGS.MD ANALYSIS**:
+**ROOT CAUSE CONFIRMED**: S12 is the calculation cascade bottleneck. Logs show:
+- ✅ **d_113 fuel changes**: S13 → S04 → S01 cascade works (lines 7101-7119)
+- ❌ **dd_d_13 standard changes**: S11 updates, but S12 U-values (`g_101`, `g_102`) stay stale
+- ❌ **No S11→S12 listener response**: S12 doesn't trigger when S11 assembly values change
+- **Result**: Flow stops at S12, preventing S13/S01 updates until manual intervention
+
+**1. Listener Setup Audit** (🔥 **PRIORITY #1**):
+- [ ] **CRITICAL**: Check if S12 listens to S11's output fields (RSI values, assembly data)
+  - **Look for**: S11 outputs like wall/roof/foundation RSI, assembly thermal properties
+  - **Expected**: S12 should have `StateManager.addListener()` calls for S11 results
+- [ ] Verify listener callbacks trigger `calculateAll()` properly
+- [ ] Confirm listeners are attached during initialization
+- [ ] **Test**: Change `dd_d_13` in S02 → verify S12 `calculateAll()` triggers automatically
+
+**2. Cross-Section Dependency Audit** (🔥 **PRIORITY #2**):
+- [ ] **CRITICAL**: Identify exactly which S11 outputs S12 needs for U-value calculations
+  - **Look for**: How `g_101`, `g_102` U-values are calculated from S11 data
+  - **Check**: S12 calculation functions read from S11 stored results (`ref_` prefixed)
+- [ ] Verify S12 `storeReferenceResults()` includes U-values with `ref_` prefixes for S13
+- [ ] **Test**: Manual S11 value change → S12 should recalculate → S13 should receive updates
+
+**3. Calculation Function Audit**:
+- [ ] Check for Pattern B contamination (`getGlobalNumericValue()` vs sovereign state)
+- [ ] Verify dual-engine structure (`calculateTargetModel()` + `calculateReferenceModel()`)
+- [ ] **COMPARE**: S12 vs working S13 pattern (S13 responds to upstream changes correctly)
+
+**4. DOM Update Audit**:
+- [ ] Verify `updateCalculatedDisplayValues()` exists and functions correctly
+- [ ] Check that `calculateAll()` calls are followed by DOM updates
+- [ ] Test mode switching displays correct values
+- [ ] **Specific**: Verify `g_101`, `g_102` DOM elements update when S11 changes
+
+**5. State Isolation Audit**:
+- [ ] Verify Target calculations read from `TargetState`
+- [ ] Verify Reference calculations read from `ReferenceState`  
+- [ ] Check for any hardcoded defaults not in field definitions
+
+**🎯 DEBUGGING STRATEGY**: 
+1. **Start with Listener Setup** - this is the most likely culprit based on logs
+2. **If listeners missing/broken** → Quick fix: Add proper S11 output listeners
+3. **If listeners exist but don't work** → Consider S11/S12 unification approach  
+4. **Test cascade**: S02 `dd_d_13` change → S11 → S12 → S13 → S01 without manual intervention
+
+### **S12 vs S11/S12 Unification Decision Matrix**:
+
+| **Repair S12 Separately** | **Unify S12 into S11** |
+|---------------------------|------------------------|
+| ✅ Preserves current architecture | ✅ Eliminates cross-section race conditions |
+| ✅ Isolated section responsibility | ✅ Simplifies TB slider → DOM updates |
+| ❌ Complex inter-section listeners | ✅ Reduces calculation chain complexity |
+| ❌ Race condition potential | ✅ Builds on S11's working patterns |
+| ❌ TB slider UX complications | ✅ Architecturally cleaner |
+
+**Recommendation**: Start with S12 audit. If extensive violations found, proceed with S11/S12 unification.
+
+---
+
+## 📖 **COMPLETED REPAIRS ARCHIVE**
 
 ---
 
