@@ -797,6 +797,9 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
 
+    // ✅ DEBUG: Log critical h_15 value to verify it's being stored
+    console.log(`🔵 [S02] DEBUG: ReferenceState h_15 = "${ReferenceState.getValue("h_15")}" → storing as ref_h_15`);
+
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
       if (value !== null && value !== undefined) {
@@ -1686,7 +1689,8 @@ window.TEUI.SectionModules.sect02 = (function () {
         d_15: "Self Reported", // Carbon standard (same)
         // Reporting year 2020 for Reference (creates natural S04 emissions differences)
         h_12: "2020", // Reporting Period - Reference uses 2020 (actual field is h_12)
-        // h_15 default comes from field definition (value: "1,427.20")
+        h_13: "50", // Service life (from field definition)
+        h_15: "1427.20", // ✅ CRITICAL FIX: Must be set for ref_h_15 storage
         // Energy costs - same as Target (differences come from reporting year/location)
         l_12: "0.1300", // Electricity cost (same as Target)
         l_13: "0.5070", // Gas cost (same as Target)
