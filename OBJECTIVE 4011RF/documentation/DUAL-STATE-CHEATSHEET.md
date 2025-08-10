@@ -42,6 +42,49 @@
 
 ---
 
+## Reference Standard Application (Clarified)
+
+**Defaults single source of truth**:
+- Field definitions in each section are the ONLY place defaults live. Do not hardcode the same defaults in state objects.
+
+**How to apply building-code subsets (from `ReferenceValues.js`)**:
+- Treat code minimums as a runtime overlay applied to `ReferenceState` only.
+- Do NOT write ReferenceValues into FieldDefinitions.
+- Recommended pattern inside each section:
+
+```javascript
+// 1) Initialize from FieldDefinitions (no hardcoded duplicates)
+TargetState.setDefaults = function () {
+  // Read defaults from sectionRows field definitions only
+};
+ReferenceState.setDefaults = function () {
+  // Same: initialize from sectionRows defaults only
+};
+
+// 2) Apply selected standard as an overlay (d_13)
+ReferenceState.applyReferenceStandardOverlay = function (standardKey) {
+  const ref = window.TEUI.ReferenceValues?.[standardKey] || {};
+  // Overwrite ONLY fields governed by code minimums (e.g., f_85, g_88, j_115, d_118, l_118, d_119, ...)
+  Object.assign(this.state, pick(ref, ["f_85","f_86","f_87","g_88","g_89","g_90","g_91","g_92","g_93","f_94","f_95","j_115","j_116","f_113","d_118","l_118","d_119"]));
+  this.saveState?.();
+};
+
+// 3) On d_13 change
+StateManager.addListener("d_13", () => {
+  ReferenceState.applyReferenceStandardOverlay(StateManager.getValue("d_13"));
+  // Optional: ModeManager.refreshUI(); calculateAll(); ModeManager.updateCalculatedDisplayValues();
+});
+```
+
+This keeps defaults in field definitions and applies code minimums only into `ReferenceState`.
+
+**Reference model setup modes (for `ReferenceToggle.js`)**:
+- Mirror Target: Copy Target inputs into Reference once (no overlay). Good for A/B sanity checks.
+- Mirror Target + Overlay (Recommended): Copy Target inputs, then apply `ReferenceValues` overlay for d_13-governed fields. Most common compliance scenario.
+- Independent Models: No copying. Reference and Target can diverge completely (useful for isolation testing and advanced scenarios).
+
+---
+
 ## STATUS: Refactoring Nearing Completion (August 2025)
 
 The Pattern A refactoring initiative is substantially complete.
@@ -235,6 +278,7 @@ window.TEUI.StateManager.setValue(
     - **WHY CRITICAL**: Creates version drift, maintenance nightmare, and data corruption
     - **Field definitions are the SINGLE SOURCE OF TRUTH** for all default values
     - **State objects should ONLY contain mode-specific overrides** (like different reporting years)
+    - **Apply ReferenceValues overlays to ReferenceState only**; never mutate FieldDefinitions
     - **Add fallback logic** in getValue functions to handle missing state values
 
 ### **Phase 6: Mode Display Isolation (CRITICAL BLEEDING PREVENTION)**

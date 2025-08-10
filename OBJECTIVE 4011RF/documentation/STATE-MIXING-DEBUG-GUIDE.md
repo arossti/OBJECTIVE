@@ -165,6 +165,20 @@ StateManager.setValue("ref_h_10", referenceTEUI);
 
 **Expected**: When user changes Reference mode, Target values in StateManager should remain **completely unchanged** from their defaults or previous Target calculations.
 
+### **Reference Standard Application (Clarified)**
+
+- FieldDefinitions are the single source of truth for defaults. Do not duplicate defaults in state objects.
+- Apply `ReferenceValues.js` subsets as an overlay to `ReferenceState` only, driven by `d_13`. Do not write these values into FieldDefinitions.
+- For “Mirror Target + Overlay”, copy Target inputs into Reference once, then overlay the `ReferenceValues` subset for only those code-governed fields.
+- The UI toggle (`switchMode`) is display-only; it must not call `calculateAll()`.
+
+Canonical reference setup modes (for `ReferenceToggle.js`):
+- Mirror Target
+- Mirror Target + Overlay (Reference) [Default]
+- Independent Models
+
+These modes help test isolation and support practical code-minimum comparisons without contaminating Target defaults.
+
 ## **TEST SCENARIO: S13 Reference Mode Edits**
 
 ### **User Test Sequence**:

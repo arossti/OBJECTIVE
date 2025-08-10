@@ -296,9 +296,9 @@ Each dual-state section must have its own `TargetState` and `ReferenceState` obj
 
 1.  **State Isolation:** Each section's state is completely independent, preventing cross-section interference.
 2.  **Persistence:** States are saved to and loaded from `localStorage` using section-specific keys.
-3.  **Default Values:** Default values are set using `setDefaults()` and can be overridden by user inputs.
+3.  **Default Values (Clarified):** Defaults originate in FieldDefinitions only (sectionRows value props). `setDefaults()` should load those values into state without redefining them.
 4.  **Value Retrieval:** Values are retrieved using `getValue()` and updated using `setValue()`.
-5.  **Dynamic Reference Loading:** Reference defaults are dynamically loaded from ReferenceValues.js based on dropdown d_13.
+5.  **Reference Standard Overlay (Clarified):** Apply building-code subsets from ReferenceValues.js as an overlay to `ReferenceState` based on d_13. Do not push these values into FieldDefinitions.
 6.  **Visual State Feedback:** Clear visual indicators distinguish between default and user-modified values.
 
 ---
@@ -310,7 +310,7 @@ Each dual-state section must have its own `TargetState` and `ReferenceState` obj
 Reference state defaults must be dynamically loaded from the ReferenceValues.js system based on the user's selection in dropdown d_13 (Reference Standard). This ensures all reference values stay synchronized with the selected building code standard.
 
 ```javascript
-// Reference State Management (with dynamic defaults)
+// Reference State Management (initialize from FieldDefinitions, then overlay)
 const ReferenceState = {
   state: {},
   listeners: {},
@@ -325,42 +325,23 @@ const ReferenceState = {
   },
 
   setDefaults: function () {
-    // ✅ DYNAMIC LOADING: Get current reference standard from dropdown d_13
-    const currentStandard =
-      window.TEUI?.StateManager?.getValue?.("d_13") || "OBC SB10 5.5-6 Z6";
-    const referenceValues =
-      window.TEUI?.ReferenceValues?.[currentStandard] || {};
-
-    // Apply reference values to this section's fields, with fallbacks for missing values
-    this.state = {
-      d_85: referenceValues.d_85 || "1411.52", // Area (inherited from Target, not in ReferenceValues)
-      f_85: referenceValues.f_85 || "5.30", // RSI values from ReferenceValues
-      f_86: referenceValues.f_86 || "4.10",
-      f_87: referenceValues.f_87 || "6.60",
-      g_88: referenceValues.g_88 || "1.990", // U-values from ReferenceValues
-      g_89: referenceValues.g_89 || "1.420",
-      g_90: referenceValues.g_90 || "1.420",
-      g_91: referenceValues.g_91 || "1.420",
-      g_92: referenceValues.g_92 || "1.420",
-      g_93: referenceValues.g_93 || "1.420",
-      f_94: referenceValues.f_94 || "1.80",
-      f_95: referenceValues.f_95 || "3.50",
-      d_96: "29.70", // Interior floors (not typically in building codes)
-      d_97: referenceValues.d_97 || "50", // Thermal bridge penalty
-      // ... add all section-specific fields
-    };
-
-    console.log(
-      `SXX: Reference defaults loaded from standard: ${currentStandard}`,
-    );
+    // Load ONLY FieldDefinition defaults here
+    this.state = loadDefaultsFromFieldDefinitions();
   },
 
-  // Listen for changes to the reference standard and reload defaults
+  applyReferenceStandardOverlay: function (standardKey) {
+    const ref = window.TEUI?.ReferenceValues?.[standardKey] || {};
+    // Overwrite only d_13-governed fields
+    Object.assign(this.state, pick(ref, CODE_GOVERNED_FIELDS));
+    this.saveState?.();
+  },
+
+  // Listen for changes to the reference standard and apply overlay
   onReferenceStandardChange: function () {
-    console.log("SXX: Reference standard changed, reloading defaults");
-    this.setDefaults();
+    console.log("SXX: Reference standard changed, applying overlay");
+    const std = window.TEUI?.StateManager?.getValue?.("d_13");
+    this.applyReferenceStandardOverlay(std);
     this.saveState();
-    // Only refresh UI if currently in reference mode
     if (ModeManager.currentMode === "reference") {
       ModeManager.refreshUI();
       calculateAll();
@@ -668,7 +649,7 @@ When implementing dual-state sections:
 
 ### **🔧 CORRECTION NEEDED: Existing Sections with Wrong Pattern**
 
-**URGENT**: S11 and other existing sections incorrectly call `calculateAll()` in `switchMode()` and need correction:
+**URGENT**: Some existing sections incorrectly call `calculateAll()` in `switchMode()` and need correction:
 
 ```javascript
 // ❌ WRONG: S11 line 249 - remove this calculateAll()
@@ -687,7 +668,7 @@ switchMode: function (mode) {
 }
 ```
 
-**Sections Needing Correction**: S11, S12, S13 (and any others calling `calculateAll()` in `switchMode()`)
+**Sections Needing Correction**: S11 (and any others calling `calculateAll()` in `switchMode()`). S13 has been corrected.
 
 ---
 
@@ -1673,7 +1654,7 @@ function calculateReferenceSomething() {
 
 The ReferenceToggle.js system provides three distinct scenarios for setting up Reference model comparisons, each serving different analysis purposes:
 
-#### **1. "Mirror Target" Mode**
+#### **1. Mirror Target**
 - **Purpose**: Create 100% identical Target and Reference models for pure building code standard comparison
 - **Behavior**: 
   - Copies ALL Target state values (user inputs, defaults, even calculated values initially) to Reference state
@@ -1682,7 +1663,7 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 - **Use Case**: "What if I built this exact building to different code standards?"
 - **Expected Result**: Initially perfect Target/Reference match until user makes Reference modifications
 
-#### **2. "Mirror Target * Reference" Mode (Default/Recommended)**
+#### **2. Mirror Target + Overlay (Reference) [Default]**
 - **Purpose**: Apply Target building design with Reference Standard building code values
 - **Behavior**:
   - Copies all Target user inputs (geometry, climate, energy costs) to Reference state
@@ -1692,7 +1673,7 @@ The ReferenceToggle.js system provides three distinct scenarios for setting up R
 - **Use Case**: "How does my building design compare to code minimums?" (most common scenario)
 - **Expected Result**: Same building envelope/geometry, different performance due to code requirements
 
-#### **3. "Reference Independence" Mode**
+#### **3. Independent Models**
 - **Purpose**: Complete flexibility for custom Target vs Reference comparisons
 - **Behavior**:
   - Unlocks all Reference values for user editing
