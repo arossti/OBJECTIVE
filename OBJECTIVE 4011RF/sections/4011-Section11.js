@@ -247,6 +247,10 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       this.refreshUI();
       calculateAll(); // Recalculate for the new mode
+      // Ensure displayed values reflect the selected mode
+      if (typeof this.updateCalculatedDisplayValues === "function") {
+        this.updateCalculatedDisplayValues();
+      }
     },
     resetState: function () {
       console.log(
@@ -271,9 +275,29 @@ window.TEUI.SectionModules.sect11 = (function () {
     setValue: function (fieldId, value, source = "user") {
       this.getCurrentState().setValue(fieldId, value, source);
 
-      // BRIDGE: For backward compatibility, sync Target changes to global StateManager.
+      // Bridge to StateManager for cross-section propagation
       if (this.currentMode === "target") {
-        window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+        const writeSource =
+          source === "user-modified" || source === "user"
+            ? "user-modified"
+            : source || "calculated";
+        window.TEUI.StateManager.setValue(fieldId, value, writeSource);
+      } else if (this.currentMode === "reference") {
+        // Write Reference-side updates with ref_ prefix
+        const writeSource =
+          source === "user-modified" || source === "user"
+            ? "user-modified"
+            : source || "calculated";
+        if (fieldId === "d_97") {
+          console.log(
+            `[S11] ModeManager REF write: ref_d_97=${value} (src=${writeSource})`,
+          );
+        }
+        window.TEUI.StateManager.setValue(
+          `ref_${fieldId}`,
+          value,
+          writeSource,
+        );
       }
     },
     refreshUI: function () {
@@ -330,6 +354,39 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
         } else if (element.hasAttribute("contenteditable")) {
           element.textContent = stateValue;
+        }
+      });
+    },
+    // Update displayed calculated values based on current mode (Target vs Reference)
+    updateCalculatedDisplayValues: function () {
+      if (!window.TEUI?.StateManager) return;
+      const calculatedFields = [
+        "i_97",
+        "k_97",
+        "d_98",
+        "i_98",
+        "k_98",
+      ];
+
+      calculatedFields.forEach((fieldId) => {
+        const valueToDisplay =
+          this.currentMode === "reference"
+            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`)
+            : window.TEUI.StateManager.getValue(fieldId);
+
+        if (valueToDisplay !== null && valueToDisplay !== undefined) {
+          const element = document.querySelector(
+            `[data-field-id="${fieldId}"]`,
+          );
+          if (element) {
+            const num = window.TEUI.parseNumeric(valueToDisplay, 0);
+            element.textContent = formatNumber(num, "number");
+            if (fieldId === "i_97" || fieldId === "k_97") {
+              console.log(
+                `[S11] Display (${this.currentMode}) ${fieldId} = ${num}`,
+              );
+            }
+          }
         }
       });
     },
@@ -1114,6 +1171,13 @@ window.TEUI.SectionModules.sect11 = (function () {
 
       // For Reference calculations, return the calculated values (stored elsewhere)
       if (isReferenceCalculation) {
+        console.log(
+          `[S11] REF TB%=${penaltyPercent}% → ref_i_97=${penaltyHeatloss.toFixed(
+            2,
+          )}, ref_k_97=${penaltyHeatgain.toFixed(2)}`,
+        );
+      }
+      if (isReferenceCalculation) {
         return { heatloss: penaltyHeatloss, heatgain: penaltyHeatgain };
       }
 
@@ -1285,6 +1349,11 @@ window.TEUI.SectionModules.sect11 = (function () {
       );
 
       // Penalty values
+      console.log(
+        `[S11] Writing ref penalty: ref_i_97=${penaltyHeatlossI.toFixed(2)}, ref_k_97=${penaltyHeatgainK.toFixed(
+          2,
+        )}`,
+      );
       window.TEUI.StateManager.setValue(
         "ref_i_97",
         penaltyHeatlossI.toString(),
@@ -1455,6 +1524,10 @@ window.TEUI.SectionModules.sect11 = (function () {
     calculateReferenceModel();
     calculateTargetModel();
 
+    // Refresh displayed values according to current mode
+    if (typeof ModeManager.updateCalculatedDisplayValues === "function") {
+      ModeManager.updateCalculatedDisplayValues();
+    }
     // console.warn("S11: Dual-engine calculations complete"); // This was already commented
   }
 
@@ -1568,16 +1641,14 @@ window.TEUI.SectionModules.sect11 = (function () {
           }
 
           // ✅ DUAL-STATE: Update via ModeManager (handles both state and StateManager sync)
-          ModeManager.setValue(
-            "d_97",
-            percentageValue.toString(),
-            "user-modified",
+          const src = "user-modified";
+          ModeManager.setValue("d_97", percentageValue.toString(), src);
+          console.log(
+            `[S11] Slider input d_97=${percentageValue} (localMode=${ModeManager.currentMode})`,
           );
 
-          // LIVE FEEDBACK: Direct calculation calls for immediate visual response
-          if (window.TEUI?.SectionModules?.sect12?.calculateCombinedUValue) {
-            window.TEUI.SectionModules.sect12.calculateCombinedUValue();
-          }
+        // Trigger local recalculation; cross-section updates flow via StateManager listeners
+        calculateAll();
         });
 
         // ARCHITECTURAL COMPLIANCE: Final change event relies on StateManager dependency chain
@@ -1586,12 +1657,16 @@ window.TEUI.SectionModules.sect11 = (function () {
           if (isNaN(percentageValue)) return;
 
           // ✅ DUAL-STATE: Final value goes through ModeManager - handles state and dependency chain
-          ModeManager.setValue(
-            "d_97",
-            percentageValue.toString(),
-            "user-modified",
+          const src = "user-modified";
+          ModeManager.setValue("d_97", percentageValue.toString(), src);
+          console.log(
+            `[S11] Slider change d_97=${percentageValue} (localMode=${ModeManager.currentMode})`,
           );
           // Note: StateManager listeners will handle full recalculation cascade
+          // Stopgap robot fingers to ensure S12 updates immediately in both modes
+          if (window.TEUI?.SectionModules?.sect12?.calculateAll) {
+            window.TEUI.SectionModules.sect12.calculateAll();
+          }
         });
 
         d97Slider.hasSliderListener = true; // Mark as listener attached
@@ -1615,7 +1690,20 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("ref_d_22", calculateAll);
 
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
-      window.TEUI.StateManager.addListener("d_97", calculateAll); // TB Penalty (affects all calculations)
+    window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
+      console.log(`[S11] Listener: d_97 changed → recalculating (src=${src})`);
+      calculateAll();
+    });
+      // Reference-side TB% (if written as ref_d_97) should also trigger recalculation
+    window.TEUI.StateManager.addListener(
+      "ref_d_97",
+      (val, _old, _id, src) => {
+        console.log(
+          `[S11] Listener: ref_d_97 changed → recalculating (src=${src})`,
+        );
+        calculateAll();
+      },
+    );
       // console.log("Section 11 listeners for climate data added.");
     } else {
       // console.warn("Section 11: StateManager not available to add climate listeners.");

@@ -138,8 +138,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       console.log(`S12: Switched to ${mode.toUpperCase()} mode`);
 
       this.refreshUI();
-      calculateAll();
-      // ✅ FIX: Update displayed calculated values based on new mode
+      // Display-only: update UI without triggering calculations
       this.updateCalculatedDisplayValues();
     },
 
@@ -1349,6 +1348,9 @@ window.TEUI.SectionModules.sect12 = (function () {
     }
 
     const useRef = !!isReferenceCalculation;
+    if (useRef) {
+      console.log("[S12] U-agg PASS: Reference calculation running");
+    }
     const g85 = getUValueFromS11("85", useRef);
     const g86 = getUValueFromS11("86", useRef);
     const g87 = getUValueFromS11("87", useRef);
@@ -1447,12 +1449,10 @@ window.TEUI.SectionModules.sect12 = (function () {
           totalArea
         : 0;
 
-    // Only update DOM for Target calculations (like S11 pattern)
-    if (!isReferenceCalculation) {
-      setCalculatedValue("g_101", g101_uAir, "W/m2");
-      setCalculatedValue("g_102", g102_uGround, "W/m2");
-      setCalculatedValue("d_104", d104_uCombined, "W/m2");
-    }
+    // Update DOM for both passes via StateManager writes and display refresh
+    setCalculatedValue("g_101", g101_uAir, "W/m2");
+    setCalculatedValue("g_102", g102_uGround, "W/m2");
+    setCalculatedValue("d_104", d104_uCombined, "W/m2");
 
     // Return calculated values for Reference engine storage
     return {
@@ -1829,6 +1829,8 @@ window.TEUI.SectionModules.sect12 = (function () {
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
     console.log("[Section12] Dual-engine calculations complete");
+    // Always refresh displayed calculated values after a calculation pass
+    ModeManager.updateCalculatedDisplayValues?.();
   }
 
   /**
@@ -1896,6 +1898,9 @@ window.TEUI.SectionModules.sect12 = (function () {
           String(value),
           "calculated",
         );
+        if (fieldId === "g_101" || fieldId === "g_102") {
+          console.log(`[S12] Stored ref_${fieldId}=${value}`);
+        }
       }
     });
 
@@ -2211,14 +2216,14 @@ window.TEUI.SectionModules.sect12 = (function () {
       "ref_f_95",
       "ref_d_97", // Reference TB% when stored with prefix
     ];
-    // CRITICAL: Robot fingers connection - MUST run dual-engine for proper Reference storage
-    // 📋 WORKPLAN: Consider moving aggregate U-value calculations (g_101, g_102) to S11
-    // This would eliminate Robot Fingers bypass issues and better align responsibilities:
-    // - S11: All transmission calculations (areas, U-values, thermal bridges)
-    // - S12: Air leakage, volume, exposures only
+    // Ensure both Target and Reference TB% changes trigger S12
     window.TEUI.StateManager.addListener("d_97", (newValue) => {
-      // console.log(`[S12] TB penalty changed to: ${newValue}% - updating U-values`);
-      calculateAll(); // ✅ FIX: Run dual-engine instead of Target-only
+      console.log(`[S12] Listener: d_97 changed → recalc`);
+      calculateAll();
+    });
+    window.TEUI.StateManager.addListener("ref_d_97", (newValue) => {
+      console.log(`[S12] Listener: ref_d_97 changed → recalc`);
+      calculateAll();
     });
 
     // Add other external dependency listeners
@@ -2240,6 +2245,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         depId,
         (newValue, oldValue, eventFieldId, state) => {
           if (eventFieldId === depId) {
+            console.log(`[S12] Listener: ${depId} changed → recalc`);
             calculateAll();
           }
         },

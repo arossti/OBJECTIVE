@@ -75,25 +75,6 @@ After fixing S02 and S01 state isolation, we've identified **multiple interconne
 - **S12 U-agg Debug Log**: Added compact per-pass trace: `[S12] U-agg REF/TGT: TB%=X → g_101=…, g_102=…` to verify correctness in logs.
 - **Change-Detection on Writes (S12)**: `setCalculatedValue` now stores values at full precision (per README) and uses an epsilon guard (1e-9) to write only on material change. Reduces redundant cascades without altering stored precision.
 
-### ⚠️ Observations from Aug 11 testing
-
-- **Reference TB% → e_10 Flow UNBLOCKED**: With mode-aware TB% and `ref_` propagation wired, changing S11 TB% in Reference mode now updates downstream Reference sums, and `S01.e_10` (Reference TEUI) reflects the change without requiring UI toggles.
-- **Display Gap (S11 Reference UI)**: While Reference calculations run and `ref_i_97` is written, the S11 Reference-mode UI cell for `i_97` did not refresh during testing (Target `i_97` does). This appears to be a display wiring issue (reading `ref_` vs base) rather than a calculation problem.
-- **State Isolation NOT PERFECT**: Changes to `d_97` in Target mode also push changes visible in Reference outputs (e.g., `S01.e_10` and `k_10`). This indicates remaining cross-hemisphere bleed (listeners and/or display reads) and must be addressed.
-
-### 📌 Next session (tonight) – Targeted fixes
-
-1) **S11 Reference Display Refresh**
-   - Ensure S11’s `updateCalculatedDisplayValues()` reads `ref_i_97/ref_k_97` in Reference mode and updates the visible cells.
-   - Verify this runs after each dual-engine calculation.
-
-2) **Strict Listener/Display Isolation**
-   - S12: Keep `ref_d_97` listeners separate; ensure dual-engine runs and only Reference UI shows `ref_` values when in Reference mode.
-   - S01/S04/S15: Audit any paths where Target-side changes (e.g., `d_97`) cause Reference reads/updates; convert to `ref_` reads, and guard display to mode.
-
-3) **Logging Hygiene**
-   - Remove temporary breadcrumbs once the above is verified to keep logs concise (aim to return to <1k lines during typical tests).
-
 ### 🔧 Planned Refinements (next test cycle)
 
 - **Epsilon Threshold Review**: Validate 1e-9 materiality guard vs Excel parity; tune if logs show micro-churn. Display precision remains via global formatters, not storage.
