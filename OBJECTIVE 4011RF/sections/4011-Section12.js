@@ -1369,40 +1369,41 @@ window.TEUI.SectionModules.sect12 = (function () {
     const d94 = parseFloat(getGlobalNumericValue("d_94"));
     const d95 = parseFloat(getGlobalNumericValue("d_95"));
 
-    // ✅ CRITICAL: Read TB penalty from S11's Pattern A system with safety checks
-    // 🚨 PERFORMANCE NOTE: Robot fingers connection is working but laggy.
-    // TODO: Optimize for production - consider direct event binding vs StateManager cascade
+    // ✅ CRITICAL: Choose TB% (d_97) by calculation pass, NOT S11's UI mode
+    // Reference pass → S11.ReferenceState.d_97; Target pass → S11.TargetState.d_97
+    // Fallbacks: StateManager ref_d_97/d_97, then local getNumericValue("d_97")
     let d97_tbPenaltyPercent;
-    if (
-      window.TEUI?.sect11?.ModeManager &&
-      window.TEUI?.sect11?.TargetState &&
-      window.TEUI?.sect11?.ReferenceState
-    ) {
-      const s11Mode = window.TEUI.sect11.ModeManager.currentMode;
-
-      if (
-        s11Mode === "reference" &&
-        window.TEUI.sect11.ReferenceState.getValue
-      ) {
-        // Use S11's ReferenceState TB penalty
-        d97_tbPenaltyPercent =
-          window.TEUI.parseNumeric(
-            window.TEUI.sect11.ReferenceState.getValue("d_97"),
-          ) || 50;
-      } else if (window.TEUI.sect11.TargetState.getValue) {
-        // Use S11's TargetState TB penalty
-        d97_tbPenaltyPercent =
-          window.TEUI.parseNumeric(
-            window.TEUI.sect11.TargetState.getValue("d_97"),
-          ) || 50;
+    try {
+      const s11 = window.TEUI?.sect11;
+      if (s11?.ReferenceState?.getValue && s11?.TargetState?.getValue) {
+        if (useRef) {
+          d97_tbPenaltyPercent = window.TEUI.parseNumeric(
+            s11.ReferenceState.getValue("d_97"),
+          );
+          if (isNaN(d97_tbPenaltyPercent)) {
+            d97_tbPenaltyPercent = window.TEUI.parseNumeric(
+              getGlobalNumericValue("ref_d_97"),
+            );
+          }
+        } else {
+          d97_tbPenaltyPercent = window.TEUI.parseNumeric(
+            s11.TargetState.getValue("d_97"),
+          );
+          if (isNaN(d97_tbPenaltyPercent)) {
+            d97_tbPenaltyPercent = window.TEUI.parseNumeric(
+              getGlobalNumericValue("d_97"),
+            );
+          }
+        }
       } else {
-        // Safety fallback if state methods not available
-        d97_tbPenaltyPercent = parseFloat(getNumericValue("d_97")) || 50;
+        d97_tbPenaltyPercent = window.TEUI.parseNumeric(
+          useRef ? getGlobalNumericValue("ref_d_97") : getGlobalNumericValue("d_97"),
+        );
       }
-    } else {
-      // Fallback to StateManager for compatibility
-      d97_tbPenaltyPercent = parseFloat(getNumericValue("d_97")) || 50;
+    } catch (e) {
+      d97_tbPenaltyPercent = window.TEUI.parseNumeric(getNumericValue("d_97"));
     }
+    if (isNaN(d97_tbPenaltyPercent)) d97_tbPenaltyPercent = 50;
 
     // IMPORTANT: d_97 comes from Section 11's slider which stores percentage as a whole number (e.g., 20 for 20%)
     // We must divide by 100 to get the decimal factor (0.2) before using in calculations
@@ -1427,6 +1428,13 @@ window.TEUI.SectionModules.sect12 = (function () {
     const sumProductGround = d94 * g94 + d95 * g95;
     const g102_uGround =
       d102_areaGround > 0 ? (sumProductGround / d102_areaGround) * tbFactor : 0;
+
+    // 🔎 DEBUG: concise trace for U-aggregation behavior per pass
+    console.log(
+      `[S12] U-agg ${useRef ? "REF" : "TGT"}: TB%=${d97_tbPenaltyPercent} → g_101=${g101_uAir.toFixed(
+        6,
+      )}, g_102=${g102_uGround.toFixed(6)}`,
+    );
 
     const totalArea = parseFloat(d101_areaAir) + parseFloat(d102_areaGround);
     const d104_uCombined =
@@ -2173,6 +2181,32 @@ window.TEUI.SectionModules.sect12 = (function () {
       "j_19", // Climate Zone (for N-Factor)
       "h_21", // Capacitance Setting (for k_104)
     ];
+    // Include Reference-prefixed U/RSI to ensure Reference-only updates trigger S12
+    const referenceUValueDeps = [
+      "ref_g_85",
+      "ref_g_86",
+      "ref_g_87",
+      "ref_g_88",
+      "ref_g_89",
+      "ref_g_90",
+      "ref_g_91",
+      "ref_g_92",
+      "ref_g_93",
+      "ref_g_94",
+      "ref_g_95",
+      "ref_f_85",
+      "ref_f_86",
+      "ref_f_87",
+      "ref_f_88",
+      "ref_f_89",
+      "ref_f_90",
+      "ref_f_91",
+      "ref_f_92",
+      "ref_f_93",
+      "ref_f_94",
+      "ref_f_95",
+      "ref_d_97", // Reference TB% when stored with prefix
+    ];
     // CRITICAL: Robot fingers connection - MUST run dual-engine for proper Reference storage
     // 📋 WORKPLAN: Consider moving aggregate U-value calculations (g_101, g_102) to S11
     // This would eliminate Robot Fingers bypass issues and better align responsibilities:
@@ -2186,6 +2220,18 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Add other external dependency listeners
     const otherDeps = externalDependencies.filter((dep) => dep !== "d_97");
     otherDeps.forEach((depId) => {
+      window.TEUI.StateManager.addListener(
+        depId,
+        (newValue, oldValue, eventFieldId, state) => {
+          if (eventFieldId === depId) {
+            calculateAll();
+          }
+        },
+      );
+    });
+
+    // Add reference-prefixed listeners
+    referenceUValueDeps.forEach((depId) => {
       window.TEUI.StateManager.addListener(
         depId,
         (newValue, oldValue, eventFieldId, state) => {
