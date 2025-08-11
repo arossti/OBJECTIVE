@@ -1319,41 +1319,43 @@ window.TEUI.SectionModules.sect12 = (function () {
   function calculateCombinedUValue(isReferenceCalculation = false) {
     const d101_areaAir = parseFloat(getNumericValue("d_101"));
     const d102_areaGround = parseFloat(getNumericValue("d_102"));
-    // Get u-values directly where available, otherwise calculate from RSI (1/RSI)
-    // Use parseFloat to maintain full floating point precision
-    const g85 =
-      parseFloat(getGlobalNumericValue("g_85")) ||
-      1 / parseFloat(getGlobalNumericValue("f_85") || 1);
-    const g86 =
-      parseFloat(getGlobalNumericValue("g_86")) ||
-      1 / parseFloat(getGlobalNumericValue("f_86") || 1);
-    const g87 =
-      parseFloat(getGlobalNumericValue("g_87")) ||
-      1 / parseFloat(getGlobalNumericValue("f_87") || 1);
-    const g88 =
-      parseFloat(getGlobalNumericValue("g_88")) ||
-      1 / parseFloat(getGlobalNumericValue("f_88") || 1);
-    const g89 =
-      parseFloat(getGlobalNumericValue("g_89")) ||
-      1 / parseFloat(getGlobalNumericValue("f_89") || 1);
-    const g90 =
-      parseFloat(getGlobalNumericValue("g_90")) ||
-      1 / parseFloat(getGlobalNumericValue("f_90") || 1);
-    const g91 =
-      parseFloat(getGlobalNumericValue("g_91")) ||
-      1 / parseFloat(getGlobalNumericValue("f_91") || 1);
-    const g92 =
-      parseFloat(getGlobalNumericValue("g_92")) ||
-      1 / parseFloat(getGlobalNumericValue("f_92") || 1);
-    const g93 =
-      parseFloat(getGlobalNumericValue("g_93")) ||
-      1 / parseFloat(getGlobalNumericValue("f_93") || 1);
-    const g94 =
-      parseFloat(getGlobalNumericValue("g_94")) ||
-      1 / parseFloat(getGlobalNumericValue("f_94") || 1);
-    const g95 =
-      parseFloat(getGlobalNumericValue("g_95")) ||
-      1 / parseFloat(getGlobalNumericValue("f_95") || 1);
+    // Get U-values directly where available, otherwise calculate from RSI (1/RSI)
+    // Prefer S11's sovereign state (robot fingers) to avoid reliance on StateManager storage
+    function getUValueFromS11(componentId, useReference) {
+      try {
+        const s11 = window.TEUI?.sect11;
+        const state = useReference
+          ? s11?.ReferenceState
+          : s11?.TargetState;
+        if (state?.getValue) {
+          const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
+          if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) return gVal;
+          const fVal = window.TEUI.parseNumeric(state.getValue(`f_${componentId}`));
+          if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) return 1 / fVal;
+        }
+      } catch (e) {
+        // fall through to global fallback
+      }
+      // Fallback to global StateManager values
+      const gGlobal = window.TEUI.parseNumeric(getGlobalNumericValue(`g_${componentId}`));
+      if (!isNaN(gGlobal) && isFinite(gGlobal) && gGlobal > 0) return gGlobal;
+      const fGlobal = window.TEUI.parseNumeric(getGlobalNumericValue(`f_${componentId}`));
+      if (!isNaN(fGlobal) && isFinite(fGlobal) && fGlobal > 0) return 1 / fGlobal;
+      return 0;
+    }
+
+    const useRef = !!isReferenceCalculation;
+    const g85 = getUValueFromS11("85", useRef);
+    const g86 = getUValueFromS11("86", useRef);
+    const g87 = getUValueFromS11("87", useRef);
+    const g88 = getUValueFromS11("88", useRef);
+    const g89 = getUValueFromS11("89", useRef);
+    const g90 = getUValueFromS11("90", useRef);
+    const g91 = getUValueFromS11("91", useRef);
+    const g92 = getUValueFromS11("92", useRef);
+    const g93 = getUValueFromS11("93", useRef);
+    const g94 = getUValueFromS11("94", useRef);
+    const g95 = getUValueFromS11("95", useRef);
 
     const d85 = parseFloat(getGlobalNumericValue("d_85"));
     const d86 = parseFloat(getGlobalNumericValue("d_86"));
@@ -2194,9 +2196,9 @@ window.TEUI.SectionModules.sect12 = (function () {
       );
     });
 
-    // CRITICAL: Listen for d_13 changes to update reference indicators
+    // CRITICAL: Listen for d_13 changes to trigger recalculation and then update indicators
     window.TEUI.StateManager.addListener("d_13", () => {
-      console.log("[Section12] d_13 changed - updating reference indicators");
+      calculateAll();
       updateAllReferenceIndicators();
     });
 
