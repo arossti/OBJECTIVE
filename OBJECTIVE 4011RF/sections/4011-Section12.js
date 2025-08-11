@@ -1110,27 +1110,16 @@ window.TEUI.SectionModules.sect12 = (function () {
       determinedFormatType = formatType;
     }
 
-    // Normalize storage string to avoid micro-change thrash (field-aware)
-    let storageString;
-    if (determinedFormatType === "W/m2") {
-      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(6);
-    } else if (determinedFormatType === "number-3dp") {
-      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(3);
-    } else if (determinedFormatType === "number-2dp-comma") {
-      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(2);
-    } else if (determinedFormatType === "number-1dp") {
-      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(1);
-    } else {
-      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toString();
-    }
-
-    // Set raw value in state manager only if changed
+    // Set raw value in state manager only if materially changed (epsilon check), store full precision
     if (window.TEUI?.StateManager?.setValue) {
-      const current = window.TEUI.StateManager.getValue(fieldId);
-      if (current !== storageString) {
-        window.TEUI.StateManager.setValue(fieldId, storageString, "calculated");
+      const currentStr = window.TEUI.StateManager.getValue(fieldId);
+      const currentNum = window.TEUI.parseNumeric(currentStr);
+      const newNum = Number.isFinite(numericValue) ? numericValue : 0;
+      const epsilon = 1e-9;
+      if (!(Math.abs((currentNum || 0) - newNum) < epsilon)) {
+        window.TEUI.StateManager.setValue(fieldId, String(newNum), "calculated");
       } else {
-        // No change; skip DOM update to avoid unnecessary work
+        // No material change; skip DOM update
         return;
       }
     } else {
