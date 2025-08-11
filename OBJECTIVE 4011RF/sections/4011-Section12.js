@@ -1057,19 +1057,6 @@ window.TEUI.SectionModules.sect12 = (function () {
         ? window.TEUI.parseNumeric(rawValue)
         : rawValue;
 
-    // Set raw value in state manager with 'calculated' state
-    if (window.TEUI?.StateManager?.setValue) {
-      // Ensure rawValue is stored as a string for consistency with FULL precision
-      window.TEUI.StateManager.setValue(
-        fieldId,
-        String(numericValue),
-        "calculated",
-      ); // Store the cleaned numeric value as string with full precision
-    } else {
-      console.error("StateManager not available to set value for", fieldId);
-      return;
-    }
-
     // Determine the correct format type based on field ID conventions
     let determinedFormatType;
 
@@ -1121,6 +1108,34 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Override if a specific format was passed and it's not the default 'number'
     if (formatType !== "number") {
       determinedFormatType = formatType;
+    }
+
+    // Normalize storage string to avoid micro-change thrash (field-aware)
+    let storageString;
+    if (determinedFormatType === "W/m2") {
+      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(6);
+    } else if (determinedFormatType === "number-3dp") {
+      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(3);
+    } else if (determinedFormatType === "number-2dp-comma") {
+      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(2);
+    } else if (determinedFormatType === "number-1dp") {
+      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toFixed(1);
+    } else {
+      storageString = (Number.isFinite(numericValue) ? numericValue : 0).toString();
+    }
+
+    // Set raw value in state manager only if changed
+    if (window.TEUI?.StateManager?.setValue) {
+      const current = window.TEUI.StateManager.getValue(fieldId);
+      if (current !== storageString) {
+        window.TEUI.StateManager.setValue(fieldId, storageString, "calculated");
+      } else {
+        // No change; skip DOM update to avoid unnecessary work
+        return;
+      }
+    } else {
+      console.error("StateManager not available to set value for", fieldId);
+      return;
     }
 
     // For 'W/m2' format, use local formatNumber function

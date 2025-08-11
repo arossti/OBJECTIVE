@@ -1,4 +1,4 @@
-# TEUI Calculator Section Debugging Workplan - August 2025
+# TEUI Calculator Section Debugging Workplan - August 10 2025
 
 This document serves as a working log and guidance for systematic section-by-section repairs to achieve full dual-state compliance.
 
@@ -67,6 +67,19 @@ After fixing S02 and S01 state isolation, we've identified **multiple interconne
 1. **S12**: Fix U-value calculation and DOM update issues
 2. **S13**: Ensure proper listener setup for S12 outputs, verify heating calculations  
 3. **S10**: Audit for any remaining dual-state violations
+
+### ✅ Implemented Improvements (Aug 10, late PM)
+
+- **S12 TB% Selection (d_97) Mode-Aware**: In `calculateCombinedUValue(isReferenceCalculation)`, TB% now comes from S11 state matching the calculation pass (ReferenceState for ref pass, TargetState for target pass). Prevents cross-hemisphere TB% contamination.
+- **S12 Reference Listeners Added**: Attached listeners for `ref_g_85..95`, `ref_f_85..95`, and `ref_d_97` to ensure S12 recalculates on Reference-only changes from S11 without requiring UI toggles.
+- **S12 U-agg Debug Log**: Added compact per-pass trace: `[S12] U-agg REF/TGT: TB%=X → g_101=…, g_102=…` to verify correctness in logs.
+- **Change-Detection on Writes (S12)**: `setCalculatedValue` now normalizes precision per field and only writes to `StateManager` if the stored string has changed. Reduces redundant cascades and improves responsiveness.
+
+### 🔧 Planned Refinements (next test cycle)
+
+- **Precision Normalization Review**: Confirm 6dp for U-values and 2–3dp for kWh aligns with Excel parity; adjust if logs show micro-churn.
+- **Downstream Churn Reduction**: Apply similar store-if-changed guards to S14/S15 totals to cut repeated identical recomputes visible in logs.
+- **Optional Architecture Step**: Emit aggregate U-values (target/ref) from S11 to StateManager or unify U-aggregation into S11 to remove robot-fingers latency, if needed after the above.
 
 ### **Phase 4: End-to-End Validation**
 
