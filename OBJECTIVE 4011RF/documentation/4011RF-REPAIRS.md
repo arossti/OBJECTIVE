@@ -78,6 +78,10 @@ After fixing S02 and S01 state isolation, we've identified **multiple interconne
 ### 🔧 Planned Refinements (next test cycle)
 
 - **Epsilon Threshold Review**: Validate 1e-9 materiality guard vs Excel parity; tune if logs show micro-churn. Display precision remains via global formatters, not storage.
+- **S12 Toggle Must Be Display-Only**: Current `ModeManager.switchMode()` in S12 still calls `calculateAll()`, which explains why toggling S12 “releases” the cascade. Planned fix: remove `calculateAll()` from the toggle; keep `refreshUI()` and `updateCalculatedDisplayValues()` only.
+- **S11 → S12 Reference Propagation**: Ensure S11 writes Reference-side updates to StateManager (e.g., `ref_d_97` for TB% and relevant `ref_g_xx/ref_f_xx`) when editing in S11 Reference mode so S12’s existing ref_ listeners trigger automatically (no UI toggle required).
+- **Stopgap (if needed)**: If ref_ events aren’t fully wired, pragmatically call `TEUI.SectionModules.sect12.calculateAll()` at the end of S11 TB% save. This is a documented exception until ref_ propagation is reliable.
+- **Test Protocol**: In Reference mode, change S11 TB%; expect S12 `ref_g_101/ref_g_102` and S01 `e_10` to update without toggling S12. In Target mode, expect only target values to change and Reference to persist.
 - **Downstream Churn Reduction**: Apply similar store-if-changed guards to S14/S15 totals to cut repeated identical recomputes visible in logs.
 - **Optional Architecture Step**: Emit aggregate U-values (target/ref) from S11 to StateManager or unify U-aggregation into S11 to remove robot-fingers latency, if needed after the above.
 
