@@ -153,12 +153,23 @@ window.TEUI.SectionModules.sect13 = (function () {
         console.log(
           `S13 ReferenceState: Saved state after ${source} changed ${fieldId} to ${value}`,
         );
-        
+
         // ✅ CRITICAL FIX: Trigger recalculations when key Reference fields change
         // BUT ONLY when currently in Reference mode (respects mode isolation)
         // calculateAll() runs BOTH Target and Reference calculations (efficient)
-        const criticalFields = ["d_113", "d_116", "f_113", "d_118", "d_119", "j_115", "l_118"];
-        if (criticalFields.includes(fieldId) && ModeManager.currentMode === "reference") {
+        const criticalFields = [
+          "d_113",
+          "d_116",
+          "f_113",
+          "d_118",
+          "d_119",
+          "j_115",
+          "l_118",
+        ];
+        if (
+          criticalFields.includes(fieldId) &&
+          ModeManager.currentMode === "reference"
+        ) {
           console.log(`[S13] Reference ${fieldId} → ${value}`);
           calculateAll(); // Runs both models - efficient and keeps both current
           ModeManager.updateCalculatedDisplayValues();
@@ -1930,7 +1941,7 @@ window.TEUI.SectionModules.sect13 = (function () {
       // Listener for d_113 (Heating System) changes - Target mode
       sm.addListener("d_113", (newValue, oldValue) => {
         console.log(`[S13] Target d_113 → ${newValue}`);
-        
+
         // ✅ PATTERN 2: Run dual-engine calculations for proper Target/Reference state handling
         calculateAll();
         ModeManager.updateCalculatedDisplayValues(); // ✅ CRITICAL: Update DOM after calculations
@@ -2287,12 +2298,14 @@ window.TEUI.SectionModules.sect13 = (function () {
     dropdowns.forEach((dropdown) => {
       // Remove any existing handlers to avoid duplicates
       dropdown.removeEventListener("change", handleDropdownChange);
-      
+
       // Add the event listener
       dropdown.addEventListener("change", handleDropdownChange);
     });
 
-    console.log(`[S13] Set up dropdown event handlers for ${dropdowns.length} dropdowns`);
+    console.log(
+      `[S13] Set up dropdown event handlers for ${dropdowns.length} dropdowns`,
+    );
   }
 
   /**
@@ -2304,9 +2317,11 @@ window.TEUI.SectionModules.sect13 = (function () {
     if (!fieldId) return;
 
     const newValue = e.target.value;
-    console.log(`[S13] Dropdown change: ${fieldId}="${newValue}" in ${ModeManager.currentMode} mode`);
+    console.log(
+      `[S13] Dropdown change: ${fieldId}="${newValue}" in ${ModeManager.currentMode} mode`,
+    );
 
-    // Store via ModeManager (dual-state aware) 
+    // Store via ModeManager (dual-state aware)
     if (ModeManager && typeof ModeManager.setValue === "function") {
       ModeManager.setValue(fieldId, newValue, "user-modified");
     }
@@ -2378,8 +2393,8 @@ window.TEUI.SectionModules.sect13 = (function () {
           : getFieldValue("f_113"),
       ) || 0;
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)        // Reference reads Reference state
-      : TargetState.getValue("d_113");        // Target reads Target state
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state
     let copheat = 1;
     if (systemType === "Heatpump" && hspf > 0) {
       copheat = hspf / 3.412;
@@ -2406,8 +2421,6 @@ window.TEUI.SectionModules.sect13 = (function () {
     };
   }
 
-
-
   /**
    * Calculate heating fuel impact for gas and oil systems
    */
@@ -2417,8 +2430,8 @@ window.TEUI.SectionModules.sect13 = (function () {
 
     // ✅ PATTERN A: Read values from proper state objects
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)        // Reference reads Reference state
-      : TargetState.getValue("d_113");        // Target reads Target state (defaults)
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state (defaults)
     const tedTarget = isReferenceCalculation
       ? window.TEUI.parseNumeric(
           window.TEUI.StateManager?.getValue("ref_d_127"),
@@ -2488,24 +2501,28 @@ window.TEUI.SectionModules.sect13 = (function () {
   function calculateSpaceHeatingEmissions(isReferenceCalculation = false) {
     // ✅ PATTERN A: Read values from proper state objects
     const systemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)        // Reference reads Reference state
-      : TargetState.getValue("d_113");        // Target reads Target state
-  const oilVolume = isReferenceCalculation
-    ? getGlobalNumericValue("ref_f_115")
-    : getGlobalNumericValue("f_115");
-    
-  const gasVolume = isReferenceCalculation
-    ? getGlobalNumericValue("ref_h_115")
-    : getGlobalNumericValue("h_115");
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state
+    const oilVolume = isReferenceCalculation
+      ? getGlobalNumericValue("ref_f_115")
+      : getGlobalNumericValue("f_115");
+
+    const gasVolume = isReferenceCalculation
+      ? getGlobalNumericValue("ref_h_115")
+      : getGlobalNumericValue("h_115");
 
     // ✅ CRITICAL FIX: Mode-aware emissions factors from S04 (gCO2e), divided by 1000 to get kgCO2e
     // Reference calculations must use Reference emissions factors, Target uses Target factors
-    const oilEmissionsFactor = isReferenceCalculation 
-      ? (getGlobalNumericValue("ref_l_30") || getGlobalNumericValue("l_30") || 2753)
-      : (getGlobalNumericValue("l_30") || 2753);
+    const oilEmissionsFactor = isReferenceCalculation
+      ? getGlobalNumericValue("ref_l_30") ||
+        getGlobalNumericValue("l_30") ||
+        2753
+      : getGlobalNumericValue("l_30") || 2753;
     const gasEmissionsFactor = isReferenceCalculation
-      ? (getGlobalNumericValue("ref_l_28") || getGlobalNumericValue("l_28") || 1921)
-      : (getGlobalNumericValue("l_28") || 1921);
+      ? getGlobalNumericValue("ref_l_28") ||
+        getGlobalNumericValue("l_28") ||
+        1921
+      : getGlobalNumericValue("l_28") || 1921;
 
     let emissions = 0;
 
@@ -2530,8 +2547,8 @@ window.TEUI.SectionModules.sect13 = (function () {
       ? getSectionValue("d_116", true)
       : getFieldValue("d_116");
     const heatingSystemType = isReferenceCalculation
-      ? getSectionValue("d_113", true)        // Reference reads Reference state
-      : TargetState.getValue("d_113");        // Target reads Target state
+      ? getSectionValue("d_113", true) // Reference reads Reference state
+      : TargetState.getValue("d_113"); // Target reads Target state
     const coolingDemand_m129 =
       window.TEUI.parseNumeric(getFieldValue("m_129")) || 0;
     const copcool_hp_j113 =
@@ -3286,7 +3303,7 @@ window.TEUI.SectionModules.sect13 = (function () {
     heatingDemand_d114,
   ) {
     const afue = window.TEUI.parseNumeric(getFieldValue("j_115")) || 1;
-    
+
     console.log(`[S13] TGT FUEL: ${systemType} system`);
 
     let fuelImpact = 0,
@@ -3310,13 +3327,15 @@ window.TEUI.SectionModules.sect13 = (function () {
     setCalculatedValue("f_115", oilLitres, "number-2dp-comma");
     setCalculatedValue("h_115", gasM3, "number-2dp-comma");
     setCalculatedValue("l_115", exhaust, "number-2dp-comma");
-    
-    // ✅ S13→S04→S01 dependency flow: Values stored via setCalculatedValue trigger StateManager listeners  
-    console.log(`[S13] FUEL STORED: ${systemType} → Gas=${gasM3}m³, Oil=${oilLitres}L`);
+
+    // ✅ S13→S04→S01 dependency flow: Values stored via setCalculatedValue trigger StateManager listeners
+    console.log(
+      `[S13] FUEL STORED: ${systemType} → Gas=${gasM3}m³, Oil=${oilLitres}L`,
+    );
     const m115_percent = afue > 0 ? 1 / afue : 0;
     setCalculatedValue("m_115", m115_percent, "percent-0dp");
 
-    // Calculate space heating emissions  
+    // Calculate space heating emissions
     calculateSpaceHeatingEmissions(false); // Target calculation
   }
 

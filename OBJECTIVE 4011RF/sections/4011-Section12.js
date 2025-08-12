@@ -1116,7 +1116,11 @@ window.TEUI.SectionModules.sect12 = (function () {
       const newNum = Number.isFinite(numericValue) ? numericValue : 0;
       const epsilon = 1e-9;
       if (!(Math.abs((currentNum || 0) - newNum) < epsilon)) {
-        window.TEUI.StateManager.setValue(fieldId, String(newNum), "calculated");
+        window.TEUI.StateManager.setValue(
+          fieldId,
+          String(newNum),
+          "calculated",
+        );
       } else {
         // No material change; skip DOM update
         return;
@@ -1327,23 +1331,30 @@ window.TEUI.SectionModules.sect12 = (function () {
     function getUValueFromS11(componentId, useReference) {
       try {
         const s11 = window.TEUI?.sect11;
-        const state = useReference
-          ? s11?.ReferenceState
-          : s11?.TargetState;
+        const state = useReference ? s11?.ReferenceState : s11?.TargetState;
         if (state?.getValue) {
-          const gVal = window.TEUI.parseNumeric(state.getValue(`g_${componentId}`));
+          const gVal = window.TEUI.parseNumeric(
+            state.getValue(`g_${componentId}`),
+          );
           if (!isNaN(gVal) && isFinite(gVal) && gVal > 0) return gVal;
-          const fVal = window.TEUI.parseNumeric(state.getValue(`f_${componentId}`));
+          const fVal = window.TEUI.parseNumeric(
+            state.getValue(`f_${componentId}`),
+          );
           if (!isNaN(fVal) && isFinite(fVal) && fVal > 0) return 1 / fVal;
         }
       } catch (e) {
         // fall through to global fallback
       }
       // Fallback to global StateManager values
-      const gGlobal = window.TEUI.parseNumeric(getGlobalNumericValue(`g_${componentId}`));
+      const gGlobal = window.TEUI.parseNumeric(
+        getGlobalNumericValue(`g_${componentId}`),
+      );
       if (!isNaN(gGlobal) && isFinite(gGlobal) && gGlobal > 0) return gGlobal;
-      const fGlobal = window.TEUI.parseNumeric(getGlobalNumericValue(`f_${componentId}`));
-      if (!isNaN(fGlobal) && isFinite(fGlobal) && fGlobal > 0) return 1 / fGlobal;
+      const fGlobal = window.TEUI.parseNumeric(
+        getGlobalNumericValue(`f_${componentId}`),
+      );
+      if (!isNaN(fGlobal) && isFinite(fGlobal) && fGlobal > 0)
+        return 1 / fGlobal;
       return 0;
     }
 
@@ -1403,7 +1414,9 @@ window.TEUI.SectionModules.sect12 = (function () {
         }
       } else {
         d97_tbPenaltyPercent = window.TEUI.parseNumeric(
-          useRef ? getGlobalNumericValue("ref_d_97") : getGlobalNumericValue("d_97"),
+          useRef
+            ? getGlobalNumericValue("ref_d_97")
+            : getGlobalNumericValue("d_97"),
         );
       }
     } catch (e) {

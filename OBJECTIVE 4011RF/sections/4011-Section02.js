@@ -722,7 +722,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     try {
       // ✅ CRITICAL FIX: Read from sovereign ReferenceState, not global StateManager with prefixes
       const carbonStandard = ReferenceState.getValue("d_15") || "Self Reported";
-      
+
       // For external dependencies (from other sections), still use getNumericValue fallback
       const modelledValueI41 = getNumericValue("i_41", 345.82);
 
@@ -827,7 +827,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     try {
       // ✅ CRITICAL FIX: Read from sovereign TargetState, not global StateManager
       const carbonStandard = TargetState.getValue("d_15") || "Self Reported";
-      
+
       // For external dependencies (from other sections), still use getNumericValue fallback
       const modelledValueI41 = getNumericValue("i_41", 345.82);
 
@@ -1131,7 +1131,9 @@ window.TEUI.SectionModules.sect02 = (function () {
     }
 
     // ✅ CRITICAL FIX: Service life slider events (h_13)
-    const serviceLifeSlider = document.querySelector('input[data-field-id="h_13"]');
+    const serviceLifeSlider = document.querySelector(
+      'input[data-field-id="h_13"]',
+    );
     if (serviceLifeSlider) {
       serviceLifeSlider.addEventListener("input", function (e) {
         const newServiceLife = e.target.value;
@@ -1795,9 +1797,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d13Value = currentState.getValue("d_13");
       if (referenceStandardDropdown && d13Value) {
         referenceStandardDropdown.value = d13Value;
-        console.log(
+        console
+          .log
           // `[S02] Updated d_13 dropdown = "${d13Value}" (${this.currentMode} mode)`,
-        );
+          ();
       }
 
       // ✅ S03 PATTERN: Update Carbon Standard dropdown using specific selector
@@ -1807,9 +1810,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d15Value = currentState.getValue("d_15");
       if (carbonStandardDropdown && d15Value) {
         carbonStandardDropdown.value = d15Value;
-        console.log(
+        console
+          .log
           // `[S02] Updated d_15 dropdown = "${d15Value}" (${this.currentMode} mode)`,
-        );
+          ();
       }
 
       // ✅ CRITICAL FIX: Update Major Occupancy dropdown using specific selector
@@ -1819,9 +1823,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d12Value = currentState.getValue("d_12");
       if (majorOccupancyDropdown && d12Value) {
         majorOccupancyDropdown.value = d12Value;
-        console.log(
+        console
+          .log
           // `[S02] Updated d_12 dropdown = "${d12Value}" (${this.currentMode} mode)`,
-        );
+          ();
       }
 
       // ✅ CRITICAL FIX: Update Actual/Target Use dropdown using specific selector
@@ -1831,9 +1836,10 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d14Value = currentState.getValue("d_14");
       if (actualTargetDropdown && d14Value) {
         actualTargetDropdown.value = d14Value;
-        console.log(
+        console
+          .log
           // `[S02] Updated d_14 dropdown = "${d14Value}" (${this.currentMode} mode)`,
-        );
+          ();
       }
 
       // ✅ CRITICAL: Update reporting year slider (h_12, displayed as d_1)
@@ -1901,24 +1907,29 @@ window.TEUI.SectionModules.sect02 = (function () {
      */
     updateCalculatedDisplayValues: function () {
       // console.log(`🔄 [S02] updateCalculatedDisplayValues: mode=${this.currentMode}`);
-      
+
       // Update calculated fields to show values for current mode
       const calculatedFields = ["d_16"]; // Embodied Carbon Target
-      
+
       calculatedFields.forEach((fieldId) => {
         const element = document.querySelector(`[data-field-id="${fieldId}"]`);
         if (element) {
           // Read the correct value from StateManager based on mode
-          const value = this.currentMode === "reference" 
-            ? window.TEUI.StateManager.getValue(`ref_${fieldId}`) || window.TEUI.StateManager.getValue(fieldId)
-            : window.TEUI.StateManager.getValue(fieldId);
-          
+          const value =
+            this.currentMode === "reference"
+              ? window.TEUI.StateManager.getValue(`ref_${fieldId}`) ||
+                window.TEUI.StateManager.getValue(fieldId)
+              : window.TEUI.StateManager.getValue(fieldId);
+
           if (value !== null && value !== undefined) {
             // Format numeric fields appropriately
-            const formattedValue = (value === "N/A") 
-              ? "N/A" 
-              : (window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value);
-            
+            const formattedValue =
+              value === "N/A"
+                ? "N/A"
+                : window.TEUI.formatNumber
+                  ? window.TEUI.formatNumber(value, "number-2dp-comma")
+                  : value;
+
             element.textContent = formattedValue;
             // console.log(`[S02] Updated calculated field ${fieldId} = "${formattedValue}" (${this.currentMode} mode)`);
           }

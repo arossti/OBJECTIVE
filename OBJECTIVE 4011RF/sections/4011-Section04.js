@@ -500,7 +500,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         } else {
           // In Target mode, show regular values only
           valueToDisplay = window.TEUI.StateManager.getValue(fieldId) || 0;
-          
+
           // 🐛 DEBUG: Log Target mode values for key fields
           if (fieldId === "j_32" || fieldId === "k_32" || fieldId === "l_27") {
             console.log(
@@ -739,22 +739,23 @@ window.TEUI.SectionModules.sect04 = (function () {
     // ✅ MODE-AWARE: Get province from S03 (d_19) based on current mode
     let provinceRaw;
     let year;
-    
+
     if (isReferenceCalculation) {
       // Reference mode: read ref_ prefixed values
-      provinceRaw = 
-        getGlobalNumericValue("ref_d_19") || 
-        getGlobalNumericValue("d_19") || 
+      provinceRaw =
+        getGlobalNumericValue("ref_d_19") ||
+        getGlobalNumericValue("d_19") ||
         "ON";
-      year = getGlobalNumericValue("ref_h_12") || getGlobalNumericValue("h_12") || 2022;
+      year =
+        getGlobalNumericValue("ref_h_12") ||
+        getGlobalNumericValue("h_12") ||
+        2022;
     } else {
       // Target mode: read unprefixed values
-      provinceRaw = 
-        getGlobalNumericValue("d_19") || 
-        "ON";
+      provinceRaw = getGlobalNumericValue("d_19") || "ON";
       year = getGlobalNumericValue("h_12") || 2022;
     }
-    
+
     const province = getProvinceCode(provinceRaw);
     return getElectricityFactor(province, year);
   }
@@ -802,7 +803,9 @@ window.TEUI.SectionModules.sect04 = (function () {
     const actualElectricity = ModeManager.getValue("d_27") || 0;
 
     // G27: Emissions from actual (D27 * L27 / 1000)
-    const emissionFactor = getElectricityEmissionFactor(ModeManager.currentMode === "reference");
+    const emissionFactor = getElectricityEmissionFactor(
+      ModeManager.currentMode === "reference",
+    );
     const actualEmissions = (actualElectricity * emissionFactor) / 1000;
 
     // K27: Emissions from target (H27 * L27 / 1000)
@@ -1100,7 +1103,9 @@ window.TEUI.SectionModules.sect04 = (function () {
   // G-column calculations (actual emissions)
   function calculateG27() {
     const f_27 = ModeManager.getValue("f_27") || 0;
-    const l_27 = getElectricityEmissionFactor(ModeManager.currentMode === "reference");
+    const l_27 = getElectricityEmissionFactor(
+      ModeManager.currentMode === "reference",
+    );
     const result = (f_27 * l_27) / 1000; // Convert gCO2e to kgCO2e
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("g_27", result);
@@ -1392,7 +1397,9 @@ window.TEUI.SectionModules.sect04 = (function () {
   // K-column calculations (target emissions)
   function calculateK27() {
     const j_27 = ModeManager.getValue("j_27") || 0;
-    const l_27 = getGlobalNumericValue("l_27") || getElectricityEmissionFactor(ModeManager.currentMode === "reference"); // Dynamic electricity emission factor
+    const l_27 =
+      getGlobalNumericValue("l_27") ||
+      getElectricityEmissionFactor(ModeManager.currentMode === "reference"); // Dynamic electricity emission factor
     const result = (j_27 * l_27) / 1000; // Excel: =J27*L27/1000
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("k_27", result);
@@ -1441,7 +1448,9 @@ window.TEUI.SectionModules.sect04 = (function () {
 
   // L-column calculation (emission factor)
   function calculateL27() {
-    const result = getElectricityEmissionFactor(ModeManager.currentMode === "reference");
+    const result = getElectricityEmissionFactor(
+      ModeManager.currentMode === "reference",
+    );
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("l_27", result, "integer");
     return result;
@@ -1564,7 +1573,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     ModeManager.currentMode = "reference";
 
     // CRITICAL: Override calculation storage to use Reference prefixes
-    // eslint-disable-next-line no-func-assign
+
     const originalSetCalculatedValue = setCalculatedValue;
     // eslint-disable-next-line no-func-assign
     setCalculatedValue = function (fieldId, rawValue, formatType) {
@@ -2416,14 +2425,18 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to Reference mode province changes from S03 (affects emission factors)
       window.TEUI.StateManager.addListener("ref_d_19", () => {
-        console.log(`[S04] Province changed (Reference), updating emission factors: ref_d_19`);
+        console.log(
+          `[S04] Province changed (Reference), updating emission factors: ref_d_19`,
+        );
         calculateReferenceModel(); // Reference emission factors depend on Reference province
         ModeManager.updateCalculatedDisplayValues();
       });
 
       // ✅ CRITICAL: React to Reference mode reporting year changes from S02 (affects emission factors)
       window.TEUI.StateManager.addListener("ref_h_12", () => {
-        console.log(`[S04] Reporting year changed (Reference), updating emission factors: ref_h_12`);
+        console.log(
+          `[S04] Reporting year changed (Reference), updating emission factors: ref_h_12`,
+        );
         calculateReferenceModel(); // Reference emission factors depend on Reference year
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2553,7 +2566,9 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ CRITICAL: React to S07/S13 Reference mode gas-related changes
       window.TEUI.StateManager.addListener("ref_d_51", () => {
-        console.log(`[S04] S07 water heating fuel type changed (Reference): ref_d_51`);
+        console.log(
+          `[S04] S07 water heating fuel type changed (Reference): ref_d_51`,
+        );
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -2572,13 +2587,17 @@ window.TEUI.SectionModules.sect04 = (function () {
       });
 
       window.TEUI.StateManager.addListener("ref_f_115", () => {
-        console.log(`[S04] S13 space oil volume changed (Reference): ref_f_115`);
+        console.log(
+          `[S04] S13 space oil volume changed (Reference): ref_f_115`,
+        );
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });
 
       window.TEUI.StateManager.addListener("ref_h_115", () => {
-        console.log(`[S04] S13 space gas volume changed (Reference): ref_h_115`);
+        console.log(
+          `[S04] S13 space gas volume changed (Reference): ref_h_115`,
+        );
         calculateReferenceModel(); // This has the function override to ensure ref_ routing
         ModeManager.updateCalculatedDisplayValues();
       });

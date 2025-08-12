@@ -293,11 +293,7 @@ window.TEUI.SectionModules.sect11 = (function () {
             `[S11] ModeManager REF write: ref_d_97=${value} (src=${writeSource})`,
           );
         }
-        window.TEUI.StateManager.setValue(
-          `ref_${fieldId}`,
-          value,
-          writeSource,
-        );
+        window.TEUI.StateManager.setValue(`ref_${fieldId}`, value, writeSource);
       }
     },
     refreshUI: function () {
@@ -360,13 +356,7 @@ window.TEUI.SectionModules.sect11 = (function () {
     // Update displayed calculated values based on current mode (Target vs Reference)
     updateCalculatedDisplayValues: function () {
       if (!window.TEUI?.StateManager) return;
-      const calculatedFields = [
-        "i_97",
-        "k_97",
-        "d_98",
-        "i_98",
-        "k_98",
-      ];
+      const calculatedFields = ["i_97", "k_97", "d_98", "i_98", "k_98"];
 
       calculatedFields.forEach((fieldId) => {
         const valueToDisplay =
@@ -1647,8 +1637,8 @@ window.TEUI.SectionModules.sect11 = (function () {
             `[S11] Slider input d_97=${percentageValue} (localMode=${ModeManager.currentMode})`,
           );
 
-        // Trigger local recalculation; cross-section updates flow via StateManager listeners
-        calculateAll();
+          // Trigger local recalculation; cross-section updates flow via StateManager listeners
+          calculateAll();
         });
 
         // ARCHITECTURAL COMPLIANCE: Final change event relies on StateManager dependency chain
@@ -1690,20 +1680,22 @@ window.TEUI.SectionModules.sect11 = (function () {
       window.TEUI.StateManager.addListener("ref_d_22", calculateAll);
 
       window.TEUI.StateManager.addListener("i_21", calculateAll); // Capacitance Factor (affects ground gain)
-    window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
-      console.log(`[S11] Listener: d_97 changed → recalculating (src=${src})`);
-      calculateAll();
-    });
-      // Reference-side TB% (if written as ref_d_97) should also trigger recalculation
-    window.TEUI.StateManager.addListener(
-      "ref_d_97",
-      (val, _old, _id, src) => {
+      window.TEUI.StateManager.addListener("d_97", (val, _old, _id, src) => {
         console.log(
-          `[S11] Listener: ref_d_97 changed → recalculating (src=${src})`,
+          `[S11] Listener: d_97 changed → recalculating (src=${src})`,
         );
         calculateAll();
-      },
-    );
+      });
+      // Reference-side TB% (if written as ref_d_97) should also trigger recalculation
+      window.TEUI.StateManager.addListener(
+        "ref_d_97",
+        (val, _old, _id, src) => {
+          console.log(
+            `[S11] Listener: ref_d_97 changed → recalculating (src=${src})`,
+          );
+          calculateAll();
+        },
+      );
       // console.log("Section 11 listeners for climate data added.");
     } else {
       // console.warn("Section 11: StateManager not available to add climate listeners.");

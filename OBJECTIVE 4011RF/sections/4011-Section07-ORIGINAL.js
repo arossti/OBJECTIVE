@@ -486,9 +486,10 @@ window.TEUI.SectionModules.sect07 = (function () {
     const recoveryPercent = getNumericValue("d_53") / 100;
 
     // Calculate compliance percentages and format them properly
-    const waterUsePercentRaw = 275 !== 0 ? litersPerPersonDay / 275 : 0;
-    const dhwUsePercentRaw = 110 !== 0 ? hotWaterLitersPerDay / 110 : 0;
-    const efficiencyPercentRaw = 0.9 !== 0 ? efficiency / 0.9 : 0;
+    // ESLint: These appear as constant conditions but preserve Excel formula structure
+    const waterUsePercentRaw = litersPerPersonDay / 275; // 275 is Excel constant
+    const dhwUsePercentRaw = hotWaterLitersPerDay / 110; // 110 is Excel constant
+    const efficiencyPercentRaw = efficiency / 0.9; // 0.9 is Excel constant
 
     setFieldValue(
       "n_49",
