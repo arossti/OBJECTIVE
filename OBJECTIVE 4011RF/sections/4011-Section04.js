@@ -1227,12 +1227,12 @@ window.TEUI.SectionModules.sect04 = (function () {
       result = 0;
     }
 
-    console.log(`[S04] calculateH28 DEBUG:
-      Space heating fuel (d_113): '${spaceHeatingFuel}'
-      Water heating fuel (d_51): '${waterHeatingFuel}'
-      Water gas volume (e_51): ${waterGasVolume}
-      Space gas volume (h_115): ${spaceGasVolume}
-      Final H28 result: ${result}`);
+    // console.log(`[S04] calculateH28 DEBUG:
+    //   Space heating fuel (d_113): '${spaceHeatingFuel}'
+    //   Water heating fuel (d_51): '${waterHeatingFuel}'
+    //   Water gas volume (e_51): ${waterGasVolume}
+    //   Space gas volume (h_115): ${spaceGasVolume}
+    //   Final H28 result: ${result}`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("h_28", result);
@@ -1311,12 +1311,12 @@ window.TEUI.SectionModules.sect04 = (function () {
       result = 0;
     }
 
-    console.log(`[S04] calculateH30 DEBUG:
-      Space heating fuel (d_113): '${spaceHeatingFuel}'
-      Water heating fuel (d_51): '${waterHeatingFuel}'
-      Water oil volume (k_54): ${waterOilVolume}
-      Space oil volume (f_115): ${spaceOilVolume}
-      Final H30 result: ${result}`);
+    // console.log(`[S04] calculateH30 DEBUG:
+    //   Space heating fuel (d_113): '${spaceHeatingFuel}'
+    //   Water heating fuel (d_51): '${waterHeatingFuel}'
+    //   Water oil volume (k_54): ${waterOilVolume}
+    //   Space oil volume (f_115): ${spaceOilVolume}
+    //   Final H30 result: ${result}`);
 
     // ✅ PATTERN A: Always use setCalculatedValue - function override handles routing
     setCalculatedValue("h_30", result);
@@ -1520,12 +1520,12 @@ window.TEUI.SectionModules.sect04 = (function () {
 
       // ✅ DUAL-ENGINE: Calculate Target model
       ModeManager.currentMode = "target";
-      console.log("[S04] Calculating Target model");
+      // console.log("[S04] Calculating Target model");
       calculateTargetModel();
 
       // ✅ DUAL-ENGINE: Calculate Reference model
       ModeManager.currentMode = "reference";
-      console.log("[S04] Calculating Reference model");
+      // console.log("[S04] Calculating Reference model");
       calculateReferenceModel();
 
       // Restore original mode
@@ -1552,7 +1552,7 @@ window.TEUI.SectionModules.sect04 = (function () {
     calculateRow34(); // Annual Percapita Energy
     calculateRow35(); // Primary Energy
 
-    console.log("[S04] Target model calculations complete");
+    // console.log("[S04] Target model calculations complete");
   }
 
   /**

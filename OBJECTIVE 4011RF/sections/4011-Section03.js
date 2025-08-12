@@ -1297,7 +1297,7 @@ window.TEUI.SectionModules.sect03 = (function () {
    * Stores results with ref_ prefix for downstream sections (S15, S14, etc.)
    */
   function calculateReferenceModel() {
-    console.log("[Section03] Running Reference Model calculations...");
+    // console.log("[Section03] Running Reference Model calculations...");
 
     try {
       // Force Reference mode temporarily to get Reference calculations
@@ -1320,7 +1320,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       console.error("Error during Section 03 calculateReferenceModel:", error);
     }
 
-    console.log("[Section03] Reference Model calculations complete");
+    // console.log("[Section03] Reference Model calculations complete");
   }
 
   /**
@@ -1883,7 +1883,7 @@ window.TEUI.SectionModules.sect03 = (function () {
       provinceSelect.appendChild(option);
     });
 
-    console.log("S03: Populated province dropdown with options:", provinces);
+    // console.log("S03: Populated province dropdown with options:", provinces);
 
     // Set default province from current state
     const defaultProvince = DualState.getValue("d_19") || "ON";
@@ -1939,7 +1939,7 @@ window.TEUI.SectionModules.sect03 = (function () {
 
     // 4. Ensure ClimateData is available before proceeding
     ClimateDataService.ensureAvailable(function () {
-      console.log("S03: ClimateData available - initializing dropdowns");
+      // console.log("S03: ClimateData available - initializing dropdowns");
 
       // Populate province dropdown
       populateProvinceDropdown();

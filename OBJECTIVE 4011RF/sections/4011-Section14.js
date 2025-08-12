@@ -997,7 +997,7 @@ window.TEUI.SectionModules.sect14 = (function () {
    * Stores results with ref_ prefix to keep separate from Target values
    */
   function calculateReferenceModel() {
-    console.log("[S14 DEBUG] 🔄 Running Reference Model calculations...");
+    // console.log("[S14 DEBUG] 🔄 Running Reference Model calculations...");
 
     try {
       // Get Reference values from upstream sections with debugging

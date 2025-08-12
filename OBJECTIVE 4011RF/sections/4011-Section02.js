@@ -798,7 +798,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     };
 
     // ✅ DEBUG: Log critical h_15 value to verify it's being stored
-    console.log(`🔵 [S02] DEBUG: ReferenceState h_15 = "${ReferenceState.getValue("h_15")}" → storing as ref_h_15`);
+    // console.log(`🔵 [S02] DEBUG: ReferenceState h_15 = "${ReferenceState.getValue("h_15")}" → storing as ref_h_15`);
 
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
@@ -1591,7 +1591,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     saveState: function () {
       try {
         localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S02: Saved Target state to localStorage`);
+        // console.log(`S02: Saved Target state to localStorage`);
       } catch (error) {
         console.warn(`S02: Error saving Target state:`, error);
       }
@@ -1662,7 +1662,7 @@ window.TEUI.SectionModules.sect02 = (function () {
     saveState: function () {
       try {
         localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S02: Saved Reference state to localStorage`);
+        // console.log(`S02: Saved Reference state to localStorage`);
       } catch (error) {
         console.warn(`S02: Error saving Reference state:`, error);
       }
@@ -1735,7 +1735,7 @@ window.TEUI.SectionModules.sect02 = (function () {
         );
       }
 
-      console.log(`S02: Pattern A initialization complete.`);
+      // console.log(`S02: Pattern A initialization complete.`);
     },
 
     // Switch between Target and Reference modes with UI refresh only
@@ -1796,7 +1796,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (referenceStandardDropdown && d13Value) {
         referenceStandardDropdown.value = d13Value;
         console.log(
-          `[S02] Updated d_13 dropdown = "${d13Value}" (${this.currentMode} mode)`,
+          // `[S02] Updated d_13 dropdown = "${d13Value}" (${this.currentMode} mode)`,
         );
       }
 
@@ -1808,7 +1808,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (carbonStandardDropdown && d15Value) {
         carbonStandardDropdown.value = d15Value;
         console.log(
-          `[S02] Updated d_15 dropdown = "${d15Value}" (${this.currentMode} mode)`,
+          // `[S02] Updated d_15 dropdown = "${d15Value}" (${this.currentMode} mode)`,
         );
       }
 
@@ -1820,7 +1820,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (majorOccupancyDropdown && d12Value) {
         majorOccupancyDropdown.value = d12Value;
         console.log(
-          `[S02] Updated d_12 dropdown = "${d12Value}" (${this.currentMode} mode)`,
+          // `[S02] Updated d_12 dropdown = "${d12Value}" (${this.currentMode} mode)`,
         );
       }
 
@@ -1832,7 +1832,7 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (actualTargetDropdown && d14Value) {
         actualTargetDropdown.value = d14Value;
         console.log(
-          `[S02] Updated d_14 dropdown = "${d14Value}" (${this.currentMode} mode)`,
+          // `[S02] Updated d_14 dropdown = "${d14Value}" (${this.currentMode} mode)`,
         );
       }
 
@@ -1900,7 +1900,7 @@ window.TEUI.SectionModules.sect02 = (function () {
      * This updates DOM elements to show calculated values from StateManager
      */
     updateCalculatedDisplayValues: function () {
-      console.log(`🔄 [S02] updateCalculatedDisplayValues: mode=${this.currentMode}`);
+      // console.log(`🔄 [S02] updateCalculatedDisplayValues: mode=${this.currentMode}`);
       
       // Update calculated fields to show values for current mode
       const calculatedFields = ["d_16"]; // Embodied Carbon Target
@@ -1920,7 +1920,7 @@ window.TEUI.SectionModules.sect02 = (function () {
               : (window.TEUI.formatNumber ? window.TEUI.formatNumber(value, "number-2dp-comma") : value);
             
             element.textContent = formattedValue;
-            console.log(`[S02] Updated calculated field ${fieldId} = "${formattedValue}" (${this.currentMode} mode)`);
+            // console.log(`[S02] Updated calculated field ${fieldId} = "${formattedValue}" (${this.currentMode} mode)`);
           }
         }
       });

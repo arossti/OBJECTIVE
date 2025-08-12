@@ -152,7 +152,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         const saved = localStorage.getItem(this.storageKey);
         if (saved) {
           this.data = JSON.parse(saved);
-          console.log(`S15: Loaded Target state from localStorage`);
+          // console.log(`S15: Loaded Target state from localStorage`);
         }
       } catch (error) {
         console.warn(`S15: Error loading Target state:`, error);
@@ -164,7 +164,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     saveState: function () {
       try {
         localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S15: Saved Target state to localStorage`);
+        // console.log(`S15: Saved Target state to localStorage`);
       } catch (error) {
         console.warn(`S15: Error saving Target state:`, error);
       }
@@ -186,7 +186,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Set default values for Target calculations
     setDefaults: function () {
       // S15 is mostly calculated values, minimal defaults needed
-      console.log(`S15: Target defaults set`);
+      // console.log(`S15: Target defaults set`);
     },
   };
 
@@ -203,7 +203,7 @@ window.TEUI.SectionModules.sect15 = (function () {
         const saved = localStorage.getItem(this.storageKey);
         if (saved) {
           this.data = JSON.parse(saved);
-          console.log(`S15: Loaded Reference state from localStorage`);
+          // console.log(`S15: Loaded Reference state from localStorage`);
         }
       } catch (error) {
         console.warn(`S15: Error loading Reference state:`, error);
@@ -215,7 +215,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     saveState: function () {
       try {
         localStorage.setItem(this.storageKey, JSON.stringify(this.data));
-        console.log(`S15: Saved Reference state to localStorage`);
+        // console.log(`S15: Saved Reference state from localStorage`);
       } catch (error) {
         console.warn(`S15: Error saving Reference state:`, error);
       }
@@ -237,7 +237,7 @@ window.TEUI.SectionModules.sect15 = (function () {
     // Set default values for Reference calculations
     setDefaults: function () {
       // S15 is mostly calculated values, minimal defaults needed
-      console.log(`S15: Reference defaults set`);
+      // console.log(`S15: Reference defaults set`);
     },
   };
 
@@ -254,7 +254,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       TargetState.setDefaults();
       ReferenceState.setDefaults();
 
-      console.log(`S15: Pattern A initialization complete.`);
+      // console.log(`S15: Pattern A initialization complete.`);
     },
 
     // Switch between Target and Reference modes
@@ -265,7 +265,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       }
 
       this.currentMode = mode;
-      console.log(`S15: Switched to ${mode.toUpperCase()} mode`);
+      // console.log(`S15: Switched to ${mode.toUpperCase()} mode`);
 
       // Refresh UI for new mode
       this.refreshUI();
@@ -302,7 +302,7 @@ window.TEUI.SectionModules.sect15 = (function () {
       // Update calculated display values
       this.updateCalculatedDisplayValues();
 
-      console.log(`S15: UI refreshed for ${this.currentMode} mode`);
+      // console.log(`S15: UI refreshed for ${this.currentMode} mode`);
     },
 
     // Update calculated field displays based on current mode

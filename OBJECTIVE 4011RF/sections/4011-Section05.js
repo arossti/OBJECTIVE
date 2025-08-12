@@ -870,7 +870,7 @@ window.TEUI.SectionModules.sect05 = (function () {
       calculate_d_41(true);
       calculatePercentages(true);
       
-      console.log("[S05] Reference model calculations complete");
+      // console.log("[S05] Reference model calculations complete");
     } catch (error) {
       console.error("[S05] Error in Reference Model calculations:", error);
     }
@@ -894,7 +894,7 @@ window.TEUI.SectionModules.sect05 = (function () {
       calculate_d_41(false);
       calculatePercentages(false);
       
-      console.log("[S05] Target model calculations complete");
+      // console.log("[S05] Target model calculations complete");
     } catch (error) {
       console.error("[S05] Error in Target Model calculations:", error);
     }
@@ -904,10 +904,10 @@ window.TEUI.SectionModules.sect05 = (function () {
    * ✅ DUAL-ENGINE: Always run both engines in parallel
    */
   function calculateAll() {
-    console.log("[S05] Running dual-engine calculations...");
+    // console.log("[S05] Running dual-engine calculations...");
     calculateTargetModel();    // Stores unprefixed values in StateManager
     calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
-    console.log("[S05] Dual-engine calculations complete");
+    // console.log("[S05] Dual-engine calculations complete");
   }
 
   //==========================================================================
@@ -1108,7 +1108,7 @@ window.TEUI.SectionModules.sect05 = (function () {
    * This is a good place to initialize values and run initial calculations
    */
   function onSectionRendered() {
-    console.log("S05: Pattern A initialization starting...");
+    // console.log("S05: Pattern A initialization starting...");
 
     // 1. Initialize dual-state architecture
     ModeManager.initialize();
@@ -1128,7 +1128,7 @@ window.TEUI.SectionModules.sect05 = (function () {
     // 6. Update DOM with calculated values
     ModeManager.updateCalculatedDisplayValues();
 
-    console.log("S05: Pattern A initialization complete.");
+    // console.log("S05: Pattern A initialization complete.");
   }
 
   //==========================================================================

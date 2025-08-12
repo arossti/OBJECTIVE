@@ -524,7 +524,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       calculateGreenNaturalGasEnergy(true);
       calculateOffsiteRenewable(true);
 
-      console.log("[S06] Reference model calculations complete");
+      // console.log("[S06] Reference model calculations complete");
     } catch (error) {
       console.error("[S06] Error in Reference Model calculations:", error);
     }
@@ -540,7 +540,7 @@ window.TEUI.SectionModules.sect06 = (function () {
       calculateGreenNaturalGasEnergy(false);
       calculateOffsiteRenewable(false);
 
-      console.log("[S06] Target model calculations complete");
+      // console.log("[S06] Target model calculations complete");
     } catch (error) {
       console.error("[S06] Error in Target Model calculations:", error);
     }
@@ -550,10 +550,10 @@ window.TEUI.SectionModules.sect06 = (function () {
    * ✅ DUAL-ENGINE: Always run both engines in parallel
    */
   function calculateAll() {
-    console.log("[S06] Running dual-engine calculations...");
+    // console.log("[S06] Running dual-engine calculations...");
     calculateTargetModel(); // Stores unprefixed values in StateManager
     calculateReferenceModel(); // Stores ref_ prefixed values in StateManager
-    console.log("[S06] Dual-engine calculations complete");
+    // console.log("[S06] Dual-engine calculations complete");
   }
 
   //==========================================================================

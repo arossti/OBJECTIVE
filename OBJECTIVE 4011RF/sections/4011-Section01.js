@@ -902,17 +902,17 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     calculationInProgress = true;
     
-    console.log("🚀 [S01] =================================");
-    console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
-    console.log("🚀 [S01] =================================");
+    // console.log("🚀 [S01] =================================");
+    // console.log("🚀 [S01] PURE DISPLAY CONSUMER TRIGGERED");
+    // console.log("🚀 [S01] =================================");
 
     try {
       // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
       updateTEUIDisplay(); // Calculates all values and updates display
       updateTitleModeIndicators(); // Update mode indicators
       
-      console.log("✅ [S01] PURE DISPLAY CONSUMER COMPLETE");
-      console.log("🚀 [S01] =================================");
+      // console.log("✅ [S01] PURE DISPLAY CONSUMER COMPLETE");
+      // console.log("🚀 [S01] =================================");
     } finally {
       calculationInProgress = false;
     }
@@ -986,11 +986,11 @@ window.TEUI.SectionModules.sect01 = (function () {
           // Only recalculate if the value actually changed
           if (newValue !== oldValue) {
             if (fieldId === "j_32") {
-              console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H`);
+              // console.log(`🟢 [S01] TARGET ENERGY LISTENER: j_32 changed from ${oldValue} to ${newValue} → will update TARGET COLUMN H`);
             } else if (fieldId === "ref_j_32") {
-              console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
+              // console.log(`🔵 [S01] REFERENCE ENERGY LISTENER: ref_j_32 changed from ${oldValue} to ${newValue} → will update REFERENCE COLUMN E`);
             } else {
-              console.log(`📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`);
+              // console.log(`📡 [S01] Listener triggered: ${fieldId} changed from ${oldValue} to ${newValue}`);
             }
             
             if (fieldId === "g_32") {
