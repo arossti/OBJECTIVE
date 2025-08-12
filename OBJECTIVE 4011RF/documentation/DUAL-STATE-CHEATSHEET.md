@@ -553,12 +553,142 @@ const referenceResults = {
 
 ---
 
+---
+
+## 🚨 **PHASE E: STATE MIXING DIAGNOSIS & REPAIR**
+
+### **CRITICAL ISSUE: State Contamination**
+
+**Problem**: Perfect state isolation is NOT achieved. Reference mode changes contaminate Target values, and Target mode changes incorrectly trigger Reference updates.
+
+**Evidence**: Target TEUI `h_10` changes from `93.6` (correct heatpump) to `154.3` (electricity) when ONLY Reference mode edits are made.
+
+### **Live Contamination Detection Tools**
+
+```bash
+# State bleeding detection
+grep -r "|| targetValue\|refValue || target" sections/
+
+# Missing mode-aware calculations
+grep -r "getNumericValue.*d_113\|getValue.*d_113" sections/
+# Should be: TargetState.getValue() vs ReferenceState.getValue()
+
+# Cross-contamination in storage
+grep -r "StateManager.setValue.*j_32\|StateManager.setValue.*k_32" sections/
+# Verify: Target engines write unprefixed, Reference engines write ref_ prefixed
+
+# ComponentBridge interference (should be disabled)
+grep -r "ComponentBridge\|initDualStateSync" *.js *.html
+```
+
+### **Known State Mixing Patterns**
+
+#### **Pattern 1: Target Contamination During Reference Operations**
+**Evidence from Logs:**
+```
+h_10=93.6 (✅ CORRECT - Target at heatpump default)
+j_32 changed from 133574... to 220216... (❌ CONTAMINATION - Target changing during Reference op)  
+h_10=154.3 (❌ CONTAMINATED - Target TEUI showing electricity values)
+```
+
+**Root Cause**: Target calculation engines reading UI mode instead of their dedicated state objects.
+
+**Fix Pattern**:
+```javascript
+// ❌ WRONG - Mode-contaminated reading:
+const fuelType = getNumericValue("d_113"); // Uses UI mode
+
+// ✅ CORRECT - Dedicated state reading:
+const fuelType = TargetState.getValue("d_113");    // Target engine
+const refFuelType = ReferenceState.getValue("d_113"); // Reference engine
+```
+
+#### **Pattern 2: Missing Mode-Aware Storage**
+**Evidence**: Reference calculations work but don't store `ref_` prefixed results for downstream sections.
+
+**Detection**: 
+```bash
+# Check if Reference engines store ref_ values
+grep -A 10 "calculateReferenceModel" sections/Section*.js | grep "ref_"
+```
+
+**Fix Pattern**:
+```javascript
+// Add to calculateReferenceModel():
+function storeReferenceResults() {
+  const referenceResults = {
+    ref_j_32: ReferenceState.getValue("j_32") || 0,
+    ref_k_32: ReferenceState.getValue("k_32") || 0,
+    ref_h_10: /* calculated Reference TEUI */
+  };
+  
+  Object.entries(referenceResults).forEach(([key, value]) => {
+    window.TEUI.StateManager.setValue(key, value.toString(), "calculated");
+  });
+}
+```
+
+### **Component Architecture Issues**
+
+#### **ComponentBridge Contamination** 
+**Status**: ComponentBridge.js should be DISABLED (commented out in index.html and Calculator.js)
+**Problem**: Incompatible with Pattern A dual-state architecture
+**Fix**: Verify initialization is commented out:
+```html
+<!-- DISABLED: ComponentBridge incompatible with dual-state -->
+<!-- <script src="4011-ComponentBridge.js"></script> -->
+```
+
+#### **Calculation Storm Prevention**
+**Problem**: Recursive listener loops causing performance issues
+**Solution**: Global calculation lock implemented in Calculator.js:
+```javascript
+window.TEUI.isCalculating = false; // Traffic cop flag
+```
+
+### **Systematic State Mixing Repair Protocol**
+
+#### **Step 1: Identify Contaminated Section**
+1. Run live detection tools above
+2. Check logs for `j_32`, `k_32`, `h_10` changes during Reference operations
+3. Focus on sections that write these global summary values (S04, S15)
+
+#### **Step 2: Make Calculations Mode-Aware**
+1. **Target engines**: Use `TargetState.getValue()` for inputs
+2. **Reference engines**: Use `ReferenceState.getValue()` for inputs  
+3. **Never use**: `getNumericValue()` or `ModeManager.getValue()` in calculation engines
+
+#### **Step 3: Fix Storage Operations**
+1. **Target engines**: Write to unprefixed StateManager keys (`j_32`, `k_32`)
+2. **Reference engines**: Write to `ref_` prefixed keys (`ref_j_32`, `ref_k_32`)
+3. **Add missing**: `storeReferenceResults()` function if section affects downstream calculations
+
+#### **Step 4: Validate State Isolation**
+**Test Sequence**:
+1. Load app with defaults → Note Target TEUI (`h_10`)
+2. Switch to Reference mode → Change fuel type in S13
+3. **Expected**: Target TEUI stays unchanged, Reference TEUI updates
+4. **Failure**: Target TEUI changes = contamination still exists
+
+### **Success Criteria for State Isolation**
+✅ **Perfect State Isolation**: Reference changes NEVER affect Target values  
+✅ **Target Stability**: `h_10` stays at defaults during Reference operations  
+✅ **Reference Functionality**: Values update correctly from `ref_` prefixed data  
+✅ **No ComponentBridge**: Disabled and commented out
+✅ **Performance**: No calculation storms or excessive logging
+
+---
+
 🛑 **FINAL REMINDER FOR AI AGENTS** 🛑
+
+**MANDATORY ORDER**: 
+1. **Preventative QA/QC** (Phases A-D above) for new refactors
+2. **Diagnostic Repair** (Phase E above) for existing contamination issues
 
 **IF ANY STEP FAILS**: Go back to the longer, more complete DUAL-STATE-IMPLEMENTATION-GUIDE.md and follow the patterns exactly as documented. Do NOT improvise or "fix" things differently than shown.
 
 **SUCCESS CRITERIA**: User can change dropdowns and see calculated fields update immediately in the DOM. Both Target and Reference modes work without state contamination.
 
-**FAILURE MODES**: "DOM not updating", "values stuck at old values", "both engines running on mode switch" = You didn't follow the documented patterns.
+**FAILURE MODES**: "DOM not updating", "values stuck at old values", "both engines running on mode switch", "state contamination" = You didn't follow the documented patterns.
 
-**NEW SYSTEMATIC APPROACH**: Use the QA/QC Framework above to prevent field-by-field debugging cycles.
+**STATE MIXING PRIORITY**: If state contamination exists, fix that FIRST before any new features or refactors.
