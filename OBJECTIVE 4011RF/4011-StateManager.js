@@ -1140,9 +1140,9 @@ TEUI.StateManager = (function () {
 
       // Check if the exact standard exists
       const exactMatch = window.TEUI.ReferenceValues[standardKey];
-      console.log("[StateManager] Exact match found?", !!exactMatch);
+      // console.log("[StateManager] Exact match found?", !!exactMatch);
       if (exactMatch) {
-        console.log("[StateManager] Standard data:", exactMatch);
+        // console.log("[StateManager] Standard data:", exactMatch);
         console.log(
           "[StateManager] d_53 in standard?",
           Object.prototype.hasOwnProperty.call(exactMatch, "d_53"),
@@ -1163,7 +1163,7 @@ TEUI.StateManager = (function () {
         : undefined;
 
     if (standardOverrideData) {
-      console.log("[StateManager] Found standard override data, applying...");
+      // console.log("[StateManager] Found standard override data, applying...");
       Object.keys(standardOverrideData).forEach((fieldId) => {
         console.log(
           `[StateManager] Checking field: ${fieldId}, value: ${standardOverrideData[fieldId]}`,
@@ -1363,11 +1363,11 @@ TEUI.StateManager = (function () {
           "info",
         );
       }
-      console.log("[StateManager] System refresh completed.");
+      // console.log("[StateManager] System refresh completed.");
       return;
     }
 
-    console.log("[StateManager] Reverting to last imported state...");
+    // console.log("[StateManager] Reverting to last imported state...");
     let revertedCount = 0;
 
     Object.entries(lastImportedState).forEach(([fieldId, importedValue]) => {

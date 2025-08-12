@@ -560,7 +560,7 @@ window.TEUI.SectionModules.sect01 = (function () {
    * ✅ NO STORAGE: Direct read → calculate → display
    */
   function updateTEUIDisplay() {
-    console.log("🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...");
+    // console.log("🎯 [S01] PURE DISPLAY CONSUMER: Starting Excel-compliant calculations...");
     
     const useType = window.TEUI.StateManager?.getValue("d_14") || "Targeted Use";
     const isUtilityMode = useType === "Utility Bills";
@@ -586,10 +586,10 @@ window.TEUI.SectionModules.sect01 = (function () {
     const actualEnergy = getGlobalNumericValue("f_32") || 0;  // From S04 Actual
     const actualEmissions = getGlobalNumericValue("g_32") || 0;  // From S04 Actual
 
-    console.log(`🔵 [S01] Upstream Reference: refEnergy=${refEnergy} (from ref_j_32), refEmissions=${refEmissions}, refEmbodiedCarbon=${refEmbodiedCarbon}`);
-    console.log(`🟢 [S01] Upstream Target: targetEnergy=${targetEnergy} (from j_32), targetEmissions=${targetEmissions}, embodiedCarbon=${embodiedCarbon}`);
-    console.log(`🟡 [S01] Upstream Actual: actualEnergy=${actualEnergy}, actualEmissions=${actualEmissions}`);
-    console.log(`🎯 [S01] Building: targetArea=${targetArea}, referenceArea=${referenceArea}, serviceLife=${serviceLife}, refServiceLife=${refServiceLife}, useType=${useType}`);
+    // console.log(`🔵 [S01] Upstream Reference: refEnergy=${refEnergy} (from ref_j_32), refEmissions=${refEmissions}, refEmbodiedCarbon=${refEmbodiedCarbon}`);
+    // console.log(`🟢 [S01] Upstream Target: targetEnergy=${targetEnergy} (from j_32), targetEmissions=${targetEmissions}, embodiedCarbon=${embodiedCarbon}`);
+    // console.log(`🟡 [S01] Upstream Actual: actualEnergy=${actualEnergy}, actualEmissions=${actualEmissions}`);
+    // console.log(`🎯 [S01] Building: targetArea=${targetArea}, referenceArea=${referenceArea}, serviceLife=${serviceLife}, refServiceLife=${refServiceLife}, useType=${useType}`);
 
     // ========================================
     // COLUMN E (REFERENCE): Excel-compliant calculations
@@ -634,9 +634,9 @@ window.TEUI.SectionModules.sect01 = (function () {
       k_6 = serviceLife > 0 ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10 : 0;
     }
 
-    console.log(`🔵 [S01] CALCULATED Reference COLUMN E: e_10=${e_10}, e_8=${e_8}, e_6=${e_6}`);
-    console.log(`🟢 [S01] CALCULATED Target COLUMN H: h_10=${h_10}, h_8=${h_8}, h_6=${h_6}`);
-    console.log(`🟡 [S01] CALCULATED Actual COLUMN K: k_10=${k_10}, k_8=${k_8}, k_6=${k_6}`);
+    // console.log(`🔵 [S01] CALCULATED Reference COLUMN E: e_10=${e_10}, e_8=${e_8}, e_6=${e_6}`);
+    // console.log(`🟢 [S01] CALCULATED Target COLUMN H: h_10=${h_10}, h_8=${h_8}, h_6=${h_6}`);
+    // console.log(`🟡 [S01] CALCULATED Actual COLUMN K: k_10=${k_10}, k_8=${k_8}, k_6=${k_6}`);
 
     // ========================================
     // DISPLAY: Format and animate - NO STORAGE
@@ -713,7 +713,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     updateAllGauges();
     checkTargetExceedsReference();
     
-    console.log("✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed");
+    // console.log("✅ [S01] PURE DISPLAY CONSUMER: All values calculated and displayed");
   }
 
   function updateAllGauges() {

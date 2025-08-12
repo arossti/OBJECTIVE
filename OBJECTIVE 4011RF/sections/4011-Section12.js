@@ -1349,7 +1349,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     const useRef = !!isReferenceCalculation;
     if (useRef) {
-      console.log("[S12] U-agg PASS: Reference calculation running");
+      // console.log("[S12] U-agg PASS: Reference calculation running");
     }
     const g85 = getUValueFromS11("85", useRef);
     const g86 = getUValueFromS11("86", useRef);
@@ -1822,13 +1822,13 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateAll() {
-    console.log("[Section12] Running dual-engine calculations...");
+    // console.log("[Section12] Running dual-engine calculations...");
 
     // ✅ ALWAYS run BOTH engines in parallel (corrected from wrong mode-aware approach)
     calculateReferenceModel(); // Reads ReferenceState → stores ref_ prefixed
     calculateTargetModel(); // Reads TargetState → stores unprefixed
 
-    console.log("[Section12] Dual-engine calculations complete");
+    // console.log("[Section12] Dual-engine calculations complete");
     // Always refresh displayed calculated values after a calculation pass
     ModeManager.updateCalculatedDisplayValues?.();
   }
@@ -1838,7 +1838,7 @@ window.TEUI.SectionModules.sect12 = (function () {
    * Uses Reference state values for section-local inputs
    */
   function calculateReferenceModel() {
-    console.log("[Section12] Running Reference Model calculations...");
+    // console.log("[Section12] Running Reference Model calculations...");
 
     try {
       // ✅ DUAL-ENGINE: Calculate all metrics using Reference state values
@@ -1867,7 +1867,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       console.error("Error during Section 12 calculateReferenceModel:", error);
     }
 
-    console.log("[Section12] Reference Model calculations complete");
+    // console.log("[Section12] Reference Model calculations complete");
   }
 
   /**
@@ -1899,7 +1899,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           "calculated",
         );
         if (fieldId === "g_101" || fieldId === "g_102") {
-          console.log(`[S12] Stored ref_${fieldId}=${value}`);
+          // console.log(`[S12] Stored ref_${fieldId}=${value}`);
         }
       }
     });
@@ -1914,7 +1914,7 @@ window.TEUI.SectionModules.sect12 = (function () {
    * Uses Target state values for section-local inputs
    */
   function calculateTargetModel() {
-    console.log("[Section12] Running Target Model calculations...");
+    // console.log("[Section12] Running Target Model calculations...");
 
     try {
       // ✅ DUAL-ENGINE: Calculate all metrics using Target state values
@@ -1934,7 +1934,7 @@ window.TEUI.SectionModules.sect12 = (function () {
       console.error("Error during Section 12 calculateTargetModel:", error);
     }
 
-    console.log("[Section12] Target Model calculations complete");
+    // console.log("[Section12] Target Model calculations complete");
   }
 
   //==========================================================================
@@ -2218,11 +2218,11 @@ window.TEUI.SectionModules.sect12 = (function () {
     ];
     // Ensure both Target and Reference TB% changes trigger S12
     window.TEUI.StateManager.addListener("d_97", (newValue) => {
-      console.log(`[S12] Listener: d_97 changed → recalc`);
+      // console.log(`[S12] Listener: d_97 changed → recalc`);
       calculateAll();
     });
     window.TEUI.StateManager.addListener("ref_d_97", (newValue) => {
-      console.log(`[S12] Listener: ref_d_97 changed → recalc`);
+      // console.log(`[S12] Listener: ref_d_97 changed → recalc`);
       calculateAll();
     });
 
