@@ -1956,5 +1956,8 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Public API for cost field formatting
     syncCostFieldDisplays: syncCostFieldDisplays,
+
+    // ✅ PATTERN A: Expose ModeManager for dual-state routing
+    ModeManager: ModeManager,
   };
 })();
