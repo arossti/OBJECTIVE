@@ -245,6 +245,31 @@ TEUI.StateManager = (function () {
     try {
       localStorage.removeItem("TEUI_Calculator_State");
       console.log("TEUI StateManager: Cleared state from localStorage");
+
+      // ✅ NEW: Explicitly clear all dual-state section storage keys
+      const dualStateKeys = [
+        "S02_TARGET_STATE", "S02_REFERENCE_STATE",
+        "S03_TARGET_STATE", "S03_REFERENCE_STATE",
+        "S04_TARGET_STATE", "S04_REFERENCE_STATE",
+        "S05_TARGET_STATE", "S05_REFERENCE_STATE",
+        "S06_TARGET_STATE", "S06_REFERENCE_STATE",
+        "S07_TARGET_STATE", "S07_REFERENCE_STATE",
+        "S08_TARGET_STATE", "S08_REFERENCE_STATE",
+        "S09_TARGET_STATE", "S09_REFERENCE_STATE",
+        "S10_TARGET_STATE", "S10_REFERENCE_STATE",
+        "S11_TARGET_STATE", "S11_REFERENCE_STATE",
+        "S12_TARGET_STATE", "S12_REFERENCE_STATE",
+        "S13_TARGET_STATE", "S13_REFERENCE_STATE",
+        "S14_TARGET_STATE", "S14_REFERENCE_STATE",
+        "S15_TARGET_STATE", "S15_REFERENCE_STATE"
+      ];
+
+      dualStateKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`Global Reset: Cleared ${key}`);
+      });
+      console.log("Global Reset: All dual-state localStorage cleared.");
+
     } catch (e) {
       console.error("TEUI StateManager: Failed to clear localStorage:", e);
     }
