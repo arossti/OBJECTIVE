@@ -921,10 +921,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
 
-    console.log(
-      `[S02] Carbon standard changed to: ${selectedValue} (${ModeManager.currentMode} mode)`,
-    );
-
     // Recalculate all values
     calculateAll();
     // Update DOM with new calculated values
@@ -946,10 +942,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
     // This ensures user changes persist when toggling between modes
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
-
-    console.log(
-      `[S02] Major occupancy changed to: ${selectedValue} (${ModeManager.currentMode} mode)`,
-    );
 
     // Recalculate all values after occupancy change
     calculateAll();
@@ -973,10 +965,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     // This ensures user changes persist when toggling between modes
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
 
-    console.log(
-      `[S02] Actual/Target use changed to: ${selectedValue} (${ModeManager.currentMode} mode)`,
-    );
-
     // Recalculate all values after use type change
     calculateAll();
     // Update DOM with new calculated values
@@ -998,10 +986,6 @@ window.TEUI.SectionModules.sect02 = (function () {
     // ✅ CRITICAL FIX: Save to current state (Target or Reference) via ModeManager
     // This ensures user changes persist when toggling between modes
     ModeManager.setValue(fieldId, selectedValue, "user-modified");
-
-    console.log(
-      `[S02] Building code changed to: ${selectedValue} (${ModeManager.currentMode} mode)`,
-    );
 
     // Recalculate all values after building code change
     calculateAll();
@@ -1711,33 +1695,16 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Initialize the mode manager
     initialize: function () {
-      // ✅ CRITICAL: Set defaults BEFORE loading state (so loadState can override)
-      TargetState.setDefaults();
-      ReferenceState.setDefaults();
-      TargetState.loadState();
-      ReferenceState.loadState();
-
-      // ✅ CRITICAL FIX: Store default energy costs in StateManager for downstream sections
-      if (window.TEUI?.StateManager) {
-        const energyCosts = {
-          l_12: "0.1300", // Electricity $/kWh
-          l_13: "0.5070", // Gas $/m³
-          l_14: "1.6200", // Propane $/kg
-          l_15: "180.00", // Wood $/m³
-          l_16: "1.5000", // Oil $/litre
-        };
-
-        Object.entries(energyCosts).forEach(([fieldId, value]) => {
-          window.TEUI.StateManager.setValue(fieldId, value, "default");
-        });
-
-        console.log(
-          `[S02] Stored default energy costs in StateManager:`,
-          energyCosts,
-        );
+      const savedState = localStorage.getItem("S02_TARGET_STATE");
+      if (savedState) {
+        try {
+          this.state = JSON.parse(savedState);
+        } catch (e) {
+          this.setDefaults();
+        }
+      } else {
+        this.setDefaults();
       }
-
-      // console.log(`S02: Pattern A initialization complete.`);
     },
 
     // Switch between Target and Reference modes with UI refresh only
@@ -1797,10 +1764,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d13Value = currentState.getValue("d_13");
       if (referenceStandardDropdown && d13Value) {
         referenceStandardDropdown.value = d13Value;
-        console
-          .log
-          // `[S02] Updated d_13 dropdown = "${d13Value}" (${this.currentMode} mode)`,
-          ();
       }
 
       // ✅ S03 PATTERN: Update Carbon Standard dropdown using specific selector
@@ -1810,10 +1773,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d15Value = currentState.getValue("d_15");
       if (carbonStandardDropdown && d15Value) {
         carbonStandardDropdown.value = d15Value;
-        console
-          .log
-          // `[S02] Updated d_15 dropdown = "${d15Value}" (${this.currentMode} mode)`,
-          ();
       }
 
       // ✅ CRITICAL FIX: Update Major Occupancy dropdown using specific selector
@@ -1823,10 +1782,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d12Value = currentState.getValue("d_12");
       if (majorOccupancyDropdown && d12Value) {
         majorOccupancyDropdown.value = d12Value;
-        console
-          .log
-          // `[S02] Updated d_12 dropdown = "${d12Value}" (${this.currentMode} mode)`,
-          ();
       }
 
       // ✅ CRITICAL FIX: Update Actual/Target Use dropdown using specific selector
@@ -1836,10 +1791,6 @@ window.TEUI.SectionModules.sect02 = (function () {
       const d14Value = currentState.getValue("d_14");
       if (actualTargetDropdown && d14Value) {
         actualTargetDropdown.value = d14Value;
-        console
-          .log
-          // `[S02] Updated d_14 dropdown = "${d14Value}" (${this.currentMode} mode)`,
-          ();
       }
 
       // ✅ CRITICAL: Update reporting year slider (h_12, displayed as d_1)

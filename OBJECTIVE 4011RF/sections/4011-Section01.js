@@ -984,6 +984,22 @@ window.TEUI.SectionModules.sect01 = (function () {
     // console.log("🚀 [S01] =================================");
 
     try {
+      // [S01DB] Dump upstream dependency snapshot for TEUI chain
+      try {
+        const snapshot = {
+          ref_j_32: window.TEUI?.StateManager?.getValue("ref_j_32"),
+          ref_k_32: window.TEUI?.StateManager?.getValue("ref_k_32"),
+          j_32: window.TEUI?.StateManager?.getValue("j_32"),
+          k_32: window.TEUI?.StateManager?.getValue("k_32"),
+          ref_h_15: window.TEUI?.StateManager?.getValue("ref_h_15"),
+          h_15: window.TEUI?.StateManager?.getValue("h_15"),
+          ref_h_13: window.TEUI?.StateManager?.getValue("ref_h_13"),
+          h_13: window.TEUI?.StateManager?.getValue("h_13"),
+        };
+        console.log("[S01DB] upstream snapshot", snapshot);
+      } catch (e) {
+        console.warn("[S01DB] snapshot failed", e);
+      }
       // ✅ PURE DISPLAY CONSUMER: Single function does all math and display
       updateTEUIDisplay(); // Calculates all values and updates display
       updateTitleModeIndicators(); // Update mode indicators

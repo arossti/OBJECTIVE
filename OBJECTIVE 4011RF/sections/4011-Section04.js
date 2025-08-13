@@ -428,6 +428,17 @@ window.TEUI.SectionModules.sect04 = (function () {
       console.log(
         `[S04] 🔄 Updating calculated display values for ${this.currentMode} mode`,
       );
+      try {
+        const j32 = window.TEUI?.StateManager?.getValue("j_32");
+        const refJ32 = window.TEUI?.StateManager?.getValue("ref_j_32");
+        const k32 = window.TEUI?.StateManager?.getValue("k_32");
+        const refK32 = window.TEUI?.StateManager?.getValue("ref_k_32");
+        console.log(
+          `[S04DB] displayContext mode=${this.currentMode} j_32=${j32} ref_j_32=${refJ32} k_32=${k32} ref_k_32=${refK32}`,
+        );
+      } catch (e) {
+        console.warn("[S04DB] displayContext: read error", e);
+      }
 
       // All calculated fields that S04 produces (BACKUP approach)
       const calculatedFields = [
@@ -1595,6 +1606,17 @@ window.TEUI.SectionModules.sect04 = (function () {
       calculateRow35(); // Primary Energy
 
       console.log("[S04] Reference model calculations complete");
+      try {
+        const refJ32 = window.TEUI?.StateManager?.getValue("ref_j_32");
+        const refK32 = window.TEUI?.StateManager?.getValue("ref_k_32");
+        const tgtJ32 = window.TEUI?.StateManager?.getValue("j_32");
+        const tgtK32 = window.TEUI?.StateManager?.getValue("k_32");
+        console.log(
+          `[S04DB] storeReference: ref_j_32=${refJ32}, ref_k_32=${refK32} | current target j_32=${tgtJ32}, k_32=${tgtK32}`,
+        );
+      } catch (e) {
+        console.warn("[S04DB] storeReference: read-back failed", e);
+      }
     } finally {
       // CRITICAL: Restore original functions
       // eslint-disable-next-line no-func-assign
