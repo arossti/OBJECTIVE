@@ -119,24 +119,14 @@ window.TEUI.SectionModules.sect01 = (function () {
       defaultValue: "0",
       section: "keyValues",
     },
-    h_15: {
-      type: "calculated",
-      label: "Source: Area",
-      defaultValue: "1",
-      section: "keyValues",
-    },
+
     i_41: {
       type: "calculated",
       label: "Source: Embodied Carbon",
       defaultValue: "0",
       section: "keyValues",
     },
-    h_13: {
-      type: "calculated",
-      label: "Source: Service Life",
-      defaultValue: "50",
-      section: "keyValues",
-    },
+
     k_32: {
       type: "calculated",
       label: "Source: Target Emissions",
