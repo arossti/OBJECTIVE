@@ -580,8 +580,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     // Building data from S02 - CRITICAL FIX: Separate Target and Reference areas
     const targetArea = getGlobalNumericValue("h_15") || 1427.2;
     const referenceArea = getGlobalNumericValue("ref_h_15") || 1427.2; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
-    const serviceLife = getGlobalNumericValue("h_13") || 50;
-    const refServiceLife = getGlobalNumericValue("ref_h_13") || 50; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
+    const targetServiceLife = getGlobalNumericValue("h_13") || 50;     // ✅ TARGET BUILDING CONFIG
+    const refServiceLife = getGlobalNumericValue("ref_h_13") || 50;     // ✅ REFERENCE BUILDING CONFIG
     
     // Reference values from upstream sections (S04, S05, S15)
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0; // From S04 Reference
@@ -600,7 +600,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     // console.log(`🔵 [S01] Upstream Reference: refEnergy=${refEnergy} (from ref_j_32), refEmissions=${refEmissions}, refEmbodiedCarbon=${refEmbodiedCarbon}`);
     // console.log(`🟢 [S01] Upstream Target: targetEnergy=${targetEnergy} (from j_32), targetEmissions=${targetEmissions}, embodiedCarbon=${embodiedCarbon}`);
     // console.log(`🟡 [S01] Upstream Actual: actualEnergy=${actualEnergy}, actualEmissions=${actualEmissions}`);
-    // console.log(`🎯 [S01] Building: targetArea=${targetArea}, referenceArea=${referenceArea}, serviceLife=${serviceLife}, refServiceLife=${refServiceLife}, useType=${useType}`);
+    // console.log(`🎯 [S01] Building: targetArea=${targetArea}, referenceArea=${referenceArea}, targetServiceLife=${targetServiceLife}, refServiceLife=${refServiceLife}, useType=${useType}`);
 
     // ========================================
     // COLUMN E (REFERENCE): Excel-compliant calculations
@@ -638,8 +638,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
     // h_6 = i_41 / h_13 + h_8 (Target Lifetime Carbon)
     const h_6 =
-      serviceLife > 0
-        ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10
+      targetServiceLife > 0
+        ? Math.round((embodiedCarbon / targetServiceLife + h_8) * 10) / 10
         : 0;
 
     // ========================================
@@ -662,8 +662,8 @@ window.TEUI.SectionModules.sect01 = (function () {
 
       // k_6 = i_41 / h_13 + k_8 (Actual Lifetime Carbon)
       k_6 =
-        serviceLife > 0
-          ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10
+        targetServiceLife > 0
+          ? Math.round((embodiedCarbon / targetServiceLife + k_8) * 10) / 10
           : 0;
     }
 
@@ -807,8 +807,8 @@ window.TEUI.SectionModules.sect01 = (function () {
     // ✅ PURE CONSUMER: Read upstream values and calculate on-the-fly (same as updateTEUIDisplay)
     const targetArea = getGlobalNumericValue("h_15") || 1427.2;
     const referenceArea = getGlobalNumericValue("ref_h_15") || targetArea;
-    const serviceLife = getGlobalNumericValue("h_13") || 50;
-    const refServiceLife = getGlobalNumericValue("ref_h_13") || serviceLife;
+    const targetServiceLife = getGlobalNumericValue("h_13") || 50;     // ✅ TARGET BUILDING CONFIG
+    const refServiceLife = getGlobalNumericValue("ref_h_13") || 50;     // ✅ REFERENCE BUILDING CONFIG
 
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0;
     const refEmissions = getGlobalNumericValue("ref_k_32") || 0;
@@ -842,8 +842,8 @@ window.TEUI.SectionModules.sect01 = (function () {
         ? Math.round((targetEmissions / targetArea) * 10) / 10
         : 4.7;
     const h_6 =
-      serviceLife > 0
-        ? Math.round((embodiedCarbon / serviceLife + h_8) * 10) / 10
+      targetServiceLife > 0
+        ? Math.round((embodiedCarbon / targetServiceLife + h_8) * 10) / 10
         : 11.7;
 
     let k_10 = 93.1,
@@ -859,8 +859,8 @@ window.TEUI.SectionModules.sect01 = (function () {
           ? Math.round((actualEmissions / targetArea) * 10) / 10
           : 4.8;
       k_6 =
-        serviceLife > 0
-          ? Math.round((embodiedCarbon / serviceLife + k_8) * 10) / 10
+        targetServiceLife > 0
+          ? Math.round((embodiedCarbon / targetServiceLife + k_8) * 10) / 10
           : 11.7;
     }
 
