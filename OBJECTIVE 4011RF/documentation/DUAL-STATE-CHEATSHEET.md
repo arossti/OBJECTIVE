@@ -675,6 +675,96 @@ window.TEUI.isCalculating = false; // Traffic cop flag
 
 ---
 
+## 🚨 **PHASE F: SYSTEMIC FIELDMANAGER CONTAMINATION (CRITICAL)**
+
+### **CRITICAL DISCOVERY: Legacy FieldManager Direct StateManager Writes**
+
+**Date Discovered**: December 2024  
+**Severity**: CRITICAL - Affects entire dual-state architecture  
+**Root Cause**: FieldManager.js bypasses dual-state architecture with direct StateManager writes  
+
+### **🔍 The Problem**
+
+During S02 Reference mode testing, systematic cross-state contamination was discovered:
+
+**Symptoms:**
+- Reference mode slider changes correctly update Reference columns (e_6, e_8) ✅
+- BUT also incorrectly contaminate Target columns (h_6, h_8, k_6, k_8) ❌
+- S05 triggered in Target mode during Reference operations ❌
+- Perfect state isolation violated across entire system ❌
+
+**Root Cause Identified:**
+```
+🚨 [DEBUG] CONTAMINATION! Something wrote h_13=value, source=undefined
+Stack trace: (anonymous) @ 4011-FieldManager.js:861
+```
+
+### **🎯 Architectural Impact**
+
+**FieldManager Legacy Pattern B Contamination:**
+- FieldManager directly writes user input to `StateManager.setValue(fieldId, value)`
+- This bypasses ModeManager dual-state architecture entirely
+- Creates **systematic cross-state bleeding** affecting all dual-state sections
+- Violates Core Principle #3: State Sovereignty
+
+**Evidence:**
+```javascript
+// ❌ WRONG: FieldManager direct StateManager write (Pattern B contamination)
+StateManager.setValue("h_13", userInputValue, "user-modified");
+
+// ✅ CORRECT: Dual-state aware write (Pattern A compliant)  
+ModeManager.setValue("h_13", userInputValue, "user-modified");
+```
+
+### **🔧 Investigation Results**
+
+**Testing Protocol Used:**
+1. **Clean logging environment** (removed 23,000+ log lines)
+2. **Focused h_13 contamination detection** with StateManager interceptor
+3. **ModeManager exonerated** - correctly writes only to `ref_h_13` 
+4. **storeReferenceResults() exonerated** - correctly stores only ref_ prefixed values
+5. **FieldManager.js:861 identified** as systematic contamination source
+
+**Detection Pattern:**
+```
+🔍 [DEBUG] ModeManager.setValue: field=h_13, value=70, mode=reference  
+🔍 [DEBUG] Writing REFERENCE: ref_h_13=70                              ✅ CORRECT
+🔍 [DEBUG] storeReferenceResults BEFORE: h_13=undefined, ref_h_13=70   ✅ CORRECT  
+🚨 [DEBUG] CONTAMINATION! Something wrote h_13=70, source=undefined    ❌ FIELDMANAGER!
+Stack trace: (anonymous) @ 4011-FieldManager.js:861
+```
+
+### **🛠️ Required Fix (Future Implementation)**
+
+**FieldManager Must Be Made Dual-State Aware:**
+
+1. **Remove direct StateManager writes** from FieldManager
+2. **Route all user inputs through section ModeManagers** 
+3. **Respect dual-state architecture** for all slider/input events
+4. **Test across all sections** for systematic contamination elimination
+
+**Pattern Fix:**
+```javascript
+// ❌ CURRENT (Pattern B contamination):
+window.TEUI.StateManager.setValue(fieldId, value, "user-modified");
+
+// ✅ REQUIRED (Pattern A compliant):
+const section = findSectionForField(fieldId);
+section.ModeManager.setValue(fieldId, value, "user-modified");
+```
+
+### **🚨 Codebase Impact Assessment**
+
+**This affects ALL dual-state sections:**
+- Any section with sliders, dropdowns, or editable fields
+- Any user input that goes through FieldManager
+- Cross-section contamination during Reference mode operations
+- State isolation violations throughout the system
+
+**Priority**: **CRITICAL** - Must be fixed before dual-state architecture can be considered stable.
+
+---
+
 🛑 **FINAL REMINDER FOR AI AGENTS** 🛑
 
 **MANDATORY ORDER**: 

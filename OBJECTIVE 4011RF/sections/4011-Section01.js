@@ -582,7 +582,7 @@ window.TEUI.SectionModules.sect01 = (function () {
     const referenceArea = getGlobalNumericValue("ref_h_15") || 1427.2; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
     const serviceLife = getGlobalNumericValue("h_13") || 50;
     const refServiceLife = getGlobalNumericValue("ref_h_13") || 50; // ✅ CRITICAL FIX: Use field definition default, not Target contamination
-
+    
     // Reference values from upstream sections (S04, S05, S15)
     const refEnergy = getGlobalNumericValue("ref_j_32") || 0; // From S04 Reference
     const refEmissions = getGlobalNumericValue("ref_k_32") || 0; // From S04 Reference
@@ -622,6 +622,7 @@ window.TEUI.SectionModules.sect01 = (function () {
       refServiceLife > 0
         ? Math.round((refEmbodiedCarbon / refServiceLife + e_8) * 10) / 10
         : 0;
+
 
     // ========================================
     // COLUMN H (TARGET): Excel-compliant calculations

@@ -586,22 +586,22 @@ window.TEUI.SectionModules.sect02 = (function () {
       if (window.TEUI?.StateManager) {
         window.TEUI.StateManager.setValue(fieldId, value.toString(), fieldType);
       }
+    }
 
-      // Update DOM with formatted value.
-      // Special handling for 'N/A' values - don't try to format them.
-      const formattedValue =
-        value === "N/A"
-          ? "N/A"
-          : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
-            value.toString());
+    // Update DOM with formatted value.
+    // Special handling for 'N/A' values - don't try to format them.
+    const formattedValue =
+      value === "N/A"
+        ? "N/A"
+        : (window.TEUI?.formatNumber?.(value, "number-2dp-comma") ??
+          value.toString());
 
-      const element = document.querySelector(`[data-field-id="${fieldId}"]`);
-      if (element) {
-        if (element.tagName === "SELECT" || element.tagName === "INPUT") {
-          element.value = value;
-        } else {
-          element.textContent = formattedValue;
-        }
+    const element = document.querySelector(`[data-field-id="${fieldId}"]`);
+    if (element) {
+      if (element.tagName === "SELECT" || element.tagName === "INPUT") {
+        element.value = value;
+      } else {
+        element.textContent = formattedValue;
       }
     }
   }
@@ -796,6 +796,8 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_15: ReferenceState.getValue("l_15"), // Propane price
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
+    
+
 
     // ✅ DEBUG: Log critical h_15 value to verify it's being stored
     // console.log(`🔵 [S02] DEBUG: ReferenceState h_15 = "${ReferenceState.getValue("h_15")}" → storing as ref_h_15`);
@@ -1120,11 +1122,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         const newYear = e.target.value;
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_12", newYear, "user-modified");
-        console.log(
-          `[S02] User changed reporting year to: ${newYear} (${ModeManager.currentMode} mode)`,
-        );
+        
         // Recalculate after year change
         calculateAll();
+        
         // Update DOM with new calculated values
         ModeManager.updateCalculatedDisplayValues();
       });
@@ -1148,11 +1149,10 @@ window.TEUI.SectionModules.sect02 = (function () {
         const newServiceLife = e.target.value;
         // ✅ PATTERN A: Save to current state (Target or Reference) via ModeManager
         ModeManager.setValue("h_13", newServiceLife, "user-modified");
-        console.log(
-          `[S02] User changed service life to: ${newServiceLife} (${ModeManager.currentMode} mode)`,
-        );
+        
         // Recalculate after service life change
         calculateAll();
+        
         // Update DOM with new calculated values
         ModeManager.updateCalculatedDisplayValues();
       });
