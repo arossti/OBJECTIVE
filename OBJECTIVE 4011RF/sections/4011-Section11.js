@@ -1355,7 +1355,7 @@ window.TEUI.SectionModules.sect11 = (function () {
         "calculated",
       );
 
-      // Store individual component reference values
+      // Store individual component reference values (calculated results)
       Object.entries(componentResults).forEach(([row, results]) => {
         const rowStr = row.toString();
         window.TEUI.StateManager.setValue(
@@ -1369,6 +1369,40 @@ window.TEUI.SectionModules.sect11 = (function () {
           "calculated",
         );
       });
+
+      // ✅ CRITICAL FIX: Store Reference input values for S12 consumption
+      // Store all Reference areas (d_85, d_86, etc.)
+      const areaFields = ["d_85", "d_86", "d_87", "d_88", "d_89", "d_90", "d_91", "d_92", "d_93", "d_94", "d_95", "d_96"];
+      areaFields.forEach(fieldId => {
+        const value = ReferenceState.getValue(fieldId);
+        if (value !== null && value !== undefined) {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+        }
+      });
+
+      // Store all Reference RSI values (f_85, f_86, etc.)
+      const rsiFields = ["f_85", "f_86", "f_87", "f_94", "f_95"];
+      rsiFields.forEach(fieldId => {
+        const value = ReferenceState.getValue(fieldId);
+        if (value !== null && value !== undefined) {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+        }
+      });
+
+      // Store all Reference U-values (g_85, g_86, etc.)
+      const uValueFields = ["g_85", "g_86", "g_87", "g_88", "g_89", "g_90", "g_91", "g_92", "g_93", "g_94", "g_95"];
+      uValueFields.forEach(fieldId => {
+        const value = ReferenceState.getValue(fieldId);
+        if (value !== null && value !== undefined) {
+          window.TEUI.StateManager.setValue(`ref_${fieldId}`, value.toString(), "calculated");
+        }
+      });
+
+      // Store Reference thermal bridging penalty
+      const d97Value = ReferenceState.getValue("d_97");
+      if (d97Value !== null && d97Value !== undefined) {
+        window.TEUI.StateManager.setValue(`ref_d_97`, d97Value.toString(), "calculated");
+      }
     }
 
     // console.log('[Section11] Reference Model values stored'); // Comment out

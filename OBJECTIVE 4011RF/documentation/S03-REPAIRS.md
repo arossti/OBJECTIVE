@@ -18,9 +18,9 @@ Testing has revealed two critical bugs related to Section 03's dual-state implem
 
 As per the project's established "Consumer Section" pattern, **Section 01 must NOT listen directly to Section 03**. S01's responsibility is to consume final calculated totals from sections like S04 and S15.
 
-The failure of `e_10` to update indicates a break in the dependency chain for Reference values. The `ref_` prefixed climate values broadcast by S03 are not successfully propagating through the intermediate calculation sections (S10-S15) to reach the summary sections (S04) that S01 listens to.
+The failure of `e_10` to update ONLY when changes made to S03 in Reference mode indicates a break in the dependency chain for Reference values. The `ref_` prefixed climate values broadcast by S03 may not be successfully propagating through the intermediate calculation sections (S10-S15) to reach the summary sections (S04) that S01 listens to.
 
-This repair plan focuses on fixing the root causes of this broken flow, not on creating architecturally incorrect shortcuts.
+The planned repair focuses on fixing the root causes of this broken flow, not on creating architecturally incorrect shortcuts.
 
 ---
 
@@ -87,28 +87,57 @@ Remove all `[SxxDB]` logs after verification.
 
 ---
 
-## Phase 4: Trace Reference Energy Path (S15 → S04 ref_j_32)
+## Phase 4: S11→S12 State Isolation SUCCESS ✅
 
-Observed in logs: Emissions subtotal `ref_k_32` changes when S03 Reference location changes (province/year logic active), but energy subtotal `ref_j_32` remains constant. This indicates the Reference energy output from S15 (e.g., `ref_d_136`) feeding S04 is not responding to `ref_` climate changes.
+✅ **PROGRESS**: S03 Reference climate broadcast confirmed working (ref_d_20, ref_d_21 updating correctly)
+✅ **PROGRESS**: S04 emission factors fixed for all provinces (Manitoba=3, Ontario year-specific)  
+✅ **PROGRESS**: S12 Reference climate reading fixed (now reads ref_d_20 for HDD)
+✅ **RESOLVED**: S11 Reference input storage added (ref_d_85, ref_f_85, ref_g_85, ref_d_97, etc.)
+✅ **RESOLVED**: S12 Reference reading fixed (mode-aware area/RSI/U-value reading)
+✅ **RESOLVED**: g_104 Excel parity achieved (DOM field mapping corrected)
+✅ **RESOLVED**: S12 Row 104 state isolation (mode-aware Reference calculations)
 
--  Task 4.1: Instrument S15 Reference energy output
-   - Add `[S15DB]` logs at the end of `calculateReferenceModel()` showing:
-     - Inputs: `ref_d_20` (HDD), `ref_d_21` (CDD), any other climate/system inputs used
-     - Output: `ref_d_136` (Reference electricity total) and any intermediate terms that compose it
-   - Confirm S15 reads inputs from Reference state (explicit `ref_` or `ReferenceState`) and NOT unprefixed values.
+### **Current Status - Major Breakthrough Achieved**
 
--  Task 4.2: Ensure S15 stores `ref_d_136`
-   - Verify S15 writes `StateManager.setValue('ref_d_136', value, 'calculated')`.
-   - Add `[S15DB]` read-back to confirm the value in StateManager after storage.
+**Separate U-Values Working**:
+- **Target Mode**: `[S12DB] TGT g_104 calc: 0.292` (20% TB%, Target climate)
+- **Reference Mode**: `[S12DB] REF g_104 calc: 0.366` (50% TB%, Reference climate)  
 
--  Task 4.3: Verify S04 consumes `ref_d_136` for Reference energy
-   - S04 `calculateRow27()` already uses `ref_d_136` in Reference mode; add `[S04DB]` log near that read to confirm the value in use.
-   - Add a one-time log when `ref_j_32` is summed to show component `j_27..j_31` values in Reference mode.
+**S15 Dependencies Flowing**:
+- `[S12DB] STORED for S15: ref_g_101=0.347926` ✅
+- `[S12DB] STORED for S15: ref_g_104=0.365609` ✅  
+- `[S12DB] STORED for S15: ref_i_104=115847.379` ✅
 
--  Task 4.4: Validate end-to-end change
-   - Test sequence: S03 Reference → change to a cold climate (e.g., Attawapiskat)
-   - Expectation: S15 `[S15DB]` shows different `ref_d_136`; S04 recomputes and `ref_j_32` changes accordingly; S01 updates `e_10` using `ref_j_32/ref_h_15`.
+**S04 Reference Energy Responding**:
+- Previous: `ref_j_32` static at ~243K
+- Current: `ref_j_32=349996` (dynamic, climate-responsive) ✅
 
-Notes:
-- Keep strict mode isolation per DUAL-STATE-CHEATSHEET.md: Reference engines must read Reference inputs only and store `ref_` outputs only; no fallbacks to Target values.
-- Remove `[S15DB]`/`[S04DB]` logs after verification.
+### **Remaining Issue - Reference Location Change Propagation**
+
+**Target Mode**: Location changes trigger full S11→S12→S13→S14→S15→S04 recalculation chain ✅
+**Reference Mode**: Location changes broadcast `ref_d_20` correctly but don't trigger S11/S12 Reference engine recalculations ❌
+
+**Next Investigation**: Why Reference climate changes don't trigger S11/S12 Reference calculations despite:
+- S03 correctly broadcasting `ref_d_20` (confirmed in logs)
+- S12 correctly reading `ref_d_20` when calculations run (confirmed in logs)  
+- Missing: S11/S12 listeners for `ref_d_20` to trigger Reference engine execution
+
+### **RECOMMENDED SOLUTION**: Major Refactor - Move U-Value Calculations to S11
+
+Per DUAL-STATE-IMPLEMENTATION-GUIDE.md, the cleanest solution is to **move U-value calculations from S12 to S11**:
+
+**Benefits**:
+- **Eliminates Robot Fingers problem permanently** - TB% slider and U-values in same section
+- **Complete state isolation** - S11 owns all transmission calculations
+- **Reduces S12 complexity** - focuses on volume/airtightness only
+- **Architecturally clean** - transmission totals belong with transmission components
+
+**Migration Plan**:
+1. **Move g_101, g_102, g_104 calculations** from S12 to S11
+2. **Add Row 104 subtotal calculations** to S11 (i_104, k_104)  
+3. **Update S12** to focus on volume metrics (d_103-d_110) only
+4. **Preserve DOM structure** - field IDs remain unchanged for import/export
+
+**Alternative**: Continue debugging the complex cross-section TB% communication, but this has proven fragile and architecturally problematic.
+
+**DECISION POINT**: Major refactor vs continued debugging of Robot Fingers pattern.

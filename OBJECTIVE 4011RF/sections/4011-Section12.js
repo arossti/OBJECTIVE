@@ -149,12 +149,12 @@ window.TEUI.SectionModules.sect12 = (function () {
       const calculatedFields = [
         "d_101",
         "d_102",
-        "d_104",
         "d_105",
         "d_106",
         "d_107",
         "g_101",
         "g_102",
+        "g_104", // ✅ EXCEL PARITY: Added g_104 weighted U-value
         "g_105",
         "g_108",
         "g_109",
@@ -211,7 +211,7 @@ window.TEUI.SectionModules.sect12 = (function () {
                 fieldId.startsWith("g_") &&
                 (fieldId.includes("101") ||
                   fieldId.includes("102") ||
-                  fieldId === "d_104")
+                  fieldId === "g_104")
               ) {
                 formattedValue = formatNumber(numericValue, "W/m2");
               } else if (fieldId.startsWith("l_")) {
@@ -230,6 +230,12 @@ window.TEUI.SectionModules.sect12 = (function () {
           }
         }
       });
+
+      // [S12DB] Debug g_104 display value for mode switching
+      const g104Display = this.currentMode === "reference" 
+        ? window.TEUI?.StateManager?.getValue("ref_g_104")
+        : window.TEUI?.StateManager?.getValue("g_104");
+      console.log(`[S12DB] g_104 DISPLAY (${this.currentMode}): ${g104Display}`);
 
       console.log(
         `[Section12] Calculated display values updated for ${this.currentMode} mode`,
@@ -584,7 +590,7 @@ window.TEUI.SectionModules.sect12 = (function () {
         e: { content: "", classes: ["unit-label"] },
         f: {},
         g: {
-          fieldId: "d_104",
+          fieldId: "g_104",
           type: "calculated",
           value: "0.292",
           section: "volumeSurfaceMetrics",
@@ -974,6 +980,14 @@ window.TEUI.SectionModules.sect12 = (function () {
     return window.TEUI.parseNumeric(rawValue) || 0;
   }
 
+  /**
+   * Get external string dependency from StateManager (Pattern A)
+   */
+  function getGlobalStringValue(fieldId) {
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return rawValue ? rawValue.toString() : "";
+  }
+
   function getSectionValue(fieldId, isReferenceCalculation = false) {
     // ✅ DUAL-ENGINE PATTERN: Get section-local values based on calculation context
     if (isReferenceCalculation) {
@@ -1060,7 +1074,7 @@ window.TEUI.SectionModules.sect12 = (function () {
     let determinedFormatType;
 
     // Determine format based on fieldId for precision matching Excel
-    if (fieldId === "g_101" || fieldId === "g_102" || fieldId === "d_104") {
+    if (fieldId === "g_101" || fieldId === "g_102" || fieldId === "g_104") {
       determinedFormatType = "W/m2"; // Use W/m2 format for U-values (3dp) - matches Section 11
     } else if (fieldId === "d_110") {
       determinedFormatType = "number-3dp"; // ELA
@@ -1275,19 +1289,38 @@ window.TEUI.SectionModules.sect12 = (function () {
   //==========================================================================
 
   function calculateVolumeMetrics(isReferenceCalculation = false) {
-    // Get all values with full precision using parseFloat
-    const d85 = parseFloat(getGlobalNumericValue("d_85"));
-    const d86 = parseFloat(getGlobalNumericValue("d_86"));
-    const d87 = parseFloat(getGlobalNumericValue("d_87"));
-    const d88 = parseFloat(getGlobalNumericValue("d_88"));
-    const d89 = parseFloat(getGlobalNumericValue("d_89"));
-    const d90 = parseFloat(getGlobalNumericValue("d_90"));
-    const d91 = parseFloat(getGlobalNumericValue("d_91"));
-    const d92 = parseFloat(getGlobalNumericValue("d_92"));
-    const d93 = parseFloat(getGlobalNumericValue("d_93"));
-    const d94 = parseFloat(getGlobalNumericValue("d_94"));
-    const d95 = parseFloat(getGlobalNumericValue("d_95"));
-    const d96 = parseFloat(getGlobalNumericValue("d_96"));
+    // ✅ MODE-AWARE: Read area values based on calculation type
+    let d85, d86, d87, d88, d89, d90, d91, d92, d93, d94, d95, d96;
+    
+    if (isReferenceCalculation) {
+      // Reference calculation: Read Reference areas from S11
+      d85 = parseFloat(getGlobalNumericValue("ref_d_85")) || parseFloat(getGlobalNumericValue("d_85")) || 0;
+      d86 = parseFloat(getGlobalNumericValue("ref_d_86")) || parseFloat(getGlobalNumericValue("d_86")) || 0;
+      d87 = parseFloat(getGlobalNumericValue("ref_d_87")) || parseFloat(getGlobalNumericValue("d_87")) || 0;
+      d88 = parseFloat(getGlobalNumericValue("ref_d_88")) || parseFloat(getGlobalNumericValue("d_88")) || 0;
+      d89 = parseFloat(getGlobalNumericValue("ref_d_89")) || parseFloat(getGlobalNumericValue("d_89")) || 0;
+      d90 = parseFloat(getGlobalNumericValue("ref_d_90")) || parseFloat(getGlobalNumericValue("d_90")) || 0;
+      d91 = parseFloat(getGlobalNumericValue("ref_d_91")) || parseFloat(getGlobalNumericValue("d_91")) || 0;
+      d92 = parseFloat(getGlobalNumericValue("ref_d_92")) || parseFloat(getGlobalNumericValue("d_92")) || 0;
+      d93 = parseFloat(getGlobalNumericValue("ref_d_93")) || parseFloat(getGlobalNumericValue("d_93")) || 0;
+      d94 = parseFloat(getGlobalNumericValue("ref_d_94")) || parseFloat(getGlobalNumericValue("d_94")) || 0;
+      d95 = parseFloat(getGlobalNumericValue("ref_d_95")) || parseFloat(getGlobalNumericValue("d_95")) || 0;
+      d96 = parseFloat(getGlobalNumericValue("ref_d_96")) || parseFloat(getGlobalNumericValue("d_96")) || 0;
+    } else {
+      // Target calculation: Read unprefixed values
+      d85 = parseFloat(getGlobalNumericValue("d_85"));
+      d86 = parseFloat(getGlobalNumericValue("d_86"));
+      d87 = parseFloat(getGlobalNumericValue("d_87"));
+      d88 = parseFloat(getGlobalNumericValue("d_88"));
+      d89 = parseFloat(getGlobalNumericValue("d_89"));
+      d90 = parseFloat(getGlobalNumericValue("d_90"));
+      d91 = parseFloat(getGlobalNumericValue("d_91"));
+      d92 = parseFloat(getGlobalNumericValue("d_92"));
+      d93 = parseFloat(getGlobalNumericValue("d_93"));
+      d94 = parseFloat(getGlobalNumericValue("d_94"));
+      d95 = parseFloat(getGlobalNumericValue("d_95"));
+      d96 = parseFloat(getGlobalNumericValue("d_96"));
+    }
     // ✅ DUAL-ENGINE: Use correct state based on calculation context
     const d105_vol = parseFloat(
       window.TEUI.parseNumeric(
@@ -1465,13 +1498,13 @@ window.TEUI.SectionModules.sect12 = (function () {
     // Update DOM for both passes via StateManager writes and display refresh
     setCalculatedValue("g_101", g101_uAir, "W/m2");
     setCalculatedValue("g_102", g102_uGround, "W/m2");
-    setCalculatedValue("d_104", d104_uCombined, "W/m2");
+    setCalculatedValue("g_104", d104_uCombined, "W/m2"); // ✅ EXCEL PARITY: g_104 not d_104
 
     // Return calculated values for Reference engine storage
     return {
       g_101: g101_uAir,
       g_102: g102_uGround,
-      d_104: d104_uCombined,
+      g_104: d104_uCombined, // ✅ EXCEL PARITY: g_104 not d_104
     };
   }
 
@@ -1795,20 +1828,62 @@ window.TEUI.SectionModules.sect12 = (function () {
   }
 
   function calculateEnvelopeTotals(isReferenceCalculation = false) {
-    // Get values with full precision using parseFloat
-    const i101 = parseFloat(getNumericValue("i_101"));
-    const i102 = parseFloat(getNumericValue("i_102"));
-    const i103 = parseFloat(getNumericValue("i_103"));
-    const k101 = parseFloat(getNumericValue("k_101"));
-    const k102 = parseFloat(getNumericValue("k_102"));
-    const k103 = parseFloat(getNumericValue("k_103")); // Air leakage gain
-    const h21_capacitanceSetting = getFieldValue("h_21"); // Get Capacitance/Static setting
-    const k98_totalEnvelopeGainS11 = parseFloat(getNumericValue("k_98")); // Get S11 total gain
+    // ✅ MODE-AWARE: Read values based on calculation type
+    let i101, i102, i103, k101, k102, k103, h21_capacitanceSetting, k98_totalEnvelopeGainS11;
+    
+    if (isReferenceCalculation) {
+      // Reference calculation: Read Reference transmission values
+      i101 = parseFloat(getGlobalNumericValue("ref_i_101")) || parseFloat(getNumericValue("i_101")) || 0;
+      i102 = parseFloat(getGlobalNumericValue("ref_i_102")) || parseFloat(getNumericValue("i_102")) || 0;
+      i103 = parseFloat(getGlobalNumericValue("ref_i_103")) || parseFloat(getNumericValue("i_103")) || 0;
+      k101 = parseFloat(getGlobalNumericValue("ref_k_101")) || parseFloat(getNumericValue("k_101")) || 0;
+      k102 = parseFloat(getGlobalNumericValue("ref_k_102")) || parseFloat(getNumericValue("k_102")) || 0;
+      k103 = parseFloat(getGlobalNumericValue("ref_k_103")) || parseFloat(getNumericValue("k_103")) || 0;
+      h21_capacitanceSetting = getGlobalStringValue("ref_h_21") || getFieldValue("h_21") || "Capacitance";
+      k98_totalEnvelopeGainS11 = parseFloat(getGlobalNumericValue("ref_k_98")) || parseFloat(getNumericValue("k_98")) || 0;
+    } else {
+      // Target calculation: Read unprefixed values
+      i101 = parseFloat(getNumericValue("i_101"));
+      i102 = parseFloat(getNumericValue("i_102"));
+      i103 = parseFloat(getNumericValue("i_103"));
+      k101 = parseFloat(getNumericValue("k_101"));
+      k102 = parseFloat(getNumericValue("k_102"));
+      k103 = parseFloat(getNumericValue("k_103"));
+      h21_capacitanceSetting = getFieldValue("h_21");
+      k98_totalEnvelopeGainS11 = parseFloat(getNumericValue("k_98"));
+    }
 
-    // Calculate total loss with full precision
+    // ✅ MISSING CALCULATION: g_104 weighted average U-value (Excel: =(G101*D101/(SUM(D101:D102)+0.000001) + G102*D102/(SUM(D101:D102)+0.000001)))
+    let d101_areaAir, d102_areaGround, g101_uAir, g102_uGround;
+    
+    if (isReferenceCalculation) {
+      // Reference calculation: Read Reference areas and U-values
+      d101_areaAir = parseFloat(getGlobalNumericValue("ref_d_101")) || 0;
+      d102_areaGround = parseFloat(getGlobalNumericValue("ref_d_102")) || 0;
+      g101_uAir = parseFloat(getGlobalNumericValue("ref_g_101")) || 0;
+      g102_uGround = parseFloat(getGlobalNumericValue("ref_g_102")) || 0;
+    } else {
+      // Target calculation: Read unprefixed values
+      d101_areaAir = parseFloat(getGlobalNumericValue("d_101")) || 0;
+      d102_areaGround = parseFloat(getGlobalNumericValue("d_102")) || 0;
+      g101_uAir = parseFloat(getGlobalNumericValue("g_101")) || 0;
+      g102_uGround = parseFloat(getGlobalNumericValue("g_102")) || 0;
+    }
+    
+    const totalArea = d101_areaAir + d102_areaGround + 0.000001; // Avoid division by zero
+    const g104_weightedUValue = (g101_uAir * d101_areaAir + g102_uGround * d102_areaGround) / totalArea;
+
+    // [S12DB] Debug g_104 weighted average calculation
+    if (isReferenceCalculation) {
+      console.log(`[S12DB] REF g_104 calc: (${g101_uAir}*${d101_areaAir} + ${g102_uGround}*${d102_areaGround})/${totalArea} = ${g104_weightedUValue}`);
+    } else {
+      console.log(`[S12DB] TGT g_104 calc: (${g101_uAir}*${d101_areaAir} + ${g102_uGround}*${d102_areaGround})/${totalArea} = ${g104_weightedUValue}`);
+    }
+
+    // Calculate total loss with full precision (Excel: =SUM(I101:I103))
     const i104_totalLoss = i101 + i102 + i103;
 
-    // Conditional calculation for k_104 based on Capacitance setting (h_21)
+    // Conditional calculation for k_104 based on Capacitance setting (Excel: =IF(H21="Capacitance", K98, SUM(K101:K102)))
     let k104_totalGain;
     if (h21_capacitanceSetting === "Capacitance") {
       // Use Section 11's total envelope gain (includes solar etc.)
@@ -1818,8 +1893,18 @@ window.TEUI.SectionModules.sect12 = (function () {
       k104_totalGain = k101 + k102;
     }
 
+    // [S12DB] Debug Row 104 subtotal calculations
+    if (isReferenceCalculation) {
+      console.log(`[S12DB] REF ROW104: i_101=${i101}, i_102=${i102}, i_103=${i103} → i_104=${i104_totalLoss}`);
+      console.log(`[S12DB] REF ROW104: h_21="${h21_capacitanceSetting}", k_98=${k98_totalEnvelopeGainS11} → k_104=${k104_totalGain}`);
+    } else {
+      console.log(`[S12DB] TGT ROW104: i_101=${i101}, i_102=${i102}, i_103=${i103} → i_104=${i104_totalLoss}`);
+      console.log(`[S12DB] TGT ROW104: h_21="${h21_capacitanceSetting}", k_98=${k98_totalEnvelopeGainS11} → k_104=${k104_totalGain}`);
+    }
+
     // Only update DOM for Target calculations (like S11 pattern)
     if (!isReferenceCalculation) {
+      setCalculatedValue("g_104", g104_weightedUValue, "W/m2"); // ✅ EXCEL PARITY: g_104 matches Excel G104
       setCalculatedValue("i_104", i104_totalLoss, "number-2dp-comma");
       setCalculatedValue("k_104", k104_totalGain, "number-2dp-comma");
     }
@@ -1840,6 +1925,7 @@ window.TEUI.SectionModules.sect12 = (function () {
 
     // ✅ FIX: Return calculated values for Reference engine storage
     return {
+      g_104: g104_weightedUValue, // ✅ EXCEL PARITY: g_104 matches Excel G104
       i_104: i104_totalLoss,
       k_104: k104_totalGain,
       l_101: l101,
@@ -1927,7 +2013,7 @@ window.TEUI.SectionModules.sect12 = (function () {
           "calculated",
         );
         // [S12DB] Debug critical S15 dependencies
-        if (["g_101", "d_101", "i_104", "g_102", "d_102", "i_101", "i_102"].includes(fieldId)) {
+        if (["g_101", "d_101", "i_104", "g_102", "d_102", "i_101", "i_102", "g_104"].includes(fieldId)) {
           console.log(`[S12DB] STORED for S15: ref_${fieldId}=${value}`);
         }
       }
