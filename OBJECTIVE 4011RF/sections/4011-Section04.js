@@ -30,6 +30,14 @@ window.TEUI.SectionModules.sect04 = (function () {
   }
 
   /**
+   * Get external string dependency from StateManager (Pattern A)
+   */
+  function getGlobalStringValue(fieldId) {
+    const rawValue = window.TEUI?.StateManager?.getValue(fieldId);
+    return rawValue ? rawValue.toString() : "";
+  }
+
+  /**
    * Set calculated value with proper formatting and state management
    * Used for Target model calculations
    */
@@ -754,8 +762,8 @@ window.TEUI.SectionModules.sect04 = (function () {
     if (isReferenceCalculation) {
       // Reference mode: read ref_ prefixed values
       provinceRaw =
-        getGlobalNumericValue("ref_d_19") ||
-        getGlobalNumericValue("d_19") ||
+        getGlobalStringValue("ref_d_19") ||
+        getGlobalStringValue("d_19") ||
         "ON";
       year =
         getGlobalNumericValue("ref_h_12") ||
@@ -763,7 +771,7 @@ window.TEUI.SectionModules.sect04 = (function () {
         2022;
     } else {
       // Target mode: read unprefixed values
-      provinceRaw = getGlobalNumericValue("d_19") || "ON";
+      provinceRaw = getGlobalStringValue("d_19") || "ON";
       year = getGlobalNumericValue("h_12") || 2022;
     }
 
