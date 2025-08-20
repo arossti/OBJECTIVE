@@ -1723,17 +1723,23 @@ window.TEUI.SectionModules.sect12 = (function () {
     // ✅ FIX: Read climate data based on calculation type (S03 canonical pattern)
     let d20_hdd, d21_cdd, d22_gfHDD, h22_gfCDD;
     if (isReferenceCalculation) {
-      // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
-      d20_hdd = getGlobalNumericValue("d_20");
-      d21_cdd = getGlobalNumericValue("d_21");
-      d22_gfHDD = getGlobalNumericValue("d_22");
-      h22_gfCDD = getGlobalNumericValue("h_22");
+      // ✅ CRITICAL FIX: Read Reference climate values from S03
+      d20_hdd = getGlobalNumericValue("ref_d_20") || getGlobalNumericValue("d_20") || 0;
+      d21_cdd = getGlobalNumericValue("ref_d_21") || getGlobalNumericValue("d_21") || 0;
+      d22_gfHDD = getGlobalNumericValue("ref_d_22") || getGlobalNumericValue("d_22") || 0;
+      h22_gfCDD = getGlobalNumericValue("ref_h_22") || getGlobalNumericValue("h_22") || 0;
+      
+      // [S12DB] Debug Reference climate reading
+      console.log(`[S12DB] REF CLIMATE: d_20=${d20_hdd}, d_21=${d21_cdd}, d_22=${d22_gfHDD}, h_22=${h22_gfCDD}`);
     } else {
       // ✅ PATTERN A: Clean external dependencies via getGlobalNumericValue
       d20_hdd = getGlobalNumericValue("d_20");
       d21_cdd = getGlobalNumericValue("d_21");
       d22_gfHDD = getGlobalNumericValue("d_22");
       h22_gfCDD = getGlobalNumericValue("h_22");
+      
+      // [S12DB] Debug Target climate reading
+      console.log(`[S12DB] TGT CLIMATE: d_20=${d20_hdd}, d_21=${d21_cdd}, d_22=${d22_gfHDD}, h_22=${h22_gfCDD}`);
     }
 
     // Constants
@@ -1745,6 +1751,15 @@ window.TEUI.SectionModules.sect12 = (function () {
     const i101_heatlossAir = h101_lossRateAir * d101_areaAir;
     const j101_gainRateAir = (g101_uAir * d21_cdd * hoursPerDay) / wattsToKw;
     const k101_heatgainAir = j101_gainRateAir * d101_areaAir;
+
+    // [S12DB] Debug h_101 calculation (Excel: =(D$20*G101*24)/1000)
+    if (isReferenceCalculation) {
+      console.log(`[S12DB] REF h_101 calc: (${d20_hdd}*${g101_uAir}*${hoursPerDay})/${wattsToKw} = ${h101_lossRateAir}`);
+      console.log(`[S12DB] REF i_101 result: ${h101_lossRateAir} * ${d101_areaAir} = ${i101_heatlossAir}`);
+    } else {
+      console.log(`[S12DB] TGT h_101 calc: (${d20_hdd}*${g101_uAir}*${hoursPerDay})/${wattsToKw} = ${h101_lossRateAir}`);
+      console.log(`[S12DB] TGT i_101 result: ${h101_lossRateAir} * ${d101_areaAir} = ${i101_heatlossAir}`);
+    }
 
     // Ground-facing envelope calculations (maintain full precision)
     const h102_lossRateGround =
@@ -1911,8 +1926,9 @@ window.TEUI.SectionModules.sect12 = (function () {
           String(value),
           "calculated",
         );
-        if (fieldId === "g_101" || fieldId === "g_102") {
-          // console.log(`[S12] Stored ref_${fieldId}=${value}`);
+        // [S12DB] Debug critical S15 dependencies
+        if (["g_101", "d_101", "i_104", "g_102", "d_102", "i_101", "i_102"].includes(fieldId)) {
+          console.log(`[S12DB] STORED for S15: ref_${fieldId}=${value}`);
         }
       }
     });
