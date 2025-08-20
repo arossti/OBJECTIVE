@@ -1931,10 +1931,11 @@ window.TEUI.SectionModules.sect03 = (function () {
         ? "integer"
         : "number-2dp"; // Default format
       this.textContent = window.TEUI.formatNumber(numericValue, formatType);
-      // Update StateManager
+      // ✅ MODE-AWARE: Update StateManager based on current mode
       if (window.TEUI.StateManager) {
+        const key = ModeManager.currentMode === 'reference' ? `ref_${fieldId}` : fieldId;
         window.TEUI.StateManager.setValue(
-          fieldId,
+          key,
           numericValue.toString(),
           "user-modified",
         );
@@ -1983,10 +1984,11 @@ window.TEUI.SectionModules.sect03 = (function () {
     if (provinceSelect.value) {
       DualState.setValue("d_19", provinceSelect.value, "init");
 
-      // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication
+      // ✅ CRITICAL FIX: Sync to global StateManager for cross-section communication (MODE-AWARE)
       if (window.TEUI?.StateManager) {
+        const key = ModeManager.currentMode === 'reference' ? 'ref_d_19' : 'd_19';
         window.TEUI.StateManager.setValue(
-          "d_19",
+          key,
           provinceSelect.value,
           "default",
         );
