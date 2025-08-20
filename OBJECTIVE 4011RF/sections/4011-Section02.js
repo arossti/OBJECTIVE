@@ -797,10 +797,19 @@ window.TEUI.SectionModules.sect02 = (function () {
       l_16: ReferenceState.getValue("l_16"), // Wood price
     };
     
-
-
-    // ✅ DEBUG: Log critical h_15 value to verify it's being stored
-    // console.log(`🔵 [S02] DEBUG: ReferenceState h_15 = "${ReferenceState.getValue("h_15")}" → storing as ref_h_15`);
+    // [S02DB] Targeted logging for critical Reference parameters
+    try {
+      console.log(
+        "[S02DB] storeReference: ref_h_12=",
+        referenceResults.h_12,
+        "ref_h_13=",
+        referenceResults.h_13,
+        "ref_h_15=",
+        referenceResults.h_15,
+      );
+    } catch (e) {
+      console.warn("[S02DB] storeReference logging failed", e);
+    }
 
     // Store with ref_ prefix for downstream sections
     Object.entries(referenceResults).forEach(([fieldId, value]) => {
@@ -1695,15 +1704,24 @@ window.TEUI.SectionModules.sect02 = (function () {
 
     // Initialize the mode manager
     initialize: function () {
-      const savedState = localStorage.getItem("S02_TARGET_STATE");
-      if (savedState) {
-        try {
-          this.state = JSON.parse(savedState);
-        } catch (e) {
-          this.setDefaults();
+      // Properly initialize both Target and Reference states
+      try {
+        TargetState.setDefaults();
+        TargetState.loadState();
+        ReferenceState.setDefaults();
+        ReferenceState.loadState();
+        // Publish core Reference parameters immediately so consumers (S01, S04) have values on first load
+        if (window.TEUI?.StateManager) {
+          const refH12 = ReferenceState.getValue("h_12");
+          const refH13 = ReferenceState.getValue("h_13");
+          const refH15 = ReferenceState.getValue("h_15");
+          if (refH12) window.TEUI.StateManager.setValue("ref_h_12", refH12, "default");
+          if (refH13) window.TEUI.StateManager.setValue("ref_h_13", refH13, "default");
+          if (refH15) window.TEUI.StateManager.setValue("ref_h_15", refH15, "default");
+          console.log("[S02DB] init publish: ref_h_12=", refH12, "ref_h_13=", refH13, "ref_h_15=", refH15);
         }
-      } else {
-        this.setDefaults();
+      } catch (e) {
+        console.warn("[S02] initialize: state initialization error", e);
       }
     },
 

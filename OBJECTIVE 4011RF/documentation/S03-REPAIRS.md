@@ -84,3 +84,31 @@ Observed in logs: S03 → S15 → S04 Reference chain is functioning (`ref_j_32`
 -  S01: Snapshot upstream inputs at the start of its display update to verify `ref_h_15`/`ref_h_13` are present when `ref_j_32`/`ref_k_32` update.
 
 Remove all `[SxxDB]` logs after verification.
+
+---
+
+## Phase 4: Trace Reference Energy Path (S15 → S04 ref_j_32)
+
+Observed in logs: Emissions subtotal `ref_k_32` changes when S03 Reference location changes (province/year logic active), but energy subtotal `ref_j_32` remains constant. This indicates the Reference energy output from S15 (e.g., `ref_d_136`) feeding S04 is not responding to `ref_` climate changes.
+
+-  Task 4.1: Instrument S15 Reference energy output
+   - Add `[S15DB]` logs at the end of `calculateReferenceModel()` showing:
+     - Inputs: `ref_d_20` (HDD), `ref_d_21` (CDD), any other climate/system inputs used
+     - Output: `ref_d_136` (Reference electricity total) and any intermediate terms that compose it
+   - Confirm S15 reads inputs from Reference state (explicit `ref_` or `ReferenceState`) and NOT unprefixed values.
+
+-  Task 4.2: Ensure S15 stores `ref_d_136`
+   - Verify S15 writes `StateManager.setValue('ref_d_136', value, 'calculated')`.
+   - Add `[S15DB]` read-back to confirm the value in StateManager after storage.
+
+-  Task 4.3: Verify S04 consumes `ref_d_136` for Reference energy
+   - S04 `calculateRow27()` already uses `ref_d_136` in Reference mode; add `[S04DB]` log near that read to confirm the value in use.
+   - Add a one-time log when `ref_j_32` is summed to show component `j_27..j_31` values in Reference mode.
+
+-  Task 4.4: Validate end-to-end change
+   - Test sequence: S03 Reference → change to a cold climate (e.g., Attawapiskat)
+   - Expectation: S15 `[S15DB]` shows different `ref_d_136`; S04 recomputes and `ref_j_32` changes accordingly; S01 updates `e_10` using `ref_j_32/ref_h_15`.
+
+Notes:
+- Keep strict mode isolation per DUAL-STATE-CHEATSHEET.md: Reference engines must read Reference inputs only and store `ref_` outputs only; no fallbacks to Target values.
+- Remove `[S15DB]`/`[S04DB]` logs after verification.
