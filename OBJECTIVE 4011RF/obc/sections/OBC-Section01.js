@@ -637,21 +637,21 @@ window.OBC.SectionModules.sect01 = (function () {
       {
         name: "Andrew Ross Thomson",
         firm: "Thomson Architecture, Inc.",
-        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson",
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Andrew-RossThomson-2",
         license: "8154",
         status: "Active",
       },
       {
         name: "Lara McKendrick",
         firm: "Lara McKendrick Architecture Inc.",
-        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Lara-J-McKendrick-1",
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/Lara-J-McKendrick-2",
         license: "5829",
         status: "Active",
       },
       {
         name: "David Vincent Thompson",
         firm: "Independent Practice", // Real firm name not publicly available
-        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/David-VincentThompson",
+        url: "https://oaa.on.ca/oaa-directory/search-architects/search-architects-detail/David-VincentThompson-2",
         license: "License number not publicly available", // OAA doesn't show license numbers on public pages
         status: "Active",
       },
