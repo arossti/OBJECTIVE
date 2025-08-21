@@ -25,42 +25,19 @@ TEUI.ReferenceToggle = (function () {
 
   /**
    * Pattern A Compatible: Get all sections with dual-state ModeManager
+   * FIXED: Updated for current dual-state architecture
    */
   function getAllDualStateSections() {
-    const dualStateSections = [];
-
-    // List of sections that have Pattern A dual-state architecture
-    const sectionIds = [
-      "sect02",
-      "sect03",
-      "sect04",
-      "sect08",
-      "sect10",
-      "sect11",
-      "sect12",
-      "sect13",
-      "sect14",
-      "sect15",
-    ];
-
-    sectionIds.forEach((sectionId) => {
-      if (window.TEUI?.SectionModules?.[sectionId]) {
-        // Check if section has a ModeManager (Pattern A indicator)
-        const sectionModule = window.TEUI.SectionModules[sectionId];
-        if (
-          sectionModule.ModeManager ||
-          window.TEUI?.[sectionId]?.ModeManager
-        ) {
-          dualStateSections.push({
-            id: sectionId,
-            module: sectionModule,
-            modeManager:
-              sectionModule.ModeManager ||
-              window.TEUI?.[sectionId]?.ModeManager,
-          });
-        }
-      }
-    });
+    const sectionIds = ["sect02", "sect03", "sect04", "sect08", "sect10", 
+                       "sect11", "sect12", "sect13", "sect14", "sect15"];
+    
+    const dualStateSections = sectionIds
+      .map(id => ({ 
+        id, 
+        module: window.TEUI?.[id], 
+        modeManager: window.TEUI?.[id]?.ModeManager 
+      }))
+      .filter(s => s.modeManager);
 
     console.log(
       `[ReferenceToggle] Found ${dualStateSections.length} dual-state sections:`,
@@ -70,38 +47,35 @@ TEUI.ReferenceToggle = (function () {
   }
 
   /**
-   * Pattern A Compatible: Switch ALL sections to Target or Reference mode
+   * PHASE 3: Master Display Toggle - Switch ALL sections with coordinated styling
+   * UPDATED: Now applies existing CSS classes for global Reference styling
    */
   function switchAllSectionsMode(mode) {
-    const dualStateSections = getAllDualStateSections();
+    const sections = getAllDualStateSections();
     let switchedCount = 0;
 
-    dualStateSections.forEach((section) => {
+    // Switch all section ModeManagers
+    sections.forEach((section) => {
       try {
-        if (
-          section.modeManager &&
-          typeof section.modeManager.switchMode === "function"
-        ) {
+        if (section.modeManager && typeof section.modeManager.switchMode === "function") {
           section.modeManager.switchMode(mode);
+          section.modeManager.updateCalculatedDisplayValues();
           switchedCount++;
-          console.log(
-            `[ReferenceToggle] Switched ${section.id} to ${mode.toUpperCase()} mode`,
-          );
-        } else {
-          console.warn(
-            `[ReferenceToggle] ${section.id} has no switchMode method`,
-          );
         }
       } catch (error) {
-        console.error(
-          `[ReferenceToggle] Error switching ${section.id} to ${mode}:`,
-          error,
-        );
+        console.error(`[ReferenceToggle] Error switching ${section.id}:`, error);
       }
     });
 
+    // Apply existing CSS classes for global Reference styling
+    const isReference = mode === 'reference';
+    document.body.classList.toggle('viewing-reference-inputs', isReference);
+    document.body.classList.toggle('viewing-reference-values', isReference);
+    document.body.classList.toggle('reference-mode', isReference);
+    document.documentElement.classList.toggle('reference-mode', isReference);
+
     console.log(
-      `[ReferenceToggle] Successfully switched ${switchedCount}/${dualStateSections.length} sections to ${mode.toUpperCase()} mode`,
+      `🎨 Master Toggle: Switched ${switchedCount}/${sections.length} sections to ${mode.toUpperCase()} mode with global styling`
     );
     return switchedCount;
   }
@@ -136,23 +110,58 @@ TEUI.ReferenceToggle = (function () {
   }
 
   function initialize() {
-    // Setup main Reference/Target toggle button
-    const runRefBtn = document.getElementById(RUN_REFERENCE_BUTTON_ID);
-    if (runRefBtn) {
-      runRefBtn.addEventListener("click", toggleReferenceDisplay);
-      runRefBtn.textContent = BUTTON_TEXT_SHOW_REFERENCE;
+    // PHASE 4: Wire new dropdown buttons to setup functions
+    
+    // Setup Reference Setup buttons
+    const mirrorTargetBtn = document.getElementById("mirrorTargetBtn");
+    if (mirrorTargetBtn) {
+      mirrorTargetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        mirrorTarget();
+      });
     }
 
-    // Setup Reference Inputs view button
-    const viewRefInputsBtn = document.getElementById(
-      VIEW_REFERENCE_INPUTS_BUTTON_ID,
-    );
+    const mirrorTargetReferenceBtn = document.getElementById("mirrorTargetReferenceBtn");
+    if (mirrorTargetReferenceBtn) {
+      mirrorTargetReferenceBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        mirrorTargetWithReference();
+      });
+    }
+
+    const referenceIndependenceBtn = document.getElementById("referenceIndependenceBtn");
+    if (referenceIndependenceBtn) {
+      referenceIndependenceBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        enableReferenceIndependence();
+      });
+    }
+
+    // Setup Display Toggle buttons
+    const showReferenceBtn = document.getElementById("showReferenceBtn");
+    if (showReferenceBtn) {
+      showReferenceBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchAllSectionsMode("reference");
+      });
+    }
+
+    const showTargetBtn = document.getElementById("showTargetBtn");
+    if (showTargetBtn) {
+      showTargetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchAllSectionsMode("target");
+      });
+    }
+
+    // Keep existing Reference Inputs view button
+    const viewRefInputsBtn = document.getElementById(VIEW_REFERENCE_INPUTS_BUTTON_ID);
     if (viewRefInputsBtn) {
       viewRefInputsBtn.addEventListener("click", toggleReferenceInputsView);
       viewRefInputsBtn.textContent = BUTTON_TEXT_HIGHLIGHT_REFERENCE_VALUES;
     }
 
-    // Setup reference standard change handler
+    // Keep existing reference standard change handler
     const standardSelector =
       document.getElementById(STANDARD_SELECTOR_ID) ||
       document.querySelector(`[data-field-id='${STANDARD_SELECTOR_ID}']`);
@@ -166,7 +175,7 @@ TEUI.ReferenceToggle = (function () {
       }
     }
 
-    console.log("[ReferenceToggle] Pattern A initialization complete");
+    console.log("[ReferenceToggle] Master Reference Toggle initialization complete");
   }
 
   /**
@@ -320,6 +329,74 @@ TEUI.ReferenceToggle = (function () {
     return null;
   }
 
+  /**
+   * PHASE 2: Three Reference Setup Functions
+   * These implement the core functionality from Master-Reference-Roadmap.md
+   */
+
+  /**
+   * 1. Mirror Target: Copy all Target values to Reference state
+   */
+  function mirrorTarget() {
+    try {
+      const sections = getAllDualStateSections();
+      console.log(`[ReferenceToggle] Mirror Target: Processing ${sections.length} sections`);
+      
+      sections.forEach(section => {
+        const targetData = section.modeManager.TargetState.data;
+        Object.keys(targetData).forEach(fieldId => {
+          section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
+        });
+        section.modeManager.refreshUI();
+      });
+      
+      console.log("🔗 Mirror Target: Reference state synchronized with Target state");
+    } catch (error) {
+      console.error("[ReferenceToggle] Mirror Target failed:", error);
+    }
+  }
+
+  /**
+   * 2. Mirror Target + Reference: Copy Target + overlay ReferenceValues subset
+   */
+  function mirrorTargetWithReference() {
+    try {
+      const standard = window.TEUI?.StateManager?.getValue('d_13') || 'OBC SB12 3.1.1.2.C1';
+      const refValues = window.TEUI?.ReferenceValues?.[standard] || {};
+      const sections = getAllDualStateSections();
+      
+      console.log(`[ReferenceToggle] Mirror Target + Reference: Using standard "${standard}"`);
+      
+      sections.forEach(section => {
+        const targetData = section.modeManager.TargetState.data;
+        
+        // Copy all Target values
+        Object.keys(targetData).forEach(fieldId => {
+          section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
+        });
+        
+        // Overlay ReferenceValues subset
+        Object.keys(refValues).forEach(fieldId => {
+          section.modeManager.ReferenceState.setValue(fieldId, refValues[fieldId], "reference-standard");
+        });
+        
+        section.modeManager.refreshUI();
+      });
+      
+      console.log(`🔗 Mirror Target + Reference: Applied ${Object.keys(refValues).length} reference values`);
+    } catch (error) {
+      console.error("[ReferenceToggle] Mirror Target + Reference failed:", error);
+    }
+  }
+
+  /**
+   * 3. Reference Independence: No setup needed - sections already independent
+   */
+  function enableReferenceIndependence() {
+    console.log("🔓 Reference Independence: Sections are already independent by default");
+    // No action needed - dual-state architecture already provides independence
+  }
+
   return {
     initialize,
     isReferenceMode,
@@ -327,5 +404,9 @@ TEUI.ReferenceToggle = (function () {
     toggleReferenceDisplay,
     switchAllSectionsMode, // Expose for external use
     getAllDualStateSections, // Expose for debugging
+    // New setup functions
+    mirrorTarget,
+    mirrorTargetWithReference,
+    enableReferenceIndependence,
   };
 })();
