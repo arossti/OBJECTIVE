@@ -433,27 +433,56 @@ When switching back to Target mode:
 
 ## 📋 **Streamlined Implementation Phases**
 
-### **Phase 1: Emergency Fix (30 minutes)**
+### **✅ Phase 1: Emergency Fix (COMPLETED)**
 - **Task**: Fix section discovery in `getAllDualStateSections()` 
-- **Code**: Change `window.TEUI.SectionModules[id]` to `window.TEUI[id]`
-- **Result**: Button no longer crashes
+- **Code**: Changed `window.TEUI.SectionModules[id]` to `window.TEUI[id]`
+- **Result**: ✅ Button no longer crashes, found 9 dual-state sections
 
-### **Phase 2: Core Functions (2-3 hours)**
+### **✅ Phase 2: Core Functions (COMPLETED - NEEDS DEBUGGING)**
 - **Task**: Add three setup functions to `4011-ReferenceToggle.js`
-- **Code**: ~50 lines total (see Minimal Implementation Pattern above)
-- **Result**: Working Mirror Target, Mirror + Reference, Independent modes
+- **Code**: ✅ Added ~50 lines total (mirrorTarget, mirrorTargetWithReference, enableReferenceIndependence)
+- **Issue**: 🚨 `TypeError: Cannot read properties of undefined (reading 'data')` in `mirrorTarget()`
+- **Root Cause**: `section.modeManager.TargetState.data` is undefined - need to access `TargetState` differently
 
-### **Phase 3: Display Toggle (1 hour)**  
+### **✅ Phase 3: Display Toggle (COMPLETED)**  
 - **Task**: Update display toggle to use existing CSS classes
-- **Code**: ~10 lines (apply existing CSS classes to body)
-- **Result**: Master toggle switches all sections with existing styling
+- **Code**: ✅ Updated `switchAllSectionsMode()` with existing CSS classes
+- **Result**: ✅ Master toggle applies global Reference styling (`viewing-reference-inputs`, `viewing-reference-values`, `reference-mode`)
 
-### **Phase 4: Button Integration (30 minutes)**
-- **Task**: Wire `runReferenceBtn` dropdown to call setup functions
-- **Code**: ~15 lines (event handlers)
-- **Result**: Complete working system
+### **✅ Phase 4: Button Integration (COMPLETED)**
+- **Task**: Wire dropdown buttons to call setup functions
+- **Code**: ✅ Added organized dropdown with Reference Setup, Display Toggle, and Legacy sections
+- **Result**: ✅ All buttons wired to appropriate functions
 
-**Total Implementation Time: 4-5 hours maximum**
+**Current Status: 90% Complete - Need to fix TargetState.data access pattern**
+
+### **🐛 DEBUGGING REQUIRED: TargetState Access Pattern**
+
+#### **Current Error (From Logs.md Line 1019-1025)**
+```
+[ReferenceToggle] Mirror Target: Processing 9 sections
+[ReferenceToggle] Mirror Target failed: TypeError: Cannot read properties of undefined (reading 'data')
+    at 4011-ReferenceToggle.js:346:60
+    at Array.forEach (<anonymous>)
+    at mirrorTarget (4011-ReferenceToggle.js:345:16)
+```
+
+#### **Root Cause Analysis**
+- **Issue**: `section.modeManager.TargetState.data` is undefined
+- **Discovery Success**: Section discovery works (found 9 sections)
+- **ModeManager Access**: `section.modeManager` exists
+- **TargetState Access**: `TargetState.data` property doesn't exist
+
+#### **Next Steps Required**
+1. **Investigate TargetState Structure**: Check how existing sections access TargetState values
+2. **Update Access Pattern**: Use correct property/method to access Target values
+3. **Test Mirror Commands**: Verify Mirror Target produces identical e_10 and h_10 values
+4. **Add Highlighting**: Implement ReferenceValues and diff highlighting features
+
+#### **Expected Outcome After Fix**
+- **Mirror Target**: e_10 (Reference TEUI) should equal h_10 (Target TEUI) exactly
+- **Perfect Synchronization**: Both Target and Reference models use identical input values
+- **Visual Confirmation**: Reference mode shows red styling with identical calculated values
 
 ---
 
@@ -587,21 +616,24 @@ section.applyDiffHighlighting?.(fieldIds)            // For Mirror Target yellow
 4. **Documentation Updates**: Update DUAL-STATE-CHEATSHEET with new patterns
 5. **Testing Protocol**: Comprehensive testing across all dual-state sections
 
-### **✅ Simplified Acceptance Criteria**
+### **📊 Implementation Progress Status**
 
-**Core Requirements (Must Have):**
-1. **No Crashes**: Button works without throwing errors
-2. **State Isolation**: Reference operations don't contaminate Target values  
-3. **Uses Existing Patterns**: Leverages current ModeManager and CSS classes
-4. **Three Setup Modes**: Mirror Target, Mirror + Reference, Independent functions work
+**✅ COMPLETED Core Requirements:**
+1. ✅ **No Crashes**: Button works without throwing errors (section discovery fixed)
+2. ✅ **Uses Existing Patterns**: Leverages current ModeManager and CSS classes
+3. ✅ **Display Toggle**: Master toggle switches all sections with global Reference styling
+4. ✅ **Button Integration**: Organized dropdown with setup functions accessible
 
-**Advanced Features (Nice to Have):**
-5. **ReferenceValues Highlighting**: Red italic styling for code-derived fields
-6. **Target Diff Highlighting**: Yellow highlighting for Mirror Target differences
-7. **UI Coordination**: Master toggle synchronizes individual section toggles
+**🔧 IN PROGRESS - Needs Debugging:**
+5. 🚨 **Setup Functions**: Mirror Target command fails on `TargetState.data` access
+6. ⏳ **State Population**: Mirror commands need to properly populate Reference state for identical TEUI values
 
-**Performance:**
-- Mode switching should be instantaneous (existing ModeManager already handles this)
+**⏳ PENDING - Next Phase:**
+7. 🎨 **ReferenceValues Highlighting**: Red italic styling for code-derived fields
+8. 🎨 **Target Diff Highlighting**: Yellow highlighting for Mirror Target differences
+9. 🔄 **State Isolation Testing**: Verify Reference operations don't contaminate Target values
+
+**Current Status: Core display functionality working, setup commands need TargetState access fix**
 
 ---
 
