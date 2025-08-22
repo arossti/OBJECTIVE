@@ -295,45 +295,87 @@ function getAllDualStateSections() {
 }
 ```
 
-### **NEW: Three Setup Functions (Minimal Code)**
+### **CORRECTED: Three Setup Functions (Using Proper Dual-State Architecture)**
+
+**🚨 ARCHITECTURAL CORRECTION**: Based on debugging and documentation review, the dual-state architecture uses:
+- **ModeManager.getValue()/setValue()** for accessing section state (not direct TargetState.data)
+- **StateManager with `ref_` prefix** for cross-section Reference values
+- **Field IDs from section definitions** (not direct state object iteration)
+
 ```javascript
-// 1. Mirror Target: Copy all Target values to Reference
+// 1. Mirror Target: Copy all Target values to Reference using proper ModeManager pattern
 TEUI.ReferenceToggle.mirrorTarget = function() {
   getAllDualStateSections().forEach(section => {
-    const targetData = section.modeManager.TargetState.data;
-    Object.keys(targetData).forEach(fieldId => {
-      section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
+    // Get field IDs for this section (need to determine correct method)
+    const fieldIds = getFieldIdsForSection(section.id); // TODO: Implement this helper
+    
+    // Save current mode and switch to target to read values
+    const originalMode = section.modeManager.currentMode;
+    section.modeManager.switchMode("target");
+    
+    // Read all Target values using ModeManager
+    const targetValues = {};
+    fieldIds.forEach(fieldId => {
+      targetValues[fieldId] = section.modeManager.getValue(fieldId);
     });
+    
+    // Switch to reference mode and copy values
+    section.modeManager.switchMode("reference");
+    fieldIds.forEach(fieldId => {
+      if (targetValues[fieldId] !== null && targetValues[fieldId] !== undefined) {
+        section.modeManager.setValue(fieldId, targetValues[fieldId], "mirrored");
+      }
+    });
+    
+    // Restore original mode and refresh
+    section.modeManager.switchMode(originalMode);
     section.modeManager.refreshUI();
   });
 };
 
-// 2. Mirror + Reference: Copy Target + overlay ReferenceValues subset
+// 2. Mirror + Reference: Copy Target + overlay ReferenceValues subset using StateManager pattern
 TEUI.ReferenceToggle.mirrorTargetWithReference = function() {
   const standard = window.TEUI?.StateManager?.getValue('d_13') || 'OBC SB12 3.1.1.2.C1';
   const refValues = window.TEUI?.ReferenceValues?.[standard] || {};
   
+  // First do Mirror Target
+  mirrorTarget();
+  
+  // Then overlay ReferenceValues subset using StateManager ref_ prefix pattern
   getAllDualStateSections().forEach(section => {
-    const targetData = section.modeManager.TargetState.data;
+    const originalMode = section.modeManager.currentMode;
+    section.modeManager.switchMode("reference");
     
-    // Copy all Target values
-    Object.keys(targetData).forEach(fieldId => {
-      section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
-    });
-    
-    // Overlay ReferenceValues subset
+    // Apply ReferenceValues overlay to Reference state
     Object.keys(refValues).forEach(fieldId => {
-      section.modeManager.ReferenceState.setValue(fieldId, refValues[fieldId], "reference-standard");
+      section.modeManager.setValue(fieldId, refValues[fieldId], "reference-standard");
     });
     
+    section.modeManager.switchMode(originalMode);
     section.modeManager.refreshUI();
   });
+  
+  console.log(`🔗 Applied ${Object.keys(refValues).length} reference standard values for "${standard}"`);
 };
 
 // 3. Independent: No setup needed - sections already independent by default
 TEUI.ReferenceToggle.enableReferenceIndependence = function() {
-  console.log("🔓 Reference Independence: No action needed - sections already independent");
+  console.log("🔓 Reference Independence: Sections are already independent by default");
+  // No action needed - dual-state architecture already provides independence
 };
+
+// HELPER: Get field IDs for a section (needs implementation)
+function getFieldIdsForSection(sectionId) {
+  // TODO: Determine correct way to get field IDs for a section
+  // Options:
+  // 1. From FieldManager: window.TEUI.FieldManager.getFieldsForSection(sectionId)
+  // 2. From section module: window.TEUI[sectionId].getFields()
+  // 3. From StateManager: filter all keys by section prefix
+  // 4. From section definitions: parse sectionRows for field IDs
+  
+  // Placeholder - need to implement based on actual architecture
+  return [];
+}
 ```
 
 ### **REUSE EXISTING: Display Toggle (Leverage Current Patterns)**
@@ -467,22 +509,237 @@ When switching back to Target mode:
     at mirrorTarget (4011-ReferenceToggle.js:345:16)
 ```
 
-#### **Root Cause Analysis**
-- **Issue**: `section.modeManager.TargetState.data` is undefined
-- **Discovery Success**: Section discovery works (found 9 sections)
-- **ModeManager Access**: `section.modeManager` exists
-- **TargetState Access**: `TargetState.data` property doesn't exist
+#### **Root Cause Analysis** ✅ **RESOLVED**
+- **Issue**: ~~`section.modeManager.TargetState.data` is undefined~~ **ARCHITECTURAL MISUNDERSTANDING**
+- **Discovery Success**: Section discovery works (found 9 sections) ✅
+- **ModeManager Access**: `section.modeManager` exists ✅
+- **✅ CORRECT UNDERSTANDING**: Dual-state architecture uses **ModeManager facade pattern**, not direct state object access
+- **✅ PROPER ACCESS**: Use `ModeManager.getValue(fieldId)` and `ModeManager.setValue(fieldId, value)` 
+- **✅ CROSS-SECTION PATTERN**: Reference values stored in StateManager with `ref_` prefix (e.g., `ref_j_32`, `ref_k_32`)
 
-#### **Next Steps Required**
-1. **Investigate TargetState Structure**: Check how existing sections access TargetState values
-2. **Update Access Pattern**: Use correct property/method to access Target values
-3. **Test Mirror Commands**: Verify Mirror Target produces identical e_10 and h_10 values
-4. **Add Highlighting**: Implement ReferenceValues and diff highlighting features
+#### **Next Steps Required** ✅ **UPDATED WITH CORRECT APPROACH**
+1. **✅ Implement getFieldIdsForSection()**: Determine how to get field IDs from section definitions
+2. **✅ Use ModeManager.getValue()/setValue()**: Replace direct state access with facade pattern
+3. **✅ Integrate ReferenceValues.js**: Use `window.TEUI.ReferenceValues[standard]` for Mirror + Reference
+4. **✅ Test Mirror Commands**: Verify Mirror Target produces identical e_10 and h_10 values
+5. **✅ Add Highlighting**: Implement ReferenceValues and diff highlighting features
 
 #### **Expected Outcome After Fix**
 - **Mirror Target**: e_10 (Reference TEUI) should equal h_10 (Target TEUI) exactly
 - **Perfect Synchronization**: Both Target and Reference models use identical input values
 - **Visual Confirmation**: Reference mode shows red styling with identical calculated values
+
+---
+
+## 🔍 **DEBUGGING GUIDE: TargetState Access Pattern**
+
+### **🚨 Current Error Analysis**
+
+#### **Error Location & Context**
+```javascript
+// 4011-ReferenceToggle.js:346 - Current failing code
+const targetData = section.modeManager.TargetState.data;
+//                                                   ^^^^
+//                                                   undefined
+```
+
+#### **Section Discovery Success (Working Code)**
+```javascript
+// ✅ This part works - finds 9 sections correctly
+function getAllDualStateSections() {
+  const sectionIds = ["sect02", "sect03", "sect04", "sect08", "sect10", 
+                     "sect11", "sect12", "sect13", "sect14", "sect15"];
+  return sectionIds
+    .map(id => ({ id, module: window.TEUI?.[id], modeManager: window.TEUI?.[id]?.ModeManager }))
+    .filter(s => s.modeManager);
+}
+```
+
+### **🔧 Debugging Steps to Execute**
+
+#### **Step 1: Inspect TargetState Structure**
+Add this debugging code to `mirrorTarget()` function:
+```javascript
+TEUI.ReferenceToggle.mirrorTarget = function() {
+  console.log('[DEBUG] Starting mirrorTarget debugging...');
+  
+  getAllDualStateSections().forEach((section, index) => {
+    console.log(`[DEBUG] Section ${index}: ${section.id}`);
+    console.log('[DEBUG] section.modeManager:', section.modeManager);
+    console.log('[DEBUG] section.modeManager.TargetState:', section.modeManager.TargetState);
+    
+    // Test different access patterns
+    if (section.modeManager.TargetState) {
+      console.log('[DEBUG] TargetState exists, checking properties:');
+      console.log('[DEBUG] - .data:', section.modeManager.TargetState.data);
+      console.log('[DEBUG] - .state:', section.modeManager.TargetState.state);
+      console.log('[DEBUG] - .values:', section.modeManager.TargetState.values);
+      console.log('[DEBUG] - keys:', Object.keys(section.modeManager.TargetState));
+    }
+    
+    // Check if it's a function that needs calling
+    if (typeof section.modeManager.TargetState === 'function') {
+      console.log('[DEBUG] TargetState is a function, trying to call...');
+      try {
+        const result = section.modeManager.TargetState();
+        console.log('[DEBUG] TargetState() result:', result);
+      } catch (e) {
+        console.log('[DEBUG] TargetState() call failed:', e);
+      }
+    }
+    
+    console.log('[DEBUG] ==================');
+  });
+};
+```
+
+#### **Step 2: Compare with Working Section Code**
+Examine how existing sections access their state data by checking:
+
+**Check Section 03 (Known Working)**:
+```javascript
+// Look at window.TEUI.sect03.ModeManager structure
+console.log('S03 ModeManager:', window.TEUI.sect03.ModeManager);
+console.log('S03 TargetState:', window.TEUI.sect03.ModeManager.TargetState);
+```
+
+**Check Section 04 (Pattern A)**:
+```javascript
+// Look at window.TEUI.sect04.ModeManager structure  
+console.log('S04 ModeManager:', window.TEUI.sect04.ModeManager);
+console.log('S04 TargetState:', window.TEUI.sect04.ModeManager.TargetState);
+```
+
+#### **Step 3: Test Alternative Access Patterns**
+
+Based on dual-state architecture patterns, try these alternatives:
+
+**Pattern A: Direct state object access**
+```javascript
+// Instead of: section.modeManager.TargetState.data
+// Try: section.modeManager.TargetState (if it IS the data object)
+const targetData = section.modeManager.TargetState;
+```
+
+**Pattern B: Method-based access**
+```javascript
+// Try: getValue method pattern
+Object.keys(section.modeManager.TargetState).forEach(fieldId => {
+  const value = section.modeManager.TargetState.getValue?.(fieldId);
+  // or
+  const value = section.modeManager.getValue?.(fieldId);
+});
+```
+
+**Pattern C: State property access**
+```javascript
+// Try: .state or .values property
+const targetData = section.modeManager.TargetState.state || 
+                   section.modeManager.TargetState.values;
+```
+
+### **🔍 Investigation Checklist**
+
+#### **✅ Verify Section Structure**
+1. **Section Discovery**: ✅ Working (finds 9 sections)
+2. **ModeManager Access**: ✅ Working (`section.modeManager` exists)
+3. **TargetState Access**: 🚨 **FAILING** (`.data` property undefined)
+
+#### **🔍 Research Questions**
+1. **What is TargetState?** Is it an object, function, or class instance?
+2. **How do existing sections read Target values?** Check S03, S04 implementation
+3. **What properties does TargetState have?** Use `Object.keys()` to inspect
+4. **Is there a getValue method?** Check for method-based access patterns
+
+#### **📋 Expected Findings**
+Based on dual-state architecture, TargetState likely has one of these patterns:
+
+**Option 1: Direct Object Pattern**
+```javascript
+// TargetState IS the data object
+const targetData = section.modeManager.TargetState; // No .data needed
+Object.keys(targetData).forEach(fieldId => {
+  const value = targetData[fieldId];
+});
+```
+
+**Option 2: Method-Based Pattern**
+```javascript
+// TargetState has getValue method
+const fieldIds = section.modeManager.getFieldIds?.() || Object.keys(someFieldList);
+fieldIds.forEach(fieldId => {
+  const value = section.modeManager.TargetState.getValue(fieldId);
+});
+```
+
+**Option 3: Property-Based Pattern**
+```javascript
+// TargetState has .state or .values property
+const targetData = section.modeManager.TargetState.state;
+// or
+const targetData = section.modeManager.TargetState.values;
+```
+
+### **🎯 Success Criteria for Fix**
+
+#### **After Debugging**
+1. **Console shows**: Clear TargetState structure for all 9 sections
+2. **No errors**: Mirror Target function executes without TypeError
+3. **State copying works**: Reference values populate from Target values
+
+#### **After Implementation**
+1. **Mirror Target works**: e_10 (Reference TEUI) equals h_10 (Target TEUI)
+2. **Perfect sync**: All Target input values copied to Reference state
+3. **State isolation**: Target values remain unchanged during Reference operations
+
+### **🚀 Next Action Plan**
+
+1. **Add debugging code** to `mirrorTarget()` function
+2. **Run Mirror Target** and examine console output
+3. **Identify correct access pattern** from debugging results
+4. **Update mirrorTarget implementation** with correct pattern
+5. **Test with TEUI comparison** (e_10 should equal h_10)
+6. **Proceed to highlighting features** once core functionality works
+
+**Time Estimate**: ~~30-60 minutes to debug and fix the access pattern issue~~ **ARCHITECTURAL UNDERSTANDING CORRECTED**
+
+### **🎯 CRITICAL ARCHITECTURAL DISCOVERY**
+
+**From Console Debugging (Lines 1017-1075 in Logs.md):**
+
+The debugging revealed that the dual-state architecture does NOT expose `TargetState` and `ReferenceState` objects directly on the ModeManager. Instead:
+
+#### **✅ Correct Architecture Pattern (From README.md Lines 525-543)**
+```javascript
+// ModeManager is a FACADE that manages internal state objects
+const ModeManager = {
+  currentMode: "target", // "target" | "reference"
+  getValue: (fieldId) => this.getCurrentState().getValue(fieldId),
+  setValue: (fieldId, value) => this.getCurrentState().setValue(fieldId, value),
+  switchMode: (mode) => { this.currentMode = mode; this.refreshUI(); }
+};
+```
+
+#### **✅ Cross-Section Communication (DUAL-STATE-CHEATSHEET.md Lines 181-186)**
+```javascript
+// Reference results stored in StateManager with ref_ prefix for downstream sections
+window.TEUI.StateManager.setValue("ref_i_98", heatloss.toString(), "calculated");
+```
+
+#### **✅ Evidence from Logs**
+- **Line 1064**: ModeManager structure shows `getValue`, `setValue`, `switchMode` methods ✅
+- **Line 1023**: `section.modeManager.TargetState: undefined` ✅ (Expected - not exposed)
+- **Lines 254, 432, 591**: `storeReference: ref_j_32=X, ref_k_32=Y` ✅ (StateManager `ref_` pattern)
+
+### **🔧 Corrected Implementation Strategy**
+
+1. **Use ModeManager facade**: `section.modeManager.getValue(fieldId)` and `setValue(fieldId, value)`
+2. **Get field IDs from section definitions**: Not from state object iteration
+3. **Mode switching for copying**: Temporarily switch modes to read/write different states
+4. **ReferenceValues.js integration**: Apply building code overlays to Reference state
+5. **StateManager `ref_` prefix**: Reference values automatically flow to downstream sections
+
+**Result**: Much cleaner implementation that follows the established dual-state architecture patterns correctly.
 
 ---
 

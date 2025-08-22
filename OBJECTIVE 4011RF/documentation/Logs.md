@@ -1,4 +1,3 @@
- [S01DB] upstream snapshot Object
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
  [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
@@ -28,7 +27,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 164798.52425999998, K32: 5932.746873359999
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 197441.05968, K32: 7107.87814848
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
  [S01DB] upstream snapshot Object
  [S01DB] upstream snapshot Object
@@ -38,10 +37,10 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=164798.52425999998, ref_k_32=5932.746873359999 | current target j_32=0, k_32=0
+ [S04DB] storeReference: ref_j_32=197441.05968, ref_k_32=7107.87814848 | current target j_32=0, k_32=0
  [S04] Dual-engine calculations completed successfully
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=164798.52425999998, ref_k_32=5932.746873359999 | current target j_32=0, k_32=0
+ [S04DB] storeReference: ref_j_32=197441.05968, ref_k_32=7107.87814848 | current target j_32=0, k_32=0
  [S04] Dual-engine calculations completed successfully
  [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
@@ -61,6 +60,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
+ [S01DB] upstream snapshot Object
  [S01DB] upstream snapshot Object
  [S02DB] storeReference: ref_h_12= 2020 ref_h_13= 50 ref_h_15= 1427.20
  [S01DB] upstream snapshot Object
@@ -213,12 +213,12 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  S11: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
  S11: ModeManager exposed globally for cross-section integration.
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Listener: ref_d_97 changed → recalculating (src=calculated)
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  S10: Global listener triggered by i_97, recalculating all.
  S10: Utilization factor dependency i_97 changed.
  S10: Global listener triggered by i_98, recalculating all.
@@ -227,8 +227,8 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [S11] Display (target) k_97 = -658.7138758107667
  [S11] Listener: ref_d_97 changed → recalculating (src=calculated)
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Display (target) i_97 = 15481.989691479248
  [S11] Display (target) k_97 = -658.7138758107667
  [S11] Display (target) i_97 = 15481.989691479248
@@ -312,16 +312,16 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  S13: Pattern A initialization complete.
  S14: Section rendered - initializing Pattern A Dual-State Module.
  S14: Reference defaults loaded from standard: OBC SB10 5.5-6 Z6
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 39414.0249835803 + 78828.0499671606 + 23178.39 + 51952.20425999997 - 45879.580160000005
- [S14 DEBUG] ✅ ref_d_127 = 147493.08905074085 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 147493.08905074085 in StateManager
+ [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 59532.28501397147 + 119064.57002794294 + 23178.39 + 84594.73968 - 45879.580160000005
+ [S14 DEBUG] ✅ ref_d_127 = 240490.4045619144 (should be numeric, not NaN)
+ [S14 DEBUG] ✅ Stored ref_d_127 = 240490.4045619144 in StateManager
  [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 39414.0249835803 + 78828.0499671606 + 23178.39 - 45879.580160000005 = 95540.88479074088
+ [S14 DEBUG] ref_d_128 calculation: 59532.28501397147 + 119064.57002794294 + 23178.39 - 45879.580160000005 = 155895.6648819144
  [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=147493.08905074085, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=240490.4045619144, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
  [S04] S13 space gas volume changed (Reference): ref_h_115
  [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 0, K32: 0
@@ -355,7 +355,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=147493.08905074085, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=240490.4045619144, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=0
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
@@ -387,7 +387,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [S04] S15 reference electricity changed: ref_d_136
  [S04] Starting dual-engine Excel-compliant calculations
  [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 0, K32: 0
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 164798.52425999998, K32: 5932.746873359999
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 197441.05968, K32: 7107.87814848
  [S01DB] upstream snapshot Object
  [S01DB] upstream snapshot Object
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
@@ -419,7 +419,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 164798.52425999998, K32: 5932.746873359999
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 197441.05968, K32: 7107.87814848
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
  [S01DB] upstream snapshot Object
  [S01DB] upstream snapshot Object
@@ -429,10 +429,10 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=164798.52425999998, ref_k_32=5932.746873359999 | current target j_32=0, k_32=0
+ [S04DB] storeReference: ref_j_32=197441.05968, ref_k_32=7107.87814848 | current target j_32=0, k_32=0
  [S04] Dual-engine calculations completed successfully
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=164798.52425999998, ref_k_32=5932.746873359999 | current target j_32=0, k_32=0
+ [S04DB] storeReference: ref_j_32=197441.05968, ref_k_32=7107.87814848 | current target j_32=0, k_32=0
  [S04] Dual-engine calculations completed successfully
  [S15] Missing critical upstream Reference values: ref_g_101, ref_d_101, ref_i_104
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
@@ -455,42 +455,42 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  TEUI Calculator 4.011 initialization complete
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=0 ref_j_32=164798.52425999998 k_32=0 ref_k_32=5932.746873359999
+ [S04DB] displayContext mode=target j_32=0 ref_j_32=197441.05968 k_32=0 ref_k_32=7107.87814848
  [S04 DEBUG] Target mode - j_32: 0
  [S04 DEBUG] Target mode - k_32: 0
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=0 ref_j_32=164798.52425999998 k_32=0 ref_k_32=5932.746873359999
+ [S04DB] displayContext mode=target j_32=0 ref_j_32=197441.05968 k_32=0 ref_k_32=7107.87814848
  [S04 DEBUG] Target mode - j_32: 0
  [S04 DEBUG] Target mode - k_32: 0
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=0 ref_j_32=164798.52425999998 k_32=0 ref_k_32=5932.746873359999
+ [S04DB] displayContext mode=target j_32=0 ref_j_32=197441.05968 k_32=0 ref_k_32=7107.87814848
  [S04 DEBUG] Target mode - j_32: 0
  [S04 DEBUG] Target mode - k_32: 0
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=0 ref_j_32=164798.52425999998 k_32=0 ref_k_32=5932.746873359999
+ [S04DB] displayContext mode=target j_32=0 ref_j_32=197441.05968 k_32=0 ref_k_32=7107.87814848
  [S04 DEBUG] Target mode - j_32: 0
  [S04 DEBUG] Target mode - k_32: 0
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=0 ref_j_32=164798.52425999998 k_32=0 ref_k_32=5932.746873359999
+ [S04DB] displayContext mode=target j_32=0 ref_j_32=197441.05968 k_32=0 ref_k_32=7107.87814848
  [S04 DEBUG] Target mode - j_32: 0
  [S04 DEBUG] Target mode - k_32: 0
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=0 ref_j_32=164798.52425999998 k_32=0 ref_k_32=5932.746873359999
+ [S04DB] displayContext mode=target j_32=0 ref_j_32=197441.05968 k_32=0 ref_k_32=7107.87814848
  [S04 DEBUG] Target mode - j_32: 0
  [S04 DEBUG] Target mode - k_32: 0
  [S04 DEBUG] Target mode - l_27: 51
@@ -512,9 +512,9 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
 calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S12DB] REF CLIMATE: d_20=2825, d_21=196, d_22=1960, h_22=-1680
- [S12DB] REF h_101 calc: (2825*0.34792632830961084*24)/1000 = 23.589405059391616
- [S12DB] REF i_101 result: 23.589405059391616 * 2476.62 = 58421.99235819046
+ [S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (4600*0.34792632830961084*24)/1000 = 38.41106664538104
+ [S12DB] REF i_101 result: 38.41106664538104 * 2476.62 = 95129.61587528359
  [S12DB] REF g_104 calc: (0*0 + 0*0)/0.000001 = 0
  [S12DB] REF ROW104: i_101=76103.69, i_102=16788.25, i_103=23178.39 → i_104=116070.33
  [S12DB] REF ROW104: h_21="Capacitance", k_98=-1895.4006468093894 → k_104=-1895.4006468093894
@@ -556,7 +556,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S12DB] STORED for S15: ref_g_102=0.4054054054054054
  [S12DB] STORED for S15: ref_g_104=0
- [S12DB] STORED for S15: ref_i_101=58421.99235819046
+ [S12DB] STORED for S15: ref_i_101=95129.61587528359
  [S12DB] STORED for S15: ref_i_102=20985.306810810813
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
@@ -579,7 +579,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 280868.85426, K32: 10111.27875336
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.38968, K32: 11286.41002848
  [S01DB] upstream snapshot Object
  [S01DB] upstream snapshot Object
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
@@ -588,7 +588,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=280868.85426, ref_k_32=10111.27875336 | current target j_32=133574.3671495516, k_32=6812.292724627132
+ [S04DB] storeReference: ref_j_32=313511.38968, ref_k_32=11286.41002848 | current target j_32=133574.3671495516, k_32=6812.292724627132
  [S04] Dual-engine calculations completed successfully
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
@@ -605,27 +605,27 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  S10: Global listener triggered by i_103, recalculating all.
  S10: Utilization factor dependency i_103 changed.
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 + 51952.20425999997 - 45879.580160000005
- [S14 DEBUG] ✅ ref_d_127 = 160754.7788910602 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 160754.7788910602 in StateManager
+ [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 + 84594.73968 - 45879.580160000005
+ [S14 DEBUG] ✅ ref_d_127 = 253752.09440223372 (should be numeric, not NaN)
+ [S14 DEBUG] ✅ Stored ref_d_127 = 253752.09440223372 in StateManager
  [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 - 45879.580160000005 = 108802.57463106024
+ [S14 DEBUG] ref_d_128 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 - 45879.580160000005 = 169157.35472223375
  [Section13] 📡 🔥 d_127 (TED) listener triggered - S14 energy demand changed!
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] S13 space gas volume changed (Reference): ref_h_115
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 280868.85426, K32: 10111.27875336
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.38968, K32: 11286.41002848
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=280868.85426, ref_k_32=10111.27875336 | current target j_32=133574.3671495516, k_32=6812.292724627132
+ [S04DB] storeReference: ref_j_32=313511.38968, ref_k_32=11286.41002848 | current target j_32=133574.3671495516, k_32=6812.292724627132
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=133574.3671495516 ref_j_32=280868.85426 k_32=6812.292724627132 ref_k_32=10111.27875336
+ [S04DB] displayContext mode=target j_32=133574.3671495516 ref_j_32=313511.38968 k_32=6812.292724627132 ref_k_32=11286.41002848
  [S04 DEBUG] Target mode - j_32: 133574.3671495516
  [S04 DEBUG] Target mode - k_32: 6812.292724627132
  [S04 DEBUG] Target mode - l_27: 51
@@ -657,9 +657,9 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 280868.85426, K32: 10111.27875336
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 313511.38968, K32: 11286.41002848
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=280868.85426, ref_k_32=10111.27875336 | current target j_32=133574.36633416289, k_32=6812.2926830423075
+ [S04DB] storeReference: ref_j_32=313511.38968, ref_k_32=11286.41002848 | current target j_32=133574.36633416289, k_32=6812.2926830423075
  [S04] Dual-engine calculations completed successfully
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
@@ -678,7 +678,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
@@ -698,21 +698,21 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
  [Section13] 🔄 Updating calculated display values for target mode
  [Section13] Calculated display values updated for target mode
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 + 51952.20425999997 - 45879.580160000005
- [S14 DEBUG] ✅ ref_d_127 = 160754.7788910602 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 160754.7788910602 in StateManager
+ [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 + 84594.73968 - 45879.580160000005
+ [S14 DEBUG] ✅ ref_d_127 = 253752.09440223372 (should be numeric, not NaN)
+ [S14 DEBUG] ✅ Stored ref_d_127 = 253752.09440223372 in StateManager
  [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 - 45879.580160000005 = 108802.57463106024
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 + 51952.20425999997 - 45879.580160000005
- [S14 DEBUG] ✅ ref_d_127 = 160754.7788910602 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 160754.7788910602 in StateManager
+ [S14 DEBUG] ref_d_128 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 - 45879.580160000005 = 169157.35472223375
+ [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 + 84594.73968 - 45879.580160000005
+ [S14 DEBUG] ✅ ref_d_127 = 253752.09440223372 (should be numeric, not NaN)
+ [S14 DEBUG] ✅ Stored ref_d_127 = 253752.09440223372 in StateManager
  [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 - 45879.580160000005 = 108802.57463106024
- [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 + 51952.20425999997 - 45879.580160000005
- [S14 DEBUG] ✅ ref_d_127 = 160754.7788910602 (should be numeric, not NaN)
- [S14 DEBUG] ✅ Stored ref_d_127 = 160754.7788910602 in StateManager
+ [S14 DEBUG] ref_d_128 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 - 45879.580160000005 = 169157.35472223375
+ [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 + 84594.73968 - 45879.580160000005
+ [S14 DEBUG] ✅ ref_d_127 = 253752.09440223372 (should be numeric, not NaN)
+ [S14 DEBUG] ✅ Stored ref_d_127 = 253752.09440223372 in StateManager
  [S14 DEBUG] 🔄 Continuing with other Reference calculations...
- [S14 DEBUG] ref_d_128 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 - 45879.580160000005 = 108802.57463106024
+ [S14 DEBUG] ref_d_128 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 - 45879.580160000005 = 169157.35472223375
  [S12DB] TGT CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
  [S12DB] TGT h_101 calc: (4600*0.27834106264768865*24)/1000 = 30.72885331630483
  [S12DB] TGT i_101 result: 30.72885331630483 * 2476.62 = 76103.69270022686
@@ -723,7 +723,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
@@ -747,7 +747,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
@@ -774,7 +774,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
@@ -797,7 +797,7 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
  [Section13] 🔄 Starting Reference Model calculations...
  [Section13] Running Reference Model calculations...
- [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+ [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
  [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
  [Section13] Reference results stored with ref_ prefix for downstream sections
  [S13 DEBUG] Total Reference results stored: 34
@@ -823,14 +823,14 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=280868.85426 k_32=6812.2926830423075 ref_k_32=10111.27875336
+ [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=313511.38968 k_32=6812.2926830423075 ref_k_32=11286.41002848
  [S04 DEBUG] Target mode - j_32: 133574.36633416289
  [S04 DEBUG] Target mode - k_32: 6812.2926830423075
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=280868.85426 k_32=6812.2926830423075 ref_k_32=10111.27875336
+ [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=313511.38968 k_32=6812.2926830423075 ref_k_32=11286.41002848
  [S04 DEBUG] Target mode - j_32: 133574.36633416289
  [S04 DEBUG] Target mode - k_32: 6812.2926830423075
  [S04 DEBUG] Target mode - l_27: 51
@@ -846,13 +846,13 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Display (target) i_97 = 15481.989691479248
  [S11] Display (target) k_97 = -658.7138758107667
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Display (target) i_97 = 15481.989691479248
  [S11] Display (target) k_97 = -658.7138758107667
  [S03DB] storeReferenceResults: mode=reference, province= BC city= Vancouver values= Object
@@ -865,26 +865,26 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Display (target) i_97 = 15481.989691479248
  [S11] Display (target) k_97 = -658.7138758107667
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Display (target) i_97 = 15481.989691479248
  [S11] Display (target) k_97 = -658.7138758107667
  [S03DB] storeReferenceResults: wrote ref_ values (read-back) Object
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=280868.85426 k_32=6812.2926830423075 ref_k_32=10111.27875336
+ [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=313511.38968 k_32=6812.2926830423075 ref_k_32=11286.41002848
  [S04 DEBUG] Target mode - j_32: 133574.36633416289
  [S04 DEBUG] Target mode - k_32: 6812.2926830423075
  [S04 DEBUG] Target mode - l_27: 51
  [S04] Calculated display values updated for target mode
  [S04] S08 forestry offset changed: d_60
  [S04] 🔄 Updating calculated display values for target mode
- [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=280868.85426 k_32=6812.2926830423075 ref_k_32=10111.27875336
+ [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=313511.38968 k_32=6812.2926830423075 ref_k_32=11286.41002848
  [S04 DEBUG] Target mode - j_32: 133574.36633416289
  [S04 DEBUG] Target mode - k_32: 6812.2926830423075
  [S04 DEBUG] Target mode - l_27: 51
@@ -898,25 +898,25 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S12DB] REF CLIMATE: d_20=2825, d_21=196, d_22=1960, h_22=-1680
- [S12DB] REF h_101 calc: (2825*0.34792632830961084*24)/1000 = 23.589405059391616
- [S12DB] REF i_101 result: 23.589405059391616 * 2476.62 = 58421.99235819046
+ [S12DB] REF CLIMATE: d_20=4600, d_21=196, d_22=1960, h_22=-1680
+ [S12DB] REF h_101 calc: (4600*0.34792632830961084*24)/1000 = 38.41106664538104
+ [S12DB] REF i_101 result: 38.41106664538104 * 2476.62 = 95129.61587528359
  [S12DB] REF g_104 calc: (0.34792632830961084*2476.6199999999994 + 0.4054054054054054*1100.42)/3577.0400009999994 = 0.36560886069732396
- [S12DB] REF ROW104: i_101=58421.99235819046, i_102=20985.306810810813, i_103=36440.079840319355 → i_104=115847.37900932063
+ [S12DB] REF ROW104: i_101=95129.61587528359, i_102=20985.306810810813, i_103=36440.079840319355 → i_104=152555.00252641377
  [S12DB] REF ROW104: h_21="Capacitance", k_98=-1895.4006468093894 → k_104=-1895.4006468093894
  [S12DB] STORED for S15: ref_d_101=2476.6199999999994
  [S12DB] STORED for S15: ref_d_102=1100.42
  [S12DB] STORED for S15: ref_g_101=0.34792632830961084
  [S12DB] STORED for S15: ref_g_102=0.4054054054054054
  [S12DB] STORED for S15: ref_g_104=0.36560886069732396
- [S12DB] STORED for S15: ref_i_101=58421.99235819046
+ [S12DB] STORED for S15: ref_i_101=95129.61587528359
  [S12DB] STORED for S15: ref_i_102=20985.306810810813
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] S15 reference electricity changed: ref_d_136
  [S04] Starting dual-engine Excel-compliant calculations
  [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133574.36633416289, K32: 6812.2926830423075
- [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 280645.9032693206, K32: 10103.252517695542
+ [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 349996.0622064138, K32: 12599.858239430894
  [S01DB] upstream snapshot Object
  [S01DB] upstream snapshot Object
 2 🔄 [S05] updateCalculatedDisplayValues: mode=target
@@ -934,11 +934,11 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
  [S04] Reference model calculations complete
- [S04DB] storeReference: ref_j_32=280645.9032693206, ref_k_32=10103.252517695542 | current target j_32=133574.36633416289, k_32=6812.2926830423075
+ [S04DB] storeReference: ref_j_32=349996.0622064138, ref_k_32=12599.858239430894 | current target j_32=133574.36633416289, k_32=6812.2926830423075
  [S04] Dual-engine calculations completed successfully
  ✅ S15 Reference Model: All values converted to numbers for proper math
  ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
- [S12DB] STORED for S15: ref_i_104=115847.37900932063
+ [S12DB] STORED for S15: ref_i_104=152555.00252641377
  [Section12] Reference results stored with ref_ prefix for downstream sections
  [S12] U-agg TGT: TB%=20 → g_101=0.278341, g_102=0.324324
  ✅ S15 Reference Model: All values converted to numbers for proper math
@@ -958,14 +958,14 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
  [S12DB] g_104 DISPLAY (target): 0.2924870886396271
  [Section12] Calculated display values updated for target mode
  [S11] calculateAll TRIGGERED. isReferenceMode: false
- [S11] REF TB%=50% → ref_i_97=39414.02, ref_k_97=-947.70
- [S11] Writing ref penalty: ref_i_97=39414.02, ref_k_97=-947.70
+ [S11] REF TB%=50% → ref_i_97=59532.29, ref_k_97=-947.70
+ [S11] Writing ref penalty: ref_i_97=59532.29, ref_k_97=-947.70
  [S11] Display (target) i_97 = 15481.989691479248
 4011-Section11.js:375 [S11] Display (target) k_97 = -658.7138758107667
 4011-Section13.js:2943 [Section13] 🚀 CALCULATEALL TRIGGERED - Running dual-engine calculations...
 4011-Section13.js:2949 [Section13] 🔄 Starting Reference Model calculations...
 4011-Section13.js:2969 [Section13] Running Reference Model calculations...
-4011-Section13.js:3150 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=160754.7788910602, hspf=7.1
+4011-Section13.js:3150 [Section13] 🔥 REF HEATING: systemType="Gas", tedReference=253752.09440223372, hspf=7.1
 4011-Section13.js:2564 [Section13] 🧊 COOLING CALC: mode=REF, coolingSystemType="Cooling", heatingType="Gas", isCoolingActive=true, coolingDemand=10192.893604542265
 4011-Section13.js:3090 [Section13] Reference results stored with ref_ prefix for downstream sections
 4011-Section13.js:3093 [S13 DEBUG] Total Reference results stored: 34
@@ -985,16 +985,16 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
 4011-Section13.js:2957 [Section13] 🎉 DUAL-ENGINE CALCULATIONS COMPLETE
 4011-Section06.js:463 🟢 [S06-TAR] Storing d_43 = 0 (from d_44=0, d_45=0, d_46=0)
 4011-Section06.js:458 🔵 [S06-REF] Storing ref_d_43 = 0 (from d_44=0, d_45=0, d_46=0)
-4011-Section14.js:1043 [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 + 51952.20425999997 - 45879.580160000005
-4011-Section14.js:1050 [S14 DEBUG] ✅ ref_d_127 = 160754.7788910602 (should be numeric, not NaN)
-4011-Section14.js:1060 [S14 DEBUG] ✅ Stored ref_d_127 = 160754.7788910602 in StateManager
+4011-Section14.js:1043 [S14 DEBUG] ✅ Converted to numbers - ref_d_127 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 + 84594.73968 - 45879.580160000005
+4011-Section14.js:1050 [S14 DEBUG] ✅ ref_d_127 = 253752.09440223372 (should be numeric, not NaN)
+4011-Section14.js:1060 [S14 DEBUG] ✅ Stored ref_d_127 = 253752.09440223372 in StateManager
 4011-Section14.js:1063 [S14 DEBUG] 🔄 Continuing with other Reference calculations...
-4011-Section14.js:1078 [S14 DEBUG] ref_d_128 calculation: 39414.0249835803 + 78828.0499671606 + 36440.079840319355 - 45879.580160000005 = 108802.57463106024
+4011-Section14.js:1078 [S14 DEBUG] ref_d_128 calculation: 59532.28501397147 + 119064.57002794294 + 36440.079840319355 - 45879.580160000005 = 169157.35472223375
 4011-Section04.js:1543 [S04] Starting dual-engine Excel-compliant calculations
 4011-Section04.js:970 [S04] Row 32 Subtotals - F32: 132938, G32: 6779.838, J32: 133574.36633416289, K32: 6812.2926830423075
-4011-Section04.js:970 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 280645.9032693206, K32: 10103.252517695542
+4011-Section04.js:970 [S04] Row 32 Subtotals - F32: 132938, G32: 4785.768, J32: 349996.0622064138, K32: 12599.858239430894
 4011-Section04.js:1616 [S04] Reference model calculations complete
-4011-Section04.js:1622 [S04DB] storeReference: ref_j_32=280645.9032693206, ref_k_32=10103.252517695542 | current target j_32=133574.36633416289, k_32=6812.2926830423075
+4011-Section04.js:1622 [S04DB] storeReference: ref_j_32=349996.0622064138, ref_k_32=12599.858239430894 | current target j_32=133574.36633416289, k_32=6812.2926830423075
 4011-Section04.js:1562 [S04] Dual-engine calculations completed successfully
 4011-Section15.js:1462 ✅ S15 Reference Model: All values converted to numbers for proper math
 4011-Section15.js:1475 ✅ S15 Reference Model: Additional fuel variables declared for cost calculations
@@ -1002,24 +1002,74 @@ calculateReferenceModel @ 4011-Section15.js:1448Understand this warningAI
 4011-Dependency.js:712 [DependencyGraph] Calculating node sizes...
 4011-Section04.js:2494 [S04] S08 forestry offset changed: d_60
 4011-Section04.js:436 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:444 [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=280645.9032693206 k_32=6812.2926830423075 ref_k_32=10103.252517695542
+4011-Section04.js:444 [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=349996.0622064138 k_32=6812.2926830423075 ref_k_32=12599.858239430894
 4011-Section04.js:525 [S04 DEBUG] Target mode - j_32: 133574.36633416289
 4011-Section04.js:525 [S04 DEBUG] Target mode - k_32: 6812.2926830423075
 4011-Section04.js:525 [S04 DEBUG] Target mode - l_27: 51
 4011-Section04.js:560 [S04] Calculated display values updated for target mode
 4011-Section04.js:2494 [S04] S08 forestry offset changed: d_60
 4011-Section04.js:436 [S04] 🔄 Updating calculated display values for target mode
-4011-Section04.js:444 [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=280645.9032693206 k_32=6812.2926830423075 ref_k_32=10103.252517695542
+4011-Section04.js:444 [S04DB] displayContext mode=target j_32=133574.36633416289 ref_j_32=349996.0622064138 k_32=6812.2926830423075 ref_k_32=12599.858239430894
 4011-Section04.js:525 [S04 DEBUG] Target mode - j_32: 133574.36633416289
 4011-Section04.js:525 [S04 DEBUG] Target mode - k_32: 6812.2926830423075
 4011-Section04.js:525 [S04 DEBUG] Target mode - l_27: 51
 4011-Section04.js:560 [S04] Calculated display values updated for target mode
-4011-ReferenceToggle.js:42 [ReferenceToggle] Found 9 dual-state sections: (9) ['sect02', 'sect03', 'sect08', 'sect10', 'sect11', 'sect12', 'sect13', 'sect14', 'sect15']
-4011-ReferenceToggle.js:343 [ReferenceToggle] Mirror Target: Processing 9 sections
-4011-ReferenceToggle.js:355 [ReferenceToggle] Mirror Target failed: TypeError: Cannot read properties of undefined (reading 'data')
-    at 4011-ReferenceToggle.js:346:60
-    at Array.forEach (<anonymous>)
-    at mirrorTarget (4011-ReferenceToggle.js:345:16)
-    at HTMLAnchorElement.<anonymous> (4011-ReferenceToggle.js:120:9)
-mirrorTarget @ 4011-ReferenceToggle.js:355
-(anonymous) @ 4011-ReferenceToggle.js:120Understand this errorAI
+4011-ReferenceToggle.js:343 [DEBUG] Starting mirrorTarget debugging...
+ [ReferenceToggle] Found 9 dual-state sections: (9) ['sect02', 'sect03', 'sect08', 'sect10', 'sect11', 'sect12', 'sect13', 'sect14', 'sect15']
+ [ReferenceToggle] Mirror Target: Processing 9 sections
+ [DEBUG] ==================
+ [DEBUG] Section 0: sect02
+ [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, getValue: ƒ, setValue: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect02
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 1: sect03
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, resetState: ƒ, getCurrentState: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect03
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 2: sect08
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, updateUIForMode: ƒ, getCurrentState: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect08
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 3: sect10
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, resetState: ƒ, getCurrentState: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect10
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 4: sect11
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, resetState: ƒ, getCurrentState: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect11
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 5: sect12
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, updateCalculatedDisplayValues: ƒ, resetState: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect12
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 6: sect13
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, updateCalculatedDisplayValues: ƒ, resetState: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect13
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 7: sect14
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, updateCalculatedDisplayValues: ƒ, resetState: ƒ, …}currentMode: "target"getCurrentState: ƒ ()getValue: ƒ (fieldId)initialize: ƒ ()refreshUI: ƒ ()resetState: ƒ ()setValue: ƒ (fieldId, value, source = "user")switchMode: ƒ (mode)updateCalculatedDisplayValues: ƒ ()[[Prototype]]: Object
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect14
+4011-ReferenceToggle.js:348 [DEBUG] ==================
+4011-ReferenceToggle.js:349 [DEBUG] Section 8: sect15
+4011-ReferenceToggle.js:350 [DEBUG] section.modeManager: {currentMode: 'target', initialize: ƒ, switchMode: ƒ, refreshUI: ƒ, updateCalculatedDisplayValues: ƒ, …}
+4011-ReferenceToggle.js:351 [DEBUG] section.modeManager.TargetState: undefined
+4011-ReferenceToggle.js:388 [DEBUG] section.modeManager.ReferenceState: undefined
+4011-ReferenceToggle.js:394 [DEBUG] ================== END sect15
+4011-ReferenceToggle.js:398 [DEBUG] Debugging complete - actual copying disabled until structure is understood
+4011-ReferenceToggle.js:411 🔍 Mirror Target: Debugging complete - check console for TargetState structure

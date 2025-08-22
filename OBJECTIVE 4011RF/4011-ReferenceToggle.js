@@ -336,23 +336,82 @@ TEUI.ReferenceToggle = (function () {
 
   /**
    * 1. Mirror Target: Copy all Target values to Reference state
+   * DEBUGGING VERSION: Comprehensive structure inspection
    */
   function mirrorTarget() {
     try {
+      console.log('[DEBUG] Starting mirrorTarget debugging...');
       const sections = getAllDualStateSections();
       console.log(`[ReferenceToggle] Mirror Target: Processing ${sections.length} sections`);
       
+      sections.forEach((section, index) => {
+        console.log(`[DEBUG] ==================`);
+        console.log(`[DEBUG] Section ${index}: ${section.id}`);
+        console.log('[DEBUG] section.modeManager:', section.modeManager);
+        console.log('[DEBUG] section.modeManager.TargetState:', section.modeManager.TargetState);
+        
+        // Test different access patterns
+        if (section.modeManager.TargetState) {
+          console.log('[DEBUG] TargetState exists, checking properties:');
+          console.log('[DEBUG] - .data:', section.modeManager.TargetState.data);
+          console.log('[DEBUG] - .state:', section.modeManager.TargetState.state);
+          console.log('[DEBUG] - .values:', section.modeManager.TargetState.values);
+          console.log('[DEBUG] - keys:', Object.keys(section.modeManager.TargetState));
+          console.log('[DEBUG] - typeof:', typeof section.modeManager.TargetState);
+        }
+        
+        // Check if it's a function that needs calling
+        if (typeof section.modeManager.TargetState === 'function') {
+          console.log('[DEBUG] TargetState is a function, trying to call...');
+          try {
+            const result = section.modeManager.TargetState();
+            console.log('[DEBUG] TargetState() result:', result);
+          } catch (e) {
+            console.log('[DEBUG] TargetState() call failed:', e);
+          }
+        }
+        
+        // Test if TargetState IS the data object directly
+        if (typeof section.modeManager.TargetState === 'object' && section.modeManager.TargetState !== null) {
+          console.log('[DEBUG] Testing direct object access...');
+          const keys = Object.keys(section.modeManager.TargetState);
+          console.log('[DEBUG] Direct object keys (first 5):', keys.slice(0, 5));
+          
+          // Test accessing a field directly
+          if (keys.length > 0) {
+            const testKey = keys[0];
+            console.log(`[DEBUG] Testing direct access to ${testKey}:`, section.modeManager.TargetState[testKey]);
+          }
+        }
+        
+        // Check ReferenceState structure for comparison
+        console.log('[DEBUG] section.modeManager.ReferenceState:', section.modeManager.ReferenceState);
+        if (section.modeManager.ReferenceState) {
+          console.log('[DEBUG] ReferenceState keys:', Object.keys(section.modeManager.ReferenceState));
+          console.log('[DEBUG] ReferenceState.setValue function:', typeof section.modeManager.ReferenceState.setValue);
+        }
+        
+        console.log(`[DEBUG] ================== END ${section.id}`);
+      });
+      
+      // TEMPORARILY DISABLE the actual copying to avoid errors during debugging
+      console.log('[DEBUG] Debugging complete - actual copying disabled until structure is understood');
+      
+      // TODO: Uncomment once we know the correct access pattern
+      /*
       sections.forEach(section => {
-        const targetData = section.modeManager.TargetState.data;
+        const targetData = section.modeManager.TargetState.data; // <-- This line fails
         Object.keys(targetData).forEach(fieldId => {
           section.modeManager.ReferenceState.setValue(fieldId, targetData[fieldId], "mirrored");
         });
         section.modeManager.refreshUI();
       });
+      */
       
-      console.log("🔗 Mirror Target: Reference state synchronized with Target state");
+      console.log("🔍 Mirror Target: Debugging complete - check console for TargetState structure");
     } catch (error) {
       console.error("[ReferenceToggle] Mirror Target failed:", error);
+      console.error("[DEBUG] Full error stack:", error.stack);
     }
   }
 
